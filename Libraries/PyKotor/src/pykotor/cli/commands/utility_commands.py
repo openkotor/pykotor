@@ -15,7 +15,8 @@ from typing import Any
 from loggerplus import RobustLogger as Logger  # type: ignore[import-untyped]
 
 # Import the proper diff logging system
-from pykotor.diff_tool.logger import DiffLogger, LogLevel, OutputMode
+from pykotor.cli.logger import LogLevel, OutputMode
+from pykotor.diff_tool.logger import DiffLogger
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats.gff import GFF, read_gff, write_gff
 from pykotor.tools.misc import is_capsule_file
@@ -46,7 +47,7 @@ def _diff_archives_or_directories(
                 if (path / "chitin.key").exists():
                     installation = Installation(path)
                     # Load all resources from the installation
-                    for resource in installation:
+                    for resource in installation.iter_all_resources():
                         try:
                             data = resource.data()
                             if data:
@@ -74,14 +75,14 @@ def _diff_archives_or_directories(
                         except Exception:
                             continue
                 except Exception:
-                    # Fallback: treat as single file
+                    Logger().exception("Error loading resources from capsule")
                     raw_resource_data[path.name.lower()] = path.read_bytes()
 
             return raw_resource_data
 
         # Load resources from both paths
-        resources1 = load_resource_container(path1)
-        resources2 = load_resource_container(path2)
+        resources1: dict[str, bytes] = load_resource_container(path1)
+        resources2: dict[str, bytes] = load_resource_container(path2)
 
         # Find common and unique resources
         common_keys = set(resources1.keys()) & set(resources2.keys())
@@ -92,13 +93,11 @@ def _diff_archives_or_directories(
 
         # Report added/removed resources
         for resource_key in sorted(only_in_1):
-            if output_mode != OutputMode.QUIET:
-                diff_logger.info(f"Only in {args.path1}: {resource_key}")
+            diff_logger.debug(f"Only in {args.path1}: {resource_key}")
             differences_found = True
 
         for resource_key in sorted(only_in_2):
-            if output_mode != OutputMode.QUIET:
-                diff_logger.info(f"Only in {args.path2}: {resource_key}")
+            diff_logger.debug(f"Only in {args.path2}: {resource_key}")
             differences_found = True
 
         # Compare common resources
@@ -119,7 +118,7 @@ def _diff_archives_or_directories(
 
                 if result is False:  # Different
                     differences_found = True
-                    if output_mode == OutputMode.DIFF_ONLY:
+                    if output_mode == OutputMode.NORMAL:
                         # Try to output unified diff for the raw data
                         try:
                             import difflib
@@ -135,26 +134,24 @@ def _diff_archives_or_directories(
                                 print("".join(diff_lines), end="")
                         except Exception:
                             # Fallback to simple message
+                            diff_logger._logger.exception("Error formatting unified diff")
                             diff_logger.info(f"Files differ: {resource_key}")
 
-            except Exception as e:
+            except Exception:
                 # If structured diff fails, fall back to simple comparison
                 if data1 != data2:
                     differences_found = True
-                    if output_mode != OutputMode.QUIET:
-                        diff_logger.info(f"Files differ: {resource_key}")
+                    diff_logger.info(f"Files differ: {resource_key}")
 
         # Summary
         if not differences_found:
-            if output_mode != OutputMode.DIFF_ONLY:
-                diff_logger.info(f"'{args.path1}' MATCHES '{args.path2}'")
+            diff_logger.info(f"'{args.path1}' MATCHES '{args.path2}'")
             return 0
         else:
-            if output_mode != OutputMode.DIFF_ONLY:
-                diff_logger.info(f"'{args.path1}' DOES NOT MATCH '{args.path2}'")
+            diff_logger.info(f"'{args.path1}' DOES NOT MATCH '{args.path2}'")
             return 1
 
-    except Exception as e:
+    except Exception:
         Logger().exception("Error comparing archives/directories")
         return 1
 
@@ -250,17 +247,6 @@ def cmd_diff(
     Returns:
     -------
         Exit code (0 for success, non-zero for error)
-
-    References:
-    ----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - GFF structures are loaded via CResGFF class throughout the engine
-            - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-            - 2DA structures loaded via C2DA class (see 2da/io_2da.py for references)
-            - TLK structures loaded via CTlkTable class (see tlk/io_tlk.py for references)
-        Libraries/PyKotor/src/pykotor/tslpatcher/diff/engine.py
-        Libraries/PyKotor/src/pykotor/tslpatcher/diff/application.py
-
     """
     # Determine verbosity from args
     verbose = getattr(args, "verbose", False) or getattr(args, "debug", False)
@@ -274,13 +260,13 @@ def cmd_diff(
         return 1
 
     # Set up proper diff logging system
-    output_mode_str = getattr(args, "output_mode", "full").lower()
+    output_mode_str = getattr(args, "output_mode", "normal").lower()
     output_mode_map = {
         "full": OutputMode.FULL,
-        "diff_only": OutputMode.DIFF_ONLY,
+        "normal": OutputMode.NORMAL,
         "quiet": OutputMode.QUIET,
     }
-    output_mode = output_mode_map.get(output_mode_str, OutputMode.FULL)
+    output_mode = output_mode_map.get(output_mode_str, OutputMode.NORMAL)
 
     # Display CLI arguments (for parity with other diff tools)
     if output_mode != OutputMode.QUIET:
@@ -295,8 +281,7 @@ def cmd_diff(
 
     # Handle special case: identical paths should always match
     if args.path1 == args.path2:
-        if output_mode != OutputMode.DIFF_ONLY:
-            print(f"'{args.path1}' MATCHES '{args.path2}'")
+        print(f"'{args.path1}' MATCHES '{args.path2}'")
         return 0
 
     # Handle output redirection
@@ -374,11 +359,11 @@ def cmd_diff(
 
     if generate_ini:
         # Use the full TSLPatcher application for INI generation
-        from pykotor.tslpatcher.diff.application import DiffConfig, handle_diff, run_application  # noqa: PLC0415
+        from pykotor.cli.diff_tool.app import DiffConfig, handle_diff, run_application  # noqa: PLC0415
 
         # Convert Path objects to the format expected by TSLPatcher
-        paths_for_tslpatcher = []
-        for path in [path1, path2]:
+        paths_for_tslpatcher: list[Path | Installation] = []
+        for path in (path1, path2):
             if _detect_path_type(path) == "installation":
                 try:
                     paths_for_tslpatcher.append(Installation(path))
@@ -450,12 +435,11 @@ def cmd_diff(
                 format_type=format_type,
             )
 
-            # Add summary message (but not in diff_only mode)
-            if output_mode != OutputMode.DIFF_ONLY:
-                if result:
-                    diff_logger.info(f"'{args.path1}' MATCHES '{args.path2}'")
-                else:
-                    diff_logger.info(f"'{args.path1}' DOES NOT MATCH '{args.path2}'")
+            # Add summary message (but not in normal mode)
+            if result:
+                diff_logger.info(f"'{args.path1}' MATCHES '{args.path2}'")
+            else:
+                diff_logger.info(f"'{args.path1}' DOES NOT MATCH '{args.path2}'")
 
             return 0 if result else 1
 
@@ -509,22 +493,11 @@ def cmd_stats(
     args: Namespace,
     logger: Logger,
 ) -> int:
-    """Show statistics about a file.
-
-    References:
-    ----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - GFF structures are loaded via CResGFF class throughout the engine
-            - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-            - 2DA structures loaded via C2DA class (see 2da/io_2da.py for references)
-            - TLK structures loaded via CTlkTable class (see tlk/io_tlk.py for references)
-
-
-    """
+    """Show statistics about a file."""
     file_path = pathlib.Path(args.file)
 
     try:
-        stats = get_file_stats(file_path)
+        stats: dict[str, int | str] = get_file_stats(file_path)
 
         logger.info(f"File: {stats.get('path', file_path)}")  # noqa: G004
         logger.info(f"Size: {stats.get('size', 0)} bytes")  # noqa: G004
@@ -543,7 +516,7 @@ def cmd_stats(
 
         return 0
     except Exception as e:
-        logger.exception(f"Failed to get stats for {file_path}: {e.__class__.__name__}: {e}s", exc_info=True)  # noqa: G004
+        logger.exception(f"Failed to get stats for {file_path}: {e.__class__.__name__}: {e}")  # noqa: G004
         return 1
 
 

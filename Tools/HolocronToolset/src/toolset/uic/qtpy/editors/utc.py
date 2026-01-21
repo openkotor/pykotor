@@ -12,7 +12,7 @@ from qtpy import QtCore, QtGui, QtWidgets
 
 
 class Ui_MainWindow(object):
-    def setupUi(self, MainWindow: QtWidgets.QMainWindow):
+    def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1007, 585)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -127,6 +127,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.tagEdit = QtWidgets.QLineEdit(self.groupBox)
+        self.tagEdit.setMaxLength(16)
         self.tagEdit.setObjectName("tagEdit")
         self.horizontalLayout_3.addWidget(self.tagEdit)
         self.tagGenerateButton = QtWidgets.QPushButton(self.groupBox)
@@ -1069,7 +1070,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.onBlockedEdit.sizePolicy().hasHeightForWidth())
-        self..setSizePolicy(sizePolicy)
+        self.onBlockedEdit.setSizePolicy(sizePolicy)
         self.onBlockedEdit.setObjectName("onBlockedEdit")
         self.horizontalLayout_29.addWidget(self.onBlockedEdit)
         self.formLayout_22.setLayout(0, QtWidgets.QFormLayout.FieldRole, self.horizontalLayout_29)

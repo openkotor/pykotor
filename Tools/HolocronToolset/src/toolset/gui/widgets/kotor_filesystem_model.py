@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, ClassVar, Protocol, TypeVar, Union, cast
 import qtpy
 
 from loggerplus import RobustLogger
-from typing_extensions import Literal
 
 from pykotor.extract.capsule import LazyCapsule
 from utility.ui_libraries.qt.adapters.filesystem.pyfilesystemmodel import PyFileSystemModel
@@ -62,7 +61,7 @@ if toolset_path.exists():
 from pathlib import Path  # noqa: E402
 
 from qtpy.QtCore import QAbstractItemModel, QDir, QModelIndex, QObject, Qt  # noqa: E402, F401
-from qtpy.QtGui import QColor, QDrag, QIcon, QImage, QPixmap  # noqa: E402
+from qtpy.QtGui import QColor, QDrag, QIcon, QImage, QPalette, QPixmap  # noqa: E402
 from qtpy.QtWidgets import (  # noqa: E402
     QFileSystemModel,  # pyright: ignore[reportPrivateImportUsage]
     QHBoxLayout,
@@ -83,6 +82,7 @@ if TYPE_CHECKING:
     from qtpy.QtCore import QPoint, QRect
     from qtpy.QtGui import QDragEnterEvent, QDragMoveEvent, _QAction
     from qtpy.QtWidgets import _QMenu
+    from typing_extensions import Literal
 
     from toolset.data.installation import HTInstallation
     from toolset.gui.windows.main import ToolWindow
@@ -292,33 +292,40 @@ class ResourceFileSystemWidget(QWidget):
     ):
         super().__init__(parent)
 
+        from toolset.uic.qtpy.widgets.resource_filesystem_widget import Ui_Form
+
+        self.ui = Ui_Form()
+        self.ui.setupUi(self)
+
         # Setup the view and model.
-        self.fsTreeView: ResourceFileSystemTreeView | RobustTreeView = ResourceFileSystemTreeView(self, use_columns=True) if view is None else view
+        if view is None:
+            # Replace the default tree view with our custom one
+            self.fsTreeView: ResourceFileSystemTreeView | RobustTreeView = ResourceFileSystemTreeView(self, use_columns=True)
+            # Remove the default tree view and add our custom one
+            self.ui.mainLayout.removeWidget(self.ui.fsTreeView)
+            self.ui.fsTreeView.deleteLater()
+            self.ui.mainLayout.addWidget(self.fsTreeView)
+        else:
+            self.fsTreeView = view
+            # Replace the default tree view with the provided one
+            self.ui.mainLayout.removeWidget(self.ui.fsTreeView)
+            self.ui.fsTreeView.deleteLater()
+            self.ui.mainLayout.addWidget(self.fsTreeView)
+
         self.fs_model: QFileSystemModel | ResourceFileSystemModel | PyFileSystemModel = ResourceFileSystemModel(self) if model is None else model
         self.fsTreeView.setModel(self.fs_model)
 
-        # Address bar
-        self.address_bar: QLineEdit = QLineEdit(self)
+        # Store references for easier access
+        self.address_bar = self.ui.addressBar
+        self.go_button = self.ui.goButton
+        self.refresh_button = self.ui.refreshButton
+        self.address_layout = self.ui.addressLayout
+        self.main_layout = self.ui.mainLayout
+
+        # Connect signals
         self.address_bar.returnPressed.connect(self.onAddressBarReturnPressed)
-
-        # Go button
-        self.go_button: QPushButton = QPushButton("Go", self)
         self.go_button.clicked.connect(self.onGoButtonClicked)
-
-        # Refresh button
-        self.refresh_button: QPushButton = QPushButton("Refresh", self)
         self.refresh_button.clicked.connect(self.onRefreshButtonClicked)
-
-        # Layout for the address bar, go button, and refresh button
-        self.address_layout: QHBoxLayout = QHBoxLayout()
-        self.address_layout.addWidget(self.address_bar)
-        self.address_layout.addWidget(self.go_button)
-        self.address_layout.addWidget(self.refresh_button)
-
-        # Main layout
-        self.main_layout: QVBoxLayout = QVBoxLayout(self)
-        self.main_layout.addLayout(self.address_layout)
-        self.main_layout.addWidget(self.fsTreeView)
 
         # Configure the QTreeView
         self.setup_tree_view()
@@ -758,7 +765,11 @@ class ResourceFileSystemModel(QAbstractItemModel):
                     display_data = self.get_detailed_data(index)
                 else:
                     display_data = self.get_default_data(index)
-                return f'<span style="color:{QColor(0, 0, 0).name()}; font-size:{self.get_tree_view().get_text_size()}pt;">{display_data}</span>'
+                # Use palette color for text instead of hardcoded black
+                tree_view = self.get_tree_view()
+                palette = tree_view.palette()
+                text_color = palette.color(QPalette.ColorRole.WindowText)
+                return f'<span style="color:{text_color.name()}; font-size:{tree_view.get_text_size()}pt;">{display_data}</span>'
             if role == Qt.ItemDataRole.DecorationRole and index.column() == 0:
                 return item.iconData()
         if role == Qt.ItemDataRole.DisplayRole:

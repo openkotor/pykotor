@@ -22,7 +22,7 @@ from qtpy.QtCore import (
     Signal,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
     Slot,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
 )
-from qtpy.QtGui import QCursor, QIcon, QImage, QPixmap, QStandardItem, QStandardItemModel
+from qtpy.QtGui import QCursor, QColor, QIcon, QImage, QPalette, QPixmap, QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import QAbstractItemView, QApplication, QFileDialog, QHeaderView, QInputDialog, QListView, QMenu, QStyle, QToolTip, QWidget
 
 from loggerplus import RobustLogger  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
@@ -38,7 +38,7 @@ from toolset.gui.widgets.texture_preview import load_resource_preview_mipmap, qi
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QModelIndex, QRect
     from qtpy.QtGui import QMouseEvent, QResizeEvent, QShowEvent
-    from qtpy.QtWidgets import QScrollBar, _QMenu
+    from qtpy.QtWidgets import QScrollBar, QMenu
 
     from pykotor.resource.formats.tpc.tpc_data import TPC
     from toolset.data.installation import HTInstallation
@@ -464,16 +464,45 @@ class ResourceProxyModel(QSortFilterProxyModel):
         assert isinstance(model, QStandardItemModel)
         resref_index: QModelIndex = model.index(source_row, 0, source_parent)
         item: ResourceStandardItem | QStandardItem | None = model.itemFromIndex(resref_index)
+        
+        if item is None:
+            return False
+            
         if isinstance(item, ResourceStandardItem):
-            # Get the file name and resource name
-            filename: str = item.resource.filepath().name.lower()
-            resname: str = item.resource.filename().lower()
+            # Match against what the user sees (tree text) plus resource identifiers.
+            # This avoids edge-cases where the display label and the underlying FileResource
+            # filename/path differ (e.g. capsule/bif container names).
+            display_text: str = item.text().lower()
+            resref: str = item.resource.resname().lower()
+            identifier_filename: str = item.resource.filename().lower()  # e.g. "p_bastila.utc"
+            container_filename: str = item.resource.filepath().name.lower()  # e.g. "templates.bif"
 
-            # Check if the filter string is a substring of either the filename or the resource name
-            if self.filter_string in filename or self.filter_string in resname:
+            # Check if the filter string is a substring of any known representation.
+            if (
+                self.filter_string in display_text
+                or self.filter_string in resref
+                or self.filter_string in identifier_filename
+                or self.filter_string in container_filename
+            ):
                 return True
-
-        return False
+            return False
+        
+        # For category items (non-ResourceStandardItem), check if any child matches
+        # This ensures categories are shown if they contain matching resources
+        if self.filter_string.strip():
+            # Check all children to see if any match using the model's index-based approach
+            child_count: int = model.rowCount(resref_index)
+            for child_row in range(child_count):
+                child_index: QModelIndex = model.index(child_row, 0, resref_index)
+                if not child_index.isValid():
+                    continue
+                # Recursively check if this child (or any of its descendants) matches
+                if self.filterAcceptsRow(child_row, resref_index):
+                    return True
+            return False
+        
+        # If no filter string, show all categories
+        return True
 
 
 class ResourceModel(QStandardItemModel):
@@ -498,7 +527,7 @@ class ResourceModel(QStandardItemModel):
     def clear(self):
         """Clear the resource model."""
         super().clear()
-        self._category_items = {}
+        self._category_items.clear()
         self.setColumnCount(2)
         self.setHorizontalHeaderLabels(["ResRef", "Type"])
 
@@ -641,6 +670,12 @@ class TextureList(MainWindowList):
         self._poll_timer.timeout.connect(self._poll_result_queue)
         # Map of (section_name, row) -> FileResource for pending process loads
         self._pending_process_loads: dict[tuple[str, int], FileResource] = {}
+        
+        # Throttle timer for scroll events to prevent rapid queue operations
+        self._scroll_throttle_timer: QTimer = QTimer(self)
+        self._scroll_throttle_timer.setSingleShot(True)
+        self._scroll_throttle_timer.timeout.connect(self._throttled_queue_load_visible_icons)
+        self._pending_scroll_load: bool = False
 
     def __del__(self):
         """Shutdown the executor when the texture list is deleted."""
@@ -681,7 +716,8 @@ class TextureList(MainWindowList):
         if vert_scroll_bar is None:
             RobustLogger().warning("Could not find vertical scroll bar for resource list")
         else:
-            vert_scroll_bar.valueChanged.connect(self.queue_load_visible_icons)
+            # Use throttled handler to prevent rapid queue operations on Windows
+            vert_scroll_bar.valueChanged.connect(self._throttled_scroll_handler)
         self.sig_icon_loaded.connect(self.on_icon_loaded)
 
     def set_installation(self, installation: HTInstallation):
@@ -835,11 +871,11 @@ class TextureList(MainWindowList):
     def on_resource_context_menu(self, position: QPoint):
         """Show the context menu for the texture list."""
         print(f"Showing context menu at position: {position}")
-        menu: _QMenu = QMenu(self)
+        menu: QMenu = QMenu(self)
         menu.addAction("Open in Editor").triggered.connect(self.on_resource_double_clicked)
         menu.addAction("Reload").triggered.connect(self.on_reload_selected)
 
-        export_submenu: _QMenu = QMenu("Export texture as...", menu)
+        export_submenu: QMenu = QMenu("Export texture as...", menu)
         menu.addMenu(export_submenu)
 
         for tpc_format in TPCTextureFormat:
@@ -941,6 +977,25 @@ class TextureList(MainWindowList):
                 RobustLogger().warning(f"Expected ResourceStandardItem, got {type(item).__name__}")
                 continue
             self.offload_texture_load(item, reload=reload)
+
+    def _throttled_scroll_handler(self, value: int):
+        """Handle scroll events with throttling to prevent rapid queue operations.
+        
+        Args:
+        ----
+            value: The scroll value from the valueChanged signal (ignored).
+        """
+        # Mark that we have a pending scroll load
+        self._pending_scroll_load = True
+        # Restart the throttle timer (single-shot, so it will fire after the timeout)
+        # This ensures we only call queue_load_visible_icons after scrolling stops
+        self._scroll_throttle_timer.start(150)  # 150ms throttle delay
+    
+    def _throttled_queue_load_visible_icons(self):
+        """Called by the throttle timer to load visible icons after scrolling stops."""
+        if self._pending_scroll_load:
+            self._pending_scroll_load = False
+            self.queue_load_visible_icons(0)
 
     @Slot(int)
     def queue_load_visible_icons(
@@ -1160,9 +1215,33 @@ def get_image_from_resource(
     except Exception as e:  # noqa: BLE001
         RobustLogger().warning(f"Failed to build preview icon for resource '{resource.path_ident()!r}': {e}")
         app_style: QStyle | None = QApplication.style()
-        assert app_style is not None
-        pixmap: QPixmap = app_style.standardPixmap(QStyle.StandardPixmap.SP_VistaShield)
-        qimg: QImage = pixmap.toImage()
+        if app_style is not None:
+            pixmap: QPixmap = app_style.standardPixmap(QStyle.StandardPixmap.SP_VistaShield)
+            qimg: QImage = pixmap.toImage()
+        else:
+            # Fallback for worker processes where QApplication.style() may return None
+            # Create a simple placeholder image using palette color
+            qimg = QImage(icon_size, icon_size, QImage.Format.Format_RGBA8888)
+            app = QApplication.instance()
+            if app is not None and isinstance(app, QApplication):
+                palette = app.palette()
+            else:
+                # Use default palette if no application instance
+                palette = QPalette()
+            
+            # Use Mid color (typically gray) for placeholder
+            placeholder_color = palette.color(QPalette.ColorRole.Mid)
+            if not placeholder_color.isValid():
+                # Fallback to WindowText if Mid is invalid
+                placeholder_color = palette.color(QPalette.ColorRole.WindowText)
+                if not placeholder_color.isValid():
+                    # Final fallback: use a neutral gray from the default palette
+                    default_palette = QPalette()
+                    placeholder_color = default_palette.color(QPalette.ColorRole.Mid)
+                    if not placeholder_color.isValid():
+                        # Last resort: create a neutral gray
+                        placeholder_color = QColor(128, 128, 128, 255)
+            qimg.fill(placeholder_color)
         return context, qimage_to_preview_mipmap(qimg, target_size=icon_size)
 
 

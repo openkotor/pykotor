@@ -1,6 +1,6 @@
 # Comprehensive CLI Commands Reference
 
-This document catalogs all CLI commands, arguments, and parameters from the following repositories/projects to ensure comprehensive and exhaustive support in KotorCLI.
+This document catalogs all CLI commands, arguments, and parameters from the following repositories/projects to ensure comprehensive and exhaustive support in PyKotorCLI.
 
 ## Table of Contents
 
@@ -931,7 +931,7 @@ nwn-gff [options] <command> <input> [output]
 
 ## Command Categories for Implementation
 
-Based on the comprehensive analysis above, KotorCLI should support:
+Based on the comprehensive analysis above, PyKotorCLI should support:
 
 ### Core Build Commands (Already Implemented)
 
@@ -975,7 +975,7 @@ Based on the comprehensive analysis above, KotorCLI should support:
 ### Utility Commands (Implemented)
 
 - `diff` - Compare resources
-- `diff-installation` / `kotordiff` - Structured n-way comparisons with optional GUI and TSLPatcher output (see `Tools/KotorCLI/src/kotorcli/diff_tool/`)
+- `diff` / `kotordiff` - Structured n-way comparisons with optional GUI and TSLPatcher output (see `Libraries/PyKotor/src/pykotor/cli/diff_tool/`)
 - `grep` - Search resources
 - `stats` - Show resource statistics
 - `validate` - Validate file formats
@@ -986,52 +986,50 @@ Based on the comprehensive analysis above, KotorCLI should support:
 Generate a Holocron-compatible kit from a module (headless or GUI).
 
 ```bash
-python -m kotorcli kit-generate --installation <path> --module <module> --output <dir> [--kit-id <id>] [--log-level info|debug|warning|error|critical]
+python -m pykotor kit-generate --installation <path> --module <module> --output <dir> [--kit-id <id>] [--log-level info|debug|warning|error|critical]
 ```
 
 - Uses `pykotor.tools.kit.extract_kit` internally (see `Libraries/PyKotor/src/pykotor/tools/kit.py`)
 - Requires installation path, module name (stem is normalized), and output directory
-- Supplying required args keeps execution headless; running `python -m kotorcli` with no args opens the Tkinter GUI for interactive kit generation
+- Supplying required args keeps execution headless; running `python -m pykotor` with no args opens the Tkinter GUI for interactive kit generation
 
 ### gui-convert
 
 Convert KotOR GUI layouts to target resolutions. Headless when arguments are provided; launches a Tk GUI when arguments are omitted.
 
 ```bash
-python -m kotorcli gui-convert --input <file_or_folder> --output <dir> --resolution <WIDTHxHEIGHT|ALL>
+python -m pykotor gui-convert --input <file_or_folder> --output <dir> --resolution <WIDTHxHEIGHT|ALL>
 ```
 
 - Multiple `--input` values are allowed
 - `--resolution` accepts comma-separated WIDTHxHEIGHT or `ALL` for every supported aspect ratio/resolution pair
 - Internally uses `pykotor.resource.formats.gff` to resize controls (`Libraries/PyKotor/src/pykotor/resource/formats/gff`)
 
-### diff-installation (KotorDiff)
+### diff (KotorDiff)
 
-Structured comparisons across files, folders, modules, or entire installations. Stays headless when CLI paths are provided; launches the Tk KotorDiff GUI when arguments are omitted or `--gui` is passed.
+Structured comparisons across files, folders, modules, or entire installations.
 
 ```bash
 # Installation vs installation with filtering
-python -m kotorcli diff-installation --path1 <install_or_path> --path2 <install_or_path> --filter tat_m17ac --output-mode diff_only
+python -m pykotor diff --path1 <install_or_path> --path2 <install_or_path> --filter tat_m17ac --output-mode normal
 
 # Generate TSLPatcher output incrementally during the diff
-python -m kotorcli diff-installation --path1 <install1> --path2 <install2> --tslpatchdata ./tslpatchdata --ini changes.ini --incremental
+python -m pykotor diff --path1 <install1> --path2 <install2> --tslpatchdata ./tslpatchdata --ini changes.ini --incremental
 ```
 
 Key options:
 
 - `--path1/--path2/--path3/--path` for 2+ way comparisons (paths or installation roots)
 - `--filter` to constrain comparisons to module/resource names (e.g., `tat_m17ac`, `dialog.tlk`)
-- `--output-mode` (`full`, `diff_only`, `quiet`) and `--output-log` for log routing
+- `--output-mode` (`full`, `normal`, `quiet`) and `--output-log` for log routing
 - `--tslpatchdata` + `--ini` + `--incremental` to emit TSLPatcher-ready output while diffing
 - `--compare-hashes/--no-compare-hashes` to toggle hashing for unsupported resource types
 - `--log-level`, `--no-color`, `--use-profiler` for diagnostics
-- `--gui` to force the GUI even when paths are provided
 
 Implementation references:
 
-- `Tools/KotorCLI/src/kotorcli/diff_tool/app.py` (orchestration, incremental TSLPatcher writer)
-- `Tools/KotorCLI/src/kotorcli/diff_tool/cli.py` (argument wiring/headless execution)
-- `Tools/KotorCLI/src/kotorcli/diff_tool/gui.py` (Tkinter UI fallback)
+- `Libraries/PyKotor/src/pykotor/diff_tool/app.py` (orchestration, incremental TSLPatcher writer)
+- `Libraries/PyKotor/src/pykotor/diff_tool/cli.py` (argument wiring/headless execution)
 
 ### Advanced Commands (To Add)
 
