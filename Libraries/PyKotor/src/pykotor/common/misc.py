@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import warnings
 
-from collections.abc import Iterable
 from enum import Enum, IntEnum
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Iterable, TypeVar
 
@@ -34,7 +33,7 @@ class ResRef(str):
         - Filenames in the Override folder
         - GFF field values (ResRef field type)
         - Resource lookups and references throughout the engine
-    
+
     References:
     ----------
         Based on swkotor.exe GFF structure:
@@ -61,7 +60,7 @@ class ResRef(str):
         - Usable in case-insensitive applications (KOTOR was created for Windows case-insensitive filesystem)
         - (recommended) Stored as case-sensitive text for cross-platform compatibility
         - ResRefs are trimmed of whitespace (leading/trailing spaces removed)
-    
+
     Discrepancies:
     -------------
         - reone lowercases ResRefs automatically (resref.h:37: boost::to_lower(_value))
@@ -92,7 +91,7 @@ class ResRef(str):
         def __init__(self, bad_text: str):
             invalid_chars: list[tuple[str, int]] = [(char, pos) for pos, char in enumerate(bad_text) if char in ResRef.INVALID_CHARACTERS]
             details: str = ", ".join(f"'{char}' at position {pos}" for char, pos in invalid_chars)
-            message: str = f"String '{bad_text}' contains invalid characters: {details}. " f"Full list of invalid characters: '{ResRef.INVALID_CHARACTERS}'"
+            message: str = f"String '{bad_text}' contains invalid characters: {details}. Full list of invalid characters: '{ResRef.INVALID_CHARACTERS}'"
             super().__init__(message)
 
     class InvalidEncodingError(ValueError):
@@ -168,7 +167,7 @@ class ResRef(str):
         text: str,
     ) -> bool:
         """Validates that text is a valid ResRef.
-        
+
         Checks (in order):
         1. Must be a non-empty string
         2. Must be trimmed (no leading/trailing whitespace)
@@ -197,22 +196,12 @@ class ResRef(str):
     def set_data(
         self,
         text: str,
-        *,
-        truncate: bool = False,
     ):
         """Sets the ResRef.
 
         Args:
         ----
             text - str: The reference string.
-            truncate - bool: Whether to truncate the text to 16 characters. Default is False.
-
-        Raises:
-        ------
-            InvalidEncodingError - text was not in ascii format
-            ExceedsMaxLengthError - text exceeded 16 characters
-            InvalidFormatError - text starts/ends with a space or contains windows invalid filename characters.
-            All of the above exceptions inherit ValueError.
         """
         # Strip whitespace and warn if original had leading/trailing whitespace
         raw_text = str(text)
@@ -227,9 +216,9 @@ class ResRef(str):
 
         # Strict maximum length validation (16 characters)
         if len(parsed_text) > self.MAX_LENGTH:
-            if not truncate:
-                raise self.ExceedsMaxLengthError(parsed_text)
-            warnings.warn(f"String '{raw_text}' exceeds the maximum allowed length ({self.MAX_LENGTH}) and will be truncated to '{parsed_text[:self.MAX_LENGTH]}'", stacklevel=2)
+            #if not truncate:
+            #    raise self.ExceedsMaxLengthError(parsed_text)
+            #warnings.warn(f"String '{raw_text}' exceeds the maximum allowed length ({self.MAX_LENGTH}) and will be truncated to '{parsed_text[: self.MAX_LENGTH]}'", stacklevel=2)
             parsed_text = parsed_text[: self.MAX_LENGTH]
 
         # Check for invalid characters (Windows filename restrictions)
@@ -687,15 +676,7 @@ class CaseInsensitiveHashSet(set, Generic[T]):
         def _sort_key(x: Any) -> str:
             return x if isinstance(x, str) else str(x)
 
-        normalized_items = tuple(
-            sorted(
-                (
-                    self._normalize_key(item)
-                    for item in self
-                ),
-                key=_sort_key
-            )
-        )
+        normalized_items = tuple(sorted((self._normalize_key(item) for item in self), key=_sort_key))
         return hash(normalized_items)
 
     def __ne__(self, other):

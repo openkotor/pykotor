@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Any, Union
 from loggerplus import RobustLogger
 from qtpy import QtGui, QtWidgets
 from qtpy.QtCore import Qt
-from qtpy.QtGui import QIcon
-from qtpy.QtWidgets import QLabel, QMessageBox
+from qtpy.QtGui import QIcon, QPalette
+from qtpy.QtWidgets import QApplication, QLabel, QMessageBox
 
 from utility.gui.base import UserCommunication
 
@@ -304,60 +304,53 @@ class BetterMessageBox(QtWidgets.QDialog):
         self.setWindowTitle(title)
 
     def initUI(self, message: str):
-        layout = QtWidgets.QVBoxLayout(self)
-        self._setup_icon(layout)
-        layout.addSpacing(20)  # Add spacing above the text
+        from toolset.uic.qtpy.dialogs.better_message_box import Ui_Dialog
 
-        # Add text label
-        label = QtWidgets.QLabel(message, self)
-        label.setWordWrap(True)  # Enable word wrap
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(label)
+        self.ui = Ui_Dialog()
+        self.ui.setupUi(self)
 
-        # Add detailed text section with expander
+        # Setup icon
+        icon = self.style().standardIcon(self.icon_type)
+        if icon:
+            icon_pixmap = icon.pixmap(32, 32)
+            self.ui.iconLabel.setPixmap(icon_pixmap)
+            self.setWindowIcon(icon)
+        else:
+            self.ui.iconLabel.hide()
+
+        # Set message text
+        self.ui.messageLabel.setText(message)
+
+        # Setup detailed text section if provided
         if self.detailed_text:
-            self.detailed_text_widget = QtWidgets.QTextEdit(self)
+            self.detailed_text_widget = self.ui.detailedTextWidget
             self.detailed_text_widget.setText(self.detailed_text)
-            self.detailed_text_widget.setReadOnly(True)
-            self.detailed_text_widget.setVisible(False)
-            toggle_button = QtWidgets.QPushButton("Show Details...", self)
-            toggle_button.setCheckable(True)
-            toggle_button.clicked.connect(self.toggle_detailed_text)
-            layout.addWidget(toggle_button)
-            layout.addWidget(self.detailed_text_widget)
+            self.toggle_button = self.ui.toggleDetailsButton
+            self.toggle_button.setVisible(True)
+            self.toggle_button.clicked.connect(self.toggle_detailed_text)
+        else:
+            self.ui.toggleDetailsButton.hide()
+            self.ui.detailedTextWidget.hide()
+            self.detailed_text_widget = None
 
-        layout.addSpacing(20)  # Add spacing below the text
+        # Store button layout reference
+        self.button_layout = self.ui.buttonLayout
 
-        # Add buttons
-        button_layout = QtWidgets.QHBoxLayout()
-        button_layout.addStretch(1)  # Add stretch to push buttons to the right
-        self.addButtons(button_layout)
-        button_layout.addStretch(1)  # Add stretch to push buttons to the left
-        layout.addLayout(button_layout)
+        # Add buttons (will be inserted before the right spacer)
+        # Remove right spacer temporarily, add buttons, then add spacer back
+        right_spacer = self.button_layout.takeAt(self.button_layout.count() - 1)
+        self.addButtons(self.button_layout)
+        if right_spacer:
+            self.button_layout.addItem(right_spacer)
 
-        self.adjustSizeToFitContent(label)
+        self.adjustSizeToFitContent(self.ui.messageLabel)
         self.applyStylesheet()
 
     def toggle_detailed_text(self, checked: bool):
         if self.detailed_text_widget:
             self.detailed_text_widget.setVisible(checked)
-            sender = self.sender()
-            if isinstance(sender, QtWidgets.QPushButton):
-                sender.setText("Hide Details..." if checked else "Show Details...")
-
-    def _setup_icon(
-        self,
-        layout: QtWidgets.QVBoxLayout | QtWidgets.QHBoxLayout | QtWidgets.QLayout,
-    ):
-        # Icon setup
-        icon = self.style().standardIcon(self.icon_type)
-        if icon:
-            icon_label = QLabel(self)
-            icon_pixmap = icon.pixmap(32, 32)  # Get pixmap from QIcon
-            icon_label.setPixmap(icon_pixmap)
-            icon_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-            layout.addWidget(icon_label)
-            self.setWindowIcon(icon)
+            if hasattr(self, 'toggle_button'):
+                self.toggle_button.setText("Hide Details..." if checked else "Show Details...")
 
     def exec_(self):
         result = super().exec()
@@ -412,21 +405,32 @@ class BetterMessageBox(QtWidgets.QDialog):
         self.adjustSize()  # Let Qt adjust the size optimally
 
     def applyStylesheet(self):
-        self.setStyleSheet("""
-            QLabel {
+        # Get palette colors
+        app = QApplication.instance()
+        if app is None or not isinstance(app, QApplication):
+            palette = QPalette()
+        else:
+            palette = app.palette()
+        
+        text_color = palette.color(QPalette.ColorRole.WindowText)
+        base_color = palette.color(QPalette.ColorRole.Base)
+        mid_color = palette.color(QPalette.ColorRole.Mid)
+        
+        self.setStyleSheet(f"""
+            QLabel {{
                 font-size: 14px;
-            }
-            QPushButton {
+            }}
+            QPushButton {{
                 min-width: 80px;
                 min-height: 30px;
                 font-size: 14px;
-            }
-            QTextEdit {
+            }}
+            QTextEdit {{
                 font-size: 12px;
-                color: gray;
-                background-color: #f0f0f0;
-                border: 1px solid #d0d0d0;
-            }
+                color: {text_color.name()};
+                background-color: {base_color.name()};
+                border: 1px solid {mid_color.name()};
+            }}
         """)
 
 
@@ -458,7 +462,7 @@ class QtUserCommunication(UserCommunication):
     def update_response(
         self,
         text: str,
-        color: str = "black",
+        color: str | None = None,
         font_size: int = 14,
         font_family: str = "Comic Sans",
     ):
@@ -471,6 +475,17 @@ class QtUserCommunication(UserCommunication):
             status_bar.showMessage(text)
         else:
             status_bar.setText(text)
+        
+        # Use palette color if no color specified
+        if color is None:
+            app = QApplication.instance()
+            if app is not None and isinstance(app, QApplication):
+                palette = app.palette()
+                text_color = palette.color(QPalette.ColorRole.WindowText)
+                color = text_color.name()
+            else:
+                color = "black"  # Fallback if no application
+        
         status_bar.setStyleSheet(f"color: {color}; font-size: {font_size}px; font-family: {font_family}; font-weight: bold;")
 
 

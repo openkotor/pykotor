@@ -52,7 +52,7 @@ def get_available_qt_version() -> Literal["PyQt5", "PyQt6", "PySide6", "PySide2"
             "pyqt6": "PyQt6",
             "pyside6": "PySide6",
             "pyside2": "PySide2",
-            "pyqt": "PyQt6",  # Default to PyQt6 if just "pyqt" is specified
+            "pyqt": "PyQt5",  # Default to PyQt5 if just "pyqt" is specified
             "pyside": "PySide6",  # Default to PySide6 if just "pyside" is specified
         }
         mapped_version = version_mapping.get(qt_api_normalized)

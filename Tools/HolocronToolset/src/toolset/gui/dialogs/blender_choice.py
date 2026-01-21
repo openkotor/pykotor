@@ -22,8 +22,6 @@ from qtpy.QtWidgets import (
     QLabel,
     QMessageBox,
     QPushButton,
-    QSizePolicy,
-    QSpacerItem,
     QVBoxLayout,
 )
 
@@ -34,7 +32,20 @@ from toolset.blender.detection import (
 )
 
 if TYPE_CHECKING:
-    from qtpy.QtWidgets import QWidget
+    from qtpy.QtWidgets import QLayout, QWidget
+    from typing_extensions import Literal
+
+
+def _get_semantic_colors() -> dict[str, str]:
+    """Get semantic colors from the application palette.
+
+    Returns:
+        Dictionary with keys: 'success', 'warning', 'error', 'muted'
+    """
+    # Use common helper function for consistency
+    from toolset.gui.common.palette_helpers import get_semantic_colors
+
+    return get_semantic_colors()
 
 
 class BlenderChoiceDialog(QDialog):
@@ -56,9 +67,8 @@ class BlenderChoiceDialog(QDialog):
 
         self._blender_info = blender_info or detect_blender()
         self._all_installations: list[BlenderInfo] = []
-        self._context = context
-        self._choice: str = "builtin"  # "blender" or "builtin"
-        self._info_frame: QFrame | None = None
+        self._context: str = context
+        self._choice: Literal["blender", "builtin"] = "builtin"  # "blender" or "builtin"
         self._install_button: QPushButton | None = None
         self._warning_label: QLabel | None = None
         self._install_hint_label: QLabel | None = None
@@ -79,80 +89,32 @@ class BlenderChoiceDialog(QDialog):
     @property
     def remember_choice(self) -> bool:
         """Check if user wants to remember their choice."""
-        return self._remember_checkbox.isChecked()
+        return self.ui.rememberCheckbox.isChecked()
 
     def _setup_ui(self):
         """Setup the dialog UI."""
-        self.setWindowTitle("Choose Editor")
-        self.setMinimumWidth(500)
+        from toolset.uic.qtpy.dialogs.blender_choice import Ui_Dialog
+
+        self.ui = Ui_Dialog()
+        self.ui.setupUi(self)
+
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint)
 
-        layout = QVBoxLayout(self)
-        layout.setSpacing(16)
-        layout.setContentsMargins(20, 20, 20, 20)
+        # Update question label with context
+        self.ui.questionLabel.setText(f"<b>How would you like to open the {self._context}?</b>")
 
-        # Blender detection info
-        self._info_frame = QFrame()
-        self._info_frame.setFrameStyle(QFrame.Shape.StyledPanel | QFrame.Shadow.Raised)
-        self._info_layout = QVBoxLayout(self._info_frame)
+        # Store reference to info layout for dynamic content
+        self._info_layout: QLayout = self.ui.infoLayout
+        self._info_frame: QFrame = self.ui.infoFrame
 
-        self._update_blender_info_display()
-
-        layout.addWidget(self._info_frame)
-
-        # Question
-        question_label = QLabel(f"<b>How would you like to open the {self._context}?</b>")
-        question_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(question_label)
-
-        # Choice buttons
-        buttons_layout = QHBoxLayout()
-        buttons_layout.setSpacing(16)
-
-        # Blender button
-        self._blender_button = QPushButton()
-        self._blender_button.setText("Open in Blender\n(Recommended)")
-        self._blender_button.setMinimumHeight(60)
+        # Update button states and connect signals
         self._update_blender_button_state()
-        self._blender_button.clicked.connect(self._choose_blender)
-        buttons_layout.addWidget(self._blender_button)
+        self.ui.blenderButton.clicked.connect(self._choose_blender)
+        self.ui.builtinButton.clicked.connect(self._choose_builtin)
+        self.ui.cancelButton.clicked.connect(self.reject)
 
-        # Built-in button
-        self._builtin_button = QPushButton()
-        self._builtin_button.setText("Use Built-in Editor")
-        self._builtin_button.setMinimumHeight(60)
-        self._builtin_button.clicked.connect(self._choose_builtin)
-        self._builtin_button.setToolTip("Use the built-in PyKotorGL renderer.\n" "Integrated experience, no external application needed.")
-        buttons_layout.addWidget(self._builtin_button)
-
-        layout.addLayout(buttons_layout)
-
-        # Feature comparison
-        comparison_label = QLabel(
-            "<table cellspacing='8'>"
-            "<tr><th align='left'></th><th>Blender</th><th>Built-in</th></tr>"
-            "<tr><td>Performance</td><td>⭐⭐⭐</td><td>⭐</td></tr>"
-            "<tr><td>3D Navigation</td><td>⭐⭐⭐</td><td>⭐⭐</td></tr>"
-            "<tr><td>Model Editing</td><td>⭐⭐⭐</td><td>❌</td></tr>"
-            "<tr><td>Lightmap Baking</td><td>⭐⭐⭐</td><td>❌</td></tr>"
-            "<tr><td>Integration</td><td>⭐⭐</td><td>⭐⭐⭐</td></tr>"
-            "</table>"
-        )
-        comparison_label.setStyleSheet("color: #666; font-size: 11px;")
-        comparison_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(comparison_label)
-
-        # Remember choice
-        self._remember_checkbox = QCheckBox("Remember my choice")
-        self._remember_checkbox.setToolTip("Don't show this dialog again. You can change this in Settings.")
-        layout.addWidget(self._remember_checkbox, alignment=Qt.AlignmentFlag.AlignCenter)
-
-        # Cancel button
-        layout.addItem(QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
-
-        cancel_button = QPushButton("Cancel")
-        cancel_button.clicked.connect(self.reject)
-        layout.addWidget(cancel_button, alignment=Qt.AlignmentFlag.AlignRight)
+        # Update Blender info display
+        self._update_blender_info_display()
 
     def _update_blender_info_display(self):
         """Update the Blender info display based on current state."""
@@ -168,30 +130,32 @@ class BlenderChoiceDialog(QDialog):
                     if nested_item is not None and nested_item.widget():
                         nested_item.widget().deleteLater()  # pyright: ignore[reportOptionalMemberAccess]
 
+        colors = _get_semantic_colors()
+
         if self._blender_info.is_valid:
             # Blender found - show status
             status_label = QLabel(f"<b>Blender {self._blender_info.version_string}</b> detected")
-            status_label.setStyleSheet("color: #4caf50;")  # Green
+            status_label.setStyleSheet(f"color: {colors['success']};")
             self._info_layout.addWidget(status_label)
 
             path_label = QLabel(f"<small>{self._blender_info.executable}</small>")
             path_label.setWordWrap(True)
-            path_label.setStyleSheet("color: #888;")
+            path_label.setStyleSheet(f"color: {colors['muted']};")
             self._info_layout.addWidget(path_label)
 
             if self._blender_info.has_kotorblender:
                 # kotorblender installed - all good
                 addon_label = QLabel(f"<b>kotorblender {self._blender_info.kotorblender_version}</b> installed")
-                addon_label.setStyleSheet("color: #4caf50;")
+                addon_label.setStyleSheet(f"color: {colors['success']};")
                 self._info_layout.addWidget(addon_label)
             else:
                 # kotorblender missing - show warning and install option
-                self._warning_label = QLabel("<span style='color: #ff9800;'><b>Warning:</b> kotorblender not found</span>")
+                self._warning_label = QLabel(f"<span style='color: {colors['warning']};'><b>Warning:</b> kotorblender not found</span>")
                 self._info_layout.addWidget(self._warning_label)
 
                 self._install_hint_label = QLabel("<small>kotorblender is required to use Blender. Install it to enable the Blender option.</small>")
                 self._install_hint_label.setWordWrap(True)
-                self._install_hint_label.setStyleSheet("color: #888;")
+                self._install_hint_label.setStyleSheet(f"color: {colors['muted']};")
                 self._info_layout.addWidget(self._install_hint_label)
 
                 # Install buttons
@@ -218,12 +182,12 @@ class BlenderChoiceDialog(QDialog):
 
         else:
             # No Blender found - show error and browse option
-            error_label = QLabel("<span style='color: #f44336;'><b>Blender not found</b></span>")
+            error_label = QLabel(f"<span style='color: {colors['error']};'><b>Blender not found</b></span>")
             self._info_layout.addWidget(error_label)
 
             hint_label = QLabel("<small>Install Blender 3.6 or later, or browse to an existing installation.</small>")
             hint_label.setWordWrap(True)
-            hint_label.setStyleSheet("color: #888;")
+            hint_label.setStyleSheet(f"color: {colors['muted']};")
             self._info_layout.addWidget(hint_label)
 
             # Browse button
@@ -241,8 +205,9 @@ class BlenderChoiceDialog(QDialog):
         """Add a combo box to select from multiple Blender installations."""
         selector_layout = QHBoxLayout()
 
+        colors = _get_semantic_colors()
         selector_label = QLabel("<small>Other installations:</small>")
-        selector_label.setStyleSheet("color: #888;")
+        selector_label.setStyleSheet(f"color: {colors['muted']};")
         selector_layout.addWidget(selector_label)
 
         self._installation_combo = QComboBox()
@@ -277,15 +242,15 @@ class BlenderChoiceDialog(QDialog):
     def _update_blender_button_state(self):
         """Update the Blender button enabled state and tooltip."""
         is_enabled = self._blender_info.is_valid and self._blender_info.has_kotorblender
-        self._blender_button.setEnabled(is_enabled)
+        self.ui.blenderButton.setEnabled(is_enabled)
 
         if self._blender_info.has_kotorblender:
-            tooltip = "Use Blender for professional-grade 3D editing with full kotorblender support.\n" "Better performance, more features, industry-standard tools."
+            tooltip = "Use Blender for professional-grade 3D editing with full kotorblender support.\nBetter performance, more features, industry-standard tools."
         elif self._blender_info.is_valid:
-            tooltip = "kotorblender is required to use Blender.\n" "Click 'Install kotorblender' above to install it."
+            tooltip = "kotorblender is required to use Blender.\nClick 'Install kotorblender' above to install it."
         else:
-            tooltip = "Blender is not installed or not found.\n" "Click 'Browse for Blender...' above to locate it."
-        self._blender_button.setToolTip(tooltip)
+            tooltip = "Blender is not installed or not found.\nClick 'Browse for Blender...' above to locate it."
+        self.ui.blenderButton.setToolTip(tooltip)
 
     def _choose_blender(self):
         """User chose Blender."""
@@ -459,48 +424,48 @@ class BlenderConnectionWidget(QFrame):
 
     def _setup_ui(self):
         """Setup the widget UI."""
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(4, 2, 4, 2)
-        layout.setSpacing(4)
+        from toolset.uic.qtpy.widgets.blender_connection_widget import Ui_Form
 
-        # Status indicator
-        self._indicator: QLabel = QLabel("●")
-        self._indicator.setStyleSheet("color: #f44336;")  # Red by default
-        layout.addWidget(self._indicator)
+        self.ui = Ui_Form()
+        self.ui.setupUi(self)
 
-        # Status text
-        self._status_label: QLabel = QLabel("Disconnected")
-        self._status_label.setStyleSheet("font-size: 11px;")
-        layout.addWidget(self._status_label)
+        # Connect signals
+        self.ui.connectButton.clicked.connect(self._on_connect_clicked)
 
-        # Connect button
-        self._connect_button: QPushButton = QPushButton("Connect")
-        self._connect_button.setMaximumHeight(22)
-        self._connect_button.clicked.connect(self._on_connect_clicked)
-        layout.addWidget(self._connect_button)
+        # Store references for easier access
+        self._indicator = self.ui.indicatorLabel
+        self._status_label = self.ui.statusLabel
+        self._connect_button = self.ui.connectButton
+
+        # Set initial indicator color
+        colors = _get_semantic_colors()
+        self._indicator.setStyleSheet(f"color: {colors['error']};")  # Error color by default
 
     def set_connected(self, connected: bool):
         """Update connection status display."""
         self._connected = connected
+        colors = _get_semantic_colors()
 
         if connected:
-            self._indicator.setStyleSheet("color: #4caf50;")  # Green
+            self._indicator.setStyleSheet(f"color: {colors['success']};")
             self._status_label.setText("Connected to Blender")
             self._connect_button.setText("Disconnect")
         else:
-            self._indicator.setStyleSheet("color: #f44336;")  # Red
+            self._indicator.setStyleSheet(f"color: {colors['error']};")
             self._status_label.setText("Disconnected")
             self._connect_button.setText("Connect")
 
     def set_connecting(self):
         """Show connecting status."""
-        self._indicator.setStyleSheet("color: #ff9800;")  # Orange
+        colors = _get_semantic_colors()
+        self._indicator.setStyleSheet(f"color: {colors['warning']};")
         self._status_label.setText("Connecting...")
         self._connect_button.setEnabled(False)
 
     def set_error(self, message: str):
         """Show error status."""
-        self._indicator.setStyleSheet("color: #f44336;")  # Red
+        colors = _get_semantic_colors()
+        self._indicator.setStyleSheet(f"color: {colors['error']};")
         self._status_label.setText(f"Error: {message}")
         self._connect_button.setEnabled(True)
         self._connect_button.setText("Retry")
@@ -525,65 +490,24 @@ class BlenderSettingsWidget(QFrame):
 
     def _setup_ui(self):
         """Setup the widget UI."""
-        from qtpy.QtWidgets import QLineEdit, QSpinBox
+        from toolset.uic.qtpy.widgets.settings.blender_settings import Ui_Form
 
-        layout = QVBoxLayout(self)
-        layout.setSpacing(8)
+        self.ui = Ui_Form()
+        self.ui.setupUi(self)
 
-        # Title
-        title = QLabel("<b>Blender Integration</b>")
-        layout.addWidget(title)
+        # Connect signals
+        self.ui.pathEdit.textChanged.connect(self._on_path_changed)
+        self.ui.browseButton.clicked.connect(self._browse_blender)
+        self.ui.detectButton.clicked.connect(self._detect_blender)
+        self.ui.installKotorblenderButton.clicked.connect(self._install_kotorblender)
 
-        # Blender path
-        path_layout = QHBoxLayout()
-        path_layout.addWidget(QLabel("Blender Path:"))
-
-        self._path_edit: QLineEdit = QLineEdit()
-        self._path_edit.setPlaceholderText("Auto-detect")
-        self._path_edit.textChanged.connect(self._on_path_changed)
-        path_layout.addWidget(self._path_edit)
-
-        browse_btn = QPushButton("Browse...")
-        browse_btn.clicked.connect(self._browse_blender)
-        path_layout.addWidget(browse_btn)
-
-        detect_btn = QPushButton("Detect")
-        detect_btn.clicked.connect(self._detect_blender)
-        path_layout.addWidget(detect_btn)
-
-        layout.addLayout(path_layout)
-
-        # Status display
-        self._status_label: QLabel = QLabel()
-        self._status_label.setWordWrap(True)
-        layout.addWidget(self._status_label)
-
-        # kotorblender install button (shown only when Blender found but kotorblender missing)
-        self._install_kotorblender_btn: QPushButton = QPushButton("Install kotorblender")
-        self._install_kotorblender_btn.clicked.connect(self._install_kotorblender)
-        self._install_kotorblender_btn.setVisible(False)
-        layout.addWidget(self._install_kotorblender_btn)
-
-        # Options
-        self._prefer_blender_cb: QCheckBox = QCheckBox("Prefer Blender when available")
-        self._prefer_blender_cb.setToolTip("Automatically use Blender for Module Designer, GIT Editor, etc.")
-        layout.addWidget(self._prefer_blender_cb)
-
-        self._remember_cb: QCheckBox = QCheckBox("Remember editor choice")
-        self._remember_cb.setToolTip("Don't ask which editor to use each time")
-        layout.addWidget(self._remember_cb)
-
-        # Port setting
-        port_layout = QHBoxLayout()
-        port_layout.addWidget(QLabel("IPC Port:"))
-
-        self._port_spin: QSpinBox = QSpinBox()
-        self._port_spin.setRange(1024, 65535)
-        self._port_spin.setValue(7531)
-        port_layout.addWidget(self._port_spin)
-        port_layout.addStretch()
-
-        layout.addLayout(port_layout)
+        # Store references for easier access
+        self._path_edit = self.ui.pathEdit
+        self._status_label = self.ui.statusLabel
+        self._install_kotorblender_btn = self.ui.installKotorblenderButton
+        self._prefer_blender_cb = self.ui.preferBlenderCheckbox
+        self._remember_cb = self.ui.rememberCheckbox
+        self._port_spin = self.ui.portSpinBox
 
         # Update status
         self._update_status()
@@ -641,20 +565,21 @@ class BlenderSettingsWidget(QFrame):
         """Update the status display."""
         custom_path = self._path_edit.text() or None
         self._blender_info = detect_blender(custom_path)
+        colors = _get_semantic_colors()
 
         if self._blender_info.is_valid:
-            status = f"<span style='color: #4CAF50;'>✓ Blender {self._blender_info.version_string} found</span>"
+            status = f"<span style='color: {colors['success']};'>✓ Blender {self._blender_info.version_string} found</span>"
 
             if self._blender_info.has_kotorblender:
-                status += f"<br><span style='color: #4CAF50;'>✓ kotorblender {self._blender_info.kotorblender_version} installed</span>"
+                status += f"<br><span style='color: {colors['success']};'>✓ kotorblender {self._blender_info.kotorblender_version} installed</span>"
                 self._install_kotorblender_btn.setVisible(False)
             else:
-                status += "<br><span style='color: #FF9800;'>⚠ kotorblender not found</span>"
+                status += f"<br><span style='color: {colors['warning']};'>⚠ kotorblender not found</span>"
                 self._install_kotorblender_btn.setVisible(True)
 
             status += f"<br><small>{self._blender_info.executable}</small>"
         else:
-            status = f"<span style='color: #f44336;'>✗ {self._blender_info.error}</span>"
+            status = f"<span style='color: {colors['error']};'>✗ {self._blender_info.error}</span>"
             self._install_kotorblender_btn.setVisible(False)
 
         self._status_label.setText(status)
