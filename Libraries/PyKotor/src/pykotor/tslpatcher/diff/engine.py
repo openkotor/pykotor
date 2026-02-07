@@ -142,7 +142,8 @@ gff_types: list[str] = list(gff.GFFContent.get_extensions())
 
 def is_kotor_install_dir(path: Path) -> bool | None:
     """Check if a path is a KOTOR installation directory."""
-    return path.is_dir() and path.joinpath("chitin.key").is_file()
+    c_path = CaseAwarePath(path)
+    return c_path.is_dir() and c_path.joinpath("chitin.key").is_file()
 
 
 # ---------------------------------------------------------------------------

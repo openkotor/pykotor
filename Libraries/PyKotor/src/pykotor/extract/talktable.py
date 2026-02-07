@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, NamedTuple
 from pykotor.common.language import Language
 from pykotor.common.misc import ResRef
 from pykotor.common.stream import BinaryReader
+from pykotor.tools.path import CaseAwarePath
 
 if TYPE_CHECKING:
     import os
@@ -44,7 +45,7 @@ class TalkTable:  # TODO(th3w1zard1): dialogf.tlk  # noqa: FIX002, TD003
         self,
         path: os.PathLike | str,
     ):
-        self._path: Path = Path(path)
+        self._path: CaseAwarePath = CaseAwarePath(path)
 
     def path(self) -> Path:
         return self._path

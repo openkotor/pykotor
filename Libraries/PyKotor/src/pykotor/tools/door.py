@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
@@ -13,6 +12,7 @@ from pykotor.resource.formats.twoda import TwoDA, read_2da
 from pykotor.resource.generics.utd import UTD, read_utd
 from pykotor.resource.type import ResourceType
 from pykotor.tools.model import iterate_textures
+from pykotor.tools.path import CaseAwarePath
 from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
@@ -101,7 +101,7 @@ def load_genericdoors_2da(
         for res_ident, loc_list in location_results.items():
             if loc_list:
                 loc = loc_list[0]  # Use first location (Override takes precedence)
-                if loc.filepath and Path(loc.filepath).exists():
+                if loc.filepath and CaseAwarePath(loc.filepath).exists():
                     # Read from file (handles both direct files and BIF files)
                     with loc.filepath.open("rb") as f:
                         f.seek(loc.offset)

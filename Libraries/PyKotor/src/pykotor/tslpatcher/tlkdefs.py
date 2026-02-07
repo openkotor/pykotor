@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import os
 
-from pathlib import Path
 from typing import Literal
 
 from pykotor.common.misc import Game
+from pykotor.tools.path import CaseAwarePath
 
 # Vanilla TLK entry counts for different game versions
 VANILLA_TLK_COUNTS = {
@@ -85,10 +85,10 @@ def detect_patch_type(game_path: os.PathLike | str) -> Literal["base", "aspyr", 
     -------
         Patch type string ("base", "aspyr", "tslrcm")
     """
-    game_path = Path(game_path)
+    game_path = CaseAwarePath(game_path)
 
     # Check for Aspyr patch indicators
-    aspyr_indicators: list[Path] = [
+    aspyr_indicators: list[CaseAwarePath] = [
         game_path / "KOTOR.app",  # macOS
         game_path / "lib",  # Linux (Aspyr)
         game_path / "KOTOR",  # Sometimes used

@@ -175,7 +175,7 @@ class ConfigReader:
         """
         from pykotor.tslpatcher.config import PatcherConfig  # noqa: PLC0415 Prevent circular imports
 
-        resolved_file_path: Path = Path(file_path).resolve()
+        resolved_file_path: Path = CaseAwarePath(file_path).resolve()
 
         ini = ConfigParser(
             delimiters=("="),

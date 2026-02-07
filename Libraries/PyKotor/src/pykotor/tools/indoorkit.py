@@ -20,6 +20,7 @@ from pykotor.common.stream import BinaryReader
 from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook, KitDoor, MDLMDXTuple
 from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.generics.utd import read_utd
+from pykotor.tools.path import CaseAwarePath
 from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
@@ -42,7 +43,7 @@ def load_kits(path: "os.PathLike | str") -> list[Kit]:
     """
     kits: list[Kit] = []
 
-    kits_path = Path(path)
+    kits_path = CaseAwarePath(path)
     if not kits_path.is_dir():
         kits_path.mkdir(parents=True)
 
@@ -139,7 +140,7 @@ def load_kits_with_missing_files(
     kits: list[Kit] = []
     missing_files: list[tuple[str, Path, str]] = []
 
-    kits_path = Path(path).absolute()
+    kits_path = CaseAwarePath(path).absolute()
     if not kits_path.is_dir():
         kits_path.mkdir(parents=True)
 
@@ -274,5 +275,4 @@ def load_kits_with_missing_files(
         kits.append(kit)
 
     return kits, missing_files
-
 
