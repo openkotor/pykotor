@@ -89,7 +89,7 @@ class TestPathlibMixedSlashes(unittest.TestCase):
         assert Path(test_path).is_file() == False  # This is the bug
         assert Path(test_path).is_dir() == False  # This is the bug
         for PathType in test_classes:
-            test_pathtype_exists: bool | None = PathType(test_path).safe_exists()
+            test_pathtype_exists: bool | None = PathType(test_path).exists()
             assert test_pathtype_exists == True, repr(PathType)
             assert PathType(test_path).exists() == True, repr(PathType)
             test_pathtype_isfile: bool | None = PathType(test_path).is_file()

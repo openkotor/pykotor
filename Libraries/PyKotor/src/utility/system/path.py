@@ -359,46 +359,6 @@ class PurePath(pathlib.PurePath, metaclass=PurePathType):  # type: ignore[misc]
     def pathify(cls, path: PathElem) -> Self:
         return path if isinstance(path, cls) else cls(path)
 
-    def split_filename(  # type: ignore[misc]
-        self: PurePath,  # type: ignore[misc]
-        dots: int = 1,
-    ) -> tuple[str, str]:
-        """Splits a filename into a tuple of stem and extension.
-
-        Args:
-        ----
-            self: Path object
-            dots: Number of dots to split on (default 1).
-                  Negative values indicate splitting from the left.
-
-        Returns:
-        -------
-            tuple: A tuple containing (stem, extension)
-
-        Processing Logic:
-        ----------------
-            - The filename is split on the last N dots, where N is the dots argument
-            - For negative dots, the filename is split on the first N dots from the left
-            - If there are fewer parts than dots, the filename is split at the first dot
-            - Otherwise, the filename is split into a stem and extension part
-        """
-        if dots == 0:
-            msg = "Number of dots must not be 0"
-            raise ValueError(msg)
-
-        parts: list[str]
-        if dots < 0:
-            parts = self.name.split(".", abs(dots))
-            parts.reverse()  # Reverse the order of parts for negative dots
-        else:
-            parts = self.name.rsplit(".", abs(dots) + 1)
-
-        if len(parts) <= abs(dots):
-            first_dot: int = self.name.find(".")
-            return (self.name[:first_dot], self.name[first_dot + 1 :]) if first_dot != -1 else (self.name, "")
-
-        return ".".join(parts[: -abs(dots)]), ".".join(parts[-abs(dots) :])
-
     def as_posix(self) -> str:
         """Convert path to a POSIX path.
 
@@ -573,66 +533,6 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
         self._last_stat_result = super().stat(*args, **kwargs)
         return self._last_stat_result
 
-    # Safe rglob operation
-    def safe_rglob(
-        self,
-        pattern: str,
-    ) -> Generator[Self, Any, None]:
-        iterator: Generator[Self, Any, None] = self.rglob(pattern)
-        while True:
-            try:
-                yield next(iterator)
-            except StopIteration:  # noqa: PERF203
-                break  # StopIteration means there are no more files to iterate over
-            except Exception:  # pylint: disable=W0718  # noqa: BLE001
-                RobustLogger().debug("This exception has been suppressed and is only relevant for debug purposes.", exc_info=True)
-                continue  # Ignore the file that caused an exception and move to the next
-
-    # Safe iterdir operation
-    def safe_iterdir(self) -> Generator[Self, Any, None]:
-        iterator: Generator[Self, Any, None] = self.iterdir()
-        while True:
-            try:
-                yield next(iterator)
-            except StopIteration:  # noqa: PERF203
-                break  # StopIteration means there are no more files to iterate over
-            except Exception:  # pylint: disable=W0718  # noqa: BLE001
-                RobustLogger().debug("This exception has been suppressed and is only relevant for debug purposes.", exc_info=True)
-                continue  # Ignore the file that caused an exception and move to the next
-
-    # Safe is_dir operation
-    def safe_isdir(self) -> bool | None:
-        check: bool | None = None
-        try:
-            check = self.is_dir()
-        except (OSError, ValueError):
-            # RobustLogger().debug("This exception has been suppressed and is only relevant for debug purposes.", exc_info=True)
-            return None
-        else:
-            return check
-
-    # Safe is_file operation
-    def safe_isfile(self) -> bool | None:
-        check: bool | None = None
-        try:
-            check = self.is_file()
-        except (OSError, ValueError):
-            # RobustLogger().debug("This exception has been suppressed and is only relevant for debug purposes.", exc_info=True)
-            return None
-        else:
-            return check
-
-    # Safe exists operation
-    def safe_exists(self) -> bool | None:
-        check: bool | None = None
-        try:
-            check = self.exists()
-        except (OSError, ValueError):
-            # RobustLogger().debug("This exception has been suppressed and is only relevant for debug purposes.", exc_info=True)
-            return None
-        else:
-            return check
-
     def get_highest_permission(self) -> int:
         read_permission: bool = os.access(self, os.R_OK)
         write_permission: bool = os.access(self, os.W_OK)
@@ -646,11 +546,6 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
         if execute_permission:
             permission_value += 0o1  # Add 1 for execute permission (001 in binary)
         return permission_value
-
-    def safe_relative_to(self, *other: PathElem) -> Self:
-        with suppress(ValueError):
-            return super().relative_to(*other)
-        return self.__class__(os.path.relpath(self, self.__class__(*other)))
 
     def has_access(
         self,
@@ -691,7 +586,7 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
         try:
             if filter_results and not filter_results(self):
                 return True  # ignore anything the filter deems ignorable.
-            if not self.safe_exists():
+            if not self.exists():
                 return False
 
             open_mode: str | None = mode_to_str[mode]
@@ -809,7 +704,7 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
             log_func("Verifying the operations were successful...")
             success = self.has_access(mode, recurse=False)
         try:
-            if recurse and self.safe_isdir():
+            if recurse and self.is_dir():
                 for child in self.iterdir():
                     result: bool = child.gain_access(mode, recurse=recurse, resolve_symlinks=resolve_symlinks, log_func=log_func)
                     if not result:
@@ -896,7 +791,7 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
 
             # Delete the batch script after execution
             with suppress(Exception):
-                if script_path.safe_isfile():
+                if script_path.is_file():
                     script_path.unlink(missing_ok=True)
 
         # Inspired by the C# code provided by KOTORModSync at https://github.com/th3w1zard1/KOTORModSync
@@ -912,7 +807,7 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
             self_path_str = str(self.absolute())
             if elevate:
                 self_path_str = f'"{self_path_str}"'
-            isdir_check: bool | None = self.safe_isdir()
+            isdir_check: bool = self.is_dir()
             commands: list[str] = []
 
             print(f"Step 1: Resetting permissions and re-enabling inheritance for {self_path_str}...")

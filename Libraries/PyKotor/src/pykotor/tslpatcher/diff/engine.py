@@ -365,8 +365,6 @@ def _ensure_capsule_install(
     def _path_is_file(path_obj: Path | None) -> bool:
         if path_obj is None:
             return False
-        if hasattr(path_obj, "safe_isfile"):
-            return bool(path_obj.is_file())  # type: ignore[attr-defined]
         return path_obj.is_file()
 
     if _path_is_file(capsule_path):
@@ -753,10 +751,7 @@ def _add_to_install_folder(
         capsule_destination = folder if folder_lower.endswith(".mod") else f"{folder}\\{filename}"
         capsule_source_path: Path | None = None
         if modded_path is not None:
-            if hasattr(modded_path, "safe_isfile"):
-                if modded_path.is_file():  # type: ignore[attr-defined]
-                    capsule_source_path = modded_path
-            elif modded_path.is_file():
+            if modded_path.is_file():
                 capsule_source_path = modded_path
 
         _ensure_capsule_install(

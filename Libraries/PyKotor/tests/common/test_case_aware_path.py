@@ -118,50 +118,6 @@ class TestCaseAwarePath(unittest.TestCase):
         assert CaseAwarePath.str_norm("/path//to/dir/", slash="/") == "/path/to/dir"
 
 
-class TestSplitFilename(unittest.TestCase):
-    def test_normal(self):
-        path = CaseAwarePath("file.txt")
-        stem, ext = path.split_filename()
-        assert stem == "file"
-        assert ext == "txt"
-
-    def test_multiple_dots(self):
-        path = CaseAwarePath("file.with.dots.txt")
-        stem, ext = path.split_filename(dots=2)
-        assert stem == "file.with"
-        assert ext == "dots.txt"
-        path = CaseAwarePath("test.asdf.qwerty.tlk.xml")
-        stem, ext = path.split_filename(dots=2)
-        assert stem == "test.asdf.qwerty"
-        assert ext == "tlk.xml"
-
-    def test_no_dots(self):
-        path = CaseAwarePath("filename")
-        stem, ext = path.split_filename()
-        assert stem == "filename"
-        assert ext == ""
-
-    def test_negative_dots(self):
-        path = CaseAwarePath("left.right.txt")
-        stem, ext = path.split_filename(dots=-1)
-        assert stem == "right.txt"
-        assert ext == "left"
-
-    def test_more_dots_than_parts(self):
-        path = CaseAwarePath("file.txt")
-        stem, ext = path.split_filename(dots=3)
-        assert stem == "file"
-        assert ext == "txt"
-        stem, ext = path.split_filename(dots=-3)
-        assert stem == "file"
-        assert ext == "txt"
-
-    def test_invalid_dots(self):
-        path = CaseAwarePath("file.txt")
-        with self.assertRaises(ValueError):
-            path.split_filename(dots=0)
-
-
 class TestIsRelativeTo(unittest.TestCase):
     @unittest.skipIf(sys.platform == "win32", "POSIX path test - Windows uses different path format")
     def test_basic(self):

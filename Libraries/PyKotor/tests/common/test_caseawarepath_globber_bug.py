@@ -208,24 +208,24 @@ class TestGlobberBug(unittest.TestCase):
             else:
                 print(f"[TEST] TypeError (might be expected): {e}")
 
-    def test_safe_rglob_from_utility(self):
-        """Test safe_rglob which calls rglob internally."""
-        print(f"\n[TEST] Testing safe_rglob('*') (from utility.path)")
+    def test_rglob_from_utility(self):
+        """Test rglob which calls rglob internally."""
+        print(f"\n[TEST] Testing rglob('*') (from utility.path)")
 
         try:
             from pathlib import Path as UtilityPath
 
             util_path = UtilityPath(self.temp_dir)
             result = list(util_path.rglob("*"))
-            print(f"[TEST] SUCCESS: safe_rglob('*') returned {len(result)} items")
+            print(f"[TEST] SUCCESS: rglob('*') returned {len(result)} items")
         except TypeError as e:
             error_msg = str(e)
             if "_Globber.__init__()" in error_msg:
                 print(f"[TEST] FAILED with _Globber TypeError: {e}")
                 traceback.print_exc()
                 self.fail(
-                    f"safe_rglob() raised _Globber TypeError: {e}\n"
-                    "This is the _Globber.__init__() bug propagating through safe_rglob.\n"
+                    f"rglob() raised _Globber TypeError: {e}\n"
+                    "This is the _Globber.__init__() bug propagating through rglob.\n"
                     "Check traceback above."
                 )
             else:
