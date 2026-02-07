@@ -326,14 +326,7 @@ def main():
 
         event_filter = VerboseEventTracer(logger=RobustLogger(), budget=trace_events_budget)
         app.installEventFilter(event_filter)
-        RobustLogger().debug(
-            "TRACE: Verbose event filter installed (TOOLSET_TRACE_EVENTS=1, budget=%s)",
-            trace_events_budget,
-        )
-    else:
-        RobustLogger().debug("TRACE: Event filter disabled (set TOOLSET_TRACE_EVENTS=1 to sample events)")
-    
-    RobustLogger().debug("TRACE: About to call app.exec()")
+        RobustLogger().debug("Verbose event filter installed (budget=%s)", trace_events_budget)
+
     exit_code = app.exec()
-    RobustLogger().debug(f"TRACE: app.exec() returned with exit code: {exit_code}")
     sys.exit(exit_code)
