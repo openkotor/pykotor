@@ -201,6 +201,13 @@ class CaseAwarePath(pathlib.Path):
                 current_path = exact_child
                 continue
 
+            # Archive-internal pseudo-paths (e.g. "foo.erf/bar.tpc") are not real
+            # filesystem directories. Once resolution reaches a regular file, preserve
+            # the remaining segments without attempting case-insensitive directory scans.
+            if not os.path.isdir(current_path):
+                current_path = os.path.join(current_path, *parts[i:])
+                break
+
             contents = _get_dir_contents(current_path)
             matches = contents.get(part.lower())
             if matches:
