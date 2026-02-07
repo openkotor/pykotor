@@ -39,7 +39,7 @@ class Ui_Form(object):
         self.textureLine.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.textureLine.setObjectName("textureLine")
         self.verticalLayout.addWidget(self.textureLine)
-        self.searchEdit = SearchFilterWidget(Form)
+        self.searchEdit = QtWidgets.QLineEdit(Form)
         self.searchEdit.setObjectName("searchEdit")
         self.verticalLayout.addWidget(self.searchEdit)
         self.resourceList = RobustListView(Form)
@@ -68,4 +68,3 @@ class Ui_Form(object):
         self.reloadButton.setText(_translate("Form", "Reload"))
         self.searchEdit.setPlaceholderText(_translate("Form", "search..."))
 from utility.gui.qt.widgets.itemviews.listview import RobustListView
-from utility.gui.qt.widgets.widgets.search_filter import SearchFilterWidget

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '../ui/dialogs/select_module.ui'
+# Form implementation generated from reading ui file '..\ui\dialogs\select_module.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -17,9 +17,7 @@ class Ui_Dialog(object):
         Dialog.resize(336, 373)
         self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.filterEdit = SearchFilterWidget(Dialog)
-        self.filterEdit.setText("")
-        self.filterEdit.setMaxLength(16)
+        self.filterEdit = QtWidgets.QLineEdit(Dialog)
         self.filterEdit.setObjectName("filterEdit")
         self.verticalLayout.addWidget(self.filterEdit)
         self.moduleList = QtWidgets.QListWidget(Dialog)
@@ -49,4 +47,3 @@ class Ui_Dialog(object):
         self.cancelButton.setText(_translate("Dialog", "Cancel"))
         self.browseButton.setText(_translate("Dialog", "Browse"))
         self.openButton.setText(_translate("Dialog", "Open"))
-from utility.gui.qt.widgets.widgets.search_filter import SearchFilterWidget

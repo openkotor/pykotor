@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '../ui/editors/utw.ui'
+# Form implementation generated from reading ui file '..\ui\editors\utw.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -43,7 +43,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_16 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_16.setObjectName("horizontalLayout_16")
         self.tagEdit = QtWidgets.QLineEdit(self.tab)
-        self.tagEdit.setMaxLength(16)
         self.tagEdit.setObjectName("tagEdit")
         self.horizontalLayout_16.addWidget(self.tagEdit)
         self.tagGenerateButton = QtWidgets.QPushButton(self.tab)

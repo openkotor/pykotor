@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '../ui/editors/twoda.ui'
+# Form implementation generated from reading ui file '..\ui\editors\twoda.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -23,7 +23,7 @@ class Ui_MainWindow(object):
         self.filterBox.setObjectName("filterBox")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.filterBox)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.filterEdit = SearchFilterWidget(self.filterBox)
+        self.filterEdit = QtWidgets.QLineEdit(self.filterBox)
         self.filterEdit.setObjectName("filterEdit")
         self.verticalLayout.addWidget(self.filterEdit)
         self.verticalLayout_2.addWidget(self.filterBox)
@@ -133,4 +133,3 @@ class Ui_MainWindow(object):
         self.actionDuplicateRow.setShortcut(_translate("MainWindow", "Ctrl+D"))
         self.actionplaceholder.setText(_translate("MainWindow", "placeholder"))
 from utility.gui.qt.widgets.itemviews.tableview import RobustTableView
-from utility.gui.qt.widgets.widgets.search_filter import SearchFilterWidget

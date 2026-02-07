@@ -228,9 +228,6 @@
               <layout class="QHBoxLayout" name="horizontalLayout_16">
                <item>
                 <widget class="QLineEdit" name="tagEdit">
-                 <property name="maxLength">
-                  <number>16</number>
-                 </property>
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -476,7 +473,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QSpinBox" name="currentHpSpin">
+            <widget class="QSpinBox" name="currenHpSpin">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
                <horstretch>0</horstretch>
@@ -490,10 +487,10 @@
               </size>
              </property>
              <property name="minimum">
-              <number>-32768</number>
+              <number>-2147483648</number>
              </property>
              <property name="maximum">
-              <number>32767</number>
+              <number>2147483647</number>
              </property>
             </widget>
            </item>
@@ -1031,7 +1028,7 @@
   <customwidget>
    <class>FilterComboBox</class>
    <extends>QComboBox</extends>
-   <header location="global">utility.gui.qt.widgets.widgets.combobox</header>
+   <header location="global">utility.ui_libraries.qt.widgets.widgets.combobox</header>
   </customwidget>
   <customwidget>
    <class>ModelRenderer</class>

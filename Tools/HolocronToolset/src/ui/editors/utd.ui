@@ -451,7 +451,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QSpinBox" name="currentHpSpin">
+            <widget class="QSpinBox" name="currenHpSpin">
              <property name="minimumSize">
               <size>
                <width>30</width>
@@ -459,10 +459,10 @@
               </size>
              </property>
              <property name="minimum">
-              <number>-32768</number>
+              <number>-2147483648</number>
              </property>
              <property name="maximum">
-              <number>32767</number>
+              <number>2147483647</number>
              </property>
             </widget>
            </item>
@@ -482,10 +482,10 @@
               </size>
              </property>
              <property name="minimum">
-              <number>-32768</number>
+              <number>-2147483648</number>
              </property>
              <property name="maximum">
-              <number>32767</number>
+              <number>2147483647</number>
              </property>
             </widget>
            </item>
@@ -927,7 +927,7 @@
   <customwidget>
    <class>FilterComboBox</class>
    <extends>QComboBox</extends>
-   <header location="global">utility.gui.qt.widgets.widgets.combobox</header>
+   <header location="global">utility.ui_libraries.qt.widgets.widgets.combobox</header>
   </customwidget>
   <customwidget>
    <class>ModelRenderer</class>

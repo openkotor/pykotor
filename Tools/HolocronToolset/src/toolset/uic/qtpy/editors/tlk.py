@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '../ui/editors/tlk.ui'
+# Form implementation generated from reading ui file '..\ui\editors\tlk.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -33,7 +33,7 @@ class Ui_MainWindow(object):
         self.searchBox.setObjectName("searchBox")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.searchBox)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.searchEdit = SearchFilterWidget(self.searchBox)
+        self.searchEdit = QtWidgets.QLineEdit(self.searchBox)
         self.searchEdit.setObjectName("searchEdit")
         self.horizontalLayout_2.addWidget(self.searchEdit)
         self.searchButton = QtWidgets.QPushButton(self.searchBox)
@@ -159,4 +159,3 @@ class Ui_MainWindow(object):
         self.actionInsert.setText(_translate("MainWindow", "Insert"))
         self.actionAuto_detect_slower.setText(_translate("MainWindow", "Auto-detect (slower)"))
 from utility.gui.qt.widgets.itemviews.tableview import RobustTableView
-from utility.gui.qt.widgets.widgets.search_filter import SearchFilterWidget

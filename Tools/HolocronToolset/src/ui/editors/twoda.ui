@@ -22,7 +22,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="SearchFilterWidget" name="filterEdit"/>
+        <widget class="QLineEdit" name="filterEdit"/>
        </item>
       </layout>
      </widget>
@@ -195,12 +195,7 @@
    <customwidget>
      <class>RobustTableView</class>
      <extends>QTableView</extends>
-    <header location="global">utility.gui.qt.widgets.itemviews.tableview</header>
-   </customwidget>
-   <customwidget>
-     <class>SearchFilterWidget</class>
-     <extends>QWidget</extends>
-     <header location="global">utility.gui.qt.widgets.widgets.search_filter</header>
+    <header location="global">utility.ui_libraries.qt.widgets.itemviews.tableview</header>
    </customwidget>
 </customwidgets>
 <resources/>

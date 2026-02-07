@@ -64,11 +64,7 @@
              <item row="1" column="1">
               <layout class="QHBoxLayout" name="horizontalLayout_15">
                <item>
-                <widget class="QLineEdit" name="tagEdit">
-                 <property name="maxLength">
-                  <number>16</number>
-                 </property>
-                </widget>
+                <widget class="QLineEdit" name="tagEdit"/>
                </item>
                <item>
                 <widget class="QPushButton" name="tagGenerateButton">
@@ -1347,7 +1343,7 @@
   <customwidget>
    <class>FilterComboBox</class>
    <extends>QComboBox</extends>
-   <header location="global">utility.gui.qt.widgets.widgets.combobox</header>
+   <header location="global">utility.ui_libraries.qt.widgets.widgets.combobox</header>
   </customwidget>
  </customwidgets>
  <resources/>
