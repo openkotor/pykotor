@@ -89,7 +89,6 @@ from toolset.gui.widgets.settings.widgets.misc import GlobalSettings
 from toolset.gui.windows.help import HelpWindow
 from toolset.gui.windows.indoor_builder import IndoorMapBuilder
 from toolset.gui.windows.kotordiff import KotorDiffWindow
-from toolset.gui.windows.module_designer import ModuleDesigner
 from toolset.gui.windows.update_manager import UpdateManager
 from toolset.utils.misc import open_link
 from toolset.utils.window import add_window, open_resource_editor
@@ -112,6 +111,7 @@ if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES
     from toolset.gui.common.localization import ToolsetLanguage
     from toolset.gui.widgets.main_widgets import ResourceModel, TextureList
+    from toolset.gui.windows.module_designer import ModuleDesigner
     from utility.gui.qt.widgets.itemviews.treeview import RobustTreeView
 
 
@@ -125,6 +125,7 @@ def run_module_designer(
     from qtpy.QtGui import QSurfaceFormat
 
     from toolset.__main__ import main_init
+    from toolset.gui.windows.module_designer import ModuleDesigner
 
     main_init()
 
@@ -573,6 +574,8 @@ class ToolWindow(QMainWindow):
 
         def open_module_designer(*args) -> ModuleDesigner | None:
             """Open the module designer."""
+            from toolset.gui.windows.module_designer import ModuleDesigner
+
             assert self.active is not None
             module_data = self.ui.modulesWidget.ui.sectionCombo.currentData(Qt.ItemDataRole.UserRole)
             module_path: Path | None = None
@@ -1688,6 +1691,8 @@ class ToolWindow(QMainWindow):
         ----
             checked: Whether the action was checked (from triggered signal, ignored).
         """
+        from toolset.gui.windows.module_designer import ModuleDesigner
+
         assert self.active is not None, "No installation loaded."
         selected_module: Path | None = None
         try:
