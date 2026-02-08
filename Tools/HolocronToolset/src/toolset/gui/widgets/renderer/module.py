@@ -433,30 +433,41 @@ class ModuleRenderer(QOpenGLWidget):
                 self.scene.selection.clear()
                 self.sig_object_selected.emit(None)
 
-        # Update cached mouse world position (under the current mouse screen coords).
-        # IMPORTANT: `Scene.screen_to_world()` must run with an active GL context (paintGL satisfies this).
-        x = float(self._mouse_prev.x)
-        y = float(self._mouse_prev.y)
-        if 0.0 <= x <= float(self.width()) and 0.0 <= y <= float(self.height()):
-            should_update = self._mouse_world_last_screen is None
-            if self._mouse_world_last_screen is not None:
-                dx = abs(self._mouse_world_last_screen.x - x)
-                dy = abs(self._mouse_world_last_screen.y - y)
-                # Tiny threshold to avoid thrashing depth reads when effectively still.
-                should_update = (dx + dy) >= 0.5
-            if should_update:
-                world = self.scene.screen_to_world(int(x), int(y))
-                self._mouse_world = world
-                self._mouse_world_last_screen = Vector2(x, y)
-
-        # Update cursor position to camera's focal point (the point the camera orbits around)
-        # The focal point is at (camera.x, camera.y, camera.z) - this is where the camera is looking at
-        # The cursor should always be at this focal point, not following the mouse
-        self.scene.cursor.set_position(self.scene.camera.x, self.scene.camera.y, self.scene.camera.z)
+        # Cursor represents the mouse world position (where the mouse ray hits the scene).
+        # Use the previous frame's cached _mouse_world to avoid chicken-and-egg with depth read.
+        # Fallback: camera focal point for first frame or when mouse is outside widget.
+        if self._mouse_world_last_screen is not None:
+            self.scene.cursor.set_position(
+                self._mouse_world.x,
+                self._mouse_world.y,
+                self._mouse_world.z,
+            )
+        else:
+            self.scene.cursor.set_position(
+                self.scene.camera.x,
+                self.scene.camera.y,
+                self.scene.camera.z,
+            )
 
         # Main render pass
         self.scene.render()
         self._frame_stats.frame_rendered()
+
+        # Update cached mouse world position from the *current* depth buffer.
+        # This avoids the extremely expensive `Scene.screen_to_world()` extra render pass,
+        # which was a major FPS bottleneck during interactive editing.
+        # Single glReadPixels is negligible; we update every frame when mouse is in bounds.
+        x = float(self._mouse_prev.x)
+        y = float(self._mouse_prev.y)
+        if 0.0 <= x < float(self.width()) and 0.0 <= y < float(self.height()):
+            if hasattr(self.scene, "screen_to_world_from_depth_buffer"):
+                try:
+                    world = self.scene.screen_to_world_from_depth_buffer(int(x), int(y))
+                    self._mouse_world = world
+                    self._mouse_world_last_screen = Vector2(x, y)
+                except Exception:
+                    # If context is lost during teardown, keep last cached value.
+                    pass
 
     def loop(self):
         """Repaints and checks for keyboard input on mouse press.
@@ -633,26 +644,12 @@ class ModuleRenderer(QOpenGLWidget):
         else:
             screenDelta = Vector2(screen.x - self._mouse_prev.x, screen.y - self._mouse_prev.y)
 
-        # Update the cached mouse world position for *this* screen position before emitting.
-        # This avoids a 1-frame lag during dragging (paintGL would otherwise be one event behind).
-        #
-        # We explicitly call makeCurrent() because QOpenGLWidget only guarantees a current
-        # context inside paintGL/initializeGL. If the context isn't available, we fall
-        # back to the last cached value.
+        # Use the last cached mouse world position.
+        # Computing `screen_to_world` during mouse-move is prohibitively expensive because it
+        # requires depth reads (and previously an extra render pass). The cached value is
+        # refreshed once per frame in `paintGL` using the already-rendered depth buffer.
         world: Vector3 = self._mouse_world
         now = datetime.now(tz=timezone.utc).astimezone()
-        if now - self._mouse_press_time > timedelta(milliseconds=60) and self.isReady():
-            try:
-                self.makeCurrent()
-                x = int(screen.x)
-                y = int(screen.y)
-                if 0 <= x <= self.width() and 0 <= y <= self.height():
-                    world = self.scene.screen_to_world(x, y)
-                    self._mouse_world = world
-                    self._mouse_world_last_screen = Vector2(float(x), float(y))
-            except Exception:
-                # During teardown or when the GL context can't be made current, keep the cached value.
-                world = self._mouse_world
         if now - self._mouse_press_time > timedelta(milliseconds=60):
             self.sig_mouse_moved.emit(screen, screenDelta, world, self._mouse_down, self._keys_down)
         self._mouse_prev = screen  # Always assign mouse_prev after emitting: allows signal handlers (e.g. ModuleDesigner, GITEditor) to handle cursor lock.
