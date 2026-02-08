@@ -540,7 +540,15 @@ class SceneBase:
         # Clear caches (but keep predefined models/textures)
         predefined_models = {"waypoint", "sound", "store", "entry", "encounter", "trigger", "camera", "empty", "cursor", "unknown"}
         self.models = CaseInsensitiveDict({k: v for k, v in self.models.items() if k in predefined_models})
-        self.textures = CaseInsensitiveDict({"NULL": self.textures.get("NULL", Texture.from_color())})
+        # Preserve the existing NULL texture; do NOT call Texture.from_color() here.
+        # This method can run from __del__ via GC at unpredictable times (e.g. during
+        # another scene's render loop) when the GL context may be invalid or belong to
+        # a different widget.  Any GL call (glGenTextures, glBindTexture, glGetError …)
+        # in that situation corrupts state and eventually crashes the driver.
+        null_tex = self.textures.get("NULL")
+        self.textures = CaseInsensitiveDict()
+        if null_tex is not None:
+            self.textures["NULL"] = null_tex
         
         RobustLogger().debug("Invalidated resource cache")
     

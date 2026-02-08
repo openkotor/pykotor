@@ -149,7 +149,6 @@ class AsyncLoader(QDialog, Generic[T]):
             | Qt.WindowType.WindowMinMaxButtonsHint  # Enable minimize/maximize buttons
             & ~Qt.WindowType.WindowContextHelpButtonHint
         )
-        print("AsyncLoader.__init__: realtime_progress:", realtime_progress)
 
         # Load UI from .ui file
         from toolset.uic.qtpy.dialogs.async_loader import Ui_Dialog
@@ -157,10 +156,9 @@ class AsyncLoader(QDialog, Generic[T]):
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
 
-        # Replace QProgressBar with AnimatedProgressBar
-        # Find the progress bar in the layout and replace it
+        # Replace QProgressBar with AnimatedProgressBar so the bar fills the designated area
+        # and the shimmer animation is drawn inside the progress bar groove.
         main_layout = self.layout()
-        # Create AnimatedProgressBar and configure it
         self._progress_bar: AnimatedProgressBar = AnimatedProgressBar(self)
         self._progress_bar.setMinimum(0)
         if isinstance(task, list):
@@ -169,9 +167,14 @@ class AsyncLoader(QDialog, Generic[T]):
             self._progress_bar.setMaximum(1 if realtime_progress else 0)
         self._progress_bar.setTextVisible(realtime_progress or isinstance(task, list))
         self._progress_bar.setFixedHeight(20)
+        # Fill the dialog width so the bar occupies the center placeholder area, not top-left
+        self._progress_bar.setMinimumWidth(220)
+        self._progress_bar.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Fixed,
+        )
 
         if main_layout is not None and isinstance(main_layout, QVBoxLayout):
-            # Find the index of the progress bar
             progress_bar_index = -1
             for i in range(main_layout.count()):
                 item = main_layout.itemAt(i)
@@ -179,15 +182,13 @@ class AsyncLoader(QDialog, Generic[T]):
                     progress_bar_index = i
                     break
 
-            # Replace the QProgressBar with AnimatedProgressBar
             if progress_bar_index >= 0:
-                # Remove old progress bar
                 old_item = main_layout.takeAt(progress_bar_index)
                 if old_item is not None:
                     old_widget = old_item.widget()
                     if old_widget is not None:
+                        old_widget.setParent(None)
                         old_widget.deleteLater()
-                # Insert new progress bar at the same position
                 main_layout.insertWidget(progress_bar_index, self._progress_bar)
 
         # Get references to UI labels
@@ -313,7 +314,6 @@ class AsyncLoader(QDialog, Generic[T]):
         self,
         error: Exception,
     ):
-        print("AsyncLoader._on_failed")
         self.errors.append(error)
         self.optional_error_hook.emit(error)
         RobustLogger().error(str(error), exc_info=error)
@@ -321,7 +321,6 @@ class AsyncLoader(QDialog, Generic[T]):
             self.error = error
 
     def _on_completed(self):
-        print("_on_completed")
         if self.error is not None:
             self.reject()
             self._show_error_dialog()
@@ -329,7 +328,6 @@ class AsyncLoader(QDialog, Generic[T]):
             self.accept()
 
     def _show_error_dialog(self):
-        print("AsyncLoader._show_error_dialog")
         if self.error_title:
             error_msgs = ""
             for i, e in enumerate(self.errors):

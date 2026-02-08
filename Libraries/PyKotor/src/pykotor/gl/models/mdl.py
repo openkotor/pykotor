@@ -15,6 +15,8 @@ from pykotor.gl.compat import has_pyopengl, missing_constant, missing_gl_func, s
 from pykotor.gl import glm, mat4, quat
 from utility.common.geometry import Vector3, Vector4
 
+HAS_PYOPENGL = has_pyopengl()
+gl_error = safe_gl_error_module()
 
 if TYPE_CHECKING:
     from pykotor.gl.scene import Scene
@@ -498,7 +500,7 @@ class Cube:
                 glBufferData(GL_ARRAY_BUFFER, len(vertices) * 4, vertices, GL_STATIC_DRAW)
 
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._ebo)
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, len(elements) * 4, elements, GL_STATIC_DRAW)
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements.nbytes, elements, GL_STATIC_DRAW)
 
                 glEnableVertexAttribArray(1)
                 glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12, ctypes.c_void_p(0))
@@ -567,7 +569,7 @@ class Boundary:
                 glBufferData(GL_ARRAY_BUFFER, len(vertices_np) * 4, vertices_np, GL_STATIC_DRAW)
 
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._ebo)
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, len(elements_np) * 4, elements_np, GL_STATIC_DRAW)
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_np.nbytes, elements_np, GL_STATIC_DRAW)
 
                 glEnableVertexAttribArray(1)
                 glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12, ctypes.c_void_p(0))
