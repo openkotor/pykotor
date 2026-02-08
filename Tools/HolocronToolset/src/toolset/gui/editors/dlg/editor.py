@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any, Iterable, Optional, cast
 
 import qtpy
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import QByteArray, QDataStream, QIODevice, QItemSelectionModel, QMimeData, QModelIndex, QPropertyAnimation, QRect, QTimer, Qt
 from qtpy.QtGui import QColor, QDrag, QFont, QKeySequence, QPalette, QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import (
@@ -40,6 +39,7 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.common.misc import Game, ResRef
 from pykotor.extract.installation import SearchLocation
 from pykotor.resource.generics.dlg import DLG, DLGComputerType, DLGConversationType, DLGEntry, DLGLink, DLGReply
@@ -247,14 +247,14 @@ class DLGEditor(Editor):
         dialog: QDialog = QDialog(self)
         ui = Ui_Dialog()
         ui.setupUi(dialog)
-        
+
         dialog.setWindowTitle(tr("All Tips"))
         fixed_width: int = 800  # Adjust this value as needed
         dialog.setFixedWidth(fixed_width)
-        
+
         ui.textEdit.setHtml("<ul>" + "".join(f"<li>{tip}</li>" for tip in self.tips) + "</ul>")
         ui.closeButton.clicked.connect(dialog.accept)
-        
+
         dialog.exec()
 
     def setup_dlg_tree_mvc(self):
@@ -428,6 +428,7 @@ Should return 1 or 0, representing a boolean.
 
         # Go-to bar
         from toolset.uic.qtpy.widgets.go_to_bar import Ui_Widget as Ui_GoToBar
+
         self.go_to_bar: QWidget = QWidget(self)
         self.go_to_bar_ui = Ui_GoToBar()
         self.go_to_bar_ui.setupUi(self.go_to_bar)
@@ -438,6 +439,7 @@ Should return 1 or 0, representing a boolean.
 
         # Find bar
         from toolset.uic.qtpy.widgets.find_bar import Ui_Widget as Ui_FindBar
+
         self.find_bar: QWidget = QWidget(self)
         self.find_bar_ui = Ui_FindBar()
         self.find_bar_ui.setupUi(self.find_bar)
@@ -693,7 +695,7 @@ Should return 1 or 0, representing a boolean.
         orphaned_index = orphaned_layout.indexOf(orphaned_placeholder)
         orphaned_placeholder.setParent(None)
         orphaned_placeholder.deleteLater()
-        
+
         self.orphaned_nodes_list: DLGListWidget = DLGListWidget(self)
         self.orphaned_nodes_list.use_hover_text = False
         self.orphaned_nodes_list.setWordWrap(True)
@@ -714,7 +716,7 @@ Should return 1 or 0, representing a boolean.
         pinned_index = pinned_layout.indexOf(pinned_placeholder)
         pinned_placeholder.setParent(None)
         pinned_placeholder.deleteLater()
-        
+
         self.pinned_items_list: DLGListWidget = DLGListWidget(self)
         self.pinned_items_list.setWordWrap(True)
         self.pinned_items_list.setItemDelegate(HTMLDelegate(self.pinned_items_list))
@@ -1392,7 +1394,7 @@ Should return 1 or 0, representing a boolean.
             if self._installation is None:
                 RobustLogger().error("Cannot edit text: installation is not set")
                 continue
-            
+
             try:
                 # Validate parent widget before creating dialog to prevent access violations
                 # Check if parent is valid and not being destroyed
@@ -1414,7 +1416,7 @@ Should return 1 or 0, representing a boolean.
                 else:
                     parent_widget = QApplication.activeWindow()
                 assert parent_widget is not None, "Parent widget is None in edit_text after all attempts to find a valid parent"
-                
+
                 dialog = LocalizedStringDialog(parent_widget, self._installation, item.link.node.text)
                 dialog_result: bool | int = False
                 try:
@@ -1428,23 +1430,23 @@ Should return 1 or 0, representing a boolean.
                     except Exception:
                         pass
                     continue
-                
+
                 if not dialog_result:
                     try:
                         dialog.deleteLater()
                     except Exception:
                         pass
                     continue
-                
+
                 # Access dialog.locstring before cleanup
                 item.link.node.text = dialog.locstring
-                
+
                 # Clean up dialog
                 try:
                     dialog.deleteLater()
                 except Exception:
                     pass
-                
+
                 if isinstance(item, DLGStandardItem):
                     self.model.update_item_display_text(item)
                 elif isinstance(source_widget, DLGListWidget):
@@ -1535,16 +1537,18 @@ Should return 1 or 0, representing a boolean.
             return None
         if "(Light)" in GlobalSettings().selectedTheme or GlobalSettings().selectedTheme == "Native":
             # Use palette color instead of hardcoded color
-            from qtpy.QtWidgets import QApplication
             from qtpy.QtGui import QPalette
+            from qtpy.QtWidgets import QApplication
+
             app = QApplication.instance()
             if app is not None and isinstance(app, QApplication):
                 palette = app.palette()
             else:
                 # Use default palette for fallback
                 from qtpy.QtGui import QPalette
+
                 palette = QPalette()
-            
+
             base_color = palette.color(QPalette.ColorRole.Base)
             self.ui.dialogTree.setStyleSheet(f"QTreeView {{ background: {base_color.name()}; }}")
         self.model.clear()
@@ -1661,6 +1665,7 @@ Should return 1 or 0, representing a boolean.
                 return
             idx: int = source_widget.indexFromItem(item).row()
             source_widget.takeItem(idx)
+
         unpin_action: _QAction | None = menu.addAction("Unpin")
         assert unpin_action is not None, "Failed to create 'Unpin' action."
         unpin_action.triggered.connect(unpin_item)
@@ -1768,7 +1773,7 @@ Should return 1 or 0, representing a boolean.
         assert find_references_action is not None, "Failed to create 'Find References' action."
         find_references_action.triggered.connect(lambda: self.find_references(item))
         find_references_action.setVisible(not_an_orphan)
-        
+
         # Add "Find References in Installation" action for dialog resref
         if self._installation is not None and self.core_dlg is not None:
             find_installation_refs_action: _QAction | None = menu.addAction("Find References in Installation...")
@@ -2009,11 +2014,11 @@ Should return 1 or 0, representing a boolean.
         if self._installation is None:
             return
 
-        from toolset.gui.dialogs.async_loader import AsyncLoader
+        from pykotor.tools.reference_finder import ReferenceSearchResult, find_conversation_references
+        from toolset.gui.dialogs.asyncloader import AsyncLoader
         from toolset.gui.dialogs.reference_search_options import ReferenceSearchOptions
         from toolset.gui.dialogs.search import FileResults
         from toolset.utils.window import add_window
-        from pykotor.tools.reference_finder import find_conversation_references, ReferenceSearchResult
 
         # Show search options dialog
         options_dialog = ReferenceSearchOptions(self)
@@ -2063,7 +2068,11 @@ Should return 1 or 0, representing a boolean.
             from toolset.gui.common.localization import trf
 
             results_dialog.setWindowTitle(
-                trf("{count} reference(s) found for dialog '{dialog_resref}'", count=len(results_list), dialog_resref=dialog_resref)
+                trf(
+                    "{count} reference(s) found for dialog '{dialog_resref}'",
+                    count=len(results_list),
+                    dialog_resref=dialog_resref,
+                ),
             )
             add_window(results_dialog)
 
@@ -2672,14 +2681,14 @@ Should return 1 or 0, representing a boolean.
                     palette = QPalette()
                 else:
                     palette = app.palette()
-                
+
                 shadow_color = palette.color(QPalette.ColorRole.Shadow)
                 error_color = QColor(shadow_color)
                 if error_color.lightness() < 128:  # Dark theme
                     error_color = error_color.lighter(150)
                 else:  # Light theme
                     error_color = error_color.darker(110)
-                
+
                 error_color_str = error_color.name()
                 self.ui.cameraIdSpin.setStyleSheet(f"QSpinBox {{ color: {error_color_str}; }}")
                 self.ui.cameraIdLabel.setStyleSheet(f"QLabel {{ color: {error_color_str}; }}")

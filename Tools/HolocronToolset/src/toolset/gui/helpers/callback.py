@@ -3,12 +3,12 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any, Union
 
-from loggerplus import RobustLogger
 from qtpy import QtGui, QtWidgets
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QIcon, QPalette
 from qtpy.QtWidgets import QApplication, QLabel, QMessageBox
 
+from loggerplus import RobustLogger
 from utility.gui.base import UserCommunication
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ class CustomQPushButton(QtWidgets.QPushButton):
             return int(self) == other
         if isinstance(other, QMessageBox.StandardButton):
             return int(self) == other
-        return NotImplemented  # type: ignore[no-any-return]
+        return NotImplemented
 
     def __hash__(self) -> int:
         return hash(self.enum_member.value)
@@ -141,7 +141,7 @@ class MessageBoxButton(IntEnum):
             self.LastButton: 134217728,
             self.YesAll: 32768,
             self.NoAll: 131072,
-            self.ButtonMask: -769  # A bitmask covering all values
+            self.ButtonMask: -769,  # A bitmask covering all values
         }
         return enum_button_map[self]
 
@@ -169,10 +169,9 @@ class MessageBoxButton(IntEnum):
             33554432: QMessageBox.StandardButton.Apply,
             67108864: QMessageBox.StandardButton.Reset,
             134217728: QMessageBox.StandardButton.RestoreDefaults,
-            -769: QMessageBox.StandardButton.ButtonMask  # A bitmask covering all values
+            -769: QMessageBox.StandardButton.ButtonMask,  # A bitmask covering all values
         }
         return standard_button_map[self.value]
-
 
     def text(self) -> str:
         """Get the default text for a given MessageBoxButton."""
@@ -201,7 +200,7 @@ class MessageBoxButton(IntEnum):
             MessageBoxButton.Default: "Default",
             MessageBoxButton.Escape: "Escape",
             MessageBoxButton.FlagMask: "Flag Mask",
-            MessageBoxButton.ButtonMask: "Button Mask"
+            MessageBoxButton.ButtonMask: "Button Mask",
         }
         return button_texts.get(self.__class__(self.value), "Unknown Button")
 
@@ -210,7 +209,7 @@ class MessageBoxButton(IntEnum):
             self is not MessageBoxButton.FlagMask
             and self is not MessageBoxButton.NoButton
             and self is not MessageBoxButton.ButtonMask
-#            and self is not MessageBoxButton.FirstButton
+            #            and self is not MessageBoxButton.FirstButton
             and self is not MessageBoxButton.LastButton
         )
 
@@ -287,9 +286,7 @@ class BetterMessageBox(QtWidgets.QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint
-            & ~Qt.WindowType.WindowContextHelpButtonHint
-            & ~Qt.WindowType.WindowMinMaxButtonsHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint
         )
         self.detailed_text: str | None = None
         self.icon_type: QtWidgets.QStyle.StandardPixmap = ICON_MAP.get(icon, icon)
@@ -349,7 +346,7 @@ class BetterMessageBox(QtWidgets.QDialog):
     def toggle_detailed_text(self, checked: bool):
         if self.detailed_text_widget:
             self.detailed_text_widget.setVisible(checked)
-            if hasattr(self, 'toggle_button'):
+            if hasattr(self, "toggle_button"):
                 self.toggle_button.setText("Hide Details..." if checked else "Show Details...")
 
     def exec_(self):
@@ -411,11 +408,11 @@ class BetterMessageBox(QtWidgets.QDialog):
             palette = QPalette()
         else:
             palette = app.palette()
-        
+
         text_color = palette.color(QPalette.ColorRole.WindowText)
         base_color = palette.color(QPalette.ColorRole.Base)
         mid_color = palette.color(QPalette.ColorRole.Mid)
-        
+
         self.setStyleSheet(f"""
             QLabel {{
                 font-size: 14px;
@@ -475,7 +472,7 @@ class QtUserCommunication(UserCommunication):
             status_bar.showMessage(text)
         else:
             status_bar.setText(text)
-        
+
         # Use palette color if no color specified
         if color is None:
             app = QApplication.instance()
@@ -485,13 +482,12 @@ class QtUserCommunication(UserCommunication):
                 color = text_color.name()
             else:
                 color = "black"  # Fallback if no application
-        
+
         status_bar.setStyleSheet(f"color: {color}; font-size: {font_size}px; font-family: {font_family}; font-weight: bold;")
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
-
 
     buttons = QMessageBox.StandardButton.NoButton
     for button in MessageBoxButton:
@@ -502,8 +498,6 @@ if __name__ == "__main__":
         buttons |= button.get()
     result = QMessageBox(QMessageBox.Icon.Information, "Test title", "Test message", buttons).exec()
     print(f"first test: You pressed button '{MessageBoxButton(result).text()}'")
-
-
 
     some_window = QtWidgets.QMainWindow()
     comm = QtUserCommunication(some_window)

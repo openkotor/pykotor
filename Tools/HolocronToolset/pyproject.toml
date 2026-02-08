@@ -21,7 +21,7 @@ toolset = [
 [project]
 name = "holocrontoolset"
 description = "A PyQt-backed program with a collection of tools and editors that make it easy to work with kotor files"
-version = "4.0.0b16"
+version = "4.0.0b17"
 requires-python = ">=3.8"
 dependencies = [
   "certifi>=2021.10.8",
@@ -115,7 +115,7 @@ Changelog = "https://github.com/OldRepublicDevs/PyKotor/releases"
 # Optional Poetry configuration for those who prefer it
 [tool.poetry]
 name = "holocrontoolset"
-version = "4.0.0b16"
+version = "4.0.0b17"
 description = "A PyQt-backed program with a collection of tools and editors that make it easy to work with kotor files"
 authors = ["Nick Hugi", "th3w1zard1 <boden.crouch@gmail.com>"]
 maintainers = ["th3w1zard1 <boden.crouch@gmail.com>"]

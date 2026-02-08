@@ -15,7 +15,7 @@ from toolset.gui.common.palette_helpers import wrap_html_with_palette_styles
 from utility.system.os_helper import is_frozen
 
 if TYPE_CHECKING:
-    from qtpy.QtWidgets import QWidget, QTextBrowser
+    from qtpy.QtWidgets import QTextBrowser, QWidget
 
 
 def get_wiki_path() -> tuple[Path, Path | None]:

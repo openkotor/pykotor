@@ -552,7 +552,6 @@ class ModuleDesignerSettings(Settings):
     )
     # endregion
 
-    # Blender integration (Module Designer only; disabled by default)
     useBlender: SettingsProperty[bool] = Settings.addSetting(
         "useBlender",
         False,

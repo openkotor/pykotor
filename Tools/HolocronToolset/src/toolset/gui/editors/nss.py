@@ -10,13 +10,10 @@ import traceback
 from contextlib import contextmanager
 from operator import attrgetter
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Any, Callable, Generator, NamedTuple, cast
+from typing import TYPE_CHECKING, Any, Callable, Generator, NamedTuple
 
-from loggerplus import RobustLogger, get_log_directory  # type: ignore[import-untyped]
 from qtpy.QtCore import QDir, QPoint, QRect, QSettings, QSize, QStringListModel, Qt  # pyright: ignore[reportPrivateImportUsage]
 from qtpy.QtGui import QKeySequence, QTextCursor, QTextDocument
-
-from toolset.utils.misc import get_qsettings_organization
 from qtpy.QtWidgets import (
     QApplication,
     QCompleter,
@@ -39,6 +36,9 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from loggerplus import RobustLogger, get_log_directory  # type: ignore[import-untyped]
+from toolset.utils.misc import get_qsettings_organization
+
 if __name__ == "__main__":
     import sys
 
@@ -57,8 +57,7 @@ from pykotor.resource.formats.ncs import read_ncs  # pyright: ignore[reportPriva
 from pykotor.resource.type import ResourceType  # pyright: ignore[reportPrivateImportUsage]
 from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_rim_file  # pyright: ignore[reportPrivateImportUsage]
 from toolset.gui.common.debugger import Debugger, DebuggerState  # pyright: ignore[reportPrivateImportUsage]
-
-# Import VS Code style helpers for tooltips and editor configuration
+from toolset.gui.common.localization import tr, trf
 from toolset.gui.common.style.vscode_style import apply_tooltip_style_to_app
 from toolset.gui.common.widgets.breadcrumbs_widget import BreadcrumbsWidget  # pyright: ignore[reportPrivateImportUsage]
 from toolset.gui.common.widgets.command_palette import CommandPalette  # pyright: ignore[reportPrivateImportUsage]
@@ -68,7 +67,6 @@ from toolset.gui.common.widgets.debug_watch_widget import DebugWatchWidget  # py
 from toolset.gui.common.widgets.find_replace_widget import FindReplaceWidget  # pyright: ignore[reportPrivateImportUsage]
 from toolset.gui.common.widgets.syntax_highlighter import SyntaxHighlighter  # pyright: ignore[reportPrivateImportUsage]
 from toolset.gui.common.widgets.test_config_widget import TestConfigDialog  # pyright: ignore[reportPrivateImportUsage]
-# GitHubFileSelector is imported lazily in determine_script_path to avoid import errors when requests is missing
 from toolset.gui.editor import Editor  # pyright: ignore[reportPrivateImportUsage]
 from toolset.gui.widgets.settings.installations import GlobalSettings, NoConfigurationSetError  # pyright: ignore[reportPrivateImportUsage]
 from toolset.gui.widgets.terminal_widget import TerminalWidget  # pyright: ignore[reportPrivateImportUsage]
@@ -998,7 +996,7 @@ class NSSEditor(Editor):
             assert action_find_all_refs is not None, "Find all references action should not be None"
             action_find_all_refs.setShortcut(QKeySequence("Shift+F12"))
             action_find_all_refs.triggered.connect(lambda: self._find_all_references(word_under_cursor))
-            
+
             # Add "Find References in Installation" action
             if hasattr(self, "_installation") and self._installation is not None and word_under_cursor:
                 action_find_installation_refs: QAction | None = menu.addAction("Find References in Installation...")
@@ -1250,12 +1248,13 @@ class NSSEditor(Editor):
         if not hasattr(self, "_installation") or self._installation is None:
             return
 
-        from toolset.gui.dialogs.async_loader import AsyncLoader
+        from qtpy.QtWidgets import QDialog, QMessageBox
+
+        from pykotor.tools.reference_finder import ReferenceSearchResult, find_script_references
+        from toolset.gui.dialogs.asyncloader import AsyncLoader
         from toolset.gui.dialogs.reference_search_options import ReferenceSearchOptions
         from toolset.gui.dialogs.search import FileResults
         from toolset.utils.window import add_window
-        from pykotor.tools.reference_finder import find_script_references, ReferenceSearchResult
-        from qtpy.QtWidgets import QDialog, QMessageBox
 
         # Show search options dialog
         options_dialog = ReferenceSearchOptions(self)
@@ -1402,7 +1401,11 @@ class NSSEditor(Editor):
                         if list_item and list_item.text().lower() == word.lower():
                             self.ui.constantList.setCurrentItem(list_item)
                             self.ui.constantList.scrollToItem(list_item)
-                            QMessageBox.information(self, tr("Go to Definition"), trf("Constant '{word}' is a built-in constant.\nSee the Constants tab for more information.", word=word))
+                            QMessageBox.information(
+                                self,
+                                tr("Go to Definition"),
+                                trf("Constant '{word}' is a built-in constant.\nSee the Constants tab for more information.", word=word),
+                            )
                             return
 
             QMessageBox.information(self, tr("Go to Definition"), trf("Definition for '{word}' not found in current file.", word=word))
@@ -2165,6 +2168,7 @@ class NSSEditor(Editor):
     def determine_script_path(self, resref: str) -> str:
         # Import lazily to avoid import errors when requests is missing
         from toolset.gui.dialogs.github_selector import GitHubFileSelector  # pyright: ignore[reportPrivateImportUsage]
+
         script_filename = f"{resref.lower()}.nss"
         dialog = GitHubFileSelector(self.owner, self.repo, selected_files=[script_filename], parent=self)
         if dialog.exec() != QDialog.DialogCode.Accepted:

@@ -1110,9 +1110,9 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
     ):
         """Opens a module."""
         # Check for Blender if not already checked (when opening directly via constructor or file)
-        # Only consider Blender when enabled in Module Designer settings (disabled by default).
         if not self._blender_choice_made:
             self._blender_choice_made = True
+            # Only consider Blender when enabled in Module Designer settings (disabled by default)
             if not self.settings.useBlender:
                 self._use_blender_mode = False
             else:

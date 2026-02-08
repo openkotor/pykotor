@@ -26,7 +26,7 @@ from qtpy.QtWidgets import QApplication, QDialog, QMessageBox, QStyle
 from loggerplus import RobustLogger
 from toolset.config import LOCAL_PROGRAM_INFO, is_remote_version_newer, toolset_tag_to_version, version_to_toolset_tag
 from toolset.gui.common.localization import translate as tr
-from toolset.gui.dialogs.async_loader import ProgressDialog
+from toolset.gui.dialogs.asyncloader import ProgressDialog
 from utility.misc import ProcessorArchitecture
 from utility.system.app_process.shutdown import terminate_child_processes
 from utility.updater.github import GithubRelease
@@ -66,16 +66,16 @@ if __name__ == "__main__":
 
 def convert_markdown_to_html(md_text: str, widget: QWidget | None = None) -> str:
     """Convert Markdown text to HTML with theme-aware styling.
-    
+
     Args:
         md_text: Markdown text to convert
         widget: Optional widget to get palette from (defaults to QApplication)
-        
+
     Returns:
         HTML string with embedded CSS styles using palette colors
     """
     from toolset.gui.common.palette_helpers import wrap_html_with_palette_styles
-    
+
     html_body = markdown.markdown(md_text, extensions=["tables", "fenced_code", "codehilite"])
     return wrap_html_with_palette_styles(html_body, widget)
 
@@ -102,8 +102,7 @@ class UpdateDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportAttributeAccessIssue]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowMinMaxButtonsHint
-            & ~Qt.WindowType.WindowContextHelpButtonHint
+            | Qt.WindowType.WindowMinMaxButtonsHint & ~Qt.WindowType.WindowContextHelpButtonHint
         )
         self.remote_info: dict[str, Any] = {}
         self.releases: list[GithubRelease] = []

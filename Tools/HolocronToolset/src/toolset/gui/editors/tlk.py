@@ -26,7 +26,7 @@ from pykotor.resource.formats.ssf.ssf_data import SSFSound
 from pykotor.resource.formats.tlk import TLK, TLKEntry, bytes_tlk, read_tlk, write_tlk
 from pykotor.resource.type import ResourceType
 from toolset.gui.common.localization import tr, trf
-from toolset.gui.dialogs.async_loader import AsyncLoader
+from toolset.gui.dialogs.asyncloader import AsyncLoader
 from toolset.gui.dialogs.search import FileResults
 from toolset.gui.editor import Editor
 from toolset.gui.widgets.settings.installations import GlobalSettings
@@ -44,8 +44,8 @@ if TYPE_CHECKING:
         QPoint,
     )
     from qtpy.QtGui import (
-        QKeyEvent,
         QCloseEvent,  # pyright: ignore[reportPrivateImportUsage]
+        QKeyEvent,
     )
     from qtpy.QtWidgets import QWidget
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
@@ -296,12 +296,12 @@ class TLKEditor(Editor):
         # We need to map it to the source model index to get the correct row number
         if not index.isValid():
             return
-        
+
         # Map proxy index to source index to get the correct stringref
         source_index: QModelIndex = self.proxy_model.mapToSource(index)
         if not source_index.isValid():
             return
-        
+
         # Use the source model row number as the stringref
         stringref: int = source_index.row()
         print(f"Finding references to stringref: {stringref}")

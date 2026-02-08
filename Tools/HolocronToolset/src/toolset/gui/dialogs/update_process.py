@@ -7,13 +7,13 @@ import sys
 from multiprocessing import Queue
 from typing import TYPE_CHECKING, Any, NoReturn
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import QCoreApplication, QThread
 from qtpy.QtGui import QIcon
 from qtpy.QtWidgets import QApplication, QStyle
 
+from loggerplus import RobustLogger
 from toolset.config import LOCAL_PROGRAM_INFO, toolset_tag_to_version, version_to_toolset_tag
-from toolset.gui.dialogs.async_loader import ProgressDialog
+from toolset.gui.dialogs.asyncloader import ProgressDialog
 from utility.system.app_process.shutdown import terminate_child_processes
 from utility.updater.update import AppUpdate
 
@@ -43,7 +43,7 @@ def start_update_process(
     download_url: str,
 ) -> None:
     """Start the update process with progress dialog.
-    
+
     This function:
     1. Creates a separate process for the progress dialog
     2. Downloads the update
@@ -68,44 +68,44 @@ def start_update_process(
 
     def exitapp(kill_self_here: bool):  # noqa: FBT001
         """Clean exit hook for the update process.
-        
+
         This function ensures proper cleanup of:
         1. The progress dialog process
         2. Child processes (texture loader, etc.)
         3. Qt threads
         4. The Qt application itself
-        
+
         Args:
             kill_self_here: If True, forcefully exit after cleanup
         """
         log = RobustLogger()
         log.info("Update exit hook called (kill_self_here=%s)", kill_self_here)
-        
+
         # 1. Signal the progress dialog to close
         try:
             packaged_data: dict[str, Any] = {"action": "shutdown", "data": {}}
             progress_queue.put(packaged_data)
         except Exception:
             log.debug("Could not send shutdown signal to progress dialog", exc_info=True)
-        
+
         # 2. Wait for progress dialog process to terminate
         try:
             ProgressDialog.monitor_and_terminate(progress_process, timeout=3)
         except Exception:
             log.debug("Error terminating progress dialog process", exc_info=True)
-        
+
         # 3. Terminate child processes (texture loaders, etc.)
         try:
             terminate_child_processes(timeout=2)
         except Exception:
             log.debug("Error terminating child processes", exc_info=True)
-        
+
         # 4. Stop all running QThreads in the application
         _terminate_qt_threads(log)
-        
+
         # 5. Quit the Qt application properly
         _quit_qt_application(log)
-        
+
         if kill_self_here:
             log.info("Forcefully exiting application...")
             # Use os._exit to ensure we actually exit, bypassing any
@@ -142,7 +142,7 @@ def start_update_process(
 
 def _terminate_qt_threads(log: RobustLogger):
     """Terminate all running QThreads in the current application.
-    
+
     Uses QCoreApplication.instance() to get threads rather than gc.get_objects()
     for better reliability.
     """
@@ -150,11 +150,11 @@ def _terminate_qt_threads(log: RobustLogger):
     if app is None:
         log.debug("No QApplication instance found")
         return
-    
+
     # Find and terminate all QThread instances that are children of the app
     # or any top-level widget
     threads_terminated = 0
-    
+
     try:
         # Get all QThread children of the application
         for child in app.findChildren(QThread):
@@ -172,7 +172,7 @@ def _terminate_qt_threads(log: RobustLogger):
                     log.debug("Error terminating QThread", exc_info=True)
     except Exception:
         log.debug("Error finding QThreads", exc_info=True)
-    
+
     if threads_terminated > 0:
         log.debug("Terminated %d QThread(s)", threads_terminated)
 
@@ -183,11 +183,11 @@ def _quit_qt_application(log: RobustLogger):
     if app is None:
         log.debug("No QApplication instance to quit")
         return
-    
+
     try:
         # Process any pending events
         app.processEvents()
-        
+
         # Close all top-level windows
         if isinstance(app, QApplication):
             for window in app.topLevelWidgets():
@@ -195,13 +195,13 @@ def _quit_qt_application(log: RobustLogger):
                     window.close()
                 except Exception:
                     log.debug("Error closing window %s", window, exc_info=True)
-        
+
         # Quit the application
         app.quit()
-        
+
         # Process remaining events
         app.processEvents()
-        
+
         log.debug("Qt application quit successfully")
     except Exception:
         log.debug("Error quitting Qt application", exc_info=True)

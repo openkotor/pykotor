@@ -9,7 +9,7 @@ from qtpy.QtWidgets import QDialog, QMessageBox
 from pykotor.common.module import Module
 from pykotor.tools import module
 from toolset.gui.common.localization import translate as tr, trf
-from toolset.gui.dialogs.async_loader import AsyncLoader
+from toolset.gui.dialogs.asyncloader import AsyncLoader
 
 if TYPE_CHECKING:
     from qtpy.QtWidgets import QWidget
@@ -55,7 +55,7 @@ class CloneModuleDialog(QDialog):
         """
         super().__init__(parent)
         self.setWindowFlags(
-            QtCore.Qt.WindowFlags(  # type: ignore[call-overload]
+            QtCore.Qt.WindowFlags(
                 QtCore.Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
                 | QtCore.Qt.WindowType.WindowCloseButtonHint
             )
@@ -64,11 +64,13 @@ class CloneModuleDialog(QDialog):
         )
 
         from toolset.uic.qtpy.dialogs.clone_module import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -77,9 +79,7 @@ class CloneModuleDialog(QDialog):
 
         self.ui.createButton.clicked.connect(self.ok)
         # QPushButton.clicked emits a bool; QDialog.close takes no args.
-        def close_dialog(*_: object) -> None:
-            self.close()
-        self.ui.cancelButton.clicked.connect(close_dialog)
+        self.ui.cancelButton.clicked.connect(lambda *_: self.close())
         self.ui.filenameEdit.textChanged.connect(self.set_prefix_from_filename)
         self.ui.moduleSelect.currentIndexChanged.connect(self.changed_module)
 
@@ -133,7 +133,7 @@ class CloneModuleDialog(QDialog):
             )
 
         if copy_textures:
-            QMessageBox(  # type: ignore[call-overload]
+            QMessageBox(
                 QMessageBox.Icon.Information,
                 tr("This may take a while"),
                 tr("You have selected to create copies of the texture. This process may add a few extra minutes to the waiting time."),
@@ -143,7 +143,7 @@ class CloneModuleDialog(QDialog):
         if not AsyncLoader(self, "Creating module", task, "Failed to create module").exec():
             return
 
-        QMessageBox(  # type: ignore[call-overload]
+        QMessageBox(
             QMessageBox.Icon.Information,
             tr("Clone Successful"),
             trf("You can now warp to the cloned module '{identifier}'.", identifier=identifier),

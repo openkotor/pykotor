@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -61,11 +60,11 @@ def setup_extract_path() -> Path:
     extract_path = Path(global_settings.extractPath)
 
     if not extract_path.is_dir():
-        extract_path: Path = Path(GlobalSettings().extractPath)
-        if extract_path.exists() and extract_path.is_dir():
-            return extract_path
-        extract_path = Path(tempfile.mkdtemp(prefix="holocron_toolset_"))
-        GlobalSettings().extractPath = str(extract_path)
+        extract_path_str: str | None = QFileDialog.getExistingDirectory(None, "Select a temp directory")
+        extract_path: Path | None = Path(extract_path_str) if extract_path_str else None
+        if extract_path is None or not extract_path.exists() or not extract_path.is_dir():
+            msg: str = "Temp directory has not been set or is invalid."
+            raise NoConfigurationSetError(msg)
     return extract_path
 
 
