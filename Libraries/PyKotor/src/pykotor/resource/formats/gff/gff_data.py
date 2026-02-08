@@ -233,6 +233,8 @@ class GFFListSemanticConfig:
 # Registry: (GFFContent, list_field_name) -> semantic config for list comparison.
 # When present, list entries are matched by identity_fields + default_when_absent,
 # so "same creature, new optional field" is reported as MODIFIED not ADDED+REMOVED.
+# Engine: K1 ReadEncounterFromGff @ 0x00592430 reads ResRef, CR, SingleSpawn only (no Appearance).
+# TSL FUN_007eb810 reads ResRef, CR, SingleSpawn, GuaranteedCount. Appearance is toolset-only.
 _GFF_LIST_SEMANTIC_REGISTRY: dict[tuple[GFFContent, str], GFFListSemanticConfig] = {
     (GFFContent.UTE, "CreatureList"): GFFListSemanticConfig(
         identity_fields=("ResRef", "CR", "Appearance", "SingleSpawn"),
@@ -241,12 +243,36 @@ _GFF_LIST_SEMANTIC_REGISTRY: dict[tuple[GFFContent, str], GFFListSemanticConfig]
     ),
 }
 
-# Registry of ignorable field values per GFF content type.
+# Registry of ignorable field values, keyed by (GFFContent, list_field_name | None).
+# list_field_name: apply only when comparing structs inside that list (e.g. "CreatureList").
+# None: apply to root/toplevel struct fields.
 # Used when comparing GFFs: fields added/removed with these values are treated as no-change.
-# Engine: K1 lacks GuaranteedCount; K2 adds it, default 0 when absent.
-_GFF_IGNORABLE_FIELD_VALUES: dict[GFFContent, dict[str, set[Any]]] = {
-    GFFContent.UTE: {"GuaranteedCount": {0}},
+# Prefer GFFContent enum; never use raw strings for content type.
+#
+# Engine references:
+#   K1 SaveEncounter @ 0x00591350: CreatureList writes ResRef, CR, SingleSpawn only.
+#   TSL FUN_007ed770: CreatureList writes ResRef, CR, SingleSpawn, GuaranteedCount.
+#   K1 lacks GuaranteedCount; TSL default 0 when absent. Ignorable for diff.
+_GFF_IGNORABLE_FIELD_VALUES: dict[tuple[GFFContent, str | None], dict[str, frozenset[Any]]] = {
+    (GFFContent.UTE, "CreatureList"): {"GuaranteedCount": frozenset({0})},
 }
+
+
+def _build_ignorable_for_content(content: GFFContent) -> dict[str, set[Any]] | None:
+    """Merge all ignorable field values for a GFF content type.
+
+    Merges entries keyed by (content, list_field) and (content, None).
+    Returns None if no ignorable entries exist.
+    """
+    merged: dict[str, set[Any]] = {}
+    for (gff_content, _list_field), field_map in _GFF_IGNORABLE_FIELD_VALUES.items():
+        if gff_content != content:
+            continue
+        for label, values in field_map.items():
+            existing = merged.get(label)
+            vals = set(values)
+            merged[label] = (existing | vals) if existing else vals
+    return merged if merged else None
 
 
 def _infer_gff_content_from_path(path: PureWindowsPath | str | None) -> GFFContent | None:
@@ -509,8 +535,7 @@ class GFF(ComparableMixin):
             if not isinstance(other, GFF):
                 return False
             comparison_result = comparison_result or GFFComparisonResult()
-            ignorable = _GFF_IGNORABLE_FIELD_VALUES.get(self.content, {})
-            ign = {k: (v if isinstance(v, set) else set(v)) for k, v in ignorable.items()} if ignorable else None
+            ign = _build_ignorable_for_content(self.content)
             return self.root.compare(
                 other.root,
                 log_func,
@@ -527,10 +552,7 @@ class GFF(ComparableMixin):
             return False
 
         # Build ignorable field values from content type (e.g. UTE CreatureList GuaranteedCount=0)
-        ignorable: dict[str, set[Any]] = {}
-        if self.content in _GFF_IGNORABLE_FIELD_VALUES:
-            for label, values in _GFF_IGNORABLE_FIELD_VALUES[self.content].items():
-                ignorable[label] = set(values) if not isinstance(values, set) else values
+        ignorable = _build_ignorable_for_content(self.content)
 
         # Always do the full recursive comparison via GFFStruct.compare() so that
         # every added/removed/changed field is reported with its full GFF-internal
