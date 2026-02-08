@@ -36,9 +36,8 @@ class UTE:
                 - Loads encounter geometry data
         
         KotOR II / TSL (swkotor2.exe):
-            - Functionally equivalent UTE parsing logic
-            - Same GFF field structure and parsing behavior
-            - String references at different addresses due to binary layout differences
+            - ReadEncounterFromGff equivalent: FUN_007eb810 (CreatureList: ResRef, CR, SingleSpawn, GuaranteedCount)
+            - SaveEncounter equivalent: FUN_007ed770
         
         GFF Field Structure (from LoadEncounter analysis):
             - Root struct fields:
@@ -207,10 +206,11 @@ class UTECreature:
 
 
 def utd_version(gff: GFF) -> Game:
-    for label in "GuaranteedCount":
-        for creature_struct in gff.root.acquire("CreatureList", GFFList()):
-            if creature_struct.exists(label):
-                return Game.K2
+    """Infer game version from UTE GFF. GuaranteedCount is TSL-only (K2)."""
+    creature_list = gff.root.acquire("CreatureList", GFFList())
+    for creature_struct in creature_list:
+        if creature_struct.exists("GuaranteedCount"):
+            return Game.K2
     return Game.K1
 
 
@@ -245,6 +245,10 @@ def construct_ute(gff: GFF) -> UTE:
         for creature_struct in creature_list:
             creature = UTECreature()
             ute.creatures.append(creature)
+            # K1 ReadEncounterFromGff @ 0x00592430: ResRef (CResRef ""), CR (FLOAT 0.0), SingleSpawn (BYTE 0).
+            #   K1 does NOT read Appearance or GuaranteedCount; field3_0x18 hardcoded 0.
+            # TSL FUN_007eb810 (ReadEncounterFromGff): same + GuaranteedCount (ReadFieldINT default 0).
+            # Appearance is toolset-only; engine does not read it.
             creature.appearance_id = creature_struct.acquire("Appearance", 0)
             creature.challenge_rating = creature_struct.acquire("CR", 0.0)
             creature.single_spawn = bool(creature_struct.acquire("SingleSpawn", 0))
@@ -285,6 +289,8 @@ def dismantle_ute(
 
     root.set_uint8("PaletteID", ute.palette_id)
 
+    # K1 SaveEncounter @ 0x00591350: CreatureList writes ResRef, CR, SingleSpawn only.
+    # TSL FUN_007ed770: CreatureList writes ResRef, CR, SingleSpawn, GuaranteedCount.
     creature_list = root.set_list("CreatureList", GFFList())
     for creature in ute.creatures:
         creature_struct = creature_list.add(0)
