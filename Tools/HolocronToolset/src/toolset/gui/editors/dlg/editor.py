@@ -29,6 +29,7 @@ from qtpy.QtWidgets import (
     QMenu,
     QMessageBox,
     QPlainTextEdit,
+    QProgressDialog,
     QPushButton,
     QSizePolicy,
     QSpinBox,
@@ -1197,36 +1198,59 @@ Should return 1 or 0, representing a boolean.
         dlg: DLG,
     ):
         """Loads a dialog tree into the UI view."""
-        if "(Light)" in GlobalSettings().selectedTheme or GlobalSettings().selectedTheme == "Native":
-            self.ui.dialogTree.setStyleSheet("")
-        self.orphaned_nodes_list.clear()
-        self._focused = False
-        self.core_dlg = dlg
-        self.model.orig_to_orphan_copy = {
-            weakref.ref(orig_link): copied_link
-            for orig_link, copied_link in zip(
-                dlg.starters,
-                [DLGLink.from_dict(link.to_dict()) for link in dlg.starters],
-            )
-        }
-        self.populate_combobox_on_void_edit_finished()
+        from toolset.gui.common.localization import translate as tr
 
-        self.model.reset_model()
-        assert self.model.rowCount() == 0 and self.model.columnCount() == 0, "Model is not empty after resetModel() call!"  # noqa: PT018
-        self.model.ignoring_updates = True
-        for start in dlg.starters:  # descending order - matches what the game does.
-            item = DLGStandardItem(link=start)
-            self.model.appendRow(item)
-            self.model.load_dlg_item_rec(item)
-        self.orphaned_nodes_list.reset()
-        self.orphaned_nodes_list.clear()
-        orphan_model: QAbstractItemModel | None = self.orphaned_nodes_list.model()
-        assert orphan_model is not None, "Failed to get orphan model."
-        orphan_model.layoutChanged.emit()
-        self.model.ignoring_updates = False
-        assert self.model.rowCount() != 0 or not dlg.starters, "Model is empty after _load_dlg(dlg: DLG) call!"  # noqa: PT018
-        assert self.model.node_to_items or not dlg.starters, "node_to_items is empty in the model somehow!"
-        assert self.model.link_to_items or not dlg.starters, "link_to_items is empty in the model somehow!"
+        total_starters = len(dlg.starters)
+        loading_dialog = QProgressDialog(tr("Loading dialog views..."), "", 0, max(total_starters, 1), self)
+        loading_dialog.setWindowModality(Qt.WindowModality.WindowModal)
+        loading_dialog.setMinimumDuration(0)
+        loading_dialog.setCancelButton(None)
+        loading_dialog.setAutoClose(False)
+        loading_dialog.setAutoReset(False)
+        loading_dialog.setValue(0)
+        loading_dialog.show()
+        QApplication.processEvents()
+
+        try:
+            if "(Light)" in GlobalSettings().selectedTheme or GlobalSettings().selectedTheme == "Native":
+                self.ui.dialogTree.setStyleSheet("")
+            self.orphaned_nodes_list.clear()
+            self._focused = False
+            self.core_dlg = dlg
+            self.model.orig_to_orphan_copy = {
+                weakref.ref(orig_link): copied_link
+                for orig_link, copied_link in zip(
+                    dlg.starters,
+                    [DLGLink.from_dict(link.to_dict()) for link in dlg.starters],
+                )
+            }
+            self.populate_combobox_on_void_edit_finished()
+
+            self.model.reset_model()
+            assert self.model.rowCount() == 0 and self.model.columnCount() == 0, "Model is not empty after resetModel() call!"  # noqa: PT018
+            self.model.ignoring_updates = True
+            for index, start in enumerate(dlg.starters, start=1):  # descending order - matches what the game does.
+                item = DLGStandardItem(link=start)
+                self.model.appendRow(item)
+                self.model.load_dlg_item_rec(item)
+                if index % 25 == 0 or index == total_starters:
+                    loading_dialog.setValue(index)
+                    # Keep the loading prompt responsive while all views are being populated.
+                    QApplication.processEvents()
+            self.orphaned_nodes_list.reset()
+            self.orphaned_nodes_list.clear()
+            orphan_model: QAbstractItemModel | None = self.orphaned_nodes_list.model()
+            assert orphan_model is not None, "Failed to get orphan model."
+            orphan_model.layoutChanged.emit()
+            self.model.ignoring_updates = False
+            assert self.model.rowCount() != 0 or not dlg.starters, "Model is empty after _load_dlg(dlg: DLG) call!"  # noqa: PT018
+            assert self.model.node_to_items or not dlg.starters, "node_to_items is empty in the model somehow!"
+            assert self.model.link_to_items or not dlg.starters, "link_to_items is empty in the model somehow!"
+        finally:
+            self.model.ignoring_updates = False
+            loading_dialog.setValue(max(total_starters, 1))
+            loading_dialog.close()
+            QApplication.processEvents()
 
     def build(self) -> tuple[bytes, bytes]:
         """Builds a dialogue from UI components."""

@@ -16,6 +16,7 @@ from qtpy.QtCore import (
     QModelIndex,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
     QObject,
     QPoint,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
+    QSignalBlocker,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
     QSortFilterProxyModel,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
     QTimer,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
     Qt,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
@@ -811,19 +812,35 @@ class TextureList(MainWindowList):
     def set_sections(self, items: list[QStandardItem]):
         """Set the sections to be displayed in the texture list combobox."""
         print(f"Setting sections for TextureList with {len(items)} items")
-        current_sections: set[str] = {self.ui.sectionCombo.itemData(i, Qt.ItemDataRole.UserRole) for i in range(self.ui.sectionCombo.count())}
-        new_sections: set[str] = {item.data(Qt.ItemDataRole.UserRole) for item in items}
+        previous_section: str | None = self.ui.sectionCombo.currentData(Qt.ItemDataRole.UserRole)
+        current_sections: set[str | None] = {self.ui.sectionCombo.itemData(i, Qt.ItemDataRole.UserRole) for i in range(self.ui.sectionCombo.count())}
+        new_sections: set[str | None] = {item.data(Qt.ItemDataRole.UserRole) for item in items}
 
         # Remove sections that are no longer present
-        removed_sections: set[str] = current_sections - new_sections
+        removed_sections: set[str | None] = current_sections - new_sections
         for section in removed_sections:
-            del self.texture_source_models[section]
+            self.texture_source_models.pop(section, None)
 
-        self.ui.sectionCombo.clear()
+        section_values: list[str | None] = []
+        with QSignalBlocker(self.ui.sectionCombo):
+            self.ui.sectionCombo.clear()
 
-        for item in items:
-            section = item.data(Qt.ItemDataRole.UserRole)
-            self.ui.sectionCombo.addItem(item.text(), section)
+            for item in items:
+                section = item.data(Qt.ItemDataRole.UserRole)
+                section_values.append(section)
+                self.ui.sectionCombo.addItem(item.text(), section)
+
+            if not section_values:
+                self.textures_proxy_model.setSourceModel(QStandardItemModel())
+                return
+
+            target_index = 0
+            if previous_section in section_values:
+                target_index = section_values.index(previous_section)
+            self.ui.sectionCombo.setCurrentIndex(target_index)
+
+        # Emit exactly one section-changed event after repopulating.
+        self.on_section_changed(self.ui.sectionCombo.currentIndex())
 
     def set_resources(self, resources: list[FileResource]):
         """Set the resources to be displayed in the texture list."""
@@ -850,8 +867,11 @@ class TextureList(MainWindowList):
     @Slot(int)
     def on_section_changed(self, index: int):
         """Handle the section combobox selection change."""
-        new_section_name: str = self.ui.sectionCombo.currentData(Qt.ItemDataRole.UserRole)
+        new_section_name: str | None = self.ui.sectionCombo.currentData(Qt.ItemDataRole.UserRole)
         print(f"Section changed to: '{new_section_name}'")
+        if not new_section_name:
+            self.textures_proxy_model.setSourceModel(QStandardItemModel())
+            return
         self.textures_proxy_model.setSourceModel(self.texture_source_models[new_section_name])
         self.sig_section_changed.emit(new_section_name)
         if not self.isVisible():
