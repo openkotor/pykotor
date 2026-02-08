@@ -712,7 +712,7 @@ class GFFStruct(ComparableMixin, dict):
         Returns immutable views so callers cannot mutate `_fields` directly.
         """
         return [
-            self.__class__.GFFFieldView(label or "", field.field_type(), field.value())
+            GFFFieldView(label or "", field.field_type(), field.value())
             for label, field in self._fields.items()
         ]
 

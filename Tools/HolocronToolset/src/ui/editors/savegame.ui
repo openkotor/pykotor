@@ -20,7 +20,7 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
-      
+
       <!-- Save Info Tab -->
       <widget class="QWidget" name="tabSaveInfo">
        <attribute name="title">
@@ -41,7 +41,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEditSaveName"/>
+            <widget class="QLineEdit" name="lineEditSaveName" />
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="labelAreaName">
@@ -51,7 +51,7 @@
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="lineEditAreaName"/>
+            <widget class="QLineEdit" name="lineEditAreaName" />
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="labelLastModule">
@@ -61,7 +61,7 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QLineEdit" name="lineEditLastModule"/>
+            <widget class="QLineEdit" name="lineEditLastModule" />
            </item>
            <item row="3" column="0">
             <widget class="QLabel" name="labelTimePlayed">
@@ -85,7 +85,111 @@
             </widget>
            </item>
            <item row="4" column="1">
-            <widget class="QLineEdit" name="lineEditPCName"/>
+            <widget class="QLineEdit" name="lineEditPCName" />
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="labelTimestamp">
+             <property name="text">
+              <string>Timestamp:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLineEdit" name="lineEditTimestamp">
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="labelCheatUsed">
+             <property name="text">
+              <string>Cheat Used:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QCheckBox" name="checkBoxCheatUsed" />
+           </item>
+           <item row="7" column="0">
+            <widget class="QLabel" name="labelGameplayHint">
+             <property name="text">
+              <string>Gameplay Hint:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="1">
+            <widget class="QSpinBox" name="spinBoxGameplayHint">
+             <property name="maximum">
+              <number>2147483647</number>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="0">
+            <widget class="QLabel" name="labelStoryHint">
+             <property name="text">
+              <string>Story Hint:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="1">
+            <widget class="QSpinBox" name="spinBoxStoryHint">
+             <property name="maximum">
+              <number>2147483647</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupLive">
+          <property name="title">
+           <string>Xbox Live (optional)</string>
+          </property>
+          <layout class="QFormLayout" name="formLayoutLive">
+           <item row="0" column="0">
+            <widget class="QLabel" name="labelLive1">
+             <property name="text">
+              <string>Live 1-6:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayoutLive">
+             <item>
+              <widget class="QLineEdit" name="lineEditLive1" />
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditLive2" />
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditLive3" />
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditLive4" />
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditLive5" />
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditLive6" />
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="labelLiveContent">
+             <property name="text">
+              <string>Live Content:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSpinBox" name="spinBoxLiveContent">
+             <property name="maximum">
+              <number>2147483647</number>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -175,7 +279,7 @@
         </item>
        </layout>
       </widget>
-      
+
       <!-- Party Table Tab -->
       <widget class="QWidget" name="tabPartyTable">
        <attribute name="title">
@@ -244,6 +348,218 @@
              </property>
             </widget>
            </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="labelTimePlayedPT">
+             <property name="text">
+              <string>Time Played (PT):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QSpinBox" name="spinBoxTimePlayedPT">
+             <property name="maximum">
+              <number>2147483647</number>
+             </property>
+             <property name="minimum">
+              <number>-1</number>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="labelCheatUsedPT">
+             <property name="text">
+              <string>Cheat Used (PT):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QCheckBox" name="checkBoxCheatUsedPT" />
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="labelControlledNPC">
+             <property name="text">
+              <string>Controlled NPC:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QSpinBox" name="spinBoxControlledNPC">
+             <property name="maximum">
+              <number>2147483647</number>
+             </property>
+             <property name="minimum">
+              <number>-1</number>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QLabel" name="labelAIState">
+             <property name="text">
+              <string>AI State:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="1">
+            <widget class="QSpinBox" name="spinBoxAIState">
+             <property name="maximum">
+              <number>2147483647</number>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="0">
+            <widget class="QLabel" name="labelFollowState">
+             <property name="text">
+              <string>Follow State:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="1">
+            <widget class="QSpinBox" name="spinBoxFollowState">
+             <property name="maximum">
+              <number>2147483647</number>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="0">
+            <widget class="QLabel" name="labelSoloMode">
+             <property name="text">
+              <string>Solo Mode:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="1">
+            <widget class="QCheckBox" name="checkBoxSoloMode" />
+           </item>
+           <item row="10" column="0">
+            <widget class="QLabel" name="labelLastGUIPanel">
+             <property name="text">
+              <string>Last GUI Panel:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="10" column="1">
+            <widget class="QSpinBox" name="spinBoxLastGUIPanel">
+             <property name="maximum">
+              <number>2147483647</number>
+             </property>
+            </widget>
+           </item>
+           <item row="11" column="0">
+            <widget class="QLabel" name="labelJournalSortOrder">
+             <property name="text">
+              <string>Journal Sort Order:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="11" column="1">
+            <widget class="QSpinBox" name="spinBoxJournalSortOrder">
+             <property name="maximum">
+              <number>2147483647</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupAvailableNPCs">
+          <property name="title">
+           <string>Available NPCs</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayoutAvailableNPCs">
+           <item>
+            <widget class="QTableWidget" name="tableWidgetAvailableNPCs">
+             <property name="columnCount">
+              <number>3</number>
+             </property>
+             <column>
+              <property name="text">
+               <string>Index</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Available</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Selectable</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupInfluence">
+          <property name="title">
+           <string>Influence (K2)</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayoutInfluence">
+           <item>
+            <widget class="QTableWidget" name="tableWidgetInfluence">
+             <property name="columnCount">
+              <number>2</number>
+             </property>
+             <column>
+              <property name="text">
+               <string>NPC Index</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Value</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupPazaak">
+          <property name="title">
+           <string>Pazaak (summary)</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayoutPazaak">
+           <item>
+            <widget class="QTextEdit" name="textEditPazaakCards" readonly="true" />
+           </item>
+           <item>
+            <widget class="QTextEdit" name="textEditPazaakDecks" readonly="true" />
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupUIMessages">
+          <property name="title">
+           <string>UI Messages (summary)</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayoutUIMessages">
+           <item>
+            <widget class="QTextEdit" name="textEditFBMsgList" readonly="true" />
+           </item>
+           <item>
+            <widget class="QTextEdit" name="textEditDlgMsgList" readonly="true" />
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditTutWndShown" readonly="true" />
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupCostMultipliers">
+          <property name="title">
+           <string>Cost Multipliers (summary)</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayoutCostMultipliers">
+           <item>
+            <widget class="QTextEdit" name="textEditCostMultipliers" readonly="true" />
+           </item>
           </layout>
          </widget>
         </item>
@@ -265,7 +581,7 @@
         </item>
        </layout>
       </widget>
-      
+
       <!-- Global Variables Tab -->
       <widget class="QWidget" name="tabGlobalVars">
        <attribute name="title">
@@ -389,7 +705,7 @@
         </item>
        </layout>
       </widget>
-      
+
       <!-- Characters Tab -->
       <widget class="QWidget" name="tabCharacters">
        <attribute name="title">
@@ -418,7 +734,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="lineEditCharName"/>
+             <widget class="QLineEdit" name="lineEditCharName" />
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="labelCharHP">
@@ -498,6 +814,220 @@
               </property>
              </widget>
             </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="labelCharTag">
+              <property name="text">
+               <string>Tag:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLineEdit" name="lineEditCharTag" />
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="labelCharResRef">
+              <property name="text">
+               <string>ResRef:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QLineEdit" name="lineEditCharResRef" />
+            </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="labelCharMin1HP">
+              <property name="text">
+               <string>Min 1 HP:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QCheckBox" name="checkBoxCharMin1HP" />
+            </item>
+            <item row="7" column="0">
+             <widget class="QLabel" name="labelCharGoodEvil">
+              <property name="text">
+               <string>Good/Evil:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QSpinBox" name="spinBoxCharGoodEvil">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QLabel" name="labelCharSTR">
+              <property name="text">
+               <string>STR:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="1">
+             <widget class="QSpinBox" name="spinBoxCharSTR">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QLabel" name="labelCharDEX">
+              <property name="text">
+               <string>DEX:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="1">
+             <widget class="QSpinBox" name="spinBoxCharDEX">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="0">
+             <widget class="QLabel" name="labelCharCON">
+              <property name="text">
+               <string>CON:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="1">
+             <widget class="QSpinBox" name="spinBoxCharCON">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="11" column="0">
+             <widget class="QLabel" name="labelCharINT">
+              <property name="text">
+               <string>INT:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="11" column="1">
+             <widget class="QSpinBox" name="spinBoxCharINT">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="12" column="0">
+             <widget class="QLabel" name="labelCharWIS">
+              <property name="text">
+               <string>WIS:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="12" column="1">
+             <widget class="QSpinBox" name="spinBoxCharWIS">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="13" column="0">
+             <widget class="QLabel" name="labelCharCHA">
+              <property name="text">
+               <string>CHA:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="13" column="1">
+             <widget class="QSpinBox" name="spinBoxCharCHA">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="14" column="0">
+             <widget class="QLabel" name="labelCharPortraitId">
+              <property name="text">
+               <string>Portrait ID:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="14" column="1">
+             <widget class="QSpinBox" name="spinBoxCharPortraitId">
+              <property name="maximum">
+               <number>2147483647</number>
+              </property>
+             </widget>
+            </item>
+            <item row="15" column="0">
+             <widget class="QLabel" name="labelCharAppearanceType">
+              <property name="text">
+               <string>Appearance Type:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="15" column="1">
+             <widget class="QSpinBox" name="spinBoxCharAppearanceType">
+              <property name="maximum">
+               <number>2147483647</number>
+              </property>
+             </widget>
+            </item>
+            <item row="16" column="0">
+             <widget class="QLabel" name="labelCharGender">
+              <property name="text">
+               <string>Gender:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="16" column="1">
+             <widget class="QComboBox" name="comboBoxCharGender" />
+            </item>
+            <item row="17" column="0">
+             <widget class="QLabel" name="labelCharSoundset">
+              <property name="text">
+               <string>Soundset:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="17" column="1">
+             <widget class="QSpinBox" name="spinBoxCharSoundset">
+              <property name="maximum">
+               <number>2147483647</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tabCharClasses">
+           <attribute name="title">
+            <string>Classes</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayoutCharClasses">
+            <item>
+             <widget class="QTableWidget" name="tableWidgetCharClasses">
+              <property name="columnCount">
+               <number>2</number>
+              </property>
+              <column>
+               <property name="text">
+                <string>Class</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Level</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tabCharFeats">
+           <attribute name="title">
+            <string>Feats</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayoutCharFeats">
+            <item>
+             <widget class="QListWidget" name="listWidgetCharFeats" />
+            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="tabCharEquipment">
@@ -506,7 +1036,7 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayoutCharEquipment">
             <item>
-             <widget class="QListWidget" name="listWidgetEquipment"/>
+             <widget class="QListWidget" name="listWidgetEquipment" />
             </item>
            </layout>
           </widget>
@@ -555,7 +1085,7 @@
         </item>
        </layout>
       </widget>
-      
+
       <!-- Inventory Tab -->
       <widget class="QWidget" name="tabInventory">
        <attribute name="title">
@@ -586,7 +1116,7 @@
         </item>
        </layout>
       </widget>
-      
+
       <!-- Journal Tab -->
       <widget class="QWidget" name="tabJournal">
        <attribute name="title">
@@ -622,12 +1152,134 @@
         </item>
        </layout>
       </widget>
-      
+
+      <!-- Cached Modules Tab -->
+      <widget class="QWidget" name="tabCachedModules">
+       <attribute name="title">
+        <string>Cached Modules</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayoutCachedModules">
+        <item>
+         <widget class="QPushButton" name="pushButtonOpenModuleResource">
+          <property name="text">
+           <string>Open Selected Resource</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTreeView" name="treeViewCachedModules" />
+        </item>
+       </layout>
+      </widget>
+
+      <!-- Reputation Tab -->
+      <widget class="QWidget" name="tabReputation">
+       <attribute name="title">
+        <string>Reputation</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayoutReputation">
+        <item>
+         <widget class="QTableWidget" name="tableWidgetReputation">
+          <property name="columnCount">
+           <number>2</number>
+          </property>
+          <column>
+           <property name="text">
+            <string>Faction</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Value</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+
+      <!-- Advanced Tab -->
+      <widget class="QWidget" name="tabAdvanced">
+       <attribute name="title">
+        <string>Advanced / Raw</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayoutAdvanced">
+        <item>
+         <widget class="QLabel" name="labelAdvancedSaveInfo">
+          <property name="text">
+           <string>SaveInfo additional fields:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="tableWidgetAdvancedSaveInfo">
+          <property name="columnCount">
+           <number>3</number>
+          </property>
+          <column>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Type</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Value</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelAdvancedPartyTable">
+          <property name="text">
+           <string>PartyTable additional fields:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="tableWidgetAdvancedPartyTable">
+          <property name="columnCount">
+           <number>3</number>
+          </property>
+          <column>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Type</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Value</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelAdvancedResources">
+          <property name="text">
+           <string>Other resources (double-click to open):</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListWidget" name="listWidgetAdvancedResources" />
+        </item>
+       </layout>
+      </widget>
+
      </widget>
     </item>
    </layout>
   </widget>
-  
+
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -641,28 +1293,28 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSaveAs"/>
-    <addaction name="separator"/>
-    <addaction name="actionRevert"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
+    <addaction name="actionNew" />
+    <addaction name="actionOpen" />
+    <addaction name="actionSave" />
+    <addaction name="actionSaveAs" />
+    <addaction name="separator" />
+    <addaction name="actionRevert" />
+    <addaction name="separator" />
+    <addaction name="actionExit" />
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
      <string>&amp;Tools</string>
     </property>
-    <addaction name="actionFlushEventQueue"/>
-    <addaction name="actionRebuildCachedModules"/>
+    <addaction name="actionFlushEventQueue" />
+    <addaction name="actionRebuildCachedModules" />
    </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuTools"/>
+   <addaction name="menuFile" />
+   <addaction name="menuTools" />
   </widget>
-  
-  <widget class="QStatusBar" name="statusBar"/>
-  
+
+  <widget class="QStatusBar" name="statusBar" />
+
   <action name="actionNew">
    <property name="text">
     <string>&amp;New</string>
@@ -703,9 +1355,8 @@
     <string>Rebuild Cached Modules</string>
    </property>
   </action>
-  
- </widget>
- <resources/>
- <connections/>
-</ui>
 
+ </widget>
+ <resources />
+ <connections />
+</ui>

@@ -401,8 +401,6 @@ class SaveGameEditor(Editor):
         
         # Timestamp - format as readable date if available
         if self._save_info.timestamp is not None:
-            # Windows FILETIME: 100-nanosecond intervals since Jan 1, 1601
-            # Convert to seconds since epoch
             try:
                 from datetime import datetime, timezone
                 win_epoch = datetime(1601, 1, 1, tzinfo=timezone.utc)
