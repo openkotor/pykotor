@@ -196,6 +196,9 @@ _TRANSLATIONS: dict[ToolsetLanguage, dict[str, str]] = {
         "Open File": "Open File",
         # Status messages
         "Loading...": "Loading...",
+        "Preparing resources...": "Preparing resources...",
+        "Populating views...": "Populating views...",
+        "Loading dialog views...": "Loading dialog views...",
         "Saving...": "Saving...",
         "Processing...": "Processing...",
         "Completed": "Completed",
@@ -791,6 +794,9 @@ _TRANSLATIONS: dict[ToolsetLanguage, dict[str, str]] = {
         "Open File": "Ouvrir un fichier",
         # Status messages
         "Loading...": "Chargement...",
+        "Preparing resources...": "Préparation des ressources...",
+        "Populating views...": "Remplissage des vues...",
+        "Loading dialog views...": "Chargement des vues de dialogue...",
         "Saving...": "Enregistrement...",
         "Processing...": "Traitement...",
         "Completed": "Terminé",
@@ -1386,6 +1392,9 @@ _TRANSLATIONS: dict[ToolsetLanguage, dict[str, str]] = {
         "Open File": "Datei öffnen",
         # Status messages
         "Loading...": "Lädt...",
+        "Preparing resources...": "Ressourcen werden vorbereitet...",
+        "Populating views...": "Ansichten werden gefüllt...",
+        "Loading dialog views...": "Dialogansichten werden geladen...",
         "Saving...": "Speichert...",
         "Processing...": "Verarbeitet...",
         "Completed": "Abgeschlossen",
@@ -1981,6 +1990,9 @@ _TRANSLATIONS: dict[ToolsetLanguage, dict[str, str]] = {
         "Open File": "Apri file",
         # Status messages
         "Loading...": "Caricamento...",
+        "Preparing resources...": "Preparazione risorse...",
+        "Populating views...": "Popolamento viste...",
+        "Loading dialog views...": "Caricamento viste dialogo...",
         "Saving...": "Salvataggio...",
         "Processing...": "Elaborazione...",
         "Completed": "Completato",
@@ -2576,6 +2588,9 @@ _TRANSLATIONS: dict[ToolsetLanguage, dict[str, str]] = {
         "Open File": "Abrir archivo",
         # Status messages
         "Loading...": "Cargando...",
+        "Preparing resources...": "Preparando recursos...",
+        "Populating views...": "Rellenando vistas...",
+        "Loading dialog views...": "Cargando vistas de diálogo...",
         "Saving...": "Guardando...",
         "Processing...": "Procesando...",
         "Completed": "Completado",
@@ -3171,6 +3186,9 @@ _TRANSLATIONS: dict[ToolsetLanguage, dict[str, str]] = {
         "Open File": "Otwórz plik",
         # Status messages
         "Loading...": "Ładowanie...",
+        "Preparing resources...": "Przygotowywanie zasobów...",
+        "Populating views...": "Wypełnianie widoków...",
+        "Loading dialog views...": "Ładowanie widoków dialogu...",
         "Saving...": "Zapisywanie...",
         "Processing...": "Przetwarzanie...",
         "Completed": "Zakończono",
@@ -3761,6 +3779,9 @@ _TRANSLATIONS: dict[ToolsetLanguage, dict[str, str]] = {
         "Open File": "Открыть файл",
         # Status messages
         "Loading...": "Загрузка...",
+        "Preparing resources...": "Подготовка ресурсов...",
+        "Populating views...": "Заполнение представлений...",
+        "Loading dialog views...": "Загрузка представлений диалога...",
         "Saving...": "Сохранение...",
         "Processing...": "Обработка...",
         "Completed": "Завершено",
