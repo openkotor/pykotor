@@ -34,7 +34,7 @@ dependencies = [
   "numpy>=1.19.0; python_version>=\"3.9\"",
   "Pillow>=9.5; python_implementation == 'CPython'",
   "Pillow>10,<11.1.0; python_implementation == 'PyPy'",
-  "pykotor[encodings,extra,font,gl,updater]>=2.2.0",
+  "pykotor[encodings,extra,font,gl,updater]>=2.2.1",
   "PyQt5-Qt5>=5.15; python_version==\"3.8\"",
   "PyQt5-sip>=12.10; python_version==\"3.8\"",
   "PyQt5>=5.15; python_version==\"3.8\"",
@@ -145,7 +145,7 @@ keywords = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pykotor = { version = "^2.2.0", extras = ["encodings", "extra", "font", "gl", "updater"] }
+pykotor = { version = "^2.2.1", extras = ["encodings", "extra", "font", "gl", "updater"] }
 certifi = ">=2021.10.8"
 comtypes = { version = ">=1.4.0", markers = "sys_platform == 'win32'" }
 idna = ">=3.11"
