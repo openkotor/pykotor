@@ -136,7 +136,7 @@ class UTCEditor(Editor):
         assert file_menu is not None, f"`file_menu = context_menu.addMenu('File...')` {file_menu.__class__.__name__}: {file_menu}"
         locations: dict[str, list[LocationResult]] = self._installation.locations(
             ([portrait], [ResourceType.TGA, ResourceType.TPC]),
-            order=[SearchLocation.OVERRIDE, SearchLocation.TEXTURES_GUI, SearchLocation.TEXTURES_TPA, SearchLocation.TEXTURES_TPB, SearchLocation.TEXTURES_TPC],
+            order=[SearchLocation.OVERRIDE, SearchLocation.TEXTURES_GUI, SearchLocation.TEXTURES_TPA, SearchLocation.TEXTURES_TPB, SearchLocation.TEXTURES_TPC, SearchLocation.CHITIN],
         )
         flat_locations: list[LocationResult] = [item for sublist in locations.values() for item in sublist]
         if flat_locations:
@@ -386,6 +386,12 @@ class UTCEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
+        """Load UTC from bytes via read_utc/construct_utc.
+
+        Defaults when fields are missing follow engine: CSWSCreature::LoadCreature
+        @ (K1: 0x00500350, TSL: 0x0068ccb0); ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350).
+        See construct_utc in generics.utc for per-field defaults.
+        """
         super().load(filepath, resref, restype, data)
         self._load_utc(read_utc(data))
         self.update_item_count()
@@ -400,15 +406,10 @@ class UTCEditor(Editor):
         ----
             utc (UTC): UTC object to load data from
 
-        Loads UTC data:
-            - Sets UTC object reference
-            - Sets preview renderer creature
-            - Loads basic data like name, tags, resref
-            - Loads advanced data like flags, stats
-            - Loads classes and levels
-            - Loads feats and powers
-            - Loads scripts
-            - Loads comments
+        Loads UTC data (defaults from construct_utc; K1 LoadCreature 0x00500350, ReadStatsFromGff 0x00560e60; TSL LoadCreature 0x0068ccb0):
+            - Sets UTC object reference and preview renderer creature
+            - Loads basic data (name, tag, resref, appearance, soundset, conversation, portrait)
+            - Loads advanced data (flags, stats, classes, feats, powers, scripts, comments)
         """
         self._utc = utc
         self.ui.previewRenderer.set_creature(utc)
@@ -594,18 +595,11 @@ class UTCEditor(Editor):
             self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(self.ui.commentsTab), "Comments")  # pyright: ignore[reportArgumentType]
 
     def build(self) -> tuple[bytes | bytearray, bytes]:
-        """Builds a UTC from UI data.
+        """Serialize UTC via bytes_utc/dismantle_utc.
 
-        Returns:
-        -------
-            tuple[bytes, bytes]: The GFF data and log.
-
-        Processing Logic:
-        ----------------
-            - Populate UTC object from UI fields
-            - Add class and feat data from lists
-            - Convert UTC to GFF bytes
-            - Return GFF data and empty log.
+        Output matches engine expectations; see dismantle_utc in generics.utc and
+        LoadCreature @ (K1: 0x00500350, TSL: 0x0068ccb0), ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350).
+        Returns GFF bytes and log.
         """
         utc: UTC = deepcopy(self._utc)
 
