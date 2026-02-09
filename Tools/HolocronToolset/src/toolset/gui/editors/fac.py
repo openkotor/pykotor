@@ -51,9 +51,10 @@ class FACEditor(Editor):
             self.ui.factionTree.setSelectionMode(QTreeView.SelectionMode.SingleSelection)
             self.ui.reputationTree.setModel(self._reputation_model)
             self.ui.reputationTree.setSelectionMode(QTreeView.SelectionMode.SingleSelection)
-            
+
             # Setup event filter to prevent scroll wheel interaction with controls
             from toolset.gui.common.filters import NoScrollEventFilter
+
             self._no_scroll_filter = NoScrollEventFilter(self)
             self._no_scroll_filter.setup_filter(parent_widget=self)
         except ImportError:
@@ -96,6 +97,7 @@ class FACEditor(Editor):
 
             # Setup event filter to prevent scroll wheel interaction with controls
             from toolset.gui.common.filters import NoScrollEventFilter
+
             self._no_scroll_filter = NoScrollEventFilter(self)
             self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -137,6 +139,10 @@ class FACEditor(Editor):
     ):
         """Load faction data from a file.
 
+        FAC GFF defaults (REVA): FactionName "" (K1 0x0052b5c0, TSL Aspyr 0x007ef390, TSL Legacy 0x005acf30);
+        FactionGlobal 0 when present, 1 when field missing (all three); FactionParentID 0 (engine) / we use 0xFFFFFFFF for no parent;
+        FactionID1/2/Rep 0; FactionRep clamped 0-100. Lists FactionList/RepList omit → empty.
+
         Args:
         ----
             filepath: Path or name of the file to load from
@@ -165,7 +171,11 @@ class FACEditor(Editor):
             self._reputation_model.appendRow(rep_item)
 
     def build(self) -> tuple[bytes, bytes]:
-        """Build the FAC data for saving."""
+        """Build the FAC data for saving.
+
+        Write path matches engine: FactionList then RepList (K1 SaveModuleFAC 0x004c3960, SaveFactions 0x0052b790,
+        SaveReputations 0x0052b830; TSL Aspyr 0x007ef910, 0x007ef9d0; TSL Legacy 0x005ad100, 0x005ad1a0).
+        """
         data = bytearray()
         write_gff(dismantle_fac(self._fac), data)
         return data, b""
@@ -342,4 +352,3 @@ class FACEditor(Editor):
         reputation: FACReputation = rep_item.data()
         self._reputation_model.removeRow(rep_item.row())
         self._fac.reputations.remove(reputation)
-

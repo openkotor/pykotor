@@ -45,6 +45,7 @@ class UTWEditor(Editor):
         super().__init__(parent, "Waypoint Editor", "waypoint", supported, supported, installation)
 
         from toolset.uic.qtpy.editors.utw import Ui_MainWindow
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self._setup_menus()
@@ -52,9 +53,10 @@ class UTWEditor(Editor):
         self._setup_signals()
         if installation is not None:  # will only be none in the unittests
             self._setup_installation(installation)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -96,20 +98,24 @@ class UTWEditor(Editor):
             - Load advanced data like map note flags and text into checkboxes and line edit
             - Load comment text into plain text edit
             - No return, simply loads UI elements from UTW object.
+
+        Engine defaults (REVA): K1 LoadWaypoint 0x005c7f30 — Tag "", LocalizedName empty,
+        HasMapNote 0, MapNoteEnabled 0, MapNote empty; Appearance/LinkedTo/TemplateResRef/
+        Description/PaletteID/Comment toolset-only, omit OK.
         """
         self._utw: UTW = utw
 
-        # Basic
+        # Basic (Tag "", LocalizedName empty, TemplateResRef blank per K1 0x005c7f30)
         self.ui.nameEdit.set_locstring(utw.name)
         self.ui.tagEdit.setText(utw.tag)
         self.ui.resrefEdit.setText(str(utw.resref))
 
-        # Advanced
+        # Advanced (HasMapNote 0, MapNoteEnabled 0, MapNote empty per K1 LoadWaypoint)
         self.ui.isNoteCheckbox.setChecked(utw.has_map_note)
         self.ui.noteEnabledCheckbox.setChecked(utw.map_note_enabled)
         self._load_locstring(self.ui.noteEdit, utw.map_note)  # pyright: ignore[reportArgumentType]
 
-        # Comments
+        # Comments (toolset-only; default "")
         self.ui.commentsEdit.setPlainText(utw.comment)
 
     def build(self) -> tuple[bytes, bytes]:
@@ -129,6 +135,10 @@ class UTWEditor(Editor):
             - Populate UTW object from UI control values
             - Serialize UTW to bytes using GFF format
             - Return bytes and empty bytes
+
+        GFF field defaults (REVA): Tag "", LocalizedName empty, HasMapNote/MapNoteEnabled 0,
+        MapNote empty; Appearance/LinkedTo/TemplateResRef/Description/PaletteID/Comment
+        toolset-only. K1 LoadWaypoint 0x005c7f30.
         """
         utw: UTW = deepcopy(self._utw)
 
