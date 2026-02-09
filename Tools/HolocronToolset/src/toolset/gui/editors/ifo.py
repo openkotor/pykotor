@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from qtpy.QtWidgets import QComboBox, QTableWidgetItem
+from qtpy.QtWidgets import QComboBox, QLineEdit
 
 from pykotor.common.misc import ResRef
+from pykotor.common.language import LocalizedString
 from pykotor.resource.formats.gff import write_gff
 from pykotor.resource.generics.ifo import IFO, dismantle_ifo, read_ifo
 from pykotor.resource.type import ResourceType
@@ -102,7 +103,7 @@ class IFOEditor(Editor):
         }
 
         for ui_name, ifo_attr in self._script_field_mapping.items():
-            widget = getattr(self.ui, ui_name)
+            widget: QComboBox | QLineEdit = getattr(self.ui, ui_name)
             if hasattr(widget, "currentTextChanged"):
                 widget.currentTextChanged.connect(self.on_value_changed)
             elif hasattr(widget, "textChanged"):
@@ -165,7 +166,10 @@ class IFOEditor(Editor):
             "startMovieEdit",
         ]
 
-        script_fields: list[QComboBox | None] = [getattr(self.ui, name, None) for name in script_field_names]
+        script_fields: list[QComboBox | None] = [
+            getattr(self.ui, name, None)
+            for name in script_field_names
+        ]
 
         for field in script_fields:
             if field is None:
@@ -184,7 +188,7 @@ class IFOEditor(Editor):
                     else f"{tooltip}\n\n{tr('Right-click to find references to this script in the installation.')}",
                 )
             # Set maxLength for FilterComboBox script fields (ResRefs are max 16 characters)
-            line_edit = field.lineEdit() if hasattr(field, "lineEdit") else None
+            line_edit: QLineEdit | None = field.lineEdit() if hasattr(field, "lineEdit") else None
             if line_edit is not None:
                 line_edit.setMaxLength(16)
 
@@ -211,7 +215,7 @@ class IFOEditor(Editor):
             return
 
         # Try to generate tag from module name or resref
-        locstring = self.ui.modNameEdit.locstring()
+        locstring: LocalizedString = self.ui.modNameEdit.locstring()
         if locstring and locstring.stringref != -1:
             # Try to get English text
             from pykotor.common.language import Language, Gender
@@ -250,13 +254,13 @@ class IFOEditor(Editor):
         restype: ResourceType,
         data: bytes | bytearray,
     ) -> None:
-        """Load an IFO file. Field defaults when missing: see construct_ifo (REVA: K1 LoadModuleStart @ 0x004c9050, TSL @ 0x0072aaa0)."""
+        """Load IFO from bytes. Defaults when field missing: Mod_ID empty, Mod_VO_ID/Mod_Tag "", Mod_Name/Mod_Entry_Area blank, Mod_Entry_X/Y/Z 0.0, Mod_On* blank, Expansion_Pack 0, Mod_Area_list optional. REVA: K1 LoadModuleStart @ 0x004c9050 (MainLoop @ 0x004babb0), TSL LoadModuleStart @ 0x0072aaa0 (MainLoop @ 0x007b6bb0)."""
         super().load(filepath, resref, restype, data)
         self.ifo = read_ifo(data)
         self.update_ui_from_ifo()
 
     def build(self) -> tuple[bytes, bytes]:
-        """Build IFO file data. Write defaults match engine read (REVA: K1 0x004c9050, TSL 0x0072aaa0)."""
+        """Build IFO bytes from editor state. Write values match engine read. REVA: K1 LoadModuleStart @ 0x004c9050, TSL @ 0x0072aaa0."""
         if self.ifo is None:
             return b"", b""
 
@@ -321,9 +325,9 @@ class IFOEditor(Editor):
         for ui_name, ifo_attr in self._script_field_mapping.items():
             widget = getattr(self.ui, ui_name)
             script_value = str(getattr(self.ifo, ifo_attr))
-            if hasattr(widget, "setCurrentText"):
+            if isinstance(widget, QComboBox):
                 widget.setCurrentText(script_value)
-            elif hasattr(widget, "setText"):
+            elif isinstance(widget, (QLineEdit,)):
                 widget.setText(script_value)
 
         # Advanced settings
