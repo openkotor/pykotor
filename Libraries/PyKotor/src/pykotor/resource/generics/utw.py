@@ -31,12 +31,12 @@ class UTW:
             - 0x005c83b0 - CSWSWaypoint::LoadFromTemplate
                 - Loads waypoint template from ResRef
                 - Calls LoadWaypoint after loading GFF
-        
+
         KotOR II / TSL (swkotor2.exe):
             - Functionally equivalent UTW parsing logic
             - Same GFF field structure and parsing behavior
             - String references at different addresses due to binary layout differences
-        
+
         GFF Field Structure (from LoadWaypoint analysis):
             - Root struct fields:
                 - "Tag" (CExoString) - Waypoint tag identifier
@@ -50,7 +50,7 @@ class UTW:
                 - "HasMapNote" (BYTE) - Whether waypoint has a map note
                 - "MapNoteEnabled" (BYTE) - Whether map note is enabled (only read if HasMapNote is true)
                 - "MapNote" (CExoLocString) - Localized map note text (only read if HasMapNote is true)
-        
+
         Note: UTW files are GFF format files with specific structure definitions (GFFContent.UTW)
 
     Attributes:
@@ -113,15 +113,28 @@ class UTW:
 def construct_utw(
     gff: GFF,
 ) -> UTW:
+    """Constructs a UTW object from a GFF structure.
+
+    Defaults when field missing (REVA): K1 CSWSWaypoint::LoadWaypoint @ 0x005c7f30;
+    TSL same semantics (TODO: find LoadWaypoint in swkotor2.exe; open PyKotorGhidraProject.gpr in REVA).
+    Tag "", TemplateResRef "", LocalizedName empty; HasMapNote/MapNoteEnabled 0, MapNote empty. Position/orient from GIT. Optional when missing.
+
+    Ten reference functions (5 K1, 5 TSL): K1 (1) LoadWaypoint @ 0x005c7f30 (root UTW parser),
+    (2) LoadWaypoints @ 0x00505360 (area waypoints), (3) LoadFromTemplate @ 0x005c83b0,
+    (4) CResGFF::ReadField* (Tag, LocalizedName, HasMapNote, MapNote, MapNoteEnabled),
+    (5) position/orient from GIT (not in UTW root). TSL (1)-(5) same semantics; addresses TODO when REVA available.
+    """
     utw = UTW()
 
     root: GFFStruct = gff.root
+    # Identity/toolset: Appearance, LinkedTo, TemplateResRef, Tag, LocalizedName, Description. K1 LoadWaypoint 0x005c7f30 (Tag/LocalizedName); Appearance/LinkedTo/Description toolset-only. TSL same (addresses TODO). Optional.
     utw.appearance_id = root.acquire("Appearance", 0)
     utw.linked_to = root.acquire("LinkedTo", "")
     utw.resref = root.acquire("TemplateResRef", ResRef.from_blank())
     utw.tag = root.acquire("Tag", "")
     utw.name = root.acquire("LocalizedName", LocalizedString.from_invalid())
     utw.description = root.acquire("Description", LocalizedString.from_invalid())
+    # Map note: HasMapNote 0, MapNote empty, MapNoteEnabled 0. K1 LoadWaypoint 0x005c7f30; TSL same. Optional.
     utw.has_map_note = bool(root.acquire("HasMapNote", 0))
     utw.map_note = root.acquire("MapNote", LocalizedString.from_invalid())
     utw.map_note_enabled = bool(root.acquire("MapNoteEnabled", 0))
@@ -137,19 +150,30 @@ def dismantle_utw(
     *,
     use_deprecated: bool = True,  # noqa: ARG001
 ) -> GFF:
+    """Dismantles a UTW object into a GFF structure. Write same defaults as engine read. K1 LoadWaypoint 0x005c7f30; TSL same (addresses TODO)."""
     gff = GFF(GFFContent.UTW)
 
     root: GFFStruct = gff.root
     root.set_uint8("Appearance", utw.appearance_id)
+    # LinkedTo: CExoString; toolset-only. Default "". Omit OK for engine.
     root.set_string("LinkedTo", utw.linked_to)
+    # TemplateResRef: CResRef; template ref. Default blank. Omit OK.
     root.set_resref("TemplateResRef", utw.resref)
+    # Tag: CExoString; engine default "". K1 LoadWaypoint 0x005c7f30 ReadFieldCExoString default "".
     root.set_string("Tag", utw.tag)
+    # LocalizedName: CExoLocString; engine default empty. K1 LoadWaypoint 0x005c7f30 ReadFieldCExoLocString.
     root.set_locstring("LocalizedName", utw.name)
+    # Description: CExoLocString; toolset-only. Default empty. Omit OK.
     root.set_locstring("Description", utw.description)
+    # HasMapNote: BYTE; engine default 0. K1 LoadWaypoint 0x005c7f30 ReadFieldBYTE(..., 0).
     root.set_uint8("HasMapNote", utw.has_map_note)
+    # MapNote: CExoLocString; read only when HasMapNote. Default empty. K1 LoadWaypoint 0x005c7f30.
     root.set_locstring("MapNote", utw.map_note)
+    # MapNoteEnabled: BYTE; engine default 0. K1 LoadWaypoint 0x005c7f30 ReadFieldBYTE(..., 0).
     root.set_uint8("MapNoteEnabled", utw.map_note_enabled)
+    # PaletteID: BYTE; toolset-only. Default 0. Omit OK.
     root.set_uint8("PaletteID", utw.palette_id)
+    # Comment: CExoString; toolset-only. Default "". Omit OK.
     root.set_string("Comment", utw.comment)
 
     return gff
