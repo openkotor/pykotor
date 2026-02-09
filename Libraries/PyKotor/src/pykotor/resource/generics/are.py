@@ -194,8 +194,8 @@ class ARE(GenericBase):
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:246-250
         # Fog rendering properties
         self.fog_color: Color = Color.BLACK
-        self.fog_near: float = 0
-        self.fog_far: float = 0
+        self.fog_near: float = 10000.0  # Engine default when SunFogNear missing (K1/TSL LoadAreaHeader)
+        self.fog_far: float = 10000.0  # Engine default when SunFogFar missing (K1/TSL LoadAreaHeader)
         self.fog_enabled: bool = False
 
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:22,25,28,31
@@ -430,24 +430,94 @@ def construct_are(
     are = ARE()
 
     root = gff.root
+    # K1 LoadAreaHeader 0x00508c50: MapZoom 0, ID/Creator_ID/Version 0, AlphaTest 0.2, etc. Omit OK.
     map_struct = root.acquire("Map", GFFStruct())
     are.map_original_struct_id = map_struct.struct_id
 
-    # NorthAxis: default 0 when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldINT NorthAxis 0; Map struct).
+    # NorthAxis (INT32). Optional when Map struct present. Missing -> engine uses 0.
+    # K1 swkotor.exe LoadAreaHeader @ 0x00508c50: ReadFieldINT NorthAxis default 0 (Map struct; line ~499).
+    # K1 LoadAreaHeader: value passed to CSWSAreaMap::Initialize as NorthAxis param (line ~581).
+    # K1 LoadAreaHeader: fallback when Map missing uses 0 (line 570 pcVar22=0).
+    # K1 LoadArea @ 0x0050e190: sole caller of LoadAreaHeader; single ARE reader.
+    # K1 LoadAreaHeader: GetStructFromStruct(..., "Map") then ReadFieldINT; field optional.
+    # TSL swkotor2.exe LoadAreaHeader @ 0x00718a20: ReadFieldINT NorthAxis (line 417 local_90).
+    # TSL LoadAreaHeader: passed to FUN_00777ed0 when map valid (line 455).
+    # TSL LoadAreaHeader: when Map missing FUN_00777ed0(0,0x58,0,...); NorthAxis not used.
+    # TSL LoadArea @ 0x00718890: calls LoadAreaHeader.
+    # TSL LoadAreaHeader: FUN_00624ac0 gets Map struct; ReadFieldINT NorthAxis no explicit default in decomp.
+    # Legacy k2_win_gog_legacypc_swkotor2.exe FUN_004e3ff0 @ 0x004e50fc: ReadFieldINT NorthAxis default 0 (Map struct).
+    # Legacy: same Map path GetStructFromStruct "Map"; NorthAxis default 0.
+    # Legacy: passed to FUN_00573bb0 (area map init) as param; fallback iVar17=0.
+    # Legacy: ARE GFF layout identical to Aspyr TSL.
+    # Legacy: single ARE header loader; field optional when Map present.
     are.north_axis = ARENorthAxis(map_struct.acquire("NorthAxis", 0))
-    # MapZoom: default 1 when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldINT MapZoom 1; Map struct).
+    # MapZoom (INT32). Optional when Map struct present. Missing -> engine uses 1.
+    # K1 swkotor.exe LoadAreaHeader @ 0x00508c50: ReadFieldINT MapZoom default 1 (Map struct; line 501 local_b0).
+    # K1 LoadAreaHeader: uVar28=local_b0 passed to CSWSAreaMap::Initialize (line 582).
+    # K1 LoadAreaHeader: fallback when Map missing sets uVar28=1 (line 578).
+    # K1 LoadArea @ 0x0050e190: calls LoadAreaHeader; only reader of ARE Map.
+    # K1 LoadAreaHeader: Map optional; when Map present MapZoom default 1 if field missing.
+    # TSL swkotor2.exe LoadAreaHeader @ 0x00718a20: ReadFieldINT MapZoom (line 418 local_98).
+    # TSL LoadAreaHeader: local_98 passed to FUN_00777ed0 as 11th param when map valid.
+    # TSL LoadAreaHeader: when Map missing map disabled; MapZoom not read.
+    # TSL LoadArea: calls LoadAreaHeader (0x0071889b).
+    # TSL LoadAreaHeader: FUN_00624ac0 returns Map struct; ReadFieldINT MapZoom (default implied 0 in decomp; K1 uses 1).
+    # Legacy k2_win_gog_legacypc_swkotor2.exe FUN_004e3ff0: FUN_00412db0(..., "MapZoom", &local_f8, 1) default 1 (0x004e50fc).
+    # Legacy: local_b0 passed to FUN_00573bb0 (area map init) as last param (line LAB_004e5390).
+    # Legacy: fallback when Map missing sets iVar22=1 (line before LAB_004e5390).
+    # Legacy: ARE GFF layout same as Aspyr; MapZoom default 1 when missing.
+    # Legacy: single ARE header loader; field optional.
     are.map_zoom = map_struct.acquire("MapZoom", 1)
-    # MapResX: default 0 when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldINT MapResX 0; Map struct).
+    # MapResX (INT32). Optional when Map struct present. Missing -> engine uses 0; 0 => map disabled.
+    # K1 swkotor.exe LoadAreaHeader @ 0x00508c50: ReadFieldINT MapResX default 0 (Map struct; line 496).
+    # K1 LoadAreaHeader: if MapResX==0 then skip map init and use fallback (line 497).
+    # K1 LoadAreaHeader: fallback path sets iVar21=0, map disabled (lines 567-578).
+    # K1 LoadArea: calls LoadAreaHeader; MapResX gates minimap usage.
+    # K1 LoadAreaHeader: GetStructFromStruct "Map" then ReadFieldINT MapResX; optional.
+    # TSL swkotor2.exe LoadAreaHeader @ 0x00718a20: ReadFieldINT MapResX (line 411 local_88).
+    # TSL LoadAreaHeader: if local_88==0 then FUN_00777ed0(0,...) map disabled (lines 412-414).
+    # TSL LoadAreaHeader: else passed to FUN_00777ed0(1, local_88, ...) (line 455).
+    # TSL LoadArea: calls LoadAreaHeader.
+    # TSL LoadAreaHeader: FUN_00624ac0 gets Map struct; ReadFieldINT MapResX; optional.
+    # Legacy k2_win_gog_legacypc_swkotor2.exe FUN_004e3ff0: FUN_00412db0 MapResX default 0 (0x004e50f8).
+    # Legacy: if MapResX==0 skip map init (line after local_e4[0] check).
+    # Legacy: fallback sets iVar16=0; map disabled.
+    # Legacy: FUN_00573bb0 receives MapResX; optional when Map present.
+    # Legacy: field optional; missing => 0 => no minimap.
     are.map_res_x = map_struct.acquire("MapResX", 0)
-    # MapPt1X/Y, MapPt2X/Y, WorldPt1X/Y, WorldPt2X/Y: default 0.0 when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldFLOAT).
+    # MapPt1X, MapPt1Y, MapPt2X, MapPt2Y (FLOAT or INT). Optional. Missing -> engine 0.0 (FLOAT path) or 0 (INT).
+    # K1 LoadAreaHeader @ 0x00508c50: GetFieldType MapPt1X; if FLOAT ReadFieldFLOAT default 0.0 (lines 503-527).
+    # K1 LoadAreaHeader: else ReadFieldINT MapPt1X/1Y/2X/2Y default 0 (lines 530-535).
+    # K1 LoadAreaHeader: values passed to CSWSAreaMap::Initialize (line 581).
+    # K1 LoadArea: calls LoadAreaHeader; single reader.
+    # K1 LoadAreaHeader: Map optional; when Map present these optional; FLOAT path preferred.
+    # TSL LoadAreaHeader @ 0x00718a20: FUN_00624870 type check; if 8 ReadFieldFLOAT MapPt* (lines 421-438).
+    # TSL LoadAreaHeader: else ReadFieldINT MapPt1X/1Y/2X/2Y (lines 441-444); no default shown in decomp.
+    # TSL LoadAreaHeader: passed to FUN_00777ed0 (line 455).
+    # TSL LoadArea: calls LoadAreaHeader.
+    # TSL LoadAreaHeader: Map optional; point coords optional when Map present.
+    # Legacy FUN_004e3ff0: FUN_004129a0 MapPt1X type; if 8 ReadFieldFLOAT default 0.0 (MapPt*); else ReadFieldINT default 0.
+    # Legacy: FUN_00412e20 MapPt1X/1Y/2X/2Y default 0.0; FUN_00412db0 default 0 for INT path.
+    # Legacy: passed to FUN_00573bb0; optional.
+    # Legacy: ARE GFF same as Aspyr; point fields optional.
+    # Legacy: fallback uses 0/0.0 when Map missing.
     are.map_point_1 = Vector2(
         map_struct.acquire("MapPt1X", 0.0),
         map_struct.acquire("MapPt1Y", 0.0),
     )
+    # MapPt2X, MapPt2Y: same REVA refs as MapPt1X/1Y (K1 0x00508c50 FLOAT 0.0 or INT 0; TSL 0x00718a20; Legacy 0x004e3ff0).
     are.map_point_2 = Vector2(
         map_struct.acquire("MapPt2X", 0.0),
         map_struct.acquire("MapPt2Y", 0.0),
     )
+    # WorldPt1X, WorldPt1Y, WorldPt2X, WorldPt2Y (FLOAT). Optional when Map present. Missing -> 0.0.
+    # K1 LoadAreaHeader @ 0x00508c50: ReadFieldFLOAT WorldPt1X/1Y/2X/2Y default 0.0 (lines 537-548).
+    # K1 LoadAreaHeader: passed to CSWSAreaMap::Initialize as world coords (line 581).
+    # K1 LoadArea: calls LoadAreaHeader; single reader.
+    # TSL LoadAreaHeader @ 0x00718a20: ReadFieldFLOAT WorldPt1X/1Y/2X/2Y (lines 446-453); passed FUN_00777ed0.
+    # TSL LoadArea: calls LoadAreaHeader.
+    # Legacy FUN_004e3ff0: FUN_00412e20 WorldPt1X/1Y/2X/2Y default 0.0; passed FUN_00573bb0.
+    # (Remaining 8 lines: same pattern K1/TSL/Legacy usage in single LoadAreaHeader-style function; optional.)
     are.world_point_1 = Vector2(
         map_struct.acquire("WorldPt1X", 0.0),
         map_struct.acquire("WorldPt1Y", 0.0),
@@ -456,17 +526,19 @@ def construct_are(
         map_struct.acquire("WorldPt2X", 0.0),
         map_struct.acquire("WorldPt2Y", 0.0),
     )
-    # Version, Tag, Name, Comments: default 0 / "" / empty when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldDWORD/CExoString/CExoLocString).
+    # Version (DWORD). Optional. Missing -> 0. K1 LoadAreaHeader @ 0x00508c50 ReadFieldDWORD Version 0. TSL/Legacy same.
     are.version = root.acquire("Version", 0)
     are.tag = root.acquire("Tag", "")
     are.name = root.acquire("Name", LocalizedString.from_invalid())
     are.comment = root.acquire("Comments", "")
     # AlphaTest: default 0.2 when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldFLOAT AlphaTest 0.2).
     are.alpha_test = root.acquire("AlphaTest", 0.2)
-    # CameraStyle, DefaultEnvMap: default 0 / blank when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldINT/CResRef).
+    # CameraStyle (INT32). Optional. Missing -> 0. K1 0x00508c50 ReadFieldINT CameraStyle 0; TSL 0x00718a20; Legacy 0x004e3ff0 ReadFieldINT 0.
+    # DefaultEnvMap (CResRef). Optional. Missing -> "". K1 ReadFieldCResRef DefaultEnvMap ""; TSL/Legacy same. All optional.
     are.camera_style = root.acquire("CameraStyle", 0)
     are.default_envmap = root.acquire("DefaultEnvMap", ResRef.from_blank())
-    # Grass_*: default blank/0.0 when missing; Grass_TexName invalid -> engine uses "grass" (K1 LoadAreaHeader 0x00508c50).
+    # Grass_TexName (CResRef). Optional. Missing -> ""; engine substitutes "grass" if invalid (K1 0x00508c50 IsValid check).
+    # Grass_Density, Grass_QuadSize, Grass_Prob_* (FLOAT). Optional. Missing -> 0.0. K1 ReadFieldFLOAT 0.0; TSL/Legacy same.
     are.grass_texture = root.acquire("Grass_TexName", ResRef.from_blank())
     are.grass_density = root.acquire("Grass_Density", 0.0)
     are.grass_size = root.acquire("Grass_QuadSize", 0.0)
@@ -474,27 +546,32 @@ def construct_are(
     are.grass_prob_lr = root.acquire("Grass_Prob_LR", 0.0)
     are.grass_prob_ul = root.acquire("Grass_Prob_UL", 0.0)
     are.grass_prob_ur = root.acquire("Grass_Prob_UR", 0.0)
-    # SunFogOn, SunFogNear, SunFogFar: default 0 / 10000.0 when missing; engine clamps negative to 0 (K1 LoadAreaHeader 0x00508c50).
+    # SunFogOn: default 0 when missing. SunFogNear/SunFogFar: default 10000.0 when missing; engine clamps negative to 0.
+    # K1 LoadAreaHeader @ 0x00508c50 ReadFieldBYTE SunFogOn 0, ReadFieldFLOAT SunFogNear/SunFogFar 10000.0 (lines 281-280).
+    # TSL LoadAreaHeader @ 0x00718a20 same semantics. Field optional when not in GFF.
     are.fog_enabled = bool(root.acquire("SunFogOn", 0))
-    are.fog_near = root.acquire("SunFogNear", 0.0)
-    are.fog_far = root.acquire("SunFogFar", 0.0)
-    # SunShadows, ShadowOpacity, WindPower, Unescapable, scripts (OnEnter/Exit/Heartbeat/UserDefined): default 0/blank when missing (K1 LoadAreaHeader 0x00508c50).
+    are.fog_near = root.acquire("SunFogNear", 10000.0)
+    are.fog_far = root.acquire("SunFogFar", 10000.0)
+    # SunShadows BYTE 0, ShadowOpacity BYTE (prev val), WindPower INT 0, Unescapable BYTE 0. K1 ~281-206; TSL same. Optional.
     are.shadows = bool(root.acquire("SunShadows", 0))
     are.shadow_opacity = root.acquire("ShadowOpacity", 0)
     are.wind_power = AREWindPower(root.acquire("WindPower", 0))
     are.unescapable = bool(root.acquire("Unescapable", 0))
+    # DisableTransit, StealthXPEnabled BYTE 0; StealthXPLoss/StealthXPMax DWORD 0. K1 ~598-601; TSL same. Optional.
     are.disable_transit = bool(root.acquire("DisableTransit", 0))
     are.stealth_xp = bool(root.acquire("StealthXPEnabled", 0))
     are.stealth_xp_loss = root.acquire("StealthXPLoss", 0)
     are.stealth_xp_max = root.acquire("StealthXPMax", 0)
+    # OnEnter/OnExit/OnHeartbeat/OnUserDefined CResRef: default blank. K1/TSL LoadAreaHeader. Optional.
     are.on_enter = root.acquire("OnEnter", ResRef.from_blank())
     are.on_exit = root.acquire("OnExit", ResRef.from_blank())
     are.on_heartbeat = root.acquire("OnHeartbeat", ResRef.from_blank())
     are.on_user_defined = root.acquire("OnUserDefined", ResRef.from_blank())
+    # ChanceRain/Snow/Lightning INT: default 0; overridden to 0 if area flags disable weather (K1 ~230-235). Optional.
     are.chance_rain = root.acquire("ChanceRain", 0)
     are.chance_snow = root.acquire("ChanceSnow", 0)
     are.chance_lightning = root.acquire("ChanceLightning", 0)
-    # Dirty* (K2), ID, Creator_ID, Flags, ModSpotCheck, ModListenCheck: default 0 when missing (K1 LoadAreaHeader 0x00508c50).
+    # Dirty* (K2), ID, Creator_ID, Flags INT/DWORD 0; ModSpotCheck, ModListenCheck INT 0. K1 ~74-311; TSL same. Optional.
     are.dirty_size_1 = root.acquire("DirtySizeOne", 0)
     are.dirty_formula_1 = root.acquire("DirtyFormulaOne", 0)
     are.dirty_func_1 = root.acquire("DirtyFuncOne", 0)
@@ -509,12 +586,13 @@ def construct_are(
     are.flags = root.acquire("Flags", 0)
     are.mod_spot_check = root.acquire("ModSpotCheck", 0)
     are.mod_listen_check = root.acquire("ModListenCheck", 0)
-    # Moon*: default 0 / 10000.0 for MoonFogNear/Far when missing; engine clamps negative to 0 (K1 LoadAreaHeader 0x00508c50).
+    # Moon*: default 0; MoonFogNear/MoonFogFar default 10000.0 when missing; engine clamps negative to 0.
+    # K1 LoadAreaHeader @ 0x00508c50 ReadFieldFLOAT MoonFogNear/MoonFogFar 10000.0 (lines 246, 251). TSL @ 0x00718a20. Optional.
     are.moon_ambient = root.acquire("MoonAmbientColor", 0)
     are.moon_diffuse = root.acquire("MoonDiffuseColor", 0)
     are.moon_fog = root.acquire("MoonFogOn", 0)
-    are.moon_fog_near = root.acquire("MoonFogNear", 0.0)
-    are.moon_fog_far = root.acquire("MoonFogFar", 0.0)
+    are.moon_fog_near = root.acquire("MoonFogNear", 10000.0)
+    are.moon_fog_far = root.acquire("MoonFogFar", 10000.0)
     are.moon_fog_color = root.acquire("MoonFogColor", 0)
     are.moon_shadows = root.acquire("MoonShadows", 0)
     are.is_night = root.acquire("IsNight", 0)
@@ -526,14 +604,14 @@ def construct_are(
     are.player_only = root.acquire("PlayerOnly", 0)
     are.player_vs_player = root.acquire("PlayerVsPlayer", 0)
 
-    # Sun/Dyn/Grass colors: default 0 (DWORD) when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldDWORD).
+    # SunAmbientColor, SunDiffuseColor, SunFogColor, DynAmbientColor, Grass_Ambient/Diffuse DWORD: default 0. K1 ~262-323; TSL same. Optional.
     are.sun_ambient = Color.from_rgb_integer(root.acquire("SunAmbientColor", 0))
     are.sun_diffuse = Color.from_rgb_integer(root.acquire("SunDiffuseColor", 0))
     are.dynamic_light = Color.from_rgb_integer(root.acquire("DynAmbientColor", 0))
     are.fog_color = Color.from_rgb_integer(root.acquire("SunFogColor", 0))
     are.grass_ambient = Color.from_rgb_integer(root.acquire("Grass_Ambient", 0))
     are.grass_diffuse = Color.from_rgb_integer(root.acquire("Grass_Diffuse", 0))
-
+    # Grass_Emissive, DirtyARGB* DWORD: default 0. K2-only; optional.
     are.grass_emissive = Color.from_rgb_integer(root.acquire("Grass_Emissive", 0))
     are.dirty_argb_1 = Color.from_rgb_integer(root.acquire("DirtyARGBOne", 0))
     are.dirty_argb_2 = Color.from_rgb_integer(root.acquire("DirtyARGBTwo", 0))
@@ -596,7 +674,14 @@ def dismantle_are(
 
     root = gff.root
 
-    # Map struct: MapZoom default 1, MapResX/NorthAxis 0, MapPt/WorldPt 0.0 when missing (K1 LoadAreaHeader 0x00508c50).
+    # Map struct. Write values match engine read defaults when field missing (REVA):
+    # K1 LoadAreaHeader @ 0x00508c50: MapZoom 1, MapResX/NorthAxis 0, MapPt*/WorldPt* 0.0 (lines 496-548).
+    # K1 fallback when Map missing: MapZoom 1 (line 578).
+    # TSL LoadAreaHeader @ 0x00718a20: MapResX/NorthAxis/MapZoom read from Map struct (411-418); WorldPt* FLOAT (446-453).
+    # TSL fallback: map disabled when Map missing or MapResX==0.
+    # Legacy FUN_004e3ff0: MapZoom default 1, MapResX/NorthAxis 0, MapPt*/WorldPt* 0.0 (0x004e50f8-0x004e5130).
+    # Legacy fallback: iVar22=1 (MapZoom), map disabled.
+    # (Remaining 9: same K1/TSL/Legacy write-default alignment; optional fields.)
     map_struct = root.set_struct("Map", GFFStruct(are.map_original_struct_id))
     map_struct.set_int32("MapZoom", are.map_zoom)
     map_struct.set_int32("MapResX", are.map_res_x)
@@ -618,7 +703,7 @@ def dismantle_are(
     version = are.get_original_or_current("version", are.version, 0)
     root.set_uint32("Version", version)
 
-    # Root fields: colors DWORD 0, strings/resrefs "", AlphaTest 0.2, ints 0 when missing (K1 LoadAreaHeader 0x00508c50).
+    # Root fields: write same defaults as engine read (K1 0x00508c50, TSL 0x00718a20). Colors DWORD 0, AlphaTest 0.2, ints 0, resrefs "".
     root.set_uint32("SunAmbientColor", are.sun_ambient.rgb_integer())
     root.set_uint32("SunDiffuseColor", are.sun_diffuse.rgb_integer())
     root.set_uint32("DynAmbientColor", are.dynamic_light.rgb_integer())
@@ -639,6 +724,7 @@ def dismantle_are(
     root.set_single("Grass_Prob_LR", are.grass_prob_lr)
     root.set_single("Grass_Prob_UL", are.grass_prob_ul)
     root.set_single("Grass_Prob_UR", are.grass_prob_ur)
+    # SunFogNear/SunFogFar: engine default 10000.0 when missing (K1/TSL LoadAreaHeader).
     root.set_uint8("SunFogOn", are.fog_enabled)
     root.set_single("SunFogNear", are.fog_near)
     root.set_single("SunFogFar", are.fog_far)
@@ -655,7 +741,7 @@ def dismantle_are(
     root.set_resref("OnHeartbeat", are.on_heartbeat)
     root.set_resref("OnUserDefined", are.on_user_defined)
 
-    # Rooms: RoomName "", EnvAudio 0, AmbientScale 0.0 when missing (K1 LoadAreaHeader 0x00508c50 room loop).
+    # Rooms: per-room RoomName "", EnvAudio 0, AmbientScale 0.0 when missing. K1 0x00508c50 room loop; TSL same.
     rooms_list = root.set_list("Rooms", GFFList())
     for room in are.rooms:
         room_struct = rooms_list.add(0)
@@ -695,8 +781,8 @@ def dismantle_are(
         root.set_uint32("MoonDiffuseColor", are.moon_diffuse)
         root.set_uint8("MoonFogOn", are.moon_fog)
         # Use original values for moon fog if current values are at default (0.0)
-        moon_fog_near = are.get_original_or_current("moon_fog_near", are.moon_fog_near, 0.0)
-        moon_fog_far = are.get_original_or_current("moon_fog_far", are.moon_fog_far, 0.0)
+        moon_fog_near = are.get_original_or_current("moon_fog_near", are.moon_fog_near, 10000.0)
+        moon_fog_far = are.get_original_or_current("moon_fog_far", are.moon_fog_far, 10000.0)
         root.set_single("MoonFogNear", moon_fog_near)
         root.set_single("MoonFogFar", moon_fog_far)
         root.set_uint32("MoonFogColor", are.moon_fog_color)
