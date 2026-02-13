@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 def _content_rect(progress_bar: QProgressBar) -> QRect:
     """Return the progress bar groove/content rect in widget coordinates.
 
-    Uses the style's subControlRect so the shimmer is drawn exactly where the
+    Uses the style's subElementRect so the shimmer is drawn exactly where the
     bar is drawn, avoiding misalignment (e.g. animation in top-left vs bar in center).
     """
     option = QStyleOptionProgressBar()
@@ -23,13 +23,21 @@ def _content_rect(progress_bar: QProgressBar) -> QRect:
     style = progress_bar.style()
     if style is None:
         return progress_bar.rect()
-    groove = style.subControlRect(
-        QStyle.ComplexControl.CC_ProgressBar,
-        option,
-        QStyle.SubControl.SC_ProgressBarGroove,
-        progress_bar,
-    )
-    return groove
+
+    # qtpy can expose enums either namespaced (Qt6-style) or flat (Qt5-style).
+    sub_element_enum = getattr(QStyle, "SubElement", QStyle)
+    se_contents = getattr(sub_element_enum, "SE_ProgressBarContents", None)
+    se_groove = getattr(sub_element_enum, "SE_ProgressBarGroove", None)
+
+    if se_contents is not None:
+        content = style.subElementRect(se_contents, option, progress_bar)
+        if not content.isEmpty():
+            return content
+    if se_groove is not None:
+        groove = style.subElementRect(se_groove, option, progress_bar)
+        if not groove.isEmpty():
+            return groove
+    return progress_bar.rect()
 
 
 class AnimatedProgressBar(QProgressBar):
@@ -49,9 +57,7 @@ class AnimatedProgressBar(QProgressBar):
             self._offset = (self._offset + 1) % content.width()
         else:
             filled_width = int(
-                content.width()
-                * (self.value() - self.minimum())
-                / (self.maximum() - self.minimum()),
+                content.width() * (self.value() - self.minimum()) / (self.maximum() - self.minimum()),
             )
             if filled_width == 0:
                 return
@@ -78,9 +84,7 @@ class AnimatedProgressBar(QProgressBar):
             filled_width = content.width()
         else:
             filled_width = int(
-                content.width()
-                * (self.value() - self.minimum())
-                / (self.maximum() - self.minimum()),
+                content.width() * (self.value() - self.minimum()) / (self.maximum() - self.minimum()),
             )
         filled_width = max(filled_width, chunk_height)
 
@@ -116,7 +120,10 @@ class AnimatedProgressBar(QProgressBar):
             shimmer_base_color = shimmer_base_color.lighter(150)
 
         shimmer_gradient = QLinearGradient(
-            light_rect.left(), 0, light_rect.right(), 0,
+            light_rect.left(),
+            0,
+            light_rect.right(),
+            0,
         )
         shimmer_gradient.setColorAt(
             0,
