@@ -21,9 +21,9 @@ References:
 from __future__ import annotations
 
 import pathlib
-from argparse import Namespace
 
-from loggerplus import RobustLogger as Logger  # type: ignore[import-untyped]
+from typing import TYPE_CHECKING
+
 from pykotor.common.language import Language
 from pykotor.tools.patching import (
     PatchingConfig,
@@ -33,6 +33,11 @@ from pykotor.tools.patching import (
     patch_folder,
     patch_install,
 )
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from loggerplus import RobustLogger as Logger
 
 
 def cmd_batch_patch(args: Namespace, logger: Logger) -> int:

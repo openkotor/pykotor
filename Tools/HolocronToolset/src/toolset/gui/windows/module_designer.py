@@ -6,16 +6,17 @@ import os
 import tempfile
 import time
 from collections import deque
-
+from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Sequence, TextIO, Union, cast
 
 import qtpy
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
-from qtpy.QtCore import QPoint, QTimer, Qt
-from qtpy.QtGui import QColor, QCursor, QIcon, QPixmap
+from qtpy.QtCore import QEvent, QPoint, QTimer, Qt
+from qtpy.QtGui import QColor, QCursor, QFont, QIcon, QImage, QPixmap
 from qtpy.QtWidgets import (
+    QAbstractItemView,
     QAction,  # pyright: ignore[reportPrivateImportUsage]
     QApplication,
     QHBoxLayout,
@@ -33,12 +34,17 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from pykotor.common.indoorkit import Kit, KitComponent
+from pykotor.common.indoormap import EmbeddedKit, IndoorMap, IndoorMapRoom
 from pykotor.common.misc import Color, ResRef
 from pykotor.common.module import Module, ModuleResource
+from pykotor.common.modulekit import ModuleKit, ModuleKitManager
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.gl.scene import Camera
 from pykotor.resource.formats.bwm import BWM
+from pykotor.resource.formats.erf import write_erf
 from pykotor.resource.formats.lyt import LYT, LYTDoorHook, LYTObstacle, LYTRoom, LYTTrack
+from pykotor.resource.formats.vis import bytes_vis
 from pykotor.resource.generics.git import (
     GITCamera,
     GITCreature,
@@ -66,9 +72,36 @@ from toolset.gui.dialogs.insert_instance import InsertInstanceDialog
 from toolset.gui.dialogs.select_module import SelectModuleDialog
 from toolset.gui.editor import Editor
 from toolset.gui.editors.git import MoveCommand, RotateCommand, DeleteCommand, _GeometryMode, _InstanceMode, _SpawnMode, open_instance_dialog
+from toolset.gui.common.editor_pipelines import (
+    populate_module_root_combobox,
+    set_exclusive_checkbox_selection,
+    set_preview_source_image,
+)
 from toolset.gui.widgets.renderer.module import ModuleRenderer
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
 from toolset.gui.windows.designer_controls import ModuleDesignerControls2d, ModuleDesignerControls3d, ModuleDesignerControlsFreeCam
+from toolset.gui.windows.indoor_builder.constants import (
+    DUPLICATE_OFFSET_X,
+    DUPLICATE_OFFSET_Y,
+    DUPLICATE_OFFSET_Z,
+    POSITION_CHANGE_EPSILON,
+    ROTATION_CHANGE_EPSILON,
+    ZOOM_WHEEL_SENSITIVITY,
+)
+from toolset.gui.windows.indoor_builder.undo_commands import (
+    AddRoomCommand,
+    DeleteRoomsCommand,
+    DuplicateRoomsCommand,
+    FlipRoomsCommand,
+    MergeRoomsCommand,
+    MoveRoomsCommand,
+    MoveWarpCommand,
+    PaintWalkmeshCommand,
+    ResetWalkmeshCommand,
+    RotateRoomsCommand,
+)
+from toolset.data.indoorkit.qt_preview import ensure_component_image
+from pykotor.tools import indoorkit as indoorkit_tools
 from toolset.gui.windows.help import HelpWindow
 from toolset.utils.misc import MODIFIER_KEY_NAMES, get_qt_button_string, get_qt_key_string
 from toolset.utils.window import open_resource_editor
@@ -77,18 +110,18 @@ from utility.error_handling import safe_repr
 
 
 if TYPE_CHECKING:
-    from qtpy.QtGui import QCloseEvent, QFont, QKeyEvent, QShowEvent
-    from qtpy.QtWidgets import QCheckBox, QMenu
+    from qtpy.QtGui import QCloseEvent, QKeyEvent, QShowEvent
+    from qtpy.QtWidgets import QCheckBox
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
 
     from pykotor.common.module import UTT, UTW
-    from pykotor.gl.scene import Camera
-    from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.generics.are import ARE
     from pykotor.resource.generics.git import GIT
     from pykotor.resource.generics.ifo import IFO
+    from toolset.gui.dialogs.indoor_settings import IndoorMapSettings  # noqa: F401  # Phase 2
     from toolset.gui.widgets.renderer.lyt_renderer import LYTRenderer
     from toolset.gui.widgets.renderer.walkmesh import WalkmeshRenderer
+    from toolset.gui.windows.indoor_builder.constants import DragMode, ZOOM_STEP_FACTOR  # noqa: F401  # Phase 2
 
 if qtpy.QT5:
     from qtpy.QtWidgets import QUndoCommand, QUndoStack  # pyright: ignore[reportPrivateImportUsage]
@@ -96,6 +129,35 @@ elif qtpy.QT6:
     from qtpy.QtGui import QUndoCommand, QUndoStack  # pyright: ignore[reportPrivateImportUsage]
 else:
     raise ValueError(f"Invalid QT_API: '{qtpy.API_NAME}'")
+
+
+# =============================================================================
+# Editor Mode Enum
+# =============================================================================
+
+
+class EditorMode:
+    """Modes for the unified Module Designer.
+
+    OBJECT  -- Default. Place/move/edit GIT instances (creatures, doors, etc.).
+    LAYOUT  -- Indoor Builder room assembly mode (from indoor_builder).
+    WALKMESH -- Walkmesh face/vertex selection and material painting.
+    """
+    OBJECT: int = 0
+    LAYOUT: int = 1
+    WALKMESH: int = 2
+
+
+class EditorTool:
+    """Active interaction tool within Object/Walkmesh mode.
+
+    SELECT -- Click to select instances (cursor: arrow).
+    MOVE   -- Drag to translate selected instances (cursor: move).
+    ROTATE -- Drag to rotate selected instances (cursor: rotate).
+    """
+    SELECT: int = 0
+    MOVE: int = 1
+    ROTATE: int = 2
 
 
 class _BlenderPropertyCommand(QUndoCommand):
@@ -172,6 +234,18 @@ _RESREF_CLASSES = (
 )
 _TAG_CLASSES = (GITDoor, GITTrigger, GITWaypoint, GITPlaceable)
 _BEARING_CLASSES = (GITCreature, GITDoor, GITPlaceable, GITStore, GITWaypoint)
+
+# Maps resource file types to the GIT instance class used for spawning from a drag-drop.
+_RESTYPE_TO_GIT_CLASS: dict[ResourceType, type[GITInstance]] = {
+    ResourceType.UTC: GITCreature,
+    ResourceType.UTP: GITPlaceable,
+    ResourceType.UTD: GITDoor,
+    ResourceType.UTW: GITWaypoint,
+    ResourceType.UTS: GITSound,
+    ResourceType.UTE: GITEncounter,
+    ResourceType.UTT: GITTrigger,
+    ResourceType.UTM: GITStore,
+}
 
 ResrefInstance = Union[
     GITCreature,
@@ -250,6 +324,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self._last_walkmeshes: list[BWM] = []
         self._fallback_session_path: Path | None = None
         self._last_undo_index: int = 0
+        self._indoor_preview_source_image: QImage | None = None
 
         self._installation: HTInstallation = installation
         self._module: Module | None = None
@@ -344,6 +419,79 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self.ui.flatRenderer.hide_walkmesh_edges = True
         self.ui.flatRenderer.highlight_boundaries = False
 
+        # =====================================================================
+        # Editor Mode State (Object / Layout / Walkmesh)
+        # =====================================================================
+        self._editor_mode: int = EditorMode.OBJECT
+
+        # --- Indoor Builder State (Layout Mode) ---
+        self._indoor_map: IndoorMap = IndoorMap()
+        self._indoor_embedded_kit: EmbeddedKit = EmbeddedKit()
+        self._indoor_kits: list[Kit] = []
+        self._indoor_filepath: str = ""
+        self._indoor_painting_walkmesh: bool = False
+        self._indoor_colorize_materials: bool = True
+        self._indoor_paint_stroke_active: bool = False
+        self._indoor_paint_stroke_originals: dict[tuple[IndoorMapRoom, int], SurfaceMaterial] = {}
+        self._indoor_paint_stroke_new: dict[tuple[IndoorMapRoom, int], SurfaceMaterial] = {}
+        self._indoor_clipboard: list = []  # RoomClipboardData items
+        self._indoor_preview_source_image = None  # QImage | None
+        self._indoor_vis_matrix: dict[int, set[int]] = {}
+
+        # Module Kit Manager — provides implicit kits from existing game modules
+        self._module_kit_manager: ModuleKitManager | None = None
+        self._current_module_kit: ModuleKit | None = None
+        if installation is not None:
+            try:
+                self._module_kit_manager = ModuleKitManager(installation)
+            except Exception:
+                self.log.warning("Failed to initialize ModuleKitManager, module kits will be unavailable")
+
+        # --- Camera bookmarks (Ctrl+1..9 to save, 1..9 to recall) ---
+        self._camera_bookmarks: dict[int, tuple[float, float, float, float, float, float]] = {}
+        # tuple: (cam_x, cam_y, cam_z, rot_x, rot_y, rot_z) — populated by save action
+
+        # --- Viewport shading cycle state ---
+        # 0 = Lightmapped (default), 1 = Solid (no lightmap), 2 = Wireframe
+        self._viewport_shading_mode: int = 0
+
+        # --- Active tool (Select / Move / Rotate) ---
+        self._active_tool: int = EditorTool.SELECT
+
+        # Connect mode selector
+        self.ui.modeSelector.currentIndexChanged.connect(self._on_mode_changed)
+        # Start in Object mode — hide indoor-only UI elements
+        self._apply_mode_visibility(EditorMode.OBJECT)
+
+        # Wire tool palette buttons as a mutually exclusive group
+        self._setup_tool_buttons()
+
+        # --- Persistent status bar labels ---
+        self._setup_status_bar()
+
+        # --- Camera HUD overlay on 3D viewport ---
+        self._setup_camera_hud()
+
+        # --- Instance inspector panel ---
+        self._setup_properties_panel()
+
+        # --- Resource tree drag-and-drop ---
+        self._setup_resource_dnd()
+
+        # Setup indoor builder renderer
+        self.ui.indoorRenderer.set_map(self._indoor_map)
+        self.ui.indoorRenderer.set_undo_stack(self.undo_stack)
+        self.ui.indoorRenderer.set_material_colors(self.material_colors)
+        self.ui.indoorRenderer.set_colorize_materials(self._indoor_colorize_materials)
+
+        # Setup indoor kit/module selectors
+        self._setup_indoor_kits()
+        self._setup_indoor_modules()
+        self._setup_indoor_signals()
+        self._setup_indoor_vis_matrix()
+        self._populate_walkmesh_material_list()
+        self._initialize_indoor_options()
+
         self._controls3d: ModuleDesignerControls3d | ModuleDesignerControlsFreeCam = ModuleDesignerControls3d(self, self.ui.mainRenderer)
         # self._controls3d: ModuleDesignerControls3d | ModuleDesignerControlsFreeCam = ModuleDesignerControlsFreeCam(self, self.ui.mainRenderer)  # Doesn't work when set in __init__, trigger this in onMousePressed
         self._controls2d: ModuleDesignerControls2d = ModuleDesignerControls2d(self, self.ui.flatRenderer)
@@ -412,6 +560,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self.ui.resourceTree.clicked.connect(self.on_resource_tree_single_clicked)
         self.ui.resourceTree.doubleClicked.connect(self.on_resource_tree_double_clicked)
         self.ui.resourceTree.customContextMenuRequested.connect(self.on_resource_tree_context_menu)
+        self.ui.resourceSearchEdit.textChanged.connect(self._filter_resource_tree)
 
         self.ui.viewCreatureCheck.toggled.connect(self.update_toggles)
         self.ui.viewPlaceableCheck.toggled.connect(self.update_toggles)
@@ -436,9 +585,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self.ui.viewCameraCheck.mouseDoubleClickEvent = lambda a0: self.on_instance_visibility_double_click(self.ui.viewCameraCheck)  # type: ignore[method-assign]  # noqa: ARG005  # pyright: ignore[reportAttributeAccessIssue, reportArgumentType]
         self.ui.viewStoreCheck.mouseDoubleClickEvent = lambda a0: self.on_instance_visibility_double_click(self.ui.viewStoreCheck)  # type: ignore[method-assign]  # noqa: ARG005  # pyright: ignore[reportAttributeAccessIssue, reportArgumentType]
 
-        self.ui.instanceList.clicked.connect(self.on_instance_list_single_clicked)
-        self.ui.instanceList.doubleClicked.connect(self.on_instance_list_double_clicked)
-        self.ui.instanceList.customContextMenuRequested.connect(self.on_instance_list_right_clicked)
+        self.ui.instanceTree.clicked.connect(self.on_instance_list_single_clicked)
+        self.ui.instanceTree.doubleClicked.connect(self.on_instance_list_double_clicked)
+        self.ui.instanceTree.customContextMenuRequested.connect(self.on_instance_list_right_clicked)
+        self.ui.instanceSearchEdit.textChanged.connect(self._filter_instance_tree)
 
         self.ui.mainRenderer.sig_renderer_initialized.connect(self.on_3d_renderer_initialized)
         self.ui.mainRenderer.sig_scene_initialized.connect(self.on_3d_scene_initialized)
@@ -476,6 +626,1440 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         # Door hook signals
         self.ui.roomNameCombo.currentTextChanged.connect(self.on_doorhook_room_changed)
         self.ui.doorNameEdit.textChanged.connect(self.on_doorhook_name_changed)
+
+    # =========================================================================
+    # Tool Palette
+    # =========================================================================
+
+    def _setup_tool_buttons(self):
+        """Create a mutually-exclusive button group for Select / Move / Rotate."""
+        from qtpy.QtWidgets import QButtonGroup  # noqa: PLC0415
+
+        self._tool_button_group = QButtonGroup(self)
+        self._tool_button_group.setExclusive(True)
+        self._tool_button_group.addButton(self.ui.toolSelectBtn, EditorTool.SELECT)
+        self._tool_button_group.addButton(self.ui.toolMoveBtn, EditorTool.MOVE)
+        self._tool_button_group.addButton(self.ui.toolRotateBtn, EditorTool.ROTATE)
+
+        self.ui.toolSelectBtn.clicked.connect(lambda: self._set_active_tool(EditorTool.SELECT))
+        self.ui.toolMoveBtn.clicked.connect(lambda: self._set_active_tool(EditorTool.MOVE))
+        self.ui.toolRotateBtn.clicked.connect(lambda: self._set_active_tool(EditorTool.ROTATE))
+
+    def _set_active_tool(self, tool: int):
+        """Switch the active manipulation tool and update the toolbar state."""
+        self._active_tool = tool
+        # Ensure the matching button is visually checked
+        self.ui.toolSelectBtn.setChecked(tool == EditorTool.SELECT)
+        self.ui.toolMoveBtn.setChecked(tool == EditorTool.MOVE)
+        self.ui.toolRotateBtn.setChecked(tool == EditorTool.ROTATE)
+        tool_names = {EditorTool.SELECT: "Select", EditorTool.MOVE: "Move", EditorTool.ROTATE: "Rotate"}
+        self.statusBar().showMessage(f"Tool: {tool_names.get(tool, 'Unknown')}", 2000)
+        self._update_status_bar()
+
+    # =========================================================================
+    # Status Bar
+    # =========================================================================
+
+    def _setup_status_bar(self):
+        """Add persistent labels to the status bar showing mode, tool, and selection info."""
+        from qtpy.QtWidgets import QLabel  # noqa: PLC0415
+
+        self._status_mode_label = QLabel("Mode: Object")
+        self._status_tool_label = QLabel("Tool: Select")
+        self._status_selection_label = QLabel("Selected: 0")
+
+        bar = self.statusBar()
+        bar.addPermanentWidget(self._status_mode_label)
+        bar.addPermanentWidget(self._status_tool_label)
+        bar.addPermanentWidget(self._status_selection_label)
+        self._update_status_bar()
+
+    def _update_status_bar(self):
+        """Refresh the persistent status bar labels from current state."""
+        mode_names = {EditorMode.OBJECT: "Object", EditorMode.LAYOUT: "Layout", EditorMode.WALKMESH: "Walkmesh"}
+        tool_names = {EditorTool.SELECT: "Select", EditorTool.MOVE: "Move", EditorTool.ROTATE: "Rotate"}
+        self._status_mode_label.setText(f"  Mode: {mode_names.get(self._editor_mode, '?')}  ")
+        self._status_tool_label.setText(f"  Tool: {tool_names.get(self._active_tool, '?')}  ")
+        sel_count = len(self.selected_instances) if hasattr(self, "selected_instances") else 0
+        self._status_selection_label.setText(f"  Selected: {sel_count}  ")
+
+    # =========================================================================
+    # Camera HUD Overlay
+    # =========================================================================
+
+    def _setup_camera_hud(self):
+        """Create a translucent HUD overlay on the 3D viewport showing camera coordinates."""
+        from qtpy.QtCore import QTimer  # noqa: PLC0415
+        from qtpy.QtWidgets import QLabel  # noqa: PLC0415
+
+        self._camera_hud = QLabel(self.ui.mainRenderer)
+        self._camera_hud.setStyleSheet(
+            "QLabel {"
+            "  background-color: rgba(0, 0, 0, 160);"
+            "  color: #cccccc;"
+            "  font-family: Consolas, 'Courier New', monospace;"
+            "  font-size: 10px;"
+            "  padding: 4px 8px;"
+            "  border-bottom-right-radius: 4px;"
+            "}"
+        )
+        self._camera_hud.move(0, 0)
+        self._camera_hud.setText("Camera: --")
+        self._camera_hud.adjustSize()
+        self._camera_hud.show()
+
+        # Update every 200ms — lightweight, doesn't block render loop
+        self._camera_hud_timer = QTimer(self)
+        self._camera_hud_timer.timeout.connect(self._update_camera_hud)
+        self._camera_hud_timer.start(200)
+
+    def _update_camera_hud(self):
+        """Refresh camera HUD text from current 3D scene camera."""
+        scene = self.ui.mainRenderer._scene if hasattr(self.ui.mainRenderer, "_scene") else None
+        if scene is None or not hasattr(scene, "camera"):
+            return
+        cam = scene.camera
+        self._camera_hud.setText(
+            f"X: {cam.x:8.2f}  Y: {cam.y:8.2f}  Z: {cam.z:8.2f}\n"
+            f"Pitch: {cam.pitch:6.1f}  Yaw: {cam.yaw:6.1f}  Dist: {cam.distance:6.1f}"
+        )
+        self._camera_hud.adjustSize()
+
+    # =========================================================================
+    # Instance Inspector Panel
+    # =========================================================================
+
+    def _setup_properties_panel(self):
+        """Wire up instance inspector panel signals and initialize."""
+        self._inspector_updating = False
+        self.ui.propXSpin.valueChanged.connect(self._on_inspector_position_changed)
+        self.ui.propYSpin.valueChanged.connect(self._on_inspector_position_changed)
+        self.ui.propZSpin.valueChanged.connect(self._on_inspector_position_changed)
+        self.ui.propBearingSpin.valueChanged.connect(self._on_inspector_bearing_changed)
+        self.ui.propOpenBlueprintBtn.clicked.connect(self._on_inspector_open_blueprint)
+        self._update_properties_panel()
+
+    def _update_properties_panel(self):
+        """Refresh inspector panel from current selection."""
+        if not hasattr(self, "_inspector_updating"):
+            return
+        self._inspector_updating = True
+        try:
+            if not hasattr(self, "selected_instances") or not self.selected_instances:
+                self.ui.propertiesGroup.setEnabled(False)
+                self.ui.propResRefValue.setText("\u2014")
+                self.ui.propTypeValue.setText("\u2014")
+                self.ui.propXSpin.setValue(0.0)
+                self.ui.propYSpin.setValue(0.0)
+                self.ui.propZSpin.setValue(0.0)
+                self.ui.propBearingSpin.setValue(0.0)
+                return
+            inst = self.selected_instances[0]
+            self.ui.propertiesGroup.setEnabled(True)
+            resref = str(getattr(inst, "resref", "\u2014") or "\u2014")
+            self.ui.propResRefValue.setText(resref)
+            type_name = type(inst).__name__.replace("GIT", "")
+            self.ui.propTypeValue.setText(type_name)
+            self.ui.propXSpin.setValue(inst.position.x)
+            self.ui.propYSpin.setValue(inst.position.y)
+            self.ui.propZSpin.setValue(inst.position.z)
+            bearing = getattr(inst, "bearing", 0.0)
+            self.ui.propBearingSpin.setValue(math.degrees(float(bearing)))
+            has_bearing = hasattr(inst, "bearing")
+            self.ui.propBearingSpin.setEnabled(has_bearing)
+        finally:
+            self._inspector_updating = False
+
+    def _on_inspector_position_changed(self):
+        """Handle XYZ spinbox changes from the inspector panel."""
+        if not hasattr(self, "_inspector_updating") or self._inspector_updating:
+            return
+        if not self.selected_instances:
+            return
+        inst = self.selected_instances[0]
+        old_pos = Vector3(inst.position.x, inst.position.y, inst.position.z)
+        new_pos = Vector3(
+            self.ui.propXSpin.value(),
+            self.ui.propYSpin.value(),
+            self.ui.propZSpin.value(),
+        )
+        self.undo_stack.push(MoveCommand(inst, old_pos, new_pos))
+        inst.position = new_pos
+        scene = self.ui.mainRenderer._scene
+        if scene is not None:
+            scene.invalidate_cache()
+
+    def _on_inspector_bearing_changed(self):
+        """Handle bearing spinbox changes from the inspector panel."""
+        if not hasattr(self, "_inspector_updating") or self._inspector_updating:
+            return
+        if not self.selected_instances:
+            return
+        inst = self.selected_instances[0]
+        if not hasattr(inst, "bearing"):
+            return
+        inst.bearing = math.radians(self.ui.propBearingSpin.value())
+        scene = self.ui.mainRenderer._scene
+        if scene is not None:
+            scene.invalidate_cache()
+
+    def _on_inspector_open_blueprint(self):
+        """Open the blueprint editor for the selected instance."""
+        if not self.selected_instances:
+            return
+        self.edit_instance(self.selected_instances[0])
+
+    # =========================================================================
+    # Resource Tree Drag-and-Drop
+    # =========================================================================
+
+    def _setup_resource_dnd(self) -> None:
+        """Enable drag from the resource tree; accept drops on the 3D viewport."""
+        self._dragged_resource: ModuleResource | None = None
+        # Enable dragging items from the resource tree
+        self.ui.resourceTree.setDragEnabled(True)
+        self.ui.resourceTree.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
+        # Track which resource is being dragged
+        self.ui.resourceTree.itemPressed.connect(self._on_resource_tree_item_pressed)
+        # Accept drops on the 3D renderer
+        self.ui.mainRenderer.setAcceptDrops(True)
+        self.ui.mainRenderer.installEventFilter(self)
+
+    def _on_resource_tree_item_pressed(self, item: QTreeWidgetItem) -> None:
+        """Cache the ModuleResource when the user begins pressing an item (pre-drag)."""
+        data = item.data(0, Qt.ItemDataRole.UserRole)
+        if isinstance(data, ModuleResource):
+            self._dragged_resource = data
+        else:
+            self._dragged_resource = None
+
+    def eventFilter(self, obj: object, event: QEvent) -> bool:  # type: ignore[override]
+        """Intercept drag-and-drop events on the 3D renderer."""
+        if obj is self.ui.mainRenderer:
+            etype = event.type()
+            if etype in (QEvent.Type.DragEnter, QEvent.Type.DragMove):
+                if self._dragged_resource is not None:
+                    event.acceptProposedAction()  # type: ignore[union-attr]
+                    return True
+            elif etype == QEvent.Type.Drop:
+                if self._dragged_resource is not None:
+                    drop_event = event  # type: ignore[assignment]
+                    pos = drop_event.pos()  # type: ignore[union-attr]
+                    self._handle_resource_drop(self._dragged_resource, pos)
+                    self._dragged_resource = None
+                    event.acceptProposedAction()  # type: ignore[union-attr]
+                    return True
+            elif etype == QEvent.Type.DragLeave:
+                self._dragged_resource = None
+        return super().eventFilter(obj, event)  # type: ignore[arg-type]
+
+    def _handle_resource_drop(self, resource: ModuleResource, screen_pos: QPoint) -> None:
+        """Spawn a new GIT instance for *resource* at the world position under *screen_pos*.
+
+        If the resource type does not map to a spawnable GIT class (e.g. items), this is a no-op.
+        """
+        git_class = _RESTYPE_TO_GIT_CLASS.get(resource.restype())
+        if git_class is None:
+            self.statusBar().showMessage(
+                f"Cannot spawn '{resource.restype()}' resources as GIT instances.", 3000
+            )
+            return
+
+        # Determine world position: try depth-buffer first, fall back to scene cursor
+        world_pos = Vector3(0.0, 0.0, 0.0)
+        scene = self.ui.mainRenderer._scene
+        if scene is not None:
+            try:
+                world_pos = scene.screen_to_world_from_depth_buffer(screen_pos.x(), screen_pos.y())
+            except Exception:  # noqa: BLE001
+                world_pos = Vector3(scene.cursor.position().x, scene.cursor.position().y, scene.cursor.position().z)
+
+        # Create instance, pre-set its resref so InsertInstanceDialog can auto-select it
+        instance: GITInstance = git_class(world_pos.x, world_pos.y, world_pos.z)
+        instance.resref = ResRef(resource.resname())  # type: ignore[union-attr]
+
+        # add_instance will show InsertInstanceDialog so the user confirms / picks location
+        # Pass walkmesh_snap=True so creatures land on surfaces correctly
+        walkmesh_snap = isinstance(instance, (GITCreature, GITWaypoint))
+        self.add_instance(instance, walkmesh_snap=walkmesh_snap)
+
+    # =========================================================================
+    # Editor Mode Switching
+    # =========================================================================
+
+
+    def _on_mode_changed(self, index: int):
+        """Handle mode selector combo box change."""
+        self._editor_mode = index
+        self._apply_mode_visibility(index)
+        self._update_status_bar()
+
+    def _apply_mode_visibility(self, mode: int):
+        """Show/hide UI elements based on the active editor mode.
+
+        This is the key mechanism to prevent the UI from being "squished" —
+        each mode only shows its relevant panels and renderers.
+        """
+        is_object = mode == EditorMode.OBJECT
+        is_layout = mode == EditorMode.LAYOUT
+        is_walkmesh = mode == EditorMode.WALKMESH
+
+        # --- Top toolbar filter checkboxes (GIT-object specific) ---
+        # These checkboxes (creature/door/placeable/etc. toggles) only apply to Object mode
+        git_toggle_widgets = [
+            self.ui.viewCreatureCheck, self.ui.viewDoorCheck, self.ui.viewPlaceableCheck,
+            self.ui.viewStoreCheck, self.ui.viewSoundCheck, self.ui.viewWaypointCheck,
+            self.ui.viewCameraCheck, self.ui.viewEncounterCheck, self.ui.viewTriggerCheck,
+        ]
+        for w in git_toggle_widgets:
+            w.setVisible(is_object)
+
+        # --- Left panel tab visibility ---
+        # Show only the tabs relevant to the active mode to save space
+        # resourceTab and lytTab are shared (always visible)
+        # layoutTab (Indoor) is visible in Layout mode
+        # walkmeshTab is visible in Walkmesh mode (and partially in Layout for painting)
+        # visTab is visible in Layout + Object modes
+        left = self.ui.leftPanel
+        for i in range(left.count()):
+            tab_name = left.widget(i).objectName() if left.widget(i) else ""
+            if tab_name == "layoutTab":
+                left.setTabVisible(i, is_layout)
+            elif tab_name == "walkmeshTab":
+                left.setTabVisible(i, is_walkmesh or is_layout)
+            elif tab_name == "visTab":
+                left.setTabVisible(i, is_layout or is_object)
+            # resourceTab and lytTab always visible
+
+        # Switch to the most relevant tab
+        if is_layout:
+            self._switch_left_panel_to("layoutTab")
+        elif is_walkmesh:
+            self._switch_left_panel_to("walkmeshTab")
+        else:
+            self._switch_left_panel_to("resourceTab")
+
+        # --- Renderer visibility ---
+        # Object mode: 3D + 2D renderers visible, indoor hidden
+        # Layout mode: indoor renderer visible, 3D hidden, 2D optional
+        # Walkmesh mode: Same as Object but walkmesh-focused
+        self.ui.mainRenderer.setVisible(is_object or is_walkmesh)
+        self.ui.flatRenderer.setVisible(is_object or is_walkmesh)
+        self.ui.indoorRenderer.setVisible(is_layout)
+
+        # --- Right panel (instancePanel) ---
+        # Instance panel is only for Object mode
+        self.ui.instancePanel.setVisible(is_object)
+
+        # --- Tool palette buttons ---
+        # Select/Move/Rotate tools only make sense in Object or Walkmesh mode
+        tool_visible = is_object or is_walkmesh
+        self.ui.toolSelectBtn.setVisible(tool_visible)
+        self.ui.toolMoveBtn.setVisible(tool_visible)
+        self.ui.toolRotateBtn.setVisible(tool_visible)
+        self.ui.toolSeparator.setVisible(tool_visible)
+        self.ui.snapCheck.setVisible(tool_visible)
+        self.ui.snapSizeSpin.setVisible(tool_visible)
+        self.ui.rotSnapCheck.setVisible(tool_visible)
+        self.ui.rotSnapDegreeSpin.setVisible(tool_visible)
+        self.ui.snapSeparator.setVisible(tool_visible)
+
+    def _switch_left_panel_to(self, tab_object_name: str):
+        """Switch left panel to a specific tab by its objectName."""
+        left = self.ui.leftPanel
+        for i in range(left.count()):
+            widget = left.widget(i)
+            if widget is not None and widget.objectName() == tab_object_name:
+                left.setCurrentIndex(i)
+                return
+
+    @property
+    def editor_mode(self) -> int:
+        return self._editor_mode
+
+    # =========================================================================
+    # Indoor Builder Setup (Layout Mode)
+    # =========================================================================
+
+    def _setup_indoor_kits(self):
+        """Load indoor kits from disk into the kit selector combo."""
+        from toolset.gui.windows.indoor_builder.builder import get_kits_path
+
+        kits_path = get_kits_path()
+        try:
+            self._indoor_kits = indoorkit_tools.load_kits(str(kits_path))
+        except Exception:
+            self.log.warning("Failed to load indoor kits from %s", kits_path)
+            self._indoor_kits = []
+
+        self.ui.kitSelect.clear()
+        for kit in self._indoor_kits:
+            self.ui.kitSelect.addItem(kit.name, kit)
+
+    def _setup_indoor_modules(self):
+        """Populate the module kit selector with available game modules."""
+        try:
+            populate_module_root_combobox(self.ui.moduleKitSelect, self._module_kit_manager)
+        except Exception:
+            self.log.warning("Failed to populate module kit list")
+
+    def _setup_indoor_signals(self):
+        """Connect signals for indoor builder controls in the Layout tab."""
+        # Kit/component selection
+        self.ui.kitSelect.currentIndexChanged.connect(self._on_indoor_kit_selected)
+        self.ui.componentList.currentItemChanged.connect(self._on_indoor_component_selected)
+
+        # Module kit selection
+        self.ui.moduleKitSelect.currentIndexChanged.connect(self._on_module_kit_selected)
+        self.ui.moduleComponentList.currentItemChanged.connect(self._on_module_component_selected)
+
+        # Options
+        self.ui.snapToGridCheck.toggled.connect(self.ui.indoorRenderer.set_snap_to_grid)
+        self.ui.snapToHooksCheck.toggled.connect(self.ui.indoorRenderer.set_snap_to_hooks)
+        self.ui.showGridCheck.toggled.connect(self.ui.indoorRenderer.set_show_grid)
+        self.ui.showHooksCheck.toggled.connect(lambda v: self.ui.indoorRenderer.set_hide_magnets(not v))
+        self.ui.gridSizeSpin.valueChanged.connect(self.ui.indoorRenderer.set_grid_size)
+        self.ui.rotSnapSpin.valueChanged.connect(self.ui.indoorRenderer.set_rotation_snap)
+
+        # Walkmesh painter (shared between Layout and Walkmesh modes)
+        self.ui.enablePaintCheck.toggled.connect(self._toggle_indoor_paint_mode)
+        self.ui.colorizeMaterialsCheck.toggled.connect(self._toggle_indoor_colorize)
+        self.ui.resetPaintButton.clicked.connect(self._reset_indoor_walkmesh_paint)
+
+        # Build button
+        self.ui.buildIndoorButton.clicked.connect(self._build_indoor_module)
+
+        # Indoor renderer signals
+        self.ui.indoorRenderer.sig_mouse_moved.connect(self._on_indoor_mouse_moved)
+        self.ui.indoorRenderer.sig_mouse_pressed.connect(self._on_indoor_mouse_pressed)
+        self.ui.indoorRenderer.sig_mouse_released.connect(self._on_indoor_mouse_released)
+        self.ui.indoorRenderer.sig_mouse_scrolled.connect(self._on_indoor_mouse_scrolled)
+        self.ui.indoorRenderer.sig_rooms_moved.connect(self._on_indoor_rooms_moved)
+        self.ui.indoorRenderer.sig_rooms_rotated.connect(self._on_indoor_rooms_rotated)
+        self.ui.indoorRenderer.sig_warp_moved.connect(self._on_indoor_warp_moved)
+        self.ui.indoorRenderer.sig_mouse_double_clicked.connect(self._on_indoor_mouse_double_clicked)
+        self.ui.indoorRenderer.customContextMenuRequested.connect(self._on_indoor_context_menu)
+
+    def _setup_indoor_vis_matrix(self):
+        """Connect and initialize the VIS matrix editor tab."""
+        self.ui.visMatrix.itemChanged.connect(self._on_indoor_vis_item_changed)
+        self.ui.visSetAllButton.clicked.connect(self._set_all_indoor_vis_visible)
+        self.ui.visClearAllButton.clicked.connect(self._clear_all_indoor_vis)
+        self._refresh_indoor_vis_matrix()
+
+    def _sync_indoor_vis_matrix(self):
+        """Keep VIS matrix state aligned with current room list and symmetric pairs."""
+        room_ids = [id(room) for room in self._indoor_map.rooms]
+        valid_ids = set(room_ids)
+
+        for room_id in room_ids:
+            if room_id not in self._indoor_vis_matrix:
+                self._indoor_vis_matrix[room_id] = {other_id for other_id in room_ids if other_id != room_id}
+
+        stale_rows = [room_id for room_id in self._indoor_vis_matrix if room_id not in valid_ids]
+        for stale_room_id in stale_rows:
+            self._indoor_vis_matrix.pop(stale_room_id, None)
+
+        for room_id in room_ids:
+            visible_set = self._indoor_vis_matrix.setdefault(room_id, set())
+            visible_set.intersection_update(valid_ids)
+            visible_set.discard(room_id)
+
+        for index, src_room_id in enumerate(room_ids):
+            for dst_room_id in room_ids[index + 1:]:
+                pair_visible = dst_room_id in self._indoor_vis_matrix[src_room_id] or src_room_id in self._indoor_vis_matrix[dst_room_id]
+                if pair_visible:
+                    self._indoor_vis_matrix[src_room_id].add(dst_room_id)
+                    self._indoor_vis_matrix[dst_room_id].add(src_room_id)
+                    continue
+                self._indoor_vis_matrix[src_room_id].discard(dst_room_id)
+                self._indoor_vis_matrix[dst_room_id].discard(src_room_id)
+
+    def _indoor_room_label(self, room: IndoorMapRoom, index: int) -> str:
+        return f"{index}: {room.component.name}"
+
+    def _refresh_indoor_vis_matrix(self):
+        """Rebuild the VIS matrix widget from current room visibility state."""
+        matrix = self.ui.visMatrix
+        rooms = self._indoor_map.rooms
+        self._sync_indoor_vis_matrix()
+
+        matrix.blockSignals(True)
+        matrix.clear()
+
+        if not rooms:
+            matrix.setColumnCount(1)
+            matrix.setHeaderLabels(["Room"])
+            matrix.blockSignals(False)
+            return
+
+        headers = ["Room", *[self._indoor_room_label(room, index) for index, room in enumerate(rooms)]]
+        matrix.setColumnCount(len(headers))
+        matrix.setHeaderLabels(headers)
+
+        for row_index, room in enumerate(rooms):
+            room_id = id(room)
+            item = QTreeWidgetItem(matrix)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
+            item.setText(0, self._indoor_room_label(room, row_index))
+            visible_set = self._indoor_vis_matrix.get(room_id, set())
+
+            for col_index, target_room in enumerate(rooms, start=1):
+                target_id = id(target_room)
+                if target_id == room_id:
+                    item.setText(col_index, "—")
+                    item.setCheckState(col_index, Qt.CheckState.Unchecked)
+                    continue
+                item.setCheckState(col_index, Qt.CheckState.Checked if target_id in visible_set else Qt.CheckState.Unchecked)
+
+        matrix.resizeColumnToContents(0)
+        matrix.blockSignals(False)
+
+    def _set_indoor_vis_pair(self, src_room_id: int, dst_room_id: int, visible: bool):
+        """Set a room pair visibility in both directions."""
+        if src_room_id == dst_room_id:
+            return
+
+        src_set = self._indoor_vis_matrix.setdefault(src_room_id, set())
+        dst_set = self._indoor_vis_matrix.setdefault(dst_room_id, set())
+        if visible:
+            src_set.add(dst_room_id)
+            dst_set.add(src_room_id)
+            return
+        src_set.discard(dst_room_id)
+        dst_set.discard(src_room_id)
+
+    def _on_indoor_vis_item_changed(self, item: QTreeWidgetItem, column: int):
+        """Handle checkbox changes in the VIS matrix widget."""
+        if column <= 0:
+            return
+
+        matrix = self.ui.visMatrix
+        row_index = matrix.indexOfTopLevelItem(item)
+        col_room_index = column - 1
+        rooms = self._indoor_map.rooms
+        if row_index < 0 or row_index >= len(rooms):
+            return
+        if col_room_index < 0 or col_room_index >= len(rooms):
+            return
+
+        src_room_id = id(rooms[row_index])
+        dst_room_id = id(rooms[col_room_index])
+        if src_room_id == dst_room_id:
+            matrix.blockSignals(True)
+            item.setCheckState(column, Qt.CheckState.Unchecked)
+            matrix.blockSignals(False)
+            return
+
+        visible = item.checkState(column) == Qt.CheckState.Checked
+        self._set_indoor_vis_pair(src_room_id, dst_room_id, visible)
+
+        matrix.blockSignals(True)
+        reverse_item = matrix.topLevelItem(col_room_index)
+        if reverse_item is not None:
+            reverse_item.setCheckState(row_index + 1, Qt.CheckState.Checked if visible else Qt.CheckState.Unchecked)
+        matrix.blockSignals(False)
+
+    def _set_all_indoor_vis_visible(self):
+        """Set all room pairs in the VIS matrix to visible."""
+        room_ids = [id(room) for room in self._indoor_map.rooms]
+        self._indoor_vis_matrix = {
+            room_id: {other_id for other_id in room_ids if other_id != room_id}
+            for room_id in room_ids
+        }
+        self._refresh_indoor_vis_matrix()
+
+    def _clear_all_indoor_vis(self):
+        """Clear all room pair visibility in the VIS matrix."""
+        room_ids = [id(room) for room in self._indoor_map.rooms]
+        self._indoor_vis_matrix = {room_id: set() for room_id in room_ids}
+        self._refresh_indoor_vis_matrix()
+
+    def _populate_walkmesh_material_list(self):
+        """Populate the material list in the walkmesh tab."""
+        self.ui.materialList.clear()
+        for material, color in self.material_colors.items():
+            pix = QPixmap(16, 16)
+            pix.fill(color)
+            item = QListWidgetItem(QIcon(pix), material.name.replace("_", " ").title())
+            item.setData(Qt.ItemDataRole.UserRole, material)
+            self.ui.materialList.addItem(item)
+        if self.ui.materialList.count() > 0:
+            self.ui.materialList.setCurrentRow(0)
+
+    # --- Indoor Kit/Module Selection Handlers ---
+
+    def _on_indoor_kit_selected(self, index: int):
+        """Handle kit selection in the Layout tab."""
+        self.ui.componentList.clear()
+        if index < 0 or index >= len(self._indoor_kits):
+            return
+        kit = self._indoor_kits[index]
+        for comp in kit.components:
+            item = QListWidgetItem(comp.name)
+            item.setData(Qt.ItemDataRole.UserRole, comp)
+            # Generate preview image
+            try:
+                qimage = ensure_component_image(comp)
+                if qimage is not None:
+                    pix = QPixmap.fromImage(qimage).scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio)
+                    item.setIcon(QIcon(pix))
+            except Exception:
+                pass
+            self.ui.componentList.addItem(item)
+
+    def _on_indoor_component_selected(self, current, previous):
+        """Handle component selection — update preview and set cursor component for placement.
+
+        Toggle behavior: clicking the same component again deselects it (cancels placement).
+        """
+        renderer = self.ui.indoorRenderer
+        if current is None:
+            self._set_indoor_preview_image(None)
+            renderer.set_cursor_component(None)
+            return
+        comp = current.data(Qt.ItemDataRole.UserRole)
+        if comp is None or not isinstance(comp, KitComponent):
+            return
+
+        # Toggle: if same component is already selected, deselect it
+        if renderer.cursor_component is comp:
+            self.ui.componentList.blockSignals(True)
+            try:
+                self.ui.componentList.clearSelection()
+                self.ui.componentList.setCurrentItem(None)
+            finally:
+                self.ui.componentList.blockSignals(False)
+            self._set_indoor_preview_image(None)
+            renderer.set_cursor_component(None)
+            return
+
+        # Clear the other list's selection to avoid confusion
+        self.ui.moduleComponentList.blockSignals(True)
+        try:
+            self.ui.moduleComponentList.clearSelection()
+            self.ui.moduleComponentList.setCurrentItem(None)
+        finally:
+            self.ui.moduleComponentList.blockSignals(False)
+
+        self._set_indoor_preview_image(ensure_component_image(comp))
+        renderer.set_cursor_component(comp)
+
+    def _set_indoor_preview_image(self, qimage: QImage | None):
+        """Update the indoor preview image label."""
+        self._indoor_preview_source_image = set_preview_source_image(self.ui.indoorPreviewImage, qimage)
+
+    def _on_module_kit_selected(self, index: int):
+        """Handle module kit selection — lazy-load the module's rooms."""
+        self.ui.moduleComponentList.clear()
+        if self._module_kit_manager is None or index < 0:
+            return
+        module_root = self.ui.moduleKitSelect.itemData(index)
+        if module_root is None:
+            return
+        try:
+            self._current_module_kit = self._module_kit_manager.get_module_kit(str(module_root))
+            if not self._current_module_kit.ensure_loaded():
+                return
+            for comp in self._current_module_kit.components:
+                item = QListWidgetItem(comp.name)
+                item.setData(Qt.ItemDataRole.UserRole, comp)
+                self.ui.moduleComponentList.addItem(item)
+        except Exception:
+            self.log.warning("Failed to load module kit for %s", module_root)
+
+    def _on_module_component_selected(self, current: QListWidgetItem | None, previous: QListWidgetItem | None):
+        """Handle module component selection — set cursor for placement with toggle."""
+        renderer = self.ui.indoorRenderer
+        if current is None:
+            self._set_indoor_preview_image(None)
+            renderer.set_cursor_component(None)
+            return
+        comp = current.data(Qt.ItemDataRole.UserRole)
+        if comp is None or not isinstance(comp, KitComponent):
+            return
+
+        # Toggle: if same component is already selected, deselect it
+        if renderer.cursor_component is comp:
+            self.ui.moduleComponentList.blockSignals(True)
+            try:
+                self.ui.moduleComponentList.clearSelection()
+                self.ui.moduleComponentList.setCurrentItem(None)
+            finally:
+                self.ui.moduleComponentList.blockSignals(False)
+            self._set_indoor_preview_image(None)
+            renderer.set_cursor_component(None)
+            return
+
+        # Clear the other list's selection to avoid confusion
+        self.ui.componentList.blockSignals(True)
+        try:
+            self.ui.componentList.clearSelection()
+            self.ui.componentList.setCurrentItem(None)
+        finally:
+            self.ui.componentList.blockSignals(False)
+
+        self._set_indoor_preview_image(ensure_component_image(comp))
+        renderer.set_cursor_component(comp)
+
+    # --- Indoor Paint / Build Handlers ---
+
+    def _toggle_indoor_paint_mode(self, enabled: bool):
+        self._indoor_painting_walkmesh = enabled
+        self._indoor_paint_stroke_active = False
+        self._indoor_paint_stroke_originals.clear()
+        self._indoor_paint_stroke_new.clear()
+
+    def _toggle_indoor_colorize(self, enabled: bool):
+        self._indoor_colorize_materials = enabled
+        self.ui.indoorRenderer.set_colorize_materials(enabled)
+        self.ui.indoorRenderer.mark_dirty()
+
+    def _current_indoor_material(self) -> SurfaceMaterial | None:
+        """Return the currently selected walkmesh material from the material list."""
+        item = self.ui.materialList.currentItem()
+        if item is not None:
+            material = item.data(Qt.ItemDataRole.UserRole)
+            if isinstance(material, SurfaceMaterial):
+                return material
+        return None
+
+    # --- Walkmesh Paint Stroke Logic ---
+
+    def _begin_indoor_paint_stroke(self, screen: Vector2):
+        """Start a new walkmesh paint stroke."""
+        self._indoor_paint_stroke_active = True
+        self._indoor_paint_stroke_originals.clear()
+        self._indoor_paint_stroke_new.clear()
+        self._apply_indoor_paint_at_screen(screen)
+
+    def _apply_indoor_paint_at_screen(self, screen: Vector2):
+        """Convert screen coords to world and apply paint."""
+        world = self.ui.indoorRenderer.to_world_coords(screen.x, screen.y)
+        self._apply_indoor_paint_at_world(world)
+
+    def _apply_indoor_paint_at_world(self, world: Vector3):
+        """Paint the walkmesh face at the given world position with the current material."""
+        material = self._current_indoor_material()
+        if material is None:
+            return
+        room, face_index = self.ui.indoorRenderer.pick_face(world)
+        if room is None or face_index is None:
+            return
+        # Ensure we have a writable walkmesh override
+        if room.walkmesh_override is None:
+            room.walkmesh_override = deepcopy(room.component.bwm)
+        base_bwm = room.walkmesh_override
+        if not (0 <= face_index < len(base_bwm.faces)):
+            return
+
+        key = (room, face_index)
+        if key not in self._indoor_paint_stroke_originals:
+            self._indoor_paint_stroke_originals[key] = base_bwm.faces[face_index].material
+
+        if base_bwm.faces[face_index].material == material:
+            return
+
+        base_bwm.faces[face_index].material = material
+        self._indoor_paint_stroke_new[key] = material
+        self._invalidate_indoor_rooms([room])
+
+    def _finish_indoor_paint_stroke(self):
+        """Finish the current paint stroke and push an undo command."""
+        if not self._indoor_paint_stroke_active:
+            return
+        self._indoor_paint_stroke_active = False
+        if not self._indoor_paint_stroke_new:
+            return
+
+        rooms: list[IndoorMapRoom] = []
+        face_indices: list[int] = []
+        old_materials: list[SurfaceMaterial] = []
+        new_materials: list[SurfaceMaterial] = []
+
+        for (room, face_index), new_material in self._indoor_paint_stroke_new.items():
+            rooms.append(room)
+            face_indices.append(face_index)
+            old_materials.append(self._indoor_paint_stroke_originals.get((room, face_index), new_material))
+            new_materials.append(new_material)
+
+        cmd = PaintWalkmeshCommand(rooms, face_indices, old_materials, new_materials, self._invalidate_indoor_rooms)
+        self.undo_stack.push(cmd)
+
+    def _reset_indoor_walkmesh_paint(self):
+        """Reset walkmesh paint on selected rooms."""
+        rooms = [r for r in self.ui.indoorRenderer.selected_rooms() if r.walkmesh_override is not None]
+        if not rooms:
+            return
+        self.undo_stack.push(ResetWalkmeshCommand(rooms, self.ui.indoorRenderer.mark_dirty))
+
+    def _build_indoor_module(self):
+        """Build the indoor layout into a .mod file."""
+        from qtpy.QtWidgets import QFileDialog
+
+        if not self._indoor_map.rooms:
+            QMessageBox.warning(self, "Build", "No rooms have been placed. Add rooms first.")
+            return
+
+        filepath, _ = QFileDialog.getSaveFileName(self, "Save Module", "", "Module Files (*.mod)")
+        if not filepath:
+            return
+        try:
+            game = self._installation.game() if self._installation else None
+            self._indoor_map.build(self._installation, self._indoor_kits, filepath, game_override=game)
+            self._apply_indoor_vis_overrides_to_build(filepath)
+            QMessageBox.information(self, "Build Complete", f"Module saved to:\n{filepath}")
+        except Exception as e:
+            QMessageBox.critical(self, "Build Failed", f"Failed to build module:\n{e}")
+
+    def _apply_indoor_vis_overrides_to_build(self, output_path: os.PathLike | str):
+        """Apply VIS matrix state to the freshly built module's VIS resource."""
+        vis = self._indoor_map.vis
+        mod = self._indoor_map.mod
+        if vis is None or mod is None:
+            return
+
+        room_ids: list[int] = []
+        room_names: list[str] = []
+        for room in self._indoor_map.rooms:
+            room_name = self._indoor_map.room_names.get(room)
+            if room_name is None:
+                continue
+            room_ids.append(id(room))
+            room_names.append(room_name)
+
+        for src_index, src_name in enumerate(room_names):
+            visible_targets = self._indoor_vis_matrix.get(room_ids[src_index], set())
+            for dst_index, dst_name in enumerate(room_names):
+                if src_index == dst_index:
+                    continue
+                vis.set_visible(src_name, dst_name, room_ids[dst_index] in visible_targets)
+
+        mod.set_data(self._indoor_map.module_id, ResourceType.VIS, bytes_vis(vis))
+        write_erf(mod, output_path)
+
+    # --- Indoor File I/O ---
+
+    def _indoor_new(self):
+        """Create a new empty indoor map, prompting to save if dirty."""
+        if not self.undo_stack.isClean():
+            result = QMessageBox.question(
+                self,
+                "Unsaved Changes",
+                "You have unsaved changes. Save before creating a new map?",
+                QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
+            )
+            if result == QMessageBox.StandardButton.Save:
+                self._indoor_save()
+            elif result == QMessageBox.StandardButton.Cancel:
+                return
+
+        self._indoor_filepath = ""
+        self._indoor_map.reset()
+        self.ui.indoorRenderer._bwm_surface_cache.clear()
+        self._indoor_vis_matrix.clear()
+        self._refresh_indoor_vis_matrix()
+        self.undo_stack.clear()
+        self.undo_stack.setClean()
+        self._refresh_window_title()
+
+    def _indoor_save(self):
+        """Save the current indoor map to its existing filepath, or prompt for one."""
+        from pykotor.common.stream import BinaryWriter
+
+        if not self._indoor_filepath:
+            self._indoor_save_as()
+        else:
+            BinaryWriter.dump(self._indoor_filepath, self._indoor_map.write())
+            self.undo_stack.setClean()
+            self._refresh_window_title()
+
+    def _indoor_save_as(self):
+        """Save the current indoor map to a new filepath."""
+        from pykotor.common.stream import BinaryWriter
+        from qtpy.QtWidgets import QFileDialog
+
+        default_name = Path(self._indoor_filepath).name if self._indoor_filepath else "untitled.indoor"
+        filepath, _ = QFileDialog.getSaveFileName(self, "Save Indoor Map", default_name, "Indoor Map File (*.indoor)")
+        if not filepath or not str(filepath).strip():
+            return
+        BinaryWriter.dump(Path(filepath), self._indoor_map.write())
+        self._indoor_filepath = str(Path(filepath))
+        self.undo_stack.setClean()
+        self._refresh_window_title()
+
+    def _indoor_open(self):
+        """Open an .indoor file, prompting to save if dirty."""
+        from qtpy.QtWidgets import QFileDialog
+
+        if not self.undo_stack.isClean():
+            result = QMessageBox.question(
+                self,
+                "Unsaved Changes",
+                "You have unsaved changes. Save before opening another map?",
+                QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
+            )
+            if result == QMessageBox.StandardButton.Save:
+                self._indoor_save()
+            elif result == QMessageBox.StandardButton.Cancel:
+                return
+
+        filepath, _ = QFileDialog.getOpenFileName(self, "Open Indoor Map", "", "Indoor Map File (*.indoor)")
+        if not filepath or not str(filepath).strip():
+            return
+        try:
+            missing_rooms = self._indoor_map.load(Path(filepath).read_bytes(), self._indoor_kits, self._module_kit_manager)
+            self._indoor_map.rebuild_room_connections()
+            self.ui.indoorRenderer._bwm_surface_cache.clear()
+            self._indoor_filepath = filepath
+            self._indoor_vis_matrix.clear()
+            self._refresh_indoor_vis_matrix()
+            self.undo_stack.clear()
+            self.undo_stack.setClean()
+            self._refresh_window_title()
+
+            if missing_rooms:
+                details = "\n".join(f"- {r.kit_name}/{r.component_name} ({r.reason})" for r in missing_rooms)
+                QMessageBox.warning(self, "Missing Rooms", f"Some rooms failed to load:\n\n{details}")
+        except Exception as e:
+            QMessageBox.critical(self, "Failed to Load", f"Failed to load indoor map:\n{e}")
+
+    def _cancel_all_indoor_operations(self):
+        """Cancel all active indoor operations and reset to a safe state.
+
+        This is the "panic button" — cancels marquee, drags, paint, and placement.
+        """
+        renderer = self.ui.indoorRenderer
+
+        # Cancel marquee selection
+        if renderer._marquee_active:
+            renderer._marquee_active = False
+            renderer.mark_dirty()
+
+        # Cancel all drag operations
+        if renderer._dragging or renderer._dragging_hook or renderer._dragging_warp:
+            renderer.end_drag()
+            renderer._dragging_hook = False
+            renderer._dragging_warp = False
+
+        # Cancel walkmesh painting (discard uncommitted stroke)
+        if self._indoor_paint_stroke_active:
+            self._indoor_paint_stroke_active = False
+            self._indoor_paint_stroke_originals.clear()
+            self._indoor_paint_stroke_new.clear()
+
+        # Cancel placement mode (clear cursor component)
+        if renderer.cursor_component is not None:
+            self._indoor_clear_placement_mode()
+
+        # Force repaint to clear any stuck visuals
+        renderer.update()
+
+    def _update_indoor_status_bar(self, screen):
+        """Update the existing status bar labels with indoor-mode info."""
+        renderer = self.ui.indoorRenderer
+        colors = self._get_semantic_colors()
+
+        # World coordinates
+        world = renderer.to_world_coords(screen.x, screen.y)
+        self.mouse_pos_label.setText(
+            f"<b><span style='{self._emoji_style}'>🖱</span>&nbsp;Coords:</b> "
+            f"<span style='color:{colors['accent1']}'>{world.x:.2f}</span>, "
+            f"<span style='color:{colors['accent2']}'>{world.y:.2f}</span>"
+        )
+
+        # Selection / hover info
+        hover_room: IndoorMapRoom | None = renderer.room_under_mouse()
+        sel_rooms = renderer.selected_rooms()
+        sel_hook = renderer.selected_hook()
+
+        parts: list[str] = []
+        if hover_room is not None:
+            parts.append(f"Hover: <span style='color:{colors['accent1']}'>{hover_room.component.name}</span>")
+        if sel_hook is not None:
+            hook_room, hook_idx = sel_hook
+            parts.append(f"Hook: <span style='color:{colors['accent1']}'>{hook_room.component.name}</span> #{hook_idx}")
+        elif sel_rooms:
+            parts.append(f"Selected: <span style='color:{colors['accent1']}'>{len(sel_rooms)}</span> room(s)")
+
+        if self._indoor_painting_walkmesh:
+            parts.append(f"<span style='color:{colors['warn']}'>PAINT</span>")
+        if renderer.cursor_component is not None:
+            parts.append(f"Place: <span style='color:{colors['info']}'>{renderer.cursor_component.name}</span>")
+
+        sel_text = " | ".join(parts) if parts else f"<span style='color:{colors['muted']}'><i>None</i></span>"
+        self.selected_instance_label.setText(f"<b><span style='{self._emoji_style}'>🧩</span>&nbsp;Layout:</b> {sel_text}")
+
+        # Camera / view info
+        self.view_camera_label.setText(
+            f"<b><span style='{self._emoji_style}'>🎥</span>&nbsp;Mode:</b> "
+            f"<span style='color:{colors['info']}'>Layout</span> | "
+            f"Rooms: <span style='color:{colors['accent1']}'>{len(self._indoor_map.rooms)}</span>"
+        )
+
+    # --- Indoor Renderer Event Stubs ---
+    # These forward to the indoor renderer's internal handling or
+    # will be expanded as the merge progresses.
+
+    # =========================================================================
+    # Indoor View Navigation
+    # =========================================================================
+
+    def _indoor_reset_view(self):
+        """Reset the indoor renderer camera to its default position."""
+        from toolset.gui.windows.indoor_builder.constants import (
+            DEFAULT_CAMERA_POSITION_X,
+            DEFAULT_CAMERA_POSITION_Y,
+            DEFAULT_CAMERA_ROTATION,
+            DEFAULT_CAMERA_ZOOM,
+        )
+        renderer = self.ui.indoorRenderer
+        renderer.set_camera_position(DEFAULT_CAMERA_POSITION_X, DEFAULT_CAMERA_POSITION_Y)
+        renderer.set_camera_rotation(DEFAULT_CAMERA_ROTATION)
+        renderer.set_camera_zoom(DEFAULT_CAMERA_ZOOM)
+
+    def _indoor_center_on_selection(self):
+        """Center the indoor camera on the selected rooms."""
+        rooms = self.ui.indoorRenderer.selected_rooms()
+        if not rooms:
+            return
+        cx = sum(r.position.x for r in rooms) / len(rooms)
+        cy = sum(r.position.y for r in rooms) / len(rooms)
+        self.ui.indoorRenderer.set_camera_position(cx, cy)
+
+    def _indoor_add_connected_to_selection(self, room: IndoorMapRoom):
+        """Recursively select a room and all rooms connected via hooks."""
+        renderer = self.ui.indoorRenderer
+        renderer.select_room(room, clear_existing=False)
+        for hook_index, _hook in enumerate(room.component.hooks):
+            connected: IndoorMapRoom | None = room.hooks[hook_index]
+            if connected is None or connected in renderer.selected_rooms():
+                continue
+            self._indoor_add_connected_to_selection(connected)
+
+    # =========================================================================
+    # Indoor Room Operations (Layout Mode)
+    # =========================================================================
+
+    def _invalidate_indoor_rooms(self, rooms: list[IndoorMapRoom]):
+        """Refresh the indoor renderer after room changes."""
+        self.ui.indoorRenderer.invalidate_rooms(rooms)
+        self._refresh_indoor_vis_matrix()
+
+    def _indoor_place_new_room(self, component: KitComponent):
+        """Place a new room at the cursor position with undo support."""
+        renderer = self.ui.indoorRenderer
+        room = IndoorMapRoom(
+            component,
+            Vector3(*renderer.cursor_point),
+            renderer.cursor_rotation,
+            flip_x=renderer.cursor_flip_x,
+            flip_y=renderer.cursor_flip_y,
+        )
+        cmd = AddRoomCommand(self._indoor_map, room, self._invalidate_indoor_rooms)
+        self.undo_stack.push(cmd)
+        renderer.cursor_rotation = 0.0
+        renderer.cursor_flip_x = False
+        renderer.cursor_flip_y = False
+
+    def _indoor_delete_selected(self):
+        """Delete selected rooms or hooks."""
+        renderer = self.ui.indoorRenderer
+        hook_sel: tuple[IndoorMapRoom, int] | None = renderer.selected_hook()
+        if hook_sel is not None:
+            room, hook_index = hook_sel
+            renderer.delete_hook(room, hook_index)
+            return
+
+        rooms: list[IndoorMapRoom] = renderer.selected_rooms()
+        if not rooms:
+            return
+        cmd = DeleteRoomsCommand(self._indoor_map, rooms, self._invalidate_indoor_rooms)
+        self.undo_stack.push(cmd)
+        if renderer._selected_hook is not None:
+            hook_room, _ = renderer._selected_hook
+            if hook_room in rooms:
+                renderer.clear_selected_hook()
+        renderer.clear_selected_rooms()
+
+    def _indoor_duplicate_selected(self):
+        """Duplicate selected rooms or hooks."""
+        renderer = self.ui.indoorRenderer
+        hook_sel = renderer.selected_hook()
+        if hook_sel is not None:
+            room, hook_index = hook_sel
+            renderer.duplicate_hook(room, hook_index)
+            return
+
+        rooms: list[IndoorMapRoom] = renderer.selected_rooms()
+        if not rooms:
+            return
+        cmd = DuplicateRoomsCommand(
+            self._indoor_map,
+            rooms,
+            Vector3(DUPLICATE_OFFSET_X, DUPLICATE_OFFSET_Y, DUPLICATE_OFFSET_Z),
+            self._invalidate_indoor_rooms,
+        )
+        self.undo_stack.push(cmd)
+        renderer.clear_selected_rooms()
+        for room in cmd.duplicates:
+            renderer.select_room(room, clear_existing=False)
+        renderer.update()
+
+    def _indoor_merge_selected(self):
+        """Merge 2+ selected rooms into a single room."""
+        rooms: list[IndoorMapRoom] = self.ui.indoorRenderer.selected_rooms()
+        if len(rooms) < 2:
+            return
+        cmd = MergeRoomsCommand(self._indoor_map, rooms, self._indoor_embedded_kit, self._invalidate_indoor_rooms)
+        self.undo_stack.push(cmd)
+        self.ui.indoorRenderer.clear_selected_rooms()
+        self.ui.indoorRenderer.clear_selected_hook()
+        self.ui.indoorRenderer.select_room(cmd.merged_room, clear_existing=True)
+        self.ui.indoorRenderer.update()
+
+    def _indoor_rotate_selected(self, angle: float):
+        """Rotate selected rooms by a fixed angle."""
+        rooms = self.ui.indoorRenderer.selected_rooms()
+        if not rooms:
+            return
+        old_rotations = [r.rotation for r in rooms]
+        new_rotations = [(r.rotation + angle) % 360 for r in rooms]
+        cmd = RotateRoomsCommand(self._indoor_map, rooms, old_rotations, new_rotations, self._invalidate_indoor_rooms)
+        self.undo_stack.push(cmd)
+        self.ui.indoorRenderer.update()
+
+    def _indoor_flip_selected(self, flip_x: bool, flip_y: bool):
+        """Flip selected rooms."""
+        rooms = self.ui.indoorRenderer.selected_rooms()
+        if not rooms:
+            return
+        cmd = FlipRoomsCommand(self._indoor_map, rooms, flip_x, flip_y, self._invalidate_indoor_rooms)
+        self.undo_stack.push(cmd)
+        self.ui.indoorRenderer.update()
+
+    def _indoor_cut_selected(self):
+        self._indoor_copy_selected()
+        self._indoor_delete_selected()
+
+    def _indoor_copy_selected(self):
+        """Copy selected rooms to the indoor clipboard."""
+        from pykotor.resource.formats.bwm import bytes_bwm
+
+        rooms: list[IndoorMapRoom] = self.ui.indoorRenderer.selected_rooms()
+        if not rooms:
+            return
+
+        self._indoor_clipboard.clear()
+        cx: float = sum(r.position.x for r in rooms) / len(rooms)
+        cy: float = sum(r.position.y for r in rooms) / len(rooms)
+
+        for room in rooms:
+            clipboard_data = {
+                "component_kit_name": room.component.kit.name,
+                "component_name": room.component.name,
+                "position": Vector3(room.position.x - cx, room.position.y - cy, room.position.z),
+                "rotation": room.rotation,
+                "flip_x": room.flip_x,
+                "flip_y": room.flip_y,
+                "walkmesh_override": bytes_bwm(room.walkmesh_override) if room.walkmesh_override is not None else None,
+            }
+            self._indoor_clipboard.append(clipboard_data)
+
+    def _indoor_paste(self):
+        """Paste rooms from the indoor clipboard."""
+        from pykotor.resource.formats.bwm import read_bwm
+        from qtpy.QtCore import QPointF
+
+        if not self._indoor_clipboard:
+            return
+
+        renderer = self.ui.indoorRenderer
+        screen_center = QPointF(renderer.width() / 2, renderer.height() / 2)
+        world_center = renderer.to_world_coords(screen_center.x(), screen_center.y())
+
+        new_rooms: list[IndoorMapRoom] = []
+        for data in self._indoor_clipboard:
+            kit: Kit | None = next((k for k in self._indoor_kits if k.name == data["component_kit_name"]), None)
+            if not kit:
+                continue
+            component: KitComponent | None = next((c for c in kit.components if c.name == data["component_name"]), None)
+            if not component:
+                continue
+
+            component_copy = deepcopy(component)
+            room = IndoorMapRoom(
+                component_copy,
+                Vector3(world_center.x + data["position"].x, world_center.y + data["position"].y, data["position"].z),
+                data["rotation"],
+                flip_x=data["flip_x"],
+                flip_y=data["flip_y"],
+            )
+            if data["walkmesh_override"] is not None:
+                try:
+                    room.walkmesh_override = read_bwm(data["walkmesh_override"])
+                except Exception:
+                    pass
+            room.hooks = [None] * len(component_copy.hooks)
+            new_rooms.append(room)
+
+        if new_rooms:
+            for room in new_rooms:
+                cmd = AddRoomCommand(self._indoor_map, room, self._invalidate_indoor_rooms)
+                self.undo_stack.push(cmd)
+            renderer.clear_selected_rooms()
+            for room in new_rooms:
+                renderer.select_room(room, clear_existing=False)
+            renderer.update()
+
+    def _indoor_clear_placement_mode(self):
+        """Clear cursor component and UI selections."""
+        renderer = self.ui.indoorRenderer
+        renderer.set_cursor_component(None)
+        renderer.clear_selected_hook()
+        self.ui.componentList.blockSignals(True)
+        self.ui.moduleComponentList.blockSignals(True)
+        try:
+            self.ui.componentList.clearSelection()
+            self.ui.componentList.setCurrentItem(None)
+            self.ui.moduleComponentList.clearSelection()
+            self.ui.moduleComponentList.setCurrentItem(None)
+        finally:
+            self.ui.componentList.blockSignals(False)
+            self.ui.moduleComponentList.blockSignals(False)
+
+    # =========================================================================
+    # Indoor Renderer Signal Handlers
+    # =========================================================================
+
+    def _on_indoor_mouse_moved(self, coords: QPoint, coords_delta: QPoint, mouse_down: set[Qt.MouseButton], keys_down: set[Qt.Key]):
+        """Handle mouse move in the indoor renderer — paint stroke + status bar update."""
+        if self._indoor_paint_stroke_active and Qt.MouseButton.LeftButton in mouse_down:
+            self._apply_indoor_paint_at_screen(Vector2(coords.x, coords.y))
+        self._update_indoor_status_bar(coords)
+
+    def _on_indoor_mouse_pressed(self, coords: QPoint, mouse_down: set[Qt.MouseButton], keys_down: set[Qt.Key]):
+        """Handle mouse press in Indoor Layout mode."""
+        renderer = self.ui.indoorRenderer
+        if Qt.MouseButton.LeftButton not in mouse_down:
+            return
+        if Qt.Key.Key_Control in keys_down:
+            return  # Control = camera pan
+
+        # Walkmesh painting
+        if self._indoor_painting_walkmesh or Qt.Key.Key_Shift in keys_down:
+            self._begin_indoor_paint_stroke(Vector2(coords.x, coords.y))
+            return
+
+        world = renderer.to_world_coords(coords.x, coords.y)
+
+        # Check for warp point
+        if renderer.is_over_warp_point(world):
+            renderer.start_warp_drag()
+            return
+
+        # Check for existing room/hook click
+        face_room, _ = renderer.pick_face(world)
+        hook_hit = renderer.hook_under_mouse(world)
+
+        if face_room is not None or hook_hit is not None:
+            self._indoor_clear_placement_mode()
+
+            if hook_hit is not None and Qt.Key.Key_Shift not in keys_down:
+                hook_room, hook_index = hook_hit
+                renderer.select_hook(hook_room, hook_index, clear_existing=True)
+                renderer._dragging_hook = True
+                renderer._drag_hook_start = Vector3(*renderer.cursor_point)
+                return
+
+            if face_room is not None:
+                if face_room in renderer.selected_rooms():
+                    renderer.start_drag(face_room)
+                else:
+                    clear_existing = Qt.Key.Key_Shift not in keys_down
+                    renderer.select_room(face_room, clear_existing=clear_existing)
+                    renderer.start_drag(face_room)
+                return
+
+        # Clicked empty space — place if cursor component set
+        if renderer.cursor_component is not None:
+            self._indoor_place_new_room(renderer.cursor_component)
+            if Qt.Key.Key_Shift not in keys_down:
+                self._indoor_clear_placement_mode()
+            return
+
+        # Otherwise start marquee
+        if Qt.Key.Key_Shift not in keys_down:
+            renderer.clear_selected_rooms()
+        renderer.start_marquee(coords)
+
+    def _on_indoor_mouse_released(self, coords: QPoint, mouse_down: set[Qt.MouseButton], keys_down: set[Qt.Key]):
+        """Handle mouse release — finalize paint strokes."""
+        if self._indoor_paint_stroke_active:
+            self._finish_indoor_paint_stroke()
+
+    def _on_indoor_mouse_double_clicked(self, coords: QPoint, mouse_down: set[Qt.MouseButton], keys_down: set[Qt.Key]):
+        """Handle double-click — select room and all connected rooms via hooks."""
+        renderer = self.ui.indoorRenderer
+        if Qt.MouseButton.LeftButton not in mouse_down:
+            return
+        room: IndoorMapRoom | None = renderer.room_under_mouse()
+        if room is None:
+            return
+        renderer.clear_selected_rooms()
+        self._indoor_add_connected_to_selection(room)
+
+    def _on_indoor_mouse_scrolled(self, delta: QPoint, mouse_down: set[Qt.MouseButton], keys_down: set[Qt.Key]):
+        """Handle scroll — zoom (Ctrl+scroll), drag rotation, or placement rotation."""
+        renderer = self.ui.indoorRenderer
+
+        if Qt.Key.Key_Control in keys_down:
+            # Multiplicative zoom: normalize delta.y by typical wheel click (120)
+            clicks = delta.y / 120.0
+            zoom_factor = (1.0 + ZOOM_WHEEL_SENSITIVITY) ** clicks
+            renderer.zoom_in_camera(zoom_factor)
+            return
+
+        # When dragging existing rooms, scroll-wheel rotates dragged rooms
+        if renderer.is_dragging_rooms():
+            renderer.rotate_drag_selection(delta.y)
+            return
+
+        # Placement preview rotation
+        if renderer.cursor_component is not None:
+            snap = renderer.rotation_snap
+            renderer.cursor_rotation += math.copysign(snap, delta.y)
+
+    def _on_indoor_rooms_moved(self, rooms: list[IndoorMapRoom], old_positions: list[Vector3], new_positions: list[Vector3]):
+        """Handle room drag completion — create undo command."""
+        if not rooms:
+            return
+        if any(old.distance(new) > POSITION_CHANGE_EPSILON for old, new in zip(old_positions, new_positions)):
+            cmd = MoveRoomsCommand(self._indoor_map, rooms, old_positions, new_positions, self._invalidate_indoor_rooms)
+            self.undo_stack.push(cmd)
+
+    def _on_indoor_rooms_rotated(self, rooms: list[IndoorMapRoom], old_rotations: list[float], new_rotations: list[float]):
+        """Handle room rotation during drag — create undo command."""
+        if not rooms:
+            return
+        if any(abs(o - n) > ROTATION_CHANGE_EPSILON for o, n in zip(old_rotations, new_rotations)):
+            cmd = RotateRoomsCommand(self._indoor_map, rooms, old_rotations, new_rotations, self._invalidate_indoor_rooms)
+            self.undo_stack.push(cmd)
+
+    def _on_indoor_warp_moved(self, old_pos: Vector3, new_pos: Vector3):
+        """Handle warp point drag."""
+        cmd = MoveWarpCommand(self._indoor_map, old_pos, new_pos)
+        self.undo_stack.push(cmd)
+
+    # =========================================================================
+    # Indoor Context Menu
+    # =========================================================================
+
+    def _on_indoor_context_menu(self, point: QPoint):
+        """Build and show the right-click context menu for indoor renderer."""
+        renderer = self.ui.indoorRenderer
+        world: Vector3 = renderer.to_world_coords(point.x(), point.y())
+        room: IndoorMapRoom | None = renderer.room_under_mouse()
+        hook_hit = renderer.hook_under_mouse(world)
+        menu = QMenu(self)
+
+        # Room-specific actions
+        if room:
+            if room not in renderer.selected_rooms():
+                renderer.select_room(room, clear_existing=True)
+
+            selected = renderer.selected_rooms()
+            count = len(selected)
+
+            dup_action = menu.addAction(f"Duplicate ({count} room{'s' if count > 1 else ''})")
+            assert dup_action is not None
+            dup_action.triggered.connect(self._indoor_duplicate_selected)
+
+            del_action = menu.addAction(f"Delete ({count} room{'s' if count > 1 else ''})")
+            assert del_action is not None
+            del_action.triggered.connect(self._indoor_delete_selected)
+
+            menu.addSeparator()
+
+            rotate_menu = menu.addMenu("Rotate")
+            assert rotate_menu is not None
+            for angle in [90, 180, 270]:
+                action = rotate_menu.addAction(f"{angle}\u00B0")
+                assert action is not None
+                action.triggered.connect(lambda _, a=angle: self._indoor_rotate_selected(a))
+
+            flip_menu = menu.addMenu("Flip")
+            assert flip_menu is not None
+            flip_x_action = flip_menu.addAction("Flip Horizontal")
+            assert flip_x_action is not None
+            flip_x_action.triggered.connect(lambda: self._indoor_flip_selected(True, False))
+            flip_y_action = flip_menu.addAction("Flip Vertical")
+            assert flip_y_action is not None
+            flip_y_action.triggered.connect(lambda: self._indoor_flip_selected(False, True))
+
+            menu.addSeparator()
+
+            merge_action = menu.addAction(f"Merge Rooms ({count} rooms)")
+            assert merge_action is not None
+            merge_action.triggered.connect(self._indoor_merge_selected)
+            merge_action.setEnabled(count >= 2)
+
+            menu.addSeparator()
+
+        # Hook actions
+        if hook_hit is not None:
+            hook_room, hook_index = hook_hit
+            hook_sel_action = menu.addAction("Select Hook")
+            assert hook_sel_action is not None
+            hook_sel_action.triggered.connect(lambda: renderer.select_hook(hook_room, hook_index, clear_existing=True))
+
+            hook_del_action = menu.addAction("Delete Hook")
+            assert hook_del_action is not None
+            hook_del_action.triggered.connect(lambda: renderer.delete_hook(hook_room, hook_index))
+
+            hook_dup_action = menu.addAction("Duplicate Hook")
+            assert hook_dup_action is not None
+            hook_dup_action.triggered.connect(lambda: renderer.duplicate_hook(hook_room, hook_index))
+
+            menu.addSeparator()
+
+        add_hook_action = menu.addAction("Add Hook Here")
+        assert add_hook_action is not None
+        add_hook_action.triggered.connect(lambda: renderer.add_hook_at(world))
+
+        center_action = menu.addAction("Center View Here")
+        assert center_action is not None
+        center_action.triggered.connect(lambda: renderer.set_camera_position(world.x, world.y))
+
+        menu.popup(renderer.mapToGlobal(point))
+
+    # =========================================================================
+    # Indoor Options Initialization
+    # =========================================================================
+
+    def _initialize_indoor_options(self):
+        """Initialize indoor options UI to match renderer state."""
+        renderer = self.ui.indoorRenderer
+        self.ui.snapToGridCheck.blockSignals(True)
+        self.ui.snapToHooksCheck.blockSignals(True)
+        self.ui.showGridCheck.blockSignals(True)
+        self.ui.showHooksCheck.blockSignals(True)
+        self.ui.gridSizeSpin.blockSignals(True)
+        self.ui.rotSnapSpin.blockSignals(True)
+
+        self.ui.snapToGridCheck.setChecked(renderer.snap_to_grid)
+        self.ui.snapToHooksCheck.setChecked(renderer.snap_to_hooks)
+        self.ui.showGridCheck.setChecked(renderer.show_grid)
+        self.ui.showHooksCheck.setChecked(not renderer.hide_magnets)
+        self.ui.gridSizeSpin.setValue(renderer.grid_size)
+        self.ui.rotSnapSpin.setValue(int(renderer.rotation_snap))
+
+        self.ui.snapToGridCheck.blockSignals(False)
+        self.ui.snapToHooksCheck.blockSignals(False)
+        self.ui.showGridCheck.blockSignals(False)
+        self.ui.showHooksCheck.blockSignals(False)
+        self.ui.gridSizeSpin.blockSignals(False)
+        self.ui.rotSnapSpin.blockSignals(False)
 
     def _init_ui(self):
         self.custom_status_bar = QStatusBar(self)
@@ -1363,6 +2947,33 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         # Restore signals after bulk update
         self.ui.resourceTree.blockSignals(False)
 
+        # Apply current search filter
+        filter_text = self.ui.resourceSearchEdit.text()
+        if filter_text:
+            self._filter_resource_tree(filter_text)
+
+    def _filter_resource_tree(self, text: str):
+        """Show/hide resource tree items based on search text."""
+        text_lower = text.lower()
+        tree = self.ui.resourceTree
+        for group_idx in range(tree.topLevelItemCount()):
+            group_node = tree.topLevelItem(group_idx)
+            if group_node is None:
+                continue
+            visible_children = 0
+            for child_idx in range(group_node.childCount()):
+                child = group_node.child(child_idx)
+                if child is None:
+                    continue
+                matches = not text_lower or text_lower in child.text(0).lower()
+                child.setHidden(not matches)
+                if matches:
+                    visible_children += 1
+            group_node.setHidden(visible_children == 0)
+            # Auto-expand groups with matches when searching
+            if text_lower and visible_children > 0:
+                group_node.setExpanded(True)
+
     def open_module_resource(self, resource: ModuleResource):
         active_path = resource.active()
         if active_path is None:
@@ -1447,22 +3058,63 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
                 item.setSelected(True)
                 self.ui.resourceTree.scrollToItem(item)
 
+    def select_resource_items(
+        self,
+        instances: Sequence[GITInstance],
+        *,
+        clear_existing: bool = True,
+    ):
+        """Select all matching resources in the resource tree for the provided instances."""
+        if clear_existing:
+            self.ui.resourceTree.clearSelection()
+
+        first_match: QTreeWidgetItem | None = None
+        identifier_lookup: set[ResourceIdentifier] = set()
+        for instance in instances:
+            this_ident = instance.identifier()
+            if this_ident is not None:
+                identifier_lookup.add(this_ident)
+
+        if not identifier_lookup:
+            return
+
+        for i in range(self.ui.resourceTree.topLevelItemCount()):
+            parent = self.ui.resourceTree.topLevelItem(i)
+            if parent is None:
+                continue
+            for j in range(parent.childCount()):
+                item = parent.child(j)
+                if item is None:
+                    continue
+                res = item.data(0, Qt.ItemDataRole.UserRole)
+                if not isinstance(res, ModuleResource):
+                    continue
+                if res.identifier() not in identifier_lookup:
+                    continue
+                parent.setExpanded(True)
+                item.setSelected(True)
+                if first_match is None:
+                    first_match = item
+
+        if first_match is not None:
+            self.ui.resourceTree.scrollToItem(first_match)
+
     def rebuild_instance_list(self):
         self.log.debug("rebuildInstanceList called.")
 
         # Only build if module is loaded
         if self._module is None:
-            self.ui.instanceList.setEnabled(False)
-            self.ui.instanceList.setVisible(False)
+            self.ui.instanceTree.setEnabled(False)
+            self.ui.instancePanel.setVisible(False)
             return
 
         # Block signals during bulk update for better performance
-        self.ui.instanceList.blockSignals(True)
-        self.ui.instanceList.clear()
-        self.ui.instanceList.setEnabled(True)
-        self.ui.instanceList.setVisible(True)
+        self.ui.instanceTree.blockSignals(True)
+        self.ui.instanceTree.clear()
+        self.ui.instanceTree.setEnabled(True)
+        self.ui.instancePanel.setVisible(True)
 
-        visible_mapping = {
+        visible_mapping: dict[type[GITInstance], bool] = {
             GITCreature: self.hide_creatures,
             GITPlaceable: self.hide_placeables,
             GITDoor: self.hide_doors,
@@ -1474,7 +3126,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             GITCamera: self.hide_cameras,
             GITInstance: False,
         }
-        icon_mapping = {
+        icon_mapping: dict[type[GITInstance], QPixmap] = {
             GITCreature: QPixmap(":/images/icons/k1/creature.png"),
             GITPlaceable: QPixmap(":/images/icons/k1/placeable.png"),
             GITDoor: QPixmap(":/images/icons/k1/door.png"),
@@ -1486,9 +3138,18 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             GITStore: QPixmap(":/images/icons/k1/merchant.png"),
             GITInstance: QPixmap(32, 32),
         }
-
-        self.ui.instanceList.clear()
-        items: list[QListWidgetItem] = []
+        # Mapping from GIT instance class to group label
+        group_label_mapping: dict[type[GITInstance], str] = {
+            GITCreature: "Creatures",
+            GITPlaceable: "Placeables",
+            GITDoor: "Doors",
+            GITTrigger: "Triggers",
+            GITEncounter: "Encounters",
+            GITWaypoint: "Waypoints",
+            GITSound: "Sounds",
+            GITStore: "Stores",
+            GITCamera: "Cameras",
+        }
 
         if self._module is None:
             return
@@ -1500,25 +3161,29 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             return
         git: GIT = git_resource
 
+        # Collect items grouped by type
+        grouped: dict[type[GITInstance], list[tuple[str, str, str, QIcon, GITInstance, QFont]]] = {}
+        for cls in group_label_mapping:
+            grouped[cls] = []
+
         for instance in git.instances():
-            if visible_mapping[instance.__class__]:
+            cls = instance.__class__
+            if visible_mapping.get(cls, False):
                 continue
 
             struct_index: int = git.index(instance)
-
-            icon = QIcon(icon_mapping[instance.__class__])
-            item = QListWidgetItem(icon, "")
-            font: QFont = item.font()
+            icon = QIcon(icon_mapping.get(cls, icon_mapping[GITInstance]))
+            font = self.ui.instanceTree.font()
 
             if isinstance(instance, GITCamera):
-                item.setText(f"Camera #{instance.camera_id}")
-                item.setToolTip(f"Struct Index: {struct_index}\nCamera ID: {instance.camera_id}\nFOV: {instance.fov}")
-                item.setData(Qt.ItemDataRole.UserRole + 1, "cam" + str(instance.camera_id).rjust(10, "0"))
+                name = f"Camera #{instance.camera_id}"
+                tooltip = f"Struct Index: {struct_index}\nCamera ID: {instance.camera_id}\nFOV: {instance.fov}"
+                sort_key = "cam" + str(instance.camera_id).rjust(10, "0")
             else:
                 this_ident = instance.identifier()
                 assert this_ident is not None
                 resname: str = this_ident.resname
-                name: str = resname
+                name = resname
                 tag: str = ""
                 module_resource: ModuleResource[ARE] | None = self._module.resource(this_ident.resname, this_ident.restype)
                 if module_resource is None:
@@ -1528,11 +3193,9 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
                     continue
 
                 if isinstance(instance, GITDoor) or (isinstance(instance, GITTrigger) and module_resource):
-                    # Tag is stored in the GIT
                     name = module_resource.localized_name() or resname
                     tag = instance.tag
                 elif isinstance(instance, GITWaypoint):
-                    # Name and tag are stored in the GIT
                     name = self._installation.string(instance.name)
                     tag = instance.tag
                 elif module_resource:
@@ -1540,24 +3203,67 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
                     tag = abstracted_resource.tag
 
                 if module_resource is None:
+                    font = QFont(font)
                     font.setItalic(True)
 
-                item.setText(name)
-                item.setToolTip(f"Struct Index: {struct_index}\nResRef: {resname}\nName: {name}\nTag: {tag}")
+                tooltip = f"Struct Index: {struct_index}\nResRef: {resname}\nName: {name}\nTag: {tag}"
                 ident = instance.identifier()
                 assert ident is not None
-                item.setData(Qt.ItemDataRole.UserRole + 1, ident.restype.extension + name)
+                sort_key = ident.restype.extension + name
 
-            item.setFont(font)
-            item.setData(Qt.ItemDataRole.UserRole, instance)
-            items.append(item)
+            if cls in grouped:
+                grouped[cls].append((sort_key, name, tooltip, icon, instance, font))
 
-        for item in sorted(items, key=lambda i: i.data(Qt.ItemDataRole.UserRole + 1)):
-            self.ui.instanceList.addItem(item)
+        # Build tree: one top-level node per type, child items underneath
+        for cls, label in group_label_mapping.items():
+            entries = grouped.get(cls, [])
+            if not entries:
+                continue
+            entries.sort(key=lambda e: e[0])
+
+            group_node = QTreeWidgetItem(self.ui.instanceTree)
+            group_node.setText(0, f"{label} ({len(entries)})")
+            group_node.setIcon(0, QIcon(icon_mapping.get(cls, icon_mapping[GITInstance])))
+            group_node.setFlags(group_node.flags() & ~Qt.ItemFlag.ItemIsSelectable)  # type: ignore[operator]
+            group_node.setExpanded(True)
+
+            for sort_key, name, tooltip, icon, instance, font in entries:
+                child = QTreeWidgetItem(group_node)
+                child.setText(0, name)
+                child.setIcon(0, icon)
+                child.setFont(0, font)
+                child.setToolTip(0, tooltip)
+                child.setData(0, Qt.ItemDataRole.UserRole, instance)
+                child.setData(0, Qt.ItemDataRole.UserRole + 1, sort_key)
 
         # Restore signals after bulk update
-        self.ui.instanceList.blockSignals(False)
+        self.ui.instanceTree.blockSignals(False)
+
+        # Apply current search filter
+        filter_text = self.ui.instanceSearchEdit.text()
+        if filter_text:
+            self._filter_instance_tree(filter_text)
+
         self._refresh_instance_id_lookup()
+
+    def _filter_instance_tree(self, text: str):
+        """Show/hide instance tree items based on search text."""
+        text_lower = text.lower()
+        tree = self.ui.instanceTree
+        for group_idx in range(tree.topLevelItemCount()):
+            group_node = tree.topLevelItem(group_idx)
+            if group_node is None:
+                continue
+            visible_children = 0
+            for child_idx in range(group_node.childCount()):
+                child = group_node.child(child_idx)
+                if child is None:
+                    continue
+                matches = not text_lower or text_lower in child.text(0).lower()
+                child.setHidden(not matches)
+                if matches:
+                    visible_children += 1
+            group_node.setHidden(visible_children == 0)
 
     def _refresh_instance_id_lookup(self):
         """Cache Python object ids for fast lookup when Blender sends events."""
@@ -1799,16 +3505,39 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             any_updates |= self._queue_blender_property_update(instance, key, value)
 
     def select_instance_item_on_list(self, instance: GITInstance):
-        self.ui.instanceList.clearSelection()
-        for i in range(self.ui.instanceList.count()):
-            item: QListWidgetItem | None = self.ui.instanceList.item(i)
-            if item is None:
-                self.log.warning("item was somehow None at index %s in selectInstanceItemOnList", i)
+        self.select_instance_items_on_list([instance])
+
+    def select_instance_items_on_list(
+        self,
+        instances: Sequence[GITInstance],
+        *,
+        clear_existing: bool = True,
+    ):
+        """Select all matching instances in the sidebar tree."""
+        if clear_existing:
+            self.ui.instanceTree.clearSelection()
+
+        target_ids: set[int] = {id(instance) for instance in instances}
+        first_match: QTreeWidgetItem | None = None
+
+        tree = self.ui.instanceTree
+        for group_idx in range(tree.topLevelItemCount()):
+            group_node = tree.topLevelItem(group_idx)
+            if group_node is None:
                 continue
-            data: GITInstance = item.data(Qt.ItemDataRole.UserRole)
-            if data is instance:
-                item.setSelected(True)
-                self.ui.instanceList.scrollToItem(item)
+            for child_idx in range(group_node.childCount()):
+                child = group_node.child(child_idx)
+                if child is None:
+                    continue
+                data = child.data(0, Qt.ItemDataRole.UserRole)
+                if data is None or id(data) not in target_ids:
+                    continue
+                child.setSelected(True)
+                if first_match is None:
+                    first_match = child
+
+        if first_match is not None:
+            self.ui.instanceTree.scrollToItem(first_match)
 
     def update_toggles(self):
         scene = self.ui.mainRenderer._scene
@@ -1825,9 +3554,11 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self.hide_stores = scene.hide_stores = self.ui.flatRenderer.hide_stores = not self.ui.viewStoreCheck.isChecked()
         self.hide_cameras = scene.hide_cameras = self.ui.flatRenderer.hide_cameras = not self.ui.viewCameraCheck.isChecked()
 
-        scene.backface_culling = self.ui.backfaceCheck.isChecked()
-        scene.use_lightmap = self.ui.lightmapCheck.isChecked()
-        scene.show_cursor = self.ui.cursorCheck.isChecked()
+        self.ui.mainRenderer.apply_render_overrides(
+            backface_culling=self.ui.backfaceCheck.isChecked(),
+            use_lightmap=self.ui.lightmapCheck.isChecked(),
+            show_cursor=self.ui.cursorCheck.isChecked(),
+        )
 
         # Sync to Blender if active
         if self.is_blender_mode() and self._blender_controller is not None:
@@ -2128,13 +3859,14 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self._selection_sync_in_progress = True
         scene = self.ui.mainRenderer._scene
         try:
-            if instances:
+            unique_instances = list(dict.fromkeys(instances))
+            if unique_instances:
                 if scene is not None:
-                    scene.select(instances[0])
-                self.ui.flatRenderer.instance_selection.select(instances)
-                self.select_instance_item_on_list(instances[0])
-                self.select_resource_item(instances[0])
-                self.selected_instances = instances
+                    scene.select(unique_instances[0])
+                self.ui.flatRenderer.instance_selection.select(unique_instances)
+                self.select_instance_items_on_list(unique_instances)
+                self.select_resource_items(unique_instances)
+                self.selected_instances = unique_instances
             else:
                 if scene is not None:
                     scene.selection.clear()
@@ -2144,7 +3876,27 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             self._selection_sync_in_progress = was_syncing
 
         if self.is_blender_mode() and not was_syncing:
-            self.sync_selection_to_blender(instances)
+            self.sync_selection_to_blender(self.selected_instances)
+
+        self._update_status_bar()
+        self._update_properties_panel()
+
+    def focus_selected_instances(self):
+        """Snap 2D/3D views to current selection centroid."""
+        if not self.selected_instances:
+            return
+
+        count = len(self.selected_instances)
+        if count == 1:
+            focus_point = self.selected_instances[0].position
+        else:
+            x_total = sum(instance.position.x for instance in self.selected_instances)
+            y_total = sum(instance.position.y for instance in self.selected_instances)
+            z_total = sum(instance.position.z for instance in self.selected_instances)
+            focus_point = Vector3(x_total / count, y_total / count, z_total / count)
+
+        self.ui.mainRenderer.snap_camera_to_point(focus_point)
+        self.ui.flatRenderer.snap_camera_to_point(focus_point)
 
     def delete_selected(
         self,
@@ -2171,6 +3923,55 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self.ui.flatRenderer.instance_selection.clear()
         self.rebuild_instance_list()
 
+    def duplicate_selected_instances(self):
+        """Duplicate selected GIT instances with a small positional offset.
+
+        Creates deep copies of each selected instance, offsets them by (0.5, 0.5, 0) meters,
+        adds them to the GIT, and selects the new copies. Supports undo.
+        """
+        if not self.selected_instances:
+            return
+        assert self._module is not None
+        git_module = self._module.git()
+        assert git_module is not None
+        git_resource = git_module.resource()
+        assert git_resource is not None
+
+        OFFSET = 0.5  # meters — small enough to stay nearby, large enough to be visible
+        new_instances: list[GITInstance] = []
+        for inst in self.selected_instances:
+            clone = deepcopy(inst)
+            clone.position = Vector3(clone.position.x + OFFSET, clone.position.y + OFFSET, clone.position.z)
+            git_resource.add(clone)
+            new_instances.append(clone)
+            # Sync to Blender
+            if self.is_blender_mode() and self._blender_controller is not None:
+                self.add_instance_to_blender(clone)
+
+        if self.ui.mainRenderer._scene:
+            self.ui.mainRenderer._scene.invalidate_cache()
+        self.rebuild_instance_list()
+        self.set_selection(new_instances)
+        self.statusBar().showMessage(f"Duplicated {len(new_instances)} instance(s)", 2000)
+
+    def _snap_to_grid(self, value: float) -> float:
+        """Snap a coordinate value to the nearest grid increment if snapping is enabled."""
+        if not self.ui.snapCheck.isChecked():
+            return value
+        grid = self.ui.snapSizeSpin.value()
+        if grid <= 0:
+            return value
+        return round(value / grid) * grid
+
+    def _snap_rotation(self, degrees: float) -> float:
+        """Snap a rotation value to the nearest increment if rotation snapping is enabled."""
+        if not self.ui.rotSnapCheck.isChecked():
+            return degrees
+        snap = self.ui.rotSnapDegreeSpin.value()
+        if snap <= 0:
+            return degrees
+        return round(degrees / snap) * snap
+
     def move_selected(  # noqa: PLR0913
         self,
         x: float,
@@ -2186,8 +3987,8 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         walkmesh_renderer: ModuleRenderer | None = self.ui.mainRenderer if self.ui.mainRenderer._scene is not None else None
         for instance in self.selected_instances:
             self.log.debug("Moving %s", instance.resref)
-            new_x = instance.position.x + x
-            new_y = instance.position.y + y
+            new_x = self._snap_to_grid(instance.position.x + x)
+            new_y = self._snap_to_grid(instance.position.y + y)
             if no_z_coord:
                 new_z = instance.position.z
             else:
@@ -2215,6 +4016,13 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             new_roll = 0.0
             if not isinstance(instance, (GITCamera, GITCreature, GITDoor, GITPlaceable, GITStore, GITWaypoint)):
                 continue  # doesn't support rotations.
+            # Apply rotation snap if enabled (convert to degrees, snap, convert back)
+            if self.ui.rotSnapCheck.isChecked():
+                import math  # noqa: PLC0415
+                snap_rad = math.radians(self.ui.rotSnapDegreeSpin.value())
+                if snap_rad > 0:
+                    new_yaw = round(new_yaw / snap_rad) * snap_rad
+                    new_pitch = round(new_pitch / snap_rad) * snap_rad
             instance.rotate(new_yaw, new_pitch, new_roll)
 
             # Sync to Blender if not already syncing from Blender
@@ -2276,34 +4084,45 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             self.is_drag_rotating = False
 
     def on_instance_list_single_clicked(self):
-        if self.ui.instanceList.selectedItems():
-            instance = self.get_git_instance_from_highlighted_list_item()
-            self.set_selection([instance])
+        selected_items = self.ui.instanceTree.selectedItems()
+        if not selected_items:
+            return
+        instances = [item.data(0, Qt.ItemDataRole.UserRole) for item in selected_items]
+        instances = [instance for instance in instances if isinstance(instance, GITInstance)]
+        if instances:
+            self.set_selection(instances)
 
     def on_instance_list_double_clicked(self):
-        if self.ui.instanceList.selectedItems():
+        if self.ui.instanceTree.selectedItems():
             instance = self.get_git_instance_from_highlighted_list_item()
-            self.set_selection([instance])
-            self.ui.mainRenderer.snap_camera_to_point(instance.position)
-            self.ui.flatRenderer.snap_camera_to_point(instance.position)
+            if instance is not None:
+                self.set_selection([instance])
+                self.focus_selected_instances()
+                self.edit_instance(instance)
 
-    def get_git_instance_from_highlighted_list_item(self) -> GITInstance:
-        item: QListWidgetItem = self.ui.instanceList.selectedItems()[0]
-        result: GITInstance = item.data(Qt.ItemDataRole.UserRole)
+    def get_git_instance_from_highlighted_list_item(self) -> GITInstance | None:
+        selected = self.ui.instanceTree.selectedItems()
+        if not selected:
+            return None
+        item: QTreeWidgetItem = selected[0]
+        result = item.data(0, Qt.ItemDataRole.UserRole)
+        if not isinstance(result, GITInstance):
+            return None
         return result
 
     def on_instance_visibility_double_click(self, checkbox: QCheckBox):
-        self.ui.viewCreatureCheck.setChecked(False)
-        self.ui.viewPlaceableCheck.setChecked(False)
-        self.ui.viewDoorCheck.setChecked(False)
-        self.ui.viewSoundCheck.setChecked(False)
-        self.ui.viewTriggerCheck.setChecked(False)
-        self.ui.viewEncounterCheck.setChecked(False)
-        self.ui.viewWaypointCheck.setChecked(False)
-        self.ui.viewCameraCheck.setChecked(False)
-        self.ui.viewStoreCheck.setChecked(False)
-
-        checkbox.setChecked(True)
+        visibility_checkboxes: tuple[QCheckBox, ...] = (
+            self.ui.viewCreatureCheck,
+            self.ui.viewPlaceableCheck,
+            self.ui.viewDoorCheck,
+            self.ui.viewSoundCheck,
+            self.ui.viewTriggerCheck,
+            self.ui.viewEncounterCheck,
+            self.ui.viewWaypointCheck,
+            self.ui.viewCameraCheck,
+            self.ui.viewStoreCheck,
+        )
+        set_exclusive_checkbox_selection(checkbox, visibility_checkboxes)
 
     def enter_instance_mode(self):
         instance_mode = _InstanceMode.__new__(_InstanceMode)
@@ -2347,13 +4166,16 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         if isinstance(data, ModuleResource):
             self.jump_to_instance_list_action(data=data)
 
-    def jump_to_instance_list_action(self, *args, data: ModuleResource, **kwargs):
+    def _instances_for_resource(self, data: ModuleResource) -> list[GITInstance]:
+        """Collect all GIT instances represented by a module resource."""
         this_ident = data.identifier()
-        instances = self.git().instances()
-        for instance in instances:
-            if instance.identifier() == this_ident:
-                self.select_instance_item_on_list(instance)
-                return
+        return [instance for instance in self.git().instances() if instance.identifier() == this_ident]
+
+    def jump_to_instance_list_action(self, *args, data: ModuleResource, **kwargs):
+        matching_instances = self._instances_for_resource(data)
+        if not matching_instances:
+            return
+        self.set_selection(matching_instances)
 
     def _active_instance_location_menu(self, data: ModuleResource, menu: QMenu):
         """Builds an active override menu for a module resource.
@@ -2380,13 +4202,9 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             menu.addAction(location_action)
 
         def jump_to_instance_list_action(*args, data: ModuleResource = data, **kwargs):
-            this_ident: ResourceIdentifier = data.identifier()
-            instances: list[GITInstance] = self.git().instances()
-            for instance in instances:
-                if instance.identifier() == this_ident:
-                    # self.selectInstanceItemOnList(instance)
-                    self.set_selection([instance])
-                    return
+            matching_instances = self._instances_for_resource(data)
+            if matching_instances:
+                self.set_selection(matching_instances)
 
         menu.addAction("Find in Instance List").triggered.connect(jump_to_instance_list_action)  # pyright: ignore[reportOptionalMemberAccess]
 
@@ -2503,8 +4321,13 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         *args,
         **kwargs,
     ):
-        item: QListWidgetItem = self.ui.instanceList.selectedItems()[0]
-        instance: GITInstance = item.data(Qt.ItemDataRole.UserRole)
+        selected = self.ui.instanceTree.selectedItems()
+        if not selected:
+            return
+        item: QTreeWidgetItem = selected[0]
+        instance = item.data(0, Qt.ItemDataRole.UserRole)
+        if not isinstance(instance, GITInstance):
+            return
         self.on_context_menu_selection_exists(instances=[instance])
 
     def on_context_menu_selection_exists(
@@ -2553,6 +4376,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self._refresh_window_title()
         self.show()
         self.activateWindow()
+
+        self.update_toggles()
+        if self.selected_instances:
+            self.set_selection(list(self.selected_instances))
 
         # Defer UI population to avoid blocking during module load
         QTimer.singleShot(50, self._deferred_initialization)
@@ -2818,9 +4645,13 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         if isinstance(data, LYTRoom):
             self.ui.lytElementTabs.setCurrentIndex(0)  # Room tab
             self.update_room_properties(data)
+            self.ui.mainRenderer.snap_camera_to_point(data.position)
+            self.ui.flatRenderer.snap_camera_to_point(data.position)
         elif isinstance(data, LYTDoorHook):
             self.ui.lytElementTabs.setCurrentIndex(1)  # Door Hook tab
             self.update_doorhook_properties(data)
+            self.ui.mainRenderer.snap_camera_to_point(data.position)
+            self.ui.flatRenderer.snap_camera_to_point(data.position)
 
     def update_room_properties(self, room: LYTRoom):
         """Update the room property editors with the selected room's data."""
@@ -3214,6 +5045,19 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
     def keyPressEvent(self, e: QKeyEvent | None):  # noqa: FBT001, FBT002  # pyright: ignore[reportIncompatibleMethodOverride]
         if e is None:
             return
+
+        # Route keyboard shortcuts based on active editor mode
+        if self._editor_mode == EditorMode.LAYOUT:
+            if self._handle_indoor_key_press(e):
+                return
+            # Forward unhandled keys to the indoor renderer for its internal handling
+            self.ui.indoorRenderer.keyPressEvent(e)
+            return
+
+        # Handle Object/Walkmesh mode shortcuts
+        if self._handle_object_mode_key_press(e):
+            return
+
         super().keyPressEvent(e)
         self.ui.mainRenderer.keyPressEvent(e)
         self.ui.flatRenderer.keyPressEvent(e)
@@ -3221,9 +5065,237 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
     def keyReleaseEvent(self, e: QKeyEvent | None):  # noqa: FBT001, FBT002  # pyright: ignore[reportIncompatibleMethodOverride]
         if e is None:
             return
+
+        if self._editor_mode == EditorMode.LAYOUT:
+            self.ui.indoorRenderer.keyReleaseEvent(e)
+            return
+
         super().keyReleaseEvent(e)
         self.ui.mainRenderer.keyReleaseEvent(e)
         self.ui.flatRenderer.keyReleaseEvent(e)
+
+    def _handle_object_mode_key_press(self, e: QKeyEvent) -> bool:
+        """Handle keyboard shortcuts when in Object or Walkmesh mode.
+
+        Returns True if the key was handled, False to pass through.
+        """
+        key = e.key()
+        modifiers = e.modifiers()
+        has_ctrl = bool(modifiers & Qt.KeyboardModifier.ControlModifier)
+        has_no_mods = not bool(modifiers)
+
+        # Q / W / E — switch active tool (Blender/Unity-style)
+        if key == Qt.Key.Key_Q and has_no_mods:
+            self._set_active_tool(EditorTool.SELECT)
+            return True
+        if key == Qt.Key.Key_W and has_no_mods:
+            self._set_active_tool(EditorTool.MOVE)
+            return True
+        if key == Qt.Key.Key_E and has_no_mods:
+            self._set_active_tool(EditorTool.ROTATE)
+            return True
+
+        # F — focus camera on selected instances (Unity-style)
+        if key == Qt.Key.Key_F and has_no_mods:
+            self.focus_selected_instances()
+            return True
+
+        # G — toggle grid snap
+        if key == Qt.Key.Key_G and has_no_mods:
+            self.ui.snapCheck.toggle()
+            state = "ON" if self.ui.snapCheck.isChecked() else "OFF"
+            self.statusBar().showMessage(f"Grid Snap: {state} ({self.ui.snapSizeSpin.value():.2f} m)", 2000)
+            return True
+
+        # Z — cycle viewport shading (Lightmapped → Solid → Wireframe → ...)
+        if key == Qt.Key.Key_Z and has_no_mods:
+            self._cycle_viewport_shading()
+            return True
+
+        # Delete / Backspace — delete selected instances
+        if key in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace) and has_no_mods:
+            if self.selected_instances:
+                self.delete_selected()
+            return True
+
+        # Camera bookmarks: Ctrl+1..9 saves, 1..9 recalls
+        if Qt.Key.Key_1 <= key <= Qt.Key.Key_9:
+            slot = key - Qt.Key.Key_1  # 0-based
+            if has_ctrl:
+                self._save_camera_bookmark(slot)
+                return True
+            elif has_no_mods:
+                self._recall_camera_bookmark(slot)
+                return True
+
+        # Ctrl+D — duplicate selected instances (Unity-style)
+        if key == Qt.Key.Key_D and has_ctrl:
+            self.duplicate_selected_instances()
+            return True
+
+        # Space — cycle through editor modes (Object → Layout → Walkmesh → ...)
+        if key == Qt.Key.Key_Space and has_no_mods:
+            next_mode = (self._editor_mode + 1) % 3
+            self.ui.modeSelector.setCurrentIndex(next_mode)
+            return True
+
+        return False
+
+    def _cycle_viewport_shading(self):
+        """Cycle viewport shading: Lightmapped → Solid → back.
+
+        Updates the lightmapCheck UI checkbox to match.
+        """
+        self._viewport_shading_mode = (self._viewport_shading_mode + 1) % 2
+        labels = ["Lightmapped", "Solid"]
+        mode_label = labels[self._viewport_shading_mode]
+
+        if self._viewport_shading_mode == 0:
+            # Lightmapped
+            self.ui.lightmapCheck.setChecked(True)
+        elif self._viewport_shading_mode == 1:
+            # Solid (no lightmap)
+            self.ui.lightmapCheck.setChecked(False)
+
+        self.statusBar().showMessage(f"Viewport Shading: {mode_label}", 2000)
+
+    def _save_camera_bookmark(self, slot: int):
+        """Save current 3D camera position/orientation to a bookmark slot."""
+        scene = self.ui.mainRenderer._scene
+        if scene is None:
+            return
+        cam = scene.camera
+        self._camera_bookmarks[slot] = (cam.x, cam.y, cam.z, cam.pitch, cam.yaw, cam.distance)
+        self.statusBar().showMessage(f"Camera bookmark {slot + 1} saved", 2000)
+
+    def _recall_camera_bookmark(self, slot: int):
+        """Recall a previously saved camera bookmark."""
+        bookmark = self._camera_bookmarks.get(slot)
+        if bookmark is None:
+            self.statusBar().showMessage(f"Camera bookmark {slot + 1} is empty", 2000)
+            return
+        scene = self.ui.mainRenderer._scene
+        if scene is None:
+            return
+        cam = scene.camera
+        cam.x, cam.y, cam.z, cam.pitch, cam.yaw, cam.distance = bookmark
+        self.ui.mainRenderer.update()
+        # Also sync 2D view to the same XY position
+        self.ui.flatRenderer.snap_camera_to_point(Vector3(bookmark[0], bookmark[1], bookmark[2]))
+        self.statusBar().showMessage(f"Camera bookmark {slot + 1} recalled", 2000)
+
+    def _handle_indoor_key_press(self, e: QKeyEvent) -> bool:
+        """Handle keyboard shortcuts when in Layout (indoor) mode.
+
+        Returns True if the key was handled, False to pass through.
+        """
+        key = e.key()
+        modifiers = e.modifiers()
+        has_ctrl = bool(modifiers & Qt.KeyboardModifier.ControlModifier)
+        has_no_mods = not bool(modifiers)
+        renderer = self.ui.indoorRenderer
+
+        # Escape — cancel all operations + clear selection
+        if key == Qt.Key.Key_Escape:
+            self._cancel_all_indoor_operations()
+            renderer.clear_selected_rooms()
+            renderer.clear_selected_hook()
+            return True
+
+        # G — toggle snap to grid
+        if key == Qt.Key.Key_G and has_no_mods:
+            self.ui.snapToGridCheck.setChecked(not self.ui.snapToGridCheck.isChecked())
+            return True
+
+        # H — toggle snap to hooks
+        if key == Qt.Key.Key_H and has_no_mods:
+            self.ui.snapToHooksCheck.setChecked(not self.ui.snapToHooksCheck.isChecked())
+            return True
+
+        # R — rotate selected rooms by snap amount
+        if key == Qt.Key.Key_R and has_no_mods:
+            rooms = renderer.selected_rooms()
+            if rooms:
+                self._indoor_rotate_selected(self.ui.rotSnapSpin.value())
+            return True
+
+        # F — flip selected rooms horizontally
+        if key == Qt.Key.Key_F and has_no_mods:
+            rooms = renderer.selected_rooms()
+            if rooms:
+                self._indoor_flip_selected(True, False)
+            return True
+
+        # Ctrl+A — select all rooms
+        if key == Qt.Key.Key_A and has_ctrl:
+            for room in self._indoor_map.rooms:
+                renderer.select_room(room, clear_existing=False)
+            renderer.update()
+            return True
+
+        # Delete / Backspace — delete selected
+        if key in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace) and has_no_mods:
+            self._indoor_delete_selected()
+            return True
+
+        # Ctrl+C — copy
+        if key == Qt.Key.Key_C and has_ctrl:
+            self._indoor_copy_selected()
+            return True
+
+        # Ctrl+X — cut
+        if key == Qt.Key.Key_X and has_ctrl:
+            self._indoor_cut_selected()
+            return True
+
+        # Ctrl+V — paste
+        if key == Qt.Key.Key_V and has_ctrl:
+            self._indoor_paste()
+            return True
+
+        # Ctrl+D — duplicate
+        if key == Qt.Key.Key_D and has_ctrl:
+            self._indoor_duplicate_selected()
+            return True
+
+        # Space — cancel placement mode
+        if key == Qt.Key.Key_Space and has_no_mods:
+            if renderer.cursor_component is not None:
+                self._indoor_clear_placement_mode()
+            return True
+
+        # P — toggle paint mode
+        if key == Qt.Key.Key_P and has_no_mods:
+            self.ui.enablePaintCheck.setChecked(not self.ui.enablePaintCheck.isChecked())
+            return True
+
+        # Ctrl+0 or Home — reset camera view
+        if (key == Qt.Key.Key_0 and has_ctrl) or (key == Qt.Key.Key_Home and has_no_mods):
+            self._indoor_reset_view()
+            return True
+
+        # F5 — refresh / cancel all and repaint
+        if key == Qt.Key.Key_F5 and has_no_mods:
+            self._cancel_all_indoor_operations()
+            renderer.update()
+            return True
+
+        # Ctrl+S — save indoor map
+        if key == Qt.Key.Key_S and has_ctrl:
+            self._indoor_save()
+            return True
+
+        # Ctrl+N — new indoor map
+        if key == Qt.Key.Key_N and has_ctrl:
+            self._indoor_new()
+            return True
+
+        # Ctrl+O — open indoor map
+        if key == Qt.Key.Key_O and has_ctrl:
+            self._indoor_open()
+            return True
+
+        return False
 
     # endregion
 

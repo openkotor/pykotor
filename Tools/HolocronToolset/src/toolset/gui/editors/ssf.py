@@ -13,8 +13,8 @@ from qtpy.QtWidgets import (
     QStyle,
 )
 
-from pykotor.extract.talktable import TalkTable
 from pykotor.extract.installation import SearchLocation
+from pykotor.extract.talktable import TalkTable
 from pykotor.resource.formats.ssf import SSF, SSFSound, read_ssf, write_ssf
 from pykotor.resource.type import ResourceType
 from toolset.gui.editor import Editor

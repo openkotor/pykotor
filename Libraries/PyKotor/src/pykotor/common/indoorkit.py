@@ -16,18 +16,19 @@ Toolset/Qt-specific behavior (e.g. QImage previews) must live outside this modul
 """
 
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
-from utility.common.more_collections import CaseInsensitiveDict
 from utility.common.geometry import Vector3
+from utility.common.more_collections import CaseInsensitiveDict
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from PIL.Image import Image  # pyright: ignore[reportMissingImports, reportPrivateImportUsage, reportMissingTypeStubs]  # type: ignore[import-not-found, import-untyped]
+    from qtpy.QtGui import QImage  # pyright: ignore[reportMissingImports, reportPrivateImportUsage, reportMissingTypeStubs]  # type: ignore[import-not-found, import-untyped]
+
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.generics.utd import UTD
-    from utility.common.geometry import Vector3
-    from qtpy.QtGui import QImage  # pyright: ignore[reportMissingImports, reportPrivateImportUsage, reportMissingTypeStubs]  # type: ignore[import-not-found, import-untyped]
-    from PIL.Image import Image  # pyright: ignore[reportMissingImports, reportPrivateImportUsage, reportMissingTypeStubs]  # type: ignore[import-not-found, import-untyped]
 
 
 class Kit:

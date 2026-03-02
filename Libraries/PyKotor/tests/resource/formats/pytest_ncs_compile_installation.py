@@ -5,10 +5,11 @@ import logging
 import os
 import pathlib
 import sys
+
 from io import StringIO
 from logging.handlers import RotatingFileHandler
-from typing import TYPE_CHECKING
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -31,15 +32,12 @@ if UTILITY_PATH.joinpath("utility").is_dir():
     add_sys_path(UTILITY_PATH)
 
 
-from _pytest.reports import TestReport
-from utility.error_handling import (  # noqa: E402
-    format_exception_with_variables,
-)
 from pathlib import Path  # noqa: E402
 
+from _pytest.reports import TestReport
+
 from pykotor.common.misc import Game  # noqa: E402
-from pykotor.extract.file import ResourceIdentifier, FileResource
-from pykotor.resource.type import ResourceType
+from pykotor.extract.file import FileResource, ResourceIdentifier
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats.ncs.compiler.classes import (  # noqa: E402
     CompileError,
@@ -54,17 +52,19 @@ from pykotor.resource.formats.ncs.compilers import (  # noqa: E402
 from pykotor.resource.formats.ncs.io_ncs import NCSBinaryWriter
 from pykotor.resource.formats.ncs.ncs_auto import compile_nss, write_ncs  # noqa: E402
 from pykotor.resource.formats.ncs.ncs_data import NCS  # noqa: E402
+from pykotor.resource.type import ResourceType
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
+from utility.error_handling import (  # noqa: E402
+    format_exception_with_variables,
+)
 
 if TYPE_CHECKING:
-    from typing_extensions import Literal
-    from _pytest.reports import TestReport
     from ply import yacc  # pyright: ignore[reportMissingTypeStubs]
-
-    from pykotor.extract.file import FileResource
-    from pykotor.resource.formats.ncs.ncs_data import NCSCompiler
+    from typing_extensions import Literal
 
     from pykotor.common.script import ScriptConstant, ScriptFunction
+    from pykotor.extract.file import FileResource
+    from pykotor.resource.formats.ncs.ncs_data import NCSCompiler
 
     KOTOR_CONSTANTS: list[ScriptConstant] = []
     KOTOR_FUNCTIONS: list[ScriptFunction] = []

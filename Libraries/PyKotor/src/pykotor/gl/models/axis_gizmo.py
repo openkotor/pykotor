@@ -70,8 +70,7 @@ else:
     GL_DEPTH_TEST = missing_constant("GL_DEPTH_TEST")
     GL_LINE_WIDTH = missing_constant("GL_LINE_WIDTH")
 
-from pykotor.gl.glm_compat import translate, vec4
-from pykotor.gl.glm_compat import Vector3 as GlmVector3
+from pykotor.gl.glm_compat import Vector3 as GlmVector3, translate, vec4
 
 if TYPE_CHECKING:
     from pykotor.gl.shader import Shader

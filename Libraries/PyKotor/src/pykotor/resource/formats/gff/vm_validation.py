@@ -17,9 +17,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Iterator
 
 from loggerplus import RobustLogger
+from pykotor.resource.formats.gff.gff_data import GFFStruct
 
 if TYPE_CHECKING:
-    from pykotor.resource.formats.gff.gff_data import GFF, GFFStruct
+    from pykotor.resource.formats.gff.gff_data import GFF
 
 logger: RobustLogger = RobustLogger()
 

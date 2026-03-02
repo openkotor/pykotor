@@ -34,8 +34,9 @@ TEST_TLK_XML = """<tlk language="0">
 
 class TestTalkTable(unittest.TestCase):
     def test_size(self):
-        import tempfile
         import os
+        import tempfile
+
         from pykotor.resource.formats.tlk import read_tlk, write_tlk
         from pykotor.resource.type import ResourceType
 
@@ -53,8 +54,9 @@ class TestTalkTable(unittest.TestCase):
             os.unlink(tmp_path)
 
     def test_string(self):
-        import tempfile
         import os
+        import tempfile
+
         from pykotor.resource.formats.tlk import read_tlk, write_tlk
         from pykotor.resource.type import ResourceType
 
@@ -76,8 +78,9 @@ class TestTalkTable(unittest.TestCase):
             os.unlink(tmp_path)
 
     def test_voiceover(self):
-        import tempfile
         import os
+        import tempfile
+
         from pykotor.resource.formats.tlk import read_tlk, write_tlk
         from pykotor.resource.type import ResourceType
 
@@ -99,8 +102,9 @@ class TestTalkTable(unittest.TestCase):
             os.unlink(tmp_path)
 
     def test_batch(self):
-        import tempfile
         import os
+        import tempfile
+
         from pykotor.resource.formats.tlk import read_tlk, write_tlk
         from pykotor.resource.type import ResourceType
 
@@ -122,8 +126,9 @@ class TestTalkTable(unittest.TestCase):
             os.unlink(tmp_path)
 
     def test_language(self):
-        import tempfile
         import os
+        import tempfile
+
         from pykotor.resource.formats.tlk import read_tlk, write_tlk
         from pykotor.resource.type import ResourceType
 

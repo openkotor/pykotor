@@ -4,13 +4,15 @@ from __future__ import annotations
 
 import logging
 import sys
-from argparse import Namespace
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.cli.kit_generator import generate_kit, normalize_module_name
 
 if TYPE_CHECKING:
+    from argparse import Namespace
+
     from loggerplus import RobustLogger
 
 LEVEL_MAP = {

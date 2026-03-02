@@ -7,12 +7,13 @@ exact vanilla TLK data to restore properly.
 
 from __future__ import annotations
 
-import os
-
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from pykotor.common.misc import Game
+
+if TYPE_CHECKING:
+    import os
 
 # Vanilla TLK entry counts for different game versions
 VANILLA_TLK_COUNTS = {

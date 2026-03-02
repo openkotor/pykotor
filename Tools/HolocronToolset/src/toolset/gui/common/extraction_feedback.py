@@ -8,9 +8,6 @@ from qtpy.QtWidgets import QMessageBox, QWidget
 
 from loggerplus import RobustLogger
 
-if TYPE_CHECKING:
-    pass
-
 
 def show_extraction_results(
     parent: QWidget | None,

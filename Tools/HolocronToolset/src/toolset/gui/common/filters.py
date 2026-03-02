@@ -4,10 +4,11 @@ from abc import abstractmethod
 from contextlib import suppress
 from typing import TYPE_CHECKING, Any, cast
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import QEvent, QObject, QSortFilterProxyModel, Qt
 from qtpy.QtGui import QStandardItemModel
 from qtpy.QtWidgets import QAbstractSpinBox, QApplication, QComboBox, QDoubleSpinBox, QGroupBox, QSlider, QSpinBox, QWidget
+
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QModelIndex

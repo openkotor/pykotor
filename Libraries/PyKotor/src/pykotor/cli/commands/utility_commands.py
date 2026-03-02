@@ -8,9 +8,8 @@ from __future__ import annotations
 import pathlib
 import sys
 
-from argparse import Namespace
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from loggerplus import RobustLogger as Logger  # type: ignore[import-untyped]
 
@@ -18,9 +17,14 @@ from loggerplus import RobustLogger as Logger  # type: ignore[import-untyped]
 from pykotor.cli.logger import LogLevel, OutputMode
 from pykotor.diff_tool.logger import DiffLogger
 from pykotor.extract.installation import Installation
-from pykotor.resource.formats.gff import GFF, read_gff, write_gff
+from pykotor.resource.formats.gff import read_gff, write_gff
 from pykotor.tools.misc import is_capsule_file
 from pykotor.tools.utilities import get_file_stats, grep_in_file, validate_file
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from pykotor.resource.formats.gff import GFF
 
 
 def _diff_archives_or_directories(

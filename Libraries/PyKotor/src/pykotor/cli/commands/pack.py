@@ -6,6 +6,7 @@ This module handles packing source files into KOTOR module/ERF/hak files.
 from __future__ import annotations
 
 import glob
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -13,12 +14,11 @@ if TYPE_CHECKING:
     from argparse import Namespace
     from logging import Logger
 
-from pykotor.resource.formats.erf import ERF, ERFType, write_erf
-from pykotor.resource.type import ResourceType
-
 from pykotor.cli.cfg_parser import load_config
 from pykotor.cli.commands.compile import cmd_compile
 from pykotor.cli.commands.convert import cmd_convert
+from pykotor.resource.formats.erf import ERF, ERFType, write_erf
+from pykotor.resource.type import ResourceType
 
 
 def should_overwrite_file(file_path: Path, source_newest: float, mode: str, logger: Logger) -> bool:

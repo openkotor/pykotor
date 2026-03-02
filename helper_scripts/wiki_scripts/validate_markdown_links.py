@@ -10,6 +10,7 @@ Scans all markdown files and validates:
 from __future__ import annotations
 
 import re
+
 from pathlib import Path
 from urllib.parse import urlparse
 

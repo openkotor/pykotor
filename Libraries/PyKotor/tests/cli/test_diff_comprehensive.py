@@ -65,10 +65,6 @@ from pykotor.resource.formats.tpc.tpc_auto import bytes_tpc
 from pykotor.resource.formats.tpc.tpc_data import TPC
 from pykotor.resource.type import ResourceType
 
-if TYPE_CHECKING:
-    pass
-
-
 # ============================================================================
 # HELPER UTILITIES FOR TEST DATA CREATION
 # ============================================================================

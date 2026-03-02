@@ -3,20 +3,16 @@ from __future__ import annotations
 import sys
 import traceback
 
-from collections.abc import Iterable
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, overload
 
 from qtpy.QtCore import (
     QAbstractItemModel,
-    QByteArray,
-    QDir,
-    QEvent,
     QUrl,
     Qt,
 )
-from qtpy.QtWidgets import QApplication, QFileSystemModel, QLayoutItem, QMessageBox, QWidget  # pyright: ignore[reportPrivateImportUsage]
+from qtpy.QtWidgets import QApplication, QFileSystemModel, QLayoutItem, QMessageBox  # pyright: ignore[reportPrivateImportUsage]
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as AdapterQFileDialog
@@ -28,9 +24,20 @@ from utility.gui.qt.widgets.itemviews.treeview import RobustTreeView
 from utility.gui.qt.widgets.widgets.stacked_view import DynamicStackedView
 
 if TYPE_CHECKING:
-    from qtpy.QtCore import QAbstractItemModel, QAbstractProxyModel, QModelIndex, QObject, QPoint
+    from collections.abc import Iterable
+
+    from qtpy.QtCore import (
+        QAbstractItemModel,
+        QAbstractProxyModel,
+        QByteArray,
+        QDir,
+        QEvent,
+        QModelIndex,
+        QObject,
+        QPoint,
+    )
     from qtpy.QtGui import QAbstractFileIconProvider
-    from qtpy.QtWidgets import QAbstractItemDelegate, QAbstractItemView, QListView, QTreeView
+    from qtpy.QtWidgets import QAbstractItemDelegate, QAbstractItemView, QListView, QTreeView, QWidget
 
 
 class ReplaceStrategy(Enum):
@@ -1267,19 +1274,19 @@ class QFileDialogExtended(AdapterQFileDialog):
         super().setDefaultSuffix(self._none_to_empty(suffix))
 
     def acceptMode(self) -> AdapterQFileDialog.AcceptMode:
-        return cast(AdapterQFileDialog.AcceptMode, super().acceptMode())
+        return cast("AdapterQFileDialog.AcceptMode", super().acceptMode())
 
     def setAcceptMode(self, mode: AdapterQFileDialog.AcceptMode) -> None:
         super().setAcceptMode(mode)
 
     def fileMode(self) -> AdapterQFileDialog.FileMode:
-        return cast(AdapterQFileDialog.FileMode, super().fileMode())
+        return cast("AdapterQFileDialog.FileMode", super().fileMode())
 
     def setFileMode(self, mode: AdapterQFileDialog.FileMode) -> None:
         super().setFileMode(mode)
 
     def viewMode(self) -> AdapterQFileDialog.ViewMode:
-        return cast(AdapterQFileDialog.ViewMode, super().viewMode())
+        return cast("AdapterQFileDialog.ViewMode", super().viewMode())
 
     def setViewMode(self, mode: AdapterQFileDialog.ViewMode) -> None:
         super().setViewMode(mode)
@@ -1298,6 +1305,7 @@ if __name__ == "__main__":
     import faulthandler
     import sys
     import traceback
+
     from pathlib import Path
 
     # Ensure the package "src" root is on sys.path so imports like

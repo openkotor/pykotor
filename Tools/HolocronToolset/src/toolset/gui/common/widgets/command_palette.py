@@ -37,8 +37,8 @@ class CommandPalette(QDialog):
 
     def setup_ui(self):
         """Set up the UI components."""
-        from toolset.uic.qtpy.widgets.command_palette import Ui_Dialog
         from toolset.gui.common.localization import translate as tr
+        from toolset.uic.qtpy.widgets.command_palette import Ui_Dialog
 
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)

@@ -14,7 +14,6 @@ import comtypes  # pyright: ignore[reportMissingTypeStubs]
 import comtypes.client  # pyright: ignore[reportMissingTypeStubs]
 
 from loggerplus import RobustLogger
-
 from utility.system.win32.com.com_helpers import HandleCOMCall
 from utility.system.win32.com.com_types import GUID
 from utility.system.win32.com.interfaces import (

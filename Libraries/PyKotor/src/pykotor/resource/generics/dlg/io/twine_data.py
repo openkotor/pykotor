@@ -9,13 +9,13 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING, Any
 
 from pykotor.common.misc import Color, ResRef
-from pykotor.resource.generics.dlg.nodes import DLGNode
 from utility.common.geometry import Vector2
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from pykotor.resource.generics.dlg.base import DLG
+    from pykotor.resource.generics.dlg.nodes import DLGNode
 
 
 class PassageType(Enum):

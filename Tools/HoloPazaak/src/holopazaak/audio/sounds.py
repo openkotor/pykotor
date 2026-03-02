@@ -14,6 +14,7 @@ References:
 from __future__ import annotations
 
 import logging
+
 from enum import Enum, auto
 from pathlib import Path
 
@@ -106,7 +107,7 @@ class SoundManager:
         try:
             # Try to import Qt multimedia
             from qtpy.QtCore import QUrl
-            from qtpy.QtMultimedia import QSoundEffect, QMediaPlayer, QAudioOutput
+            from qtpy.QtMultimedia import QAudioOutput, QMediaPlayer, QSoundEffect
 
             self._qt_available = True
             logger.info("Qt multimedia initialized successfully")

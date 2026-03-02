@@ -5,7 +5,6 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING, Callable, Generator
 
 from loggerplus import RobustLogger
-
 from pykotor.resource.generics.dlg import DLGEntry
 
 if TYPE_CHECKING:

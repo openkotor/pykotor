@@ -8,11 +8,14 @@ implementation) so behavior stays aligned with the library implementation.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger
 from pykotor.extract.installation import Installation
 from pykotor.tools.kit import extract_kit as _extract_kit
 from pykotor.tools.path import CaseAwarePath
+
+if TYPE_CHECKING:
+    from loggerplus import RobustLogger
 
 
 def normalize_module_name(raw_module: str) -> str:

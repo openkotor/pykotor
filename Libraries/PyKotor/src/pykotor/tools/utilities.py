@@ -20,12 +20,17 @@ from __future__ import annotations
 
 import difflib
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.gff.gff_auto import read_gff
-from pykotor.resource.formats.gff.gff_data import GFF, GFFFieldType, GFFList, GFFStruct
+from pykotor.resource.formats.gff.gff_data import GFFFieldType, GFFList, GFFStruct
 from pykotor.resource.formats.tlk.tlk_auto import read_tlk
 from pykotor.resource.formats.twoda.twoda_auto import read_2da
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from pykotor.resource.formats.gff.gff_data import GFF
 
 
 def diff_files(

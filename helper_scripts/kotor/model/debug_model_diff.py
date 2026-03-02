@@ -98,6 +98,7 @@ for node in mdl.all_nodes():
 
 # Now test write functionality
 from io import BytesIO
+
 from pykotor.resource.formats.mdl import write_mdl
 
 print("\n===== Testing write_mdl =====")

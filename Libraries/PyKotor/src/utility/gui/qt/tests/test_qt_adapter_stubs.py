@@ -7,28 +7,27 @@ the Qt API with correct method signatures, return types, and behavior.
 from __future__ import annotations
 
 import tempfile
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
+
 from qtpy.QtCore import (
     QDir,
     QFileInfo,
     QModelIndex,
-    Qt,
     QUrl,  # pyright: ignore[reportPrivateImportUsage]
+    Qt,
 )
 from qtpy.QtWidgets import QApplication, QFileDialog, QFileSystemModel
 
-if TYPE_CHECKING:
-    pass
-
 # Import all adapter classes
-from utility.gui.qt.adapters.filesystem.pyfilesystemmodel import PyFileSystemModel
-from utility.gui.qt.adapters.filesystem.pyfileinfogatherer import PyFileInfoGatherer
-from utility.gui.qt.adapters.filesystem.pyfilesystemnode import PyFileSystemNode
 from utility.gui.qt.adapters.filesystem.pyextendedinformation import PyQExtendedInformation
+from utility.gui.qt.adapters.filesystem.pyfileinfogatherer import PyFileInfoGatherer
+from utility.gui.qt.adapters.filesystem.pyfilesystemmodel import PyFileSystemModel
 from utility.gui.qt.adapters.filesystem.pyfilesystemmodelsorter import PyFileSystemModelSorter
+from utility.gui.qt.adapters.filesystem.pyfilesystemnode import PyFileSystemNode
 from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as AdapterQFileDialog
 
 

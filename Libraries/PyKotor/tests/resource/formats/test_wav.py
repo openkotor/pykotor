@@ -18,6 +18,7 @@ import struct
 import sys
 import tempfile
 import unittest
+
 from io import BytesIO
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()

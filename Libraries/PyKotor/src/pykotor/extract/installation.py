@@ -13,7 +13,6 @@ from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Generator, Iterable, Sequence, overload
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingModuleSource]
-
 from pykotor.common.language import Gender, Language, LocalizedString
 from pykotor.common.misc import Game, ResRef
 from pykotor.extract.capsule import Capsule
@@ -21,8 +20,8 @@ from pykotor.extract.chitin import Chitin
 from pykotor.extract.file import FileResource, LocationResult, ResourceIdentifier, ResourceResult
 from pykotor.extract.savedata import SaveFolderEntry
 from pykotor.extract.talktable import TalkTable
-from pykotor.resource.formats.gff import read_gff, GFFFieldType
-from pykotor.resource.formats.tpc import read_tpc, TPC
+from pykotor.resource.formats.gff import GFFFieldType, read_gff
+from pykotor.resource.formats.tpc import read_tpc
 from pykotor.resource.formats.wav import bytes_wav, read_wav
 from pykotor.resource.type import ResourceType
 from pykotor.tools.misc import is_capsule_file, is_erf_file, is_mod_file
@@ -42,6 +41,7 @@ if TYPE_CHECKING:
     from pykotor.extract.capsule import LazyCapsule
     from pykotor.extract.talktable import StringResult
     from pykotor.resource.formats.gff import GFF
+    from pykotor.resource.formats.tpc import TPC
 
 
 @dataclass

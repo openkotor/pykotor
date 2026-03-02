@@ -5,11 +5,11 @@ import weakref
 
 from typing import TYPE_CHECKING, Any
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QColor, QPalette
 from qtpy.QtWidgets import QApplication, QListWidget, QListWidgetItem, QWidget
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.resource.generics.dlg import DLGEntry, DLGLink
 from toolset.gui.editors.dlg.constants import QT_STANDARD_ITEM_FORMAT, _DLG_MIME_DATA_ROLE, _EXTRA_DISPLAY_ROLE
 from utility.gui.qt.widgets.itemviews.html_delegate import HTMLDelegate

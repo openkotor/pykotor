@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import unittest
 
-from pykotor.resource.formats.tpc.tpc_data import TPC
-from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import dxt1_to_rgb
 from pykotor.resource.formats.tpc.convert.dxt.compress_dxt import rgb_to_dxt1
+from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import dxt1_to_rgb
 from pykotor.resource.formats.tpc.convert.rgb import rgb_to_rgba
+from pykotor.resource.formats.tpc.tpc_data import TPC
 
 
 class TestTPCData(unittest.TestCase):

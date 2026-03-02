@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 from loggerplus import RobustLogger
-
 from utility.system.os_helper import is_frozen, requires_admin
 
 if TYPE_CHECKING:

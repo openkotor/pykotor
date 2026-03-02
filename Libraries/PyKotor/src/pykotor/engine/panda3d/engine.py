@@ -17,11 +17,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from direct.showbase.ShowBase import ShowBase
-
-from pykotor.engine.panda3d.materials import Panda3DMaterialManager
-from pykotor.engine.panda3d.module_loader import ModuleLoader
-from pykotor.engine.panda3d.scene_graph import Panda3DSceneGraph
-
 from panda3d.core import (
     AmbientLight,
     AntialiasAttrib,
@@ -30,10 +25,15 @@ from panda3d.core import (
     loadPrcFileData,
 )
 
+from pykotor.engine.panda3d.materials import Panda3DMaterialManager
+from pykotor.engine.panda3d.scene_graph import Panda3DSceneGraph
+
 if TYPE_CHECKING:
     from panda3d.core import (
         NodePath,
     )
+
+    from pykotor.engine.panda3d.module_loader import ModuleLoader
 
 
 class KotorEngine(ShowBase):

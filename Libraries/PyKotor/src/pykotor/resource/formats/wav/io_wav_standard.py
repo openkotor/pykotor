@@ -17,12 +17,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.wav.wav_data import (
-    WAV,
     AudioFormat,
 )
 from pykotor.resource.type import ResourceWriter, autoclose
 
 if TYPE_CHECKING:
+    from pykotor.resource.formats.wav.wav_data import (
+        WAV,
+    )
     from pykotor.resource.type import TARGET_TYPES
 
 

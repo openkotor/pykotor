@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import pathlib
-from argparse import Namespace
+
 from typing import TYPE_CHECKING
 
 from pykotor.tools.archives import create_key_from_directory
 
 if TYPE_CHECKING:
+    from argparse import Namespace
     from logging import Logger
 
 

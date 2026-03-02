@@ -23,13 +23,13 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from typing import TYPE_CHECKING
 
-from utility.common.geometry import Vector2
 from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.generics.pth import PTH, construct_pth, dismantle_pth
+from pykotor.resource.generics.pth import construct_pth, dismantle_pth
 from pykotor.resource.type import ResourceType
+from utility.common.geometry import Vector2
 
 if TYPE_CHECKING:
-    pass
+    from pykotor.resource.generics.pth import PTH
 
 TEST_PTH_XML = """<gff3>
   <struct id="-1">

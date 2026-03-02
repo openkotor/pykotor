@@ -7,12 +7,17 @@ disassemble, assemble) using PyKotor utilities.
 from __future__ import annotations
 
 import pathlib
-from argparse import Namespace
 
-from loggerplus import RobustLogger
+from typing import TYPE_CHECKING
+
 from pykotor.common.misc import Game
 from pykotor.resource.formats.ncs.ncs_auto import compile_nss, write_ncs
 from pykotor.tools.scripts import decompile_ncs_to_nss, disassemble_ncs
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from loggerplus import RobustLogger
 
 
 def cmd_decompile(args: Namespace, logger: RobustLogger) -> int:

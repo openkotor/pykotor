@@ -7,9 +7,9 @@ This module provides CLI commands for converting between different file formats
 from __future__ import annotations
 
 import pathlib
-from argparse import Namespace
 
-from loggerplus import RobustLogger as Logger  # type: ignore[import-untyped, note]
+from typing import TYPE_CHECKING
+
 from pykotor.tools.conversions import (
     convert_2da_to_csv,
     convert_csv_to_2da,
@@ -23,6 +23,11 @@ from pykotor.tools.conversions import (
     convert_xml_to_ssf,
     convert_xml_to_tlk,
 )
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from loggerplus import RobustLogger as Logger
 
 
 def cmd_gff2xml(args: Namespace, logger: Logger) -> int:

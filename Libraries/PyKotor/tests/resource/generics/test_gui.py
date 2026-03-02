@@ -4,6 +4,7 @@ import os
 import pathlib
 import sys
 import unittest
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
@@ -24,33 +25,30 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from typing import TYPE_CHECKING
 
-
-from utility.common.geometry import Vector2, Vector4
-from pykotor.resource.formats.gff import GFF
 from pykotor.common.misc import Color
-from pykotor.resource.formats.gff import read_gff
+from pykotor.resource.formats.gff import GFF, read_gff
 from pykotor.resource.generics.gui import (
     GUI,
-    construct_gui,
-    dismantle_gui,
+    GUIBorder,
+    GUIButton,
+    GUICheckBox,
     GUIControl,
     GUIControlType,
-    GUIBorder,
-    GUIText,
-    GUIScrollbar,
-    GUIButton,
-    GUISlider,
-    GUIPanel,
     GUIListBox,
-    GUICheckBox,
-    GUIProtoItem,
+    GUIPanel,
     GUIProgressBar,
+    GUIProtoItem,
+    GUIScrollbar,
+    GUISlider,
+    GUIText,
+    construct_gui,
+    dismantle_gui,
 )
 from pykotor.resource.type import ResourceType
+from utility.common.geometry import Vector2, Vector4
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.gff.gff_data import GFF
-    from pykotor.resource.generics.gui import GUI
 
 TEST_FILE_1 = r"Libraries\PyKotor\tests\test_files\name_x.gui"
 TEST_FILE_2 = r"Libraries\PyKotor\tests\test_files\pazaakgame_p.gui"

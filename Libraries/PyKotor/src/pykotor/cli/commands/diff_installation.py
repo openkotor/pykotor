@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from argparse import Namespace
+from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger as Logger  # type: ignore[import-untyped]
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from loggerplus import RobustLogger as Logger
 
 
 def cmd_diff_installation(args: Namespace, logger: Logger) -> int:

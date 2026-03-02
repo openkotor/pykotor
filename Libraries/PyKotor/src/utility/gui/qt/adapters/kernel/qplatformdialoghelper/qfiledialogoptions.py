@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from typing import Iterable
+from typing import TYPE_CHECKING, Iterable
 
-from qtpy.QtCore import QDir, QUrl
 from qtpy.QtWidgets import QFileDialog
+
+if TYPE_CHECKING:
+    from qtpy.QtCore import QDir, QUrl
 
 
 class QFileDialogOptions:

@@ -257,7 +257,16 @@ class ModuleDesignerControls3d:
         camera_wants_input = move_xy_camera_satisfied or move_camera_plane_satisfied or zoom_camera_satisfied or (rotate_camera_satisfied and modifier_held)
 
         # Instance manipulation - only when no camera control with modifiers claims the input
-        if not camera_wants_input and not self.editor.ui.lockInstancesCheck.isChecked() and self.editor.selected_instances:
+        # The _active_tool on the editor gates which drag operations are allowed:
+        #   SELECT (0): no drag manipulation; left-drag falls through to camera controls
+        #   MOVE   (1): left-drag moves instances (default binding behaviour)
+        #   ROTATE (2): left-drag rotates instances (overrides move binding)
+        _TOOL_SELECT = 0
+        _TOOL_MOVE = 1
+        _TOOL_ROTATE = 2
+        active_tool: int = getattr(self.editor, "_active_tool", _TOOL_MOVE)
+
+        if not camera_wants_input and active_tool != _TOOL_SELECT and not self.editor.ui.lockInstancesCheck.isChecked() and self.editor.selected_instances:
             # Check instance manipulation bindings (most specific first)
             if self.move_z_selected.satisfied(buttons, keys):
                 if not self.editor.is_drag_moving:
@@ -265,6 +274,17 @@ class ModuleDesignerControls3d:
                     self.editor.is_drag_moving = True
                 for instance in self.editor.selected_instances:
                     instance.position.z -= processed_dy / 40
+                return
+
+            # ROTATE tool: redirect left-drag to rotation instead of XY move
+            if active_tool == _TOOL_ROTATE and self.move_xy_selected.satisfied(buttons, keys):
+                if not self.editor.is_drag_rotating:
+                    self.editor.is_drag_rotating = True
+                    for instance in self.editor.selected_instances:
+                        if not isinstance(instance, (GITCamera, GITCreature, GITDoor, GITPlaceable, GITStore, GITWaypoint)):
+                            continue
+                        self.editor.initial_rotations[instance] = Vector4(*instance.orientation) if isinstance(instance, GITCamera) else instance.bearing
+                self.editor.rotate_selected(processed_dx, processed_dy)
                 return
 
             if self.rotate_selected.satisfied(buttons, keys):
@@ -277,7 +297,8 @@ class ModuleDesignerControls3d:
                 self.editor.rotate_selected(processed_dx, processed_dy)
                 return
 
-            if self.move_xy_selected.satisfied(buttons, keys):
+            # MOVE tool (or default): left-drag moves XY
+            if active_tool != _TOOL_ROTATE and self.move_xy_selected.satisfied(buttons, keys):
                 if not self.editor.is_drag_moving:
                     self.editor.initial_positions = {instance: instance.position for instance in self.editor.selected_instances}
                     self.editor.is_drag_moving = True
@@ -392,6 +413,8 @@ class ModuleDesignerControls3d:
                 instance: GITInstance | None = next(iter(self.editor.selected_instances), None)
                 if instance is not None:
                     self.renderer.snap_camera_to_point(instance.position)
+                    # Also sync 2D camera to the selected instance position
+                    self.editor.ui.flatRenderer.snap_camera_to_point(instance.position)
             elif move_camera_keys["cursor"]:
                 scene.camera.set_position(scene.cursor.position())
             elif move_camera_keys["entry"]:
@@ -742,6 +765,8 @@ class ModuleDesignerControls2d:
         if self.snap_camera_to_selected.satisfied(buttons, keys):
             for instance in self.editor.selected_instances:
                 self.renderer.snap_camera_to_point(instance.position)
+                # Also sync 3D camera to the selected instance position
+                self.editor.ui.mainRenderer.snap_camera_to_point(instance.position)
                 break
 
         if self.toggle_instance_lock.satisfied(buttons, keys):

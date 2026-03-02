@@ -16,7 +16,7 @@ from utility.gui.qt.widgets.widgets.stacked_view import DynamicStackedView
 class TestDynamicStackedView(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.app: QApplication = cast(QApplication, QApplication.instance() or QApplication(sys.argv))
+        cls.app: QApplication = cast("QApplication", QApplication.instance() or QApplication(sys.argv))
 
     @classmethod
     def tearDownClass(cls):
@@ -214,7 +214,7 @@ class TestDynamicStackedView(unittest.TestCase):
     def test_select_all(self):
         """Test selecting all items."""
         # Set up a model with actual items
-        from qtpy.QtGui import QStandardItemModel, QStandardItem
+        from qtpy.QtGui import QStandardItem, QStandardItemModel
         from qtpy.QtWidgets import QAbstractItemView
 
         model = QStandardItemModel()

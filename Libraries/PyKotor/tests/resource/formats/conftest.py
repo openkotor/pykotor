@@ -5,6 +5,7 @@ import logging
 import os
 import pathlib
 import sys
+
 from io import StringIO
 from pathlib import Path  # noqa: E402
 from typing import TYPE_CHECKING
@@ -30,10 +31,9 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
-from utility.error_handling import format_exception_with_variables
-
 from pykotor.common.misc import Game  # noqa: E402
 from pykotor.extract.installation import Installation  # noqa: E402
+from utility.error_handling import format_exception_with_variables
 
 if TYPE_CHECKING:
     from typing_extensions import Literal

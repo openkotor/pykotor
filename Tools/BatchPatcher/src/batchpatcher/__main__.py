@@ -40,9 +40,8 @@ if getattr(sys, "frozen", False) is False:
 
 from pathlib import Path, PurePath
 
-from loggerplus import RobustLogger
-
 from batchpatcher.translate.language_translator import TranslationOption, Translator
+from loggerplus import RobustLogger
 from pykotor.common.alien_sounds import ALIEN_SOUNDS
 from pykotor.common.language import Language, LocalizedString
 from pykotor.common.misc import Game, ResRef
@@ -1260,11 +1259,12 @@ class KOTORPatchingToolUI:
             return None
 
         try:
-            from pykotor.resource.formats.gff import read_gff
-            from pykotor.resource.formats.gff.gff_data import GFFStruct, GFFList
-            from pykotor.resource.type import ResourceType
-            from pykotor.extract.installation import Installation
             from pathlib import Path
+
+            from pykotor.extract.installation import Installation
+            from pykotor.resource.formats.gff import read_gff
+            from pykotor.resource.formats.gff.gff_data import GFFList, GFFStruct
+            from pykotor.resource.type import ResourceType
 
             install_path = Path(self.path.get())
             if not install_path.exists():

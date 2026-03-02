@@ -1,21 +1,10 @@
 from __future__ import annotations
 
 import os
+
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, cast
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
-from pykotor.extract.capsule import Capsule
-from pykotor.extract.chitin import Chitin
-from pykotor.extract.file import FileResource, ResourceIdentifier
-from pykotor.extract.installation import Installation, SearchLocation
-from pykotor.extract.talktable import TalkTable
-from pykotor.extract.twoda import TwoDARegistry
-from pykotor.resource.formats.tpc.tpc_data import TPC
-from pykotor.resource.formats.twoda import read_2da
-from pykotor.resource.formats.twoda.twoda_data import TwoDA
-from pykotor.resource.type import ResourceType
-from pykotor.tools.misc import is_capsule_file, is_erf_file, is_mod_file, is_rim_file
 from qtpy.QtCore import (
     QPoint,
     Qt,
@@ -31,21 +20,34 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
+from pykotor.extract.capsule import Capsule
+from pykotor.extract.chitin import Chitin
+from pykotor.extract.file import FileResource, ResourceIdentifier
+from pykotor.extract.installation import Installation, SearchLocation
+from pykotor.extract.talktable import TalkTable
+from pykotor.extract.twoda import TwoDARegistry
+from pykotor.resource.formats.tpc.tpc_data import TPC
+from pykotor.resource.formats.twoda import read_2da
+from pykotor.resource.formats.twoda.twoda_data import TwoDA
+from pykotor.resource.type import ResourceType
+from pykotor.tools.misc import is_capsule_file, is_erf_file, is_mod_file, is_rim_file
 from toolset.gui.common.localization import tr, trf
 from toolset.utils.window import add_window
 
 if TYPE_CHECKING:
-    from pykotor.extract.file import LocationResult, ResourceResult
-    from pykotor.resource.formats.tpc import TPC
-    from pykotor.resource.formats.tpc.tpc_data import TPCMipmap
-    from pykotor.resource.formats.twoda import TwoDA
-    from pykotor.resource.generics.uti import UTI
     from qtpy.QtGui import QStandardItemModel
     from qtpy.QtWidgets import QPlainTextEdit
     from typing_extensions import (  # pyright: ignore[reportMissingModuleSource]
         Literal,
         Self,
     )
+
+    from pykotor.extract.file import LocationResult, ResourceResult
+    from pykotor.resource.formats.tpc import TPC
+    from pykotor.resource.formats.tpc.tpc_data import TPCMipmap
+    from pykotor.resource.formats.twoda import TwoDA
+    from pykotor.resource.generics.uti import UTI
 
 
 class HTInstallation(Installation):
@@ -621,7 +623,6 @@ class HTInstallation(Installation):
             find_tag_references,
             find_template_resref_references,
         )
-
         from toolset.gui.dialogs.asyncloader import AsyncLoader
         from toolset.gui.dialogs.reference_search_options import ReferenceSearchOptions
         from toolset.gui.dialogs.search import FileResults

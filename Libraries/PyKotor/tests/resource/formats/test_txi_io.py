@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import io
-import pytest
-from pykotor.resource.formats.txi import TXI, read_txi, bytes_txi
 
 from typing import TYPE_CHECKING
+
+import pytest
+
+from pykotor.resource.formats.txi import TXI, bytes_txi, read_txi
 
 if TYPE_CHECKING:
     from typing_extensions import LiteralString

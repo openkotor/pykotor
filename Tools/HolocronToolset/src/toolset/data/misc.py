@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Set, Tuple, Union
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QKeySequence
 
+from loggerplus import RobustLogger
 from toolset.utils.misc import get_qt_button_string, get_qt_key_string
 
 Bind = Tuple[Set[Qt.Key], Union[Set[Qt.MouseButton], None]]

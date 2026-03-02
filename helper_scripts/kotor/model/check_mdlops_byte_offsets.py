@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import struct
+
 from pathlib import Path
 
 # Read original binary and find where MDLOps actually reads the values

@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal, TypeVar
 
 from loggerplus import RobustLogger
-
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Color, Game, ResRef
 from pykotor.resource.formats.gff.gff_auto import bytes_gff, read_gff, write_gff

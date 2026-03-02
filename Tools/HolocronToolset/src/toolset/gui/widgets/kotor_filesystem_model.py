@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, ClassVar, Protocol, TypeVar, Union, cast
 import qtpy
 
 from loggerplus import RobustLogger
-
 from pykotor.extract.capsule import LazyCapsule
 from utility.gui.qt.adapters.filesystem.pyfilesystemmodel import PyFileSystemModel
 from utility.gui.qt.tools.image import qicon_from_file_ext, qpixmap_to_qicon
@@ -64,17 +63,17 @@ from qtpy.QtCore import QAbstractItemModel, QDir, QModelIndex, QObject, Qt, Sign
 from qtpy.QtGui import QDrag, QIcon, QImage, QPalette, QPixmap  # noqa: E402
 from qtpy.QtWidgets import (  # noqa: E402
     QFileSystemModel,  # pyright: ignore[reportPrivateImportUsage]
-    )
+)
 
 from pykotor.extract.file import FileResource  # noqa: E402
 from pykotor.tools.misc import is_capsule_file  # noqa: E402
 from toolset.gui.dialogs.load_from_location_result import ResourceItems  # noqa: E402
-from toolset.gui.widgets.settings.installations import InstallationConfig  # noqa: E402
+from toolset.gui.widgets.settings.installations import GlobalSettings, InstallationConfig  # noqa: E402
 from toolset.main_init import main_init  # noqa: E402
-from toolset.utils.window import open_resource_editor  # noqa: E402
-from utility.system.os_helper import get_size_on_disk  # noqa: E402
+from toolset.utils.window import open_resource_editor_from_path  # noqa: E402
 from utility.gui.qt.widgets.itemviews.html_delegate import ICONS_DATA_ROLE, HTMLDelegate  # noqa: E402
 from utility.gui.qt.widgets.itemviews.treeview import RobustTreeView  # noqa: E402
+from utility.system.os_helper import get_size_on_disk  # noqa: E402
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QPoint, QRect
@@ -616,7 +615,7 @@ class ResourceFileSystemWidget(QWidget):
             print("<SDM> [fileSystemModelDoubleClick scope] ToolWindow: ", mw)
             if mw is None:
                 return
-            open_resource_editor(item.path, item.resource.resname(), item.resource.restype(), item.resource.data(), installation=mw.active, parentWindow=None)
+            open_resource_editor_from_path(item.path, installation=mw.active, gff_specialized=GlobalSettings().gffSpecializedEditors)
         elif isinstance(item, DirItem):
             if not item.children and isinstance(self.fs_model, (KotorFileSystemModel, ResourceFileSystemModel, QFileSystemModel)):
                 item.loadChildren(self.fs_model)
@@ -762,12 +761,12 @@ class ResourceFileSystemWidget(QWidget):
         print("<SDM> [fileSystemModelContextMenu scope] m: ", m)
 
         m.addAction("Open").triggered.connect(
-            lambda: [open_resource_editor(r.filepath(), r.resname(), r.restype(), r.data(), installation=active_installation) for r in resources]
+            lambda: [open_resource_editor_from_path(r.filepath(), installation=active_installation, gff_specialized=GlobalSettings().gffSpecializedEditors) for r in resources]
         )  # pyright: ignore[reportOptionalMemberAccess]
 
         if all(r.restype().contents == "gff" for r in resources):
             m.addAction("Open with GFF Editor").triggered.connect(
-                lambda: [open_resource_editor(r.filepath(), r.resname(), r.restype(), r.data(), installation=active_installation, gff_specialized=False) for r in resources]
+                lambda: [open_resource_editor_from_path(r.filepath(), installation=active_installation, open_as_generic_gff=True) for r in resources]
             )  # pyright: ignore[reportOptionalMemberAccess]
 
         m.addSeparator()
@@ -1048,7 +1047,7 @@ class KotorFileSystemModel(QAbstractItemModel):
         pixmap: QPixmap | None = None
         try:
             if ext == "tpc":
-                from pykotor.resource.formats.tpc import read_tpc, TPCTextureFormat
+                from pykotor.resource.formats.tpc import TPCTextureFormat, read_tpc
 
                 tpc = read_tpc(data)
                 if tpc.convert(TPCTextureFormat.RGB):

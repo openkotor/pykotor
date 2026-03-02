@@ -19,16 +19,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-from pykotor.common.indoorkit import Kit, KitComponent
 from pykotor.common.indoormap import IndoorMap, IndoorMapRoom, _RoomTransformMatch
-from pykotor.common.misc import Game
-from pykotor.common.module import Module, ModuleResource
-from pykotor.common.modulekit import ModuleKit, ModuleKitManager
+from pykotor.common.module import Module
+from pykotor.common.modulekit import ModuleKitManager
 from pykotor.extract.installation import Installation
-from pykotor.resource.formats.bwm import BWM, read_bwm
-from pykotor.resource.formats.lyt import LYT
-from pykotor.resource.generics.are import ARE
-from pykotor.resource.generics.ifo import IFO
+from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.formats.erf import read_erf
 from pykotor.resource.formats.lyt import read_lyt
 from pykotor.resource.type import ResourceType
@@ -38,6 +33,15 @@ from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
     import os
+
+    from pykotor.common.indoorkit import Kit, KitComponent
+    from pykotor.common.misc import Game
+    from pykotor.common.module import ModuleResource
+    from pykotor.common.modulekit import ModuleKit
+    from pykotor.resource.formats.bwm import BWM
+    from pykotor.resource.formats.lyt import LYT
+    from pykotor.resource.generics.are import ARE
+    from pykotor.resource.generics.ifo import IFO
 
 
 def build_mod_from_indoor_file(

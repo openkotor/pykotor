@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import cProfile
-import sys
 import os
 import pathlib
-from typing import TYPE_CHECKING, Any
+import sys
+
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -29,6 +30,8 @@ if UTILITY_PATH.joinpath("utility").is_dir():
     add_sys_path(UTILITY_PATH)
 
 from pykotor.common.misc import Game
+from pykotor.extract.file import FileResource
+from pykotor.extract.installation import Installation
 from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
 from pykotor.resource.generics.are import read_are, write_are
 from pykotor.resource.generics.dlg import read_dlg, write_dlg
@@ -45,11 +48,9 @@ from pykotor.resource.generics.uts import read_uts, write_uts
 from pykotor.resource.generics.utt import read_utt, write_utt
 from pykotor.resource.generics.utw import read_utw, write_utw
 from pykotor.resource.type import ResourceType
-from pykotor.extract.installation import Installation
-from pykotor.extract.file import FileResource, ResourceIdentifier
 
 if TYPE_CHECKING:
-    from pykotor.extract.file import FileResource
+    from pykotor.extract.file import FileResource, ResourceIdentifier
 
 K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
 K2_PATH: str | None = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")

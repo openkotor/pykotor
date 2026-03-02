@@ -62,7 +62,6 @@ if getattr(sys, "frozen", False) is False:
 from pathlib import Path
 
 from loggerplus import RobustLogger
-
 from pykotor.extract.capsule import LazyCapsule
 from pykotor.resource.formats.bwm.bwm_auto import bytes_bwm, read_bwm
 from pykotor.resource.formats.erf.erf_auto import bytes_erf, read_erf

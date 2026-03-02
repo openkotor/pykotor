@@ -26,7 +26,6 @@ from enum import IntEnum, auto
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-
 from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.tpc.convert.bgra import (
     bgr_to_bgra,

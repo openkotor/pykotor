@@ -70,11 +70,10 @@ import unittest
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, Final, NamedTuple
 
-from qtpy.QtCore import QCoreApplication, QModelIndex, Qt
+from qtpy.QtCore import QCoreApplication, Qt
 from qtpy.QtGui import QColor, QPalette
 from qtpy.QtTest import QSignalSpy, QTest
 from qtpy.QtWidgets import (
-    QAbstractItemView,
     QApplication,
     QDialogButtonBox,
     QFrame,
@@ -82,13 +81,17 @@ from qtpy.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
     QMenu,
-    QSizePolicy,
     QToolButton,
-    QWidget,
 )
 
 if TYPE_CHECKING:
-    from qtpy.QtWidgets import QAbstractButton
+    from qtpy.QtCore import QModelIndex
+    from qtpy.QtWidgets import (
+        QAbstractButton,
+        QAbstractItemView,
+        QSizePolicy,
+        QWidget,
+    )
 
 
 # =============================================================================

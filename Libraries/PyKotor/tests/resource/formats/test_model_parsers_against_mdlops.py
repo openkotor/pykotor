@@ -9,15 +9,18 @@ import tempfile
 import traceback
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from pykotor.common.misc import Game
-from pykotor.extract.file import FileResource
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats.mdl import read_mdl, write_mdl
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import find_kotor_paths_from_default
+
+if TYPE_CHECKING:
+    from pykotor.extract.file import FileResource
 
 
 def find_test_models(

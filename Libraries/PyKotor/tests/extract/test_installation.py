@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from io import BytesIO
 import pathlib
 import pickle
 import sys
 import unittest
+
+from io import BytesIO
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
@@ -23,8 +24,6 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
-from pykotor.resource.formats.tpc.tpc_data import TPC
-from utility.common.more_collections import CaseInsensitiveDict
 from pykotor.common.language import LocalizedString
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import ResourceIdentifier
@@ -33,10 +32,16 @@ from pykotor.resource.type import ResourceType
 
 # Import create_installation from test_diff_comprehensive
 sys.path.insert(0, str(THIS_SCRIPT_PATH.parents[1] / "cli"))
+import tempfile
+
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from test_diff_comprehensive import DiffTestDataHelper
 
-import tempfile
-from pathlib import Path
+if TYPE_CHECKING:
+    from pykotor.resource.formats.tpc.tpc_data import TPC
+    from utility.common.more_collections import CaseInsensitiveDict
 
 
 class TestInstallation(TestCase):

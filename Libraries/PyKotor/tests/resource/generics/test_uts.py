@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import pathlib
 import sys
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()

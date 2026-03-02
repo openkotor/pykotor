@@ -16,8 +16,8 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pykotor.common.stream import BinaryReader
 from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook, KitDoor, MDLMDXTuple
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.generics.utd import read_utd
 from utility.common.geometry import Vector3

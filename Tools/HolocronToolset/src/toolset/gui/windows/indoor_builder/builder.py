@@ -60,6 +60,11 @@ from toolset.blender.integration import BlenderEditorMixin
 from toolset.data.indoorkit.qt_preview import ensure_component_image
 from toolset.data.installation import HTInstallation
 from toolset.gui.common.filters import NoScrollEventFilter
+from toolset.gui.common.editor_pipelines import (
+    populate_module_root_combobox,
+    set_preview_source_image,
+    update_preview_image_size,
+)
 from toolset.gui.common.localization import translate as tr, translate_format as trf
 from toolset.gui.dialogs.asyncloader import AsyncLoader
 from toolset.gui.dialogs.indoor_settings import IndoorMapSettings
@@ -555,56 +560,22 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         self.ui.moduleSelect.clear()
         self.ui.moduleComponentList.clear()
 
-        if not self._installation:
+        if self._installation is None or self._module_kit_manager is None:
             # Disable modules UI if no installation is available
             self.ui.modulesGroupBox.setEnabled(False)
             return
-
-        # Get module roots from the kit manager
-        module_roots: list[str] = self._module_kit_manager.get_module_roots()
-
-        # Populate the combobox with module names
-        for module_root in module_roots:
-            assert isinstance(module_root, str)
-            display_name = self._module_kit_manager.get_module_display_name(module_root)
-            self.ui.moduleSelect.addItem(display_name, module_root)
+        populate_module_root_combobox(self.ui.moduleSelect, self._module_kit_manager)
 
     def _set_preview_image(
         self,
         image: QImage | None,
     ):
         """Render a component preview into the unified preview pane."""
-        if image is None:
-            self.ui.previewImage.clear()
-            self._preview_source_image = None
-            return
-
-        # Store the original image for resizing
-        self._preview_source_image = image
-        # Scale to fit the label's current size
-        self._update_preview_image_size()
+        self._preview_source_image = set_preview_source_image(self.ui.previewImage, image)
 
     def _update_preview_image_size(self):
         """Update preview image to match current label size."""
-        if self._preview_source_image is None:
-            return
-
-        # Get the label's available size
-        label_size = self.ui.previewImage.size()
-        if label_size.width() <= 0 or label_size.height() <= 0:
-            # Label not yet sized, use a default
-            label_size = self.ui.previewImage.sizeHint()
-            if label_size.width() <= 0 or label_size.height() <= 0:
-                label_size = QSize(128, 128)  # Fallback default
-
-        # Scale the image to fit while maintaining aspect ratio
-        pixmap = QPixmap.fromImage(self._preview_source_image)
-        scaled = pixmap.scaled(
-            label_size,
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation,
-        )
-        self.ui.previewImage.setPixmap(scaled)
+        update_preview_image_size(self.ui.previewImage, self._preview_source_image)
 
     def _on_splitter_moved(
         self,

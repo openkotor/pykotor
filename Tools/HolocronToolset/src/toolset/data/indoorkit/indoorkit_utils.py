@@ -8,7 +8,7 @@ This module remains only for compatibility with historical Toolset code paths.
 
 from typing import TYPE_CHECKING
 
-from pykotor.common.indoorkit import MDLMDXTuple, Kit
+from pykotor.common.indoorkit import Kit, MDLMDXTuple
 
 if TYPE_CHECKING:
     from pathlib import Path

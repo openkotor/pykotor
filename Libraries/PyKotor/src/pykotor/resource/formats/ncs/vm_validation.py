@@ -9,11 +9,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-
-from pykotor.resource.formats.ncs.ncs_data import NCS, NCSInstruction, NCSInstructionType
+from pykotor.resource.formats.ncs.ncs_data import NCSInstructionType
 
 if TYPE_CHECKING:
-    pass
+    from pykotor.resource.formats.ncs.ncs_data import NCS, NCSInstruction
 
 logger: RobustLogger = RobustLogger()
 

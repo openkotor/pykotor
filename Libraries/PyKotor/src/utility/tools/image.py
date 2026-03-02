@@ -6,7 +6,6 @@ import pathlib
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-
 from utility.gui.qt.tools.image import _process_pil_image, _process_qt_image, _process_tpc_image
 
 if TYPE_CHECKING:

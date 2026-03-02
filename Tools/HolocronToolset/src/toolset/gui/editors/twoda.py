@@ -6,10 +6,11 @@ from typing import TYPE_CHECKING, Any
 import qtpy
 
 from qtpy.QtCore import QObject, QSortFilterProxyModel, Qt
-from qtpy.QtGui import QColor, QPalette, QStandardItem, QStandardItemModel
+from qtpy.QtGui import QColor, QKeySequence, QPalette, QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import (
     QAction,  # pyright: ignore[reportPrivateImportUsage]
     QApplication,
+    QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -17,19 +18,17 @@ from qtpy.QtWidgets import (
     QLabel,
     QLineEdit,
     QMessageBox,
-    QCheckBox,
     QPushButton,
     QShortcut,  # pyright: ignore[reportPrivateImportUsage]
     QWidget,
 )
-from qtpy.QtGui import QKeySequence
 
 from pykotor.resource.formats.twoda import TwoDA, read_2da, write_2da
 from pykotor.resource.type import ResourceType
-from toolset.gui.editor import Editor
-from toolset.gui.widgets.settings.installations import GlobalSettings
 from toolset.gui.common.filters import NoScrollEventFilter
 from toolset.gui.common.localization import translate
+from toolset.gui.editor import Editor
+from toolset.gui.widgets.settings.installations import GlobalSettings
 from utility.error_handling import assert_with_variable_trace
 
 try:
@@ -2070,8 +2069,9 @@ class TwoDAEditor(Editor):
 
     def import_csv(self):
         """Import CSV file and populate the table."""
-        from qtpy.QtWidgets import QFileDialog
         import csv
+
+        from qtpy.QtWidgets import QFileDialog
 
         filepath, _ = QFileDialog.getOpenFileName(
             self,
@@ -2146,8 +2146,9 @@ class TwoDAEditor(Editor):
 
     def export_csv(self):
         """Export table to CSV file."""
-        from qtpy.QtWidgets import QFileDialog
         import csv
+
+        from qtpy.QtWidgets import QFileDialog
 
         filepath, _ = QFileDialog.getSaveFileName(
             self,
@@ -2899,7 +2900,7 @@ class TwoDAEditor(Editor):
 
     def _apply_cell_formatting(self, indexes: list, formatting: dict):
         """Apply formatting to the given indexes."""
-        from qtpy.QtGui import QFont, QColor, QBrush
+        from qtpy.QtGui import QBrush, QColor, QFont
         
         for idx in indexes:
             source_idx = self.proxy_model.mapToSource(idx)

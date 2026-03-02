@@ -18,7 +18,7 @@ from pykotor.common.stream import BinaryReader
 from pykotor.extract.file import FileResource
 from pykotor.extract.installation import Installation
 from pykotor.extract.twoda import K1Columns2DA, K2Columns2DA
-from pykotor.resource.formats.gff import GFF, GFFContent, GFFFieldType, GFFList, GFFStruct, read_gff
+from pykotor.resource.formats.gff import GFFContent, GFFFieldType, GFFList, GFFStruct, read_gff
 from pykotor.resource.formats.ssf import SSFSound, read_ssf
 from pykotor.resource.formats.tlk import read_tlk
 from pykotor.resource.formats.twoda import TwoDA, read_2da
@@ -52,6 +52,7 @@ from pykotor.tslpatcher.mods.twoda import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from pykotor.resource.formats.gff import GFF
     from pykotor.resource.formats.tlk import TLKEntry
     from pykotor.resource.formats.twoda import TwoDA
     from pykotor.tslpatcher.mods.template import PatcherModifications

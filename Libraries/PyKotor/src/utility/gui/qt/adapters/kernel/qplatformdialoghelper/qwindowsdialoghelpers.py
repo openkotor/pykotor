@@ -8,7 +8,6 @@ from qtpy.QtCore import QEventLoop, Qt
 from qtpy.QtGui import QColor, QFont
 from qtpy.QtWidgets import QDialog, QFileDialog, QFontDialog
 
-from utility.system.win32.com.interfaces import COMDLG_FILTERSPEC, IShellItem
 from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper import (
     QFileDialogPlatformHelper,
     QPlatformColorDialogHelper,
@@ -16,6 +15,7 @@ from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper 
     QPlatformFileDialogHelper,
     QPlatformFontDialogHelper,
 )
+from utility.system.win32.com.interfaces import COMDLG_FILTERSPEC, IShellItem
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractProxyModel, QObject, QUrl

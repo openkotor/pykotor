@@ -326,6 +326,7 @@ def compare_kit_module_structures(installation: HTInstallation, kits_path: str, 
 def test_room_creation_from_module(installation: HTInstallation, verbose: bool = False) -> bool:
     """Test creating IndoorMapRoom from module component."""
     from pykotor.data.indoormap import IndoorMapRoom
+
     from pykotor.common.indoorkit import ModuleKitManager
     from utility.common.geometry import Vector3
 
@@ -392,6 +393,7 @@ def test_room_creation_from_module(installation: HTInstallation, verbose: bool =
 def test_indoor_map_operations(installation: HTInstallation, verbose: bool = False) -> bool:
     """Test IndoorMap operations with module-derived rooms."""
     from pykotor.data.indoormap import IndoorMap, IndoorMapRoom
+
     from pykotor.common.indoorkit import ModuleKitManager
     from utility.common.geometry import Vector3
 
@@ -514,8 +516,8 @@ def test_module_doors_and_hooks(installation: HTInstallation, verbose: bool = Fa
 
 def test_module_bwm_geometry(installation: HTInstallation, verbose: bool = False) -> bool:
     """Test BWM geometry from module components."""
-    from pykotor.resource.formats.bwm.bwm_data import BWM
     from pykotor.common.indoorkit import ModuleKitManager
+    from pykotor.resource.formats.bwm.bwm_data import BWM
 
     print("\n=== Testing BWM Geometry ===")
 
@@ -634,6 +636,7 @@ def test_multiple_module_loading(installation: HTInstallation, verbose: bool = F
 def test_component_equivalence(installation: HTInstallation, kits_path: str, verbose: bool = False) -> bool:
     """Test that module components can be used interchangeably with kit components."""
     from pykotor.data.indoormap import IndoorMap, IndoorMapRoom
+
     from pykotor.common.indoorkit import KitComponent, ModuleKitManager, load_kits
     from utility.common.geometry import Vector3
 

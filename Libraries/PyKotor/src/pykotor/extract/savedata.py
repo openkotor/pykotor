@@ -189,8 +189,7 @@ from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.resource.formats.erf import ERFType
 from pykotor.resource.formats.erf.erf_data import ERF
-from pykotor.resource.formats.gff import bytes_gff, read_gff
-from pykotor.resource.formats.gff import GFFFieldType, GFFList, GFFStruct
+from pykotor.resource.formats.gff import GFFFieldType, GFFList, GFFStruct, bytes_gff, read_gff
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath
 from utility.common.geometry import Vector3, Vector4
@@ -379,6 +378,7 @@ class SaveInfo:
         4. Handle optional fields (TIMESTAMP, PCNAME)
         """
         from copy import deepcopy
+
         from pykotor.resource.formats.gff import read_gff
 
         gff = read_gff(self.save_info_path)
@@ -455,8 +455,7 @@ class SaveInfo:
         - Bytes: set_uint8() for CHEATUSED, hints, LIVECONTENT
         - ResRefs: set_resref() for PORTRAIT0/1/2
         """
-        from pykotor.resource.formats.gff import write_gff
-        from pykotor.resource.formats.gff import GFF, GFFContent
+        from pykotor.resource.formats.gff import GFF, GFFContent, write_gff
 
         gff = GFF(GFFContent.NFO)
         root = gff.root
@@ -846,25 +845,25 @@ class PartyTable:
         self.jnl_sort_order = _acquire("JNL_SORT_ORDER", 0)
 
         # Pazaak
-        self.pt_pazaakcards = cast(GFFList, _acquire("PT_PAZAAKCARDS", GFFList()))
-        self.pt_pazaakdecks = cast(GFFList, _acquire("PT_PAZAAKDECKS", GFFList()))
+        self.pt_pazaakcards = cast("GFFList", _acquire("PT_PAZAAKCARDS", GFFList()))
+        self.pt_pazaakdecks = cast("GFFList", _acquire("PT_PAZAAKDECKS", GFFList()))
 
         # UI
         self.pt_last_gui_pnl = int(_acquire("PT_LAST_GUI_PNL", 0))
-        self.pt_fb_msg_list = cast(GFFList, _acquire("PT_FB_MSG_LIST", GFFList()))
-        self.pt_dlg_msg_list = cast(GFFList, _acquire("PT_DLG_MSG_LIST", GFFList()))
-        self.pt_tut_wnd_shown = cast(bytes, _acquire("PT_TUT_WND_SHOWN", b""))
+        self.pt_fb_msg_list = cast("GFFList", _acquire("PT_FB_MSG_LIST", GFFList()))
+        self.pt_dlg_msg_list = cast("GFFList", _acquire("PT_DLG_MSG_LIST", GFFList()))
+        self.pt_tut_wnd_shown = cast("bytes", _acquire("PT_TUT_WND_SHOWN", b""))
 
         # Cheats
         self.pt_cheat_used = bool(_acquire("PT_CHEAT_USED", 0))
 
         # Economy
-        self.pt_cost_mult_lis = cast(GFFList, _acquire("PT_COST_MULT_LIS", GFFList()))
+        self.pt_cost_mult_lis = cast("GFFList", _acquire("PT_COST_MULT_LIS", GFFList()))
 
         # K2-specific fields
-        self.pt_item_componen = cast(int, _acquire("PT_ITEM_COMPONEN", 0))
-        self.pt_item_chemical = cast(int, _acquire("PT_ITEM_CHEMICAL", 0))
-        self.pt_pcname = cast(str, _acquire("PT_PCNAME", ""))
+        self.pt_item_componen = cast("int", _acquire("PT_ITEM_COMPONEN", 0))
+        self.pt_item_chemical = cast("int", _acquire("PT_ITEM_CHEMICAL", 0))
+        self.pt_pcname = cast("str", _acquire("PT_PCNAME", ""))
 
         # Load PT_INFLUENCE (K2 only)
         if root.exists("PT_INFLUENCE"):
@@ -912,8 +911,7 @@ class PartyTable:
         5. Atomic write to disk
 
         """
-        from pykotor.resource.formats.gff import write_gff
-        from pykotor.resource.formats.gff import GFF, GFFContent
+        from pykotor.resource.formats.gff import GFF, GFFContent, write_gff
 
         gff = GFF(GFFContent.PT)
         root = gff.root
@@ -1392,8 +1390,7 @@ class GlobalVars:
         Vendor ref: KSE/Functions/Globals.pm line ~300-320
         """
         from pykotor.common.stream import BinaryWriter
-        from pykotor.resource.formats.gff import write_gff
-        from pykotor.resource.formats.gff import GFF, GFFContent, GFFList
+        from pykotor.resource.formats.gff import GFF, GFFContent, GFFList, write_gff
 
         gff = GFF(GFFContent.GVT)
         root = gff.root
@@ -2075,7 +2072,7 @@ class SaveNestedCapsule:
             save.save()
         ```
         """
-        from pykotor.resource.formats.gff import read_gff, GFFList
+        from pykotor.resource.formats.gff import GFFList, read_gff
 
         # Iterate through all cached modules
         for module_erf in self.cached_modules.values():
@@ -2428,7 +2425,6 @@ class SaveFolderEntry:
         - Vendor ref: KSE uses temp files + rename for atomicity
         """
         from loggerplus import RobustLogger
-
         from pykotor.resource.formats.erf.erf_auto import write_erf
 
         logger = RobustLogger()

@@ -19,16 +19,16 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+
 from pathlib import Path
-from typing import ClassVar, Final
+from typing import TYPE_CHECKING, ClassVar, Final
 
 from qtpy.QtCore import (
     QCoreApplication,
     QMimeData,
-    QModelIndex,
     QPoint,
-    Qt,
     QUrl,
+    Qt,
 )
 from qtpy.QtGui import (
     QDragEnterEvent,
@@ -43,6 +43,10 @@ from qtpy.QtWidgets import (
     QTreeView,
 )
 
+if TYPE_CHECKING:
+    from qtpy.QtCore import (
+        QModelIndex,
+    )
 
 # =============================================================================
 # WINDOWS 11 DRAG DROP SPECIFICATIONS

@@ -47,9 +47,6 @@ from qtpy.QtWidgets import (
     QTreeView,
 )
 
-if TYPE_CHECKING:
-    pass
-
 
 class TestQFileDialogExtendedLayout(unittest.TestCase):
     """Test visual layout conformance for QFileDialogExtended.

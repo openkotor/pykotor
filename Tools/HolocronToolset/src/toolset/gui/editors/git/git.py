@@ -27,6 +27,7 @@ from pykotor.tools.template import extract_name, extract_tag_from_gff
 from toolset.blender import BlenderEditorMode
 from toolset.blender.integration import BlenderEditorMixin
 from toolset.gui.editor import Editor
+from toolset.gui.common.editor_pipelines import set_exclusive_checkbox_selection
 from toolset.gui.editors.git.controls import GITControlScheme
 from toolset.gui.editors.git.mode import _GeometryMode, _InstanceMode, _Mode, _SpawnMode
 from toolset.gui.widgets.settings.editor_settings.git import GITSettings
@@ -376,17 +377,18 @@ class GITEditor(Editor, BlenderEditorMixin):
             - Uncheck all other instance type checkboxes
             - Check the checkbox that was double clicked
         """
-        self.ui.viewCreatureCheck.setChecked(False)
-        self.ui.viewPlaceableCheck.setChecked(False)
-        self.ui.viewDoorCheck.setChecked(False)
-        self.ui.viewSoundCheck.setChecked(False)
-        self.ui.viewTriggerCheck.setChecked(False)
-        self.ui.viewEncounterCheck.setChecked(False)
-        self.ui.viewWaypointCheck.setChecked(False)
-        self.ui.viewCameraCheck.setChecked(False)
-        self.ui.viewStoreCheck.setChecked(False)
-
-        checkbox.setChecked(True)
+        visibility_checkboxes: tuple[QCheckBox, ...] = (
+            self.ui.viewCreatureCheck,
+            self.ui.viewPlaceableCheck,
+            self.ui.viewDoorCheck,
+            self.ui.viewSoundCheck,
+            self.ui.viewTriggerCheck,
+            self.ui.viewEncounterCheck,
+            self.ui.viewWaypointCheck,
+            self.ui.viewCameraCheck,
+            self.ui.viewStoreCheck,
+        )
+        set_exclusive_checkbox_selection(checkbox, visibility_checkboxes)
 
     def get_instance_external_name(self, instance: GITInstance) -> str | None:
         """Get external name of a GIT instance.

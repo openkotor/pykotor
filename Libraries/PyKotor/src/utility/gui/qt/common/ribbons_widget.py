@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
 from qtpy.QtCore import QSize, Qt
 from qtpy.QtGui import QAction, QIcon
@@ -16,9 +16,11 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from utility.gui.qt.common.action_definitions import FileExplorerActions
 from utility.gui.qt.common.column_options_dialog import SetDefaultColumnsDialog
 from utility.gui.qt.common.menu_definitions import FileExplorerMenus
+
+if TYPE_CHECKING:
+    from utility.gui.qt.common.action_definitions import FileExplorerActions
 
 
 class RibbonsWidget(QWidget):
@@ -356,8 +358,8 @@ class RibbonsWidget(QWidget):
 
     def set_stylesheet(self):
         """Apply Windows 11 Fluent Design styling to the ribbon widget."""
-        from qtpy.QtWidgets import QApplication
         from qtpy.QtGui import QPalette
+        from qtpy.QtWidgets import QApplication
 
         app = QApplication.instance()
         assert isinstance(app, QApplication), "QApplication.instance() is not a QApplication"

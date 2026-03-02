@@ -13,8 +13,7 @@ from enum import IntEnum
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
-from qtpy.QtCore import QModelIndex, QSize, Qt, Signal
+from qtpy.QtCore import QSize, Qt, Signal
 from qtpy.QtGui import QImage, QPixmap
 from qtpy.QtWidgets import (
     QAbstractItemView,
@@ -24,12 +23,17 @@ from qtpy.QtWidgets import (
     QListView,
     QStyle,
     QStyledItemDelegate,
-    QStyleOptionViewItem,
 )
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
+
 if TYPE_CHECKING:
+    from qtpy.QtCore import QModelIndex
     from qtpy.QtGui import QPainter
-    from qtpy.QtWidgets import QWidget
+    from qtpy.QtWidgets import (
+        QStyleOptionViewItem,
+        QWidget,
+    )
 
 
 class IconSize(IntEnum):
@@ -370,7 +374,7 @@ class ThumbnailListView(QListView):
 if __name__ == "__main__":
     import sys
 
-    from qtpy.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QHBoxLayout
+    from qtpy.QtWidgets import QApplication, QHBoxLayout, QMainWindow, QPushButton, QVBoxLayout, QWidget
 
     app = QApplication(sys.argv)
 

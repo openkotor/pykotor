@@ -3,11 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QBrush, QPalette
 from qtpy.QtWidgets import QDialog, QDialogButtonBox, QListWidgetItem, QMessageBox
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.common.misc import ResRef
 from pykotor.common.stream import BinaryWriter
 from pykotor.resource.formats.erf import read_erf, write_erf

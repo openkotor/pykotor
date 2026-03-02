@@ -4,9 +4,9 @@ import uuid
 
 from pathlib import Path
 
-from loggerplus import RobustLogger
 from qtpy.QtWidgets import QFileDialog
 
+from loggerplus import RobustLogger
 from pykotor.common.misc import Game
 from pykotor.common.stream import BinaryWriter
 from pykotor.resource.formats.ncs.compilers import ExternalNCSCompiler, KnownExternalCompilers

@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Sequence, Union
 
 from loggerplus import RobustLogger
-
 from pykotor.common.language import LocalizedString
 from pykotor.common.stream import BinaryReader
 from pykotor.extract.file import FileResource  # noqa: PLC0415

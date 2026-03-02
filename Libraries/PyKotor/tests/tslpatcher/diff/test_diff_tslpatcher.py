@@ -32,8 +32,8 @@ if KOTORDIFF_PATH.joinpath("kotordiff").exists():
     add_sys_path(KOTORDIFF_PATH)
 
 
-from pykotor.diff_tool.app import DiffConfig, run_application
 from pykotor.common.misc import Game
+from pykotor.diff_tool.app import DiffConfig, run_application
 from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
 from pykotor.resource.formats.gff.gff_data import GFFContent
 from pykotor.resource.formats.ssf import SSF, SSFSound, bytes_ssf
@@ -54,9 +54,6 @@ from pykotor.tslpatcher.mods.twoda import (
     TargetType,
 )
 from pykotor.tslpatcher.reader import ConfigReader
-
-if TYPE_CHECKING:
-    pass
 
 
 class TestTSLPatcherFromDiff(unittest.TestCase):
@@ -263,14 +260,14 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
         config = self._setupIniAndConfig(expected_ini)
         self.assertEqual(1, len(config.patches_2da))
         self.assertEqual(1, len(config.patches_2da[0].modifiers))
-        mod = cast(ChangeRow2DA, config.patches_2da[0].modifiers[0])
+        mod = cast("ChangeRow2DA", config.patches_2da[0].modifiers[0])
         assert isinstance(mod, ChangeRow2DA)
         self.assertIsInstance(mod, ChangeRow2DA)
         self.assertEqual(TargetType.ROW_INDEX, mod.target.target_type)
         self.assertEqual(1, mod.target.value)
         self.assertIn("Col1", mod.cells)
         self.assertIsInstance(mod.cells["Col1"], RowValueConstant)
-        self.assertEqual("X", cast(RowValueConstant, mod.cells["Col1"]).string)
+        self.assertEqual("X", cast("RowValueConstant", mod.cells["Col1"]).string)
 
         # Apply using loaded INI config to ensure patching also works end-to-end
         memory = PatcherMemory()

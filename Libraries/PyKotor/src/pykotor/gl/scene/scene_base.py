@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
-from pykotor.gl.compat import has_pyopengl
 from loggerplus import RobustLogger
+from pykotor.gl.compat import has_pyopengl
 
 HAS_PYOPENGL = has_pyopengl()
 
@@ -56,7 +56,7 @@ if TYPE_CHECKING:
 
     from pykotor.common.module import Module, ModulePieceResource, ModuleResource
     from pykotor.extract.capsule import Capsule
-    from pykotor.extract.file import ResourceIdentifier, ResourceResult
+    from pykotor.extract.file import ResourceResult
     from pykotor.extract.installation import Installation
     from pykotor.gl.models.mdl import Model, Node
     from pykotor.resource.formats.tpc import TPC

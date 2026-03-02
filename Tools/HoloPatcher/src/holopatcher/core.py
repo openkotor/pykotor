@@ -283,6 +283,7 @@ def parse_args() -> Namespace:
         Namespace: Parsed command line arguments
     """
     import os
+
     from argparse import ArgumentParser
     from pathlib import Path
 
@@ -631,7 +632,6 @@ def write_log_entry(
         log_level: Current log level setting
     """
     from loggerplus import RobustLogger
-
     from pykotor.tslpatcher.logger import LogType
 
     def log_type_to_level() -> LogType:

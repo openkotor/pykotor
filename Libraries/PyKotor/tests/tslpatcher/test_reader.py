@@ -43,7 +43,6 @@ from pykotor.tslpatcher.mods.gff import (  # pyright: ignore[reportMissingImport
     FieldValueTLKMemory,
     LocalizedStringDelta,
     ModifyFieldGFF,
-    ModifyGFF,
 )
 from pykotor.tslpatcher.mods.twoda import (  # pyright: ignore[reportMissingImports]
     AddRow2DA,
@@ -61,6 +60,9 @@ from pykotor.tslpatcher.reader import ConfigReader
 from utility.common.geometry import Vector3, Vector4  # pyright: ignore[reportMissingImports]
 
 if TYPE_CHECKING:
+    from pykotor.tslpatcher.mods.gff import (  # pyright: ignore[reportMissingImports]
+        ModifyGFF,
+    )
     from pykotor.tslpatcher.mods.ssf import ModifySSF  # pyright: ignore[reportMissingImports]
     from pykotor.tslpatcher.mods.tlk import ModifyTLK  # pyright: ignore[reportMissingImports]
     from pykotor.tslpatcher.mods.twoda import AddColumn2DA, ChangeRow2DA  # pyright: ignore[reportMissingImports]
@@ -1534,8 +1536,8 @@ class TestConfigReader(unittest.TestCase):
         self._assert_batch(mod_6, 123)
 
     def _assert_batch(self, this_mod: ModifyGFF | AddFieldGFF, stored):
-        this_mod = cast(AddFieldGFF, this_mod)
-        this_mod.value = cast(FieldValueConstant, this_mod.value)
+        this_mod = cast("AddFieldGFF", this_mod)
+        this_mod.value = cast("FieldValueConstant", this_mod.value)
         assert isinstance(this_mod, AddFieldGFF)
         assert isinstance(this_mod.value, FieldValueConstant)
         assert str(this_mod.path) == "SomeList"

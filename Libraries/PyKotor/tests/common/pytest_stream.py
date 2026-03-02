@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import pathlib
 import sys
+
 from typing import Any
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()

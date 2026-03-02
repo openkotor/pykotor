@@ -7,6 +7,7 @@ These are general utility functions, not specific to KOTOR.
 from __future__ import annotations
 
 import platform
+
 from contextlib import suppress
 from pathlib import Path
 from typing import TYPE_CHECKING

@@ -4,6 +4,7 @@ import os
 import pathlib
 import sys
 import unittest
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
@@ -26,11 +27,11 @@ from typing import TYPE_CHECKING
 
 from pykotor.common.misc import EquipmentSlot
 from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.generics.utc import UTC, construct_utc, dismantle_utc
+from pykotor.resource.generics.utc import construct_utc, dismantle_utc
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
-    pass
+    from pykotor.resource.generics.utc import UTC
 
 # Inlined test.utc content converted to XML format
 TEST_UTC_XML = """<gff3>
@@ -226,8 +227,8 @@ class TestUTC(TestCase):
 
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
-        import tempfile
         import os
+        import tempfile
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".utc.xml", delete=False, encoding="utf-8") as tmp:
             tmp.write(TEST_UTC_XML)

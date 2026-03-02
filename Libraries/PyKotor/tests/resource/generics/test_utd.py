@@ -4,6 +4,7 @@ import os
 import pathlib
 import sys
 import unittest
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
@@ -189,8 +190,8 @@ class TestUTD(TestCase):
 
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
-        import tempfile
         import os
+        import tempfile
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".utd.xml", delete=False, encoding="utf-8") as tmp:
             tmp.write(TEST_UTD_XML)

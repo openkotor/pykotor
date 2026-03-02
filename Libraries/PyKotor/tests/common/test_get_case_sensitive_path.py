@@ -8,7 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from types import TracebackType
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
@@ -27,7 +27,12 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
+from typing import TYPE_CHECKING
+
 from pykotor.tools.path import CaseAwarePath
+
+if TYPE_CHECKING:
+    from types import TracebackType
 
 
 def is_windows_case_sensitivity_supported() -> bool:

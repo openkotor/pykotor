@@ -24,11 +24,11 @@ if UTILITY_PATH.joinpath("utility").exists():
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.generics.jrl import JRL, JRLEntry, JRLQuest, construct_jrl, dismantle_jrl
+from pykotor.resource.generics.jrl import construct_jrl, dismantle_jrl
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
-    pass
+    from pykotor.resource.generics.jrl import JRL, JRLEntry, JRLQuest
 
 TEST_JRL_XML = """<gff3>
   <struct id="-1">

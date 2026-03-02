@@ -18,14 +18,15 @@ from typing import TYPE_CHECKING
 from loggerplus import RobustLogger
 from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook, KitDoor
 from pykotor.common.module import Module
-from pykotor.resource.formats.bwm import BWM, BWMEdge, BWMFace, read_bwm
+from pykotor.resource.formats.bwm import BWM, BWMFace, read_bwm
 from pykotor.resource.generics.utd import UTD
 from pykotor.resource.type import ResourceType
 from pykotor.tools.kit import _extract_doorhooks_from_bwm  # NOTE: shared logic (function)
-from utility.common.geometry import Vector3, SurfaceMaterial
+from utility.common.geometry import SurfaceMaterial, Vector3
 
 if TYPE_CHECKING:
     from pykotor.extract.installation import Installation
+    from pykotor.resource.formats.bwm import BWMEdge
     from pykotor.resource.formats.lyt import LYT, LYTRoom
 
 

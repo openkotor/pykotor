@@ -17,7 +17,6 @@ import itertools
 import json
 import math
 
-import pathlib
 from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, Callable, NamedTuple, TypedDict
 
@@ -25,10 +24,10 @@ from loggerplus import RobustLogger
 from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook, KitDoor
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Color, Game, ResRef
-from pykotor.common.modulekit import ModuleKit, ModuleKitManager
-from pykotor.extract.installation import Installation, SearchLocation
+from pykotor.common.modulekit import ModuleKit
+from pykotor.extract.installation import SearchLocation
 from pykotor.resource.formats._base import ComparableMixin
-from pykotor.resource.formats.bwm import BWM, bytes_bwm, read_bwm
+from pykotor.resource.formats.bwm import bytes_bwm, read_bwm
 from pykotor.resource.formats.erf import ERF, ERFType, write_erf
 from pykotor.resource.formats.lyt import LYT, LYTRoom, bytes_lyt
 from pykotor.resource.formats.tpc import TPCTextureFormat, bytes_tpc
@@ -36,14 +35,18 @@ from pykotor.resource.formats.vis import VIS, bytes_vis
 from pykotor.resource.generics.are import ARE, ARENorthAxis, bytes_are
 from pykotor.resource.generics.git import GIT, GITDoor, GITModuleLink, bytes_git
 from pykotor.resource.generics.ifo import IFO, bytes_ifo
-from pykotor.resource.generics.utd import bytes_utd
-from pykotor.resource.generics.utd import UTD
+from pykotor.resource.generics.utd import UTD, bytes_utd
 from pykotor.resource.type import ResourceType
 from pykotor.tools import model
 from utility.common.geometry import Vector2, Vector3
 
 if TYPE_CHECKING:
     import os
+    import pathlib
+
+    from pykotor.common.modulekit import ModuleKitManager
+    from pykotor.extract.installation import Installation
+    from pykotor.resource.formats.bwm import BWM
 
 
 class DoorInsertion(NamedTuple):

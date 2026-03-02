@@ -8,6 +8,7 @@ import tempfile
 import textwrap
 import traceback
 import unittest
+
 from pathlib import Path
 from typing import TYPE_CHECKING, Sequence
 
@@ -29,7 +30,6 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
-from utility.common.geometry import Vector3
 from pykotor.common.misc import Game
 from pykotor.common.script import DataType
 from pykotor.common.stream import BinaryReader
@@ -46,6 +46,7 @@ from pykotor.resource.formats.ncs.ncs_auto import (
     write_ncs,
 )
 from pykotor.resource.formats.ncs.optimizers import RemoveNopOptimizer
+from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
     from pykotor.common.script import ScriptConstant, ScriptFunction

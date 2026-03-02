@@ -12,11 +12,11 @@ from __future__ import annotations
 import mimetypes
 import os
 import stat
+
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import QSize, Qt, Signal
 from qtpy.QtGui import QImage, QPalette, QPixmap
 from qtpy.QtWidgets import (
@@ -30,6 +30,8 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QModelIndex
@@ -581,6 +583,7 @@ class EnhancedPreviewPane(QWidget):
 
 if __name__ == "__main__":
     import sys
+
     from qtpy.QtWidgets import QApplication, QMainWindow, QSplitter
 
     app = QApplication(sys.argv)

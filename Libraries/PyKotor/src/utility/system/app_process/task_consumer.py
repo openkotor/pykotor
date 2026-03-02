@@ -8,7 +8,6 @@ import time
 from typing import TYPE_CHECKING, Any, Callable, Generic, Mapping, TypeVar
 
 from loggerplus import RobustLogger
-
 from utility.system.win32.job import assign_process_to_job_object, close_handle, create_job_object
 
 if TYPE_CHECKING:

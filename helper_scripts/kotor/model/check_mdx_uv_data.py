@@ -1,8 +1,9 @@
+import shutil
 import struct
+import subprocess
 import sys
 import tempfile
-import shutil
-import subprocess
+
 from pathlib import Path
 
 sys.path.insert(0, "vendor/PyKotor/Libraries/PyKotor/src")

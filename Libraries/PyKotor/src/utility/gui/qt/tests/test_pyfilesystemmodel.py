@@ -9,22 +9,21 @@ from __future__ import annotations
 import os
 import tempfile
 import time
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
+
 from qtpy.QtCore import (
     QDir,
     QFileInfo,
     QModelIndex,
-    Qt,
     QStandardPaths,
+    Qt,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
 from qtpy.QtWidgets import QApplication, QFileIconProvider, QStyle
-
-if TYPE_CHECKING:
-    pass
 
 # Import the Python adapters
 from utility.gui.qt.adapters.filesystem.pyfilesystemmodel import PyFileSystemModel

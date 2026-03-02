@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import sys
 
-from collections.abc import Sequence
 from pathlib import Path
 
 
@@ -33,8 +32,13 @@ def setup_paths() -> None:
 # This is critical for running the CLI directly from the repository
 setup_paths()
 
+from typing import TYPE_CHECKING
+
 from pykotor.cli.argparser import create_parser
 from pykotor.cli.dispatch import cli_main
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def main(argv: Sequence[str] | None = None) -> int:

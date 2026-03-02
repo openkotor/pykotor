@@ -29,7 +29,6 @@ import time
 import tkinter as tk
 
 from abc import ABC, abstractmethod
-from pathlib import Path
 from threading import Event, Thread
 from tkinter import filedialog, font as tkfont, messagebox, ttk
 from typing import TYPE_CHECKING, Any
@@ -39,6 +38,7 @@ from pykotor.tslpatcher.logger import LogType, PatchLogger
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from pathlib import Path
 
     from pykotor.tslpatcher.logger import PatchLog
 

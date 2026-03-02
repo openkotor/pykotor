@@ -25,12 +25,12 @@ import time
 import unittest
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from pykotor.common.misc import Color
 from pykotor.extract.chitin import Chitin
-from pykotor.extract.file import FileResource
 from pykotor.resource.formats.mdl import (
     MDL,
     MDLAnimation,
@@ -64,6 +64,9 @@ from pykotor.resource.formats.mdl.mdl_types import (
 )
 from pykotor.resource.type import ResourceType
 from utility.common.geometry import Vector2, Vector3, Vector4
+
+if TYPE_CHECKING:
+    from pykotor.extract.file import FileResource
 
 
 # NOTE: MDL ASCII reader/writer are implemented on top of BinaryReader/BinaryWriter,

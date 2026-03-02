@@ -1,4 +1,5 @@
 import struct
+
 from pathlib import Path
 
 mdl = Path("vendor/PyKotor/Libraries/PyKotor/tests/test_files/mdl/dor_lhr02.mdl")

@@ -443,6 +443,34 @@ class TLKEditor(Editor):
     ):
         self.proxy_model.setFilterFixedString(text)
 
+    def goto_strref(
+        self,
+        strref: int,
+    ) -> bool:
+        """Jump to a TLK stringref and select it in the table.
+
+        Returns True when a valid row was selected.
+        """
+        if strref < 0 or strref >= self.source_model.rowCount():
+            return False
+
+        source_index: QModelIndex = self.source_model.index(strref, 0)
+        if not source_index.isValid():
+            return False
+
+        proxy_index: QModelIndex = self.proxy_model.mapFromSource(source_index)
+        if not proxy_index.isValid():
+            self.do_filter("")
+            proxy_index = self.proxy_model.mapFromSource(source_index)
+            if not proxy_index.isValid():
+                return False
+
+        self.ui.jumpSpinbox.setValue(strref)
+        self.ui.talkTable.scrollTo(proxy_index)
+        self.ui.talkTable.setCurrentIndex(proxy_index)
+        self.ui.talkTable.setFocus()
+        return True
+
     def toggle_filter_box(self):
         is_visible: bool = self.ui.searchBox.isVisible()
         self.ui.searchBox.setVisible(not is_visible)

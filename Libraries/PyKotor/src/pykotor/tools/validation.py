@@ -23,11 +23,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 from pykotor.extract.file import ResourceIdentifier
-from pykotor.extract.installation import Installation, SearchLocation
+from pykotor.extract.installation import SearchLocation
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from pykotor.common.module import Module
+    from pykotor.extract.installation import Installation
 
 
 class ValidationResult(TypedDict):

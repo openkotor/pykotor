@@ -7,6 +7,7 @@ that all offset values in tables include both decimal and hexadecimal representa
 
 import re
 import sys
+
 from pathlib import Path
 
 

@@ -19,12 +19,10 @@ from qtpy.QtCore import (
     QFile,
     QFileInfo,
     QIODevice,
-    QItemSelectionModel,
     QModelIndex,
     QPoint,
     QRandomGenerator,
     QSettings,
-    QSize,
     QSortFilterProxyModel,
     QStandardPaths,
     QTemporaryFile,
@@ -35,21 +33,16 @@ from qtpy.QtCore import (
 from qtpy.QtGui import QCursor
 from qtpy.QtTest import QTest
 from qtpy.QtWidgets import (
-    QAbstractItemView,
     QAction,  # pyright: ignore[reportPrivateImportUsage]
     QApplication,
     QComboBox,
-    QCompleter,
     QDialogButtonBox,
     QFileSystemModel,  # pyright: ignore[reportPrivateImportUsage]
-    QHeaderView,
-    QLayout,
     QLineEdit,
     QListView,
     QPushButton,
     QToolButton,
     QTreeView,
-    QWidget,
 )
 
 from utility.gui.qt.adapters.filesystem.pyfileinfogatherer import PyFileInfoGatherer as QFileInfoGatherer
@@ -58,8 +51,19 @@ from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDial
 from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper import QPlatformFileDialogHelper
 
 if TYPE_CHECKING:
-    from qtpy.QtCore import QAbstractItemModel
-    from qtpy.QtWidgets import QPushButton
+    from qtpy.QtCore import (
+        QAbstractItemModel,
+        QItemSelectionModel,
+        QSize,
+    )
+    from qtpy.QtWidgets import (
+        QAbstractItemView,
+        QCompleter,
+        QHeaderView,
+        QLayout,
+        QPushButton,
+        QWidget,
+    )
 
 
 class FilterDirModel(QAbstractProxyModel):
@@ -186,7 +190,7 @@ class CrashDialog(PythonQFileDialog):
 class TestQFileDialog2(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.app: QApplication = cast(QApplication, QApplication.instance() or QApplication(sys.argv))
+        cls.app: QApplication = cast("QApplication", QApplication.instance() or QApplication(sys.argv))
         cls.temp_dir: tempfile.TemporaryDirectory = tempfile.TemporaryDirectory()
         cls.temp_path: Path = Path(os.path.normpath(cls.temp_dir.name)).absolute()
         cls.temp_path_str: str = str(cls.temp_path)

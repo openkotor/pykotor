@@ -26,7 +26,6 @@ from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING, Any
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]  # type: ignore[import-untyped]
-
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import ResRef
 from pykotor.resource.formats.gff import GFFFieldType, GFFList, GFFStruct, bytes_gff

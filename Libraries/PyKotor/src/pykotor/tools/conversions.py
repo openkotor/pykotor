@@ -18,7 +18,6 @@ References:
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
@@ -28,6 +27,8 @@ from pykotor.resource.formats.twoda.twoda_auto import read_2da, write_2da
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pykotor.common.language import Language
 
 

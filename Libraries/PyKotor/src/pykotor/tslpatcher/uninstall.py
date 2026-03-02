@@ -14,11 +14,11 @@ from pykotor.tools.encoding import decode_bytes_with_fallbacks
 from pykotor.tools.misc import is_mod_file
 from pykotor.tools.path import CaseAwarePath
 from pykotor.tslpatcher.logger import PatchLogger
+from pykotor.tslpatcher.tlkdefs import detect_patch_type, get_vanilla_tlk_count
 
 if TYPE_CHECKING:
     from pykotor.extract.installation import Installation
     from pykotor.resource.formats.tlk import TLK
-    from pykotor.tslpatcher.tlkdefs import detect_patch_type, get_vanilla_tlk_count
 
 
 # TODO: the aspyr patch contains some required files in the override folder, hardcode them and ignore those here.

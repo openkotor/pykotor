@@ -22,6 +22,7 @@ from panda3d.core import (
     Vec3,
     Vec4,
 )
+
 from pykotor.engine.scene.base import FogProperties, ISceneGraph
 
 if TYPE_CHECKING:

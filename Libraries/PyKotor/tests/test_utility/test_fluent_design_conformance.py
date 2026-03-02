@@ -22,10 +22,11 @@ Each test includes tolerance values accounting for:
 from __future__ import annotations
 
 import unittest
-from typing import ClassVar, Final
+
+from typing import TYPE_CHECKING, ClassVar, Final
 
 from qtpy.QtCore import QCoreApplication, QMargins, QSize, Qt
-from qtpy.QtGui import QColor, QFontDatabase, QPalette
+from qtpy.QtGui import QFontDatabase, QPalette
 from qtpy.QtWidgets import (
     QApplication,
     QComboBox,
@@ -40,6 +41,8 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+if TYPE_CHECKING:
+    from qtpy.QtGui import QColor
 
 # =============================================================================
 # WINDOWS 11 FLUENT DESIGN SPECIFICATIONS

@@ -6,6 +6,7 @@ This class matches qfilesystemmodel.cpp lines 1041-1110 (QFileSystemModelSorter 
 from __future__ import annotations
 
 import os
+
 from typing import TYPE_CHECKING
 
 from qtpy.QtCore import QCollator, QTimeZone, Qt  # type: ignore[attr-defined]

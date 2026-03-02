@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import json
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from pykotor.cli.dispatch import cli_main
 from pykotor.common.module import Module
-from pykotor.extract.installation import Installation
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from pykotor.extract.installation import Installation
 
 
 def _run_cli(argv: list[str]) -> int:

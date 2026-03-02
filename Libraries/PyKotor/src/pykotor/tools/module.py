@@ -6,7 +6,6 @@ from loggerplus import RobustLogger
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import ResRef
 from pykotor.common.module import Module
-from pykotor.extract.file import LocationResult
 from pykotor.extract.installation import Installation, SearchLocation
 from pykotor.resource.formats.erf import ERF, ERFType, read_erf, write_erf
 from pykotor.resource.formats.gff import bytes_gff
@@ -35,7 +34,7 @@ if TYPE_CHECKING:
 
     from pykotor.common.misc import Game
     from pykotor.common.module import ModuleResource
-    from pykotor.extract.file import ResourceResult
+    from pykotor.extract.file import LocationResult, ResourceResult
     from pykotor.resource.formats.lyt.lyt_data import LYT
     from pykotor.resource.formats.tpc import TPC
     from pykotor.resource.formats.vis.vis_data import VIS

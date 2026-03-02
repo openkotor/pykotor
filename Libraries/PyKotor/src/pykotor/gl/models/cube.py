@@ -41,7 +41,6 @@ else:
 
 if TYPE_CHECKING:
     from pykotor.gl.glm_compat import mat4
-
     from pykotor.gl.scene import Scene
     from pykotor.gl.shader import Shader
 

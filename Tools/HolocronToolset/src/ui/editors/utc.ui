@@ -2833,7 +2833,7 @@
   </customwidget>
   <customwidget>
    <class>ModelRenderer</class>
-   <extends>QOpenGLWidget</extends>
+   <extends>QWidget</extends>
    <header location="global">toolset.gui.widgets.renderer.model</header>
   </customwidget>
   <customwidget>

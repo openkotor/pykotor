@@ -74,6 +74,7 @@ class DebugWatchWidget(QWidget):
             expression = self._watch_expressions[row]
 
             from qtpy.QtWidgets import QMenu
+
             from toolset.gui.common.localization import translate as tr
 
             menu = QMenu(self)

@@ -7,7 +7,6 @@ from enum import IntEnum
 from typing import TYPE_CHECKING, Any, NoReturn, cast
 
 from loggerplus import RobustLogger
-
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Color, Game, ResRef
 from pykotor.extract.file import ResourceIdentifier

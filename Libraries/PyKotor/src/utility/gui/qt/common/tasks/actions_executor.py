@@ -26,12 +26,12 @@ Future = _ConcurrentFuture
 sys.modules.setdefault("FileActionsExecutor", sys.modules[__name__])
 CONTROL_KEYWORDS: set[str] = {"progress_queue", "pause_flag", "cancel_flag"}
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import (
     QObject,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
 
+from loggerplus import RobustLogger
 from utility.gui.qt.common.expensive_functions import FileOperations
 
 if qtpy.QT5:
@@ -255,14 +255,14 @@ class FileActionsExecutor(QObject):
         # Check for handle_operation method - legitimate dynamic lookup
         handle_op = getattr(func_obj, "handle_operation", None)
         if callable(handle_op):
-            handle_callable = cast(Callable[..., Any], handle_op)
+            handle_callable = cast("Callable[..., Any]", handle_op)
             return handle_callable(*args, **kwargs)
 
         # Check for handle_multiple method - legitimate dynamic lookup
         handle_multi = getattr(func_obj, "handle_multiple", None)
         if callable(handle_multi):
             paths: list[str] = args[0] if args else kwargs.get("paths", [])
-            handle_multi_callable = cast(Callable[..., Any], handle_multi)
+            handle_multi_callable = cast("Callable[..., Any]", handle_multi)
             return handle_multi_callable(paths, **kwargs)
 
         RobustLogger().debug(f"FileOperations.{operation} is not callable and has no handler methods")

@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import io
+
+from typing import TYPE_CHECKING
 from unittest import TestCase
 
+from pykotor.resource.formats.key import KEY, KEYBinaryReader, KEYBinaryWriter
 from pykotor.resource.type import ResourceType
-from pykotor.resource.formats.key import KEY, BifEntry, KeyEntry, KEYBinaryWriter, KEYBinaryReader
+
+if TYPE_CHECKING:
+    from pykotor.resource.formats.key import BifEntry, KeyEntry
 
 
 class TestKEY(TestCase):

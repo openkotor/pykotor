@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from pathlib import Path
-from collections import defaultdict, Counter
 import traceback
 
+from collections import Counter, defaultdict
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from pykotor.resource.formats.tpc.tpc_auto import read_tpc
-from pykotor.resource.formats.tpc.tpc_data import TPC
+
+if TYPE_CHECKING:
+    from pykotor.resource.formats.tpc.tpc_data import TPC
 
 
 def analyze_textures(texture_dir: Path):

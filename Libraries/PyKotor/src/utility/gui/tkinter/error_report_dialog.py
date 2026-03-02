@@ -3,9 +3,12 @@ from __future__ import annotations
 import tkinter as tk
 
 from tkinter import ttk
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
-from utility.gui.common.error_report_dialog import ErrorReportData, ErrorReportDialogBase
+from utility.gui.common.error_report_dialog import ErrorReportDialogBase
+
+if TYPE_CHECKING:
+    from utility.gui.common.error_report_dialog import ErrorReportData
 
 
 class TkErrorReportDialog(tk.Toplevel, ErrorReportDialogBase):

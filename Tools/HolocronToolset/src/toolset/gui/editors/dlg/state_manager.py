@@ -5,7 +5,6 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING, Any, TypeVar
 
 from loggerplus import RobustLogger
-
 from pykotor.resource.generics.dlg.nodes import DLGNode
 
 if TYPE_CHECKING:

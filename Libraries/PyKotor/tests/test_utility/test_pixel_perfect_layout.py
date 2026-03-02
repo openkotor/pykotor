@@ -23,19 +23,24 @@ from __future__ import annotations
 import unittest
 
 from enum import IntEnum
-from typing import ClassVar, Final
+from typing import TYPE_CHECKING, ClassVar, Final
 
-from qtpy.QtCore import QCoreApplication, QMargins, QRect
+from qtpy.QtCore import QCoreApplication, QMargins
 from qtpy.QtWidgets import (
     QApplication,
     QComboBox,
-    QLayout,
     QLineEdit,
     QPushButton,
     QToolBar,
     QToolButton,
-    QWidget,
 )
+
+if TYPE_CHECKING:
+    from qtpy.QtCore import QRect
+    from qtpy.QtWidgets import (
+        QLayout,
+        QWidget,
+    )
 
 # =============================================================================
 # TOLERANCE LEVELS

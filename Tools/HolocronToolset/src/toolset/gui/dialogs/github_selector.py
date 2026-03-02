@@ -29,7 +29,6 @@ except ImportError:
 
         requests.structures = _RequestsStructures()  # type: ignore[assignment]
 
-from loggerplus import RobustLogger
 from qtpy import QtCore
 from qtpy.QtCore import QTimer, Qt
 from qtpy.QtGui import QBrush, QPalette
@@ -43,6 +42,7 @@ from qtpy.QtWidgets import (
     QTreeWidgetItem,
 )
 
+from loggerplus import RobustLogger
 from toolset.gui.common.localization import translate as tr, trf  # type: ignore[import-not-found]
 from utility.updater.github import CompleteRepoData, TreeInfoData, extract_owner_repo, get_api_url, get_forks_url, get_main_url
 

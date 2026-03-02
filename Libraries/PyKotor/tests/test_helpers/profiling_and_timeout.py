@@ -11,13 +11,11 @@ import os
 import pstats
 import re
 import time
+
 from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeoutError
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Iterator
-
-if TYPE_CHECKING:
-    pass
 
 
 def get_profile_threshold_ms() -> int:

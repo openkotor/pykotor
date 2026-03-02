@@ -4,8 +4,9 @@ from typing import TYPE_CHECKING, ClassVar
 
 import qtpy
 
-from loggerplus import RobustLogger
 from qtpy.QtGui import QColor, QFont, QSyntaxHighlighter, QTextCharFormat
+
+from loggerplus import RobustLogger
 
 if qtpy.QT5:
     from qtpy.QtCore import QRegExp  # pyright: ignore[reportAttributeAccessIssue]

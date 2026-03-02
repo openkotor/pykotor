@@ -63,22 +63,22 @@ if HAS_PYOPENGL:
         GL_BLEND,
         GL_COLOR_BUFFER_BIT,
         GL_CULL_FACE,
-        GL_DEPTH_TEST,
         GL_DEPTH_BUFFER_BIT,
         GL_DEPTH_COMPONENT,
+        GL_DEPTH_TEST,
+        GL_LEQUAL,  # pyright: ignore[reportMissingImports]
         GL_ONE,
         GL_ONE_MINUS_SRC_ALPHA,
-        GL_SRC_COLOR,
         GL_SRC_ALPHA,
-        glDepthMask,
+        GL_SRC_COLOR,
+        glBlendFunc,
         glClear,
         glClearColor,
-        glBlendFunc,
         glDepthFunc,
+        glDepthMask,
         glDisable,
         glEnable,
     )
-    from OpenGL.raw.GL.VERSION.GL_1_0 import GL_LEQUAL  # pyright: ignore[reportMissingImports]
     from OpenGL.raw.GL.VERSION.GL_1_2 import GL_BGRA, GL_UNSIGNED_INT_8_8_8_8  # pyright: ignore[reportMissingImports]
 else:
     glReadPixels = missing_gl_func("glReadPixels")

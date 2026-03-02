@@ -10,8 +10,7 @@ from qtpy.QtCore import (
     Qt,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
-from qtpy.QtWidgets import QLineEdit, QWidget
-from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QLineEdit, QPushButton, QWidget
 
 from toolset.gui.common.localization import translate as tr
 

@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 from qtpy.QtCore import QObject, Slot
 from qtpy.QtWidgets import QHBoxLayout, QPushButton, QVBoxLayout
 
-# Local imports
-from .widgets import HolocronStatus, HolocronToolbar
-
 # Spyder imports
 from spyder.api.translations import get_translation
 from spyder.api.widgets.main_container import PluginMainContainer
 from toolset.gui.windows.main import ToolWindow
+
+# Local imports
+from .widgets import HolocronStatus, HolocronToolbar
 
 if TYPE_CHECKING:
     from .plugin import HolocronToolset as HolocronToolsetPlugin

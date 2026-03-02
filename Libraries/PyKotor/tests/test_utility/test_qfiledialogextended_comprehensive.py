@@ -50,9 +50,6 @@ from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import (
     QFileDialogExtended,
 )
 
-if TYPE_CHECKING:
-    pass
-
 
 class TestQFileDialogExtendedComprehensive(unittest.TestCase):
     """Comprehensive test suite for QFileDialogExtended.

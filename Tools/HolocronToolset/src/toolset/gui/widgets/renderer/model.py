@@ -22,7 +22,7 @@ from pykotor.gl.scene import RenderObject, Scene
 from pykotor.resource.generics.git import GIT
 from toolset.data.misc import ControlItem
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
-from utility.common.geometry import Vector2
+from utility.common.geometry import Vector2, Vector3
 from utility.error_handling import assert_with_variable_trace
 
 if TYPE_CHECKING:
@@ -240,6 +240,35 @@ class ModelRenderer(QOpenGLWidget):
                 scene.camera.pitch = math.pi / 16 * 9
                 scene.camera.yaw = math.pi / 16 * 7
                 scene.camera.distance = model.radius(scene) + 2
+
+    def apply_render_overrides(
+        self,
+        *,
+        field_of_view: float | None = None,
+        show_cursor: bool | None = None,
+    ):
+        """Apply render/view overrides for parity with module renderer APIs."""
+        if self._scene is None:
+            return
+        if field_of_view is not None:
+            self._scene.camera.fov = field_of_view
+        if show_cursor is not None:
+            self._scene.show_cursor = show_cursor
+        self.update()
+
+    def snap_camera_to_point(
+        self,
+        point: Vector2 | Vector3,
+        *,
+        distance: float | None = None,
+    ):
+        """Snap camera center to point in model preview scene."""
+        self.scene.camera.x = point.x
+        self.scene.camera.y = point.y
+        if isinstance(point, Vector3):
+            self.scene.camera.z = point.z
+        if distance is not None:
+            self.scene.camera.distance = distance
 
     # region Events
     def focusOutEvent(self, e: QFocusEvent):  # pyright: ignore[reportIncompatibleMethodOverride]

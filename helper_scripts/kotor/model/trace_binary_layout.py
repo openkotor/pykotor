@@ -13,11 +13,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parents[3] / "Libraries" / "PyKotor" / "src"))
 
 from pykotor.common.misc import Game
+from pykotor.extract.file import ResourceResult
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats.mdl import read_mdl, write_mdl
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath, find_kotor_paths_from_default
-from pykotor.extract.file import ResourceResult
 
 
 def get_uint32(data: bytes, offset: int) -> int:

@@ -24,7 +24,74 @@
        <attribute name="title">
         <string>General</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="6,1,5">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_preview">
+          <item>
+           <widget class="ModelRenderer" name="previewRenderer">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>200</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="mouseTracking">
+             <bool>true</bool>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="itemModelInfoGroupBox">
+            <property name="title">
+             <string>Model Info</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_itemModelInfo">
+             <item>
+              <widget class="QLabel" name="itemModelInfoSummaryLabel">
+               <property name="toolTip">
+                <string>Summary of the item's 3D model. Expand to see full model path and texture info. Display-only; change Base Item or Model Variation to change the model. Not stored in the GFF.</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="itemModelInfoLabel">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <item>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
@@ -218,201 +285,6 @@
             <property name="toolTip">
              <string>Upgrade Level (GFF: Upgrades). DWORD in engine (ReadFieldDWORD in LoadDataFromGff, K1 @ 0x0055fcd0). K1: bitfield for which upgrade slots are filled. K2: often used as upgrade tier (0–255). UI shows 0–255. Modders: must match base item; invalid values can break upgrade slots or display.</string>
             </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>10</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <widget class="QCheckBox" name="plotCheckbox">
-            <property name="text">
-             <string>Plot</string>
-            </property>
-            <property name="toolTip">
-             <string>Plot (GFF: Plot). BYTE 0/1. Engine reads via ReadFieldBYTE in LoadDataFromGff (K1 @ 0x0055fcd0). When set, the item cannot be dropped or sold; used for quest and story-critical items. Modders: enable for items that must stay in inventory; NPCs with Plot items will not drop them on death.</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QFormLayout" name="formLayout_2">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_43">
-              <property name="text">
-               <string>Charges:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QSpinBox" name="chargesSpin">
-              <property name="minimum">
-               <number>0</number>
-              </property>
-              <property name="maximum">
-               <number>255</number>
-              </property>
-              <property name="toolTip">
-               <string>Charges (GFF: Charges). BYTE 0–255. Engine reads via ReadFieldBYTE in LoadDataFromGff (K1 @ 0x0055fcd0); default 50 (0x32) when missing. Current uses remaining for usable items (medpacs, grenades, etc.). Modders: 0 = empty/unusable; max 255. When charges reach 0, the item is consumed or unusable until recharged.</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_44">
-              <property name="text">
-               <string>Stack Size:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QSpinBox" name="stackSpin">
-              <property name="minimum">
-               <number>0</number>
-              </property>
-              <property name="maximum">
-               <number>65535</number>
-              </property>
-              <property name="toolTip">
-               <string>Stack Size (GFF: StackSize). WORD 0–65535. Engine reads via ReadFieldWORD in LoadDataFromGff (K1 @ 0x0055fcd0). Max number of this item that can stack in one inventory slot. Modders: 1 = non-stackable (weapons, armor); higher for consumables/ammo. Very high values work but may overflow in some UIs.</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_45">
-              <property name="text">
-               <string>Model Variation:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QSpinBox" name="modelVarSpin">
-              <property name="minimum">
-               <number>0</number>
-              </property>
-              <property name="maximum">
-               <number>255</number>
-              </property>
-              <property name="toolTip">
-               <string>Model Variation (GFF: ModelVariation). BYTE 0–255. Engine reads via ReadFieldBYTE in LoadDataFromGff (K1 @ 0x0055fcd0); if 0, ModelPart1 is read as fallback (and clamped to 1 if still 0). Selects alternate meshes from the base item. Modders: check baseitems.2da and model files; invalid indices may show default or wrong visuals.</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_46">
-              <property name="text">
-               <string>Body Variation:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QSpinBox" name="bodyVarSpin">
-              <property name="minimum">
-               <number>0</number>
-              </property>
-              <property name="maximum">
-               <number>255</number>
-              </property>
-              <property name="toolTip">
-               <string>Body Variation (GFF: BodyVariation). Used for armor (model_type 1) only. In LoadDataFromGff (K1 @ 0x0055fcd0), when base item is armor the engine sets body_variation from the base item's body_var and then reads TextureVar from GFF; BodyVariation may be stored for toolset/override. Modders: only applies to armor; check appearance.2da and armor models. Valid 0–255.</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="label_47">
-              <property name="text">
-               <string>Texture Variation:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QSpinBox" name="textureVarSpin">
-              <property name="minimum">
-               <number>0</number>
-              </property>
-              <property name="maximum">
-               <number>255</number>
-              </property>
-              <property name="toolTip">
-               <string>Texture Variation (GFF: TextureVar). BYTE 0–255. Engine reads via ReadFieldBYTE in LoadDataFromGff (K1 @ 0x0055fcd0) only when base item model_type is 1 (armor); default 1 when missing. Selects texture variant for armor. Modders: only applies to armor; check armor textures for valid indices.</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QGroupBox" name="groupBox">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>84</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="title">
-             <string>Icon</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_3">
-             <property name="leftMargin">
-              <number>3</number>
-             </property>
-             <property name="topMargin">
-              <number>3</number>
-             </property>
-             <property name="rightMargin">
-              <number>3</number>
-             </property>
-             <property name="bottomMargin">
-              <number>3</number>
-             </property>
-             <property name="spacing">
-              <number>3</number>
-             </property>
-             <item row="0" column="0">
-              <widget class="QLabel" name="iconLabel">
-               <property name="toolTip">
-                <string>Item icon preview. The game derives the icon from the base item (baseitems.2da) and sometimes model; this is display-only. Change Base Item or model variation to change the icon. Not stored as a separate GFF field.</string>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>64</width>
-                 <height>64</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>64</width>
-                 <height>64</height>
-                </size>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="scaledContents">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
            </widget>
           </item>
          </layout>
@@ -628,6 +500,12 @@
    <class>ComboBox2DA</class>
    <extends>QComboBox</extends>
    <header location="global">toolset.gui.widgets.edit.combobox_2da</header>
+  </customwidget>
+  <customwidget>
+   <class>ModelRenderer</class>
+   <extends>QWidget</extends>
+   <header location="global">toolset.gui.widgets.renderer.model</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

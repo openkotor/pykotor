@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import unittest
+
 from typing import Any, Callable
 
 from utility.common.misc_string.case_insens_str import CaseInsensImmutableStr

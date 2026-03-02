@@ -5,6 +5,7 @@ import pathlib
 import subprocess
 import sys
 import unittest
+
 from tempfile import TemporaryDirectory
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
@@ -25,8 +26,9 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 import contextlib
 
-from utility.system.path import Path
 from pathlib import Path
+
+from utility.system.path import Path
 
 
 class TestPathExtras(unittest.TestCase):

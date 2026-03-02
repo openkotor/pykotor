@@ -31,16 +31,18 @@ from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.bwm.bwm_data import (  # noqa: E402
     BWM,
-    BWMAdjacency,
-    BWMEdge,
     BWMFace,
-    BWMNodeAABB,
     BWMType,
 )
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose  # noqa: E402
 from utility.common.geometry import SurfaceMaterial, Vector3  # noqa: E402
 
 if TYPE_CHECKING:
+    from pykotor.resource.formats.bwm.bwm_data import (  # noqa: E402
+        BWMAdjacency,
+        BWMEdge,
+        BWMNodeAABB,
+    )
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
 

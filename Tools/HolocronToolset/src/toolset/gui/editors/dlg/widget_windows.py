@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, ClassVar
 
 import qtpy
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import (
     Qt,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
@@ -14,6 +13,7 @@ from qtpy.QtCore import (
 from qtpy.QtGui import QTextDocument
 from qtpy.QtWidgets import QDialog, QListWidgetItem, QStyle, QStyleOptionViewItem
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.resource.generics.dlg import DLGLink
 from toolset.gui.editors.dlg.list_widget_base import DLGListWidget, DLGListWidgetItem
 from utility.gui.qt.widgets.itemviews.html_delegate import HTMLDelegate
@@ -154,8 +154,8 @@ class ReferenceChooserDialog(QDialog):
         return int(doc.idealWidth())
 
     def get_stylesheet(self) -> str:
-        from qtpy.QtWidgets import QApplication
         from qtpy.QtGui import QPalette
+        from qtpy.QtWidgets import QApplication
 
         # Get palette color for dialog background
         app = QApplication.instance()

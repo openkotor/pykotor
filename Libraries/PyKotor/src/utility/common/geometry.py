@@ -14,9 +14,9 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 if importlib.util.find_spec("pyglm"):
-    from pyglm.glm import vec2, vec3, vec4, mat4
+    from pyglm.glm import mat4, vec2, vec3, vec4
 elif importlib.util.find_spec("glm"):
-    from glm import vec2, vec3, vec4, mat4
+    from glm import mat4, vec2, vec3, vec4
 elif not TYPE_CHECKING:
     vec2, vec3, vec4, mat4 = object, object, object, object
 

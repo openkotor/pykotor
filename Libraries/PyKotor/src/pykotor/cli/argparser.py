@@ -4,10 +4,14 @@ from __future__ import annotations
 
 import os
 import sys
-from argparse import Action, ArgumentParser, RawDescriptionHelpFormatter
-from typing import Any
+
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from typing import TYPE_CHECKING, Any
 
 from pykotor.cli.version import VERSION
+
+if TYPE_CHECKING:
+    from argparse import Action
 
 
 class PyKotorHelpFormatter(RawDescriptionHelpFormatter):
@@ -160,6 +164,7 @@ def _get_invocation_command() -> str:
         return "pykotor"
 
     import os
+
     from pathlib import Path
 
     # Try to detect if we're being run via "uv run" by checking parent process

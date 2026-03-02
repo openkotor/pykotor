@@ -41,16 +41,16 @@ from qtpy.QtWidgets import (
     QListView,
     QMainWindow,
     QMenuBar,
-    QSplitter,
     QStatusBar,
-    QToolBar,
     QToolButton,
     QTreeView,
 )
 
 if TYPE_CHECKING:
-    pass
-
+    from qtpy.QtWidgets import (
+        QSplitter,
+        QToolBar,
+    )
 
 # =============================================================================
 # WINDOWS EXPLORER SPECIFICATIONS

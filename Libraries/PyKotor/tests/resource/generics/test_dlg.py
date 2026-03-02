@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import os
 import pathlib
-from pathlib import PureWindowsPath
 import sys
 import unittest
+
+from pathlib import PureWindowsPath
 from unittest import TestCase
+
 import pytest
 
 from pykotor.common.language import Gender, Language, LocalizedString
@@ -771,8 +773,8 @@ class TestDLG(TestCase):
 
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
-        import tempfile
         import os
+        import tempfile
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".dlg.xml", delete=False, encoding="utf-8") as tmp:
             tmp.write(TEST_DLG_XML)

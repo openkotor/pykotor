@@ -61,8 +61,8 @@ class TestRIM(unittest.TestCase):
 
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
-        import tempfile
         import os
+        import tempfile
 
         with tempfile.NamedTemporaryFile(mode="wb", suffix=".rim", delete=False) as tmp:
             tmp.write(BINARY_TEST_DATA)

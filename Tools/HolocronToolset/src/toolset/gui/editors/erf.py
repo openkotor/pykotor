@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Callable
+from typing import TYPE_CHECKING, Callable, cast
 
 import qtpy
 
@@ -751,8 +751,8 @@ class ERFEditorTable(RobustTableView):
         if mime_data.hasUrls():
             event.setDropAction(Qt.DropAction.CopyAction)
             event.accept()
-            filter_model: ERFSortFilterProxyModel = cast(ERFSortFilterProxyModel, self.model())
-            source_model: QStandardItemModel = cast(QStandardItemModel, filter_model.sourceModel())
+            filter_model: ERFSortFilterProxyModel = cast("ERFSortFilterProxyModel", self.model())
+            source_model: QStandardItemModel = cast("QStandardItemModel", filter_model.sourceModel())
             existing_items: set[str] = {f"{source_model.index(row, 0).data()}.{source_model.index(row, 1).data()}".strip().lower() for row in range(source_model.rowCount())}
             always: bool = False
             never: bool = False
@@ -860,8 +860,8 @@ class ERFEditorTable(RobustTableView):
             return
 
         urls: list[QUrl] = []
-        filter_model: ERFSortFilterProxyModel = cast(ERFSortFilterProxyModel, self.model())
-        source_model: QStandardItemModel = cast(QStandardItemModel, filter_model.sourceModel())
+        filter_model: ERFSortFilterProxyModel = cast("ERFSortFilterProxyModel", self.model())
+        source_model: QStandardItemModel = cast("QStandardItemModel", filter_model.sourceModel())
         for index in (index for index in self.selectedIndexes() if not index.column()):
             resource: ERFResource = source_model.data(filter_model.mapToSource(index), Qt.ItemDataRole.UserRole + 1)
             file_stem, file_ext = str(resource.resref), resource.restype.extension

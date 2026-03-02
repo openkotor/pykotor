@@ -328,6 +328,24 @@ class ModuleRenderer(QOpenGLWidget):
             self.update()
         self.sig_lyt_updated.emit(self._lyt)
 
+    def apply_render_overrides(
+        self,
+        *,
+        backface_culling: bool | None = None,
+        use_lightmap: bool | None = None,
+        show_cursor: bool | None = None,
+    ) -> None:
+        """Apply renderer overlay/display toggles to the active scene."""
+        if self._scene is None:
+            return
+        if backface_culling is not None:
+            self._scene.backface_culling = backface_culling
+        if use_lightmap is not None:
+            self._scene.use_lightmap = use_lightmap
+        if show_cursor is not None:
+            self._scene.show_cursor = show_cursor
+        self.update()
+
     def get_lyt(self) -> LYT | None:
         """Returns the current LYT data."""
         return self._lyt

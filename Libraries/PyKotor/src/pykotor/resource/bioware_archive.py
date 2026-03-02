@@ -281,7 +281,7 @@ class BiowareArchive(ComparableMixin, ABC):
             key = ResourceIdentifier.from_path(key)
         if not isinstance(key, ResourceIdentifier):
             raise TypeError(f"Expected ResourceIdentifier, got {key.__class__.__name__}")
-        self._resources.remove(cast(dict[ResourceIdentifier, ArchiveResource], self._resource_dict).pop(key))
+        self._resources.remove(cast("dict[ResourceIdentifier, ArchiveResource]", self._resource_dict).pop(key))
 
     def __add__(
         self,
@@ -326,7 +326,7 @@ class BiowareArchive(ComparableMixin, ABC):
         data: bytes,
     ) -> None:
         resource: ArchiveResource | None = next(
-            (resource for resource in cast(list[ArchiveResource], self._resources) if resource.resref == resref and resource.restype == restype),
+            (resource for resource in cast("list[ArchiveResource]", self._resources) if resource.resref == resref and resource.restype == restype),
             None,
         )
         if resource is None:
@@ -341,7 +341,7 @@ class BiowareArchive(ComparableMixin, ABC):
         resref: ResRef | str,
         restype: ResourceType,
     ) -> bytes | None:
-        resource_dict: dict[ResourceIdentifier, ArchiveResource] = cast(dict[ResourceIdentifier, ArchiveResource], self._resource_dict)
+        resource_dict: dict[ResourceIdentifier, ArchiveResource] = cast("dict[ResourceIdentifier, ArchiveResource]", self._resource_dict)
         key = ResourceIdentifier(resref, restype)
         resource: ArchiveResource | None = resource_dict.get(key, None)
         return None if resource is None else resource.data
@@ -383,7 +383,7 @@ class BiowareArchive(ComparableMixin, ABC):
         from pykotor.resource.formats.bif import BIF  # Prevent circular imports
 
         bif = BIF()
-        for resource in cast(list[ArchiveResource], self._resources):
+        for resource in cast("list[ArchiveResource]", self._resources):
             bif.set_data(ResRef(resource.resref), resource.restype, resource.data)
         return bif
 
@@ -391,7 +391,7 @@ class BiowareArchive(ComparableMixin, ABC):
         from pykotor.resource.formats.erf import ERF  # Prevent circular imports
 
         erf = ERF()
-        for resource in cast(list[ArchiveResource], self._resources):
+        for resource in cast("list[ArchiveResource]", self._resources):
             erf.set_data(ResRef(resource.resref), resource.restype, resource.data)
         return erf
 
@@ -399,6 +399,6 @@ class BiowareArchive(ComparableMixin, ABC):
         from pykotor.resource.formats.rim import RIM  # Prevent circular imports
 
         rim = RIM()
-        for resource in cast(list[ArchiveResource], self._resources):
+        for resource in cast("list[ArchiveResource]", self._resources):
             rim.set_data(ResRef(resource.resref), resource.restype, resource.data)
         return rim

@@ -22,9 +22,6 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    pass
-
 
 class CardType(Enum):
     """All card types in Pazaak.

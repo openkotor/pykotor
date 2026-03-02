@@ -19,16 +19,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from panda3d.core import LQuaternion, NodePath  # pyright: ignore[reportMissingImports]
+from panda3d.core import LQuaternion  # pyright: ignore[reportMissingImports]
 
 from pykotor.common.module_loader import ModuleDataLoader
-from pykotor.resource.generics.git import GIT
 from pykotor.extract.installation import SearchLocation
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
+    from panda3d.core import NodePath
+
     from pykotor.common.module import Module
     from pykotor.extract.installation import Installation
+    from pykotor.resource.generics.git import GIT
 
 SEARCH_ORDER = [SearchLocation.OVERRIDE, SearchLocation.CHITIN]
 

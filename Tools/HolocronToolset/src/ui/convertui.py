@@ -182,7 +182,7 @@ def compile_ui(
             result = None
             for compiler in compiler_mapping.values():
                 if result is False:
-                    sys.exit(1)
+                    break  # All attempted compilers failed for this file
                 compiler_path = shutil.which(compiler)
                 try:
                     if compiler_path is None:
@@ -196,11 +196,17 @@ def compile_ui(
                     result = False
                 else:
                     break
+            if result is False:
+                print(f"WARNING: Failed to compile '{ui_file}', skipping...")
+                continue
             if result:
                 if result.stdout:
                     print(result.stdout)
                 if result.stderr:
                     print(result.stderr, file=sys.stderr)
+            if not ui_target.is_file():
+                print(f"WARNING: Target '{ui_target}' not generated, skipping...")
+                continue
             filedata: str = ui_target.read_text(encoding="utf-8")
             new_filedata: str = filedata.replace(f"from {qt_version}", "from qtpy").replace(f"import {qt_version}", "import qtpy")
             if filedata != new_filedata:

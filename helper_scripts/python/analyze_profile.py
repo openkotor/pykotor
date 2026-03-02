@@ -171,7 +171,7 @@ def add_callers(stats: pstats.Stats) -> None:
         stats: pstats.Stats object to populate with caller information
     """
     # Access the internal stats dictionary
-    stats_dict = cast(StatsProtocol, stats).stats
+    stats_dict = cast("StatsProtocol", stats).stats
 
     # Build caller relationships by analyzing the profile data
     # The stats tuple is: (ncalls, prim_calls, tottime, cumtime, callers_dict)
@@ -241,8 +241,8 @@ def filter_stats(stats: pstats.Stats, pattern: str | None) -> pstats.Stats:
 
     # Create a new stats object with filtered entries
     filtered_stats = pstats.Stats()
-    stats_dict = cast(StatsProtocol, stats).stats
-    filtered_dict = cast(StatsProtocol, filtered_stats).stats
+    stats_dict = cast("StatsProtocol", stats).stats
+    filtered_dict = cast("StatsProtocol", filtered_stats).stats
 
     for func_key, func_stats in stats_dict.items():
         func_name = f"{func_key[0]}:{func_key[1]}({func_key[2]})"
@@ -278,7 +278,7 @@ def format_compact_stats(stats: pstats.Stats, top_n: int, sort_key: str) -> str:
     lines.append(f"Top {top_n} by {sort_key}:")
     lines.append("-" * 80)
 
-    stats_dict = cast(StatsProtocol, stats).stats
+    stats_dict = cast("StatsProtocol", stats).stats
     count = 0
     for func_key, func_stats in stats_dict.items():
         if count >= top_n:
@@ -324,7 +324,7 @@ def export_json(
     ----
         Dictionary with profile data
     """
-    stats_protocol = cast(StatsProtocol, stats)
+    stats_protocol = cast("StatsProtocol", stats)
     result: dict[str, Any] = {
         "profile_file": str(prof_file),
         "analysis_time": datetime.now().isoformat(),
@@ -531,7 +531,7 @@ def analyze_profile(
             if output_stream is None:
                 output_stream = sys.stdout
 
-            stats_protocol = cast(StatsProtocol, stats)
+            stats_protocol = cast("StatsProtocol", stats)
             print(f"Profile: {prof_file}", file=output_stream)
             print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", file=output_stream)
             print(f"Total calls: {stats_protocol.total_calls:,}, Total time: {stats_protocol.total_tt:.2f}s", file=output_stream)
@@ -551,7 +551,7 @@ def analyze_profile(
         if output_stream is None:
             output_stream = sys.stdout
 
-        stats_protocol = cast(StatsProtocol, stats)
+        stats_protocol = cast("StatsProtocol", stats)
 
         # Header
         print("=" * 100, file=output_stream)

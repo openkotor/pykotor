@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+
 from pathlib import Path
 
 # Add the PyKotor source directory to the Python path
@@ -19,8 +20,8 @@ if str(pykotor_src) not in sys.path:
     sys.path.insert(0, str(pykotor_src))
 
 # Forward to pykotor.cli.commands.kit_generate
-from pykotor.cli.commands.kit_generate import cmd_kit_generate  # noqa: E402
 from pykotor.cli.argparser import create_parser  # noqa: E402
+from pykotor.cli.commands.kit_generate import cmd_kit_generate  # noqa: E402
 from pykotor.cli.logger import setup_logger  # noqa: E402
 
 

@@ -808,8 +808,8 @@ class SaveGameEditor(Editor):
             fp_percent = (char.fp / char.max_fp * 100) if char.max_fp > 0 else 0
 
             # Use palette colors for HP/FP indicators
+            from qtpy.QtGui import QColor, QPalette
             from qtpy.QtWidgets import QApplication
-            from qtpy.QtGui import QPalette, QColor
 
             app = QApplication.instance()
             if app is not None and isinstance(app, QApplication):
@@ -2099,9 +2099,10 @@ class SaveGameEditor(Editor):
         # Update inventory GFF - rebuild from updated UTI objects
         # This ensures changes are serialized when SaveNestedCapsule.save() is called
         if self._nested_capsule.inventory_gff:
+            from copy import deepcopy
+
             from pykotor.resource.formats.gff import GFFList
             from pykotor.resource.generics.uti import dismantle_uti
-            from copy import deepcopy
 
             inventory_list: GFFList = self._nested_capsule.inventory_gff.root.set_list("ItemList", GFFList())
             inventory_list.clear()

@@ -1,4 +1,5 @@
 import unittest
+
 from pykotor.resource.formats.txi.txi_data import TXI
 
 

@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 
 from qtpy.QtWidgets import QComboBox, QLineEdit
 
-from pykotor.common.misc import ResRef
 from pykotor.common.language import LocalizedString
+from pykotor.common.misc import ResRef
 from pykotor.resource.formats.gff import write_gff
 from pykotor.resource.generics.ifo import IFO, dismantle_ifo, read_ifo
 from pykotor.resource.type import ResourceType
@@ -218,7 +218,7 @@ class IFOEditor(Editor):
         locstring: LocalizedString = self.ui.modNameEdit.locstring()
         if locstring and locstring.stringref != -1:
             # Try to get English text
-            from pykotor.common.language import Language, Gender
+            from pykotor.common.language import Gender, Language
 
             name = locstring.get(Language.ENGLISH, Gender.MALE) or ""
             if not name and self._installation:

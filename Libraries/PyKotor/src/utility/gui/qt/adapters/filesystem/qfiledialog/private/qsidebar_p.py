@@ -51,7 +51,7 @@ if TYPE_CHECKING:
         QPixmap,
         _QAction,
     )
-    from qtpy.QtWidgets import QStyleOptionViewItem, QWidget  # pyright: ignore[reportPrivateImportUsage]
+    from qtpy.QtWidgets import QStyleOptionViewItem  # pyright: ignore[reportPrivateImportUsage]
 
 
 class QSideBarDelegate(QStyledItemDelegate):

@@ -22,13 +22,13 @@ References:
 from __future__ import annotations
 
 import concurrent.futures
-from collections.abc import Callable
+
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from pykotor.common.alien_sounds import ALIEN_SOUNDS
-from pykotor.common.language import Language, LocalizedString
+from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Game, ResRef
 from pykotor.common.stream import BinaryWriter
 from pykotor.extract.capsule import Capsule, LazyCapsule
@@ -73,6 +73,9 @@ from pykotor.tools.misc import is_any_erf_type_file, is_capsule_file
 from pykotor.tools.path import CaseAwarePath
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from pykotor.common.language import Language
     from pykotor.resource.formats.tlk import TLK
     from pykotor.resource.formats.tlk.tlk_data import TLKEntry
 

@@ -24,12 +24,12 @@ from __future__ import annotations
 
 import io
 import math
+import pathlib
+import sys
+
 from pathlib import Path
 
 import pytest
-
-import pathlib
-import sys
 
 # Setup paths
 THIS_FILE = pathlib.Path(__file__).resolve()
@@ -42,10 +42,10 @@ for path in (PYKOTOR_SRC, UTILITY_SRC):
     if as_posix not in sys.path:
         sys.path.insert(0, as_posix)
 
-from utility.common.geometry import Vector3, SurfaceMaterial  # noqa: E402
 from pykotor.resource.formats.bwm import read_bwm  # noqa: E402  # pyright: ignore[reportMissingImports]
 from pykotor.resource.formats.bwm.bwm_auto import BWMBinaryReader, BWMBinaryWriter  # noqa: E402  # pyright: ignore[reportMissingImports]
-from pykotor.resource.formats.bwm.bwm_data import BWM, BWMType, BWMFace  # noqa: E402  # pyright: ignore[reportMissingImports]
+from pykotor.resource.formats.bwm.bwm_data import BWM, BWMFace, BWMType  # noqa: E402  # pyright: ignore[reportMissingImports]
+from utility.common.geometry import SurfaceMaterial, Vector3  # noqa: E402
 
 # Test file paths
 TESTS_DIR = THIS_FILE.parents[2]  # Goes up to 'tests' directory

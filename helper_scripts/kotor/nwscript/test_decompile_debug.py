@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """Debug script for decompilation issues."""
 
-import traceback
 import sys
+import traceback
+
 from pathlib import Path
 
 # Add paths
 sys.path.insert(0, str(Path(__file__).parent.parent / "Libraries" / "PyKotor" / "src"))
 sys.path.insert(0, str(Path(__file__).parent.parent / "Utility" / "src"))
 
-from pykotor.resource.formats.ncs.ncs_auto import compile_nss, decompile_ncs
 from pykotor.common.misc import Game
+from pykotor.resource.formats.ncs.ncs_auto import compile_nss, decompile_ncs
 
 root = Path("vendor/Vanilla_KOTOR_Script_Source")
 script_path = root / "K1" / "Modules" / "M01AA_Endar_Spire_Command_Module_end_m01aa" / "k_end_cut2_fght.nss"

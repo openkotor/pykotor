@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from pykotor.resource.formats.gff.gff_data import GFFFieldType
 
-
 # Field mappings for script references (ResRef fields that contain script names)
 SCRIPT_FIELDS: dict[str, set[str]] = {
     "IFO": {

@@ -39,6 +39,7 @@ from panda3d.core import (  # type: ignore[import-not-found, note]  # pyright: i
     InternalName,
     NodePath,
 )
+
 from pykotor.common.geometry_utils import compute_per_vertex_tangent_space  # pyright: ignore[reportMissingImports]
 from pykotor.gl.models.mdl_converter import get_node_converter_type  # pyright: ignore[reportMissingImports]
 from pykotor.resource.formats.mdl import read_mdl  # pyright: ignore[reportMissingImports]
@@ -535,7 +536,7 @@ class MDLLoader:
 
 
         """
-        from panda3d.core import PointLight, DirectionalLight, Vec3, Vec4
+        from panda3d.core import DirectionalLight, PointLight, Vec3, Vec4
 
         if not mdl_node.light:
             return NodePath(mdl_node.name)

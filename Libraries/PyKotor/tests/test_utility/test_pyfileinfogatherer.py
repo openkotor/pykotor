@@ -4,14 +4,18 @@ import os
 import sys
 import tempfile
 
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from qtpy.QtCore import QCoreApplication, QDir, QFileInfo
+from qtpy.QtCore import QDir, QFileInfo
 from qtpy.QtWidgets import QApplication
 
 from utility.gui.qt.adapters.filesystem.pyfileinfogatherer import PyFileInfoGatherer
+
+if TYPE_CHECKING:
+    from qtpy.QtCore import QCoreApplication
 
 
 @pytest.fixture(scope="session", autouse=True)

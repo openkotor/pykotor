@@ -637,10 +637,8 @@ from pykotor.common.misc import Color, Game
 from pykotor.common.stream import BinaryReader, BinaryWriter
 from pykotor.resource.formats.mdl.mdl_data import (
     MDL,
-    MDLAABBNode,
     MDLAnimation,
     MDLBoneVertex,
-    MDLConstraint,
     MDLController,
     MDLControllerRow,
     MDLEvent,
@@ -661,6 +659,10 @@ if TYPE_CHECKING:
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
 
     from pykotor.common.stream import BinaryWriterBytearray
+    from pykotor.resource.formats.mdl.mdl_data import (
+        MDLAABBNode,
+        MDLConstraint,
+    )
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
 

@@ -1,7 +1,7 @@
 """Debug script to understand DLG serialization issue."""
 
-from pykotor.resource.generics.dlg import DLGEntry, DLGReply, DLGLink
-from pykotor.common.language import LocalizedString, Language, Gender
+from pykotor.common.language import Gender, Language, LocalizedString
+from pykotor.resource.generics.dlg import DLGEntry, DLGLink, DLGReply
 
 # Create the same structure as the test
 entry1 = DLGEntry(comment="E248")

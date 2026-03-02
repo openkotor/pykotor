@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from pathlib import Path, PurePath
+from pathlib import PurePath
 from typing import TYPE_CHECKING, Iterator
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
@@ -12,6 +12,8 @@ from pykotor.tools.path import CaseAwarePath
 
 if TYPE_CHECKING:
     import os
+
+    from pathlib import Path
 
     from typing_extensions import Literal, Self  # pyright: ignore[reportMissingModuleSource]
 

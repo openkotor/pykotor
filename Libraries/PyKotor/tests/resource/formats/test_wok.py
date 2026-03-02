@@ -3,8 +3,8 @@ from __future__ import annotations
 import pathlib
 import sys
 import unittest
-from unittest import TestCase
 
+from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[4].joinpath("src")
@@ -24,11 +24,11 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from typing import TYPE_CHECKING
 
-from utility.common.geometry import Vector3
 from pykotor.resource.formats.bwm import BWMBinaryReader, read_bwm, write_bwm
+from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
-    from pykotor.resource.formats.bwm import BWM, BWMEdge, BWMAdjacency
+    from pykotor.resource.formats.bwm import BWM, BWMAdjacency, BWMEdge
 
 THIS_FILE = pathlib.Path(__file__).resolve()
 TESTS_DIR = THIS_FILE.parents[2]

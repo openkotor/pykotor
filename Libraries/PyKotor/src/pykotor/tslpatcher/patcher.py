@@ -10,7 +10,6 @@ from pathlib import PurePath
 from typing import TYPE_CHECKING, Callable
 
 from loggerplus import RobustLogger
-
 from pykotor.common.stream import BinaryReader, BinaryWriter
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import ResourceIdentifier

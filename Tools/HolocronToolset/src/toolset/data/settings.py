@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Any, Generic, TypeVar
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import QSettings, Qt
 
-from toolset.utils.misc import get_qt_button_string, get_qt_key, get_qt_key_string, get_qt_mouse_button, get_qsettings_organization
+from loggerplus import RobustLogger
+from toolset.utils.misc import get_qsettings_organization, get_qt_button_string, get_qt_key, get_qt_key_string, get_qt_mouse_button
 
 
 class QtTypeWrapper:

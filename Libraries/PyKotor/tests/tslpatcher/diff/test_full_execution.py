@@ -16,8 +16,8 @@ paths beyond what step 1 already executed.
 
 from __future__ import annotations
 
-import contextlib
 import cProfile
+import contextlib
 import io
 import os
 import pathlib
@@ -45,11 +45,19 @@ if KOTORDIFF_PATH.as_posix() not in sys.path:
 if HOLOPATCHER_PATH.as_posix() not in sys.path:
     sys.path.insert(0, HOLOPATCHER_PATH.as_posix())
 
-from holopatcher.core import uninstall_mod, install_mod, load_mod, validate_game_directory, validate_install_paths, format_install_time  # pyright: ignore[reportMissingImports]
+from pathlib import Path
+
+from holopatcher.core import (  # pyright: ignore[reportMissingImports]
+    format_install_time,
+    install_mod,
+    load_mod,
+    uninstall_mod,
+    validate_game_directory,
+    validate_install_paths,
+)
 from pykotor.diff_tool.app import DiffConfig, run_application
 from pykotor.extract.installation import Installation  # pyright: ignore[reportMissingImports]
 from pykotor.tslpatcher.logger import PatchLogger  # pyright: ignore[reportMissingImports]
-from pathlib import Path
 
 
 @contextlib.contextmanager

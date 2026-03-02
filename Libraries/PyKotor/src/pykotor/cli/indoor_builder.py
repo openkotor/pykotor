@@ -5,14 +5,13 @@ This module provides CLI-friendly wrappers around the HolocronToolset indoor map
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.common.misc import Game
 from pykotor.extract.installation import Installation
 
 if TYPE_CHECKING:
-    pass
+    from pathlib import Path
 
 
 def parse_game_argument(game_arg: str | None) -> Game | None:

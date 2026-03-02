@@ -42,8 +42,8 @@ from utility.common.geometry import Vector2, Vector3
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QPoint
-    from qtpy.QtWidgets import QListWidget, QWidget
     from qtpy.QtGui import QUndoStack
+    from qtpy.QtWidgets import QListWidget, QWidget
 
     from pykotor.extract.file import LocationResult, ResourceIdentifier
     from pykotor.resource.generics.git import GITInstance

@@ -14,15 +14,16 @@ References:
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pykotor.common.misc import Game
 from pykotor.resource.formats.ncs.ncs_auto import decompile_ncs, read_ncs
-from pykotor.resource.formats.ncs.ncs_data import NCS
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from pykotor.common.misc import Game
     from pykotor.common.script import ScriptConstant, ScriptFunction
+    from pykotor.resource.formats.ncs.ncs_data import NCS
 
 
 def decompile_ncs_to_nss(

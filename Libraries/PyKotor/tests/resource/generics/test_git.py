@@ -5,7 +5,6 @@ import pathlib
 import sys
 import unittest
 
-
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[4].joinpath("src")
 UTILITY_PATH = THIS_SCRIPT_PATH.parents[6].joinpath("Libraries", "Utility", "src")
@@ -24,7 +23,6 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from typing import TYPE_CHECKING, cast
 
-from utility.common.geometry import Vector3  # pyright: ignore[reportMissingImports]
 from pykotor.common.language import Gender, Language, LocalizedString
 from pykotor.common.misc import Color, ResRef
 from pykotor.resource.formats.gff import read_gff
@@ -33,6 +31,7 @@ from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from pykotor.resource.generics.git import GIT
+    from utility.common.geometry import Vector3
 
 TEST_GIT_XML = """<gff3>
   <struct id="-1">
@@ -387,7 +386,7 @@ class TestGIT(unittest.TestCase):
         self.assertAlmostEqual(-41.319, git.encounters[0].position.x, 2)
         self.assertAlmostEqual(-19.222, git.encounters[0].position.y, 2)
         self.assertAlmostEqual(1.000, git.encounters[0].position.z, 2)
-        encounter_vertex: Vector3 = cast(Vector3, git.encounters[0].geometry[0])
+        encounter_vertex: Vector3 = cast("Vector3", git.encounters[0].geometry[0])
         self.assertAlmostEqual(-5.890, encounter_vertex.x, 2)
         self.assertAlmostEqual(3.072, encounter_vertex.y, 2)
         self.assertAlmostEqual(0.025, encounter_vertex.z, 2)
@@ -423,7 +422,7 @@ class TestGIT(unittest.TestCase):
         self.assertEqual("203tel", git.triggers[0].linked_to_module)
         self.assertEqual("to_203TEL", git.triggers[0].tag)
         self.assertEqual(104245, git.triggers[0].transition_destination.stringref)
-        trigger_vertex: Vector3 = cast(Vector3, git.triggers[0].geometry[0])
+        trigger_vertex: Vector3 = cast("Vector3", git.triggers[0].geometry[0])
         self.assertAlmostEqual(-7.433, trigger_vertex.x, 2)
         self.assertAlmostEqual(1.283, trigger_vertex.y, 2)
         self.assertAlmostEqual(0.025, trigger_vertex.z, 2)

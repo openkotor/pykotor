@@ -10,10 +10,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
+
 from typing import TYPE_CHECKING, Any, Callable
 
 try:
     import websockets
+
     from websockets.client import WebSocketClientProtocol
 
     HAS_WEBSOCKETS = True
@@ -27,9 +29,6 @@ from holopazaak.network.protocol import (
     create_message,
     parse_message,
 )
-
-if TYPE_CHECKING:
-    pass
 
 logger = logging.getLogger(__name__)
 

@@ -19,6 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from panda3d.core import Quat, Vec3
+
 from pykotor.engine.animation.base import (
     IAnimationController,
     IAnimationManager,
@@ -27,6 +28,7 @@ from pykotor.engine.animation.base import (
 
 if TYPE_CHECKING:
     from panda3d.core import NodePath
+
     from pykotor.resource.formats.mdl.mdl_data import MDL, MDLAnimation, MDLController, MDLControllerRow
 
 

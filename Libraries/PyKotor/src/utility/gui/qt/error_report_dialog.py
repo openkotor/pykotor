@@ -3,13 +3,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QDialog, QWidget
+from qtpy.QtWidgets import QDialog
 
-from utility.gui.common.error_report_dialog import ErrorReportData, ErrorReportDialogBase
+from utility.gui.common.error_report_dialog import ErrorReportDialogBase
 from utility.gui.qt.error_report_dialog_ui import Ui_Dialog
 
 if TYPE_CHECKING:
     from qtpy.QtGui import QCloseEvent
+    from qtpy.QtWidgets import QWidget
+
+    from utility.gui.common.error_report_dialog import ErrorReportData
 
 
 class QtErrorReportDialog(QDialog, ErrorReportDialogBase):

@@ -4,7 +4,6 @@ from enum import IntEnum
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
 if TYPE_CHECKING:

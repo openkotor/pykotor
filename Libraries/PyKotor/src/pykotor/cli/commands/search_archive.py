@@ -5,7 +5,7 @@ from __future__ import annotations
 import fnmatch
 import pathlib
 import re
-from argparse import Namespace
+
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -19,6 +19,7 @@ from pykotor.tools.archives import (
 )
 
 if TYPE_CHECKING:
+    from argparse import Namespace
     from logging import Logger
 
 

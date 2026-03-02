@@ -7,10 +7,10 @@ import subprocess
 import sys
 import threading
 import time
+
 from contextlib import suppress
 
 from loggerplus import RobustLogger
-
 from utility.misc import is_frozen
 
 

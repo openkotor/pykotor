@@ -17,19 +17,19 @@ from typing import TYPE_CHECKING, Any, Generator
 import pytest
 
 from qtpy.QtCore import (
-    QCoreApplication,
     QModelIndex,
     QUrl,
     Qt,
 )
 from qtpy.QtWidgets import QApplication
 
-if TYPE_CHECKING:
-    pass
-
 # Import QFileDialogExtended and all dependencies
-
 from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import QFileDialogExtended
+
+if TYPE_CHECKING:
+    from qtpy.QtCore import (
+        QCoreApplication,
+    )
 
 
 @pytest.fixture(scope="session")

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import subprocess
+
 from argparse import Namespace
 from pathlib import Path
 from typing import TYPE_CHECKING

@@ -223,11 +223,11 @@ class GFFJSONWriter(ResourceWriter):
         field_type = field.field_type()
         field_value = field.value()
         if field_type.value == GFF_FIELD_TYPE_STRUCT:
-            return self._serialize_struct(cast(GFFStruct, field_value))
+            return self._serialize_struct(cast("GFFStruct", field_value))
         if field_type.value == GFF_FIELD_TYPE_LIST:
-            return self._serialize_list(cast(GFFList, field_value))
+            return self._serialize_list(cast("GFFList", field_value))
         if field_type.value == GFF_FIELD_TYPE_LOCSTRING:
-            return self._serialize_locstring(cast(LocalizedString, field_value))
+            return self._serialize_locstring(cast("LocalizedString", field_value))
         return field_value
 
     def _serialize_list(

@@ -33,11 +33,14 @@ from pykotor.common.misc import ResRef
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import FileResource
 from pykotor.extract.installation import Installation
-from pykotor.resource.formats.gff import detect_gff, read_gff, write_gff, GFFContent, GFFFieldType, GFFList, GFFStruct
+from pykotor.resource.formats.gff import GFFContent, GFFFieldType, GFFList, GFFStruct, detect_gff, read_gff, write_gff
 from pykotor.resource.formats.lip import read_lip, write_lip
-from pykotor.resource.formats.ssf import read_ssf, write_ssf, SSFSound
-from pykotor.resource.formats.tlk import read_tlk, write_tlk
-from pykotor.resource.formats.tlk import TLK  # noqa: PLC0415
+from pykotor.resource.formats.ssf import SSFSound, read_ssf, write_ssf
+from pykotor.resource.formats.tlk import (
+    TLK,  # noqa: PLC0415
+    read_tlk,
+    write_tlk,
+)
 from pykotor.resource.formats.twoda import read_2da, write_2da
 from pykotor.resource.type import ResourceType
 from pykotor.tools.reference_cache import GFF_FIELD_TO_2DA_MAPPING, StrRefReferenceCache

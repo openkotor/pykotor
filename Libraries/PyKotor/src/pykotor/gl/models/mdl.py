@@ -10,9 +10,8 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pykotor.gl.compat import has_pyopengl, missing_constant, missing_gl_func, safe_gl_error_module
-
 from pykotor.gl import glm, mat4, quat
+from pykotor.gl.compat import has_pyopengl, missing_constant, missing_gl_func, safe_gl_error_module
 from utility.common.geometry import Vector3, Vector4
 
 HAS_PYOPENGL = has_pyopengl()
@@ -36,6 +35,7 @@ else:
         from OpenGL.raw.GL.VERSION.GL_1_5 import GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, glBindBuffer, glBufferData  # pyright: ignore[reportMissingImports]
         from OpenGL.raw.GL.VERSION.GL_2_0 import glEnableVertexAttribArray  # pyright: ignore[reportMissingImports]
         from OpenGL.raw.GL.VERSION.GL_3_0 import glBindVertexArray  # pyright: ignore[reportMissingImports]
+
         from pykotor.gl.compat import GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_SRC_COLOR, glBlendFunc, glDepthMask  # noqa: E501
     else:
         glGenBuffers = missing_gl_func("glGenBuffers")

@@ -6,8 +6,9 @@ end up on NON_WALK faces instead of WALKABLE faces.
 """
 
 import sys
-from pathlib import Path
+
 from copy import deepcopy
+from pathlib import Path
 
 # Add PyKotor to path
 pykotor_path = Path(__file__).resolve().parent.parent / "Libraries" / "PyKotor" / "src"
@@ -15,7 +16,7 @@ sys.path.insert(0, str(pykotor_path))
 toolset_path = Path(__file__).resolve().parent.parent / "Tools" / "HolocronToolset" / "src"
 sys.path.insert(0, str(toolset_path))
 
-from pykotor.resource.formats.bwm import read_bwm, bytes_bwm
+from pykotor.resource.formats.bwm import bytes_bwm, read_bwm
 
 
 def analyze_kit_wok(kit_path: Path) -> None:

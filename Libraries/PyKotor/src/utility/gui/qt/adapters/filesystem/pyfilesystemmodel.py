@@ -79,15 +79,19 @@ if toolset_path.exists():
     if __name__ == "__main__":
         os.chdir(toolset_path)
 
-from utility.system.path import Path  # noqa: E402
+from qtpy.QtCore import (
+    QDateTime,  # pyright: ignore[reportPrivateImportUsage]  # noqa: E402  # noqa: E402  # noqa: E402
+)
+
 from utility.gui.qt.adapters.filesystem.pyfileinfogatherer import PyFileInfoGatherer  # noqa: E402
 from utility.gui.qt.adapters.filesystem.pyfilesystemmodelsorter import PyFileSystemModelSorter  # noqa: E402
 from utility.gui.qt.adapters.filesystem.pyfilesystemnode import PyFileSystemNode  # noqa: E402
+from utility.system.path import Path  # noqa: E402
 
 if TYPE_CHECKING:
     from qtpy.QtCore import (
-        QDateTime,
         QObject,
+        QRegularExpression,
         QTimerEvent,
         Signal,  # pyright: ignore[reportPrivateImportUsage]  # noqa: E402  # noqa: E402  # noqa: E402
     )
@@ -1550,7 +1554,6 @@ class PyFileSystemModel(QAbstractItemModel):
 
         # Check the name regularexpression filters
         if not (node.isDir() and bool(self._filters & QDir.Filter.AllDirs)):  # type: ignore[attr-defined]
-            from qtpy.QtCore import QRegularExpression
 
             # C++: node->fileName.contains(re) where re is QRegularExpression
             # In Qt, QString::contains(QRegularExpression) checks if string contains a match

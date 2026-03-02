@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Collection, Generic, TypeVar, TypedDict, cast
 
 from loggerplus import RobustLogger
-
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import ResRef
 from pykotor.extract.capsule import Capsule

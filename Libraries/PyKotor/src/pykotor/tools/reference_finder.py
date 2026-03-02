@@ -15,13 +15,14 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable
 
 from pykotor.common.stream import BinaryReader
-from pykotor.extract.file import FileResource
-from pykotor.resource.formats.gff import GFF, GFFFieldType, GFFList, GFFStruct, read_gff
+from pykotor.resource.formats.gff import GFFFieldType, GFFList, GFFStruct, read_gff
 from pykotor.resource.formats.ncs import NCSByteCode, NCSInstructionQualifier
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
+    from pykotor.extract.file import FileResource
     from pykotor.extract.installation import Installation
+    from pykotor.resource.formats.gff import GFF
 
 
 @dataclass(frozen=True)

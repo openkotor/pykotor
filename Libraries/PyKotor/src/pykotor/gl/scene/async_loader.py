@@ -8,7 +8,6 @@ from concurrent.futures import Future, ProcessPoolExecutor
 from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Protocol
 
 from loggerplus import RobustLogger
-
 from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.tpc.tpc_auto import read_tpc
 
@@ -102,6 +101,7 @@ def _load_and_parse_texture(
     """
     try:
         from pathlib import Path
+
         from pykotor.resource.type import ResourceType
 
         # IO: Read raw bytes from file

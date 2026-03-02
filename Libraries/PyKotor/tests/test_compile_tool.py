@@ -9,9 +9,13 @@ import platform
 import sys
 
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from typing import TYPE_CHECKING
+from unittest.mock import MagicMock, patch
 
 import pytest
+
+if TYPE_CHECKING:
+    from unittest.mock import Mock
 
 # Add compile directory to path (located at repo root)
 repo_root = Path(__file__).resolve().parents[3]

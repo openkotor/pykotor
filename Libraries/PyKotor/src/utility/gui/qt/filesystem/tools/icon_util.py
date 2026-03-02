@@ -6,10 +6,11 @@ import sys
 from io import BytesIO
 from typing import TYPE_CHECKING, Literal
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import QFileInfo, QObject, QTemporaryFile, QTimer, Qt, Signal
 from qtpy.QtGui import QIcon, QImage, QPainter, QPixmap
 from qtpy.QtWidgets import QApplication, QFileIconProvider, QStyle
+
+from loggerplus import RobustLogger
 
 if TYPE_CHECKING:
     import os

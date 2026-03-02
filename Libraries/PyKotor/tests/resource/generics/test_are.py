@@ -23,12 +23,11 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from typing import TYPE_CHECKING
 
-
-from pykotor.resource.formats.gff.gff_data import GFF
-from pykotor.resource.type import ResourceType
 from pykotor.common.misc import Game
 from pykotor.resource.formats.gff import read_gff
+from pykotor.resource.formats.gff.gff_data import GFF
 from pykotor.resource.generics.are import ARE, construct_are, dismantle_are
+from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.gff import GFF
@@ -164,8 +163,8 @@ class TestARE(unittest.TestCase):
 
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
-        import tempfile
         import os
+        import tempfile
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".are.xml", delete=False, encoding="utf-8") as tmp:
             tmp.write(TEST_ARE_XML)

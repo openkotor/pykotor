@@ -26,7 +26,6 @@ from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING, Mapping
 
 from loggerplus import RobustLogger
-
 from pykotor.resource.formats.twoda import bytes_2da, read_2da
 from pykotor.tslpatcher.mods.template import PatcherModifications
 

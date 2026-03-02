@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING, Any, List, cast
 
 import qtpy
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import QDataStream, QIODevice, QItemSelectionModel, QMimeData, QModelIndex, QPoint, QPointF, QRect, QTimer, Qt
-from qtpy.QtGui import QBrush, QColor, QCursor, QDrag, QFont, QPainter, QPen, QPixmap, QPalette, QRadialGradient, QStandardItemModel, QTextDocument
+from qtpy.QtGui import QBrush, QColor, QCursor, QDrag, QFont, QPainter, QPalette, QPen, QPixmap, QRadialGradient, QStandardItemModel, QTextDocument
 from qtpy.QtWidgets import QAbstractItemDelegate, QAbstractItemView, QApplication, QStyledItemDelegate, QToolTip, QWidget
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.resource.generics.dlg import DLGEntry, DLGLink, DLGNode, DLGReply
 from toolset.gui.editors.dlg.constants import QT_STANDARD_ITEM_FORMAT, _DLG_MIME_DATA_ROLE, _LINK_PARENT_NODE_PATH_ROLE, _MODEL_INSTANCE_ID_ROLE
 from toolset.gui.editors.dlg.model import DLGStandardItem, DLGStandardItemModel

@@ -4,9 +4,10 @@ import asyncio
 import multiprocessing
 import os
 import pathlib
-import pytest
 import sys
 import unittest
+
+import pytest
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[3].joinpath("src")

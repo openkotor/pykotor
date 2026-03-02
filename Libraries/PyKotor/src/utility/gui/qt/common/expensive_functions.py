@@ -19,13 +19,13 @@ from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 import send2trash
 
-from loggerplus import RobustLogger
 from qtpy.QtWidgets import QFileDialog
 from typing_extensions import Literal
 
+from loggerplus import RobustLogger
+from utility.gui.qt.common.filesystem.file_properties_dialog import FileProperties
 from utility.misc import generate_hash, get_file_attributes
 from utility.system.os_helper import get_size_on_disk
-from utility.gui.qt.common.filesystem.file_properties_dialog import FileProperties
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

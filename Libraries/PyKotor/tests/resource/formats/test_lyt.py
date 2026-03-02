@@ -4,6 +4,7 @@ import os
 import pathlib
 import sys
 import unittest
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
@@ -22,7 +23,7 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
-from utility.common.geometry import Vector3, Vector4
+from pykotor.common.misc import ResRef
 from pykotor.resource.formats.lyt import (
     LYT,
     LYTAsciiReader,
@@ -31,10 +32,9 @@ from pykotor.resource.formats.lyt import (
     LYTRoom,
     LYTTrack,
 )
-
-from pykotor.common.misc import ResRef
 from pykotor.resource.formats.lyt.lyt_auto import read_lyt, write_lyt
 from pykotor.resource.type import ResourceType
+from utility.common.geometry import Vector3, Vector4
 
 # Inlined test.lyt content
 ASCII_TEST_DATA = """#MAXLAYOUT ASCII
@@ -87,8 +87,8 @@ class TestLYT(TestCase):
 
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
-        import tempfile
         import os
+        import tempfile
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".lyt", delete=False, encoding="utf-8") as tmp:
             tmp.write(ASCII_TEST_DATA)

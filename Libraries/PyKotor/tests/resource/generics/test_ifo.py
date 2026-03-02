@@ -4,6 +4,7 @@ import os
 import pathlib
 import sys
 import unittest
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
@@ -25,11 +26,11 @@ if UTILITY_PATH.joinpath("utility").exists():
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.generics.ifo import IFO, construct_ifo, dismantle_ifo
+from pykotor.resource.generics.ifo import construct_ifo, dismantle_ifo
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
-    pass
+    from pykotor.resource.generics.ifo import IFO
 
 TEST_IFO_XML = """<gff3>
   <struct id="-1">

@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-
 from pykotor.common.misc import EquipmentSlot  # pyright: ignore[reportMissingImports]
 from pykotor.resource.formats.twoda import read_2da  # pyright: ignore[reportMissingImports]
 from pykotor.resource.generics.uti import UTI, read_uti  # pyright: ignore[reportMissingImports]

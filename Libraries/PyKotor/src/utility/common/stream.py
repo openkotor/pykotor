@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 from loggerplus import RobustLogger
-
 from pykotor.common.language import LocalizedString
 
 # decode_bytes_with_fallbacks is imported lazily in the function that uses it to avoid circular imports

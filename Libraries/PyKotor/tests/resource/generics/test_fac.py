@@ -7,6 +7,7 @@ import os
 import pathlib
 import sys
 import unittest
+
 from unittest import TestCase
 
 # Add PyKotor to path
@@ -29,11 +30,8 @@ if UTILITY_PATH.joinpath("utility").exists():
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.generics.fac import construct_fac, dismantle_fac, FAC, FACFaction, FACReputation
+from pykotor.resource.generics.fac import FAC, FACFaction, FACReputation, construct_fac, dismantle_fac
 from pykotor.resource.type import ResourceType
-
-if TYPE_CHECKING:
-    pass
 
 # Test FAC XML with standard factions and reputations
 TEST_FAC_XML = """<gff3>

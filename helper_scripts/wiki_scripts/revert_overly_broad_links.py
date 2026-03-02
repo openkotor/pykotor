@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import re
+
 from pathlib import Path
 
 # All replacement patterns from REVERT_OVERLY_BROAD_LINKS.md

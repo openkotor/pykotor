@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import TypeVar, cast
+from typing import TYPE_CHECKING, TypeVar, cast
 
-from pykotor.common.module import Module
-from pykotor.extract.installation import Installation, SearchLocation
+from pykotor.extract.installation import SearchLocation
 from pykotor.gl.compat import (
     GL_BGRA,
     GL_BLEND,
@@ -26,11 +25,10 @@ from pykotor.gl.compat import (
     glEnable,
     glReadPixels,
 )
-from pykotor.gl.glm_compat import mat4, Vector3 as GlmVector3, Vector4, unProject
+from pykotor.gl.glm_compat import Vector3 as GlmVector3, Vector4, mat4, unProject
 from pykotor.gl.models.axis_gizmo import AxisGizmo
-from pykotor.gl.models.mdl import Model
 from pykotor.gl.scene.frustum import CullingStats, Frustum
-from pykotor.gl.scene.scene_base import RenderObject, SceneBase
+from pykotor.gl.scene.scene_base import SceneBase
 from pykotor.gl.scene.scene_cache import SceneCache
 from pykotor.gl.shader import (
     KOTOR_FSHADER,
@@ -55,6 +53,12 @@ from pykotor.resource.generics.git import (
     GITWaypoint,
 )
 from utility.common.geometry import Vector3 as GeomVector3
+
+if TYPE_CHECKING:
+    from pykotor.common.module import Module
+    from pykotor.extract.installation import Installation
+    from pykotor.gl.models.mdl import Model
+    from pykotor.gl.scene.scene_base import RenderObject
 
 T = TypeVar("T")
 SEARCH_ORDER_2DA: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN]
@@ -437,7 +441,7 @@ class Scene(SceneBase):
             return
 
         model: Model = self.model(obj.model)
-        next_transform = cast(mat4, transform * obj.transform())
+        next_transform = cast("mat4", transform * obj.transform())
         model.draw(shader, next_transform, override_texture=obj.override_texture)
 
         for child in obj.children:
@@ -485,7 +489,7 @@ class Scene(SceneBase):
             return
 
         model: Model = self.model(obj.model)
-        model.draw(self.picker_shader, cast(mat4, transform * obj.transform()))
+        model.draw(self.picker_shader, cast("mat4", transform * obj.transform()))
         for child in obj.children:
             self._picker_render_object(child, obj.transform())
 

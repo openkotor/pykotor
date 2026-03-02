@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import struct
 import sys
+
 from pathlib import Path
 
 sys.path.insert(0, "vendor/PyKotor/Libraries/PyKotor/src")

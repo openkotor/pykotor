@@ -50,9 +50,6 @@ from utility.gui.qt.adapters.filesystem.pyfilesystemnode import PyFileSystemNode
 from utility.gui.qt.adapters.filesystem.pyfilesystemwatcher import PyFileSystemWatcher
 from utility.gui.qt.adapters.filesystem.qfilesystemmodelnodekey import PyQFileSystemModelNodePathKey
 
-if TYPE_CHECKING:
-    pass  # type: ignore[import-untyped]
-
 # Constants matching C++ tests
 WAITTIME = 1000  # milliseconds
 

@@ -5,9 +5,8 @@ import sys
 from threading import Event
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger
-
 from holopatcher import core
+from loggerplus import RobustLogger
 from pykotor.tslpatcher.logger import PatchLogger
 
 if TYPE_CHECKING:

@@ -132,3 +132,6 @@ test_output.txt
 Tools/HolocronToolset/src/ui/**/*_ui.py
 Tools/tests/
 Tools/HolocronToolset/src/toolset/wiki/
+docs/reva_roadmap/
+vendor/kotor_re_things/
+vendor/kotor_re_things/

@@ -27,6 +27,7 @@ from toolset.gui.common.localization import translate as tr
 from toolset.gui.dialogs.edit.locstring import LocalizedStringDialog
 from toolset.gui.dialogs.load_from_location_result import FileSelectionWindow, ResourceItems
 from toolset.gui.editor import Editor
+from toolset.gui.widgets.settings.installations import GlobalSettings
 from toolset.utils.window import add_window
 
 if TYPE_CHECKING:
@@ -60,6 +61,7 @@ class UTIEditor(Editor):
         super().__init__(parent, "Item Editor", "item", supported, supported, installation)
 
         self._uti = UTI()
+        self.globalSettings: GlobalSettings = GlobalSettings()
 
         from toolset.uic.qtpy.editors.uti import Ui_MainWindow
 
@@ -86,6 +88,10 @@ class UTIEditor(Editor):
         self.ui.iconLabel.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)  # pyright: ignore[reportArgumentType]
         self.ui.iconLabel.customContextMenuRequested.connect(self._icon_label_context_menu)
 
+        # Initialize model info widget state (collapsed by default)
+        self.ui.itemModelInfoLabel.setVisible(False)
+        self.ui.itemModelInfoSummaryLabel.setVisible(True)
+
         # Setup reference search for Tag field (append to .ui tooltip)
         if installation is not None:
             installation.setup_file_context_menu(self.ui.tagEdit, [], enable_reference_search=True, reference_search_type="tag")
@@ -94,6 +100,7 @@ class UTIEditor(Editor):
             installation.setup_file_context_menu(self.ui.resrefEdit, [], enable_reference_search=True, reference_search_type="template_resref")
             self.ui.resrefEdit.setToolTip(self.ui.resrefEdit.toolTip() + " " + tr("Right-click to find references to this template resref in the installation."))
 
+        self.update3dPreview()
         self.new()
 
     def _setup_signals(self):
@@ -111,6 +118,13 @@ class UTIEditor(Editor):
         self.ui.bodyVarSpin.valueChanged.connect(self.on_update_icon)
         self.ui.textureVarSpin.valueChanged.connect(self.on_update_icon)
         self.ui.baseSelect.currentIndexChanged.connect(self.on_update_icon)
+
+        # Connect preview signals
+        self.ui.baseSelect.currentIndexChanged.connect(self.update3dPreview)
+        self.ui.modelVarSpin.valueChanged.connect(self.update3dPreview)
+        self.ui.bodyVarSpin.valueChanged.connect(self.update3dPreview)
+        self.ui.textureVarSpin.valueChanged.connect(self.update3dPreview)
+        self.ui.previewRenderer.resourcesLoaded.connect(self._on_textures_loaded)
 
     def _setup_installation(
         self,
@@ -456,6 +470,73 @@ class UTIEditor(Editor):
             self.ui.iconLabel.setPixmap(pixmap)  # pyright: ignore[reportArgumentType]
             # Update the tooltip whenever the icon changes
             self.ui.iconLabel.setToolTip(self._generate_icon_tooltip(as_html=True))
+
+    def update3dPreview(self):
+        """Updates the 3D preview and model info.
+
+        Hides BOTH the preview renderer AND the model info groupbox when preview is hidden.
+        """
+        show_preview = self.globalSettings.showPreviewUTI
+        self.ui.previewRenderer.setVisible(show_preview)
+        self.ui.itemModelInfoGroupBox.setVisible(show_preview)
+
+        if show_preview:
+            self.resize(max(800, self.sizeHint().width()), max(400, self.sizeHint().height()))
+
+            if self._installation is not None:
+                # Build item data and set it on the renderer
+                data, _ = self.build()
+                uti: UTI = read_uti(data)
+                self.ui.previewRenderer.set_item(uti)
+                self._update_model_info(uti)
+        else:
+            self.resize(max(800 - 200, self.sizeHint().width()), max(400, self.sizeHint().height()))
+
+    def _update_model_info(self, uti: UTI):
+        """Updates the model information label with item model details.
+
+        Args:
+        ----
+            uti: The UTI object to analyze
+        """
+        if self._installation is None:
+            return
+
+        info_lines: list[str] = []
+
+        try:
+            # Get the base item data to find the model path
+            baseitems: TwoDA | None = self._installation.ht_get_cache_2da(HTInstallation.TwoDA_BASEITEMS)
+            if baseitems is None or uti.base_item >= baseitems.get_height():
+                info_lines.append("Model: Unknown (invalid base item)")
+            else:
+                model_type: int = baseitems.get_row(uti.base_item).get_integer("ModelType") or 0
+                model_name: str = baseitems.get_row(uti.base_item).get_string("ModelName") or "Unknown"
+                info_lines.append(f"Model: {model_name} (type {model_type})")
+                info_lines.append(f"Variation: {uti.model_variation}")
+
+            # Basic summary
+            summary = " | ".join(info_lines[:2]) if info_lines else "No model info available"
+            self.ui.itemModelInfoSummaryLabel.setText(summary)
+
+            # Detailed info
+            detail = "\n".join(info_lines)
+            self.ui.itemModelInfoLabel.setText(detail)
+        except Exception as e:
+            RobustLogger().error(f"Error updating item model info: {e}")
+            self.ui.itemModelInfoSummaryLabel.setText("Error loading model info")
+            self.ui.itemModelInfoLabel.setText(str(e))
+
+    def toggle_preview(self):
+        """Toggle the 3D preview visibility."""
+        self.globalSettings.showPreviewUTI = not self.globalSettings.showPreviewUTI
+        self.update3dPreview()
+
+    def _on_textures_loaded(self):
+        """Called when textures finish loading in the preview renderer."""
+        # Optional: update model info with texture details if renderer has that info
+        # For now, just log that textures loaded
+        pass
 
     def on_available_property_list_double_clicked(self):
         for item in self.ui.availablePropertyList.selectedItems():

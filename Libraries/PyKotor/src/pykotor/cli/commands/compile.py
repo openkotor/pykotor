@@ -13,7 +13,9 @@ if TYPE_CHECKING:
     from argparse import Namespace
     from logging import Logger
 
-from pykotor.cli.cfg_parser import KotorCLIConfig, load_config
+    from pykotor.cli.cfg_parser import KotorCLIConfig
+
+from pykotor.cli.cfg_parser import load_config
 from pykotor.common.misc import Game
 from pykotor.resource.formats.ncs.compilers import InbuiltNCSCompiler
 

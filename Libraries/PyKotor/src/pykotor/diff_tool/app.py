@@ -19,7 +19,6 @@ from pykotor.common.misc import Game
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats import gff
 from pykotor.tools.reference_cache import StrRefReferenceCache
-
 from pykotor.tslpatcher.diff.engine import (
     diff_data,
     run_differ_from_args_impl,

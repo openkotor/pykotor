@@ -8,7 +8,6 @@ import pathlib
 import re
 import sys
 import typing
-from urllib.parse import urlparse
 
 from abc import ABC
 from contextlib import suppress
@@ -24,6 +23,7 @@ from typing import (
     get_origin,
     overload,
 )
+from urllib.parse import urlparse
 
 if TYPE_CHECKING:
     from typing_extensions import Self

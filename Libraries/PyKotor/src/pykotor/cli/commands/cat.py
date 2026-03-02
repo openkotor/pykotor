@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import pathlib
 import sys
-from argparse import Namespace
+
 from typing import TYPE_CHECKING
 
 from pykotor.tools.archives import get_resource_from_archive
 
 if TYPE_CHECKING:
+    from argparse import Namespace
     from logging import Logger
 
 

@@ -19,7 +19,6 @@ import unittest
 
 from pykotor.gl.glm_compat import vec3
 
-
 # Handle optional pykotor.gl dependency
 try:
     from pykotor.gl.scene.camera import Camera

@@ -4,6 +4,7 @@ import os
 import pathlib
 import sys
 import unittest
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH: pathlib.Path = pathlib.Path(__file__).resolve()
@@ -23,7 +24,6 @@ if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
 from pykotor.resource.formats.lip import LIP, LIPBinaryReader, LIPShape, LIPXMLReader, detect_lip, read_lip, write_lip
-
 from pykotor.resource.type import ResourceType
 
 # Inlined test.lip binary content
@@ -63,8 +63,8 @@ class TestLIP(TestCase):
 
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
-        import tempfile
         import os
+        import tempfile
 
         with tempfile.NamedTemporaryFile(mode="wb", suffix=".lip", delete=False) as tmp:
             tmp.write(BINARY_TEST_DATA)

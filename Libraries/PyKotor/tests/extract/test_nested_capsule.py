@@ -6,7 +6,7 @@ e.g., a SAV file containing another SAV file containing a resource.
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import (
@@ -18,6 +18,9 @@ from pykotor.extract.file import (
 from pykotor.resource.formats.erf import ERF, ERFType, write_erf
 from pykotor.resource.formats.rim import RIM, write_rim
 from pykotor.resource.type import ResourceType
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestFindRealFilesystemPath:

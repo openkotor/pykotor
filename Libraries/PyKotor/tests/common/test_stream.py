@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from io import BytesIO
 import pathlib
 import sys
 import unittest
+
+from io import BytesIO
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()

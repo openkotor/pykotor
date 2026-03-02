@@ -23,6 +23,7 @@ References:
 from __future__ import annotations
 
 import random
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto

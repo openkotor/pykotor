@@ -35,7 +35,6 @@ if TYPE_CHECKING:
 from pykotor.common.module import Module
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import SearchLocation
-from pykotor.tools.module import get_resource_priority
 from pykotor.resource.formats.bwm import bytes_bwm, read_bwm
 from pykotor.resource.formats.erf import read_erf
 from pykotor.resource.formats.rim import read_rim
@@ -44,6 +43,7 @@ from pykotor.resource.generics.utd import read_utd
 from pykotor.resource.type import ResourceType
 from pykotor.tools import door as door_tools
 from pykotor.tools.model import iterate_lightmaps, iterate_textures
+from pykotor.tools.module import get_resource_priority
 from utility.common.geometry import Vector2, Vector3
 
 # Qt imports for minimap generation

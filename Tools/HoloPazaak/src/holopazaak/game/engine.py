@@ -19,6 +19,7 @@ References:
 from __future__ import annotations
 
 import random
+
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import TYPE_CHECKING, Callable
@@ -31,9 +32,6 @@ from holopazaak.game.card import (
     create_main_deck_card,
 )
 from holopazaak.game.player import Player
-
-if TYPE_CHECKING:
-    pass
 
 
 class GamePhase(Enum):

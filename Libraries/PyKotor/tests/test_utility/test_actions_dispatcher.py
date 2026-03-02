@@ -16,9 +16,6 @@ import pytest
 
 from qtpy.QtWidgets import QApplication
 
-if TYPE_CHECKING:
-    pass
-
 # Import ActionsDispatcher and dependencies
 from utility.gui.qt.common.action_definitions import ActionDefinition, FileExplorerActions
 from utility.gui.qt.common.actions_dispatcher import ActionsDispatcher

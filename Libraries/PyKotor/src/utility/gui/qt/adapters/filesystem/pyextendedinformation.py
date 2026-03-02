@@ -22,11 +22,11 @@ import os
 
 from typing import TYPE_CHECKING
 
-from qtpy.QtCore import QDateTime, QFileDevice, QFileInfo, QTimeZone  # noqa: E402
+from qtpy.QtCore import QFileInfo, QTimeZone  # noqa: E402
 from qtpy.QtGui import QIcon  # noqa: E402
 
 if TYPE_CHECKING:
-    pass
+    from qtpy.QtCore import QDateTime, QFileDevice
 
 
 class PyQExtendedInformation:

@@ -7,9 +7,9 @@ using PyKotor utilities.
 from __future__ import annotations
 
 import pathlib
-from argparse import Namespace
 
-from loggerplus import RobustLogger as Logger
+from typing import TYPE_CHECKING
+
 from pykotor.tools.resources import (
     convert_ascii_to_mdl,
     convert_clean_to_wav,
@@ -18,6 +18,11 @@ from pykotor.tools.resources import (
     convert_tpc_to_tga,
     convert_wav_to_clean,
 )
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from loggerplus import RobustLogger as Logger
 
 
 def cmd_texture_convert(args: Namespace, logger: Logger) -> int:

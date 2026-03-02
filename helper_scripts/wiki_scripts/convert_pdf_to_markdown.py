@@ -7,6 +7,7 @@ preserving structure and formatting as much as possible.
 """
 
 import sys
+
 from pathlib import Path
 
 try:

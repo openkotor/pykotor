@@ -17,7 +17,6 @@ References:
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.mdl.mdl_auto import read_mdl, write_mdl
@@ -26,6 +25,8 @@ from pykotor.resource.formats.wav.wav_auto import read_wav, write_wav
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pykotor.resource.formats.tpc.tpc_data import TPCTextureFormat
 
 

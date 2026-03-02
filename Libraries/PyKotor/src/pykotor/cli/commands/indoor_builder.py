@@ -9,7 +9,6 @@ from __future__ import annotations
 import logging
 import sys
 
-from argparse import Namespace
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -27,6 +26,8 @@ from pykotor.tools.indoormap import (
 from pykotor.tools.path import CaseAwarePath
 
 if TYPE_CHECKING:
+    from argparse import Namespace
+
     from loggerplus import RobustLogger
 
 LEVEL_MAP = {

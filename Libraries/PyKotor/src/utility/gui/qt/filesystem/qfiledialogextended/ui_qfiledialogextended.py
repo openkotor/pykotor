@@ -10,7 +10,6 @@ from qtpy.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
-    QLayout,
     QLineEdit,
     QListView,
     QSplitter,
@@ -22,6 +21,9 @@ from qtpy.QtWidgets import (
 )
 
 if TYPE_CHECKING:
+    from qtpy.QtWidgets import (
+        QLayout,
+    )
     from typing_extensions import Self
 
     from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import QFileDialogExtended

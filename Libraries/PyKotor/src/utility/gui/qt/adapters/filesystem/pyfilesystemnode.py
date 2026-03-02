@@ -6,12 +6,14 @@ This class matches qfilesystemmodel_p.h lines 74-196 (QFileSystemNode class).
 from __future__ import annotations
 
 import os
+
 from typing import TYPE_CHECKING
 
-from qtpy.QtCore import QDateTime, QFileDevice, QFileInfo, QTimeZone  # noqa: E402
+from qtpy.QtCore import QDateTime, QFileDevice, QFileInfo  # noqa: E402
 from qtpy.QtGui import QIcon  # noqa: E402
 
 if TYPE_CHECKING:
+    from qtpy.QtCore import QTimeZone
     from qtpy.QtGui import QAbstractFileIconProvider
 
 from utility.gui.qt.adapters.filesystem.pyextendedinformation import PyQExtendedInformation  # noqa: E402

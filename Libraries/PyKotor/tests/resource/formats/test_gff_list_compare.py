@@ -5,7 +5,6 @@ from __future__ import annotations
 import pathlib
 import sys
 
-
 THIS_FILE = pathlib.Path(__file__).resolve()
 REPO_ROOT = THIS_FILE.parents[5]
 PYKOTOR_SRC = REPO_ROOT / "Libraries" / "PyKotor" / "src"
@@ -16,8 +15,8 @@ for path in (PYKOTOR_SRC, UTILITY_SRC):
     if as_posix not in sys.path:
         sys.path.insert(0, as_posix)
 
-from utility.common.geometry import Vector3
 from pykotor.resource.formats.gff import GFFList  # pyright: ignore[reportMissingImports]
+from utility.common.geometry import Vector3
 
 
 def _silent_logger(message: object = "", **kwargs: object) -> None:

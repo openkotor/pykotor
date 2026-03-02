@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import multiprocessing
 import os
+import re
 
 from abc import abstractmethod
 from collections import defaultdict
@@ -22,7 +23,7 @@ from qtpy.QtCore import (
     Signal,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
     Slot,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
 )
-from qtpy.QtGui import QCursor, QColor, QIcon, QImage, QPalette, QPixmap, QStandardItem, QStandardItemModel
+from qtpy.QtGui import QColor, QCursor, QIcon, QImage, QPalette, QPixmap, QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import QAbstractItemView, QApplication, QFileDialog, QHeaderView, QInputDialog, QListView, QMenu, QStyle, QToolTip, QWidget
 
 from loggerplus import RobustLogger  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
@@ -38,7 +39,7 @@ from toolset.gui.widgets.texture_preview import load_resource_preview_mipmap, qi
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QModelIndex, QRect
     from qtpy.QtGui import QMouseEvent, QResizeEvent, QShowEvent
-    from qtpy.QtWidgets import QScrollBar, QMenu
+    from qtpy.QtWidgets import QMenu, QScrollBar
 
     from pykotor.resource.formats.tpc.tpc_data import TPC
     from toolset.data.installation import HTInstallation
@@ -447,12 +448,22 @@ class ResourceProxyModel(QSortFilterProxyModel):
         super().__init__(parent)
         self.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.filter_string: str = ""
+        self._wildcard_regex: re.Pattern[str] | None = None
+
+    @staticmethod
+    def _wildcard_to_regex_pattern(pattern: str) -> str:
+        escaped_pattern = re.escape(pattern)
+        wildcard_pattern = escaped_pattern.replace(r"\*", ".*").replace(r"\?", ".")
+        return f"^{wildcard_pattern}$"
 
     def set_filter_string(
         self,
         filter_string: str,
     ):
         self.filter_string = filter_string.lower()
+        self._wildcard_regex = None
+        if "*" in self.filter_string or "?" in self.filter_string:
+            self._wildcard_regex = re.compile(self._wildcard_to_regex_pattern(self.filter_string), re.IGNORECASE)
         self.invalidateFilter()
 
     def filterAcceptsRow(
@@ -476,11 +487,18 @@ class ResourceProxyModel(QSortFilterProxyModel):
             resref: str = item.resource.resname().lower()
             identifier_filename: str = item.resource.filename().lower()  # e.g. "p_bastila.utc"
             container_filename: str = item.resource.filepath().name.lower()  # e.g. "templates.bif"
+            searchable_values = (display_text, resref, identifier_filename, container_filename)
 
-            # Check if the filter string is a substring of any known representation.
-            if self.filter_string in display_text or self.filter_string in resref or self.filter_string in identifier_filename or self.filter_string in container_filename:
+            if not self.filter_string.strip():
                 return True
-            return False
+
+            if self._wildcard_regex is not None:
+                return any(self._wildcard_regex.match(value) is not None for value in searchable_values)
+
+            if any(value.startswith(self.filter_string) for value in searchable_values):
+                return True
+
+            return any(self.filter_string in value for value in searchable_values)
 
         # For category items (non-ResourceStandardItem), check if any child matches
         # This ensures categories are shown if they contain matching resources

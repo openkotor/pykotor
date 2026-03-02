@@ -10,13 +10,15 @@ import pathlib
 import re
 import sys
 import warnings
-from collections.abc import Iterable
+
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from pykotor.common.misc import Game
 
 # Directory cache

@@ -8,6 +8,7 @@ This script:
 """
 
 import sys
+
 from pathlib import Path
 
 # Add PyKotor to path

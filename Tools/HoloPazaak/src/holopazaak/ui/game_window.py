@@ -45,9 +45,6 @@ from holopazaak.ui.widgets import (
     ScoreWidget,
 )
 
-if TYPE_CHECKING:
-    pass
-
 
 class OpponentSelectDialog(QDialog):
     """Dialog for selecting an opponent.

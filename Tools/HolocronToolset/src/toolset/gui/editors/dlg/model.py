@@ -7,7 +7,6 @@ import weakref
 from collections import deque
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Generator, Iterable, List, Literal, Mapping, Sequence, cast
 
-from loggerplus import RobustLogger  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
 from qtpy.QtCore import (
     QByteArray,
     QDataStream,
@@ -23,6 +22,7 @@ from qtpy.QtCore import (
 from qtpy.QtGui import QBrush, QColor, QPalette, QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import QApplication, QStyle
 
+from loggerplus import RobustLogger  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
 from pykotor.extract.installation import SearchLocation  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
 from pykotor.resource.generics.dlg import DLGEntry, DLGLink, DLGNode, DLGReply  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
 from toolset.gui.editors.dlg.constants import (  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]

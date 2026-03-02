@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, cast
 
-from loggerplus import RobustLogger
 from qtpy import QtCore
 from qtpy.QtCore import QAbstractItemModel, QSortFilterProxyModel, QTimer, Qt
 from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QAbstractItemDelegate, QAbstractItemView, QAbstractScrollArea, QFrame, QStyle, QStyleOptionViewItem
 
+from loggerplus import RobustLogger
 from utility.gui.qt.widgets.itemviews.baseview import RobustBaseWidget
 from utility.gui.qt.widgets.itemviews.html_delegate import HTMLDelegate
 

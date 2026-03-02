@@ -4,13 +4,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import SearchLocation
-from pykotor.resource.formats.mdl import MDL, MDLNode, read_mdl
+from pykotor.resource.formats.mdl import read_mdl
 from pykotor.resource.formats.tpc import read_tpc
 from pykotor.resource.formats.twoda import TwoDA, read_2da
-from pykotor.resource.generics.utd import UTD, read_utd
+from pykotor.resource.generics.utd import read_utd
 from pykotor.resource.type import ResourceType
 from pykotor.tools.model import iterate_textures
 from utility.common.geometry import Vector3
@@ -19,6 +18,8 @@ if TYPE_CHECKING:
     from pykotor.common.module import Module
     from pykotor.extract.file import ResourceResult
     from pykotor.extract.installation import Installation
+    from pykotor.resource.formats.mdl import MDL, MDLNode
+    from pykotor.resource.generics.utd import UTD
     from pykotor.resource.type import SOURCE_TYPES
 
 

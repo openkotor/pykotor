@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 import pathlib
-from argparse import Namespace
+
 from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
+    from argparse import Namespace
     from logging import Logger
 
-from pykotor.tools.archives import extract_bif, extract_erf, extract_key_bif, extract_rim
-
 from pykotor.cli.archive_filter import matches_resource_name
+from pykotor.tools.archives import extract_bif, extract_erf, extract_key_bif, extract_rim
 
 
 def _matches_filter(resource, pattern: str) -> bool:  # type: ignore[no-untyped-def]

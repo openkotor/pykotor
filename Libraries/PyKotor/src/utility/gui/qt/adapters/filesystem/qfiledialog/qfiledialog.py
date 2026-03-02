@@ -3,15 +3,14 @@ from __future__ import annotations
 import os
 import sys
 import tempfile
-from pathlib import Path
 
 from collections.abc import Callable
 from enum import Enum, IntFlag
+from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, cast, overload
 
 import qtpy
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import (
     QByteArray,  # pyright: ignore[reportAttributeAccessIssue]
     QDataStream,  # pyright: ignore[reportAttributeAccessIssue]
@@ -28,6 +27,7 @@ from qtpy.QtCore import (
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
 from qtpy.QtWidgets import (
+    QAbstractItemDelegate,
     QAbstractItemView,
     QAction,  # pyright: ignore[reportPrivateImportUsage]
     QApplication,
@@ -38,6 +38,7 @@ from qtpy.QtWidgets import (
     QFileSystemModel,  # pyright: ignore[reportPrivateImportUsage]
 )
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from utility.gui.qt.adapters.filesystem.qfiledialog.private.qfiledialog_p import HistoryItem, QFileDialogOptionsPrivate, QFileDialogPrivate, qt_make_filter_list
 from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper import QPlatformFileDialogHelper
 from utility.gui.qt.common.qt_event_utils import process_events_if_safe
@@ -53,7 +54,7 @@ if TYPE_CHECKING:
         QRegularExpressionMatch,  # pyright: ignore[reportPrivateImportUsage, reportAttributeAccessIssue]
     )
     from qtpy.QtGui import QAbstractFileIconProvider
-    from qtpy.QtWidgets import QAbstractItemDelegate, QHeaderView, QPushButton, QWidget
+    from qtpy.QtWidgets import QHeaderView, QPushButton, QWidget
     from typing_extensions import Self  # pyright: ignore[reportMissingModuleSource]
 
 
@@ -1376,7 +1377,7 @@ class QFileDialog(RealQFileDialog if TYPE_CHECKING else QDialog):  # pyright: ig
             if d.completer:
                 d.completer.setModel(d.proxyModel)
                 d.completer.proxyModel = d.proxyModel
-            cast(Signal, d.proxyModel.rowsInserted).connect(d._q_rowsInserted)  # noqa: SLF001  # pyright: ignore[reportOptionalMemberAccess]
+            cast("Signal", d.proxyModel.rowsInserted).connect(d._q_rowsInserted)  # noqa: SLF001  # pyright: ignore[reportOptionalMemberAccess]
         else:
             d.proxyModel = None
             d.qFileDialogUi.listView.setModel(d.model)
@@ -1385,7 +1386,7 @@ class QFileDialog(RealQFileDialog if TYPE_CHECKING else QDialog):  # pyright: ig
                 d.completer.setModel(d.model)
                 d.completer.sourceModel = d.model
                 d.completer.proxyModel = None
-            cast(Signal, d.model.rowsInserted).connect(d._q_rowsInserted)  # noqa: SLF001
+            cast("Signal", d.model.rowsInserted).connect(d._q_rowsInserted)  # noqa: SLF001
 
         # Match C++: QScopedPointer<QItemSelectionModel> selModel(d->qFileDialogUi->treeView->selectionModel());
         # Match C++: d->qFileDialogUi->treeView->setSelectionModel(d->qFileDialogUi->listView->selectionModel());
@@ -1896,7 +1897,7 @@ class QFileDialog(RealQFileDialog if TYPE_CHECKING else QDialog):  # pyright: ig
                 def __init__(self):
                     super().__init__()
                     self.web_view = QWebEngineView()
-                    cast(Signal, self.web_view.loadFinished).connect(self.handle_file_selection)
+                    cast("Signal", self.web_view.loadFinished).connect(self.handle_file_selection)
 
                 def open_file(self):
                     self.web_view.load("about:blank")

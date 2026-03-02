@@ -18,11 +18,13 @@ import argparse
 import asyncio
 import logging
 import uuid
+
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 try:
     import websockets
+
     from websockets.server import WebSocketServerProtocol
 
     HAS_WEBSOCKETS = True
@@ -37,9 +39,6 @@ from holopazaak.network.protocol import (
     msg_error,
     parse_message,
 )
-
-if TYPE_CHECKING:
-    pass
 
 # Configure logging
 logging.basicConfig(
@@ -417,6 +416,7 @@ def _get_invocation_command() -> str:
     """Get the actual command used to invoke the CLI."""
     import os
     import sys
+
     from pathlib import Path
 
     if not sys.argv:

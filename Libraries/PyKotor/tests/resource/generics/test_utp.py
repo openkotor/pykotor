@@ -4,6 +4,7 @@ import os
 import pathlib
 import sys
 import unittest
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH: pathlib.Path = pathlib.Path(__file__).resolve()
@@ -24,10 +25,9 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from typing import TYPE_CHECKING
 
-
-from pykotor.resource.type import ResourceType
 from pykotor.resource.formats.gff import read_gff
 from pykotor.resource.generics.utp import UTP, construct_utp, dismantle_utp
+from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.gff.gff_data import GFF
@@ -140,8 +140,8 @@ class Test(TestCase):
 
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
-        import tempfile
         import os
+        import tempfile
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".utp.xml", delete=False, encoding="utf-8") as tmp:
             tmp.write(TEST_UTP_XML)

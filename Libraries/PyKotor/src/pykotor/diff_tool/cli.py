@@ -154,11 +154,11 @@ def execute_cli(cmdline_args: Namespace):
     Args:
         cmdline_args: Parsed command line arguments
     """
-    from pykotor.diff_tool.app import DiffConfig, run_application
-    from pykotor.extract.installation import Installation
-
     # Set up logging ONCE at the CLI level
     import logging
+
+    from pykotor.diff_tool.app import DiffConfig, run_application
+    from pykotor.extract.installation import Installation
 
     output_mode = getattr(cmdline_args, "output_mode", "normal")
     log_level_arg = getattr(cmdline_args, "log_level", None)

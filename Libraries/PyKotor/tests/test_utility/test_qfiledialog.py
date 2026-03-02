@@ -10,7 +10,6 @@ complete API compatibility and identical functionality.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 
@@ -39,9 +38,6 @@ from qtpy.QtWidgets import (
 
 from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as PythonQFileDialog
 from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import QFileDialogExtended
-
-if TYPE_CHECKING:
-    from qtpy.QtCore import QUrl
 
 
 @pytest.fixture(

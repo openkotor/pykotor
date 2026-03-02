@@ -7,9 +7,9 @@ import uuid
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger
 from qtpy.QtWidgets import QFileDialog, QMessageBox
 
+from loggerplus import RobustLogger
 from pykotor.common.misc import Game
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.resource.formats.ncs.compiler.classes import EntryPointError

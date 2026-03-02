@@ -4,16 +4,17 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-
-from pykotor.extract.file import ResourceIdentifier, ResourceResult
+from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import SearchLocation
 from pykotor.resource.formats.twoda import TwoDA, read_2da
-from pykotor.resource.generics.utp import UTP, read_utp
+from pykotor.resource.generics.utp import read_utp
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from pykotor.common.module import Module
+    from pykotor.extract.file import ResourceResult
     from pykotor.extract.installation import Installation
+    from pykotor.resource.generics.utp import UTP
     from pykotor.resource.type import SOURCE_TYPES
 
 

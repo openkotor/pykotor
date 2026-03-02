@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from loggerplus import RobustLogger
-
 from pykotor.common.misc import Game
 from utility.misc import ProcessorArchitecture
 

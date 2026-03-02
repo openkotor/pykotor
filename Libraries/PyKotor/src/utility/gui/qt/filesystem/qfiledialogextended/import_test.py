@@ -1,5 +1,6 @@
-from pathlib import Path
 import sys
+
+from pathlib import Path
 
 src = Path(r"G:/GitHub/Andastra/vendor/PyKotor/Libraries/PyKotor/src")
 if str(src) not in sys.path:

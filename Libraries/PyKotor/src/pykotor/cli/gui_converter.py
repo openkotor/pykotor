@@ -12,12 +12,14 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Iterable, Sequence
+from typing import TYPE_CHECKING, Callable, Iterable, Sequence
 
 from loggerplus import RobustLogger
 from pykotor.resource.formats.gff import GFF, GFFContent, read_gff, write_gff
-from pykotor.resource.formats.gff.gff_data import GFFList, GFFStruct
 from pykotor.tools.path import CaseAwarePath
+
+if TYPE_CHECKING:
+    from pykotor.resource.formats.gff.gff_data import GFFList, GFFStruct
 
 ASPECT_RATIO_TO_RESOLUTION: dict[str, list[tuple[int, int]]] = {
     "16:9": [
@@ -319,6 +321,7 @@ def convert_gui_inputs(
 def launch_gui_converter() -> None:  # noqa: PLR0915
     """Open a minimal Tk GUI for interactive conversions."""
     import tkinter as tk  # noqa: PLC0415  # imported lazily to avoid headless dependency
+
     from tkinter import filedialog, messagebox, scrolledtext  # noqa: PLC0415
 
     root = tk.Tk()

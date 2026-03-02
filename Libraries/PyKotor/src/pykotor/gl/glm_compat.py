@@ -10,10 +10,8 @@ from __future__ import annotations
 
 import importlib
 import math
-from typing import TYPE_CHECKING
 
-# Import geometry classes and alias to lowercase (GLM-compatible names)
-from utility.common.geometry import Matrix4, Vector2, Vector3, Vector4
+from typing import TYPE_CHECKING
 
 # Import GLM-compatible functions
 from pykotor.common.geometry_utils import (
@@ -30,6 +28,9 @@ from pykotor.common.geometry_utils import (
     unProject,
     value_ptr,
 )
+
+# Import geometry classes and alias to lowercase (GLM-compatible names)
+from utility.common.geometry import Matrix4, Vector2, Vector3, Vector4
 
 # GLM-compatible aliases (lowercase)
 vec2 = Vector2  # noqa: N801

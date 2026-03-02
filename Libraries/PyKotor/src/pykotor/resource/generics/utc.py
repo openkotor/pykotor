@@ -5,10 +5,11 @@ from typing import TYPE_CHECKING
 from loggerplus import RobustLogger
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import EquipmentSlot, Game, InventoryItem, ResRef
-from pykotor.resource.formats.gff import GFF, GFFContent, GFFFieldType, GFFList, GFFStruct, bytes_gff, read_gff, write_gff
+from pykotor.resource.formats.gff import GFF, GFFContent, GFFFieldType, GFFList, bytes_gff, read_gff, write_gff
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
+    from pykotor.resource.formats.gff import GFFStruct
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
 

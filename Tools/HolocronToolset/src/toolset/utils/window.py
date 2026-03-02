@@ -6,10 +6,10 @@ from functools import singledispatch
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger  # type: ignore[import-untyped]
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QMainWindow, QMessageBox, QWidget
 
+from loggerplus import RobustLogger  # type: ignore[import-untyped]
 from pykotor.extract.file import FileResource  # type: ignore[import-not-found]
 from pykotor.resource.type import ResourceType  # type: ignore[import-not-found]
 from toolset.gui.common.localization import translate as tr, trf  # type: ignore[import-not-found]
@@ -81,16 +81,29 @@ def open_resource_editor(  # noqa: PLR0913
     resname: str | None = None,
     restype: ResourceType | None = None,
     data: bytes | None = None,
+    open_as_generic_gff: bool = False,
 ) -> tuple[os.PathLike | str | None, Editor | QMainWindow | None]:
     raise NotImplementedError("Unsupported input type")
 
 
 @open_resource_editor.register(FileResource)
 def _(
-    resource: FileResource, installation: HTInstallation | None = None, parent_window: QWidget | None = None, *, gff_specialized: bool | None = None, **kwargs
+    resource: FileResource,
+    installation: HTInstallation | None = None,
+    parent_window: QWidget | None = None,
+    *,
+    gff_specialized: bool | None = None,
+    open_as_generic_gff: bool = False,
+    **kwargs,
 ) -> tuple[os.PathLike | str | None, Editor | QMainWindow | None]:
     # Implementation for FileResource
-    return _open_resource_editor_impl(resource=resource, installation=installation, parent_window=parent_window, gff_specialized=gff_specialized)
+    return _open_resource_editor_impl(
+        resource=resource,
+        installation=installation,
+        parent_window=parent_window,
+        gff_specialized=gff_specialized,
+        open_as_generic_gff=open_as_generic_gff,
+    )
 
 
 @open_resource_editor.register(str)
@@ -104,9 +117,17 @@ def _(  # noqa: PLR0913
     parent_window: QWidget | None = None,
     *,
     gff_specialized: bool | None = None,
+    open_as_generic_gff: bool = False,
 ) -> tuple[os.PathLike | str | None, Editor | QMainWindow | None]:
     return _open_resource_editor_impl(
-        filepath=path, resname=resname, restype=restype, data=data, installation=installation, parent_window=parent_window, gff_specialized=gff_specialized
+        filepath=path,
+        resname=resname,
+        restype=restype,
+        data=data,
+        installation=installation,
+        parent_window=parent_window,
+        gff_specialized=gff_specialized,
+        open_as_generic_gff=open_as_generic_gff,
     )
 
 
@@ -119,6 +140,7 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
     installation: HTInstallation | None = None,
     parent_window: QWidget | None = None,
     gff_specialized: bool | None = None,
+    open_as_generic_gff: bool = False,
 ) -> tuple[os.PathLike | str | None, Editor | QMainWindow | None]:
     # To avoid circular imports, these need to be placed within the function
     from toolset.gui.editors.are import AREEditor  # type: ignore[import-not-found] # noqa: PLC0415
@@ -152,6 +174,8 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
 
     if gff_specialized is None:
         gff_specialized = GlobalSettings().gffSpecializedEditors
+    if open_as_generic_gff:
+        gff_specialized = False
 
     editor: Editor | None = None
     parent_window_widget: QWidget | None = parent_window if isinstance(parent_window, QWidget) else None
@@ -170,6 +194,23 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
         ...
     else:
         raise ValueError("Invalid input combination")
+
+    from toolset.utils.window_editor import get_editor_by_resource_identity
+
+    existing_editor = get_editor_by_resource_identity(filepath, resname, restype)
+    if existing_editor is not None:
+        try:
+            existing_editor.show()
+            existing_editor.raise_()
+            existing_editor.activateWindow()
+        except Exception:  # noqa: BLE001
+            RobustLogger().exception(
+                "Failed to focus existing editor for '%s.%s' (filepath=%s)",
+                resname,
+                restype,
+                filepath,
+            )
+        return filepath, existing_editor
 
     if restype.target_type() is ResourceType.TwoDA:
         editor = TwoDAEditor(None, installation)
@@ -216,7 +257,7 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
             editor = UTPEditor(None, installation)
 
     elif restype.target_type() in {ResourceType.UTD, ResourceType.BTD}:
-        if installation is None or not gff_specialized:
+        if installation is None or not gff_specialized:  # noqa: SIM108
             editor = GFFEditor(None, installation)
         else:
             editor = UTDEditor(None, installation)
@@ -286,6 +327,20 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
             editor = GFFEditor(None, installation)
         else:
             editor = GITEditor(None, installation)
+
+    elif restype.target_type() is ResourceType.GUI:
+        editor = GFFEditor(None, installation)
+
+    elif restype.target_type() is ResourceType.BIK:
+        QMessageBox(
+            QMessageBox.Icon.Information,
+            tr("Unsupported file type"),
+            tr("BIK video preview is not supported yet in the Toolset editor."),
+            QMessageBox.StandardButton.Ok,
+            parent_window_widget,
+            flags=Qt.WindowType.Window | Qt.WindowType.Dialog | Qt.WindowType.WindowStaysOnTopHint,  # pyright: ignore[reportArgumentType]
+        ).show()
+        return None, None
 
     elif restype.category == "Audio":
         editor = WAVEditor(None, installation)

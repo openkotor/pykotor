@@ -9,7 +9,6 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import (
     QDir,
     QFile,
@@ -42,6 +41,7 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from utility.gui.qt.common.actions_dispatcher import ActionsDispatcher
 from utility.gui.qt.common.tasks.actions_executor import FileActionsExecutor
 from utility.gui.qt.common.tasks.task_details_dialog import TaskDetailsDialog

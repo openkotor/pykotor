@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import lzma
 import tempfile
-from pathlib import Path
 import unittest
+
+from pathlib import Path
 
 from pykotor.common.misc import ResRef
 from pykotor.common.stream import BinaryWriter
@@ -11,9 +12,9 @@ from pykotor.resource.formats.bif import (
     BIF,
     BIFResource,
     BIFType,
+    bytes_bif,
     read_bif,
     write_bif,
-    bytes_bif,
 )
 from pykotor.resource.type import ResourceType
 

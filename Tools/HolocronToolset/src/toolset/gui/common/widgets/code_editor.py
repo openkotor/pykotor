@@ -27,7 +27,6 @@ from qtpy.QtGui import (
     QTextDocument,
     QTextFormat,
 )
-from toolset.utils.misc import get_qsettings_organization
 from qtpy.QtWidgets import (
     QCompleter,
     QDialog,
@@ -43,6 +42,7 @@ from toolset.gui.common.style.vscode_style import (
     configure_code_editor_font,
     get_editor_stylesheet,
 )
+from toolset.utils.misc import get_qsettings_organization
 
 if qtpy.QT5:
     from qtpy.QtCore import QRegExp  # pyright: ignore[reportAttributeAccessIssue]

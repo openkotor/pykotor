@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from pykotor.common.script import DataType, ScriptConstant, ScriptFunction, ScriptParam
 from utility.common.geometry import Vector3
 

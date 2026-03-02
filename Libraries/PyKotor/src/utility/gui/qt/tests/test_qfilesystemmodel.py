@@ -8,19 +8,17 @@ from __future__ import annotations
 
 import os
 import tempfile
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
+
 from qtpy.QtCore import QDir, Qt
 from qtpy.QtWidgets import QApplication, QFileIconProvider
 
-if TYPE_CHECKING:
-    pass
-
 # Import the Python adapters
 from utility.gui.qt.adapters.filesystem.pyfilesystemmodel import PyFileSystemModel
-
 
 WAITTIME = 1000  # milliseconds
 

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import os
+
 from pathlib import Path
 
 import pytest
+
 from pykotor.extract.installation import Installation
 from pykotor.tools.path import CaseAwarePath
 
@@ -40,8 +42,9 @@ _test_helpers_path = str(Path(__file__).resolve().parents[1])
 if _test_helpers_path not in sys.path:
     sys.path.insert(0, _test_helpers_path)
 
+from typing import Any, Iterator
+
 from test_helpers.profiling_and_timeout import profile_if_enabled
-from typing import Iterator, Any
 
 
 @pytest.hookimpl(hookwrapper=True)

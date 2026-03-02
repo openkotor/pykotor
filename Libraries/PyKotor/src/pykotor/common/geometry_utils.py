@@ -20,7 +20,10 @@ References:
 from __future__ import annotations
 
 import math
+
 from typing import TYPE_CHECKING, Any, overload
+
+from pykotor.resource.formats.mdl import MDLSkin
 
 # Runtime imports - these are used in the function bodies
 from utility.common.geometry import Matrix4, Vector3, Vector4
@@ -28,7 +31,7 @@ from utility.common.geometry import Matrix4, Vector3, Vector4
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from pykotor.resource.formats.mdl import MDLMesh, MDLSkin
+    from pykotor.resource.formats.mdl import MDLMesh
 
 
 def compute_per_vertex_tangent_space(

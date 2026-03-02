@@ -21,10 +21,10 @@ from typing import TYPE_CHECKING, Any, cast
 
 import qtpy
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import QBuffer, QIODevice
 from qtpy.QtMultimedia import QMediaPlayer
 
+from loggerplus import RobustLogger
 from pykotor.resource.type import ResourceType
 from toolset.gui.editor import Editor
 from utility.system.os_helper import remove_any

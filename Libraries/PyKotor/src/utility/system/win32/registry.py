@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import winreg
+
 from typing import cast
 
 
@@ -30,6 +31,6 @@ def resolve_reg_key_to_path(reg_key: str, keystr: str) -> str | None:
             return None
         with winreg.OpenKey(root_key, subkey) as key:
             resolved_path, _ = winreg.QueryValueEx(key, keystr)
-            return cast(str, resolved_path)
+            return cast("str", resolved_path)
     except (FileNotFoundError, PermissionError):
         return None

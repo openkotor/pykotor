@@ -8,12 +8,12 @@ from pykotor.resource.formats.tpc import (
     TPCLayer,
     TPCMipmap,
     TPCTextureFormat,
-    read_tpc,
     bytes_tpc,
+    read_tpc,
 )
-from pykotor.resource.formats.tpc.tpc_auto import detect_tpc
 from pykotor.resource.formats.tpc.convert.dxt.compress_dxt import rgb_to_dxt1
 from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import dxt1_to_rgb, dxt5_to_rgba
+from pykotor.resource.formats.tpc.tpc_auto import detect_tpc
 from pykotor.resource.type import ResourceType
 
 

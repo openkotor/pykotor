@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pykotor.gl.glm_compat import mat4, Vector3, Vector4, value_ptr
-
 from pykotor.gl.compat import (
     MissingPyOpenGLError,
     has_pyopengl,
     missing_constant,
     missing_gl_func,
 )
+from pykotor.gl.glm_compat import Vector3, Vector4, mat4, value_ptr
 
 HAS_PYOPENGL = has_pyopengl()
 
@@ -31,7 +30,7 @@ else:
     GL_VERTEX_SHADER = missing_constant("GL_VERTEX_SHADER")
 
 if TYPE_CHECKING:
-    from pykotor.gl.glm_compat import mat4, Vector3, Vector4
+    from pykotor.gl.glm_compat import Vector3, Vector4, mat4
 
 
 KOTOR_VSHADER = """

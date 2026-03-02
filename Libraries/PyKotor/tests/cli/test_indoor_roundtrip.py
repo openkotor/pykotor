@@ -24,13 +24,13 @@ Coverage (each test asserts one type or aspect):
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from pykotor.common.indoormap import IndoorMap
 from pykotor.common.module import Module
-from pykotor.extract.installation import Installation, SearchLocation
+from pykotor.extract.installation import SearchLocation
 from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.formats.erf import read_erf
 from pykotor.resource.formats.lyt import read_lyt
@@ -42,6 +42,10 @@ from pykotor.resource.generics.pth import bytes_pth, read_pth
 from pykotor.resource.type import ResourceType
 from pykotor.tools.indoormap import extract_indoor_from_module_as_modulekit
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from pykotor.extract.installation import Installation
 
 # ---------------------------------------------------------------------------
 # Helper Functions
