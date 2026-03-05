@@ -818,6 +818,7 @@ class BlenderCommands:
         return None
 
 
+
 # Global client instance
 _global_client: BlenderIPCClient | None = None
 

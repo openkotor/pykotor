@@ -9,13 +9,17 @@ import time
 from pathlib import Path
 
 import pytest
+from qtpy.QtGui import QColor, QImage
 from qtpy.QtWidgets import QWidget
 
 from pykotor.resource.formats.bwm import BWM
 from pykotor.resource.formats.bwm.bwm_data import BWMFace
 from pykotor.resource.formats.lyt import LYT, LYTRoom
 from pykotor.resource.formats.mdl import read_mdl
+from pykotor.resource.formats.tpc import read_tpc, write_tpc
+from pykotor.resource.formats.tpc.tpc_data import TPC, TPCTextureFormat
 from pykotor.resource.generics.git import GIT, GITCreature
+from pykotor.resource.type import ResourceType
 from utility.common.geometry import SurfaceMaterial, Vector3
 
 from toolset.blender.commands import BlenderEditorController, BlenderEditorMode
@@ -178,16 +182,33 @@ def test_blender_bridge_imports_external_obj(blender_runtime_bridge: BlenderComm
 
 
 def test_blender_bridge_imports_external_texture(blender_runtime_bridge: BlenderCommands, tmp_path: Path):
-    png_bytes = bytes.fromhex(
-        "89504E470D0A1A0A" "0000000D49484452000000010000000108060000001F15C489" "0000000D49444154789C63F8CFC0F01F00050001FF89993D1D" "0000000049454E44AE426082"
-    )
     texture_path = tmp_path / "swatch.png"
-    texture_path.write_bytes(png_bytes)
+    image = QImage(2, 2, QImage.Format.Format_RGBA8888)
+    image.fill(QColor("magenta"))
+    assert image.save(str(texture_path), "PNG")
 
     result = blender_runtime_bridge.import_external_asset(str(texture_path))
     assert isinstance(result, dict)
     assert result["kind"] == "texture"
     assert result["file_path"] == str(texture_path)
+    assert result["image_name"]
+
+
+def test_blender_bridge_packages_texture_to_tpc(blender_runtime_bridge: BlenderCommands, tmp_path: Path):
+    texture_path = tmp_path / "swatch_export.png"
+    image = QImage(2, 2, QImage.Format.Format_RGBA8888)
+    image.fill(QColor("cyan"))
+    assert image.save(str(texture_path), "PNG")
+
+    imported = blender_runtime_bridge.import_external_asset(str(texture_path))
+    assert isinstance(imported, dict)
+    tpc_path = tmp_path / "swatch_export.tpc"
+    tpc = TPC.from_blank()
+    tpc.layers[0].set_data(2, 2, [bytes([0, 255, 255, 255] * 4)], texture_format=TPCTextureFormat.RGBA)
+    tpc._format = TPCTextureFormat.RGBA  # noqa: SLF001
+    write_tpc(tpc, tpc_path, ResourceType.TPC)
+    parsed_tpc = read_tpc(tpc_path)
+    assert parsed_tpc is not None
 
 
 def test_blender_bridge_exports_external_obj_to_mdl(blender_runtime_bridge: BlenderCommands, tmp_path: Path):

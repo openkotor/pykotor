@@ -724,8 +724,9 @@ class HolocronIPCServer:
             bpy.ops.wm.collada_import(filepath=file_path)
             asset_kind = "model"
         elif suffix in {"png", "jpg", "jpeg", "tga", "tif", "tiff", "bmp", "webp"}:
-            bpy.ops.image.open(filepath=file_path)
-            return {"kind": "texture", "file_path": file_path}
+            image = bpy.data.images.load(file_path, check_existing=True)
+            image_name = image.name
+            return {"kind": "texture", "file_path": file_path, "image_name": image_name}
         else:
             raise ValueError(f"Unsupported external asset type: {file_path}")
 
@@ -785,6 +786,7 @@ class HolocronIPCServer:
 
         mdx_path = str(Path(output_path).with_suffix(".mdx"))
         return {"mdl_path": output_path, "mdx_path": mdx_path}
+
 
     # ---------------------------------------------------------------------
     # Utility helpers
