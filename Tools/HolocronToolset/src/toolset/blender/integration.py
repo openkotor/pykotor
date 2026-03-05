@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
-    from pykotor.resource.generics.git import GIT, GITInstance, GITObject
+    from pykotor.resource.generics.git import GIT, GITObject
     from toolset.blender.commands import BlenderEditorController, BlenderEditorMode
     from toolset.blender.ipc_client import ConnectionState
 

@@ -399,9 +399,7 @@ class HolocronIPCServer:
             "position": tuple(round(float(v), 6) for v in obj.location),
             "rotation_mode": obj.rotation_mode,
             "rotation": (
-                tuple(round(float(v), 6) for v in obj.rotation_quaternion)
-                if obj.rotation_mode == "QUATERNION"
-                else tuple(round(float(v), 6) for v in obj.rotation_euler)
+                tuple(round(float(v), 6) for v in obj.rotation_quaternion) if obj.rotation_mode == "QUATERNION" else tuple(round(float(v), 6) for v in obj.rotation_euler)
             ),
             "state": state,
         }
@@ -418,12 +416,7 @@ class HolocronIPCServer:
         current_selection = tuple(sorted(name for name in tracked_now if tracked_now[name].select_get()))
         if current_selection != self._selection_snapshot:
             self._selection_snapshot = current_selection
-            selected_runtime_ids = [
-                runtime_id
-                for name in current_selection
-                for runtime_id in [self._runtime_id_value(tracked_now[name])]
-                if runtime_id is not None
-            ]
+            selected_runtime_ids = [runtime_id for name in current_selection for runtime_id in [self._runtime_id_value(tracked_now[name])] if runtime_id is not None]
             self.send_event("selection_changed", {"selected": list(current_selection), "selected_runtime_ids": selected_runtime_ids})
 
         previous_names = set(self._monitor_snapshot)
@@ -471,11 +464,7 @@ class HolocronIPCServer:
                 self.send_event("transform_changed", params)
 
             if old_snapshot["state"] != new_snapshot["state"] and new_snapshot["kind"] == "instance":
-                changed = {
-                    key: value
-                    for key, value in new_snapshot["state"].items()
-                    if old_snapshot["state"].get(key) != value
-                }
+                changed = {key: value for key, value in new_snapshot["state"].items() if old_snapshot["state"].get(key) != value}
                 if changed:
                     self.send_event(
                         "instance_updated",
@@ -519,11 +508,7 @@ class HolocronIPCServer:
             "installation_path": params.get("installation_path", self.installation_path),
         }
 
-        walkmesh_lookup = {
-            str(walkmesh.get("model", "")).lower(): walkmesh
-            for walkmesh in params.get("walkmeshes", [])
-            if isinstance(walkmesh, dict)
-        }
+        walkmesh_lookup = {str(walkmesh.get("model", "")).lower(): walkmesh for walkmesh in params.get("walkmeshes", []) if isinstance(walkmesh, dict)}
 
         lyt_data = params.get("lyt", {})
         for room in lyt_data.get("rooms", []):

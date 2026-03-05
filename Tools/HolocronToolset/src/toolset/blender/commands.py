@@ -26,16 +26,18 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
     from pykotor.resource.generics.git import GIT, GITObject
-    from toolset.blender.ipc_client import BlenderIPCClient
+    from toolset.blender.ipc_client import BlenderIPCClient, ConnectionState
 
     class InstanceData(TypedDict, total=False):
         """Data structure for instance information."""
+
         type: str
         resref: str
         # Add other fields as needed
 
     class InstanceProperties(TypedDict, total=False):
         """Data structure for instance properties."""
+
         location: list[float]
         rotation: list[float]
         scale: list[float]
@@ -69,7 +71,9 @@ def requires_connection(default_return_value: Any = False, check_session: bool =
                 self._logger.error(f"Cannot {func.__name__}: not connected to Blender")
                 return default_return_value
             return func(self, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
 

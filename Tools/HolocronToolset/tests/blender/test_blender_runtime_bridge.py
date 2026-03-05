@@ -176,6 +176,19 @@ def test_blender_bridge_imports_external_obj(blender_runtime_bridge: BlenderComm
     assert result["imported_objects"]
 
 
+def test_blender_bridge_imports_external_texture(blender_runtime_bridge: BlenderCommands, tmp_path: Path):
+    png_bytes = bytes.fromhex(
+        "89504E470D0A1A0A" "0000000D49484452000000010000000108060000001F15C489" "0000000D49444154789C63F8CFC0F01F00050001FF89993D1D" "0000000049454E44AE426082"
+    )
+    texture_path = tmp_path / "swatch.png"
+    texture_path.write_bytes(png_bytes)
+
+    result = blender_runtime_bridge.import_external_asset(str(texture_path))
+    assert isinstance(result, dict)
+    assert result["kind"] == "texture"
+    assert result["file_path"] == str(texture_path)
+
+
 def test_blender_bridge_layout_operations_roundtrip(blender_runtime_bridge: BlenderCommands):
     assert blender_runtime_bridge.load_module(
         lyt_data={"rooms": [], "doorhooks": [], "tracks": [], "obstacles": []},
@@ -238,7 +251,17 @@ def test_blender_bridge_visibility_and_undo_roundtrip(blender_runtime_bridge: Bl
     }
     assert blender_runtime_bridge.load_module(
         lyt_data={"rooms": [], "doorhooks": [], "tracks": [], "obstacles": []},
-        git_data={"creatures": [creature], "cameras": [], "doors": [], "placeables": [placeable], "waypoints": [], "sounds": [], "stores": [], "triggers": [], "encounters": []},
+        git_data={
+            "creatures": [creature],
+            "cameras": [],
+            "doors": [],
+            "placeables": [placeable],
+            "waypoints": [],
+            "sounds": [],
+            "stores": [],
+            "triggers": [],
+            "encounters": [],
+        },
         installation_path="/workspace",
         module_root="m_visibility",
         walkmeshes=[],
@@ -289,14 +312,17 @@ def test_blender_editor_controller_roundtrip(blender_runtime_bridge: BlenderComm
     controller.on_transform_changed(lambda instance_id, position, rotation: transform_events.append((instance_id, position, rotation)))
 
     assert controller.connect(timeout=2.0) is True
-    assert controller.load_module(
-        mode=BlenderEditorMode.MODULE_DESIGNER,
-        lyt=lyt,
-        git=git,
-        walkmeshes=[walkmesh],
-        module_root="m_controller",
-        installation_path="/workspace",
-    ) is True
+    assert (
+        controller.load_module(
+            mode=BlenderEditorMode.MODULE_DESIGNER,
+            lyt=lyt,
+            git=git,
+            walkmeshes=[walkmesh],
+            module_root="m_controller",
+            installation_path="/workspace",
+        )
+        is True
+    )
 
     assert controller.select_instances([creature]) is True
     for _ in range(20):
@@ -395,18 +421,19 @@ def test_blender_editor_mixin_runtime_roundtrip(qtbot, monkeypatch):
     qtbot.addWidget(harness)
 
     try:
-        assert harness.start_blender_mode(
-            lyt=lyt,
-            git=git,
-            walkmeshes=[walkmesh],
-            module_root="m_mixin",
-            installation_path="/workspace",
-        ) is True
+        assert (
+            harness.start_blender_mode(
+                lyt=lyt,
+                git=git,
+                walkmeshes=[walkmesh],
+                module_root="m_mixin",
+                installation_path="/workspace",
+            )
+            is True
+        )
         qtbot.waitUntil(lambda: harness.loaded or harness.failed, timeout=15000)
         assert harness.loaded is True
         assert harness.failed is False
     finally:
         harness.stop_blender_mode()
         qtbot.waitUntil(lambda: harness.stopped, timeout=5000)
-
-

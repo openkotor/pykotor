@@ -196,6 +196,7 @@ class EditorMode:
     LAYOUT  -- Indoor Builder room assembly mode (from indoor_builder).
     WALKMESH -- Walkmesh face/vertex selection and material painting.
     """
+
     OBJECT: int = 0
     LAYOUT: int = 1
     WALKMESH: int = 2
@@ -208,6 +209,7 @@ class EditorTool:
     MOVE   -- Drag to translate selected instances (cursor: move).
     ROTATE -- Drag to rotate selected instances (cursor: rotate).
     """
+
     SELECT: int = 0
     MOVE: int = 1
     ROTATE: int = 2
@@ -647,6 +649,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         # Only show confirmation dialog if there are unsaved changes
         if self.has_unsaved_changes():
             from toolset.gui.helpers.message_box import ask_question
+
             reply = ask_question(
                 tr("Confirm Exit"),
                 tr("Really quit the module designer? You may lose unsaved changes."),
@@ -832,10 +835,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
     def _invalidate_scene_and_update_renderers(self, update_flat: bool = False) -> None:
         """Invalidate the main renderer's scene cache and update all affected renderers.
-        
+
         This is a common pattern throughout the module designer: after modifying geometry,
         we need to invalidate the scene cache and trigger a re-render.
-        
+
         Args:
             update_flat: If True, also update the flat renderer in addition to main renderer.
         """
@@ -1005,10 +1008,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         if scene is None or not hasattr(scene, "camera"):
             return
         cam = scene.camera
-        self._camera_hud.setText(
-            f"X: {cam.x:8.2f}  Y: {cam.y:8.2f}  Z: {cam.z:8.2f}\n"
-            f"Pitch: {cam.pitch:6.1f}  Yaw: {cam.yaw:6.1f}  Dist: {cam.distance:6.1f}"
-        )
+        self._camera_hud.setText(f"X: {cam.x:8.2f}  Y: {cam.y:8.2f}  Z: {cam.z:8.2f}\n" f"Pitch: {cam.pitch:6.1f}  Yaw: {cam.yaw:6.1f}  Dist: {cam.distance:6.1f}")
         self._camera_hud.adjustSize()
 
     # =========================================================================
@@ -1268,7 +1268,6 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             GITInstance: False,
         }
 
-
     def _on_mode_changed(self, index: int):
         """Handle mode selector combo box change."""
         self._editor_mode = index
@@ -1463,9 +1462,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             self.ui.visOverlayLegendLabel.setObjectName("visOverlayLegendLabel")
             self.ui.visOverlayLegendLabel.setWordWrap(True)
             self.ui.visOverlayLegendLabel.setToolTip(
-                "VIS overlay semantics:\n"
-                "• Solid cyan line: both rooms see each other\n"
-                "• Dashed amber line with arrow: one-way visibility"
+                "VIS overlay semantics:\n" "• Solid cyan line: both rooms see each other\n" "• Dashed amber line with arrow: one-way visibility"
             )
             self.ui.visButtonsLayout.insertWidget(1, self.ui.visOverlayLegendLabel)
 
@@ -1486,10 +1483,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.mainRenderer.set_show_vis_overlay(enabled)
 
     def _sync_main_renderer_vis_overlay(self) -> None:
-        room_positions: dict[int, Vector3] = {
-            id(room): Vector3(room.position.x, room.position.y, room.position.z)
-            for room in self._indoor_map.rooms
-        }
+        room_positions: dict[int, Vector3] = {id(room): Vector3(room.position.x, room.position.y, room.position.z) for room in self._indoor_map.rooms}
         self.ui.mainRenderer.set_vis_overlay_data(room_positions, self._indoor_vis_matrix)
 
     def _sync_indoor_vis_matrix(self):
@@ -1628,10 +1622,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     def _set_all_indoor_vis_visible(self):
         """Set all room pairs in the VIS matrix to visible."""
         room_ids = [id(room) for room in self._indoor_map.rooms]
-        self._indoor_vis_matrix = {
-            room_id: {other_id for other_id in room_ids if other_id != room_id}
-            for room_id in room_ids
-        }
+        self._indoor_vis_matrix = {room_id: {other_id for other_id in room_ids if other_id != room_id} for room_id in room_ids}
         self._refresh_indoor_vis_matrix()
 
     def _clear_all_indoor_vis(self):
@@ -1814,11 +1805,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             grid = self.ui.snapSizeSpin.value()
             target = snap_vector3(target, grid, enabled=grid > 0)
 
-        if (
-            math.isclose(vertex.x, target.x, abs_tol=1e-6)
-            and math.isclose(vertex.y, target.y, abs_tol=1e-6)
-            and math.isclose(vertex.z, target.z, abs_tol=1e-6)
-        ):
+        if math.isclose(vertex.x, target.x, abs_tol=1e-6) and math.isclose(vertex.y, target.y, abs_tol=1e-6) and math.isclose(vertex.z, target.z, abs_tol=1e-6):
             return
 
         vertex.x = target.x
@@ -1984,11 +1971,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             self.ui.faceLosCheck.setChecked(line_of_sight)
 
             material_row = next(
-                (
-                    row
-                    for row in range(self.ui.materialList.count())
-                    if self.ui.materialList.item(row).data(Qt.ItemDataRole.UserRole) == material
-                ),
+                (row for row in range(self.ui.materialList.count()) if self.ui.materialList.item(row).data(Qt.ItemDataRole.UserRole) == material),
                 -1,
             )
             if material_row >= 0:
@@ -2035,21 +2018,24 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     def _show_info_message(self, title: str, text: str) -> None:
         """Show informational message dialog."""
         from qtpy.QtWidgets import QMessageBox
+
         QMessageBox.information(self, title, text)
 
     def _show_warning_message(self, title: str, text: str) -> None:
         """Show warning message dialog."""
         from qtpy.QtWidgets import QMessageBox
+
         QMessageBox.warning(self, title, text)
 
     def _show_error_message(self, title: str, text: str) -> None:
         """Show error message dialog."""
         from qtpy.QtWidgets import QMessageBox
+
         QMessageBox.critical(self, title, text)
 
     def _get_or_create_layout_resource(self) -> LYT | None:
         """Get the layout resource from the current module, creating an empty one if needed.
-        
+
         Returns:
             LYT object if module exists and has layout, None if module doesn't exist.
         """
@@ -2074,10 +2060,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
     def _show_status_message(self, message: str, duration_ms: int = 2000) -> None:
         """Display a temporary status message in the status bar.
-        
+
         Most UI actions show a status message for 2 seconds. This helper
         consolidates that common pattern.
-        
+
         Args:
             message: The status message to display
             duration_ms: Duration in milliseconds (default 2000)
@@ -2102,7 +2088,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
     def _clear_list_selection(self, list_widget) -> None:
         """Clear selection from a QListWidget while temporarily blocking signals.
-        
+
         This is a common pattern: temporarily disable signals,  clear selection and
         current item, then re-enable signals to avoid triggering selection change events.
         """
@@ -2506,6 +2492,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             DEFAULT_CAMERA_ROTATION,
             DEFAULT_CAMERA_ZOOM,
         )
+
         reset_indoor_camera_view(
             self.ui.indoorRenderer,
             default_camera_x=DEFAULT_CAMERA_POSITION_X,
@@ -3318,9 +3305,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             )
 
         # Format keys and buttons using shared utility
-        self.buttons_keys_pressed_label.setText(
-            format_status_bar_keys_and_buttons(keys, buttons, self._emoji_style, colors["accent3"], colors["accent2"])
-        )
+        self.buttons_keys_pressed_label.setText(format_status_bar_keys_and_buttons(keys, buttons, self._emoji_style, colors["accent3"], colors["accent2"]))
 
         # Selected instance with better style
         if self.selected_instances:
@@ -5077,12 +5062,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             if axis is not None:
                 self._begin_object_rotate_gizmo_drag(axis, screen)
                 return
-        if (
-            self._editor_mode == EditorMode.OBJECT
-            and self._active_tool == EditorTool.MOVE
-            and self.selected_instances
-            and self._walkmesh_select_bind.satisfied(buttons, keys)
-        ):
+        if self._editor_mode == EditorMode.OBJECT and self._active_tool == EditorTool.MOVE and self.selected_instances and self._walkmesh_select_bind.satisfied(buttons, keys):
             axis = self.ui.mainRenderer.object_gizmo_handle(screen.x, screen.y)
             if axis is not None:
                 self._begin_object_gizmo_drag(axis)
@@ -6283,6 +6263,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 self.ui.mainRenderer.pan_camera(-move_units_delta, 0, 0)
             else:
                 self.ui.mainRenderer.move_camera(-move_units_delta, 0, 0)
+
 
 if __name__ == "__main__":
     import sys
