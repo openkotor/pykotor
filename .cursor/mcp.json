@@ -1,28 +1,59 @@
 {
   "mcpServers": {
-		"agentdecompile-proxy": {
-			"type": "stdio",
-			"command": "uvx",
-			"args": [
-				"--refresh",
-				"--from",
+    "agdec-http": {
+      "url": "http://170.4.241.140:8080/mcp/",
+      "headers": {
+        "X-Agent-Server-Username": "th3w1zard1",
+        "X-Agent-Server-Password": "c3ll0h3r0327",
+        "X-Agent-Server-Repository": "Odyssey",
+        "X-Ghidra-Server-Host": "170.4.241.140",
+        "X-Ghidra-Server-Port": "13100"
+      }
+    },
+    "agdec-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--refresh",
+        "--from",
         "git+https://github.com/bolabaden/agentdecompile",
-				"agentdecompile-server",
-				"--transport",
-				"stdio",
-				"--server-host",
-				"170.9.241.140",
-				"--backend-url",
-				"http://170.9.241.140:8080",
-				"--server-port",
-				"13100",
-				"--server-username",
-				"OpenKotOR",
-				"--server-password",
-				"MuchaShakaPaka",
-				"--ghidra-server-repository",
-				"Odyssey"
-			]
-		}
+        "agentdecompile-server",
+        "--transport",
+        "stdio",
+        "--backend-url",
+        "http://170.9.241.140:8080"
+      ],
+      "env": {
+        "AGENTDECOMPILE_GHIDRA_USERNAME": "th3w1zard1",
+        "AGENTDECOMPILE_GHIDRA_PASSWORD": "c3ll0h3r0327",
+        "AGENTDECOMPILE_GHIDRA_HOST": "170.9.241.140",
+        "AGENTDECOMPILE_GHIDRA_PORT": "13100",
+        "AGENTDECOMPILE_GHIDRA_REPOSITORY": "Odyssey"
+      }
+    },
+    "agentdecompile-proxy": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--refresh",
+        "--from",
+        "git+https://github.com/bolabaden/agentdecompile",
+        "agentdecompile-server",
+        "--transport",
+        "stdio",
+        "--server-host",
+        "170.9.241.140",
+        "--backend-url",
+        "http://170.9.241.140:8080",
+        "--server-port",
+        "13100",
+        "--server-username",
+        "OpenKotOR",
+        "--server-password",
+        "MuchaShakaPaka",
+        "--ghidra-server-repository",
+        "Odyssey"
+      ]
+    }
   }
 }
