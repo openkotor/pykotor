@@ -3435,6 +3435,32 @@ class TwoDAEditor(Editor):
         elif res == 104:
             self._select_all_matching(d.get_find_text(), d.is_match_case(), d.is_match_whole_cell())
 
+    def _text_matches(
+        self,
+        cell_text: str,
+        find_text: str,
+        match_case: bool,
+        match_whole_cell: bool = True,
+    ) -> bool:
+        """Check if cell text matches the find criteria.
+
+        Args:
+        ----
+            cell_text: The text in the cell to check
+            find_text: The text to find
+            match_case: If True, search is case-sensitive
+            match_whole_cell: If True, the entire cell must match; if False, partial match is allowed
+
+        Returns:
+        -------
+            bool: True if the cell matches the criteria, False otherwise
+        """
+        if match_whole_cell:
+            return (cell_text == find_text) if match_case else (cell_text.lower() == find_text.lower())
+        if match_case:
+            return find_text in cell_text
+        return find_text.lower() in cell_text.lower()
+
     def _select_all_matching(
         self,
         find_text: str,
@@ -3445,20 +3471,13 @@ class TwoDAEditor(Editor):
         if not find_text:
             return
 
-        def _matches(cell_text: str) -> bool:
-            if match_whole_cell:
-                return (cell_text == find_text) if match_case else (cell_text.lower() == find_text.lower())
-            if match_case:
-                return find_text in cell_text
-            return find_text.lower() in cell_text.lower()
-
         from qtpy.QtCore import QItemSelection
 
         selection = QItemSelection()
         for r in range(self.source_model.rowCount()):
             for c in range(self.source_model.columnCount()):
                 item = self.source_model.item(r, c)
-                if item and _matches(item.text()):
+                if item and self._text_matches(item.text(), find_text, match_case, match_whole_cell):
                     src_idx = self.source_model.index(r, c)
                     proxy_idx = self.proxy_model.mapFromSource(src_idx)
                     if proxy_idx.isValid():
@@ -3476,13 +3495,6 @@ class TwoDAEditor(Editor):
     ):
         if not find_text:
             return
-
-        def _matches(cell_text: str) -> bool:
-            if match_whole_cell:
-                return (cell_text == find_text) if match_case else (cell_text.lower() == find_text.lower())
-            if match_case:
-                return find_text in cell_text
-            return find_text.lower() in cell_text.lower()
 
         start_row, start_col = 0, 0
         cur = self.ui.twodaTable.currentIndex()
@@ -3504,7 +3516,7 @@ class TwoDAEditor(Editor):
             for r in range(start_row, rows):
                 for c in range(start_col if r == start_row else 0, cols):
                     item = self.source_model.item(r, c)
-                    if item and _matches(item.text()):
+                    if item and self._text_matches(item.text(), find_text, match_case, match_whole_cell):
                         idx = self.proxy_model.mapFromSource(self.source_model.index(r, c))
                         self.ui.twodaTable.setCurrentIndex(idx)
                         self.ui.twodaTable.scrollTo(idx, self.ui.twodaTable.ScrollHint.EnsureVisible)
@@ -3532,13 +3544,6 @@ class TwoDAEditor(Editor):
         match_case: bool,
         match_whole_cell: bool = False,
     ):
-        def _matches(cell_text: str) -> bool:
-            if match_whole_cell:
-                return (cell_text == find_text) if match_case else (cell_text.lower() == find_text.lower())
-            if match_case:
-                return find_text in cell_text
-            return find_text.lower() in cell_text.lower()
-
         cur = self.ui.twodaTable.currentIndex()
         if not cur.isValid():
             return
@@ -3546,7 +3551,7 @@ class TwoDAEditor(Editor):
         item = self.source_model.item(src.row(), src.column())
         if item is None:
             return
-        if not _matches(item.text()):
+        if not self._text_matches(item.text(), find_text, match_case, match_whole_cell):
             self._find_next(forward=True, find_text=find_text, match_case=match_case, match_whole_cell=match_whole_cell)
             cur = self.ui.twodaTable.currentIndex()
             if not cur.isValid():
@@ -3569,18 +3574,11 @@ class TwoDAEditor(Editor):
         if not find_text:
             return
 
-        def _matches(cell_text: str) -> bool:
-            if match_whole_cell:
-                return (cell_text == find_text) if match_case else (cell_text.lower() == find_text.lower())
-            if match_case:
-                return find_text in cell_text
-            return find_text.lower() in cell_text.lower()
-
         changes: list[tuple[int, int, str, str]] = []
         for r in range(self.source_model.rowCount()):
             for c in range(self.source_model.columnCount()):
                 item = self.source_model.item(r, c)
-                if item and _matches(item.text()):
+                if item and self._text_matches(item.text(), find_text, match_case, match_whole_cell):
                     changes.append((r, c, item.text(), replace_text))
         if not changes:
             return

@@ -1249,6 +1249,20 @@ class NSSEditor(Editor):
         cursor.insertText(content)
         self.ui.codeEdit.setTextCursor(cursor)
 
+    def _matches_case_insensitive(self, str1: str, str2: str) -> bool:
+        """Check if two strings match in a case-insensitive manner.
+
+        Args:
+        ----
+            str1: First string to compare
+            str2: Second string to compare
+
+        Returns:
+        -------
+            bool: True if strings match case-insensitively, False otherwise
+        """
+        return str1.lower() == str2.lower()
+
     def go_to_definition(self):
         """Go to definition of symbol under cursor."""
         cursor: QTextCursor = self.ui.codeEdit.textCursor()
@@ -1274,7 +1288,7 @@ class NSSEditor(Editor):
             else:
                 identifier = item_text.strip()
 
-            if identifier.lower() == word.lower():
+            if self._matches_case_insensitive(identifier, word):
                 obj: Any = tree_item.data(0, Qt.ItemDataRole.UserRole)
                 if obj:
                     self.ui.codeEdit.on_outline_item_double_clicked(tree_item, 0)  # pyright: ignore[reportArgumentType]
@@ -1291,7 +1305,7 @@ class NSSEditor(Editor):
                     child_identifier = child_text.split(":", 1)[1].strip()
                 else:
                     child_identifier = child_text.strip()
-                if child_identifier.lower() == word.lower():
+                if self._matches_case_insensitive(child_identifier, word):
                     # Go to parent definition
                     self.ui.codeEdit.on_outline_item_double_clicked(tree_item, 0)  # pyright: ignore[reportArgumentType]
                     found = True
@@ -1303,13 +1317,13 @@ class NSSEditor(Editor):
         if not found:
             # Check functions
             for func in self.functions:
-                if func.name.lower() == word.lower():
+                if self._matches_case_insensitive(func.name, word):
                     # Show in constants/learn tab
                     self.ui.panelTabs.setCurrentWidget(self.ui.learnTab)
                     # Try to find and select in function list
                     for i in range(self.ui.functionList.count()):
                         list_item: QListWidgetItem | None = self.ui.functionList.item(i)
-                        if list_item and list_item.text().lower() == word.lower():
+                        if list_item and self._matches_case_insensitive(list_item.text(), word):
                             self.ui.functionList.setCurrentItem(list_item)
                             self.ui.functionList.scrollToItem(list_item)
                             QMessageBox.information(
@@ -1323,11 +1337,11 @@ class NSSEditor(Editor):
 
             # Check constants
             for const in self.constants:
-                if const.name.lower() == word.lower():
+                if self._matches_case_insensitive(const.name, word):
                     self.ui.panelTabs.setCurrentWidget(self.ui.learnTab)
                     for i in range(self.ui.constantList.count()):
                         list_item = self.ui.constantList.item(i)
-                        if list_item and list_item.text().lower() == word.lower():
+                        if list_item and self._matches_case_insensitive(list_item.text(), word):
                             self.ui.constantList.setCurrentItem(list_item)
                             self.ui.constantList.scrollToItem(list_item)
                             QMessageBox.information(

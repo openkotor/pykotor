@@ -626,38 +626,47 @@ class JRLEditor(Editor):
 
     # ── Reference searching ────────────────────────────────────────────────
 
+    def _ensure_installation(self) -> HTInstallation | None:
+        """Check if installation is available and return it, or None if not."""
+        if not hasattr(self, "_installation") or self._installation is None:
+            return None
+        return self._installation
+
     def _find_quest_scripts(self, quest_item: QStandardItem):
         """Find NCS/NSS scripts that reference this quest tag."""
-        if not hasattr(self, "_installation") or self._installation is None:
+        installation = self._ensure_installation()
+        if installation is None:
             return
         quest: JRLQuest = quest_item.data()
         tag = quest.tag or ""
         if not tag:
             QMessageBox(QMessageBox.Icon.Warning, "No Tag", "This quest has no tag set.", parent=self).exec()
             return
-        self._installation._find_references(self, tag, "quest")
+        installation._find_references(self, tag, "quest")
 
     def _find_quest_dialogs(self, quest_item: QStandardItem):
         """Find DLG dialogs that reference this quest tag in their Quest field."""
-        if not hasattr(self, "_installation") or self._installation is None:
+        installation = self._ensure_installation()
+        if installation is None:
             return
         quest: JRLQuest = quest_item.data()
         tag = quest.tag or ""
         if not tag:
             QMessageBox(QMessageBox.Icon.Warning, "No Tag", "This quest has no tag set.", parent=self).exec()
             return
-        self._installation._find_references(self, tag, "quest")
+        installation._find_references(self, tag, "quest")
 
     def _find_quest_all(self, quest_item: QStandardItem):
         """Find all resources that reference this quest tag (scripts + dialogs + tag)."""
-        if not hasattr(self, "_installation") or self._installation is None:
+        installation = self._ensure_installation()
+        if installation is None:
             return
         quest: JRLQuest = quest_item.data()
         tag = quest.tag or ""
         if not tag:
             QMessageBox(QMessageBox.Icon.Warning, "No Tag", "This quest has no tag set.", parent=self).exec()
             return
-        self._installation._find_references(self, tag, "tag")
+        installation._find_references(self, tag, "tag")
 
     # ── Internal helpers ───────────────────────────────────────────────────
 
