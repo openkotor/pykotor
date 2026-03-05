@@ -1205,6 +1205,50 @@ class Module:  # noqa: PLR0904
             None,
         )
 
+    def _filter_resources_by_type(self, resource_type: ResourceType) -> list[ModuleResource]:
+        """Filter resources by their type.
+
+        Args:
+        ----
+            resource_type: The ResourceType to filter by
+
+        Returns:
+        -------
+            list[ModuleResource]: List of resources matching the specified type
+
+        Processing Logic:
+        ----------------
+            - Iterate through all resources in self.resources.values()
+            - Check if each resource's type matches the specified resource_type
+            - Return list of matching resources.
+        """
+        return [resource for resource in self.resources.values() if resource.restype() == resource_type]
+
+    def _filter_resources_by_types(self, resource_types: set[ResourceType], require_active: bool = False) -> list[ModuleResource]:
+        """Filter resources by their types with optional active check.
+
+        Args:
+        ----
+            resource_types: Set of ResourceTypes to filter by
+            require_active: Whether to only include active resources
+
+        Returns:
+        -------
+            list[ModuleResource]: List of resources matching the specified types
+
+        Processing Logic:
+        ----------------
+            - Iterate through all resources in self.resources.values()
+            - Check if each resource's type is in the specified resource_types
+            - If require_active is True, also check if resource.isActive()
+            - Return list of matching resources.
+        """
+        return [
+            resource
+            for resource in self.resources.values()
+            if resource.restype() in resource_types and (not require_active or resource.isActive())
+        ]
+
     def creatures(self) -> list[ModuleResource[UTC]]:
         """Returns a list of UTC resources.
 
@@ -1222,7 +1266,7 @@ class Module:  # noqa: PLR0904
             - Check if each resource's type is UTC
             - Add matching resources to the return list.
         """
-        return [resource for resource in self.resources.values() if resource.restype() == ResourceType.UTC]
+        return self._filter_resources_by_type(ResourceType.UTC)
 
     def placeable(
         self,
@@ -1267,7 +1311,7 @@ class Module:  # noqa: PLR0904
             - Check if resource type is UTP
             - Add matching resources to the return list.
         """
-        return [resource for resource in self.resources.values() if resource.restype() == ResourceType.UTP]
+        return self._filter_resources_by_type(ResourceType.UTP)
 
     def door(
         self,
@@ -1312,7 +1356,7 @@ class Module:  # noqa: PLR0904
             - Check if each resource's type is UTD
             - Add matching resources to the return list.
         """
-        return [resource for resource in self.resources.values() if resource.restype() == ResourceType.UTD]
+        return self._filter_resources_by_type(ResourceType.UTD)
 
     def item(
         self,
@@ -1354,11 +1398,11 @@ class Module:  # noqa: PLR0904
         Processing Logic:
         ----------------
             - Iterate through self.resources which is a dictionary of all resources
-            - Check if each resource's restype is equal to ResourceType.UTD
+            - Check if each resource's restype is equal to ResourceType.UTI
             - If equal, add it to the return list
             - Return the list of UTI resources.
         """
-        return [resource for resource in self.resources.values() if resource.restype() == ResourceType.UTD]
+        return self._filter_resources_by_type(ResourceType.UTI)
 
     def encounter(
         self,
@@ -1404,7 +1448,7 @@ class Module:  # noqa: PLR0904
             - If type matches, add it to the return list
             - Return the list of UTE resources.
         """
-        return [resource for resource in self.resources.values() if resource.restype() == ResourceType.UTE]
+        return self._filter_resources_by_type(ResourceType.UTE)
 
     def store(self, resname: str) -> ModuleResource[UTM] | None:
         """Looks up a material (UTM) resource by the specified resname from this module and returns the resource data.
@@ -1432,7 +1476,7 @@ class Module:  # noqa: PLR0904
 
     def stores(self) -> list[ModuleResource[UTM]]:
         """Returns a list of material (UTM) resources for this module."""
-        return [resource for resource in self.resources.values() if resource.restype() == ResourceType.UTM]
+        return self._filter_resources_by_type(ResourceType.UTM)
 
     def trigger(
         self,
@@ -1479,7 +1523,7 @@ class Module:  # noqa: PLR0904
             - Add matching resources to a list
             - Return the list of UTT resources.
         """
-        return [resource for resource in self.resources.values() if resource.restype() == ResourceType.UTT]
+        return self._filter_resources_by_type(ResourceType.UTT)
 
     def waypoint(
         self,
@@ -1522,7 +1566,7 @@ class Module:  # noqa: PLR0904
             - Add matching resources to return list
             - Return list of UTW resources.
         """
-        return [resource for resource in self.resources.values() if resource.restype() == ResourceType.UTW]
+        return self._filter_resources_by_type(ResourceType.UTW)
 
     def model(
         self,
@@ -1591,7 +1635,7 @@ class Module:  # noqa: PLR0904
             - Checks if the resource type is MDL
             - Adds matching resources to the return list.
         """
-        return [resource for resource in self.resources.values() if resource.restype() == ResourceType.MDL]
+        return self._filter_resources_by_type(ResourceType.MDL)
 
     def model_exts(self) -> list[ModuleResource]:
         """Returns a list of MDX model resources.
@@ -1609,7 +1653,7 @@ class Module:  # noqa: PLR0904
             - Checks if the resource type is MDX
             - Adds matching resources to the return list.
         """
-        return [resource for resource in self.resources.values() if resource.restype() == ResourceType.MDX]
+        return self._filter_resources_by_type(ResourceType.MDX)
 
     def texture(
         self,
@@ -1661,7 +1705,7 @@ class Module:  # noqa: PLR0904
             - Include the resource in return list if type matches.
         """
         texture_types: set[ResourceType] = {ResourceType.TPC, ResourceType.TGA}
-        return [resource for resource in self.resources.values() if resource.isActive() is not None and resource.restype() in texture_types]
+        return self._filter_resources_by_types(texture_types, require_active=True)
 
     def sound(
         self,
@@ -1707,7 +1751,7 @@ class Module:  # noqa: PLR0904
             - Add matching resources to a list
             - Return the list of UTS resources.
         """
-        return [resource for resource in self.resources.values() if resource.restype() == ResourceType.UTS]
+        return self._filter_resources_by_type(ResourceType.UTS)
 
     def loadscreen(self) -> FileResource | None:
         """Returns a FileResource object representing the loadscreen texture for this module.
