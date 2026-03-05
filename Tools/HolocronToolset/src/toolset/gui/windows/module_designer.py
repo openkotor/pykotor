@@ -5439,7 +5439,16 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             return
 
         self.log.info("Generating walkmesh from layout...")
-        self.ui.flatRenderer.generate_walkmeshes(lyt)
+        walkmesh_templates: dict[str, BWM] = {}
+        if self._module is not None:
+            for module_resource in self._module.resources.values():
+                if module_resource.restype() != ResourceType.WOK:
+                    continue
+                resource_obj = module_resource.resource()
+                if isinstance(resource_obj, BWM):
+                    walkmesh_templates[module_resource.resname().lower()] = resource_obj
+
+        self.ui.flatRenderer.generate_walkmeshes(lyt, walkmesh_templates=walkmesh_templates)
         self.ui.flatRenderer.center_camera()
         self.ui.flatRenderer.update()
         self.log.info("Walkmesh generated from current layout")

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 
+from copy import deepcopy
 from typing import TYPE_CHECKING, ClassVar, Generic, NamedTuple, TypeVar
 
 import qtpy
@@ -306,17 +307,22 @@ class WalkmeshRenderer(QWidget):
         self._highlighted_edge = edge
         self.update()
 
-    def generate_walkmeshes(self, layout: LYT):
-        """Generate walkmesh based on the current room layout."""
-        # Logic to generate walkmesh from layout
+    def generate_walkmeshes(self, layout: LYT, walkmesh_templates: dict[str, BWM] | None = None):
+        """Generate walkmeshes based on the current room layout.
+
+        When template walkmeshes are provided, the renderer will re-anchor them
+        around each room's requested layout position instead of falling back to a
+        placeholder quad. This preserves real face materials/transitions and gives
+        layout editing a much closer approximation of the final module geometry.
+        """
         self._walkmeshes = []  # Clear existing walkmeshes
+        template_lookup = {key.lower(): value for key, value in (walkmesh_templates or {}).items()}
         for room in layout.rooms:
-            # Generate walkmesh for each room
-            walkmesh = self.create_walkmesh_for_room(room)
+            walkmesh = self.create_walkmesh_for_room(room, template_lookup.get(room.model.lower()))
             self._walkmeshes.append(walkmesh)
         self.update_walkmesh_display()
 
-    def create_walkmesh_for_room(self, room: LYTRoom) -> BWM:
+    def create_walkmesh_for_room(self, room: LYTRoom, template: BWM | None = None) -> BWM:
         """Create a procedural walkmesh for a room when no WOK is loaded.
 
         LYTRoom only provides model (ResRef) and position; it has no explicit dimensions.
@@ -328,6 +334,25 @@ class WalkmeshRenderer(QWidget):
         BWM.position set to the room position so the floor is placed correctly in
         world space. Faces use a walkable material (STONE) and no edge transitions.
         """
+        if template is not None and template.faces:
+            walkmesh = deepcopy(template)
+            bbmin, bbmax = walkmesh.box()
+            anchor = Vector3(
+                (bbmin.x + bbmax.x) / 2.0,
+                (bbmin.y + bbmax.y) / 2.0,
+                (bbmin.z + bbmax.z) / 2.0,
+            )
+            if template.position != Vector3.from_null():
+                anchor = Vector3(template.position.x, template.position.y, template.position.z)
+
+            walkmesh.translate(
+                room.position.x - anchor.x,
+                room.position.y - anchor.y,
+                room.position.z - anchor.z,
+            )
+            walkmesh.position = Vector3(room.position.x, room.position.y, room.position.z)
+            return walkmesh
+
         walkmesh = BWM()
         walkmesh.position = Vector3(room.position.x, room.position.y, room.position.z)
 
