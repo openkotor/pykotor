@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING
 from pykotor.extract.capsule import Capsule
 from pykotor.resource.formats import gff, lip, ssf, tlk, twoda
 from pykotor.tools.misc import is_capsule_file
+from utility.misc import get_normalized_extension
 
 if TYPE_CHECKING:
     from pykotor.extract.file import FileResource
@@ -224,7 +225,7 @@ class KotorDiffer:
         relative_path: str,
     ) -> FileChange | None:
         """Compare regular files based on their type."""
-        ext = file1.suffix.lower().lstrip(".")
+        ext = get_normalized_extension(file1).lstrip(".")
 
         if ext in self.gff_types:
             return self._diff_gff_files(file1, file2, relative_path)
@@ -535,7 +536,7 @@ class KotorDiffer:
         """Get the resource type from a file path."""
         if isinstance(file_path, str):
             file_path = Path(file_path)
-        return file_path.suffix.lower().lstrip(".")
+        return get_normalized_extension(file_path).lstrip(".")
 
     # Text conversion methods
     def _gff_to_text(self, gff_obj: gff.GFF) -> str:
