@@ -1138,6 +1138,39 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         label = f"{resource.resname().upper()}.{resource.restype().extension.upper()}"
         self.ui.mainRenderer.set_drop_preview(world_pos, label)
 
+    @staticmethod
+    def _external_asset_urls(event: QEvent) -> list[Path]:
+        mime_data = event.mimeData() if hasattr(event, "mimeData") else None  # type: ignore[call-arg]
+        if mime_data is None or not mime_data.hasUrls():
+            return []
+        urls = []
+        for url in mime_data.urls():
+            if url.isLocalFile():
+                urls.append(Path(url.toLocalFile()))
+        return urls
+
+    @staticmethod
+    def _is_supported_external_asset(path: Path) -> bool:
+        supported_suffixes = {".obj", ".fbx", ".gltf", ".glb", ".dae", ".png", ".jpg", ".jpeg", ".tga", ".tif", ".tiff", ".bmp", ".webp"}
+        return path.suffix.lower() in supported_suffixes
+
+    def _handle_external_asset_drop(self, file_paths: list[Path]) -> bool:
+        if not self._is_blender_mode_enabled() or self._blender_controller is None:
+            return False
+
+        imported_assets = 0
+        for file_path in file_paths:
+            if not file_path.is_file() or not self._is_supported_external_asset(file_path):
+                continue
+            result = self._blender_controller.import_external_asset(str(file_path))
+            if result is not None:
+                imported_assets += 1
+
+        if imported_assets:
+            self._show_status_message(f"Imported {imported_assets} external asset(s) into Blender.", 4000)
+            return True
+        return False
+
     def eventFilter(self, obj: object, event: QEvent) -> bool:  # type: ignore[override]
         """Intercept drag-and-drop events on the 3D renderer."""
         if obj is self.ui.mainRenderer:
@@ -1148,6 +1181,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                     self._update_resource_drop_preview(self._dragged_resource, drag_event.pos())  # type: ignore[union-attr]
                     event.acceptProposedAction()  # type: ignore[union-attr]
                     return True
+                external_assets = self._external_asset_urls(event)
+                if external_assets and any(self._is_supported_external_asset(path) for path in external_assets):
+                    event.acceptProposedAction()  # type: ignore[union-attr]
+                    return True
             elif etype == QEvent.Type.Drop:
                 if self._dragged_resource is not None:
                     drop_event = event  # type: ignore[assignment]
@@ -1155,6 +1192,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                     self._handle_resource_drop(self._dragged_resource, pos)
                     self._dragged_resource = None
                     self.ui.mainRenderer.set_drop_preview(None)
+                    event.acceptProposedAction()  # type: ignore[union-attr]
+                    return True
+                external_assets = self._external_asset_urls(event)
+                if external_assets and self._handle_external_asset_drop(external_assets):
                     event.acceptProposedAction()  # type: ignore[union-attr]
                     return True
             elif etype == QEvent.Type.DragLeave:

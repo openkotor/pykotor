@@ -145,3 +145,24 @@ def test_blender_bridge_module_roundtrip(blender_runtime_bridge: BlenderCommands
 
     assert blender_runtime_bridge.remove_instance(added_name) is True
     assert blender_runtime_bridge.unload_module() is True
+
+
+def test_blender_bridge_imports_external_obj(blender_runtime_bridge: BlenderCommands, tmp_path: Path):
+    obj_path = tmp_path / "triangle.obj"
+    obj_path.write_text(
+        "\n".join(
+            [
+                "o Triangle",
+                "v 0.0 0.0 0.0",
+                "v 1.0 0.0 0.0",
+                "v 0.0 1.0 0.0",
+                "f 1 2 3",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = blender_runtime_bridge.import_external_asset(str(obj_path))
+    assert isinstance(result, dict)
+    assert result["kind"] == "model"
+    assert result["imported_objects"]

@@ -373,6 +373,14 @@ class HolocronIPCServer:
         self._serialize_state(obj, state)
         return state
 
+    def _move_object_to_session_collection(self, obj: bpy.types.Object) -> None:
+        session_collection = self._session_collection()
+        if obj.name not in session_collection.objects:
+            session_collection.objects.link(obj)
+        for collection in list(obj.users_collection):
+            if collection != session_collection:
+                collection.objects.unlink(obj)
+
     def _apply_properties(self, obj: bpy.types.Object, properties: dict[str, Any]) -> None:
         state = self._deserialize_state(obj)
         state.update(properties)
@@ -698,6 +706,35 @@ class HolocronIPCServer:
         bpy.data.objects.remove(obj, do_unlink=True)
         self._remember_scene_state()
         return True
+
+    def _rpc_import_external_asset(self, params: dict[str, Any]) -> dict[str, Any]:
+        file_path = str(params.get("file_path", ""))
+        suffix = file_path.lower().rsplit(".", 1)[-1] if "." in file_path else ""
+        imported_before = {obj.name for obj in bpy.data.objects}
+
+        if suffix == "obj":
+            bpy.ops.wm.obj_import(filepath=file_path)
+            asset_kind = "model"
+        elif suffix == "fbx":
+            bpy.ops.import_scene.fbx(filepath=file_path)
+            asset_kind = "model"
+        elif suffix in {"gltf", "glb"}:
+            bpy.ops.import_scene.gltf(filepath=file_path)
+            asset_kind = "model"
+        elif suffix == "dae":
+            bpy.ops.wm.collada_import(filepath=file_path)
+            asset_kind = "model"
+        elif suffix in {"png", "jpg", "jpeg", "tga", "tif", "tiff", "bmp", "webp"}:
+            bpy.ops.image.open(filepath=file_path)
+            return {"kind": "texture", "file_path": file_path}
+        else:
+            raise ValueError(f"Unsupported external asset type: {file_path}")
+
+        imported_objects = [obj for obj in bpy.data.objects if obj.name not in imported_before]
+        for obj in imported_objects:
+            self._move_object_to_session_collection(obj)
+
+        return {"kind": asset_kind, "file_path": file_path, "imported_objects": [obj.name for obj in imported_objects]}
 
     # ---------------------------------------------------------------------
     # Utility helpers

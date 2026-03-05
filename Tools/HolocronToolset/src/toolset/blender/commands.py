@@ -588,6 +588,11 @@ class BlenderEditorController:
         """
         return self._commands.set_camera_view(x, y, z, yaw, pitch, distance)
 
+    @requires_connection(return_value=None)
+    def import_external_asset(self, file_path: str) -> dict[str, Any] | None:
+        """Import an external asset into the active Blender session."""
+        return self._commands.import_external_asset(file_path)
+
     # =========================================================================
     # Layout Editing
     # =========================================================================
