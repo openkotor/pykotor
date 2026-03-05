@@ -1,0 +1,154 @@
+diff --git a/src/agentdecompile_cli/bridge.py b/src/agentdecompile_cli/bridge.py
+index e72decc..daa2903 100644
+--- a/src/agentdecompile_cli/bridge.py
++++ b/src/agentdecompile_cli/bridge.py
+@@ -755,18 +755,36 @@ class AgentDecompileStdioBridge:
+         backend so that tools like ``list-project-files`` work immediately
+         without requiring a manual ``open`` call.
+         """
+-        server_host = os.environ.get("AGENT_DECOMPILE_SERVER_HOST", "").strip()
++        server_host = (
++            os.environ.get("AGENT_DECOMPILE_SERVER_HOST", "").strip()
++            or os.environ.get("AGENT_DECOMPILE_GHIDRA_SERVER_HOST", "").strip()
++            or os.environ.get("AGENTDECOMPILE_GHIDRA_HOST", "").strip()
++        )
+         if not server_host:
+             return  # No shared server configured – nothing to auto-open.
+ 
+-        server_port = os.environ.get("AGENT_DECOMPILE_SERVER_PORT", "13100").strip()
+-        server_username = os.environ.get("AGENT_DECOMPILE_SERVER_USERNAME", "").strip()
+-        server_password = os.environ.get("AGENT_DECOMPILE_SERVER_PASSWORD", "").strip()
++        server_port = (
++            os.environ.get("AGENT_DECOMPILE_SERVER_PORT", "").strip()
++            or os.environ.get("AGENT_DECOMPILE_GHIDRA_SERVER_PORT", "").strip()
++            or os.environ.get("AGENTDECOMPILE_GHIDRA_PORT", "").strip()
++            or "13100"
++        )
++        server_username = (
++            os.environ.get("AGENT_DECOMPILE_SERVER_USERNAME", "").strip()
++            or os.environ.get("AGENT_DECOMPILE_GHIDRA_SERVER_USERNAME", "").strip()
++            or os.environ.get("AGENTDECOMPILE_GHIDRA_USERNAME", "").strip()
++        )
++        server_password = (
++            os.environ.get("AGENT_DECOMPILE_SERVER_PASSWORD", "").strip()
++            or os.environ.get("AGENT_DECOMPILE_GHIDRA_SERVER_PASSWORD", "").strip()
++            or os.environ.get("AGENTDECOMPILE_GHIDRA_PASSWORD", "").strip()
++        )
+         repository = (
+             os.environ.get("AGENT_DECOMPILE_GHIDRA_SERVER_REPOSITORY", "").strip()
+             or os.environ.get("AGENTDECOMPILE_GHIDRA_SERVER_REPOSITORY", "").strip()
+             or os.environ.get("AGENT_DECOMPILE_REPOSITORY", "").strip()
+             or os.environ.get("AGENTDECOMPILE_REPOSITORY", "").strip()
++            or os.environ.get("AGENTDECOMPILE_GHIDRA_REPOSITORY", "").strip()
+         )
+ 
+         open_args: dict[str, Any] = {
+diff --git a/src/agentdecompile_cli/executor.py b/src/agentdecompile_cli/executor.py
+index 0890bcc..c5a125c 100644
+--- a/src/agentdecompile_cli/executor.py
++++ b/src/agentdecompile_cli/executor.py
+@@ -73,7 +73,16 @@ def build_backend_url(host: str, port: int, use_tls: bool = False) -> str:
+ 
+ 
+ def normalize_backend_url(value: str) -> str:
+-    """Normalize a backend URL or host[:port] into a full MCP message endpoint URL."""
++    """Normalize a backend URL or host[:port] into a full MCP message endpoint URL.
++
++    Accepted path forms and their normalization:
++    - (empty)          → /mcp/message
++    - /mcp             → /mcp/message
++    - /mcp/            → /mcp/message
++    - /mcp/message     → /mcp/message  (no change)
++    - /mcp/message/    → /mcp/message  (strip trailing slash)
++    - /custom/path     → /custom/path/mcp/message
++    """
+     raw = value.strip()
+     if not raw:
+         raise ValueError("Backend URL cannot be empty")
+@@ -89,6 +98,8 @@ def normalize_backend_url(value: str) -> str:
+     path = (parsed.path or "").rstrip("/")
+     if not path or path == "":
+         path = "/mcp/message"
++    elif path == "/mcp":
++        path = "/mcp/message"
+     elif not path.endswith("/mcp/message"):
+         path = f"{path}/mcp/message"
+     return urlunparse(parsed._replace(path=path))
+diff --git a/src/agentdecompile_cli/mcp_server/proxy_server.py b/src/agentdecompile_cli/mcp_server/proxy_server.py
+index cc6b55e..c58f4a0 100644
+--- a/src/agentdecompile_cli/mcp_server/proxy_server.py
++++ b/src/agentdecompile_cli/mcp_server/proxy_server.py
+@@ -98,8 +98,10 @@ class AgentDecompileMcpProxyServer:
+         mcp_asgi: Any = _SessionContextASGI(self._session_manager.handle_request)
+         if self.auth_config is not None:
+             mcp_asgi = AuthMiddleware(mcp_asgi, self.auth_config)
+-        self.app.mount("/mcp/message", mcp_asgi)
+         self.app.mount("/mcp/message/", mcp_asgi)
++        self.app.mount("/mcp/message", mcp_asgi)
++        self.app.mount("/mcp/", mcp_asgi)
++        self.app.mount("/mcp", mcp_asgi)
+ 
+         @self.app.get("/health")
+         async def health_check() -> dict[str, Any]:
+diff --git a/src/agentdecompile_cli/mcp_server/server.py b/src/agentdecompile_cli/mcp_server/server.py
+index 5b3564c..e8f556e 100644
+--- a/src/agentdecompile_cli/mcp_server/server.py
++++ b/src/agentdecompile_cli/mcp_server/server.py
+@@ -179,8 +179,10 @@ class PythonMcpServer:
+         mcp_asgi: Any = _SessionContextASGI(self._session_manager.handle_request)
+         if self.auth_config is not None:
+             mcp_asgi = AuthMiddleware(mcp_asgi, self.auth_config)
+-        self.app.mount("/mcp/message", mcp_asgi)
+         self.app.mount("/mcp/message/", mcp_asgi)
++        self.app.mount("/mcp/message", mcp_asgi)
++        self.app.mount("/mcp/", mcp_asgi)
++        self.app.mount("/mcp", mcp_asgi)
+ 
+         @self.app.get("/health")
+         async def health_check() -> dict[str, Any]:
+diff --git a/src/agentdecompile_cli/server.py b/src/agentdecompile_cli/server.py
+index aff9918..d5e510f 100644
+--- a/src/agentdecompile_cli/server.py
++++ b/src/agentdecompile_cli/server.py
+@@ -647,6 +647,7 @@ def main() -> None:
+     _has_credentials = bool(
+         os.environ.get("AGENT_DECOMPILE_GHIDRA_SERVER_USERNAME")
+         or os.environ.get("AGENT_DECOMPILE_SERVER_USERNAME")
++        or os.environ.get("AGENTDECOMPILE_GHIDRA_USERNAME")
+         or getattr(args, "ghidra_server_username", None)
+     )
+     _is_http_transport = args.transport in _HTTP_TRANSPORTS
+@@ -658,28 +659,33 @@ def main() -> None:
+                 default_server_host=(
+                     os.environ.get("AGENT_DECOMPILE_GHIDRA_SERVER_HOST")
+                     or os.environ.get("AGENT_DECOMPILE_SERVER_HOST")
++                    or os.environ.get("AGENTDECOMPILE_GHIDRA_HOST")
+                     or getattr(args, "ghidra_server_host", None)
+                 ),
+                 default_server_port=int(
+                     os.environ.get("AGENT_DECOMPILE_GHIDRA_SERVER_PORT")
+                     or os.environ.get("AGENT_DECOMPILE_SERVER_PORT")
++                    or os.environ.get("AGENTDECOMPILE_GHIDRA_PORT")
+                     or getattr(args, "ghidra_server_port", None)
+                     or 13100
+                 ),
+                 default_username=(
+                     os.environ.get("AGENT_DECOMPILE_GHIDRA_SERVER_USERNAME")
+                     or os.environ.get("AGENT_DECOMPILE_SERVER_USERNAME")
++                    or os.environ.get("AGENTDECOMPILE_GHIDRA_USERNAME")
+                     or getattr(args, "ghidra_server_username", None)
+                 ),
+                 default_password=(
+                     os.environ.get("AGENT_DECOMPILE_GHIDRA_SERVER_PASSWORD")
+                     or os.environ.get("AGENT_DECOMPILE_SERVER_PASSWORD")
++                    or os.environ.get("AGENTDECOMPILE_GHIDRA_PASSWORD")
+                     or getattr(args, "ghidra_server_password", None)
+                 ),
+                 default_repository=(
+                     os.environ.get("AGENT_DECOMPILE_GHIDRA_SERVER_REPOSITORY")
+                     or os.environ.get("AGENTDECOMPILE_GHIDRA_SERVER_REPOSITORY")
+                     or os.environ.get("AGENT_DECOMPILE_REPOSITORY")
++                    or os.environ.get("AGENTDECOMPILE_GHIDRA_REPOSITORY")
+                     or getattr(args, "ghidra_server_repository", None)
+                 ),
+             )
