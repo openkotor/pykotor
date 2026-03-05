@@ -323,10 +323,8 @@ class TSLPatcherINISerializer:
         verbose: bool = True,
     ) -> list[str]:
         """Serialize [2DAList] section."""
-        if not modifications:
-            if verbose:
-                print("No 2DA modifications to serialize")
-            return []
+        if (empty_result := self._check_empty_modifications(modifications, "2DA", verbose)) is not None:
+            return empty_result
 
         if verbose:
             print(f"Serializing {len(modifications)} 2DA files")
@@ -544,10 +542,8 @@ class TSLPatcherINISerializer:
         verbose: bool = True,
     ) -> list[str]:
         """Serialize [GFFList] section with exact TSLPatcher format."""
-        if not modifications:
-            if verbose:
-                print("No GFF modifications to serialize")
-            return []
+        if (empty_result := self._check_empty_modifications(modifications, "GFF", verbose)) is not None:
+            return empty_result
 
         if verbose:
             print(f"Serializing {len(modifications)} GFF files")
@@ -866,10 +862,8 @@ class TSLPatcherINISerializer:
         verbose: bool = True,
     ) -> list[str]:
         """Serialize [TLKList] section."""
-        if not modifications:
-            if verbose:
-                print("No TLK modifications to serialize")
-            return []
+        if (empty_result := self._check_empty_modifications(modifications, "TLK", verbose)) is not None:
+            return empty_result
 
         if verbose:
             print(f"Serializing {len(modifications)} TLK modification sets")
@@ -944,10 +938,8 @@ class TSLPatcherINISerializer:
         verbose: bool = True,
     ) -> list[str]:
         """Serialize [SSFList] section."""
-        if not modifications:
-            if verbose:
-                print("No SSF modifications to serialize")
-            return []
+        if (empty_result := self._check_empty_modifications(modifications, "SSF", verbose)) is not None:
+            return empty_result
 
         if verbose:
             print(f"Serializing {len(modifications)} SSF files")
@@ -1026,10 +1018,8 @@ class TSLPatcherINISerializer:
         verbose: bool = True,
     ) -> list[str]:
         """Serialize [HACKList] section for NCS binary patches."""
-        if not modifications:
-            if verbose:
-                print("No NCS modifications to serialize")
-            return []
+        if (empty_result := self._check_empty_modifications(modifications, "NCS", verbose)) is not None:
+            return empty_result
 
         if verbose:
             print(f"Serializing {len(modifications)} NCS files for HACKList")
@@ -1334,6 +1324,30 @@ class IncrementalTSLPatchDataWriter:
         self._batch_writes: bool = True  # Flag to enable/disable write batching
         self._writes_since_last_flush: int = 0
         self._write_batch_size: int = 50  # Write every N modifications
+
+    def _check_empty_modifications(
+        self,
+        modifications: list,
+        modification_type: str,
+        verbose: bool = True,
+    ) -> list[str] | None:
+        """Check if modifications list is empty and return early if so.
+
+        Args:
+        ----
+            modifications: List of modifications to check
+            modification_type: Type name for logging (e.g., "2DA", "GFF", "TLK")
+            verbose: Whether to print verbose messages
+
+        Returns:
+        -------
+            Empty list if no modifications, None if there are modifications to process
+        """
+        if not modifications:
+            if verbose:
+                print(f"No {modification_type} modifications to serialize")
+            return []
+        return None
 
     def register_tlk_modification_with_source(
         self,
