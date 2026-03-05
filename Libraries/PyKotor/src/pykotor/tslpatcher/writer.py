@@ -1349,6 +1349,24 @@ class IncrementalTSLPatchDataWriter:
             return []
         return None
 
+    def _log_exception_with_traceback(self, operation: str, filename: str, exception: Exception, *, indent_lines: bool = True) -> None:
+        """Log an exception with full traceback.
+
+        Args:
+        ----
+            operation: Description of the operation that failed (e.g., "write 2DA")
+            filename: Name of the file being processed
+            exception: The exception that occurred
+            indent_lines: Whether to indent traceback lines with "  "
+        """
+        self.log_func(f"[Error] Failed to {operation} {filename}: {exception.__class__.__name__}: {exception}")
+        if indent_lines:
+            self.log_func("Full traceback:")
+            for line in traceback.format_exc().splitlines():
+                self.log_func(f"  {line}")
+        else:
+            self.log_func(traceback.format_exc())
+
     def register_tlk_modification_with_source(
         self,
         tlk_mod: ModificationsTLK,
@@ -1563,10 +1581,7 @@ class IncrementalTSLPatchDataWriter:
                 write_2da(twoda_obj, output_path, ResourceType.TwoDA)
                 _log_verbose(f"Wrote 2DA file: {filename}")
             except Exception as e:  # noqa: BLE001
-                self.log_func(f"[Error] Failed to write 2DA {filename}: {e.__class__.__name__}: {e}")
-                self.log_func("Full traceback:")
-                for line in traceback.format_exc().splitlines():
-                    self.log_func(f"  {line}")
+                self._log_exception_with_traceback("write 2DA", filename, e)
                 return
 
         # Add to install folders
@@ -2037,10 +2052,7 @@ class IncrementalTSLPatchDataWriter:
                 write_gff(gff_obj, output_path, file_format)
                 _log_verbose(f"Wrote GFF file: {actual_filename}")
             except Exception as e:  # noqa: BLE001
-                self.log_func(f"[Error] Failed to write GFF {actual_filename}: {e.__class__.__name__}: {e}")
-                self.log_func("Full traceback:")
-                for line in traceback.format_exc().splitlines():
-                    self.log_func(f"  {line}")
+                self._log_exception_with_traceback("write GFF", actual_filename, e)
                 # Still add to INI so the section is generated and user can fix the file manually
                 # Fall through to add to install folder, write INI section, and track modification
 
@@ -2555,8 +2567,7 @@ class IncrementalTSLPatchDataWriter:
                         self.log_func(traceback.format_exc())
 
             except Exception as e:
-                self.log_func(f"[Error] Failed to search Installation: {e.__class__.__name__}: {e}")
-                self.log_func(traceback.format_exc())
+                self._log_exception_with_traceback("search Installation", "", e, indent_lines=False)
 
         elif isinstance(source, Path):
             # Path-based scanning is not supported with typed location objects
@@ -3871,10 +3882,7 @@ class IncrementalTSLPatchDataWriter:
                 write_ssf(ssf_obj, output_path, ResourceType.SSF)
                 _log_verbose(f"Wrote SSF file: {filename}")
             except Exception as e:  # noqa: BLE001
-                self.log_func(f"[Error] Failed to write SSF {filename}: {e.__class__.__name__}: {e}")
-                self.log_func("Full traceback:")
-                for line in traceback.format_exc().splitlines():
-                    self.log_func(f"  {line}")
+                self._log_exception_with_traceback("write SSF", filename, e)
                 return
 
         # Add to install folders
@@ -4123,10 +4131,7 @@ class IncrementalTSLPatchDataWriter:
                 else:
                     self.log_func(f"[Warning] Could not extract data for install file: {filename}")
             except Exception as e:  # noqa: BLE001
-                self.log_func(f"[Error] Failed to copy install file {filename}: {e.__class__.__name__}: {e}")
-                self.log_func("Full traceback:")
-                for line in traceback.format_exc().splitlines():
-                    self.log_func(f"  {line}")
+                self._log_exception_with_traceback("copy install file", filename, e)
 
     def _extract_file_data(
         self,
@@ -4165,10 +4170,7 @@ class IncrementalTSLPatchDataWriter:
 
                 _log_debug(f"Resource {filename} not found in capsule {source_path.name}")
             except Exception as e:  # noqa: BLE001
-                self.log_func(f"[Error] Failed to extract from capsule {source_path}: {e.__class__.__name__}: {e}")
-                self.log_func("Full traceback:")
-                for line in traceback.format_exc().splitlines():
-                    self.log_func(f"  {line}")
+                self._log_exception_with_traceback(f"extract from capsule {source_path}", "", e)
                 return None
             else:
                 return None
