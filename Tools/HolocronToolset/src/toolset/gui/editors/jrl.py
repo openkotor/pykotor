@@ -119,6 +119,21 @@ class JRLEditor(Editor):
 
         self.ui.actionSettings.triggered.connect(self._show_settings)
 
+    def _create_item_with_data(self, data) -> QStandardItem:
+        """Create a QStandardItem and set its data.
+
+        Args:
+        ----
+            data: The data to store in the item
+
+        Returns:
+        -------
+            QStandardItem: The created item with data set
+        """
+        item = QStandardItem()
+        item.setData(data)
+        return item
+
     def _setup_installation(self, installation: HTInstallation):
         self._installation = installation
         self.ui.categoryNameEdit.set_installation(installation)
@@ -174,14 +189,12 @@ class JRLEditor(Editor):
         self._model.clear()
         self.ui.filterEdit.clear()
         for quest in self._jrl.quests:
-            quest_item = QStandardItem()
-            quest_item.setData(quest)
+            quest_item = self._create_item_with_data(quest)
             self.refresh_quest_item(quest_item)
             self._model.appendRow(quest_item)
 
             for entry in quest.entries:
-                entry_item = QStandardItem()
-                entry_item.setData(entry)
+                entry_item = self._create_item_with_data(entry)
                 self.refresh_entry_item(entry_item)
                 quest_item.appendRow(entry_item)
 
@@ -298,8 +311,7 @@ class JRLEditor(Editor):
             questItem: The item in the tree that stores the quest.
             newEntry: The entry to add into the quest.
         """
-        entry_item = QStandardItem()
-        entry_item.setData(newEntry)
+        entry_item = self._create_item_with_data(newEntry)
         self.refresh_entry_item(entry_item)
         quest_item.appendRow(entry_item)
         quest: JRLQuest = quest_item.data()
@@ -316,8 +328,7 @@ class JRLEditor(Editor):
         ----
             newQuest: The new quest to be added in.
         """
-        quest_item = QStandardItem()
-        quest_item.setData(newQuest)
+        quest_item = self._create_item_with_data(newQuest)
         self.refresh_quest_item(quest_item)
         self._model.appendRow(quest_item)
         self._jrl.quests.append(newQuest)
@@ -584,8 +595,7 @@ class JRLEditor(Editor):
         # Rebuild child items to match sorted order
         quest_item.removeRows(0, quest_item.rowCount())
         for entry in quest.entries:
-            entry_item = QStandardItem()
-            entry_item.setData(entry)
+            entry_item = self._create_item_with_data(entry)
             self.refresh_entry_item(entry_item)
             quest_item.appendRow(entry_item)
 

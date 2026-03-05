@@ -205,6 +205,20 @@ class ERFEditor(Editor):
         self.ui.tableView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.ui.tableView.customContextMenuRequested.connect(self.open_context_menu)
 
+    def _get_selected_resources_data(self) -> list[ERFResource]:
+        """Get the data of selected resources from the table view.
+
+        Returns:
+        -------
+            List of ERFResource objects for selected rows
+        """
+        sel_model: QItemSelectionModel | None = self.ui.tableView.selectionModel()
+        if sel_model is None:
+            RobustLogger().warning("ERFEditor: selectionModel was None in _get_selected_resources_data()")
+            return []
+        selected_rows = sel_model.selectedRows()
+        return [self.source_model.itemFromIndex(self._proxy_model.mapToSource(index)).data() for index in selected_rows]
+
     def prompt_confirm(self) -> bool:
         result = QMessageBox.question(
             None,
@@ -437,12 +451,7 @@ class ERFEditor(Editor):
         main_menu.exec(viewport.mapToGlobal(position))
 
     def get_selected_resources(self) -> list[ERFResource]:
-        # return [self.model.itemFromIndex(rowItem).data() for rowItem in selected_rows]
-        sel_model: QItemSelectionModel | None = self.ui.tableView.selectionModel()
-        if sel_model is None:
-            RobustLogger().warning("ERFEditor: selectionModel was None in get_selected_resources()")
-            return []
-        return [self.source_model.itemFromIndex(self._proxy_model.mapToSource(rowItem)).data() for rowItem in sel_model.selectedRows()]
+        return self._get_selected_resources_data()
 
     def extract_selected(self):
         selected_resources: list[ERFResource] = self.get_selected_resources()
@@ -564,15 +573,7 @@ class ERFEditor(Editor):
         *,
         gff_specialized: bool | None = None,
     ):
-        sel_model: QItemSelectionModel | None = self.ui.tableView.selectionModel()
-        if sel_model is None:
-            RobustLogger().warning("ERFEditor: selectionModel was None in open_selected()")
-            return
-        selected_rows: list[QModelIndex] = sel_model.selectedRows()
-        if not selected_rows:
-            RobustLogger().warning("ERFEditor: no selected rows in open_selected()")
-            return
-        erf_resources: list[ERFResource] = [self.source_model.itemFromIndex(self._proxy_model.mapToSource(index)).data() for index in selected_rows]
+        erf_resources: list[ERFResource] = self._get_selected_resources_data()
         if not erf_resources:
             RobustLogger().warning("ERFEditor: no erf_resources in open_selected()")
             return

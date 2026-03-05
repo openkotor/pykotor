@@ -133,6 +133,34 @@ class FACEditor(Editor):
 
         QShortcut("Del", self).activated.connect(self.on_delete_shortcut)
 
+    def _create_item_with_data(self, data) -> QStandardItem:
+        """Create a QStandardItem and set its data.
+
+        Args:
+        ----
+            data: The data to store in the item
+
+        Returns:
+        -------
+            QStandardItem: The created item with data set
+        """
+        item = QStandardItem()
+        item.setData(data)
+        return item
+
+    def _get_all_model_items(self, model: QStandardItemModel) -> list[QStandardItem]:
+        """Get all items from a QStandardItemModel.
+
+        Args:
+        ----
+            model: The model to get items from
+
+        Returns:
+        -------
+            List of all items in the model
+        """
+        return [model.item(i) for i in range(model.rowCount())]
+
     def load(
         self,
         filepath: os.PathLike | str,
@@ -160,16 +188,14 @@ class FACEditor(Editor):
         # Populate faction tree
         self._faction_model.clear()
         for i, faction in enumerate(self._fac.factions):
-            faction_item = QStandardItem()
-            faction_item.setData(faction)
+            faction_item = self._create_item_with_data(faction)
             self.refresh_faction_item(faction_item)
             self._faction_model.appendRow(faction_item)
 
         # Populate reputation tree
         self._reputation_model.clear()
         for rep in self._fac.reputations:
-            rep_item = QStandardItem()
-            rep_item.setData(rep)
+            rep_item = self._create_item_with_data(rep)
             self.refresh_reputation_item(rep_item)
             self._reputation_model.appendRow(rep_item)
 
@@ -321,8 +347,7 @@ class FACEditor(Editor):
     def add_faction(self, faction: FACFaction):
         """Add a faction to the FAC."""
         self._fac.factions.append(faction)
-        faction_item = QStandardItem()
-        faction_item.setData(faction)
+        faction_item = self._create_item_with_data(faction)
         self.refresh_faction_item(faction_item)
         self._faction_model.appendRow(faction_item)
 
@@ -336,7 +361,7 @@ class FACEditor(Editor):
         # Remove all reputations involving this faction
         to_remove = [
             rep_item
-            for rep_item in [self._reputation_model.item(i) for i in range(self._reputation_model.rowCount())]
+            for rep_item in self._get_all_model_items(self._reputation_model)
             if rep_item is not None and (rep_item.data().faction_id1 == faction_id or rep_item.data().faction_id2 == faction_id)
         ]
         for rep_item in to_remove:
@@ -346,8 +371,7 @@ class FACEditor(Editor):
     def add_reputation(self, reputation: FACReputation):
         """Add a reputation to the FAC."""
         self._fac.reputations.append(reputation)
-        rep_item = QStandardItem()
-        rep_item.setData(reputation)
+        rep_item = self._create_item_with_data(reputation)
         self.refresh_reputation_item(rep_item)
         self._reputation_model.appendRow(rep_item)
 
