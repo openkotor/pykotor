@@ -78,6 +78,7 @@ from pykotor.tslpatcher.mods.twoda import (  # noqa: PLC0415
 )
 from utility.common.geometry import Vector3, Vector4
 from utility.common.more_collections import CaseInsensitiveDict
+from utility.misc import ensure_directory_exists
 from utility.misc import get_normalized_extension
 
 if TYPE_CHECKING:
@@ -1275,7 +1276,7 @@ class IncrementalTSLPatchDataWriter:
         self._tlk_metadata: dict[int, dict[str, Any]] = {}
 
         # Create tslpatchdata directory
-        self.tslpatchdata_path.mkdir(parents=True, exist_ok=True)
+        ensure_directory_exists(self.tslpatchdata_path)
 
         # Track what we've written
         self.written_sections: set[str] = set()
@@ -4230,7 +4231,6 @@ class IncrementalTSLPatchDataWriter:
     ) -> None:
         """Write resource using appropriate io function."""
         self._write_resource_by_extension(data, dest_path, file_ext)
-            dest_path.write_bytes(data)
 
     def _insert_into_section(self, section_marker: str, new_lines: list[str]) -> None:
         """Insert content into a specific section of the INI file.

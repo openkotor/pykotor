@@ -27,7 +27,7 @@ from pykotor.tslpatcher.mods.install import InstallFile, create_backup
 from pykotor.tslpatcher.mods.nss import ModificationsNSS, MutableString
 from pykotor.tslpatcher.mods.template import OverrideType
 from utility.string_util import normalize_string
-from utility.misc import get_normalized_extension
+from utility.misc import ensure_directory_exists, get_normalized_extension
 
 if TYPE_CHECKING:
     from threading import Event
@@ -165,7 +165,7 @@ class ModInstaller:
             self.log.add_warning(f"Could not initialize uninstall directory: {(e.__class__.__name__, str(e))}")
         backup_dir = backup_dir / "backup" / timestamp
         try:  # sourcery skip: remove-redundant-exception
-            backup_dir.mkdir(parents=True, exist_ok=True)
+            ensure_directory_exists(backup_dir)
         except (PermissionError, OSError) as e:
             self.log.add_warning(f"Could not create backup folder: {(e.__class__.__name__, str(e))}")
         self.log.add_note(f"Using backup directory: '{backup_dir}'")
@@ -466,7 +466,7 @@ class ModInstaller:
                 else:
                     # if self.game.is_ios():  # TODO(th3w1zard1):
                     #    patch.saveas = patch.saveas.lower()
-                    output_container_path.mkdir(exist_ok=True, parents=True)  # Create non-existing folders when the patch demands it.
+                    ensure_directory_exists(output_container_path)  # Create non-existing folders when the patch demands it.
                     BinaryWriter.dump(output_container_path / patch.saveas, patched_data)
                 self.log.complete_patch()
             except Exception as e:  # pylint: disable=W0718  # noqa: BLE001
@@ -510,7 +510,7 @@ class ModInstaller:
         temp_script_folder: CaseAwarePath = self.mod_path / "temp_nss_working_dir"
         if temp_script_folder.is_dir():
             shutil.rmtree(temp_script_folder, ignore_errors=True)
-        temp_script_folder.mkdir(exist_ok=True, parents=True)
+        ensure_directory_exists(temp_script_folder)
         for file in self.mod_path.iterdir():
             if get_normalized_extension(file) != ".nss" or not file.is_file():
                 continue

@@ -435,3 +435,13 @@ def get_normalized_extension(path: Path | str) -> str:
         The file extension in lowercase (e.g., '.txt', '.mdl')
     """
     return Path(path).suffix.lower()
+
+
+def ensure_directory_exists(path: Path | str) -> None:
+    """Ensure that a directory exists, creating it if necessary.
+
+    Args:
+    ----
+        path: The directory path to ensure exists
+    """
+    Path(path).mkdir(parents=True, exist_ok=True)

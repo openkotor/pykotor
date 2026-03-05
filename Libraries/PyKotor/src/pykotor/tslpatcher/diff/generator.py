@@ -29,6 +29,7 @@ from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath
 from pykotor.tslpatcher.memory import PatcherMemory
 from utility.string_util import is_non_empty_string
+from utility.misc import ensure_directory_exists
 from pykotor.tslpatcher.mods.gff import AddFieldGFF, AddStructToListGFF, FieldValue, FieldValueConstant, ModifyFieldGFF
 from pykotor.tslpatcher.mods.install import InstallFile
 from pykotor.tslpatcher.mods.ssf import ModifySSF
@@ -76,7 +77,7 @@ class TSLPatchDataGenerator:
             tslpatchdata_path: Path where tslpatchdata folder will be created
         """
         self.tslpatchdata_path = tslpatchdata_path
-        self.tslpatchdata_path.mkdir(parents=True, exist_ok=True)
+        ensure_directory_exists(self.tslpatchdata_path)
         _log_debug(f"TSLPatchDataGenerator initialized at: {self.tslpatchdata_path}")
 
     def generate_all_files(
