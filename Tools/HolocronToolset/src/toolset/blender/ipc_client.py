@@ -439,10 +439,10 @@ class BlenderCommands:
         response = self._client.send_command("ping")
         return response.success
 
-    def get_version(self) -> str | None:
-        """Get kotorblender version."""
+    def get_version(self) -> dict[str, Any] | None:
+        """Get kotorblender/bridge version information."""
         response = self._client.send_command("get_version")
-        if response.success:
+        if response.success and isinstance(response.result, dict):
             return response.result
         return None
 
@@ -452,12 +452,14 @@ class BlenderCommands:
         git_data: dict,
         installation_path: str,
         module_root: str,
+        walkmeshes: list[dict] | None = None,
     ) -> bool:
         """Load a module into Blender.
 
         Args:
             lyt_data: Serialized LYT data
             git_data: Serialized GIT data
+            walkmeshes: Serialized walkmesh resources keyed by room/model
             installation_path: Path to KotOR installation
             module_root: Module root name (e.g., "tar_m02aa")
 
@@ -469,6 +471,7 @@ class BlenderCommands:
             {
                 "lyt": lyt_data,
                 "git": git_data,
+                "walkmeshes": walkmeshes or [],
                 "installation_path": installation_path,
                 "module_root": module_root,
             },

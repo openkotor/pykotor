@@ -223,6 +223,7 @@ class BlenderEditorController:
         success = self._commands.load_module(
             lyt_data=module_data["lyt"],
             git_data=module_data["git"],
+            walkmeshes=module_data["walkmeshes"],
             installation_path=str(installation_path),
             module_root=module_root,
         )
