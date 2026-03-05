@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 from pykotor.cli.archive_filter import matches_resource_name
 from pykotor.tools.archives import extract_bif, extract_erf, extract_key_bif, extract_rim
+from utility.misc import ensure_directory_exists
 
 
 def _matches_filter(resource, pattern: str) -> bool:  # type: ignore[no-untyped-def]
@@ -47,7 +48,7 @@ def cmd_extract(args: Namespace, logger: Logger) -> int:
         return 1
 
     output_dir = pathlib.Path(args.output) if args.output else pathlib.Path.cwd() / input_path.stem
-    output_dir.mkdir(parents=True, exist_ok=True)
+    ensure_directory_exists(output_dir)
 
     suffix = input_path.suffix.lower()
     logger.info(f"Extracting from {suffix} archive: {input_path.name}")  # noqa: G004
@@ -91,7 +92,7 @@ def _extract_key(key_path: pathlib.Path, output_dir: pathlib.Path, args: Namespa
                 logger.info(f"Extracting from BIF: {bif_path.name}")  # noqa: G004
                 seen_bifs.add(bif_path)
 
-            output_file.parent.mkdir(parents=True, exist_ok=True)
+            ensure_directory_exists(output_file.parent)
             output_file.write_bytes(resource.data)
             extracted_count += 1
 
@@ -118,7 +119,7 @@ def _extract_bif(bif_path: pathlib.Path, output_dir: pathlib.Path, args: Namespa
             resource_filter=((lambda r: _matches_filter(r, args.filter)) if args.filter and key_path.exists() else None),
             filter_pattern=args.filter if not (args.filter and key_path.exists()) else None,
         ):
-            output_file.parent.mkdir(parents=True, exist_ok=True)
+            ensure_directory_exists(output_file.parent)
             output_file.write_bytes(resource.data)
             extracted_count += 1
 

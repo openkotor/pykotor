@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 from pykotor.extract.installation import Installation
 from pykotor.tools.kit import extract_kit as _extract_kit
 from pykotor.tools.path import CaseAwarePath
+from utility.misc import ensure_directory_exists
 
 if TYPE_CHECKING:
     from loggerplus import RobustLogger
@@ -55,7 +56,7 @@ def generate_kit(
     installation = Installation(case_installation)
 
     case_output = CaseAwarePath(output_path)
-    case_output.mkdir(parents=True, exist_ok=True)
+    ensure_directory_exists(case_output)
 
     _extract_kit(
         installation=installation,

@@ -35,6 +35,7 @@ from typing import TYPE_CHECKING, Any
 
 from loggerplus import RobustLogger
 from pykotor.tslpatcher.logger import LogType, PatchLogger
+from utility.misc import ensure_directory_exists
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -189,7 +190,7 @@ class BaseApp(ABC):
         log_file_path = self.get_log_file_path()
         if log_file_path:
             try:
-                log_file_path.parent.mkdir(parents=True, exist_ok=True)
+                ensure_directory_exists(log_file_path.parent)
                 with log_file_path.open("a", encoding="utf-8") as log_file:
                     log_file.write(f"{log.formatted_message}\n")
             except OSError as e:

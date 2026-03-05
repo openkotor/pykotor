@@ -12,6 +12,8 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
 
+from utility.misc import ensure_directory_exists
+
 # Handle optional certifi dependency
 try:
     import certifi  # pyright: ignore[reportMissingImports]
@@ -466,7 +468,7 @@ def _download_file(
         dest_path = dest_path.parent
     dest_filepath = dest_path / file_name
     if not dest_filepath.parent.is_dir():
-        dest_filepath.parent.mkdir(parents=True, exist_ok=True)
+        ensure_directory_exists(dest_filepath.parent)
     shutil.move(temp_output_file.name, dest_filepath)
 
 

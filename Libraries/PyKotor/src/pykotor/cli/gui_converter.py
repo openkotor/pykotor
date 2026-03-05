@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Callable, Iterable, Sequence
 from loggerplus import RobustLogger
 from pykotor.resource.formats.gff import GFF, GFFContent, read_gff, write_gff
 from pykotor.tools.path import CaseAwarePath
+from utility.misc import ensure_directory_exists
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.gff.gff_data import GFFList, GFFStruct
@@ -278,7 +279,7 @@ def convert_gui_inputs(
         return 1
 
     case_output = CaseAwarePath(output)
-    case_output.mkdir(parents=True, exist_ok=True)
+    ensure_directory_exists(case_output)
 
     gathered = _gather_gui_inputs(inputs, warn)
     if not gathered:
@@ -302,7 +303,7 @@ def convert_gui_inputs(
                 continue
 
             dest = case_output / target.label / relative_dir / gui_file.name
-            dest.parent.mkdir(parents=True, exist_ok=True)
+            ensure_directory_exists(dest.parent)
             try:
                 write_gff(adjusted, dest)
                 log(f"Wrote GUI for {target.label} -> {dest}")

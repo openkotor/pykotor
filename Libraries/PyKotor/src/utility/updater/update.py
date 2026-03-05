@@ -21,7 +21,7 @@ from utility.system.os_helper import get_app_dir, get_mac_dot_app_dir, is_frozen
 from utility.system.path import ChDir
 from utility.updater.downloader import FileDownloader, download_mega_file_url
 from utility.updater.restarter import RestartStrategy, Restarter, UpdateStrategy
-from utility.misc import get_normalized_extension
+from utility.misc import get_normalized_extension, ensure_directory_exists
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -301,7 +301,7 @@ class LibUpdate:
                     # Sanitize and extract each file
                     member_path: tuple[str, ...] = PurePath(member.name).parts
                     sanitized_path: Path = Path.cwd() / PurePath(*[p for p in member_path if p not in ("/", "..", "")])
-                    sanitized_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
+                    ensure_directory_exists(sanitized_path.parent)  # Ensure directory exists
                     with sanitized_path.open("wb") as f:
                         extracted_member: IO[bytes] | None = tfile.extractfile(member)
                         if not extracted_member:

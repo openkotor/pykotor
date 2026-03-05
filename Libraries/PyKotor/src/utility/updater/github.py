@@ -25,6 +25,8 @@ from typing import (
 )
 from urllib.parse import urlparse
 
+from utility.misc import ensure_directory_exists
+
 if TYPE_CHECKING:
     from typing_extensions import Self
 
@@ -606,7 +608,7 @@ def download_github_file(
 
     timeout = 180 if timeout is None else timeout
     local_path = Path(local_path).absolute()
-    local_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_directory_exists(local_path.parent)
 
     if isinstance(url_or_repo, tuple):
         owner, repo = url_or_repo
@@ -666,7 +668,7 @@ def download_github_release_asset(
 
     timeout = 180 if timeout is None else timeout
     local_path = Path(local_path).absolute()
-    local_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_directory_exists(local_path.parent)
 
     # Get release info
     if tag_name.lower() == "latest":

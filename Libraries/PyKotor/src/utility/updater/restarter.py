@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Callable
 
 from loggerplus import RobustLogger
 from utility.system.os_helper import is_frozen, requires_admin
+from utility.misc import ensure_directory_exists
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -133,7 +134,7 @@ class Restarter:
         import tempfile
 
         script_dir = Path(tempfile.gettempdir()) / "holotoolset_update"
-        script_dir.mkdir(parents=True, exist_ok=True)
+        ensure_directory_exists(script_dir)
         script_path = script_dir / f"update_{os.getpid()}.ps1"
 
         self.log.debug("Writing update script to: %s", script_path)
@@ -464,7 +465,7 @@ class Restarter:
         import tempfile
 
         script_dir = Path(tempfile.gettempdir()) / "holotoolset_update"
-        script_dir.mkdir(parents=True, exist_ok=True)
+        ensure_directory_exists(script_dir)
         script_path = script_dir / f"update_{current_pid}.sh"
 
         self.log.debug("Writing update script to: %s", script_path)

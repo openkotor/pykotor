@@ -18,6 +18,8 @@ from pykotor.common.indoormap import IndoorMap
 from pykotor.common.modulekit import ModuleKitManager
 from pykotor.extract.installation import Installation
 from pykotor.tools.indoorkit import load_kits
+from utility.misc import ensure_directory_exists
+from utility.string_util import normalize_string
 from pykotor.tools.indoormap import (
     build_mod_from_indoor_file_modulekit,
     extract_indoor_from_module_as_modulekit,
@@ -353,7 +355,7 @@ def cmd_indoor_build(args: Namespace, logger: RobustLogger) -> int:  # noqa: PLR
             _log_missing_rooms(logger, missing)
 
             if args.module_filename:
-                indoor.module_id = args.module_filename.lower().strip()
+                indoor.module_id = normalize_string(args.module_filename)
                 logger.info("Module ID set to: %s", indoor.module_id)
 
             indoor.build(installation, kits, output_path, game_override=game, loadscreen_path=args.loading_screen)
@@ -397,7 +399,7 @@ def cmd_indoor_extract(args: Namespace, logger: RobustLogger) -> int:  # noqa: P
         return 1
     # kits are optional in implicit-kit mode.
 
-    module_name = args.module.lower().strip() if args.module else ""
+    module_name = normalize_string(args.module) if args.module else ""
     output_path = Path(args.output)
     installation_path = Path(args.installation)
     kits_path = Path(args.kits) if args.kits else None
@@ -432,7 +434,7 @@ def cmd_indoor_extract(args: Namespace, logger: RobustLogger) -> int:  # noqa: P
             return 1
         candidate_files = module_candidates
 
-        output_path.parent.mkdir(parents=True, exist_ok=True)
+        ensure_directory_exists(output_path.parent)
 
         # NOTE: We do not use embedded `indoormap.txt` payloads. Extraction must be based on
         # real module resources (LYT/WOK/MDL/MDX/etc), not cached editor data.
