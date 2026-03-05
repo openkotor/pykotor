@@ -16,6 +16,7 @@ from qtpy.QtCore import QTimer
 from qtpy.QtWidgets import QMessageBox
 
 from loggerplus import RobustLogger
+from toolset.gui.helpers.message_box import ask_question, show_error_message, show_warning_message
 from pykotor.resource.generics.git import (
     GITCamera,
     GITCreature,
@@ -110,22 +111,20 @@ class BlenderEditorMixin:
         blender_info = settings.get_blender_info()
 
         if not blender_info.is_valid:
-            QMessageBox.warning(
-                self,  # type: ignore[arg-type]
+            show_warning_message(
                 "Blender Not Found",
                 blender_info.error,
+                self,  # type: ignore[arg-type]
             )
             return False
 
         if not blender_info.has_kotorblender:
-            result = QMessageBox.warning(
-                self,  # type: ignore[arg-type]
+            result = ask_question(
                 "kotorblender Not Found",
                 f"{blender_info.error}\n\nDo you want to continue without kotorblender support?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No,
+                self,  # type: ignore[arg-type]
             )
-            if result != QMessageBox.Yes:
+            if result != QMessageBox.StandardButton.Yes:
                 return False
 
         # Launch Blender with IPC
@@ -137,10 +136,10 @@ class BlenderEditorMixin:
         )
 
         if self._blender_process is None:
-            QMessageBox.critical(
-                self,  # type: ignore[arg-type]
+            show_error_message(
                 "Launch Failed",
                 "Failed to launch Blender. Please check your Blender installation.",
+                self,  # type: ignore[arg-type]
             )
             return False
 
@@ -205,10 +204,10 @@ class BlenderEditorMixin:
         if self._connection_attempts > self._max_connection_attempts:
             if self._blender_connection_timer:
                 self._blender_connection_timer.stop()
-            QMessageBox.warning(
-                self,  # type: ignore[arg-type]
+            show_warning_message(
                 "Connection Failed",
                 "Failed to connect to Blender IPC server.\nPlease make sure Blender started correctly and kotorblender is installed.",
+                self,  # type: ignore[arg-type]
             )
             self.stop_blender_mode()
             self._on_blender_connection_failed()
@@ -245,10 +244,10 @@ class BlenderEditorMixin:
             RobustLogger().info("Module loaded in Blender successfully")
             self._on_blender_module_loaded()
         else:
-            QMessageBox.warning(
-                self,  # type: ignore[arg-type]
+            show_warning_message(
                 "Load Failed",
                 "Failed to load module in Blender. Check the Blender console for errors.",
+                self,  # type: ignore[arg-type]
             )
 
     def stop_blender_mode(self):

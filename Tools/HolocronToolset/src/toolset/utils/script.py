@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 from qtpy.QtWidgets import QFileDialog, QMessageBox
 
 from loggerplus import RobustLogger
+from toolset.gui.helpers.message_box import show_warning_message
 from pykotor.common.misc import Game
 from pykotor.common.stream import BinaryWriter
 from pykotor.extract.file import ResourceIdentifier
@@ -269,10 +270,10 @@ def _execute_nwnnsscomp_compile(
             stdout, stderr = extCompiler.compile_script(tempSourcePath, tempCompiledPath, gameEnum)
             log.debug("stdout: %s\nstderr: %s", stdout, stderr)
         except EntryPointError:
-            QMessageBox.warning(
-                None,
+            show_warning_message(
                 "Include scripts cannot be compiled",
                 "This script is an include script, compiling it serves no purpose. If this warning is incorrect, check that your script has an entry point and then compile again.",
+                None,
             )
             raise  # TODO(th3w1zard1): return something ignorable.
         else:
