@@ -41,6 +41,7 @@ from pykotor.resource.formats.rim.rim_data import RIM
 from pykotor.resource.formats.twoda.twoda_auto import write_2da
 from pykotor.resource.formats.twoda.twoda_data import TwoDA
 from pykotor.tools.path import CaseAwarePath
+from utility.misc import get_normalized_extension
 
 
 class TestPathTypeDetection:
@@ -1187,7 +1188,7 @@ class TestDiffWithTestFiles:
 
         # Find any two files
         all_files = list(test_files_dir.glob("*"))
-        text_files = [f for f in all_files if f.is_file() and f.suffix.lower() not in [".rim", ".erf", ".mod", ".sav", ".bif", ".tpc", ".mp3", ".wav", ".bik", ".mve"]]
+        text_files = [f for f in all_files if f.is_file() and get_normalized_extension(f) not in [".rim", ".erf", ".mod", ".sav", ".bif", ".tpc", ".mp3", ".wav", ".bik", ".mve"]]
 
         if len(text_files) >= 2:
             file1, file2 = text_files[:2]
@@ -1207,7 +1208,7 @@ class TestDiffWithTestFiles:
 
         # Find any two files
         all_files = list(test_files_dir.glob("*"))
-        text_files = [f for f in all_files if f.is_file() and f.suffix.lower() not in [".rim", ".erf", ".mod", ".sav", ".bif", ".tpc", ".mp3", ".wav", ".bik", ".mve"]]
+        text_files = [f for f in all_files if f.is_file() and get_normalized_extension(f) not in [".rim", ".erf", ".mod", ".sav", ".bif", ".tpc", ".mp3", ".wav", ".bik", ".mve"]]
 
         if len(text_files) >= 2:
             file1, file2 = text_files[:2]
