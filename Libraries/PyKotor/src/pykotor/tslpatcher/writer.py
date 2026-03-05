@@ -1367,6 +1367,16 @@ class IncrementalTSLPatchDataWriter:
         else:
             self.log_func(traceback.format_exc())
 
+    def _read_ini_lines(self) -> list[str]:
+        """Read the INI file and split it into lines.
+
+        Returns:
+        -------
+            List of lines from the INI file
+        """
+        current_content: str = self.ini_path.read_text(encoding="utf-8")
+        return current_content.splitlines()
+
     def register_tlk_modification_with_source(
         self,
         tlk_mod: ModificationsTLK,
@@ -3968,8 +3978,7 @@ class IncrementalTSLPatchDataWriter:
         self.install_folders[dest_folder].append(filename)
 
         # Read file to find where to insert
-        current_content: str = self.ini_path.read_text(encoding="utf-8")
-        lines: list[str] = current_content.splitlines()
+        lines: list[str] = self._read_ini_lines()
 
         # Find the folder section
         folder_section_idx: int | None = None
@@ -3982,8 +3991,7 @@ class IncrementalTSLPatchDataWriter:
         if folder_section_idx is None:
             self._insert_folder_section(folder_num, dest_folder)
             # Re-read to find the section
-            current_content = self.ini_path.read_text(encoding="utf-8")
-            lines = current_content.splitlines()
+            lines = self._read_ini_lines()
             for i, section_line in enumerate(lines):
                 if section_line == folder_section:
                     folder_section_idx = i
@@ -4038,8 +4046,7 @@ class IncrementalTSLPatchDataWriter:
         """Insert a new [install_folder#] section after [InstallList]."""
         folder_section = f"[install_folder{folder_num}]"
         # Read file
-        current_content: str = self.ini_path.read_text(encoding="utf-8")
-        lines: list[str] = current_content.splitlines()
+        lines: list[str] = self._read_ini_lines()
 
         # Find [InstallList] section end (where [2DAList] starts)
         install_list_idx: int | None = None
@@ -4221,8 +4228,7 @@ class IncrementalTSLPatchDataWriter:
             return
 
         # Read current file content
-        current_content: str = self.ini_path.read_text(encoding="utf-8")
-        lines: list[str] = current_content.splitlines()
+        lines: list[str] = self._read_ini_lines()
 
         # Find the section marker and the next section marker
         section_idx: int | None = None
