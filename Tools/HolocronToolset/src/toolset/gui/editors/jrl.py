@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 from qtpy.QtGui import QColor, QPalette, QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import (
+    QApplication,
     QMenu,
     QMessageBox,
     QShortcut,  # pyright: ignore[reportPrivateImportUsage]
@@ -74,9 +76,14 @@ class JRLEditor(Editor):
         self._no_scroll_filter.setup_filter(parent_widget=self)
         self.resize(400, 250)
 
+        from toolset.gui.editors.jrl_settings import JRLEditorSettings
+
+        self._settings: JRLEditorSettings = JRLEditorSettings()
+
         self._setup_menus()
         self._add_help_action()
         self._setup_signals()
+        self._setup_filter()
         if installation is not None:  # will only be none in the unittests
             self._setup_installation(installation)
 
@@ -110,9 +117,19 @@ class JRLEditor(Editor):
         QShortcut("Del", self).activated.connect(self.on_delete_shortcut)
         QShortcut("Del", self.ui.journalTree).activated.connect(self.on_delete_shortcut)
 
+        self.ui.actionSettings.triggered.connect(self._show_settings)
+
     def _setup_installation(self, installation: HTInstallation):
         self._installation = installation
         self.ui.categoryNameEdit.set_installation(installation)
+
+        # Tag field: right-click → find quest journal references
+        installation.setup_file_context_menu(
+            self.ui.categoryTag,
+            resref_type=[],
+            enable_reference_search=True,
+            reference_search_type="quest",
+        )
 
         planets: TwoDA | None = installation.ht_get_cache_2da(HTInstallation.TwoDA_PLANETS)
         if planets is None:
@@ -155,6 +172,7 @@ class JRLEditor(Editor):
         self._jrl = read_jrl(data)
 
         self._model.clear()
+        self.ui.filterEdit.clear()
         for quest in self._jrl.quests:
             quest_item = QStandardItem()
             quest_item.setData(quest)
@@ -428,19 +446,220 @@ class JRLEditor(Editor):
             data = item.data()
 
             if isinstance(data, JRLQuest):
+                menu.addAction("Rename Quest...").triggered.connect(lambda: self.change_quest_name())
+                menu.addSeparator()
                 menu.addAction("Add Entry").triggered.connect(lambda: self.add_entry(item, JRLEntry()))
+                menu.addAction("Duplicate Quest").triggered.connect(lambda: self._duplicate_quest(item))
                 menu.addAction("Remove Quest").triggered.connect(lambda: self.remove_quest(item))
-                # it's not easy to right click without selecting an item - add the 'addQuest' action here as well.
+                menu.addSeparator()
+                sort_menu = menu.addMenu("Sort Entries")
+                sort_menu.addAction("By ID (Ascending)").triggered.connect(lambda: self._sort_entries(item, ascending=True))
+                sort_menu.addAction("By ID (Descending)").triggered.connect(lambda: self._sort_entries(item, ascending=False))
+                menu.addAction("Move Quest Up").triggered.connect(lambda: self._move_quest(item, -1))
+                menu.addAction("Move Quest Down").triggered.connect(lambda: self._move_quest(item, +1))
+                menu.addSeparator()
+                menu.addAction("Copy Tag").triggered.connect(lambda: self._copy_quest_tag(item))
+                if hasattr(self, "_installation") and self._installation is not None:
+                    menu.addSeparator()
+                    menu.addAction("Find Scripts...").triggered.connect(lambda: self._find_quest_scripts(item))
+                    menu.addAction("Find Dialogs...").triggered.connect(lambda: self._find_quest_dialogs(item))
+                    menu.addAction("Find All Tag References...").triggered.connect(lambda: self._find_quest_all(item))
+                # Always show Add Quest at bottom for easy discoverability
                 menu.addSeparator()
                 menu.addAction("Add Quest").triggered.connect(lambda: self.add_quest(JRLQuest()))
+
             elif isinstance(data, JRLEntry):
+                menu.addAction("Edit Entry Text...").triggered.connect(lambda: self.change_entry_text())
+                menu.addAction("Duplicate Entry").triggered.connect(lambda: self._duplicate_entry(item))
                 menu.addAction("Remove Entry").triggered.connect(lambda: self.remove_entry(item))
+                menu.addSeparator()
+                menu.addAction("Move Entry Up").triggered.connect(lambda: self._move_entry(item, -1))
+                menu.addAction("Move Entry Down").triggered.connect(lambda: self._move_entry(item, +1))
         else:
             menu.addAction("Add Quest").triggered.connect(lambda: self.add_quest(JRLQuest()))
 
         jrlTree_viewport = self.ui.journalTree.viewport()
         assert jrlTree_viewport is not None, "Journal tree viewport is None"
         menu.popup(jrlTree_viewport.mapToGlobal(point))
+
+    # ── Filter ─────────────────────────────────────────────────────────────
+
+    def _setup_filter(self):
+        """Connect filter bar signals."""
+        self.ui.filterEdit.textChanged.connect(self._on_filter_changed)
+        self.ui.filterClearBtn.clicked.connect(self.ui.filterEdit.clear)
+
+    def _on_filter_changed(self, text: str):
+        """Show/hide tree items based on the filter text and mode."""
+        text = text.strip().lower()
+        mode = self._settings.filter_mode
+        root = self._model.invisibleRootItem()
+        for row in range(root.rowCount()):
+            quest_item = root.child(row)
+            if quest_item is None:
+                continue
+            quest: JRLQuest = quest_item.data()
+            if not text:
+                self.ui.journalTree.setRowHidden(row, self.ui.journalTree.rootIndex(), False)
+                for erow in range(quest_item.rowCount()):
+                    self.ui.journalTree.setRowHidden(erow, quest_item.index(), False)
+                continue
+
+            quest_name = self._installation.string(quest.name, "") if hasattr(self, "_installation") and self._installation else ""
+            quest_tag = quest.tag or ""
+            quest_matches = text in quest_name.lower() or text in quest_tag.lower()
+
+            entry_matches = False
+            for erow in range(quest_item.rowCount()):
+                entry_item = quest_item.child(erow)
+                if entry_item is None:
+                    continue
+                entry: JRLEntry = entry_item.data()
+                entry_text = self._installation.string(entry.text, "") if hasattr(self, "_installation") and self._installation else ""
+                entry_id_str = str(entry.entry_id)
+                ematch = text in entry_text.lower() or text in entry_id_str
+                hide_entry = False
+                if mode == "all_levels":
+                    hide_entry = not (quest_matches or ematch)
+                elif mode == "quest_only":
+                    hide_entry = False  # show all entries if quest matches; hide quest handled below
+                else:  # smart
+                    hide_entry = not ematch and not quest_matches
+                self.ui.journalTree.setRowHidden(erow, quest_item.index(), hide_entry)
+                if ematch:
+                    entry_matches = True
+
+            if mode == "quest_only":
+                hide_quest = not quest_matches
+            elif mode == "all_levels":
+                hide_quest = not quest_matches and not entry_matches
+            else:  # smart
+                hide_quest = not quest_matches and not entry_matches
+            self.ui.journalTree.setRowHidden(row, self.ui.journalTree.rootIndex(), hide_quest)
+            if not hide_quest and quest_item.rowCount() > 0:
+                self.ui.journalTree.expand(quest_item.index())
+
+    # ── Settings ───────────────────────────────────────────────────────────
+
+    def _show_settings(self):
+        """Open the JRL editor settings dialog."""
+        from toolset.gui.editors.jrl_settings import JRLSettingsDialog
+
+        dlg = JRLSettingsDialog(self, self._settings)
+        dlg.exec()
+        # Re-apply filter after settings change
+        self._on_filter_changed(self.ui.filterEdit.text())
+
+    # ── Quest manipulation ─────────────────────────────────────────────────
+
+    def _duplicate_quest(self, quest_item: QStandardItem):
+        """Deep-copy a quest and append it after the original."""
+        original: JRLQuest = quest_item.data()
+        new_quest = deepcopy(original)
+        new_quest.tag = (new_quest.tag or "") + "_copy"
+        self.add_quest(new_quest)
+        new_index = self._model.index(self._model.rowCount() - 1, 0)
+        self.ui.journalTree.setCurrentIndex(new_index)
+        self.ui.journalTree.scrollTo(new_index)
+
+    def _move_quest(self, quest_item: QStandardItem, direction: int):
+        """Move a quest up (-1) or down (+1) in the list."""
+        root = self._model.invisibleRootItem()
+        row = quest_item.row()
+        new_row = row + direction
+        if new_row < 0 or new_row >= root.rowCount():
+            return
+        taken = root.takeRow(row)
+        root.insertRow(new_row, taken)
+        quest: JRLQuest = quest_item.data()
+        self._jrl.quests.remove(quest)
+        self._jrl.quests.insert(new_row, quest)
+        new_index = quest_item.index()
+        self.ui.journalTree.setCurrentIndex(new_index)
+
+    def _sort_entries(self, quest_item: QStandardItem, *, ascending: bool = True):
+        """Sort all child entry items of a quest by entry_id."""
+        quest: JRLQuest = quest_item.data()
+        quest.entries.sort(key=lambda e: e.entry_id, reverse=not ascending)
+        # Rebuild child items to match sorted order
+        quest_item.removeRows(0, quest_item.rowCount())
+        for entry in quest.entries:
+            entry_item = QStandardItem()
+            entry_item.setData(entry)
+            self.refresh_entry_item(entry_item)
+            quest_item.appendRow(entry_item)
+
+    def _copy_quest_tag(self, quest_item: QStandardItem):
+        """Copy the quest tag to the clipboard."""
+        quest: JRLQuest = quest_item.data()
+        QApplication.clipboard().setText(quest.tag or "")
+
+    # ── Entry manipulation ─────────────────────────────────────────────────
+
+    def _duplicate_entry(self, entry_item: QStandardItem):
+        """Deep-copy an entry and append after the original."""
+        parent_item = entry_item.parent()
+        if parent_item is None:
+            return
+        original: JRLEntry = entry_item.data()
+        new_entry = deepcopy(original)
+        new_entry.entry_id = new_entry.entry_id + 1
+        self.add_entry(parent_item, new_entry)
+
+    def _move_entry(self, entry_item: QStandardItem, direction: int):
+        """Move an entry up (-1) or down (+1) within its parent quest."""
+        parent_item = entry_item.parent()
+        if parent_item is None:
+            return
+        row = entry_item.row()
+        new_row = row + direction
+        if new_row < 0 or new_row >= parent_item.rowCount():
+            return
+        taken = parent_item.takeRow(row)
+        parent_item.insertRow(new_row, taken)
+        quest: JRLQuest = parent_item.data()
+        entry: JRLEntry = entry_item.data()
+        quest.entries.remove(entry)
+        quest.entries.insert(new_row, entry)
+        new_index = entry_item.index()
+        self.ui.journalTree.setCurrentIndex(new_index)
+
+    # ── Reference searching ────────────────────────────────────────────────
+
+    def _find_quest_scripts(self, quest_item: QStandardItem):
+        """Find NCS/NSS scripts that reference this quest tag."""
+        if not hasattr(self, "_installation") or self._installation is None:
+            return
+        quest: JRLQuest = quest_item.data()
+        tag = quest.tag or ""
+        if not tag:
+            QMessageBox(QMessageBox.Icon.Warning, "No Tag", "This quest has no tag set.", parent=self).exec()
+            return
+        self._installation._find_references(self, tag, "quest")
+
+    def _find_quest_dialogs(self, quest_item: QStandardItem):
+        """Find DLG dialogs that reference this quest tag in their Quest field."""
+        if not hasattr(self, "_installation") or self._installation is None:
+            return
+        quest: JRLQuest = quest_item.data()
+        tag = quest.tag or ""
+        if not tag:
+            QMessageBox(QMessageBox.Icon.Warning, "No Tag", "This quest has no tag set.", parent=self).exec()
+            return
+        self._installation._find_references(self, tag, "quest")
+
+    def _find_quest_all(self, quest_item: QStandardItem):
+        """Find all resources that reference this quest tag (scripts + dialogs + tag)."""
+        if not hasattr(self, "_installation") or self._installation is None:
+            return
+        quest: JRLQuest = quest_item.data()
+        tag = quest.tag or ""
+        if not tag:
+            QMessageBox(QMessageBox.Icon.Warning, "No Tag", "This quest has no tag set.", parent=self).exec()
+            return
+        self._installation._find_references(self, tag, "tag")
+
+    # ── Internal helpers ───────────────────────────────────────────────────
 
     def on_delete_shortcut(self):
         """Deletes selected shortcut from journal tree.
