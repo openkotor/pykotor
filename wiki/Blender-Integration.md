@@ -83,7 +83,19 @@ In other words:
 
 - **drag/drop into Blender:** supported
 - **edit in Blender with Toolset session active:** supported
-- **export back out as KotOR resources:** still uses the standard `kotorblender` exporters
+- **export imported meshes back out as KotOR MDL/MDX:** supported through the live bridge for minimal trimesh-style exports
+- **full packaging back into modules/kits:** still uses the standard `kotorblender` exporters plus PyKotor packaging/conversion steps
+
+### Minimal model export support
+
+The bridge can now take an imported mesh object (for example from `.obj`) and wrap it in a minimal
+KotOR model root so it can be exported as:
+
+- `.mdl`
+- `.mdx`
+
+This path is intended for simple trimesh-style content and automated validation, not as a substitute
+for all manual authoring features inside Blender.
 
 ## Walkmesh generation behavior
 
