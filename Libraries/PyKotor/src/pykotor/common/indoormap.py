@@ -38,6 +38,7 @@ from pykotor.resource.generics.ifo import IFO, bytes_ifo
 from pykotor.resource.generics.utd import UTD, bytes_utd
 from pykotor.resource.type import ResourceType
 from pykotor.tools import model
+from utility.misc import get_normalized_extension
 from utility.common.geometry import Vector2, Vector3
 
 if TYPE_CHECKING:
@@ -609,7 +610,7 @@ class IndoorMap(ComparableMixin):
         if not load_path.is_file():
             return
         data = load_path.read_bytes()
-        restype = ResourceType.TGA if load_path.suffix.lower() == ".tga" else ResourceType.TPC
+        restype = ResourceType.TGA if get_normalized_extension(load_path) == ".tga" else ResourceType.TPC
         self.mod.set_data(f"load_{self.module_id}", restype, data)
 
     def finalize_module_data(self):
