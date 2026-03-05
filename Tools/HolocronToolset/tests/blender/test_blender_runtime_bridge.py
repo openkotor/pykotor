@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 
 import pytest
+from qtpy.QtWidgets import QWidget
 
 from pykotor.resource.formats.bwm import BWM
 from pykotor.resource.formats.bwm.bwm_data import BWMFace
@@ -239,5 +240,92 @@ def test_blender_editor_controller_roundtrip(blender_runtime_bridge: BlenderComm
 
     assert controller.unload_module() is True
     controller.disconnect()
+
+
+def test_blender_editor_mixin_runtime_roundtrip(qtbot, monkeypatch):
+    blender_binary = _resolve_blender_binary()
+    if blender_binary is None:
+        pytest.skip("No Blender runtime available for mixin smoke test")
+
+    blender_info = detect_blender(custom_path=blender_binary)
+    if not blender_info.is_valid:
+        pytest.skip(f"Blender runtime is not usable: {blender_info.error}")
+
+    success, message = install_kotorblender(blender_info, verify_ipc=False)
+    if not success:
+        pytest.skip(f"kotorblender installation failed in test environment: {message}")
+
+    from toolset.blender import commands as blender_commands_module
+    from toolset.blender import integration as blender_integration_module
+    from toolset.blender import ipc_client as ipc_client_module
+    from toolset.blender.integration import BlenderEditorMixin
+
+    ipc_client_module._global_client = None  # noqa: SLF001
+    blender_commands_module._controller = None  # noqa: SLF001
+
+    class _Settings:
+        ipc_port = 7536
+
+        def get_blender_info(self):
+            return blender_info
+
+    real_launch = launch_blender_with_ipc
+
+    def _background_launch(info, **kwargs):
+        kwargs["background"] = True
+        return real_launch(info, **kwargs)
+
+    monkeypatch.setattr(blender_integration_module, "get_blender_settings", lambda: _Settings())
+    monkeypatch.setattr(blender_integration_module, "launch_blender_with_ipc", _background_launch)
+
+    class _Harness(QWidget, BlenderEditorMixin):
+        def __init__(self):
+            super().__init__()
+            self.loaded = False
+            self.failed = False
+            self.stopped = False
+            self._init_blender_integration(BlenderEditorMode.MODULE_DESIGNER)
+
+        def _on_blender_module_loaded(self):
+            self.loaded = True
+
+        def _on_blender_connection_failed(self):
+            self.failed = True
+
+        def _on_blender_mode_stopped(self):
+            self.stopped = True
+
+    lyt = LYT()
+    lyt.rooms.append(LYTRoom(model="m_mixin", position=Vector3(0.0, 0.0, 0.0)))
+
+    git = GIT()
+    creature = GITCreature(0.0, 0.0, 0.0)
+    creature.resref = "n_mixin"
+    git.creatures.append(creature)
+
+    walkmesh = BWM()
+    face1 = BWMFace(Vector3(-1.0, -1.0, 0.0), Vector3(1.0, -1.0, 0.0), Vector3(1.0, 1.0, 0.0))
+    face1.material = SurfaceMaterial.STONE
+    face2 = BWMFace(Vector3(-1.0, -1.0, 0.0), Vector3(1.0, 1.0, 0.0), Vector3(-1.0, 1.0, 0.0))
+    face2.material = SurfaceMaterial.STONE
+    walkmesh.faces.extend([face1, face2])
+
+    harness = _Harness()
+    qtbot.addWidget(harness)
+
+    try:
+        assert harness.start_blender_mode(
+            lyt=lyt,
+            git=git,
+            walkmeshes=[walkmesh],
+            module_root="m_mixin",
+            installation_path="/workspace",
+        ) is True
+        qtbot.waitUntil(lambda: harness.loaded or harness.failed, timeout=15000)
+        assert harness.loaded is True
+        assert harness.failed is False
+    finally:
+        harness.stop_blender_mode()
+        qtbot.waitUntil(lambda: harness.stopped, timeout=5000)
 
 
