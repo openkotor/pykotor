@@ -109,7 +109,7 @@ class CommandPalette(QDialog):
                 item = self.ui.commandList.item(i)
                 if item is not None:
                     item.setHidden(False)
-            if self.ui.commandList.count() > 0:
+            if self.ui.commandList.count():
                 self.ui.commandList.setCurrentRow(0)
             return
 

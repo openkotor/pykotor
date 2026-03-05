@@ -113,7 +113,7 @@ class InsertInstanceDialog(QDialog):
                     item.setData(Qt.ItemDataRole.UserRole, resource)
                     self.ui.resourceList.addItem(item)
 
-        if self.ui.resourceList.count() > 0:
+        if self.ui.resourceList.count():
             self.ui.resourceList.item(0).setSelected(True)  # pyright: ignore[reportOptionalMemberAccess]
 
     def accept(self):  # noqa: C901, PLR0912

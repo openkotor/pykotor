@@ -570,7 +570,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             item = QListWidgetItem(QIcon(pix), material.name.replace("_", " ").title())
             item.setData(Qt.ItemDataRole.UserRole, material)
             self.ui.materialList.addItem(item)  # pyright: ignore[reportArgumentType, reportCallIssue]
-        if self.ui.materialList.count() > 0:
+        if self.ui.materialList.count():
             self.ui.materialList.setCurrentRow(0)
 
     def _current_material(self) -> SurfaceMaterial | None:

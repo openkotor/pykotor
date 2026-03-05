@@ -1603,7 +1603,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     def _populate_walkmesh_material_list(self):
         """Populate the material list in the walkmesh tab."""
         populate_material_list_widget(self.ui.materialList, self.material_colors)
-        if self.ui.materialList.count() > 0:
+        if self.ui.materialList.count():
             self.ui.materialList.setCurrentRow(0)
 
     def _setup_walkmesh_face_panel(self):

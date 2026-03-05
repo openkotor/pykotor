@@ -681,7 +681,7 @@ class TextureList(MainWindowList):
                 self.texture_models[section] = QStandardItemModel()
 
         # Set the model for the current section
-        if self.ui.sectionCombo.count() > 0:
+        if self.ui.sectionCombo.count():
             current_section: str = self.ui.sectionCombo.itemData(0, Qt.ItemDataRole.UserRole)
             self.textures_proxy_model.setSourceModel(self.texture_models[current_section])
 

@@ -1424,7 +1424,7 @@ class SaveGameEditor(Editor):
             item.setToolTip(tooltip)
             self.ui.listWidgetCharacters.addItem(item)
 
-        if self.ui.listWidgetCharacters.count() > 0:
+        if self.ui.listWidgetCharacters.count():
             self.ui.listWidgetCharacters.setCurrentRow(0)
 
     def on_character_selected(self, row: int):

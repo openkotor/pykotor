@@ -80,7 +80,7 @@ def _first_tooltip_from_widget(widget: QWidget | None) -> str | None:
     if tip:
         return tip
     layout = widget.layout()
-    if layout is not None and layout.count() > 0:
+    if layout is not None and layout.count():
         return _tooltip_from_layout_item(layout.itemAt(0))
     return None
 
@@ -385,7 +385,7 @@ def copy_tooltips_to_form_labels(root: QWidget) -> None:
     for splitter in root.findChildren(QSplitter):
         if splitter.toolTip() and splitter.toolTip().strip():
             continue
-        if splitter.count() > 0:
+        if splitter.count():
             first = splitter.widget(0)
             tip = _first_tooltip_from_widget(first)
             if tip:
