@@ -333,7 +333,7 @@ class HolocronIPCServer:
         obj[_KIND_PROP] = "instance"
         obj[_TYPE_PROP] = state.get("type", "GITObject")
         if state.get("runtime_id") is not None:
-            obj[_RUNTIME_ID_PROP] = int(state["runtime_id"])
+            obj[_RUNTIME_ID_PROP] = str(state["runtime_id"])
         self._serialize_state(obj, state)
         self._set_rotation_from_state(obj, state)
         self._session_collection().objects.link(obj)
@@ -356,9 +356,9 @@ class HolocronIPCServer:
         state = self._deserialize_state(obj)
         state["type"] = obj.get(_TYPE_PROP, state.get("type", "GITObject"))
         state["position"] = self._vector_dict(obj.location)
-        runtime_id = obj.get(_RUNTIME_ID_PROP)
+        runtime_id = self._runtime_id_value(obj)
         if runtime_id is not None:
-            state["runtime_id"] = int(runtime_id)
+            state["runtime_id"] = runtime_id
 
         if obj.rotation_mode == "QUATERNION" and "orientation" in state:
             state["orientation"] = {
@@ -395,7 +395,7 @@ class HolocronIPCServer:
         return {
             "kind": obj.get(_KIND_PROP, ""),
             "type": obj.get(_TYPE_PROP, ""),
-            "runtime_id": obj.get(_RUNTIME_ID_PROP),
+            "runtime_id": self._runtime_id_value(obj),
             "position": tuple(round(float(v), 6) for v in obj.location),
             "rotation_mode": obj.rotation_mode,
             "rotation": (
@@ -418,7 +418,12 @@ class HolocronIPCServer:
         current_selection = tuple(sorted(name for name in tracked_now if tracked_now[name].select_get()))
         if current_selection != self._selection_snapshot:
             self._selection_snapshot = current_selection
-            selected_runtime_ids = [int(tracked_now[name].get(_RUNTIME_ID_PROP)) for name in current_selection if tracked_now[name].get(_RUNTIME_ID_PROP) is not None]
+            selected_runtime_ids = [
+                runtime_id
+                for name in current_selection
+                for runtime_id in [self._runtime_id_value(tracked_now[name])]
+                if runtime_id is not None
+            ]
             self.send_event("selection_changed", {"selected": list(current_selection), "selected_runtime_ids": selected_runtime_ids})
 
         previous_names = set(self._monitor_snapshot)
@@ -755,6 +760,16 @@ class HolocronIPCServer:
     @staticmethod
     def _vector_dict(value: Any) -> dict[str, float]:
         return {"x": float(value[0]), "y": float(value[1]), "z": float(value[2])}
+
+    @staticmethod
+    def _runtime_id_value(obj: bpy.types.Object) -> int | None:
+        raw_runtime = obj.get(_RUNTIME_ID_PROP)
+        if raw_runtime is None:
+            return None
+        try:
+            return int(raw_runtime)
+        except (TypeError, ValueError):
+            return None
 
 
 _SERVER: HolocronIPCServer | None = None

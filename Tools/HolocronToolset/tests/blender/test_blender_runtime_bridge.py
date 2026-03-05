@@ -10,6 +10,13 @@ from pathlib import Path
 
 import pytest
 
+from pykotor.resource.formats.bwm import BWM
+from pykotor.resource.formats.bwm.bwm_data import BWMFace
+from pykotor.resource.formats.lyt import LYT, LYTRoom
+from pykotor.resource.generics.git import GIT, GITCreature
+from utility.common.geometry import SurfaceMaterial, Vector3
+
+from toolset.blender.commands import BlenderEditorController, BlenderEditorMode
 from toolset.blender.detection import detect_blender, install_kotorblender, launch_blender_with_ipc
 from toolset.blender.ipc_client import BlenderCommands, BlenderIPCClient
 
@@ -166,3 +173,71 @@ def test_blender_bridge_imports_external_obj(blender_runtime_bridge: BlenderComm
     assert isinstance(result, dict)
     assert result["kind"] == "model"
     assert result["imported_objects"]
+
+
+def test_blender_editor_controller_roundtrip(blender_runtime_bridge: BlenderCommands):
+    del blender_runtime_bridge  # bridge fixture keeps Blender running; controller uses its own client
+
+    from toolset.blender import commands as blender_commands_module
+    from toolset.blender import ipc_client as ipc_client_module
+
+    ipc_client_module._global_client = None  # noqa: SLF001
+    blender_commands_module._controller = None  # noqa: SLF001
+
+    lyt = LYT()
+    lyt.rooms.append(LYTRoom(model="m_controller", position=Vector3(0.0, 0.0, 0.0)))
+
+    git = GIT()
+    creature = GITCreature(0.5, 0.5, 0.0)
+    creature.resref = "n_controller"
+    git.creatures.append(creature)
+
+    walkmesh = BWM()
+    face1 = BWMFace(Vector3(-2.0, -2.0, 0.0), Vector3(2.0, -2.0, 0.0), Vector3(2.0, 2.0, 0.0))
+    face1.material = SurfaceMaterial.STONE
+    face2 = BWMFace(Vector3(-2.0, -2.0, 0.0), Vector3(2.0, 2.0, 0.0), Vector3(-2.0, 2.0, 0.0))
+    face2.material = SurfaceMaterial.STONE
+    walkmesh.faces.extend([face1, face2])
+
+    controller = BlenderEditorController()
+    selection_events: list[list[int]] = []
+    transform_events: list[tuple[int, dict | None, dict | None]] = []
+
+    controller.on_selection_changed(lambda ids: selection_events.append(ids))
+    controller.on_transform_changed(lambda instance_id, position, rotation: transform_events.append((instance_id, position, rotation)))
+
+    assert controller.connect(timeout=2.0) is True
+    assert controller.load_module(
+        mode=BlenderEditorMode.MODULE_DESIGNER,
+        lyt=lyt,
+        git=git,
+        walkmeshes=[walkmesh],
+        module_root="m_controller",
+        installation_path="/workspace",
+    ) is True
+
+    assert controller.select_instances([creature]) is True
+    for _ in range(20):
+        if selection_events:
+            break
+        time.sleep(0.1)
+    assert selection_events
+    assert selection_events[-1] == [id(creature)]
+
+    assert controller.update_instance_position(creature, 3.0, 4.0, 0.0) is True
+    for _ in range(20):
+        if transform_events:
+            break
+        time.sleep(0.1)
+    assert transform_events
+    assert transform_events[-1][0] == id(creature)
+    assert transform_events[-1][1]["x"] == pytest.approx(3.0)  # type: ignore[index]
+
+    saved = controller.save_changes()
+    assert saved[1] is not None
+    assert saved[1]["creatures"][0]["resref"] == "n_controller"  # type: ignore[index]
+
+    assert controller.unload_module() is True
+    controller.disconnect()
+
+

@@ -255,6 +255,32 @@ class BlenderEditorController:
         runtime_id = id(instance)
         self._session.runtime_to_instance[runtime_id] = instance
 
+    @staticmethod
+    def _expected_object_name(instance: GITObject) -> str:
+        """Predict the default Blender object name for an instance.
+
+        The live bridge names initial GIT instances deterministically from their
+        serialized type and primary identifier. This gives the controller a
+        stable fallback before explicit name bindings have been learned from
+        instance-added events.
+        """
+
+        data = instance.serialize()
+        instance_type = data.get("type", instance.__class__.__name__)
+        primary_identifier = data.get("resref") or data.get("tag") or "instance"
+        return f"{instance_type}:{primary_identifier}"
+
+    def _object_name_for_instance(self, instance: GITObject) -> str | None:
+        """Resolve a Blender object name for *instance* using known bindings or a deterministic fallback."""
+        if self._session is None:
+            return None
+
+        object_name = self._session.instance_to_object.get(id(instance))
+        if object_name:
+            return object_name
+
+        return self._expected_object_name(instance)
+
     @requires_connection(True)
     def unload_module(self) -> bool:
         """Unload the current module from Blender.
@@ -309,7 +335,7 @@ class BlenderEditorController:
         """
         instance_id = id(instance)
         runtime_id = instance_id
-        object_name = self._session.instance_to_object.get(instance_id)
+        object_name = self._object_name_for_instance(instance)
 
         if not object_name:
             return False
@@ -364,7 +390,7 @@ class BlenderEditorController:
         Returns:
             True if updated successfully
         """
-        object_name = self._session.instance_to_object.get(id(instance))
+        object_name = self._object_name_for_instance(instance)
         if not object_name:
             return False
 
@@ -390,7 +416,7 @@ class BlenderEditorController:
         Returns:
             True if updated successfully
         """
-        object_name = self._session.instance_to_object.get(id(instance))
+        object_name = self._object_name_for_instance(instance)
         if not object_name:
             return False
 
@@ -419,7 +445,7 @@ class BlenderEditorController:
         """
         object_names = []
         for instance in instances:
-            name = self._session.instance_to_object.get(id(instance))
+            name = self._object_name_for_instance(instance)
             if name:
                 object_names.append(name)
 
