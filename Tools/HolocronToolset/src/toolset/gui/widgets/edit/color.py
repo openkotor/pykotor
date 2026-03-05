@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
+from qtpy.QtCore import Signal  # pyright: ignore[reportPrivateImportUsage]
 from qtpy.QtGui import QColor, QImage, QPixmap
 from qtpy.QtWidgets import QColorDialog, QWidget
 
@@ -9,6 +12,8 @@ from pykotor.common.misc import Color
 
 
 class ColorEdit(QWidget):
+    sig_color_changed: ClassVar[Signal] = Signal(object)  # Color
+
     def __init__(self, parent: QWidget):
         super().__init__(parent)
 
@@ -32,12 +37,15 @@ class ColorEdit(QWidget):
 
         if dialog.exec():
             qcolor = dialog.selectedColor()
+            color: Color = Color(qcolor.redF(), qcolor.greenF(), qcolor.blueF())
             if self.allow_alpha:
-                color: Color = Color(qcolor.redF(), qcolor.greenF(), qcolor.blueF())
                 self.ui.colorSpin.setValue(color.rgb_integer() + (qcolor.alpha() << 24))
             else:
-                color: Color = Color(qcolor.redF(), qcolor.greenF(), qcolor.blueF())
                 self.ui.colorSpin.setValue(color.rgb_integer())
+            # Sync _color and emit (setValue may not trigger signal if unchanged)
+            self._color.r, self._color.g, self._color.b = color.r, color.g, color.b
+            self._color.a = qcolor.alphaF() if self.allow_alpha else 0.0
+            self.sig_color_changed.emit(self._color)
 
     def _on_color_change(
         self,
@@ -51,6 +59,7 @@ class ColorEdit(QWidget):
         data = bytes([b, g, r] * 16 * 16)
         pixmap: QPixmap = QPixmap.fromImage(QImage(data, 16, 16, QImage.Format.Format_BGR888))
         self.ui.colorLabel.setPixmap(pixmap)
+        self.sig_color_changed.emit(self._color)
 
     def set_color(self, color: Color):
         self._color: Color = color

@@ -6,12 +6,15 @@ so marquee selection looks and behaves consistently across editors.
 
 from __future__ import annotations
 
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 from qtpy.QtCore import QRectF, Qt
-from qtpy.QtGui import QColor, QPainter, QPen
+from qtpy.QtGui import QColor, QPen
 
-from utility.common.geometry import Vector2
+if TYPE_CHECKING:
+    from qtpy.QtGui import QPainter
+
+    from utility.common.geometry import Vector2
 
 # Minimum drag distance (pixels) before treating as marquee rather than click
 MARQUEE_MOVE_THRESHOLD_PIXELS: Final[float] = 5.0

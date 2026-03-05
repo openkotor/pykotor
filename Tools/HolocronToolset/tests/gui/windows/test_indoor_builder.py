@@ -5536,27 +5536,8 @@ def test_room_highlight_drawing(qtbot: QtBot, builder_no_kits: IndoorMapBuilder,
 
 
 # ============================================================================
-# SETTINGS AND DIALOGS
+# DIALOGS
 # ============================================================================
-
-
-def test_open_settings_dialog(qtbot: QtBot, builder_no_kits: IndoorMapBuilder, installation: HTInstallation):
-    """Test opening settings dialog."""
-    from unittest.mock import patch
-
-    builder = builder_no_kits
-
-    builder.show()
-    QApplication.processEvents()
-    QApplication.processEvents()
-
-    # Mock the dialog to avoid actual UI
-    with patch("toolset.gui.dialogs.indoor_settings.IndoorMapSettings.exec", return_value=QDialog.DialogCode.Accepted):
-        builder.open_settings()
-
-        # Settings should have been opened (no crash)
-
-        builder.close()
 
 
 def test_show_help_window(qtbot: QtBot, builder_no_kits: IndoorMapBuilder):

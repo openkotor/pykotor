@@ -14,7 +14,7 @@ from qtpy.QtCore import QPoint, Qt
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.gl.scene import Scene
 from pykotor.gl.scene.camera_controller import CameraController, CameraControllerSettings, InputState
-from pykotor.resource.generics.git import GITCamera, GITInstance
+from pykotor.resource.generics.git import GITCamera
 from toolset.data.misc import ControlItem
 from toolset.gui.common.interaction.camera import calculate_zoom_strength
 from toolset.gui.editors.git import DuplicateCommand, _GeometryMode, _InstanceMode
@@ -24,7 +24,7 @@ from utility.common.geometry import Vector2, Vector3
 
 if TYPE_CHECKING:
     from pykotor.gl.scene import Scene
-    from pykotor.resource.generics.git import GITInstance
+    from pykotor.resource.generics.git import GITInstance, GITObject
     from toolset.gui.editors.git import _SpawnMode
     from toolset.gui.widgets.renderer.module import ModuleRenderer
     from toolset.gui.widgets.renderer.walkmesh import WalkmeshRenderer
@@ -378,7 +378,7 @@ class ModuleDesignerControls3d:
 
     def _duplicate_selected_instance(self):
         # TODO(th3w1zard1): Seems the code throughout is designed for multi-selections, yet nothing uses it. Probably disabled due to a bug or planned for later.
-        instance: GITInstance = deepcopy(self.editor.selected_instances[-1])
+        instance: GITObject = deepcopy(self.editor.selected_instances[-1])
         if isinstance(instance, GITCamera) and self.editor._module is not None:
             instance.camera_id = self.editor._module.git().resource().next_camera_id()  # noqa: SLF001  # pyright: ignore[reportOptionalMemberAccess]
         RobustLogger().info(f"Duplicating {instance!r}")
@@ -413,7 +413,7 @@ class ModuleDesignerControls3d:
         }
         if any(move_camera_keys.values()):
             if move_camera_keys["selected"]:
-                instance: GITInstance | None = next(iter(self.editor.selected_instances), None)
+                instance: GITObject | None = next(iter(self.editor.selected_instances), None)
                 if instance is not None:
                     self.renderer.snap_camera_to_point(instance.position)
                     # Also sync 2D camera to the selected instance position
@@ -723,7 +723,7 @@ class ModuleDesignerControls2d:
             if not self.editor.is_drag_rotating:
                 self.editor.is_drag_rotating = True
                 RobustLogger().debug("rotateSelected instance in 2d")
-                selection: list[GITInstance] = self.editor.selected_instances  # noqa: SLF001
+                selection: list[GITObject] = self.editor.selected_instances  # noqa: SLF001
                 for instance in selection:
                     if not self.editor._is_rotatable_instance(instance):  # noqa: SLF001
                         continue  # doesn't support rotations.

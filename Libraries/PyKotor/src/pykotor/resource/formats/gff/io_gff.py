@@ -257,25 +257,17 @@ class GFFBinaryReader(ResourceReader):
             # Inline: data is in the first byte of data_or_offset (little-endian)
             gff_struct.set_uint8(label, data_or_offset & 0xFF)
         elif field_type_id == 1:  # GFFFieldType.Int8
-            # Inline: data is in the first byte, interpret as signed
+            # Inline: data is in the first byte, interpret as signed (Python int, not unsigned 32-bit)
             byte_value = data_or_offset & 0xFF
-            # Sign extend: if bit 7 is set, extend sign to 32 bits
-            if byte_value & 0x80:
-                int8_value = byte_value | 0xFFFFFF00
-            else:
-                int8_value = byte_value
+            int8_value = struct.unpack("<b", struct.pack("<B", byte_value))[0]
             gff_struct.set_int8(label, int8_value)
         elif field_type_id == 2:  # GFFFieldType.UInt16
             # Inline: data is in the first 2 bytes of data_or_offset (little-endian)
             gff_struct.set_uint16(label, data_or_offset & 0xFFFF)
         elif field_type_id == 3:  # GFFFieldType.Int16
-            # Inline: data is in the first 2 bytes, interpret as signed
+            # Inline: data is in the first 2 bytes, interpret as signed (Python int, not unsigned 32-bit)
             word_value = data_or_offset & 0xFFFF
-            # Sign extend: if bit 15 is set, extend sign to 32 bits
-            if word_value & 0x8000:
-                int16_value = word_value | 0xFFFF0000
-            else:
-                int16_value = word_value
+            int16_value = struct.unpack("<h", struct.pack("<H", word_value))[0]
             gff_struct.set_int16(label, int16_value)
         elif field_type_id == 4:  # GFFFieldType.UInt32
             # Inline: data is the full 4 bytes

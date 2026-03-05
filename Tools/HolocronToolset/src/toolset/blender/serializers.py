@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.lyt import LYT, LYTDoorHook, LYTObstacle, LYTRoom, LYTTrack  # pyright: ignore[reportMissingImports]
     from pykotor.resource.generics.git import (  # pyright: ignore[reportMissingImports]
         GIT,
-        GITInstance,
+        GITObject,
     )
     from utility.common.geometry import Vector3, Vector4
 
@@ -53,11 +53,11 @@ def deserialize_vector4(data: dict[str, float]) -> tuple[float, float, float, fl
 # =============================================================================
 
 
-def serialize_git_instance(instance: GITInstance) -> dict[str, Any]:
-    """Serialize a GITInstance to JSON-compatible dict.
+def serialize_git_instance(instance: GITObject) -> dict[str, Any]:
+    """Serialize a GITObject to JSON-compatible dict.
 
     Args:
-        instance: Any GITInstance subclass
+        instance: Any GITObject subclass
 
     Returns:
         Dictionary representation suitable for JSON serialization
@@ -70,7 +70,7 @@ def serialize_git_instance(instance: GITInstance) -> dict[str, Any]:
 def deserialize_git_instance(data: dict[str, Any]) -> dict[str, Any]:
     """Deserialize GIT instance data from JSON.
 
-    This returns a dictionary that can be used to update a GITInstance.
+    This returns a dictionary that can be used to update a GITObject.
     The actual instance creation/update is handled by the caller.
 
     Args:

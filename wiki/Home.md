@@ -77,7 +77,7 @@ KotOR uses hexadecimal resource type identifiers derived from the Aurora engine 
 | BMP           | 0x0001  | Bitmap image                         |
 | MVE           | 0x0002  | Movie/video file       Not used in KotOR                   |
 | TGA           | 0x0003  | TarGA image format                          |
-| [WAV](WAV-File-Format)           | 0x0004  | Wave audio file (see [WAV File Format](WAV-File-Format))
+| [WAV](WAV-File-Format)           | 0x0004  | Wave audio file (see [WAV File Format](WAV-File-Format)) |
 | INI           | 0x0007  | Configuration file (e.g., `swkotor.ini`, `swkotor2.ini`)                          |
 | BMU           | 0x0008  | Unknown  Not used in KotOR                                |
 | MPG           | 0x0009  | MPEG video  Not used in KotOR                            |

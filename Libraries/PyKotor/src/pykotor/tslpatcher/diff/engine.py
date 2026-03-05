@@ -1158,6 +1158,17 @@ def compare_text_content(
     lines1 = text1.splitlines(keepends=True)
     lines2 = text2.splitlines(keepends=True)
 
+    # Avoid O(n*m) difflib on huge inputs (can cause test timeouts)
+    _MAX_DIFF_LINES = 4000
+    if len(lines1) > _MAX_DIFF_LINES or len(lines2) > _MAX_DIFF_LINES:
+        if show_header:
+            log_func(
+                f"^ '{where}': Text content differs ({len(lines1)} vs {len(lines2)} lines, diff omitted) ^",
+                separator=True,
+                message_type="diff",  # pyright: ignore[reportCallIssue]
+            )
+        return False
+
     if format_type == "unified":
         diff = difflib.unified_diff(
             lines1,
@@ -1300,6 +1311,10 @@ def print_udiff(
     a = read_text_lines(from_file)
     b = read_text_lines(to_file)
     if not a and not b:
+        return
+    _MAX_UDIFF_LINES = 4000
+    if len(a) > _MAX_UDIFF_LINES or len(b) > _MAX_UDIFF_LINES:
+        log_func(f"--- {label_from}\n+++ {label_to}\n(diff omitted: {len(a)} vs {len(b)} lines)")
         return
     diff: Iterator[str] = difflib.unified_diff(
         a,
@@ -1836,15 +1851,18 @@ def diff_files(
         a = read_text_lines(file1)
         b = read_text_lines(file2)
         if a or b:
-            diff = difflib.unified_diff(
-                a,
-                b,
-                fromfile=str(f"(old){c_file1_rel}"),
-                tofile=str(f"(new){c_file2_rel}"),
-                lineterm="",
-            )
-            for line in diff:
-                log_func(line)
+            if len(a) <= 4000 and len(b) <= 4000:
+                diff = difflib.unified_diff(
+                    a,
+                    b,
+                    fromfile=str(f"(old){c_file1_rel}"),
+                    tofile=str(f"(new){c_file2_rel}"),
+                    lineterm="",
+                )
+                for line in diff:
+                    log_func(line)
+            else:
+                log_func(f"(old){c_file1_rel}: {len(a)} lines vs (new){c_file2_rel}: {len(b)} lines (diff omitted)")
 
     if is_capsule_file(c_file1_rel.name):
         # Implementation moved to separate function for clarity

@@ -13,12 +13,14 @@ This document provides detailed documentation for NWScript global variable funct
 ### Understanding Global Variables
 
 Global variables are stored at the **campaign level** and persist across:
+
 - Area transitions
 - Save/load operations
 - Module changes
 - Multiple sessions
 
 Global variables are defined in the `globalcat.2da` file, which specifies:
+
 - Variable names
 - Variable types (Number, Boolean, String, Location)
 - Initial values
@@ -34,17 +36,21 @@ Global variables are defined in the `globalcat.2da` file, which specifies:
 **Routine:** 580
 
 #### Function Signature
+
 ```nss
 int GetGlobalNumber(string sIdentifier);
 ```
 
 #### Description
+
 Gets the value of a global number variable. Global numbers are stored as signed bytes with a range of **-128 to +127**.
 
 #### Parameters
+
 - `sIdentifier`: Name of the global variable (must match name in `globalcat.2da`)
 
 #### Returns
+
 - Value of the global number (-128 to +127)
 - `0` if the global doesn't exist
 
@@ -68,6 +74,7 @@ if (nLightsaber == 3) {
 ```
 
 **Pattern: Quest Tracking**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
 int nLightsaber = GetGlobalNumber("904MAL_Lightsaber");
@@ -78,6 +85,7 @@ if (nLightsaber == 3) {
 ```
 
 #### Notes
+
 - **Range Limit:** Global numbers must be between -128 and +127
 - **Variable Names:** Must be defined in `globalcat.2da` or created dynamically
 - **Case Sensitivity:** Variable names are typically case-insensitive (stored lowercase)
@@ -89,14 +97,17 @@ if (nLightsaber == 3) {
 **Routine:** 581
 
 #### Function Signature
+
 ```nss
 void SetGlobalNumber(string sIdentifier, int nValue);
 ```
 
 #### Description
+
 Sets the value of a global number variable. **Value must be in range -128 to +127**.
 
 #### Parameters
+
 - `sIdentifier`: Name of the global variable
 - `nValue`: Value to set (must be between -128 and +127)
 
@@ -116,6 +127,7 @@ if (nCurrent < 127) {
 ```
 
 #### Notes
+
 - **Range Limit:** Values outside -128 to +127 may cause errors
 - **Auto-creation:** If the global doesn't exist, it may be created automatically (implementation dependent)
 
@@ -126,16 +138,19 @@ if (nCurrent < 127) {
 **Routine:** 799
 
 #### Function Signature
+
 ```nss
 void IncrementGlobalNumber(string sIdentifier, int nAmount);
 ```
 
 #### Description
+
 Increments a global number by the specified amount. Convenience function that automatically handles range checking.
 
 **⚠️ WARNING:** Will fail with a warning if the result exceeds 127 (the maximum value).
 
 #### Parameters
+
 - `sIdentifier`: Name of the global variable
 - `nAmount`: Amount to increment by (can be negative to decrement)
 
@@ -152,6 +167,7 @@ IncrementGlobalNumber("Counter", 5);
 ```
 
 **Pattern: Quest Progress Tracking**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
 IncrementGlobalNumber("904MAL_Lightsaber", 1);
@@ -161,6 +177,7 @@ if (GetGlobalNumber("904MAL_Lightsaber") == 3) {
 ```
 
 #### Notes
+
 - Only works with Number type globals, not Booleans
 - Result must not exceed 127 or be less than -128
 - Convenient for counters and progress tracking
@@ -172,16 +189,19 @@ if (GetGlobalNumber("904MAL_Lightsaber") == 3) {
 **Routine:** 800
 
 #### Function Signature
+
 ```nss
 void DecrementGlobalNumber(string sIdentifier, int nAmount);
 ```
 
 #### Description
+
 Decrements a global number by the specified amount. Convenience function that automatically handles range checking.
 
 **⚠️ WARNING:** Will fail with a warning if the result is less than -128 (the minimum value).
 
 #### Parameters
+
 - `sIdentifier`: Name of the global variable
 - `nAmount`: Amount to decrement by (must be positive)
 
@@ -198,6 +218,7 @@ DecrementGlobalNumber("Health_Points", 10);
 ```
 
 #### Notes
+
 - Only works with Number type globals
 - Result must not be less than -128
 
@@ -210,17 +231,21 @@ DecrementGlobalNumber("Health_Points", 10);
 **Routine:** 578
 
 #### Function Signature
+
 ```nss
 int GetGlobalBoolean(string sIdentifier);
 ```
 
 #### Description
+
 Gets the value of a global boolean variable. Returns `TRUE` (1) or `FALSE` (0).
 
 #### Parameters
+
 - `sIdentifier`: Name of the global boolean variable
 
 #### Returns
+
 - `TRUE` (1) if the global is `TRUE`
 - `FALSE` (0) if the global is `FALSE` or doesn't exist
 
@@ -249,14 +274,17 @@ if (!bHasMetNPC) {
 **Routine:** 579
 
 #### Function Signature
+
 ```nss
 void SetGlobalBoolean(string sIdentifier, int nValue);
 ```
 
 #### Description
+
 Sets the value of a global boolean variable. Any non-zero value is treated as `TRUE`, zero is `FALSE`.
 
 #### Parameters
+
 - `sIdentifier`: Name of the global boolean variable
 - `nValue`: Value to set (`TRUE`/`FALSE` or any non-zero/zero)
 
@@ -286,17 +314,21 @@ SetGlobalBoolean("Temporary_Flag", FALSE);
 **Routine:** 583
 
 #### Function Signature
+
 ```nss
 string GetGlobalString(string sIdentifier);
 ```
 
 #### Description
+
 Gets the value of a global string variable. Strings can store arbitrary text data.
 
 #### Parameters
+
 - `sIdentifier`: Name of the global string variable
 
 #### Returns
+
 - String value of the global
 - Empty string ("") if the global doesn't exist
 
@@ -323,14 +355,17 @@ string sLastArea = GetGlobalString("LastArea");
 **Routine:** 584
 
 #### Function Signature
+
 ```nss
 void SetGlobalString(string sIdentifier, string sValue);
 ```
 
 #### Description
+
 Sets the value of a global string variable.
 
 #### Parameters
+
 - `sIdentifier`: Name of the global string variable
 - `sValue`: String value to set
 
@@ -355,17 +390,21 @@ SetGlobalString("LastVisitedArea", "Dantooine_Enclave");
 **Routine:** 585
 
 #### Function Signature
+
 ```nss
 location GetGlobalLocation(string sIdentifier);
 ```
 
 #### Description
+
 Gets the value of a global location variable. Locations store position (X, Y, Z) and facing angle.
 
 #### Parameters
+
 - `sIdentifier`: Name of the global location variable
 
 #### Returns
+
 - Location value of the global
 - Invalid location if the global doesn't exist
 
@@ -386,14 +425,17 @@ if (GetIsObjectValid(lSavedLocation)) {
 **Routine:** 586
 
 #### Function Signature
+
 ```nss
 void SetGlobalLocation(string sIdentifier, location lValue);
 ```
 
 #### Description
+
 Sets the value of a global location variable.
 
 #### Parameters
+
 - `sIdentifier`: Name of the global location variable
 - `lValue`: Location value to set
 
@@ -490,6 +532,7 @@ if (GetGlobalBoolean("Quest_Completed")) {
 Global numbers are **strictly limited** to -128 to +127 (signed byte). This is a fundamental limitation of the engine.
 
 **Workarounds:**
+
 - Use multiple global numbers for larger ranges (e.g., `Counter_Low`, `Counter_High`)
 - Use boolean flags for tracking states (1 = true, 0 = false)
 - Use strings to store numeric data as text (requires conversion)

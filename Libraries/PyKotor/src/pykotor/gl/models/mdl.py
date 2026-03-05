@@ -370,7 +370,7 @@ class Mesh:
         else:  # Default blend mode
             glDepthMask(True)
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            shader.set_float("alphaCutoff", 0.0)
+            shader.set_float("alphaCutoff", alpha_cutoff)
 
         glActiveTexture(GL_TEXTURE1)
         self._scene.texture(self.lightmap, lightmap=True).use()

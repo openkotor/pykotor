@@ -2,127 +2,188 @@
 
 from __future__ import annotations
 
-import traceback
-
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any
+from copy import copy
+from pathlib import Path
+from typing import TYPE_CHECKING
 
-from qtpy.QtWidgets import QApplication, QMenu, QMessageBox, QWidget
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import (
+    QActionGroup,  # pyright: ignore[reportPrivateImportUsage]  # noqa: F401
+    QApplication,
+    QDockWidget,
+    QDoubleSpinBox,
+    QFormLayout,
+    QLabel,
+    QListWidget,
+    QMenu,
+    QMessageBox,
+    QVBoxLayout,
+    QWidget,
+)
 
 from loggerplus import RobustLogger
 from pykotor.extract.installation import SearchLocation
 from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.formats.lyt import read_lyt
-from pykotor.resource.generics.pth import PTH, bytes_pth, read_pth
+from pykotor.resource.generics.pth import PTH, PTHEdge, bytes_pth, read_pth
 from pykotor.resource.type import ResourceType
 from toolset.data.misc import ControlItem
 from toolset.gui.common.interaction.camera import calculate_zoom_strength
 from toolset.gui.common.walkmesh_materials import get_walkmesh_material_colors
 from toolset.gui.editor import Editor
+from toolset.gui.widgets.installation_toolbar import FolderPathSpec
 from toolset.gui.widgets.settings.editor_settings.git import GITSettings
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
 from utility.common.geometry import Vector2
 
+try:
+    from qtpy.QtWidgets import QUndoCommand, QUndoStack  # type: ignore[assignment]
+except ImportError:
+    from qtpy.QtGui import QUndoCommand, QUndoStack  # type: ignore[assignment]
+
 if TYPE_CHECKING:
     import os
-
-    from collections.abc import Callable
 
     from qtpy.QtCore import QPoint, Qt
     from qtpy.QtGui import QColor, QKeyEvent, QKeySequence, QMouseEvent
     from qtpy.QtWidgets import (
         QAction,  # pyright: ignore[reportPrivateImportUsage]
         QClipboard,
-        QStatusBar,
     )
 
     from pykotor.extract.file import ResourceIdentifier, ResourceResult
     from pykotor.resource.formats.bwm.bwm_data import BWM
     from pykotor.resource.formats.lyt import LYT
-    from pykotor.resource.generics.git import GITInstance
+    from pykotor.resource.generics.git import GITObject
     from toolset.data.installation import HTInstallation
     from utility.common.geometry import SurfaceMaterial, Vector3
 
 
-class CustomStdout:
-    def __init__(self, editor: PTHEditor):
-        self.prev_status_out: str = ""
-        self.prev_status_error: str = ""
-        self.mouse_pos = Vector2.from_null()  # Initialize with a default position
-        self.editor: PTHEditor = editor
-
-        sbar = editor.statusBar()
-        assert sbar is not None
-        self.editor_status_bar: QStatusBar = sbar
-
-    def write(self, text):  # Update status bar with stdout content
-        self.update_status_bar(stdout=text)
-
-    def flush(self):  # Required for compatibility
-        ...
-
-    def update_status_bar(
-        self,
-        stdout: str = "",
-        stderr: str = "",
-    ):
-        # Update stderr if provided
-        if stderr:
-            self.prev_status_error = stderr
-
-        # If a message is provided (e.g., from the decorator), use it as the last stdout
-        if stdout:
-            self.prev_status_out = stdout
-
-        # Construct the status text using last known values
-        left_status = str(self.mouse_pos)
-        center_status = str(self.prev_status_out)
-        right_status = str(self.prev_status_error)
-        self.editor.update_status_bar(left_status, center_status, right_status)
+# --- Undo commands ---
 
 
-def status_bar_decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-    def wrapper(*args, **kwargs):
-        args = list(args)
-        self: PTHEditor | PTHControlScheme = args.pop(0)
-        # Create a representation of the function call
-        args_repr = [repr(a) for a in args]  # List comprehension to get the repr of args
-        kwargs_repr = [f"{k}={v!r}" for k, v in kwargs.items()]  # List comprehension for kwargs
-        signature = ", ".join(args_repr + kwargs_repr)  # Combine the args and kwargs representations
-        func_call_repr = f"{func.__name__}({signature})"  # Construct the full function call representation
+class AddNodeCommand(QUndoCommand):
+    def __init__(self, pth: PTH, x: float, y: float, node_index: int):
+        super().__init__()
+        self._pth = pth
+        self._x = x
+        self._y = y
+        self._node_index = node_index
 
-        editor = self if isinstance(self, PTHEditor) else self.editor
-        try:
-            editor.status_out.update_status_bar(func_call_repr)
-            return func(self, *args, **kwargs)
-        except Exception as e:
-            traceback.print_exc()
-            error_message = str((e.__class__.__name__, str(e)))
-            editor.status_out.update_status_bar(stderr=error_message)  # Update the status bar with the error
-            raise  # Re-raise the exception after logging it to the status bar
+    def undo(self):
+        self._pth.remove(self._node_index)
 
-    return wrapper
+    def redo(self):
+        self._pth._points.insert(self._node_index, Vector2(self._x, self._y))
+        for edge in self._pth._connections:
+            if edge.source >= self._node_index:
+                edge.source += 1
+            if edge.target >= self._node_index:
+                edge.target += 1
 
 
-def auto_decorate_methods(decorator: Callable[..., Any]) -> Callable[..., Any]:
-    """Class decorator to automatically apply a decorator to all methods.
+class MoveNodeCommand(QUndoCommand):
+    def __init__(self, pth: PTH, node_index: int, old_x: float, old_y: float, new_x: float, new_y: float):
+        super().__init__()
+        self._pth = pth
+        self._node_index = node_index
+        self._old_x, self._old_y = old_x, old_y
+        self._new_x, self._new_y = new_x, new_y
 
-    Untested.
-    """
+    def undo(self):
+        point = self._pth.get(self._node_index)
+        if point:
+            point.x = self._old_x
+            point.y = self._old_y
 
-    def class_decorator(cls):
-        # Iterate over all attributes of cls
-        for attr_name, attr_value in cls.__dict__.items():
-            # Check if it's a callable (method) and not inherited
-            if callable(attr_value) and attr_name not in dir(cls.__base__):
-                # Wrap the method with the decorator
-                setattr(cls, attr_name, decorator(attr_value))
-        return cls
+    def redo(self):
+        point = self._pth.get(self._node_index)
+        if point:
+            point.x = self._new_x
+            point.y = self._new_y
 
-    return class_decorator
+
+class DeleteNodeCommand(QUndoCommand):
+    def __init__(self, pth: PTH, node_index: int):
+        super().__init__()
+        self._pth = pth
+        self._node_index = node_index
+        self._saved_point: tuple[float, float] | None = None
+        self._saved_connections: list[tuple[int, int]] | None = None
+
+    def _old_to_new_index(self, old: int) -> int:
+        if old < self._node_index:
+            return old
+        if old == self._node_index:
+            return self._node_index
+        return old + 1
+
+    def undo(self):
+        if self._saved_point is None or self._saved_connections is None:
+            return
+        x, y = self._saved_point
+        self._pth._points.insert(self._node_index, Vector2(x, y))
+        for edge in self._pth._connections:
+            if edge.source >= self._node_index:
+                edge.source += 1
+            if edge.target >= self._node_index:
+                edge.target += 1
+        for src, tgt in self._saved_connections:
+            self._pth._connections.append(PTHEdge(self._old_to_new_index(src), self._old_to_new_index(tgt)))
+
+    def redo(self):
+        point = self._pth.get(self._node_index)
+        if point is None:
+            return
+        self._saved_point = (point.x, point.y)
+        self._saved_connections = [(e.source, e.target) for e in copy(self._pth._connections) if e.source == self._node_index or e.target == self._node_index]
+        self._pth.remove(self._node_index)
+
+
+class ConnectCommand(QUndoCommand):
+    def __init__(self, pth: PTH, source: int, target: int, bidirectional: bool):
+        super().__init__()
+        self._pth = pth
+        self._source = source
+        self._target = target
+        self._bidirectional = bidirectional
+
+    def undo(self):
+        self._pth.disconnect(self._source, self._target)
+        if self._bidirectional:
+            self._pth.disconnect(self._target, self._source)
+
+    def redo(self):
+        self._pth.connect(self._source, self._target)
+        if self._bidirectional:
+            self._pth.connect(self._target, self._source)
+
+
+class DisconnectCommand(QUndoCommand):
+    def __init__(self, pth: PTH, source: int, target: int, bidirectional: bool):
+        super().__init__()
+        self._pth = pth
+        self._source = source
+        self._target = target
+        self._bidirectional = bidirectional
+
+    def undo(self):
+        self._pth.connect(self._source, self._target)
+        if self._bidirectional:
+            self._pth.connect(self._target, self._source)
+
+    def redo(self):
+        self._pth.disconnect(self._source, self._target)
+        if self._bidirectional:
+            self._pth.disconnect(self._target, self._source)
 
 
 class PTHEditor(Editor):
+    STANDALONE_FOLDER_PATHS = [
+        FolderPathSpec("modules_folder", "Modules Folder", "Folder containing extracted module resources."),
+    ]
+
     def __init__(
         self,
         parent: QWidget | None,
@@ -131,7 +192,6 @@ class PTHEditor(Editor):
         supported: list[ResourceType] = [ResourceType.PTH]
         super().__init__(parent, "PTH Editor", "pth", supported, supported, installation)
         self.setup_status_bar()
-        self.status_out: CustomStdout = CustomStdout(self)
 
         from toolset.uic.qtpy.editors.pth import Ui_MainWindow
 
@@ -150,6 +210,11 @@ class PTHEditor(Editor):
 
         self._pth: PTH = PTH()
         self._controls: PTHControlScheme = PTHControlScheme(self)
+        self._undo_stack: QUndoStack = QUndoStack(self)
+        self._tool_mode: str = "select"  # "select" | "add_node" | "connect"
+        self._connect_drag_source_index: int | None = None  # for Connect tool
+        self._drag_start_world: Vector2 | None = None  # for Select tool move
+        self._drag_initial_positions: list[tuple[int, float, float]] | None = None  # (node_index, x, y) when drag started
 
         self.settings: GITSettings = GITSettings()
 
@@ -161,8 +226,25 @@ class PTHEditor(Editor):
         self.ui.renderArea.material_colors = self.material_colors
         self.ui.renderArea.hide_walkmesh_edges = True
         self.ui.renderArea.highlight_boundaries = False
+        self.ui.renderArea.show_room_boundaries = True
+        self.ui.renderArea.show_grid = False
+
+        self._setup_toolbar_and_dock()
 
         self.new()
+
+    def _resolve_path_resource(self, resref: str, suffix: str) -> bytes | None:
+        folder = getattr(self, "_standalone_folder_paths", {}).get("modules_folder")
+        if folder is None:
+            return None
+        path = folder / f"{resref}.{suffix}"
+        return path.read_bytes() if path.is_file() else None
+
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        self._installation = installation
+
+    def _on_folder_paths_changed(self, paths: dict[str, Path | None]) -> None:
+        self._standalone_folder_paths = paths
 
     def setup_status_bar(self):
         from toolset.uic.qtpy.widgets.pth_status_bar import Ui_Form
@@ -184,11 +266,12 @@ class PTHEditor(Editor):
 
     def update_status_bar(
         self,
-        left_status: str = "",
-        center_status: str = "",
-        right_status: str = "",
+        *,
+        left_status: str | None = None,
+        center_status: str | None = None,
+        right_status: str | None = None,
     ):
-        # Update the text of each label
+        """Update status bar segments. Only provided segments are updated."""
         try:
             self._core_update_status_bar(left_status, center_status, right_status)
         except RuntimeError:  # wrapped C/C++ object of type QLabel has been deleted
@@ -197,22 +280,29 @@ class PTHEditor(Editor):
 
     def _core_update_status_bar(
         self,
-        left_status: str,
-        center_status: str,
-        right_status: str,
+        left_status: str | None,
+        center_status: str | None,
+        right_status: str | None,
     ):
-        if left_status and left_status.strip():
+        if left_status is not None and left_status.strip():
             self.leftLabel.setText(left_status)
-        if center_status and center_status.strip():
+        if center_status is not None and center_status.strip():
             self.centerLabel.setText(center_status)
-        if right_status and right_status.strip():
+        if right_status is not None and right_status.strip():
             self.rightLabel.setText(right_status)
+
+    def set_status_center(self, msg: str) -> None:
+        """Set the center status bar message (e.g. hint or action result)."""
+        self.update_status_bar(center_status=msg)
+
+    def set_status_error(self, msg: str) -> None:
+        """Set the right status bar message (e.g. error)."""
+        self.update_status_bar(right_status=msg)
 
     def mouseMoveEvent(self, event: QMouseEvent):
         super().mouseMoveEvent(event)
         point: QPoint = event.pos()
-        self.status_out.mouse_pos = Vector2(point.x(), point.y())
-        self.status_out.update_status_bar()
+        self.update_status_bar(left_status=f"{point.x()}, {point.y()}")
 
     def _setup_signals(self):
         self.ui.renderArea.sig_mouse_pressed.connect(self.on_mouse_pressed)
@@ -221,6 +311,178 @@ class PTHEditor(Editor):
         self.ui.renderArea.sig_mouse_released.connect(self.on_mouse_released)
         self.ui.renderArea.customContextMenuRequested.connect(self.on_context_menu)
         self.ui.renderArea.sig_key_pressed.connect(self.on_key_pressed)
+        self.ui.renderArea.sig_marquee_select.connect(self._on_marquee_select)
+
+    def _setup_toolbar_and_dock(self):
+        """Wire toolbar actions and properties dock. Uses getattr for optional UI from .ui (regenerate uic if missing)."""
+        main_toolbar = getattr(self.ui, "mainToolBar", None)
+        if main_toolbar is not None:
+            action_select = getattr(self.ui, "actionSelect", None)
+            action_add_node = getattr(self.ui, "actionAddNode", None)
+            action_connect = getattr(self.ui, "actionConnect", None)
+            if action_select is not None and action_add_node is not None and action_connect is not None:
+                tool_group = QActionGroup(self)
+                tool_group.setExclusive(True)
+                for a in (action_select, action_add_node, action_connect):
+                    a.setActionGroup(tool_group)
+                action_select.triggered.connect(lambda: self._set_tool_mode("select"))
+                action_add_node.triggered.connect(lambda: self._set_tool_mode("add_node"))
+                action_connect.triggered.connect(lambda: self._set_tool_mode("connect"))
+
+            action_undo = getattr(self.ui, "actionUndo", None)
+            action_redo = getattr(self.ui, "actionRedo", None)
+            if action_undo is not None:
+                action_undo.triggered.connect(self._undo_stack.undo)
+            if action_redo is not None:
+                action_redo.triggered.connect(self._undo_stack.redo)
+
+            action_delete = getattr(self.ui, "actionDelete", None)
+            if action_delete is not None:
+                action_delete.triggered.connect(self._on_toolbar_delete)
+
+            action_toggle_walkmesh = getattr(self.ui, "actionToggleWalkmesh", None)
+            if action_toggle_walkmesh is not None:
+                action_toggle_walkmesh.triggered.connect(self._on_toggle_walkmesh)
+
+            action_center_camera = getattr(self.ui, "actionCenterCamera", None)
+            if action_center_camera is not None:
+                action_center_camera.triggered.connect(self.ui.renderArea.center_camera)
+
+            action_show_room_boundaries = getattr(self.ui, "actionShowRoomBoundaries", None)
+            if action_show_room_boundaries is not None:
+                action_show_room_boundaries.toggled.connect(
+                    lambda value: setattr(self.ui.renderArea, "show_room_boundaries", value)
+                )
+                action_show_room_boundaries.toggled.connect(lambda _: self.ui.renderArea.update())
+
+            action_show_grid = getattr(self.ui, "actionShowGrid", None)
+            if action_show_grid is not None:
+                action_show_grid.toggled.connect(lambda value: setattr(self.ui.renderArea, "show_grid", value))
+                action_show_grid.toggled.connect(lambda _: self.ui.renderArea.update())
+
+        # Properties dock is created in code so the .ui compiles with PyQt5 uic (which can fail on QDockWidget).
+        properties_dock = QDockWidget(self)
+        properties_dock.setObjectName("propertiesDockWidget")
+        properties_dock.setWindowTitle("Properties")
+        properties_dock.setFeatures(
+            QDockWidget.DockWidgetFeature.DockWidgetMovable
+            | QDockWidget.DockWidgetFeature.DockWidgetFloatable
+            | QDockWidget.DockWidgetFeature.DockWidgetClosable
+        )
+        contents = QWidget()
+        layout = QVBoxLayout(contents)
+        layout.setSpacing(4)
+        layout.setContentsMargins(4, 4, 4, 4)
+        form = QFormLayout()
+        self._properties_spin_x = QDoubleSpinBox()
+        self._properties_spin_x.setDecimals(2)
+        self._properties_spin_x.setRange(-999999.0, 999999.0)
+        self._properties_spin_x.setSingleStep(0.1)
+        self._properties_spin_y = QDoubleSpinBox()
+        self._properties_spin_y.setDecimals(2)
+        self._properties_spin_y.setRange(-999999.0, 999999.0)
+        self._properties_spin_y.setSingleStep(0.1)
+        form.addRow(QLabel("X Position"), self._properties_spin_x)
+        form.addRow(QLabel("Y Position"), self._properties_spin_y)
+        layout.addLayout(form)
+        layout.addWidget(QLabel("Connections"))
+        self._properties_connections = QListWidget()
+        layout.addWidget(self._properties_connections)
+        properties_dock.setWidget(contents)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, properties_dock)
+        self._properties_spin_x.valueChanged.connect(self._on_property_x_changed)
+        self._properties_spin_y.valueChanged.connect(self._on_property_y_changed)
+
+    def _set_tool_mode(self, mode: str):
+        self._tool_mode = mode
+        self.ui.renderArea.set_connection_preview_source(None)
+
+    def _on_marquee_select(self, world_rect: tuple[float, float, float, float], additive: bool):
+        min_x, min_y, max_x, max_y = world_rect
+        inside: list[Vector2] = []
+        for point in self._pth:
+            if min_x <= point.x <= max_x and min_y <= point.y <= max_y:
+                inside.append(point)
+        if inside:
+            self.ui.renderArea.path_selection.select(inside, clear_existing=not additive)
+        elif not additive:
+            self.ui.renderArea.path_selection.clear()
+        self._refresh_properties_inspector()
+
+    def _on_toolbar_delete(self):
+        selected = self.ui.renderArea.path_selection.all()
+        if selected:
+            idx = self._pth.find(selected[0])
+            if idx is not None:
+                self.remove_node(idx)
+        else:
+            under = self.ui.renderArea.path_nodes_under_mouse()
+            if under:
+                idx = self._pth.find(under[0])
+                if idx is not None:
+                    self.remove_node(idx)
+
+    def _on_toggle_walkmesh(self):
+        self.ui.renderArea.hide_walkmesh_edges = not self.ui.renderArea.hide_walkmesh_edges
+        self.ui.renderArea.update()
+
+    def _on_property_x_changed(self, value: float):
+        self._apply_property_position(value, self._properties_spin_y.value() if self._properties_spin_y else 0.0, "x")
+
+    def _on_property_y_changed(self, value: float):
+        self._apply_property_position(self._properties_spin_x.value() if self._properties_spin_x else 0.0, value, "y")
+
+    def _apply_property_position(self, x: float, y: float, changed: str):
+        selected = self.ui.renderArea.path_selection.all()
+        if not selected or len(self._pth) == 0:
+            return
+        point = selected[0]
+        idx = self._pth.find(point)
+        if idx is None:
+            return
+        old_x, old_y = point.x, point.y
+        if changed == "x":
+            point.x = x
+        else:
+            point.y = y
+        if point.x != old_x or point.y != old_y:
+            self._undo_stack.push(MoveNodeCommand(self._pth, idx, old_x, old_y, point.x, point.y))
+
+    def _refresh_properties_inspector(self):
+        """Update Properties dock from current selection."""
+        if self._properties_spin_x is None or self._properties_spin_y is None or self._properties_connections is None:
+            return
+        selected = self.ui.renderArea.path_selection.all()
+        if not selected:
+            self._properties_spin_x.blockSignals(True)
+            self._properties_spin_y.blockSignals(True)
+            self._properties_spin_x.setEnabled(False)
+            self._properties_spin_y.setEnabled(False)
+            self._properties_spin_x.setValue(0.0)
+            self._properties_spin_y.setValue(0.0)
+            self._properties_connections.clear()
+            self._properties_spin_x.blockSignals(False)
+            self._properties_spin_y.blockSignals(False)
+            return
+        point = selected[0]
+        idx = self._pth.find(point)
+        if idx is None:
+            return
+        self._properties_spin_x.blockSignals(True)
+        self._properties_spin_y.blockSignals(True)
+        self._properties_spin_x.setEnabled(True)
+        self._properties_spin_y.setEnabled(True)
+        self._properties_spin_x.setValue(point.x)
+        self._properties_spin_y.setValue(point.y)
+        self._properties_spin_x.blockSignals(False)
+        self._properties_spin_y.blockSignals(False)
+        self._properties_connections.clear()
+        for edge in self._pth.outgoing(idx):
+            target = self._pth.get(edge.target)
+            if target:
+                self._properties_connections.addItem(f"→ {edge.target} ({target.x:.1f}, {target.y:.1f})")
+        for edge in self._pth.incoming(idx):
+            self._properties_connections.addItem(f"← {edge.source}")
 
     def load(
         self,
@@ -229,14 +491,20 @@ class PTHEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
-        """Load PTH from bytes. Defaults when missing: see construct_pth. REVA: K1 LoadPathPoints @ 0x00508400 (LoadArea @ 0x0050e190), TSL LoadPathPoints @ 0x00721db0 (LoadArea @ 0x00718860)."""
+        """Load PTH from bytes. Defaults when missing: see construct_pth. K1 LoadPathPoints @ 0x00508400 (LoadArea @ 0x0050e190), TSL LoadPathPoints @ 0x00721db0 (LoadArea @ 0x00718860)."""
         super().load(filepath, resref, restype, data)
 
-        order: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN, SearchLocation.MODULES]
-        assert self._installation is not None
-        result: ResourceResult | None = self._installation.resource(resref, ResourceType.LYT, order)
-        if result:
-            self.loadLayout(read_lyt(result.data))
+        layout_data: bytes | None = None
+        if self._installation is not None:
+            order: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN, SearchLocation.MODULES]
+            result: ResourceResult | None = self._installation.resource(resref, ResourceType.LYT, order)
+            if result is not None:
+                layout_data = result.data
+        else:
+            layout_data = self._resolve_path_resource(resref, "lyt")
+
+        if layout_data is not None:
+            self.loadLayout(read_lyt(layout_data))
         else:
             from toolset.gui.common.localization import translate as tr, trf
             from toolset.gui.helpers.callback import BetterMessageBox
@@ -251,146 +519,141 @@ class PTHEditor(Editor):
         pth: PTH = read_pth(data)
         self._loadPTH(pth)
 
-    @status_bar_decorator
     def _loadPTH(self, pth: PTH):
         """Apply PTH to UI. Same defaults as construct_pth (K1 0x00508400, TSL 0x00721db0)."""
         self._pth = pth
+        self._undo_stack.clear()
         self.ui.renderArea.center_camera()
         self.ui.renderArea.set_pth(pth)
+        self._refresh_properties_inspector()
 
     def build(self) -> tuple[bytes, bytes]:
-        """Build PTH bytes from editor state. Write values match engine. REVA: K1 LoadPathPoints @ 0x00508400, TSL @ 0x00721db0."""
+        """Build PTH bytes from editor state. Write values match engine. K1 LoadPathPoints @ 0x00508400, TSL @ 0x00721db0."""
         return bytes_pth(self._pth), b""
 
     def new(self):
         super().new()
         self._loadPTH(PTH())
 
-    @status_bar_decorator
     def pth(self) -> PTH:
         return self._pth
 
-    @status_bar_decorator
     def loadLayout(self, layout: LYT):
-        assert self._installation is not None
         walkmeshes: list[BWM] = []
         for room in layout.rooms:
-            order: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN, SearchLocation.MODULES]
-            findBWM: ResourceResult | None = self._installation.resource(room.model, ResourceType.WOK, order)
-            if findBWM is not None:
-                print(
-                    "loadLayout",
-                    "BWM Found",
-                    f"{findBWM.resname}.{findBWM.restype}",
-                    file=self.status_out,
-                )
-                walkmeshes.append(read_bwm(findBWM.data))
+            walkmesh_data: bytes | None = None
+            if self._installation is not None:
+                order: list[SearchLocation] = [
+                    SearchLocation.OVERRIDE,
+                    SearchLocation.CHITIN,
+                    SearchLocation.MODULES,
+                ]
+                findBWM: ResourceResult | None = self._installation.resource(room.model, ResourceType.WOK, order)
+                walkmesh_data = findBWM.data if findBWM is not None else None
+            else:
+                walkmesh_data = self._resolve_path_resource(room.model, "wok")
+
+            if walkmesh_data is not None:
+                walkmeshes.append(read_bwm(walkmesh_data))
 
         self.ui.renderArea.set_walkmeshes(walkmeshes)
 
-    @status_bar_decorator
     def moveCameraToSelection(self):
-        instance: GITInstance | None = self.ui.renderArea.instance_selection.last()
-        if instance:
+        instance: GITObject | None = self.ui.renderArea.instance_selection.last()
+        if instance is not None:
             self.ui.renderArea.camera.set_position(instance.position.x, instance.position.y)
 
-    @status_bar_decorator
     def move_camera(self, x: float, y: float):
         self.ui.renderArea.camera.nudge_position(x, y)
 
-    @status_bar_decorator
     def zoom_camera(self, amount: float):
         self.ui.renderArea.camera.nudge_zoom(amount)
 
-    @status_bar_decorator
     def rotate_camera(self, angle: float):
         self.ui.renderArea.camera.nudge_rotation(angle)
 
-    @status_bar_decorator
     def move_selected(self, x: float, y: float):
+        """Move all selected nodes to (x, y). Does not push undo; call commit_move_selected() on release."""
         for point in self.ui.renderArea.path_selection.all():
             point.x = x
             point.y = y
 
-    @status_bar_decorator
+    def commit_move_selected(self):
+        """Push MoveNodeCommand for each selected node that was dragged. Call after mouse release."""
+        if not self._drag_initial_positions:
+            return
+        for node_index, old_x, old_y in self._drag_initial_positions:
+            point = self._pth.get(node_index)
+            if point and (point.x != old_x or point.y != old_y):
+                self._undo_stack.push(MoveNodeCommand(self._pth, node_index, old_x, old_y, point.x, point.y))
+        self._drag_initial_positions = None
+        self._refresh_properties_inspector()
+
     def select_node_under_mouse(self):
         if self.ui.renderArea.path_nodes_under_mouse():
             to_select: list[Vector2] = [self.ui.renderArea.path_nodes_under_mouse()[0]]
-            print("select_node_under_mouse", "to_select:", to_select)
             self.ui.renderArea.path_selection.select(to_select)
         else:
-            print("select_node_under_mouse", "clear():", file=self.status_out)
             self.ui.renderArea.path_selection.clear()
+        self._refresh_properties_inspector()
 
-    @status_bar_decorator
-    def addNode(self, x: float, y: float):
-        self._pth.add(x, y)
+    def addNode(self, x: float, y: float) -> int:
+        idx = self._pth.add(x, y)
+        self._undo_stack.push(AddNodeCommand(self._pth, x, y, idx))
+        return idx
 
-    @status_bar_decorator
     def remove_node(self, index: int):
-        self._pth.remove(index)
+        self._undo_stack.push(DeleteNodeCommand(self._pth, index))
         self.ui.renderArea.path_selection.clear()
+        self._refresh_properties_inspector()
 
-    @status_bar_decorator
     def removeEdge(self, source: int, target: int):
-        # Remove bidirectional connections like other path editors
-        self._pth.disconnect(source, target)
-        self._pth.disconnect(target, source)
+        bidirectional = self._pth.is_connected(target, source)
+        self._undo_stack.push(DisconnectCommand(self._pth, source, target, bidirectional))
 
-    @status_bar_decorator
-    def addEdge(self, source: int, target: int):
-        # Create bidirectional connections like other path editors
-        self._pth.connect(source, target)
-        self._pth.connect(target, source)
+    def addEdge(self, source: int, target: int, bidirectional: bool = True):
+        self._undo_stack.push(ConnectCommand(self._pth, source, target, bidirectional))
 
-    @status_bar_decorator
     def points_under_mouse(self) -> list[Vector2]:
         return self.ui.renderArea.path_nodes_under_mouse()
 
-    @status_bar_decorator
     def selected_nodes(self) -> list[Vector2]:
         return self.ui.renderArea.path_selection.all()
 
     # region Signal Callbacks
-    @status_bar_decorator
     def on_context_menu(self, point: QPoint):
         global_point: QPoint = self.ui.renderArea.mapToGlobal(point)
         world: Vector3 = self.ui.renderArea.to_world_coords(point.x(), point.y())
         self._controls.on_render_context_menu(Vector2.from_vector3(world), global_point)
 
-    @status_bar_decorator
     def on_mouse_moved(self, screen: Vector2, delta: Vector2, buttons: set[int], keys: set[int]):
         world_delta: Vector2 = self.ui.renderArea.to_world_delta(delta.x, delta.y)
         world: Vector3 = self.ui.renderArea.to_world_coords(screen.x, screen.y)
+        self.update_status_bar(left_status=f"{world.x:.1f}, {world.y:.1f}")
         self._controls.on_mouse_moved(screen, delta, Vector2.from_vector3(world), world_delta, buttons, keys)
 
-    @status_bar_decorator
     def on_mouse_scrolled(self, delta: Vector2, buttons: set[int], keys: set[int]):
         # print(f"on_mouse_scrolled(delta={delta!r})", file=self.stdout)
         self._controls.on_mouse_scrolled(delta, buttons, keys)
 
     def on_mouse_pressed(self, screen: Vector2, buttons: set[int], keys: set[int]):
-        # print(f"on_mouse_pressed(screen={screen!r})", file=self.stdout)
-        self._controls.on_mouse_pressed(screen, buttons, keys)
+        world = Vector2.from_vector3(self.ui.renderArea.to_world_coords(screen.x, screen.y))
+        self._controls.on_mouse_pressed(screen, buttons, keys, world)
 
-    @status_bar_decorator
     def on_mouse_released(self, screen: Vector2, buttons: set[int], keys: set[int]):
-        # print("on_mouse_released", file=self.stdout)
-        self._controls.on_mouse_released(Vector2(0, 0), buttons, keys)
+        world = Vector2.from_vector3(self.ui.renderArea.to_world_coords(screen.x, screen.y))
+        self._controls.on_mouse_released(screen, buttons, keys, world)
 
-    @status_bar_decorator
     def on_key_pressed(self, buttons: set[int], keys: set[int]):
         # print("on_key_pressed", file=self.stdout)
         self._controls.on_keyboard_pressed(buttons, keys)
 
-    @status_bar_decorator
     def keyPressEvent(self, e: QKeyEvent):
         # print(f"keyPressEvent(e={e!r})", file=self.stdout)
         if e is None:
             return
         self.ui.renderArea.keyPressEvent(e)
 
-    @status_bar_decorator
     def keyReleaseEvent(self, e: QKeyEvent):
         # print(f"keyReleaseEvent(e={e!r})", file=self.stdout)
         if e is None:
@@ -399,17 +662,16 @@ class PTHEditor(Editor):
 
     # endregion
 
+
 class PTHControlScheme:
     def __init__(self, editor: PTHEditor):
         self.editor: PTHEditor = editor
         self.settings: GITSettings = GITSettings()
 
-    @status_bar_decorator
     def mouseMoveEvent(self, event: QMouseEvent):
         point: QPoint = event.pos()
-        self.editor.status_out.mouse_pos = Vector2(point.x(), point.y())
+        self.editor.update_status_bar(left_status=f"{point.x()}, {point.y()}")
 
-    @status_bar_decorator
     def on_mouse_scrolled(self, delta: Vector2, buttons: set[int], keys: set[int]):
         if self.zoom_camera.satisfied(buttons, keys):
             if not delta.y:
@@ -419,7 +681,6 @@ class PTHControlScheme:
             # RobustLogger.debug(f"on_mouse_scrolled zoom_camera (delta.y={delta.y}, zoom_factor={zoom_factor}, sensSetting={sensSetting}))")
             self.editor.zoom_camera(zoom_factor)
 
-    @status_bar_decorator
     def on_mouse_moved(
         self,
         screen: Vector2,
@@ -429,45 +690,80 @@ class PTHControlScheme:
         buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ):
-        self.editor.status_out.mouse_pos = screen
+        if self.editor._connect_drag_source_index is not None:
+            self.editor.ui.renderArea.set_connection_preview_mouse(world)
         shouldPanCamera = self.pan_camera.satisfied(buttons, keys)
         shouldrotate_camera = self.rotate_camera.satisfied(buttons, keys)
         if shouldPanCamera or shouldrotate_camera:
             self.editor.ui.renderArea.do_cursor_lock(screen)
         if shouldPanCamera:
             moveSens = ModuleDesignerSettings().moveCameraSensitivity2d / 100
-            # RobustLogger.debug(f"on_mouse_scrolled move_camera (delta.y={screenDelta.y}, sensSetting={moveSens}))")
             self.editor.move_camera(-world_delta.x * moveSens, -world_delta.y * moveSens)
         if shouldrotate_camera:
             delta_magnitude = abs(screenDelta.x)
             direction = -1 if screenDelta.x < 0 else 1 if screenDelta.x > 0 else 0
             rotateSens = ModuleDesignerSettings().rotateCameraSensitivity2d / 1000
             rotateAmount = delta_magnitude * rotateSens * direction
-            # RobustLogger.debug(f"on_mouse_scrolled rotate_camera (delta_value={delta_magnitude}, rotateAmount={rotateAmount}, sensSetting={rotateSens}))")
             self.editor.rotate_camera(rotateAmount)
         if self.move_selected.satisfied(buttons, keys):
             self.editor.move_selected(world.x, world.y)
 
-    @status_bar_decorator
     def on_mouse_pressed(
         self,
         screen: Vector2,
         buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
+        world: Vector2,
     ):
-        if self.select_underneath.satisfied(buttons, keys):
-            self.editor.select_node_under_mouse()
+        mode = self.editor._tool_mode
+        left = Qt.MouseButton.LeftButton in buttons if hasattr(buttons, "__contains__") else (Qt.MouseButton.LeftButton in buttons)
 
-    @status_bar_decorator
+        if mode == "select" and self.select_underneath.satisfied(buttons, keys):
+            nodes_under = self.editor.points_under_mouse()
+            if nodes_under:
+                self.editor.select_node_under_mouse()
+                selected = self.editor.selected_nodes()
+                if selected:
+                    self.editor._drag_initial_positions = []
+                    for pt in selected:
+                        idx = self.editor.pth().find(pt)
+                        if idx is not None:
+                            self.editor._drag_initial_positions.append((idx, pt.x, pt.y))
+            else:
+                self.editor.ui.renderArea.start_marquee(screen)
+        elif mode == "add_node" and left:
+            self.editor.addNode(world.x, world.y)
+            self.editor._refresh_properties_inspector()
+        elif mode == "connect" and left:
+            nodes_under = self.editor.points_under_mouse()
+            if nodes_under:
+                idx = self.editor.pth().find(nodes_under[0])
+                if idx is not None:
+                    self.editor._connect_drag_source_index = idx
+                    self.editor.ui.renderArea.set_connection_preview_source(idx)
+                    self.editor.ui.renderArea.set_connection_preview_mouse(world)
+
     def on_mouse_released(
         self,
         screen: Vector2,
         buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
+        world: Vector2,
     ):
-        pass
+        if self.editor._drag_initial_positions is not None:
+            self.editor.commit_move_selected()
+        src = self.editor._connect_drag_source_index
+        if src is not None:
+            nodes_under = self.editor.points_under_mouse()
+            if nodes_under:
+                tgt = self.editor.pth().find(nodes_under[0])
+                if tgt is not None and tgt != src:
+                    bidirectional = Qt.Key.Key_Shift in keys if hasattr(keys, "__contains__") else (Qt.Key.Key_Shift in keys)
+                    self.editor.addEdge(src, tgt, bidirectional=bidirectional)
+                    self.editor._refresh_properties_inspector()
+            self.editor._connect_drag_source_index = None
+            self.editor.ui.renderArea.set_connection_preview_source(None)
 
-    @status_bar_decorator
     def on_keyboard_pressed(
         self,
         buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
@@ -490,7 +786,6 @@ class PTHControlScheme:
                 return
             self.editor.remove_node(node)
 
-    @status_bar_decorator
     def onKeyboardReleased(
         self,
         buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
@@ -498,7 +793,6 @@ class PTHControlScheme:
     ):
         pass
 
-    @status_bar_decorator
     def on_render_context_menu(
         self,
         world: Vector2,
@@ -522,13 +816,6 @@ class PTHControlScheme:
                     selected_index = self.editor.pth().find(selected)
                     if selected_index is not None:
                         break
-        print(
-            f"selected_index:{selected_index}",
-            f"under_mouse_index:{under_mouse_index}",
-            f"on_render_context_menu(world={world!r}, screen={screen!r})",
-            file=self.editor.status_out,
-        )
-
         menu = QMenu(self.editor)
         from toolset.gui.common.localization import translate as tr
 
@@ -543,12 +830,12 @@ class PTHControlScheme:
         copy_xy_coords_action: QAction | None = menu.addAction(tr("Copy XY coords"))
         assert copy_xy_coords_action is not None, "copy_xy_coords_action is None"
 
-        def copy_xy_coords():
+        def copy_xy_coords_at(wx: float, wy: float):
             clipboard: QClipboard | None = QApplication.clipboard()
-            assert clipboard is not None, "clipboard is None"
-            clipboard.setText(str(self.editor.status_out.mouse_pos))
+            if clipboard is not None:
+                clipboard.setText(f"{wx:.2f}, {wy:.2f}")
 
-        copy_xy_coords_action.triggered.connect(copy_xy_coords)
+        copy_xy_coords_action.triggered.connect(lambda: copy_xy_coords_at(world.x, world.y))
 
         if under_mouse_index is not None:
             remove_node_action: QAction | None = menu.addAction(tr("Remove Node"))
@@ -621,6 +908,7 @@ class PTHControlScheme:
 
     @delete_selected.setter
     def delete_selected(self, value): ...
+
 
 if __name__ == "__main__":
     import sys

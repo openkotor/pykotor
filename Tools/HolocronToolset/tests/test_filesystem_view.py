@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from pytestqt.qtbot import QtBot
+from qtpy.QtWidgets import QApplication
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QModelIndex, QPoint
@@ -136,10 +137,15 @@ class TestFilesystemViewComprehensive:
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
 
+        expected = Path(installation.path()).resolve()
         widget.setRootPath(installation.path())
         QApplication.processEvents()  # Wait for async operations
 
-        assert widget.fs_model.rootPath() == installation.path()
+        actual = widget.fs_model.rootPath()
+        assert actual is not None, "Model root path should be set after setRootPath"
+        assert Path(actual).resolve() == expected, (
+            f"Widget root path {actual!r} should match installation path {expected!r}"
+        )
 
     def test_archive_as_folder_bif(self, qt_api: str, qtbot: QtBot, installation: HTInstallation):
         """Test that BIF files are treated as folders."""

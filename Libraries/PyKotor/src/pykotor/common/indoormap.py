@@ -198,6 +198,8 @@ class IndoorMap(ComparableMixin):
         self.ifo: IFO | None = None
         self.git: GIT | None = None
 
+        self._preserve_extracted_metadata: bool = False
+
         self.total_lm: int = 0
         self.room_names: dict[IndoorMapRoom, str] = {}
         self.tex_renames: dict[str, str] = {}
@@ -484,6 +486,8 @@ class IndoorMap(ComparableMixin):
 
     def set_area_attributes(self, bounds: tuple[Vector2, Vector2]):
         assert self.are is not None, "are is None"
+        if self._preserve_extracted_metadata:
+            return
         world_min, world_max = bounds
         self.are.tag = self.module_id
         # Verified engine behavior (do not change without re-validating):
@@ -511,6 +515,8 @@ class IndoorMap(ComparableMixin):
     def set_ifo_attributes(self):
         assert self.ifo is not None, "ifo is None"
         assert self.vis is not None, "vis is None"
+        if self._preserve_extracted_metadata:
+            return
         self.ifo.tag = self.module_id
         self.ifo.area_name = ResRef(self.module_id)
         self.ifo.resref = ResRef(self.module_id)
@@ -553,9 +559,18 @@ class IndoorMap(ComparableMixin):
         self.mod = ERF(ERFType.MOD)
         self.lyt = LYT()
         self.vis = VIS()
-        self.are = ARE()
-        self.ifo = IFO()
-        self.git = GIT()
+        if self._preserve_extracted_metadata and self.are is not None:
+            pass
+        else:
+            self.are = ARE()
+        if self._preserve_extracted_metadata and self.ifo is not None:
+            pass
+        else:
+            self.ifo = IFO()
+        if self._preserve_extracted_metadata and self.git is not None:
+            pass
+        else:
+            self.git = GIT()
         self.room_names.clear()
         self.tex_renames.clear()
         self.total_lm = 0

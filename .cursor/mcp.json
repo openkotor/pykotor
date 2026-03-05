@@ -1,22 +1,28 @@
 {
   "mcpServers": {
-    "reva": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "--from",
+		"agentdecompile-proxy": {
+			"type": "stdio",
+			"command": "uvx",
+			"args": [
+				"--refresh",
+				"--from",
         "git+https://github.com/bolabaden/agentdecompile",
-        "mcp-agentdecompile"
-      ],
-      "env": {
-        "AGENTDECOMPILE_PROJECT_PATH": "C:/Users/boden/PyKotorGhidraProject.gpr",
-        "GHIDRA_INSTALL_DIR": "C:/Users/boden/Downloads/ghidra_12.0_PUBLIC_20251205/ghidra_12.0_PUBLIC"
-      },
-      "alwaysAllow": [],
-      "disabledTools": [],
-      "disabled": false,
-      "gallery": "https://api.mcp.github.com",
-      "version": "0.1.0"
-    }
+				"agentdecompile-server",
+				"--transport",
+				"stdio",
+				"--server-host",
+				"170.9.241.140",
+				"--backend-url",
+				"http://170.9.241.140:8080",
+				"--server-port",
+				"13100",
+				"--server-username",
+				"OpenKotOR",
+				"--server-password",
+				"MuchaShakaPaka",
+				"--ghidra-server-repository",
+				"Odyssey"
+			]
+		}
   }
 }

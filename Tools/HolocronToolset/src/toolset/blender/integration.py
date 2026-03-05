@@ -20,6 +20,7 @@ from pykotor.resource.generics.git import (
     GITCamera,
     GITCreature,
     GITDoor,
+    GITObject,
     GITPlaceable,
     GITStore,
     GITWaypoint,
@@ -35,7 +36,7 @@ if TYPE_CHECKING:
 
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
-    from pykotor.resource.generics.git import GIT, GITInstance
+    from pykotor.resource.generics.git import GIT, GITInstance, GITObject
     from toolset.blender import BlenderInfo
     from toolset.blender.commands import BlenderEditorController, BlenderEditorMode
     from toolset.blender.ipc_client import ConnectionState
@@ -272,7 +273,7 @@ class BlenderEditorMixin:
         self._blender_enabled = False
         self._on_blender_mode_stopped()
 
-    def sync_selection_to_blender(self, instances: list[GITInstance]):
+    def sync_selection_to_blender(self, instances: list[GITObject]):
         """Sync selection to Blender.
 
         Args:
@@ -283,7 +284,7 @@ class BlenderEditorMixin:
 
         self._blender_controller.select_instances(instances)
 
-    def sync_instance_to_blender(self, instance: GITInstance):
+    def sync_instance_to_blender(self, instance: GITObject):
         """Sync instance position/rotation to Blender.
 
         Args:
@@ -312,7 +313,7 @@ class BlenderEditorMixin:
                 orientation=(ori.x, ori.y, ori.z, ori.w),
             )
 
-    def add_instance_to_blender(self, instance: GITInstance) -> str | None:
+    def add_instance_to_blender(self, instance: GITObject) -> str | None:
         """Add an instance to Blender.
 
         Args:
@@ -326,7 +327,7 @@ class BlenderEditorMixin:
 
         return self._blender_controller.add_instance(instance)
 
-    def remove_instance_from_blender(self, instance: GITInstance) -> bool:
+    def remove_instance_from_blender(self, instance: GITObject) -> bool:
         """Remove an instance from Blender.
 
         Args:

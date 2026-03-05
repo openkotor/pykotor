@@ -64,7 +64,6 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.tpc import TPC
     from pykotor.resource.generics.git import GITCreature, GITInstance
     from pykotor.resource.generics.utc import UTC
-    from utility.common.geometry import Vector3
 
 T = TypeVar("T")
 SEARCH_ORDER_2DA: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN]
@@ -101,10 +100,6 @@ class SceneBase:
         self.async_loader: AsyncResourceLoader | None = None
         self._shutdown: bool = False
 
-        self.installation: Installation | None = installation
-        if installation is not None:
-            self.set_installation(installation)
-
         self._missing_texture = Texture.from_color(255, 0, 255)
         self._missing_lightmap = Texture.from_color(0, 0, 0)
         self._loading_texture = Texture.from_color(128, 128, 128)
@@ -117,6 +112,10 @@ class SceneBase:
         self.table_creatures = TwoDA()
         self.table_heads = TwoDA()
         self.table_baseitems = TwoDA()
+
+        self.installation: Installation | None = installation
+        if installation is not None:
+            self.set_installation(installation)
 
         # World-space anchor under the mouse ray (legacy name: "cursor").
         # IMPORTANT: This is *not* the camera/view focus point.

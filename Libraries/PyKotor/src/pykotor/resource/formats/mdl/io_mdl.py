@@ -3098,7 +3098,11 @@ class MDLBinaryReader:
             if bin_node.light is not None:
                 node.light = MDLLight()
                 node.light.ambient_only = bool(bin_node.light.ambient_only)
-                node.light.dynamic_type = MDLDynamicType(bin_node.light.dynamic_type)
+                # Clamp invalid values from misaligned roundtrip binary to STATIC (binary writer layout can produce wrong bytes here)
+                try:
+                    node.light.dynamic_type = MDLDynamicType(bin_node.light.dynamic_type)
+                except ValueError:
+                    node.light.dynamic_type = MDLDynamicType.STATIC
                 node.light.affect_dynamic = bool(bin_node.light.affect_dynamic)
                 node.light.shadow = bool(bin_node.light.shadow)
                 node.light.flare = bool(bin_node.light.flare)
@@ -3464,6 +3468,8 @@ class MDLBinaryReader:
                         vertex_bone.vertex_weights = (w1, w2, w3, w4)
 
         for child_offset in bin_node.children_offsets:
+            if child_offset in (0, 0xFFFFFFFF):
+                continue
             child_node: MDLNode = self._load_node(child_offset, node)
             node.children.append(child_node)
 

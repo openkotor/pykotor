@@ -17,7 +17,7 @@ import tempfile
 import time
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 import qtpy
 
@@ -26,16 +26,18 @@ from qtpy.QtMultimedia import QMediaPlayer
 
 from loggerplus import RobustLogger
 from pykotor.resource.type import ResourceType
+from toolset.gui.common.localization import trf
 from toolset.gui.editor import Editor
 from utility.system.os_helper import remove_any
 
 if TYPE_CHECKING:
     import os
 
+    from PyQt6.QtCore import pyqtBoundSignal  # type: ignore[reportMissingImports]
     from PyQt6.QtMultimedia import QMediaPlayer as PyQt6MediaPlayer  # pyright: ignore[reportMissingImports]
     from PySide6.QtMultimedia import QMediaPlayer as PySide6MediaPlayer  # pyright: ignore[reportMissingImports]
     from qtpy.QtGui import QCloseEvent
-    from qtpy.QtWidgets import QWidget
+    from qtpy.QtWidgets import QToolBar, QWidget
 
     from toolset.data.installation import HTInstallation
 
@@ -112,12 +114,13 @@ class WAVEditor(Editor):
         player = self.mediaPlayer.player  # pyright: ignore[reportAttributeAccessIssue]
 
         # Disconnect any existing connections to avoid duplicates
-        signal_pairs = [
+        signal_pairs: list[tuple[Callable[[], QMediaPlayer.Error | None] | pyqtBoundSignal, Callable]] = [
             (player.durationChanged, self._on_duration_changed),
             (player.positionChanged, self._on_position_changed),
             (player.mediaStatusChanged, self._on_media_status_changed),
         ]
         error_signal = player.error if qtpy.QT5 else player.errorOccurred  # type: ignore[attr-defined]
+
         signal_pairs.append((error_signal, self._on_player_error))
 
         for signal, handler in signal_pairs:
@@ -512,7 +515,7 @@ class WAVEditor(Editor):
 
     def _on_player_error(self, *args: Any, **kwargs: Any) -> None:
         """Handle media player errors."""
-        RobustLogger().warning(f"Media player error: {args}, {kwargs}")
+        RobustLogger().warning(trf("Media player error: {args}, {kwargs}", args=args, kwargs=kwargs))
 
     # =========================================================================
     # Cleanup
@@ -528,6 +531,7 @@ class WAVEditor(Editor):
         self._cleanup_temp_file()
         if a0 is not None:
             super().closeEvent(a0)
+
 
 if __name__ == "__main__":
     import sys

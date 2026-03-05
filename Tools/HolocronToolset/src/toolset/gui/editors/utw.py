@@ -5,11 +5,13 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
+from loggerplus import RobustLogger
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import ResRef
 from pykotor.resource.formats.gff import write_gff
 from pykotor.resource.generics.utw import UTW, dismantle_utw, read_utw
 from pykotor.resource.type import ResourceType
+from toolset.gui.common.localization import trf
 from toolset.gui.dialogs.edit.locstring import LocalizedStringDialog
 from toolset.gui.editor import Editor
 
@@ -79,13 +81,10 @@ class UTWEditor(Editor):
         self.ui.nameEdit.set_installation(installation)
 
     def _set_map_note_locstring(self, locstring: LocalizedString):
-        self._load_locstring(self.ui.noteEdit, locstring)  # pyright: ignore[reportArgumentType]
+        self._load_locstring(self.ui.noteEdit, locstring)
 
     def _get_map_note_locstring(self) -> LocalizedString:
-        try:
-            return self.ui.noteEdit.locstring  # type: ignore[return-value]
-        except AttributeError:
-            return LocalizedString(self.ui.noteEdit.text())
+        return self.ui.noteEdit.locstring()
 
     def _load_basic_fields(self, utw: UTW):
         self.ui.nameEdit.set_locstring(utw.name)
@@ -121,7 +120,7 @@ class UTWEditor(Editor):
         """
         self._utw: UTW = utw
 
-        # Basic (Tag "", LocalizedName empty, TemplateResRef blank per K1 0x005c7f30)
+        # Basic (Tag "", LocalizedName empty, TemplateResRef blank per K1)
         self._load_basic_fields(utw)
 
         # Advanced (HasMapNote 0, MapNoteEnabled 0, MapNote empty per K1 LoadWaypoint)
@@ -153,7 +152,7 @@ class UTWEditor(Editor):
         gff: GFF = dismantle_utw(utw)
         write_gff(gff, data)
 
-        return data, b""
+        return bytes(data), b""
 
     def new(self):
         super().new()

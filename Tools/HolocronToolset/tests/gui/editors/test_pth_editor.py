@@ -4,6 +4,9 @@ Unit Tests for PTH Editor - testing EVERY possible manipulation.
 Each test focuses on a specific manipulation and validates save/load roundtrips.
 Following the ARE editor test pattern for comprehensive coverage.
 """
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pytest
 from pathlib import Path
@@ -13,6 +16,9 @@ from toolset.data.installation import HTInstallation  # type: ignore[import-not-
 from pykotor.resource.generics.pth import PTH, read_pth, bytes_pth  # type: ignore[import-not-found]
 from pykotor.resource.type import ResourceType  # type: ignore[import-not-found]
 from utility.common.geometry import Vector2, Vector3  # type: ignore[import-not-found]
+
+if TYPE_CHECKING:
+    ...
 
 # ============================================================================
 # BASIC TESTS
@@ -494,12 +500,34 @@ def test_pth_editor_signal_connections(qtbot, installation: HTInstallation):
     assert hasattr(editor.ui.renderArea, "sig_key_pressed")
 
 
+def test_pth_editor_toggle_room_boundaries(qtbot, installation: HTInstallation):
+    """Test toolbar toggle for room boundaries/labels in render area."""
+    editor = PTHEditor(None, installation)
+    qtbot.addWidget(editor)
+
+    original = editor.ui.renderArea.show_room_boundaries
+    editor.ui.actionShowRoomBoundaries.setChecked(not original)
+
+    assert editor.ui.renderArea.show_room_boundaries is (not original)
+
+
+def test_pth_editor_toggle_show_grid(qtbot, installation: HTInstallation):
+    """Test toolbar toggle for grid rendering in render area."""
+    editor = PTHEditor(None, installation)
+    qtbot.addWidget(editor)
+
+    original = editor.ui.renderArea.show_grid
+    editor.ui.actionShowGrid.setChecked(not original)
+
+    assert editor.ui.renderArea.show_grid is (not original)
+
+
 # ============================================================================
 # MATERIAL COLORS
 # ============================================================================
 
 
-def test_pth_editor_material_colors_initialization(qtbot, installation: HTInstallation):
+def test_pth_editor_material_colors_initialization(qtbot: QtBot, installation: HTInstallation):
     """Test material colors are properly initialized."""
     editor = PTHEditor(None, installation)
     qtbot.addWidget(editor)

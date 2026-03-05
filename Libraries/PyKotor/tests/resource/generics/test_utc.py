@@ -332,7 +332,7 @@ class TestUTC(TestCase):
         assert utc.treat_injury == 8
 
     def test_utc_missing_field_defaults(self) -> None:
-        """Test defaults when UTC fields are omitted (REVA: K1 0x00500350, TSL 0x0068ccb0; ReadStatsFromGff 0x00560e60/0x006ec350)."""
+        """Test defaults when UTC fields are omitted (K1 0x00500350, TSL 0x0068ccb0; ReadStatsFromGff 0x00560e60/0x006ec350)."""
         minimal_utc_xml = """<gff3>
           <struct id="-1">
             <exostring label="Tag">OnlyTag</exostring>

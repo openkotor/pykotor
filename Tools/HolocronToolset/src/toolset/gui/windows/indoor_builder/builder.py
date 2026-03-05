@@ -15,7 +15,6 @@ from qtpy.QtGui import QColor, QIcon, QImage, QPixmap, QShortcut
 from qtpy.QtWidgets import (
     QAction,  # pyright: ignore[reportPrivateImportUsage]
     QApplication,
-    QDialog,
     QFileDialog,
     QHBoxLayout,
     QLabel,
@@ -99,8 +98,8 @@ from toolset.gui.common.interaction.camera import calculate_zoom_strength, handl
 from toolset.gui.common.localization import translate as tr, translate_format as trf
 from toolset.gui.common.status_bar_utils import format_status_bar_keys_and_buttons
 from toolset.gui.common.walkmesh_materials import get_walkmesh_material_colors
+from toolset.gui.widgets.installation_toolbar import InstallationToolbar, StandaloneWindowMixin
 from toolset.gui.dialogs.asyncloader import AsyncLoader
-from toolset.gui.dialogs.indoor_settings import IndoorMapSettings
 from toolset.gui.windows.help import HelpWindow
 from toolset.gui.windows.indoor_builder.constants import (
     DEFAULT_CAMERA_POSITION_X,
@@ -167,7 +166,7 @@ class SnapResult:
 # =============================================================================
 
 
-class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
+class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     def __init__(
         self,
         parent: QWidget | None,
@@ -227,10 +226,10 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         # Put it right after "Open" in File menu and toolbar.
         try:
             self.ui.menuFile.insertAction(self.ui.actionSave, self._action_open_mod)
-            self.ui.toolBar.insertAction(self.ui.actionSave, self._action_open_mod)
         except Exception:
-            # If UI structure changes, we still keep the action accessible via signal hookup below.
             pass
+
+        self._setup_settings_toolbar()
 
         # New UI uses dock widgets - connect to dock widget signals for preview updates
         left_dock: QDockWidget | None = self.ui.leftDockWidget
@@ -266,6 +265,9 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         # Initialize Options UI to match renderer state
         self._initialize_options_ui()
 
+        # Sync settings toolbar from current map
+        self._update_settings_ui()
+
         # Setup Blender integration UI (deferred to avoid layout issues)
         QTimer.singleShot(0, self._install_view_stack)
 
@@ -276,6 +278,36 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         # Setup NoScrollEventFilter
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
+
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        self._installation = installation
+        self._module_kit_manager = ModuleKitManager(installation) if installation is not None else None
+        try:
+            self._setup_settings_toolbar()
+            self._setup_modules()
+            self._refresh_window_title()
+        except Exception:
+            self.log.exception("Failed to refresh after installation switch")
+
+    def enable_standalone_mode(self) -> None:
+        """Override: place installation toolbar in left dock above Modules instead of above the map."""
+        if self._installation_toolbar is not None:
+            return
+        container = getattr(self.ui, "installationToolbarContainer", None)
+        if container is None:
+            super().enable_standalone_mode()
+            return
+        self._standalone_folder_paths = {}
+        self._installation_toolbar = InstallationToolbar(
+            container,
+            folder_path_specs=list(self.STANDALONE_FOLDER_PATHS),
+            requires_installation=self.STANDALONE_REQUIRES_INSTALLATION,
+        )
+        self._installation_toolbar.installation_changed.connect(self._handle_installation_changed)
+        self._installation_toolbar.folder_paths_changed.connect(self._handle_folder_paths_changed)
+        layout = container.layout()
+        if layout is not None:
+            layout.addWidget(self._installation_toolbar)
 
     def _get_semantic_colors(self) -> dict[str, str]:
         """Get semantic colors from the application palette.
@@ -366,13 +398,6 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         # QAction.triggered emits a bool; QWidget.close takes no args.
         self.ui.actionExit.triggered.connect(lambda *_: self.close())
 
-        # Settings
-        if self._installation:
-            assert isinstance(self._installation, HTInstallation)
-            self.ui.actionSettings.triggered.connect(self.open_settings)
-        else:
-            self.ui.actionSettings.setEnabled(False)
-
         # Edit menu
         self.ui.actionDeleteSelected.triggered.connect(self.delete_selected)
         self.ui.actionDuplicate.triggered.connect(self.duplicate_selected)
@@ -422,6 +447,76 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
             set_grid_size=self.ui.mapRenderer.set_grid_size,
             set_rotation_snap=self.ui.mapRenderer.set_rotation_snap,
         )
+        self.ui.showRoomLabelsCheck.toggled.connect(self.ui.mapRenderer.set_show_room_labels)
+
+        # Settings toolbar: sync map -> UI when any setting changes
+        self.ui.nameEdit.sig_editing_finished.connect(self._on_settings_changed)
+        self.ui.colorEdit.sig_color_changed.connect(self._on_settings_changed)
+        self.ui.warpCodeEdit.textChanged.connect(self._on_settings_changed)
+        self.ui.skyboxSelect.currentIndexChanged.connect(self._on_settings_changed)
+        self.ui.gameTypeSelect.currentIndexChanged.connect(self._on_settings_changed)
+
+    def _setup_settings_toolbar(self):
+        """Add settings widget to toolbar and populate skybox/game type. Set installation on nameEdit."""
+        self.ui.toolBar.addWidget(self.ui.settingsToolbarWidget)
+        if isinstance(self._installation, HTInstallation):
+            self.ui.nameEdit.set_installation(self._installation)
+        self.ui.skyboxSelect.clear()
+        self.ui.skyboxSelect.addItem(tr("[None]"), "")
+        for kit in self._kits:
+            for skybox in kit.skyboxes:
+                self.ui.skyboxSelect.addItem(skybox, skybox)
+        self.ui.gameTypeSelect.clear()
+        self.ui.gameTypeSelect.addItem(tr("Use Installation Default"), None)
+        self.ui.gameTypeSelect.addItem("Knights of the Old Republic (K1)", False)
+        self.ui.gameTypeSelect.addItem("The Sith Lords (TSL/K2)", True)
+
+    def _update_settings_ui(self):
+        """Sync toolbar widgets from current _map state."""
+        self.ui.nameEdit.set_locstring(self._map.name)
+        self.ui.colorEdit.blockSignals(True)
+        self.ui.colorEdit.set_color(self._map.lighting)
+        self.ui.colorEdit.blockSignals(False)
+        self.ui.warpCodeEdit.blockSignals(True)
+        self.ui.warpCodeEdit.setText(self._map.module_id)
+        self.ui.warpCodeEdit.blockSignals(False)
+        self.ui.skyboxSelect.blockSignals(True)
+        if self._map.skybox:
+            idx = self.ui.skyboxSelect.findText(self._map.skybox)
+            if idx == -1:
+                idx = self.ui.skyboxSelect.findData(self._map.skybox)
+            self.ui.skyboxSelect.setCurrentIndex(idx if idx != -1 else 0)
+        else:
+            self.ui.skyboxSelect.setCurrentIndex(0)
+        self.ui.skyboxSelect.blockSignals(False)
+        self.ui.gameTypeSelect.blockSignals(True)
+        if self._map.target_game_type is None:
+            self.ui.gameTypeSelect.setCurrentIndex(0)
+        elif self._map.target_game_type:
+            self.ui.gameTypeSelect.setCurrentIndex(2)
+        else:
+            self.ui.gameTypeSelect.setCurrentIndex(1)
+        self.ui.gameTypeSelect.blockSignals(False)
+
+    def _on_settings_changed(self):
+        """Read toolbar settings into _map and mark document modified."""
+        self._map.name = self.ui.nameEdit.locstring()
+        self._map.lighting = self.ui.colorEdit.color()
+        self._map.module_id = self.ui.warpCodeEdit.text()
+        self._map.skybox = self.ui.skyboxSelect.currentData()
+        self._map.target_game_type = self.ui.gameTypeSelect.currentData()
+        from qtpy.QtWidgets import QUndoCommand  # pyright: ignore[reportPrivateImportUsage]
+
+        class SettingsChangedCommand(QUndoCommand):
+            def __init__(self):
+                super().__init__("Settings Changed")
+
+            def undo(self): ...
+            def redo(self): ...
+
+        if not self._undo_stack.canUndo():
+            self._undo_stack.push(SettingsChangedCommand())
+        self._refresh_window_title()
 
     def _setup_walkmesh_painter(self):
         """Initialize walkmesh painting UI and palette."""
@@ -1049,6 +1144,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
             grid_size_spin=self.ui.gridSizeSpin,
             rotation_snap_spin=self.ui.rotSnapSpin,
         )
+        self.ui.showRoomLabelsCheck.setChecked(self.ui.mapRenderer.show_room_labels)
 
     def _refresh_status_bar(
         self,
@@ -1174,18 +1270,52 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
             self._refresh_window_title()
 
     def save_as(self):
-        filepath, _ = QFileDialog.getSaveFileName(
+        default_name = (
+            Path(self._filepath).name
+            if self._filepath and str(self._filepath).strip()
+            else "test.indoor"
+        )
+        filepath, selected_filter = QFileDialog.getSaveFileName(
             self,
-            "Save Map",
-            Path(self._filepath).name if self._filepath and str(self._filepath).strip() else "test.indoor",
-            "Indoor Map File (*.indoor)",
+            tr("Save Map"),
+            default_name,
+            tr("Indoor Map File (*.indoor);;Module (*.mod)"),
         )
         if not filepath or not str(filepath).strip():
             return
-        BinaryWriter.dump(Path(filepath), self._map.write())
-        self._filepath = str(Path(filepath))
-        self._undo_stack.setClean()
-        self._refresh_window_title()
+        path = Path(filepath)
+        saving_as_mod = (
+            (selected_filter and (".mod" in selected_filter))
+            or path.suffix.lower() == ".mod"
+        )
+        if saving_as_mod:
+            path = path.with_suffix(".mod") if path.suffix.lower() != ".mod" else path
+            if not isinstance(self._installation, HTInstallation):
+                QMessageBox.warning(
+                    self, tr("No Installation"), tr("Please select an installation first.")
+                )
+                return
+
+            def task():
+                assert isinstance(self._installation, HTInstallation)
+                return self._map.build(self._installation, self._kits, path)
+
+            loader = AsyncLoader(
+                self,
+                tr("Saving module..."),
+                task,
+                tr("Failed to build map."),
+            )
+            if loader.exec():
+                self._undo_stack.setClean()
+                msg = trf("Module saved to:\n{path}", path=path)
+                QMessageBox(QMessageBox.Icon.Information, tr("Module saved"), msg).exec()
+        else:
+            path = path.with_suffix(".indoor") if path.suffix.lower() != ".indoor" else path
+            BinaryWriter.dump(path, self._map.write())
+            self._filepath = str(path)
+            self._undo_stack.setClean()
+            self._refresh_window_title()
 
     def new(self):
         if not self._undo_stack.isClean():
@@ -1205,6 +1335,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         self.ui.mapRenderer._bwm_surface_cache.clear()
         self._undo_stack.clear()
         self._undo_stack.setClean()  # Mark as clean for new file
+        self._update_settings_ui()
         self._refresh_window_title()
 
     def open(self):
@@ -1229,6 +1360,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
                 self._filepath = filepath
                 self._undo_stack.clear()
                 self._undo_stack.setClean()  # Mark as clean after loading
+                self._update_settings_ui()
                 self._refresh_window_title()
 
                 if missing_rooms:
@@ -1341,42 +1473,6 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         KitDownloader(self).exec()
         self._setup_kits()
 
-    def open_settings(self):
-        """Open the settings dialog and update the map if changes are made."""
-        if not isinstance(self._installation, HTInstallation):
-            return
-
-        # Store original values to detect changes
-        old_module_id: str = self._map.module_id
-        old_name: str | int | None = self._map.name.stringref if self._map.name.stringref is not None else None  # type: ignore[assignment, attr-defined]
-        old_skybox: str | None = self._map.skybox if self._map.skybox is not None else None  # type: ignore[assignment, attr-defined]
-
-        dialog = IndoorMapSettings(self, self._installation, self._map, self._kits)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            # Settings were accepted - check if anything actually changed
-            module_id_changed: bool = old_module_id != self._map.module_id
-            name_changed: bool = old_name != (self._map.name.stringref if self._map.name.stringref is not None else None)  # type: ignore[assignment, attr-defined]
-            skybox_changed: bool = old_skybox != (self._map.skybox if self._map.skybox is not None else None)  # type: ignore[assignment, attr-defined]
-
-            if module_id_changed or name_changed or skybox_changed:
-                # Mark as having unsaved changes by pushing a no-op command
-                # This ensures the asterisk appears in the window title
-                from qtpy.QtWidgets import QUndoCommand  # pyright: ignore[reportPrivateImportUsage]
-
-                class SettingsChangedCommand(QUndoCommand):
-                    def __init__(self):
-                        super().__init__("Settings Changed")
-
-                    def undo(self): ...
-                    def redo(self): ...
-
-                # Only push if stack is clean to avoid unnecessary undo entries
-                if not self._undo_stack.canUndo():
-                    self._undo_stack.push(SettingsChangedCommand())
-
-                # Refresh window title to reflect any changes (especially module_id)
-                self._refresh_window_title()
-
     def build_map(self):
         if not isinstance(self._installation, HTInstallation):
             QMessageBox.warning(self, tr("No Installation"), tr("Please select an installation first."))
@@ -1469,6 +1565,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
             self._undo_stack.clear()
             self._undo_stack.setClean()
             self._filepath = ""  # Clear filepath since this is extracted, not loaded from file
+            self._update_settings_ui()
             self._refresh_window_title()
 
             # Show success message

@@ -476,7 +476,7 @@
            <item row="1" column="1">
             <widget class="QSpinBox" name="animationState">
              <property name="toolTip">
-              <string>Animation State (GFF: AnimationState). BYTE 0–255. Current door animation state (e.g. open/closed). K1 CSWSDoor::LoadDoor @ 0x0058a1f0 does not read this field in the template loader; it may be used when loading from save or for instance state in the area. In template UTDs leave at 0; runtime state is stored in the GIT for placed instances. Modders: set 0 for new doors.</string>
+              <string>Animation State (GFF: AnimationState). BYTE 0–255. Current door animation state (e.g. open/closed). CSWSDoor::LoadDoor does not read this field in the template loader; it may be used when loading from save or for instance state in the area. In template UTDs leave at 0; runtime state is stored in the GIT for placed instances. Modders: set 0 for new doors.</string>
              </property>
              <property name="minimumSize">
               <size>

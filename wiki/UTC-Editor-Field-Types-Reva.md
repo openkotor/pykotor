@@ -117,6 +117,7 @@ Field types and ranges were determined by inspecting the creature-stats reader i
 Verified against K1 `k1_win_gog_swkotor.exe` (and TSL where applicable) via PyKotor-reva MCP. Function: `CSWSCreatureStats::ReadStatsFromGff` — K1 @ 0x005afce0, TSL @ 0x006ec350.
 
 **K1 (swkotor.exe) confirmations:**
+
 - **Gender:** `ReadFieldBYTE(…, "Gender", …)` then `if (4 < bVar7) bVar7 = 4` → effective 0–4.
 - **GoodEvil:** `ReadFieldBYTE(…, "GoodEvil", …)` then `if (100 < uVar12) uVar12 = 100` → effective 0–100.
 - **Race:** `ReadFieldBYTE(…, "Race", …)`; if `(Rules->internal).race_row_count <= bVar7` then return 0x5f4 (load fails).

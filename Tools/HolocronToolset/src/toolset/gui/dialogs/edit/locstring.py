@@ -15,6 +15,7 @@ from pykotor.resource.formats.tlk import read_tlk, write_tlk
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath
 from toolset.data.installation import HTInstallation
+from toolset.gui.common.localization import translate as tr, trf
 from toolset.utils.window import open_resource_editor
 
 if TYPE_CHECKING:
@@ -137,16 +138,8 @@ class LocalizedStringDialog(QDialog):
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
-        from toolset.gui.common.localization import translate as tr, trf
+        from toolset.gui.common.localization import translate as trf
 
-        self.ui.stringrefNoneButton.setToolTip(tr("Override the TLK with a custom entry."))
-        self.ui.stringrefNewButton.setToolTip(tr("Create a new entry in the TLK."))
-        self.ui.stringrefSearchButton = QPushButton(tr("Search"), self.ui.frame)
-        self.ui.stringrefSearchButton.setToolTip(tr("Search existing TLK entries and select a StringRef."))
-        self.ui.stringrefOpenTLKButton = QPushButton(tr("Open TLK"), self.ui.frame)
-        self.ui.stringrefOpenTLKButton.setToolTip(tr("Open the TLK editor and jump to this StringRef."))
-        self.ui.horizontalLayout_2.insertWidget(4, self.ui.stringrefSearchButton)
-        self.ui.horizontalLayout_2.insertWidget(5, self.ui.stringrefOpenTLKButton)
         self.setWindowTitle(trf("{language} - {name} - Localized String Editor", language=installation.talktable().language().name.title(), name=installation.name))
 
         self.ui.stringrefSpin.valueChanged.connect(self.stringref_changed)
@@ -197,14 +190,12 @@ class LocalizedStringDialog(QDialog):
 
     def open_search_dialog(self):
         dialog = _TLKSearchDialog(self, self._installation, self.ui.stringrefSpin.value())
-        result = dialog.exec_() if hasattr(dialog, "exec_") else dialog.exec()
+        result = dialog.exec()
         if result == QDialog.DialogCode.Accepted and dialog.selected_stringref is not None:
             self.ui.stringrefSpin.setValue(dialog.selected_stringref)
 
     def open_in_tlk_editor(self):
-        from toolset.gui.common.localization import translate as tr, trf
-
-        stringref = self.ui.stringrefSpin.value()
+        stringref: int = self.ui.stringrefSpin.value()
         if stringref < 0:
             return
 
@@ -221,7 +212,9 @@ class LocalizedStringDialog(QDialog):
 
         resource = FileResource("dialog", ResourceType.TLK, os.path.getsize(tlk_path), 0x0, tlk_path)  # noqa: PTH202
         _filepath, editor = open_resource_editor(resource, self._installation, self)
-        if editor is not None and hasattr(editor, "goto_strref"):
+        from toolset.gui.editors.tlk import TLKEditor
+
+        if editor is not None and isinstance(editor, TLKEditor):
             editor.goto_strref(stringref)
 
     def substring_changed(self):

@@ -68,6 +68,8 @@ class BWMEditor(Editor):
 
         self.material_colors: dict[SurfaceMaterial, QColor] = get_walkmesh_material_colors()
         self.ui.renderArea.material_colors = self.material_colors
+        self.ui.renderArea.show_room_boundaries = True
+        self.ui.renderArea.show_grid = False
         self.rebuild_materials()
 
         self.new()
@@ -75,11 +77,14 @@ class BWMEditor(Editor):
     def _setup_signals(self) -> None:
         self.ui.renderArea.sig_mouse_moved.connect(self.on_mouse_moved)
         self.ui.renderArea.sig_mouse_scrolled.connect(self.on_mouse_scrolled)
-        self.ui.renderArea.sig_mouse_pressed.connect(self.on_mouse_pressed)
-        self.ui.renderArea.sig_marquee_select.connect(self.on_marquee_select)
+        self.ui.actionShowRoomBoundaries.toggled.connect(lambda value: setattr(self.ui.renderArea, "show_room_boundaries", value))
+        self.ui.actionShowRoomBoundaries.toggled.connect(lambda _: self.ui.renderArea.update())
+        self.ui.actionShowGrid.toggled.connect(lambda value: setattr(self.ui.renderArea, "show_grid", value))
+        self.ui.actionShowGrid.toggled.connect(lambda _: self.ui.renderArea.update())
 
-        # Use "=" (base key) for zoom in instead of "+" (which requires Shift).
+        # Use "=" (base key) for zoom in as well as "+" (which requires Shift).
         QShortcut("=", self).activated.connect(lambda: self.ui.renderArea.camera.set_zoom(2))
+        QShortcut("+", self).activated.connect(lambda: self.ui.renderArea.camera.set_zoom(2))
         QShortcut("-", self).activated.connect(lambda: self.ui.renderArea.camera.set_zoom(-2))
 
     def rebuild_materials(self):
@@ -169,8 +174,8 @@ class BWMEditor(Editor):
             self.ui.renderArea, screen, delta, world_data, buttons, keys
         )
 
-        # Painting: require Shift + LeftButton to avoid conflicts with normal selection/drag
-        if not handled_cam and Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Shift in keys and face is not None:  # type: ignore[attr-defined]
+        # Paint with left-drag unless camera movement consumed the input.
+        if not handled_cam and Qt.MouseButton.LeftButton in buttons and face is not None:  # type: ignore[attr-defined]
             self.change_face_material(face)
 
         coords_text = f"x: {world.x:.2f}, {world.y:.2f}"
@@ -180,32 +185,6 @@ class BWMEditor(Editor):
         xy = f" || x: {screen.x:.2f}, " + f"y: {screen.y:.2f}, "
 
         self.statusBar().showMessage(coords_text + face_text + xy)  # pyright: ignore[reportCallIssue]
-
-    def on_mouse_pressed(self, screen: Vector2, buttons: set[int], keys: set[int]):
-        """Start marquee on left click when not panning (Ctrl) or painting (Shift)."""
-        if (
-            Qt.MouseButton.LeftButton in buttons  # type: ignore[attr-defined]
-            and Qt.Key.Key_Control not in keys  # type: ignore[attr-defined]
-            and Qt.Key.Key_Shift not in keys  # type: ignore[attr-defined]
-        ):
-            self.ui.renderArea.start_marquee(screen)
-
-    def on_marquee_select(self, world_rect: tuple[float, float, float, float], additive: bool):
-        """Highlight the first face that intersects the marquee rect."""
-        if self._bwm is None:
-            return
-        min_x, min_y, max_x, max_y = world_rect
-        for face in self._bwm.faces:
-            # Check if any vertex or centroid is inside the rect
-            cx = (face.v1.x + face.v2.x + face.v3.x) / 3
-            cy = (face.v1.y + face.v2.y + face.v3.y) / 3
-            if min_x <= cx <= max_x and min_y <= cy <= max_y:
-                self.ui.renderArea.setHighlightedTrans(face, None)
-                return
-            for v in (face.v1, face.v2, face.v3):
-                if min_x <= v.x <= max_x and min_y <= v.y <= max_y:
-                    self.ui.renderArea.setHighlightedTrans(face, None)
-                    return
 
     def on_mouse_scrolled(self, delta: Vector2, buttons: set[int], keys: set[int]):
         if not delta.y:
@@ -241,6 +220,8 @@ class BWMEditor(Editor):
     def onTransitionSelect(self):
         if self.ui.transList.currentItem():
             item: QListWidgetItem | None = self.ui.transList.currentItem()  # type: ignore[union-attr]  # pyright: ignore[reportOptionalMemberAccess]
+            if item is None:
+                return
             face: BWMFace | None = item.data(_TRANS_FACE_ROLE)
             edge: int | None = item.data(_TRANS_EDGE_ROLE)
             self.ui.renderArea.setHighlightedTrans(face, edge)

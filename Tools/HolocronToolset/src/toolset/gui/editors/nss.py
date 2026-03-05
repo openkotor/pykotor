@@ -969,6 +969,7 @@ class NSSEditor(Editor):
         self.ui.codeEdit.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.ui.codeEdit.customContextMenuRequested.connect(self.editor_context_menu)
         self.ui.codeEdit.textChanged.connect(self.ui.codeEdit.on_text_changed)
+        self.ui.findResultsTree.itemDoubleClicked.connect(self._open_find_result)
 
     def editor_context_menu(self, pos: QPoint):
         """Enhanced context menu with VS Code-like organization."""
@@ -1117,6 +1118,22 @@ class NSSEditor(Editor):
         text = self.ui.codeEdit.toPlainText()
         lines = text.split("\n")
 
+        # Determine display path and open info (capsule vs loose file)
+        from_capsule = (
+            self._filepath is not None
+            and (is_rim_file(self._filepath.name) or is_any_erf_type_file(self._filepath.name))
+            and self._resname
+            and self._restype is not None
+        )
+        if from_capsule:
+            display_file = f"{self._filepath.name}/{self._resname}.{self._restype.extension}"
+            open_filepath = self._filepath
+            resname, restype = self._resname, self._restype
+        else:
+            display_file = str(self._filepath) if self._filepath else "Untitled"
+            open_filepath = self._filepath
+            resname, restype = None, None
+
         for line_num, line in enumerate(lines, 1):
             # Simple word boundary matching
             import re
@@ -1124,9 +1141,17 @@ class NSSEditor(Editor):
             pattern = r"\b" + re.escape(word) + r"\b"
             matches = re.finditer(pattern, line, re.IGNORECASE)
             for match in matches:
-                self._find_results.append(
-                    {"file": str(self._filepath) if self._filepath else "Untitled", "line": line_num, "content": line.strip()[:100], "column": match.start() + 1}
-                )
+                result_entry: dict[str, Any] = {
+                    "file": display_file,
+                    "line": line_num,
+                    "content": line.strip()[:100],
+                    "column": match.start() + 1,
+                    "open_filepath": open_filepath,
+                }
+                if resname is not None and restype is not None:
+                    result_entry["resname"] = resname
+                    result_entry["restype"] = restype
+                self._find_results.append(result_entry)
 
         # Populate results
         self._populate_find_results()
@@ -2924,6 +2949,7 @@ class NSSEditor(Editor):
                                 "file": str(file_path),
                                 "line": line_num,
                                 "content": line.strip()[:100],  # Limit content length
+                                "open_filepath": str(file_path),
                             }
                         )
             except Exception:
@@ -2944,7 +2970,9 @@ class NSSEditor(Editor):
         # Create tree items
         for file_path, results in files_dict.items():
             file_item = QTreeWidgetItem(self.ui.findResultsTree)
-            file_item.setText(0, Path(file_path).name)
+            # Capsule resources: show "capsule/resref.ext"; loose files: show filename only
+            display_name = file_path if any(r.get("resname") for r in results) else Path(file_path).name
+            file_item.setText(0, display_name)
             file_item.setText(1, str(len(results)))
             file_item.setData(0, Qt.ItemDataRole.UserRole, file_path)
 
@@ -2955,29 +2983,39 @@ class NSSEditor(Editor):
                 result_item.setText(2, result["content"])
                 result_item.setData(0, Qt.ItemDataRole.UserRole, result)
 
-        # Connect double-click to open file
-        self.ui.findResultsTree.itemDoubleClicked.connect(self._open_find_result)
-
     def _open_find_result(self, item: QTreeWidgetItem, column: int):
         """Open file from find results."""
         result_data = item.data(0, Qt.ItemDataRole.UserRole)
-        if isinstance(result_data, dict) and "file" in result_data and "line" in result_data:
-            file_path = result_data["file"]
-            # Open file and go to line
-            fileres = FileResource.from_path(Path(file_path))
-            result = open_resource_editor(fileres)
-            # open_resource_editor returns a tuple, get the editor
-            editor = None
-            if isinstance(result, tuple):
-                _, editor = result
-            else:
-                editor = result
-            # Only NSSEditor has ui.codeEdit, so check if editor is an NSSEditor instance
-            if isinstance(editor, NSSEditor) and editor.ui is not None:
-                # Try to go to the line
+        if not isinstance(result_data, dict) or "line" not in result_data:
+            return
+        open_filepath = result_data.get("open_filepath") or result_data.get("file")
+        if open_filepath is None or (isinstance(open_filepath, str) and open_filepath == "Untitled"):
+            return
+        path = Path(open_filepath) if not isinstance(open_filepath, Path) else open_filepath
+        resname = result_data.get("resname")
+        restype = result_data.get("restype")
+        is_capsule_path = path.name and (is_rim_file(path.name) or is_any_erf_type_file(path.name))
+
+        if resname and restype is not None and is_capsule_path:
+            fileres = FileResource(resname=resname, restype=restype, size=0, offset=0, filepath=path)
+            result = open_resource_editor(fileres, installation=self._installation)
+        else:
+            if not path.is_file():
+                return
+            fileres = FileResource.from_path(path)
+            result = open_resource_editor(fileres, installation=self._installation)
+
+        editor = None
+        if isinstance(result, tuple):
+            _, editor = result
+        else:
+            editor = result
+        if isinstance(editor, NSSEditor) and editor.ui is not None:
+            line_num = result_data.get("line")
+            if line_num is not None and line_num >= 1:
                 document = editor.ui.codeEdit.document()
                 if document:
-                    block = document.findBlockByLineNumber(result_data["line"] - 1)
+                    block = document.findBlockByLineNumber(line_num - 1)
                     cursor = QTextCursor(block)
                     editor.ui.codeEdit.setTextCursor(cursor)
                     editor.ui.codeEdit.centerCursor()

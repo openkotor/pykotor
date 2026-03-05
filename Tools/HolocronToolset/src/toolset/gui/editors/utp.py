@@ -92,6 +92,12 @@ class UTPEditor(Editor):
         self.new()
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        if installation is None:
+            return
+        self._setup_installation(installation)
+        self.update3dPreview()
+
     def _setup_signals(self):
         """Connect UI buttons to their respective methods.
 

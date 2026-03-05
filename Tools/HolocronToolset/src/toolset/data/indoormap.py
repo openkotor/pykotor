@@ -13,7 +13,6 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING, NamedTuple
 
-from pykotor.common.indoorkit.qt_preview import ensure_component_image
 from qtpy import QtCore  # pyright: ignore[reportMissingImports]
 from qtpy.QtGui import QColor, QImage, QPainter, QPixmap, QTransform  # pyright: ignore[reportMissingImports]
 
@@ -23,6 +22,7 @@ from pykotor.common.indoormap import (  # re-exported for Toolset imports
     IndoorMapRoom,
     MissingRoomInfo,
 )
+from toolset.data.indoorkit.qt_preview import ensure_component_image
 from utility.common.geometry import Vector2, Vector3
 
 if TYPE_CHECKING:

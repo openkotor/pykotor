@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import inspect
 import sys
-import weakref
 
 from typing import TYPE_CHECKING, Any
 
@@ -89,15 +88,21 @@ def install_qt_signal_slot_safety_net() -> None:  # noqa: C901
     - Wrapping at connect-time is the closest thing to a "global" fix for a large codebase.
     """
 
-    # (signal_instance) -> { id(original_slot) -> wrapped_slot }
-    try:
-        _slot_map: weakref.WeakKeyDictionary[object, dict[int, object]] = weakref.WeakKeyDictionary()
-    except TypeError:
-        _slot_map = weakref.WeakKeyDictionary()  # type: ignore[assignment]
+    # id(signal_instance) -> { stable_slot_key(original_slot) -> wrapped_slot }
+    _slot_map: dict[int, dict[Any, object]] = {}
+
+    def _stable_slot_key(slot: object) -> Any:
+        """Return a stable key for callables, including ephemeral bound methods."""
+        slot_self = getattr(slot, "__self__", None)
+        slot_func = getattr(slot, "__func__", None)
+        if slot_self is not None and slot_func is not None:
+            return (id(slot_self), slot_func)
+        return id(slot)
 
     def _get_wrapped(signal_obj: object, slot: object) -> Any | None:
         try:
-            return _slot_map.get(signal_obj, {}).get(id(slot))
+            signal_key = id(signal_obj)
+            return _slot_map.get(signal_key, {}).get(_stable_slot_key(slot))
         except Exception:  # noqa: BLE001
             return None
 
@@ -107,11 +112,12 @@ def install_qt_signal_slot_safety_net() -> None:  # noqa: C901
         wrapped: object,
     ) -> None:
         try:
-            d = _slot_map.get(signal_obj)
+            signal_key = id(signal_obj)
+            d = _slot_map.get(signal_key)
             if d is None:
                 d = {}
-                _slot_map[signal_obj] = d
-            d[id(slot)] = wrapped
+                _slot_map[signal_key] = d
+            d[_stable_slot_key(slot)] = wrapped
         except Exception:  # noqa: BLE001
             # Never allow mapping issues to break normal connect() behavior.
             pass

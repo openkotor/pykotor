@@ -16,7 +16,7 @@ from toolset.gui.editor.base import Editor
 if TYPE_CHECKING:
     import os
 
-    from qtpy.QtWidgets import QMenuBar
+    from qtpy.QtWidgets import QMenu, QMenuBar
 
     from pykotor.resource.type import ResourceType
     from toolset.gui.editor.base import Editor
@@ -67,7 +67,7 @@ class EditorFile:
         self.editor._resname = resref  # noqa: SLF001
         self.editor._restype = restype  # noqa: SLF001
         self.editor._revert = data  # noqa: SLF001
-        for action in cast("QMenuBar", self.editor.menuBar()).actions()[0].menu().actions():  # pyright: ignore[reportOptionalMemberAccess]
+        for action in cast("QMenu", cast("QMenuBar", self.editor.menuBar()).actions()[0].menu()).actions():
             if action.text() == "Revert":
                 action.setEnabled(True)
                 break
@@ -79,7 +79,7 @@ class EditorFile:
         self.editor._filepath = self.editor.setup_extract_path() / f"{self.editor._resname}.{self.editor._restype.extension}"  # noqa: SLF001
         menu_bar: QMenuBar | None = cast("Optional[QMenuBar]", self.editor.menuBar())
         assert menu_bar is not None, "Menu bar is None somehow? This should be impossible."
-        for action in menu_bar.actions()[0].menu().actions():  # pyright: ignore[reportOptionalMemberAccess]
+        for action in cast("QMenu", cast("QMenuBar", menu_bar).actions()[0].menu()).actions():
             if action.text() != "Revert":
                 continue
             action.setEnabled(False)

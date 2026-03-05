@@ -687,6 +687,9 @@ QCheckBox::indicator:checked:hover {
     <addaction name="actionZoomOut"/>
     <addaction name="actionRecentreCamera"/>
     <addaction name="separator"/>
+    <addaction name="actionShowRoomBoundaries"/>
+    <addaction name="actionShowGrid"/>
+    <addaction name="separator"/>
     <addaction name="menuCreatureLabels"/>
     <addaction name="menuDoorLabels"/>
     <addaction name="menuPlaceableLabels"/>
@@ -743,6 +746,25 @@ QCheckBox::indicator:checked:hover {
   <action name="actionRecentreCamera">
    <property name="text">
     <string>Reset Camera</string>
+   </property>
+  </action>
+  <action name="actionShowRoomBoundaries">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Room Boundaries</string>
+   </property>
+  </action>
+  <action name="actionShowGrid">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Grid</string>
    </property>
   </action>
   <action name="actionDeleteSelected">

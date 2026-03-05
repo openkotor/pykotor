@@ -195,14 +195,14 @@ def dismantle_ifo(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
-    """Build IFO GFF from IFO. Write values match engine read defaults (REVA: K1 0x004c9050, TSL 0x0072aaa0).
+    """Build IFO GFF from IFO. Write values match engine read defaults (K1 0x004c9050, TSL 0x0072aaa0).
 
     Reference functions: same as construct_ifo (LoadModuleStart/MainLoop K1 0x004c9050/0x004babb0,
     TSL 0x0072aaa0/0x007b6bb0). Mod_IsSaveGame BYTE 0 when omitted; Mod_Area_list at least one struct.
     """
     gff = GFF(GFFContent.IFO)
-
     root = gff.root
+
     # Mod_ID, Mod_VO_ID, Mod_Name, Mod_Tag: engine default empty/"". K1 0x004c9050, TSL 0x0072aaa0. Mod_IsSaveGame BYTE 0.
     root.set_binary("Mod_ID", ifo.mod_id)
     root.set_string("Mod_VO_ID", ifo.vo_id)
@@ -233,10 +233,7 @@ def dismantle_ifo(
     root.set_single("Mod_Entry_Dir_Y", entry_direction.y)
 
     # Mod_Area_list: at least one struct with Area_Name. K1/TSL LoadModuleStart GetList; we write one entry.
-    root.set_list("Mod_Area_list", GFFList()).add(6).set_resref(
-        "Area_Name",
-        ifo.area_name,
-    )
+    root.set_list("Mod_Area_list", GFFList()).add(6).set_resref("Area_Name", ifo.area_name)
 
     # Deprecated/time/creator/version/lists: engine defaults 0/""/empty. K1/TSL LoadModuleStart; optional when use_deprecated.
     if use_deprecated:

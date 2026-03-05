@@ -12,6 +12,8 @@ from pykotor.resource.formats.bwm import bytes_bwm, read_bwm
 from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
+    from qtpy.QtWidgets import QCheckBox, QDoubleSpinBox, QSpinBox
+
     from pykotor.common.indoorkit import Kit, KitComponent
     from pykotor.common.indoormap import EmbeddedKit, IndoorMap
 
@@ -477,12 +479,12 @@ def toggle_check_widget(widget: ToggleCheckWidgetLike) -> None:
 
 def connect_indoor_option_signals(
     *,
-    snap_to_grid_check: ToggleSignalWidgetLike,
-    snap_to_hooks_check: ToggleSignalWidgetLike,
-    show_grid_check: ToggleSignalWidgetLike,
-    show_hooks_check: ToggleSignalWidgetLike,
-    grid_size_spin: ValueSignalWidgetLike,
-    rotation_snap_spin: ValueSignalWidgetLike,
+    snap_to_grid_check: QCheckBox,
+    snap_to_hooks_check: QCheckBox,
+    show_grid_check: QCheckBox,
+    show_hooks_check: QCheckBox,
+    grid_size_spin: QDoubleSpinBox,
+    rotation_snap_spin: QSpinBox,
     set_snap_to_grid: Callable[[bool], None],
     set_snap_to_hooks: Callable[[bool], None],
     set_show_grid: Callable[[bool], None],
@@ -622,7 +624,7 @@ def add_room_context_actions(
     rotate_menu = menu.addMenu("Rotate")
     assert rotate_menu is not None
     for angle in [90, 180, 270]:
-        action = rotate_menu.addAction(f"{angle}\u00B0")
+        action = rotate_menu.addAction(f"{angle}\u00b0")
         assert action is not None
         action.triggered.connect(lambda _, a=angle: on_rotate(a))
 

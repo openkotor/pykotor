@@ -1161,15 +1161,17 @@ def test_twoda_editor_fill_down(qtbot: QtBot, installation: HTInstallation):
     race_col = _race_col(editor)
     editor.source_model.item(1, race_col).setText("FILL_ANCHOR")
     from qtpy.QtCore import QItemSelection
-    top = editor.proxy_model.index(1, race_col)
-    bottom = editor.proxy_model.index(4, race_col)
-    selectionModel = editor.ui.twodaTable.selectionModel()
+    # Select block rows 1-4 so selection is applied (single-column range can be flaky)
+    top_left = editor.proxy_model.index(1, 0)
+    bottom_right = editor.proxy_model.index(4, editor.proxy_model.columnCount() - 1)
+    table = editor.ui.twodaTable
+    selectionModel = table.selectionModel()
     assert selectionModel is not None
     selectionModel.select(
-        QItemSelection(top, bottom),
+        QItemSelection(top_left, bottom_right),
         selectionModel.SelectionFlag.ClearAndSelect,
     )
-    editor.ui.twodaTable.setCurrentIndex(top)
+    table.setCurrentIndex(editor.proxy_model.index(1, race_col))
     editor.fill_down()
     for r in range(1, 5):
         assert editor.source_model.item(r, race_col).text() == "FILL_ANCHOR"
@@ -1280,13 +1282,15 @@ def test_add_col_button_exists_and_works(qtbot: QtBot, installation: HTInstallat
     editor = TwoDAEditor(None, installation)
     qtbot.addWidget(editor)
     editor.new()
-    
+    editor.show()
+    qtbot.waitExposed(editor)
+
     # Button exists
     assert hasattr(editor, '_add_col_btn')
     assert editor._add_col_btn is not None
     assert editor._add_col_btn.text() == "+"
     assert editor._add_col_btn.toolTip() == "Add Column"
-    
+
     # Button is visible
     assert editor._add_col_btn.isVisible()
     

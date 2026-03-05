@@ -91,9 +91,9 @@ Most mod tools either zero out these fields or set them to the current date when
 
 The Description [StrRef](TLK-File-Format#string-references-strref) field (offset 0x0028 / 0x28) varies depending on the ERF variant:
 
-- **MOD files**: `0xFFFFFFFF` (-1) is the standard for BioWare modules. 
-    - *Exception*: TSL LIPS files consistently use `0xCDCDCDCD` (Debug Fill). 
-    - *Exception*: Some KOTOR 1 modules (e.g. `unk_m41` series) use `0`.
+- **MOD files**: `0xFFFFFFFF` (-1) is the standard for BioWare modules.
+  - *Exception*: TSL LIPS files consistently use `0xCDCDCDCD` (Debug Fill).
+  - *Exception*: Some KOTOR 1 modules (e.g. `unk_m41` series) use `0`.
 - **SAV files**: `0` (typically no description)
 - **NWM files**: `-1` (**Neverwinter Nights module format, NOT used in KotOR**)
 - **ERF/HAK files**: Unpredictable (may contain valid [StrRef](TLK-File-Format#string-references-strref) or `-1`)
@@ -128,6 +128,7 @@ ERF localized strings provide multi-language descriptions for the archive itself
 - Additional languages for Asian releases
 
 **Important Notes:**
+
 - Most ERF files have zero localized strings (Language count = 0)
 - MOD files may include localized module names for the load screen
 - **Engine Behavior**: The game engine's resource loader (`CExoKeyTable::AddEncapsulatedContents`) **ignores** these fields. They are likely used only by the specific UI components (like the Module Selection screen).
@@ -262,11 +263,13 @@ Reverse engineering of the game engine (specifically `CExoKeyTable::AddEncapsula
 ### Critical vs. Metadata Fields
 
 The engine's resource manager is surprisingly strict, reading the 160-byte header but **ignoring** most fields. It only validates/uses:
+
 - **file type** and **Version** (Verified against expected values)
 - **Entry Count** (Used to allocate memory for the key table)
 - **offset to [KEY](KEY-File-Format) List** (Used to seek to the key data)
 
 The following fields are **parsed but ignored** by the resource manager (though they may be used by the UI/Menus):
+
 - `Language count` and `Localized string size`
 - `offset to Localized string List`
 - `Build Year` and `Build Day`
@@ -274,7 +277,8 @@ The following fields are **parsed but ignored** by the resource manager (though 
 
 ### Save Game Detection
 
-Contrary to popular belief, the engine does **not** identify Save Games based on the file type signature (`SAV ` vs `ERF `) or the `Description StrRef` being `0`.
+Contrary to popular belief, the engine does **not** identify Save Games based on the file type signature (`SAV` vs `ERF`) or the `Description StrRef` being `0`.
+
 - **Mechanism**: The engine distinguishes save games based on **file context** (loading from the `saves/` directory) and the resource system usage (aliasing `SAVES:` path).
 - **Implication**: Setting `Description StrRef` to `0` in a `MOD` file does *not* make it a save file. Legitimate modules (e.g., `unk_m41` series) use `0` as their StrRef.
 

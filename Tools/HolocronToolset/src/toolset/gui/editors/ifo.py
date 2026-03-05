@@ -253,13 +253,13 @@ class IFOEditor(Editor):
         restype: ResourceType,
         data: bytes | bytearray,
     ) -> None:
-        """Load IFO from bytes. Defaults when field missing: Mod_ID empty, Mod_VO_ID/Mod_Tag "", Mod_Name/Mod_Entry_Area blank, Mod_Entry_X/Y/Z 0.0, Mod_On* blank, Expansion_Pack 0, Mod_Area_list optional. REVA: K1 LoadModuleStart @ 0x004c9050 (MainLoop @ 0x004babb0), TSL LoadModuleStart @ 0x0072aaa0 (MainLoop @ 0x007b6bb0)."""
+        """Load IFO from bytes. Defaults when field missing: Mod_ID empty, Mod_VO_ID/Mod_Tag "", Mod_Name/Mod_Entry_Area blank, Mod_Entry_X/Y/Z 0.0, Mod_On* blank, Expansion_Pack 0, Mod_Area_list optional. K1 LoadModuleStart @ 0x004c9050 (MainLoop @ 0x004babb0), TSL LoadModuleStart @ 0x0072aaa0 (MainLoop @ 0x007b6bb0)."""
         super().load(filepath, resref, restype, data)
         self.ifo = read_ifo(data)
         self.update_ui_from_ifo()
 
     def build(self) -> tuple[bytes, bytes]:
-        """Build IFO bytes from editor state. Write values match engine read (Mod_ID, Mod_Tag, Mod_Entry_*, Mod_On*, Mod_Area_list). REVA: K1 LoadModuleStart @ 0x004c9050, TSL @ 0x0072aaa0."""
+        """Build IFO bytes from editor state. Write values match engine read (Mod_ID, Mod_Tag, Mod_Entry_*, Mod_On*, Mod_Area_list). K1 LoadModuleStart @ 0x004c9050, TSL @ 0x0072aaa0."""
         if self.ifo is None:
             return b"", b""
 

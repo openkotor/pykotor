@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from qtpy.QtCore import Qt
@@ -22,6 +23,7 @@ from toolset.gui.common.interaction.camera import calculate_zoom_strength, handl
 from toolset.gui.common.localization import translate as tr
 from toolset.gui.dialogs.edit.locstring import LocalizedStringDialog
 from toolset.gui.editor import Editor
+from toolset.gui.widgets.installation_toolbar import FolderPathSpec
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
 from utility.common.geometry import SurfaceMaterial, Vector2
 
@@ -40,6 +42,11 @@ if TYPE_CHECKING:
 
 
 class AREEditor(Editor):
+    STANDALONE_FOLDER_PATHS = [
+        FolderPathSpec("modules_folder", "Modules Folder", "Folder containing extracted module resources."),
+        FolderPathSpec("override_folder", "Override Folder", "Folder containing override resources."),
+    ]
+
     def __init__(self, parent: QWidget | None, installation: HTInstallation | None = None):
         supported: list[ResourceType] = [ResourceType.ARE]
         super().__init__(parent, "ARE Editor", "none", supported, supported, installation)
@@ -88,6 +95,23 @@ class AREEditor(Editor):
 
         self.new()
 
+    def _resolve_path_resource(self, resref: str, suffix: str, keys: tuple[str, ...]) -> bytes | None:
+        for key in keys:
+            folder = getattr(self, "_standalone_folder_paths", {}).get(key)
+            if folder is None:
+                continue
+            path = folder / f"{resref}.{suffix}"
+            if path.is_file():
+                return path.read_bytes()
+        return None
+
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        if installation is not None:
+            self._setup_installation(installation)
+
+    def _on_folder_paths_changed(self, paths: dict[str, Path | None]) -> None:
+        self._standalone_folder_paths = paths
+
     def _setup_signals(self):
         self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
 
@@ -114,11 +138,11 @@ class AREEditor(Editor):
         QShortcut("-", self).activated.connect(lambda: self.ui.minimapRenderer.camera.nudge_zoom(0.8))
         QShortcut("Ctrl+0", self).activated.connect(self.fit_minimap_view)
 
-        assert self._installation is not None, "Installation is not set"
-        self.relevant_script_resnames: list[str] = sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.NCS, self._filepath)}))
-
-        for combo_box in self._script_combo_boxes():
-            combo_box.populate_combo_box(self.relevant_script_resnames)
+        self.relevant_script_resnames: list[str] = []
+        if self._installation is not None:
+            self.relevant_script_resnames = sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.NCS, self._filepath)}))
+            for combo_box in self._script_combo_boxes():
+                combo_box.populate_combo_box(self.relevant_script_resnames)
 
     def _script_combo_boxes(self) -> tuple[QWidget, ...]:
         """Return all script combobox widgets used by this editor."""
@@ -214,10 +238,7 @@ class AREEditor(Editor):
 
     def _loadARE(self, are: ARE):
         """Load ARE into UI. Field defaults when missing: see construct_are.
-        REVA: K1 LoadAreaHeader @ 0x00508c50, TSL @ 0x00718a20, Legacy FUN_004e3ff0; MapZoom default 1, AlphaTest 0.2, fog 10000.0."""
-        if self._installation is None:
-            print("Load an installation first.")
-            return
+        K1 LoadAreaHeader @ 0x00508c50, TSL @ 0x00718a20, Legacy FUN_004e3ff0; MapZoom default 1, AlphaTest 0.2, fog 10000.0."""
         self._rooms = are.rooms
         # Only attempt related-resource lookups when we have a real area resref.
         # Editor uses `untitled_<hex>` placeholders for new/unsaved tabs.
@@ -232,13 +253,26 @@ class AREEditor(Editor):
                 SearchLocation.CHITIN,
                 SearchLocation.MODULES,
             ]
-            res_result_lyt: ResourceResult | None = self._installation.resource(self._resname, ResourceType.LYT, order_lyt)
-            if res_result_lyt is not None:
-                lyt: LYT = read_lyt(res_result_lyt.data)
+            lyt_data: bytes | None = None
+            if self._installation is not None:
+                res_result_lyt: ResourceResult | None = self._installation.resource(self._resname, ResourceType.LYT, order_lyt)
+                lyt_data = res_result_lyt.data if res_result_lyt is not None else None
+            else:
+                lyt_data = self._resolve_path_resource(self._resname, "lyt", ("override_folder", "modules_folder"))
+
+            if lyt_data is not None:
+                lyt: LYT = read_lyt(lyt_data)
                 queries: list[ResourceIdentifier] = [ResourceIdentifier(room.model, ResourceType.WOK) for room in lyt.rooms]
 
-                wok_results: dict[ResourceIdentifier, ResourceResult | None] = self._installation.resources(queries, order_lyt)
-                walkmeshes: list[BWM] = [read_bwm(result.data) for result in wok_results.values() if result]
+                walkmeshes: list[BWM] = []
+                if self._installation is not None:
+                    wok_results: dict[ResourceIdentifier, ResourceResult | None] = self._installation.resources(queries, order_lyt)
+                    walkmeshes = [read_bwm(result.data) for result in wok_results.values() if result]
+                else:
+                    for query in queries:
+                        wok_data = self._resolve_path_resource(query.resname, "wok", ("override_folder", "modules_folder"))
+                        if wok_data is not None:
+                            walkmeshes.append(read_bwm(wok_data))
                 self.ui.minimapRenderer.set_walkmeshes(walkmeshes)
 
             # Minimap texture lookup: "lbl_map<area>" (TGA/TPC via `Installation.texture`).
@@ -253,7 +287,10 @@ class AREEditor(Editor):
                 SearchLocation.MODULES,
             ]
             minimap_resname = f"lbl_map{self._resname}"
-            self._minimap = self._installation.texture(minimap_resname, order_tex)
+            if self._installation is not None:
+                self._minimap = self._installation.texture(minimap_resname, order_tex)
+            else:
+                self._minimap = None
             if self._minimap is None:
                 RobustLogger().warning(f"Could not find texture '{minimap_resname}' required for minimap")
             else:

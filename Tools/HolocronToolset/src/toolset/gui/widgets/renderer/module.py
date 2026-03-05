@@ -28,6 +28,7 @@ from pykotor.resource.formats.bwm.bwm_data import BWM
 from pykotor.resource.formats.lyt.lyt_data import LYT
 from pykotor.resource.generics.git import GITInstance
 from pykotor.resource.type import ResourceType
+from toolset.utils.misc import keyboard_modifiers_to_qt_keys
 from utility.common.geometry import Vector2, Vector3, Vector4
 from utility.error_handling import assert_with_variable_trace
 
@@ -1336,7 +1337,8 @@ class ModuleRenderer(QOpenGLWidget):
         super().wheelEvent(e)
         if e is None:
             return
-        self.sig_mouse_scrolled.emit(Vector2(e.angleDelta().x(), e.angleDelta().y()), self._mouse_down, self._keys_down)
+        keys_to_emit = self._keys_down | keyboard_modifiers_to_qt_keys(e.modifiers())
+        self.sig_mouse_scrolled.emit(Vector2(e.angleDelta().x(), e.angleDelta().y()), self._mouse_down, keys_to_emit)
 
     def mouseMoveEvent(self, e: QMouseEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
         # super().mouseMoveEvent(e)

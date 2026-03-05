@@ -113,7 +113,7 @@ class TestJRL(unittest.TestCase):
         self.assertAlmostEqual(expected_xp, jrl.xp_percentage, decimal_places)
 
     def test_jrl_missing_field_defaults(self) -> None:
-        """Test defaults when JRL fields are omitted (REVA: K1 0x004f17d0, TSL 0x006fd830; module Categories/EntryList)."""
+        """Test defaults when JRL fields are omitted (K1 0x004f17d0, TSL 0x006fd830; module Categories/EntryList)."""
         minimal_jrl_xml = """<gff3>
           <struct id="-1">
             <list label="Categories">

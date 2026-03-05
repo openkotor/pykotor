@@ -51,6 +51,7 @@ if TYPE_CHECKING:
     from pykotor.resource.generics.git import (
         GIT,
         GITInstance,
+        GITObject,
     )
     from toolset.data.installation import HTInstallation
     from toolset.gui.editors.git.git import GITEditor
@@ -62,23 +63,23 @@ if TYPE_CHECKING:
 
 def _create_instance_dialog(
     parent: QWidget,
-    instance: GITInstance,
+    instance: GITObject,
     installation: HTInstallation,
 ) -> CameraDialog | CreatureDialog | DoorDialog | EncounterDialog | PlaceableDialog | TriggerDialog | SoundDialog | StoreDialog | WaypointDialog:
     """Create the appropriate dialog for an instance based on its type."""
     dialog_map: dict[
-        type[GITInstance],
+        type[GITObject],
         Callable[[], CameraDialog | CreatureDialog | DoorDialog | EncounterDialog | PlaceableDialog | TriggerDialog | SoundDialog | StoreDialog | WaypointDialog],
     ] = {
-        GITCamera: lambda: CameraDialog(parent, cast(GITCamera, instance)),
-        GITCreature: lambda: CreatureDialog(parent, cast(GITCreature, instance)),
-        GITDoor: lambda: DoorDialog(parent, cast(GITDoor, instance), installation),
-        GITEncounter: lambda: EncounterDialog(parent, cast(GITEncounter, instance)),
-        GITPlaceable: lambda: PlaceableDialog(parent, cast(GITPlaceable, instance)),
-        GITTrigger: lambda: TriggerDialog(parent, cast(GITTrigger, instance), installation),
-        GITSound: lambda: SoundDialog(parent, cast(GITSound, instance)),
-        GITStore: lambda: StoreDialog(parent, cast(GITStore, instance)),
-        GITWaypoint: lambda: WaypointDialog(parent, cast(GITWaypoint, instance), installation),
+        GITCamera: lambda: CameraDialog(parent, cast("GITCamera", instance)),
+        GITCreature: lambda: CreatureDialog(parent, cast("GITCreature", instance)),
+        GITDoor: lambda: DoorDialog(parent, cast("GITDoor", instance), installation),
+        GITEncounter: lambda: EncounterDialog(parent, cast("GITEncounter", instance)),
+        GITPlaceable: lambda: PlaceableDialog(parent, cast("GITPlaceable", instance)),
+        GITTrigger: lambda: TriggerDialog(parent, cast("GITTrigger", instance), installation),
+        GITSound: lambda: SoundDialog(parent, cast("GITSound", instance)),
+        GITStore: lambda: StoreDialog(parent, cast("GITStore", instance)),
+        GITWaypoint: lambda: WaypointDialog(parent, cast("GITWaypoint", instance), installation),
     }
 
     factory = dialog_map.get(instance.__class__)
@@ -89,7 +90,7 @@ def _create_instance_dialog(
 
 def open_instance_dialog(
     parent: QWidget,
-    instance: GITInstance,
+    instance: GITObject,
     installation: HTInstallation,
 ) -> int:
     dialog: CameraDialog | CreatureDialog | DoorDialog | EncounterDialog | PlaceableDialog | TriggerDialog | SoundDialog | StoreDialog | WaypointDialog = (
@@ -330,7 +331,7 @@ class _InstanceMode(_Mode):
         menu.addSeparator()
         self.add_resource_sub_menu(menu, instance)
 
-    def add_resource_sub_menu(self, menu: QMenu, instance: GITInstance) -> QMenu:
+    def add_resource_sub_menu(self, menu: QMenu, instance: GITObject) -> QMenu:
         if isinstance(instance, GITCamera):
             return menu
         locations = self._installation.location(*instance.identifier().unpack())  # pyright: ignore[reportOptionalMemberAccess]
@@ -371,7 +372,7 @@ class _InstanceMode(_Mode):
         file_menu.addAction("Details...").triggered.connect(more_info)  # pyright: ignore[reportOptionalMemberAccess]
         return menu
 
-    def _get_instance_label_name(self, instance: GITInstance) -> str | None:
+    def _get_instance_label_name(self, instance: GITObject) -> str | None:
         """Get the display name for an instance based on settings."""
         if isinstance(instance, GITCamera):
             return str(instance.camera_id)
@@ -392,7 +393,7 @@ class _InstanceMode(_Mode):
             return self._editor.get_instance_external_name(instance)
         return None
 
-    def set_list_item_label(self, item: QListWidgetItem, instance: GITInstance):
+    def set_list_item_label(self, item: QListWidgetItem, instance: GITObject):
         assert self._installation is not None, "Installation is required to set list item label"
         item.setData(Qt.ItemDataRole.UserRole, instance)
         item.setToolTip(self.get_instance_tooltip(instance))
@@ -414,12 +415,12 @@ class _InstanceMode(_Mode):
 
         item.setText(text)
 
-    def get_instance_tooltip(self, instance: GITInstance) -> str:
+    def get_instance_tooltip(self, instance: GITObject) -> str:
         if isinstance(instance, GITCamera):
             return f"Struct Index: {self._struct_index(instance)}\nCamera ID: {instance.camera_id}"
         return f"Struct Index: {self._struct_index(instance)}\nResRef: {self._instance_reference_text(instance)}"
 
-    def _instance_reference_text(self, instance: GITInstance, *, camera_fallback: str = "") -> str:
+    def _instance_reference_text(self, instance: GITObject, *, camera_fallback: str = "") -> str:
         if isinstance(instance, GITCamera):
             return camera_fallback
         identifier = instance.identifier()
@@ -441,15 +442,15 @@ class _InstanceMode(_Mode):
             return self._git.index(instance)
         return struct_index
 
-    def _instance_sort_key(self, instance: GITInstance) -> str:
+    def _instance_sort_key(self, instance: GITObject) -> str:
         if isinstance(instance, GITCamera):
             return str(instance.camera_id).rjust(9, "0")
         return self._instance_reference_text(instance).rjust(9, "0")
 
-    def _is_rotatable_instance(self, instance: GITInstance) -> bool:
+    def _is_rotatable_instance(self, instance: GITObject) -> bool:
         return isinstance(instance, (GITCamera, GITCreature, GITDoor, GITPlaceable, GITStore, GITWaypoint))
 
-    def _rotation_delta_to_point(self, instance: GITInstance, yaw: float, current_angle: float) -> float:
+    def _rotation_delta_to_point(self, instance: GITObject, yaw: float, current_angle: float) -> float:
         return yaw - current_angle if isinstance(instance, GITCamera) else -yaw + current_angle
 
     def _show_world_status(self, world: Vector2, detail: str = "") -> None:

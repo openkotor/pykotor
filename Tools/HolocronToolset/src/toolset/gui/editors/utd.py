@@ -91,6 +91,12 @@ class UTDEditor(Editor):
         self.new()
         self.resize(654, 495)
 
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        if installation is None:
+            return
+        self._setup_installation(installation)
+        self.update3dPreview()
+
     def _setup_signals(self):
         """Connect GUI buttons and signals to methods.
 
@@ -261,7 +267,7 @@ class UTDEditor(Editor):
         restype: ResourceType,
         data: bytes | bytearray,
     ) -> None:
-        """Load UTD from bytes. Defaults when field missing: Tag/LocName/TemplateResRef "" or empty; lock/key/HP/scripts 0 or blank ResRef; Conversation ""; Static 0. REVA: K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620."""
+        """Load UTD from bytes. Defaults when field missing: Tag/LocName/TemplateResRef "" or empty; lock/key/HP/scripts 0 or blank ResRef; Conversation ""; Static 0. K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620."""
         super().load(filepath, resref, restype, data)
 
         utd = read_utd(data)
@@ -327,7 +333,7 @@ class UTDEditor(Editor):
         self.ui.commentsEdit.setPlainText(utd.comment)
 
     def build(self) -> tuple[bytes | bytearray, bytes]:
-        """Build UTD bytes from editor state. Write values match engine (Tag, LocName, TemplateResRef, lock/key, HP, scripts, GenericType, Static, etc.). REVA: K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620. Returns GFF bytes and log."""
+        """Build UTD bytes from editor state. Write values match engine (Tag, LocName, TemplateResRef, lock/key, HP, scripts, GenericType, Static, etc.). K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620. Returns GFF bytes and log."""
         utd: UTD = deepcopy(self._utd)
 
         # Basic

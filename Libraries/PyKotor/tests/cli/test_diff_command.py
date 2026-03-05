@@ -407,7 +407,14 @@ class TestBiowareArchives:
         rim1 = self.create_test_rim(tmp_path, "test1.rim")
         rim2 = self.create_test_rim(tmp_path, "test2.rim")
 
-        args = Namespace(path1=str(rim1), path2=str(rim2), format="unified", generate_ini=False, verbose=False)
+        args = Namespace(
+            path1=str(rim1),
+            path2=str(rim2),
+            format="unified",
+            generate_ini=False,
+            verbose=False,
+            output_mode="full",
+        )
 
         logger = RobustLogger()
 
@@ -439,6 +446,7 @@ class TestInstallationComparisons:
             format="unified",
             generate_ini=False,
             verbose=False,
+            output_mode="full",
         )
 
         logger = RobustLogger()

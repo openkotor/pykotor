@@ -45,7 +45,7 @@
             <item>
              <widget class="LocalizedStringLineEdit" name="nameEdit" native="true">
               <property name="toolTip">
-               <string>Name (GFF: LocName). CExoLocString. The display name shown in the merchant/store interface when the player opens the store. Engine reads via ReadFieldCExoLocString in CSWSStore::LoadStore (K1 @ 0x005c7180). Default when missing: empty. In-game: shown at the top of the store UI. Modders: set a descriptive name (e.g. "Dantooine Merchant", "Czerka Corp"); use the game language for localization. Empty names may show as blank.</string>
+               <string>Name (GFF: LocName). CExoLocString. The display name shown in the merchant/store interface when the player opens the store. Engine reads via ReadFieldCExoLocString in CSWSStore::LoadStore. Default when missing: empty. In-game: shown at the top of the store UI. Modders: set a descriptive name (e.g. "Dantooine Merchant", "Czerka Corp"); use the game language for localization. Empty names may show as blank.</string>
               </property>
               <property name="minimumSize">
                <size>
@@ -69,7 +69,7 @@
             <item>
              <widget class="QLineEdit" name="tagEdit">
               <property name="toolTip">
-               <string>Tag (GFF: Tag). CExoString. Unique identifier for this merchant. Engine reads via ReadFieldCExoString in CSWSStore::LoadStore (K1 @ 0x005c7180); default "". In-game: scripts use GetObjectByTag(sTag) to find the merchant (e.g. for OpenStore, dialogue conditions). Modders: keep unique per module so scripts target the correct store; set a descriptive tag (e.g. "dan_merchant"). Changing a tag breaks existing script references. Empty is valid but scripts cannot find this merchant.</string>
+               <string>Tag (GFF: Tag). CExoString. Unique identifier for this merchant. Engine reads via ReadFieldCExoString in CSWSStore::LoadStore; default "". In-game: scripts use GetObjectByTag(sTag) to find the merchant (e.g. for OpenStore, dialogue conditions). Modders: keep unique per module so scripts target the correct store; set a descriptive tag (e.g. "dan_merchant"). Changing a tag breaks existing script references. Empty is valid but scripts cannot find this merchant.</string>
               </property>
              </widget>
             </item>
@@ -198,7 +198,7 @@
              <item row="0" column="1">
               <widget class="QSpinBox" name="markUpSpin">
                <property name="toolTip">
-                <string>Mark Up (GFF: MarkUp). INT32. Engine reads via ReadFieldINT in CSWSStore::LoadStore (K1 @ 0x005c7180); default 0. Percentage multiplier for the selling price: 100 = base item price; 150 = 50% markup; 200 = double price. In-game: applied when the player buys items. Modders: typical 100–150; 0 may cause free or broken pricing. Negative values can cause odd behavior.</string>
+                <string>Mark Up (GFF: MarkUp). INT32. Engine reads via ReadFieldINT in CSWSStore::LoadStore; default 0. Percentage multiplier for the selling price: 100 = base item price; 150 = 50% markup; 200 = double price. In-game: applied when the player buys items. Modders: typical 100–150; 0 may cause free or broken pricing. Negative values can cause odd behavior.</string>
                </property>
                <property name="minimum">
                 <number>0</number>
@@ -218,7 +218,7 @@
              <item row="1" column="1">
               <widget class="QSpinBox" name="markDownSpin">
                <property name="toolTip">
-                <string>Mark Down (GFF: MarkDown). INT32. Engine reads via ReadFieldINT in CSWSStore::LoadStore (K1 @ 0x005c7180); default 0. Percentage of base item price the merchant pays when the player sells: 100 = full price; 50 = half; 25 = quarter. In-game: applied when the player sells items. Modders: typical 25–100; 0 may mean the merchant pays nothing. Negative values can cause odd behavior.</string>
+                <string>Mark Down (GFF: MarkDown). INT32. Engine reads via ReadFieldINT in CSWSStore::LoadStore; default 0. Percentage of base item price the merchant pays when the player sells: 100 = full price; 50 = half; 25 = quarter. In-game: applied when the player sells items. Modders: typical 25–100; 0 may mean the merchant pays nothing. Negative values can cause odd behavior.</string>
                </property>
                <property name="minimum">
                 <number>0</number>
@@ -246,7 +246,7 @@
                <item row="0" column="1">
                 <widget class="QLineEdit" name="onOpenEdit">
                  <property name="toolTip">
-                  <string>OnOpenStore (GFF: OnOpenStore). ResRef of NCS script (max 16 characters). Engine reads via ReadFieldCResRef in CSWSStore::LoadStore (K1 @ 0x005c7180). Fires when the player opens the store—before the UI appears. In-game: use for custom logic, restrictions, or dynamic inventory. Modders: leave blank for no script; script runs in store context. Max 16 characters.</string>
+                  <string>OnOpenStore (GFF: OnOpenStore). ResRef of NCS script (max 16 characters). Engine reads via ReadFieldCResRef in CSWSStore::LoadStore. Fires when the player opens the store—before the UI appears. In-game: use for custom logic, restrictions, or dynamic inventory. Modders: leave blank for no script; script runs in store context. Max 16 characters.</string>
                  </property>
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -269,7 +269,7 @@
                <item row="1" column="1">
                 <widget class="QComboBox" name="storeFlagSelect">
                  <property name="toolTip">
-                  <string>Store (GFF: BuySellFlag). BYTE. Engine reads via ReadFieldBYTE in CSWSStore::LoadStore (K1 @ 0x005c7180). Bit 0 = can buy from player; bit 1 = can sell to player. Only Buy = bit 0; Only Sell = bit 1; Buy and Sell = both. In-game: restricts what the player can do in the store UI. Modders: choose based on merchant role (e.g. vendor = both; junk dealer = buy only).</string>
+                  <string>Store (GFF: BuySellFlag). BYTE. Engine reads via ReadFieldBYTE in CSWSStore::LoadStore. Bit 0 = can buy from player; bit 1 = can sell to player. Only Buy = bit 0; Only Sell = bit 1; Buy and Sell = both. In-game: restricts what the player can do in the store UI. Modders: choose based on merchant role (e.g. vendor = both; junk dealer = buy only).</string>
                  </property>
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">

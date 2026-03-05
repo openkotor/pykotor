@@ -173,6 +173,7 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
     from toolset.gui.editors.bwm import BWMEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.dlg import DLGEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.erf import ERFEditor  # type: ignore[import-not-found] # noqa: PLC0415
+    from toolset.gui.editors.fac import FACEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.gff import GFFEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.git import GITEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.ifo import IFOEditor  # type: ignore[import-not-found] # noqa: PLC0415
@@ -189,7 +190,6 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
     from toolset.gui.editors.txt import TXTEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.utc import UTCEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.utd import UTDEditor  # type: ignore[import-not-found] # noqa: PLC0415
-    from toolset.gui.editors.fac import FACEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.ute import UTEEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.uti import UTIEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.utm import UTMEditor  # type: ignore[import-not-found] # noqa: PLC0415

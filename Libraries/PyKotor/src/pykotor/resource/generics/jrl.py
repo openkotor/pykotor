@@ -148,7 +148,7 @@ def dismantle_jrl(  # TODO: store original list indices and sort.
 ) -> GFF:
     gff = GFF(GFFContent.JRL)
 
-    # Write same defaults as construct_jrl. Categories/EntryList; Comment "", PlanetID/PlotIndex/Priority 0, End/ID 0, XP_Percentage 0.0. REVA: K1 LoadJournal @ 0x004f17d0 (JNL_* save); TSL: same journal path. Omit OK.
+    # Write same defaults as construct_jrl. Categories/EntryList; Comment "", PlanetID/PlotIndex/Priority 0, End/ID 0, XP_Percentage 0.0. K1 LoadJournal @ 0x004f17d0 (JNL_* save); TSL: same journal path. Omit OK.
     category_list: GFFList = gff.root.set_list("Categories", GFFList())
     for i, quest in enumerate(jrl.quests):
         category_struct = category_list.add(i)

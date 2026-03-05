@@ -69,6 +69,11 @@ class UTEEditor(Editor):
 
         self.new()
 
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        if installation is None:
+            return
+        self._setup_installation(installation)
+
     def _setup_signals(self):
         """Connects UI signals to handler functions.
 

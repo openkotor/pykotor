@@ -7,6 +7,7 @@ based on the KotOR findrefs utility functionality.
 from __future__ import annotations
 
 from pykotor.resource.formats.gff.gff_data import GFFFieldType
+from pykotor.resource.type import ResourceType
 
 # Field mappings for script references (ResRef fields that contain script names)
 SCRIPT_FIELDS: dict[str, set[str]] = {
@@ -240,14 +241,17 @@ def get_itemlist_fields_for_type(file_type: str) -> set[str]:
 def get_all_searchable_file_types() -> set[str]:
     """Get all file types that can be searched for references.
 
+    Iterates through all ResourceType enum members (excluding INVALID and types
+    with no extension) so the reference search options dialog shows every
+    resource type. The reference finder filters by restype.extension.upper().
+
     Returns:
     -------
-        Set of file type abbreviations
+        Set of file type abbreviations (uppercase extension, e.g. "ARE", "UTC")
     """
-    all_types: set[str] = set()
-    all_types.update(SCRIPT_FIELDS.keys())
-    all_types.update(TAG_FIELDS.keys())
-    all_types.update(TEMPLATE_RESREF_FIELDS.keys())
-    all_types.update(CONVERSATION_FIELDS.keys())
-    all_types.update(ITEMLIST_FIELDS.keys())
-    return all_types
+    result: set[str] = set()
+    for restype in ResourceType:
+        if restype == ResourceType.INVALID or not restype.extension:
+            continue
+        result.add(restype.extension.upper())
+    return result

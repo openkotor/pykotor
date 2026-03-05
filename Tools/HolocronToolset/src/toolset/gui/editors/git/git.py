@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import qtpy
@@ -29,6 +30,7 @@ from toolset.gui.common.walkmesh_materials import get_walkmesh_material_colors
 from toolset.gui.editor import Editor
 from toolset.gui.editors.git.controls import GITControlScheme
 from toolset.gui.editors.git.mode import _GeometryMode, _InstanceMode, _SpawnMode
+from toolset.gui.widgets.installation_toolbar import FolderPathSpec
 from toolset.gui.widgets.settings.editor_settings.git import GITSettings
 from utility.common.geometry import Vector2
 
@@ -61,6 +63,11 @@ elif qtpy.QT6:
 
 
 class GITEditor(Editor, BlenderEditorMixin):
+    STANDALONE_FOLDER_PATHS = [
+        FolderPathSpec("modules_folder", "Modules Folder", "Folder containing extracted module resources."),
+        FolderPathSpec("override_folder", "Override Folder", "Folder containing override resources."),
+    ]
+
     sig_settings_updated = Signal(object)  # pyright: ignore[reportPrivateImportUsage]
 
     def __init__(
@@ -111,8 +118,28 @@ class GITEditor(Editor, BlenderEditorMixin):
         self.ui.renderArea.material_colors = self.material_colors
         self.ui.renderArea.hide_walkmesh_edges = True
         self.ui.renderArea.highlight_boundaries = False
+        self.ui.renderArea.show_room_boundaries = True
+        self.ui.renderArea.show_grid = False
 
         self.new()
+
+    def _resolve_path_resource(self, resref: str, suffix: str, keys: tuple[str, ...]) -> bytes | None:
+        for key in keys:
+            folder = getattr(self, "_standalone_folder_paths", {}).get(key)
+            if folder is None:
+                continue
+            path = folder / f"{resref}.{suffix}"
+            if path.is_file():
+                return path.read_bytes()
+        return None
+
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        self._installation = installation
+        self._mode = _InstanceMode(self, self._installation, self._git)
+        self.update_visibility()
+
+    def _on_folder_paths_changed(self, paths: dict[str, Path | None]) -> None:
+        self._standalone_folder_paths = paths
 
     def _setup_hotkeys(self):  # TODO: use GlobalSettings() defined hotkeys
         self.ui.actionDeleteSelected.setShortcut(QKeySequence("Del"))  # type: ignore[arg-type]
@@ -164,6 +191,10 @@ class GITEditor(Editor, BlenderEditorMixin):
         self.ui.actionZoomIn.triggered.connect(lambda: self.ui.renderArea.camera.nudge_zoom(1))
         self.ui.actionZoomOut.triggered.connect(lambda: self.ui.renderArea.camera.nudge_zoom(-1))
         self.ui.actionRecentreCamera.triggered.connect(self.ui.renderArea.center_camera)
+        self.ui.actionShowRoomBoundaries.toggled.connect(lambda value: setattr(self.ui.renderArea, "show_room_boundaries", value))
+        self.ui.actionShowRoomBoundaries.toggled.connect(lambda _: self.ui.renderArea.update())
+        self.ui.actionShowGrid.toggled.connect(lambda value: setattr(self.ui.renderArea, "show_grid", value))
+        self.ui.actionShowGrid.toggled.connect(lambda _: self.ui.renderArea.update())
         # View -> Creature Labels
         self.ui.actionUseCreatureResRef.triggered.connect(lambda: setattr(self.settings, "creatureLabel", "resref"))
         self.ui.actionUseCreatureResRef.triggered.connect(self.update_visibility)
@@ -248,18 +279,24 @@ class GITEditor(Editor, BlenderEditorMixin):
             - Load layout if found in search locations
             - Parse git data and call _loadGIT()
         """
-        assert self._installation is not None, "Installation is required to load GITEditor layout"
         super().load(filepath, resref, restype, data)
 
-        order = [
-            SearchLocation.OVERRIDE,
-            SearchLocation.MODULES,
-            SearchLocation.CHITIN,
-        ]
-        result: ResourceResult | None = self._installation.resource(resref, ResourceType.LYT, order)
-        if result:
+        layout_data: bytes | None = None
+        if self._installation is not None:
+            order = [
+                SearchLocation.OVERRIDE,
+                SearchLocation.MODULES,
+                SearchLocation.CHITIN,
+            ]
+            result: ResourceResult | None = self._installation.resource(resref, ResourceType.LYT, order)
+            if result is not None:
+                layout_data = result.data
+        else:
+            layout_data = self._resolve_path_resource(resref, "lyt", ("override_folder", "modules_folder"))
+
+        if layout_data is not None:
             self._logger.debug("Found GITEditor layout for '%s'", filepath)
-            self.load_layout(read_lyt(result.data))
+            self.load_layout(read_lyt(layout_data))
         else:
             self._logger.warning("Missing layout %s.lyt, needed for GITEditor '%s.%s'", resref, resref, restype)
 
@@ -318,22 +355,27 @@ class GITEditor(Editor, BlenderEditorMixin):
             - If a walkmesh asset is found, read it and add it to a list
             - Set the list of walkmeshes on the UI renderer.
         """
-        assert self._installation is not None, "Installation is required to load GITEditor layout walkmeshes"
         walkmeshes: list[BWM] = []
         for room in layout.rooms:
-            order: list[SearchLocation] = [
-                SearchLocation.OVERRIDE,
-                SearchLocation.MODULES,
-                SearchLocation.CHITIN,
-            ]
-            walkmesh_resource: ResourceResult | None = self._installation.resource(
-                room.model,
-                ResourceType.WOK,
-                order,
-            )
-            if walkmesh_resource is not None:
+            walkmesh_data: bytes | None = None
+            if self._installation is not None:
+                order: list[SearchLocation] = [
+                    SearchLocation.OVERRIDE,
+                    SearchLocation.MODULES,
+                    SearchLocation.CHITIN,
+                ]
+                walkmesh_resource: ResourceResult | None = self._installation.resource(
+                    room.model,
+                    ResourceType.WOK,
+                    order,
+                )
+                walkmesh_data = walkmesh_resource.data if walkmesh_resource is not None else None
+            else:
+                walkmesh_data = self._resolve_path_resource(room.model, "wok", ("override_folder", "modules_folder"))
+
+            if walkmesh_data is not None:
                 try:
-                    wok_data = read_bwm(walkmesh_resource.data)
+                    wok_data = read_bwm(walkmesh_data)
                 except (ValueError, OSError):
                     self._logger.exception("Corrupted walkmesh cannot be loaded: '%s.wok'", room.model)
                 else:
@@ -396,7 +438,8 @@ class GITEditor(Editor, BlenderEditorMixin):
             - Save name in buffer
             - Return name from buffer.
         """
-        assert self._installation is not None, "Installation is required to get instance external name"
+        if self._installation is None:
+            return None
         resid: ResourceIdentifier | None = instance.identifier()
         assert resid is not None, "resid cannot be None in get_instance_external_name({instance!r})"
         if resid not in self.name_buffer:
@@ -407,7 +450,8 @@ class GITEditor(Editor, BlenderEditorMixin):
         return self.name_buffer[resid]
 
     def get_instance_external_tag(self, instance: GITInstance) -> str | None:
-        assert self._installation is not None, "Installation is required to get instance external tag"
+        if self._installation is None:
+            return None
         res_ident: ResourceIdentifier | None = instance.identifier()
         assert res_ident is not None, f"resid cannot be None in get_instance_external_tag({instance!r})"
         if res_ident not in self.tag_buffer:

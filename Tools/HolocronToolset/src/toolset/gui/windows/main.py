@@ -58,6 +58,7 @@ from toolset.gui.common.localization import (
     translate as tr,
     trf,
 )
+from toolset.gui.common.tooltip_utils import install_tooltip_label_filter
 from toolset.gui.common.style.theme_manager import ThemeManager
 from toolset.gui.dialogs.about import About
 from toolset.gui.dialogs.asyncloader import AsyncLoader
@@ -142,6 +143,7 @@ def run_module_designer(
     QSurfaceFormat.setDefaultFormat(fmt)
 
     app = QApplication([])
+    install_tooltip_label_filter(app)
     designerUi = ModuleDesigner(
         None,
         HTInstallation(active_path, active_name, tsl=active_tsl),
@@ -233,6 +235,7 @@ class ToolWindow(QMainWindow):
         # UI state management
         self.previous_game_combo_index: int = 0
         self._mouse_move_pos: QPoint | None = None
+        self._is_changing_installation: bool = False
         self._preparing_resources: bool = False  # Guard to prevent multiple simultaneous preparations
 
         # Dialog management (lazy-loaded)
@@ -1223,7 +1226,7 @@ class ToolWindow(QMainWindow):
             editor.show()
 
         except Exception as e:
-            from toolset.gui.common.localization import translate as tr, translate_formatted as trf
+            from toolset.gui.common.localization import translate as tr, translate_format as trf
             self._show_error_message(
                 tr("Error Opening Save Editor"),
                 trf("Failed to open save editor:\n{error}", error=str(e)),
@@ -1279,39 +1282,51 @@ class ToolWindow(QMainWindow):
         index: int,  # noqa: PLR0915, C901, PLR0912
     ):
         RobustLogger().debug(f"TRACE: change_active_installation({index}) called")
-        if index < 0:  # self.ui.gameCombo.clear() will call this function with -1
+        if self._is_changing_installation:
+            RobustLogger().debug(f"Skipping change_active_installation({index}) - installation change already in progress")
             return
 
-        prev_index: int = self.previous_game_combo_index
-        # Only set index if it's different to avoid unnecessary signal emission
-        current_index = self.ui.gameCombo.currentIndex()
-        if current_index != index:
-            # Block signals to prevent recursive calls when setting index programmatically
-            self.ui.gameCombo.blockSignals(True)
-            self.ui.gameCombo.setCurrentIndex(index)
-            self.ui.gameCombo.blockSignals(False)
+        self._is_changing_installation = True
+        try:
+            if index < 0:  # self.ui.gameCombo.clear() will call this function with -1
+                return
 
-        if index == 0:
-            self.unset_installation()
-            self.previous_game_combo_index = 0
-            return
+            prev_index: int = self.previous_game_combo_index
+            # Only set index if it's different to avoid unnecessary signal emission
+            current_index = self.ui.gameCombo.currentIndex()
+            if current_index != index:
+                # Block signals to prevent recursive calls when setting index programmatically
+                self.ui.gameCombo.blockSignals(True)
+                self.ui.gameCombo.setCurrentIndex(index)
+                self.ui.gameCombo.blockSignals(False)
 
-        # Get installation details from settings
-        name: str = self.ui.gameCombo.itemText(index)
-        installation_config = self.settings.installations()[name]
-        path: str = installation_config.path.strip()
-        tsl: bool = installation_config.tsl
+            if index == 0:
+                self.unset_installation()
+                self.previous_game_combo_index = 0
+                return
 
-        # Validate and prompt for installation path if needed
-        path = self._validate_installation_path(name, path, tsl, prev_index)
-        if not path:
-            return
+            # Get installation details from settings
+            name: str = self.ui.gameCombo.itemText(index)
+            if self.active is not None and self.active.name == name:
+                self.previous_game_combo_index = index
+                RobustLogger().debug(f"Skipping installation reload for '{name}' - already active")
+                return
+            installation_config = self.settings.installations()[name]
+            path: str = installation_config.path.strip()
+            tsl: bool = installation_config.tsl
 
-        # Enable resource tabs for the selected installation
-        self.ui.resourceTabs.setEnabled(True)
+            # Validate and prompt for installation path if needed
+            path = self._validate_installation_path(name, path, tsl, prev_index)
+            if not path:
+                return
 
-        # Load or create the installation
-        self._load_installation(name, path, tsl, prev_index)
+            # Enable resource tabs for the selected installation
+            self.ui.resourceTabs.setEnabled(True)
+
+            # Load or create the installation
+            self._load_installation(name, path, tsl, prev_index)
+        finally:
+            self._is_changing_installation = False
 
     def _validate_installation_path(self, name: str, path: str, tsl: bool, prev_index: int) -> str:
         """Validate the installation path and prompt user if needed.
@@ -2010,35 +2025,25 @@ class ToolWindow(QMainWindow):
 
     def reload_installations(self):
         """Refresh the list of installations available in the combobox."""
+        previously_blocked = self.ui.gameCombo.blockSignals(True)
         try:
-            self.ui.gameCombo.currentIndexChanged.disconnect(self.change_active_installation)
-        except (TypeError, RuntimeError):
-            # Signal may not be connected yet during initialization
-            pass
-        self.ui.gameCombo.clear()  # without above disconnect, would call ToolWindow().changeActiveInstallation(-1)
-        self.ui.gameCombo.addItem(tr("[None]"))  # without above disconnect, would call ToolWindow().changeActiveInstallation(0)
-
-        for installation in self.settings.installations().values():
-            self.ui.gameCombo.addItem(installation.name)
-        self.ui.gameCombo.currentIndexChanged.connect(self.change_active_installation)
+            self.ui.gameCombo.clear()
+            self.ui.gameCombo.addItem(tr("[None]"))
+            for installation in self.settings.installations().values():
+                self.ui.gameCombo.addItem(installation.name)
+        finally:
+            self.ui.gameCombo.blockSignals(previously_blocked)
 
     @Slot()
     def unset_installation(self):
         """Unset the current installation and clear all UI state."""
         # Clear file system watcher before clearing the installation
         self._clear_file_watcher()
-
-        # Disconnect signal to prevent recursive call when setting index to 0
+        previously_blocked = self.ui.gameCombo.blockSignals(True)
         try:
-            self.ui.gameCombo.currentIndexChanged.disconnect(self.change_active_installation)
-        except (TypeError, RuntimeError):
-            # Signal may not be connected yet during initialization
-            pass
-
-        self.ui.gameCombo.setCurrentIndex(0)
-
-        # Reconnect signal after setting index
-        self.ui.gameCombo.currentIndexChanged.connect(self.change_active_installation)
+            self.ui.gameCombo.setCurrentIndex(0)
+        finally:
+            self.ui.gameCombo.blockSignals(previously_blocked)
 
         # Clear all resource lists
         self.ui.coreWidget.set_resources([])
@@ -2638,6 +2643,7 @@ class ToolWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    install_tooltip_label_filter(app)
     window = ToolWindow()
     window.show()
     sys.exit(app.exec())

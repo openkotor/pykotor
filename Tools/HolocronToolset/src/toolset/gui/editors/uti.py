@@ -102,6 +102,12 @@ class UTIEditor(Editor):
         self.update3dPreview()
         self.new()
 
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        if installation is None:
+            return
+        self._setup_installation(installation)
+        self.update3dPreview()
+
     def _setup_reference_field(
         self,
         widget,
@@ -485,7 +491,9 @@ class UTIEditor(Editor):
             file_menu.addAction("Details...").triggered.connect(lambda: self._open_details(flat_locations))
 
         context_menu.addMenu(copy_menu)
-        context_menu.exec(self.ui.iconLabel.mapToGlobal(position))  # pyright: ignore[reportArgumentType]
+        icon_label = self.ui.iconLabel
+        target = icon_label if icon_label is not None else self
+        context_menu.exec(target.mapToGlobal(position))  # pyright: ignore[reportArgumentType]
 
     def _open_details(
         self,
@@ -513,10 +521,11 @@ class UTIEditor(Editor):
         model_variation: int = self.ui.modelVarSpin.value()
         texture_variation: int = self.ui.textureVarSpin.value()
         pixmap: QPixmap | None = self._installation.get_item_icon(base_item, model_variation, texture_variation)
+        icon_label = self.ui.iconLabel
         if pixmap is not None:
-            self.ui.iconLabel.setPixmap(pixmap)  # pyright: ignore[reportArgumentType]
+            icon_label.setPixmap(pixmap)  # pyright: ignore[reportArgumentType]
             # Update the tooltip whenever the icon changes
-            self.ui.iconLabel.setToolTip(self._generate_icon_tooltip(as_html=True))
+            icon_label.setToolTip(self._generate_icon_tooltip(as_html=True))
 
     def update3dPreview(self):
         """Updates the 3D preview and model info.
@@ -531,7 +540,7 @@ class UTIEditor(Editor):
             self.resize(max(800, self.sizeHint().width()), max(400, self.sizeHint().height()))
 
             if self._installation is not None:
-                # Build item data and set it on the renderer
+                # Build item data and set it on the renderer (if it supports set_item, e.g. ItemRenderer)
                 data, _ = self.build()
                 uti: UTI = read_uti(data)
                 self.ui.previewRenderer.set_item(uti)

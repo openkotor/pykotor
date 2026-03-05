@@ -30,6 +30,7 @@ from qtpy.QtWidgets import (
     QMessageBox,
     QPlainTextEdit,
     QProgressDialog,
+    QSplitter,
     QStackedWidget,
     QStatusBar,
     QTreeWidgetItem,
@@ -111,6 +112,7 @@ from toolset.gui.common.indoor_builder_ops import (
     sync_indoor_options_ui_from_renderer,
     toggle_check_widget,
 )
+from toolset.gui.common.interaction.camera import handle_standard_2d_camera_movement
 from toolset.gui.common.interaction.transforms import TransformInteractionState
 from toolset.gui.common.lyt_ops import (
     add_lyt_element_to_blender,
@@ -132,6 +134,8 @@ from toolset.gui.dialogs.insert_instance import InsertInstanceDialog
 from toolset.gui.dialogs.select_module import SelectModuleDialog
 from toolset.gui.editor import Editor
 from toolset.gui.editors.git import DeleteCommand, MoveCommand, RotateCommand, _GeometryMode, _InstanceMode, _SpawnMode, open_instance_dialog
+from toolset.gui.widgets.installation_toolbar import StandaloneWindowMixin
+from toolset.gui.widgets.renderer.lyt_renderer import LYTRenderer
 from toolset.gui.widgets.renderer.module import ModuleRenderer
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
 from toolset.gui.windows.designer_controls import ModuleDesignerControls2d, ModuleDesignerControls3d, ModuleDesignerControlsFreeCam
@@ -161,13 +165,16 @@ if TYPE_CHECKING:
     from pykotor.common.modulekit import ModuleKit
     from pykotor.gl.scene import Camera
     from pykotor.resource.generics.are import ARE
-    from pykotor.resource.generics.git import GIT
+    from pykotor.resource.generics.git import (
+        GIT,
+        GITObject,
+    )
     from pykotor.resource.generics.ifo import IFO
     from toolset.gui.common.indoor_builder_ops import RoomClipboardData
-    from toolset.gui.dialogs.indoor_settings import IndoorMapSettings  # noqa: F401  # Phase 2
     from toolset.gui.widgets.renderer.lyt_renderer import LYTRenderer
     from toolset.gui.widgets.renderer.walkmesh import WalkmeshRenderer
     from toolset.gui.windows.indoor_builder.constants import ZOOM_STEP_FACTOR, DragMode  # noqa: F401  # Phase 2
+    from toolset.gui.windows.indoor_builder.renderer import IndoorMapRenderer
 
 if qtpy.QT5:
     from qtpy.QtWidgets import QUndoCommand, QUndoStack  # pyright: ignore[reportPrivateImportUsage]
@@ -384,6 +391,9 @@ def run_module_designer(
 
     main_init()
     app = QApplication(sys.argv)
+    from toolset.gui.common.tooltip_utils import install_tooltip_label_filter
+
+    install_tooltip_label_filter(app)
     designer_ui = ModuleDesigner(
         None,
         HTInstallation(active_path, active_name, tsl=active_tsl),
@@ -404,7 +414,9 @@ def run_module_designer(
     sys.exit(app.exec())
 
 
-class ModuleDesigner(QMainWindow, BlenderEditorMixin):
+class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
+    STANDALONE_REQUIRES_INSTALLATION = True
+
     def __init__(
         self,
         parent: QWidget | None,
@@ -512,6 +524,8 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self.ui.flatRenderer.material_colors = self.material_colors
         self.ui.flatRenderer.hide_walkmesh_edges = True
         self.ui.flatRenderer.highlight_boundaries = False
+        self.ui.flatRenderer.show_room_boundaries = True
+        self.ui.flatRenderer.show_grid = False
 
         # =====================================================================
         # Editor Mode State (Object / Layout / Walkmesh)
@@ -593,13 +607,34 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         # self._controls3d: ModuleDesignerControls3d | ModuleDesignerControlsFreeCam = ModuleDesignerControlsFreeCam(self, self.ui.mainRenderer)  # Doesn't work when set in __init__, trigger this in onMousePressed
         self._controls2d: ModuleDesignerControls2d = ModuleDesignerControls2d(self, self.ui.flatRenderer)
 
-        # LYT renderer for layout tab
-        self._lyt_renderer: LYTRenderer | None = None
+        # LYT renderer for layout tab (2D LYT editing surface).
+        self._lyt_renderer: LYTRenderer | None = LYTRenderer(parent=self)
+        self._lyt_renderer.sig_element_selected.connect(self._on_lyt_renderer_element_selected)
+        self._lyt_renderer.sig_element_moved.connect(self._on_lyt_renderer_element_moved)
+        renderer_splitter = self.ui.mainRenderer.parentWidget()
+        if isinstance(renderer_splitter, QSplitter):
+            insert_before_flat = renderer_splitter.indexOf(self.ui.flatRenderer)
+            if insert_before_flat < 0:
+                insert_before_flat = 1
+            renderer_splitter.insertWidget(insert_before_flat, self._lyt_renderer)
+            self._lyt_renderer.setVisible(False)
+        else:
+            self.log.warning("Could not attach LYT renderer: parent splitter not found")
 
         if mod_filepath is None:  # Use singleShot timer so the ui window opens while the loading is happening.
             QTimer().singleShot(33, self.open_module_with_dialog)
         else:
             QTimer().singleShot(33, lambda: self.open_module(mod_filepath))
+
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        if installation is None:
+            return
+        self._installation = installation
+        try:
+            self._setup_indoor_modules()
+            self._refresh_window_title()
+        except Exception:
+            self.log.exception("Failed to refresh after installation switch")
 
     def showEvent(self, a0: QShowEvent):
         if self.ui.mainRenderer._scene is None:  # noqa: SLF001
@@ -665,6 +700,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self.ui.backfaceCheck.toggled.connect(self.update_toggles)
         self.ui.lightmapCheck.toggled.connect(self.update_toggles)
         self.ui.cursorCheck.toggled.connect(self.update_toggles)
+        self.ui.roomBoundariesCheck.toggled.connect(lambda value: setattr(self.ui.flatRenderer, "show_room_boundaries", value))
+        self.ui.roomBoundariesCheck.toggled.connect(lambda _: self.ui.flatRenderer.update())
+        self.ui.flatGridCheck.toggled.connect(lambda value: setattr(self.ui.flatRenderer, "show_grid", value))
+        self.ui.flatGridCheck.toggled.connect(lambda _: self.ui.flatRenderer.update())
 
         for checkbox in instance_visibility_checkboxes:
             checkbox.mouseDoubleClickEvent = (  # type: ignore[method-assign]  # pyright: ignore[reportAttributeAccessIssue, reportArgumentType]
@@ -1242,6 +1281,12 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self.ui.mainRenderer.setVisible(True)
         self.ui.flatRenderer.setVisible(True)
         self.ui.indoorRenderer.setVisible(is_layout)
+        lyt_renderer = getattr(self, "_lyt_renderer", None)
+        if lyt_renderer is not None:
+            lyt_renderer.setVisible(is_layout)
+
+        if is_walkmesh and not self._last_walkmeshes:
+            self.on_generate_walkmesh()
 
         # --- Right panel (instancePanel) ---
         # Instance panel is only for Object mode
@@ -1986,10 +2031,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         """
         self.statusBar().showMessage(message, duration_ms)
 
-    def _is_rotatable_instance(self, instance: GITInstance) -> bool:
+    def _is_rotatable_instance(self, instance: GITObject) -> bool:
         return isinstance(instance, (GITCamera, GITCreature, GITDoor, GITPlaceable, GITStore, GITWaypoint))
 
-    def _capture_initial_rotation_for_transform(self, instance: GITInstance) -> None:
+    def _capture_initial_rotation_for_transform(self, instance: GITObject) -> None:
         if isinstance(instance, GITCamera):
             self.transform_state.initial_rotations[instance] = Vector4(
                 instance.orientation.x,
@@ -2531,7 +2576,19 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
 
     def _on_indoor_mouse_moved(self, coords: QPoint, coords_delta: QPoint, mouse_down: set[Qt.MouseButton], keys_down: set[Qt.Key]):
         """Handle mouse move in the indoor renderer — paint stroke + status bar update."""
-        if self._indoor_paint_stroke_active and Qt.MouseButton.LeftButton in mouse_down:
+        renderer = self.ui.indoorRenderer
+        world_delta: Vector2 = renderer.to_world_delta(coords_delta.x, coords_delta.y)
+        handled_cam = handle_standard_2d_camera_movement(
+            renderer,
+            coords,
+            coords_delta,
+            world_delta,
+            mouse_down,
+            keys_down,
+            is_indoor_builder=True,
+        )
+
+        if not handled_cam and self._indoor_paint_stroke_active and Qt.MouseButton.LeftButton in mouse_down:
             self._apply_indoor_paint_at_screen(Vector2(coords.x, coords.y))
         self._update_indoor_status_bar(coords)
 
@@ -2562,6 +2619,11 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         """Handle mouse release — finalize paint strokes."""
         if self._indoor_paint_stroke_active:
             self._finish_indoor_paint_stroke()
+        renderer = self.ui.indoorRenderer
+        if renderer._dragging_hook:  # noqa: SLF001
+            renderer._dragging_hook = False  # noqa: SLF001
+            self._indoor_map.rebuild_room_connections()
+        renderer.end_drag()
 
     def _on_indoor_mouse_double_clicked(self, coords: QPoint, mouse_down: set[Qt.MouseButton], keys_down: set[Qt.Key]):
         """Handle double-click — select room and all connected rooms via hooks."""
@@ -3103,7 +3165,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             # If textures were changed, we need to export the MDL and reload it
             if "diffuse_texture" in material_data or "lightmap_texture" in material_data:
                 # Request MDL export from Blender
-                if self._is_blender_mode_enabled():
+                if self._is_blender_mode_enabled() and self._blender_controller is not None:
                     # Export MDL to a temp location
                     import tempfile
 
@@ -3296,6 +3358,8 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         result: tuple[Module, GIT, list[BWM]] = (combined_module, git, walkmeshes)
         new_module, git, walkmeshes = result
         self._module = new_module
+        if self._lyt_renderer is not None:
+            self._lyt_renderer.set_module(new_module)
 
         # Get LYT for Blender mode
         lyt: LYT | None = None
@@ -4250,7 +4314,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         )
 
         # Sync to Blender if active
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             visibility_map = {instance_type: not hidden for instance_type, hidden in hidden_by_instance_type.items()}
             for instance_type, visible in visibility_map.items():
                 self._blender_controller.set_visibility(instance_type, visible)
@@ -4279,7 +4343,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
     #    @with_variable_trace(Exception)
     def add_instance(
         self,
-        instance: GITInstance,
+        instance: GITObject,
         *,
         walkmesh_snap: bool = True,
     ):
@@ -4349,7 +4413,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
     #    @with_variable_trace()
     def add_instance_at_cursor(
         self,
-        instance: GITInstance,
+        instance: GITObject,
     ):
         scene = self.ui.mainRenderer._scene
         if scene is None:
@@ -4395,7 +4459,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
     #    @with_variable_trace()
     def edit_instance(
         self,
-        instance: GITInstance | None = None,
+        instance: GITObject | None = None,
     ):
         if instance is None:
             if not self.selected_instances:
@@ -4410,7 +4474,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
                         scene.clear_cache_buffer.append(ident)
 
             # Sync property changes to Blender
-            if self._is_blender_mode_enabled():
+            if self._is_blender_mode_enabled() and self._blender_controller is not None:
                 self.sync_instance_to_blender(instance)
 
             self.rebuild_instance_list()
@@ -4437,7 +4501,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         git_camera_instance.orientation = new_orientation
 
         # Sync to Blender
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             self._blender_controller.update_instance_position(
                 git_camera_instance,
                 git_camera_instance.position.x,
@@ -4466,7 +4530,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         view_camera.distance = 0
 
         # Sync viewport to Blender
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             self._blender_controller.set_camera_view(
                 view_camera.x,
                 view_camera.y,
@@ -4478,7 +4542,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
 
     def snap_view_to_git_instance(
         self,
-        git_instance: GITInstance,
+        git_instance: GITObject,
     ):
         try:
             camera: Camera = self._get_scene_camera()
@@ -4492,7 +4556,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         camera.distance = 0
 
         # Sync viewport to Blender
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             self._blender_controller.set_camera_view(
                 camera.x,
                 camera.y,
@@ -4512,7 +4576,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
     def snap_camera_to_entry_location(self):
         scene = self.ui.mainRenderer._scene
         if scene is None:
-            if self._is_blender_mode_enabled():
+            if self._is_blender_mode_enabled() and self._blender_controller is not None:
                 entry_pos = self.ifo().entry_position
                 self._blender_controller.set_camera_view(
                     entry_pos.x,
@@ -4526,7 +4590,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         scene.camera.z = self.ifo().entry_position.z
 
         # Sync to Blender
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             self._blender_controller.set_camera_view(
                 scene.camera.x,
                 scene.camera.y,
@@ -4571,7 +4635,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self.ui.flatRenderer.snap_camera_to_point(focus)
         self.ui.mainRenderer.update()
 
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             self._blender_controller.set_camera_view(
                 camera.x,
                 camera.y,
@@ -4592,7 +4656,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             self._controls3d = ModuleDesignerControls3d(self, self.ui.mainRenderer)
 
     # region Selection Manipulations
-    def set_selection(self, instances: list[GITInstance]):
+    def set_selection(self, instances: list[GITObject]):
         was_syncing = self._selection_sync_in_progress
         self._selection_sync_in_progress = True
         scene = self.ui.mainRenderer._scene
@@ -4652,7 +4716,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             for instance in instances_to_delete:
                 git_resource.remove(instance)
                 # Sync deletion to Blender
-                if self._is_blender_mode_enabled():
+                if self._is_blender_mode_enabled() and self._blender_controller is not None:
                     self._blender_controller.remove_instance(instance)
         self.selected_instances.clear()
         if self.ui.mainRenderer._scene:
@@ -4676,14 +4740,14 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         assert git_resource is not None
 
         OFFSET = 0.5  # meters — small enough to stay nearby, large enough to be visible
-        new_instances: list[GITInstance] = []
+        new_instances: list[GITObject] = []
         for inst in self.selected_instances:
             clone = deepcopy(inst)
             clone.position = Vector3(clone.position.x + OFFSET, clone.position.y + OFFSET, clone.position.z)
             git_resource.add(clone)
             new_instances.append(clone)
             # Sync to Blender
-            if self._is_blender_mode_enabled():
+            if self._is_blender_mode_enabled() and self._blender_controller is not None:
                 self.add_instance_to_blender(clone)
 
         self._invalidate_scene_and_update_renderers()
@@ -5220,7 +5284,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         lyt.rooms.append(room)
 
         # Sync to Blender
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             self._blender_controller.add_room(room.model, room.position.x, room.position.y, room.position.z)
 
         self.rebuild_layout_tree()
@@ -5240,7 +5304,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         lyt.doorhooks.append(doorhook)
 
         # Sync to Blender
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             self._blender_controller.add_door_hook(
                 doorhook.room,
                 doorhook.door,
@@ -5265,7 +5329,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         lyt.tracks.append(track)
 
         # Sync to Blender
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             self._blender_controller.add_track(track.model, track.position.x, track.position.y, track.position.z)
 
         self.rebuild_layout_tree()
@@ -5283,7 +5347,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         lyt.obstacles.append(obstacle)
 
         # Sync to Blender
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             self._blender_controller.add_obstacle(obstacle.model, obstacle.position.x, obstacle.position.y, obstacle.position.z)
 
         self.rebuild_layout_tree()
@@ -5309,7 +5373,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             return
 
         self.log.info("Generating walkmesh from layout...")
-        # TODO: Implement walkmesh generation logic
+        self.ui.flatRenderer.generate_walkmeshes(lyt)
+        self.ui.flatRenderer.center_camera()
+        self.ui.flatRenderer.update()
+        self.log.info("Walkmesh generated from current layout")
 
     def rebuild_layout_tree(self):
         """Rebuild the layout tree widget to show current LYT structure."""
@@ -5377,6 +5444,8 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
 
         item = selected_items[0]
         data = item.data(0, Qt.ItemDataRole.UserRole)
+        if self._lyt_renderer is not None and data is not None and self._lyt_renderer.get_selected_element() is not data:
+            self._lyt_renderer.select_element(data)
 
         if isinstance(data, LYTRoom):
             self.ui.lytElementTabs.setCurrentIndex(0)  # Room tab
@@ -5388,6 +5457,40 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             self.update_doorhook_properties(data)
             self.ui.mainRenderer.snap_camera_to_point(data.position)
             self.ui.flatRenderer.snap_camera_to_point(data.position)
+
+    def _find_lyt_tree_item_by_data(self, target: object) -> QTreeWidgetItem | None:
+        root = self.ui.lytTree.invisibleRootItem()
+        stack: list[QTreeWidgetItem] = [root]
+        while stack:
+            current = stack.pop()
+            for i in range(current.childCount()):
+                child = current.child(i)
+                if child.data(0, Qt.ItemDataRole.UserRole) is target:
+                    return child
+                stack.append(child)
+        return None
+
+    def _on_lyt_renderer_element_selected(self, element: LYTRoom | LYTDoorHook | LYTTrack | LYTObstacle | None):
+        if element is None:
+            return
+        item = self._find_lyt_tree_item_by_data(element)
+        if item is None:
+            return
+        self.ui.lytTree.blockSignals(True)
+        try:
+            self.ui.lytTree.setCurrentItem(item)
+        finally:
+            self.ui.lytTree.blockSignals(False)
+        self.on_lyt_tree_selection_changed()
+
+    def _on_lyt_renderer_element_moved(self, element: LYTRoom | LYTDoorHook | LYTTrack | LYTObstacle, _new_position: Vector3):
+        # LYTRenderer already applies the new transform directly to the element.
+        # Refresh dependent UI/renderers and record that the module changed.
+        self.rebuild_layout_tree()
+        self._mark_changes_made()
+        lyt = self._get_or_create_layout_resource()
+        if lyt is not None:
+            self.on_lyt_updated(lyt)
 
     def update_room_properties(self, room: LYTRoom):
         """Update the room property editors with the selected room's data."""
@@ -5466,7 +5569,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self._mark_changes_made()
 
         # Sync to Blender
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             obj_name = f"Room_{element.model}"
             self._blender_controller.update_room_position(
                 obj_name,
@@ -5494,7 +5597,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         element.model = self.ui.modelEdit.text()
 
         # Sync to Blender - update room model
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             old_obj_name = f"Room_{old_model}"
             # Update room properties (model change requires removing and re-adding, but for now just update position)
             # The model itself would need to be reloaded, which is complex, so we'll just update position
@@ -5530,7 +5633,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self._mark_changes_made()
 
         # Sync to Blender
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             obj_name = f"DoorHook_{element.door}"
             self._blender_controller.update_door_hook(
                 obj_name,
@@ -5547,7 +5650,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         element.door = self.ui.doorNameEdit.text()
 
         # Sync to Blender - update door name
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             old_obj_name = f"DoorHook_{old_door}"
             self._blender_controller.update_door_hook(
                 old_obj_name,
@@ -5628,7 +5731,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         new_element = duplicate_lyt_element_with_offset(lyt, element, offset)
 
         # Sync to Blender
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             add_lyt_element_to_blender(self._blender_controller, new_element)
 
         self.rebuild_layout_tree()
@@ -5665,7 +5768,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         remove_lyt_element(lyt, element)
 
         # Sync to Blender (would need object name, but we can try to find it)
-        if self._is_blender_mode_enabled():
+        if self._is_blender_mode_enabled() and self._blender_controller is not None:
             obj_name = lyt_element_blender_object_name(element)
             self._blender_controller.remove_lyt_element(obj_name, blender_type)
 
@@ -5887,7 +5990,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         modifiers = e.modifiers()
         has_ctrl = bool(modifiers & Qt.KeyboardModifier.ControlModifier)
         has_no_mods = not bool(modifiers)
-        renderer = self.ui.indoorRenderer
+        renderer: IndoorMapRenderer = self.ui.indoorRenderer
         return handle_indoor_key_press_shortcuts(
             key,
             has_ctrl=has_ctrl,

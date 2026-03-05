@@ -186,7 +186,7 @@
            <item>
             <widget class="QCheckBox" name="unescapableCheck">
              <property name="toolTip">
-              <string>Unescapable (GFF: Unescapable). BYTE 0/1. Area cannot be left via normal transitions; player is trapped. Engine reads via ReadFieldBYTE in CSWSArea::LoadProperties (K1 @ 0x00507490) from AreaProperties. Modders: use for boss arenas or scripted sequences; escape requires scripted transition.</string>
+              <string>Unescapable (GFF: Unescapable). BYTE 0/1. Area cannot be left via normal transitions; player is trapped. Engine reads via ReadFieldBYTE in CSWSArea::LoadProperties from AreaProperties. Modders: use for boss arenas or scripted sequences; escape requires scripted transition.</string>
              </property>
              <property name="text">
               <string>Unescapable</string>
@@ -205,7 +205,7 @@
              <item row="0" column="1">
               <widget class="QDoubleSpinBox" name="alphaTestSpin">
                <property name="toolTip">
-                <string>Alpha Test (GFF: AlphaTest). FLOAT. Transparency cutoff for rendering; pixels below this are discarded. K1 LoadAreaHeader @ 0x00508c50 ReadFieldFLOAT default 0.2. Typical 0.0–1.0. Modders: lower = more transparent; higher = more opaque. Affects water, particles, foliage.</string>
+                <string>Alpha Test (GFF: AlphaTest). FLOAT. Transparency cutoff for rendering; pixels below this are discarded. LoadAreaHeader ReadFieldFLOAT default 0.2. Typical 0.0–1.0. Modders: lower = more transparent; higher = more opaque. Affects water, particles, foliage.</string>
                </property>
                <property name="minimum">
                 <double>0.0</double>
@@ -248,7 +248,7 @@
              <item row="0" column="1">
               <widget class="QSpinBox" name="stealthMaxSpin">
                <property name="toolTip">
-                <string>Max (GFF: StealthXPMax). DWORD. Maximum stealth XP pool for this area. Engine reads via ReadFieldDWORD in CSWSArea::LoadProperties (K1 @ 0x00507490) from AreaProperties struct. Valid 0–4294967295; UI caps at 2147483647. Modders: enable Stealth XP first; player gains XP up to this cap while sneaking undetected; if current exceeds max on load, engine clamps current to max.</string>
+                <string>Max (GFF: StealthXPMax). DWORD. Maximum stealth XP pool for this area. Engine reads via ReadFieldDWORD in CSWSArea::LoadProperties from AreaProperties struct. Valid 0–4294967295; UI caps at 2147483647. Modders: enable Stealth XP first; player gains XP up to this cap while sneaking undetected; if current exceeds max on load, engine clamps current to max.</string>
                </property>
                <property name="minimum">
                 <number>0</number>
@@ -268,7 +268,7 @@
              <item row="1" column="1">
               <widget class="QSpinBox" name="stealthLossSpin">
                <property name="toolTip">
-                <string>Loss (GFF: StealthXPLoss). DWORD. Stealth XP deducted when the player is detected. Engine reads via ReadFieldDWORD in CSWSArea::LoadProperties (K1 @ 0x00507490) from AreaProperties. Valid 0–4294967295; UI caps at 2147483647. Modders: higher = harsher penalty for being spotted; 0 = no loss on detection.</string>
+                <string>Loss (GFF: StealthXPLoss). DWORD. Stealth XP deducted when the player is detected. Engine reads via ReadFieldDWORD in CSWSArea::LoadProperties from AreaProperties. Valid 0–4294967295; UI caps at 2147483647. Modders: higher = harsher penalty for being spotted; 0 = no loss on detection.</string>
                </property>
                <property name="minimum">
                 <number>0</number>

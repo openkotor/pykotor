@@ -39,7 +39,7 @@
             <item>
              <widget class="LocalizedStringLineEdit" name="nameEdit" native="true">
               <property name="toolTip">
-               <string>Name (GFF: LocalizedName). CExoLocString. Display name for the encounter; read via ReadFieldCExoLocString in ReadEncounterFromGff (K1 @ 0x00592430). Not shown to players at runtime—used by toolset for organization. Modders: optional; leave empty if not needed.</string>
+               <string>Name (GFF: LocalizedName). CExoLocString. Display name for the encounter; read via ReadFieldCExoLocString in ReadEncounterFromGff. Not shown to players at runtime—used by toolset for organization. Modders: optional; leave empty if not needed.</string>
               </property>
               <property name="minimumSize">
                <size>
@@ -63,14 +63,14 @@
             <item>
              <widget class="QLineEdit" name="tagEdit">
               <property name="toolTip">
-               <string>Tag (GFF: Tag). CExoString. Unique identifier for scripts; GetObjectByTag uses this. Must be unique per module if scripts reference it. Modders: set a descriptive tag (e.g. "enc_sith_ambush"); leave empty if no script reference.</string>
+               <string>Tag (GFF: Tag). CExoString. Unique identifier for scripts; GetObjectByTag uses this. Must be unique per module if scripts reference it. Modders: set a descriptive tag (e.g. "enc_sith_ambush"); leave empty if no script reference. Duplicate tags in the same area can cause wrong object to be targeted.</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QPushButton" name="tagGenerateButton">
               <property name="toolTip">
-               <string>Generate tag from ResRef. Copies the Template ResRef into the Tag field so they stay in sync. Scripts reference encounters by Tag.</string>
+               <string>Generate tag from ResRef. Copies the Template ResRef into the Tag field so they stay in sync. Scripts reference encounters by Tag. Keep Tag unique per area.</string>
               </property>
               <property name="maximumSize">
                <size>

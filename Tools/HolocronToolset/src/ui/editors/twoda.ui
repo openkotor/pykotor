@@ -75,6 +75,9 @@
     <addaction name="actionSaveAs"/>
     <addaction name="actionRevert"/>
     <addaction name="separator"/>
+    <addaction name="actionImportCSV"/>
+    <addaction name="actionExportCSV"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -131,6 +134,7 @@
     <addaction name="separator"/>
     <addaction name="actionFillDown"/>
     <addaction name="actionFillRight"/>
+    <addaction name="actionFillDownPattern"/>
     <addaction name="separator"/>
     <addaction name="actionTransposeTable"/>
     <addaction name="separator"/>
@@ -153,6 +157,10 @@
     <addaction name="separator"/>
     <addaction name="actionHideColumn"/>
     <addaction name="actionShowAllColumns"/>
+    <addaction name="separator"/>
+    <addaction name="actionColumnStatistics"/>
+    <addaction name="actionHighlightNonNumeric"/>
+    <addaction name="actionFreezeRowLabels"/>
     <addaction name="separator"/>
     <widget class="QMenu" name="menuSetRowHeader">
      <property name="title">
@@ -197,6 +205,16 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionImportCSV">
+   <property name="text">
+    <string>Import CSV...</string>
+   </property>
+  </action>
+  <action name="actionExportCSV">
+   <property name="text">
+    <string>Export CSV...</string>
    </property>
   </action>
   <action name="actionUndo">
@@ -445,6 +463,11 @@
     <string>Ctrl+Shift+R</string>
    </property>
   </action>
+  <action name="actionFillDownPattern">
+   <property name="text">
+    <string>Fill Down Pattern...</string>
+   </property>
+  </action>
   <action name="actionTransposeTable">
    <property name="text">
     <string>Transpose Table</string>
@@ -527,6 +550,27 @@
   <action name="actionShowAllColumns">
    <property name="text">
     <string>Show All Columns</string>
+   </property>
+  </action>
+  <action name="actionColumnStatistics">
+   <property name="text">
+    <string>Column Statistics...</string>
+   </property>
+  </action>
+  <action name="actionHighlightNonNumeric">
+   <property name="text">
+    <string>Highlight Non-Numeric</string>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionFreezeRowLabels">
+   <property name="text">
+    <string>Freeze Row Labels</string>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionToggleFilter">

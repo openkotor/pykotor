@@ -1766,6 +1766,32 @@ def test_git_editor_visibility_toggle_cameras(qtbot: QtBot, installation: HTInst
     editor.update_visibility()
 
 
+def test_git_editor_toggle_room_boundaries(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
+    """Test toggling room boundary/label overlay in the 2D renderer."""
+    editor = GITEditor(None, installation)
+    qtbot.addWidget(editor)
+    _load_git_file_for_testing(editor, installation, test_files_dir)
+    qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
+
+    original = editor.ui.renderArea.show_room_boundaries
+    editor.ui.actionShowRoomBoundaries.setChecked(not original)
+
+    assert editor.ui.renderArea.show_room_boundaries is (not original)
+
+
+def test_git_editor_toggle_show_grid(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
+    """Test toggling world-space grid in the 2D renderer."""
+    editor = GITEditor(None, installation)
+    qtbot.addWidget(editor)
+    _load_git_file_for_testing(editor, installation, test_files_dir)
+    qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
+
+    original = editor.ui.renderArea.show_grid
+    editor.ui.actionShowGrid.setChecked(not original)
+
+    assert editor.ui.renderArea.show_grid is (not original)
+
+
 def test_git_editor_visibility_double_click_exclusive(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test that double-clicking visibility checkbox unchecks all others."""
     editor = GITEditor(None, installation)

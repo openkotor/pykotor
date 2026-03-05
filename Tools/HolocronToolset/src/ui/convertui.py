@@ -275,7 +275,9 @@ def compile_qrc(
                 print(result.stderr, file=sys.stderr)
 
         filedata: str = qrc_target.read_text(encoding="utf-8")
-        new_filedata: str = filedata.replace(f"from {qt_version}", "from qtpy").replace(f"import {qt_version}", "import qtpy")
+        new_filedata: str = filedata
+        for binding in ("PyQt5", "PyQt6", "PySide2", "PySide6"):
+            new_filedata = new_filedata.replace(f"from {binding}", "from qtpy").replace(f"import {binding}", "import qtpy")
         if filedata != new_filedata:
             qrc_target.write_text(new_filedata)
 

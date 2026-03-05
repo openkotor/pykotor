@@ -47,14 +47,23 @@ if HOLOPATCHER_PATH.as_posix() not in sys.path:
 
 from pathlib import Path
 
-from holopatcher.core import (  # pyright: ignore[reportMissingImports]
-    format_install_time,
-    install_mod,
-    load_mod,
-    uninstall_mod,
-    validate_game_directory,
-    validate_install_paths,
-)
+import pytest
+
+try:
+    from holopatcher.core import (  # pyright: ignore[reportMissingImports]
+        format_install_time,
+        install_mod,
+        load_mod,
+        uninstall_mod,
+        validate_game_directory,
+        validate_install_paths,
+    )
+    HAS_HOLOPATCHER = True
+except ModuleNotFoundError:
+    HAS_HOLOPATCHER = False
+
+pytestmark = pytest.mark.skipif(not HAS_HOLOPATCHER, reason="holopatcher not installed")
+
 from pykotor.diff_tool.app import DiffConfig, run_application
 from pykotor.extract.installation import Installation  # pyright: ignore[reportMissingImports]
 from pykotor.tslpatcher.logger import PatchLogger  # pyright: ignore[reportMissingImports]

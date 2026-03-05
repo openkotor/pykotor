@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import math
 
-from copy import copy
-from typing import TYPE_CHECKING, Generic, NamedTuple, TypeVar
+from typing import TYPE_CHECKING, ClassVar, Generic, NamedTuple, TypeVar
 
 import qtpy
 
@@ -22,6 +21,7 @@ from qtpy.QtGui import QColor, QCursor, QImage, QPainter, QPainterPath, QPalette
 from qtpy.QtWidgets import QApplication, QWidget
 
 from pykotor.resource.formats.bwm import BWM
+from pykotor.resource.formats.bwm.bwm_data import BWMFace
 from pykotor.resource.formats.tpc import TPCTextureFormat
 from pykotor.resource.generics.are import ARENorthAxis
 from pykotor.resource.generics.git import (
@@ -39,14 +39,13 @@ from toolset.gui.common.marquee import (
     MARQUEE_MOVE_THRESHOLD_PIXELS,
     draw_marquee_rect,
 )
-from toolset.utils.misc import clamp
-from utility.common.geometry import Vector2, Vector3
+from toolset.utils.misc import clamp, keyboard_modifiers_to_qt_keys
+from utility.common.geometry import SurfaceMaterial, Vector2, Vector3
 from utility.error_handling import assert_with_variable_trace
 
 if TYPE_CHECKING:
     from qtpy.QtGui import QFocusEvent, QKeyEvent, QMouseEvent, QPaintEvent, QWheelEvent
 
-    from pykotor.resource.formats.bwm.bwm_data import BWMFace
     from pykotor.resource.formats.lyt import LYT
     from pykotor.resource.formats.lyt.lyt_data import LYTRoom
     from pykotor.resource.formats.tpc.tpc_data import TPC, TPCMipmap
@@ -55,11 +54,14 @@ if TYPE_CHECKING:
         GIT,
         GITEncounterSpawnPoint,
         GITInstance,
+        GITObject,
     )
     from pykotor.resource.generics.pth import PTH
-    from utility.common.geometry import SurfaceMaterial
-
 T = TypeVar("T")
+
+# Default half-extent (meters) for procedurally generated room floors when no WOK is loaded.
+# Total floor size is DEFAULT_ROOM_FLOOR_SIZE x DEFAULT_ROOM_FLOOR_SIZE (e.g. 10x10).
+DEFAULT_ROOM_FLOOR_SIZE = 5.0
 
 
 class GeomPoint(NamedTuple):
@@ -79,7 +81,7 @@ class WalkmeshCamera:
         self._zoom: float = 1.0
 
     def position(self) -> Vector2:
-        return copy(self._position)
+        return self._position.copy()
 
     def rotation(self) -> float:
         return self._rotation
@@ -126,7 +128,7 @@ class WalkmeshSelection(Generic[T]):
         return len(self._selection) == 0
 
     def all(self) -> list[T]:
-        return copy(self._selection)
+        return self._selection.copy()
 
     def get(self, index: int) -> T:
         return self._selection[index]
@@ -141,25 +143,25 @@ class WalkmeshSelection(Generic[T]):
 
 
 class WalkmeshRenderer(QWidget):
-    sig_mouse_moved = Signal(object, object, object, object)  # screen coords, screen delta, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_moved: ClassVar[Signal] = Signal(object, object, object, object)  # screen coords, screen delta, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when mouse is moved over the widget."""
 
-    sig_mouse_scrolled = Signal(object, object, object)  # screen delta, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_scrolled: ClassVar[Signal] = Signal(object, object, object)  # screen delta, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when mouse is scrolled over the widget."""
 
-    sig_mouse_released = Signal(object, object, object)  # screen coords, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_released: ClassVar[Signal] = Signal(object, object, object)  # screen coords, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when a mouse button is released after being pressed on the widget."""
 
-    sig_mouse_pressed = Signal(object, object, object)  # screen coords, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_pressed: ClassVar[Signal] = Signal(object, object, object)  # screen coords, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when a mouse button is pressed on the widget."""
 
-    sig_marquee_select = Signal(object, object)  # (min_x, min_y, max_x, max_y) world rect, additive  # pyright: ignore[reportPrivateImportUsage]
+    sig_marquee_select: ClassVar[Signal] = Signal(object, object)  # (min_x, min_y, max_x, max_y) world rect, additive  # pyright: ignore[reportPrivateImportUsage]
     """Emitted when marquee selection completes. Subscribers select items in the world rect."""
 
-    sig_key_pressed = Signal(object, object)  # mouse keys  # pyright: ignore[reportPrivateImportUsage]
-    sig_key_released = Signal(object, object)  # mouse keys  # pyright: ignore[reportPrivateImportUsage]
-    sig_instance_hovered = Signal(object)  # instance  # pyright: ignore[reportPrivateImportUsage]
-    sig_instance_pressed = Signal(object)  # instance  # pyright: ignore[reportPrivateImportUsage]
+    sig_key_pressed: ClassVar[Signal] = Signal(object, object)  # mouse keys  # pyright: ignore[reportPrivateImportUsage]
+    sig_key_released: ClassVar[Signal] = Signal(object, object)  # mouse keys  # pyright: ignore[reportPrivateImportUsage]
+    sig_instance_hovered: ClassVar[Signal] = Signal(object)  # instance  # pyright: ignore[reportPrivateImportUsage]
+    sig_instance_pressed: ClassVar[Signal] = Signal(object)  # instance  # pyright: ignore[reportPrivateImportUsage]
 
     def __init__(self, parent: QWidget):
         """Initializes the WalkmeshViewer widget.
@@ -183,7 +185,7 @@ class WalkmeshRenderer(QWidget):
         self._world_size: Vector3 = Vector3.from_null()
 
         self.camera: WalkmeshCamera = WalkmeshCamera()
-        self.instance_selection: WalkmeshSelection[GITInstance] = WalkmeshSelection()
+        self.instance_selection: WalkmeshSelection[GITObject] = WalkmeshSelection()
         self.geometry_selection: WalkmeshSelection[GeomPoint] = WalkmeshSelection()
         self.spawn_selection: WalkmeshSelection[EncounterSpawnPoint] = WalkmeshSelection()
 
@@ -205,6 +207,9 @@ class WalkmeshRenderer(QWidget):
         self.hide_waypoints: bool = True
         self.hide_cameras: bool = True
         self.hide_spawn_points: bool = True
+        self.show_room_boundaries: bool = True
+        self.show_grid: bool = False
+        self.grid_size: float = 1.0
 
         self.material_colors: dict[SurfaceMaterial, QColor] = {}
         self.default_material_color: QColor = QColor(255, 0, 255)
@@ -223,7 +228,7 @@ class WalkmeshRenderer(QWidget):
         self._pixmap_trigger: QPixmap = QPixmap(":/images/icons/k1/trigger.png")
         self._pixmap_encounter: QPixmap = QPixmap(":/images/icons/k1/encounter.png")
         self._pixmap_camera: QPixmap = QPixmap(":/images/icons/k1/camera.png")
-        self._instance_pixmaps: dict[type[GITInstance], QPixmap] = {
+        self._instance_pixmaps: dict[type[GITObject], QPixmap] = {
             GITCamera: self._pixmap_camera,
             GITCreature: self._pixmap_creature,
             GITDoor: self._pixmap_door,
@@ -235,7 +240,7 @@ class WalkmeshRenderer(QWidget):
             GITWaypoint: self._pixmap_waypoint,
         }
 
-        self._instances_under_mouse: list[GITInstance] = []
+        self._instances_under_mouse: list[GITObject] = []
         self._geom_points_under_mouse: list[GeomPoint] = []
         self._spawn_points_under_mouse: list[EncounterSpawnPoint] = []
 
@@ -248,6 +253,10 @@ class WalkmeshRenderer(QWidget):
         self._marquee_active: bool = False
         self._marquee_start: Vector2 = Vector2.from_null()
         self._marquee_end: Vector2 = Vector2.from_null()
+
+        # Connection preview (Connect tool: dashed line from source node to mouse)
+        self._connection_preview_source_index: int | None = None
+        self._connection_preview_mouse: Vector2 | None = None
 
         self._loop()
 
@@ -308,11 +317,35 @@ class WalkmeshRenderer(QWidget):
         self.update_walkmesh_display()
 
     def create_walkmesh_for_room(self, room: LYTRoom) -> BWM:
-        """Create a walkmesh for a given room."""
-        # Placeholder logic for creating a walkmesh
-        # Replace with actual walkmesh generation logic
+        """Create a procedural walkmesh for a room when no WOK is loaded.
+
+        LYTRoom only provides model (ResRef) and position; it has no explicit dimensions.
+        This builds a single flat, walkable floor quad (two triangles) centered at the
+        room's position, with a default size, so the layout has visible walkable area
+        in the module designer and pathfinding has a valid surface.
+
+        The walkmesh uses local-space vertices (floor in the X-Y plane at z=0) and
+        BWM.position set to the room position so the floor is placed correctly in
+        world space. Faces use a walkable material (STONE) and no edge transitions.
+        """
         walkmesh = BWM()
-        # Add faces to walkmesh based on room dimensions
+        walkmesh.position = Vector3(room.position.x, room.position.y, room.position.z)
+
+        h = DEFAULT_ROOM_FLOOR_SIZE
+        # Local-space quad in X-Y plane at z=0: from (-h,-h) to (h,h). Two triangles,
+        # counter-clockwise when viewed from above (normal +Z).
+        v1 = Vector3(-h, -h, 0.0)
+        v2 = Vector3(h, -h, 0.0)
+        v3 = Vector3(h, h, 0.0)
+        v4 = Vector3(-h, h, 0.0)
+
+        face1 = BWMFace(v1, v2, v3)
+        face1.material = SurfaceMaterial.STONE
+        face2 = BWMFace(v1, v3, v4)
+        face2.material = SurfaceMaterial.STONE
+
+        walkmesh.faces.append(face1)
+        walkmesh.faces.append(face2)
         return walkmesh
 
     def update_walkmesh_display(self):
@@ -465,7 +498,7 @@ class WalkmeshRenderer(QWidget):
     def material_color(self, material: SurfaceMaterial) -> QColor:
         return self.material_colors.get(material, self.default_material_color)
 
-    def instances_under_mouse(self) -> list[GITInstance]:
+    def instances_under_mouse(self) -> list[GITObject]:
         return self._instances_under_mouse
 
     def path_nodes_under_mouse(self) -> list[Vector2]:
@@ -477,7 +510,7 @@ class WalkmeshRenderer(QWidget):
     def spawn_points_under_mouse(self) -> list[EncounterSpawnPoint]:
         return self._spawn_points_under_mouse
 
-    def is_instance_visible(self, instance: GITInstance) -> bool | None:
+    def is_instance_visible(self, instance: GITObject) -> bool | None:
         """Check if an instance type should be visible based on hide flags."""
         if isinstance(instance, GITCamera):
             return not self.hide_cameras
@@ -500,7 +533,7 @@ class WalkmeshRenderer(QWidget):
 
         return None
 
-    def instance_pixmap(self, instance: GITInstance) -> QPixmap:
+    def instance_pixmap(self, instance: GITObject) -> QPixmap:
         """Get the pixmap icon for an instance based on its type."""
         for inst_type, pixmap in self._instance_pixmaps.items():
             if isinstance(instance, inst_type):
@@ -508,7 +541,11 @@ class WalkmeshRenderer(QWidget):
 
         return QPixmap()
 
-    def _should_collect_geom_points(self, instance: GITInstance, selected_instances: list[GITInstance]) -> bool:
+    def _should_collect_geom_points(
+        self,
+        instance: GITObject,
+        selected_instances: list[GITObject],
+    ) -> bool:
         return isinstance(instance, GITEncounter) or (isinstance(instance, GITTrigger) and instance in selected_instances)
 
     def _current_palette(self) -> QPalette | None:
@@ -517,7 +554,49 @@ class WalkmeshRenderer(QWidget):
             return None
         return app.palette()
 
-    def center_camera(self, *, fill: float = 1.0):
+    def _draw_grid(
+        self,
+        painter: QPainter,
+    ):
+        if not self.show_grid or self.grid_size <= 0:
+            return
+
+        top_left = self.to_world_coords(0, 0)
+        bottom_right = self.to_world_coords(self.width(), self.height())
+
+        min_x = min(top_left.x, bottom_right.x)
+        max_x = max(top_left.x, bottom_right.x)
+        min_y = min(top_left.y, bottom_right.y)
+        max_y = max(top_left.y, bottom_right.y)
+
+        min_x = math.floor(min_x / self.grid_size) * self.grid_size
+        max_x = math.ceil(max_x / self.grid_size) * self.grid_size
+        min_y = math.floor(min_y / self.grid_size) * self.grid_size
+        max_y = math.ceil(max_y / self.grid_size) * self.grid_size
+
+        palette = self._current_palette()
+        if palette is not None:
+            grid_color = palette.color(QPalette.ColorRole.Mid)
+        else:
+            grid_color = QColor(90, 90, 90)
+
+        painter.setPen(QPen(grid_color, 1 / self.camera.zoom()))
+
+        x = min_x
+        while x <= max_x:
+            painter.drawLine(QPointF(x, min_y), QPointF(x, max_y))
+            x += self.grid_size
+
+        y = min_y
+        while y <= max_y:
+            painter.drawLine(QPointF(min_x, y), QPointF(max_x, y))
+            y += self.grid_size
+
+    def center_camera(
+        self,
+        *,
+        fill: float = 1.0,
+    ):
         self.camera.set_position((self._bbmin.x + self._bbmax.x) / 2, (self._bbmin.y + self._bbmax.y) / 2)
         world_w: float = self._world_size.x
         world_h: float = self._world_size.y
@@ -544,6 +623,39 @@ class WalkmeshRenderer(QWidget):
         self.camera.set_zoom(camScale)
         self.camera.set_rotation(0)
 
+    def _draw_arrowhead(
+        self,
+        painter: QPainter,
+        sx: float,
+        sy: float,
+        tx: float,
+        ty: float,
+        size: float,
+        color: QColor,
+    ) -> None:
+        """Draw an arrowhead at (tx, ty) pointing from (sx, sy) toward (tx, ty)."""
+        dx = tx - sx
+        dy = ty - sy
+        length = math.sqrt(dx * dx + dy * dy)
+        if length < 1e-6:
+            return
+        ux = dx / length
+        uy = dy / length
+        tip_x = tx
+        tip_y = ty
+        back_x = tx - ux * size
+        back_y = ty - uy * size
+        perp_x = -uy * size * 0.6
+        perp_y = ux * size * 0.6
+        path = QPainterPath()
+        path.moveTo(tip_x, tip_y)
+        path.lineTo(back_x + perp_x, back_y + perp_y)
+        path.lineTo(back_x - perp_x, back_y - perp_y)
+        path.closeSubpath()
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(color)
+        painter.drawPath(path)
+
     def _build_face(
         self,
         face: BWMFace,
@@ -563,7 +675,7 @@ class WalkmeshRenderer(QWidget):
 
     def _build_instance_bounds(
         self,
-        instance: GITInstance,
+        instance: GITObject,
     ) -> QPainterPath:
         path = QPainterPath()
         if (isinstance(instance, (GITEncounter, GITTrigger))) and len(instance.geometry) > 0:
@@ -575,7 +687,7 @@ class WalkmeshRenderer(QWidget):
 
     def _build_instance_bounds_points(
         self,
-        instance: GITInstance,
+        instance: GITObject,
     ) -> QPainterPath:
         path = QPainterPath()
         if isinstance(instance, (GITTrigger, GITEncounter)):
@@ -632,6 +744,7 @@ class WalkmeshRenderer(QWidget):
 
         # Draw the faces of the walkmesh (cached).
         painter.setTransform(transform)
+        self._draw_grid(painter)
 
         # Draw the minimap
         # References (engine behavior mirrored):
@@ -800,7 +913,7 @@ class WalkmeshRenderer(QWidget):
                     painter.drawPath(path)
 
         # Draw room boundaries and names from LYT layout
-        if self._layout is not None:
+        if self.show_room_boundaries and self._layout is not None:
             # Create a mapping from room model to walkmesh
             # Walkmeshes are loaded in the same order as rooms in load_layout
             room_to_walkmesh: dict[str, BWM] = {}
@@ -895,33 +1008,66 @@ class WalkmeshRenderer(QWidget):
                 path_node_color = palette.color(QPalette.ColorRole.Mid)
                 path_hover_color = palette.color(QPalette.ColorRole.Base)
                 path_selected_color = QColor(colors.get("success", "#00ff00"))
+                path_node_border = palette.color(QPalette.ColorRole.Shadow)
             else:
                 path_edge_color = QColor(200, 200, 200, 255)
                 path_node_color = QColor(200, 200, 200, 255)
                 path_hover_color = QColor(255, 255, 255, 255)
                 path_selected_color = QColor(0, 255, 0, 255)
+                path_node_border = QColor(40, 40, 40, 255)
+
+            arrow_size = max(0.15, 0.4 / self.camera.zoom())
+            edge_w = max(self._path_edge_width, 0.08 / self.camera.zoom())
 
             for i, source in enumerate(self._pth):
-                painter.setPen(QPen(path_edge_color, self._path_edge_width, Qt.PenStyle.SolidLine))
                 for j in self._pth.outgoing(i):
                     target: Vector2 | None = self._pth.get(j.target)
                     assert target is not None, assert_with_variable_trace(target is not None)
+                    bidirectional = self._pth.is_connected(j.target, i)
+                    if bidirectional:
+                        painter.setPen(QPen(path_edge_color, edge_w * 1.4, Qt.PenStyle.SolidLine))
+                    else:
+                        painter.setPen(QPen(path_edge_color, edge_w, Qt.PenStyle.SolidLine))
+                    painter.setBrush(Qt.BrushStyle.NoBrush)
                     painter.drawLine(QPointF(source.x, source.y), QPointF(target.x, target.y))
+                    self._draw_arrowhead(painter, source.x, source.y, target.x, target.y, arrow_size, path_edge_color)
+                    if bidirectional:
+                        self._draw_arrowhead(painter, target.x, target.y, source.x, source.y, arrow_size * 0.85, path_edge_color)
 
+            # Connection preview (dashed line from source node to mouse)
+            if self._connection_preview_source_index is not None and self._connection_preview_mouse is not None:
+                src_pt = self._pth.get(self._connection_preview_source_index)
+                if src_pt is not None:
+                    preview_color = QColor(path_selected_color)
+                    preview_color.setAlpha(180)
+                    painter.setPen(
+                        QPen(preview_color, edge_w, Qt.PenStyle.DashLine),
+                    )
+                    painter.setBrush(Qt.BrushStyle.NoBrush)
+                    painter.drawLine(
+                        QPointF(src_pt.x, src_pt.y),
+                        QPointF(self._connection_preview_mouse.x, self._connection_preview_mouse.y),
+                    )
+
+            # Nodes: default, then hover, then selected (so selected/hover draw on top)
+            node_radius = self._path_node_size
+            border_w = max(0.03, 0.08 / self.camera.zoom())
             for point_2d in self._pth:
-                painter.setPen(QColor(0, 0, 0, 0))
+                painter.setPen(QPen(path_node_border, border_w, Qt.PenStyle.SolidLine))
                 painter.setBrush(path_node_color)
-                painter.drawEllipse(QPointF(point_2d.x, point_2d.y), self._path_node_size, self._path_node_size)
+                painter.drawEllipse(QPointF(point_2d.x, point_2d.y), node_radius, node_radius)
 
             for point_2d in self._path_nodes_under_mouse:
-                painter.setPen(QColor(0, 0, 0, 0))
+                painter.setPen(QPen(path_node_border, border_w, Qt.PenStyle.SolidLine))
                 painter.setBrush(path_hover_color)
-                painter.drawEllipse(QPointF(point_2d.x, point_2d.y), self._path_node_size, self._path_node_size)
+                painter.drawEllipse(QPointF(point_2d.x, point_2d.y), node_radius * 1.1, node_radius * 1.1)
 
             for point_2d in self.path_selection.all():
-                painter.setPen(QColor(0, 0, 0, 0))
+                painter.setPen(QPen(path_selected_color, border_w * 1.5, Qt.PenStyle.SolidLine))
                 painter.setBrush(path_selected_color)
-                painter.drawEllipse(QPointF(point_2d.x, point_2d.y), self._path_node_size, self._path_node_size)
+                painter.setOpacity(0.85)
+                painter.drawEllipse(QPointF(point_2d.x, point_2d.y), node_radius * 1.15, node_radius * 1.15)
+                painter.setOpacity(1.0)
 
         # Draw the git instances (represented as icons)
         painter.setOpacity(0.6)
@@ -1028,7 +1174,7 @@ class WalkmeshRenderer(QWidget):
 
         # Highlight the first instance that is underneath the mouse
         if self._instances_under_mouse:
-            instance: GITInstance = self._instances_under_mouse[0]
+            instance: GITObject = self._instances_under_mouse[0]
 
             painter.setBrush(hover_bg)
             painter.setPen(Qt.PenStyle.NoPen)
@@ -1116,6 +1262,18 @@ class WalkmeshRenderer(QWidget):
             draw_marquee_rect(painter, self._marquee_start, self._marquee_end)
             painter.restore()
 
+    def set_connection_preview_source(self, node_index: int | None) -> None:
+        """Set the source node index for the connection preview line (Connect tool). None to clear."""
+        self._connection_preview_source_index = node_index
+        if node_index is None:
+            self._connection_preview_mouse = None
+        self.update()
+
+    def set_connection_preview_mouse(self, world: Vector2) -> None:
+        """Update the mouse position for the connection preview line (Connect tool)."""
+        self._connection_preview_mouse = world
+        self.update()
+
     def start_marquee(self, screen_pos: Vector2) -> None:
         """Start marquee selection. Call on left-click on empty space."""
         self._marquee_active = True
@@ -1140,10 +1298,11 @@ class WalkmeshRenderer(QWidget):
         self.update()
 
     def wheelEvent(self, e: QWheelEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
-        self.sig_mouse_scrolled.emit(Vector2(e.angleDelta().x(), e.angleDelta().y()), self._mouse_down, self._keys_down)
+        keys_to_emit: set[int | Qt.Key] = self._keys_down | keyboard_modifiers_to_qt_keys(e.modifiers())
+        self.sig_mouse_scrolled.emit(Vector2(e.angleDelta().x(), e.angleDelta().y()), self._mouse_down, keys_to_emit)
 
     def mouseMoveEvent(self, e: QMouseEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
-        pos = e.pos() if qtpy.QT5 else e.position().toPoint()
+        pos: QPoint = e.pos() if qtpy.QT5 else e.position().toPoint()
         super().mouseMoveEvent(e)
         coords: Vector2 = Vector2(pos.x(), pos.y())
         coords_delta: Vector2 = Vector2(coords.x - self._mouse_prev.x, coords.y - self._mouse_prev.y)
@@ -1166,7 +1325,7 @@ class WalkmeshRenderer(QWidget):
         world: Vector2 = Vector2.from_vector3(self.to_world_coords(coords.x, coords.y))  # Mouse pos in world
 
         if self._git is not None:
-            instances: list[GITInstance] = self._git.instances()
+            instances: list[GITObject] = self._git.instances()
             selected_instances = self.instance_selection.all()
             for instance in instances:
                 position = Vector2(instance.position.x, instance.position.y)
@@ -1174,7 +1333,7 @@ class WalkmeshRenderer(QWidget):
                     self.sig_instance_hovered.emit(instance)
                     self._instances_under_mouse.append(instance)
 
-                if self._should_collect_geom_points(instance, selected_instances):
+                if self._should_collect_geom_points(instance, selected_instances) and isinstance(instance, (GITEncounter, GITTrigger)):
                     for point in instance.geometry:
                         pworld: Vector2 = Vector2.from_vector3(instance.position + point)
                         if pworld.distance(world) <= 0.5:  # noqa: PLR2004

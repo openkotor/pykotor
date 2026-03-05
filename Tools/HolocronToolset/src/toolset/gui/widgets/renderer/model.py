@@ -20,7 +20,10 @@ from loggerplus import RobustLogger
 from pykotor.gl import vec3
 from pykotor.gl.models.read_mdl import gl_load_mdl
 from pykotor.gl.scene import RenderObject, Scene
+from pykotor.resource.formats.twoda import read_2da
 from pykotor.resource.generics.git import GIT
+from pykotor.resource.generics.uti import UTI
+from pykotor.resource.type import ResourceType
 from toolset.data.misc import ControlItem
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
 from utility.common.geometry import Vector2, Vector3
@@ -81,10 +84,11 @@ class ModelRenderer(QOpenGLWidget):
     @installation.setter
     def installation(self, value: Installation | None):
         self._installation = value
-        # If scene already exists, update its installation too
-        # This is critical because initializeGL() may have created the scene before installation was set
+        # If scene already exists, update its installation and load 2DA tables.
+        # set_installation() loads appearance.2da etc. that the renderer needs.
         if self._scene is not None and value is not None and self._scene.installation is None:
             self._scene.installation = value
+            self._scene.set_installation(value)
             RobustLogger().debug("ModelRenderer.installation setter: Updated existing scene with installation")
 
     def initializeGL(self):
@@ -216,6 +220,33 @@ class ModelRenderer(QOpenGLWidget):
 
     def set_creature(self, utc: UTC):
         self._creature_to_load = utc
+
+    def set_item(self, uti: UTI) -> None:
+        """Load and display the item's model from baseitems.2da ModelName (for UTI editor preview)."""
+        if self._installation is None:
+            return
+        baseitems = None
+        ht_get = getattr(self._installation, "ht_get_cache_2da", None)
+        baseitems_name = getattr(self._installation, "TwoDA_BASEITEMS", "baseitems")
+        if ht_get is not None:
+            baseitems = ht_get(baseitems_name)
+        else:
+            res = self._installation.resource("baseitems", ResourceType.TwoDA)
+            if res is not None and res.data is not None:
+                baseitems = read_2da(res.data)
+        if baseitems is None or uti.base_item < 0 or uti.base_item >= baseitems.get_height():
+            return
+        row = baseitems.get_row(uti.base_item)
+        model_name = row.get_string("ModelName") if row else None
+        if not model_name or not model_name.strip():
+            return
+        mdl_res = self._installation.resource(model_name.strip(), ResourceType.MDL)
+        mdx_res = self._installation.resource(model_name.strip(), ResourceType.MDX)
+        if mdl_res is None or mdl_res.data is None:
+            return
+        mdl_bytes = mdl_res.data
+        mdx_bytes = mdx_res.data if mdx_res is not None and mdx_res.data is not None else b""
+        self.set_model(mdl_bytes, mdx_bytes)
 
     def _is_model_ready(self, obj: RenderObject) -> bool:
         """Check if a RenderObject's model and all child models have finished loading."""

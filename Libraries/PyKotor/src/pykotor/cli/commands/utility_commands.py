@@ -147,16 +147,18 @@ def _diff_archives_or_directories(
                     differences_found = True
                     diff_logger.info(f"Files differ: {resource_key}")
 
-        # Summary (print to stdout so result is visible in normal mode and tests)
+        # Summary: print only in full mode (normal = diff only, quiet = log only)
         if not differences_found:
             msg = f"'{args.path1}' MATCHES '{args.path2}'"
             diff_logger.info(msg)
-            print(msg)
+            if output_mode == OutputMode.FULL:
+                print(msg)
             return 0
         else:
             msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
             diff_logger.info(msg)
-            print(msg)
+            if output_mode == OutputMode.FULL:
+                print(msg)
             return 1
 
     except Exception:
@@ -277,7 +279,7 @@ def cmd_diff(
     output_mode = output_mode_map.get(output_mode_str, OutputMode.NORMAL)
 
     # Display CLI arguments (for parity with other diff tools)
-    if output_mode != OutputMode.QUIET:
+    if output_mode == OutputMode.FULL:
         print(f"Using --path1='{args.path1}'")
         print(f"Using --path2='{args.path2}'")
         print("Using --ignore-rims=False")
@@ -289,7 +291,8 @@ def cmd_diff(
 
     # Handle special case: identical paths should always match
     if args.path1 == args.path2:
-        print(f"'{args.path1}' MATCHES '{args.path2}'")
+        if output_mode == OutputMode.FULL:
+            print(f"'{args.path1}' MATCHES '{args.path2}'")
         return 0
 
     # Handle output redirection
@@ -347,15 +350,17 @@ def cmd_diff(
                 format_type=format_type,
             )
 
-            # Add summary message (print so visible in normal mode and when stdout is captured)
+            # Add summary message in full mode only
             if result:
                 msg = f"'{args.path1}' MATCHES '{args.path2}'"
                 diff_logger.info(msg)
-                print(msg)
+                if output_mode == OutputMode.FULL:
+                    print(msg)
             else:
                 msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
                 diff_logger.info(msg)
-                print(msg)
+                if output_mode == OutputMode.FULL:
+                    print(msg)
 
             return 0 if result else 1
 
@@ -473,11 +478,17 @@ def cmd_diff(
                 format_type=format_type,
             )
 
-            # Add summary message (but not in normal mode)
+            # Add summary message in full mode only
             if result:
-                diff_logger.info(f"'{args.path1}' MATCHES '{args.path2}'")
+                msg = f"'{args.path1}' MATCHES '{args.path2}'"
+                diff_logger.info(msg)
+                if output_mode == OutputMode.FULL:
+                    print(msg)
             else:
-                diff_logger.info(f"'{args.path1}' DOES NOT MATCH '{args.path2}'")
+                msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
+                diff_logger.info(msg)
+                if output_mode == OutputMode.FULL:
+                    print(msg)
 
             return 0 if result else 1
 

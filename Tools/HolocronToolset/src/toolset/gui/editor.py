@@ -17,14 +17,21 @@ from qtpy.QtGui import QIcon, QPixmap
 from qtpy.QtMultimedia import QMediaPlayer
 from qtpy.QtWidgets import (
     QApplication,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
     QFileDialog,
+    QLabel,
     QMainWindow,
     QMenu,
     QMessageBox,
     QPlainTextEdit,
+    QPushButton,
     QShortcut,  # pyright: ignore[reportPrivateImportUsage]
     QSlider,
     QStyle,
+    QToolBar,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -42,11 +49,14 @@ from pykotor.resource.type import ResourceType
 from pykotor.tools import module
 from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_capsule_file, is_rim_file, is_sav_file
 from pykotor.tools.path import CaseAwarePath
+from toolset.gui.common.tooltip_utils import copy_tooltips_to_form_labels
 from toolset.gui.dialogs.load_from_module import LoadFromModuleDialog
 from toolset.gui.dialogs.save.to_bif import BifSaveDialog, BifSaveOption
 from toolset.gui.dialogs.save.to_module import SaveToModuleDialog
 from toolset.gui.dialogs.save.to_rim import RimSaveDialog, RimSaveOption
-from toolset.gui.widgets.settings.installations import GlobalSettings
+from toolset.data.installation import HTInstallation
+from toolset.gui.widgets.installation_toolbar import StandaloneWindowMixin
+from toolset.gui.widgets.settings.installations import GlobalSettings, InstallationsWidget
 from ui import stylesheet_resources  # noqa: PLC0415, F401, I001  # pylint: disable=C0415
 from utility.error_handling import assert_with_variable_trace, format_exception_with_variables
 from utility.system.os_helper import remove_any
@@ -288,7 +298,7 @@ class MediaPlayerWidget(QWidget):
         super().showEvent(event)
 
 
-class Editor(QMainWindow):
+class Editor(QMainWindow, StandaloneWindowMixin):
     """Editor is a base class for all file-specific editors.
 
     Provides methods for saving and loading files that are stored directly in folders and for files that are encapsulated in a MOD or RIM.
@@ -383,12 +393,140 @@ class Editor(QMainWindow):
 
         self.setupEditorFilters(readSupported, writeSupported)
 
+        # Unified editor toolbar: subclasses add installation combobox and custom controls via _populate_editor_toolbar.
+        self._editor_toolbar: QToolBar = QToolBar(self)
+        self._editor_toolbar.setObjectName("editorToolbar")
+        self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self._editor_toolbar)
+        self._installation_combo: QComboBox | None = None
+        self._installation_cache: dict[str, HTInstallation] = {}
+        self._saved_installations: dict[str, dict[str, str | bool]] = {}
+        self._installation_combo_in_update: bool = False
+
+    def _populate_editor_toolbar(self, toolbar: QToolBar) -> None:
+        """Override in subclasses to add installation combobox and editor-specific controls.
+
+        Subclasses that need an installation should call _add_installation_combobox_to_toolbar(toolbar)
+        and then add their own widgets. Call this at the end of the subclass __init__.
+        """
+        pass
+
+    def _add_installation_combobox_to_toolbar(self, toolbar: QToolBar) -> None:
+        """Add Installation: combobox and Reload/Manage buttons to the editor toolbar.
+
+        Populates from GlobalSettings; when self._installation is already set (embedded),
+        selects that installation in the combobox. Connects selection to _on_installation_changed.
+        """
+        from toolset.gui.common.localization import translate as tr
+
+        toolbar.addWidget(QLabel(tr("Installation:")))
+        self._installation_combo = QComboBox(self)
+        self._installation_combo.setMinimumWidth(180)
+        toolbar.addWidget(self._installation_combo)
+        reload_btn = QPushButton(tr("Reload"), self)
+        reload_btn.clicked.connect(self._reload_installation_combo)
+        toolbar.addWidget(reload_btn)
+        manage_btn = QPushButton(tr("Manage..."), self)
+        manage_btn.clicked.connect(self._open_installations_manage_dialog)
+        toolbar.addWidget(manage_btn)
+        self._reload_installation_combo()
+        self._installation_combo.currentIndexChanged.connect(self._on_installation_combo_changed)
+
+    def _reload_installation_combo(self) -> None:
+        """Reload installation list from GlobalSettings and preserve current selection or set from self._installation."""
+        if self._installation_combo is None:
+            return
+        current_key = self._installation_combo.currentData()
+        self._saved_installations = {
+            name: {"path": config.path, "tsl": config.tsl, "name": name}
+            for name, config in self._global_settings.installations().items()
+        }
+        self._installation_combo_in_update = True
+        try:
+            self._installation_combo.clear()
+            self._installation_combo.addItem("(None)", None)
+            for name, config in sorted(self._saved_installations.items()):
+                self._installation_combo.addItem(f"{name} ({config['path']})", name)
+            if self._installation is not None and hasattr(self._installation, "name"):
+                key = getattr(self._installation, "name", None)
+                idx = self._installation_combo.findData(key)
+                if idx >= 0:
+                    self._installation_combo.setCurrentIndex(idx)
+            elif current_key is not None:
+                idx = self._installation_combo.findData(current_key)
+                if idx >= 0:
+                    self._installation_combo.setCurrentIndex(idx)
+        finally:
+            self._installation_combo_in_update = False
+
+    def _open_installations_manage_dialog(self) -> None:
+        """Open Manage Installations dialog and reload combobox on save."""
+        from toolset.gui.common.localization import translate as tr
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(tr("Manage Installations"))
+        layout = QVBoxLayout(dialog)
+        widget = InstallationsWidget(dialog)
+        layout.addWidget(widget)
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel,
+            dialog,
+        )
+        layout.addWidget(button_box)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            widget.save()
+            self._reload_installation_combo()
+
+    def _on_installation_combo_changed(self, _index: int) -> None:
+        """Resolve selected installation and call _on_installation_changed."""
+        if self._installation_combo_in_update:
+            return
+        installation = self._get_installation_from_combo()
+        self._installation = installation
+        self._on_installation_changed(installation)
+
+    def _get_installation_from_combo(self) -> HTInstallation | None:
+        """Resolve current combobox selection to HTInstallation."""
+        if self._installation_combo is None:
+            return None
+        selected_name = self._installation_combo.currentData()
+        if selected_name is None:
+            return None
+        cache_key = str(selected_name)
+        if cache_key in self._installation_cache:
+            return self._installation_cache[cache_key]
+        config = self._saved_installations.get(cache_key)
+        if config is None:
+            return None
+        try:
+            installation = HTInstallation(
+                config["path"],
+                config["name"],
+                tsl=bool(config.get("tsl")),
+            )
+            self._installation_cache[cache_key] = installation
+            return installation
+        except Exception as exc:
+            self._logger.exception("Failed to create installation '%s': %s", cache_key, exc)
+            QMessageBox.warning(
+                self,
+                "Invalid Installation",
+                f"Could not load installation '{cache_key}'.",
+            )
+            return None
+
     def showEvent(self, event: QShowEvent):
+        # Copy field tooltips to their labels once so hovering labels shows the same help
+        if not getattr(self, "_tooltips_copied_to_labels", False):
+            copy_tooltips_to_form_labels(self)
+            self._tooltips_copied_to_labels = True  # type: ignore[attr-defined]
         # Set minimum size based on the current size
         self.setMinimumSize(
             self.size().width() + QApplication.font().pointSize() * 2,
             self.size().height(),
         )
+        super().showEvent(event)
 
     def _setupMenus(self):
         """Sets up menu actions and keyboard shortcuts.

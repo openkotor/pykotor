@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import qtpy
 
@@ -18,7 +18,7 @@ from pykotor.resource.generics.git import (
 from toolset.data.misc import ControlItem
 from toolset.gui.widgets.settings.editor_settings.git import GITSettings
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
-from utility.common.geometry import Vector2, Vector3, Vector4
+from utility.common.geometry import Vector2, Vector3
 
 if qtpy.QT5:
     from qtpy.QtWidgets import QUndoStack
@@ -28,8 +28,12 @@ elif qtpy.QT6:
 if TYPE_CHECKING:
     from qtpy.QtCore import Qt
 
-    from pykotor.resource.generics.git import GITInstance
+    from pykotor.resource.generics.git import (
+        GITInstance,
+        GITObject,
+    )
     from toolset.gui.editors.git.git import GITEditor
+    from utility.common.geometry import Vector4
 
 
 from toolset.gui.common.interaction.camera import calculate_zoom_strength
@@ -37,7 +41,14 @@ from toolset.gui.common.interaction.transforms import TransformInteractionState
 
 
 class GITControlScheme:
-    _ROTATABLE_INSTANCE_TYPES = (GITCamera, GITCreature, GITDoor, GITPlaceable, GITStore, GITWaypoint)
+    _ROTATABLE_INSTANCE_TYPES: tuple[type[GITObject], ...] = (
+        GITCamera,
+        GITCreature,
+        GITDoor,
+        GITPlaceable,
+        GITStore,
+        GITWaypoint,
+    )
 
     def __init__(self, editor: GITEditor):
         self.editor: GITEditor = editor
@@ -55,7 +66,7 @@ class GITControlScheme:
         if self.zoom_camera.satisfied(buttons, keys):
             if not delta.y:
                 return  # sometimes it'll be zero when holding middlemouse-down.
-            sens_setting = ModuleDesignerSettings().zoomCameraSensitivity2d
+            sens_setting: int = ModuleDesignerSettings().zoomCameraSensitivity2d
             zoom_factor = calculate_zoom_strength(delta.y, sens_setting)
             # RobustLogger.debug(f"on_mouse_scrolled zoom_camera (delta.y={delta.y}, zoom_factor={zoom_factor}, sensSetting={sensSetting}))")
             self.editor.zoom_camera(zoom_factor)
@@ -72,27 +83,27 @@ class GITControlScheme:
         # sourcery skip: extract-duplicate-method, remove-redundant-if, split-or-ifs
         from toolset.gui.editors.git.mode import _InstanceMode, _SpawnMode
 
-        should_pan_camera = self.pan_camera.satisfied(buttons, keys)
-        should_rotate_camera = self.rotate_camera.satisfied(buttons, keys)
+        should_pan_camera: bool = self.pan_camera.satisfied(buttons, keys)
+        should_rotate_camera: bool = self.rotate_camera.satisfied(buttons, keys)
         is_instance_mode: bool = isinstance(self.editor._mode, _InstanceMode)  # noqa: SLF001
         is_spawn_mode: bool = isinstance(self.editor._mode, _SpawnMode)  # noqa: SLF001
 
         # Adjust world_delta if cursor is locked
-        adjusted_world_delta = world_delta
+        adjusted_world_delta: Vector2 = world_delta
         if should_pan_camera or should_rotate_camera:
             self.editor.ui.renderArea.do_cursor_lock(screen)
             adjusted_world_delta = Vector2(-world_delta.x, -world_delta.y)
 
         if should_pan_camera:
-            moveSens = ModuleDesignerSettings().moveCameraSensitivity2d / 100
+            move_sens = ModuleDesignerSettings().moveCameraSensitivity2d / 100
             # RobustLogger.debug(f"on_mouse_scrolled move_camera (delta.y={screenDelta.y}, sensSetting={moveSens}))")
-            self.editor.move_camera(-world_delta.x * moveSens, -world_delta.y * moveSens)
+            self.editor.move_camera(-world_delta.x * move_sens, -world_delta.y * move_sens)
         if should_rotate_camera:
             self._handle_camera_rotation(screen_delta)
 
         if self.move_selected.satisfied(buttons, keys):
             if not self.transform_state.is_drag_moving and is_instance_mode:
-                selection: list[GITInstance] = self.editor._mode.renderer2d.instance_selection.all()  # noqa: SLF001
+                selection: list[GITObject] = self.editor._mode.renderer2d.instance_selection.all()  # noqa: SLF001
                 self.transform_state.initial_positions = {instance: Vector3(*instance.position) for instance in selection}
                 self.transform_state.is_drag_moving = True
             if not self.transform_state.is_drag_moving_spawn and is_spawn_mode:
@@ -101,9 +112,7 @@ class GITControlScheme:
                 self.transform_state.is_drag_moving_spawn = True
             self.editor.move_selected(adjusted_world_delta.x, adjusted_world_delta.y)
         if self.rotate_selected_to_point.satisfied(buttons, keys):
-            if (
-                not self.transform_state.is_drag_rotating and not self.editor.ui.lockInstancesCheck.isChecked() and is_instance_mode
-            ):
+            if not self.transform_state.is_drag_rotating and not self.editor.ui.lockInstancesCheck.isChecked() and is_instance_mode:
                 self.transform_state.is_drag_rotating = True
                 RobustLogger().debug("rotateSelected instance in GITControlScheme")
                 selection = self.editor._mode.renderer2d.instance_selection.all()  # noqa: SLF001
@@ -118,7 +127,7 @@ class GITControlScheme:
             self.editor.rotate_selected_to_point(world.x, world.y)
 
     @staticmethod
-    def _is_rotatable_instance(instance: GITInstance) -> bool:
+    def _is_rotatable_instance(instance: GITObject) -> bool:
         """Return whether this instance supports rotation editing."""
         return isinstance(instance, GITControlScheme._ROTATABLE_INSTANCE_TYPES)
 
@@ -170,9 +179,9 @@ class GITControlScheme:
             is_instance_mode = isinstance(self.editor._mode, _InstanceMode)  # noqa: SLF001
             is_spawn_mode = isinstance(self.editor._mode, _SpawnMode)  # noqa: SLF001
             if is_instance_mode:
-                selection: list[GITInstance] = self.editor._mode.renderer2d.instance_selection.all()  # noqa: SLF001
-                if selection:
-                    self.undo_stack.push(DeleteCommand(self.editor._git, selection.copy(), self.editor))  # noqa: SLF001
+                selection = self.editor._mode.renderer2d.instance_selection.all()  # noqa: SLF001
+                if isinstance(selection, list):
+                    self.undo_stack.push(DeleteCommand(self.editor._git, cast("list[GITObject]", selection.copy()), self.editor))  # noqa: SLF001
             elif is_spawn_mode:
                 sp_ref = self.editor._mode.renderer2d.spawn_selection.last()  # noqa: SLF001
                 if sp_ref is not None and sp_ref.spawn in sp_ref.encounter.spawn_points:

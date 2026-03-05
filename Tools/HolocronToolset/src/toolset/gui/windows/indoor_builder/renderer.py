@@ -6,13 +6,13 @@ import math
 
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, ClassVar
 
 import qtpy
 
 from qtpy import QtCore
-from qtpy.QtCore import QPointF, QRectF, QTimer, Qt
-from qtpy.QtGui import QColor, QPainter, QPainterPath, QPen, QPolygonF, QTransform
+from qtpy.QtCore import QPointF, QRectF, QTimer, Qt, Signal
+from qtpy.QtGui import QColor, QPainter, QPainterPath, QPalette, QPen, QPolygonF, QTransform
 from qtpy.QtWidgets import (
     QApplication,
     QWidget,
@@ -90,6 +90,7 @@ from toolset.gui.windows.indoor_builder.constants import (
     WARP_POINT_RADIUS,
     DragMode,
 )
+from toolset.utils.misc import keyboard_modifiers_to_qt_keys
 from utility.common.geometry import SurfaceMaterial, Vector2, Vector3
 
 if TYPE_CHECKING:
@@ -132,15 +133,15 @@ class _BWMSurfaceCache:
 
 
 class IndoorMapRenderer(QWidget):
-    sig_mouse_moved = QtCore.Signal(object, object, object, object)  # pyright: ignore[reportPrivateImportUsage]
-    sig_mouse_scrolled = QtCore.Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
-    sig_mouse_released = QtCore.Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
-    sig_mouse_pressed = QtCore.Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
-    sig_mouse_double_clicked = QtCore.Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
-    sig_rooms_moved = QtCore.Signal(object, object, object)  # rooms, old_positions, new_positions  # pyright: ignore[reportPrivateImportUsage]
-    sig_rooms_rotated = QtCore.Signal(object, object, object)  # rooms, old_rotations, new_rotations  # pyright: ignore[reportPrivateImportUsage]
-    sig_warp_moved = QtCore.Signal(object, object)  # old_position, new_position  # pyright: ignore[reportPrivateImportUsage]
-    sig_marquee_select = QtCore.Signal(object, object)  # rooms selected, additive  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_moved: ClassVar[Signal] = Signal(object, object, object, object)  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_scrolled: ClassVar[Signal] = Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_released: ClassVar[Signal] = Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_pressed: ClassVar[Signal] = Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_double_clicked: ClassVar[Signal] = Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
+    sig_rooms_moved: ClassVar[Signal] = Signal(object, object, object)  # rooms, old_positions, new_positions  # pyright: ignore[reportPrivateImportUsage]
+    sig_rooms_rotated: ClassVar[Signal] = Signal(object, object, object)  # rooms, old_rotations, new_rotations  # pyright: ignore[reportPrivateImportUsage]
+    sig_warp_moved: ClassVar[Signal] = Signal(object, object)  # old_position, new_position  # pyright: ignore[reportPrivateImportUsage]
+    sig_marquee_select: ClassVar[Signal] = Signal(object, object)  # rooms selected, additive  # pyright: ignore[reportPrivateImportUsage]
 
     def __init__(self, parent: QWidget):
         super().__init__(parent)
@@ -202,6 +203,7 @@ class IndoorMapRenderer(QWidget):
         # Visual options
         self.hide_magnets: bool = False
         self.show_grid: bool = False
+        self.show_room_labels: bool = True
         self.highlight_rooms_hover: bool = True
 
         # Snap visualization
@@ -302,7 +304,7 @@ class IndoorMapRenderer(QWidget):
     def set_status_callback(self, callback: Callable[[QPoint | Vector2 | None, set[int | Qt.MouseButton], set[int | Qt.Key]], None] | None) -> None:
         self._status_callback = callback  # type: ignore[assignment]  # pyright: ignore[reportAssignmentType]
 
-    def select_room(self, room: IndoorMapRoom, *, clear_existing: bool):
+    def select_room(self, room: IndoorMapRoom, *, clear_existing: bool = True):
         if clear_existing:
             self._selected_rooms.clear()
         if room in self._selected_rooms:
@@ -385,7 +387,7 @@ class IndoorMapRenderer(QWidget):
         room: IndoorMapRoom,
         hook_index: int,
         *,
-        clear_existing: bool,
+        clear_existing: bool = True,
     ):
         # Validate hook index
         if hook_index < 0 or hook_index >= len(room.component.hooks):
@@ -421,6 +423,10 @@ class IndoorMapRenderer(QWidget):
 
     def set_show_grid(self, enabled: bool):
         self.show_grid = enabled
+        self.mark_dirty()
+
+    def set_show_room_labels(self, enabled: bool):
+        self.show_room_labels = enabled
         self.mark_dirty()
 
     def set_hide_magnets(self, enabled: bool):
@@ -793,8 +799,8 @@ class IndoorMapRenderer(QWidget):
     def camera_rotation(self) -> float:
         return self._cam_rotation
 
-    def set_camera_rotation(self, radians: float):
-        self._cam_rotation = radians
+    def set_camera_rotation(self, angle: float):
+        self._cam_rotation = angle
         self.mark_dirty()
 
     def rotate_camera(self, radians: float):
@@ -926,6 +932,55 @@ class IndoorMapRenderer(QWidget):
             selected=self._selected_hook,
             room_for_selection=room,
         )
+
+    def _draw_room_labels(
+        self,
+        painter: QPainter,
+    ):
+        """Draw room model labels in screen space near each room center."""
+        if not self.show_room_labels:
+            return
+
+        palette = QApplication.instance().palette() if QApplication.instance() is not None else None
+        if palette is not None:
+            text_color = palette.color(QPalette.ColorRole.WindowText)
+            bg_color = palette.color(QPalette.ColorRole.Window)
+            bg_color.setAlpha(180)
+        else:
+            text_color = QColor(255, 255, 255, 255)
+            bg_color = QColor(0, 0, 0, 180)
+
+        for room in self._map.rooms:
+            base_bwm = room.base_walkmesh()
+            vertices = base_bwm.vertices()
+            if not vertices:
+                continue
+
+            world_vertices = [self._room_local_to_world(room, vertex) for vertex in vertices]
+            min_x = min(vertex.x for vertex in world_vertices)
+            max_x = max(vertex.x for vertex in world_vertices)
+            min_y = min(vertex.y for vertex in world_vertices)
+            max_y = max(vertex.y for vertex in world_vertices)
+            center_world = QPointF((min_x + max_x) * 0.5, (min_y + max_y) * 0.5)
+            center_screen = painter.transform().map(center_world)
+
+            painter.save()
+            painter.resetTransform()
+            painter.setPen(QPen(text_color, 1))
+            painter.setBrush(bg_color)
+            room_name = room.model
+            text_rect = painter.fontMetrics().boundingRect(room_name)
+            text_x = center_screen.x() - text_rect.width() / 2
+            text_y = center_screen.y() + text_rect.height() / 2
+            bg_rect = QRectF(
+                text_x - 3,
+                text_y - text_rect.height() - 3,
+                text_rect.width() + 6,
+                text_rect.height() + 6,
+            )
+            painter.drawRect(bg_rect)
+            painter.drawText(int(text_x), int(text_y), room_name)
+            painter.restore()
 
     def _draw_cursor_walkmesh(self, painter: QPainter):
         """Draw the cursor preview using walkmesh geometry.
@@ -1373,7 +1428,7 @@ class IndoorMapRenderer(QWidget):
         # Draw rooms using walkmesh geometry (NOT QImage - QImage is only for sidebar preview)
         for room in self._map.rooms:
             self._draw_room_walkmesh(painter, room)
-
+        self._draw_room_labels(painter)
         self._draw_vis_overlay(painter)
 
         # Draw hooks (magnets)
@@ -1446,10 +1501,11 @@ class IndoorMapRenderer(QWidget):
     # =========================================================================
 
     def wheelEvent(self, e: QWheelEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
+        keys_to_emit = self._keys_down | keyboard_modifiers_to_qt_keys(e.modifiers())
         self.sig_mouse_scrolled.emit(
             Vector2(e.angleDelta().x(), e.angleDelta().y()),
             e.buttons(),
-            self._keys_down,
+            keys_to_emit,
         )
         self.mark_dirty()
 

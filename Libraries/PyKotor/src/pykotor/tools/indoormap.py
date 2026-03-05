@@ -27,6 +27,7 @@ from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.formats.erf import read_erf
 from pykotor.resource.formats.lyt import read_lyt
 from pykotor.resource.type import ResourceType
+from pykotor.resource.generics.git import GIT
 from pykotor.tools.indoorkit import load_kits
 from pykotor.tools.path import CaseAwarePath
 from utility.common.geometry import Vector3
@@ -194,6 +195,12 @@ def _module_are_ifo(module: Module) -> tuple[ARE | None, IFO | None]:
     )
 
 
+def _module_git(module: Module) -> GIT | None:
+    """Return optional GIT resource from module."""
+    git_res = module.git()
+    return None if git_res is None else git_res.resource()
+
+
 def _apply_indoor_metadata(indoor: IndoorMap, module: Module, are: ARE | None, ifo: IFO | None) -> None:
     """Apply module id, area lighting/name, and warp point to indoor map."""
     indoor.module_id = module.module_id() or "test01"
@@ -321,6 +328,14 @@ def extract_indoor_from_module_as_modulekit(
     for comp in kit.components:
         _append_indoor_room(indoor, comp, comp.default_position)
     indoor.rebuild_room_connections()
+    if kit._module is not None:
+        are, ifo = _module_are_ifo(kit._module)
+        git = _module_git(kit._module)
+        indoor.are = are
+        indoor.ifo = ifo
+        indoor.git = git
+        indoor._preserve_extracted_metadata = any((are is not None, ifo is not None, git is not None))
+        _apply_indoor_metadata(indoor, kit._module, are, ifo)
     logger.debug("ModuleKit extraction produced %d room(s) for '%s'", len(indoor.rooms), module_root)
     return indoor
 

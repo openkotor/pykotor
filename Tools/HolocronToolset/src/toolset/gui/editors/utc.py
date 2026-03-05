@@ -119,6 +119,12 @@ class UTCEditor(Editor):
         self.ui.portraitPicture.customContextMenuRequested.connect(self._portrait_context_menu)
         self.ui.portraitPicture.setToolTip(self._generate_portrait_tooltip(as_html=True))
 
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        if installation is None:
+            return
+        self._setup_installation(installation)
+        self.update3dPreview()
+
     def _generate_portrait_tooltip(self, *, as_html: bool = False) -> str:
         # sourcery skip: lift-return-into-if
         """Generates a detailed tooltip for the portrait picture."""
@@ -404,7 +410,7 @@ class UTCEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
-        """Load UTC from bytes. Defaults when missing: see construct_utc. REVA: K1 LoadCreature @ 0x00500350 (LoadCreatures @ 0x00504a70), TSL LoadCreature @ 0x0068ccb0 (LoadCreatures @ 0x0071b140); ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350)."""
+        """Load UTC from bytes. Defaults when missing: see construct_utc. K1 LoadCreature @ 0x00500350 (LoadCreatures @ 0x00504a70), TSL LoadCreature @ 0x0068ccb0 (LoadCreatures @ 0x0071b140); ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350)."""
         super().load(filepath, resref, restype, data)
         self._load_utc(read_utc(data))
         self.update_item_count()
@@ -597,7 +603,7 @@ class UTCEditor(Editor):
             item.setCheckState(Qt.CheckState.Checked)
 
     def build(self) -> tuple[bytes | bytearray, bytes]:
-        """Build UTC bytes from editor state. Write values match engine. REVA: K1 LoadCreature @ 0x00500350, TSL @ 0x0068ccb0; ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350)."""
+        """Build UTC bytes from editor state. Write values match engine. K1 LoadCreature @ 0x00500350, TSL @ 0x0068ccb0; ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350)."""
         utc: UTC = deepcopy(self._utc)
 
         utc.first_name = self.ui.firstnameEdit.locstring()

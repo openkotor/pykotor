@@ -23,13 +23,22 @@ from qtpy.QtCore import (
 from qtpy.QtGui import QAction, QIcon, QPixmap
 from qtpy.QtWidgets import (
     QApplication,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
     QFileDialog,
+    QLabel,
+    QLineEdit,
     QMainWindow,
     QMenu,
     QMessageBox,
     QPlainTextEdit,  # pyright: ignore[reportPrivateImportUsage]
+    QPushButton,
     QShortcut,  # pyright: ignore[reportPrivateImportUsage]
     QStyle,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
 )
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
@@ -42,15 +51,18 @@ from pykotor.resource.formats.erf import ERF, ERFType, read_erf, write_erf
 from pykotor.resource.formats.gff import GFFStruct, bytes_gff, read_gff
 from pykotor.resource.formats.rim import read_rim, write_rim
 from pykotor.resource.type import ResourceType
-from pykotor.tools import module
 from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_capsule_file, is_rim_file, is_sav_file
+from pykotor.tools.module import rim_to_mod
+from toolset.data.installation import HTInstallation
+from toolset.gui.common.localization import tr, trf
 from toolset.gui.dialogs.load_from_module import LoadFromModuleDialog
 from toolset.gui.dialogs.save.to_bif import BifSaveDialog, BifSaveOption
 from toolset.gui.dialogs.save.to_module import SaveToModuleDialog
 from toolset.gui.dialogs.save.to_rim import RimSaveDialog, RimSaveOption
 from toolset.gui.widgets.edit.locstring import LocalizedStringLineEdit
+from toolset.gui.widgets.installation_toolbar import StandaloneWindowMixin
 from toolset.gui.widgets.media_player_widget import MediaPlayerWidget
-from toolset.gui.widgets.settings.installations import GlobalSettings
+from toolset.gui.widgets.settings.installations import GlobalSettings, InstallationsWidget
 from utility.error_handling import format_exception_with_variables
 
 if TYPE_CHECKING:
@@ -63,10 +75,9 @@ if TYPE_CHECKING:
     from qtpy.QtCore import QRect
     from qtpy.QtGui import QScreen, _QAction
     from qtpy.QtWidgets import (
-        QLineEdit,
+        QMenu,
         QMenuBar,
         QWidget,
-        _QMenu,
     )
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
 
@@ -77,7 +88,7 @@ if TYPE_CHECKING:
     from toolset.data.installation import HTInstallation
 
 
-class Editor(QMainWindow):
+class Editor(QMainWindow, StandaloneWindowMixin):
     sig_new_file: Signal = Signal()
     sig_saved_file: Signal = Signal(str, str, ResourceType, bytes)
     sig_loaded_file: Signal = Signal(str, str, ResourceType, bytes)
@@ -112,8 +123,168 @@ class Editor(QMainWindow):
 
         self.setup_editor_filters(read_supported, write_supported)
 
+        # Installation toolbar — always visible, allows switching installation at any time.
+        self._editor_toolbar: QToolBar = QToolBar(self)
+        self._editor_toolbar.setObjectName("editorToolbar")
+        self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self._editor_toolbar)
+        self._installation_combo: QComboBox | None = None
+        self._installation_cache: dict[str, HTInstallation] = {}
+        self._saved_installations: dict[str, dict[str, str | bool]] = {}
+        self._installation_combo_in_update: bool = False
+        self._folder_path_edits: dict[str, QLineEdit] = {}
+        self._add_installation_combobox_to_toolbar(self._editor_toolbar)
+
+        # Editors that declare STANDALONE_FOLDER_PATHS get a second toolbar row of folder path overrides.
+        if self.STANDALONE_FOLDER_PATHS:
+            self._folder_toolbar: QToolBar = QToolBar(self)
+            self._folder_toolbar.setObjectName("folderPathsToolbar")
+            self.addToolBarBreak(Qt.ToolBarArea.TopToolBarArea)
+            self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self._folder_toolbar)
+            self._add_folder_path_inputs_to_toolbar(self._folder_toolbar)
+
+    def _populate_editor_toolbar(self, toolbar: QToolBar) -> None:
+        """Override in subclasses to append editor-specific controls after the installation combobox.
+
+        The base class already adds the installation combobox (and folder path inputs for editors
+        that declare STANDALONE_FOLDER_PATHS) automatically in __init__, so subclasses should NOT
+        call _add_installation_combobox_to_toolbar here.
+        """
+
+    def enable_standalone_mode(self) -> None:
+        """Editors always show installation controls in their toolbar; no extra panel needed."""
+
+    def _add_folder_path_inputs_to_toolbar(self, toolbar: QToolBar) -> None:
+        """Add a label + QLineEdit + Browse button for every FolderPathSpec declared by the editor."""
+        for spec in self.STANDALONE_FOLDER_PATHS:
+            toolbar.addWidget(QLabel(f"{spec.label}:"))
+            edit = QLineEdit(self)
+            edit.setPlaceholderText("(optional)" if not spec.required else "(required)")
+            edit.setMinimumWidth(110)
+            edit.setToolTip(spec.tooltip)
+            toolbar.addWidget(edit)
+            browse_btn = QPushButton("Browse...", self)
+            browse_btn.clicked.connect(lambda _checked=False, k=spec.key: self._browse_folder_path(k))
+            toolbar.addWidget(browse_btn)
+            edit.editingFinished.connect(self._emit_folder_paths_changed)
+            self._folder_path_edits[spec.key] = edit
+
+    def _browse_folder_path(self, key: str) -> None:
+        """Open a directory chooser and store the chosen path in the matching folder edit."""
+        directory = QFileDialog.getExistingDirectory(self, "Select Folder")
+        if directory and key in self._folder_path_edits:
+            self._folder_path_edits[key].setText(directory)
+            self._emit_folder_paths_changed()
+
+    def _emit_folder_paths_changed(self) -> None:
+        """Collect current folder path edit values and forward to _on_folder_paths_changed."""
+        paths: dict[str, Path | None] = {
+            spec.key: (Path(text) if (text := self._folder_path_edits[spec.key].text().strip()) else None)
+            for spec in self.STANDALONE_FOLDER_PATHS
+            if spec.key in self._folder_path_edits
+        }
+        self._on_folder_paths_changed(paths)
+
+    def _add_installation_combobox_to_toolbar(self, toolbar: QToolBar) -> None:
+        """Add Installation: combobox and Reload/Manage buttons to the editor toolbar."""
+        toolbar.addWidget(QLabel("Installation:"))
+        self._installation_combo = QComboBox(self)
+        self._installation_combo.setMinimumWidth(180)
+        toolbar.addWidget(self._installation_combo)
+        reload_btn = QPushButton("Reload", self)
+        reload_btn.clicked.connect(self._reload_installation_combo)
+        toolbar.addWidget(reload_btn)
+        manage_btn = QPushButton("Manage...", self)
+        manage_btn.clicked.connect(self._open_installations_manage_dialog)
+        toolbar.addWidget(manage_btn)
+        self._reload_installation_combo()
+        self._installation_combo.currentIndexChanged.connect(self._on_installation_combo_changed)
+
+    def _reload_installation_combo(self) -> None:
+        """Reload installation list from GlobalSettings and preserve current selection or set from self._installation."""
+        if self._installation_combo is None:
+            return
+        current_key = self._installation_combo.currentData()
+        self._saved_installations = {name: {"path": config.path, "tsl": config.tsl, "name": name} for name, config in self._global_settings.installations().items()}
+        self._installation_combo_in_update = True
+        try:
+            self._installation_combo.clear()
+            self._installation_combo.addItem("(None)", None)
+            for name, config in sorted(self._saved_installations.items()):
+                self._installation_combo.addItem(f"{name} ({config['path']})", name)
+            if self._installation is not None:
+                key = self._installation.name
+                idx = self._installation_combo.findData(key)
+                if idx >= 0:
+                    self._installation_combo.setCurrentIndex(idx)
+            elif current_key is not None:
+                idx = self._installation_combo.findData(current_key)
+                if idx >= 0:
+                    self._installation_combo.setCurrentIndex(idx)
+        finally:
+            self._installation_combo_in_update = False
+
+    def _open_installations_manage_dialog(self) -> None:
+        """Open Manage Installations dialog and reload combobox on save."""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Manage Installations")
+        layout = QVBoxLayout(dialog)
+        widget = InstallationsWidget(dialog)
+        layout.addWidget(widget)
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel,
+            dialog,
+        )
+        layout.addWidget(button_box)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            widget.save()
+            self._reload_installation_combo()
+
+    def _on_installation_combo_changed(self, _index: int) -> None:
+        """Resolve selected installation and call _on_installation_changed."""
+        if self._installation_combo_in_update:
+            return
+        installation = self._get_installation_from_combo()
+        self._installation = installation
+        self._on_installation_changed(installation)
+
+    def _get_installation_from_combo(self) -> HTInstallation | None:
+        """Resolve current combobox selection to HTInstallation."""
+        if self._installation_combo is None:
+            return None
+        selected_name: str | None = self._installation_combo.currentData()
+        if selected_name is None:
+            return None
+        cache_key: str = str(selected_name)
+        if cache_key in self._installation_cache:
+            return self._installation_cache[cache_key]
+        config: dict[str, Any] | None = self._saved_installations.get(cache_key)
+        if config is None:
+            return None
+        try:
+            installation = HTInstallation(
+                str(config["path"]),
+                str(config["name"]),
+                tsl=bool(config.get("tsl") or False),
+            )
+            self._installation_cache[cache_key] = installation
+            return installation
+        except Exception as exc:
+            self._logger.exception("Failed to create installation '%s': %s", cache_key, exc)
+            QMessageBox.warning(
+                self,
+                "Invalid Installation",
+                f"Could not load installation '{cache_key}'.",
+            )
+            return None
+
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        """Override in subclasses that need to react to installation changes."""
+        return
+
     @abstractmethod
-    def build(self) -> tuple[bytes | bytearray, bytes]: ...
+    def build(self) -> tuple[bytes | bytearray, bytes | bytearray]: ...
 
     def _setup_menus(self):
         menubar: QMenuBar | None = self.menuBar()
@@ -270,15 +441,15 @@ class Editor(QMainWindow):
 
     def refresh_window_title(self):
         """Refreshes the window title based on the current state of the editor."""
-        installation_name: str = self._installation.name if self._installation else "No Installation"
-        title: str = f"{self._editor_title}({installation_name})[*]"
+        installation_name: str = self._installation.name if self._installation else tr("No Installation")
+        title: str = trf("{editor_title}({installation_name})[*]", editor_title=self._editor_title, installation_name=installation_name)
         if self._filepath and self._resname and self._restype:
             relpath: Path = self._filepath.relative_to(self._filepath.parent.parent) if self._filepath.parent.parent.name else self._filepath.parent
             from toolset.gui.editors.erf import ERFEditor
 
             if (is_bif_file(relpath) or is_capsule_file(self._filepath)) and not isinstance(self, ERFEditor):
                 relpath /= f"{self._resname}.{self._restype.extension}"
-            title = f"{relpath} - {title}"
+            title = trf("{relpath} - {title}", relpath=relpath, title=title)
         self.setWindowTitle(title)
 
     def setup_editor_filters(
@@ -290,36 +461,40 @@ class Editor(QMainWindow):
         additional_formats: set[str] = {"XML", "JSON", "CSV", "ASCII", "YAML"}
         for add_format in additional_formats:
             read_supported.extend(
-                ResourceType.__members__[f"{restype.name}_{add_format}"] for restype in read_supported if f"{restype.name}_{add_format}" in ResourceType.__members__
-            )  # noqa: E501
+                ResourceType.__members__[f"{restype.name}_{add_format}"]
+                for restype in read_supported
+                if f"{restype.name}_{add_format}" in ResourceType.__members__  # noqa: E501
+            )
             write_supported.extend(
-                ResourceType.__members__[f"{restype.name}_{add_format}"] for restype in write_supported if f"{restype.name}_{add_format}" in ResourceType.__members__
-            )  # noqa: E501
+                ResourceType.__members__[f"{restype.name}_{add_format}"]
+                for restype in write_supported
+                if f"{restype.name}_{add_format}" in ResourceType.__members__  # noqa: E501
+            )
         self._read_supported: list[ResourceType] = read_supported
         self._write_supported: list[ResourceType] = write_supported
 
-        self._save_filter: str = "All valid files ("
+        self._save_filter: str = tr("All valid files (")
         for resource in write_supported:
             self._save_filter += f"*.{resource.extension}{'' if write_supported[-1] == resource else ' '}"
         self._save_filter += f" {self.CAPSULE_FILTER});;"
         for resource in write_supported:
             self._save_filter += f"{resource.category} File (*.{resource.extension});;"
-        self._save_filter += f"Save into module ({self.CAPSULE_FILTER})"
+        self._save_filter += trf("Save into module ({capsule_filter})", capsule_filter=self.CAPSULE_FILTER)
 
-        self._open_filter: str = "All valid files ("
+        self._open_filter: str = tr("All valid files (")
         for resource in read_supported:
             self._open_filter += f"*.{resource.extension}{'' if read_supported[-1] == resource else ' '}"
         self._open_filter += f" {self.CAPSULE_FILTER});;"
         for resource in read_supported:
             self._open_filter += f"{resource.category} File (*.{resource.extension});;"
-        self._open_filter += f"Load from module ({self.CAPSULE_FILTER})"
+        self._open_filter += trf("Load from module ({capsule_filter})", capsule_filter=self.CAPSULE_FILTER)
 
     def save_as(self):  # noqa: C901
         def show_invalid(exc: Exception | None, msg: str):
             msgBox = QMessageBox(
                 QMessageBox.Icon.Critical,
-                "Invalid filename/extension",
-                f"Check the filename and try again. Could not save!{f'<br><br>{msg}' if msg else ''}",
+                tr("Invalid filename/extension"),
+                trf("Check the filename and try again. Could not save!{msg}", msg=f'<br><br>{msg}' if msg else ''),
                 parent=None,
                 flags=Qt.WindowType.Window | Qt.WindowType.Dialog | Qt.WindowType.WindowStaysOnTopHint,
             )
@@ -361,7 +536,7 @@ class Editor(QMainWindow):
         self.refresh_window_title()
         menu_bar: QMenuBar | None = self.menuBar()
         assert menu_bar is not None, "menu_bar is somehow None"
-        menu: _QMenu | None = menu_bar.actions()[0].menu()
+        menu: QMenu | None = menu_bar.actions()[0].menu()
         assert menu is not None, "menu is somehow None"
         for action in menu.actions():
             if action.text() == "Revert":
@@ -378,10 +553,11 @@ class Editor(QMainWindow):
                 return
             from toolset.gui.editors.gff import GFFEditor
 
+            # HACK: Write a real implementation for this later, and remove this hack.
             # CRITICAL: For save game resources, ALWAYS preserve extra fields
             # Save game GFF files contain undocumented fields that must be preserved
             # to prevent save corruption. This is more important than the user setting.
-            should_preserve_fields = self._is_save_game_resource or self._global_settings.attemptKeepOldGFFFields
+            should_preserve_fields: bool = self._is_save_game_resource or self._global_settings.attemptKeepOldGFFFields
 
             if should_preserve_fields and self._restype is not None and self._restype.is_gff() and not isinstance(self, GFFEditor) and self._revert is not None:  # noqa: E501
                 if self._is_save_game_resource:
@@ -406,8 +582,8 @@ class Editor(QMainWindow):
                 self._save_ends_with_other(data, data_ext)
         except Exception as e:  # noqa: BLE001
             self.blink_window()
-            RobustLogger().critical("Failed to write to file", exc_info=True)
-            msg_box = QMessageBox(QMessageBox.Icon.Critical, "Failed to write to file", str((e.__class__.__name__, str(e))).replace("\n", "<br>"))
+            RobustLogger().critical(tr("Failed to write to file"), exc_info=True)
+            msg_box = QMessageBox(QMessageBox.Icon.Critical, tr("Failed to write to file"), trf("{class_name}: {error}", class_name=e.__class__.__name__, error=str(e)).replace("\n", "<br>"))
             msg_box.setDetailedText(format_exception_with_variables(e))
             msg_box.exec()
         else:
@@ -421,10 +597,17 @@ class Editor(QMainWindow):
         dialog = BifSaveDialog(self)
         dialog.exec()
         if dialog.option == BifSaveOption.MOD:
-            str_filepath, filter = QFileDialog.getSaveFileName(self, "Save As", "", ".MOD File (*.mod)", "")
+            str_filepath, filter = QFileDialog.getSaveFileName(
+                self,
+                tr("Save As"),
+                "",
+                tr(".MOD File (*.mod)"),
+                "",
+                options=QFileDialog.Option.DontUseNativeDialog,
+            )
             if str_filepath is None or not str(str_filepath).strip():
                 return
-            r_filepath = Path(str_filepath)
+            r_filepath: Path = Path(str_filepath)
             dialog2 = SaveToModuleDialog(self._resname, self._restype, self._write_supported)
             if dialog2.exec():
                 self._resname = dialog2.resname()
@@ -548,10 +731,10 @@ class Editor(QMainWindow):
         if self._filepath.is_file():
             erf: ERF = read_erf(self._filepath)
         elif self._filepath.with_suffix(".rim").is_file():
-            module.rim_to_mod(self._filepath)
+            rim_to_mod(self._filepath)
             erf = read_erf(self._filepath)
         else:
-            print(f"Saving '{self._resname}.{self._restype}' to a blank new {erftype.name} file at '{self._filepath}'")
+            print(trf("Saving '{resname}.{restype}' to a blank new {erftype_name} file at '{filepath}'", resname=self._resname, restype=self._restype, erftype_name=erftype.name, filepath=self._filepath))
             erf = ERF(erftype)
         erf.erf_type = erftype
 
@@ -637,7 +820,7 @@ class Editor(QMainWindow):
         assert menu_bar is not None, "Menu bar is None somehow? This should be impossible."
         menu_bar_actions: Sequence[_QAction] = menu_bar.actions()  # pyright: ignore[reportAssignmentType]
         if len(menu_bar_actions) > 0:
-            menu: _QMenu | None = menu_bar_actions[0].menu()
+            menu: QMenu | None = menu_bar_actions[0].menu()
             assert menu is not None, "Menu is somehow None"
             for action in menu_bar_actions:
                 if action.text() == "Revert":
@@ -681,7 +864,7 @@ class Editor(QMainWindow):
         self._filepath = self.setup_extract_path() / f"{self._resname}.{self._restype.extension}"
         menu_bar: QMenuBar | None = cast("Optional[QMenuBar]", self.menuBar())
         assert menu_bar is not None, "Menu bar is None somehow? This should be impossible."
-        menu: _QMenu | None = menu_bar.actions()[0].menu()
+        menu: QMenu | None = menu_bar.actions()[0].menu()
         assert menu is not None, "Menu is somehow None"
         menu_bar_actions: Sequence[_QAction] = menu.actions()  # pyright: ignore[reportAssignmentType]
         if len(menu_bar_actions) > 0:

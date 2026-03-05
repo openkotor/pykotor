@@ -479,7 +479,7 @@ def dismantle_utd(
     gff = GFF(GFFContent.UTD)
 
     root: GFFStruct = gff.root
-    # Root fields: same defaults as engine when missing (0, "", blank ResRef). REVA: K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620. Omit OK.
+    # Root fields: same defaults as engine when missing (0, "", blank ResRef). K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620. Omit OK.
     root.set_string("Tag", utd.tag)
     root.set_locstring("LocName", utd.name)
     root.set_resref("TemplateResRef", utd.resref)

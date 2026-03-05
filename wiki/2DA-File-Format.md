@@ -177,6 +177,50 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 ---
 
+<!-- Anchors for TOC links to 2DA files that do not have a dedicated subsection -->
+<a id="actions2da"></a>
+<a id="ai_styles2da"></a>
+<a id="aiscripts2da"></a>
+<a id="aliensound2da"></a>
+<a id="alienvo2da"></a>
+<a id="areaeffects2da"></a>
+<a id="bodyvariation2da"></a>
+<a id="chargenclothes2da"></a>
+<a id="cls_atk_2da"></a>
+<a id="cls_savthr_2da"></a>
+<a id="creaturesize2da"></a>
+<a id="credits2da"></a>
+<a id="crtemplates2da"></a>
+<a id="environment2da"></a>
+<a id="gamespyrooms2da"></a>
+<a id="hen_companion2da"></a>
+<a id="hen_familiar2da"></a>
+<a id="humanfirst2da"></a>
+<a id="humanlast2da"></a>
+<a id="iprp_ammocost2da"></a>
+<a id="iprp_attackmod2da"></a>
+<a id="iprp_bonusfeat2da"></a>
+<a id="iprp_damagered2da"></a>
+<a id="iprp_damagevs2da"></a>
+<a id="iprp_feats2da"></a>
+<a id="iprp_skillcost2da"></a>
+<a id="iprp_spellres2da"></a>
+<a id="iprp_spells2da"></a>
+<a id="iprp_traptype2da"></a>
+<a id="iprp_weightinc2da"></a>
+<a id="itempropsdef2da"></a>
+<a id="merchants2da"></a>
+<a id="minglobalrim2da"></a>
+<a id="musictable2da"></a>
+<a id="palette2da"></a>
+<a id="phenotype2da"></a>
+<a id="rumble2da"></a>
+<a id="soundeax2da"></a>
+<a id="textures2da"></a>
+<a id="tilecolor2da"></a>
+<a id="tutorial_old2da"></a>
+<a id="videoquality2da"></a>
+
 ## file structure Overview
 
 2DA files store tabular game data in a compact format used by the KotOR game engine. files use version "V2.b" and have the `.2da` extension.

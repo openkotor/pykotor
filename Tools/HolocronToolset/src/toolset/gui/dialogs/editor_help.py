@@ -90,8 +90,7 @@ class EditorHelpDialog(QDialog):
         """
         toolset_wiki_path, root_wiki_path = get_wiki_path()
         file_path = toolset_wiki_path / wiki_filename
-        if not file_path.exists():
-            assert root_wiki_path is not None
+        if not file_path.exists() and root_wiki_path is not None:
             file_path = root_wiki_path / wiki_filename
 
         if not file_path.exists():

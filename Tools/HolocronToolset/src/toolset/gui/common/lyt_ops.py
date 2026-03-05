@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, Union, cast
 
-
 from pykotor.resource.formats.lyt import LYTDoorHook, LYTObstacle, LYTRoom, LYTTrack
 
 if TYPE_CHECKING:

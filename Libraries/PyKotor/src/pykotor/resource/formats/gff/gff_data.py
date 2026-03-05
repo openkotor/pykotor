@@ -79,6 +79,10 @@ U = TypeVar("U")
 GFFStructType = TypeVar("GFFStructType", bound="GFFStruct")
 
 
+# Max lines per side for difflib; larger inputs use a short summary to avoid O(n*m) timeout
+_FORMAT_DIFF_MAX_LINES = 4000
+
+
 def format_diff(
     old_value: object,
     new_value: object,
@@ -89,6 +93,14 @@ def format_diff(
     # Convert values to strings if they aren't already
     str_old_value: list[str] = str(old_value).splitlines(keepends=True)
     str_new_value: list[str] = str(new_value).splitlines(keepends=True)
+
+    # Avoid difflib on huge inputs (SequenceMatcher is O(n*m), can timeout)
+    if len(str_old_value) > _FORMAT_DIFF_MAX_LINES or len(str_new_value) > _FORMAT_DIFF_MAX_LINES:
+        return (
+            f"(old){name}: {len(str_old_value)} lines\n"
+            f"(new){name}: {len(str_new_value)} lines\n"
+            "(diff omitted: value too large)"
+        )
 
     # Generate diff based on format type
     if format_type == "unified":

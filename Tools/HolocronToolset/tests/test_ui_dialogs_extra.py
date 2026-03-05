@@ -13,7 +13,6 @@ from unittest.mock import MagicMock, patch
 from toolset.gui.dialogs.extract_options import ExtractOptionsDialog
 from toolset.gui.dialogs.inventory import InventoryItem, EquipmentSlot
 from toolset.gui.dialogs.select_module import SelectModuleDialog
-from toolset.gui.dialogs.indoor_settings import IndoorMapSettings
 
 if TYPE_CHECKING:
     from pytestqt.qtbot import QtBot
@@ -113,22 +112,6 @@ def test_select_module_dialog(qtbot: QtBot, installation: HTInstallation):
         # Select item
         # dialog.ui.moduleList.setCurrentRow(0)
         # assert dialog.selected_module() == ...
-
-
-def test_indoor_settings_dialog(qtbot: QtBot, installation: HTInstallation):
-    """Test IndoorMapSettings."""
-    from pykotor.common.indoormap import IndoorMap
-    from pykotor.common.indoorkit import Kit
-
-    parent = QWidget()
-    indoor_map = IndoorMap()
-    kits: list[Kit] = []
-    dialog = IndoorMapSettings(parent, installation, indoor_map, kits)
-    qtbot.addWidget(dialog)
-    dialog.show()
-
-    assert dialog.isVisible()
-    # Test generic settings widgets
 
 
 def test_inventory_editor(qtbot: QtBot, installation: HTInstallation):

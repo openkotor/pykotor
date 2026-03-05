@@ -400,6 +400,10 @@ class GlobalSettings(Settings):
         "showPreviewUTD",
         True,
     )
+    showPreviewUTI: SettingsProperty[bool] = Settings.addSetting(
+        "showPreviewUTI",
+        True,
+    )
     # endregion
 
 

@@ -190,6 +190,9 @@ def create_standalone_app(argv: list[str] | None = None) -> QApplication:
         argv = sys.argv
 
     app = QApplication(argv)
+    from toolset.gui.common.tooltip_utils import install_tooltip_label_filter
+
+    install_tooltip_label_filter(app)
     app.setApplicationName("HolocronToolset-Editor")
     app.setOrganizationName("PyKotor")
     app.setOrganizationDomain("github.com/OldRepublicDevs/PyKotor")
@@ -409,7 +412,10 @@ def create_editor(
         An editor instance ready to show.
     """
     editor_class = _import_editor_class(editor_name)
-    return editor_class(parent, installation)
+    editor = editor_class(parent, installation)
+    if hasattr(editor, "enable_standalone_mode"):
+        editor.enable_standalone_mode()
+    return editor
 
 
 def create_app(
@@ -435,10 +441,16 @@ def create_app(
         if installation is None:
             raise ValueError("Module Designer requires an installation.")
         mod_filepath = Path(file_path).resolve() if file_path is not None else None
-        return app_class(parent, installation, mod_filepath)
+        window = app_class(parent, installation, mod_filepath)
+        if hasattr(window, "enable_standalone_mode"):
+            window.enable_standalone_mode()
+        return window
 
     if app_name == "indoor-builder":
-        return app_class(parent, installation)
+        window = app_class(parent, installation)
+        if hasattr(window, "enable_standalone_mode"):
+            window.enable_standalone_mode()
+        return window
 
     raise ValueError(f"Unsupported app key: {app_name}")
 
@@ -855,6 +867,7 @@ launch_ltr = _make_editor_launcher("ltr")
 launch_mdl = _make_editor_launcher("mdl")
 launch_nss = _make_editor_launcher("nss")
 launch_pth = _make_editor_launcher("pth")
+launch_savegame = _make_editor_launcher("savegame")
 launch_ssf = _make_editor_launcher("ssf")
 launch_tlk = _make_editor_launcher("tlk")
 launch_tpc = _make_editor_launcher("tpc")

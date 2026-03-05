@@ -136,7 +136,7 @@ class TestPTH(unittest.TestCase):
         assert pth.is_connected(3, 1)
 
     def test_pth_missing_field_defaults(self) -> None:
-        """Test defaults when PTH fields are omitted (REVA: K1 0x00508400, TSL 0x00721db0)."""
+        """Test defaults when PTH fields are omitted (K1 0x00508400, TSL 0x00721db0)."""
         minimal_pth_xml = """<gff3>
           <struct id="-1">
             <list label="Path_Points">

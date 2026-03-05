@@ -7,7 +7,6 @@ import re
 
 from pathlib import Path
 
-
 _MD_BLOCK_START_RE = re.compile(r"^(\s*)```ini", re.IGNORECASE)
 _HASH_START_COMMENT_RE = re.compile(r"^(\s*)# (.+)$")
 _INLINE_HASH_COMMENT_RE = re.compile(r"(\S)\s+# ([^#]+)$")

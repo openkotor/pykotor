@@ -750,7 +750,7 @@ def dismantle_utc(
     gff = GFF(GFFContent.UTC)
 
     root = gff.root
-    # Root fields: same defaults as engine ReadField* when missing (0, 0.0, "", blank ResRef). REVA: K1 LoadCreature @ 0x00500350, TSL @ 0x0068ccb0; ReadStatsFromGff @ (K1: 0x005afce0, TSL: 0x006ec350). Omit OK.
+    # Root fields: same defaults as engine ReadField* when missing (0, 0.0, "", blank ResRef). K1 LoadCreature @ 0x00500350, TSL @ 0x0068ccb0; ReadStatsFromGff @ (K1: 0x005afce0, TSL: 0x006ec350). Omit OK.
     root.set_resref("TemplateResRef", utc.resref)
     root.set_string("Tag", utc.tag)
     root.set_string("Comment", utc.comment)

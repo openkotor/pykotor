@@ -13,6 +13,7 @@ This document provides detailed documentation for NWScript ability and stat func
 ### Understanding Ability Scores
 
 KotOR uses the D&D d20 system with six ability scores:
+
 - **Strength (STR)** - Physical power, melee damage
 - **Dexterity (DEX)** - Agility, ranged accuracy, defense
 - **Constitution (CON)** - Health, hit points
@@ -25,6 +26,7 @@ Ability scores typically range from 3 to 18 (though can be modified by effects).
 ### Understanding Hit Points
 
 Hit Points (HP) represent a creature's health:
+
 - **Current HP** - Current health value
 - **Max HP** - Maximum possible health
 - When Current HP reaches 0, the creature is unconscious or dead
@@ -38,14 +40,17 @@ Hit Points (HP) represent a creature's health:
 **Routine:** 288
 
 #### Function Signature
+
 ```nss
 int GetAbilityScore(int nAbility, object oCreature = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the base ability score of a creature. Returns the actual ability score value (typically 3-18+).
 
 #### Parameters
+
 - `nAbility`: Ability constant:
   - `ABILITY_STRENGTH` (0) - Strength
   - `ABILITY_DEXTERITY` (1) - Dexterity
@@ -56,6 +61,7 @@ Gets the base ability score of a creature. Returns the actual ability score valu
 - `oCreature`: Creature to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Ability score value (typically 3-18, can be higher with effects)
 - Default score if ability is invalid
 
@@ -80,6 +86,7 @@ if (nINT >= 14 || nWIS >= 14) {
 ```
 
 **Pattern: Ability-Based Dialogue**
+
 ```nss
 // Use ability scores for dialogue options
 int nCHA = GetAbilityScore(ABILITY_CHARISMA, GetFirstPC());
@@ -89,6 +96,7 @@ if (nCHA >= 15) {
 ```
 
 #### Notes
+
 - Returns base ability score, not modified by temporary effects
 - Ability scores can be modified by permanent effects (items, level-ups)
 - Typical range is 3-18, but can be higher with effects
@@ -100,18 +108,22 @@ if (nCHA >= 15) {
 **Routine:** 331
 
 #### Function Signature
+
 ```nss
 int GetAbilityModifier(int nAbility, object oCreature = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the ability modifier for a creature. The modifier is calculated as `(Ability Score - 10) / 2`, rounded down. Modifiers affect skills, combat, and other derived statistics.
 
 #### Parameters
+
 - `nAbility`: Ability constant (see `GetAbilityScore`)
 - `oCreature`: Creature to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Ability modifier (e.g., -4 to +4 for scores 3-18)
 - Negative values for scores below 10, positive for scores above 10
 
@@ -146,6 +158,7 @@ int nTotalDamage = nBaseDamage + nSTRMod;
 ```
 
 **Pattern: Skill Check with Modifier**
+
 ```nss
 // Calculate effective skill rank (base + modifier)
 int nBaseSkill = GetSkillRank(SKILL_REPAIR, GetFirstPC());
@@ -154,6 +167,7 @@ int nEffectiveSkill = nBaseSkill + nINTMod;
 ```
 
 #### Notes
+
 - Modifier affects skills (Intelligence for Repair, Dexterity for Stealth, etc.)
 - Modifier affects combat (Strength for melee, Dexterity for ranged)
 - Formula: `(Score - 10) / 2`, rounded down
@@ -167,17 +181,21 @@ int nEffectiveSkill = nBaseSkill + nINTMod;
 **Routine:** 49
 
 #### Function Signature
+
 ```nss
 int GetCurrentHitPoints(object oObject = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the current hit points (health) of a creature or object. When HP reaches 0, the creature is unconscious or dead.
 
 #### Parameters
+
 - `oObject`: Creature or object to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Current hit points (0 or higher)
 - `0` if object is invalid or dead
 
@@ -200,6 +218,7 @@ if (nHP <= 0) {
 ```
 
 **Pattern: Health Percentage Check**
+
 ```nss
 // Check health as percentage
 int nCurrentHP = GetCurrentHitPoints(GetFirstPC());
@@ -212,6 +231,7 @@ if (fPercent < 25.0) {
 ```
 
 **Pattern: Combat Health Monitoring**
+
 ```nss
 // Check health during combat
 int nHP = GetCurrentHitPoints(OBJECT_SELF);
@@ -223,6 +243,7 @@ if (nHP < (nMaxHP / 2)) {
 ```
 
 #### Notes
+
 - Returns 0 for dead creatures
 - Works on creatures, doors, and placeables
 - Use with `GetMaxHitPoints()` to calculate health percentage
@@ -234,17 +255,21 @@ if (nHP < (nMaxHP / 2)) {
 **Routine:** 50
 
 #### Function Signature
+
 ```nss
 int GetMaxHitPoints(object oObject = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the maximum hit points (health capacity) of a creature or object. This is the highest HP value the creature can have.
 
 #### Parameters
+
 - `oObject`: Creature or object to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Maximum hit points
 - `0` if object is invalid
 
@@ -256,6 +281,7 @@ int nMaxHP = GetMaxHitPoints(GetFirstPC());
 ```
 
 **Pattern: Full Heal**
+
 ```nss
 // Heal to full HP
 object oTarget = GetFirstPC();
@@ -270,6 +296,7 @@ if (nHealAmount > 0) {
 ```
 
 **Pattern: Health Percentage**
+
 ```nss
 // Calculate health percentage
 int nCurrent = GetCurrentHitPoints(GetFirstPC());
@@ -288,6 +315,7 @@ if (fPercent >= 75.0) {
 ```
 
 #### Notes
+
 - Max HP is determined by Constitution, class, and level
 - Can be modified by temporary or permanent effects
 - Use with `GetCurrentHitPoints()` for health calculations
@@ -301,17 +329,21 @@ if (fPercent >= 75.0) {
 **Routine:** 55
 
 #### Function Signature
+
 ```nss
 int GetCurrentForcePoints(object oObject = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the current Force Points (FP) of a creature. Force Points are used to cast Force powers.
 
 #### Parameters
+
 - `oObject`: Creature to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Current Force Points (0 or higher)
 - `0` if creature is invalid or has no Force Points
 
@@ -332,17 +364,21 @@ if (nFP < 10) {
 **Routine:** 56
 
 #### Function Signature
+
 ```nss
 int GetMaxForcePoints(object oObject = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the maximum Force Points (FP) of a creature. Max FP is determined by Wisdom modifier and class levels.
 
 #### Parameters
+
 - `oObject`: Creature to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Maximum Force Points
 - `0` if creature is invalid or has no Force abilities
 
@@ -446,6 +482,7 @@ int nTotalDefense = nBaseDefense + nDEXMod;
 ### Ability Score Modifiers
 
 Ability modifiers are automatically calculated and affect:
+
 - **Skills**: Intelligence affects Repair, Wisdom affects Awareness, etc.
 - **Combat**: Strength affects melee damage, Dexterity affects ranged accuracy
 - **Defense**: Dexterity modifier adds to defense (AC)
@@ -454,11 +491,13 @@ Ability modifiers are automatically calculated and affect:
 ### Hit Point Calculation
 
 Max HP is calculated from:
+
 - Base HP from class and level
 - Constitution modifier per level
 - Temporary or permanent effects
 
 Current HP can be:
+
 - Reduced by damage (combat, effects)
 - Restored by healing (effects, items)
 - Cannot exceed Max HP
@@ -466,6 +505,7 @@ Current HP can be:
 ### Force Points (KotOR Specific)
 
 Force Points are used for Force powers:
+
 - Max FP is determined by Wisdom modifier and Jedi class levels
 - FP regenerate over time (implementation dependent)
 - Non-Jedi characters typically have 0 FP

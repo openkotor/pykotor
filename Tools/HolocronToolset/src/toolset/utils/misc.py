@@ -36,6 +36,37 @@ MODIFIER_KEY_NAMES: dict[Qt.Key, str] = {
 }
 MODIFIER_KEYNAME_TO_KEY: dict[str, Qt.Key] = {v: k for k, v in MODIFIER_KEY_NAMES.items()}
 
+# Map Qt.KeyboardModifier (e.g. from QWheelEvent.modifiers()) to Qt.Key for bind checks.
+_MODIFIER_FLAG_TO_KEY: list[tuple[object, Qt.Key]] = []
+if hasattr(Qt, "KeyboardModifier"):
+    km = Qt.KeyboardModifier  # type: ignore[attr-defined]
+    _MODIFIER_FLAG_TO_KEY = [
+        (km.ControlModifier, Qt.Key.Key_Control),  # type: ignore[attr-defined]
+        (km.ShiftModifier, Qt.Key.Key_Shift),  # type: ignore[attr-defined]
+        (km.AltModifier, Qt.Key.Key_Alt),  # type: ignore[attr-defined]
+        (km.MetaModifier, Qt.Key.Key_Meta),  # type: ignore[attr-defined]
+    ]
+
+
+def keyboard_modifiers_to_qt_keys(modifiers: Qt.KeyboardModifier) -> set[Qt.Key]:  # type: ignore[name-defined]
+    """Map Qt.KeyboardModifier flags (e.g. from QWheelEvent.modifiers()) to a set of Qt.Key.
+
+    Used so scroll handlers see the modifier state at scroll time even when the
+    widget does not have keyboard focus (keyPress/keyRelease are focus-dependent).
+    """
+    result: set[Qt.Key] = set()
+    try:
+        mod_int = int(modifiers)  # pyright: ignore[reportArgumentType]
+    except (TypeError, ValueError):
+        return result
+    for flag, key in _MODIFIER_FLAG_TO_KEY:
+        try:
+            if mod_int & int(flag):  # pyright: ignore[reportArgumentType]
+                result.add(key)
+        except (TypeError, ValueError):
+            pass
+    return result
+
 
 MOUSE_BUTTON_NAMES: dict[Qt.MouseButton, str] = {
     Qt.MouseButton.LeftButton: "LeftButton",

@@ -14,7 +14,7 @@ from qtpy.QtWidgets import (
     QListWidgetItem,
     QMenu,
     QMessageBox,
-    QShortcut,
+    QShortcut,  # pyright: ignore[reportPrivateImportUsage]
     QTableWidget,
     QTableWidgetItem,
 )
@@ -27,6 +27,8 @@ from pykotor.resource.type import ResourceType
 from toolset.gui.common.filters import NoScrollEventFilter
 from toolset.gui.dialogs.load_from_location_result import FileSelectionWindow
 from toolset.gui.editor import Editor
+from toolset.gui.editors.gff import GFFEditor
+from toolset.utils.window import open_resource_editor
 from utility.common.geometry import Vector4
 
 if TYPE_CHECKING:
@@ -213,10 +215,14 @@ class SaveGameEditor(Editor):
         self.ui.pushButtonOpenModuleResource.clicked.connect(self.on_open_module_resource)
         self.ui.treeViewCachedModules.doubleClicked.connect(self.on_open_module_resource)
 
-        # Advanced/Raw signals
-        self.ui.tableWidgetAdvancedSaveInfo.itemChanged.connect(self.on_advanced_field_changed)
-        self.ui.tableWidgetAdvancedPartyTable.itemChanged.connect(self.on_advanced_field_changed)
+        # Advanced/Raw signals: combo switches GFF source; list double-click opens resource
+        self.ui.comboAdvancedGffSource.currentIndexChanged.connect(self._on_advanced_gff_source_changed)
+        self.ui.stackedWidgetAdvanced.currentChanged.connect(self._on_advanced_stack_changed)
         self.ui.listWidgetAdvancedResources.itemDoubleClicked.connect(self.on_open_advanced_resource)
+
+        # GFF editors for SaveInfo and PartyTable (embedded in Advanced tab)
+        self._gff_editor_saveinfo: GFFEditor | None = None
+        self._gff_editor_partytable: GFFEditor | None = None
 
         # Tool actions
         self.ui.actionFlushEventQueue.triggered.connect(self.flush_event_queue)
@@ -2134,9 +2140,8 @@ class SaveGameEditor(Editor):
         pass
 
     def update_advanced_fields_from_ui(self):
-        """Update additional fields from Advanced/Raw tabs."""
-        # TODO: Implement advanced field editing with proper GFF type conversion
-        pass
+        """Flush embedded GFF editor (SaveInfo or PartyTable) back to model so save() persists edits."""
+        self._flush_current_advanced_gff_to_model()
 
     # ==================== Journal Methods ====================
 
@@ -2599,18 +2604,7 @@ class SaveGameEditor(Editor):
         if not data:
             return
 
-        # Get the main window to access editor registry
-        from toolset.gui.windows.main import ToolWindow
-
-        main_window = self.parent()
-        while main_window and not isinstance(main_window, ToolWindow):
-            main_window = main_window.parent()
-
-        if not main_window:
-            QMessageBox.warning(self, tr("Cannot Open Resource"), tr("Main window not found. Cannot open resource editor."))
-            return
-
-        # Determine resource identifier
+        # Determine resource identifier and get data
         if isinstance(data, tuple):
             # Nested resource (module_id, res_id)
             module_id, res_id = data
@@ -2618,14 +2612,43 @@ class SaveGameEditor(Editor):
             QMessageBox.information(
                 self, tr("Nested Resource"), trf("Opening nested resource {resname} from module {module}", resname=str(res_id.resname), module=str(module_id.resname))
             )
-        else:
-            # Direct resource
-            res_id = data
-            # Open in appropriate editor
+            return
+
+        res_id = data
+        if not self._nested_capsule:
+            QMessageBox.warning(self, tr("Cannot Open Resource"), tr("No save data loaded."))
+            return
+
+        # Resolve resource bytes: other_resources or cached character (serialize UTC to GFF)
+        resource_data = self._nested_capsule.other_resources.get(res_id)
+        if resource_data is None and res_id in self._nested_capsule.cached_characters:
+            utc = self._nested_capsule.cached_characters[res_id]
             try:
-                main_window.open_resource_editor(res_id.resname, res_id.restype, None)
-            except Exception as e:
-                QMessageBox.critical(self, tr("Error Opening Resource"), trf("Failed to open resource:\n{error}", error=str(e)))
+                from pykotor.resource.generics.utc import bytes_utc
+                resource_data = bytes_utc(utc, self._nested_capsule.game)
+            except Exception:  # noqa: BLE001
+                resource_data = None
+
+        if resource_data is None:
+            QMessageBox.warning(
+                self,
+                tr("Cannot Open Resource"),
+                trf("Resource data for {resname} is not available for opening.", resname=str(res_id.resname)),
+            )
+            return
+
+        filepath = self._nested_capsule.nested_capsule_path
+        try:
+            open_resource_editor(
+                filepath,
+                res_id.resname,
+                res_id.restype,
+                resource_data,
+                installation=self._installation,
+                parent_window=self,
+            )
+        except Exception as e:
+            QMessageBox.critical(self, tr("Error Opening Resource"), trf("Failed to open resource:\n{error}", error=str(e)))
 
     # ==================== Reputation Methods ====================
 
@@ -2670,99 +2693,99 @@ class SaveGameEditor(Editor):
 
     # ==================== Advanced/Raw Fields Methods ====================
 
+    def _ensure_gff_editors_embedded(self) -> None:
+        """Create GFF editors and embed their central widgets in the Advanced tab (once per load)."""
+        if self._gff_editor_saveinfo is not None and self._gff_editor_partytable is not None:
+            return
+        # Create SaveInfo GFF editor and replace placeholder
+        self._gff_editor_saveinfo = GFFEditor(self, self._installation)
+        self._gff_editor_saveinfo.setWindowFlags(Qt.WindowType.Widget)
+        layout_si = self.ui.verticalLayoutAdvancedSaveInfoGff
+        old_si = self.ui.labelAdvancedSaveInfoGffPlaceholder
+        layout_si.removeWidget(old_si)
+        old_si.deleteLater()
+        layout_si.addWidget(self._gff_editor_saveinfo.centralWidget())
+        # Create PartyTable GFF editor and replace placeholder
+        self._gff_editor_partytable = GFFEditor(self, self._installation)
+        self._gff_editor_partytable.setWindowFlags(Qt.WindowType.Widget)
+        layout_pt = self.ui.verticalLayoutAdvancedPartyTableGff
+        old_pt = self.ui.labelAdvancedPartyTableGffPlaceholder
+        layout_pt.removeWidget(old_pt)
+        old_pt.deleteLater()
+        layout_pt.addWidget(self._gff_editor_partytable.centralWidget())
+
+    def _flush_current_advanced_gff_to_model(self) -> None:
+        """Flush the currently visible GFF editor (SaveInfo or PartyTable) back to the model."""
+        idx = self.ui.stackedWidgetAdvanced.currentIndex()
+        if idx == 0 and self._gff_editor_saveinfo is not None and self._save_info is not None:
+            data, _ = self._gff_editor_saveinfo.build()
+            if data:
+                self._save_info.load_from_gff_bytes(data)
+        elif idx == 1 and self._gff_editor_partytable is not None and self._party_table is not None:
+            data, _ = self._gff_editor_partytable.build()
+            if data:
+                self._party_table.load_from_gff_bytes(data)
+
+    def _on_advanced_gff_source_changed(self, index: int) -> None:
+        """Switch Advanced stack to the selected GFF source; flush previous editor to model."""
+        self._flush_current_advanced_gff_to_model()
+        self.ui.stackedWidgetAdvanced.setCurrentIndex(index)
+
+    def _on_advanced_stack_changed(self, _index: int) -> None:
+        """Sync combo to stack when stack is changed programmatically."""
+        self.ui.comboAdvancedGffSource.blockSignals(True)
+        self.ui.comboAdvancedGffSource.setCurrentIndex(self.ui.stackedWidgetAdvanced.currentIndex())
+        self.ui.comboAdvancedGffSource.blockSignals(False)
+
     def populate_advanced_fields(self):
-        """Populate Advanced/Raw tabs with additional fields."""
-        # SaveInfo additional fields
-        if self._save_info and self._save_info.additional_fields:
-            self.ui.tableWidgetAdvancedSaveInfo.setRowCount(len(self._save_info.additional_fields))
-            for row, (label, (field_type, value)) in enumerate(self._save_info.additional_fields.items()):
-                name_item = QTableWidgetItem(label)
-                name_item.setFlags(name_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                self.ui.tableWidgetAdvancedSaveInfo.setItem(row, 0, name_item)
-
-                type_item = QTableWidgetItem(field_type.name if hasattr(field_type, "name") else str(field_type))
-                type_item.setFlags(type_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                self.ui.tableWidgetAdvancedSaveInfo.setItem(row, 1, type_item)
-
-                value_str = self._format_gff_value_for_display(value, field_type)
-                value_item = QTableWidgetItem(value_str)
-                self.ui.tableWidgetAdvancedSaveInfo.setItem(row, 2, value_item)
-
-        # PartyTable additional fields
-        if self._party_table and self._party_table.additional_fields:
-            self.ui.tableWidgetAdvancedPartyTable.setRowCount(len(self._party_table.additional_fields))
-            for row, (label, (field_type, value)) in enumerate(self._party_table.additional_fields.items()):
-                name_item = QTableWidgetItem(label)
-                name_item.setFlags(name_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                self.ui.tableWidgetAdvancedPartyTable.setItem(row, 0, name_item)
-
-                type_item = QTableWidgetItem(field_type.name if hasattr(field_type, "name") else str(field_type))
-                type_item.setFlags(type_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                self.ui.tableWidgetAdvancedPartyTable.setItem(row, 1, type_item)
-
-                value_str = self._format_gff_value_for_display(value, field_type)
-                value_item = QTableWidgetItem(value_str)
-                self.ui.tableWidgetAdvancedPartyTable.setItem(row, 2, value_item)
-
-        # Other resources
+        """Embed GFF editors (reused from gff.py), load SaveInfo/PartyTable GFF, and list other resources."""
+        self._ensure_gff_editors_embedded()
+        if self._save_info is not None and self._gff_editor_saveinfo is not None:
+            self._gff_editor_saveinfo.load("", "savenfo", ResourceType.RES, self._save_info.to_gff_bytes())
+        if self._party_table is not None and self._gff_editor_partytable is not None:
+            self._gff_editor_partytable.load("", "partytable", ResourceType.RES, self._party_table.to_gff_bytes())
+        # Other resources list
+        self.ui.listWidgetAdvancedResources.clear()
         if self._nested_capsule and self._nested_capsule.other_resources:
-            self.ui.listWidgetAdvancedResources.clear()
             for res_id in sorted(self._nested_capsule.other_resources.keys(), key=lambda x: str(x.resname)):
                 item_text = f"{res_id.resname} ({res_id.restype})"
                 item = QListWidgetItem(item_text)
                 item.setData(Qt.ItemDataRole.UserRole, res_id)
                 self.ui.listWidgetAdvancedResources.addItem(item)
 
-    def _format_gff_value_for_display(self, value: Any, field_type) -> str:
-        """Format GFF value for display in Advanced tab."""
-        from pykotor.resource.formats.gff import GFFFieldType
-
-        if field_type == GFFFieldType.List:
-            return f"List ({len(value) if hasattr(value, '__len__') else '?'} items)"
-        elif field_type == GFFFieldType.Struct:
-            return f"Struct ({len(value.fields()) if hasattr(value, 'fields') else '?'} fields)"
-        elif field_type == GFFFieldType.Binary:
-            return f"Binary ({len(value) if isinstance(value, bytes) else '?'} bytes)"
-        elif isinstance(value, bytes):
-            return f"<{len(value)} bytes>"
-        else:
-            return str(value)
-
     def clear_advanced_fields(self):
-        """Clear Advanced/Raw tabs."""
-        self.ui.tableWidgetAdvancedSaveInfo.setRowCount(0)
-        self.ui.tableWidgetAdvancedPartyTable.setRowCount(0)
+        """Clear Advanced/Raw: clear Other list; GFF editors are left in place but cleared."""
         self.ui.listWidgetAdvancedResources.clear()
+        if self._gff_editor_saveinfo is not None:
+            self._gff_editor_saveinfo.new()
+        if self._gff_editor_partytable is not None:
+            self._gff_editor_partytable.new()
 
-    def on_advanced_field_changed(self, item: QTableWidgetItem):
-        """Handle changes to advanced/raw fields."""
-        # TODO: Update additional_fields dict when user edits values
-        # This requires parsing the edited string back to the appropriate GFF type
-        pass
+    def _destroy_advanced_gff_editors(self) -> None:
+        """Tear down embedded GFF editors (e.g. when closing or loading a new save)."""
+        self._gff_editor_saveinfo = None
+        self._gff_editor_partytable = None
+        # Placeholders were removed; repopulate_advanced_fields will recreate editors when a save is loaded again
 
     def on_open_advanced_resource(self, item: QListWidgetItem):
         """Open advanced resource in appropriate editor."""
         res_id = item.data(Qt.ItemDataRole.UserRole)
-        if not res_id:
+        if not res_id or not self._nested_capsule or res_id not in self._nested_capsule.other_resources:
             return
 
-        # Get the main window to access editor registry
-        from toolset.gui.windows.main import ToolWindow
-
-        main_window = self.parent()
-        while main_window and not isinstance(main_window, ToolWindow):
-            main_window = main_window.parent()
-
-        if not main_window:
-            return
-
-        # Get resource data from nested capsule
-        if res_id in self._nested_capsule.other_resources:
-            resource_data = self._nested_capsule.other_resources[res_id]
-            try:
-                main_window.open_resource_editor(res_id.resname, res_id.restype, resource_data)
-            except Exception as e:
-                QMessageBox.critical(self, tr("Error Opening Resource"), trf("Failed to open resource:\n{error}", error=str(e)))
+        resource_data = self._nested_capsule.other_resources[res_id]
+        filepath = self._nested_capsule.nested_capsule_path
+        try:
+            open_resource_editor(
+                filepath,
+                res_id.resname,
+                res_id.restype,
+                resource_data,
+                installation=self._installation,
+                parent_window=self,
+            )
+        except Exception as e:
+            QMessageBox.critical(self, tr("Error Opening Resource"), trf("Failed to open resource:\n{error}", error=str(e)))
 
     # ==================== Tool Methods ====================
 

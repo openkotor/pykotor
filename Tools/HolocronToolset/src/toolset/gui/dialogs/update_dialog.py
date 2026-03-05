@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 import platform
+from datetime import datetime
 
 from typing import TYPE_CHECKING, Any
 
 import markdown
 
 from qtpy import QtCore
+from qtpy.QtCore import QUrl
 from qtpy.QtGui import QColor, QPalette
 from qtpy.QtWidgets import QApplication, QDialog, QMessageBox
+from qtpy.QtGui import QDesktopServices
 
 from loggerplus import RobustLogger
 from toolset.config import LOCAL_PROGRAM_INFO, is_remote_version_newer, toolset_tag_to_version
@@ -78,11 +81,18 @@ class UpdateDialog(QDialog):
     def init_ui(self):
         # Connect signals
         self.ui.preReleaseCheckBox.stateChanged.connect(self.on_pre_release_changed)
-        self.ui.fetchReleasesButton.clicked.connect(self.init_config)
+        self.ui.refreshButton.clicked.connect(self.init_config)
         self.ui.forkComboBox.currentIndexChanged.connect(self.on_fork_changed)
         self.ui.releaseComboBox.currentIndexChanged.connect(self.on_release_changed)
-        self.ui.installSelectedButton.clicked.connect(self.on_install_selected)
-        self.ui.updateLatestButton.clicked.connect(self.on_update_latest_clicked)
+        self.ui.ignoreButton.clicked.connect(self.reject)
+        self.ui.checkoutButton.clicked.connect(self.on_checkout_clicked)
+        self.ui.installButton.clicked.connect(self.on_install_selected)
+
+        # Changelog: transparent background and no border so it blends with the dialog
+        self.ui.changelogEdit.setStyleSheet("background: transparent; border: none;")
+
+        # Title label shows rich text (version number colored via palette)
+        self.ui.titleLabel.setTextFormat(QtCore.Qt.RichText)
 
         # Update current version label (will be updated after releases are loaded)
         self.update_version_label()
@@ -176,13 +186,48 @@ class UpdateDialog(QDialog):
         index: int,  # noqa: FBT001
     ):
         if index < 0 or index >= len(self.releases):
+            self.ui.titleLabel.setText("What is new in version ")
             return
         release: GithubRelease = self.ui.releaseComboBox.itemData(index)
         if not release:
             return
         changelog_html: str = convert_markdown_to_html(release.body, self)
         self.ui.changelogEdit.setHtml(changelog_html)
+        self._update_title_label(release)
         self.update_version_label()
+
+    def _update_title_label(self, release: GithubRelease) -> None:
+        """Set titleLabel to 'What is new in version {tag} ({date})' with version colored from palette."""
+        app = QApplication.instance()
+        if app is None or not isinstance(app, QApplication):
+            palette = QPalette()
+        else:
+            palette = app.palette()
+        highlight_color = palette.color(QPalette.ColorRole.Highlight)
+        if not highlight_color.isValid():
+            highlight_color = palette.color(QPalette.ColorRole.Link)
+        color_hex = highlight_color.name()
+        tag = release.tag_name
+        date_str = ""
+        if release.published_at:
+            try:
+                # ISO format e.g. 2024-01-15T12:00:00Z
+                dt = datetime.fromisoformat(release.published_at.replace("Z", "+00:00"))
+                date_str = f"{dt.year}/{dt.month}/{dt.day}"
+            except (ValueError, TypeError):
+                date_str = release.published_at[:10] if len(release.published_at) >= 10 else release.published_at
+        if date_str:
+            title = f'What is new in version <span style="color:{color_hex}; font-weight:bold;">{tag}</span> ({date_str})'
+        else:
+            title = f'What is new in version <span style="color:{color_hex}; font-weight:bold;">{tag}</span>'
+        self.ui.titleLabel.setText(title)
+
+    def on_checkout_clicked(self) -> None:
+        """Open the selected release's web page in the default browser."""
+        release = self.ui.releaseComboBox.currentData()
+        if not release or not getattr(release, "html_url", None):
+            return
+        QDesktopServices.openUrl(QUrl(release.html_url))
 
     def get_latest_release(self) -> GithubRelease | None:
         if self.releases:

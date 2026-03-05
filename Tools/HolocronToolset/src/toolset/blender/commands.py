@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
-    from pykotor.resource.generics.git import GIT, GITInstance
+    from pykotor.resource.generics.git import GIT, GITObject
     from toolset.blender.ipc_client import BlenderIPCClient
 
 
@@ -47,7 +47,7 @@ class BlenderSession:
     instance_to_object: dict[int, str] = None  # type: ignore[assignment]
     object_to_instance: dict[str, int] = None  # type: ignore[assignment]
     runtime_to_object: dict[int, str] = None  # type: ignore[assignment]
-    runtime_to_instance: dict[int, "GITInstance"] = None  # type: ignore[assignment]
+    runtime_to_instance: dict[int, "GITObject"] = None  # type: ignore[assignment]
 
     def __post_init__(self):
         if self.instance_to_object is None:
@@ -204,7 +204,7 @@ class BlenderEditorController:
         for instance in git.instances():
             self._register_runtime_instance(instance)
 
-    def _register_runtime_instance(self, instance: GITInstance):
+    def _register_runtime_instance(self, instance: GITObject):
         if self._session is None:
             return
         runtime_id = id(instance)
@@ -230,11 +230,11 @@ class BlenderEditorController:
     # Instance Management
     # =========================================================================
 
-    def add_instance(self, instance: GITInstance) -> str | None:
+    def add_instance(self, instance: GITObject) -> str | None:
         """Add a GIT instance to Blender.
 
         Args:
-            instance: GITInstance to add
+            instance: GITObject to add
 
         Returns:
             Blender object name if successful
@@ -256,11 +256,11 @@ class BlenderEditorController:
 
         return object_name
 
-    def remove_instance(self, instance: GITInstance) -> bool:
+    def remove_instance(self, instance: GITObject) -> bool:
         """Remove a GIT instance from Blender.
 
         Args:
-            instance: GITInstance to remove
+            instance: GITObject to remove
 
         Returns:
             True if removed successfully
@@ -288,7 +288,7 @@ class BlenderEditorController:
     def bind_runtime_instance(
         self,
         runtime_id: int,
-        instance: GITInstance,
+        instance: GITObject,
         object_name: str | None = None,
     ) -> None:
         """Associate a runtime id with a Python instance (and optionally a Blender object)."""
@@ -310,7 +310,7 @@ class BlenderEditorController:
 
     def update_instance_position(
         self,
-        instance: GITInstance,
+        instance: GITObject,
         x: float,
         y: float,
         z: float,
@@ -318,7 +318,7 @@ class BlenderEditorController:
         """Update instance position in Blender.
 
         Args:
-            instance: GITInstance to update
+            instance: GITObject to update
             x, y, z: New position coordinates
 
         Returns:
@@ -338,14 +338,14 @@ class BlenderEditorController:
 
     def update_instance_rotation(
         self,
-        instance: GITInstance,
+        instance: GITObject,
         bearing: float | None = None,
         orientation: tuple[float, float, float, float] | None = None,
     ) -> bool:
         """Update instance rotation in Blender.
 
         Args:
-            instance: GITInstance to update
+            instance: GITObject to update
             bearing: Bearing angle for non-camera instances
             orientation: Quaternion for cameras
 
@@ -372,11 +372,11 @@ class BlenderEditorController:
 
         return self._commands.update_instance(object_name, properties)
 
-    def select_instances(self, instances: list[GITInstance]) -> bool:
+    def select_instances(self, instances: list[GITObject]) -> bool:
         """Select instances in Blender.
 
         Args:
-            instances: List of GITInstances to select
+            instances: List of GITObjects to select
 
         Returns:
             True if selection changed successfully

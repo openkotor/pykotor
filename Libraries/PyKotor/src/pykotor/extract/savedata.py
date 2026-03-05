@@ -189,7 +189,7 @@ from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.resource.formats.erf import ERFType
 from pykotor.resource.formats.erf.erf_data import ERF
-from pykotor.resource.formats.gff import GFFFieldType, GFFList, GFFStruct, bytes_gff, read_gff
+from pykotor.resource.formats.gff import GFF, GFFFieldType, GFFList, GFFStruct, bytes_gff, read_gff
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath
 from utility.common.geometry import Vector3, Vector4
@@ -377,12 +377,15 @@ class SaveInfo:
         3. Use acquire() for safe field access (returns default if missing)
         4. Handle optional fields (TIMESTAMP, PCNAME)
         """
-        from copy import deepcopy
-
         from pykotor.resource.formats.gff import read_gff
 
         gff = read_gff(self.save_info_path)
-        root = gff.root
+        self._load_from_root(gff.root)
+
+    def _load_from_root(self, root: GFFStruct):
+        """Load SaveInfo state from a GFF root struct (used by load() and load_from_gff_bytes())."""
+        from copy import deepcopy
+
         processed_fields: set[str] = set()
 
         def _acquire(label: str, default: Any) -> Any:
@@ -426,6 +429,19 @@ class SaveInfo:
             if label not in processed_fields:
                 self.additional_fields[label] = (field_type, deepcopy(value))
 
+    def load_from_gff_bytes(self, data: bytes) -> None:
+        """Update SaveInfo from GFF bytes (e.g. after editing in GFF editor)."""
+        from io import BytesIO
+
+        from pykotor.resource.formats.gff import read_gff
+
+        gff = read_gff(BytesIO(data))
+        self._load_from_root(gff.root)
+
+    def to_gff_bytes(self) -> bytes:
+        """Return current SaveInfo state as GFF bytes (same structure as save())."""
+        return bytes_gff(self._build_gff())
+
     def save(self):
         """Save SAVENFO.res data to the save folder.
 
@@ -455,7 +471,13 @@ class SaveInfo:
         - Bytes: set_uint8() for CHEATUSED, hints, LIVECONTENT
         - ResRefs: set_resref() for PORTRAIT0/1/2
         """
-        from pykotor.resource.formats.gff import GFF, GFFContent, write_gff
+        from pykotor.resource.formats.gff import write_gff
+
+        write_gff(self._build_gff(), self.save_info_path)
+
+    def _build_gff(self) -> GFF:
+        """Build GFF from current SaveInfo state (used by save() and to_gff_bytes())."""
+        from pykotor.resource.formats.gff import GFF, GFFContent
 
         gff = GFF(GFFContent.NFO)
         root = gff.root
@@ -493,9 +515,6 @@ class SaveInfo:
 
         # Additional fields - ensure nothing is lost
         def _set_additional_field(label: str, field_type: GFFFieldType, value: Any):
-            """Helper to set additional fields based on type."""
-            from pykotor.resource.formats.gff import GFFFieldType
-
             if field_type == GFFFieldType.UInt8:
                 root.set_uint8(label, value)
             elif field_type == GFFFieldType.UInt16:
@@ -526,12 +545,11 @@ class SaveInfo:
                 root.set_list(label, value)
             elif field_type == GFFFieldType.Struct:
                 root.set_struct(label, value)
-            # Note: LocalizedString, Orientation, Vector are handled as their base types
 
         for extra_label, (extra_type, extra_value) in self.additional_fields.items():
             _set_additional_field(extra_label, extra_type, extra_value)
 
-        write_gff(gff, self.save_info_path)
+        return gff
 
 
 class JournalEntry:
@@ -784,7 +802,12 @@ class PartyTable:
         5. Validate data integrity (member count, indexes)
         """
         party_table_gff = read_gff(self.party_table_path)
-        root = party_table_gff.root
+        self._load_from_root(party_table_gff.root)
+
+    def _load_from_root(self, root: GFFStruct) -> None:
+        """Load PartyTable state from a GFF root struct (used by load() and load_from_gff_bytes())."""
+        from copy import deepcopy
+
         processed_fields: set[str] = set()
 
         def _acquire(label: str, default):
@@ -881,6 +904,17 @@ class PartyTable:
             if label not in processed_fields:
                 self.additional_fields[label] = (field_type, deepcopy(value))
 
+    def load_from_gff_bytes(self, data: bytes) -> None:
+        """Update PartyTable from GFF bytes (e.g. after editing in GFF editor)."""
+        from io import BytesIO
+
+        gff = read_gff(BytesIO(data))
+        self._load_from_root(gff.root)
+
+    def to_gff_bytes(self) -> bytes:
+        """Return current PartyTable state as GFF bytes (same structure as save())."""
+        return bytes_gff(self._build_gff())
+
     def save(self):
         """Save PARTYTABLE.res data to the save folder.
 
@@ -911,7 +945,13 @@ class PartyTable:
         5. Atomic write to disk
 
         """
-        from pykotor.resource.formats.gff import GFF, GFFContent, write_gff
+        from pykotor.resource.formats.gff import write_gff
+
+        write_gff(self._build_gff(), self.party_table_path)
+
+    def _build_gff(self) -> GFF:
+        """Build GFF from current PartyTable state (used by save() and to_gff_bytes())."""
+        from pykotor.resource.formats.gff import GFF, GFFContent
 
         gff = GFF(GFFContent.PT)
         root = gff.root
@@ -1084,7 +1124,7 @@ class PartyTable:
         for extra_label, (extra_type, extra_value) in self.additional_fields.items():
             _set_additional_field(extra_label, extra_type, extra_value)
 
-        write_gff(gff, self.party_table_path)
+        return gff
 
 
 class GlobalVars:

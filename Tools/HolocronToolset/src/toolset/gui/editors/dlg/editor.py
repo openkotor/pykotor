@@ -8,6 +8,7 @@ import re
 import weakref
 
 from collections import deque
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable, Optional, cast
 
 import qtpy
@@ -24,15 +25,18 @@ from qtpy.QtWidgets import (
     QDialog,
     QDockWidget,
     QDoubleSpinBox,
+    QFileDialog,
     QLabel,
     QLineEdit,
     QListWidgetItem,
     QMenu,
     QMessageBox,
     QPlainTextEdit,
+    QPushButton,
     QSizePolicy,
     QSpinBox,
     QStyle,
+    QToolBar,
     QWhatsThis,
     QWidget,
 )
@@ -54,6 +58,7 @@ from toolset.gui.editors.dlg.model import DLGStandardItem, DLGStandardItemModel
 from toolset.gui.editors.dlg.settings import DLGSettings
 from toolset.gui.editors.dlg.tree_view import DLGTreeView
 from toolset.gui.editors.dlg.widget_windows import ReferenceChooserDialog
+from toolset.gui.widgets.installation_toolbar import FolderPathSpec
 from toolset.gui.widgets.settings.installations import GlobalSettings
 from utility.gui.qt.adapters.itemmodels.filters import NoScrollEventFilter
 from utility.gui.qt.widgets.itemviews.html_delegate import HTMLDelegate
@@ -85,6 +90,12 @@ if TYPE_CHECKING:
 
 
 class DLGEditor(Editor):
+    STANDALONE_FOLDER_PATHS = [
+        FolderPathSpec("streamwaves", "Stream Waves", "Optional folder for voice resources."),
+        FolderPathSpec("streamsounds", "Stream Sounds", "Optional folder for sound resources."),
+        FolderPathSpec("streammusic", "Stream Music", "Optional folder for music resources."),
+    ]
+
     @property
     def editor(self) -> Self:
         return self
@@ -172,6 +183,50 @@ class DLGEditor(Editor):
         self.set_all_whats_this()
         self.setup_extra_tooltip_mode()
         self.new()
+
+    def _scan_audio_folder(self, folder: Path | None) -> list[str]:
+        if folder is None or not folder.exists() or not folder.is_dir():
+            return []
+        supported = {".wav", ".mp3", ".ogg", ".wma"}
+        return sorted({item.stem for item in folder.iterdir() if item.is_file() and item.suffix.lower() in supported}, key=str.lower)
+
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        if installation is None:
+            self.all_voices = []
+            self.all_sounds = []
+            self.all_music = []
+            if hasattr(self, "ui") and hasattr(self.ui, "voiceComboBox"):
+                self.ui.voiceComboBox.populate_combo_box([])
+                self.ui.soundComboBox.populate_combo_box([])
+                self.ui.ambientTrackCombo.populate_combo_box([])
+            return
+        self._setup_installation(installation)
+        self._populate_audio_lists_from_installation(installation)
+
+    def _on_folder_paths_changed(self, paths: dict[str, Path | None]) -> None:
+        waves = self._scan_audio_folder(paths.get("streamwaves"))
+        sounds = sorted({*waves, *self._scan_audio_folder(paths.get("streamsounds"))}, key=str.lower)
+        music = self._scan_audio_folder(paths.get("streammusic"))
+
+        self.all_voices = waves
+        self.all_sounds = sounds
+        self.all_music = music
+        self.ui.voiceComboBox.populate_combo_box(self.all_voices)  # noqa: SLF001
+        self.ui.soundComboBox.populate_combo_box(self.all_sounds)  # noqa: SLF001
+        self.ui.ambientTrackCombo.populate_combo_box(self.all_music)
+
+    def _populate_audio_lists_from_installation(self, installation: HTInstallation) -> None:
+        """Populate voice/sound/music lists from the installation."""
+        self.all_voices = sorted({res.resname() for res in installation._streamwaves}, key=str.lower)  # noqa: SLF001
+        self.all_sounds = sorted(
+            {res.resname() for res in [*installation._streamwaves, *installation._streamsounds]},  # noqa: SLF001
+            key=str.lower,
+        )
+        self.all_music = sorted({res.resname() for res in installation._streammusic}, key=str.lower)  # noqa: SLF001
+        if hasattr(self, "ui") and hasattr(self.ui, "voiceComboBox"):
+            self.ui.voiceComboBox.populate_combo_box(self.all_voices)
+            self.ui.soundComboBox.populate_combo_box(self.all_sounds)
+            self.ui.ambientTrackCombo.populate_combo_box(self.all_music)
 
     def revert_tooltips(self):
         for widget, original_tooltip in self.original_tooltips.items():
@@ -1311,7 +1366,7 @@ Should return 1 or 0, representing a boolean.
         self.core_dlg.delay_reply = self.ui.replyDelaySpin.value()
 
         data = bytearray()
-        game_to_use: Game = self._installation.game()
+        game_to_use: Game = self._installation.game() if self._installation is not None else Game.K1
         tsl_widget_preference_setting: str = DLGSettings().tsl_widget_preference("Default")
         if game_to_use.is_k1() and tsl_widget_preference_setting == "Enable":
             msg_box = QMessageBox()

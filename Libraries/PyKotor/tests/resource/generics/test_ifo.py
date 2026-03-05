@@ -149,7 +149,7 @@ class TestIFO(TestCase):
         self.assertAlmostEqual(-1.571, ifo.entry_direction, 3)
 
     def test_ifo_missing_field_defaults(self) -> None:
-        """Test defaults when IFO fields are omitted (REVA: K1 0x004c9050, TSL 0x0072aaa0)."""
+        """Test defaults when IFO fields are omitted (K1 0x004c9050, TSL 0x0072aaa0)."""
         minimal_ifo_xml = """<gff3>
           <struct id="-1">
             <exostring label="Mod_Tag">OnlyTag</exostring>

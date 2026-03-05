@@ -920,6 +920,28 @@ def test_bwm_editor_ui_widgets_exist(qtbot: QtBot, installation: HTInstallation)
     assert editor.ui.transList is not None
 
 
+def test_bwm_editor_toggle_room_boundaries(qtbot: QtBot, installation: HTInstallation):
+    """Test toolbar toggle for room boundaries/labels."""
+    editor = BWMEditor(None, installation)
+    qtbot.addWidget(editor)
+
+    original = editor.ui.renderArea.show_room_boundaries
+    editor.ui.actionShowRoomBoundaries.setChecked(not original)
+
+    assert editor.ui.renderArea.show_room_boundaries is (not original)
+
+
+def test_bwm_editor_toggle_show_grid(qtbot: QtBot, installation: HTInstallation):
+    """Test toolbar toggle for 2D grid display."""
+    editor = BWMEditor(None, installation)
+    qtbot.addWidget(editor)
+
+    original = editor.ui.renderArea.show_grid
+    editor.ui.actionShowGrid.setChecked(not original)
+
+    assert editor.ui.renderArea.show_grid is (not original)
+
+
 def test_bwm_editor_material_colors_initialized(qtbot: QtBot, installation: HTInstallation):
     """Test that material colors are initialized."""
     editor = BWMEditor(None, installation)

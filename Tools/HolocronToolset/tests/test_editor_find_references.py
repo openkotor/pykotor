@@ -289,10 +289,13 @@ class TestReferenceSearchIntegration:
         qtbot.addWidget(editor)
 
         tag_field = editor.ui.tagEdit
+        assert tag_field is not None, "UTI editor has no tagEdit widget"
 
-        # Check tooltip
-        tooltip = tag_field.toolTip()
-        assert "find references" in tooltip.lower() or "reference" in tooltip.lower()
+        # Reference search appends "Right-click to find references..." (or translated); accept any hint
+        tooltip = (tag_field.toolTip() or "").lower()
+        assert "reference" in tooltip or "find reference" in tooltip, (
+            f"Tag field tooltip should mention reference search; got: {tooltip[:80]!r}..."
+        )
 
     def test_utt_editor_script_field_tooltip(self, qtbot: QtBot, installation: HTInstallation):
         """Test UTT editor script field has reference search tooltip."""

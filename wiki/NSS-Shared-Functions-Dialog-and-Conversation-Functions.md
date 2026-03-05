@@ -15,20 +15,24 @@ This document provides detailed documentation for NWScript dialog and conversati
 **Routine:** 255
 
 #### Function Signature
+
 ```nss
 int BeginConversation(string sResRef = "", object oObjectToDialog = OBJECT_INVALID);
 ```
 
 #### Description
+
 Starts a conversation dialog tree. **This function is typically called from an OnDialog event script** (triggered when a creature is clicked or `ActionStartConversation` is used). If no dialog resref is specified, the creature's default conversation file is used.
 
 **⚠️ IMPORTANT:** This function is called **by the game engine** when a dialog is triggered. You typically call this from OnDialog scripts, not from regular scripts. For manual conversation starts, use `ActionStartConversation()` instead.
 
 #### Parameters
+
 - `sResRef`: Dialog file resref (without `.dlg` extension). If empty (""), uses the creature's default conversation
 - `oObjectToDialog`: Object to start conversation with (default: `OBJECT_INVALID` - uses the object that triggered the event)
 
 #### Returns
+
 - `1` if conversation started successfully
 - `0` if failed
 
@@ -57,6 +61,7 @@ void main() {
 ```
 
 #### Notes
+
 - Typically called from **OnDialog event scripts**, not regular scripts
 - The OnDialog event fires when a creature is clicked or `ActionStartConversation` is executed
 - If `sResRef` is empty, the creature's `Conversation` field (from UTC/GIT) is used
@@ -69,6 +74,7 @@ void main() {
 **Routine:** 204
 
 #### Function Signature
+
 ```nss
 void ActionStartConversation(
     object oObjectToConverse,
@@ -90,9 +96,11 @@ void ActionStartConversation(
 ```
 
 #### Description
+
 Queues an action to start a conversation with a target object. The creature will move to within conversation range (if needed) and then start the dialog. This is the **primary way to start conversations from scripts**.
 
 #### Parameters
+
 - `oObjectToConverse`: Target object to start conversation with (the NPC/creature)
 - `sDialogResRef`: Dialog file resref (without `.dlg`). If empty, uses the creature's default conversation
 - `bPrivateConversation`: If `TRUE`, conversation is private (default: `FALSE`)
@@ -127,6 +135,7 @@ ActionStartConversation(oBoss, "", FALSE, CONVERSATION_TYPE_CINEMATIC, TRUE);
 ```
 
 **Pattern: Cutscene Conversation**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
 object oKreia = GetObjectByTag("kreia", 0);
@@ -136,6 +145,7 @@ DelayCommand(0.2, AssignCommand(oKreia,
 ```
 
 **Pattern: Object Starts Conversation with Itself**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/905MAL_Malachor_V_Trayus_Crescent/a_cellopen.nss
 object oNPC = GetObjectByTag("npc_tag");
@@ -144,6 +154,7 @@ AssignCommand(oNPC, ActionStartConversation(oNPC, "", 0, 0, 0, "", "", "", "", "
 ```
 
 #### Implementation Reference
+
 - [`vendor/reone/src/libs/game/action/startconversation.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/action/startconversation.cpp)
 - Conversation starts when actor reaches within 4.0 meters of target (unless `bIgnoreStartRange` is `TRUE`)
 
@@ -156,14 +167,17 @@ AssignCommand(oNPC, ActionStartConversation(oNPC, "", 0, 0, 0, "", "", "", "", "
 **Routine:** 254
 
 #### Function Signature
+
 ```nss
 object GetLastSpeaker();
 ```
 
 #### Description
+
 Gets the object that is speaking in the current conversation. **Use this in conversation scripts** (scripts attached to dialog nodes) to get the conversation participant. Returns `OBJECT_INVALID` if not in a conversation context.
 
 #### Returns
+
 - Object of the current speaker in conversation
 - `OBJECT_INVALID` if not in conversation context or invalid
 
@@ -192,6 +206,7 @@ void main() {
 ```
 
 #### Notes
+
 - Primarily used in **conversation scripts** (attached to dialog nodes)
 - The "last speaker" is the object whose dialog node just executed
 - In dialog scripts, this typically refers to the NPC/creature, not the PC
@@ -203,17 +218,21 @@ void main() {
 **Routine:** 445
 
 #### Function Signature
+
 ```nss
 int GetIsInConversation(object oObject = OBJECT_SELF);
 ```
 
 #### Description
+
 Returns `TRUE` if the specified object is currently in a conversation.
 
 #### Parameters
+
 - `oObject`: Object to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - `TRUE` if object is in conversation
 - `FALSE` if not in conversation or invalid
 
@@ -243,14 +262,17 @@ ActionStartConversation(oNPC);
 **Routine:** 701
 
 #### Function Signature
+
 ```nss
 int GetIsConversationActive();
 ```
 
 #### Description
+
 Returns `TRUE` if any conversation is currently active in the game.
 
 #### Returns
+
 - `TRUE` if a conversation is active
 - `FALSE` if no conversation is active
 
@@ -271,11 +293,13 @@ if (GetIsConversationActive()) {
 **Routine:** 295
 
 #### Function Signature
+
 ```nss
 void EventConversation();
 ```
 
 #### Description
+
 Triggers the OnConversation event script on the caller. Used to execute conversation-related logic when a conversation event occurs.
 
 #### Usage Examples
@@ -286,6 +310,7 @@ EventConversation();
 ```
 
 #### Notes
+
 - Typically called by the game engine during conversation flow
 - Triggers OnConversation event scripts on objects
 - Can be used to trigger conversation-related logic programmatically
@@ -299,14 +324,17 @@ EventConversation();
 **Routine:** 221
 
 #### Function Signature
+
 ```nss
 void SpeakString(string sStringToSpeak, int nTalkVolume = TALKVOLUME_TALK);
 ```
 
 #### Description
+
 Makes the caller speak a string immediately. This is a **non-queued function** (executes immediately, not an action).
 
 #### Parameters
+
 - `sStringToSpeak`: Text to speak
 - `nTalkVolume`: Volume constant (default: `TALKVOLUME_TALK`):
   - `TALKVOLUME_TALK` - Normal talking volume
@@ -332,6 +360,7 @@ SpeakString("Charge!", TALKVOLUME_SHOUT);
 ```
 
 #### Notes
+
 - Executes **immediately** (not queued as an action)
 - Use `ActionSpeakString()` if you need to queue speaking as part of an action sequence
 
@@ -342,14 +371,17 @@ SpeakString("Charge!", TALKVOLUME_SHOUT);
 **Routine:** 39
 
 #### Function Signature
+
 ```nss
 void ActionSpeakString(string sStringToSpeak, int nTalkVolume = TALKVOLUME_TALK);
 ```
 
 #### Description
+
 Queues an action to speak a string. The action completes when the speech finishes. Use this when you need to speak as part of an action sequence.
 
 #### Parameters
+
 - `sStringToSpeak`: Text to speak
 - `nTalkVolume`: Volume constant (same as `SpeakString()`)
 
@@ -374,14 +406,17 @@ AssignCommand(oNPC, ActionSpeakString("Halt!", TALKVOLUME_SHOUT));
 **Routine:** 240
 
 #### Function Signature
+
 ```nss
 void ActionSpeakStringByStrRef(int nStrRef, int nTalkVolume = TALKVOLUME_TALK);
 ```
 
 #### Description
+
 Queues an action to speak a string from the talk table (TLK file) using a string reference ID. This is the preferred method for localized/modded content.
 
 #### Parameters
+
 - `nStrRef`: String reference ID from TLK file
 - `nTalkVolume`: Volume constant (same as `SpeakString()`)
 
@@ -399,14 +434,17 @@ ActionSpeakStringByStrRef(12345, TALKVOLUME_TALK);
 **Routine:** 671
 
 #### Function Signature
+
 ```nss
 void BarkString(object oCreature, int strRef);
 ```
 
 #### Description
+
 Makes a creature bark (speak a one-liner) using a string reference from the TLK file. Barks are brief, context-free statements often used for ambient dialogue.
 
 #### Parameters
+
 - `oCreature`: Creature to bark
 - `strRef`: String reference ID from TLK file
 
@@ -425,14 +463,17 @@ BarkString(oNPC, 10001);
 **Routine:** 417
 
 #### Function Signature
+
 ```nss
 void SpeakOneLinerConversation(string sDialogResRef, object oTokenTarget = OBJECT_INVALID);
 ```
 
 #### Description
+
 Speaks a one-liner from a dialog file. The dialog file should have a single starting node that plays as a bark/one-liner.
 
 #### Parameters
+
 - `sDialogResRef`: Dialog file resref (without `.dlg` extension)
 - `oTokenTarget`: Target object for dialog tokens (default: `OBJECT_INVALID`)
 
@@ -452,11 +493,13 @@ SpeakOneLinerConversation("guard_barks");
 **Routine:** 205
 
 #### Function Signature
+
 ```nss
 void ActionPauseConversation();
 ```
 
 #### Description
+
 Queues an action to pause the current conversation. The conversation can be resumed later with `ActionResumeConversation()`.
 
 #### Usage Examples
@@ -473,11 +516,13 @@ ActionPauseConversation();
 **Routine:** 206
 
 #### Function Signature
+
 ```nss
 void ActionResumeConversation();
 ```
 
 #### Description
+
 Queues an action to resume a paused conversation.
 
 #### Usage Examples

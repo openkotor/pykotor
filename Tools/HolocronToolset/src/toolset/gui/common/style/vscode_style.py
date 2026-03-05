@@ -6,14 +6,12 @@ VS Code's appearance for a professional IDE experience.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import html
+import re
 
+from qtpy.QtCore import QEvent, QObject
 from qtpy.QtGui import QColor, QFont, QFontDatabase, QFontMetrics, QPalette
-from qtpy.QtWidgets import QApplication
-
-if TYPE_CHECKING:
-    from qtpy.QtWidgets import QWidget
-
+from qtpy.QtWidgets import QApplication, QPlainTextEdit, QTextEdit, QWidget
 
 # VS Code's default font stack with fallbacks for all platforms
 # These are all monospace fonts with consistent character widths
@@ -239,7 +237,7 @@ def get_tooltip_stylesheet() -> str:
             border-radius: 4px;
             padding: 8px 12px;
             font-family: "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-            font-size: 12px;
+            font-size: 13px;
         }
     """
 
@@ -269,16 +267,11 @@ def configure_code_editor_font(
     # Apply font to widget
     widget.setFont(font)
 
-    # Set tab stop width to match VS Code (4 spaces by default)
-    if hasattr(widget, "setTabStopDistance"):
+    # Set tab stop width to match VS Code (4 spaces by default) for text editors
+    if isinstance(widget, (QPlainTextEdit, QTextEdit)):
         metrics = QFontMetrics(font)
         tab_width = metrics.horizontalAdvance(" ") * DEFAULT_TAB_SIZE
         widget.setTabStopDistance(tab_width)
-    elif hasattr(widget, "setTabStopWidth"):
-        # Fallback for older Qt versions
-        metrics = QFontMetrics(font)
-        tab_width = metrics.horizontalAdvance(" ") * DEFAULT_TAB_SIZE
-        widget.setTabStopWidth(int(tab_width))
 
     return font
 
@@ -439,15 +432,79 @@ def _get_luminance(color: QColor) -> float:
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
+def plain_to_rich_tooltip(plain: str) -> str:
+    """Turn plain tooltip text into readable HTML with light structure and emphasis.
+
+    Leaves empty or already-HTML strings unchanged. Escapes HTML, adds optional
+    emphasis where it helps (e.g. field labels, GFF names), and wraps in a
+    minimal readable div. Does not force bold/underline everywhere.
+    """
+    if not plain or not plain.strip():
+        return plain
+    text = plain.strip()
+    if text.startswith("<"):
+        return plain
+
+    escaped = html.escape(text)
+
+    # Optional: make leading "Label (GFF: FieldName)." more scannable — bold the label only
+    label_gff = re.match(r"^([A-Za-z][A-Za-z0-9\s]*?)\s*\((GFF:\s*[A-Za-z0-9_]+)\)\.", escaped)
+    if label_gff:
+        label_part = label_gff.group(1).strip()
+        gff_part = label_gff.group(2)
+        rest = escaped[label_gff.end() :].lstrip()
+        escaped = f"<b>{label_part}</b> ({gff_part}). {rest}"
+
+    # Optional: break before "Modders:" so the section is easier to spot
+    if " Modders:" in escaped:
+        escaped = escaped.replace(" Modders:", "<br><b>Modders:</b>", 1)
+
+    return (
+        '<div style="'
+        "font-family: 'Segoe UI', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; "
+        "font-size: 13px; "
+        "line-height: 1.35; "
+        "max-width: 480px; "
+        "white-space: normal; "
+        "word-break: break-word;"
+        '">'
+        f"{escaped}"
+        "</div>"
+    )
+
+
+class _RichTooltipEventFilter(QObject):
+    """Event filter that upgrades plain tooltip text to readable HTML before display."""
+
+    def eventFilter(self, obj: QObject, event: QEvent) -> bool:
+        if event.type() != QEvent.Type.ToolTip:
+            return False
+        if not isinstance(obj, QWidget):
+            return False
+        tip = obj.toolTip()
+        if not tip or not tip.strip():
+            return False
+        if tip.strip().startswith("<"):
+            return False
+        obj.setToolTip(plain_to_rich_tooltip(tip))
+        return False
+
+
+_tooltip_filter_installed = False
+
+
 def apply_tooltip_style_to_app(app: QApplication | None = None):
     """Apply VS Code-like tooltip styling to the application.
 
     Should be called once during application initialization to ensure
-    all tooltips have consistent, readable styling.
+    all tooltips have consistent, readable styling. Merges the tooltip
+    stylesheet and installs an event filter that turns plain tooltip
+    text into readable HTML before display.
 
     Args:
         app: The QApplication instance. If None, uses current instance.
     """
+    global _tooltip_filter_installed  # noqa: PLW0603
     parsed_app = QApplication.instance() if app is None else app
     if not isinstance(parsed_app, QApplication):
         return
@@ -455,10 +512,13 @@ def apply_tooltip_style_to_app(app: QApplication | None = None):
     # Get current stylesheet and append tooltip styling
     current_style = parsed_app.styleSheet() or ""
     tooltip_style = get_tooltip_stylesheet()
-
-    # Only add if not already present
     if "QToolTip" not in current_style:
         parsed_app.setStyleSheet(current_style + "\n" + tooltip_style)
+
+    # Install the rich-tooltip event filter once so plain tooltips are upgraded at show time
+    if not _tooltip_filter_installed:
+        parsed_app.installEventFilter(_RichTooltipEventFilter(parsed_app))
+        _tooltip_filter_installed = True
 
 
 def get_line_number_font(base_font: QFont) -> QFont:

@@ -179,68 +179,10 @@ class ResourceTuple(NamedTuple):
 
     type_id: int
     extension: str
-    category: Literal[
-        "Save Data",
-        "Images",
-        "Video",
-        "Audio",
-        "Text Files",
-        "Other",
-        "Models",
-        "Textures",
-        "Scripts",
-        "Modules",
-        "Module Data",
-        "Creatures",
-        "2D Arrays",
-        "Talk Tables",
-        "Dialogs",
-        "Palettes",
-        "Triggers",
-        "Sounds",
-        "Factions",
-        "Encounters",
-        "Doors",
-        "Placeables",
-        "Defaults",
-        "GUIs",
-        "Unused",
-    ]
+    category: Literal["Save Data", "Images", "Video", "Audio", "Text Files", "Other", "Models", "Textures", "Scripts", "Modules", "Module Data", "Creatures", "2D Arrays", "Talk Tables", "Dialogs", "Palettes", "Triggers", "Sounds", "Factions", "Encounters", "Doors", "Placeables", "Defaults", "GUIs", "Unused"]
     contents: Literal["binary", "plaintext", "gff", "erf", "lips", "video", "xml"]
     is_invalid: bool = False
-    target_member: (
-        Literal[
-            "RES",
-            "BMP",
-            "MVE",
-            "TGA",
-            "WAV",
-            "PLT",
-            "INI",
-            "BMU",
-            "MPG",
-            "TXT",
-            "WMA",
-            "WMV",
-            "XMV",
-            "PLH",
-            "TEX",
-            "MDL",
-            "THG",
-            "FNT",
-            "LUA",
-            "SLT",
-            "NSS",
-            "NCS",
-            "MOD",
-            "ARE",
-            "SET",
-            "BIP",
-            "JPG2",
-            "PWC",
-        ]
-        | None
-    ) = None
+    target_member: Literal["RES", "BMP", "MVE", "TGA", "WAV", "PLT", "INI", "BMU", "MPG", "TXT", "WMA", "WMV", "XMV", "PLH", "TEX", "MDL", "THG", "FNT", "LUA", "SLT", "NSS", "NCS", "MOD", "ARE", "SET", "BIP", "JPG2", "PWC"] | None = None
     supported_engines: tuple[BiowareEngine, ...] = ()  # Empty tuple as default, use tuple for immutability
 
 
@@ -592,7 +534,7 @@ class ResourceType(Enum):
         19002, "cdx", "Other", "binary"
     )
     FPT = ResourceTuple(  # FPT file
-        19003, "fpt", "Other", "binary"
+        type_id=19003, extension="fpt", category="Other", contents="binary"
     )
     ZIP = ResourceTuple(  # ZIP archive
         20000, "zip", "Archives", "binary"

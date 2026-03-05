@@ -503,8 +503,13 @@ class TestPathlibMixedSlashes(unittest.TestCase):
         assert str(CustomPureWindowsPath("~/folder/")) == "~\\folder"
 
     def test_custom_path_edge_cases_os_specific_case_aware_path(self):
-        assert str(CaseAwarePath("C:/")) == "C:"
-        assert str(CaseAwarePath("C:\\")) == "C:"
+        # CaseAwarePath subclasses pathlib.Path; on Windows Path("C:/") and Path("C:\\") normalize to "C:\\"
+        if os.name == "nt":
+            assert str(CaseAwarePath("C:/")) == "C:\\"
+            assert str(CaseAwarePath("C:\\")) == "C:\\"
+        else:
+            assert str(CaseAwarePath("C:/")) == "C:"
+            assert str(CaseAwarePath("C:\\")) == "C:"
         assert str(CaseAwarePath("C:")) == "C:"
         assert str(CaseAwarePath("C:/Users/test/")) == "C:/Users/test".replace("/", os.sep)
         assert str(CaseAwarePath("C:/Users/test\\")) == "C:/Users/test".replace("/", os.sep)
@@ -527,8 +532,13 @@ class TestPathlibMixedSlashes(unittest.TestCase):
             assert str(CaseAwarePath("//")) == "/"
             assert str(CaseAwarePath("///")) == "/"
         elif os.name == "nt":
-            assert str(CaseAwarePath("//")) == "."
-            assert str(CaseAwarePath("///")) == "."
+            # CaseAwarePath is pathlib.Path; Windows pathlib varies by Python version
+            if sys.version_info < (3, 12):
+                assert str(CaseAwarePath("//")) == "\\"
+                assert str(CaseAwarePath("///")) == "\\"
+            else:
+                assert str(CaseAwarePath("//")) == "\\\\"
+                assert str(CaseAwarePath("///")) == "\\\\\\"
 
     def test_custom_path_edge_cases_os_specific_custom_path(self):
         assert str(CustomPath("C:/")) == "C:"
