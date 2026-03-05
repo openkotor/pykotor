@@ -13,15 +13,24 @@ import socket
 import threading
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import bpy
+
+from ..constants import Classification, DummyType, ExportOptions, MeshType
+from ..io.mdl import save_mdl
 
 
 _STATE_PROP = "holocron_state_json"
 _KIND_PROP = "holocron_kind"
 _TYPE_PROP = "holocron_instance_type"
 _RUNTIME_ID_PROP = "holocron_runtime_id"
+
+
+class _ReportOperator:
+    def report(self, _level: set[str], _message: str) -> None:
+        return None
 
 
 @dataclass
@@ -725,6 +734,57 @@ class HolocronIPCServer:
             self._move_object_to_session_collection(obj)
 
         return {"kind": asset_kind, "file_path": file_path, "imported_objects": [obj.name for obj in imported_objects]}
+
+    def _rpc_export_kotor_model(self, params: dict[str, Any]) -> dict[str, Any]:
+        object_name = str(params.get("object_name", ""))
+        output_path = str(params.get("output_path", ""))
+        target_obj = bpy.data.objects.get(object_name)
+        if target_obj is None:
+            raise ValueError(f"Object not found: {object_name}")
+
+        root_name = f"{target_obj.name}_mdlroot"
+        root = bpy.data.objects.get(root_name)
+        created_root = False
+        original_parent = target_obj.parent
+        original_rotation_mode = target_obj.rotation_mode
+        if root is None:
+            root = bpy.data.objects.new(root_name, None)
+            root.rotation_mode = "QUATERNION"
+            root.kb.dummytype = DummyType.MDLROOT
+            root.kb.classification = Classification.OTHER
+            root.kb.animscale = 1.0
+            root.kb.node_number = 1
+            root.kb.export_order = 0
+            bpy.context.collection.objects.link(root)
+            created_root = True
+
+        if target_obj.type != "MESH":
+            raise ValueError(f"Object is not exportable as a mesh: {object_name}")
+
+        mesh = target_obj.data
+        if "UVMap" not in mesh.uv_layers:
+            mesh.uv_layers.new(name="UVMap")
+        if not mesh.materials:
+            mesh.materials.append(bpy.data.materials.new(name=f"{target_obj.name}_mat"))
+
+        target_obj.parent = root
+        target_obj.rotation_mode = "QUATERNION"
+        target_obj.kb.meshtype = MeshType.TRIMESH
+        target_obj.kb.node_number = 2
+        target_obj.kb.export_order = 1
+
+        options = ExportOptions()
+        options.export_animations = False
+        options.export_walkmeshes = False
+        save_mdl(_ReportOperator(), output_path, options)
+
+        target_obj.parent = original_parent
+        target_obj.rotation_mode = original_rotation_mode
+        if created_root:
+            bpy.data.objects.remove(root, do_unlink=True)
+
+        mdx_path = str(Path(output_path).with_suffix(".mdx"))
+        return {"mdl_path": output_path, "mdx_path": mdx_path}
 
     # ---------------------------------------------------------------------
     # Utility helpers

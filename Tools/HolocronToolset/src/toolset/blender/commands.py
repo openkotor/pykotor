@@ -623,6 +623,11 @@ class BlenderEditorController:
         """Import an external asset into the active Blender session."""
         return self._commands.import_external_asset(file_path)
 
+    @requires_connection(return_value=None)
+    def export_kotor_model(self, object_name: str, output_path: str) -> dict[str, Any] | None:
+        """Export a Blender object as a KotOR model."""
+        return self._commands.export_kotor_model(object_name, output_path)
+
     # =========================================================================
     # Layout Editing
     # =========================================================================

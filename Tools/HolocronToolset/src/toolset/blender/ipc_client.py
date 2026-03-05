@@ -806,6 +806,17 @@ class BlenderCommands:
             return response.result
         return None
 
+    def export_kotor_model(self, object_name: str, output_path: str) -> dict[str, Any] | None:
+        """Export a Blender object as a KotOR MDL/MDX pair."""
+        response = self._client.send_command(
+            "export_kotor_model",
+            {"object_name": object_name, "output_path": output_path},
+            timeout=30.0,
+        )
+        if response.success and isinstance(response.result, dict):
+            return response.result
+        return None
+
 
 # Global client instance
 _global_client: BlenderIPCClient | None = None

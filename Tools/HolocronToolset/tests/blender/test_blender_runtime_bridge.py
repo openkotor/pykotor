@@ -14,6 +14,7 @@ from qtpy.QtWidgets import QWidget
 from pykotor.resource.formats.bwm import BWM
 from pykotor.resource.formats.bwm.bwm_data import BWMFace
 from pykotor.resource.formats.lyt import LYT, LYTRoom
+from pykotor.resource.formats.mdl import read_mdl
 from pykotor.resource.generics.git import GIT, GITCreature
 from utility.common.geometry import SurfaceMaterial, Vector3
 
@@ -187,6 +188,37 @@ def test_blender_bridge_imports_external_texture(blender_runtime_bridge: Blender
     assert isinstance(result, dict)
     assert result["kind"] == "texture"
     assert result["file_path"] == str(texture_path)
+
+
+def test_blender_bridge_exports_external_obj_to_mdl(blender_runtime_bridge: BlenderCommands, tmp_path: Path):
+    obj_path = tmp_path / "triangle_export.obj"
+    obj_path.write_text(
+        "\n".join(
+            [
+                "o TriangleExport",
+                "v 0.0 0.0 0.0",
+                "v 1.0 0.0 0.0",
+                "v 0.0 1.0 0.0",
+                "f 1 2 3",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    imported = blender_runtime_bridge.import_external_asset(str(obj_path))
+    assert isinstance(imported, dict)
+    object_name = imported["imported_objects"][0]
+
+    mdl_path = tmp_path / "triangle_export.mdl"
+    exported = blender_runtime_bridge.export_kotor_model(object_name, str(mdl_path))
+    assert isinstance(exported, dict)
+    assert Path(exported["mdl_path"]).is_file()
+    assert Path(exported["mdx_path"]).is_file()
+    assert Path(exported["mdl_path"]).stat().st_size > 0
+    assert Path(exported["mdx_path"]).stat().st_size > 0
+
+    mdl = read_mdl(Path(exported["mdl_path"]), source_ext=Path(exported["mdx_path"]))
+    assert mdl is not None
 
 
 def test_blender_bridge_layout_operations_roundtrip(blender_runtime_bridge: BlenderCommands):
