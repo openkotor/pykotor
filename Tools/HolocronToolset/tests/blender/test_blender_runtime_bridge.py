@@ -176,6 +176,87 @@ def test_blender_bridge_imports_external_obj(blender_runtime_bridge: BlenderComm
     assert result["imported_objects"]
 
 
+def test_blender_bridge_layout_operations_roundtrip(blender_runtime_bridge: BlenderCommands):
+    assert blender_runtime_bridge.load_module(
+        lyt_data={"rooms": [], "doorhooks": [], "tracks": [], "obstacles": []},
+        git_data={"creatures": [], "cameras": [], "doors": [], "placeables": [], "waypoints": [], "sounds": [], "stores": [], "triggers": [], "encounters": []},
+        installation_path="/workspace",
+        module_root="m_layout",
+        walkmeshes=[],
+    )
+
+    room_name = blender_runtime_bridge.add_room({"model": "m_layoutroom", "position": {"x": 1.0, "y": 2.0, "z": 0.0}})
+    assert room_name == "Room:m_layoutroom"
+    assert blender_runtime_bridge.update_room(room_name, {"position": {"x": 5.0, "y": 6.0, "z": 0.0}}) is True
+
+    door_hook_name = blender_runtime_bridge.add_door_hook(
+        {
+            "room": "m_layoutroom",
+            "door": "door01",
+            "position": {"x": 5.0, "y": 6.0, "z": 0.0},
+        }
+    )
+    assert door_hook_name == "DoorHook:door01"
+    assert blender_runtime_bridge.update_door_hook(door_hook_name, {"door": "door02"}) is True
+
+    track_name = blender_runtime_bridge.add_track({"model": "track01", "position": {"x": 0.0, "y": 1.0, "z": 0.0}})
+    obstacle_name = blender_runtime_bridge.add_obstacle({"model": "obstacle01", "position": {"x": 2.0, "y": 3.0, "z": 0.0}})
+    assert track_name == "Track:track01"
+    assert obstacle_name == "Obstacle:obstacle01"
+    assert blender_runtime_bridge.update_track(track_name, {"model": "track02"}) is True
+    assert blender_runtime_bridge.update_obstacle(obstacle_name, {"model": "obstacle02"}) is True
+
+    saved = blender_runtime_bridge.save_changes()
+    assert isinstance(saved, dict)
+    assert saved["lyt"]["rooms"][0]["model"] == "m_layoutroom"
+    assert saved["lyt"]["rooms"][0]["position"]["x"] == pytest.approx(5.0)
+    assert saved["lyt"]["doorhooks"][0]["door"] == "door02"
+    assert saved["lyt"]["tracks"][0]["model"] == "track02"
+    assert saved["lyt"]["obstacles"][0]["model"] == "obstacle02"
+
+    assert blender_runtime_bridge.remove_lyt_element(track_name, "track") is True
+    saved_after_remove = blender_runtime_bridge.save_changes()
+    assert saved_after_remove["lyt"]["tracks"] == []
+
+    assert blender_runtime_bridge.unload_module() is True
+
+
+def test_blender_bridge_visibility_and_undo_roundtrip(blender_runtime_bridge: BlenderCommands):
+    creature = {
+        "type": "GITCreature",
+        "resref": "n_visible",
+        "position": {"x": 0.0, "y": 0.0, "z": 0.0},
+        "bearing": 0.0,
+        "runtime_id": 303,
+    }
+    placeable = {
+        "type": "GITPlaceable",
+        "resref": "plc_visible",
+        "position": {"x": 1.0, "y": 1.0, "z": 0.0},
+        "bearing": 0.0,
+        "runtime_id": 404,
+    }
+    assert blender_runtime_bridge.load_module(
+        lyt_data={"rooms": [], "doorhooks": [], "tracks": [], "obstacles": []},
+        git_data={"creatures": [creature], "cameras": [], "doors": [], "placeables": [placeable], "waypoints": [], "sounds": [], "stores": [], "triggers": [], "encounters": []},
+        installation_path="/workspace",
+        module_root="m_visibility",
+        walkmeshes=[],
+    )
+
+    assert blender_runtime_bridge.set_visibility("GITCreature", False) is True
+    assert blender_runtime_bridge.set_visibility("GITCreature", True) is True
+
+    assert blender_runtime_bridge.update_instance("GITPlaceable:plc_visible", {"position": {"x": 8.0, "y": 9.0, "z": 0.0}}) is True
+    saved = blender_runtime_bridge.save_changes()
+    assert saved["git"]["placeables"][0]["position"]["x"] == pytest.approx(8.0)
+
+    assert blender_runtime_bridge.undo() in {True, False}
+    assert blender_runtime_bridge.redo() in {True, False}
+
+    assert blender_runtime_bridge.unload_module() is True
+
+
 def test_blender_editor_controller_roundtrip(blender_runtime_bridge: BlenderCommands):
     del blender_runtime_bridge  # bridge fixture keeps Blender running; controller uses its own client
 
