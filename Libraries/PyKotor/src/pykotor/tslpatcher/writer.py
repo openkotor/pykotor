@@ -1389,6 +1389,38 @@ class IncrementalTSLPatchDataWriter:
             new_content += "\n"
         self.ini_path.write_text(new_content, encoding="utf-8")
 
+    def _write_resource_by_extension(self, data: bytes, dest_path: Path, file_ext: str) -> None:
+        """Write resource data to file based on file extension.
+
+        Args:
+        ----
+            data: Raw binary data to write
+            dest_path: Destination file path
+            file_ext: File extension (without dot)
+        """
+        try:
+            if file_ext.upper() in GFFContent.get_extensions():
+                gff_obj = read_gff(data)
+                write_gff(gff_obj, dest_path, ResourceType.from_extension(file_ext))
+            elif file_ext == "2da":
+                twoda_obj = read_2da(data)
+                write_2da(twoda_obj, dest_path, ResourceType.TwoDA)
+            elif file_ext == "tlk":
+                tlk_obj = read_tlk(data)
+                write_tlk(tlk_obj, dest_path, ResourceType.TLK)
+            elif file_ext == "ssf":
+                ssf_obj = read_ssf(data)
+                write_ssf(ssf_obj, dest_path, ResourceType.SSF)
+            elif file_ext == "lip":
+                lip_obj = read_lip(data)
+                write_lip(lip_obj, dest_path, ResourceType.LIP)
+            else:
+                # Binary file
+                dest_path.write_bytes(data)
+        except Exception as e:  # noqa: BLE001
+            self.log_func(f"[Warning] Failed to use io function for {file_ext}, using binary write: {e.__class__.__name__}: {e}")
+            dest_path.write_bytes(data)
+
     def register_tlk_modification_with_source(
         self,
         tlk_mod: ModificationsTLK,
@@ -4197,30 +4229,7 @@ class IncrementalTSLPatchDataWriter:
         file_ext: str,
     ) -> None:
         """Write resource using appropriate io function."""
-        try:
-            if file_ext.upper() in GFFContent.get_extensions():
-                gff_obj = read_gff(data)
-                write_gff(gff_obj, dest_path, ResourceType.from_extension(file_ext))
-            elif file_ext == "2da":
-                twoda_obj = read_2da(data)
-                write_2da(twoda_obj, dest_path, ResourceType.TwoDA)
-            elif file_ext == "tlk":
-                tlk_obj = read_tlk(data)
-                write_tlk(tlk_obj, dest_path, ResourceType.TLK)
-            elif file_ext == "ssf":
-                ssf_obj = read_ssf(data)
-                write_ssf(ssf_obj, dest_path, ResourceType.SSF)
-            elif file_ext == "lip":
-                lip_obj = read_lip(data)
-                write_lip(lip_obj, dest_path, ResourceType.LIP)
-            else:
-                # Binary file
-                dest_path.write_bytes(data)
-        except Exception as e:  # noqa: BLE001
-            self.log_func(f"[Warning] Failed to use io function for {file_ext}, using binary write: {e.__class__.__name__}: {e}")
-            self.log_func("Full traceback:")
-            for line in traceback.format_exc().splitlines():
-                self.log_func(f"  {line}")
+        self._write_resource_by_extension(data, dest_path, file_ext)
             dest_path.write_bytes(data)
 
     def _insert_into_section(self, section_marker: str, new_lines: list[str]) -> None:
