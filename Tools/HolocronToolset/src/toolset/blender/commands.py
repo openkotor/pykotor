@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable
 
 from loggerplus import RobustLogger
@@ -41,19 +42,28 @@ if TYPE_CHECKING:
         # Add other properties as needed
 
 
-def requires_connection(default_return_value: Any = False, check_session: bool = False) -> Callable:
+def requires_connection(default_return_value: Any = False, check_session: bool = False, **compat_kwargs: Any) -> Callable:
     """Decorator that checks if Blender is connected before executing a method.
 
     Args:
     ----
         default_return_value: Value to return if not connected
         check_session: Also check if session exists
+        **compat_kwargs: Backwards-compatible aliases for older call sites.
 
     Returns:
     -------
         Decorated function
     """
+    if "return_value" in compat_kwargs:
+        default_return_value = compat_kwargs.pop("return_value")
+    if compat_kwargs:
+        unexpected_args = ", ".join(sorted(compat_kwargs))
+        msg = f"Unexpected requires_connection kwargs: {unexpected_args}"
+        raise TypeError(msg)
+
     def decorator(func: Callable) -> Callable:
+        @wraps(func)
         def wrapper(self, *args, **kwargs):
             if not self.is_connected or (check_session and self._session is None):
                 self._logger.error(f"Cannot {func.__name__}: not connected to Blender")

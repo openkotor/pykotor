@@ -16,7 +16,6 @@ from qtpy.QtCore import QTimer
 from qtpy.QtWidgets import QMessageBox
 
 from loggerplus import RobustLogger
-from toolset.gui.helpers.message_box import ask_question, show_error_message, show_warning_message
 from pykotor.resource.generics.git import (
     GITCamera,
     GITCreature,
@@ -26,9 +25,9 @@ from pykotor.resource.generics.git import (
     GITStore,
     GITWaypoint,
 )
-from toolset.blender import launch_blender_with_ipc
 from toolset.blender.commands import get_blender_controller
-from toolset.blender.detection import get_blender_settings
+from toolset.blender.detection import BlenderInfo, get_blender_settings, launch_blender_with_ipc
+from toolset.gui.helpers.message_box import ask_question, show_error_message, show_warning_message
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -38,7 +37,6 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
     from pykotor.resource.generics.git import GIT, GITInstance, GITObject
-    from toolset.blender import BlenderInfo
     from toolset.blender.commands import BlenderEditorController, BlenderEditorMode
     from toolset.blender.ipc_client import ConnectionState
 
