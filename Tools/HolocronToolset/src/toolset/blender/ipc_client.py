@@ -114,6 +114,15 @@ class BlenderIPCClient:
         """Check if connected to Blender."""
         return self._state == ConnectionState.CONNECTED
 
+    def set_endpoint(self, host: str | None = None, port: int | None = None) -> None:
+        """Update the target IPC endpoint while disconnected."""
+        if self.is_connected:
+            return
+        if host is not None:
+            self._host = host
+        if port is not None:
+            self._port = port
+
     def connect(self, timeout: float = CONNECT_TIMEOUT) -> bool:
         """Connect to the Blender IPC server.
 

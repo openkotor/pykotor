@@ -158,7 +158,9 @@ class BlenderEditorMixin:
         installation_path: str | Path,
     ):
         """Connect to Blender IPC server and load data."""
+        settings = get_blender_settings()
         self._blender_controller = get_blender_controller()
+        self._blender_controller._client.set_endpoint(port=settings.ipc_port)  # noqa: SLF001
 
         # Store data for loading after connection
         self._pending_lyt = lyt

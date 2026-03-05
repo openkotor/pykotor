@@ -1000,6 +1000,15 @@ class TestIPCClient:
         assert client._port == 7531
         assert client._auto_reconnect is True
 
+    def test_client_endpoint_can_be_reconfigured_while_disconnected(self):
+        """Test BlenderIPCClient endpoint can be reconfigured before connecting."""
+        from toolset.blender.ipc_client import BlenderIPCClient
+
+        client = BlenderIPCClient(port=7531)
+        client.set_endpoint(port=8123)
+
+        assert client._port == 8123
+
     def test_client_connect_disconnect_cycle(self):
         """Test multiple connect/disconnect cycles."""
         from toolset.blender.ipc_client import BlenderIPCClient, ConnectionState
