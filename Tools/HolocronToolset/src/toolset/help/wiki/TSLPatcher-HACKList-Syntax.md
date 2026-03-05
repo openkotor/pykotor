@@ -479,7 +479,7 @@ File0=combat_init.ncs
 
 ### 4. Enabling Debug Features
 
-Some scripts have debug [flags](GFF-File-Format#gff-data-types) that can be enabled:
+Some scripts have debug flags that can be enabled:
 
 ```ini
 [HACKList]

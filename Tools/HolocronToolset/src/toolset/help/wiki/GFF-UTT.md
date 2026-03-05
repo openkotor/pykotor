@@ -38,7 +38,7 @@ UTT files define [trigger templates](GFF-File-Format#utt-trigger) for invisible 
 | ----- | ---- | ----------- |
 | `LinkedTo` | [CExoString](GFF-File-Format#gff-data-types) | Destination waypoint tag |
 | `LinkedToModule` | [ResRef](GFF-File-Format#gff-data-types) | Destination module [ResRef](GFF-File-Format#gff-data-types) |
-| `LinkedToFlags` | Byte | Transition behavior [flags](GFF-File-Format#gff-data-types) |
+| `LinkedToFlags` | Byte | Transition behavior flags |
 | `LoadScreenID` | Word | Loading screen ID |
 | `PortraitId` | Word | Portrait ID (unused) |
 
@@ -55,9 +55,9 @@ UTT files define [trigger templates](GFF-File-Format#utt-trigger) for invisible 
 | `TrapFlag` | Byte | Trigger is a trap |
 | `TrapType` | Byte | index into `traps.2da` |
 | `TrapDetectable` | Byte | Can be detected |
-| `TrapDetectDC` | Byte | Awareness DC to detect (K1 triggers: read from traps.2da, not GFF; stored for doors/placeables compatibility) |
+| `TrapDetectDC` | Byte | Awareness DC to detect |
 | `TrapDisarmable` | Byte | Can be disarmed |
-| `DisarmDC` | Byte | Security DC to disarm (K1 triggers: read from traps.2da, not GFF; stored for doors/placeables compatibility) |
+| `DisarmDC` | Byte | Security DC to disarm |
 | `TrapOneShot` | Byte | Fires once then disables |
 | `AutoRemoveKey` | Byte | [KEY](KEY-File-Format) removed on use |
 | `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | [KEY](KEY-File-Format) tag required to disarm/bypass |

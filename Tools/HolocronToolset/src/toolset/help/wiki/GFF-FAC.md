@@ -15,6 +15,7 @@ A Faction is a control system for determining how game objects interact with eac
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/generics/fac.py`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py)
 
 **Related Files:**
+
 - `repute.2da` - Default faction standings (see [2DA File Format](2DA-File-Format))
 - `repadjust.2da` - Reputation adjustment values (see [2DA File Format](2DA-File-Format))
 
@@ -90,6 +91,7 @@ From all the above, it follows that a module that contains no user-defined facti
 The `repute.2da` file defines default faction standings. Each row corresponds to a faction ID, and columns represent how that faction feels about other factions.
 
 **Rows (by faction ID):**
+
 - Row 0: Player
 - Row 1: Hostile
 - Row 2: Commoner
@@ -97,6 +99,7 @@ The `repute.2da` file defines default faction standings. Each row corresponds to
 - Row 4: Defender (KotOR 2 only)
 
 **Columns:**
+
 - `LABEL` - String: Programmer label; name of faction being considered by the faction named in each of the other columns. Row number is the faction ID.
 - `HOSTILE` - Integer: How the Hostile faction feels about the other factions
 - `COMMONER` - Integer: How the Commoner faction feels about the other factions
@@ -110,12 +113,14 @@ The `repute.2da` file defines default faction standings. Each row corresponds to
 The `repadjust.2da` file describes how faction reputation standings change in response to different faction-affecting actions, how the presence of witnesses affects the changes, and by how much the changes occur.
 
 **Rows (action types - hardcoded, do not change order):**
+
 - Attack
 - Theft
 - Kill
 - Help
 
 **Columns:**
+
 - `LABEL` - String: Programmer label; name of an action.
 - `PERSONALREP` - Integer: Personal reputation adjustment of how the target feels about the perpetrator of the action named in the LABEL.
 - `FACTIONREP` - Integer: Base faction reputation adjustment in how the target's Faction feels about the perpetrator. This reputation adjustment is modified further by the effect of witnesses, as controlled by the columns described below. Note that a witness only affects faction standing if the witness belongs to a Global faction.

@@ -13,6 +13,7 @@ This document provides detailed documentation for NWScript door and placeable fu
 ### Understanding Doors
 
 Doors are objects that:
+
 - Can be opened and closed
 - Can be locked or unlocked
 - May require keys or skill checks to open
@@ -22,6 +23,7 @@ Doors are objects that:
 ### Understanding Placeables
 
 Placeables are interactive objects in the game world:
+
 - **Containers** - Have inventories (chests, crates)
 - **Interactive Objects** - Trigger scripts when used (terminals, switches)
 - **Conversation Objects** - Start dialogues when used
@@ -37,14 +39,17 @@ Placeables are interactive objects in the game world:
 **Routine:** 43
 
 #### Function Signature
+
 ```nss
 void ActionOpenDoor(object oDoor);
 ```
 
 #### Description
+
 Queues an action to open a door. The creature will move to the door and open it if possible (not locked, has key, etc.).
 
 #### Parameters
+
 - `oDoor`: Door object to open
 
 #### Usage Examples
@@ -63,6 +68,7 @@ AssignCommand(oNPC, ActionOpenDoor(oDoor));
 ```
 
 **Pattern: Conditional Door Opening**
+
 ```nss
 // Open door if unlocked
 object oDoor = GetObjectByTag("secret_door");
@@ -74,6 +80,7 @@ if (!GetLocked(oDoor)) {
 ```
 
 #### Notes
+
 - Door must be unlocked or creature must have key
 - Creature will move to door if not in range
 - Locked doors cannot be opened without key or skill check
@@ -85,14 +92,17 @@ if (!GetLocked(oDoor)) {
 **Routine:** 44
 
 #### Function Signature
+
 ```nss
 void ActionCloseDoor(object oDoor);
 ```
 
 #### Description
+
 Queues an action to close a door. The creature will move to the door and close it.
 
 #### Parameters
+
 - `oDoor`: Door object to close
 
 #### Usage Examples
@@ -120,17 +130,21 @@ ActionCloseDoor(oDoor2);
 **Routine:** 325
 
 #### Function Signature
+
 ```nss
 int GetLocked(object oTarget);
 ```
 
 #### Description
+
 Gets the locked state of a door or placeable object.
 
 #### Parameters
+
 - `oTarget`: Door or placeable to check
 
 #### Returns
+
 - `TRUE` (1) if the object is locked
 - `FALSE` (0) if the object is unlocked or invalid
 
@@ -148,6 +162,7 @@ if (GetLocked(oDoor)) {
 ```
 
 **Pattern: Conditional Based on Lock State**
+
 ```nss
 // Different behavior based on lock state
 object oContainer = GetObjectByTag("chest");
@@ -167,14 +182,17 @@ if (GetLocked(oContainer)) {
 **Routine:** 324
 
 #### Function Signature
+
 ```nss
 void SetLocked(object oTarget, int bLocked);
 ```
 
 #### Description
+
 Sets the locked state of a door or placeable object.
 
 #### Parameters
+
 - `oTarget`: Door or placeable to lock/unlock
 - `bLocked`: `TRUE` to lock, `FALSE` to unlock
 
@@ -193,6 +211,7 @@ SetLocked(oDoor, FALSE);
 ```
 
 **Pattern: Lock After Event**
+
 ```nss
 // Lock door after player enters
 void main() {
@@ -214,17 +233,21 @@ void main() {
 **Routine:** 329
 
 #### Function Signature
+
 ```nss
 void ActionInteractObject(object oPlaceable);
 ```
 
 #### Description
+
 Queues an action to interact with (use) a placeable object. The behavior depends on the placeable type:
+
 - **Containers**: Opens inventory
 - **Conversation Objects**: Starts dialogue
 - **Script Objects**: Runs OnUsed script
 
 #### Parameters
+
 - `oPlaceable`: Placeable object to interact with
 
 #### Usage Examples
@@ -244,6 +267,7 @@ if (!GetLocked(oChest)) {
 ```
 
 **Pattern: Conditional Placeable Interaction**
+
 ```nss
 // Interact if unlocked
 object oContainer = GetObjectByTag("locked_box");
@@ -255,6 +279,7 @@ if (!GetLocked(oContainer)) {
 ```
 
 #### Notes
+
 - Creature will move to placeable if not in range
 - Locked containers cannot be opened
 - Different placeable types have different behaviors
@@ -268,14 +293,17 @@ if (!GetLocked(oContainer)) {
 **Routine:** 330
 
 #### Function Signature
+
 ```nss
 object GetLastUsedBy();
 ```
 
 #### Description
+
 Gets the last object that used the placeable or door that is calling this function. This is typically used in `OnUsed` event scripts.
 
 #### Returns
+
 - Object that last used the caller
 - `OBJECT_INVALID` if called by something other than a placeable or door, or if no object has used it
 
@@ -293,6 +321,7 @@ void main() {
 ```
 
 **Pattern: User-Specific Behavior**
+
 ```nss
 // Different behavior based on who used it
 void main() {
@@ -308,6 +337,7 @@ void main() {
 ```
 
 #### Notes
+
 - Only works in event scripts (OnUsed, etc.)
 - Returns the last object that used the caller
 - Always validate the returned object
@@ -319,14 +349,17 @@ void main() {
 **Routine:** 326
 
 #### Function Signature
+
 ```nss
 object GetClickingObject();
 ```
 
 #### Description
+
 Gets the object that last clicked on the caller. This is identical to `GetEnteringObject()` and is typically used in trigger `OnClick` event scripts.
 
 #### Returns
+
 - Object that clicked on the caller
 - `OBJECT_INVALID` if no object clicked or caller is invalid
 
@@ -344,6 +377,7 @@ void main() {
 ```
 
 #### Notes
+
 - Only works in event scripts (OnClick, etc.)
 - Identical to `GetEnteringObject()`
 - Always validate the returned object
@@ -357,18 +391,22 @@ void main() {
 **Routine:** 337
 
 #### Function Signature
+
 ```nss
 int GetIsDoorActionPossible(object oTargetDoor, int nDoorAction);
 ```
 
 #### Description
+
 Checks if a specific door action can be performed on a door. Useful for checking if a door can be opened, closed, locked, etc.
 
 #### Parameters
+
 - `oTargetDoor`: Door to check
 - `nDoorAction`: Door action constant (see Door Action Constants below)
 
 #### Returns
+
 - `TRUE` (1) if the action can be performed
 - `FALSE` (0) if the action cannot be performed or door is invalid
 
@@ -389,14 +427,17 @@ if (GetIsDoorActionPossible(oDoor, DOOR_ACTION_OPEN)) {
 **Routine:** 338
 
 #### Function Signature
+
 ```nss
 void DoDoorAction(object oTargetDoor, int nDoorAction);
 ```
 
 #### Description
+
 Performs a specific door action on a door. This is a direct action (not queued) that executes immediately.
 
 #### Parameters
+
 - `oTargetDoor`: Door to perform action on
 - `nDoorAction`: Door action constant (see Door Action Constants below)
 
@@ -418,6 +459,7 @@ DoDoorAction(oDoor, DOOR_ACTION_LOCK);
 ## Door Action Constants
 
 Standard door action constants:
+
 - `DOOR_ACTION_OPEN` (0) - Open door
 - `DOOR_ACTION_UNLOCK` (1) - Unlock door
 - `DOOR_ACTION_BASH` (2) - Bash door (attempt to break it)
@@ -527,6 +569,7 @@ void main() {
 ### Door States
 
 Doors can be in multiple states:
+
 - **Open/Closed**: Physical state of the door
 - **Locked/Unlocked**: Whether the door requires a key or skill to open
 - **Key Required**: Some doors require specific items (keys) to open
@@ -534,6 +577,7 @@ Doors can be in multiple states:
 ### Placeable Types
 
 Placeables can have different behaviors:
+
 - **Containers**: Have inventories that can be accessed
 - **Conversation Objects**: Start dialogues when used
 - **Script Objects**: Run custom scripts when used
@@ -542,6 +586,7 @@ Placeables can have different behaviors:
 ### Lock Mechanics
 
 Locks can be:
+
 - **Key-Based**: Require a specific item to unlock
 - **Skill-Based**: Can be unlocked with Security skill
 - **Script-Based**: Unlocked through script events
@@ -550,6 +595,7 @@ Locks can be:
 ### Area Transitions
 
 Some doors link to other areas or modules:
+
 - When clicked, they trigger area/module transitions
 - These doors may not use standard open/close actions
 - Transition behavior is defined in the door's properties

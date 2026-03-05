@@ -58,7 +58,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `disableinjuredanim` | Boolean (optional) | Whether to disable injured [animations](MDL-MDX-File-Format#animation-header) |
 | `abortonparry` | Boolean | Whether to abort on parry |
 | `freelookeffect` | Integer (optional) | Free look effect ID |
-| `equipslotslocked` | Integer (optional) | Locked equipment slot [flags](GFF-File-Format#gff-data-types) |
+| `equipslotslocked` | Integer (optional) | Locked equipment slot flags |
 | `weaponscale` | String (optional) | Weapon scale multiplier |
 | `wingTailScale` | Boolean | Whether wing/tail scaling is enabled |
 | `helmetScaleF` | String (optional) | Female helmet scale |

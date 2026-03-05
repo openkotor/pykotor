@@ -39,14 +39,17 @@ Effects are temporary or permanent modifications to objects. They are **created*
 **Routine:** 220
 
 #### Function Signature
+
 ```nss
 void ApplyEffectToObject(int nDurationType, effect eEffect, object oTarget, float fDuration = 0.0);
 ```
 
 #### Description
+
 Applies an effect to a target object with the specified duration type. This is the **primary way** to make effects take effect. Effects created with effect functions (e.g., `EffectDamage()`) do nothing until applied.
 
 #### Parameters
+
 - `nDurationType`: Duration type constant:
   - `DURATION_TYPE_INSTANT` (0) - Effect applies immediately and is removed
   - `DURATION_TYPE_TEMPORARY` (1) - Effect lasts for `fDuration` seconds
@@ -58,17 +61,20 @@ Applies an effect to a target object with the specified duration type. This is t
 #### Duration Types Explained
 
 **DURATION_TYPE_INSTANT (0)**
+
 - Effect applies immediately and is removed
 - Used for: Damage, healing, resurrection
 - `fDuration` parameter is ignored
 
 **DURATION_TYPE_TEMPORARY (1)**
+
 - Effect lasts for `fDuration` seconds
 - Used for: Temporary buffs/debuffs, status effects with duration
 - Effect is automatically removed when duration expires
 - `fDuration` must be specified (> 0.0)
 
 **DURATION_TYPE_PERMANENT (2)**
+
 - Effect persists until explicitly removed with `RemoveEffect()` or `ClearAllEffects()`
 - Used for: Permanent ability increases, item-based effects
 - `fDuration` parameter is ignored
@@ -94,6 +100,7 @@ ApplyEffectToObject(DURATION_TYPE_PERMANENT, eStr, oTarget, 0.0);
 ```
 
 **Pattern: Conditional Duration**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_speed_set.nss
 effect eEffect;
@@ -109,6 +116,7 @@ else
 ```
 
 #### Implementation Reference
+
 - [`vendor/KotOR.js/src/nwscript/NWScriptDefK1.ts:2735-2759`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L2735-L2759)
 - [`vendor/reone/src/libs/game/object.cpp:257-271`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object.cpp#L257-L271)
 
@@ -121,16 +129,19 @@ else
 **Routine:** 79
 
 #### Function Signature
+
 ```nss
 effect EffectDamage(int nDamageAmount, int nDamageType = DAMAGE_TYPE_UNIVERSAL, int nDamagePower = DAMAGE_POWER_NORMAL);
 ```
 
 #### Description
+
 Creates a damage effect that deals damage to a target when applied. The damage is applied immediately when used with `DURATION_TYPE_INSTANT`.
 
 **⚠️ IMPORTANT:** Damage effects must be applied as `DURATION_TYPE_INSTANT` to deal damage. Temporary/permanent damage effects don't work as expected.
 
 #### Parameters
+
 - `nDamageAmount`: Amount of damage to deal (minimum 1, maximum 10000)
 - `nDamageType`: Damage type constant (default: `DAMAGE_TYPE_UNIVERSAL`):
   - `DAMAGE_TYPE_BLUDGEONING` (1) - Physical bludgeoning damage
@@ -175,6 +186,7 @@ if (!ReflexSave(oTarget, nDC, SAVE_TYPE_REFLEX, oCaster)) {
 ```
 
 **Pattern: Area Damage with Save**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/411DXN_Dxun_Sith_Tomb/k_def_user_heal.nss
 object oShapeObject = GetFirstObjectInShape(4, 4.0, location1, 0, 65, [0.0,0.0,0.0]);
@@ -196,6 +208,7 @@ while (GetIsObjectValid(oShapeObject) && (int4 > 0)) {
 ```
 
 #### Implementation Reference
+
 - [`vendor/reone/src/libs/game/script/routine/impl/effect.cpp:149-162`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/script/routine/impl/effect.cpp#L149-L162)
 - [`vendor/KotOR.js/src/effects/EffectDamage.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/effects/EffectDamage.ts)
 
@@ -206,16 +219,19 @@ while (GetIsObjectValid(oShapeObject) && (int4 > 0)) {
 **Routine:** 78
 
 #### Function Signature
+
 ```nss
 effect EffectHeal(int nDamageToHeal);
 ```
 
 #### Description
+
 Creates a healing effect that restores hit points to a target. Must be applied as `DURATION_TYPE_INSTANT` to take effect.
 
 **Returns:** `EFFECT_TYPE_INVALIDEFFECT` if `nDamageToHeal < 0`.
 
 #### Parameters
+
 - `nDamageToHeal`: Amount of hit points to restore (cannot be negative)
 
 #### Usage Examples
@@ -236,6 +252,7 @@ if (nHealAmount > 0) {
 ```
 
 **Pattern: Full Healing**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/403DXN_Dxun_Mandalorian_Ruins/k_circle_damage.nss
 DelayCommand(1.0, ApplyEffectToObject(DURATION_TYPE_INSTANT, 
@@ -244,6 +261,7 @@ DelayCommand(1.0, ApplyEffectToObject(DURATION_TYPE_INSTANT,
 ```
 
 #### Implementation Reference
+
 - [`vendor/reone/src/libs/game/script/routine/impl/effect.cpp:138-147`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/script/routine/impl/effect.cpp#L138-L147)
 
 ---
@@ -255,11 +273,13 @@ DelayCommand(1.0, ApplyEffectToObject(DURATION_TYPE_INSTANT,
 **Routine:** 134
 
 #### Function Signature
+
 ```nss
 effect EffectKnockdown();
 ```
 
 #### Description
+
 Creates a knockdown effect that knocks the target prone. Typically used with `DURATION_TYPE_TEMPORARY` for timed knockdowns.
 
 #### Usage Examples
@@ -283,11 +303,13 @@ if (!FortitudeSave(oTarget, nDC, SAVE_TYPE_FORTITUDE, oCaster)) {
 **Routine:** 148
 
 #### Function Signature
+
 ```nss
 effect EffectParalyze();
 ```
 
 #### Description
+
 Creates a paralyze effect that immobilizes the target. Target cannot move or take actions.
 
 #### Usage Examples
@@ -309,14 +331,17 @@ ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectParalyze(), oTarget, 0.0);
 **Routine:** 133
 
 #### Function Signature
+
 ```nss
 effect EffectDeath(int nSpectacularDeath = 0, int nDisplayFeedback = 1);
 ```
 
 #### Description
+
 Creates a death effect that kills the target. Must be applied as `DURATION_TYPE_INSTANT`.
 
 #### Parameters
+
 - `nSpectacularDeath`: If non-zero, uses spectacular death animation
 - `nDisplayFeedback`: If non-zero, displays death feedback message
 
@@ -339,14 +364,17 @@ ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDeath(1, 1), oTarget, 0.0);
 **Routine:** 82
 
 #### Function Signature
+
 ```nss
 effect EffectResurrection(int nHitPointPercent = 100);
 ```
 
 #### Description
+
 Creates a resurrection effect that revives a dead creature. Must be applied as `DURATION_TYPE_INSTANT`.
 
 #### Parameters
+
 - `nHitPointPercent`: Percentage of maximum hit points to restore (0-100, default 100)
 
 #### Usage Examples
@@ -370,14 +398,17 @@ ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectResurrection(50), oTarget, 0.0)
 **Routine:** 80
 
 #### Function Signature
+
 ```nss
 effect EffectAbilityIncrease(int nAbilityToIncrease, int nModifyBy);
 ```
 
 #### Description
+
 Creates an effect that increases an ability score. Commonly used with `DURATION_TYPE_PERMANENT` for item-based stat boosts.
 
 #### Parameters
+
 - `nAbilityToIncrease`: Ability constant:
   - `ABILITY_STRENGTH` (0)
   - `ABILITY_DEXTERITY` (1)
@@ -408,14 +439,17 @@ ApplyEffectToObject(DURATION_TYPE_TEMPORARY,
 **Routine:** 446
 
 #### Function Signature
+
 ```nss
 effect EffectAbilityDecrease(int nAbility, int nModifyBy);
 ```
 
 #### Description
+
 Creates an effect that decreases an ability score. Typically used with `DURATION_TYPE_TEMPORARY` for debuffs.
 
 #### Parameters
+
 - `nAbility`: Ability constant (same as EffectAbilityIncrease)
 - `nModifyBy`: Amount to decrease the ability by
 
@@ -436,16 +470,19 @@ ApplyEffectToObject(DURATION_TYPE_TEMPORARY,
 **Routine:** 165
 
 #### Function Signature
+
 ```nss
 effect EffectMovementSpeedIncrease(int nNewSpeedPercent);
 ```
 
 #### Description
+
 Creates an effect that increases movement speed. `nNewSpeedPercent` is the new speed as a percentage of base speed (e.g., 150 = 150% speed = 1.5x).
 
 **Note:** There is typically a cap around 200% speed. Values above the cap may be ignored.
 
 #### Parameters
+
 - `nNewSpeedPercent`: New movement speed as percentage (100 = normal speed, 150 = 50% faster, 200 = double speed)
 
 #### Usage Examples
@@ -469,14 +506,17 @@ ApplyEffectToObject(DURATION_TYPE_PERMANENT,
 **Routine:** 451
 
 #### Function Signature
+
 ```nss
 effect EffectMovementSpeedDecrease(int nPercentChange);
 ```
 
 #### Description
+
 Creates an effect that decreases movement speed. `nPercentChange` is the amount to reduce speed by (e.g., 50 = reduce speed by 50%).
 
 #### Parameters
+
 - `nPercentChange`: Percentage to reduce speed by (50 = 50% slower)
 
 #### Usage Examples
@@ -496,11 +536,13 @@ ApplyEffectToObject(DURATION_TYPE_TEMPORARY,
 **Routine:** 271 (TSL only)
 
 #### Function Signature
+
 ```nss
 void ClearAllEffects(object oTarget = OBJECT_SELF);
 ```
 
 #### Description
+
 Removes all effects from the target object. Useful for resetting state or removing unwanted effects.
 
 #### Usage Examples
@@ -520,11 +562,13 @@ ClearAllEffects(oTarget);
 **Routine:** 272
 
 #### Function Signature
+
 ```nss
 void RemoveEffect(object oTarget, effect eEffect);
 ```
 
 #### Description
+
 Removes a specific effect from the target. Requires the effect to have been previously stored.
 
 #### Usage Examples

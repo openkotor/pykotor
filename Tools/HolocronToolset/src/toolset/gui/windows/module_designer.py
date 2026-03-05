@@ -1288,9 +1288,13 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         if is_walkmesh and not self._last_walkmeshes:
             self.on_generate_walkmesh()
 
-        # --- Right panel (instancePanel) ---
-        # Instance panel is only for Object mode
-        self.ui.instancePanel.setVisible(is_object)
+        # --- Right panel ---
+        # instancesTab is for Object mode; layoutTab is for Layout mode
+        self.ui.rightPanel.setVisible(is_object or is_layout)
+        if is_object:
+            self._switch_right_panel_to("instancesTab")
+        elif is_layout:
+            self._switch_right_panel_to("layoutTab")
 
         # --- Tool palette buttons ---
         # Select/Move/Rotate tools only make sense in Object or Walkmesh mode
@@ -1312,6 +1316,15 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             widget = left.widget(i)
             if widget is not None and widget.objectName() == tab_object_name:
                 left.setCurrentIndex(i)
+                return
+
+    def _switch_right_panel_to(self, tab_object_name: str):
+        """Switch right panel to a specific tab by its objectName."""
+        right = self.ui.rightPanel
+        for i in range(right.count()):
+            widget = right.widget(i)
+            if widget is not None and widget.objectName() == tab_object_name:
+                right.setCurrentIndex(i)
                 return
 
     @property
@@ -2477,6 +2490,19 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         """Refresh the indoor renderer after room changes."""
         self.ui.indoorRenderer.invalidate_rooms(rooms)
         self._refresh_indoor_vis_matrix()
+        self._sync_lyt_from_indoor_map()
+
+    def _sync_lyt_from_indoor_map(self) -> None:
+        """Sync IndoorMap rooms → module LYT (in-memory) and refresh layout tree."""
+        lyt = self._get_or_create_layout_resource()
+        if lyt is None:
+            return
+        lyt.rooms.clear()
+        module_id = self._indoor_map.module_id
+        for i, room in enumerate(self._indoor_map.rooms):
+            model_name = f"{module_id}_room{i}"
+            lyt.rooms.append(LYTRoom(model_name, room.position))
+        self.rebuild_layout_tree()
 
     def _indoor_place_new_room(self, component: KitComponent):
         """Place a new room at the cursor position with undo support."""
@@ -3737,14 +3763,14 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         # Only build if module is loaded
         if self._module is None:
             self.ui.instanceTree.setEnabled(False)
-            self.ui.instancePanel.setVisible(False)
+            self.ui.rightPanel.setVisible(False)
             return
 
         # Block signals during bulk update for better performance
         self.ui.instanceTree.blockSignals(True)
         self.ui.instanceTree.clear()
         self.ui.instanceTree.setEnabled(True)
-        self.ui.instancePanel.setVisible(True)
+        self.ui.rightPanel.setVisible(True)
 
         hidden_mapping = self._hidden_instance_class_mapping()
         icon_mapping: dict[type[GITInstance], QPixmap] = {

@@ -637,6 +637,7 @@ while (*src == 0x20) {  // Space character
 The walkmesh must start with `"node aabb"` and end with `"endnode"`.
 
 **Detection Logic**:
+
 ```c
 if (strncmp(src, "node", 4) == 0) {
     src += 4;
@@ -656,6 +657,7 @@ if (strncmp(src, "endnode", 7) == 0) {
 **Format**: `"position" SPACE float SPACE float SPACE float`
 
 **Parsing**:
+
 ```c
 float x, y, z;
 sscanf(src, "position %f %f %f", &x, &y, &z);
@@ -671,6 +673,7 @@ mesh->position.z = z;
 **Format**: `"orientation" SPACE float SPACE float SPACE float SPACE float`
 
 **Parsing**:
+
 ```c
 float x, y, z, w;
 sscanf(src, "orientation %f %f %f %f", &x, &y, &z, &w);
@@ -696,12 +699,14 @@ if (abs(x) < 0.0001 && abs(y) < 0.0001 && abs(z) < 0.0001) {
 #### 4. Vertices Block
 
 **Format**:
+
 ```
 "verts" SPACE integer NEWLINE
 (float SPACE float SPACE float NEWLINE)+
 ```
 
 **Parsing**:
+
 ```c
 int vertex_count;
 sscanf(src, "verts %d", &vertex_count);
@@ -724,12 +729,14 @@ for (int i = 0; i < vertex_count; i++) {
 #### 5. Faces Block
 
 **Format**:
+
 ```
 "faces" SPACE integer NEWLINE
 (integer SPACE integer SPACE integer SPACE integer SPACE integer SPACE integer SPACE integer SPACE integer NEWLINE)+
 ```
 
 **Face Line Format**: Each face line contains **8 integers**:
+
 1. `v1` - First vertex index
 2. `v2` - Second vertex index
 3. `v3` - Third vertex index
@@ -740,6 +747,7 @@ for (int i = 0; i < vertex_count; i++) {
 8. `material` - Material ID
 
 **Parsing**:
+
 ```c
 int face_count;
 sscanf(src, "faces %d", &face_count);
@@ -816,6 +824,7 @@ mesh->adjacency_count = walkable_count;  // Number of walkable faces
 ```
 
 **Final Structure**:
+
 - **Walkable faces** (indices 0 to `adjacency_count - 1`): Stored first
 - **Unwalkable faces** (indices `adjacency_count` to `face_count - 1`): Stored after walkable faces
 - `adjacency_count`: Set to number of walkable faces (used for adjacency table size in binary format)
@@ -823,12 +832,14 @@ mesh->adjacency_count = walkable_count;  // Number of walkable faces
 #### 6. AABB Block
 
 **Format**:
+
 ```
 "aabb" NEWLINE
 (float SPACE float SPACE float SPACE float SPACE float SPACE float SPACE integer NEWLINE)*
 ```
 
 **AABB Line Format**: Each line contains **7 values**:
+
 1. `min_x` (float) - Minimum X bound
 2. `min_y` (float) - Minimum Y bound
 3. `min_z` (float) - Minimum Z bound
@@ -838,6 +849,7 @@ mesh->adjacency_count = walkable_count;  // Number of walkable faces
 7. `face_index` (int) - Face index for leaf nodes (-1 for internal nodes)
 
 **Parsing**:
+
 ```c
 while (/* more lines available */) {
     float min_x, min_y, min_z, max_x, max_y, max_z;
@@ -882,6 +894,7 @@ while (/* more lines available */) {
 ```
 
 **AABB Node Structure** (44 bytes):
+
 - Offset 0x00-0x17 (24 bytes): Bounding box (6 floats: min_x, min_y, min_z, max_x, max_y, max_z)
 - Offset 0x18 (4 bytes): Face index (int32, -1 for internal nodes)
 - Offset 0x1C (4 bytes): Unknown field
@@ -892,6 +905,8 @@ while (/* more lines available */) {
 **Tree Construction**: The engine builds a hierarchical AABB tree structure from the parsed nodes, linking parent-child relationships and calculating split planes based on bounding box dimensions. The complete tree building algorithm is complex and involves maintaining stacks of nodes with unresolved children.
 
 **Epsilon Constant**: `0.01` (0x3C23D70A) - Applied to all bounding box coordinates to prevent floating-point precision issues.
+
+<a id="implementation-approaches-and-differences"></a>
 
 ### Implementation Notes
 
@@ -912,6 +927,7 @@ while (/* more lines available */) {
 #### Error Handling
 
 The engine handles errors by:
+
 - Calling `LoadDefaultMesh` vtable function on parse errors
 - Returning `1` on error (not `0`)
 - Freeing all allocated memory on error

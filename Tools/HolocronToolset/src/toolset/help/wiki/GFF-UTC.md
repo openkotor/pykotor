@@ -6,7 +6,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Creature format specification, see [Bioware Aurora Creature Format](Bioware-Aurora-Creature).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py). For engine-verified field types and min/max ranges (Reva), see [UTC Editor Field Types](UTC-Editor-Field-Types).
+**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py)
 
 ## Core Identity fields
 
@@ -22,9 +22,9 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Appearance_Type` | Word | index into [`appearance.2da`](2DA-appearance) |
+| `Appearance_Type` | DWord | index into [`appearance.2da`](2DA-appearance) |
 | `PortraitId` | Word | index into [`portraits.2da`](2DA-portraits); 65535 (0xFFFF) = use Portrait ResRef instead |
-| `Gender` | Byte | 0=Male, 1=Female, 2=Both, 3=Other, 4=None (engine clamps values &gt; 4 to 4) |
+| `Gender` | Byte | 0=Male, 1=Female, 2=Both, 3=Other, 4=None (engine clamps values > 4 to 4) |
 | `Race` | Byte | Index into [`racialtypes.2da`](2DA-racialtypes). If value is greater than or equal to the number of rows in race.2da, the creature fails to load. |
 | `SubraceIndex` | Byte | Index into subrace.2da; refines race (e.g. subspecies). |
 | `BodyVariation` | Byte | Body [model](MDL-MDX-File-Format) variation (0-9) |
@@ -41,11 +41,12 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 | `Int` | Byte | Intelligence score (3-255) |
 | `Wis` | Byte | Wisdom score (3-255) |
 | `Cha` | Byte | Charisma score (3-255) |
-| `HitPoints` | Short | Base hit points (used with level/con modifier to derive max HP for NPCs) |
-| `CurrentHitPoints` | Short | Current hit points |
+| `HitPoints` | Short | Current hit points |
+| `CurrentHitPoints` | Short | Alias for hit points |
 | `MaxHitPoints` | Short | Maximum hit points |
-| `ForcePoints` | Short | Maximum Force points (KotOR-specific) |
-| `CurrentForce` | Short | Current Force points |
+| `ForcePoints` | Short | Current Force points (KotOR specific) |
+| `CurrentForce` | Short | Alias for Force points |
+| `MaxForcePoints` | Short | Maximum Force points |
 
 ## Character Progression
 
@@ -153,13 +154,14 @@ When editing UTCs in the Holocron Toolset, numeric fields use the following rang
 - **Tag:** No engine-enforced max length; keep unique per module for script lookups (e.g. `GetObjectByTag`).
 - **FirstName, LastName, Comment:** Localized or plain string; no fixed max in GFF.
 - **Appearance_Type, PortraitId, SoundSetFile, FactionID:** WORD (0–65535); use valid 2DA row indices.
-- **Race, Gender, SubraceIndex, PerceptionRange, NaturalAC, ability scores (Str–Cha), skill Rank:** BYTE (0–255). **Race** must be a valid row index in racialtypes.2da (0 to row count − 1); otherwise the creature fails to load. Save bonuses (fortbonus, refbonus, willbonus): SHORT (-32768–32767); engine often uses -128–127.
+- **Race, Gender, SubraceIndex, PerceptionRange, NaturalAC, ability scores (Str–Cha), skill Rank:** BYTE (0–255). **Race:** must be a valid row index in racialtypes.2da (0 to row count − 1); otherwise the creature fails to load. Save bonuses (fortbonus, refbonus, willbonus): SHORT (-32768–32767).
 - **WalkRate:** INT; row index into creaturespeed.2da (0 to row count − 1). Invalid index can cause default or broken movement.
-- **HitPoints, CurrentHitPoints, MaxHitPoints, CurrentForce, ForcePoints:** SHORT (0–32767 typical).
+- **HitPoints, CurrentHitPoints, MaxHitPoints, CurrentForce, ForcePoints:** SHORT (0–32767 typical; game does not use negative HP/FP).
 - **ChallengeRating:** Float (0–100 typical). **GoodEvil (alignment):** 0–100 (0=Dark, 100=Light).
-- **ClassLevel:** SHORT (0–32767); typical level 1–20. **MultiplierSet (K2):** BYTE (0–255); 0 = typical default. **BlindSpot (K2):** Float 0–360 degrees.
+- **ClassLevel:** SHORT (0–32767); typical level 1–20. **MultiplierSet (K2):** INT32; 0 = default.
+- **BlindSpot (K2):** Float 0–360 degrees.
 
-Each field in the UTC editor has a tooltip describing how the game uses it and how modders can change it.
+All script hooks store a ResRef to an NCS file; leave blank for no script. The toolset provides tooltips on each field describing how the game uses it and how modders can change it.
 
 ## Implementation Notes
 

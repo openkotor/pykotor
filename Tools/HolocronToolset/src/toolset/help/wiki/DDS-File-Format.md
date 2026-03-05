@@ -46,7 +46,7 @@ Implementation reference:
 - `Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py` (BioWare header path)
 - `vendor/xoreos/src/graphics/images/dds.cpp` lines around the BioWare branch for comparison.
 
-### Writer behaviour (PyKotor)
+### Writer Behaviour (PyKotor)
 
 - `TPCDDSWriter` emits only standard DDS headers:
   - Supports `DXT1`, `DXT3`, `DXT5`, and uncompressed `BGR/BGRA`.
@@ -73,7 +73,7 @@ Implementation reference:
 
 ### Practical differences vs. TGA/TPC
 
-- **TGA**: uncompressed/RLE raster data; no block compression; single [face](MDL-MDX-File-Format#face-structure) only; origin/alpha [flags](GFF-File-Format#gff-data-types) live in the header. DDS can be block-compressed (DXT1/3/5) and include cubemap [faces](MDL-MDX-File-Format#face-structure)/mip hierarchies in one container.
+- **TGA**: uncompressed/RLE raster data; no block compression; single [face](MDL-MDX-File-Format#face-structure) only; origin/alpha flags live in the header. DDS can be block-compressed (DXT1/3/5) and include cubemap [faces](MDL-MDX-File-Format#face-structure)/mip hierarchies in one container.
 - **TPC**: KotOR-specific container with [TXI](TXI-File-Format) embedded and different header layout; PyKotor maps DDS surfaces into `TPC` objects for unified downstream handling (conversion, [TXI](TXI-File-Format) logic, cubemap normalization).
 
 ### Notes and limits

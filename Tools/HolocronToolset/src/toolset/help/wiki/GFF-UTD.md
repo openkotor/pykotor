@@ -6,9 +6,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Door/Placeable format specification, see [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-DoorPlaceableGFF).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/utd.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py).
-
-**Verified (Reva):** K1 `CSWSDoor::LoadDoor` @ 0x0058a1f0. Root struct: Appearance (DWORD→byte), GenericType, OpenState (BYTE); Fort, Will, Ref (BYTE); HP, CurrentHP (SHORT); Hardness, OpenLockDC, CloseLockDC, SecretDoorDC (BYTE); LocName, Description (CExoLocString); Tag, KeyName (CExoString); Conversation, Portrait (CResRef); PortraitId (WORD); scripts (CResRef); TrapType, DisarmDC, TrapDetectDC, Locked, Lockable, etc. (BYTE). AnimationState is not read in the K1 LoadDoor decompilation; may be used on save load or in TSL.
+**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/utd.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py)
 
 ## Core Identity fields
 
@@ -44,8 +42,6 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 | `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](KEY-File-Format) item |
 | `AutoRemoveKey` | Byte | [KEY](KEY-File-Format) consumed on use |
 | `OpenLockDC` | Byte | Security skill DC to pick lock |
-| `OpenLockDiff` (KotOR2) | Byte | Additional unlock difficulty (0–255) |
-| `OpenLockDiffMod` (KotOR2) | INT8 | Modifier to lock difficulty (-128 to 127); positive = harder |
 | `CloseLockDC` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Security skill DC to lock door |
 
 **Lock Mechanics:**
@@ -135,7 +131,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 | ----- | ---- | ----------- |
 | `LoadScreenID` (KotOR2) | Word | Loading screen to show |
 | `LinkedTo` (KotOR2) | [CExoString](GFF-File-Format#gff-data-types) | Destination module tag |
-| `LinkedToFlags` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Transition behavior [flags](GFF-File-Format#gff-data-types) |
+| `LinkedToFlags` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Transition behavior flags |
 | `LinkedToModule` (KotOR2) | [ResRef](GFF-File-Format#gff-data-types) | Destination module [ResRef](GFF-File-Format#gff-data-types) |
 | `TransitionDestin` (KotOR2) | [CExoLocString](GFF-File-Format#gff-data-types) | Destination label |
 

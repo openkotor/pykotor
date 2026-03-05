@@ -1123,217 +1123,6 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="layoutTab">
-         <attribute name="title">
-          <string>Indoor</string>
-         </attribute>
-         <layout class="QVBoxLayout" name="layoutTabLayout">
-          <property name="spacing">
-           <number>4</number>
-          </property>
-          <property name="leftMargin">
-           <number>2</number>
-          </property>
-          <property name="topMargin">
-           <number>2</number>
-          </property>
-          <property name="rightMargin">
-           <number>2</number>
-          </property>
-          <property name="bottomMargin">
-           <number>2</number>
-          </property>
-          <item>
-           <widget class="QGroupBox" name="indoorPreviewBox">
-            <property name="title">
-             <string>Preview</string>
-            </property>
-            <layout class="QGridLayout" name="indoorPreviewLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="indoorPreviewImage">
-               <property name="text">
-                <string />
-               </property>
-               <property name="scaledContents">
-                <bool>true</bool>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>100</width>
-                 <height>100</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QGroupBox" name="indoorKitsGroupBox">
-            <property name="title">
-             <string>Kits</string>
-            </property>
-            <layout class="QVBoxLayout" name="indoorKitsLayout">
-             <property name="spacing">
-              <number>4</number>
-             </property>
-             <item>
-              <widget class="QComboBox" name="kitSelect" />
-             </item>
-             <item>
-              <widget class="QListWidget" name="componentList">
-               <property name="minimumHeight">
-                <number>100</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QGroupBox" name="indoorModulesGroupBox">
-            <property name="title">
-             <string>Modules</string>
-            </property>
-            <layout class="QVBoxLayout" name="indoorModulesLayout">
-             <property name="spacing">
-              <number>4</number>
-             </property>
-             <item>
-              <widget class="QComboBox" name="moduleKitSelect" />
-             </item>
-             <item>
-              <widget class="QListWidget" name="moduleComponentList">
-               <property name="minimumHeight">
-                <number>100</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QGroupBox" name="indoorOptionsBox">
-            <property name="title">
-             <string>Options</string>
-            </property>
-            <layout class="QVBoxLayout" name="indoorOptionsLayout">
-             <item>
-              <widget class="QCheckBox" name="snapToGridCheck">
-               <property name="text">
-                <string>Snap to Grid (G)</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="snapToHooksCheck">
-               <property name="text">
-                <string>Snap to Hooks (H)</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="showGridCheck">
-               <property name="text">
-                <string>Show Grid</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="showHooksCheck">
-               <property name="text">
-                <string>Show Hooks</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="gridSizeLayout">
-               <item>
-                <widget class="QLabel" name="gridSizeLabel">
-                 <property name="text">
-                  <string>Grid Size:</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QDoubleSpinBox" name="gridSizeSpin">
-                 <property name="minimum">
-                  <double>0.5</double>
-                 </property>
-                 <property name="maximum">
-                  <double>10.0</double>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.5</double>
-                 </property>
-                 <property name="value">
-                  <double>1.0</double>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="rotSnapLayout">
-               <item>
-                <widget class="QLabel" name="rotSnapLabel">
-                 <property name="text">
-                  <string>Rotation Snap:</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QSpinBox" name="rotSnapSpin">
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>90</number>
-                 </property>
-                 <property name="value">
-                  <number>15</number>
-                 </property>
-                 <property name="suffix">
-                  <string>°</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="buildIndoorButton">
-            <property name="text">
-             <string>Build Module (.mod)</string>
-            </property>
-            <property name="toolTip">
-             <string>Compile the indoor layout into a playable .mod file</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="layoutTabSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </widget>
         <widget class="QWidget" name="walkmeshTab">
          <attribute name="title">
           <string>Walkmesh</string>
@@ -1593,36 +1382,40 @@
        </layout>
       </item>
       <item>
-       <widget class="QWidget" name="instancePanel">
+       <widget class="QTabWidget" name="rightPanel">
         <property name="maximumSize">
          <size>
           <width>250</width>
           <height>16777215</height>
          </size>
         </property>
-        <layout class="QVBoxLayout" name="instancePanelLayout">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLineEdit" name="instanceSearchEdit">
-           <property name="placeholderText">
-            <string>Search instances...</string>
-           </property>
-           <property name="clearButtonEnabled">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
+        <widget class="QWidget" name="instancesTab">
+         <attribute name="title">
+          <string>Instances</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="instancePanelLayout">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLineEdit" name="instanceSearchEdit">
+            <property name="placeholderText">
+             <string>Search instances...</string>
+            </property>
+            <property name="clearButtonEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          <item>
           <widget class="QTreeWidget" name="instanceTree">
            <property name="contextMenuPolicy">
@@ -1777,7 +1570,219 @@
            </layout>
           </widget>
          </item>
-        </layout>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="layoutTab">
+         <attribute name="title">
+          <string>Indoor</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="layoutTabLayout">
+          <property name="spacing">
+           <number>4</number>
+          </property>
+          <property name="leftMargin">
+           <number>2</number>
+          </property>
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="rightMargin">
+           <number>2</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
+          <item>
+           <widget class="QGroupBox" name="indoorPreviewBox">
+            <property name="title">
+             <string>Preview</string>
+            </property>
+            <layout class="QGridLayout" name="indoorPreviewLayout">
+             <item row="0" column="0">
+              <widget class="QLabel" name="indoorPreviewImage">
+               <property name="text">
+                <string />
+               </property>
+               <property name="scaledContents">
+                <bool>true</bool>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>100</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="indoorKitsGroupBox">
+            <property name="title">
+             <string>Kits</string>
+            </property>
+            <layout class="QVBoxLayout" name="indoorKitsLayout">
+             <property name="spacing">
+              <number>4</number>
+             </property>
+             <item>
+              <widget class="QComboBox" name="kitSelect" />
+             </item>
+             <item>
+              <widget class="QListWidget" name="componentList">
+               <property name="minimumHeight">
+                <number>100</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="indoorModulesGroupBox">
+            <property name="title">
+             <string>Modules</string>
+            </property>
+            <layout class="QVBoxLayout" name="indoorModulesLayout">
+             <property name="spacing">
+              <number>4</number>
+             </property>
+             <item>
+              <widget class="QComboBox" name="moduleKitSelect" />
+             </item>
+             <item>
+              <widget class="QListWidget" name="moduleComponentList">
+               <property name="minimumHeight">
+                <number>100</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="indoorOptionsBox">
+            <property name="title">
+             <string>Options</string>
+            </property>
+            <layout class="QVBoxLayout" name="indoorOptionsLayout">
+             <item>
+              <widget class="QCheckBox" name="snapToGridCheck">
+               <property name="text">
+                <string>Snap to Grid (G)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="snapToHooksCheck">
+               <property name="text">
+                <string>Snap to Hooks (H)</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="showGridCheck">
+               <property name="text">
+                <string>Show Grid</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="showHooksCheck">
+               <property name="text">
+                <string>Show Hooks</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="gridSizeLayout">
+               <item>
+                <widget class="QLabel" name="gridSizeLabel">
+                 <property name="text">
+                  <string>Grid Size:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="gridSizeSpin">
+                 <property name="minimum">
+                  <double>0.5</double>
+                 </property>
+                 <property name="maximum">
+                  <double>10.0</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.5</double>
+                 </property>
+                 <property name="value">
+                  <double>1.0</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="rotSnapLayout">
+               <item>
+                <widget class="QLabel" name="rotSnapLabel">
+                 <property name="text">
+                  <string>Rotation Snap:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="rotSnapSpin">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>90</number>
+                 </property>
+                 <property name="value">
+                  <number>15</number>
+                 </property>
+                 <property name="suffix">
+                  <string>°</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="buildIndoorButton">
+            <property name="text">
+             <string>Build Module (.mod)</string>
+            </property>
+            <property name="toolTip">
+             <string>Compile the indoor layout into a playable .mod file</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="layoutTabSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
      </layout>

@@ -461,7 +461,7 @@ HoloPatcher Execution Order:
 A [TLK file](TLK-File-Format) is a binary format containing:
 
 - **header**: file type (`TLK`), version (`V3.0`), language ID, string count, entries offset
-- **Entry headers**: [flags](GFF-File-Format#gff-data-types), sound ResRef (16 bytes), volume/pitch variance (unused), text offset, text length, sound length (unused)
+- **Entry headers**: flags, sound ResRef (16 bytes), volume/pitch variance (unused), text offset, text length, sound length (unused)
 - **Text data**: Actual string content stored at the specified offsets
 
 **[TLK](TLK-File-Format) Entry structure**:
