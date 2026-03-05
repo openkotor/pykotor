@@ -407,7 +407,7 @@ All cell values are stored as strings in the 2DA file, but are interpreted as di
 - **Floats**: Decimal strings parsed as [`float`](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) - used for calculations like damage multipliers, timers, and percentages
 - **ResRefs**: [Resource references](GFF-File-Format#gff-data-types) (max 16 characters, no extension) - point to other game resources like [models](MDL-MDX-File-Format), [textures](TPC-File-Format), or scripts
 - **StrRefs**: [String references](TLK-File-Format#string-references-strref) into [`dialog.tlk`](TLK-File-Format) (typically negative values like `-1` indicate no reference) - used for localized text display
-- **Boolean**: `"0"` or `"1"` (sometimes `"TRUE"`/`"FALSE"`) - control feature [flags](GFF-File-Format#gff-data-types) and settings
+- **Boolean**: `"0"` or `"1"` (sometimes `"TRUE"`/`"FALSE"`) - control feature flags and settings
 - **Empty Cells**: Represented as `"****"` - treated as null/undefined by the engine
 
 The game engine parses cell values based on context and expected data type for each column. For example, the `appearance.2da` file uses integers for [model](MDL-MDX-File-Format) indices, [ResRefs](GFF-File-Format#gff-data-types) for [texture](TPC-File-Format) names, and [StrRefs](TLK-File-Format#string-references-strref) for race names.
@@ -612,7 +612,7 @@ This section documents all known 2DA files used in KotOR and KotOR 2, organized 
 | `disableinjuredanim` | Boolean (optional) | Whether to disable injured [animations](MDL-MDX-File-Format#animation-header) |
 | `abortonparry` | Boolean | Whether to abort on parry |
 | `freelookeffect` | Integer (optional) | Free look effect ID |
-| `equipslotslocked` | Integer (optional) | Locked equipment slot [flags](GFF-File-Format#gff-data-types) |
+| `equipslotslocked` | Integer (optional) | Locked equipment slot flags |
 | `weaponscale` | String (optional) | Weapon scale multiplier |
 | `wingTailScale` | Boolean | Whether wing/tail scaling is enabled |
 | `helmetScaleF` | String (optional) | Female helmet scale |
@@ -677,7 +677,7 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 
 ### [baseitems.2da](2DA-baseitems)
 
-**Engine Usage**: Defines base item types that form the foundation for all items in the game. Each row represents a base item type (weapon, armor, shield, etc.) with properties like damage dice, weapon categories, equipment slots, and item [flags](GFF-File-Format#gff-data-types). The engine uses this file to determine item behavior, combat statistics, and equipment compatibility.
+**Engine Usage**: Defines base item types that form the foundation for all items in the game. Each row represents a base item type (weapon, armor, shield, etc.) with properties like damage dice, weapon categories, equipment slots, and item flags. The engine uses this file to determine item behavior, combat statistics, and equipment compatibility.
 
 **Row index**: Base item ID (integer)
 
@@ -699,7 +699,7 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 | `damagedice` | Integer | Damage dice count |
 | `damagedie` | Integer | Damage die size |
 | `damagebonus` | Integer | Base damage bonus |
-| `damagetype` | Integer | Damage type [flags](GFF-File-Format#gff-data-types) |
+| `damagetype` | Integer | Damage type flags |
 | `weaponmattype` | Integer | Weapon [material](MDL-MDX-File-Format#trimesh-header) type |
 | `weaponsound` | Integer | Weapon sound type |
 | `ammunitiontype` | Integer | Ammunition type required |
@@ -712,7 +712,7 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 | `weaponfocusfeat` | Integer | Weapon focus feat ID |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | string reference for item description |
 | `icon` | [ResRef](GFF-File-Format#gff-data-types) | Icon image [ResRef](GFF-File-Format#gff-data-types) |
-| `equipableslots` | Integer | Equipment slot [flags](GFF-File-Format#gff-data-types) |
+| `equipableslots` | Integer | Equipment slot flags |
 | `model1` through `model6` | ResRef (optional) | 3D [model](MDL-MDX-File-Format) ResRefs for different variations |
 | `partenvmap` | ResRef (optional) | Partial environment map [texture](TPC-File-Format) |
 | `defaultmodel` | ResRef (optional) | Default [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
@@ -746,7 +746,7 @@ The following columns are accessed by the reone engine:
 - `maxattackrange`: Maximum attack range for ranged weapons
 - `crithitmult`: Critical hit multiplier
 - `critthreat`: Critical threat range
-- `damageflags`: Damage type [flags](GFF-File-Format#gff-data-types)
+- `damageflags`: Damage type flags
 - `dietoroll`: Damage die size
 - `equipableslots`: Equipment slot flags (hex integer)
 - `itemclass`: Item class identifier (string)
@@ -808,7 +808,7 @@ The following columns are accessed by the reone engine:
 | `preferredalignment` | Integer | Preferred alignment |
 | `alignrestrict` | Integer | Alignment restrictions |
 | `classfeat` | Integer | Class-specific feat ID |
-| `classskill` | Integer | Class skill [flags](GFF-File-Format#gff-data-types) |
+| `classskill` | Integer | Class skill flags |
 | `skillpointmaxlevel` | Integer | Maximum level for skill point calculation |
 | `spellcaster` | Integer | Spellcasting level (0 = non-caster) |
 | `spellcastingtype` | Integer | Spellcasting type identifier |
@@ -892,7 +892,7 @@ The following columns are accessed by the reone engine:
 | `reqskill` | Integer (optional) | Required skill ID |
 | `reqskillrank` | Integer (optional) | Required skill rank |
 | `constant` | Integer (optional) | Constant value for feat calculations |
-| `toolscategories` | Integer (optional) | Tool categories [flags](GFF-File-Format#gff-data-types) |
+| `toolscategories` | Integer (optional) | Tool categories flags |
 | `effecticon` | ResRef (optional) | Effect icon [ResRef](GFF-File-Format#gff-data-types) |
 | `effectdesc` | StrRef (optional) | Effect description string reference |
 | `effectcategory` | Integer (optional) | Effect category identifier |
@@ -1020,8 +1020,8 @@ The following columns are accessed by the reone engine:
 | `school` | Integer | Spell school identifier |
 | `range` | Integer | Spell range type |
 | `vs` | Integer | Versus type (self, touch, etc.) |
-| `metamagic` | Integer | Metamagic [flags](GFF-File-Format#gff-data-types) |
-| `targettype` | Integer | Target type [flags](GFF-File-Format#gff-data-types) |
+| `metamagic` | Integer | Metamagic flags |
+| `targettype` | Integer | Target type flags |
 | `impactscript` | ResRef (optional) | Impact script [ResRef](GFF-File-Format#gff-data-types) |
 | `innate` | Integer | Innate Force power level (0 = not available) |
 | `conjtime` | Float | Casting/conjuration time |
@@ -1035,7 +1035,7 @@ The following columns are accessed by the reone engine:
 | `conjrange` | Integer | Conjuration range |
 | `conjca` | Integer | Conjuration casting [animation](MDL-MDX-File-Format#animation-header) |
 | `conjca2` through `conjca50` | Integer (optional) | Additional casting animations (numbered 2-50) |
-| `hostilesetting` | Integer | Hostile setting [flags](GFF-File-Format#gff-data-types) |
+| `hostilesetting` | Integer | Hostile setting flags |
 | `featid` | Integer (optional) | Associated feat ID |
 | `counter1` | Integer (optional) | Counter spell ID 1 |
 | `counter2` | Integer (optional) | Counter spell ID 2 |
@@ -1052,7 +1052,7 @@ The following columns are accessed by the reone engine:
 | `icon2` through `icon50` | ResRef (optional) | Additional icons (numbered 2-50) |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | Spell description string reference |
 | `altmessage` | StrRef (optional) | Alternative message string reference |
-| `usewhencast` | Integer | Use when cast [flags](GFF-File-Format#gff-data-types) |
+| `usewhencast` | Integer | Use when cast flags |
 | `blood` | Boolean | Whether spell causes blood effects |
 | `concentration` | Integer | Concentration check DC |
 | `immunitytype` | Integer | Immunity type identifier |
@@ -1072,7 +1072,7 @@ The following columns are accessed by the reone engine:
 - `casttime`: Cast time
 - `catchtime`: Catch time
 - `conjanim`: Conjuration [animation](MDL-MDX-File-Format#animation-header) type (e.g., "throw", "up")
-- `hostilesetting`: Hostile setting [flags](GFF-File-Format#gff-data-types)
+- `hostilesetting`: Hostile setting flags
 - `projectile`: Projectile [ResRef](GFF-File-Format#gff-data-types)
 - `projectileHook`: Projectile hook point
 - `projectileOrigin`: Projectile origin point
@@ -1398,7 +1398,7 @@ The complete column structure is defined in reone's genericdoors parser:
 | `durationvariance` | Float | Duration variance |
 | `loop` | Boolean | Whether effect loops |
 | `render` | Boolean | Whether effect is rendered |
-| `renderhint` | Integer | Render hint [flags](GFF-File-Format#gff-data-types) |
+| `renderhint` | Integer | Render hint flags |
 | `sound` | ResRef (optional) | Sound effect [ResRef](GFF-File-Format#gff-data-types) |
 | `sounddelay` | Float | Sound delay in seconds |
 | `soundvariance` | Float | Sound variance |
@@ -2582,7 +2582,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 ### iprp_damagetype.2da
 
-**Engine Usage**: Maps item property values to damage type [flags](GFF-File-Format#gff-data-types). The engine uses this file to determine damage type calculations for item properties.
+**Engine Usage**: Maps item property values to damage type flags. The engine uses this file to determine damage type calculations for item properties.
 
 **Row index**: Item Property Value (integer)
 

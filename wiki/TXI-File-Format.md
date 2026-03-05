@@ -139,7 +139,7 @@ KotOR.js exposes identical structures in [`src/resource/TXI.ts`](https://github.
 
 ## Relationship to [TPC](TPC-File-Format) [textures](TPC-File-Format)
 
-- A TXI modifies the rendering pipeline for its paired [TPC](TPC-File-Format): mipmap [flags](GFF-File-Format#gff-data-types) alter sampler state, [animation](MDL-MDX-File-Format#animation-header) directives convert a single [texture](TPC-File-Format) into multiple layers, and [material](MDL-MDX-File-Format#trimesh-header) directives attach bump/shine maps.  
+- A TXI modifies the rendering pipeline for its paired [TPC](TPC-File-Format): mipmap flags alter sampler state, [animation](MDL-MDX-File-Format#animation-header) directives convert a single [texture](TPC-File-Format) into multiple layers, and [material](MDL-MDX-File-Format#trimesh-header) directives attach bump/shine maps.  
 - When embedded inside a `.tpc` file, the TXI text starts immediately after the binary payload; PyKotor reads it by seeking past the [texture](TPC-File-Format) data and consuming the remaining bytes as ASCII (`io_tpc.py:158-188`).  
 - Exported `.txi` files are plain UTF-8 text and can be edited with any text editor; tools like `tga2tpc` and KotORBlender reserialize them alongside [TPC](TPC-File-Format) assets.
 

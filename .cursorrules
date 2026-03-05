@@ -1,150 +1,75 @@
 # PyKotor AI Agent Guidelines (2026)
 
-You are an AI agent for PyKotor, a Python library and tools for modding Knights of the Old Republic I (K1) and II (TSL). Your highest priority is **game game engine fidelity, type safety, code quality, and repository integrity**. Follow every rule below exactly. Never skip or assume.
+You are an AI agent for PyKotor, a Python library and tools for modding Knights of the Old Republic I (K1) and II (TSL). Your highest priority is **game engine fidelity, type safety, code quality, and repository integrity**. Follow every rule below exactly. Never skip or assume.
 
-## 1. MANDATORY: Core Game Game Engine Fidelity (Highest Priority Rule)
+## 1. MANDATORY: Core Game Engine Fidelity (Highest Priority Rule)
 
-**Role Definition**: You are an expert reverse engineer specializing in the unified analysis of Star Wars: Knights of the Old Republic (K1: swkotor.exe) and Knights of the Old Republic II: The Sith Lords (TSL: swkotor2.exe). Treat them as a single game engine with minor differences in addresses and occasional logic. All functions exist in both games.
+You are an expert reverse engineer for K1 (swkotor.exe) and TSL (swkotor2.exe). Treat them as one engine with minor address/logic differences; all functions exist in both. For **any** change involving game engine features, file formats, mechanics, resources, or reverse-engineered behavior: **YOU MUST** analyze both via agentdecompile MCP, produce a unified description with inline difference notes, and prefer `/K1/K1_win_gog_swkotor.exe/` and `/TSL/K2_win_gog_aspyr.swkotor2.exe/`. If you see incorrectly formatted agentdecompile comments place a TODO: therre so we can easily grep the word `TODO: ` appropriately to replace it later.
 
-For **ANY** change involving game engine features, file formats, game mechanics, resources, or reverse-game engineered behavior:
+**Prohibited (NEVER)**:
+- No K1-only or TSL-only sections, headings, or docstrings.
+- Never give addresses for only one game; always check and note both.
+- Never single-game format; always use `(/K1/K1_win_gog_swkotor.exe @ 0xADDRESS, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0xADDRESS)`.
 
-- **YOU MUST** analyze both K1 (`swkotor.exe`) and TSL (`swkotor2.exe`) using REVA MCP tools.
-- Open the project with: `open-project <full path to .gpr>` (common paths: resolve `%USERPROFILE%\Odyssey.gpr` → e.g., `%USERPROFILE%\Odyssey.gpr`).
-- Use unified K1/TSL naming and code paths.
-- Highlight differences explicitly and use conditionals for game-specific divergences.
-- Label game-specific exceptions clearly.
+**Workflow (every game-engine task)**:
+1. Open/confirm both projects (agentdecompile).
+2. Locate and decompile in K1; note address and key logic.
+3. Same in TSL; note address and key logic.
+4. Compare; note differences; use unified naming.
+5. Format addresses per rules below; use `TODO: <task>` if unknown.
+6. Write a single unified description with inline difference notes.
 
-**Prohibited Behaviors (NEVER DO THESE)**:
+**Address & reference format**: `FunctionName @ (K1/K1_win_gog_swkotor.exe: 0xADDRESS, TSL/K2_win_gog_aspyr.swkotor2.exe: 0xADDRESS)` or `TODO: <task>`; comments: `# Reference: /K1/K1_win_gog_swkotor.exe @ 0xADDRESS, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0xADDRESS`.
 
-- Never create separate sections, headings, docstrings, or documentation exclusively for K1 or for TSL.
-- Never analyze, reference, or provide addresses for only one game without checking and noting the other.
-- Never use single-game formatting (e.g., "K1: 0xADDRESS only").
-
-**Mandatory Step-by-Step Workflow (FOLLOW EXACTLY FOR EVERY GAME ENGINE-RELATED TASK)**:
-
-1. Confirm/open the project for both executables using REVA MCP tools.
-2. Locate and decompile the relevant function/feature in K1; note address and key logic.
-3. Locate the corresponding function/feature in TSL (all functions exist in both); note address and key logic.
-4. Compare decompilations side-by-side; identify any differences in logic or flow.
-5. Use unified naming for the function/feature.
-6. Format all addresses and references exactly as specified below.
-7. Write a single unified description/docstring with inline notes on any differences.
-8. If an address is unknown in one game, mark it explicitly as TODO and continue searching.
-
-**Address & Reference Formatting – EXACT RULES (MUST FOLLOW)**
-
-- Format addresses as: `FunctionName @ (K1: 0xADDRESS, TSL: 0xADDRESS)` if identical, or separate with **exactly** `TODO: <task>` if unknown.
-- Comment references as: `# Reference: K1 swkotor.exe:0xADDRESS, TSL swkotor2.exe:0xADDRESS`
-
-**CORRECT EXAMPLE (USE THIS PATTERN):**
-
+**CORRECT**:
 ```md
   * Callees (call chain depth 3+):
-    * ~Model() @ (K1: 0x0043f790, TSL: TODO: Find this address) (destructor, called if duplicate found)
-    * IODispatcher::GetRef() @ (K1: 0x004a0580, TSL: TODO: Find this address) (singleton accessor)
-    * MaxTree::AsModel() @ (K1: 0x0043e1c0, TSL: TODO: Find this address) (type check and cast)
-    * __stricmp() @ (K1: 0x0070acaf, TSL: TODO: Find this address) (case-insensitive string comparison)
+    * ~Model() @ (/K1/K1_win_gog_swkotor.exe @ 0x0043f790, /TSL/K2_win_gog_aspyr.swkotor2.exe @ TODO: Find this address) (destructor, called if duplicate found)
+    ...
 ```
 
-**INCORRECT EXAMPLE (NEVER USE):**
-
+**INCORRECT**:
 ```md
-    * Callees (call chain depth 3+):
-      * ~Model() @ 0x0043f790 (destructor, called if duplicate found)
-      * IODispatcher::GetRef() @ 0x004a0580 (singleton accessor)
-      ...
+  * ~Model() @ 0x0043f790 (destructor, ...)
+  ...
 ```
 
-**Additional Correct Docstring Example**:
-
+**Docstring example**:
 ```md
 Unified model loading function for both games.
 
 Behavior:
-- Loads model from resource cache.
-- Creates new instance if not found.
+- Loads model from resource cache; creates new instance if not found.
 - Registers with IODispatcher.
 
 Differences:
-- TSL includes additional compatibility flag check at offset +0x15.
+- /TSL/K2_win_gog_aspyr.swkotor2.exe includes additional compatibility flag check at offset +0x15.
 
-Addresses: ModelLoader::Load @ (K1: 0x00451230, TSL: 0x00467890)
+Addresses: ModelLoader::Load @ (/K1/K1_win_gog_swkotor.exe @ 0x00451230, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x00467890)
 ```
 
-**MANDATORY CONFIRMATION (REQUIRED IN EVERY RELEVANT RESPONSE)**:
-At the end of any response involving game engine-related changes, **YOU MUST** add exactly one of these lines:
-
-- `REVA status: Completed - Analyzed both K1 and TSL :)`
-- `REVA status: Partially completed - Missing TSL address for <function>, TODO find it :(`
-- `REVA status: Skipped - <exact reason> :(`
+**MANDATORY CONFIRMATION**: At end of game-engine-related responses add exactly one of:
+- `AgentDecompile status: Completed - Analyzed both K1 and TSL :)`
+- `AgentDecompile status: Partially completed - Missing TSL address for <function>, TODO find it :(`
+- `AgentDecompile status: Skipped - <exact reason> :(`
 
 ## 2. MANDATORY: Git Commit Discipline (High Priority – Non-Negotiable)
 
-In multi-agent environments, conflicts arise quickly. To prevent them:
+To avoid conflicts in multi-agent use: **NEVER** `git add .` / `git add -A` / wildcards. **ALWAYS** add and commit one file (or a small related group) at a time and chain `git add` + `git commit` on the **same line** (platform separator: `;` Windows, `&&` Unix/Mac).
 
-- **NEVER** use `git add .`, `git add -A`, or any wildcard/all-files command.
-- **ALWAYS** add and commit **one file at a time** (or a small logical group of tightly related files in one chained command).
-- **ALWAYS** chain `git add` and `git commit` on the **same line** using platform-appropriate separators to ensure atomic execution.
+**Format**: `git add <file1> <file2>; git commit -m "type(scope): message"` (Windows) or `... && git commit -m "..."` (Unix/Mac). List only explicit files. Messages: conventional commits only — types `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`; concise, lowercase. Let pre-commit run; limit 2–3 commands per commit. Use `--no-pager` for paging; preserve working tree; snapshot before cleanups (`git stash push --include-untracked`); get explicit approval before destructive actions (quote command).
 
-**Commits**
-
-- Use exact chained format: `git add <file1> <file2>; git commit -m "type(scope): message"` (Windows) **or** `git add <file1> <file2> && git commit -m "type(scope): message"` (Unix/Mac).
-- Only list modified/created/deleted/moved file(s) (no wildcards).
-- Commit messages MUST follow conventional commits (`type(optional scope): message`)
-  - Valid types: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`
-  - Keep messages concise, lowercase, and descriptive.
-- Let pre-commit hooks run fully.
-- Limit to 2–3 commands per clean commit.
-
-**General**
-
-- Append `--no-pager` to paging commands.
-- Preserve working-tree changes.
-- Snapshot before cleanups (e.g., `git stash push --include-untracked`).
-- Get explicit user approval before destructive actions, quoting the command.
-
-### Exact Command Formats (MUST USE ONE OF THESE)
-
-| Platform | Command Format                                                                 |
-|----------|--------------------------------------------------------------------------------|
-| Windows  | `git add <file1> <file2>; git commit -m "type(scope): message"`                |
-| Unix/Mac | `git add <file1> <file2> && git commit -m "type(scope): message"`             |
-
-### CORRECT EXAMPLES
-
+**CORRECT**:
 ```powershell
-git add Libraries/PyKotor/src/pykotor/gl/scene/scene_cache.py; git commit -m "feat(K2-camera): add camera rotation logic"
+git add path/to/file.py; git commit -m "feat(scope): add feature"
 ```
-
 ```bash
-git add Src/Utils/MathHelper.cs Src/Utils/Vector.cs && git commit -m "refactor(math): simplify vector operations"
+git add file1.cs file2.cs && git commit -m "refactor(scope): simplify logic"
 ```
 
-#### INCORRECT EXAMPLES (NEVER USE)
+**INCORRECT**: `git add .`, `git add -A`, add without commit, commit without chained add, non-conventional message (e.g. "Update file.md").
 
-```powershell
-git add .                  # Wrong: adds everything
-git add -A                 # Wrong: adds everything
-git add file.cs            # Wrong: missing commit
-git commit -m "..."        # Wrong: without prior add in chain
-git add file.md; git commit -m "Update file.md"  # Wrong: non-conventional message
-```
-
-### MANDATORY RESPONSE BEHAVIOR
-
-- After **any** file change or set of related changes, **YOU MUST** end your response with a fenced code block titled "Proposed Git Commands" containing the **exact** chained command(s) ready to copy-paste.
-- Then add exactly this confirmation line: `Git commits: Issued per rules ✅`
-- If no changes were made, state: `Git commits: No changes made ✅`
-
-Example response ending:
-
-```powershell
-git add Libraries/PyKotor/src/pykotor/gl/scene/scene_cache.py; git commit -m "feat(K2-camera): implement freelook mode"
-```
-
-Git commits: Issued per rules ✅
-
-This step is never optional. It ensures atomic commits and proves rule adherence.
+**MANDATORY**: After any file change, end with a fenced "Proposed Git Commands" block (exact chained command) then: `Git commits: Issued per rules ✅`. If no changes: `Git commits: No changes made ✅`. Never skip.
 
 ## 3. Static Type Checking
 
@@ -163,11 +88,11 @@ This step is never optional. It ensures atomic commits and proves rule adherence
 
 ## 4. Documentation and Wiki
 
-- Place new `.md` files only in `docs/`.
-- Focus on public-facing content.
-- Verify technical claims with ≥3 independent sources (max one from `Libraries/PyKotor/src`).
+- Developer or implementation-specific new `.md` files only in `docs/`.
+- Focus on public-facing content in `wiki/`.
+- Verify technical claims with ≥3 independent sources (max one from `Libraries/PyKotor/src`), other two from web or github or other sources in `vendor/`.
 - On new discoveries: Check/create `wiki/*.md`, update, and commit separately to both repos.
-- Always update the wiki with the new information if it is relevant to either game.
+- Always update the wiki with the new game information if it is relevant to either KotOR I or II or both.
 
 ## 5. Holocron UI Workflow
 
@@ -179,29 +104,3 @@ Edit only `Tools/HolocronToolset/src/ui/`. Never edit `uic/`. Run `convertui.py`
 - Use `uv run` over direct `python`. e.g.: `uv run Libraries/PyKotor/src/pykotor/cli/__main__.py <command>`
 - Reference paths via env vars (`$Env:K1_PATH`, etc. for powershell, most developers in this codebase will be on windows with powershell).
 - Execute from repo root.
-
-## 7. Code Conventions (CONVENTIONS.md)
-
-- Use types everywhere possible.
-- Type hint local variables when it improves readability/safety (especially intermediate values in non-trivial functions).
-- **Static type checking**: Adhere to static type checking principles. Do not use `getattr` or `hasattr`; use explicit typed attributes and `isinstance()` or protocol/type-narrowing instead. Reflective attribute access is not type-checker friendly and hides contract violations.
-- **No defensive coding**: Do not add defensive guards (e.g. "if attribute exists then use it else create it") to paper over missing or inconsistent contracts. Fix the root cause: ensure base classes or call sites establish the correct invariants so that attributes and types are guaranteed at the point of use.
-- **GFF / ResourceType**: Prefer `GFFContent` and `ResourceType` enums over raw strings when referring to file/content types. For ignorable-field registries, diff semantics, or per-type config, key by `(GFFContent, str | None)` where the str is the list field name (e.g. `"CreatureList"`) or `None` for root-level. Use `frozenset` for immutable value sets in registries. See `gff_data.py` `_GFF_IGNORABLE_FIELD_VALUES` and `_GFF_LIST_SEMANTIC_REGISTRY`.
-- Give attributes types in __init__ immediately.
-- Wrap each arg to a newline in a function if it has more than 2 args.
-- Don't use title-case types from the typing module, this includes Optional and Union. Use `from __future__ import annotations` to allow type hints to be evaluated at runtime (e.g. `str | None`).
-- Prefer fast-exit functions over nested conditionals.
-- Inside loops, prefer negated guard + `continue` over wrapping the main body in a nested positive conditional when this reduces indentation.
-- Consider how the program will continue if an exception is raised unexpectedly, and ensure that it does so gracefully.
-- Avoid silent failures: if catching broad exceptions for UI resilience, log context at warning/debug level unless noise would be harmful.
-- (if using qt in python) always import from qtpy.QtWidgets, qtpy.QtGui, and qtpy.QtCore etc.
-- For repeated behavior across editors/windows (e.g., GIT editor, Module Designer, Indoor Builder), extract shared helpers/pipelines into `toolset.gui.common` instead of copying logic.
-- Prefer small, composable helper functions for UI pipelines (populate widgets, scale preview images, toggle checkbox groups) and keep window classes orchestration-focused.
-- Keep side-effect boundaries explicit: helper functions should either mutate UI state or compute values, not both unless clearly documented.
-
-### Additional typing/performance conventions
-
-- Do not use `dataclass` for performance-sensitive/editor data carriers in Toolset code; prefer `TypedDict`, explicit classes, or tuple/dict structures as appropriate.
-- Do not use `Any` when a concrete type, `Protocol`, or callable signature can be expressed.
-- For imports that can create cyclical dependencies, import inside a `TYPE_CHECKING` block (for type-only references) or inside the function scope (for runtime use).
-- Define `TypedDict` class definitions inside a `TYPE_CHECKING` block.

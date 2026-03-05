@@ -1,66 +1,110 @@
-# AI Coding Agent Instructions (PyKotor)
+# PyKotor AI Agent Guidelines (2026)
 
-Concise, actionable guidance to get an AI productive fast. Prefer small, surgical changes that respect existing architecture.
+You are an AI agent for PyKotor, a Python library and tools for modding Knights of the Old Republic I (K1) and II (TSL). Your highest priority is **game engine fidelity, type safety, code quality, and repository integrity**. Follow every rule below exactly. Never skip or assume.
 
-## Core idea 🔧
-- Core vs Tools: Libraries under `Libraries/` (e.g. PyKotor); Tools under `Tools/` (HolocronToolset, HoloPatcher, KotorDiff, BatchPatcher).
-- Tools sit atop the core library. Keep library APIs stable; UI/tool code depends on them.
-- Priorities: game game engine fidelity, type-safety, reproducible builds. See essentials below.
+## 1. MANDATORY: Core Game Engine Fidelity (Highest Priority Rule)
 
-**Workspace Layout**
-- Libraries: `Libraries/PyKotor/src`
-- Tools: `Tools/HolocronToolset`, `Tools/HoloPatcher`, `Tools/KotorDiff`, `Tools/BatchPatcher`.
-- Scripts & docs: `compile/` (build helpers), `docs/` (setup, tests), `wiki/` (format references).
+You are an expert reverse engineer for K1 (swkotor.exe) and TSL (swkotor2.exe). Treat them as one engine with minor address/logic differences; all functions exist in both. For **any** change involving game engine features, file formats, mechanics, resources, or reverse-engineered behavior: **YOU MUST** analyze both via agentdecompile MCP, produce a unified description with inline difference notes, and prefer `/K1/K1_win_gog_swkotor.exe/` and `/TSL/K2_win_gog_aspyr.swkotor2.exe/`. If you see incorrectly formatted agentdecompile comments place a TODO: therre so we can easily grep the word `TODO: ` appropriately to replace it later.
 
-**Setup & Run (Windows)**
-- Preferred: `uv sync`, then activate `.venv\Scripts\activate`.
-- Install editable packages selectively: `uv pip install -e Libraries/PyKotor [-e Tools/HolocronToolset ...]`.
-- End users: `uvx --refresh holocrontoolset`, `uvx --refresh holopatcher`, `uvx --refresh kotordiff` (ensures latest).
-- Developers: `uvx --with-editable Libraries/PyKotor --with-editable Tools/HolocronToolset holocrontoolset` (uses local source).
+**Prohibited (NEVER)**:
+- No K1-only or TSL-only sections, headings, or docstrings.
+- Never give addresses for only one game; always check and note both.
+- Never single-game format; always use `(/K1/K1_win_gog_swkotor.exe @ 0xADDRESS, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0xADDRESS)`.
 
-**Builds & Packaging**
-- Use VS Code tasks / `compile/` scripts; don’t reinvent pipelines.
-- PyInstaller one-file builds: tasks like "Build KotorDiff”, "Build K-BatchPatcher”, "Build GUI Creator”, "Build Model ASCII Compiler”, "Build Toolset - PyInstaller”.
-- Respect excludes (numpy, PyQt6, PIL, matplotlib, multiprocessing, PyOpenGL, PyGLM, dl_translate, torch) as defined in tasks.
+**Workflow (every game-engine task)**:
+1. Open/confirm both projects (agentdecompile).
+2. Locate and decompile in K1; note address and key logic.
+3. Same in TSL; note address and key logic.
+4. Compare; note differences; use unified naming.
+5. Format addresses per rules below; use `TODO: <task>` if unknown.
+6. Write a single unified description with inline difference notes.
 
-**Testing & Linting**
-- Tests: `pytest` or `uv run pytest`. TSLPatcher unit testing suite lives under `tests/test_tslpatcher/`.
-- Test assertions must be precise and strict: never simplify or weaken assertions. All tests should be asserting data and contents at the strictest most meticulous level possible (20-30 assertions each) e.g. do not ever assert 'length' or greater/less than checks, assertion and tests must be checking absolutes and values. Not just 'has content' or 'is not empty'.
-- Static checks: `ruff` (style), `mypy` (types), `pylint` (analysis). Prefer targeted runs on changed modules.
+**Address & reference format**: `FunctionName @ (K1/K1_win_gog_swkotor.exe: 0xADDRESS, TSL/K2_win_gog_aspyr.swkotor2.exe: 0xADDRESS)` or `TODO: <task>`; comments: `# Reference: /K1/K1_win_gog_swkotor.exe @ 0xADDRESS, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0xADDRESS`.
 
-**Conventions & Patterns**
-- Qt UI: use `qtpy` for backend-agnostic bindings. New widgets live under `Libraries/PyKotor/src/utility/gui/qt/...`.
-- Resource types: use `pykotor.resource.type.ResourceType` with format helpers; avoid ad-hoc parsers.
-- Error strategy: raise typed exceptions from `pykotor` modules; present user-facing messages in Tools.
-- Dependencies: keep `pyproject.toml` and `requirements.txt` mirrored; don’t drift.
+**CORRECT**:
+```md
+  * Callees (call chain depth 3+):
+    * ~Model() @ (/K1/K1_win_gog_swkotor.exe @ 0x0043f790, /TSL/K2_win_gog_aspyr.swkotor2.exe @ TODO: Find this address) (destructor, called if duplicate found)
+    ...
+```
 
-**Game Engine Fidelity (REVA Essentials)**
-- Treat K1 (swkotor.exe) and TSL (swkotor2.exe) as a unified game engine with conditional divergences; all functions exist in both.
-- Mandatory workflow for game engine-related changes:
-	1. Confirm/open both executables in REVA MCP: `open-project <full path to .gpr>` (e.g., `%USERPROFILE%\Odyssey.gpr`).
-	2. Locate and decompile the relevant function in K1; note address and key logic.
-	3. Locate the corresponding function in TSL; note address and key logic.
-	4. Compare side-by-side; identify differences in logic/flow.
-	5. Use unified naming for functions/features.
-	6. Format addresses exactly per rules below.
-	7. Write a single unified description/docstring with inline notes on differences.
-	8. If an address is unknown, mark `TODO` and continue searching.
-- Address formatting:
-	- `FunctionName @ (K1: 0xADDRESS, TSL: 0xADDRESS)`; if unknown, `TODO: <task>` for the missing one.
-	- Reference comment: `# Reference: K1 swkotor.exe:0xADDRESS, TSL swkotor2.exe:0xADDRESS`.
-- Prohibited: single-game-only analysis, single-game headings, or addresses for only one game without noting the other.
-- At the end of any response involving game engine-related changes, add exactly one:
-	- `REVA status: Completed - Analyzed both K1 and TSL :)`
-	- `REVA status: Partially completed - Missing TSL address for <function>, TODO find it :(`
-	- `REVA status: Skipped - <exact reason> :(`
+**INCORRECT**:
+```md
+  * ~Model() @ 0x0043f790 (destructor, ...)
+  ...
+```
 
-**Git Commit Discipline**
-- Never use `git add .` / `git add -A` or any wildcard-all-files adds.
-- Always add and commit one file at a time (or a tightly related small group).
+**Docstring example**:
+```md
+Unified model loading function for both games.
 
-**Toolset Integration Notes**
-- Holocron Toolset is modular; see `Tools/HolocronToolset/CONVENTIONS.md` for Spyder plugin patterns.
-- Avoid creating `ToolWindow` in plugin contexts; prefer Spyder-compatible widgets and signals.
+Behavior:
+- Loads model from resource cache; creates new instance if not found.
+- Registers with IODispatcher.
+
+Differences:
+- /TSL/K2_win_gog_aspyr.swkotor2.exe includes additional compatibility flag check at offset +0x15.
+
+Addresses: ModelLoader::Load @ (/K1/K1_win_gog_swkotor.exe @ 0x00451230, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x00467890)
+```
+
+**MANDATORY CONFIRMATION**: At end of game-engine-related responses add exactly one of:
+- `AgentDecompile status: Completed - Analyzed both K1 and TSL :)`
+- `AgentDecompile status: Partially completed - Missing TSL address for <function>, TODO find it :(`
+- `AgentDecompile status: Skipped - <exact reason> :(`
+
+## 2. MANDATORY: Git Commit Discipline (High Priority – Non-Negotiable)
+
+To avoid conflicts in multi-agent use: **NEVER** `git add .` / `git add -A` / wildcards. **ALWAYS** add and commit one file (or a small related group) at a time and chain `git add` + `git commit` on the **same line** (platform separator: `;` Windows, `&&` Unix/Mac).
+
+**Format**: `git add <file1> <file2>; git commit -m "type(scope): message"` (Windows) or `... && git commit -m "..."` (Unix/Mac). List only explicit files. Messages: conventional commits only — types `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`; concise, lowercase. Let pre-commit run; limit 2–3 commands per commit. Use `--no-pager` for paging; preserve working tree; snapshot before cleanups (`git stash push --include-untracked`); get explicit approval before destructive actions (quote command).
+
+**CORRECT**:
+```powershell
+git add path/to/file.py; git commit -m "feat(scope): add feature"
+```
+```bash
+git add file1.cs file2.cs && git commit -m "refactor(scope): simplify logic"
+```
+
+**INCORRECT**: `git add .`, `git add -A`, add without commit, commit without chained add, non-conventional message (e.g. "Update file.md").
+
+**MANDATORY**: After any file change, end with a fenced "Proposed Git Commands" block (exact chained command) then: `Git commits: Issued per rules ✅`. If no changes: `Git commits: No changes made ✅`. Never skip.
+
+## 3. Static Type Checking
+
+- Run `mypy --strict` and `pyright` on all `.py` files (exclude `.` folders and root `vendor/`).
+- **FIX ALL TYPE ERRORS** before committing.
+- Use suppressions only in justified cases:
+
+| Mechanism                          | Allowed Only For                              |
+|------------------------------------|-----------------------------------------------|
+| `# type: ignore`, `# pyright: ignore` | Untyped third-party libraries (no stubs)     |
+| Specific ignore codes              | Temporary legacy migration (add TODO + plan) |
+| `cast()`, excessive `Any`          | Never (prefer real types)                    |
+
+- Favor annotations and `isinstance()` checks.
+- Prefer `isinstance` over `hasattr`/`getattr`.
+
+## 4. Documentation and Wiki
+
+- Developer or implementation-specific new `.md` files only in `docs/`.
+- Focus on public-facing content in `wiki/`.
+- Verify technical claims with ≥3 independent sources (max one from `Libraries/PyKotor/src`), other two from web or github or other sources in `vendor/`.
+- On new discoveries: Check/create `wiki/*.md`, update, and commit separately to both repos.
+- Always update the wiki with the new game information if it is relevant to either KotOR I or II or both.
+
+## 5. Holocron UI Workflow
+
+Edit only `Tools/HolocronToolset/src/ui/`. Never edit `uic/`. Run `convertui.py` after UI changes.
+
+## 6. Testing and Environment
+
+- Enforce timeouts (120s/test, 300s/suite).
+- Use `uv run` over direct `python`. e.g.: `uv run Libraries/PyKotor/src/pykotor/cli/__main__.py <command>`
+- Reference paths via env vars (`$Env:K1_PATH`, etc. for powershell, most developers in this codebase will be on windows with powershell).
+- Execute from repo root.
+
 
 **Useful Commands (Examples)**
 ```powershell

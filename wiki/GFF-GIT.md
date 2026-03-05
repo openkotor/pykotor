@@ -87,7 +87,7 @@ Each instance type has common fields plus type-specific data:
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Instance tag override |
 | `LinkedToModule` | [ResRef](GFF-File-Format#gff-data-types) | Destination module |
 | `LinkedTo` | [CExoString](GFF-File-Format#gff-data-types) | Destination waypoint tag |
-| `LinkedToFlags` | Byte | Transition [flags](GFF-File-Format#gff-data-types) |
+| `LinkedToFlags` | Byte | Transition flags |
 | `TransitionDestin` | [CExoLocString](GFF-File-Format#gff-data-types) | Destination label (UI) |
 | `X`, `Y`, `Z` | Float | position coordinates |
 | `Bearing` | Float | Door orientation |
@@ -134,7 +134,7 @@ Each instance type has common fields plus type-specific data:
 | `TransitionDestin` | [CExoLocString](GFF-File-Format#gff-data-types) | Transition label |
 | `LinkedToModule` | [ResRef](GFF-File-Format#gff-data-types) | Destination module |
 | `LinkedTo` | [CExoString](GFF-File-Format#gff-data-types) | Destination waypoint |
-| `LinkedToFlags` | Byte | Transition [flags](GFF-File-Format#gff-data-types) |
+| `LinkedToFlags` | Byte | Transition flags |
 | `X`, `Y`, `Z` | Float | Trigger position |
 | `XPosition`, `YPosition`, `ZPosition` | Float | Position (alternate) |
 | `XOrientation`, `YOrientation`, `ZOrientation` | Float | orientation |

@@ -6,14 +6,14 @@ This document provides a detailed description of the ERF (Encapsulated Resource 
 
 - KotOR ERF file format Documentation
   - Table of Contents
-  - [file structure Overview](#file-structure-overview)
+  - [File Structure Overview](#file-structure-overview)
   - [Binary Format](#binary-format)
-    - [file header](#file-header)
-    - [Localized string List](#localized-string-list)
+    - [File Header](#file-header)
+    - [Localized String List](#localized-string-list)
     - [KEY List](#key-list)
     - [Resource List](#resource-list)
-    - [Resource data](#resource-data)
-    - [MOD/NWM file format Quirk: Blank data Block](#modnwm-file-format-quirk-blank-data-block)
+    - [Resource Data](#resource-data)
+    - [MOD/NWM File Format Quirk: Blank Data Block](#modnwm-file-format-quirk-blank-data-block)
   - [ERF Variants](#erf-variants)
     - [MOD Files (module archives)](#mod-files-module-archives)
     - [SAV Files (save game archives)](#sav-files-save-game-archives)
@@ -23,7 +23,7 @@ This document provides a detailed description of the ERF (Encapsulated Resource 
 
 ---
 
-## file structure Overview
+## File Structure Overview
 
 ERF files are self-contained archives that store both resource names ([ResRefs](GFF-File-Format#gff-data-types)) and data in the same file. Unlike [BIF files](BIF-File-Format) which require a [KEY file](KEY-File-Format) for filename lookups, ERF files include [ResRef](GFF-File-Format#gff-data-types) information directly in the archive.
 
@@ -50,7 +50,7 @@ ERF files are self-contained archives that store both resource names ([ResRefs](
 
 ## [Binary Format](https://en.wikipedia.org/wiki/Binary_file)
 
-### file header
+### File Header
 
 The file header is 160 bytes in size:
 
@@ -69,7 +69,7 @@ The file header is 160 bytes in size:
 | Description [StrRef](TLK-File-Format#string-references-strref)        | [uint32](GFF-File-Format#gff-data-types)  | 40 (0x28) | 4    | [TLK](TLK-File-Format) string reference for description           |
 | Reserved                  | [byte](GFF-File-Format#gff-data-types) | 44 (0x2C)  | 116  | Padding (usually zeros)                         |
 
-**Build Date fields:**
+**Build Date Fields:**
 
 The Build Year and Build Day fields timestamp when the ERF file was created:
 
@@ -103,7 +103,7 @@ The Description [StrRef](TLK-File-Format#string-references-strref) field (offset
 **Reference**: [`vendor/Kotor.NET/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:11-46`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L11-L46)  
 **Reference**: [`vendor/xoreos-docs/specs/torlack/mod.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/mod.html) - Tim Smith (Torlack)'s reverse-engineered ERF format documentation
 
-### Localized string List
+### Localized String List
 
 Localized strings provide descriptions in multiple languages:
 
@@ -111,7 +111,7 @@ Localized strings provide descriptions in multiple languages:
 | ------------ | ------- | ---- | ---------------------------------------------------------------- |
 | Language ID  | [uint32](GFF-File-Format#gff-data-types)  | 4    | Language identifier (see Language enum)                          |
 | string size  | [uint32](GFF-File-Format#gff-data-types)  | 4    | Length of string in bytes                                       |
-| string data  | [char](GFF-File-Format#gff-data-types)[]  | N    | `windows-1252` encoded text (Varying length)                     |
+| string data  | [char](GFF-File-Format#gff-data-types)[]  | N    | `windows-1252` encoded text                     |
 
 **Localized string Usage:**
 
@@ -125,7 +125,6 @@ ERF localized strings provide multi-language descriptions for the archive itself
 - `3` = Italian
 - `4` = Spanish
 - `5` = Polish
-- Additional languages for Asian releases
 
 **Important Notes:**
 
@@ -191,7 +190,6 @@ ERF files come in several variants based on file type:
 | ERF       | `.erf`    | Generic encapsulated resource file                               |
 | MOD       | `.mod`    | Module file (contains area resources)                            |
 | SAV       | `.sav`    | Save game file (contains saved game state)                       |
-| HAK       | `.hak`    | Hak pak file (contains override resources)                      |
 
 All variants use the same binary format structure, differing only in the file type signature.
 
@@ -218,30 +216,12 @@ SAV files store complete game state:
 
 - Party member data (inventory, stats, equipped items)
 - Module state (spawned creatures, opened containers)
-- Global variables and plot [flags](GFF-File-Format#gff-data-types)
+- Global variables and plot flags
 - Area layouts with modifications
 - Quick bar configurations
 - Portrait images
 
 Save files preserve the state of all modified resources. When a placeable is looted or a door opened, the updated `.git` resource is stored in the SAV file.
-
-### HAK Files (Override Paks)
-
-HAK files provide mod content that overrides base game resources:
-
-**Usage:**
-
-- High-priority resource overrides (above base game, below saves)
-- Total conversion mods
-- Large content packs
-- Shareable mod packages
-
-Unlike the `override/` directory, HAK files:
-
-- are self-contained and portable
-- Can be enabled/disabled per-module
-- Support multiple HAKs with defined load order
-- are referenced by module `.ifo` files
 
 ### ERF Files (Generic Archives)
 

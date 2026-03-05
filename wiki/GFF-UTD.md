@@ -131,7 +131,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 | ----- | ---- | ----------- |
 | `LoadScreenID` (KotOR2) | Word | Loading screen to show |
 | `LinkedTo` (KotOR2) | [CExoString](GFF-File-Format#gff-data-types) | Destination module tag |
-| `LinkedToFlags` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Transition behavior [flags](GFF-File-Format#gff-data-types) |
+| `LinkedToFlags` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Transition behavior flags |
 | `LinkedToModule` (KotOR2) | [ResRef](GFF-File-Format#gff-data-types) | Destination module [ResRef](GFF-File-Format#gff-data-types) |
 | `TransitionDestin` (KotOR2) | [CExoLocString](GFF-File-Format#gff-data-types) | Destination label |
 

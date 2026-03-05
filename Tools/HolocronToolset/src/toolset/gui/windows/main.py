@@ -87,7 +87,7 @@ from toolset.gui.editors.utt import UTTEditor
 from toolset.gui.editors.utw import UTWEditor
 from toolset.gui.widgets.main_widgets import ResourceList, ResourceStandardItem
 from toolset.gui.widgets.settings.widgets.misc import GlobalSettings
-from toolset.gui.windows.help import HelpWindow
+from toolset.gui.windows.help import HelpWindow, get_help_path
 from toolset.gui.windows.indoor_builder import IndoorMapBuilder
 from toolset.gui.windows.kotordiff import KotorDiffWindow
 from toolset.gui.windows.module_designer import ModuleDesigner
@@ -680,6 +680,7 @@ class ToolWindow(QMainWindow):
         self.ui.actionTSLPatchDataEditor.triggered.connect(self.open_tslpatchdata_editor)
 
         self.ui.actionInstructions.triggered.connect(self.open_instructions_window)
+        self.ui.actionNewFeaturesGuide.triggered.connect(self.open_new_features_guide)
         self.ui.actionHelpUpdates.triggered.connect(self.update_manager.check_for_updates)
         self.ui.actionHelpAbout.triggered.connect(self.open_about_dialog)
         self._connect_discord_actions()
@@ -905,6 +906,7 @@ class ToolWindow(QMainWindow):
                 ("actionSettings", "Settings"),
                 ("actionHelpAbout", "About"),
                 ("actionInstructions", "Instructions"),
+                ("actionNewFeaturesGuide", "New Features Guide"),
                 ("actionHelpUpdates", "Check For Updates"),
                 ("actionEditTLK", "Edit Talk Table"),
                 ("actionEditJRL", "Edit Journal"),

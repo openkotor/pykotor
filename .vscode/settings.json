@@ -127,5 +127,6 @@
       "-NoLogo"
     ],
     "path": "pwsh.exe"
-  }
+  },
+  "cursorpyright.analysis.autoImportCompletions": true
 }

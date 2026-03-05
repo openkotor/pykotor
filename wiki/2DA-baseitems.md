@@ -2,7 +2,7 @@
 
 Part of the [2DA File Format Documentation](2DA-File-Format).
 
-**Engine Usage**: Defines base item types that form the foundation for all items in the game. Each row represents a base item type (weapon, armor, shield, etc.) with properties like damage dice, weapon categories, equipment slots, and item [flags](GFF-File-Format#gff-data-types). The engine uses this file to determine item behavior, combat statistics, and equipment compatibility.
+**Engine Usage**: Defines base item types that form the foundation for all items in the game. Each row represents a base item type (weapon, armor, shield, etc.) with properties like damage dice, weapon categories, equipment slots, and item flags. The engine uses this file to determine item behavior, combat statistics, and equipment compatibility.
 
 **Row index**: Base item ID (integer)
 
@@ -24,7 +24,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `damagedice` | Integer | Damage dice count |
 | `damagedie` | Integer | Damage die size |
 | `damagebonus` | Integer | Base damage bonus |
-| `damagetype` | Integer | Damage type [flags](GFF-File-Format#gff-data-types) |
+| `damagetype` | Integer | Damage type flags |
 | `weaponmattype` | Integer | Weapon [material](MDL-MDX-File-Format#trimesh-header) type |
 | `weaponsound` | Integer | Weapon sound type |
 | `ammunitiontype` | Integer | Ammunition type required |
@@ -37,7 +37,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `weaponfocusfeat` | Integer | Weapon focus feat ID |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | string reference for item description |
 | `icon` | [ResRef](GFF-File-Format#gff-data-types) | Icon image [ResRef](GFF-File-Format#gff-data-types) |
-| `equipableslots` | Integer | Equipment slot [flags](GFF-File-Format#gff-data-types) |
+| `equipableslots` | Integer | Equipment slot flags |
 | `model1` through `model6` | ResRef (optional) | 3D [model](MDL-MDX-File-Format) ResRefs for different variations |
 | `partenvmap` | ResRef (optional) | Partial environment map [texture](TPC-File-Format) |
 | `defaultmodel` | ResRef (optional) | Default [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
@@ -71,7 +71,7 @@ The following columns are accessed by the reone engine:
 - `maxattackrange`: Maximum attack range for ranged weapons
 - `crithitmult`: Critical hit multiplier
 - `critthreat`: Critical threat range
-- `damageflags`: Damage type [flags](GFF-File-Format#gff-data-types)
+- `damageflags`: Damage type flags
 - `dietoroll`: Damage die size
 - `equipableslots`: Equipment slot flags (hex integer)
 - `itemclass`: Item class identifier (string)

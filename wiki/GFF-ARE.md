@@ -165,7 +165,7 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 - `CameraStyle`: Determines camera constraints
 - Defines zoom, rotation, and collision behavior
 
-## Area Behavior [flags](GFF-File-Format#gff-data-types)
+## Area Behavior flags
 
 | field | type | Description |
 | ----- | ---- | ----------- |

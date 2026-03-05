@@ -1,5 +1,6 @@
 <Contents version="4">
   <Folder name="Introduction">
+    <Document name="New Features Quick Guide" file="wiki/New-Features-Guide.md" />
     <Document name="Getting Started" file="introduction1-gettingStarted.md" />
     <Document name="Core Tab" file="introduction2-coreResources.md" />
     <Document name="Modules Tab" file="introduction3-moduleResources.md" />

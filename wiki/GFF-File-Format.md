@@ -105,7 +105,7 @@ Every `.utc` ([UTC](GFF-File-Format#utc-creature)), `.uti` ([UTI](GFF-File-Forma
 
 ## Binary format
 
-### file header
+### File Header
 
 The file header is 56 bytes in size:
 

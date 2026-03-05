@@ -58,7 +58,7 @@ The [modular structure](https://en.wikipedia.org/wiki/Modular_programming) allow
 
 ## [Binary Format](https://en.wikipedia.org/wiki/Binary_file)
 
-### file header
+### File Header
 
 The file header is 20 bytes in size:
 

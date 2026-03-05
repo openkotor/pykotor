@@ -89,6 +89,7 @@ _TRANSLATIONS: dict[ToolsetLanguage, dict[str, str]] = {
         "Clone Module": "Clone Module",
         "About": "About",
         "Instructions": "Instructions",
+        "New Features Guide": "New Features Guide",
         "Check For Updates": "Check For Updates",
         "Discord": "Discord",
         "KOTOR Community Portal": "KOTOR Community Portal",

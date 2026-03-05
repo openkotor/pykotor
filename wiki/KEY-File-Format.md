@@ -63,7 +63,7 @@ The KEY file only manages [BIF](BIF-File-Format) resources (step 4). Higher-prio
 
 ## [Binary Format](https://en.wikipedia.org/wiki/Binary_file)
 
-### file header
+### File Header
 
 The file header is 64 bytes in size:
 
@@ -95,9 +95,9 @@ Each file entry is 12 bytes:
 | Filename Length | [uint16](GFF-File-Format#gff-data-types) | 8 (0x08) | 2    | Length of filename in bytes                                      |
 | Drives          | [uint16](GFF-File-Format#gff-data-types) | 10 (0x0A) | 2    | Drive flags (0x0001=HD0, 0x0002=CD1, etc.)                      |
 
-**Drive [flags](GFF-File-Format#gff-data-types) Explained:**
+**Drive flags Explained:**
 
-Drive [flags](GFF-File-Format#gff-data-types) are a legacy feature from the multi-CD distribution era:
+Drive flags are a legacy feature from the multi-CD distribution era:
 
 | [flag](GFF-File-Format#gff-data-types) value | Meaning | Description |
 | ---------- | ------- | ----------- |
@@ -113,7 +113,7 @@ In contemporary distributions (Steam, GOG, digital):
 
 - All [BIF files](BIF-File-Format) use `0x0001` (HD [flag](GFF-File-Format#gff-data-types)) since everything is installed locally
 - The engine doesn't prompt for disc swapping
-- Multiple [flags](GFF-File-Format#gff-data-types) can be combined (bitwise OR) if a [BIF](BIF-File-Format) could be on multiple sources
+- Multiple flags can be combined (bitwise OR) if a [BIF](BIF-File-Format) could be on multiple sources
 - Mod tools typically set this to `0x0001` for all files
 
 The drive system was originally designed so the engine could:
