@@ -19,8 +19,13 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
+import urllib.error
+import urllib.request
+import zipfile
 
 from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -28,6 +33,12 @@ from loggerplus import RobustLogger
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+
+KOTORBLENDER_GITHUB_REPO = "OldRepublicDevs/kotorblender"
+KOTORBLENDER_GITHUB_URL = f"https://github.com/{KOTORBLENDER_GITHUB_REPO}"
+KOTORBLENDER_ARCHIVE_URL = f"https://codeload.github.com/{KOTORBLENDER_GITHUB_REPO}/zip/refs/heads/master"
+KOTORBLENDER_ENV_VAR = "KOTORBLENDER_SOURCE_PATH"
 
 
 @dataclass
@@ -507,11 +518,19 @@ def _get_kotorblender_source_path() -> Path | None:
 
     Works for both:
     - Running from source: vendor/kotorblender/io_scene_kotor
+    - Running from source with adjacent checkout: kotorblender/io_scene_kotor
     - PyInstaller builds: bundled in _MEIPASS/kotorblender/io_scene_kotor
+    - Auto-downloaded cache from GitHub
 
     Returns:
         Path to io_scene_kotor directory, or None if not found
     """
+    env_source = os.environ.get(KOTORBLENDER_ENV_VAR)
+    if env_source:
+        source_path = Path(env_source).expanduser()
+        if source_path.is_dir() and (source_path / "__init__.py").is_file():
+            return source_path
+
     # Check for PyInstaller frozen build
     if getattr(sys, "frozen", False):
         # Running as PyInstaller bundle
@@ -536,7 +555,33 @@ def _get_kotorblender_source_path() -> Path | None:
         if vendor_path.is_dir() and (vendor_path / "__init__.py").is_file():
             return vendor_path
 
-    return None
+        checkout_path = parent / "kotorblender" / "io_scene_kotor"
+        if checkout_path.is_dir() and (checkout_path / "__init__.py").is_file():
+            return checkout_path
+
+    return _download_kotorblender_source()
+
+
+def _download_kotorblender_source() -> Path | None:
+    """Download upstream kotorblender source into a local cache if needed."""
+
+    cache_root = Path(tempfile.gettempdir()) / "HolocronToolset" / "kotorblender_cache"
+    cached_source = cache_root / "kotorblender-master" / "io_scene_kotor"
+    if cached_source.is_dir() and (cached_source / "__init__.py").is_file():
+        return cached_source
+
+    try:
+        cache_root.mkdir(parents=True, exist_ok=True)
+        RobustLogger().info(f"Downloading kotorblender source from {KOTORBLENDER_GITHUB_URL}")
+        with urllib.request.urlopen(KOTORBLENDER_ARCHIVE_URL, timeout=30) as response:
+            archive_bytes = response.read()
+        with zipfile.ZipFile(BytesIO(archive_bytes)) as archive:
+            archive.extractall(cache_root)
+    except (OSError, urllib.error.URLError, zipfile.BadZipFile) as exc:
+        RobustLogger().warning(f"Unable to download kotorblender source: {exc}")
+        return None
+
+    return cached_source if (cached_source / "__init__.py").is_file() else None
 
 
 def _test_ipc_connection(timeout: float = 5.0, max_attempts: int = 3) -> tuple[bool, str]:
@@ -620,9 +665,10 @@ def install_kotorblender(
     if kotorblender_src is None or not kotorblender_src.is_dir():
         return False, (
             "kotorblender source not found.\n\n"
-            "Please download kotorblender manually from:\n"
-            "https://deadlystream.com/files/file/1853-kotorblender/\n\n"
-            "Then extract and select the io_scene_kotor folder."
+            f"The Toolset could not find a local source checkout or download one from:\n"
+            f"{KOTORBLENDER_GITHUB_URL}\n\n"
+            "You can still install manually by downloading the repository or release archive,\n"
+            "then selecting the io_scene_kotor folder."
         )
 
     init_file = kotorblender_src / "__init__.py"

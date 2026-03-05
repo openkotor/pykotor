@@ -310,6 +310,18 @@ class TestBlenderDetection:
             assert info.has_kotorblender is True
             assert info.error == ""
 
+    def test_get_kotorblender_source_path_from_env(self, monkeypatch, tmp_path):
+        """Test kotorblender source path can be provided via environment."""
+        from toolset.blender.detection import _get_kotorblender_source_path
+
+        source_dir = tmp_path / "io_scene_kotor"
+        source_dir.mkdir()
+        (source_dir / "__init__.py").write_text("bl_info = {'version': (4, 0, 4)}", encoding="utf-8")
+
+        monkeypatch.setenv("KOTORBLENDER_SOURCE_PATH", str(source_dir))
+
+        assert _get_kotorblender_source_path() == source_dir
+
     def test_is_blender_available_true(self):
         """Test is_blender_available returns True when available."""
         from toolset.blender.detection import BlenderInfo, is_blender_available
@@ -1555,6 +1567,35 @@ class TestBlenderEditorMixin:
         mock_controller.unload_module.assert_called_once()
         mock_controller.disconnect.assert_called_once()
         mock_timer.stop.assert_called_once()
+
+    def test_check_blender_and_ask_uses_dialog_choice(self):
+        """Test Blender choice dialog result is propagated."""
+        from toolset.blender.detection import BlenderInfo
+        from toolset.blender.integration import check_blender_and_ask
+
+        blender_info = BlenderInfo(
+            executable=Path("/usr/bin/blender"),
+            version=(4, 2, 0),
+            is_valid=True,
+        )
+
+        with patch("toolset.blender.integration.get_blender_settings") as mock_settings:
+            mock_settings.return_value.get_blender_info.return_value = blender_info
+            with patch("toolset.gui.dialogs.blender_choice.show_blender_choice_dialog", return_value=("blender", False)):
+                use_blender, returned_info = check_blender_and_ask(Mock(), "Module Designer")
+
+        assert use_blender is True
+        assert returned_info == blender_info
+
+    def test_check_blender_and_ask_cancelled(self):
+        """Test cancelled Blender choice returns no info."""
+        from toolset.blender.integration import check_blender_and_ask
+
+        with patch("toolset.gui.dialogs.blender_choice.show_blender_choice_dialog", return_value=("cancelled", False)):
+            use_blender, returned_info = check_blender_and_ask(Mock(), "Module Designer")
+
+        assert use_blender is False
+        assert returned_info is None
 
 
 # =============================================================================
