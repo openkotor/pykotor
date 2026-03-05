@@ -26,6 +26,28 @@ if TYPE_CHECKING:
     from toolset.blender.ipc_client import BlenderIPCClient
 
 
+def requires_connection(default_return_value: Any = False, check_session: bool = False) -> Callable:
+    """Decorator that checks if Blender is connected before executing a method.
+
+    Args:
+    ----
+        default_return_value: Value to return if not connected
+        check_session: Also check if session exists
+
+    Returns:
+    -------
+        Decorated function
+    """
+    def decorator(func: Callable) -> Callable:
+        def wrapper(self, *args, **kwargs):
+            if not self.is_connected or (check_session and self._session is None):
+                self._logger.error(f"Cannot {func.__name__}: not connected to Blender")
+                return default_return_value
+            return func(self, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
 class BlenderEditorMode(Enum):
     """Mode for Blender editor integration."""
 
@@ -146,6 +168,7 @@ class BlenderEditorController:
     # Module Loading
     # =========================================================================
 
+    @requires_connection(False)
     def load_module(
         self,
         mode: BlenderEditorMode,
@@ -168,10 +191,6 @@ class BlenderEditorController:
         Returns:
             True if loaded successfully
         """
-        if not self.is_connected:
-            self._logger.error("Cannot load module: not connected to Blender")
-            return False
-
         # Serialize module data
         module_data = serialize_module_data(lyt, git, walkmeshes, module_root, str(installation_path))
 
@@ -210,15 +229,13 @@ class BlenderEditorController:
         runtime_id = id(instance)
         self._session.runtime_to_instance[runtime_id] = instance
 
+    @requires_connection(True)
     def unload_module(self) -> bool:
         """Unload the current module from Blender.
 
         Returns:
             True if unloaded successfully
         """
-        if not self.is_connected:
-            return True
-
         success = self._commands.unload_module()
         if success:
             self._session = None
@@ -230,6 +247,7 @@ class BlenderEditorController:
     # Instance Management
     # =========================================================================
 
+    @requires_connection(None, check_session=True)
     def add_instance(self, instance: GITObject) -> str | None:
         """Add a GIT instance to Blender.
 
@@ -239,9 +257,6 @@ class BlenderEditorController:
         Returns:
             Blender object name if successful
         """
-        if not self.is_connected or self._session is None:
-            return None
-
         instance_data = instance.serialize()
         runtime_id = instance_data.get("runtime_id")
         self._register_runtime_instance(instance)
@@ -256,6 +271,7 @@ class BlenderEditorController:
 
         return object_name
 
+    @requires_connection(False, check_session=True)
     def remove_instance(self, instance: GITObject) -> bool:
         """Remove a GIT instance from Blender.
 
@@ -265,9 +281,6 @@ class BlenderEditorController:
         Returns:
             True if removed successfully
         """
-        if not self.is_connected or self._session is None:
-            return False
-
         instance_id = id(instance)
         runtime_id = instance_id
         object_name = self._session.instance_to_object.get(instance_id)
@@ -308,6 +321,7 @@ class BlenderEditorController:
         self._session.runtime_to_object.pop(runtime_id, None)
         self._session.runtime_to_instance.pop(runtime_id, None)
 
+    @requires_connection(False, check_session=True)
     def update_instance_position(
         self,
         instance: GITObject,
@@ -324,9 +338,6 @@ class BlenderEditorController:
         Returns:
             True if updated successfully
         """
-        if not self.is_connected or self._session is None:
-            return False
-
         object_name = self._session.instance_to_object.get(id(instance))
         if not object_name:
             return False
@@ -336,6 +347,7 @@ class BlenderEditorController:
             {"position": {"x": x, "y": y, "z": z}},
         )
 
+    @requires_connection(False, check_session=True)
     def update_instance_rotation(
         self,
         instance: GITObject,
@@ -352,9 +364,6 @@ class BlenderEditorController:
         Returns:
             True if updated successfully
         """
-        if not self.is_connected or self._session is None:
-            return False
-
         object_name = self._session.instance_to_object.get(id(instance))
         if not object_name:
             return False
@@ -372,6 +381,7 @@ class BlenderEditorController:
 
         return self._commands.update_instance(object_name, properties)
 
+    @requires_connection(False, check_session=True)
     def select_instances(self, instances: list[GITObject]) -> bool:
         """Select instances in Blender.
 
@@ -381,9 +391,6 @@ class BlenderEditorController:
         Returns:
             True if selection changed successfully
         """
-        if not self.is_connected or self._session is None:
-            return False
-
         object_names = []
         for instance in instances:
             name = self._session.instance_to_object.get(id(instance))
@@ -392,15 +399,13 @@ class BlenderEditorController:
 
         return self._commands.select_instances(object_names)
 
+    @requires_connection([], check_session=True)
     def get_selected_instance_ids(self) -> list[int]:
         """Get IDs of currently selected instances in Blender.
 
         Returns:
             List of instance IDs (from id(instance))
         """
-        if not self.is_connected or self._session is None:
-            return []
-
         object_names = self._commands.get_selection()
         instance_ids = []
 
@@ -415,6 +420,7 @@ class BlenderEditorController:
     # Layout Editing
     # =========================================================================
 
+    @requires_connection(None)
     def add_room(self, model: str, x: float, y: float, z: float) -> str | None:
         """Add a room to the layout in Blender.
 
@@ -425,9 +431,6 @@ class BlenderEditorController:
         Returns:
             Blender object name if successful
         """
-        if not self.is_connected:
-            return None
-
         room_data = {
             "model": model,
             "position": {"x": x, "y": y, "z": z},
@@ -435,6 +438,7 @@ class BlenderEditorController:
 
         return self._commands.add_room(room_data)
 
+    @requires_connection(False)
     def update_room_position(
         self,
         object_name: str,
@@ -451,9 +455,6 @@ class BlenderEditorController:
         Returns:
             True if updated successfully
         """
-        if not self.is_connected:
-            return False
-
         return self._commands.update_room(
             object_name,
             {"position": {"x": x, "y": y, "z": z}},
@@ -463,15 +464,13 @@ class BlenderEditorController:
     # Synchronization
     # =========================================================================
 
+    @requires_connection((None, None))
     def save_changes(self) -> tuple[dict | None, dict | None]:
         """Export modified data from Blender.
 
         Returns:
             Tuple of (lyt_data, git_data) or (None, None) on failure
         """
-        if not self.is_connected:
-            return None, None
-
         result = self._commands.save_changes()
         if result:
             return result.get("lyt"), result.get("git")
@@ -482,24 +481,22 @@ class BlenderEditorController:
     # Undo/Redo
     # =========================================================================
 
+    @requires_connection(False)
     def undo(self) -> bool:
         """Trigger undo in Blender.
 
         Returns:
             True if undo was successful
         """
-        if not self.is_connected:
-            return False
         return self._commands.undo()
 
+    @requires_connection(False)
     def redo(self) -> bool:
         """Trigger redo in Blender.
 
         Returns:
             True if redo was successful
         """
-        if not self.is_connected:
-            return False
         return self._commands.redo()
 
     # =========================================================================
