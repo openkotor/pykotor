@@ -30,7 +30,8 @@ A Python library for reading and modifying file formats used by the game [Knight
 ## Requirements
 
 - Python 3.8+
-- Windows 7+, macOS, or Linux
+- Windows 7–11, macOS, or Linux
+- All common architectures supported (x86, x64, arm64)
 
 ## Installation
 

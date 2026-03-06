@@ -2,12 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from qtpy.QtWidgets import QMessageBox
-
-if TYPE_CHECKING:
-    from qtpy.QtWidgets import QWidget
+from qtpy.QtWidgets import QMessageBox, QWidget
 
 
 def show_info_message(

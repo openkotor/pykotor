@@ -518,7 +518,7 @@ class BlenderEditorController:
     # Visibility and Render Settings
     # =========================================================================
 
-    @requires_connection(return_value=False)
+    @requires_connection(False)
     def set_visibility(self, instance_type: str, visible: bool) -> bool:
         """Set visibility of an instance type in Blender.
 
@@ -531,7 +531,7 @@ class BlenderEditorController:
         """
         return self._commands.set_visibility(instance_type, visible)
 
-    @requires_connection(return_value=False)
+    @requires_connection(False)
     def set_render_settings(
         self,
         backface_culling: bool | None = None,
@@ -554,7 +554,7 @@ class BlenderEditorController:
             show_cursor=show_cursor,
         )
 
-    @requires_connection(return_value=False)
+    @requires_connection(False)
     def set_camera_view(
         self,
         x: float,
@@ -581,7 +581,7 @@ class BlenderEditorController:
     # Layout Editing
     # =========================================================================
 
-    @requires_connection(return_value=None)
+    @requires_connection(None)
     def add_door_hook(
         self,
         room: str,
@@ -617,7 +617,7 @@ class BlenderEditorController:
 
         return self._commands.add_door_hook(door_hook_data)
 
-    @requires_connection(return_value=None)
+    @requires_connection(None)
     def add_track(self, model: str, x: float, y: float, z: float) -> str | None:
         """Add a track to the layout in Blender.
 
@@ -635,7 +635,7 @@ class BlenderEditorController:
 
         return self._commands.add_track(track_data)
 
-    @requires_connection(return_value=None)
+    @requires_connection(None)
     def add_obstacle(self, model: str, x: float, y: float, z: float) -> str | None:
         """Add an obstacle to the layout in Blender.
 
@@ -653,7 +653,7 @@ class BlenderEditorController:
 
         return self._commands.add_obstacle(obstacle_data)
 
-    @requires_connection(return_value=False)
+    @requires_connection(False)
     def update_door_hook(
         self,
         object_name: str,
@@ -694,7 +694,7 @@ class BlenderEditorController:
 
         return self._commands.update_door_hook(object_name, properties)
 
-    @requires_connection(return_value=False)
+    @requires_connection(False)
     def update_track(
         self,
         object_name: str,
@@ -731,7 +731,7 @@ class BlenderEditorController:
 
         return self._commands.update_track(object_name, properties)
 
-    @requires_connection(return_value=False)
+    @requires_connection(False)
     def update_obstacle(
         self,
         object_name: str,
@@ -768,7 +768,7 @@ class BlenderEditorController:
 
         return self._commands.update_obstacle(object_name, properties)
 
-    @requires_connection(return_value=False)
+    @requires_connection(False)
     def remove_lyt_element(self, object_name: str, element_type: str) -> bool:
         """Remove a LYT element from Blender.
 

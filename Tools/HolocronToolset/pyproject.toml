@@ -22,7 +22,7 @@ toolset = [
 name = "holocrontoolset"
 description = "A PyQt-backed program with a collection of tools and editors that make it easy to work with kotor files"
 version = "4.0.0b18"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 dependencies = [
   "certifi>=2021.10.8",
   "comtypes>=1.4.0; sys_platform == \"win32\"",

@@ -6,8 +6,8 @@ concurrency:
 
 env:
   OS_RUNNERS_JSON: '["windows-latest", "ubuntu-20.04", "macos-12"]'
-  PYTHON_VERSIONS_JSON: '["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
-  ARCHITECTURES_JSON: '["x86", "x64"]'
+  PYTHON_VERSIONS_JSON: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
+  ARCHITECTURES_JSON: '["x86", "x64", "arm64"]'
   INTERPRETERS_JSON: '["python"]'
 
 on:
@@ -84,6 +84,11 @@ jobs:
             architecture: x86
           - os: macos-12
             architecture: x86
+          # arm64 only on macOS (native); Windows/Ubuntu runners are x64
+          - os: windows-latest
+            architecture: arm64
+          - os: ubuntu-20.04
+            architecture: arm64
           # Latest pypy is 3.10
           - python_pypy: 'pypy'
             python-version: '3.11'

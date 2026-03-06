@@ -4,7 +4,7 @@ A PyQt5/PyQt6 implementation of the Pazaak card game from Knights of the Old Rep
 
 ## Requirements
 
-- Python 3.8 through 3.12
+- Python 3.8+
 
 ## Local Run
 

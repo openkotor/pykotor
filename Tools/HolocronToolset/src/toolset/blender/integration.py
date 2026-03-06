@@ -486,6 +486,8 @@ def check_blender_and_ask(
     # if choice == "cancelled":
     #     return False, None
     # elif choice == "blender":
+    #     # Only fetch Blender info when user chose Blender (avoids wasted work and
+    #     # confusing (False, blender_info) when choice was e.g. "builtin").
     #     settings = get_blender_settings()
     #     info = settings.get_blender_info()
     #     return True, info
