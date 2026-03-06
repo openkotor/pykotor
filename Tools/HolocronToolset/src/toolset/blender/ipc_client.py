@@ -114,6 +114,15 @@ class BlenderIPCClient:
         """Check if connected to Blender."""
         return self._state == ConnectionState.CONNECTED
 
+    def set_endpoint(self, host: str | None = None, port: int | None = None) -> None:
+        """Update the target IPC endpoint while disconnected."""
+        if self.is_connected:
+            return
+        if host is not None:
+            self._host = host
+        if port is not None:
+            self._port = port
+
     def connect(self, timeout: float = CONNECT_TIMEOUT) -> bool:
         """Connect to the Blender IPC server.
 
@@ -439,10 +448,10 @@ class BlenderCommands:
         response = self._client.send_command("ping")
         return response.success
 
-    def get_version(self) -> str | None:
-        """Get kotorblender version."""
+    def get_version(self) -> dict[str, Any] | None:
+        """Get kotorblender/bridge version information."""
         response = self._client.send_command("get_version")
-        if response.success:
+        if response.success and isinstance(response.result, dict):
             return response.result
         return None
 
@@ -452,12 +461,14 @@ class BlenderCommands:
         git_data: dict,
         installation_path: str,
         module_root: str,
+        walkmeshes: list[dict] | None = None,
     ) -> bool:
         """Load a module into Blender.
 
         Args:
             lyt_data: Serialized LYT data
             git_data: Serialized GIT data
+            walkmeshes: Serialized walkmesh resources keyed by room/model
             installation_path: Path to KotOR installation
             module_root: Module root name (e.g., "tar_m02aa")
 
@@ -469,6 +480,7 @@ class BlenderCommands:
             {
                 "lyt": lyt_data,
                 "git": git_data,
+                "walkmeshes": walkmeshes or [],
                 "installation_path": installation_path,
                 "module_root": module_root,
             },
@@ -787,6 +799,23 @@ class BlenderCommands:
         )
         return response.success
 
+    def import_external_asset(self, file_path: str) -> dict[str, Any] | None:
+        """Import an external asset into the current Blender session."""
+        response = self._client.send_command("import_external_asset", {"file_path": file_path}, timeout=30.0)
+        if response.success and isinstance(response.result, dict):
+            return response.result
+        return None
+
+    def export_kotor_model(self, object_name: str, output_path: str) -> dict[str, Any] | None:
+        """Export a Blender object as a KotOR MDL/MDX pair."""
+        response = self._client.send_command(
+            "export_kotor_model",
+            {"object_name": object_name, "output_path": output_path},
+            timeout=30.0,
+        )
+        if response.success and isinstance(response.result, dict):
+            return response.result
+        return None
 
 # Global client instance
 _global_client: BlenderIPCClient | None = None

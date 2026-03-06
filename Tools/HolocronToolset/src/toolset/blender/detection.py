@@ -19,9 +19,13 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
+import urllib.error
+import urllib.request
 import zipfile
 
 from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -29,6 +33,12 @@ from loggerplus import RobustLogger
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+
+KOTORBLENDER_GITHUB_REPO = "OldRepublicDevs/kotorblender"
+KOTORBLENDER_GITHUB_URL = f"https://github.com/{KOTORBLENDER_GITHUB_REPO}"
+KOTORBLENDER_ARCHIVE_URL = f"https://codeload.github.com/{KOTORBLENDER_GITHUB_REPO}/zip/refs/heads/master"
+KOTORBLENDER_ENV_VAR = "KOTORBLENDER_SOURCE_PATH"
 
 
 @dataclass
@@ -553,11 +563,19 @@ def _get_kotorblender_source_path() -> Path | None:
 
     Works for both:
     - Running from source: vendor/kotorblender/io_scene_kotor
+    - Running from source with adjacent checkout: kotorblender/io_scene_kotor
     - PyInstaller builds: bundled in _MEIPASS/kotorblender/io_scene_kotor
+    - Auto-downloaded cache from GitHub
 
     Returns:
         Path to io_scene_kotor directory, or None if not found
     """
+    env_source = os.environ.get(KOTORBLENDER_ENV_VAR)
+    if env_source:
+        source_path = Path(env_source).expanduser()
+        if source_path.is_dir() and (source_path / "__init__.py").is_file():
+            return source_path
+
     # Check for PyInstaller frozen build
     if getattr(sys, "frozen", False):
         # Running as PyInstaller bundle
@@ -582,7 +600,53 @@ def _get_kotorblender_source_path() -> Path | None:
         if vendor_path.is_dir() and (vendor_path / "__init__.py").is_file():
             return vendor_path
 
-    return None
+        checkout_path = parent / "kotorblender" / "io_scene_kotor"
+        if checkout_path.is_dir() and (checkout_path / "__init__.py").is_file():
+            return checkout_path
+
+    return _download_kotorblender_source()
+
+
+def _download_kotorblender_source() -> Path | None:
+    """Download upstream kotorblender source into a local cache if needed."""
+
+    cache_root = Path(tempfile.gettempdir()) / "HolocronToolset" / "kotorblender_cache"
+    cached_source = cache_root / "kotorblender-master" / "io_scene_kotor"
+    if cached_source.is_dir() and (cached_source / "__init__.py").is_file():
+        return cached_source
+
+    try:
+        cache_root.mkdir(parents=True, exist_ok=True)
+        RobustLogger().info(f"Downloading kotorblender source from {KOTORBLENDER_GITHUB_URL}")
+        with urllib.request.urlopen(KOTORBLENDER_ARCHIVE_URL, timeout=30) as response:
+            archive_bytes = response.read()
+        with zipfile.ZipFile(BytesIO(archive_bytes)) as archive:
+            archive.extractall(cache_root)
+    except (OSError, urllib.error.URLError, zipfile.BadZipFile) as exc:
+        RobustLogger().warning(f"Unable to download kotorblender source: {exc}")
+        return None
+
+    return cached_source if (cached_source / "__init__.py").is_file() else None
+
+
+def _get_kotorblender_overlay_path() -> Path | None:
+    """Return the bundled Holocron IPC overlay package, if present."""
+    overlay_path = Path(__file__).resolve().parent / "addon_overlay" / "io_scene_kotor" / "ipc"
+    init_file = overlay_path / "__init__.py"
+    return overlay_path if overlay_path.is_dir() and init_file.is_file() else None
+
+
+def _install_kotorblender_overlay(destination: Path) -> None:
+    """Copy the Holocron IPC overlay into an installed kotorblender package."""
+    overlay_source = _get_kotorblender_overlay_path()
+    if overlay_source is None:
+        RobustLogger().warning("Holocron IPC overlay package was not found; Blender live bridge will be unavailable")
+        return
+
+    overlay_destination = destination / "ipc"
+    if overlay_destination.exists():
+        shutil.rmtree(overlay_destination)
+    shutil.copytree(overlay_source, overlay_destination)
 
 
 def _test_ipc_connection(timeout: float = 5.0, max_attempts: int = 3) -> tuple[bool, str]:
@@ -666,9 +730,10 @@ def install_kotorblender(
     if kotorblender_src is None or not kotorblender_src.is_dir():
         return False, (
             "kotorblender source not found.\n\n"
-            "Please download kotorblender manually from:\n"
-            "https://deadlystream.com/files/file/1853-kotorblender/\n\n"
-            "Then extract and select the io_scene_kotor folder."
+            f"The Toolset could not find a local source checkout or download one from:\n"
+            f"{KOTORBLENDER_GITHUB_URL}\n\n"
+            "You can still install manually by downloading the repository or release archive,\n"
+            "then selecting the io_scene_kotor folder."
         )
 
     init_file = kotorblender_src / "__init__.py"
@@ -685,6 +750,7 @@ def install_kotorblender(
 
         # Copy kotorblender to Blender directory
         shutil.copytree(kotorblender_src, kotorblender_dest)
+        _install_kotorblender_overlay(kotorblender_dest)
 
         # Verify installation files exist
         info.has_kotorblender = check_kotorblender_installed(info)
@@ -796,7 +862,11 @@ def launch_blender_with_ipc(
         return None
 
     # Build startup script that initializes IPC server
-    startup_script = _generate_ipc_startup_script(ipc_port, installation_path, module_path)
+    kotorblender_dest = blender_info.kotorblender_path
+    if kotorblender_dest is not None and kotorblender_dest.exists():
+        _install_kotorblender_overlay(kotorblender_dest)
+
+    startup_script = _generate_ipc_startup_script(ipc_port, installation_path, module_path, background=background)
 
     # Build command line
     cmd: list[str] = [str(blender_info.executable)]
@@ -835,6 +905,8 @@ def _generate_ipc_startup_script(
     port: int,
     installation_path: Path | str | None,
     module_path: Path | str | None,
+    *,
+    background: bool = False,
 ) -> str:
     """Generate Python script to run on Blender startup.
 
@@ -847,33 +919,65 @@ def _generate_ipc_startup_script(
             return "None"
         return repr(str(p))
 
+    addon_modules = ["bl_ext.user_default.io_scene_kotor", "io_scene_kotor"]
+
     script = f"""
 import sys
 import traceback
 
 def _holocron_enable_kotor_addon():
+    module_names = {addon_modules!r}
     try:
+        import bpy
         import addon_utils
-        addon_utils.enable("io_scene_kotor", default_set=True, persistent=True)
-        print("[HolocronToolset] io_scene_kotor add-on enabled")
-        return True
+
+        for module_name in module_names:
+            try:
+                bpy.ops.preferences.addon_enable(module=module_name)
+                print(f"[HolocronToolset] Enabled Blender add-on '{{module_name}}' via bpy.ops.preferences.addon_enable")
+                return module_name
+            except Exception:
+                pass
+            try:
+                addon_utils.enable(module_name, default_set=True, persistent=True)
+                print(f"[HolocronToolset] Enabled Blender add-on '{{module_name}}' via addon_utils.enable")
+                return module_name
+            except Exception:
+                pass
     except Exception as exc:
-        print(f"[HolocronToolset] Failed to enable io_scene_kotor add-on: {{exc}}")
+        print(f"[HolocronToolset] Failed while enabling kotorblender add-on: {{exc}}")
         traceback.print_exc()
-        return False
+
+    print("[HolocronToolset] Failed to enable io_scene_kotor add-on using known module names")
+    return None
 
 # Try to import and start IPC server
 try:
-    if _holocron_enable_kotor_addon():
-        from io_scene_kotor.ipc import start_ipc_server
-        server = start_ipc_server(port={port}, installation_path={escape_path(installation_path)})
+    enabled_module = _holocron_enable_kotor_addon()
+    if enabled_module:
+        import importlib
+        bridge_module = importlib.import_module(f"{{enabled_module}}.ipc")
+        server = bridge_module.start_ipc_server(port={port}, installation_path={escape_path(installation_path)})
         try:
-            from io_scene_kotor.ipc.sync import start_scene_monitor
-            start_scene_monitor(server)
+            sync_module = importlib.import_module(f"{{enabled_module}}.ipc.sync")
+            sync_module.start_scene_monitor(server)
         except Exception as monitor_exc:
             print(f"[HolocronToolset] Failed to start Blender scene monitor: {{monitor_exc}}")
             traceback.print_exc()
         print(f"[HolocronToolset] IPC server started on port {port}")
+        if {background!r}:
+            import time
+
+            while getattr(server, "_running", False):
+                try:
+                    server._process_requests()
+                    if getattr(server, "_monitor_running", False):
+                        server._monitor_scene()
+                except Exception as loop_exc:
+                    print(f"[HolocronToolset] Background IPC loop error: {{loop_exc}}")
+                    traceback.print_exc()
+                    break
+                time.sleep(0.05)
     else:
         print("[HolocronToolset] IPC server was not started because the add-on could not be enabled.")
 except ImportError as e:

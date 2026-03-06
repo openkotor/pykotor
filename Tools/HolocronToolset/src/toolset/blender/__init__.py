@@ -14,6 +14,9 @@ Architecture:
 
 from __future__ import annotations
 
+from importlib import import_module
+from typing import Any
+
 from toolset.blender.detection import (
     BlenderInfo,
     BlenderSettings,
@@ -27,16 +30,6 @@ from toolset.blender.detection import (
     is_blender_available,
     launch_blender_with_ipc,
     uninstall_kotorblender,
-)
-from toolset.blender.integration import (
-    BlenderEditorMixin,
-    check_blender_and_ask,
-)
-from toolset.blender.commands import (
-    BlenderEditorController,
-    BlenderEditorMode,
-    BlenderSession,
-    get_blender_controller,
 )
 from toolset.blender.ipc_client import (
     BlenderCommands,
@@ -73,3 +66,31 @@ __all__ = [
     "ConnectionState",
     "get_ipc_client",
 ]
+
+_LAZY_EXPORTS: dict[str, tuple[str, str]] = {
+    "BlenderEditorMixin": ("toolset.blender.integration", "BlenderEditorMixin"),
+    "check_blender_and_ask": ("toolset.blender.integration", "check_blender_and_ask"),
+    "BlenderEditorController": ("toolset.blender.commands", "BlenderEditorController"),
+    "BlenderEditorMode": ("toolset.blender.commands", "BlenderEditorMode"),
+    "BlenderSession": ("toolset.blender.commands", "BlenderSession"),
+    "get_blender_controller": ("toolset.blender.commands", "get_blender_controller"),
+}
+
+
+def __getattr__(name: str) -> Any:
+    """Lazily resolve heavier Blender integration exports.
+
+    The editors often need detection/settings helpers even when the live Blender
+    bridge is unavailable. Delaying imports keeps package import cheap and
+    prevents one broken integration submodule from poisoning the entire package.
+    """
+
+    if name not in _LAZY_EXPORTS:
+        msg = f"module {__name__!r} has no attribute {name!r}"
+        raise AttributeError(msg)
+
+    module_name, attr_name = _LAZY_EXPORTS[name]
+    module = import_module(module_name)
+    value = getattr(module, attr_name)
+    globals()[name] = value
+    return value

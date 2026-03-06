@@ -16,7 +16,6 @@ from qtpy.QtCore import QTimer
 from qtpy.QtWidgets import QMessageBox
 
 from loggerplus import RobustLogger
-from toolset.gui.helpers.message_box import ask_question, show_error_message, show_warning_message
 from pykotor.resource.generics.git import (
     GITCamera,
     GITCreature,
@@ -26,9 +25,9 @@ from pykotor.resource.generics.git import (
     GITStore,
     GITWaypoint,
 )
-from toolset.blender import launch_blender_with_ipc
 from toolset.blender.commands import get_blender_controller
-from toolset.blender.detection import get_blender_settings
+from toolset.blender.detection import BlenderInfo, get_blender_settings, launch_blender_with_ipc
+from toolset.gui.helpers.message_box import ask_question, show_error_message, show_warning_message
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -37,8 +36,7 @@ if TYPE_CHECKING:
 
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
-    from pykotor.resource.generics.git import GIT, GITInstance, GITObject
-    from toolset.blender import BlenderInfo
+    from pykotor.resource.generics.git import GIT, GITObject
     from toolset.blender.commands import BlenderEditorController, BlenderEditorMode
     from toolset.blender.ipc_client import ConnectionState
 
@@ -160,7 +158,9 @@ class BlenderEditorMixin:
         installation_path: str | Path,
     ):
         """Connect to Blender IPC server and load data."""
+        settings = get_blender_settings()
         self._blender_controller = get_blender_controller()
+        self._blender_controller._client.set_endpoint(port=settings.ipc_port)  # noqa: SLF001
 
         # Store data for loading after connection
         self._pending_lyt = lyt
@@ -477,6 +477,14 @@ def check_blender_and_ask(
     Returns:
         Tuple of (use_blender, blender_info)
     """
+    from toolset.gui.dialogs.blender_choice import show_blender_choice_dialog
+
+    choice, _remember_choice = show_blender_choice_dialog(parent, context)
+    if choice == "cancelled":
+        return False, None
+
+    blender_info = get_blender_settings().get_blender_info()
+    return choice == "blender", blender_info
     # TODO: Re-enable Blender choice dialog once it's finished
     # FIXME: The Blender choice dialog is currently unfinished and disabled
     # from toolset.gui.dialogs.blender_choice import show_blender_choice_dialog

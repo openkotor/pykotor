@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable
 
 from loggerplus import RobustLogger
@@ -25,41 +26,54 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
     from pykotor.resource.generics.git import GIT, GITObject
-    from toolset.blender.ipc_client import BlenderIPCClient
+    from toolset.blender.ipc_client import BlenderIPCClient, ConnectionState
 
     class InstanceData(TypedDict, total=False):
         """Data structure for instance information."""
+
         type: str
         resref: str
         # Add other fields as needed
 
     class InstanceProperties(TypedDict, total=False):
         """Data structure for instance properties."""
+
         location: list[float]
         rotation: list[float]
         scale: list[float]
         # Add other properties as needed
 
 
-def requires_connection(default_return_value: Any = False, check_session: bool = False) -> Callable:
+def requires_connection(default_return_value: Any = False, check_session: bool = False, **compat_kwargs: Any) -> Callable:
     """Decorator that checks if Blender is connected before executing a method.
 
     Args:
     ----
         default_return_value: Value to return if not connected
         check_session: Also check if session exists
+        **compat_kwargs: Backwards-compatible aliases for older call sites.
 
     Returns:
     -------
         Decorated function
     """
+    if "return_value" in compat_kwargs:
+        default_return_value = compat_kwargs.pop("return_value")
+    if compat_kwargs:
+        unexpected_args = ", ".join(sorted(compat_kwargs))
+        msg = f"Unexpected requires_connection kwargs: {unexpected_args}"
+        raise TypeError(msg)
+
     def decorator(func: Callable) -> Callable:
+        @wraps(func)
         def wrapper(self, *args, **kwargs):
             if not self.is_connected or (check_session and self._session is None):
                 self._logger.error(f"Cannot {func.__name__}: not connected to Blender")
                 return default_return_value
             return func(self, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -213,6 +227,7 @@ class BlenderEditorController:
         success = self._commands.load_module(
             lyt_data=module_data["lyt"],
             git_data=module_data["git"],
+            walkmeshes=module_data["walkmeshes"],
             installation_path=str(installation_path),
             module_root=module_root,
         )
@@ -243,6 +258,32 @@ class BlenderEditorController:
             return
         runtime_id = id(instance)
         self._session.runtime_to_instance[runtime_id] = instance
+
+    @staticmethod
+    def _expected_object_name(instance: GITObject) -> str:
+        """Predict the default Blender object name for an instance.
+
+        The live bridge names initial GIT instances deterministically from their
+        serialized type and primary identifier. This gives the controller a
+        stable fallback before explicit name bindings have been learned from
+        instance-added events.
+        """
+
+        data = instance.serialize()
+        instance_type = data.get("type", instance.__class__.__name__)
+        primary_identifier = data.get("resref") or data.get("tag") or "instance"
+        return f"{instance_type}:{primary_identifier}"
+
+    def _object_name_for_instance(self, instance: GITObject) -> str | None:
+        """Resolve a Blender object name for *instance* using known bindings or a deterministic fallback."""
+        if self._session is None:
+            return None
+
+        object_name = self._session.instance_to_object.get(id(instance))
+        if object_name:
+            return object_name
+
+        return self._expected_object_name(instance)
 
     @requires_connection(True)
     def unload_module(self) -> bool:
@@ -298,7 +339,7 @@ class BlenderEditorController:
         """
         instance_id = id(instance)
         runtime_id = instance_id
-        object_name = self._session.instance_to_object.get(instance_id)
+        object_name = self._object_name_for_instance(instance)
 
         if not object_name:
             return False
@@ -353,7 +394,7 @@ class BlenderEditorController:
         Returns:
             True if updated successfully
         """
-        object_name = self._session.instance_to_object.get(id(instance))
+        object_name = self._object_name_for_instance(instance)
         if not object_name:
             return False
 
@@ -379,7 +420,7 @@ class BlenderEditorController:
         Returns:
             True if updated successfully
         """
-        object_name = self._session.instance_to_object.get(id(instance))
+        object_name = self._object_name_for_instance(instance)
         if not object_name:
             return False
 
@@ -408,7 +449,7 @@ class BlenderEditorController:
         """
         object_names = []
         for instance in instances:
-            name = self._session.instance_to_object.get(id(instance))
+            name = self._object_name_for_instance(instance)
             if name:
                 object_names.append(name)
 
@@ -576,6 +617,16 @@ class BlenderEditorController:
             True if updated successfully
         """
         return self._commands.set_camera_view(x, y, z, yaw, pitch, distance)
+
+    @requires_connection(return_value=None)
+    def import_external_asset(self, file_path: str) -> dict[str, Any] | None:
+        """Import an external asset into the active Blender session."""
+        return self._commands.import_external_asset(file_path)
+
+    @requires_connection(return_value=None)
+    def export_kotor_model(self, object_name: str, output_path: str) -> dict[str, Any] | None:
+        """Export a Blender object as a KotOR model."""
+        return self._commands.export_kotor_model(object_name, output_path)
 
     # =========================================================================
     # Layout Editing

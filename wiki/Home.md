@@ -9,6 +9,7 @@
 ### For Mod Developers
 
 - [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.)
+- [Blender Integration](Blender-Integration)
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
 - [TSLPatcher Thread Complete Archive](TSLPatcher_Thread_Complete)
 - [HoloPatcher Feature Coverage Overview](Explanations-on-HoloPatcher-Internal-Logic)
@@ -327,7 +328,7 @@ Libraries focused on reading/writing KotOR file formats:
 
 Tools for working with KotOR 3D [models](MDL-MDX-File-Format) and [textures](TPC-File-Format):
 
-- **[kotorblender](https://github.com/ndixUR/kotorblender)** - Blender add-on for importing/exporting KotOR [MDL files](MDL-MDX-File-Format) with full [animation](MDL-MDX-File-Format#animation-header) support ([Mirror: th3w1zard1/kotorblender](https://github.com/th3w1zard1/kotorblender))
+- **[kotorblender](https://github.com/OldRepublicDevs/kotorblender)** - Blender add-on for importing/exporting KotOR [MDL files](MDL-MDX-File-Format), [LYT layouts](LYT-File-Format), [PTH paths](GFF-PTH), and [walkmeshes](BWM-File-Format) with active Holocron Toolset bridge support (see [Blender Integration](Blender-Integration))
 - **[mdlops](https://github.com/ndixUR/mdlops)** - Legacy Python [MDL](MDL-MDX-File-Format) toolkit for [model](MDL-MDX-File-Format) conversions ([Mirror: th3w1zard1/mdlops](https://github.com/th3w1zard1/mdlops))
 - **[tga2tpc](https://github.com/ndixUR/tga2tpc)** - Standalone TGA to [TPC](TPC-File-Format) [texture](TPC-File-Format) converter ([Mirror: th3w1zard1/tga2tpc](https://github.com/th3w1zard1/tga2tpc))
 - **[DLZ-Tool](https://github.com/LaneDibello/DLZ-Tool)** - DLZ file decompression tool ([Mirror: th3w1zard1/DLZ-Tool](https://github.com/th3w1zard1/DLZ-Tool))
