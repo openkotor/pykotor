@@ -4,7 +4,7 @@
 
 ### Overview
 
-PyKotor is a pure-Python monorepo for modding Knights of the Old Republic I & II. It uses **uv** as the package manager with a workspace defined in the root `pyproject.toml`. The project targets Python 3.13 (per `.python-version`). See `README.md` and `CONTRIBUTING.md` for standard commands.
+PyKotor is a pure-Python monorepo for modding Knights of the Old Republic I & II. It uses **uv** as the package manager with a workspace defined in the root `pyproject.toml`. Minimum supported Python is 3.8; local development may use 3.13 (per `.python-version`). See `README.md` and `CONTRIBUTING.md` for standard commands.
 
 ### Running commands
 
@@ -49,7 +49,7 @@ Run `CXX=g++ uv sync --all-packages --all-extras` (not bare `uv sync`) to instal
 
 ### System dependencies (already in snapshot)
 
-Python 3.13, uv, g++/gfortran (for numpy build), and Qt6/OpenGL/xcb system libraries are pre-installed. The `CXX=g++` env var may be needed when `uv sync` rebuilds numpy from source.
+Python 3.8–3.13, uv, g++/gfortran (for numpy build), and Qt6/OpenGL/xcb system libraries are pre-installed. The `CXX=g++` env var may be needed when `uv sync` rebuilds numpy from source.
 
 ### Known codebase issues
 

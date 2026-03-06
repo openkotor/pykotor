@@ -19,6 +19,7 @@ def _coerce_parent(parent: object | None) -> QWidget | None:
     """
 
     return parent if isinstance(parent, QWidget) else None
+from qtpy.QtWidgets import QMessageBox, QWidget
 
 
 def show_info_message(

@@ -4,7 +4,7 @@ A PyQt/PySide application that can edit the files used by the KotOR game engine.
 
 ## Requirements
 
-- Python 3.8 through 3.12
+- Python 3.8+
 - qtpy (abstraction layer for pyqt5/6 and pyside2/6)
 - (Optional) A KotOR I or II game installed on your machine somewhere.
 

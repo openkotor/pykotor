@@ -242,7 +242,7 @@ def main():
         print("[-] Some checks failed. Review the issues above.")
         print("\nCommon solutions:")
         print("  1. Run as Administrator (Windows)")
-        print("  2. Ensure Windows 10 version 1803+ or Windows 11")
+        print("  2. For per-directory case sensitivity only: Windows 10 1803+ or Windows 11 (PyKotor otherwise supports Windows 7+)")
         print("  3. Verify NTFS filesystem")
         print("  4. Check if fsutil.exe is available")
         return 1

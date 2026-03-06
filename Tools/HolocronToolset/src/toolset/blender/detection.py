@@ -513,6 +513,51 @@ def detect_blender(
     return info
 
 
+def _get_toolset_user_cache_dir() -> Path:
+    """Return a user-specific cache directory for HolocronToolset.
+
+    Prefer this over tempfile.gettempdir() for any cached data that is later
+    used for execution (e.g. downloaded kotorblender source), since the system
+    temp dir is shared on multi-user systems and is a security risk.
+    """
+    return Path.home() / ".cache" / "HolocronToolset"
+
+
+def _get_kotorblender_cache_dir() -> Path:
+    """Return user-specific cache directory for downloaded kotorblender source.
+
+    Do not use tempfile.gettempdir() for this; the system temp dir is shared
+    on multi-user systems and allows another user to place malicious code that
+    would then be copied into Blender's add-on directory and executed.
+    """
+    return _get_toolset_user_cache_dir() / "kotorblender_cache"
+
+
+def _safe_zip_extract_all(zip_path: Path, dest_dir: Path) -> None:
+    """Extract a zip archive to dest_dir, rejecting members that would escape (zip slip).
+
+    Iterates over zip members and checks that each resolved path stays within
+    dest_dir before extracting. Use this instead of zipfile.ZipFile.extractall()
+    when the archive may come from an untrusted or external source.
+
+    Raises:
+        ValueError: If any member path would resolve outside dest_dir.
+    """
+    dest_dir = dest_dir.resolve()
+    with zipfile.ZipFile(zip_path) as zf:
+        for member in zf.namelist():
+            # Normalize: strip leading slashes and backslashes
+            name = member.replace("\\", "/").lstrip("/")
+            if not name or name == ".." or name.startswith("../"):
+                raise ValueError(f"Unsafe zip member path: {member!r}")
+            target = (dest_dir / name).resolve()
+            if not target.is_relative_to(dest_dir):
+                raise ValueError(
+                    f"Zip slip: member {member!r} would extract outside {dest_dir}",
+                )
+            zf.extract(member, dest_dir)
+
+
 def _get_kotorblender_source_path() -> Path | None:
     """Find the kotorblender source directory.
 

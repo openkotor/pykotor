@@ -15,6 +15,7 @@ Thank you for your interest in contributing to PyKotor! This guide covers develo
 ## Prerequisites
 
 - **Python 3.8+** (3.9+ recommended for development)
+- **Platforms**: Windows 7–11, macOS, Linux; common architectures (x86, x64, arm64) supported
 - **Git** for version control
 - A code editor with Python support (VS Code, PyCharm, etc.)
 

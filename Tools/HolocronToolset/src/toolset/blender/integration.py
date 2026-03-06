@@ -485,3 +485,22 @@ def check_blender_and_ask(
 
     blender_info = get_blender_settings().get_blender_info()
     return choice == "blender", blender_info
+    # TODO: Re-enable Blender choice dialog once it's finished
+    # FIXME: The Blender choice dialog is currently unfinished and disabled
+    # from toolset.gui.dialogs.blender_choice import show_blender_choice_dialog
+    #
+    # choice, _ = show_blender_choice_dialog(parent, context)
+    #
+    # if choice == "cancelled":
+    #     return False, None
+    # elif choice == "blender":
+    #     # Only fetch Blender info when user chose Blender (avoids wasted work and
+    #     # confusing (False, blender_info) when choice was e.g. "builtin").
+    #     settings = get_blender_settings()
+    #     info = settings.get_blender_info()
+    #     return True, info
+    # else:
+    #     return False, None
+
+    # Temporarily always return False to use built-in editor
+    return False, None

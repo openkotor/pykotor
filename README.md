@@ -30,13 +30,14 @@ A Python library for reading and modifying file formats used by the game [Knight
 ## Requirements
 
 - Python 3.8+
-- Windows 7+, macOS, or Linux
+- Windows 7–11, macOS, or Linux
+- All common architectures supported (x86, x64, arm64)
 
 ## Installation
 
 ### Quick Install
 
-The fastest way to get started is using `uvx` (no installation required). Install `uv` from [astral-sh/uv installation](https://docs.astral.sh/uv/getting-started/installation/), then run tools with `--refresh` to ensure you're using the latest version:
+The fastest way to get started is using `uvx` (no installation required). Install `uv` from [Installing uv](https://docs.astral.sh/uv/getting-started/installation/), then run tools with `--refresh` to ensure you're using the latest version:
 
 **Windows (PowerShell):**
 
@@ -145,10 +146,7 @@ See individual tool documentation for detailed usage.
 - **[PowerShell Setup](POWERSHELL.md)** - Windows PowerShell configuration
 
 ### Design & Architecture
-- **[Figma Integration Summary](FIGMA_INTEGRATION_SUMMARY.md)** - Complete Figma tools integration overview
-- **[FigJam Diagrams](FIGMA_DIAGRAMS.md)** - 22 architectural diagrams covering all components
 - **[Design System Rules](.cursor/rules/design_system_rules.md)** - Comprehensive UI design system documentation
-- **[Code Connect Examples](FIGMA_CODE_CONNECT_EXAMPLES.md)** - Figma-to-code mapping examples
 
 ## Contributing
 
