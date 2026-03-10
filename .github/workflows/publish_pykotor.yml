@@ -511,8 +511,8 @@ jobs:
           Add-Content -Path $Env:GITHUB_ENV -Value "PYKOTOR_VENV_NAME=$venvName"
 
           Add-Content -Path $Env:GITHUB_STEP_SUMMARY -Value "### Python/Venv"
-          Add-Content -Path $Env:GITHUB_STEP_SUMMARY -Value "- Venv: `$venvName`"
-          Add-Content -Path $Env:GITHUB_STEP_SUMMARY -Value "- Python: `$venvPython`"
+          Add-Content -Path $Env:GITHUB_STEP_SUMMARY -Value ("- Venv: `{0}`" -f $venvName)
+          Add-Content -Path $Env:GITHUB_STEP_SUMMARY -Value ("- Python: `{0}`" -f $venvPython)
 
       - name: Compile tool
         shell: pwsh
