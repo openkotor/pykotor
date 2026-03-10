@@ -13,7 +13,6 @@ from pykotor.resource.formats.twoda import TwoDA, read_2da
 from pykotor.resource.generics.utd import read_utd
 from pykotor.resource.type import ResourceType
 from pykotor.tools.model import iterate_textures
-from pykotor.tools.path import CaseAwarePath
 from pykotor.tools.resource_lookup import load_2da_with_fallback, read_location_data
 from utility.common.geometry import Vector3
 
