@@ -67,27 +67,27 @@ jobs:
           python -c "
           # Test core module imports
           import pykotor
-          print('✓ pykotor imported')
+          print('OK: pykotor imported')
 
           from pykotor.common.language import LocalizedString, Language, Gender
-          print('✓ LocalizedString imported')
+          print('OK: LocalizedString imported')
 
           from pykotor.resource.type import ResourceType
-          print('✓ ResourceType imported')
+          print('OK: ResourceType imported')
 
           from pykotor.extract.installation import Installation
-          print('✓ Installation imported')
+          print('OK: Installation imported')
 
           from pykotor.tslpatcher import patcher
-          print('✓ TSLPatcher imported')
+          print('OK: TSLPatcher imported')
 
           # Test basic functionality
           ls = LocalizedString.from_english('Test')
           assert ls.get(Language.ENGLISH, Gender.MALE) == 'Test'
-          print('✓ LocalizedString works')
+          print('OK: LocalizedString works')
 
           assert ResourceType.UTC.extension == 'utc'
-          print('✓ ResourceType works')
+          print('OK: ResourceType works')
 
           print()
           print('All pykotor core tests passed!')
@@ -97,10 +97,10 @@ jobs:
         run: |
           python -c "
           from pykotor.resource.formats import gff, tlk, twoda, erf, rim, bif
-          print('✓ All format modules imported')
+          print('OK: All format modules imported')
 
           from pykotor.resource.generics import are, git, ifo, utc, uti, utd, dlg
-          print('✓ All generic modules imported')
+          print('OK: All generic modules imported')
 
           print('All resource format tests passed!')
           "
@@ -140,9 +140,9 @@ jobs:
           try:
               from pykotor.gl import scene
               from pykotor.gl.models import mdl
-              print('✓ pykotor.gl imported')
+              print('OK: pykotor.gl imported')
           except ImportError as e:
-              print(f'○ pykotor.gl not available: {e}')
+              print(f'SKIP: pykotor.gl not available: {e}')
           " || true
 
       - name: Test pykotor
@@ -150,9 +150,9 @@ jobs:
           python -c "
           try:
               from pykotor.font import draw
-              print('✓ PyKotor.font imported')
+              print('OK: PyKotor.font imported')
           except ImportError as e:
-              print(f'○ PyKotor.font not available: {e}')
+              print(f'SKIP: PyKotor.font not available: {e}')
           " || true
 
   test-cli-tools:
