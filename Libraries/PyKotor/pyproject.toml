@@ -149,7 +149,7 @@ authors = ["Nick Hugi", "th3w1zard1 <boden.crouch@gmail.com>"]
 maintainers = ["th3w1zard1 <boden.crouch@gmail.com>"]
 readme = "README.md"
 license = "LGPL-3.0-or-later"
-packages = [{ include = "pykotor*", from = "src" }, { include = "utility*", from = "src" }]
+packages = [{ include = "pykotor*", from = "src" }, { include = "utility*", from = "src" }, { include = "loggerplus*", from = "src" }]
 keywords = [
   "2da", "bif", "bioware", "erf", "game-files", "game-modding", "gff", "holocron",
   "knights-of-the-old-republic", "kotor", "kotor1", "kotor2", "lucasarts", "mdl",
@@ -260,4 +260,4 @@ package-dir = { "" = "src" }
 [tool.setuptools.packages.find]
 namespaces = true
 where = ["src"]
-include = ["pykotor*", "utility*"]
+include = ["pykotor*", "utility*", "loggerplus*"]
