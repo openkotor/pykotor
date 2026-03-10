@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from qtpy.QtWidgets import QWidget
+
 from toolset.gui.common.localization import translate as tr
 
 if TYPE_CHECKING:

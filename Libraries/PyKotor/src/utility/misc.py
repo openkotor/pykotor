@@ -17,9 +17,9 @@ from typing import TYPE_CHECKING, Any, SupportsFloat, SupportsInt, TypeVar
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from xml.etree.ElementTree import Element
+    from typing_extensions import Buffer, Literal, Self, SupportsIndex
 
 from utility.string_util import is_non_empty_string
-from typing_extensions import Buffer, Literal, Self, SupportsIndex
 
 T = TypeVar("T")
 U = TypeVar("U")

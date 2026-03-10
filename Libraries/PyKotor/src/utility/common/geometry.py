@@ -394,6 +394,10 @@ class Vector2(vec2):
         """
         return math.atan2(self.y, self.x)
 
+    def copy(self) -> Self:
+        """Return a shallow copy of this vector."""
+        return self.__class__.from_vector2(self)
+
 
 class Vector3(vec3):
     """Represents a 3 dimensional vector.
@@ -770,6 +774,10 @@ class Vector3(vec3):
             Dictionary with x, y, z components as floats.
         """
         return {"x": float(self.x), "y": float(self.y), "z": float(self.z)}
+
+    def copy(self) -> Self:
+        """Return a shallow copy of this vector."""
+        return self.__class__.from_vector3(self)
 
 
 class Vector4(vec4):
@@ -1293,6 +1301,10 @@ class Vector4(vec4):
         """
         return {"x": float(self.x), "y": float(self.y), "z": float(self.z), "w": float(self.w)}
 
+    def copy(self) -> Self:
+        """Return a shallow copy of this vector."""
+        return self.__class__.from_vector4(self)
+
 
 class AxisAngle:
     """Represents a rotation in 3D space.
@@ -1355,6 +1367,10 @@ class AxisAngle:
             A new AxisAngle instance.
         """
         return cls(Vector3.from_null(), 0.0)
+
+    def copy(self) -> Self:
+        """Return a copy of this axis-angle rotation."""
+        return self.__class__(self.axis.copy(), self.angle)
 
 
 class SurfaceMaterial(IntEnum):
@@ -1516,6 +1532,10 @@ class Face:
         ny = (dy1 * dx3 - dx1 * dy3) / scale
         return self.v1.z + ny * (self.v2.z - self.v1.z) + nx * (self.v3.z - self.v1.z)
 
+    def copy(self) -> Face:
+        """Return a copy of this face and its vertices."""
+        return self.__class__(self.v1.copy(), self.v2.copy(), self.v3.copy(), self.material)
+
 
 class Polygon2:
     def __init__(
@@ -1667,6 +1687,10 @@ class Polygon2:
     ) -> int:
         return self.points.index(point)
 
+    def copy(self) -> Polygon2:
+        """Return a copy of this polygon and its points."""
+        return self.__class__([point.copy() for point in self.points])
+
 
 class Polygon3:
     def __init__(
@@ -1781,6 +1805,10 @@ class Polygon3:
         point: Vector3,
     ) -> int:
         return self.points.index(point)
+
+    def copy(self) -> Polygon3:
+        """Return a copy of this polygon and its points."""
+        return self.__class__([point.copy() for point in self.points])
 
 
 class Matrix4(mat4):
@@ -1958,3 +1986,7 @@ class Matrix4(mat4):
             A new Matrix4 instance.
         """
         return cls(other)
+
+    def copy(self) -> Self:
+        """Return a copy of this matrix."""
+        return self.__class__.from_matrix4(self)

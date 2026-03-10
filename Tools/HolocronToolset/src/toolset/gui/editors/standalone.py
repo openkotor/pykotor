@@ -572,7 +572,9 @@ def launch_editor(
     try:
         editor = create_editor(editor_name, installation=installation)
     except (KeyError, ImportError, AssertionError, AttributeError) as e:
-        print(f"Error creating editor: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        print(f"Error creating editor: {e.__class__.__name__}: {e}", file=sys.stderr)
         if installation is None and editor_name in EDITORS_REQUIRING_INSTALLATION:
             print(
                 "This editor requires a game installation. "
