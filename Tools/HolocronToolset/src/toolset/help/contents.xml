@@ -1,5 +1,6 @@
 <Contents version="4">
   <Folder name="Introduction">
+    <Document name="New Features Quick Guide" file="wiki/New-Features-Guide.md" />
     <Document name="Getting Started" file="introduction1-gettingStarted.md" />
     <Document name="Core Tab" file="introduction2-coreResources.md" />
     <Document name="Modules Tab" file="introduction3-moduleResources.md" />
@@ -174,6 +175,7 @@
       <Document name="JRL" file="wiki/GFF-JRL.md" />
       <Document name="PTH" file="wiki/GFF-PTH.md" />
       <Document name="UTC" file="wiki/GFF-UTC.md" />
+      <Document name="UTC Editor Field Types" file="wiki/UTC-Editor-Field-Types.md" />
       <Document name="UTD" file="wiki/GFF-UTD.md" />
       <Document name="UTE" file="wiki/GFF-UTE.md" />
       <Document name="UTI" file="wiki/GFF-UTI.md" />

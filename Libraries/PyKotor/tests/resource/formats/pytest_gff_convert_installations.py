@@ -1,18 +1,20 @@
 from __future__ import annotations
 
 import cProfile
-import sys
 import os
 import pathlib
-from typing import TYPE_CHECKING, Any
+import sys
+
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__)
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[4].joinpath("src")
 UTILITY_PATH = THIS_SCRIPT_PATH.parents[6].joinpath("Libraries", "Utility", "src")
+
 
 def add_sys_path(p: pathlib.Path):
     working_dir = str(p)
@@ -28,6 +30,8 @@ if UTILITY_PATH.joinpath("utility").is_dir():
     add_sys_path(UTILITY_PATH)
 
 from pykotor.common.misc import Game
+from pykotor.extract.file import FileResource
+from pykotor.extract.installation import Installation
 from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
 from pykotor.resource.generics.are import read_are, write_are
 from pykotor.resource.generics.dlg import read_dlg, write_dlg
@@ -44,12 +48,9 @@ from pykotor.resource.generics.uts import read_uts, write_uts
 from pykotor.resource.generics.utt import read_utt, write_utt
 from pykotor.resource.generics.utw import read_utw, write_utw
 from pykotor.resource.type import ResourceType
-from pykotor.extract.installation import Installation
-from pykotor.extract.file import FileResource, ResourceIdentifier
-from typing_extensions import Literal
 
 if TYPE_CHECKING:
-    from pykotor.extract.file import FileResource
+    from pykotor.extract.file import FileResource, ResourceIdentifier
 
 K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
 K2_PATH: str | None = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
@@ -69,6 +70,7 @@ def _setup_and_profile_installation() -> dict[Game, Installation]:
     if K2_PATH and Path(K2_PATH).joinpath("chitin.key").is_file():
         all_installations[Game.K2] = Installation(K2_PATH)
     return all_installations
+
 
 def collect_all_gffs(
     restype: ResourceType = ResourceType.NSS,
@@ -115,11 +117,13 @@ def extract_all_gffs():
 def pytest_generate_tests(metafunc: pytest.Metafunc):
     if "gff_data" in metafunc.fixturenames:
         print("Generating GFF conversion tests...")
-        
+
         if not ALL_GFFS[Game.K1] and not ALL_GFFS[Game.K2]:
             collect_all_gffs()
 
-        combined_data: list[tuple[str, tuple[Game, FileResource, Path]]] = [(f"{game}_{resource._path_ident_obj}", (game, resource, conversion_path)) for game, gff_info in ALL_GFFS.items() for resource, conversion_path in gff_info]
+        combined_data: list[tuple[str, tuple[Game, FileResource, Path]]] = [
+            (f"{game}_{resource._path_ident_obj}", (game, resource, conversion_path)) for game, gff_info in ALL_GFFS.items() for resource, conversion_path in gff_info
+        ]
 
         sorted_combined_data: list[tuple[str, tuple[Game, FileResource, Path]]] = sorted(combined_data, key=lambda x: x[0])
 
@@ -134,6 +138,7 @@ def ensure_gffs_ready():
         collect_all_gffs()
     extract_all_gffs()
 
+
 @pytest.fixture
 def gff_data(request: pytest.FixtureRequest, ensure_gffs_ready):
     return request.param
@@ -146,59 +151,59 @@ def test_gff_conversions(
     converted_game = Game.K2 if game.is_k1() else Game.K1
     generic: Any
 
-    if resource.restype() is ResourceType.ARE:
+    if resource.restype() == ResourceType.ARE:
         generic = read_are(resource.data(), offset=0, size=resource.size())
         write_are(generic, converted_filepath, converted_game)
 
-    elif resource.restype() is ResourceType.DLG:
+    elif resource.restype() == ResourceType.DLG:
         generic = read_dlg(resource.data(), offset=0, size=resource.size())
         write_dlg(generic, converted_filepath, converted_game)
 
-    elif resource.restype() is ResourceType.GIT:
+    elif resource.restype() == ResourceType.GIT:
         generic = read_git(resource.data(), offset=0, size=resource.size())
         write_git(generic, converted_filepath, converted_game)
 
-    elif resource.restype() is ResourceType.JRL:
+    elif resource.restype() == ResourceType.JRL:
         generic = read_jrl(resource.data(), offset=0, size=resource.size())
         write_jrl(generic, converted_filepath, game=converted_game)
 
-    elif resource.restype() is ResourceType.PTH:
+    elif resource.restype() == ResourceType.PTH:
         generic = read_pth(resource.data(), offset=0, size=resource.size())
         write_pth(generic, converted_filepath, game=converted_game)
 
-    elif resource.restype() is ResourceType.UTC:
+    elif resource.restype() == ResourceType.UTC:
         generic = read_utc(resource.data(), offset=0, size=resource.size())
         write_utc(generic, converted_filepath, game=converted_game)
 
-    elif resource.restype() is ResourceType.UTD:
+    elif resource.restype() == ResourceType.UTD:
         generic = read_utd(resource.data(), offset=0, size=resource.size())
         write_utd(generic, converted_filepath, game=converted_game)
 
-    elif resource.restype() is ResourceType.UTE:
+    elif resource.restype() == ResourceType.UTE:
         generic = read_ute(resource.data(), offset=0, size=resource.size())
         write_ute(generic, converted_filepath, game=converted_game)
 
-    elif resource.restype() is ResourceType.UTI:
+    elif resource.restype() == ResourceType.UTI:
         generic = read_uti(resource.data(), offset=0, size=resource.size())
         write_uti(generic, converted_filepath, game=converted_game)
 
-    elif resource.restype() is ResourceType.UTM:
+    elif resource.restype() == ResourceType.UTM:
         generic = read_utm(resource.data(), offset=0, size=resource.size())
         write_utm(generic, converted_filepath, game=converted_game)
 
-    elif resource.restype() is ResourceType.UTP:
+    elif resource.restype() == ResourceType.UTP:
         generic = read_utp(resource.data(), offset=0, size=resource.size())
         write_utp(generic, converted_filepath, game=converted_game)
 
-    elif resource.restype() is ResourceType.UTS:
+    elif resource.restype() == ResourceType.UTS:
         generic = read_uts(resource.data(), offset=0, size=resource.size())
         write_uts(generic, converted_filepath, game=converted_game)
 
-    elif resource.restype() is ResourceType.UTT:
+    elif resource.restype() == ResourceType.UTT:
         generic = read_utt(resource.data(), offset=0, size=resource.size())
         write_utt(generic, converted_filepath, game=converted_game)
 
-    elif resource.restype() is ResourceType.UTW:
+    elif resource.restype() == ResourceType.UTW:
         generic = read_utw(resource.data(), offset=0, size=resource.size())
         write_utw(generic, converted_filepath, game=converted_game)
 

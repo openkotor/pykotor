@@ -5,7 +5,6 @@ import pathlib
 import sys
 import unittest
 
-
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[4].joinpath("src")
 UTILITY_PATH = THIS_SCRIPT_PATH.parents[6].joinpath("Libraries", "Utility", "src")
@@ -24,7 +23,6 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from typing import TYPE_CHECKING, cast
 
-from utility.common.geometry import Vector3  # pyright: ignore[reportMissingImports]
 from pykotor.common.language import Gender, Language, LocalizedString
 from pykotor.common.misc import Color, ResRef
 from pykotor.resource.formats.gff import read_gff
@@ -32,8 +30,8 @@ from pykotor.resource.generics.git import GITDoor, GITModuleLink, GITTrigger, co
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
-    from pykotor.resource.formats.gff.gff_data import GFF
     from pykotor.resource.generics.git import GIT
+    from utility.common.geometry import Vector3
 
 TEST_GIT_XML = """<gff3>
   <struct id="-1">
@@ -251,6 +249,8 @@ K1_SAME_GIT_XML = """<gff3>
     </struct>
   </gff3>
 """
+
+
 class TestGIT(unittest.TestCase):
     def setUp(self):
         self.log_messages = [os.linesep]
@@ -386,7 +386,7 @@ class TestGIT(unittest.TestCase):
         self.assertAlmostEqual(-41.319, git.encounters[0].position.x, 2)
         self.assertAlmostEqual(-19.222, git.encounters[0].position.y, 2)
         self.assertAlmostEqual(1.000, git.encounters[0].position.z, 2)
-        encounter_vertex: Vector3 = cast(Vector3, git.encounters[0].geometry[0])
+        encounter_vertex: Vector3 = cast("Vector3", git.encounters[0].geometry[0])
         self.assertAlmostEqual(-5.890, encounter_vertex.x, 2)
         self.assertAlmostEqual(3.072, encounter_vertex.y, 2)
         self.assertAlmostEqual(0.025, encounter_vertex.z, 2)
@@ -422,7 +422,7 @@ class TestGIT(unittest.TestCase):
         self.assertEqual("203tel", git.triggers[0].linked_to_module)
         self.assertEqual("to_203TEL", git.triggers[0].tag)
         self.assertEqual(104245, git.triggers[0].transition_destination.stringref)
-        trigger_vertex: Vector3 = cast(Vector3, git.triggers[0].geometry[0])
+        trigger_vertex: Vector3 = cast("Vector3", git.triggers[0].geometry[0])
         self.assertAlmostEqual(-7.433, trigger_vertex.x, 2)
         self.assertAlmostEqual(1.283, trigger_vertex.y, 2)
         self.assertAlmostEqual(0.025, trigger_vertex.z, 2)
@@ -511,6 +511,44 @@ class TestGITSerializeStrictTyping(unittest.TestCase):
         self.assertEqual(result["linked_to"], "test_link")
         self.assertEqual(result["transition_destination_stringref"], 54321)
         self.assertEqual(result["linked_to_flags"], GITModuleLink.ToDoor.value)
+
+    def test_git_missing_area_properties_and_empty_lists(self):
+        """AreaProperties omit → defaults (0); lists omit → empty. K1 LoadGIT 0x0050dd80, LoadProperties 0x00507490."""
+        minimal_xml = """<gff3><struct id="-1"><byte label="UseTemplates">1</byte></struct></gff3>"""
+        gff = read_gff(minimal_xml.encode(), file_format=ResourceType.GFF_XML)
+        git = construct_git(gff)
+        self.assertEqual(git.ambient_volume, 0)
+        self.assertEqual(git.ambient_sound_id, 0)
+        self.assertEqual(git.env_audio, 0)
+        self.assertEqual(git.music_standard_id, 0)
+        self.assertEqual(git.music_battle_id, 0)
+        self.assertEqual(git.music_delay, 0)
+        self.assertEqual(len(git.cameras), 0)
+        self.assertEqual(len(git.creatures), 0)
+        self.assertEqual(len(git.doors), 0)
+        self.assertEqual(len(git.encounters), 0)
+        self.assertEqual(len(git.placeables), 0)
+        self.assertEqual(len(git.sounds), 0)
+        self.assertEqual(len(git.stores), 0)
+        self.assertEqual(len(git.triggers), 0)
+        self.assertEqual(len(git.waypoints), 0)
+
+    def test_git_empty_roundtrip(self):
+        """Empty GIT round-trip: dismantle then construct preserves empty lists and AreaProperties defaults."""
+        git = construct_git(read_gff(TEST_GIT_XML.encode(), file_format=ResourceType.GFF_XML))
+        git.cameras.clear()
+        git.creatures.clear()
+        git.doors.clear()
+        git.encounters.clear()
+        git.placeables.clear()
+        git.sounds.clear()
+        git.stores.clear()
+        git.triggers.clear()
+        git.waypoints.clear()
+        gff = dismantle_git(git)
+        git2 = construct_git(gff)
+        self.assertEqual(len(git2.cameras), 0)
+        self.assertEqual(len(git2.waypoints), 0)
 
 
 if __name__ == "__main__":

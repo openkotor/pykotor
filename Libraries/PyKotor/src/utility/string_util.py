@@ -33,6 +33,34 @@ def insert_newlines(
     return new_string
 
 
+def is_non_empty_string(value: str | None) -> bool:
+    """Check if a string is not None, not empty, and not just whitespace.
+
+    Args:
+    ----
+        value: The string value to check
+
+    Returns:
+    -------
+        True if the string is non-empty and contains non-whitespace characters
+    """
+    return value is not None and bool(value.strip())
+
+
+def normalize_string(value: str | None) -> str:
+    """Normalize a string by converting to lowercase and stripping whitespace.
+
+    Args:
+    ----
+        value: The string value to normalize
+
+    Returns:
+    -------
+        The normalized string, or empty string if input is None
+    """
+    return value.lower().strip() if value else ""
+
+
 def ireplace(
     original: str,
     target: str,

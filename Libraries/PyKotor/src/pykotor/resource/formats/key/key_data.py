@@ -6,41 +6,52 @@ chitin.key as the main KEY file which references all game BIF files.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        KEY file format specification
-        Binary Format:
-        -------------
-        Header (64 bytes):
-        Offset | Size | Type   | Description
-        -------|------|--------|-------------
-        0x00   | 4    | char[] | File Type ("KEY ")
-        0x04   | 4    | char[] | File Version ("V1  " or "V1.1")
-        0x08   | 4    | uint32 | BIF Count
-        0x0C   | 4    | uint32 | Key Count (number of resources)
-        0x10   | 4    | uint32 | Offset to File Table (BIF entries)
-        0x14   | 4    | uint32 | Offset to Key Table (resource entries)
-        0x18   | 4    | uint32 | Build Year (years since 1900)
-        0x1C   | 4    | uint32 | Build Day (days since Jan 1)
-        0x20   | 32   | byte[] | Reserved (padding, usually zeros)
-        File Entry (12 bytes each):
-        Offset | Size | Type   | Description
-        -------|------|--------|-------------
-        0x00   | 4    | uint32 | File Size (of BIF file)
-        0x04   | 4    | uint32 | Filename Offset (into filename table)
-        0x08   | 2    | uint16 | Filename Length
-        0x0A   | 2    | uint16 | Drives (drive flags, e.g. 0x0001 = HD0)
-        Filename Table (variable length):
-        Null-terminated strings for each BIF filename
-        Referenced by File Entry's Filename Offset
-        Key Entry (22 bytes each):
-        Offset | Size | Type   | Description
-        -------|------|--------|-------------
-        0x00   | 16   | char[] | ResRef (null-padded, max 16 chars)
-        0x10   | 2    | uint16 | Resource Type
-        0x12   | 4    | uint32 | Resource ID
-        Bits 31-20: BIF Index (top 12 bits)
-        Bits 19-0:  Resource Index within BIF (bottom 20 bits)
+    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) KEY/BIF structure.
+    Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+
+    - CExoKeyTable::CExoKeyTable (key table constructor): K1: 0x0040d030, TSL: TODO
+    - CExoKeyTable::AddKeyTable (loads KEY, parses header/BIF entries/key entries): K1: 0x00406e20, TSL: TODO
+    - CExoKeyTable::AddKeyTableContents (loads BIFs, registers resources): K1: 0x0040fb80, TSL: TODO
+    - CExoKeyTable::LocateBifFile (locates BIF in resource dirs): K1: 0x0040d200, TSL: TODO
+    - CExoKeyTable::GetKeyEntryFromTable: K1: 0x004071a0, TSL: TODO
+    - CExoKeyTable::DestroyTable: K1: 0x0040d2e0, TSL: TODO
+    - "BIF" string (BIF file type identifier): K1: 0x0073d8dc, TSL: TODO
+    - "CExoKeyTable::DestroyTable: Resource %s still in demand during table deletion": K1: 0x0073e0d8, TSL: TODO
+    - "CExoKeyTable::AddKey: Duplicate Resource ": K1: 0x0073e184, TSL: TODO
+    KEY file format specification
+
+Binary Format:
+-------------
+    Header (64 bytes):
+    Offset | Size | Type   | Description
+    -------|------|--------|-------------
+    0x00   | 4    | char[] | File Type ("KEY ")
+    0x04   | 4    | char[] | File Version ("V1  " or "V1.1")
+    0x08   | 4    | uint32 | BIF Count
+    0x0C   | 4    | uint32 | Key Count (number of resources)
+    0x10   | 4    | uint32 | Offset to File Table (BIF entries)
+    0x14   | 4    | uint32 | Offset to Key Table (resource entries)
+    0x18   | 4    | uint32 | Build Year (years since 1900)
+    0x1C   | 4    | uint32 | Build Day (days since Jan 1)
+    0x20   | 32   | byte[] | Reserved (padding, usually zeros)
+    File Entry (12 bytes each):
+    Offset | Size | Type   | Description
+    -------|------|--------|-------------
+    0x00   | 4    | uint32 | File Size (of BIF file)
+    0x04   | 4    | uint32 | Filename Offset (into filename table)
+    0x08   | 2    | uint16 | Filename Length
+    0x0A   | 2    | uint16 | Drives (drive flags, e.g. 0x0001 = HD0)
+    Filename Table (variable length):
+    Null-terminated strings for each BIF filename
+    Referenced by File Entry's Filename Offset
+    Key Entry (22 bytes each):
+    Offset | Size | Type   | Description
+    -------|------|--------|-------------
+    0x00   | 16   | char[] | ResRef (null-padded, max 16 chars)
+    0x10   | 2    | uint16 | Resource Type
+    0x12   | 4    | uint32 | Resource ID
+    Bits 31-20: BIF Index (top 12 bits)
+    Bits 19-0:  Resource Index within BIF (bottom 20 bits)
 """
 
 from __future__ import annotations
@@ -53,31 +64,31 @@ from pykotor.resource.type import ResourceType
 
 class BifEntry:
     """Represents a BIF file entry in the KEY file's file table.
-    
+
     Each BIF entry contains the filename and metadata for a single BIF archive. The KEY file
     maintains a list of all BIF files used by the game, and resources reference their containing
     BIF by index into this list.
-    
+
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). CExoKeyTable::AddKeyTableContents, LocateBifFile.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:70-82
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
         https://github.com/th3w1zard1/KotOR-dotNET/tree/master/AuroraParsers/KEYObject.cs:14-24
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/interface/resource/IBIFEntry.ts
-        Binary Format (12 bytes):
-        -------------------------
-        Offset | Size | Type   | Description
-        -------|------|--------|-------------
-        0x00   | 4    | uint32 | File Size (of BIF file on disk)
-        0x04   | 4    | uint32 | Filename Offset (into filename table)
-        0x08   | 2    | uint16 | Filename Length (bytes)
-        0x0A   | 2    | uint16 | Drives (bitfield: 0x0001=HD0, 0x0002=CD1, etc.)
 
-        
+    Binary Format (12 bytes):
+    -------------------------
+    Offset | Size | Type   | Description
+    -------|------|--------|-------------
+    0x00   | 4    | uint32 | File Size (of BIF file on disk)
+    0x04   | 4    | uint32 | Filename Offset (into filename table)
+    0x08   | 2    | uint16 | Filename Length (bytes)
+    0x0A   | 2    | uint16 | Drives (bitfield: 0x0001=HD0, 0x0002=CD1, etc.)
+
+
     Attributes:
     ----------
         filename: Path to the BIF file (relative to game directory)
@@ -86,13 +97,13 @@ class BifEntry:
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/KEYObject.ts:70 (filename field)
             Typically paths like "data/models.bif" or "data/textures.bif"
             Forward slashes used as path separators
-            
+
         filesize: Size of the BIF file in bytes
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/KEYBinaryStructure.cs:77 (reads 4 bytes, skipped)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/KEY.cs:61 (FileSize property)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/KEYObject.ts:61 (fileSize field)
             Used for validation and disk space calculations
-            
+
         drives: Drive location bitfield
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/KEYBinaryStructure.cs:80 (reads 2 bytes, skipped)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/KEY.cs:64 (Drives property)
@@ -105,19 +116,17 @@ class BifEntry:
     """
 
     def __init__(self):
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:38
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/KEY.cs:72
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/KEYObject.ts:70
         # Path to BIF file (relative to game directory)
         self.filename: str = ""
-        
-        
+
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/KEY.cs:61
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/KEYObject.ts:61
         # Size of BIF file on disk (bytes)
         self.filesize: int = 0
-        
+
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/KEY.cs:64
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/KEYObject.ts:64
         # Drive location flags (0x0001=HD0, 0x0002=CD1, etc.)
@@ -143,15 +152,14 @@ class BifEntry:
 
 class KeyEntry:
     """Represents a resource entry in the KEY file's key table.
-    
+
     Each key entry maps a resource name (ResRef) and type to a specific location within a BIF file.
     The resource_id field encodes both the BIF index (which BIF contains this resource) and the
     resource index within that BIF. This enables the game to quickly locate any resource by name.
-    
+
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). CExoKeyTable::GetKeyEntryFromTable.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:84-112
@@ -168,7 +176,7 @@ class KeyEntry:
         Bits 31-20: BIF Index (top 12 bits, max 4096 BIFs)
         Bits 19-0:  Resource Index within BIF (bottom 20 bits, max 1048576 resources per BIF)
 
-    
+
     Attributes:
     ----------
         resref: Resource filename (ResRef)
@@ -178,7 +186,7 @@ class KeyEntry:
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/KEYObject.ts:76 (resRef field)
             ASCII string, typically lowercase, max 16 chars
             Null-padded in binary format, stored as ResRef object for compatibility
-            
+
         restype: Resource type identifier
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/KEYBinaryStructure.cs:87 (ResourceType property)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/KEY.cs:207 (ResourceType field)
@@ -186,7 +194,7 @@ class KeyEntry:
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/KEYObject.ts:77 (resType field)
             Stored as uint16 in binary, converted to ResourceType enum for type safety
             Maps to resource file extensions (e.g., 0x3F = TPC for textures)
-            
+
         resource_id: Composite ID encoding BIF index and resource index
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/KEYBinaryStructure.cs:88 (ResourceID property)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/KEY.cs:208 (ResID field)
@@ -208,13 +216,13 @@ class KeyEntry:
         # https://github.com/th3w1zard1/KotOR-dotNET/tree/master/AuroraParsers/KEYObject.cs:67
         # Resource filename (max 16 chars, null-padded in binary)
         self.resref: ResRef = ResRef.from_blank() if resref is None else ResRef(resref)
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:93
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/KEY.cs:81
         # https://github.com/th3w1zard1/KotOR-dotNET/tree/master/AuroraParsers/KEYObject.cs:68
         # Resource type (uint16 in binary, converted to ResourceType enum)
         self.restype: ResourceType = ResourceType.INVALID if restype is None else restype
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:94
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/KEY.cs:83
         # https://github.com/th3w1zard1/KotOR-dotNET/tree/master/AuroraParsers/KEYObject.cs:69
@@ -224,11 +232,10 @@ class KeyEntry:
     @property
     def bif_index(self) -> int:
         """Get the index into the BIF file table (top 12 bits of resource_id).
-        
+
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). resource_id layout (bif_index = top 12 bits).
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:101-102
@@ -245,11 +252,10 @@ class KeyEntry:
     @property
     def res_index(self) -> int:
         """Get the index into the resource table (bottom 20 bits of resource_id).
-        
+
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). resource_id layout (res_index = bottom 20 bits).
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:105-110
@@ -283,15 +289,14 @@ class KeyEntry:
 
 class KEY:
     """Represents a KEY (Key Table) file in the Aurora engine.
-    
+
     The KEY file is the master index for all game resources. It contains a list of BIF files
     and a complete mapping of all resource names (ResRefs) to their locations within those BIFs.
     The game typically loads chitin.key at startup, which provides access to all BIF archives.
-    
+
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). CExoKeyTable, AddKeyTable, KEY header layout.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:50-68
@@ -312,40 +317,40 @@ class KEY:
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/KEYObject.ts:46
         # File type signature ("KEY ")
         self.file_type: str = self.FILE_TYPE
-        
+
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/KEY.cs:47
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/KEYObject.ts:47
         # File version ("V1  ")
         self.file_version: str = self.FILE_VERSION
-        
+
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/KEY.cs:106-107
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/KEYObject.ts:52
         # Build year (years since 1900)
         self.build_year: int = 0
-        
+
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/KEY.cs:109
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/KEYObject.ts:53
         # Build day (days since Jan 1)
         self.build_day: int = 0
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:18
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/KEY.cs:116
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/KEYObject.ts:56
         # List of BIF file entries
         self.bif_entries: list[BifEntry] = []
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:20
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/KEY.cs:119
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/KEYObject.ts:73
         # List of resource entries mapping ResRefs to BIF locations
         self.key_entries: list[KeyEntry] = []
-        
+
         # PyKotor optimization: fast ResRef+Type -> KeyEntry lookup (O(1) access)
         self._resource_lookup: dict[tuple[str, ResourceType], KeyEntry] = {}
-        
+
         # PyKotor optimization: fast BIF filename -> BifEntry lookup
         self._bif_lookup: dict[str, BifEntry] = {}
-        
+
         # Modification tracking flag
         self._modified: bool = False
 

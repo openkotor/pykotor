@@ -12,6 +12,8 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
 
+from utility.misc import ensure_directory_exists
+
 # Handle optional certifi dependency
 try:
     import certifi  # pyright: ignore[reportMissingImports]
@@ -348,7 +350,7 @@ def _download_file(
     progress_hooks: list[Callable[[dict[str, Any]], Any]] | None = None,
 ):
     if not _CRYPTO_AVAILABLE:
-        raise ImportError("pycryptodome is required for MEGA file downloads. " "Install it with: pip install pycryptodome")
+        raise ImportError("pycryptodome is required for MEGA file downloads. Install it with: pip install pycryptodome")
     dest_path = Path(dest or Path.cwd()).absolute()
     if file is None:
         if is_public:
@@ -466,7 +468,7 @@ def _download_file(
         dest_path = dest_path.parent
     dest_filepath = dest_path / file_name
     if not dest_filepath.parent.is_dir():
-        dest_filepath.parent.mkdir(parents=True, exist_ok=True)
+        ensure_directory_exists(dest_filepath.parent)
     shutil.move(temp_output_file.name, dest_filepath)
 
 

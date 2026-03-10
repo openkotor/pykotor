@@ -1,3 +1,5 @@
+"""UTD (door) editor: model, linked module, and dialog integration."""
+
 from __future__ import annotations
 
 import os
@@ -24,7 +26,7 @@ from toolset.gui.widgets.settings.installations import GlobalSettings
 from toolset.utils.window import open_resource_editor
 
 if TYPE_CHECKING:
-    from qtpy.QtWidgets import QComboBox, QLineEdit, QMessageBox, QPlainTextEdit, QWidget
+    from qtpy.QtWidgets import QComboBox, QLineEdit, QPlainTextEdit, QWidget
 
     from pykotor.extract.file import ResourceResult
     from pykotor.resource.formats.twoda import TwoDA
@@ -68,12 +70,13 @@ class UTDEditor(Editor):
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
-        
+
         self._setup_menus()
         self._add_help_action()
         self._setup_signals()
@@ -87,6 +90,12 @@ class UTDEditor(Editor):
         self.update3dPreview()
         self.new()
         self.resize(654, 495)
+
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        if installation is None:
+            return
+        self._setup_installation(installation)
+        self.update3dPreview()
 
     def _setup_signals(self):
         """Connect GUI buttons and signals to methods.
@@ -103,15 +112,73 @@ class UTDEditor(Editor):
             - Connect appearanceSelect currentIndexChanged signal to update3dPreview method
             - Connect actionShowPreview triggered signal to toggle_preview method.
         """
-        self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
-        self.ui.resrefGenerateButton.clicked.connect(self.generate_resref)
-        self.ui.conversationModifyButton.clicked.connect(self.edit_conversation)
+        signal_connections = [
+            (self.ui.tagGenerateButton.clicked, self.generate_tag),
+            (self.ui.resrefGenerateButton.clicked, self.generate_resref),
+            (self.ui.conversationModifyButton.clicked, self.edit_conversation),
+            (self.ui.appearanceSelect.currentIndexChanged, self.update3dPreview),
+            (self.ui.actionShowPreview.triggered, self.toggle_preview),
+            (self.ui.modelInfoGroupBox.toggled, self._on_model_info_toggled),
+            (self.ui.previewRenderer.resourcesLoaded, self._on_textures_loaded),
+        ]
+        for signal, handler in signal_connections:
+            signal.connect(handler)
 
-        self.ui.appearanceSelect.currentIndexChanged.connect(self.update3dPreview)
-        self.ui.actionShowPreview.triggered.connect(self.toggle_preview)
-        self.ui.modelInfoGroupBox.toggled.connect(self._on_model_info_toggled)
-        # Connect to renderer's signal to update texture info when textures finish loading
-        self.ui.previewRenderer.resourcesLoaded.connect(self._on_textures_loaded)
+    def _script_fields(self) -> list[QPlainTextEdit | QLineEdit | QComboBox]:
+        """Return all script-related combo/text fields used by this editor."""
+        return [
+            self.ui.onClickEdit,
+            self.ui.onClosedEdit,
+            self.ui.onDamagedEdit,
+            self.ui.onDeathEdit,
+            self.ui.onHeartbeatSelect,
+            self.ui.onMeleeAttackEdit,
+            self.ui.onOpenEdit,
+            self.ui.onOpenFailedEdit,
+            self.ui.onSpellEdit,
+            self.ui.onUnlockEdit,
+            self.ui.onUserDefinedSelect,
+        ]
+
+    def _script_value_pairs(self, utd: UTD) -> list[tuple[QPlainTextEdit | QLineEdit | QComboBox, ResRef]]:
+        """Map script widgets to UTD script values for load/populate operations."""
+        return [
+            (self.ui.onClickEdit, utd.on_click),
+            (self.ui.onClosedEdit, utd.on_closed),
+            (self.ui.onDamagedEdit, utd.on_damaged),
+            (self.ui.onDeathEdit, utd.on_death),
+            (self.ui.onOpenFailedEdit, utd.on_open_failed),
+            (self.ui.onHeartbeatSelect, utd.on_heartbeat),
+            (self.ui.onMeleeAttackEdit, utd.on_melee),
+            (self.ui.onSpellEdit, utd.on_power),
+            (self.ui.onOpenEdit, utd.on_open),
+            (self.ui.onUnlockEdit, utd.on_unlock),
+            (self.ui.onUserDefinedSelect, utd.on_user_defined),
+        ]
+
+    def _setup_reference_field(
+        self,
+        widget: QPlainTextEdit | QLineEdit | QComboBox,
+        resource_types: list[ResourceType],
+        reference_type: str,
+        tooltip_text: str,
+        *,
+        set_max_length: bool = False,
+    ) -> None:
+        """Configure context menu reference search behavior for a widget."""
+        assert self._installation is not None
+        self._installation.setup_file_context_menu(
+            widget,
+            resource_types,
+            enable_reference_search=True,
+            reference_search_type=reference_type,
+        )
+        widget.setToolTip(tr(tooltip_text))
+
+        if set_max_length and hasattr(widget, "lineEdit"):
+            line_edit = widget.lineEdit()
+            if line_edit is not None:
+                line_edit.setMaxLength(16)
 
     def _setup_installation(self, installation: HTInstallation):
         """Sets up the installation for editing.
@@ -153,40 +220,34 @@ class UTDEditor(Editor):
         self.handle_widget_with_tsl(self.ui.difficultyModLabel, installation)
 
         # Setup context menus for script fields with reference search enabled
-        script_fields: list[QPlainTextEdit | QLineEdit | QComboBox] = [
-            self.ui.onClickEdit,
-            self.ui.onClosedEdit,
-            self.ui.onDamagedEdit,
-            self.ui.onDeathEdit,
-            self.ui.onHeartbeatSelect,
-            self.ui.onMeleeAttackEdit,
-            self.ui.onOpenEdit,
-            self.ui.onOpenFailedEdit,
-            self.ui.onSpellEdit,
-            self.ui.onUnlockEdit,
-            self.ui.onUserDefinedSelect,
-        ]
-        for field in script_fields:
-            installation.setup_file_context_menu(field, [ResourceType.NSS, ResourceType.NCS], enable_reference_search=True, reference_search_type="script")
-            field.setToolTip(tr("Right-click to find references to this script in the installation."))
-            # Set maxLength for FilterComboBox script fields (ResRefs are max 16 characters)
-            line_edit = field.lineEdit() if hasattr(field, "lineEdit") else None
-            if line_edit is not None:
-                line_edit.setMaxLength(16)
-        installation.setup_file_context_menu(self.ui.conversationEdit, [ResourceType.DLG], enable_reference_search=True, reference_search_type="conversation")
-        self.ui.conversationEdit.setToolTip(tr("Right-click to find references to this conversation in the installation."))
-        # Set maxLength for conversation FilterComboBox (ResRefs are max 16 characters)
-        line_edit = self.ui.conversationEdit.lineEdit()
-        if line_edit is not None:
-            line_edit.setMaxLength(16)
-        
-        # Setup reference search for Tag field
-        installation.setup_file_context_menu(self.ui.tagEdit, [], enable_reference_search=True, reference_search_type="tag")
-        self.ui.tagEdit.setToolTip(tr("Right-click to find references to this tag in the installation."))
-        
-        # Setup reference search for TemplateResRef field
-        installation.setup_file_context_menu(self.ui.resrefEdit, [], enable_reference_search=True, reference_search_type="template_resref")
-        self.ui.resrefEdit.setToolTip(tr("Right-click to find references to this template resref in the installation."))
+        for field in self._script_fields():
+            self._setup_reference_field(
+                field,
+                [ResourceType.NSS, ResourceType.NCS],
+                "script",
+                "Right-click to find references to this script in the installation.",
+                set_max_length=True,
+            )
+
+        self._setup_reference_field(
+            self.ui.conversationEdit,
+            [ResourceType.DLG],
+            "conversation",
+            "Right-click to find references to this conversation in the installation.",
+            set_max_length=True,
+        )
+        self._setup_reference_field(
+            self.ui.tagEdit,
+            [],
+            "tag",
+            "Right-click to find references to this tag in the installation.",
+        )
+        self._setup_reference_field(
+            self.ui.resrefEdit,
+            [],
+            "template_resref",
+            "Right-click to find references to this template resref in the installation.",
+        )
 
     def handle_widget_with_tsl(
         self,
@@ -206,6 +267,7 @@ class UTDEditor(Editor):
         restype: ResourceType,
         data: bytes | bytearray,
     ) -> None:
+        """Load UTD from bytes. Defaults when field missing: Tag/LocName/TemplateResRef "" or empty; lock/key/HP/scripts 0 or blank ResRef; Conversation ""; Static 0. K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620."""
         super().load(filepath, resref, restype, data)
 
         utd = read_utd(data)
@@ -221,11 +283,7 @@ class UTDEditor(Editor):
         ----
             utd (UTD): UTD object to load data from
 
-        Processing Logic:
-        ----------------
-            - Sets UI element values from UTD object attributes
-            - Divides loading into sections for Basic, Advanced, Lock, Scripts, and Comments
-            - Handles different UI element types like checkboxes, dropdowns, text fields, etc.
+        Defaults from construct_utd; LoadDoor @ (K1: 0x0058a1f0, TSL: 0x00765620). Sets Basic, Advanced, Lock, Scripts, Comments.
         """
         assert self._installation is not None
         self._utd = utd
@@ -261,30 +319,12 @@ class UTDEditor(Editor):
         self.ui.difficultyModSpin.setValue(utd.unlock_diff_mod)
 
         # Scripts
-        self.ui.onClickEdit.set_combo_box_text(str(utd.on_click))
-        self.ui.onClosedEdit.set_combo_box_text(str(utd.on_closed))
-        self.ui.onDamagedEdit.set_combo_box_text(str(utd.on_damaged))
-        self.ui.onDeathEdit.set_combo_box_text(str(utd.on_death))
-        self.ui.onOpenFailedEdit.set_combo_box_text(str(utd.on_open_failed))
-        self.ui.onHeartbeatSelect.set_combo_box_text(str(utd.on_heartbeat))
-        self.ui.onMeleeAttackEdit.set_combo_box_text(str(utd.on_melee))
-        self.ui.onSpellEdit.set_combo_box_text(str(utd.on_power))
-        self.ui.onOpenEdit.set_combo_box_text(str(utd.on_open))
-        self.ui.onUnlockEdit.set_combo_box_text(str(utd.on_unlock))
-        self.ui.onUserDefinedSelect.set_combo_box_text(str(utd.on_user_defined))
+        for field, value in self._script_value_pairs(utd):
+            field.set_combo_box_text(str(value))
 
         self.relevant_script_resnames: list[str] = sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.NCS, self._filepath)}))
-        self.ui.onClickEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onClosedEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onDamagedEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onDeathEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onHeartbeatSelect.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onMeleeAttackEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onOpenEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onOpenFailedEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onSpellEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onUnlockEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onUserDefinedSelect.populate_combo_box(self.relevant_script_resnames)
+        for field in self._script_fields():
+            field.populate_combo_box(self.relevant_script_resnames)
         self.ui.conversationEdit.populate_combo_box(
             sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.DLG, self._filepath)}))
         )  # noqa: E501
@@ -293,18 +333,7 @@ class UTDEditor(Editor):
         self.ui.commentsEdit.setPlainText(utd.comment)
 
     def build(self) -> tuple[bytes | bytearray, bytes]:
-        """Builds a UTD object from UI data.
-
-        Returns:
-        -------
-            tuple[bytes, bytes]: A tuple containing the GFF data (bytes) and errors (bytes)
-
-        Processing Logic:
-        ----------------
-            - Sets UTD properties from UI elements like name, tag, resrefs etc
-            - Writes the constructed UTD to a GFF bytearray
-            - Returns the GFF data and any errors
-        """
+        """Build UTD bytes from editor state. Write values match engine (Tag, LocName, TemplateResRef, lock/key, HP, scripts, GenericType, Static, etc.). K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620. Returns GFF bytes and log."""
         utd: UTD = deepcopy(self._utd)
 
         # Basic
@@ -338,17 +367,20 @@ class UTDEditor(Editor):
         utd.key_name = self.ui.keyEdit.text()
 
         # Scripts
-        utd.on_click = ResRef(self.ui.onClickEdit.currentText())
-        utd.on_closed = ResRef(self.ui.onClosedEdit.currentText())
-        utd.on_damaged = ResRef(self.ui.onDamagedEdit.currentText())
-        utd.on_death = ResRef(self.ui.onDeathEdit.currentText())
-        utd.on_open_failed = ResRef(self.ui.onOpenFailedEdit.currentText())
-        utd.on_heartbeat = ResRef(self.ui.onHeartbeatSelect.currentText())
-        utd.on_melee = ResRef(self.ui.onMeleeAttackEdit.currentText())
-        utd.on_power = ResRef(self.ui.onSpellEdit.currentText())
-        utd.on_open = ResRef(self.ui.onOpenEdit.currentText())
-        utd.on_unlock = ResRef(self.ui.onUnlockEdit.currentText())
-        utd.on_user_defined = ResRef(self.ui.onUserDefinedSelect.currentText())
+        for attr_name, field in (
+            ("on_click", self.ui.onClickEdit),
+            ("on_closed", self.ui.onClosedEdit),
+            ("on_damaged", self.ui.onDamagedEdit),
+            ("on_death", self.ui.onDeathEdit),
+            ("on_open_failed", self.ui.onOpenFailedEdit),
+            ("on_heartbeat", self.ui.onHeartbeatSelect),
+            ("on_melee", self.ui.onMeleeAttackEdit),
+            ("on_power", self.ui.onSpellEdit),
+            ("on_open", self.ui.onOpenEdit),
+            ("on_unlock", self.ui.onUnlockEdit),
+            ("on_user_defined", self.ui.onUserDefinedSelect),
+        ):
+            setattr(utd, attr_name, ResRef(field.currentText()))
 
         # Comments
         utd.comment = self.ui.commentsEdit.toPlainText()
@@ -588,38 +620,38 @@ class UTDEditor(Editor):
 
     def _on_textures_loaded(self):
         """Called when renderer signals that textures have finished loading.
-        
+
         Reads the EXACT lookup info from scene.texture_lookup_info - this is the
         SAME info that the renderer used when loading textures. No additional lookups.
         """
         scene = self.ui.previewRenderer._scene
         if scene is None:
             return
-        
+
         # Get the EXACT lookup info stored by the renderer when it loaded textures
         texture_lookup_info = getattr(scene, "texture_lookup_info", {})
-        
+
         if not texture_lookup_info:
             RobustLogger().debug("_on_textures_loaded: No texture_lookup_info available yet")
             return
-        
+
         RobustLogger().debug(f"_on_textures_loaded: Found {len(texture_lookup_info)} textures with lookup info")
-        
+
         # Get current model info text and update the texture section
         current_text = self.ui.modelInfoLabel.text()
-        
+
         # Find and replace the "Textures: Loading..." line
         lines = current_text.split("\n")
         new_lines: list[str] = []
         skip_old_texture_section = False
-        
+
         for line in lines:
             if "Textures:" in line:
                 skip_old_texture_section = True
                 # Add new texture section
                 new_lines.append("")
                 new_lines.append(f"Textures ({len(texture_lookup_info)} loaded by renderer):")
-                
+
                 for tex_name, lookup_info in sorted(texture_lookup_info.items()):
                     if lookup_info.get("found"):
                         filepath = lookup_info.get("filepath")
@@ -632,7 +664,7 @@ class UTDEditor(Editor):
                                 new_lines.append(f"  {tex_name}: {rel_path}")
                             except (ValueError, AttributeError):
                                 new_lines.append(f"  {tex_name}: {filepath}")
-                            
+
                             source = self._get_source_location_type(filepath)
                             if source:
                                 new_lines.append(f"    └─ Source: {source}")
@@ -652,7 +684,7 @@ class UTDEditor(Editor):
                 new_lines.append(line)
             elif not skip_old_texture_section:
                 new_lines.append(line)
-        
+
         self.ui.modelInfoLabel.setText("\n".join(new_lines))
 
     def _on_model_info_toggled(self, checked: bool):
@@ -698,3 +730,10 @@ class UTDEditor(Editor):
         except (ValueError, AttributeError):
             pass
         return None
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("utd"))

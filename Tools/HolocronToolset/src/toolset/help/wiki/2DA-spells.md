@@ -15,8 +15,8 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `school` | Integer | Spell school identifier |
 | `range` | Integer | Spell range type |
 | `vs` | Integer | Versus type (self, touch, etc.) |
-| `metamagic` | Integer | Metamagic [flags](GFF-File-Format#gff-data-types) |
-| `targettype` | Integer | Target type [flags](GFF-File-Format#gff-data-types) |
+| `metamagic` | Integer | Metamagic flags |
+| `targettype` | Integer | Target type flags |
 | `impactscript` | ResRef (optional) | Impact script [ResRef](GFF-File-Format#gff-data-types) |
 | `innate` | Integer | Innate Force power level (0 = not available) |
 | `conjtime` | Float | Casting/conjuration time |
@@ -30,7 +30,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `conjrange` | Integer | Conjuration range |
 | `conjca` | Integer | Conjuration casting [animation](MDL-MDX-File-Format#animation-header) |
 | `conjca2` through `conjca50` | Integer (optional) | Additional casting animations (numbered 2-50) |
-| `hostilesetting` | Integer | Hostile setting [flags](GFF-File-Format#gff-data-types) |
+| `hostilesetting` | Integer | Hostile setting flags |
 | `featid` | Integer (optional) | Associated feat ID |
 | `counter1` | Integer (optional) | Counter spell ID 1 |
 | `counter2` | Integer (optional) | Counter spell ID 2 |
@@ -47,7 +47,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `icon2` through `icon50` | ResRef (optional) | Additional icons (numbered 2-50) |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | Spell description string reference |
 | `altmessage` | StrRef (optional) | Alternative message string reference |
-| `usewhencast` | Integer | Use when cast [flags](GFF-File-Format#gff-data-types) |
+| `usewhencast` | Integer | Use when cast flags |
 | `blood` | Boolean | Whether spell causes blood effects |
 | `concentration` | Integer | Concentration check DC |
 | `immunitytype` | Integer | Immunity type identifier |
@@ -67,7 +67,7 @@ The following columns are accessed by the reone engine:
 - `casttime`: Cast time
 - `catchtime`: Catch time
 - `conjanim`: Conjuration [animation](MDL-MDX-File-Format#animation-header) type (e.g., "throw", "up")
-- `hostilesetting`: Hostile setting [flags](GFF-File-Format#gff-data-types)
+- `hostilesetting`: Hostile setting flags
 - `projectile`: Projectile [ResRef](GFF-File-Format#gff-data-types)
 - `projectileHook`: Projectile hook point
 - `projectileOrigin`: Projectile origin point

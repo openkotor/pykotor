@@ -4,6 +4,7 @@ Unit Tests for Blender integration module.
 Each test focuses on specific functionality and validates serialization,
 IPC communication, detection, and integration components.
 """
+
 from __future__ import annotations
 
 import json
@@ -309,6 +310,18 @@ class TestBlenderDetection:
             assert info.has_kotorblender is True
             assert info.error == ""
 
+    def test_get_kotorblender_source_path_from_env(self, monkeypatch, tmp_path):
+        """Test kotorblender source path can be provided via environment."""
+        from toolset.blender.detection import _get_kotorblender_source_path
+
+        source_dir = tmp_path / "io_scene_kotor"
+        source_dir.mkdir()
+        (source_dir / "__init__.py").write_text("bl_info = {'version': (4, 0, 4)}", encoding="utf-8")
+
+        monkeypatch.setenv("KOTORBLENDER_SOURCE_PATH", str(source_dir))
+
+        assert _get_kotorblender_source_path() == source_dir
+
     def test_is_blender_available_true(self):
         """Test is_blender_available returns True when available."""
         from toolset.blender.detection import BlenderInfo, is_blender_available
@@ -410,7 +423,7 @@ class TestIPCSerialization:
                 self.x = x
                 self.y = y
                 self.z = z
-            
+
             def serialize(self) -> dict[str, float]:
                 """Serialize to JSON-compatible dict."""
                 return {"x": float(self.x), "y": float(self.y), "z": float(self.z)}
@@ -457,7 +470,7 @@ class TestIPCSerialization:
                 self.y = y
                 self.z = z
                 self.w = w
-            
+
             def serialize(self) -> dict[str, float]:
                 """Serialize to JSON-compatible dict."""
                 return {"x": float(self.x), "y": float(self.y), "z": float(self.z), "w": float(self.w)}
@@ -552,6 +565,7 @@ class TestIPCSerialization:
         door.linked_to_module = ResRef("mymod")
         door.linked_to = "door_exit"
         from pykotor.resource.generics.git import GITModuleLink
+
         door.linked_to_flags = GITModuleLink.ToDoor
         door.transition_destination = LocalizedString.from_english("Transition")
 
@@ -985,6 +999,15 @@ class TestIPCClient:
         assert client._host == "127.0.0.1"
         assert client._port == 7531
         assert client._auto_reconnect is True
+
+    def test_client_endpoint_can_be_reconfigured_while_disconnected(self):
+        """Test BlenderIPCClient endpoint can be reconfigured before connecting."""
+        from toolset.blender.ipc_client import BlenderIPCClient
+
+        client = BlenderIPCClient(port=7531)
+        client.set_endpoint(port=8123)
+
+        assert client._port == 8123
 
     def test_client_connect_disconnect_cycle(self):
         """Test multiple connect/disconnect cycles."""
@@ -1420,6 +1443,7 @@ class TestBlenderEditorController:
 
         # Need to set up a session for callbacks to work
         from toolset.blender.commands import BlenderSession, BlenderEditorMode
+
         controller._session = BlenderSession(
             mode=BlenderEditorMode.MODULE_DESIGNER,
             module_root="test",
@@ -1429,11 +1453,9 @@ class TestBlenderEditorController:
 
         # Simulate events
         from unittest.mock import Mock
+
         controller._on_selection_changed(IPCEvent(method="selection_changed", params={"selected": ["obj1"]}))
-        controller._on_transform_changed(IPCEvent(
-            method="transform_changed",
-            params={"name": "obj1", "position": {"x": 1}, "rotation": {}}
-        ))
+        controller._on_transform_changed(IPCEvent(method="transform_changed", params={"name": "obj1", "position": {"x": 1}, "rotation": {}}))
         controller._on_instance_added(IPCEvent(method="instance_added", params={"instance": {"type": "GITCreature", "resref": "test_creature"}}))
 
         assert len(selection_calls) == 1
@@ -1537,13 +1559,13 @@ class TestBlenderEditorMixin:
         mock_controller.unload_module = Mock()
         mock_controller.disconnect = Mock()
         obj._blender_controller = mock_controller
-        
+
         mock_process = Mock()
         mock_process.terminate = Mock()
         mock_process.wait = Mock()
         mock_process.kill = Mock()
         obj._blender_process = mock_process
-        
+
         mock_timer = Mock()
         mock_timer.stop = Mock()
         obj._blender_connection_timer = mock_timer
@@ -1554,6 +1576,35 @@ class TestBlenderEditorMixin:
         mock_controller.unload_module.assert_called_once()
         mock_controller.disconnect.assert_called_once()
         mock_timer.stop.assert_called_once()
+
+    def test_check_blender_and_ask_uses_dialog_choice(self):
+        """Test Blender choice dialog result is propagated."""
+        from toolset.blender.detection import BlenderInfo
+        from toolset.blender.integration import check_blender_and_ask
+
+        blender_info = BlenderInfo(
+            executable=Path("/usr/bin/blender"),
+            version=(4, 2, 0),
+            is_valid=True,
+        )
+
+        with patch("toolset.blender.integration.get_blender_settings") as mock_settings:
+            mock_settings.return_value.get_blender_info.return_value = blender_info
+            with patch("toolset.gui.dialogs.blender_choice.show_blender_choice_dialog", return_value=("blender", False)):
+                use_blender, returned_info = check_blender_and_ask(Mock(), "Module Designer")
+
+        assert use_blender is True
+        assert returned_info == blender_info
+
+    def test_check_blender_and_ask_cancelled(self):
+        """Test cancelled Blender choice returns no info."""
+        from toolset.blender.integration import check_blender_and_ask
+
+        with patch("toolset.gui.dialogs.blender_choice.show_blender_choice_dialog", return_value=("cancelled", False)):
+            use_blender, returned_info = check_blender_and_ask(Mock(), "Module Designer")
+
+        assert use_blender is False
+        assert returned_info is None
 
 
 # =============================================================================
@@ -1852,7 +1903,7 @@ class TestSerializationRoundtrips:
                 self.x = x
                 self.y = y
                 self.z = z
-            
+
             def serialize(self) -> dict[str, float]:
                 """Serialize to JSON-compatible dict."""
                 return {"x": float(self.x), "y": float(self.y), "z": float(self.z)}
@@ -1921,7 +1972,7 @@ class TestErrorHandling:
             x: float | None = None
             y: float | None = None
             z: float | None = None
-            
+
             def serialize(self) -> dict[str, float]:
                 """Serialize to JSON-compatible dict - will fail on None values."""
                 # This will raise TypeError when float() is called on None
@@ -2014,14 +2065,17 @@ class TestComprehensiveIntegration:
         controller = BlenderEditorController()
 
         # Try to load module
-        assert controller.load_module(
-            mode=BlenderEditorMode.MODULE_DESIGNER,
-            lyt=LYT(),
-            git=GIT(),
-            walkmeshes=[],
-            module_root="test",
-            installation_path="/path/to/kotor",
-        ) is False
+        assert (
+            controller.load_module(
+                mode=BlenderEditorMode.MODULE_DESIGNER,
+                lyt=LYT(),
+                git=GIT(),
+                walkmeshes=[],
+                module_root="test",
+                installation_path="/path/to/kotor",
+            )
+            is False
+        )
 
         # Try to add instance
         from pykotor.resource.generics.git import GITCreature

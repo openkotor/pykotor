@@ -1,3 +1,5 @@
+"""Extract options dialog: TPC decompile and other extraction settings."""
+
 from __future__ import annotations
 
 from qtpy.QtWidgets import QDialog
@@ -13,9 +15,10 @@ class ExtractOptionsDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_ExtractOptionsDialog()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 

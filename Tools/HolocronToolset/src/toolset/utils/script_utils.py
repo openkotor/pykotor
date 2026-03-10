@@ -1,11 +1,13 @@
+"""Script (NCS) compile/decompile helpers: registry spoofing, paths, and permission messages."""
+
 from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger
 from qtpy.QtWidgets import QFileDialog, QMessageBox
 
+from loggerplus import RobustLogger
 from toolset.gui.widgets.settings.installations import GlobalSettings, NoConfigurationSetError
 
 if TYPE_CHECKING:

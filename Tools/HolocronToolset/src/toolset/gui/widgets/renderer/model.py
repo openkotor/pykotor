@@ -1,3 +1,5 @@
+"""Single-model preview widget (OpenGL) for GIT instances in the module designer."""
+
 from __future__ import annotations
 
 import math
@@ -6,26 +8,31 @@ from typing import TYPE_CHECKING, cast
 
 import qtpy
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import (
     QPoint,
     QTimer,
-    Qt,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
 from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QOpenGLWidget  # pyright: ignore[reportPrivateImportUsage]
 
+from loggerplus import RobustLogger
 from pykotor.gl import vec3
 from pykotor.gl.models.read_mdl import gl_load_mdl
 from pykotor.gl.scene import RenderObject, Scene
+from pykotor.resource.formats.twoda import read_2da
 from pykotor.resource.generics.git import GIT
+from pykotor.resource.generics.uti import UTI
+from pykotor.resource.type import ResourceType
 from toolset.data.misc import ControlItem
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
-from utility.common.geometry import Vector2
+from utility.common.geometry import Vector2, Vector3
 from utility.error_handling import assert_with_variable_trace
 
 if TYPE_CHECKING:
+    from qtpy.QtCore import (
+        Qt,  # pyright: ignore[reportPrivateImportUsage]
+    )
     from qtpy.QtGui import QCloseEvent, QFocusEvent, QKeyEvent, QKeySequence, QMouseEvent, QResizeEvent, QWheelEvent
     from qtpy.QtWidgets import QWidget
 
@@ -73,14 +80,15 @@ class ModelRenderer(QOpenGLWidget):
     @property
     def installation(self) -> Installation | None:
         return self._installation
-    
+
     @installation.setter
     def installation(self, value: Installation | None):
         self._installation = value
-        # If scene already exists, update its installation too
-        # This is critical because initializeGL() may have created the scene before installation was set
+        # If scene already exists, update its installation and load 2DA tables.
+        # set_installation() loads appearance.2da etc. that the renderer needs.
         if self._scene is not None and value is not None and self._scene.installation is None:
             self._scene.installation = value
+            self._scene.set_installation(value)
             RobustLogger().debug("ModelRenderer.installation setter: Updated existing scene with installation")
 
     def initializeGL(self):
@@ -154,11 +162,8 @@ class ModelRenderer(QOpenGLWidget):
         # 1. texture_lookup_info count increased (new textures have lookup info stored)
         # 2. OR pending count decreased (async loads completed)
         # DO NOT emit just because requested count increased - that means textures are still loading!
-        textures_finished_loading = (
-            current_texture_count > self._last_texture_count or 
-            (current_pending_count < previous_pending_count and previous_pending_count > 0)
-        )
-        
+        textures_finished_loading = current_texture_count > self._last_texture_count or (current_pending_count < previous_pending_count and previous_pending_count > 0)
+
         if textures_finished_loading:
             self._last_texture_count = current_texture_count
             self._last_pending_texture_count = current_pending_count
@@ -216,6 +221,33 @@ class ModelRenderer(QOpenGLWidget):
     def set_creature(self, utc: UTC):
         self._creature_to_load = utc
 
+    def set_item(self, uti: UTI) -> None:
+        """Load and display the item's model from baseitems.2da ModelName (for UTI editor preview)."""
+        if self._installation is None:
+            return
+        baseitems = None
+        ht_get = getattr(self._installation, "ht_get_cache_2da", None)
+        baseitems_name = getattr(self._installation, "TwoDA_BASEITEMS", "baseitems")
+        if ht_get is not None:
+            baseitems = ht_get(baseitems_name)
+        else:
+            res = self._installation.resource("baseitems", ResourceType.TwoDA)
+            if res is not None and res.data is not None:
+                baseitems = read_2da(res.data)
+        if baseitems is None or uti.base_item < 0 or uti.base_item >= baseitems.get_height():
+            return
+        row = baseitems.get_row(uti.base_item)
+        model_name = row.get_string("ModelName") if row else None
+        if not model_name or not model_name.strip():
+            return
+        mdl_res = self._installation.resource(model_name.strip(), ResourceType.MDL)
+        mdx_res = self._installation.resource(model_name.strip(), ResourceType.MDX)
+        if mdl_res is None or mdl_res.data is None:
+            return
+        mdl_bytes = mdl_res.data
+        mdx_bytes = mdx_res.data if mdx_res is not None and mdx_res.data is not None else b""
+        self.set_model(mdl_bytes, mdx_bytes)
+
     def _is_model_ready(self, obj: RenderObject) -> bool:
         """Check if a RenderObject's model and all child models have finished loading."""
         # Check if this model is still loading
@@ -243,6 +275,35 @@ class ModelRenderer(QOpenGLWidget):
                 scene.camera.pitch = math.pi / 16 * 9
                 scene.camera.yaw = math.pi / 16 * 7
                 scene.camera.distance = model.radius(scene) + 2
+
+    def apply_render_overrides(
+        self,
+        *,
+        field_of_view: float | None = None,
+        show_cursor: bool | None = None,
+    ):
+        """Apply render/view overrides for parity with module renderer APIs."""
+        if self._scene is None:
+            return
+        if field_of_view is not None:
+            self._scene.camera.fov = field_of_view
+        if show_cursor is not None:
+            self._scene.show_cursor = show_cursor
+        self.update()
+
+    def snap_camera_to_point(
+        self,
+        point: Vector2 | Vector3,
+        *,
+        distance: float | None = None,
+    ):
+        """Snap camera center to point in model preview scene."""
+        self.scene.camera.x = point.x
+        self.scene.camera.y = point.y
+        if isinstance(point, Vector3):
+            self.scene.camera.z = point.z
+        if distance is not None:
+            self.scene.camera.distance = distance
 
     # region Events
     def focusOutEvent(self, e: QFocusEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -399,19 +460,19 @@ class ModelRenderer(QOpenGLWidget):
 class ModelRendererControls:
     @property
     def moveCameraSensitivity3d(self) -> float:
-        return cast(float, ModuleDesignerSettings().moveCameraSensitivity3d)
+        return cast("float", ModuleDesignerSettings().moveCameraSensitivity3d)
 
     @moveCameraSensitivity3d.setter
     def moveCameraSensitivity3d(self, value: float): ...
     @property
     def zoomCameraSensitivity3d(self) -> float:
-        return cast(float, ModuleDesignerSettings().zoomCameraSensitivity3d)
+        return cast("float", ModuleDesignerSettings().zoomCameraSensitivity3d)
 
     @zoomCameraSensitivity3d.setter
     def zoomCameraSensitivity3d(self, value: float): ...
     @property
     def rotateCameraSensitivity3d(self) -> float:
-        return cast(float, ModuleDesignerSettings().rotateCameraSensitivity3d)
+        return cast("float", ModuleDesignerSettings().rotateCameraSensitivity3d)
 
     @rotateCameraSensitivity3d.setter
     def rotateCameraSensitivity3d(self, value: float): ...

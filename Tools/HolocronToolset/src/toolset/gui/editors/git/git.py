@@ -1,23 +1,22 @@
+"""GIT (game instance) editor: placeables, creatures, doors, and module designer integration."""
+
 from __future__ import annotations
 
-import os
 import sys
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import qtpy
 
 from qtpy.QtCore import (
-    Qt,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
-from qtpy.QtGui import QColor, QKeySequence
+from qtpy.QtGui import QKeySequence
 from qtpy.QtWidgets import (
-    QListWidgetItem,
     QMessageBox,  # pyright: ignore[reportPrivateImportUsage]
 )
 
-from pykotor.common.misc import Color
 from pykotor.extract.installation import SearchLocation
 from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.formats.lyt import read_lyt
@@ -26,22 +25,36 @@ from pykotor.resource.type import ResourceType
 from pykotor.tools.template import extract_name, extract_tag_from_gff
 from toolset.blender import BlenderEditorMode
 from toolset.blender.integration import BlenderEditorMixin
+from toolset.gui.common.editor_pipelines import set_exclusive_checkbox_selection
+from toolset.gui.common.walkmesh_materials import get_walkmesh_material_colors
 from toolset.gui.editor import Editor
 from toolset.gui.editors.git.controls import GITControlScheme
-from toolset.gui.editors.git.mode import _GeometryMode, _InstanceMode, _Mode, _SpawnMode
+from toolset.gui.editors.git.mode import _GeometryMode, _InstanceMode, _SpawnMode
+from toolset.gui.widgets.installation_toolbar import FolderPathSpec
 from toolset.gui.widgets.settings.editor_settings.git import GITSettings
-from utility.common.geometry import SurfaceMaterial, Vector2, Vector3
+from utility.common.geometry import Vector2
 
 if TYPE_CHECKING:
-    from qtpy.QtCore import QPoint
-    from qtpy.QtGui import QCloseEvent, QKeyEvent
-    from qtpy.QtWidgets import QCheckBox, QWidget
+    import os
+
+    from qtpy.QtCore import (
+        QPoint,
+        Qt,  # pyright: ignore[reportPrivateImportUsage]
+    )
+    from qtpy.QtGui import QCloseEvent, QColor, QKeyEvent
+    from qtpy.QtWidgets import (
+        QCheckBox,
+        QListWidgetItem,  # pyright: ignore[reportPrivateImportUsage]
+        QWidget,
+    )
 
     from pykotor.extract.file import ResourceIdentifier, ResourceResult
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
     from pykotor.resource.generics.git import GITInstance
     from toolset.data.installation import HTInstallation
+    from toolset.gui.editors.git.mode import _Mode
+    from utility.common.geometry import SurfaceMaterial, Vector3
 
 if qtpy.QT5:
     pass
@@ -50,6 +63,11 @@ elif qtpy.QT6:
 
 
 class GITEditor(Editor, BlenderEditorMixin):
+    STANDALONE_FOLDER_PATHS = [
+        FolderPathSpec("modules_folder", "Modules Folder", "Folder containing extracted module resources."),
+        FolderPathSpec("override_folder", "Override Folder", "Folder containing override resources."),
+    ]
+
     sig_settings_updated = Signal(object)  # pyright: ignore[reportPrivateImportUsage]
 
     def __init__(
@@ -92,41 +110,36 @@ class GITEditor(Editor, BlenderEditorMixin):
 
         self.settings = GITSettings()
 
-        def int_color_to_qcolor(int_value: int) -> QColor:
-            color = Color.from_rgba_integer(int_value)
-            return QColor(int(color.r * 255), int(color.g * 255), int(color.b * 255), int(color.a * 255))
+        self.material_colors: dict[SurfaceMaterial, QColor] = get_walkmesh_material_colors()
 
-        self.material_colors: dict[SurfaceMaterial, QColor] = {
-            SurfaceMaterial.UNDEFINED: int_color_to_qcolor(self.settings.undefinedMaterialColour),
-            SurfaceMaterial.OBSCURING: int_color_to_qcolor(self.settings.obscuringMaterialColour),
-            SurfaceMaterial.DIRT: int_color_to_qcolor(self.settings.dirtMaterialColour),
-            SurfaceMaterial.GRASS: int_color_to_qcolor(self.settings.grassMaterialColour),
-            SurfaceMaterial.STONE: int_color_to_qcolor(self.settings.stoneMaterialColour),
-            SurfaceMaterial.WOOD: int_color_to_qcolor(self.settings.woodMaterialColour),
-            SurfaceMaterial.WATER: int_color_to_qcolor(self.settings.waterMaterialColour),
-            SurfaceMaterial.NON_WALK: int_color_to_qcolor(self.settings.nonWalkMaterialColour),
-            SurfaceMaterial.TRANSPARENT: int_color_to_qcolor(self.settings.transparentMaterialColour),
-            SurfaceMaterial.CARPET: int_color_to_qcolor(self.settings.carpetMaterialColour),
-            SurfaceMaterial.METAL: int_color_to_qcolor(self.settings.metalMaterialColour),
-            SurfaceMaterial.PUDDLES: int_color_to_qcolor(self.settings.puddlesMaterialColour),
-            SurfaceMaterial.SWAMP: int_color_to_qcolor(self.settings.swampMaterialColour),
-            SurfaceMaterial.MUD: int_color_to_qcolor(self.settings.mudMaterialColour),
-            SurfaceMaterial.LEAVES: int_color_to_qcolor(self.settings.leavesMaterialColour),
-            SurfaceMaterial.LAVA: int_color_to_qcolor(self.settings.lavaMaterialColour),
-            SurfaceMaterial.BOTTOMLESS_PIT: int_color_to_qcolor(self.settings.bottomlessPitMaterialColour),
-            SurfaceMaterial.DEEP_WATER: int_color_to_qcolor(self.settings.deepWaterMaterialColour),
-            SurfaceMaterial.DOOR: int_color_to_qcolor(self.settings.doorMaterialColour),
-            SurfaceMaterial.NON_WALK_GRASS: int_color_to_qcolor(self.settings.nonWalkGrassMaterialColour),
-            SurfaceMaterial.TRIGGER: int_color_to_qcolor(self.settings.nonWalkGrassMaterialColour),
-        }
         self.name_buffer: dict[ResourceIdentifier, str] = {}
         self.tag_buffer: dict[ResourceIdentifier, str] = {}
 
         self.ui.renderArea.material_colors = self.material_colors
         self.ui.renderArea.hide_walkmesh_edges = True
         self.ui.renderArea.highlight_boundaries = False
+        self.ui.renderArea.show_room_boundaries = True
+        self.ui.renderArea.show_grid = False
 
         self.new()
+
+    def _resolve_path_resource(self, resref: str, suffix: str, keys: tuple[str, ...]) -> bytes | None:
+        for key in keys:
+            folder = getattr(self, "_standalone_folder_paths", {}).get(key)
+            if folder is None:
+                continue
+            path = folder / f"{resref}.{suffix}"
+            if path.is_file():
+                return path.read_bytes()
+        return None
+
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        self._installation = installation
+        self._mode = _InstanceMode(self, self._installation, self._git)
+        self.update_visibility()
+
+    def _on_folder_paths_changed(self, paths: dict[str, Path | None]) -> None:
+        self._standalone_folder_paths = paths
 
     def _setup_hotkeys(self):  # TODO: use GlobalSettings() defined hotkeys
         self.ui.actionDeleteSelected.setShortcut(QKeySequence("Del"))  # type: ignore[arg-type]
@@ -141,6 +154,7 @@ class GITEditor(Editor, BlenderEditorMixin):
         self.ui.renderArea.sig_mouse_moved.connect(self.on_mouse_moved)
         self.ui.renderArea.sig_mouse_scrolled.connect(self.on_mouse_scrolled)
         self.ui.renderArea.sig_mouse_released.connect(self.on_mouse_released)
+        self.ui.renderArea.sig_marquee_select.connect(self.on_marquee_select)
         self.ui.renderArea.sig_key_pressed.connect(self.on_key_pressed)
         self.ui.renderArea.customContextMenuRequested.connect(self.on_context_menu)
 
@@ -177,6 +191,10 @@ class GITEditor(Editor, BlenderEditorMixin):
         self.ui.actionZoomIn.triggered.connect(lambda: self.ui.renderArea.camera.nudge_zoom(1))
         self.ui.actionZoomOut.triggered.connect(lambda: self.ui.renderArea.camera.nudge_zoom(-1))
         self.ui.actionRecentreCamera.triggered.connect(self.ui.renderArea.center_camera)
+        self.ui.actionShowRoomBoundaries.toggled.connect(lambda value: setattr(self.ui.renderArea, "show_room_boundaries", value))
+        self.ui.actionShowRoomBoundaries.toggled.connect(lambda _: self.ui.renderArea.update())
+        self.ui.actionShowGrid.toggled.connect(lambda value: setattr(self.ui.renderArea, "show_grid", value))
+        self.ui.actionShowGrid.toggled.connect(lambda _: self.ui.renderArea.update())
         # View -> Creature Labels
         self.ui.actionUseCreatureResRef.triggered.connect(lambda: setattr(self.settings, "creatureLabel", "resref"))
         self.ui.actionUseCreatureResRef.triggered.connect(self.update_visibility)
@@ -243,6 +261,10 @@ class GITEditor(Editor, BlenderEditorMixin):
     ):
         """Load a resource from a file.
 
+        GIT defaults (REVA): K1 LoadGIT 0x0050dd80 — UseTemplates/CurrentWeather/WeatherStarted ReadFieldBYTE 0;
+        LoadProperties 0x00507490, CSWSAmbientSound::Load 0x005c95f0 (AreaProperties: AmbientSndDayVol/MusicDay/etc. INT 0);
+        lists omit → empty. TSL Aspyr LoadGIT 0x0071ae10.
+
         Args:
         ----
             filepath: {Path or filename to load from}
@@ -257,18 +279,24 @@ class GITEditor(Editor, BlenderEditorMixin):
             - Load layout if found in search locations
             - Parse git data and call _loadGIT()
         """
-        assert self._installation is not None, "Installation is required to load GITEditor layout"
         super().load(filepath, resref, restype, data)
 
-        order = [
-            SearchLocation.OVERRIDE,
-            SearchLocation.MODULES,
-            SearchLocation.CHITIN,
-        ]
-        result: ResourceResult | None = self._installation.resource(resref, ResourceType.LYT, order)
-        if result:
+        layout_data: bytes | None = None
+        if self._installation is not None:
+            order = [
+                SearchLocation.OVERRIDE,
+                SearchLocation.MODULES,
+                SearchLocation.CHITIN,
+            ]
+            result: ResourceResult | None = self._installation.resource(resref, ResourceType.LYT, order)
+            if result is not None:
+                layout_data = result.data
+        else:
+            layout_data = self._resolve_path_resource(resref, "lyt", ("override_folder", "modules_folder"))
+
+        if layout_data is not None:
             self._logger.debug("Found GITEditor layout for '%s'", filepath)
-            self.load_layout(read_lyt(result.data))
+            self.load_layout(read_lyt(layout_data))
         else:
             self._logger.warning("Missing layout %s.lyt, needed for GITEditor '%s.%s'", resref, resref, restype)
 
@@ -283,6 +311,10 @@ class GITEditor(Editor, BlenderEditorMixin):
         self.update_visibility()
 
     def build(self) -> tuple[bytes, bytes]:
+        """Build GIT bytes.
+
+        Write path (REVA): K1 SaveGIT 0x0050ba00 — UseTemplates 1; SaveProperties 0x00506090, CSWSAmbientSound::Save 0x005c96e0 (AreaProperties INT); lists per type. Omit OK.
+        """
         return bytes_git(self._git), b""
 
     def new(self):
@@ -323,22 +355,27 @@ class GITEditor(Editor, BlenderEditorMixin):
             - If a walkmesh asset is found, read it and add it to a list
             - Set the list of walkmeshes on the UI renderer.
         """
-        assert self._installation is not None, "Installation is required to load GITEditor layout walkmeshes"
         walkmeshes: list[BWM] = []
         for room in layout.rooms:
-            order: list[SearchLocation] = [
-                SearchLocation.OVERRIDE,
-                SearchLocation.MODULES,
-                SearchLocation.CHITIN,
-            ]
-            walkmesh_resource: ResourceResult | None = self._installation.resource(
-                room.model,
-                ResourceType.WOK,
-                order,
-            )
-            if walkmesh_resource is not None:
+            walkmesh_data: bytes | None = None
+            if self._installation is not None:
+                order: list[SearchLocation] = [
+                    SearchLocation.OVERRIDE,
+                    SearchLocation.MODULES,
+                    SearchLocation.CHITIN,
+                ]
+                walkmesh_resource: ResourceResult | None = self._installation.resource(
+                    room.model,
+                    ResourceType.WOK,
+                    order,
+                )
+                walkmesh_data = walkmesh_resource.data if walkmesh_resource is not None else None
+            else:
+                walkmesh_data = self._resolve_path_resource(room.model, "wok", ("override_folder", "modules_folder"))
+
+            if walkmesh_data is not None:
                 try:
-                    wok_data = read_bwm(walkmesh_resource.data)
+                    wok_data = read_bwm(walkmesh_data)
                 except (ValueError, OSError):
                     self._logger.exception("Corrupted walkmesh cannot be loaded: '%s.wok'", room.model)
                 else:
@@ -368,17 +405,18 @@ class GITEditor(Editor, BlenderEditorMixin):
             - Uncheck all other instance type checkboxes
             - Check the checkbox that was double clicked
         """
-        self.ui.viewCreatureCheck.setChecked(False)
-        self.ui.viewPlaceableCheck.setChecked(False)
-        self.ui.viewDoorCheck.setChecked(False)
-        self.ui.viewSoundCheck.setChecked(False)
-        self.ui.viewTriggerCheck.setChecked(False)
-        self.ui.viewEncounterCheck.setChecked(False)
-        self.ui.viewWaypointCheck.setChecked(False)
-        self.ui.viewCameraCheck.setChecked(False)
-        self.ui.viewStoreCheck.setChecked(False)
-
-        checkbox.setChecked(True)
+        visibility_checkboxes: tuple[QCheckBox, ...] = (
+            self.ui.viewCreatureCheck,
+            self.ui.viewPlaceableCheck,
+            self.ui.viewDoorCheck,
+            self.ui.viewSoundCheck,
+            self.ui.viewTriggerCheck,
+            self.ui.viewEncounterCheck,
+            self.ui.viewWaypointCheck,
+            self.ui.viewCameraCheck,
+            self.ui.viewStoreCheck,
+        )
+        set_exclusive_checkbox_selection(checkbox, visibility_checkboxes)
 
     def get_instance_external_name(self, instance: GITInstance) -> str | None:
         """Get external name of a GIT instance.
@@ -400,7 +438,8 @@ class GITEditor(Editor, BlenderEditorMixin):
             - Save name in buffer
             - Return name from buffer.
         """
-        assert self._installation is not None, "Installation is required to get instance external name"
+        if self._installation is None:
+            return None
         resid: ResourceIdentifier | None = instance.identifier()
         assert resid is not None, "resid cannot be None in get_instance_external_name({instance!r})"
         if resid not in self.name_buffer:
@@ -411,7 +450,8 @@ class GITEditor(Editor, BlenderEditorMixin):
         return self.name_buffer[resid]
 
     def get_instance_external_tag(self, instance: GITInstance) -> str | None:
-        assert self._installation is not None, "Installation is required to get instance external tag"
+        if self._installation is None:
+            return None
         res_ident: ResourceIdentifier | None = instance.identifier()
         assert res_ident is not None, f"resid cannot be None in get_instance_external_tag({instance!r})"
         if res_ident not in self.tag_buffer:
@@ -440,8 +480,7 @@ class GITEditor(Editor, BlenderEditorMixin):
         self.ui.renderArea.camera.set_position(instance.position.x, instance.position.y)
 
     # region Mode Calls
-    def open_list_context_menu(self, item: QListWidgetItem, point: QPoint):
-        ...
+    def open_list_context_menu(self, item: QListWidgetItem, point: QPoint): ...
 
     def update_visibility(self):
         self._mode.update_visibility()
@@ -508,6 +547,23 @@ class GITEditor(Editor, BlenderEditorMixin):
     def on_mouse_released(self, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
         self._controls.on_mouse_released(Vector2(0, 0), buttons, keys)
 
+    def on_marquee_select(self, world_rect: tuple[float, float, float, float], additive: bool):
+        """Select instances inside the marquee world rect. Called from WalkmeshRenderer.sig_marquee_select."""
+        min_x, min_y, max_x, max_y = world_rect
+        in_rect: list[GITInstance] = []
+        for instance in self._git.instances():
+            if not self.ui.renderArea.is_instance_visible(instance):
+                continue
+            x, y = instance.position.x, instance.position.y
+            if min_x <= x <= max_x and min_y <= y <= max_y:
+                in_rect.append(instance)
+        if additive:
+            current = self._mode.renderer2d.instance_selection.all()
+            combined = list({*current, *in_rect})
+            self._mode.set_selection(combined)
+        else:
+            self._mode.set_selection(in_rect)
+
     def on_key_pressed(self, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
         self._controls.on_keyboard_pressed(buttons, keys)
 
@@ -518,3 +574,10 @@ class GITEditor(Editor, BlenderEditorMixin):
         self.ui.renderArea.keyReleaseEvent(e)
 
     # endregion
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("git"))

@@ -188,7 +188,7 @@ python integration_test.py
 
 ## Requirements
 
-- Python 3.12+
+- Python 3.8+
 - PyKotor library
 - tkinter (for GUI - optional)
 - Standard Python libraries (pathlib, difflib, etc.)

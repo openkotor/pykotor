@@ -1198,79 +1198,85 @@
        </layout>
       </widget>
 
-      <!-- Advanced Tab -->
+      <!-- Advanced Tab: GFF editor (reused) + Other resources -->
       <widget class="QWidget" name="tabAdvanced">
        <attribute name="title">
         <string>Advanced / Raw</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayoutAdvanced">
         <item>
-         <widget class="QLabel" name="labelAdvancedSaveInfo">
-          <property name="text">
-           <string>SaveInfo additional fields:</string>
+         <widget class="QComboBox" name="comboAdvancedGffSource">
+          <property name="toolTip">
+           <string>Select which GFF to edit. SaveInfo and PartyTable open in the full GFF editor (expandable tree).</string>
           </property>
+          <item>
+           <property name="text">
+            <string>SaveInfo (SAVENFO.res)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>PartyTable (PARTYTABLE.res)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Other resources (double-click to open)</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item>
-         <widget class="QTableWidget" name="tableWidgetAdvancedSaveInfo">
-          <property name="columnCount">
-           <number>3</number>
+         <widget class="QStackedWidget" name="stackedWidgetAdvanced">
+          <property name="currentIndex">
+           <number>0</number>
           </property>
-          <column>
-           <property name="text">
-            <string>Name</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Type</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Value</string>
-           </property>
-          </column>
+          <widget class="QWidget" name="pageAdvancedSaveInfoGff">
+           <attribute name="title">
+            <string>SaveInfo GFF</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayoutAdvancedSaveInfoGff">
+            <item>
+             <widget class="QLabel" name="labelAdvancedSaveInfoGffPlaceholder">
+              <property name="text">
+               <string>GFF editor will be embedded here.</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="pageAdvancedPartyTableGff">
+           <attribute name="title">
+            <string>PartyTable GFF</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayoutAdvancedPartyTableGff">
+            <item>
+             <widget class="QLabel" name="labelAdvancedPartyTableGffPlaceholder">
+              <property name="text">
+               <string>GFF editor will be embedded here.</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="pageAdvancedOtherResources">
+           <attribute name="title">
+            <string>Other resources</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayoutAdvancedOther">
+            <item>
+             <widget class="QLabel" name="labelAdvancedResources">
+              <property name="text">
+               <string>Other resources (double-click to open in editor):</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QListWidget" name="listWidgetAdvancedResources" />
+            </item>
+           </layout>
+          </widget>
          </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="labelAdvancedPartyTable">
-          <property name="text">
-           <string>PartyTable additional fields:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QTableWidget" name="tableWidgetAdvancedPartyTable">
-          <property name="columnCount">
-           <number>3</number>
-          </property>
-          <column>
-           <property name="text">
-            <string>Name</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Type</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Value</string>
-           </property>
-          </column>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="labelAdvancedResources">
-          <property name="text">
-           <string>Other resources (double-click to open):</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QListWidget" name="listWidgetAdvancedResources" />
         </item>
        </layout>
       </widget>

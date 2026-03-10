@@ -1,3 +1,5 @@
+"""TSLPatcher uninstall: revert override folder and restore from backups."""
+
 from __future__ import annotations
 
 import os
@@ -14,11 +16,12 @@ from pykotor.tools.encoding import decode_bytes_with_fallbacks
 from pykotor.tools.misc import is_mod_file
 from pykotor.tools.path import CaseAwarePath
 from pykotor.tslpatcher.logger import PatchLogger
+from pykotor.tslpatcher.tlkdefs import detect_patch_type, get_vanilla_tlk_count
+from utility.misc import ensure_directory_exists
 
 if TYPE_CHECKING:
     from pykotor.extract.installation import Installation
     from pykotor.resource.formats.tlk import TLK
-    from pykotor.tslpatcher.tlkdefs import detect_patch_type, get_vanilla_tlk_count
 
 
 # TODO: the aspyr patch contains some required files in the override folder, hardcode them and ignore those here.
@@ -229,7 +232,7 @@ class ModUninstaller:
             if file_path.name == "remove these files.txt":
                 continue
             destination_path: Path = self.game_path / file_path.relative_to(backup_folder)  # type: ignore[attr-defined]
-            destination_path.parent.mkdir(parents=True, exist_ok=True)
+            ensure_directory_exists(destination_path.parent)
             shutil.copy(file_path, destination_path)
             self.log.add_note(f"Restoring backup of '{file_path.name}' to '{destination_path.relative_to(self.game_path.parent)}'...")  # type: ignore[attr-defined]
 

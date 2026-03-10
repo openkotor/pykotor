@@ -13,12 +13,14 @@ This document provides detailed documentation for NWScript local variable functi
 ### Understanding Local Variables
 
 Local variables are stored **on individual objects** (creatures, placeables, doors, etc.) and are used for:
+
 - Object-specific state tracking
 - Flags and conditions unique to an object
 - Temporary data that doesn't need to persist across saves (though they do persist)
 - Quest/NPC state that's specific to that instance
 
 **Key Differences from Global Variables:**
+
 - **Scope:** Local to the object, not campaign-wide
 - **Persistence:** Stored with the object, persist in save games
 - **Range:** Local numbers have different range limits (see below)
@@ -43,18 +45,22 @@ Local variables use **numeric indices** instead of string names:
 **Routine:** 681
 
 #### Function Signature
+
 ```nss
 int GetLocalNumber(object oObject, int nIndex);
 ```
 
 #### Description
+
 Gets the value of a local number variable on an object. Local numbers use indices **12-28** and can store values **0-255** (unsigned byte).
 
 #### Parameters
+
 - `oObject`: Object to get the local variable from
 - `nIndex`: Index of the local number (must be 12-28)
 
 #### Returns
+
 - Value of the local number (0-255)
 - `0` if the local variable doesn't exist or index is invalid
 
@@ -75,6 +81,7 @@ int nTalkCount = GetLocalNumber(oNPC, 12);
 ```
 
 **Pattern: Check Object State**
+
 ```nss
 // Check if object has been interacted with
 int nInteracted = GetLocalNumber(OBJECT_SELF, 12);
@@ -85,6 +92,7 @@ if (nInteracted == 0) {
 ```
 
 #### Notes
+
 - **Index Range:** Must be 12-28
 - **Value Range:** 0-255 (unsigned byte)
 - **Default:** Returns 0 if variable not set
@@ -96,14 +104,17 @@ if (nInteracted == 0) {
 **Routine:** 682
 
 #### Function Signature
+
 ```nss
 void SetLocalNumber(object oObject, int nIndex, int nValue);
 ```
 
 #### Description
+
 Sets the value of a local number variable on an object. **Value must be in range 0-255**.
 
 #### Parameters
+
 - `oObject`: Object to set the local variable on
 - `nIndex`: Index of the local number (must be 12-28)
 - `nValue`: Value to set (must be 0-255)
@@ -122,6 +133,7 @@ SetLocalNumber(oNPC, 12, 1);
 ```
 
 **Pattern: Increment Local Number**
+
 ```nss
 // Increment a counter
 int nCurrent = GetLocalNumber(OBJECT_SELF, 12);
@@ -129,6 +141,7 @@ SetLocalNumber(OBJECT_SELF, 12, nCurrent + 1);
 ```
 
 **Pattern: Script Parameter Helper**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_localn_set.nss
 int nParam1 = GetScriptParameter(1);
@@ -137,6 +150,7 @@ SetLocalNumber(OBJECT_SELF, nParam1, nParam2);
 ```
 
 #### Notes
+
 - **Index Range:** Must be 12-28
 - **Value Range:** 0-255 (unsigned byte, unlike global numbers which are -128 to +127)
 - **Overflow:** Values > 255 will wrap or cause errors
@@ -150,18 +164,22 @@ SetLocalNumber(OBJECT_SELF, nParam1, nParam2);
 **Routine:** 679
 
 #### Function Signature
+
 ```nss
 int GetLocalBoolean(object oObject, int nIndex);
 ```
 
 #### Description
+
 Gets the value of a local boolean variable on an object. Local booleans use indices **20-63**.
 
 #### Parameters
+
 - `oObject`: Object to get the local boolean from
 - `nIndex`: Index of the local boolean (must be 20-63)
 
 #### Returns
+
 - `TRUE` (1) if the boolean is `TRUE`
 - `FALSE` (0) if the boolean is `FALSE` or not set
 
@@ -185,6 +203,7 @@ if (GetLocalBoolean(oNPC, 20)) {
 ```
 
 **Pattern: One-Time Events**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
 if (!GetLocalBoolean(OBJECT_SELF, 50)) {
@@ -200,14 +219,17 @@ if (!GetLocalBoolean(OBJECT_SELF, 50)) {
 **Routine:** 680
 
 #### Function Signature
+
 ```nss
 void SetLocalBoolean(object oObject, int nIndex, int nValue);
 ```
 
 #### Description
+
 Sets the value of a local boolean variable on an object. Any non-zero value is treated as `TRUE`, zero is `FALSE`.
 
 #### Parameters
+
 - `oObject`: Object to set the local boolean on
 - `nIndex`: Index of the local boolean (must be 20-63)
 - `nValue`: Value to set (`TRUE`/`FALSE` or any non-zero/zero)
@@ -239,18 +261,22 @@ SetLocalBoolean(oNPC, 20, TRUE);
 **Routine:** 683
 
 #### Function Signature
+
 ```nss
 string GetLocalString(object oObject, int nIndex);
 ```
 
 #### Description
+
 Gets the value of a local string variable on an object. Local strings use indices **0-9** (10 slots).
 
 #### Parameters
+
 - `oObject`: Object to get the local string from
 - `nIndex`: Index of the local string (must be 0-9)
 
 #### Returns
+
 - String value of the local variable
 - Empty string ("") if the variable doesn't exist or index is invalid
 
@@ -271,14 +297,17 @@ if (sName != "") {
 **Routine:** 684
 
 #### Function Signature
+
 ```nss
 void SetLocalString(object oObject, int nIndex, string sValue);
 ```
 
 #### Description
+
 Sets the value of a local string variable on an object.
 
 #### Parameters
+
 - `oObject`: Object to set the local string on
 - `nIndex`: Index of the local string (must be 0-9)
 - `sValue`: String value to set
@@ -299,18 +328,22 @@ SetLocalString(OBJECT_SELF, 0, "CustomName");
 **Routine:** 685
 
 #### Function Signature
+
 ```nss
 object GetLocalObject(object oObject, int nIndex);
 ```
 
 #### Description
+
 Gets the value of a local object variable. Stores a reference to another object.
 
 #### Parameters
+
 - `oObject`: Object to get the local object from
 - `nIndex`: Index of the local object
 
 #### Returns
+
 - Object reference stored in the local variable
 - `OBJECT_INVALID` if not set or invalid
 
@@ -335,14 +368,17 @@ if (GetIsObjectValid(oStored)) {
 **Routine:** 686
 
 #### Function Signature
+
 ```nss
 void SetLocalObject(object oObject, int nIndex, object oValue);
 ```
 
 #### Description
+
 Sets the value of a local object variable.
 
 #### Parameters
+
 - `oObject`: Object to set the local object on
 - `nIndex`: Index of the local object
 - `oValue`: Object reference to store
@@ -427,6 +463,7 @@ if (GetIsObjectValid(oStoredEnemy)) {
 ### Index Organization Strategy
 
 **Recommended Index Allocation:**
+
 - **Numbers 12-14:** Quest/state tracking (common)
 - **Numbers 15-20:** General counters and temporary values
 - **Booleans 20-30:** Common flags (first interaction, quest started, etc.)
@@ -463,11 +500,13 @@ if (GetIsObjectValid(oStoredEnemy)) {
 ### Index Range Validation
 
 The engine may not validate index ranges. Using invalid indices can cause:
+
 - Undefined behavior
 - Script errors
 - Save game corruption
 
 **Always use valid index ranges:**
+
 - Numbers: 12-28
 - Booleans: 20-63
 - Strings: 0-9
@@ -479,5 +518,6 @@ Local variables persist in save games because they're stored on the objects them
 ### Migration from Global Variables
 
 If you need to track state per-object (not campaign-wide), use local variables:
+
 - **Use Globals:** Quest completion, campaign-wide flags, save game state
 - **Use Locals:** NPC-specific state, object interaction counts, per-instance data

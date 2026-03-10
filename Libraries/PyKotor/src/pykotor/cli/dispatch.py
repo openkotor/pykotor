@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from pykotor.cli.argparser import create_parser
 from pykotor.cli.commands import (
@@ -58,6 +58,9 @@ from pykotor.cli.commands import (
 )
 from pykotor.cli.commands.indoor_builder import cmd_indoor_build, cmd_indoor_extract
 from pykotor.cli.logger import setup_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915

@@ -1,22 +1,20 @@
 """List-archive command implementation - list contents of archive files."""
+
 from __future__ import annotations
 
 import pathlib
-from argparse import Namespace
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from argparse import Namespace
     from logging import Logger
-
-from pykotor.tools.archives import list_bif, list_erf, list_key, list_rim
 
 # Pykotorcli-level filter supports matching either "resref" or "resref.ext".
 from pykotor.cli.archive_filter import matches_resource_name
+from pykotor.tools.archives import list_bif, list_erf, list_key, list_rim
 
 # vendor references:
-
-
-
 
 
 def cmd_list_archive(args: Namespace, logger: Logger) -> int:  # noqa: PLR0911
@@ -187,4 +185,3 @@ def _list_erf(erf_path: pathlib.Path, args: Namespace, logger: Logger) -> int:
         return 1
     else:
         return 0
-

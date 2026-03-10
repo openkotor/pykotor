@@ -25,7 +25,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `preferredalignment` | Integer | Preferred alignment |
 | `alignrestrict` | Integer | Alignment restrictions |
 | `classfeat` | Integer | Class-specific feat ID |
-| `classskill` | Integer | Class skill [flags](GFF-File-Format#gff-data-types) |
+| `classskill` | Integer | Class skill flags |
 | `skillpointmaxlevel` | Integer | Maximum level for skill point calculation |
 | `spellcaster` | Integer | Spellcasting level (0 = non-caster) |
 | `spellcastingtype` | Integer | Spellcasting type identifier |

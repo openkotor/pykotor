@@ -1,39 +1,73 @@
+"""GIT editor undo: move, add/remove instance, and property change commands."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING, Sequence, TypeVar
 
 from qtpy.QtWidgets import QUndoCommand  # pyright: ignore[reportPrivateImportUsage]
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
-from utility.common.geometry import Vector3, Vector4
+from pykotor.resource.generics.git import (
+    GITCamera,
+    GITObject,
+)
+from toolset.gui.editors.git.git import GITEditor
+from utility.common.geometry import Vector4
 
 if TYPE_CHECKING:
     from pykotor.resource.generics.git import (
         GIT,
-        GITCamera,
-        GITCreature,
-        GITDoor,
         GITEncounter,
         GITEncounterSpawnPoint,
         GITInstance,
-        GITPlaceable,
-        GITStore,
-        GITWaypoint,
     )
-    from toolset.gui.editors.git.git import GITEditor
+    from toolset.gui.editors.git.mode import _Mode
     from toolset.gui.windows.module_designer import ModuleDesigner
+    from utility.common.geometry import Vector3
+
+
+_T = TypeVar("_T")
+
+
+def _select_instance_in_editor(
+    editor: GITEditor | ModuleDesigner,
+    instance: GITObject,
+) -> None:
+    """Select a single instance in either editor implementation."""
+    if isinstance(editor, GITEditor):
+        editor._mode.renderer2d.instance_selection.select([instance])  # noqa: SLF001
+    else:
+        editor.set_selection([instance])
+
+
+def _rebuild_instance_list(editor: GITEditor | ModuleDesigner) -> None:
+    """Refresh the editor instance list UI after undo/redo operations."""
+    from toolset.gui.editors.git.mode import _InstanceMode
+
+    if isinstance(editor, GITEditor):
+        editor.enter_instance_mode()
+        assert isinstance(editor._mode, _InstanceMode)  # noqa: SLF001
+        editor._mode.build_list()  # noqa: SLF001
+    else:
+        editor.enter_instance_mode()
+        editor.rebuild_instance_list()
+
+
+def _instance_id_set(instances: Sequence[_T]) -> set[int]:
+    """Build a fast identity set for repeated membership checks (any object type)."""
+    return {id(instance) for instance in instances}
 
 
 class MoveCommand(QUndoCommand):
     def __init__(
         self,
-        instance: GITInstance,
+        instance: GITObject,
         old_position: Vector3,
         new_position: Vector3,
     ):
         RobustLogger().debug(f"Init movecommand with instance {instance.identifier()}")
         super().__init__()
-        self.instance: GITInstance = instance
+        self.instance: GITObject = instance
         self.old_position: Vector3 = old_position
         self.new_position: Vector3 = new_position
 
@@ -48,11 +82,14 @@ class MoveCommand(QUndoCommand):
 
 class RotateCommand(QUndoCommand):
     def __init__(
-        self, instance: GITCamera | GITCreature | GITDoor | GITPlaceable | GITStore | GITWaypoint, old_orientation: Vector4 | float, new_orientation: Vector4 | float
+        self,
+        instance: GITObject,
+        old_orientation: Vector4 | float,
+        new_orientation: Vector4 | float,
     ):
         RobustLogger().debug(f"Init rotatecommand with instance: {instance.identifier()}")
         super().__init__()
-        self.instance: GITCamera | GITCreature | GITDoor | GITPlaceable | GITStore | GITWaypoint = instance
+        self.instance: GITObject = instance
         self.old_orientation: Vector4 | float = old_orientation
         self.new_orientation: Vector4 | float = new_orientation
 
@@ -61,68 +98,60 @@ class RotateCommand(QUndoCommand):
         if isinstance(self.instance, GITCamera):
             assert isinstance(self.old_orientation, Vector4)
             self.instance.orientation = self.old_orientation
-        else:
+        elif isinstance(self.instance, GITInstance):
             assert isinstance(self.old_orientation, float)
             self.instance.bearing = self.old_orientation
+        else:
+            raise ValueError(f"Invalid instance type: {self.instance.__class__.__name__}")
 
     def redo(self):
         RobustLogger().debug(f"Redo rotation: {self.instance.identifier()} ({self.old_orientation} --> NEW {self.new_orientation})")
         if isinstance(self.instance, GITCamera):
             assert isinstance(self.new_orientation, Vector4)
             self.instance.orientation = self.new_orientation
-        else:
+        elif isinstance(self.instance, GITInstance):
             assert isinstance(self.new_orientation, float)
             self.instance.bearing = self.new_orientation
+        else:
+            raise ValueError(f"Invalid instance type: {self.instance.__class__.__name__}")
 
 
 class DuplicateCommand(QUndoCommand):
     def __init__(
         self,
         git: GIT,
-        instances: Sequence[GITInstance],
+        instances: Sequence[GITObject],
         editor: GITEditor | ModuleDesigner,
     ):
         super().__init__()
         self.git: GIT = git
-        self.instances: list[GITInstance] = list(instances)
+        self.instances: list[GITObject] = list(instances)
         self.editor: GITEditor | ModuleDesigner = editor
 
     def undo(self):
         self.editor.enter_instance_mode()
+        current_instance_ids: set[int] = _instance_id_set(self.git.instances())
         for instance in self.instances:
-            if instance not in self.git.instances():
+            if id(instance) not in current_instance_ids:
                 RobustLogger().warning(f"{instance!r} not found in instances: no duplicate to undo.")
                 continue
             RobustLogger().debug(f"Undo duplicate: {instance.identifier()}")
-            if isinstance(self.editor, GITEditor):
-                self.editor._mode.renderer2d.instance_selection.select([instance])  # noqa: SLF001
-            else:
-                self.editor.set_selection([instance])
+            _select_instance_in_editor(self.editor, instance)
             self.editor.delete_selected(no_undo_stack=True)
         self.rebuild_instance_list()
 
     def rebuild_instance_list(self):
-        from toolset.gui.editors.git.mode import _InstanceMode
-
-        if isinstance(self.editor, GITEditor):
-            self.editor.enter_instance_mode()
-            assert isinstance(self.editor._mode, _InstanceMode)  # noqa: SLF001
-            self.editor._mode.build_list()  # noqa: SLF001
-        else:
-            self.editor.enter_instance_mode()
-            self.editor.rebuild_instance_list()
+        _rebuild_instance_list(self.editor)
 
     def redo(self):
+        current_instance_ids: set[int] = _instance_id_set(self.git.instances())
         for instance in self.instances:
-            if instance in self.git.instances():
+            if id(instance) in current_instance_ids:
                 RobustLogger().warning(f"{instance!r} already found in instances: no duplicate to redo.")
                 continue
             RobustLogger().debug(f"Redo duplicate: {instance.identifier()}")
             self.git.add(instance)
-            if isinstance(self.editor, GITEditor):
-                self.editor._mode.renderer2d.instance_selection.select([instance])  # noqa: SLF001
-            else:
-                self.editor.set_selection([instance])
+            _select_instance_in_editor(self.editor, instance)
         self.rebuild_instance_list()
 
 
@@ -130,46 +159,37 @@ class DeleteCommand(QUndoCommand):
     def __init__(
         self,
         git: GIT,
-        instances: list[GITInstance],
+        instances: list[GITObject],
         editor: GITEditor | ModuleDesigner,
     ):
         super().__init__()
         self.git: GIT = git
-        self.instances: list[GITInstance] = instances
+        self.instances: list[GITObject] = instances
         self.editor: GITEditor | ModuleDesigner = editor
 
     def undo(self):
         RobustLogger().debug(f"Undo delete: {[repr(instance) for instance in self.instances]}")
+        current_instance_ids: set[int] = _instance_id_set(self.git.instances())
         for instance in self.instances:
-            if instance in self.git.instances():
+            if id(instance) in current_instance_ids:
                 RobustLogger().warning(f"{instance!r} already found in instances: no deletecommand to undo.")
                 continue
             self.git.add(instance)
         self.rebuild_instance_list()
 
     def rebuild_instance_list(self):
-        from toolset.gui.editors.git.mode import _InstanceMode
-
-        if isinstance(self.editor, GITEditor):
-            self.editor.enter_instance_mode()
-            assert isinstance(self.editor._mode, _InstanceMode)  # noqa: SLF001
-            self.editor._mode.build_list()  # noqa: SLF001
-        else:
-            self.editor.enter_instance_mode()
-            self.editor.rebuild_instance_list()
+        _rebuild_instance_list(self.editor)
 
     def redo(self):
         RobustLogger().debug(f"Redo delete: {[repr(instance) for instance in self.instances]}")
         self.editor.enter_instance_mode()
+        current_instance_ids: set[int] = _instance_id_set(self.git.instances())
         for instance in self.instances:
-            if instance not in self.git.instances():
+            if id(instance) not in current_instance_ids:
                 RobustLogger().warning(f"{instance!r} not found in instances: no deletecommand to redo.")
                 continue
             RobustLogger().debug(f"Redo delete: {instance!r}")
-            if isinstance(self.editor, GITEditor):
-                self.editor._mode.renderer2d.instance_selection.select([instance])  # noqa: SLF001
-            else:
-                self.editor.set_selection([instance])
+            _select_instance_in_editor(self.editor, instance)
             self.editor.delete_selected(no_undo_stack=True)
         self.rebuild_instance_list()
 
@@ -178,12 +198,12 @@ class InsertCommand(QUndoCommand):
     def __init__(
         self,
         git: GIT,
-        instance: GITInstance,
+        instance: GITObject,
         editor: GITEditor | ModuleDesigner,
     ):
         super().__init__()
         self.git: GIT = git
-        self.instance: GITInstance = instance
+        self.instance: GITObject = instance
         self._first_run: bool = True
         self.editor: GITEditor | ModuleDesigner = editor
 
@@ -193,17 +213,17 @@ class InsertCommand(QUndoCommand):
         self.rebuild_instance_list()
 
     def rebuild_instance_list(self):
-        from toolset.gui.editors.git.mode import _GeometryMode, _InstanceMode
         from toolset.gui.editors.git.git import GITEditor
+        from toolset.gui.editors.git.mode import _GeometryMode, _InstanceMode
 
         if isinstance(self.editor, GITEditor):
-            old_mode = self.editor._mode  # noqa: SLF001
+            old_mode: _Mode = self.editor._mode  # noqa: SLF001
             self.editor.enter_instance_mode()
             assert isinstance(self.editor._mode, _InstanceMode)  # noqa: SLF001
             self.editor._mode.build_list()  # noqa: SLF001
             if isinstance(old_mode, _GeometryMode):
                 self.editor.enter_geometry_mode()
-            elif isinstance(old_mode, type(self.editor._mode)):  # _SpawnMode  # noqa: SLF001
+            elif isinstance(old_mode, self.editor._mode.__class__):  # _SpawnMode  # noqa: SLF001
                 self.editor.enter_spawn_mode()
         else:
             self.editor.rebuild_instance_list()
@@ -219,18 +239,11 @@ class InsertCommand(QUndoCommand):
 
 
 def _refresh_git_views(editor: GITEditor | ModuleDesigner):
-    ui = getattr(editor, "ui", None)
-    if ui is None:
-        return
-    render_area = getattr(ui, "renderArea", None)
-    if render_area is not None:
-        render_area.update()
-    flat_renderer = getattr(ui, "flatRenderer", None)
-    if flat_renderer is not None:
-        flat_renderer.update()
-    main_renderer = getattr(ui, "mainRenderer", None)
-    if main_renderer is not None:
-        main_renderer.update()
+    if isinstance(editor, GITEditor):
+        editor.ui.renderArea.update()
+    else:
+        editor.ui.flatRenderer.update()
+        editor.ui.mainRenderer.update()
 
 
 class SpawnPointInsertCommand(QUndoCommand):
@@ -246,12 +259,14 @@ class SpawnPointInsertCommand(QUndoCommand):
         self.editor: GITEditor | ModuleDesigner = editor
 
     def undo(self):
-        if self.spawn in self.encounter.spawn_points:
+        spawn_ids = _instance_id_set(self.encounter.spawn_points)
+        if id(self.spawn) in spawn_ids:
             self.encounter.spawn_points.remove(self.spawn)
         _refresh_git_views(self.editor)
 
     def redo(self):
-        if self.spawn not in self.encounter.spawn_points:
+        spawn_ids = _instance_id_set(self.encounter.spawn_points)
+        if id(self.spawn) not in spawn_ids:
             self.encounter.spawn_points.append(self.spawn)
         _refresh_git_views(self.editor)
 
@@ -267,23 +282,33 @@ class SpawnPointDeleteCommand(QUndoCommand):
         self.encounter: GITEncounter = encounter
         self.spawn: GITEncounterSpawnPoint = spawn
         self.editor: GITEditor | ModuleDesigner = editor
+        self.index: int = self._find_spawn_index(encounter, spawn)
+
+    @staticmethod
+    def _find_spawn_index(encounter: GITEncounter, spawn: GITEncounterSpawnPoint) -> int:
         try:
-            self.index: int = encounter.spawn_points.index(spawn)
+            return encounter.spawn_points.index(spawn)
         except ValueError:
-            self.index = -1
+            return -1
+
+    @staticmethod
+    def _insert_spawn(encounter: GITEncounter, spawn: GITEncounterSpawnPoint, index: int) -> None:
+        if index < 0 or index > len(encounter.spawn_points):
+            encounter.spawn_points.append(spawn)
+            return
+        encounter.spawn_points.insert(index, spawn)
 
     def undo(self):
-        if self.spawn in self.encounter.spawn_points:
+        spawn_ids = _instance_id_set(self.encounter.spawn_points)
+        if id(self.spawn) in spawn_ids:
             _refresh_git_views(self.editor)
             return
-        if self.index < 0 or self.index > len(self.encounter.spawn_points):
-            self.encounter.spawn_points.append(self.spawn)
-        else:
-            self.encounter.spawn_points.insert(self.index, self.spawn)
+        self._insert_spawn(self.encounter, self.spawn, self.index)
         _refresh_git_views(self.editor)
 
     def redo(self):
-        if self.spawn in self.encounter.spawn_points:
+        spawn_ids = _instance_id_set(self.encounter.spawn_points)
+        if id(self.spawn) in spawn_ids:
             self.encounter.spawn_points.remove(self.spawn)
         _refresh_git_views(self.editor)
 

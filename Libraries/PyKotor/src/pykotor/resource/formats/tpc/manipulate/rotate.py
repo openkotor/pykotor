@@ -1,3 +1,5 @@
+"""Rotate RGB/RGBA (and BGR/BGRA) image data in 90° steps for TPC texture manipulation."""
+
 from __future__ import annotations
 
 
@@ -34,6 +36,7 @@ def rotate_rgb_rgba(data: bytearray, width: int, height: int, bytes_per_pixel: i
 
     return new_data
 
+
 def flip_vertically_rgb_rgba(data: bytearray, width: int, height: int, bytes_per_pixel: int) -> bytearray:
     """Flip RGB/BGR/RGBA/BGRA image data vertically.
 
@@ -49,9 +52,10 @@ def flip_vertically_rgb_rgba(data: bytearray, width: int, height: int, bytes_per
     for y in range(height):
         src_row_start = y * row_size
         dst_row_start = (height - 1 - y) * row_size
-        new_data[dst_row_start:dst_row_start + row_size] = data[src_row_start:src_row_start + row_size]
+        new_data[dst_row_start : dst_row_start + row_size] = data[src_row_start : src_row_start + row_size]
 
     return new_data
+
 
 def flip_horizontally_rgb_rgba(data: bytearray, width: int, height: int, bytes_per_pixel: int) -> bytearray:
     """Flip RGB/BGR/RGBA/BGRA image data horizontally.

@@ -10,31 +10,34 @@ This editor provides comprehensive audio file handling including:
 The editor inherits from the base Editor class and uses its built-in
 MediaPlayerWidget for audio playback, while providing its own UI controls.
 """
+
 from __future__ import annotations
 
 import tempfile
 import time
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 import qtpy
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import QBuffer, QIODevice
 from qtpy.QtMultimedia import QMediaPlayer
 
+from loggerplus import RobustLogger
 from pykotor.resource.type import ResourceType
+from toolset.gui.common.localization import trf
 from toolset.gui.editor import Editor
 from utility.system.os_helper import remove_any
 
 if TYPE_CHECKING:
     import os
 
+    from PyQt6.QtCore import pyqtBoundSignal  # type: ignore[reportMissingImports]
     from PyQt6.QtMultimedia import QMediaPlayer as PyQt6MediaPlayer  # pyright: ignore[reportMissingImports]
     from PySide6.QtMultimedia import QMediaPlayer as PySide6MediaPlayer  # pyright: ignore[reportMissingImports]
     from qtpy.QtGui import QCloseEvent
-    from qtpy.QtWidgets import QWidget
+    from qtpy.QtWidgets import QToolBar, QWidget
 
     from toolset.data.installation import HTInstallation
 
@@ -66,8 +69,9 @@ class WAVEditor(Editor):
 
         # Ensure mediaPlayer exists - create it if base class didn't
         # The base Editor class should create this, but if it doesn't, we create it
-        if not hasattr(self, 'mediaPlayer'):
+        if not hasattr(self, "mediaPlayer"):
             from toolset.gui.widgets.media_player_widget import MediaPlayerWidget
+
             self.mediaPlayer = MediaPlayerWidget(self)
 
         # Audio-specific state
@@ -86,6 +90,7 @@ class WAVEditor(Editor):
 
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -107,41 +112,25 @@ class WAVEditor(Editor):
     def _setup_player_signals(self) -> None:
         """Set up media player signals."""
         player = self.mediaPlayer.player  # pyright: ignore[reportAttributeAccessIssue]
-        
-        # Disconnect any existing connections to avoid duplicates
-        try:
-            player.durationChanged.disconnect()
-        except TypeError:
-            pass  # No connections to disconnect
-        try:
-            player.positionChanged.disconnect()
-        except TypeError:
-            pass
-        try:
-            player.mediaStatusChanged.disconnect()
-        except TypeError:
-            pass
-        if qtpy.QT5:
-            try:
-                player.error.disconnect()  # type: ignore[attr-defined]
-            except TypeError:
-                pass  # No connections to disconnect
-        else:
-            try:
-                player.errorOccurred.disconnect()  # type: ignore[attr-defined]
-            except TypeError:
-                pass  # No connections to disconnect
-        
-        # Connect signals
-        player.durationChanged.connect(self._on_duration_changed)
-        player.positionChanged.connect(self._on_position_changed)
-        player.mediaStatusChanged.connect(self._on_media_status_changed)
 
-        # Error handling differs between Qt5 and Qt6
-        if qtpy.QT5:
-            player.error.connect(self._on_player_error)  # type: ignore[attr-defined]
-        else:
-            player.errorOccurred.connect(self._on_player_error)  # type: ignore[attr-defined]
+        # Disconnect any existing connections to avoid duplicates
+        signal_pairs: list[tuple[Callable[[], QMediaPlayer.Error | None] | pyqtBoundSignal, Callable]] = [
+            (player.durationChanged, self._on_duration_changed),
+            (player.positionChanged, self._on_position_changed),
+            (player.mediaStatusChanged, self._on_media_status_changed),
+        ]
+        error_signal = player.error if qtpy.QT5 else player.errorOccurred  # type: ignore[attr-defined]
+
+        signal_pairs.append((error_signal, self._on_player_error))
+
+        for signal, handler in signal_pairs:
+            try:
+                signal.disconnect()
+            except TypeError:
+                pass
+
+        for signal, handler in signal_pairs:
+            signal.connect(handler)
 
     # =========================================================================
     # Format Detection
@@ -279,20 +268,21 @@ class WAVEditor(Editor):
             data: Raw audio data bytes
         """
         player = self.mediaPlayer.player  # pyright: ignore[reportAttributeAccessIssue]
-        
+
         # Stop player and clear media to prevent signal firing during cleanup
         player.stop()
-        
+
         # Clear media to release any existing resources
         try:
             if qtpy.QT5:
                 from qtpy.QtMultimedia import QMediaContent  # pyright: ignore[reportAttributeAccessIssue]
+
                 player.setMedia(QMediaContent())  # pyright: ignore[reportAttributeAccessIssue]
             else:
                 player.setSource(None)  # type: ignore[attr-defined]
         except Exception:  # noqa: BLE001
             pass  # Ignore errors when clearing media
-        
+
         # Cleanup temp files synchronously
         self._cleanup_temp_file()
 
@@ -467,7 +457,7 @@ class WAVEditor(Editor):
         # Clamp duration to valid range for QSlider (int32 max) and ensure non-negative
         max_slider_value = 2147483647
         duration = max(0, min(duration, max_slider_value))
-        
+
         # Format time only if duration is valid
         if duration > 0:
             try:
@@ -476,7 +466,7 @@ class WAVEditor(Editor):
                 total_time = "00:00:00"
         else:
             total_time = "00:00:00"
-            
+
         self.ui.totalTimeLabel.setText(total_time)
         # Set minimum to 0 to ensure valid range even for zero duration
         self.ui.timeSlider.setMinimum(0)
@@ -490,7 +480,7 @@ class WAVEditor(Editor):
         """
         # Clamp position to valid range and ensure non-negative
         position = max(0, min(position, 2147483647))
-        
+
         # Only format time if position is valid
         if position > 0:
             try:
@@ -500,7 +490,7 @@ class WAVEditor(Editor):
                 current_time = "00:00:00"
         else:
             current_time = "00:00:00"
-        
+
         self.ui.currentTimeLabel.setText(current_time)
 
         # Fix for inaccurate duration calculation (but clamp to avoid overflow)
@@ -525,7 +515,7 @@ class WAVEditor(Editor):
 
     def _on_player_error(self, *args: Any, **kwargs: Any) -> None:
         """Handle media player errors."""
-        RobustLogger().warning(f"Media player error: {args}, {kwargs}")
+        RobustLogger().warning(trf("Media player error: {args}, {kwargs}", args=args, kwargs=kwargs))
 
     # =========================================================================
     # Cleanup
@@ -542,3 +532,10 @@ class WAVEditor(Editor):
         if a0 is not None:
             super().closeEvent(a0)
 
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("wav"))

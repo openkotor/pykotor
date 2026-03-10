@@ -20,7 +20,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `durationvariance` | Float | Duration variance |
 | `loop` | Boolean | Whether effect loops |
 | `render` | Boolean | Whether effect is rendered |
-| `renderhint` | Integer | Render hint [flags](GFF-File-Format#gff-data-types) |
+| `renderhint` | Integer | Render hint flags |
 | `sound` | ResRef (optional) | Sound effect [ResRef](GFF-File-Format#gff-data-types) |
 | `sounddelay` | Float | Sound delay in seconds |
 | `soundvariance` | Float | Sound variance |

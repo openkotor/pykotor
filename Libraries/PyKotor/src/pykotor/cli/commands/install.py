@@ -1,8 +1,10 @@
 """Install command implementation."""
+
 from __future__ import annotations
 
 import os
 import shutil
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -12,6 +14,7 @@ if TYPE_CHECKING:
 
 from pykotor.cli.cfg_parser import load_config
 from pykotor.cli.commands.pack import cmd_pack, should_overwrite_file
+from utility.misc import is_valid_path
 
 
 def find_kotor_install_dir() -> Path | None:
@@ -83,7 +86,7 @@ def cmd_install(args: Namespace, logger: Logger) -> int:
     else:
         install_dir = find_kotor_install_dir()
 
-    if install_dir is None or not install_dir.exists():
+    if not is_valid_path(install_dir):
         logger.error("KOTOR installation directory not found")
         logger.info("Use --installDir to specify location")
         return 1
@@ -158,6 +161,3 @@ def cmd_install(args: Namespace, logger: Logger) -> int:
 
     logger.info("Installation complete")
     return 0
-
-
-

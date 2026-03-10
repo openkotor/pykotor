@@ -1,8 +1,11 @@
+"""Main window widgets: file tree, editor stack, and async resource loading."""
+
 from __future__ import annotations
 
 import contextlib
 import multiprocessing
 import os
+import re
 
 from abc import abstractmethod
 from collections import defaultdict
@@ -23,12 +26,12 @@ from qtpy.QtCore import (
     Signal,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
     Slot,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
 )
-from qtpy.QtGui import QCursor, QColor, QIcon, QImage, QPalette, QPixmap, QStandardItem, QStandardItemModel
+from qtpy.QtGui import QColor, QCursor, QIcon, QImage, QPalette, QPixmap, QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import QAbstractItemView, QApplication, QFileDialog, QHeaderView, QInputDialog, QListView, QMenu, QStyle, QToolTip, QWidget
 
 from loggerplus import RobustLogger  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.extract.file import FileResource
-from pykotor.resource.formats.tpc import TPC, TPCMipmap, TPCTextureFormat, read_tpc, write_tpc
+from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, read_tpc, write_tpc
 from pykotor.resource.type import ResourceType
 from toolset.data.installation import HTInstallation
 from toolset.gui.dialogs.load_from_location_result import ResourceItems
@@ -39,8 +42,9 @@ from toolset.gui.widgets.texture_preview import load_resource_preview_mipmap, qi
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QModelIndex, QRect
     from qtpy.QtGui import QMouseEvent, QResizeEvent, QShowEvent
-    from qtpy.QtWidgets import QScrollBar, QMenu
+    from qtpy.QtWidgets import QScrollBar
 
+    from pykotor.resource.formats.tpc import TPCMipmap
     from pykotor.resource.formats.tpc.tpc_data import TPC
     from toolset.data.installation import HTInstallation
     from utility.gui.qt.widgets.itemviews.listview import RobustListView
@@ -448,12 +452,22 @@ class ResourceProxyModel(QSortFilterProxyModel):
         super().__init__(parent)
         self.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.filter_string: str = ""
+        self._wildcard_regex: re.Pattern[str] | None = None
+
+    @staticmethod
+    def _wildcard_to_regex_pattern(pattern: str) -> str:
+        escaped_pattern = re.escape(pattern)
+        wildcard_pattern = escaped_pattern.replace(r"\*", ".*").replace(r"\?", ".")
+        return f"^{wildcard_pattern}$"
 
     def set_filter_string(
         self,
         filter_string: str,
     ):
         self.filter_string = filter_string.lower()
+        self._wildcard_regex = None
+        if "*" in self.filter_string or "?" in self.filter_string:
+            self._wildcard_regex = re.compile(self._wildcard_to_regex_pattern(self.filter_string), re.IGNORECASE)
         self.invalidateFilter()
 
     def filterAcceptsRow(
@@ -465,10 +479,10 @@ class ResourceProxyModel(QSortFilterProxyModel):
         assert isinstance(model, QStandardItemModel)
         resref_index: QModelIndex = model.index(source_row, 0, source_parent)
         item: ResourceStandardItem | QStandardItem | None = model.itemFromIndex(resref_index)
-        
+
         if item is None:
             return False
-            
+
         if isinstance(item, ResourceStandardItem):
             # Match against what the user sees (tree text) plus resource identifiers.
             # This avoids edge-cases where the display label and the underlying FileResource
@@ -477,17 +491,19 @@ class ResourceProxyModel(QSortFilterProxyModel):
             resref: str = item.resource.resname().lower()
             identifier_filename: str = item.resource.filename().lower()  # e.g. "p_bastila.utc"
             container_filename: str = item.resource.filepath().name.lower()  # e.g. "templates.bif"
+            searchable_values = (display_text, resref, identifier_filename, container_filename)
 
-            # Check if the filter string is a substring of any known representation.
-            if (
-                self.filter_string in display_text
-                or self.filter_string in resref
-                or self.filter_string in identifier_filename
-                or self.filter_string in container_filename
-            ):
+            if not self.filter_string.strip():
                 return True
-            return False
-        
+
+            if self._wildcard_regex is not None:
+                return any(self._wildcard_regex.match(value) is not None for value in searchable_values)
+
+            if any(value.startswith(self.filter_string) for value in searchable_values):
+                return True
+
+            return any(self.filter_string in value for value in searchable_values)
+
         # For category items (non-ResourceStandardItem), check if any child matches
         # This ensures categories are shown if they contain matching resources
         if self.filter_string.strip():
@@ -501,7 +517,7 @@ class ResourceProxyModel(QSortFilterProxyModel):
                 if self.filterAcceptsRow(child_row, resref_index):
                     return True
             return False
-        
+
         # If no filter string, show all categories
         return True
 
@@ -671,7 +687,7 @@ class TextureList(MainWindowList):
         self._poll_timer.timeout.connect(self._poll_result_queue)
         # Map of (section_name, row) -> FileResource for pending process loads
         self._pending_process_loads: dict[tuple[str, int], FileResource] = {}
-        
+
         # Throttle timer for scroll events to prevent rapid queue operations
         self._scroll_throttle_timer: QTimer = QTimer(self)
         self._scroll_throttle_timer.setSingleShot(True)
@@ -1000,7 +1016,7 @@ class TextureList(MainWindowList):
 
     def _throttled_scroll_handler(self, value: int):
         """Handle scroll events with throttling to prevent rapid queue operations.
-        
+
         Args:
         ----
             value: The scroll value from the valueChanged signal (ignored).
@@ -1010,7 +1026,7 @@ class TextureList(MainWindowList):
         # Restart the throttle timer (single-shot, so it will fire after the timeout)
         # This ensures we only call queue_load_visible_icons after scrolling stops
         self._scroll_throttle_timer.start(150)  # 150ms throttle delay
-    
+
     def _throttled_queue_load_visible_icons(self):
         """Called by the throttle timer to load visible icons after scrolling stops."""
         if self._pending_scroll_load:
@@ -1248,7 +1264,7 @@ def get_image_from_resource(
             else:
                 # Use default palette if no application instance
                 palette = QPalette()
-            
+
             # Use Mid color (typically gray) for placeholder
             placeholder_color = palette.color(QPalette.ColorRole.Mid)
             if not placeholder_color.isValid():

@@ -28,10 +28,7 @@ class DLGNode:
 
     References:
     ----------
-        Based on swkotor.exe DLG structure:
-        - CSWSDialog::LoadDialog @ 0x005a2ae0 - Loads dialog from GFF structure
-        - CSWSDialog::LoadDialogBase @ 0x0059f5f0 - Loads dialog base properties
-        - CSWSDialog::LoadDialogLinkedNode @ 0x0059ec10 - Loads linked dialog nodes (entries/replies)
+        See pykotor.resource.formats.gff.gff_data module docstring for engine addresses (K1 + TSL TODO). LoadDialog, LoadDialogBase, LoadDialogLinkedNode.
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/DLGNode.ts (DLG node structure)
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorDLG/DLG.cs (DLG node structure)
 
@@ -41,94 +38,94 @@ class DLGNode:
     ----------
         links: List of DLGLink objects connecting to other nodes.
             Outgoing edges in the dialog graph.
-        
+
         list_index: Index of this node in EntryList or ReplyList.
             Used for GFF path resolution (e.g., "EntryList\\0").
-        
+
         text: "Text" field. Localized string for the dialog line.
             The actual dialog text displayed to the player.
-        
+
         speaker: "Speaker" field. Speaker identifier (DLGEntry only).
             Identifies who is speaking this line.
-        
+
         script1: "Script" field. Primary script to execute.
             Script ResRef executed when this node is reached.
-        
+
         script2: "Script2" field. Secondary script (KotOR 2).
             Additional script ResRef for KotOR 2.
-        
+
         sound: "Sound" field. Sound effect ResRef.
             Sound effect played with this dialog line.
-        
+
         vo_resref: "VO_ResRef" field. Voice-over ResRef.
             Voice-over audio file for this line.
-        
+
         animations: "AnimList" field. List of dialog animations.
             Animation references for this dialog line.
-        
+
         camera_angle: "CameraAngle" field. Camera angle setting.
-        
+
         camera_id: "CameraID" field. Camera ID reference.
-        
+
         camera_anim: "CameraAnimation" field. Camera animation ID.
-        
+
         camera_fov: "CamFieldOfView" field. Camera field of view.
-        
+
         camera_height: "CamHeightOffset" field. Camera height offset.
-        
+
         camera_effect: "CamVidEffect" field. Camera video effect ID.
-        
+
         target_height: "TarHeightOffset" field. Target height offset.
-        
+
         fade_type: "FadeType" field. Fade effect type.
-        
+
         fade_color: "FadeColor" field. Fade color (vec3).
-        
+
         fade_delay: "FadeDelay" field. Fade delay in seconds.
-        
+
         fade_length: "FadeLength" field. Fade duration in seconds.
-        
+
         delay: "Delay" field. Dialog delay in milliseconds.
-        
+
         listener: "Listener" field. Listener identifier.
-        
+
         quest: "Quest" field. Quest identifier string.
-        
+
         quest_entry: "QuestEntry" field. Quest entry index.
-        
+
         plot_index: "PlotIndex" field. Plot flag index.
-        
+
         plot_xp_percentage: "PlotXPPercentage" field. XP percentage for plot.
-        
+
         emotion_id: "Emotion" field. Emotion animation ID.
             Reference: emotion.2da for valid IDs.
-        
+
         facial_id: "FacialAnim" field. Facial animation ID.
             Reference: facialanim.2da for valid IDs.
-        
+
         alien_race_node: "AlienRaceNode" field. KotOR 2 alien race ID.
             Reference: racialtypes.2da for valid IDs.
-        
+
         node_id: "NodeID" field. KotOR 2 node identifier.
             Unique identifier for this node.
-        
+
         post_proc_node: "PostProcNode" field. KotOR 2 post-processing node ID.
-        
+
         unskippable: "NodeUnskippable" field. KotOR 2 unskippable flag.
-        
+
         record_vo: "RecordVO" field. KotOR 2 record VO flag.
-        
+
         record_no_vo_override: "RecordNoVOOverri" field. KotOR 2 override flag.
-        
+
         vo_text_changed: "VOTextChanged" field. KotOR 2 VO text changed flag.
-        
+
         wait_flags: "WaitFlags" field. Wait flags bitmask.
-        
+
         sound_exists: "SoundExists" field. Sound existence flag.
-        
+
         script1_param1-6: "ActionParam1-5" and "ActionParamStrA" fields. KotOR 2 script parameters.
             Parameters passed to script1.
-        
+
         script2_param1-6: "ActionParam1b-5b" and "ActionParamStrB" fields. KotOR 2 script parameters.
             Parameters passed to script2.
     """
@@ -233,6 +230,7 @@ class DLGNode:
         source: DLGNode,
     ):
         from pykotor.resource.generics.dlg.links import DLGLink
+
         target_links.append(DLGLink(source, len(target_links)))
 
     def calculate_links_and_nodes(self) -> tuple[int, int]:

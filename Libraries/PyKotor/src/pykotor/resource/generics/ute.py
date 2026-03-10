@@ -1,3 +1,5 @@
+"""UTE (encounter) generic: GFF-based encounter definitions and spawn lists."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -34,12 +36,11 @@ class UTE:
                 - Loads encounter spawn point geometry
             - 0x00590580 - CSWSEncounter::LoadEncounterGeometry
                 - Loads encounter geometry data
-        
+
         KotOR II / TSL (swkotor2.exe):
-            - Functionally equivalent UTE parsing logic
-            - Same GFF field structure and parsing behavior
-            - String references at different addresses due to binary layout differences
-        
+            - ReadEncounterFromGff equivalent: FUN_007eb810 (CreatureList: ResRef, CR, SingleSpawn, GuaranteedCount)
+            - SaveEncounter equivalent: FUN_007ed770
+
         GFF Field Structure (from LoadEncounter analysis):
             - Root struct fields:
                 - "CreatureList" (GFFList) - List of creature spawn entries
@@ -55,7 +56,7 @@ class UTE:
                 - "CR" (FLOAT) - Challenge rating
                 - "SingleSpawn" (BYTE) - Whether creature spawns only once
                 - Additional spawn-related fields
-        
+
         Note: UTE files are GFF format files with specific structure definitions (GFFContent.UTE)
 
     Attributes:
@@ -207,19 +208,34 @@ class UTECreature:
 
 
 def utd_version(gff: GFF) -> Game:
-    for label in "GuaranteedCount":
-        for creature_struct in gff.root.acquire("CreatureList", GFFList()):
-            if creature_struct.exists(label):
-                return Game.K2
+    """Infer game version from UTE GFF. GuaranteedCount is TSL-only (K2)."""
+    creature_list = gff.root.acquire("CreatureList", GFFList())
+    for creature_struct in creature_list:
+        if creature_struct.exists("GuaranteedCount"):
+            return Game.K2
     return Game.K1
 
 
 def construct_ute(gff: GFF) -> UTE:
+    """Constructs a UTE object from a GFF structure.
+
+    Defaults when field missing (REVA): K1 CSWSEncounter::LoadEncounter @ 0x00593830,
+    ReadEncounterFromGff @ 0x00592430; TSL ReadEncounterFromGff @ 0x007eb810. Tag/TemplateResRef "";
+    Active/PlayerOnly/Reset/SpawnOption 0; DifficultyIndex/Faction/MaxCreatures/RecCreatures/ResetTime/Respawns 0;
+    scripts ResRef "". Optional when missing.
+
+    Ten reference functions (5 K1, 5 TSL): K1 (1) LoadEncounter @ 0x00593830 (root UTE parser),
+    (2) LoadEncounters @ 0x00505060 (area encounters), (3) ReadEncounterFromGff @ 0x00592430 (CreatureList),
+    (4) ReadEncounterScriptsFromGff @ 0x00590820, (5) LoadEncounterSpawnPoints @ 0x00590410 / LoadEncounterGeometry @ 0x00590580.
+    TSL (1) ReadEncounterFromGff @ 0x007eb810, (2) SaveEncounter @ 0x007ed770, (3)-(5) same semantics.
+    """
     ute = UTE()
 
     root = gff.root
+    # Identity: Tag "", TemplateResRef "". K1 LoadEncounter 0x00593830, TSL 0x007eb810. Optional.
     ute.tag = root.acquire("Tag", "")
     ute.resref = root.acquire("TemplateResRef", ResRef.from_blank())
+    # Spawn/reset: Active, DifficultyIndex, Faction, MaxCreatures, RecCreatures, Reset, ResetTime, Respawns, SpawnOption. Default 0. K1/TSL LoadEncounter. Optional.
     ute.active = bool(root.acquire("Active", 0))
     ute.difficulty_id = root.acquire("DifficultyIndex", 0)
     ute.unused_difficulty = root.acquire("Difficulty", 0)
@@ -231,6 +247,7 @@ def construct_ute(gff: GFF) -> UTE:
     ute.reset_time = root.acquire("ResetTime", 0)
     ute.respawns = root.acquire("Respawns", 0)
     ute.single_shot = bool(root.acquire("SpawnOption", 0))
+    # Scripts: OnEntered/OnExit/OnExhausted/OnHeartbeat/OnUserDefined. ResRef "". K1 ReadEncounterScriptsFromGff 0x00590820; TSL same. Optional.
     ute.on_entered = root.acquire("OnEntered", ResRef.from_blank())
     ute.on_exit = root.acquire("OnExit", ResRef.from_blank())
     ute.on_exhausted = root.acquire("OnExhausted", ResRef.from_blank())
@@ -240,11 +257,16 @@ def construct_ute(gff: GFF) -> UTE:
     ute.name = root.acquire("LocalizedName", LocalizedString.from_invalid())
     ute.palette_id = root.acquire("PaletteID", 0)
 
+    # CreatureList: ResRef "", CR 0.0, SingleSpawn 0; TSL GuaranteedCount 0. K1 ReadEncounterFromGff 0x00592430, TSL 0x007eb810. Optional.
     creature_list = root.get_list("CreatureList")
     if creature_list is not None:
         for creature_struct in creature_list:
             creature = UTECreature()
             ute.creatures.append(creature)
+            # K1 ReadEncounterFromGff @ 0x00592430: ResRef (CResRef ""), CR (FLOAT 0.0), SingleSpawn (BYTE 0).
+            #   K1 does NOT read Appearance or GuaranteedCount; field3_0x18 hardcoded 0.
+            # TSL FUN_007eb810 (ReadEncounterFromGff): same + GuaranteedCount (ReadFieldINT default 0).
+            # Appearance is toolset-only; engine does not read it.
             creature.appearance_id = creature_struct.acquire("Appearance", 0)
             creature.challenge_rating = creature_struct.acquire("CR", 0.0)
             creature.single_spawn = bool(creature_struct.acquire("SingleSpawn", 0))
@@ -263,7 +285,7 @@ def dismantle_ute(
     gff = GFF(GFFContent.UTE)
 
     root = gff.root
-
+    # Write same defaults as engine read. K1 LoadEncounter 0x00593830, SaveEncounter 0x00591350; TSL 0x007eb810, 0x007ed770. Tag "", ResRef "", INT32/BYTE 0.
     root.set_string("Tag", ute.tag)
     root.set_resref("TemplateResRef", ute.resref)
     root.set_uint8("Active", ute.active)
@@ -285,6 +307,8 @@ def dismantle_ute(
 
     root.set_uint8("PaletteID", ute.palette_id)
 
+    # K1 SaveEncounter @ 0x00591350: CreatureList writes ResRef, CR, SingleSpawn only.
+    # TSL FUN_007ed770: CreatureList writes ResRef, CR, SingleSpawn, GuaranteedCount.
     creature_list = root.set_list("CreatureList", GFFList())
     for creature in ute.creatures:
         creature_struct = creature_list.add(0)

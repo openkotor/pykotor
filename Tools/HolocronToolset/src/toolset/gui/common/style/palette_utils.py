@@ -1,7 +1,14 @@
+"""Palette helpers: color blending and TLK/locstring background styling for themes."""
+
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from qtpy.QtGui import QColor, QPalette
-from qtpy.QtWidgets import QApplication, QWidget
+from qtpy.QtWidgets import QApplication
+
+if TYPE_CHECKING:
+    from qtpy.QtWidgets import QWidget
 
 
 def _blend(a: QColor, b: QColor, t: float) -> QColor:
@@ -41,5 +48,3 @@ def apply_locstring_background(
         pal.setColor(QPalette.ColorRole.Base, _blend(base, highlight, 0.18))
 
     widget.setPalette(pal)
-
-

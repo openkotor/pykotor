@@ -33,7 +33,6 @@ from pykotor.resource.type import ResourceType
 from pykotor.tools import creature
 
 if TYPE_CHECKING:
-
     from pykotor.common.module import Module, ModuleResource
     from pykotor.extract.installation import Installation
     from pykotor.resource.formats.lyt import LYT
@@ -97,10 +96,13 @@ class KotorRenderer(ShowBase):
         module: Module | None = None,
     ):
         # Enable hardware animation and advanced shaders
-        loadPrcFileData("", """
+        loadPrcFileData(
+            "",
+            """
             hardware-animated-vertices true
             basic-shaders-only false
-        """)
+        """,
+        )
 
         super().__init__()
 
@@ -204,11 +206,17 @@ class KotorRenderer(ShowBase):
                 return TwoDA()
             return read_2da(resource.data)
 
-        self.table_doors = load_2da("genericdoors")
-        self.table_placeables = load_2da("placeables")
-        self.table_creatures = load_2da("appearance")
-        self.table_heads = load_2da("heads")
-        self.table_baseitems = load_2da("baseitems")
+        # Mapping of table attributes to 2DA file names
+        table_mappings = {
+            "table_doors": "genericdoors",
+            "table_placeables": "placeables",
+            "table_creatures": "appearance",
+            "table_heads": "heads",
+            "table_baseitems": "baseitems",
+        }
+
+        for attr_name, filename in table_mappings.items():
+            setattr(self, attr_name, load_2da(filename))
 
     def load_module(self, module: Module) -> None:
         """Load a module and all its content into the scene."""
@@ -411,6 +419,8 @@ class KotorRenderer(ShowBase):
                 SearchLocation.CUSTOM_MODULES,
                 SearchLocation.OVERRIDE,
                 SearchLocation.TEXTURES_TPA,
+                SearchLocation.TEXTURES_TPB,
+                SearchLocation.TEXTURES_TPC,
                 SearchLocation.CHITIN,
             ],
             capsules=None if self._module is None else self._module.capsules(),

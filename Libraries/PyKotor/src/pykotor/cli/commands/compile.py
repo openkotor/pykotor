@@ -13,7 +13,9 @@ if TYPE_CHECKING:
     from argparse import Namespace
     from logging import Logger
 
-from pykotor.cli.cfg_parser import KotorCLIConfig, load_config
+    from pykotor.cli.cfg_parser import KotorCLIConfig
+
+from pykotor.cli.cfg_parser import load_config
 from pykotor.common.misc import Game
 from pykotor.resource.formats.ncs.compilers import InbuiltNCSCompiler
 
@@ -37,7 +39,7 @@ def find_nss_compiler() -> Path | None:
         Based on swkotor.exe NCS compilation:
         - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
         - NWScript compilation and execution within game engine
-        
+
         Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py - PyKotor compiler implementations
 
     """
@@ -79,11 +81,8 @@ def use_builtin_compiler(
 
     References:
     ----------
-        Based on swkotor.exe NCS compilation:
-        - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
-        - HandleBNCSMessage @ 0x005d5180 - NCS bytecode execution
-        - NWScript compilation and execution within game engine
-        
+        Based on unified K1/TSL NCS. See pykotor.resource.formats.ncs.ncs_data (K1 addrs + TSL TODO).
+        CResNCS::CResNCS (0x005d4c30), HandleBNCSMessage (0x005d5180); NWScript compilation/execution.
         Derivations and Other Implementations:
         ----------
             - https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts

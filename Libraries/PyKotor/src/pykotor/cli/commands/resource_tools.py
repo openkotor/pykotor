@@ -3,12 +3,13 @@
 This module provides CLI commands for converting resources (textures, sounds, models)
 using PyKotor utilities.
 """
+
 from __future__ import annotations
 
 import pathlib
-from argparse import Namespace
 
-from loggerplus import RobustLogger as Logger
+from typing import TYPE_CHECKING
+
 from pykotor.tools.resources import (
     convert_ascii_to_mdl,
     convert_clean_to_wav,
@@ -17,6 +18,11 @@ from pykotor.tools.resources import (
     convert_tpc_to_tga,
     convert_wav_to_clean,
 )
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from loggerplus import RobustLogger as Logger
 
 
 def cmd_texture_convert(args: Namespace, logger: Logger) -> int:
@@ -88,7 +94,7 @@ def cmd_model_convert(args: Namespace, logger: Logger) -> int:
         Based on swkotor.exe model format:
         - LoadModel @ 0x00464200, @ 0x0061b380, @ 0x006823f0, @ 0x006842e0, @ 0x006903d0, @ 0x006910d0 - Model loading functions
         - UnloadModel @ 0x0060c8e0, @ 0x00646650, @ 0x006825f0 - Model unloading functions
-        
+
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/mdlops/tree/master/
@@ -116,4 +122,3 @@ def cmd_model_convert(args: Namespace, logger: Logger) -> int:
         return 1
     else:
         return 0
-

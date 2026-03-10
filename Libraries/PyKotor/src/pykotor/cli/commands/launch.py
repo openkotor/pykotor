@@ -1,8 +1,10 @@
 """Launch command implementation."""
+
 from __future__ import annotations
 
 import os
 import subprocess
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -11,6 +13,7 @@ if TYPE_CHECKING:
     from logging import Logger
 
 from pykotor.cli.commands.install import cmd_install, find_kotor_install_dir
+from utility.misc import is_valid_path
 
 
 def find_kotor_executable() -> Path | None:
@@ -78,7 +81,7 @@ def cmd_launch(args: Namespace, logger: Logger) -> int:
     else:
         game_bin = find_kotor_executable()
 
-    if game_bin is None or not game_bin.exists():
+    if not is_valid_path(game_bin):
         logger.error("KOTOR executable not found")
         logger.info("Use --gameBin to specify location")
         return 1
@@ -107,6 +110,3 @@ def cmd_launch(args: Namespace, logger: Logger) -> int:
         return 1
 
     return 0
-
-
-

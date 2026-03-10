@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import unittest
-import tempfile
 import shutil
+import tempfile
+import unittest
 import warnings
 
 from pathlib import Path
@@ -12,6 +12,7 @@ try:
     from PIL import Image
 except ImportError:
     import pytest
+
     pytest.skip("PIL/Pillow not available", allow_module_level=True)
 
 from pykotor.common.language import Language  # pyright: ignore[reportMissingImports]
@@ -21,6 +22,7 @@ try:
     from pykotor.font.draw import write_bitmap_font, write_bitmap_fonts  # pyright: ignore[reportMissingImports]
 except ImportError:
     import pytest
+
     pytest.skip("pykotor.font not available", allow_module_level=True)
 
 if __name__ == "__main__":

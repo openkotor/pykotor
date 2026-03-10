@@ -178,13 +178,13 @@ graph TD
 
 ## 📦 Artifacts
 
-Each release includes platform-specific builds:
+Each release includes platform-specific builds. Minimum Python version is 3.8.
 
 | Platform | Architectures |
 |----------|---------------|
-| Windows | x86, x64 |
-| Linux | x64 |
-| macOS | x64 |
+| Windows | x86, x64 (arm64 where supported) |
+| Linux | x64, arm64 |
+| macOS | x64, arm64 |
 
 ## 🐛 Troubleshooting
 

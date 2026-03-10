@@ -1,3 +1,5 @@
+"""Boundary mesh rendering: OpenGL VAO/VBO for walkmesh and other boundary geometry."""
+
 from __future__ import annotations
 
 import ctypes
@@ -46,6 +48,7 @@ if TYPE_CHECKING:
     from pykotor.gl.scene import Scene
     from pykotor.gl.shader import Shader
 
+
 class Boundary:
     def __init__(
         self,
@@ -69,7 +72,7 @@ class Boundary:
             glBufferData(GL_ARRAY_BUFFER, len(vertices_np) * 4, vertices_np, GL_STATIC_DRAW)
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._ebo)
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, len(elements_np) * 4, elements_np, GL_STATIC_DRAW)
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_np.nbytes, elements_np, GL_STATIC_DRAW)
 
             glEnableVertexAttribArray(1)
             glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12, ctypes.c_void_p(0))
@@ -113,7 +116,7 @@ class Boundary:
         shader.set_matrix4("model", transform)
         glBindVertexArray(self._vao)
         glDrawElements(GL_TRIANGLES, self._face_count, GL_UNSIGNED_SHORT, None)
-    
+
     def vertex_blob(self) -> bytes:
         """Interleaved vertex data (position only; UVs are zero-filled)."""
         vertex_count = len(self._vertex_data) // 3

@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+
 from pathlib import Path
 
 sys.path.insert(0, "vendor/PyKotor/Libraries/PyKotor/src")
@@ -82,9 +83,7 @@ def analyze_model(mdl_path: Path, mdx_path: Path, name: str):
     try:
         ascii_path = td_path / f"{test_mdl.stem}-ascii.mdl"
         if ascii_path.exists():
-            mdl_obj_ascii = read_mdl(
-                ascii_path.read_bytes(), file_format=ResourceType.MDL_ASCII
-            )
+            mdl_obj_ascii = read_mdl(ascii_path.read_bytes(), file_format=ResourceType.MDL_ASCII)
             print("[OK] PyKotor can read MDLOps ASCII")
 
             # Write binary
@@ -116,19 +115,11 @@ def analyze_model(mdl_path: Path, mdx_path: Path, name: str):
 
 
 # Test both models
-passing_model_mdl = Path(
-    "vendor/PyKotor/Libraries/PyKotor/tests/test_files/mdl/c_dewback.mdl"
-)
-passing_model_mdx = Path(
-    "vendor/PyKotor/Libraries/PyKotor/tests/test_files/mdl/c_dewback.mdx"
-)
+passing_model_mdl = Path("vendor/PyKotor/Libraries/PyKotor/tests/test_files/mdl/c_dewback.mdl")
+passing_model_mdx = Path("vendor/PyKotor/Libraries/PyKotor/tests/test_files/mdl/c_dewback.mdx")
 
-failing_model_mdl = Path(
-    "vendor/PyKotor/Libraries/PyKotor/tests/test_files/mdl/dor_lhr02.mdl"
-)
-failing_model_mdx = Path(
-    "vendor/PyKotor/Libraries/PyKotor/tests/test_files/mdl/dor_lhr02.mdx"
-)
+failing_model_mdl = Path("vendor/PyKotor/Libraries/PyKotor/tests/test_files/mdl/dor_lhr02.mdl")
+failing_model_mdx = Path("vendor/PyKotor/Libraries/PyKotor/tests/test_files/mdl/dor_lhr02.mdx")
 
 analyze_model(passing_model_mdl, passing_model_mdx, "PASSING MODEL")
 analyze_model(failing_model_mdl, failing_model_mdx, "FAILING MODEL")

@@ -1,48 +1,46 @@
 from __future__ import annotations
 
-import os
-
 from typing import TYPE_CHECKING, Any
 
-from qtpy.QtCore import QDir, QDirIterator, Qt
+from qtpy.QtCore import Qt
 from qtpy.QtGui import QColor
-from qtpy.QtWidgets import QApplication, QComboBox, QDialog, QHBoxLayout, QLabel, QPushButton, QStyleFactory, QVBoxLayout
+from qtpy.QtWidgets import QApplication, QComboBox, QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
+
+from utility.gui.qt.widgets.theme.theme_apply import apply_style, get_original_style
+from utility.gui.qt.widgets.theme.theme_manager import ThemeManager
 
 if TYPE_CHECKING:
-    from qtpy.QtCore import QCoreApplication
     from qtpy.QtGui import QPalette
-    from qtpy.QtWidgets import QStyle
 
 
 class ThemeDialog(QDialog):
     """Dialog for selecting and changing application themes."""
 
-    def __init__(self):
-        """Initialize the theme dialog."""
+    def __init__(self, theme_manager: ThemeManager | None = None):
+        """Initialize the theme dialog.
+
+        Args:
+            theme_manager: Optional ThemeManager for applying theme/style. If not provided, a default is created.
+        """
         super().__init__()
+        self._manager = theme_manager or ThemeManager()
         self._init_ui()
 
     @staticmethod
     def get_available_themes() -> tuple[str, ...]:
         """List all resources in the specified resource path."""
-        it = QDirIterator(QDir(":/themes"), QDirIterator.IteratorFlag.Subdirectories)
-        return tuple(os.path.splitext(os.path.basename(file))[0].lower() for file in iter(it.next, None))
-
+        manager = ThemeManager()
+        return manager.get_available_themes()
 
     @staticmethod
     def get_default_styles() -> tuple[str, ...]:
         """Get the available styles."""
-        return tuple(k.lower() for k in QStyleFactory.keys())
+        return ThemeManager.get_default_styles()
 
     @classmethod
     def get_original_style(cls) -> str:
         """Get the original style of the application."""
-        app: QCoreApplication | None = QApplication.instance()
-        assert isinstance(app, QApplication), "QApplication instance not found or not QApplication type."
-        app_style: QStyle | None = app.style()
-        if app_style is None:
-            raise RuntimeError("Failed to get application style")
-        return str(app_style.objectName().lower())
+        return get_original_style()
 
     @staticmethod
     def adjust_color(
@@ -78,11 +76,15 @@ class ThemeDialog(QDialog):
         self.setWindowTitle("Theme Selection")
         self.setWindowFlags(Qt.WindowType.WindowCloseButtonHint)
 
-        # Theme selection label and combo box
+        # Theme selection label and combo box (themes and styles in one list for simple UI)
         self._theme_label: QLabel = QLabel("Select Theme:")
         self._theme_combo_box: QComboBox = QComboBox()
-        self._theme_combo_box.addItems(set(self.get_available_themes() + self.get_default_styles()))
+        themes = self.get_available_themes()
+        styles = self.get_default_styles()
+        self._theme_combo_box.addItems(sorted(set(themes) | set(styles)))
         self._theme_combo_box.currentTextChanged.connect(self.on_theme_changed)
+        self._theme_names: frozenset[str] = frozenset(t.lower() for t in themes)
+        self._style_names: frozenset[str] = frozenset(s.lower() for s in styles)
 
         # Buttons
         self._ok_button: QPushButton = QPushButton("Apply")
@@ -102,15 +104,21 @@ class ThemeDialog(QDialog):
 
         self.setLayout(self._main_layout)
 
-    def on_theme_changed(
-        self,
-        theme: str,
-    ):
-        """Handle theme change event."""
-        print(f"Theme changed to: {theme}")
-        app: QCoreApplication | None = QApplication.instance()
-        assert isinstance(app, QApplication), "QApplication instance not found or not QApplication type."
-        self.apply_style(app=app, sheet=theme, style=None, palette=None)
+    def on_theme_changed(self, selection: str):
+        """Handle theme/style change: apply via ThemeManager if selection is a known theme or style."""
+        if not selection:
+            return
+        app = QApplication.instance()
+        if not isinstance(app, QApplication):
+            return
+        sel_lower = selection.lower()
+        if sel_lower in self._theme_names:
+            style_name = self._manager.get_original_style()
+            self._manager.apply_theme_and_style(selection, style_name, fallback_theme="sourcegraph-dark", fallback_style="Fusion")
+        elif sel_lower in self._style_names:
+            themes = self._manager.get_available_themes()
+            theme_name = themes[0] if themes else "sourcegraph-dark"
+            self._manager.apply_theme_and_style(theme_name, selection, fallback_theme="sourcegraph-dark", fallback_style="Fusion")
 
     @classmethod
     def apply_style(
@@ -121,18 +129,7 @@ class ThemeDialog(QDialog):
         palette: QPalette | None = None,
     ):
         """Apply the style, sheet, and palette to the application."""
-        # Set style first (before stylesheet) for proper rendering
-        if style:
-            style_obj = QStyleFactory.create(style)
-            if style_obj:
-                app.setStyle(style_obj)
-        app_style: QStyle | None = app.style()
-        if palette is None and app_style is not None:
-            palette = app_style.standardPalette()
-        if palette is not None:
-            app.setPalette(palette)
-        # Set stylesheet last (can override style appearance)
-        app.setStyleSheet(sheet or "")
+        apply_style(app, sheet=sheet, style=style, palette=palette)
 
     def get_theme(self) -> str:
         """

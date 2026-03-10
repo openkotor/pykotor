@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """DEPRECATED legacy Qt-facing indoor-kit classes (Toolset).
 
 Toolset now uses the headless data model in `pykotor.common.indoorkit` plus Qt preview helpers
@@ -9,16 +7,18 @@ This file remains only for backward compatibility with historical Toolset code/t
 Do not add new logic here.
 """
 
+from __future__ import annotations
+
 import copy
 
 from typing import TYPE_CHECKING, Any
+
+from qtpy.QtGui import QImage
 
 from utility.common.more_collections import CaseInsensitiveDict
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-    from qtpy.QtGui import QImage
 
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.generics.utd import UTD
@@ -107,21 +107,21 @@ class KitComponent:
         self.bwm: BWM = bwm
         self.mdl: bytes = mdl
         self.mdx: bytes = mdx
-    
+
     def __deepcopy__(self, memo: dict[int, Any]) -> KitComponent:
         """Custom deep copy implementation that handles QImage properly.
-        
+
         QImage objects cannot be pickled, so we need to manually copy them
         using QImage.copy() instead of relying on the default deepcopy behavior.
         """
         # Create a new KitComponent with copied attributes
         # Copy the QImage using its copy() method (QImage is not pickleable)
         image_copy = self.image.copy() if self.image is not None else None
-        
+
         # Deep copy other attributes
         bwm_copy = copy.deepcopy(self.bwm, memo)
         hooks_copy = copy.deepcopy(self.hooks, memo)
-        
+
         # Create new instance
         new_component = KitComponent(
             self.kit,  # Keep reference to same kit (don't deep copy)
@@ -132,5 +132,5 @@ class KitComponent:
             self.mdx,  # bytes are immutable, can share
         )
         new_component.hooks = hooks_copy
-        
+
         return new_component

@@ -1,4 +1,8 @@
-"""This module handles reading and writing KEY files."""
+"""Reading and writing KEY (BIF index) files.
+
+KEY files list BIF archives and map ResRef+ResourceType to (bif_index, res_index).
+Used by the game to resolve resource names to data in BIF files.
+"""
 
 from __future__ import annotations
 
@@ -14,10 +18,10 @@ if TYPE_CHECKING:
 
 class KEYBinaryReader(ResourceReader):
     """Reads KEY files.
-    
+
     KEY files index game resources stored in BIF files. They contain references to BIF files
     and resource entries that map ResRefs to locations within those BIF files.
-    
+
     References:
     ----------
         Based on swkotor.exe KEY structure:
@@ -40,13 +44,14 @@ class KEYBinaryReader(ResourceReader):
         - "CExoKeyTable::DestroyTable: Resource %s still in demand during table deletion" @ 0x0073e0d8 - Error message
         - "CExoKeyTable::AddKey: Duplicate Resource " @ 0x0073e184 - Duplicate resource error
         - KEY file format: "KEY " type, "V1.0" version, BIF count, key count, file table offset, key table offset
-        
+
         Missing Features:
         ----------------
         - ResRef lowercasing (reone lowercases resrefs)
         - Resource ID decomposition (reone decomposes resource_id into bif_index/resource_index)
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -59,7 +64,7 @@ class KEYBinaryReader(ResourceReader):
     @autoclose
     def load(self, *, auto_close: bool = True) -> KEY:  # noqa: FBT001, FBT002, ARG002
         """Load KEY data from source."""
-        
+
         # Read signature
         self.key.file_type = self._reader.read_string(4)
         self.key.file_version = self._reader.read_string(4)
@@ -108,12 +113,12 @@ class KEYBinaryReader(ResourceReader):
         self._reader.seek(key_table_offset)
         for _ in range(key_count):
             entry: KeyEntry = KeyEntry()
-            
+
             # reone lowercases resref at line 46
             resref_str = self._reader.read_string(16).rstrip("\0").lower()
             entry.resref = ResRef(resref_str)
             entry.restype = ResourceType.from_id(self._reader.read_uint16())
-            
+
             # NOTE: reone decomposes resource_id into bif_index/resource_index, PyKotor stores as-is
             entry.resource_id = self._reader.read_uint32()
             self.key.key_entries.append(entry)

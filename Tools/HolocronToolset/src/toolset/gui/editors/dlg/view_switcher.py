@@ -1,3 +1,5 @@
+"""DLG view switcher: toggle between tree view and node graph view."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
@@ -31,7 +33,7 @@ class DLGViewSwitcher(QWidget):
 
         # Load UI from .ui file
         from toolset.uic.qtpy.editors.view_switcher import Ui_Widget
-        
+
         self.ui: Ui_Widget = Ui_Widget()
         self.ui.setupUi(self)
 

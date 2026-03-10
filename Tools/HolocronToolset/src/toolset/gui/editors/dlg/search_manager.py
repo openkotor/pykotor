@@ -1,3 +1,5 @@
+"""DLG search: categories, result model, and node/link text search."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -5,7 +7,6 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING, Callable, Generator
 
 from loggerplus import RobustLogger
-
 from pykotor.resource.generics.dlg import DLGEntry
 
 if TYPE_CHECKING:

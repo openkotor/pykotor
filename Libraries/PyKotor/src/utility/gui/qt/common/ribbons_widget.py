@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
 from qtpy.QtCore import QSize, Qt
 from qtpy.QtGui import QAction, QIcon
@@ -10,16 +10,17 @@ from qtpy.QtWidgets import (
     QHBoxLayout,
     QMenu,
     QSizePolicy,
-    QStyle,
     QTabWidget,
     QToolButton,
     QVBoxLayout,
     QWidget,
 )
 
-from utility.gui.qt.common.action_definitions import FileExplorerActions
 from utility.gui.qt.common.column_options_dialog import SetDefaultColumnsDialog
 from utility.gui.qt.common.menu_definitions import FileExplorerMenus
+
+if TYPE_CHECKING:
+    from utility.gui.qt.common.action_definitions import FileExplorerActions
 
 
 class RibbonsWidget(QWidget):
@@ -357,8 +358,8 @@ class RibbonsWidget(QWidget):
 
     def set_stylesheet(self):
         """Apply Windows 11 Fluent Design styling to the ribbon widget."""
-        from qtpy.QtWidgets import QApplication
         from qtpy.QtGui import QPalette
+        from qtpy.QtWidgets import QApplication
 
         app = QApplication.instance()
         assert isinstance(app, QApplication), "QApplication.instance() is not a QApplication"
@@ -380,10 +381,10 @@ class RibbonsWidget(QWidget):
         win11_active_bg = "#E1F5FE"
         win11_active_border = "#0078D7"
         win11_group_border = "#E1E1E1"
-        
+
         # Check if dark theme
         is_dark = palette.color(QPalette.ColorRole.Window).lightness() < 128
-        
+
         if is_dark:
             # Dark theme colors
             win11_bg = "#202020"

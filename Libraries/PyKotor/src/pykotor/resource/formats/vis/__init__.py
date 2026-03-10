@@ -1,4 +1,7 @@
+"""VIS (visibility) package: room-to-room visibility and ASCII I/O for occlusion culling."""
+
 from __future__ import annotations
+
 from pykotor.resource.formats.vis.vis_data import VIS
 from pykotor.resource.formats.vis.io_vis import (
     VISAsciiReader,
@@ -14,4 +17,3 @@ __all__ = [
     "read_vis",
     "write_vis",
 ]
-

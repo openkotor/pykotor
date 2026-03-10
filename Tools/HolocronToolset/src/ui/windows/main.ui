@@ -439,6 +439,7 @@
         <addaction name="actionHelpAbout" />
         <addaction name="menuDiscord" />
         <addaction name="actionInstructions" />
+        <addaction name="actionNewFeaturesGuide" />
         <addaction name="actionHelpUpdates" />
       </widget>
       <addaction name="menuFile" />
@@ -771,6 +772,11 @@
     <action name="actionInstructions">
       <property name="text">
         <string>Instructions</string>
+      </property>
+    </action>
+    <action name="actionNewFeaturesGuide">
+      <property name="text">
+        <string>New Features Guide</string>
       </property>
     </action>
     <action name="actionDiscordHolocronToolset">

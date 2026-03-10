@@ -4,6 +4,7 @@ import os
 import pathlib
 import sys
 import unittest
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
@@ -24,8 +25,6 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from typing import TYPE_CHECKING
 
-from pykotor.common.misc import Game
-from pykotor.extract.installation import Installation
 from pykotor.resource.formats.gff import read_gff
 from pykotor.resource.generics.utd import construct_utd, dismantle_utd
 from pykotor.resource.type import ResourceType
@@ -174,27 +173,27 @@ class TestUTD(TestCase):
 
     @unittest.skip("This test is known to fail - fixme")  # FIXME:
     def test_gff_reconstruct(self):
-        gff = read_gff(K1_SAME_TEST_UTD_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff = read_gff(K1_SAME_TEST_UTD_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         reconstructed_gff = dismantle_utd(construct_utd(gff))
         assert gff.compare(reconstructed_gff, self.log_func), os.linesep.join(self.log_messages)
 
     def test_io_construct(self):
-        gff = read_gff(TEST_UTD_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff = read_gff(TEST_UTD_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         utd = construct_utd(gff)
         self.validate_io(utd)
 
     def test_io_reconstruct(self):
-        gff = read_gff(TEST_UTD_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff = read_gff(TEST_UTD_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         gff = dismantle_utd(construct_utd(gff))
         utd = construct_utd(gff)
         self.validate_io(utd)
 
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
-        import tempfile
         import os
+        import tempfile
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.utd.xml', delete=False, encoding='utf-8') as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".utd.xml", delete=False, encoding="utf-8") as tmp:
             tmp.write(TEST_UTD_XML)
             tmp_path = tmp.name
 

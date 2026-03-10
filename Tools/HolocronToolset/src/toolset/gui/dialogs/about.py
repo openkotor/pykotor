@@ -1,3 +1,5 @@
+"""About dialog: toolset name, version, and credits from LOCAL_PROGRAM_INFO."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -33,17 +35,17 @@ class About(QDialog):
         self.setWindowFlags(
             QtCore.Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | QtCore.Qt.WindowType.WindowCloseButtonHint
-            | QtCore.Qt.WindowType.WindowStaysOnTopHint
-            & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint
-            & ~QtCore.Qt.WindowType.WindowMinMaxButtonsHint
+            | QtCore.Qt.WindowType.WindowStaysOnTopHint & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint & ~QtCore.Qt.WindowType.WindowMinMaxButtonsHint
         )
 
         from toolset.uic.qtpy.dialogs.about import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 

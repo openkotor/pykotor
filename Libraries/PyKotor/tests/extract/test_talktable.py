@@ -52,14 +52,15 @@ class TestTalkTable(unittest.TestCase):
             assert talktable.size() == 3
 
     def test_size(self):
-        import tempfile
         import os
+        import tempfile
+
         from pykotor.resource.formats.tlk import read_tlk, write_tlk
         from pykotor.resource.type import ResourceType
 
         # Convert XML to binary TLK and save to temp file
-        tlk = read_tlk(TEST_TLK_XML.encode('utf-8'), file_format=ResourceType.TLK_XML)
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.tlk', delete=False) as tmp:
+        tlk = read_tlk(TEST_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".tlk", delete=False) as tmp:
             tmp_path = tmp.name
 
         write_tlk(tlk, tmp_path, ResourceType.TLK)
@@ -71,14 +72,15 @@ class TestTalkTable(unittest.TestCase):
             os.unlink(tmp_path)
 
     def test_string(self):
-        import tempfile
         import os
+        import tempfile
+
         from pykotor.resource.formats.tlk import read_tlk, write_tlk
         from pykotor.resource.type import ResourceType
 
         # Convert XML to binary TLK and save to temp file
-        tlk = read_tlk(TEST_TLK_XML.encode('utf-8'), file_format=ResourceType.TLK_XML)
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.tlk', delete=False) as tmp:
+        tlk = read_tlk(TEST_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".tlk", delete=False) as tmp:
             tmp_path = tmp.name
 
         write_tlk(tlk, tmp_path, ResourceType.TLK)
@@ -94,14 +96,15 @@ class TestTalkTable(unittest.TestCase):
             os.unlink(tmp_path)
 
     def test_voiceover(self):
-        import tempfile
         import os
+        import tempfile
+
         from pykotor.resource.formats.tlk import read_tlk, write_tlk
         from pykotor.resource.type import ResourceType
 
         # Convert XML to binary TLK and save to temp file
-        tlk = read_tlk(TEST_TLK_XML.encode('utf-8'), file_format=ResourceType.TLK_XML)
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.tlk', delete=False) as tmp:
+        tlk = read_tlk(TEST_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".tlk", delete=False) as tmp:
             tmp_path = tmp.name
 
         write_tlk(tlk, tmp_path, ResourceType.TLK)
@@ -117,14 +120,15 @@ class TestTalkTable(unittest.TestCase):
             os.unlink(tmp_path)
 
     def test_batch(self):
-        import tempfile
         import os
+        import tempfile
+
         from pykotor.resource.formats.tlk import read_tlk, write_tlk
         from pykotor.resource.type import ResourceType
 
         # Convert XML to binary TLK and save to temp file
-        tlk = read_tlk(TEST_TLK_XML.encode('utf-8'), file_format=ResourceType.TLK_XML)
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.tlk', delete=False) as tmp:
+        tlk = read_tlk(TEST_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".tlk", delete=False) as tmp:
             tmp_path = tmp.name
 
         write_tlk(tlk, tmp_path, ResourceType.TLK)
@@ -140,14 +144,15 @@ class TestTalkTable(unittest.TestCase):
             os.unlink(tmp_path)
 
     def test_language(self):
-        import tempfile
         import os
+        import tempfile
+
         from pykotor.resource.formats.tlk import read_tlk, write_tlk
         from pykotor.resource.type import ResourceType
 
         # Convert XML to binary TLK and save to temp file
-        tlk = read_tlk(TEST_TLK_XML.encode('utf-8'), file_format=ResourceType.TLK_XML)
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.tlk', delete=False) as tmp:
+        tlk = read_tlk(TEST_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".tlk", delete=False) as tmp:
             tmp_path = tmp.name
 
         write_tlk(tlk, tmp_path, ResourceType.TLK)

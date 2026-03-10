@@ -1,3 +1,5 @@
+"""Cube geometry: AABB wireframe or solid cube for GL (e.g. instance bounds)."""
+
 from __future__ import annotations
 
 import ctypes
@@ -41,9 +43,9 @@ else:
 
 if TYPE_CHECKING:
     from pykotor.gl.glm_compat import mat4
-
     from pykotor.gl.scene import Scene
     from pykotor.gl.shader import Shader
+
 
 class Cube:
     def __init__(
@@ -108,7 +110,7 @@ class Cube:
             glBufferData(GL_ARRAY_BUFFER, len(vertices) * 4, vertices, GL_STATIC_DRAW)
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._ebo)
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, len(elements) * 4, elements, GL_STATIC_DRAW)
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements.nbytes, elements, GL_STATIC_DRAW)
 
             glEnableVertexAttribArray(1)
             glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12, ctypes.c_void_p(0))
@@ -126,7 +128,7 @@ class Cube:
         shader.set_matrix4("model", transform)
         glBindVertexArray(self._vao)
         glDrawElements(GL_TRIANGLES, self._face_count, GL_UNSIGNED_SHORT, None)
-    
+
     def vertex_blob(self) -> bytes:
         """Interleaved vertex data (position only)."""
         vertex_count = len(self._vertex_data) // 3

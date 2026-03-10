@@ -28,6 +28,8 @@ from pykotor.resource.formats.twoda.twoda_auto import read_2da, write_2da
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath
 from pykotor.tslpatcher.memory import PatcherMemory
+from utility.string_util import is_non_empty_string
+from utility.misc import ensure_directory_exists
 from pykotor.tslpatcher.mods.gff import AddFieldGFF, AddStructToListGFF, FieldValue, FieldValueConstant, ModifyFieldGFF
 from pykotor.tslpatcher.mods.install import InstallFile
 from pykotor.tslpatcher.mods.ssf import ModifySSF
@@ -75,7 +77,7 @@ class TSLPatchDataGenerator:
             tslpatchdata_path: Path where tslpatchdata folder will be created
         """
         self.tslpatchdata_path = tslpatchdata_path
-        self.tslpatchdata_path.mkdir(parents=True, exist_ok=True)
+        ensure_directory_exists(self.tslpatchdata_path)
         _log_debug(f"TSLPatchDataGenerator initialized at: {self.tslpatchdata_path}")
 
     def generate_all_files(
@@ -613,7 +615,7 @@ class TSLPatchDataGenerator:
         current_struct: GFFStruct = root_struct
 
         for part in path_parts:
-            if not part or not part.strip():
+            if not is_non_empty_string(part):
                 _log_debug(f"Skipping empty path part in {context}")
                 continue
 
@@ -717,7 +719,7 @@ class TSLPatchDataGenerator:
         current_obj: GFFStruct | GFFList = root_struct
 
         for part in path_parts:
-            if not part or not part.strip():
+            if not is_non_empty_string(part):
                 _log_debug(f"Skipping empty path part in {context}")
                 continue
 

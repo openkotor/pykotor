@@ -128,29 +128,28 @@ class StructuredDiffEngine:
     ) -> list[ColumnDiff]:
         """Compare 2DA columns."""
         column_diffs: list[ColumnDiff] = []
-
-        left_headers = set(left_2da.get_headers())
-        right_headers = set(right_2da.get_headers())
+        left_header_list = left_2da.get_headers()
+        right_header_list = right_2da.get_headers()
+        left_header_to_index = {h: i for i, h in enumerate(left_header_list)}
+        right_header_to_index = {h: i for i, h in enumerate(right_header_list)}
+        left_headers = set(left_header_to_index)
+        right_headers = set(right_header_to_index)
 
         # Added columns
-        added_columns = right_headers - left_headers
-        for col_name in added_columns:
-            col_index = right_2da.get_headers().index(col_name)
+        for col_name in right_headers - left_headers:
             column_diffs.append(
                 ColumnDiff(
-                    column_index=col_index,
+                    column_index=right_header_to_index[col_name],
                     column_name=col_name,
                     diff_type=DiffType.ADDED,
                 )
             )
 
         # Removed columns
-        removed_columns = left_headers - right_headers
-        for col_name in removed_columns:
-            col_index = left_2da.get_headers().index(col_name)
+        for col_name in left_headers - right_headers:
             column_diffs.append(
                 ColumnDiff(
-                    column_index=col_index,
+                    column_index=left_header_to_index[col_name],
                     column_name=col_name,
                     diff_type=DiffType.REMOVED,
                 )
@@ -175,10 +174,7 @@ class StructuredDiffEngine:
         left_height = left_2da.get_height()
         right_height = right_2da.get_height()
 
-        common_headers: list[str] = [
-            h for h in left_2da.get_headers()
-            if h in right_2da.get_headers()
-        ]
+        common_headers: list[str] = [h for h in left_2da.get_headers() if h in right_2da.get_headers()]
 
         # Check existing rows
         for row_idx in range(min(left_height, right_height)):
@@ -237,10 +233,7 @@ class StructuredDiffEngine:
 
         # Removed rows
         if left_height > right_height:
-            row_diffs.extend(
-                RowDiff(row_index=row_idx, diff_type=DiffType.REMOVED, cell_diffs=[])
-                for row_idx in range(right_height, left_height)
-            )
+            row_diffs.extend(RowDiff(row_index=row_idx, diff_type=DiffType.REMOVED, cell_diffs=[]) for row_idx in range(right_height, left_height))
 
         return row_diffs
 
@@ -458,8 +451,12 @@ class StructuredDiffEngine:
                 )
 
         # Scalar comparison
-        left_value: int | float | str | ResRef | LocalizedString | Vector3 | Vector4 | GFFStruct | GFFList | bytes | None = self._get_gff_field_value(left_struct, field_label, left_field_type)  # noqa: E501
-        right_value: int | float | str | ResRef | LocalizedString | Vector3 | Vector4 | GFFStruct | GFFList | bytes | None = self._get_gff_field_value(right_struct, field_label, right_field_type)  # noqa: E501
+        left_value: int | float | str | ResRef | LocalizedString | Vector3 | Vector4 | GFFStruct | GFFList | bytes | None = self._get_gff_field_value(
+            left_struct, field_label, left_field_type
+        )  # noqa: E501
+        right_value: int | float | str | ResRef | LocalizedString | Vector3 | Vector4 | GFFStruct | GFFList | bytes | None = self._get_gff_field_value(
+            right_struct, field_label, right_field_type
+        )  # noqa: E501
 
         if not self._gff_values_equal(left_value, right_value):
             return FieldDiff(
@@ -550,8 +547,7 @@ class StructuredDiffEngine:
             if left_entry is None or right_entry is None:
                 continue
 
-            if (left_entry.text != right_entry.text or
-                str(left_entry.voiceover) != str(right_entry.voiceover)):
+            if left_entry.text != right_entry.text or str(left_entry.voiceover) != str(right_entry.voiceover):
                 entry_diffs.append(
                     TLKEntryDiff(
                         entry_id=idx,

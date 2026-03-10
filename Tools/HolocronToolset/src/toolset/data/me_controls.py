@@ -1,3 +1,7 @@
+"""Module editor input: key bindings, mouse handling, and control schemes.
+
+Used by the module/level editor (e.g. ModuleRenderer) for camera and selection.
+"""
 from __future__ import annotations
 
 import json
@@ -16,9 +20,9 @@ from pykotor.tools.encoding import decode_bytes_with_fallbacks
 from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
-    from pykotor.gl.glm_compat import vec3
     from qtpy.QtCore import QKeyCombination, Qt
 
+    from pykotor.gl.glm_compat import vec3
     from pykotor.resource.generics.git import GITInstance
     from toolset.gui.widgets.renderer.module import ModuleRenderer
     from utility.common.geometry import Vector2
@@ -48,66 +52,66 @@ def get_key_code(
 
 def strip_json_comments(text: str) -> str:
     """Strip JavaScript-style comments from JSON text.
-    
+
     This is a drop-in replacement for jsmin when used for removing comments
     from JSON files. Handles both single-line (//) and multi-line (/* */) comments
     while preserving strings and escaped characters.
-    
+
     Args:
     ----
         text: JSON text that may contain comments
-        
+
     Returns:
     -------
         JSON text with comments removed
     """
-    lines: list[str] = text.split('\n')
+    lines: list[str] = text.split("\n")
     result: list[str] = []
     in_string = False
     escape_next = False
-    
+
     for line in lines:
         new_line: list[str] = []
         i = 0
         while i < len(line):
             char = line[i]
-            
+
             if escape_next:
                 new_line.append(char)
                 escape_next = False
                 i += 1
                 continue
-            
-            if char == '\\':
+
+            if char == "\\":
                 escape_next = True
                 new_line.append(char)
                 i += 1
                 continue
-            
-            if char == '"' and (i == 0 or line[i-1] != '\\'):
+
+            if char == '"' and (i == 0 or line[i - 1] != "\\"):
                 in_string = not in_string
-            
+
             if not in_string:
                 # Check for // comment
-                if char == '/' and i + 1 < len(line) and line[i+1] == '/':
+                if char == "/" and i + 1 < len(line) and line[i + 1] == "/":
                     break  # Rest of line is comment
                 # Check for /* comment
-                if char == '/' and i + 1 < len(line) and line[i+1] == '*':
+                if char == "/" and i + 1 < len(line) and line[i + 1] == "*":
                     # Skip until */
                     i += 2
                     while i + 1 < len(line):
-                        if line[i] == '*' and line[i+1] == '/':
+                        if line[i] == "*" and line[i + 1] == "/":
                             i += 2
                             break
                         i += 1
                     continue
-            
+
             new_line.append(char)
             i += 1
-        
-        result.append(''.join(new_line))
-    
-    return '\n'.join(result)
+
+        result.append("".join(new_line))
+
+    return "\n".join(result)
 
 
 class ModuleEditorControls(ABC):

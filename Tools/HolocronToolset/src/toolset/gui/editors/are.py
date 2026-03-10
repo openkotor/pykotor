@@ -1,5 +1,8 @@
+"""ARE (area) editor: room/track/obstacle layout, north axis, wind, and module integration."""
+
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from qtpy.QtCore import Qt
@@ -16,9 +19,11 @@ from pykotor.resource.formats.lyt import read_lyt
 from pykotor.resource.generics.are import ARE, ARENorthAxis, AREWindPower, dismantle_are, read_are
 from pykotor.resource.type import ResourceType
 from toolset.data.installation import HTInstallation
+from toolset.gui.common.interaction.camera import calculate_zoom_strength, handle_standard_2d_camera_movement
 from toolset.gui.common.localization import translate as tr
 from toolset.gui.dialogs.edit.locstring import LocalizedStringDialog
 from toolset.gui.editor import Editor
+from toolset.gui.widgets.installation_toolbar import FolderPathSpec
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
 from utility.common.geometry import SurfaceMaterial, Vector2
 
@@ -37,6 +42,11 @@ if TYPE_CHECKING:
 
 
 class AREEditor(Editor):
+    STANDALONE_FOLDER_PATHS = [
+        FolderPathSpec("modules_folder", "Modules Folder", "Folder containing extracted module resources."),
+        FolderPathSpec("override_folder", "Override Folder", "Folder containing override resources."),
+    ]
+
     def __init__(self, parent: QWidget | None, installation: HTInstallation | None = None):
         supported: list[ResourceType] = [ResourceType.ARE]
         super().__init__(parent, "ARE Editor", "none", supported, supported, installation)
@@ -85,18 +95,38 @@ class AREEditor(Editor):
 
         self.new()
 
+    def _resolve_path_resource(self, resref: str, suffix: str, keys: tuple[str, ...]) -> bytes | None:
+        for key in keys:
+            folder = getattr(self, "_standalone_folder_paths", {}).get(key)
+            if folder is None:
+                continue
+            path = folder / f"{resref}.{suffix}"
+            if path.is_file():
+                return path.read_bytes()
+        return None
+
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        if installation is not None:
+            self._setup_installation(installation)
+
+    def _on_folder_paths_changed(self, paths: dict[str, Path | None]) -> None:
+        self._standalone_folder_paths = paths
+
     def _setup_signals(self):
         self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
 
         self.ui.mapAxisSelect.currentIndexChanged.connect(self.redoMinimap)
-        self.ui.mapWorldX1Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapWorldX2Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapWorldY1Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapWorldY2Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapImageX1Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapImageX2Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapImageY1Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapImageY2Spin.valueChanged.connect(self.redoMinimap)
+        for signal in (
+            self.ui.mapWorldX1Spin.valueChanged,
+            self.ui.mapWorldX2Spin.valueChanged,
+            self.ui.mapWorldY1Spin.valueChanged,
+            self.ui.mapWorldY2Spin.valueChanged,
+            self.ui.mapImageX1Spin.valueChanged,
+            self.ui.mapImageX2Spin.valueChanged,
+            self.ui.mapImageY1Spin.valueChanged,
+            self.ui.mapImageY2Spin.valueChanged,
+        ):
+            signal.connect(self.redoMinimap)
 
         # Minimap renderer input: match other WalkmeshRenderer users (PTH/BWM).
         self.ui.minimapRenderer.sig_mouse_moved.connect(self.on_minimap_mouse_moved)
@@ -108,13 +138,50 @@ class AREEditor(Editor):
         QShortcut("-", self).activated.connect(lambda: self.ui.minimapRenderer.camera.nudge_zoom(0.8))
         QShortcut("Ctrl+0", self).activated.connect(self.fit_minimap_view)
 
-        assert self._installation is not None, "Installation is not set"
-        self.relevant_script_resnames: list[str] = sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.NCS, self._filepath)}))
+        self.relevant_script_resnames: list[str] = []
+        if self._installation is not None:
+            self.relevant_script_resnames = sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.NCS, self._filepath)}))
+            for combo_box in self._script_combo_boxes():
+                combo_box.populate_combo_box(self.relevant_script_resnames)
 
-        self.ui.onEnterSelect.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onExitSelect.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onHeartbeatSelect.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onUserDefinedSelect.populate_combo_box(self.relevant_script_resnames)
+    def _script_combo_boxes(self) -> tuple[QWidget, ...]:
+        """Return all script combobox widgets used by this editor."""
+        return (
+            self.ui.onEnterSelect,
+            self.ui.onExitSelect,
+            self.ui.onHeartbeatSelect,
+            self.ui.onUserDefinedSelect,
+        )
+
+    def _script_value_pairs(self, are: ARE) -> tuple[tuple[QWidget, ResRef], ...]:
+        """Map script combobox widgets to ARE script values."""
+        return (
+            (self.ui.onEnterSelect, are.on_enter),
+            (self.ui.onExitSelect, are.on_exit),
+            (self.ui.onHeartbeatSelect, are.on_heartbeat),
+            (self.ui.onUserDefinedSelect, are.on_user_defined),
+        )
+
+    def _setup_reference_field(
+        self,
+        field: QWidget,
+        resource_types: list[ResourceType],
+        reference_type: str,
+        tooltip_text: str,
+    ) -> None:
+        """Configure context menu reference search behavior for a script widget."""
+        assert self._installation is not None
+        line_edit = field.lineEdit() if hasattr(field, "lineEdit") else None
+        if line_edit is not None:
+            line_edit.setMaxLength(16)
+
+        self._installation.setup_file_context_menu(
+            field,
+            resource_types,
+            enable_reference_search=True,
+            reference_search_type=reference_type,
+        )
+        field.setToolTip(tr(tooltip_text))
 
     def _setup_installation(self, installation: HTInstallation):
         self._installation = installation
@@ -144,20 +211,13 @@ class AREEditor(Editor):
         self.ui.lightningCheck.setEnabled(installation.tsl)
 
         # Setup context menus for script fields with reference search enabled
-        script_fields: list[QWidget] = [
-            self.ui.onEnterSelect,
-            self.ui.onExitSelect,
-            self.ui.onHeartbeatSelect,
-            self.ui.onUserDefinedSelect,
-        ]
-        # Set maxLength for FilterComboBox script fields (ResRefs are max 16 characters)
-        for field in script_fields:
-            line_edit = field.lineEdit() if hasattr(field, "lineEdit") else None
-            if line_edit is not None:
-                line_edit.setMaxLength(16)
-        for field in script_fields:
-            installation.setup_file_context_menu(field, [ResourceType.NSS, ResourceType.NCS], enable_reference_search=True, reference_search_type="script")
-            field.setToolTip(tr("Right-click to find references to this script in the installation."))
+        for field in self._script_combo_boxes():
+            self._setup_reference_field(
+                field,
+                [ResourceType.NSS, ResourceType.NCS],
+                "script",
+                "Right-click to find references to this script in the installation.",
+            )
 
     def load(
         self,
@@ -177,25 +237,42 @@ class AREEditor(Editor):
         self.adjustSize()
 
     def _loadARE(self, are: ARE):
-        if not self._installation:
-            print("Load an installation first.")
-            return
+        """Load ARE into UI. Field defaults when missing: see construct_are.
+        K1 LoadAreaHeader @ 0x00508c50, TSL @ 0x00718a20, Legacy FUN_004e3ff0; MapZoom default 1, AlphaTest 0.2, fog 10000.0."""
         self._rooms = are.rooms
         # Only attempt related-resource lookups when we have a real area resref.
         # Editor uses `untitled_<hex>` placeholders for new/unsaved tabs.
         # Engine reference: `vendor/swkotor.c:L468225-L468237` (`area_name` -> "lbl_map%s").
-        if self._resname and not self._resname.startswith("untitled_"):
+        resname = (self._resname or "").strip().casefold()
+        if resname and not resname.startswith("untitled_"):
             # Layout (.lyt) lookup for room walkmeshes.
             # Mirrors engine: areas resolve by `area_name` and then load auxiliary assets.
             # Engine reference: `vendor/swkotor.c:L476816-L476845` and `vendor/swkotor.c:L194243-L194331`.
-            order_lyt: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN, SearchLocation.MODULES]
-            res_result_lyt: ResourceResult | None = self._installation.resource(self._resname, ResourceType.LYT, order_lyt)
-            if res_result_lyt:
-                lyt: LYT = read_lyt(res_result_lyt.data)
+            order_lyt: list[SearchLocation] = [
+                SearchLocation.OVERRIDE,
+                SearchLocation.CHITIN,
+                SearchLocation.MODULES,
+            ]
+            lyt_data: bytes | None = None
+            if self._installation is not None:
+                res_result_lyt: ResourceResult | None = self._installation.resource(self._resname, ResourceType.LYT, order_lyt)
+                lyt_data = res_result_lyt.data if res_result_lyt is not None else None
+            else:
+                lyt_data = self._resolve_path_resource(self._resname, "lyt", ("override_folder", "modules_folder"))
+
+            if lyt_data is not None:
+                lyt: LYT = read_lyt(lyt_data)
                 queries: list[ResourceIdentifier] = [ResourceIdentifier(room.model, ResourceType.WOK) for room in lyt.rooms]
 
-                wok_results: dict[ResourceIdentifier, ResourceResult | None] = self._installation.resources(queries, order_lyt)
-                walkmeshes: list[BWM] = [read_bwm(result.data) for result in wok_results.values() if result]
+                walkmeshes: list[BWM] = []
+                if self._installation is not None:
+                    wok_results: dict[ResourceIdentifier, ResourceResult | None] = self._installation.resources(queries, order_lyt)
+                    walkmeshes = [read_bwm(result.data) for result in wok_results.values() if result]
+                else:
+                    for query in queries:
+                        wok_data = self._resolve_path_resource(query.resname, "wok", ("override_folder", "modules_folder"))
+                        if wok_data is not None:
+                            walkmeshes.append(read_bwm(wok_data))
                 self.ui.minimapRenderer.set_walkmeshes(walkmeshes)
 
             # Minimap texture lookup: "lbl_map<area>" (TGA/TPC via `Installation.texture`).
@@ -203,12 +280,17 @@ class AREEditor(Editor):
             order_tex: list[SearchLocation] = [
                 SearchLocation.OVERRIDE,
                 SearchLocation.TEXTURES_TPA,
+                SearchLocation.TEXTURES_TPB,
+                SearchLocation.TEXTURES_TPC,
                 SearchLocation.TEXTURES_GUI,
                 SearchLocation.CHITIN,
                 SearchLocation.MODULES,
             ]
             minimap_resname = f"lbl_map{self._resname}"
-            self._minimap = self._installation.texture(minimap_resname, order_tex)
+            if self._installation is not None:
+                self._minimap = self._installation.texture(minimap_resname, order_tex)
+            else:
+                self._minimap = None
             if self._minimap is None:
                 RobustLogger().warning(f"Could not find texture '{minimap_resname}' required for minimap")
             else:
@@ -219,7 +301,8 @@ class AREEditor(Editor):
 
         max_value: int = 100
 
-        # Basic
+        # Load ARE into UI. Defaults from construct_are (K1 LoadAreaHeader 0x00508c50, TSL 0x00718a20); field optional when not in GFF.
+        # Basic: AlphaTest default 0.2; Tag/Name/Comments ""; CameraStyle/ID 0; DefaultEnvMap blank (K1/TSL LoadAreaHeader).
         self.ui.nameEdit.set_locstring(are.name)
         self.ui.tagEdit.setText(are.tag)
         self.ui.cameraStyleSelect.setCurrentIndex(are.camera_style)
@@ -231,7 +314,7 @@ class AREEditor(Editor):
         self.ui.stealthMaxSpin.setValue(are.stealth_xp_max)
         self.ui.stealthLossSpin.setValue(are.stealth_xp_loss)
 
-        # Map
+        # Map: MapZoom default 1, NorthAxis 0, MapResX 0, MapPt/WorldPt 0.0 when missing (K1 0x00508c50 Map struct; TSL same).
         self.ui.mapAxisSelect.setCurrentIndex(are.north_axis)
         self.ui.mapZoomSpin.setValue(are.map_zoom)
         self.ui.mapResXSpin.setValue(are.map_res_x)
@@ -244,7 +327,7 @@ class AREEditor(Editor):
         self.ui.mapWorldY1Spin.setValue(are.world_point_1.y)
         self.ui.mapWorldY2Spin.setValue(are.world_point_2.y)
 
-        # Weather
+        # Weather: SunFogOn 0; SunFogNear/SunFogFar default 10000.0 when missing (K1/TSL LoadAreaHeader).
         self.ui.fogEnabledCheck.setChecked(are.fog_enabled)
         self.ui.fogColorEdit.set_color(are.fog_color)
         self.ui.fogNearSpin.setValue(are.fog_near)
@@ -284,10 +367,8 @@ class AREEditor(Editor):
         self.ui.dirtSize3Spin.setValue(are.dirty_size_3)
 
         # Scripts
-        self.ui.onEnterSelect.set_combo_box_text(str(are.on_enter))
-        self.ui.onExitSelect.set_combo_box_text(str(are.on_exit))
-        self.ui.onHeartbeatSelect.set_combo_box_text(str(are.on_heartbeat))
-        self.ui.onUserDefinedSelect.set_combo_box_text(str(are.on_user_defined))
+        for script_widget, script_value in self._script_value_pairs(are):
+            script_widget.set_combo_box_text(str(script_value))
 
         # Comments
         self.ui.commentsEdit.setPlainText(are.comment)
@@ -325,9 +406,10 @@ class AREEditor(Editor):
         return bytes(data), b""
 
     def _buildARE(self) -> ARE:
+        """Build ARE from UI. Write defaults match engine (K1 LoadAreaHeader 0x00508c50, TSL 0x00718a20)."""
         are = ARE()
 
-        # Basic
+        # Basic: same defaults as construct_are/dismantle_are (K1 0x00508c50, TSL 0x00718a20). AlphaTest 0.2, MapZoom 1 when missing.
         are.name = self.ui.nameEdit.locstring()
         are.tag = self.ui.tagEdit.text()
         are.camera_style = self.ui.cameraStyleSelect.currentIndex()
@@ -339,7 +421,7 @@ class AREEditor(Editor):
         are.stealth_xp_max = self.ui.stealthMaxSpin.value()
         are.stealth_xp_loss = self.ui.stealthLossSpin.value()
 
-        # Map
+        # Map: MapZoom 1, NorthAxis 0, MapResX 0, MapPt/WorldPt 0.0 when missing (K1 Map struct; TSL same).
         are.north_axis = ARENorthAxis(self.ui.mapAxisSelect.currentIndex())
         are.map_zoom = self.ui.mapZoomSpin.value()
         are.map_res_x = self.ui.mapResXSpin.value()
@@ -348,7 +430,7 @@ class AREEditor(Editor):
         are.world_point_1 = Vector2(self.ui.mapWorldX1Spin.value(), self.ui.mapWorldY1Spin.value())
         are.world_point_2 = Vector2(self.ui.mapWorldX2Spin.value(), self.ui.mapWorldY2Spin.value())
 
-        # Weather
+        # Weather: SunFogNear/SunFogFar engine default 10000.0 when missing (K1/TSL LoadAreaHeader).
         are.fog_enabled = self.ui.fogEnabledCheck.isChecked()
         are.fog_color = self.ui.fogColorEdit.color()
         are.fog_near = self.ui.fogNearSpin.value()
@@ -396,13 +478,23 @@ class AREEditor(Editor):
         are.dirty_size_3 = self.ui.dirtSize3Spin.value()
 
         # Scripts
-        are.on_enter = ResRef(self.ui.onEnterSelect.currentText())
-        are.on_exit = ResRef(self.ui.onExitSelect.currentText())
-        are.on_heartbeat = ResRef(self.ui.onHeartbeatSelect.currentText())
-        are.on_user_defined = ResRef(self.ui.onUserDefinedSelect.currentText())
+        for attr_name, script_widget in (
+            ("on_enter", self.ui.onEnterSelect),
+            ("on_exit", self.ui.onExitSelect),
+            ("on_heartbeat", self.ui.onHeartbeatSelect),
+            ("on_user_defined", self.ui.onUserDefinedSelect),
+        ):
+            setattr(are, attr_name, ResRef(script_widget.currentText()))
 
         # Comments
         are.comment = self.ui.commentsEdit.toPlainText()
+
+        # Moon fog: no UI; preserve from loaded ARE so GFF roundtrip keeps MoonFogNear/MoonFogFar etc.
+        if self._loaded_are is not None:
+            are.moon_fog = self._loaded_are.moon_fog
+            are.moon_fog_near = self._loaded_are.moon_fog_near
+            are.moon_fog_far = self._loaded_are.moon_fog_far
+            are.moon_fog_color = self._loaded_are.moon_fog_color
 
         # Remaining.
         are.rooms = self._rooms
@@ -427,14 +519,12 @@ class AREEditor(Editor):
     def on_minimap_mouse_moved(self, screen: Vector2, delta: Vector2, buttons: set[int], keys: set[int]):
         # Pan/rotate controls mirror `BWMEditor` (Ctrl+drag) and respect module designer sensitivities.
         world_delta: Vector2 = self.ui.minimapRenderer.to_world_delta(delta.x, delta.y)
-        if Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Control in keys:  # type: ignore[attr-defined]
-            self.ui.minimapRenderer.do_cursor_lock(screen)
-            move_sens = ModuleDesignerSettings().moveCameraSensitivity2d / 100
-            self.ui.minimapRenderer.camera.nudge_position(-world_delta.x * move_sens, -world_delta.y * move_sens)
-        elif Qt.MouseButton.MiddleButton in buttons and Qt.Key.Key_Control in keys:  # type: ignore[attr-defined]
-            self.ui.minimapRenderer.do_cursor_lock(screen)
-            rotate_sens = ModuleDesignerSettings().rotateCameraSensitivity2d / 1000
-            self.ui.minimapRenderer.camera.nudge_rotation((delta.x / 50) * rotate_sens)
+        move_sens = ModuleDesignerSettings().moveCameraSensitivity2d / 100
+        rotate_sens = ModuleDesignerSettings().rotateCameraSensitivity2d / 1000
+        
+        handle_standard_2d_camera_movement(
+            self.ui.minimapRenderer, screen, delta, world_delta, buttons, keys, move_sens, rotate_sens
+        )
 
     def on_minimap_mouse_scrolled(self, delta: Vector2, buttons: set[int], keys: set[int]):
         if not delta.y:
@@ -467,9 +557,9 @@ class AREEditor(Editor):
         self.ui.tagEdit.setText("newarea" if self._resname is None or self._resname == "" else self._resname)
 
 
-def calculate_zoom_strength(delta_y: float, sens_setting: int) -> float:
-    # Mirrors `BWMEditor.calculate_zoom_strength` / `PTHEditor.calculate_zoom_strength`.
-    m = 0.00202
-    b = 1
-    factor_in = m * sens_setting + b
-    return 1 / abs(factor_in) if delta_y < 0 else abs(factor_in)
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("are"))

@@ -1093,7 +1093,7 @@ class DiffContext:
 
 def is_text_content(data: bytes) -> bool:
     """Heuristically determine if data is text content."""
-    if len(data) == 0:
+    if not data:
         return True
 
     with suppress(UnicodeDecodeError):
@@ -1158,6 +1158,17 @@ def compare_text_content(
     # Use difflib for detailed text comparison
     lines1 = text1.splitlines(keepends=True)
     lines2 = text2.splitlines(keepends=True)
+
+    # Avoid O(n*m) difflib on huge inputs (can cause test timeouts)
+    _MAX_DIFF_LINES = 4000
+    if len(lines1) > _MAX_DIFF_LINES or len(lines2) > _MAX_DIFF_LINES:
+        if show_header:
+            log_func(
+                f"^ '{where}': Text content differs ({len(lines1)} vs {len(lines2)} lines, diff omitted) ^",
+                separator=True,
+                message_type="diff",  # pyright: ignore[reportCallIssue]
+            )
+        return False
 
     if format_type == "unified":
         diff = difflib.unified_diff(
@@ -1302,6 +1313,10 @@ def print_udiff(
     b = read_text_lines(to_file)
     if not a and not b:
         return
+    _MAX_UDIFF_LINES = 4000
+    if len(a) > _MAX_UDIFF_LINES or len(b) > _MAX_UDIFF_LINES:
+        log_func(f"--- {label_from}\n+++ {label_to}\n(diff omitted: {len(a)} vs {len(b)} lines)")
+        return
     diff: Iterator[str] = difflib.unified_diff(
         a,
         b,
@@ -1396,13 +1411,21 @@ def diff_data(  # noqa: PLR0913
         # If context.where is "swkotor\Override\journal.gui", use just "journal.gui" as the root path
         compare_path = PureWindowsPath(Path(str(context.where)).name)
         comparison_result = GFFComparisonResult()
-        # For GFF comparison, always use structured format to get field-by-field diffs
-        are_same = gff1.compare(gff2, log_func, compare_path, comparison_result=comparison_result, format_type="structured")
+        # For GFF comparison, always use structured format to get field-by-field diffs.
+        # ignore_default_changes=True: optional fields (e.g. UTE GuaranteedCount=0) are not reported.
+        are_same = gff1.compare(
+            gff2,
+            log_func,
+            compare_path,
+            ignore_default_changes=True,
+            comparison_result=comparison_result,
+            format_type="structured",
+        )
         if are_same and not comparison_result.has_field_differences():
             return True
 
         modifications: PatcherModifications | tuple[PatcherModifications, dict[int, int]] | None = None
-        if modifications_by_type is not None or format_type != "unified":
+        if modifications_by_type is not None or incremental_writer is not None or format_type != "unified":
             try:
                 analyzer = DiffAnalyzerFactory.get_analyzer("gff")
                 if analyzer is None:
@@ -1569,7 +1592,7 @@ def diff_data(  # noqa: PLR0913
                     return True
 
                 # Generate INI modifications if requested (log BEFORE final separator)
-                if modifications_by_type is None:
+                if modifications_by_type is None and incremental_writer is None:
                     # Log final separator AFTER all patch info
                     log_func(f"^ '{context.where}': {context.ext.upper()} is different ^", separator=True)
                     return False
@@ -1689,7 +1712,8 @@ def diff_data(  # noqa: PLR0913
                         )  # noqa: E501
                         modifications.destination = destination
                         modifications.sourcefile = resource_name  # Just the filename, not the full path
-                        modifications_by_type.ssf.append(modifications)
+                        if modifications_by_type is not None:
+                            modifications_by_type.ssf.append(modifications)
                         ssf_modifiers: list[ModifySSF] = [m for m in modifications.modifiers if isinstance(m, ModifySSF)]
 
                         if ssf_modifiers:
@@ -1726,7 +1750,8 @@ def diff_data(  # noqa: PLR0913
                         # saveas should also be just the filename, NOT the full path
                         modifications.saveas = resource_name
 
-                        modifications_by_type.gff.append(modifications)
+                        if modifications_by_type is not None:
+                            modifications_by_type.gff.append(modifications)
                         gff_modifiers: list[ModifyGFF] = [m for m in modifications.modifiers if isinstance(m, ModifyGFF)]
 
                         if gff_modifiers:
@@ -1827,15 +1852,18 @@ def diff_files(
         a = read_text_lines(file1)
         b = read_text_lines(file2)
         if a or b:
-            diff = difflib.unified_diff(
-                a,
-                b,
-                fromfile=str(f"(old){c_file1_rel}"),
-                tofile=str(f"(new){c_file2_rel}"),
-                lineterm="",
-            )
-            for line in diff:
-                log_func(line)
+            if len(a) <= 4000 and len(b) <= 4000:
+                diff = difflib.unified_diff(
+                    a,
+                    b,
+                    fromfile=str(f"(old){c_file1_rel}"),
+                    tofile=str(f"(new){c_file2_rel}"),
+                    lineterm="",
+                )
+                for line in diff:
+                    log_func(line)
+            else:
+                log_func(f"(old){c_file1_rel}: {len(a)} lines vs (new){c_file2_rel}: {len(b)} lines (diff omitted)")
 
     if is_capsule_file(c_file1_rel.name):
         # Implementation moved to separate function for clarity
@@ -2720,6 +2748,7 @@ def resolve_resource_in_installation_impl(
             SearchLocation.TEXTURES_TPA,
             SearchLocation.TEXTURES_TPB,
             SearchLocation.TEXTURES_TPC,
+            SearchLocation.TEXTURES_GUI,
             SearchLocation.LIPS,
             # SearchLocation.RIMS intentionally omitted - must be specified explicitly
         ]
@@ -3195,32 +3224,26 @@ def compare_resources_n_way(  # noqa: PLR0913
             log_func(f"  Only in path {path_index} ({path_info.name})")
             log_func("  -> Creating InstallList entry and patch")
 
-            # Generate install patch for unique resource
-            if modifications_by_type is not None:
-                filename: str = Path(resource_id).name
-
-                # Determine destination - default to Override for safety
-                destination: str = "Override"
-
-                resource_path: Path | None = None
-                if incremental_writer is not None:
-                    try:
-                        base_path = path_info.get_path()
-                        if path_info.is_file:
-                            resource_path = base_path
-                        elif path_info.is_folder:
-                            resource_path = base_path / Path(resource.identifier)
-                        else:
-                            resource_path = None
-                    except Exception:  # noqa: BLE001
+            filename: str = Path(resource_id).name
+            destination: str = "Override"
+            resource_path: Path | None = None
+            if incremental_writer is not None:
+                try:
+                    base_path = path_info.get_path()
+                    if path_info.is_file:
+                        resource_path = base_path
+                    elif path_info.is_folder:
+                        resource_path = base_path / Path(resource.identifier)
+                    else:
                         resource_path = None
+                except Exception:  # noqa: BLE001
+                    resource_path = None
 
-                # Create context for patch creation
+            if modifications_by_type is not None:
                 file1_rel: Path = Path(f"path{path_index}") / filename
                 file2_rel: Path = Path("missing") / filename
                 context: DiffContext = DiffContext(file1_rel, file2_rel, resource.ext)
 
-                # Add to install folder
                 _add_to_install_folder(
                     modifications_by_type,
                     destination,
@@ -3232,12 +3255,13 @@ def compare_resources_n_way(  # noqa: PLR0913
                     incremental_writer=incremental_writer,
                 )
 
-                if incremental_writer is not None and resource_path is not None:
-                    try:
-                        if hasattr(resource_path, "is_file") and resource_path.is_file():
-                            incremental_writer.add_install_file(destination, filename, resource_path)
-                    except Exception as exc:  # noqa: BLE001
-                        log_func(f"  [Warning] Failed to stage install file '{filename}': {(exc.__class__.__name__, str(exc))}")
+            # Always add to incremental writer when present (e.g. tslpatchdata_path set, modifications_by_type None)
+            if incremental_writer is not None and resource_path is not None:
+                try:
+                    if hasattr(resource_path, "is_file") and resource_path.is_file():
+                        incremental_writer.add_install_file(destination, filename, resource_path)
+                except Exception as exc:  # noqa: BLE001
+                    log_func(f"  [Warning] Failed to stage install file '{filename}': {(exc.__class__.__name__, str(exc))}")
 
             diff_count += 1
             is_same_result = False

@@ -1,3 +1,5 @@
+"""Custom progress bar with optional shimmer animation and style-safe content rect."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -5,11 +7,39 @@ from typing import TYPE_CHECKING
 from qtpy import QtCore
 from qtpy.QtCore import QRectF, QTimer
 from qtpy.QtGui import QBrush, QColor, QLinearGradient, QPainter, QPalette
-from qtpy.QtWidgets import QApplication, QProgressBar
+from qtpy.QtWidgets import QApplication, QProgressBar, QStyle, QStyleOptionProgressBar
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QRect
     from qtpy.QtGui import QPaintEvent
+
+
+def _content_rect(progress_bar: QProgressBar) -> QRect:
+    """Return the progress bar groove/content rect in widget coordinates.
+
+    Uses the style's subElementRect so the shimmer is drawn exactly where the
+    bar is drawn, avoiding misalignment (e.g. animation in top-left vs bar in center).
+    """
+    option = QStyleOptionProgressBar()
+    progress_bar.initStyleOption(option)
+    style = progress_bar.style()
+    if style is None:
+        return progress_bar.rect()
+
+    # qtpy can expose enums either namespaced (Qt6-style) or flat (Qt5-style).
+    sub_element_enum = getattr(QStyle, "SubElement", QStyle)
+    se_contents = getattr(sub_element_enum, "SE_ProgressBarContents", None)
+    se_groove = getattr(sub_element_enum, "SE_ProgressBarGroove", None)
+
+    if se_contents is not None:
+        content = style.subElementRect(se_contents, option, progress_bar)
+        if not content.isEmpty():
+            return content
+    if se_groove is not None:
+        groove = style.subElementRect(se_groove, option, progress_bar)
+        if not groove.isEmpty():
+            return groove
+    return progress_bar.rect()
 
 
 class AnimatedProgressBar(QProgressBar):
@@ -21,71 +51,109 @@ class AnimatedProgressBar(QProgressBar):
         self._offset: int = 0
 
     def update_animation(self):
+        content = _content_rect(self)
+        if content.width() <= 0:
+            return
         if self.maximum() == self.minimum():
-            return
-        filled_width = int(self.width() * (self.value() - self.minimum()) / (self.maximum() - self.minimum()))
-        if filled_width == 0:
-            return
-        self._offset = (self._offset + 1) % filled_width
+            # Indeterminate: sweep across full content width
+            self._offset = (self._offset + 1) % content.width()
+        else:
+            filled_width = int(
+                content.width() * (self.value() - self.minimum()) / (self.maximum() - self.minimum()),
+            )
+            if filled_width == 0:
+                return
+            self._offset = (self._offset + 1) % filled_width
         self.update()
 
     def paintEvent(
         self,
         event: QPaintEvent,
     ):
-        # Call the base class's paintEvent to draw the default progress bar
         super().paintEvent(event)
+
+        content: QRect = _content_rect(self)
+        if content.isEmpty():
+            return
 
         painter: QPainter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)  # pyright: ignore[reportAttributeAccessIssue]
 
-        rect: QRect = self.rect()
-        chunk_height: int = rect.height()
-        chunk_radius: float = chunk_height / 2
+        chunk_height: int = content.height()
+        chunk_radius: float = min(chunk_height / 2, content.width() / 2)
 
-        # Calculate the filled width based on the current value
         if self.maximum() == self.minimum():
-            filled_width: int = rect.width()
+            filled_width = content.width()
         else:
-            filled_width = int(rect.width() * (self.value() - self.minimum()) / (self.maximum() - self.minimum()))
-        filled_width = max(filled_width, chunk_height)  # Ensure minimum width to accommodate semicircles
+            filled_width = int(
+                content.width() * (self.value() - self.minimum()) / (self.maximum() - self.minimum()),
+            )
+        filled_width = max(filled_width, chunk_height)
 
         if filled_width <= 0:
             painter.end()
             return
-        # 1. Draw the shimmering effect (moving light)
-        light_width: int = chunk_height * 2  # Width of the shimmering light effect
-        light_rect: QRectF = QRectF(self._offset - light_width / 2, 0, light_width, chunk_height)
 
-        # Adjust light position if it starts before the progress bar
-        if light_rect.left() < rect.left():
-            light_rect.moveLeft(rect.left())
+        # Shimmer rect in widget coordinates, constrained to the content (groove) rect
+        light_width = chunk_height * 2
+        light_left = content.left() + self._offset - light_width / 2
+        light_rect = QRectF(
+            float(light_left),
+            float(content.top()),
+            float(light_width),
+            float(chunk_height),
+        )
+        if light_rect.left() < content.left():
+            light_rect.moveLeft(float(content.left()))
+        if light_rect.right() > content.right():
+            light_rect.moveRight(float(content.right()))
 
-        # Adjust light position if it ends after the progress bar
-        if light_rect.right() > rect.right():
-            light_rect.moveRight(rect.right())
-
-        # Create a linear gradient for the shimmering light effect using palette colors
         app = QApplication.instance()
         if app is not None and isinstance(app, QApplication):
             palette = app.palette()
         else:
             palette = QPalette()
-        
-        # Use BrightText or Light color for shimmer effect, which adapts to theme
+
         shimmer_base_color = palette.color(QPalette.ColorRole.BrightText)
-        # If BrightText is too dark, use Light color instead
         if shimmer_base_color.lightness() < 128:
             shimmer_base_color = palette.color(QPalette.ColorRole.Light)
-        # Ensure we have a light color for the shimmer
         if shimmer_base_color.lightness() < 180:
             shimmer_base_color = QColor(shimmer_base_color)
             shimmer_base_color = shimmer_base_color.lighter(150)
-        
-        shimmer_gradient: QLinearGradient = QLinearGradient(light_rect.left(), 0, light_rect.right(), 0)
-        shimmer_gradient.setColorAt(0, QColor(shimmer_base_color.red(), shimmer_base_color.green(), shimmer_base_color.blue(), 0))  # Transparent at the edges
-        shimmer_gradient.setColorAt(0.5, QColor(shimmer_base_color.red(), shimmer_base_color.green(), shimmer_base_color.blue(), 150))  # Semi-transparent in the center
-        shimmer_gradient.setColorAt(1, QColor(shimmer_base_color.red(), shimmer_base_color.green(), shimmer_base_color.blue(), 0))  # Transparent at the edges
+
+        shimmer_gradient = QLinearGradient(
+            light_rect.left(),
+            0,
+            light_rect.right(),
+            0,
+        )
+        shimmer_gradient.setColorAt(
+            0,
+            QColor(
+                shimmer_base_color.red(),
+                shimmer_base_color.green(),
+                shimmer_base_color.blue(),
+                0,
+            ),
+        )
+        shimmer_gradient.setColorAt(
+            0.5,
+            QColor(
+                shimmer_base_color.red(),
+                shimmer_base_color.green(),
+                shimmer_base_color.blue(),
+                150,
+            ),
+        )
+        shimmer_gradient.setColorAt(
+            1,
+            QColor(
+                shimmer_base_color.red(),
+                shimmer_base_color.green(),
+                shimmer_base_color.blue(),
+                0,
+            ),
+        )
 
         painter.setBrush(QBrush(shimmer_gradient))
         painter.setPen(QtCore.Qt.PenStyle.NoPen)  # pyright: ignore[reportAttributeAccessIssue]

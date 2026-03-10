@@ -1,3 +1,5 @@
+"""ASCII MDL read/write: human-readable model format for editing and debugging."""
+
 from __future__ import annotations
 
 import io
@@ -445,11 +447,11 @@ class MDLAsciiWriter(ResourceWriter):
             node_type_str = "trimesh"
         elif type_id == 33:  # NODE_TRIMESH
             node_type_str = "trimesh"
-        elif type_id == 545:  # NODE_AABB
+        elif type_id in (513, 545):  # HEADER|AABB (513), HEADER|MESH|AABB (545) NODE_AABB
             node_type_str = "aabb"
         elif type_id == 17:  # NODE_REFERENCE
             node_type_str = "reference"
-        elif type_id == 2081:  # NODE_SABER
+        elif type_id in (2049, 2081):  # HEADER|SABER (2049), HEADER|MESH|SABER (2081) NODE_SABER
             node_type_str = "lightsaber"
         else:
             node_type_str = "dummy"
@@ -596,6 +598,14 @@ class MDLAsciiWriter(ResourceWriter):
                 indent + 1,
                 f"{face.v1} {face.v2} {face.v3} {smoothgroup_mask} {t1} {t2} {t3} {material_id}",
             )
+
+        # Preserve indices arrays for binary roundtrip (MDLOps compatibility)
+        if getattr(mesh, "indices_counts", None) and len(mesh.indices_counts) > 0:
+            self.write_line(indent, "indices_counts " + " ".join(str(c) for c in mesh.indices_counts))
+        if getattr(mesh, "indices_offsets", None) and len(mesh.indices_offsets) > 0:
+            self.write_line(indent, "indices_offsets " + " ".join(str(o) for o in mesh.indices_offsets))
+        if getattr(mesh, "indices_offsets_count", 0) != 0:
+            self.write_line(indent, f"indices_offsets_count {mesh.indices_offsets_count}")
 
     def _write_skin(
         self,
@@ -1726,6 +1736,32 @@ class MDLAsciiReader(ResourceReader):
                 mesh.faces = []
             return True
 
+        # Parse indices_counts (space-separated integers after keyword, for binary roundtrip)
+        if re.match(r"^\s*indices_counts\s", line, re.IGNORECASE):
+            parts = line.split()
+            if len(parts) >= 1:
+                try:
+                    mesh.indices_counts = [int(parts[i]) for i in range(1, len(parts))]
+                except ValueError:
+                    mesh.indices_counts = []
+            return True
+
+        # Parse indices_offsets (space-separated integers after keyword)
+        if re.match(r"^\s*indices_offsets\s", line, re.IGNORECASE):
+            parts = line.split()
+            if len(parts) >= 1:
+                try:
+                    mesh.indices_offsets = [int(parts[i]) for i in range(1, len(parts))]
+                except ValueError:
+                    mesh.indices_offsets = []
+            return True
+
+        # Parse indices_offsets_count
+        match = re.match(r"^\s*indices_offsets_count\s+(\S+)", line, re.IGNORECASE)
+        if match:
+            mesh.indices_offsets_count = int(match.group(1))
+            return True
+
         # Parse tverts declaration
         if re.match(r"^\s*tverts\s+(\S+)", line, re.IGNORECASE):
             match = re.match(r"^\s*tverts\s+(\S+)", line, re.IGNORECASE)
@@ -2613,9 +2649,21 @@ class MDLAsciiReader(ResourceReader):
             if only.name and only.name.lower() == "root":
                 explicit_root = only
 
+        # Single top-level node not named "root" / model name: treat as child of implicit root (e.g. test dummy)
+        use_implicit_root = False
+        if (
+            explicit_root is None
+            and len(top_level_nodes) == 1
+            and top_level_nodes[0].name
+            and top_level_nodes[0].name.lower() not in ("root", (self._mdl.name or "").lower())
+        ):
+            use_implicit_root = True
+
         if explicit_root is not None:
             self._mdl.root = explicit_root
             self._mdl.root.children = []
+        elif use_implicit_root:
+            self._mdl.root.children = list(top_level_nodes)
         else:
             self._mdl.root.children = []
         for node in self._nodes:
@@ -2624,20 +2672,17 @@ class MDLAsciiReader(ResourceReader):
         # Build name-to-node lookup for hierarchy resolution
         by_name: dict[str, MDLNode] = {n.name.lower(): n for n in self._nodes if n.name}
 
-        # MDLOps uses node 0 (first parsed node) as the starting point for traversal
-        #
-        # Set root to node 0 if nodes exist, matching MDLOps behavior exactly
-        if self._nodes:
+        # MDLOps uses node 0 as the starting point when no explicit root and not using implicit root
+        if self._nodes and not use_implicit_root and explicit_root is None:
             self._mdl.root = self._nodes[0]
-            self._mdl.root.children = []
-        else:
             self._mdl.root.children = []
 
         for node in self._nodes:
             node.children = []
 
-        # Build name-to-node lookup for hierarchy resolution
+        # Build name-to-node and node-to-index lookups for O(1) hierarchy resolution
         by_name = {n.name.lower(): n for n in self._nodes if n.name}
+        node_to_index = {id(n): i for i, n in enumerate(self._nodes)}
 
         # Build parent-child relationships (matching MDLOps: )
         for node in self._nodes:
@@ -2647,8 +2692,7 @@ class MDLAsciiReader(ResourceReader):
             parent_name: str | None = node.__dict__.get("_parent_name")
             if isinstance(parent_name, str) and parent_name in by_name:
                 parent_node = by_name[parent_name]
-                # Update parent_id to match resolved parent
-                node.parent_id = self._nodes.index(parent_node) if parent_node in self._nodes else -1
+                node.parent_id = node_to_index.get(id(parent_node), -1)
             elif node.parent_id >= 0 and node.parent_id < len(self._nodes):
                 # Fall back to index-based resolution
                 parent_node = self._nodes[node.parent_id]
@@ -2658,10 +2702,10 @@ class MDLAsciiReader(ResourceReader):
                 #
                 parent_node.children.append(node)
             elif node is not self._mdl.root:
-                # If parent not found and node is not the root, attach to root to ensure it's not lost
-                # This ensures all nodes are reachable from node 0 during recursive traversal
-                #
-                self._mdl.root.children.append(node)
+                # If parent not found and node is not the root, attach to root to ensure it's not lost.
+                # When use_implicit_root we already set root.children = top_level_nodes, so skip re-appending.
+                if not (use_implicit_root and node.parent_id == -1):
+                    self._mdl.root.children.append(node)
 
         # Cleanup temporary parent tracking
         for node in self._nodes:

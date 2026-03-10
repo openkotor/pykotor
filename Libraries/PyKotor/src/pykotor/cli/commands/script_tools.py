@@ -7,12 +7,17 @@ disassemble, assemble) using PyKotor utilities.
 from __future__ import annotations
 
 import pathlib
-from argparse import Namespace
 
-from loggerplus import RobustLogger
+from typing import TYPE_CHECKING
+
 from pykotor.common.misc import Game
 from pykotor.resource.formats.ncs.ncs_auto import compile_nss, write_ncs
 from pykotor.tools.scripts import decompile_ncs_to_nss, disassemble_ncs
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from loggerplus import RobustLogger
 
 
 def cmd_decompile(args: Namespace, logger: RobustLogger) -> int:
@@ -20,12 +25,8 @@ def cmd_decompile(args: Namespace, logger: RobustLogger) -> int:
 
     References:
     ----------
-        Based on swkotor.exe NCS structure:
-        - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
-        - HandleBNCSMessage @ 0x005d5180 - NCS bytecode execution
-        - ExecuteCommandExecuteScript @ 0x00535b70 - Executes NCS scripts
-
-
+        See pykotor.resource.formats.ncs.ncs_data for engine addresses (K1 + TSL TODO).
+        CResNCS::CResNCS, HandleBNCSMessage, ExecuteCommandExecuteScript.
     """
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".nss")
@@ -40,17 +41,14 @@ def cmd_decompile(args: Namespace, logger: RobustLogger) -> int:
     else:
         return 0
 
+
 def cmd_disassemble(args: Namespace, logger: RobustLogger) -> int:
     """Disassemble NCS bytecode to text representation.
 
     References:
     ----------
-        Based on swkotor.exe NCS structure:
-        - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
-        - HandleBNCSMessage @ 0x005d5180 - NCS bytecode execution
-        - ExecuteCommandExecuteScript @ 0x00535b70 - Executes NCS scripts
-
-
+        See pykotor.resource.formats.ncs.ncs_data for engine addresses (K1 + TSL TODO).
+        CResNCS::CResNCS, HandleBNCSMessage, ExecuteCommandExecuteScript.
     """
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".txt")
@@ -74,12 +72,8 @@ def cmd_assemble(args: Namespace, logger: RobustLogger) -> int:
 
     References:
     ----------
-        Based on swkotor.exe NCS structure:
-        - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
-        - HandleBNCSMessage @ 0x005d5180 - NCS bytecode execution
-        - ExecuteCommandExecuteScript @ 0x00535b70 - Executes NCS scripts
-        Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py - Built-in compiler
-
+        See pykotor.resource.formats.ncs.ncs_data for engine addresses (K1 + TSL TODO).
+        Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py - Built-in compiler.
     """
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".ncs")

@@ -1,3 +1,5 @@
+"""TSLPatcher changes.ini reader: parse INI and build modification structures."""
+
 from __future__ import annotations
 
 import base64
@@ -16,6 +18,7 @@ from pykotor.tools.path import CaseAwarePath
 from pykotor.tslpatcher.config import LogLevel
 from pykotor.tslpatcher.logger import PatchLogger
 from pykotor.tslpatcher.memory import NoTokenUsage, TokenUsage2DA, TokenUsageTLK
+from utility.string_util import normalize_string
 from pykotor.tslpatcher.mods.gff import (
     AddFieldGFF,
     AddStructToListGFF,
@@ -138,11 +141,7 @@ class ConfigReader:
         self.ini: ConfigParser = ini
         self.mod_path: CaseAwarePath = CaseAwarePath(mod_path)
         # path to the tslpatchdata, optional but we'll use it here for the nwnnsscomp.exe if it exists.
-        self.tslpatchdata_path: CaseAwarePath | None = (
-            None
-            if tslpatchdata_path is None
-            else CaseAwarePath(tslpatchdata_path)
-        )
+        self.tslpatchdata_path: CaseAwarePath | None = None if tslpatchdata_path is None else CaseAwarePath(tslpatchdata_path)
         self.config: PatcherConfig
         self.log: PatchLogger = logger or PatchLogger()
 
@@ -227,11 +226,7 @@ class ConfigReader:
     ) -> str | None:
         """Resolves the case-insensitive section name string if found and returns the case-sensitive correct section name."""
         s: str | None = next(
-            (
-                section
-                for section in self.ini.sections()
-                if section.lower() == section_name.lower()
-            ),
+            (section for section in self.ini.sections() if section.lower() == section_name.lower()),
             None,
         )
         if s is not None:
@@ -485,8 +480,8 @@ class ConfigReader:
 
                 modification_ids_dict = CaseInsensitiveDict(self.ini[modification_id])
                 manipulation: Modify2DA | None = self.discern_2da(key, modification_id, modification_ids_dict)
-                if not manipulation:  # TODO(th3w1zard1): Does this denote an error occurred? If so we should raise.
-                    continue
+                if manipulation is None:
+                    raise ValueError(f"Unknown or invalid 2DA modification key '{key}' in section '{modification_id}'")
                 modifications.modifiers.append(manipulation)
 
     def load_ssf_list(self):
@@ -842,17 +837,19 @@ class ConfigReader:
         """
         value: FieldValue = cls.field_value_from_unknown(str_value)
         lower_key: str = key.lower()
-        if "(strref)" in lower_key:
+        strref_pos = lower_key.find("(strref)")
+        lang_pos = lower_key.find("(lang")
+        if strref_pos != -1:
             value = FieldValueConstant(LocalizedStringDelta(value))
-            key = key[: lower_key.index("(strref)")]
+            key = key[:strref_pos]
 
-        elif "(lang" in lower_key:
-            substring_id = int(key[lower_key.index("(lang") + 5 : -1])
+        elif lang_pos != -1:
+            substring_id = int(key[lang_pos + 5 : -1])
             language, gender = LocalizedString.substring_pair(substring_id)
             locstring = LocalizedStringDelta()
             locstring.set_data(language, gender, str_value)
             value = FieldValueConstant(locstring)
-            key = key[: lower_key.index("(lang")]
+            key = key[:lang_pos]
 
         elif lower_key.startswith("2damemory"):
             lower_str_value: str = str_value.lower()
@@ -1418,7 +1415,7 @@ class ConfigReader:
         store_tlk: dict[int, RowValue] = {}
 
         for modifier, value in modifiers.items():
-            lower_modifier: str = modifier.lower().strip()
+            lower_modifier: str = normalize_string(modifier)
             lower_value: str = value.lower()
 
             is_store_2da: bool = lower_modifier.startswith("2damemory") and len(lower_modifier) > len("2damemory") and modifier[len("2damemory") :].isdigit()

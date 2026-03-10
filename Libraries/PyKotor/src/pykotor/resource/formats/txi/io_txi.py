@@ -1,10 +1,11 @@
+"""TXI (texture info) binary reader/writer and coordinate modes."""
+
 from __future__ import annotations
 
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
 if TYPE_CHECKING:
@@ -28,9 +29,7 @@ class TXIBinaryReader(ResourceReader):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-
+        See txi_data module docstring for engine addresses (K1 + TSL TODO). GetTXIInternal, ReleaseTXIInternal, CAuroraTXI, CResTXI, SetTxiData, GetTxiData, ".txi", "txi", "TXI".
 
     """
 

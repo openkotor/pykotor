@@ -1,13 +1,15 @@
+"""Insert instance dialog: pick template (UTC/UTD/UTE/UTP/UTS/UTM/UTT/UTW) and add to GIT."""
+
 from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QBrush, QPalette
 from qtpy.QtWidgets import QDialog, QDialogButtonBox, QListWidgetItem, QMessageBox
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.common.misc import ResRef
 from pykotor.common.stream import BinaryWriter
 from pykotor.resource.formats.erf import read_erf, write_erf
@@ -47,9 +49,7 @@ class InsertInstanceDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint
-            & ~Qt.WindowType.WindowContextHelpButtonHint
-            & ~Qt.WindowType.WindowMinMaxButtonsHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint
         )
 
         self._installation: HTInstallation = installation
@@ -62,15 +62,17 @@ class InsertInstanceDialog(QDialog):
         self.filepath: Path | None = None
 
         from toolset.uic.qtpy.dialogs.insert_instance import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.ui.previewRenderer.installation = installation
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
-        
+
         self._setup_signals()
         self._setup_location_select()
         self._setup_resource_list()
@@ -92,26 +94,40 @@ class InsertInstanceDialog(QDialog):
             self.ui.locationSelect.addItem(str(capsule.filepath()), capsule.filepath())
         self.ui.locationSelect.setCurrentIndex(self.ui.locationSelect.count() - 1)
 
+    def _create_resource_list_item(self, resource, *, foreground_brush=None):
+        """Create a QListWidgetItem for a resource with tooltip and data.
+
+        Args:
+        ----
+            resource: The resource to create item for
+            foreground_brush: Optional brush for foreground color
+
+        Returns:
+        -------
+            QListWidgetItem: The created item
+        """
+        item = QListWidgetItem(resource.resname())
+        item.setToolTip(str(resource.filepath()))
+        item.setData(Qt.ItemDataRole.UserRole, resource)
+        if foreground_brush is not None:
+            item.setForeground(foreground_brush)
+        return item
+
     def _setup_resource_list(self):
         palette: QPalette = self.palette()  # Get the current application palette if needed
         text_color: QColor = palette.color(QPalette.ColorRole.WindowText)
         for resource in self._installation.core_resources():
             if resource.restype() == self._restype:
-                item = QListWidgetItem(resource.resname())
-                item.setToolTip(str(resource.filepath()))
-                item.setData(Qt.ItemDataRole.UserRole, resource)
+                item = self._create_resource_list_item(resource)
                 self.ui.resourceList.addItem(item)
 
         for capsule in self._module.capsules():
             for resource in (resource for resource in capsule if resource.restype() == self._restype):
                 if resource.restype() == self._restype:
-                    item = QListWidgetItem(resource.resname())
-                    item.setToolTip(str(resource.filepath()))
-                    item.setForeground(QBrush(text_color))
-                    item.setData(Qt.ItemDataRole.UserRole, resource)
+                    item = self._create_resource_list_item(resource, foreground_brush=QBrush(text_color))
                     self.ui.resourceList.addItem(item)
 
-        if self.ui.resourceList.count() > 0:
+        if self.ui.resourceList.count():
             self.ui.resourceList.item(0).setSelected(True)  # pyright: ignore[reportOptionalMemberAccess]
 
     def accept(self):  # noqa: C901, PLR0912
@@ -129,7 +145,12 @@ class InsertInstanceDialog(QDialog):
         new = True
         if not self.ui.resourceList.selectedItems():
             from toolset.gui.common.localization import translate as tr
-            BetterMessageBox(tr("Choose an instance"), tr("You must choose an instance, use the radial buttons to determine where/how to create the GIT instance."), icon=QMessageBox.Critical).exec()
+
+            BetterMessageBox(
+                tr("Choose an instance"),
+                tr("You must choose an instance, use the radial buttons to determine where/how to create the GIT instance."),
+                icon=QMessageBox.Critical,
+            ).exec()
             return
         resource: FileResource = self.ui.resourceList.selectedItems()[0].data(Qt.ItemDataRole.UserRole)
 
@@ -145,21 +166,21 @@ class InsertInstanceDialog(QDialog):
         elif self.ui.createResourceRadio.isChecked():
             self.resname = self.ui.resrefEdit.text()
             self.filepath = Path(self.ui.locationSelect.currentData())
-            if self._restype is ResourceType.UTC:
+            if self._restype == ResourceType.UTC:
                 self.data = bytes_utc(UTC())
-            elif self._restype is ResourceType.UTP:
+            elif self._restype == ResourceType.UTP:
                 self.data = bytes_utp(UTP())
-            elif self._restype is ResourceType.UTD:
+            elif self._restype == ResourceType.UTD:
                 self.data = bytes_utd(UTD())
-            elif self._restype is ResourceType.UTE:
+            elif self._restype == ResourceType.UTE:
                 self.data = bytes_ute(UTE())
-            elif self._restype is ResourceType.UTT:
+            elif self._restype == ResourceType.UTT:
                 self.data = bytes_utt(UTT())
-            elif self._restype is ResourceType.UTS:
+            elif self._restype == ResourceType.UTS:
                 self.data = bytes_uts(UTS())
-            elif self._restype is ResourceType.UTM:
+            elif self._restype == ResourceType.UTM:
                 self.data = bytes_utm(UTM())
-            elif self._restype is ResourceType.UTW:
+            elif self._restype == ResourceType.UTW:
                 self.data = bytes_utw(UTW())
             else:
                 self.data = b""
@@ -207,27 +228,26 @@ class InsertInstanceDialog(QDialog):
             resource: FileResource = selected_items[0].data(Qt.ItemDataRole.UserRole)
             summary_text: str = self.generate_resource_summary(resource)
             self.ui.dynamicTextLabel.setText(summary_text)
-            if resource.restype() is ResourceType.UTC and self.global_settings.showPreviewUTC:
+            if resource.restype() == ResourceType.UTC and self.global_settings.showPreviewUTC:
                 self.ui.previewRenderer.set_creature(read_utc(resource.data()))
             else:
                 mdl_data: bytes | None = None
                 mdx_data: bytes | None = None
-                if resource.restype() is ResourceType.UTD and self.global_settings.showPreviewUTD:
+                if resource.restype() == ResourceType.UTD and self.global_settings.showPreviewUTD:
                     modelname: str = door.get_model(read_utd(resource.data()), self._installation)
                     self.set_render_model(modelname)
-                elif resource.restype() is ResourceType.UTP and self.global_settings.showPreviewUTP:
+                elif resource.restype() == ResourceType.UTP and self.global_settings.showPreviewUTP:
                     modelname: str = placeable.get_model(read_utp(resource.data()), self._installation)
                     self.set_render_model(modelname)
-                elif (
-                    resource.restype() in (ResourceType.MDL, ResourceType.MDX)
-                    and any((
+                elif resource.restype() in (ResourceType.MDL, ResourceType.MDX) and any(
+                    (
                         self.global_settings.showPreviewUTC,
                         self.global_settings.showPreviewUTD,
                         self.global_settings.showPreviewUTP,
-                    ))
+                    )
                 ):
                     data = resource.data()
-                    if resource.restype() is ResourceType.MDL:
+                    if resource.restype() == ResourceType.MDL:
                         mdl_data = data
                         if is_any_erf_type_file(resource.filepath().name):
                             erf = read_erf(resource.filepath())
@@ -241,7 +261,7 @@ class InsertInstanceDialog(QDialog):
                                 mdx_data = mdx_res.data
                         else:
                             mdx_data = resource.filepath().with_suffix(".mdx").read_bytes()
-                    elif resource.restype() is ResourceType.MDX:
+                    elif resource.restype() == ResourceType.MDX:
                         mdx_data = data
                         if is_any_erf_type_file(resource.filepath().name):
                             erf = read_erf(resource.filepath())
@@ -265,12 +285,8 @@ class InsertInstanceDialog(QDialog):
         self,
         modelname: str,
     ):
-        mdl: ResourceResult | None = self._installation.resource(
-            modelname, ResourceType.MDL
-        )
-        mdx: ResourceResult | None = self._installation.resource(
-            modelname, ResourceType.MDX
-        )
+        mdl: ResourceResult | None = self._installation.resource(modelname, ResourceType.MDL)
+        mdx: ResourceResult | None = self._installation.resource(modelname, ResourceType.MDX)
         if mdl is not None and mdx is not None:
             self.ui.previewRenderer.setModel(mdl.data, mdx.data)
         else:
@@ -284,7 +300,7 @@ class InsertInstanceDialog(QDialog):
             f"Name: {resource.resname()}",
             f"Type: {resource.restype().name}",
             f"Size: {len(resource.data())} bytes",
-            f"Path: {resource.filepath().relative_to(self._installation.path())}"
+            f"Path: {resource.filepath().relative_to(self._installation.path())}",
         ]
         return "\n".join(summary)
 

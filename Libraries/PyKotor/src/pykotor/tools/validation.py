@@ -16,17 +16,20 @@ References:
 
 
 """
+
 from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 from pykotor.extract.file import ResourceIdentifier
-from pykotor.extract.installation import Installation, SearchLocation
+from pykotor.extract.installation import SearchLocation
 from pykotor.resource.type import ResourceType
+from utility.misc import is_valid_path
 
 if TYPE_CHECKING:
     from pykotor.common.module import Module
+    from pykotor.extract.installation import Installation
 
 
 class ValidationResult(TypedDict):
@@ -35,6 +38,40 @@ class ValidationResult(TypedDict):
     valid: bool
     missing_files: list[str]
     errors: list[str]
+
+
+DEFAULT_TXI_SEARCH_LOCATIONS: tuple[SearchLocation, ...] = (
+    SearchLocation.OVERRIDE,
+    SearchLocation.TEXTURES_GUI,
+    SearchLocation.TEXTURES_TPA,
+    SearchLocation.CHITIN,
+)
+
+DEFAULT_2DA_SEARCH_LOCATIONS: tuple[SearchLocation, ...] = (
+    SearchLocation.CHITIN,
+    SearchLocation.OVERRIDE,
+)
+
+
+def _collect_unique_filepaths(locations: dict[ResourceIdentifier, list]) -> list[Path]:
+    """Return unique non-empty file paths from installation location results, preserving order."""
+    found_paths: list[Path] = []
+    seen_paths: set[Path] = set()
+    for loc_list in locations.values():
+        for loc in loc_list:
+            filepath = getattr(loc, "filepath", None)
+            if filepath and filepath not in seen_paths:
+                seen_paths.add(filepath)
+                found_paths.append(filepath)
+    return found_paths
+
+
+def _resolved_search_locations(
+    search_locations: list[SearchLocation] | None,
+    default_locations: tuple[SearchLocation, ...],
+) -> list[SearchLocation]:
+    """Return caller-provided search locations or a safe default list."""
+    return search_locations if search_locations is not None else list(default_locations)
 
 
 def check_txi_files(
@@ -61,13 +98,7 @@ def check_txi_files(
         >>> results = check_txi_files(inst, ["lda_bark04", "lda_flr11"])
         >>> print(results["lda_bark04"])  # List of paths where TXI was found
     """
-    if search_locations is None:
-        search_locations = [
-            SearchLocation.OVERRIDE,
-            SearchLocation.TEXTURES_GUI,
-            SearchLocation.TEXTURES_TPA,
-            SearchLocation.CHITIN,
-        ]
+    search_locations = _resolved_search_locations(search_locations, DEFAULT_TXI_SEARCH_LOCATIONS)
 
     results: dict[str, list[Path]] = {}
 
@@ -76,12 +107,7 @@ def check_txi_files(
             [ResourceIdentifier(resname=tex_name, restype=ResourceType.TXI)],
             search_locations,
         )
-        found_paths: list[Path] = []
-        for res_ident, loc_list in locations.items():
-            for loc in loc_list:
-                if loc.filepath and loc.filepath not in found_paths:
-                    found_paths.append(loc.filepath)
-        results[tex_name] = found_paths
+        results[tex_name] = _collect_unique_filepaths(locations)
 
     return results
 
@@ -111,19 +137,14 @@ def check_2da_file(
         >>> if found:
         ...     print(f"Found at: {paths[0]}")
     """
-    if search_locations is None:
-        search_locations = [SearchLocation.CHITIN, SearchLocation.OVERRIDE]
+    search_locations = _resolved_search_locations(search_locations, DEFAULT_2DA_SEARCH_LOCATIONS)
 
     locations = installation.locations(
         [ResourceIdentifier(resname=twoda_name, restype=ResourceType.TwoDA)],
         search_locations,
     )
 
-    found_paths: list[Path] = []
-    for res_ident, loc_list in locations.items():
-        for loc in loc_list:
-            if loc.filepath and loc.filepath not in found_paths:
-                found_paths.append(loc.filepath)
+    found_paths = _collect_unique_filepaths(locations)
 
     return len(found_paths) > 0, found_paths
 
@@ -249,9 +270,9 @@ def investigate_module_structure(
     main_rim_path = rims_path / f"{module_name}.rim" if rims_path.exists() else None
     data_rim_path = rims_path / f"{module_name}_s.rim" if rims_path.exists() else None
 
-    if main_rim_path is None or not main_rim_path.exists():
+    if not is_valid_path(main_rim_path):
         main_rim_path = modules_path / f"{module_name}.rim" if modules_path.exists() else None
-    if data_rim_path is None or not data_rim_path.exists():
+    if not is_valid_path(data_rim_path):
         data_rim_path = modules_path / f"{module_name}_s.rim" if modules_path.exists() else None
 
     # Read RIM files
@@ -287,10 +308,12 @@ def investigate_module_structure(
         lyt = read_lyt(lyt_data)
         for room in lyt.rooms:
             model_name = room.model.lower()
-            rooms.append({
-                "model": model_name,
-                "position": (room.position.x, room.position.y, room.position.z),
-            })
+            rooms.append(
+                {
+                    "model": model_name,
+                    "position": (room.position.x, room.position.y, room.position.z),
+                }
+            )
 
             # Check for MDL/MDX/WOK
             mdl_key = (model_name, ResourceType.MDL)
@@ -378,11 +401,10 @@ def validate_installation(
             if not found:
                 missing_files.append(f"{twoda_name}.2da")
 
-    valid = len(errors) == 0 and len(missing_files) == 0
+    valid = not errors and not missing_files
 
     return {
         "valid": valid,
         "missing_files": missing_files,
         "errors": errors,
     }
-

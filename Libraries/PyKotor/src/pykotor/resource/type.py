@@ -39,7 +39,7 @@ import uuid
 from enum import Enum
 from functools import lru_cache
 from io import BytesIO
-from typing import TYPE_CHECKING, NamedTuple, TypeVar, Union, cast
+from typing import TYPE_CHECKING, NamedTuple, TypeVar, Union
 from xml.etree.ElementTree import ParseError
 
 from pykotor.common.stream import BinaryReader, BinaryWriter
@@ -50,7 +50,6 @@ if TYPE_CHECKING:
 
     from typing_extensions import Literal, Self  # pyright: ignore[reportMissingModuleSource]
 
-    from pykotor.common.stream import BinaryWriterBytearray, BinaryWriterFile
 
 
 class BiowareEngine(Enum):
@@ -244,7 +243,8 @@ class ResourceType(Enum):
     )
     # Type ID 5 is reserved/unused in all BioWare engines
     PLT = ResourceTuple(  # Packed layer texture
-        6, "plt", "Other", "binary", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))
+        6, "plt", "Other", "binary", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey)
+    )
     INI = ResourceTuple(  # Configuration, Windows INI
         7, "ini", "Text Files", "plaintext", supported_engines=(BiowareEngine.Infinity, BiowareEngine.Aurora, BiowareEngine.Odyssey, BiowareEngine.Eclipse)
     )
@@ -534,7 +534,7 @@ class ResourceType(Enum):
         19002, "cdx", "Other", "binary"
     )
     FPT = ResourceTuple(  # FPT file
-        19003, "fpt", "Other", "binary"
+        type_id=19003, extension="fpt", category="Other", contents="binary"
     )
     ZIP = ResourceTuple(  # ZIP archive
         20000, "zip", "Archives", "binary"

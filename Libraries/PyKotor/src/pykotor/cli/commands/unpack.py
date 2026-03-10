@@ -2,10 +2,12 @@
 
 This module handles unpacking of module/ERF/hak files into JSON source files.
 """
+
 from __future__ import annotations
 
 import glob
 import hashlib
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -13,12 +15,11 @@ if TYPE_CHECKING:
     from argparse import Namespace
     from logging import Logger
 
+from pykotor.cli.cfg_parser import load_config
 from pykotor.resource.formats.erf import read_erf
 from pykotor.resource.formats.gff import read_gff, write_gff
 from pykotor.resource.formats.rim import read_rim
 from pykotor.resource.type import ResourceType
-
-from pykotor.cli.cfg_parser import load_config
 
 
 def compute_file_hash(file_path: Path) -> str:
@@ -196,4 +197,3 @@ def cmd_unpack(args: Namespace, logger: Logger) -> int:
         return 1
 
     return 0
-

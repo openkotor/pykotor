@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""TLK (talk table) editor: string list, sound refs, and TLK export/import."""
+
 from __future__ import annotations
 
 from time import sleep
@@ -51,6 +53,9 @@ if TYPE_CHECKING:
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
 
     from pykotor.extract.file import FileResource
+    from pykotor.tools.reference_cache import (  # noqa: PLC0415
+        StrRefSearchResult,
+    )
     from pykotor.tools.reference_finder import ReferenceSearchResult
     from toolset.data.installation import HTInstallation
 
@@ -148,8 +153,7 @@ class TLKEditor(Editor):
         self.ui.actionFind.triggered.connect(self.toggle_filter_box)
         self.ui.actionFind.setShortcut("Ctrl+F")
         self.ui.searchButton.clicked.connect(_on_search_button_clicked)
-        # Also connect the search widget's built-in search button
-        self.ui.searchEdit.searchRequested.connect(_on_search_button_clicked)
+        self.ui.searchEdit.returnPressed.connect(_on_search_button_clicked)
         self.ui.actionInsert.triggered.connect(self.insert)
         self.ui.actionInsert.setShortcut("Ctrl+I")
         # self.ui.actionDelete.triggered.connect(self.delete)
@@ -314,7 +318,6 @@ class TLKEditor(Editor):
                 GFFRefLocation,
                 NCSRefLocation,
                 SSFRefLocation,
-                StrRefSearchResult,
                 TwoDARefLocation,
                 find_strref_references,
             )
@@ -442,6 +445,34 @@ class TLKEditor(Editor):
         text: str,
     ):
         self.proxy_model.setFilterFixedString(text)
+
+    def goto_strref(
+        self,
+        strref: int,
+    ) -> bool:
+        """Jump to a TLK stringref and select it in the table.
+
+        Returns True when a valid row was selected.
+        """
+        if strref < 0 or strref >= self.source_model.rowCount():
+            return False
+
+        source_index: QModelIndex = self.source_model.index(strref, 0)
+        if not source_index.isValid():
+            return False
+
+        proxy_index: QModelIndex = self.proxy_model.mapFromSource(source_index)
+        if not proxy_index.isValid():
+            self.do_filter("")
+            proxy_index = self.proxy_model.mapFromSource(source_index)
+            if not proxy_index.isValid():
+                return False
+
+        self.ui.jumpSpinbox.setValue(strref)
+        self.ui.talkTable.scrollTo(proxy_index)
+        self.ui.talkTable.setCurrentIndex(proxy_index)
+        self.ui.talkTable.setFocus()
+        return True
 
     def toggle_filter_box(self):
         is_visible: bool = self.ui.searchBox.isVisible()
@@ -612,3 +643,10 @@ class LoaderWorker(QThread):
 
     def run(self):
         self.load_data()
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("tlk"))

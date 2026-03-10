@@ -1,23 +1,24 @@
-from __future__ import annotations
-
 """Case-aware path helpers used by PyKotor.
 
 The module keeps modern `pathlib` behavior where possible, while preserving
 legacy compatibility points that older callers still import from here.
 """
+from __future__ import annotations
 
-from collections.abc import Generator, Iterable
-from functools import lru_cache
 import os
 import pathlib
 import re
 import sys
-from typing import TYPE_CHECKING
 import warnings
+
+from functools import lru_cache
+from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from pykotor.common.misc import Game
 
 # Directory cache
@@ -38,6 +39,7 @@ def _warn_deprecated_endpoint(endpoint: str, replacement: str) -> None:
         stacklevel=3,
     )
 
+
 def is_filesystem_case_sensitive(
     path: os.PathLike | str,
 ) -> bool | None:
@@ -45,6 +47,7 @@ def is_filesystem_case_sensitive(
     This function creates a temporary file to test the filesystem behavior.
     """
     import tempfile
+
     try:
         with tempfile.TemporaryDirectory(dir=path) as temp_dir:
             temp_path: pathlib.Path = pathlib.Path(temp_dir)
@@ -97,6 +100,31 @@ def _get_dir_contents(path_str: str) -> dict[str, list[str]]:
     return mapping
 
 
+def _choose_case_match(part: str, matches: list[str], current_path: str) -> str:
+    """Choose the best match for an ambiguously-cased path segment."""
+    if len(matches) == 1:
+        return matches[0]
+    if part in matches:
+        return part
+
+    best_match = matches[0]
+    best_score = -1
+    for candidate in matches:
+        score = CaseAwarePath.get_matching_characters_count(part, candidate)
+        if score > best_score:
+            best_score = score
+            best_match = candidate
+
+    RobustLogger().debug(
+        "Ambiguous case-insensitive match for '%s' under '%s'; chose '%s' from %s.",
+        part,
+        current_path,
+        best_match,
+        matches,
+    )
+    return best_match
+
+
 def clear_cache() -> None:
     """Clear directory case-resolution cache."""
     cached_entries = len(_DIR_CACHE)
@@ -116,17 +144,39 @@ class CaseAwarePath(pathlib.Path):
     if hasattr(pathlib, "_windows_flavour"):
         _flavour = pathlib._windows_flavour if os.name == "nt" else pathlib._posix_flavour
 
+    @staticmethod
+    def _normalize_posix_constructor_arg(arg: object) -> object:
+        """Normalize a constructor argument for POSIX path semantics."""
+        if isinstance(arg, (os.PathLike, pathlib.PurePath)):
+            arg = os.fspath(arg)
+        if isinstance(arg, bytes):
+            arg = os.fsdecode(arg)
+        if isinstance(arg, str):
+            return arg.replace("\\", "/")
+        return arg
+
+    @classmethod
+    def _normalize_posix_constructor_args(cls, args: tuple[object, ...]) -> tuple[object, ...]:
+        """Normalize constructor arguments for POSIX path semantics."""
+        return tuple(cls._normalize_posix_constructor_arg(arg) for arg in args)
+
+    @classmethod
+    def _normalize_posix_raw_paths(cls, args: tuple[object, ...]) -> list[str]:
+        """Return string raw-path arguments normalized for pathlib internals on POSIX."""
+        normalized_raw_paths: list[str] = []
+        for arg in cls._normalize_posix_constructor_args(args):
+            if isinstance(arg, str):
+                normalized_raw_paths.append(arg)
+                continue
+            arg_path = os.fspath(arg)
+            if isinstance(arg_path, bytes):
+                arg_path = os.fsdecode(arg_path)
+            normalized_raw_paths.append(arg_path.replace("\\", "/"))
+        return normalized_raw_paths
+
     def __new__(cls, *args, **kwargs):
         if os.name == "posix":
-            normalized_args: list[object] = []
-            for arg in args:
-                if isinstance(arg, (os.PathLike, pathlib.PurePath)):
-                    arg = os.fspath(arg)
-                if isinstance(arg, str):
-                    normalized_args.append(arg.replace("\\", "/"))
-                    continue
-                normalized_args.append(arg)
-            args = tuple(normalized_args)
+            args = cls._normalize_posix_constructor_args(args)
         return super().__new__(cls, *args, **kwargs)
 
     def __init__(self, *args, **kwargs):
@@ -145,13 +195,7 @@ class CaseAwarePath(pathlib.Path):
         if os.name != "posix" or not hasattr(self, "_raw_paths"):
             return
 
-        normalized_raw_paths: list[str] = []
-        for arg in args:
-            arg_path = os.fspath(arg)
-            if isinstance(arg_path, bytes):
-                arg_path = os.fsdecode(arg_path)
-            normalized_raw_paths.append(arg_path.replace("\\", "/"))
-        self._raw_paths = normalized_raw_paths  # type: ignore[attr-defined]
+        self._raw_paths = self._normalize_posix_raw_paths(args)  # type: ignore[attr-defined]
 
     @staticmethod
     def _is_windows_drive_like(path: str) -> bool:
@@ -211,28 +255,7 @@ class CaseAwarePath(pathlib.Path):
             contents = _get_dir_contents(current_path)
             matches = contents.get(part.lower())
             if matches:
-                if len(matches) == 1:
-                    actual_name = matches[0]
-                else:
-                    if part in matches:
-                        actual_name = part
-                    else:
-                        best_match = matches[0]
-                        best_score = -1
-                        for m in matches:
-                            score = CaseAwarePath.get_matching_characters_count(part, m)
-                            if score > best_score:
-                                best_score = score
-                                best_match = m
-                        actual_name = best_match
-                        RobustLogger().debug(
-                            "Ambiguous case-insensitive match for '%s' under '%s'; chose '%s' from %s.",
-                            part,
-                            current_path,
-                            actual_name,
-                            matches,
-                        )
-
+                actual_name = _choose_case_match(part, matches, current_path)
                 current_path = os.path.join(current_path, actual_name)
             else:
                 remaining = parts[i:]
@@ -441,22 +464,27 @@ def create_case_insensitive_pathlib_class(cls: type[CaseAwarePath]) -> None:
     return None
 
 
+def _deprecated_noop(endpoint: str, replacement: str) -> None:
+    _warn_deprecated_endpoint(endpoint, replacement)
+    return None
+
+
 def _cleanup_fuse_mounts() -> None:
     """Deprecated no-op: FUSE mount support was removed from this module."""
-    _warn_deprecated_endpoint(
+    _deprecated_noop(
         "_cleanup_fuse_mounts()",
         "FUSE path mounting support was removed from this module.",
     )
-    return None
 
 
 def _get_or_create_fuse_mount(root_path: str) -> str | None:
     """Deprecated no-op: FUSE mount support was removed from this module."""
-    _warn_deprecated_endpoint(
+    _deprecated_noop(
         "_get_or_create_fuse_mount()",
         "FUSE path mounting support was removed from this module.",
     )
     return None
+
 
 def get_default_paths() -> dict[str, dict[Game, list[str]]]:  # TODO(th3w1zard1): Many of these paths are incomplete and need community input.  # noqa: TD003
     from pykotor.common.misc import Game  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
@@ -527,6 +555,7 @@ def get_default_paths() -> dict[str, dict[Game, list[str]]]:  # TODO(th3w1zard1)
         },
     }
 
+
 def find_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
     """Finds paths to Knights of the Old Republic game data directories.
 
@@ -534,28 +563,22 @@ def find_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
     -------
         dict[Game, list[CaseAwarePath]]: A dictionary mapping Games to lists of existing path locations.
     """
-    from pykotor.common.misc import Game  # noqa: PLC0415
     import platform
+
+    from pykotor.common.misc import Game  # noqa: PLC0415
 
     os_str = platform.system()
 
     # Build hardcoded default kotor locations
     raw_locations: dict[str, dict[Game, list[str]]] = get_default_paths()
     locations: dict[Game, set[CaseAwarePath]] = {
-        game: {
-            case_path
-            for case_path in (
-                CaseAwarePath(path).expanduser().resolve()
-                for path in paths
-            )
-            if case_path.exists()
-        }
+        game: {case_path for case_path in (CaseAwarePath(path).expanduser().resolve() for path in paths) if case_path.exists()}
         for game, paths in raw_locations.get(os_str, {}).items()
     }
 
     # Build kotor locations by registry (if on windows)
     if os_str == "Windows":
-        from pykotor.tools.registry import find_software_key, winreg_key, resolve_reg_key_to_path
+        from pykotor.tools.registry import find_software_key, resolve_reg_key_to_path, winreg_key
 
         for game, possible_game_paths in ((Game.K1, winreg_key(Game.K1)), (Game.K2, winreg_key(Game.K2))):
             for reg_key, reg_valname in possible_game_paths:
@@ -563,12 +586,13 @@ def find_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
                 path = CaseAwarePath(path_str).resolve() if path_str else None
                 if path and path.name and path.is_dir():
                     locations[game].add(path)
-        
+
         amazon_k1_path_str: str | None = find_software_key("AmazonGames/Star Wars - Knights of the Old")
         if amazon_k1_path_str is not None and os.path.isdir(amazon_k1_path_str):
             locations[Game.K1].add(CaseAwarePath(amazon_k1_path_str))
 
     return {Game.K1: sorted(list(locations[Game.K1])), Game.K2: sorted(list(locations[Game.K2]))}
+
 
 __all__ = [
     "CaseAwarePath",

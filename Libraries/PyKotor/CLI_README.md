@@ -62,7 +62,8 @@ python3 -m pip install -e Libraries/PyKotor
 ### Requirements
 
 - Python 3.8+
-- Windows 7-11, MacOS, or any linux variant.
+- Windows 7–11, macOS, or any Linux variant
+- All common architectures supported (x86, x64, arm64)
 
 ## Quick Start
 

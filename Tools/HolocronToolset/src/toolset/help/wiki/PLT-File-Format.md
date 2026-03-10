@@ -81,7 +81,7 @@ To determine the final color for a pixel in a PLT [texture](TPC-File-Format):
 
 ## Binary format
 
-### file header
+### File Header
 
 The PLT file header is 24 bytes:
 

@@ -2,10 +2,12 @@
 
 This module handles conversion of JSON source files to binary GFF format for packing.
 """
+
 from __future__ import annotations
 
 import glob
 import shutil
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -13,10 +15,9 @@ if TYPE_CHECKING:
     from argparse import Namespace
     from logging import Logger
 
+from pykotor.cli.cfg_parser import load_config
 from pykotor.resource.formats.gff import read_gff, write_gff
 from pykotor.resource.type import ResourceType
-
-from pykotor.cli.cfg_parser import load_config
 
 
 def cmd_convert(args: Namespace, logger: Logger) -> int:
@@ -158,4 +159,3 @@ def cmd_convert(args: Namespace, logger: Logger) -> int:
                     logger.error(f"Failed to modify module.ifo: {e}")
 
     return 0
-

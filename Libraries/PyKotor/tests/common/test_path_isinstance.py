@@ -4,6 +4,7 @@ import os
 import pathlib
 import sys
 import unittest
+
 from unittest import mock
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()

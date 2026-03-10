@@ -1,3 +1,5 @@
+"""MDL (model) editor: load/save from installation or archive, no 3D preview."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -31,14 +33,16 @@ class MDLEditor(Editor):
         self._installation = installation
 
         from toolset.uic.qtpy.editors.mdl import Ui_MainWindow
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
-        
+
         self._setup_menus()
         self._add_help_action()
         self._setup_signals()
@@ -47,8 +51,7 @@ class MDLEditor(Editor):
 
         self.new()
 
-    def _setup_signals(self):
-        ...
+    def _setup_signals(self): ...
 
     def load(self, filepath: os.PathLike | str, resref: str, restype: ResourceType, data: bytes | bytearray):
         """Loads a model resource and its associated data.
@@ -72,7 +75,7 @@ class MDLEditor(Editor):
         mdl_data: bytes | None = None
         mdx_data: bytes | None = None
 
-        if restype is ResourceType.MDL:
+        if restype == ResourceType.MDL:
             mdl_data = data
             mdl_filepath = p_filepath.with_suffix(".mdl")
             mdx_filepath = p_filepath.with_suffix(".mdx")
@@ -86,7 +89,7 @@ class MDLEditor(Editor):
                 mdx_data = rim.get(resref, ResourceType.MDX)
             elif is_bif_file(p_filepath.name):
                 mdx_data = self._installation.resource(resref, ResourceType.MDX, [SearchLocation.CHITIN]).data
-        elif restype is ResourceType.MDX:
+        elif restype == ResourceType.MDX:
             mdx_data = data
             if p_filepath.suffix.lower() == ".mdx" and mdl_filepath.exists() and mdl_filepath.is_file():
                 mdl_data = mdl_filepath.read_bytes()
@@ -125,3 +128,10 @@ class MDLEditor(Editor):
         super().new()
         self._mdl = MDL()
         self.ui.modelRenderer.clear_model()
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("mdl"))

@@ -14,8 +14,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
 
-from qtpy.QtCore import QAbstractProxyModel, QModelIndex, QRect, QSize, Qt, QAbstractItemModel
-from qtpy.QtGui import QColor, QFontMetrics, QPainter, QPalette, QPen
+from qtpy.QtCore import QAbstractProxyModel, QRect, Qt
+from qtpy.QtGui import QColor, QPainter, QPalette, QPen
 from qtpy.QtWidgets import (
     QApplication,
     QFileSystemModel,
@@ -25,6 +25,8 @@ from qtpy.QtWidgets import (
 )
 
 if TYPE_CHECKING:
+    from qtpy.QtCore import QAbstractItemModel, QModelIndex, QSize
+    from qtpy.QtGui import QFontMetrics
     from qtpy.QtWidgets import QWidget
 
 

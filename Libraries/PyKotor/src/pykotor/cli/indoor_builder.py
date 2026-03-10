@@ -5,14 +5,18 @@ This module provides CLI-friendly wrappers around the HolocronToolset indoor map
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.common.misc import Game
 from pykotor.extract.installation import Installation
+from utility.string_util import normalize_string
 
 if TYPE_CHECKING:
-    pass
+    from pathlib import Path
+
+
+K1_ALIASES = ("k1", "kotor1", "kotor 1")
+K2_ALIASES = ("k2", "kotor2", "kotor 2", "tsl")
 
 
 def parse_game_argument(game_arg: str | None) -> Game | None:
@@ -29,10 +33,10 @@ def parse_game_argument(game_arg: str | None) -> Game | None:
     if not game_arg:
         return None
 
-    game_lower = game_arg.lower().strip()
-    if game_lower in ("k1", "kotor1", "kotor 1"):
+    game_lower = normalize_string(game_arg)
+    if game_lower in K1_ALIASES:
         return Game.K1
-    if game_lower in ("k2", "kotor2", "kotor 2", "tsl"):
+    if game_lower in K2_ALIASES:
         return Game.K2
 
     return None
@@ -54,3 +58,11 @@ def determine_game_from_installation(installation_path: Path) -> Game | None:
         return installation.game()
     except Exception:
         return None
+
+
+def resolve_game_argument(game_arg: str | None, installation_path: Path) -> Game | None:
+    """Resolve game from explicit argument first, then by probing installation."""
+    explicit = parse_game_argument(game_arg)
+    if explicit is not None:
+        return explicit
+    return determine_game_from_installation(installation_path)

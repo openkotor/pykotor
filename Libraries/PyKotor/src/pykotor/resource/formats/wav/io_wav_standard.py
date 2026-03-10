@@ -8,9 +8,7 @@ This module's writer produces clean RIFF/WAVE output regardless of input format.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Standard RIFF/WAVE format specification
+        See wav_data module docstring for engine addresses (K1 + TSL TODO). Standard RIFF/WAVE format specification
 
 """
 
@@ -19,21 +17,23 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.wav.wav_data import (
-    WAV,
     AudioFormat,
 )
 from pykotor.resource.type import ResourceWriter, autoclose
 
 if TYPE_CHECKING:
+    from pykotor.resource.formats.wav.wav_data import (
+        WAV,
+    )
     from pykotor.resource.type import TARGET_TYPES
 
 
 class WAVStandardWriter(ResourceWriter):
     """Handles writing standard (non-obfuscated) WAV binary data.
-    
+
     This writer produces clean RIFF/WAVE format without KotOR obfuscation headers.
     For MP3 audio data, writes the raw MP3 bytes directly (not wrapped in WAV).
-    
+
     Use this writer when you need playable audio for:
     - Media players
     - Qt audio playback
@@ -61,7 +61,7 @@ class WAVStandardWriter(ResourceWriter):
         if self.wav.audio_format == AudioFormat.MP3:
             self._writer.write_bytes(self.wav.data)
             return
-        
+
         # Calculate sizes for RIFF header
         data_size = len(self.wav.data)
         fmt_chunk_size = 16

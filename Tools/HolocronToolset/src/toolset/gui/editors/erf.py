@@ -1,7 +1,9 @@
+"""ERF/MOD/SAV archive editor: resource list, extract/pack, and drag-drop."""
+
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Callable
+from typing import TYPE_CHECKING, Callable, cast
 
 import qtpy
 
@@ -28,7 +30,6 @@ from qtpy.QtWidgets import (
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.common.misc import ResRef
 from pykotor.extract.file import ResourceIdentifier
-from pykotor.resource.bioware_archive import ArchiveResource
 from pykotor.resource.formats.bif import BIF, BIFResource, BIFType, read_bif, write_bif
 from pykotor.resource.formats.erf import ERF, ERFResource, ERFType, read_erf, write_erf
 from pykotor.resource.formats.rim import RIM, RIMResource, read_rim, write_rim
@@ -55,7 +56,7 @@ if TYPE_CHECKING:
     from qtpy.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
     from qtpy.QtWidgets import QAbstractButton, QHeaderView, QWidget
 
-    from pykotor.resource.formats.rim import RIMResource
+    from pykotor.resource.bioware_archive import ArchiveResource
     from toolset.data.installation import HTInstallation
 
 if qtpy.QT5:
@@ -72,6 +73,22 @@ def human_readable_size(byte_size: float) -> str:
             return f"{round(byte_size, 2)} {unit}"
         byte_size /= 1024
     return str(byte_size)
+
+
+def _archive_resource_resname(resource: ERFResource | RIMResource | BIFResource) -> str:
+    """Return display/resname for an archive resource. BIF does not store ResRef (it is in KEY); use ID when blank."""
+    if isinstance(resource, BIFResource) and not str(resource.resref).strip():
+        return f"id_{resource.resname_key_index}"
+    return str(resource.resref)
+
+
+def _resource_identifier(source_model: QStandardItemModel, row: int) -> str:
+    """Build a stable lower-case key for row resource identity."""
+    row_item = source_model.item(row, 0)
+    type_item = source_model.item(row, 1)
+    res_name = row_item.data() if row_item is not None else ""
+    ext = type_item.data() if type_item is not None else ""
+    return f"{res_name}.{ext}".strip().lower()
 
 
 class ERFSortFilterProxyModel(RobustSortFilterProxyModel):
@@ -188,6 +205,20 @@ class ERFEditor(Editor):
         self.ui.tableView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.ui.tableView.customContextMenuRequested.connect(self.open_context_menu)
 
+    def _get_selected_resources_data(self) -> list[ERFResource]:
+        """Get the data of selected resources from the table view.
+
+        Returns:
+        -------
+            List of ERFResource objects for selected rows
+        """
+        sel_model: QItemSelectionModel | None = self.ui.tableView.selectionModel()
+        if sel_model is None:
+            RobustLogger().warning("ERFEditor: selectionModel was None in _get_selected_resources_data()")
+            return []
+        selected_rows = sel_model.selectedRows()
+        return [self.source_model.itemFromIndex(self._proxy_model.mapToSource(index)).data() for index in selected_rows]
+
     def prompt_confirm(self) -> bool:
         result = QMessageBox.question(
             None,
@@ -226,7 +257,7 @@ class ERFEditor(Editor):
                 offset_item: QStandardItem = QStandardItem(f"0x{res_offset:X}")
                 self.source_model.appendRow([resref_item, restype_item, size_item, offset_item])
 
-        elif restype is ResourceType.RIM:
+        elif restype == ResourceType.RIM:
             rim: RIM = read_rim(data)
             for resource in rim:
                 resref_item = QStandardItem(str(resource.resref))
@@ -236,10 +267,12 @@ class ERFEditor(Editor):
                 offset_item = QStandardItem(f"0x{rim.get_resource_offset(resource):X}")
                 self.source_model.appendRow([resref_item, restype_item, size_item, offset_item])
 
-        elif restype is ResourceType.BIF:
+        elif restype == ResourceType.BIF:
             bif: BIF = read_bif(data)
             for resource in bif:
-                resref_item = QStandardItem(str(resource.resref))
+                # BIF files do not store ResRef names (they are in the KEY file); use resource ID when blank
+                resref_display = str(resource.resref).strip() or f"id_{resource.resname_key_index}"
+                resref_item = QStandardItem(resref_display)
                 resref_item.setData(resource)
                 restype_item = QStandardItem(resource.restype.extension.upper())
                 size_item = QStandardItem(human_readable_size(len(resource.data)))
@@ -283,6 +316,7 @@ class ERFEditor(Editor):
                 arch.set_data(res.resref, res.restype, res.data, res.resname_key_index)
             else:
                 arch.set_data(res.resref, res.restype, res.data)
+
         def write_archive_data(arch: RIM | ERF | BIF, data_buf: bytearray):
             writer_mapping = {
                 RIM: write_rim,
@@ -292,7 +326,7 @@ class ERFEditor(Editor):
             write_func = writer_mapping[arch.__class__]
             write_func(arch, data_buf)
 
-        if self._restype is ResourceType.RIM:
+        if self._restype == ResourceType.RIM:
             rim = RIM()
             self._build_archive(
                 rim,
@@ -304,7 +338,7 @@ class ERFEditor(Editor):
 
         elif self._restype in (ResourceType.ERF, ResourceType.MOD, ResourceType.SAV):  # sourcery skip: split-or-ifs
             erf = ERF(ERFType.from_extension(self._restype.extension))
-            if self._restype is ResourceType.SAV:
+            if self._restype == ResourceType.SAV:
                 erf.is_save = True
             self._build_archive(
                 erf,
@@ -417,12 +451,7 @@ class ERFEditor(Editor):
         main_menu.exec(viewport.mapToGlobal(position))
 
     def get_selected_resources(self) -> list[ERFResource]:
-        # return [self.model.itemFromIndex(rowItem).data() for rowItem in selected_rows]
-        sel_model: QItemSelectionModel | None = self.ui.tableView.selectionModel()
-        if sel_model is None:
-            RobustLogger().warning("ERFEditor: selectionModel was None in get_selected_resources()")
-            return []
-        return [self.source_model.itemFromIndex(self._proxy_model.mapToSource(rowItem)).data() for rowItem in sel_model.selectedRows()]
+        return self._get_selected_resources_data()
 
     def extract_selected(self):
         selected_resources: list[ERFResource] = self.get_selected_resources()
@@ -544,15 +573,7 @@ class ERFEditor(Editor):
         *,
         gff_specialized: bool | None = None,
     ):
-        sel_model: QItemSelectionModel | None = self.ui.tableView.selectionModel()
-        if sel_model is None:
-            RobustLogger().warning("ERFEditor: selectionModel was None in open_selected()")
-            return
-        selected_rows: list[QModelIndex] = sel_model.selectedRows()
-        if not selected_rows:
-            RobustLogger().warning("ERFEditor: no selected rows in open_selected()")
-            return
-        erf_resources: list[ERFResource] = [self.source_model.itemFromIndex(self._proxy_model.mapToSource(index)).data() for index in selected_rows]
+        erf_resources: list[ERFResource] = self._get_selected_resources_data()
         if not erf_resources:
             RobustLogger().warning("ERFEditor: no erf_resources in open_selected()")
             return
@@ -586,6 +607,7 @@ class ERFEditor(Editor):
     ):
         for resource in resources:
             new_filepath: Path = filepath
+            resname = _archive_resource_resname(resource)
             if resource.restype in (
                 ResourceType.ERF,
                 ResourceType.SAV,
@@ -594,10 +616,10 @@ class ERFEditor(Editor):
             ):
                 RobustLogger().info(
                     "Nested capsule selected for opening, appending resref/restype '%s.%s' to the filepath.",
-                    resource.resref,
+                    resname,
                     resource.restype,
                 )
-                new_filepath /= str(ResourceIdentifier(str(resource.resref), resource.restype))
+                new_filepath /= str(ResourceIdentifier(resname, resource.restype))
 
             # IMPORTANT:
             # We already have the in-memory bytes (`resource.data`). Do NOT wrap this as a FileResource
@@ -605,7 +627,7 @@ class ERFEditor(Editor):
             # which leads to opening the wrong bytes in the wrong editor (e.g. "Failed to determine GFF").
             _tempPath, editor = open_resource_editor(
                 new_filepath,
-                str(resource.resref),
+                resname,
                 resource.restype,
                 resource.data,
                 installation=installation,
@@ -740,9 +762,9 @@ class ERFEditorTable(RobustTableView):
         if mime_data.hasUrls():
             event.setDropAction(Qt.DropAction.CopyAction)
             event.accept()
-            filter_model: ERFSortFilterProxyModel = cast(ERFSortFilterProxyModel, self.model())
-            source_model: QStandardItemModel = cast(QStandardItemModel, filter_model.sourceModel())
-            existing_items: set[str] = {f"{source_model.index(row, 0).data()}.{source_model.index(row, 1).data()}".strip().lower() for row in range(source_model.rowCount())}
+            filter_model: ERFSortFilterProxyModel = cast("ERFSortFilterProxyModel", self.model())
+            source_model: QStandardItemModel = cast("QStandardItemModel", filter_model.sourceModel())
+            existing_items: set[str] = {_resource_identifier(source_model, row) for row in range(source_model.rowCount())}
             always: bool = False
             never: bool = False
             to_skip: list[str] = []
@@ -849,8 +871,8 @@ class ERFEditorTable(RobustTableView):
             return
 
         urls: list[QUrl] = []
-        filter_model: ERFSortFilterProxyModel = cast(ERFSortFilterProxyModel, self.model())
-        source_model: QStandardItemModel = cast(QStandardItemModel, filter_model.sourceModel())
+        filter_model: ERFSortFilterProxyModel = cast("ERFSortFilterProxyModel", self.model())
+        source_model: QStandardItemModel = cast("QStandardItemModel", filter_model.sourceModel())
         for index in (index for index in self.selectedIndexes() if not index.column()):
             resource: ERFResource = source_model.data(filter_model.mapToSource(index), Qt.ItemDataRole.UserRole + 1)
             file_stem, file_ext = str(resource.resref), resource.restype.extension
@@ -863,3 +885,10 @@ class ERFEditorTable(RobustTableView):
         drag = QtGui.QDrag(self)
         drag.setMimeData(mime_data)
         drag.exec(Qt.DropAction.CopyAction, Qt.DropAction.CopyAction)
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("erf"))

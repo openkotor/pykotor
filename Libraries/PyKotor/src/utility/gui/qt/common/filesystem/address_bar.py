@@ -5,7 +5,6 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import QSize, QTimer, Qt, Signal  # pyright: ignore[reportPrivateImportUsage]
 from qtpy.QtGui import QColor, QIcon, QLinearGradient, QPainter, QPen
 from qtpy.QtWidgets import (
@@ -24,6 +23,7 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from utility.gui.qt.common.qt_event_utils import process_events_if_safe
 
 if TYPE_CHECKING:

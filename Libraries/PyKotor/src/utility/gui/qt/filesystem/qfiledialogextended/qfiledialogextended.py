@@ -3,20 +3,16 @@ from __future__ import annotations
 import sys
 import traceback
 
-from collections.abc import Iterable
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, overload
 
 from qtpy.QtCore import (
     QAbstractItemModel,
-    QByteArray,
-    QDir,
-    QEvent,
     QUrl,
     Qt,
 )
-from qtpy.QtWidgets import QApplication, QFileSystemModel, QLayoutItem, QMessageBox, QWidget  # pyright: ignore[reportPrivateImportUsage]
+from qtpy.QtWidgets import QApplication, QFileSystemModel, QLayoutItem, QMessageBox  # pyright: ignore[reportPrivateImportUsage]
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as AdapterQFileDialog
@@ -28,9 +24,20 @@ from utility.gui.qt.widgets.itemviews.treeview import RobustTreeView
 from utility.gui.qt.widgets.widgets.stacked_view import DynamicStackedView
 
 if TYPE_CHECKING:
-    from qtpy.QtCore import QAbstractItemModel, QAbstractProxyModel, QModelIndex, QObject, QPoint
+    from collections.abc import Iterable
+
+    from qtpy.QtCore import (
+        QAbstractItemModel,
+        QAbstractProxyModel,
+        QByteArray,
+        QDir,
+        QEvent,
+        QModelIndex,
+        QObject,
+        QPoint,
+    )
     from qtpy.QtGui import QAbstractFileIconProvider
-    from qtpy.QtWidgets import QAbstractItemDelegate, QAbstractItemView, QListView, QTreeView
+    from qtpy.QtWidgets import QAbstractItemDelegate, QAbstractItemView, QListView, QTreeView, QWidget
 
 
 class ReplaceStrategy(Enum):
@@ -215,6 +222,7 @@ class QFileDialogExtended(AdapterQFileDialog):
                 # Be defensive: if the import fails, do not crash the dialog.
                 try:
                     from loggerplus import RobustLogger
+
                     RobustLogger.getLogger(__name__).warning("Windows11ItemDelegate not available; using default delegates", exc_info=True)
                 except Exception:
                     # Last resort: ignore logging failures
@@ -397,7 +405,7 @@ class QFileDialogExtended(AdapterQFileDialog):
         # View mode actions
         actions.actionListView.triggered.connect(self._q_showListView)
         actions.actionDetailView.triggered.connect(self._q_showDetailsView)
-        
+
         # Icon size actions
         actions.actionExtraLargeIcons.triggered.connect(self._set_extra_large_icons)
         actions.actionLargeIcons.triggered.connect(self._set_large_icons)
@@ -407,34 +415,38 @@ class QFileDialogExtended(AdapterQFileDialog):
     def _set_extra_large_icons(self) -> None:
         """Set extra large icons (256px) and switch to list view mode."""
         from utility.gui.qt.widgets.itemviews.thumbnail_list_view import IconSize
+
         self._set_icon_size(IconSize.EXTRA_LARGE)
 
     def _set_large_icons(self) -> None:
         """Set large icons (128px) and switch to list view mode."""
         from utility.gui.qt.widgets.itemviews.thumbnail_list_view import IconSize
+
         self._set_icon_size(IconSize.LARGE)
 
     def _set_medium_icons(self) -> None:
         """Set medium icons (64px) and switch to list view mode."""
         from utility.gui.qt.widgets.itemviews.thumbnail_list_view import IconSize
+
         self._set_icon_size(IconSize.MEDIUM)
 
     def _set_small_icons(self) -> None:
         """Set small icons (32px) and switch to list view mode."""
         from utility.gui.qt.widgets.itemviews.thumbnail_list_view import IconSize
+
         self._set_icon_size(IconSize.SMALL)
 
     def _set_icon_size(self, size: int) -> None:
         """Set the icon size for the list view and switch to it."""
         from qtpy.QtCore import QSize
         from qtpy.QtWidgets import QListView
-        
+
         # Switch to list view mode
         self._q_showListView()
-        
+
         # Set icon size
         self.ui.listView.setIconSize(QSize(size, size))
-        
+
         # Configure view mode based on size
         if size >= 64:  # Medium and above
             self.ui.listView.setViewMode(QListView.ViewMode.IconMode)
@@ -1262,19 +1274,19 @@ class QFileDialogExtended(AdapterQFileDialog):
         super().setDefaultSuffix(self._none_to_empty(suffix))
 
     def acceptMode(self) -> AdapterQFileDialog.AcceptMode:
-        return cast(AdapterQFileDialog.AcceptMode, super().acceptMode())
+        return cast("AdapterQFileDialog.AcceptMode", super().acceptMode())
 
     def setAcceptMode(self, mode: AdapterQFileDialog.AcceptMode) -> None:
         super().setAcceptMode(mode)
 
     def fileMode(self) -> AdapterQFileDialog.FileMode:
-        return cast(AdapterQFileDialog.FileMode, super().fileMode())
+        return cast("AdapterQFileDialog.FileMode", super().fileMode())
 
     def setFileMode(self, mode: AdapterQFileDialog.FileMode) -> None:
         super().setFileMode(mode)
 
     def viewMode(self) -> AdapterQFileDialog.ViewMode:
-        return cast(AdapterQFileDialog.ViewMode, super().viewMode())
+        return cast("AdapterQFileDialog.ViewMode", super().viewMode())
 
     def setViewMode(self, mode: AdapterQFileDialog.ViewMode) -> None:
         super().setViewMode(mode)
@@ -1293,6 +1305,7 @@ if __name__ == "__main__":
     import faulthandler
     import sys
     import traceback
+
     from pathlib import Path
 
     # Ensure the package "src" root is on sys.path so imports like

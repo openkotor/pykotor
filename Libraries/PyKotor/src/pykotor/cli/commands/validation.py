@@ -11,7 +11,7 @@ References:
         Based on swkotor.exe resource validation:
         - CExoResMan::GetResRef - Resource reference lookup
         - CResGFF, CRes2DA, CResTPC - Resource format validators
-        
+
         scripts/kotor/check_txi_files.py - TXI file checking
         scripts/kotor/check_missing_resources.py - Missing resource checking
         scripts/kotor/investigate_module_structure.py - Module investigation
@@ -23,10 +23,11 @@ from __future__ import annotations
 
 import json
 import pathlib
-from argparse import Namespace
-from collections.abc import Sized
 
-from loggerplus import RobustLogger as Logger  # type: ignore[import-untyped]
+from collections.abc import Sized
+from typing import TYPE_CHECKING
+
+from pykotor.cli.console import ok_fail_symbols
 from pykotor.common.module import Module
 from pykotor.extract.installation import Installation
 from pykotor.tools.validation import (
@@ -38,7 +39,10 @@ from pykotor.tools.validation import (
     validate_installation,
 )
 
-from pykotor.cli.console import ok_fail_symbols
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from loggerplus import RobustLogger as Logger
 
 
 def cmd_check_txi(args: Namespace, logger: Logger) -> int:

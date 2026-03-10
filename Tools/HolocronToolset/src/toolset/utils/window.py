@@ -1,3 +1,5 @@
+"""Window registry: keep toolset windows alive, recent files, and open-resource helpers."""
+
 from __future__ import annotations
 
 import os
@@ -6,10 +8,10 @@ from functools import singledispatch
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger  # type: ignore[import-untyped]
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QMainWindow, QMessageBox, QWidget
 
+from loggerplus import RobustLogger  # type: ignore[import-untyped]
 from pykotor.extract.file import FileResource  # type: ignore[import-not-found]
 from pykotor.resource.type import ResourceType  # type: ignore[import-not-found]
 from toolset.gui.common.localization import translate as tr, trf  # type: ignore[import-not-found]
@@ -23,8 +25,34 @@ if TYPE_CHECKING:
     from toolset.gui.editor import Editor
 
 TOOLSET_WINDOWS: list[QDialog | QMainWindow] = []
-"""List of windows that are currently open."""
 _UNIQUE_SENTINEL = object()
+_MAX_RECENT_FILES = 15
+_TOP_LEVEL_MESSAGE_FLAGS = (
+    Qt.WindowType.Window
+    | Qt.WindowType.Dialog
+    | Qt.WindowType.WindowStaysOnTopHint
+)  # pyright: ignore[reportArgumentType]
+_IMAGE_OR_TEXTURE_CATEGORY = {"Images", "Textures"}
+
+
+def _normalize_recent_files(entries: list[str]) -> list[str]:
+    """Return a deduplicated list of existing file paths as strings."""
+    seen: set[Path] = set()
+    recent_files: list[str] = []
+    for value in entries:
+        path = Path(value)
+        if path.is_file() and path not in seen:
+            seen.add(path)
+            recent_files.append(str(path))
+    return recent_files
+
+
+def _prepend_recent_file(file: Path | str, recent_files: list[str]) -> list[str]:
+    """Update a normalized recent-files list with file at the head."""
+    path_text = str(file)
+    filtered: list[str] = [value for value in recent_files if value != path_text]
+    filtered.insert(0, path_text)
+    return filtered[:_MAX_RECENT_FILES]
 
 
 def add_window(
@@ -61,13 +89,11 @@ def add_window(
     TOOLSET_WINDOWS.append(window)
 
 
-def add_recent_file(file: Path):
-    """Update the list of recent files."""
+def add_recent_file(file: Path) -> None:
+    """Update the list of recent files (deduplicated, order preserved)."""
     settings = GlobalSettings()
-    recent_files: list[str] = [str(fp) for fp in {Path(p) for p in settings.recentFiles} if fp.is_file()]
-    recent_files.insert(0, str(file))
-    if len(recent_files) > 15:  # noqa: PLR2004
-        recent_files.pop()
+    recent_files = _normalize_recent_files(settings.recentFiles)
+    recent_files = _prepend_recent_file(file, recent_files)
     settings.recentFiles = recent_files
 
 
@@ -81,8 +107,10 @@ def open_resource_editor(  # noqa: PLR0913
     resname: str | None = None,
     restype: ResourceType | None = None,
     data: bytes | None = None,
+    open_as_generic_gff: bool = False,
 ) -> tuple[os.PathLike | str | None, Editor | QMainWindow | None]:
     raise NotImplementedError("Unsupported input type")
+
 
 @open_resource_editor.register(FileResource)
 def _(
@@ -91,15 +119,18 @@ def _(
     parent_window: QWidget | None = None,
     *,
     gff_specialized: bool | None = None,
-    **kwargs
+    open_as_generic_gff: bool = False,
+    **kwargs,
 ) -> tuple[os.PathLike | str | None, Editor | QMainWindow | None]:
     # Implementation for FileResource
     return _open_resource_editor_impl(
         resource=resource,
         installation=installation,
         parent_window=parent_window,
-        gff_specialized=gff_specialized
+        gff_specialized=gff_specialized,
+        open_as_generic_gff=open_as_generic_gff,
     )
+
 
 @open_resource_editor.register(str)
 @open_resource_editor.register(os.PathLike)
@@ -112,6 +143,7 @@ def _(  # noqa: PLR0913
     parent_window: QWidget | None = None,
     *,
     gff_specialized: bool | None = None,
+    open_as_generic_gff: bool = False,
 ) -> tuple[os.PathLike | str | None, Editor | QMainWindow | None]:
     return _open_resource_editor_impl(
         filepath=path,
@@ -120,8 +152,10 @@ def _(  # noqa: PLR0913
         data=data,
         installation=installation,
         parent_window=parent_window,
-        gff_specialized=gff_specialized
+        gff_specialized=gff_specialized,
+        open_as_generic_gff=open_as_generic_gff,
     )
+
 
 def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
     resource: FileResource | None = None,
@@ -132,12 +166,14 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
     installation: HTInstallation | None = None,
     parent_window: QWidget | None = None,
     gff_specialized: bool | None = None,
+    open_as_generic_gff: bool = False,
 ) -> tuple[os.PathLike | str | None, Editor | QMainWindow | None]:
     # To avoid circular imports, these need to be placed within the function
     from toolset.gui.editors.are import AREEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.bwm import BWMEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.dlg import DLGEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.erf import ERFEditor  # type: ignore[import-not-found] # noqa: PLC0415
+    from toolset.gui.editors.fac import FACEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.gff import GFFEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.git import GITEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.ifo import IFOEditor  # type: ignore[import-not-found] # noqa: PLC0415
@@ -165,6 +201,8 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
 
     if gff_specialized is None:
         gff_specialized = GlobalSettings().gffSpecializedEditors
+    if open_as_generic_gff:
+        gff_specialized = False
 
     editor: Editor | None = None
     parent_window_widget: QWidget | None = parent_window if isinstance(parent_window, QWidget) else None
@@ -174,42 +212,63 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
             data = resource.data()
         except Exception:  # noqa: BLE001
             RobustLogger().exception("Exception occurred in _open_resource_editor_impl")
-            QMessageBox(QMessageBox.Icon.Critical, tr("Failed to get the file data."), tr("An error occurred while attempting to read the data of the file.")).exec()
+            from toolset.gui.helpers.message_box import show_error_message
+            show_error_message(tr("Failed to get the file data."), tr("An error occurred while attempting to read the data of the file."))
             return None, None
         restype = resource.restype()
         resname = resource.resname()
         filepath = resource.filepath()
-    elif (
-        resname
-        and resname.strip()
-        and restype
-        and data is not None
-        and filepath
-    ):
+    elif resname and resname.strip() and restype and data is not None and filepath:
         ...
     else:
         raise ValueError("Invalid input combination")
 
-    if restype.target_type() is ResourceType.TwoDA:
-        editor = TwoDAEditor(None, installation)
-    elif restype.target_type() is ResourceType.SSF:
-        editor = SSFEditor(None, installation)
-    elif restype.target_type() is ResourceType.TLK:
-        editor = TLKEditor(None, installation)
-    elif restype.target_type() is ResourceType.LTR:
-        editor = LTREditor(None, installation)
-    elif restype.target_type() is ResourceType.LIP:  # Add LIP editor support
-        editor = LIPEditor(None, installation)
-    elif restype.category == "Walkmeshes":
-        editor = BWMEditor(None, installation)
-    elif (
-        restype.category in {"Images", "Textures"}
-        and restype is not ResourceType.TXI
-    ):
-        editor = TPCEditor(None, installation)
-    elif restype is ResourceType.NSS:
-        editor = NSSEditor(None, installation)
-    elif restype is ResourceType.NCS:
+    from toolset.utils.window_editor import get_editor_by_resource_identity
+
+    existing_editor = get_editor_by_resource_identity(filepath, resname, restype)
+    if existing_editor is not None:
+        try:
+            existing_editor.show()
+            existing_editor.raise_()
+            existing_editor.activateWindow()
+        except Exception:  # noqa: BLE001
+            RobustLogger().exception(
+                "Failed to focus existing editor for '%s.%s' (filepath=%s)",
+                resname,
+                restype,
+                filepath,
+            )
+        return filepath, existing_editor
+
+    def _instantiate_editor(editor_class: type[Editor], *, requires_installation: bool = False) -> Editor | None:
+        """Create an editor instance with optional installation requirements."""
+        if requires_installation and installation is None:
+            return None
+        return editor_class(None, installation)
+
+    # Mapping of resource types to editor creation functions
+    # Each entry is a tuple: (editor_class, requires_installation)
+    editor_mappings: dict[ResourceType, tuple[type[Editor], bool]] = {
+        # Simple mappings (no special conditions)
+        ResourceType.TwoDA: (TwoDAEditor, False),
+        ResourceType.SSF: (SSFEditor, False),
+        ResourceType.TLK: (TLKEditor, False),
+        ResourceType.LTR: (LTREditor, False),
+        ResourceType.LIP: (LIPEditor, False),
+        ResourceType.NSS: (NSSEditor, False),
+        ResourceType.GUI: (GFFEditor, False),
+    }
+
+    # Category-based mappings
+    if restype.category == "Walkmeshes":
+        editor = _instantiate_editor(BWMEditor)
+    elif restype.category in _IMAGE_OR_TEXTURE_CATEGORY and restype != ResourceType.TXI:
+        editor = _instantiate_editor(TPCEditor)
+    elif restype.category == "Audio":
+        editor = _instantiate_editor(WAVEditor)
+    elif restype.name in (ResourceType.ERF, ResourceType.SAV, ResourceType.MOD, ResourceType.RIM, ResourceType.BIF):
+        editor = _instantiate_editor(ERFEditor)
+    elif restype == ResourceType.NCS:
         if installation is None:
             QMessageBox.warning(
                 parent_window_widget,
@@ -217,124 +276,67 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
                 tr("Please select an installation from the dropdown before loading an NCS."),
             )
             return None, None
-        editor = NSSEditor(None, installation)
+        editor = _instantiate_editor(NSSEditor)
+    elif restype == ResourceType.BIK:
+        from toolset.gui.helpers.message_box import show_info_message
+        show_info_message(tr("Unsupported file type"), tr("BIK video preview is not supported yet in the Toolset editor."), parent_window_widget)
+        return None, None
+    else:
+        # Handle target_type mappings with GFF specialization logic
+        target_type = restype.target_type()
+        gff_editor_mappings = {
+            ResourceType.DLG: DLGEditor,
+            ResourceType.UTC: UTCEditor,
+            ResourceType.BTC: UTCEditor,
+            ResourceType.BIC: UTCEditor,
+            ResourceType.UTP: UTPEditor,
+            ResourceType.BTP: UTPEditor,
+            ResourceType.UTD: UTDEditor,
+            ResourceType.BTD: UTDEditor,
+            ResourceType.IFO: IFOEditor,
+            ResourceType.UTS: UTSEditor,
+            ResourceType.UTT: UTTEditor,
+            ResourceType.BTT: UTTEditor,
+            ResourceType.UTM: UTMEditor,
+            ResourceType.BTM: UTMEditor,
+            ResourceType.UTW: UTWEditor,
+            ResourceType.UTE: UTEEditor,
+            ResourceType.BTE: UTEEditor,
+            ResourceType.UTI: UTIEditor,
+            ResourceType.BTI: UTIEditor,
+            ResourceType.JRL: JRLEditor,
+            ResourceType.ARE: AREEditor,
+            ResourceType.PTH: PTHEditor,
+            ResourceType.GIT: GITEditor,
+            ResourceType.FAC: FACEditor,
+        }
 
-    elif restype.target_type() is ResourceType.DLG:
-        if installation is None or not gff_specialized:  # noqa: SIM108
-            editor = GFFEditor(None, installation)
+        if target_type in gff_editor_mappings:
+            specialized_editor_class = gff_editor_mappings[target_type]
+            if installation is None or not gff_specialized:
+                editor = _instantiate_editor(GFFEditor)
+            else:
+                editor = _instantiate_editor(specialized_editor_class)
         else:
-            editor = DLGEditor(None, installation)
+            # Fallback to simple mapping or None
+            if restype in editor_mappings:
+                editor_class, requires_installation = editor_mappings[restype]
+                editor = _instantiate_editor(editor_class, requires_installation=requires_installation)
+            else:
+                editor = None
 
-    elif restype.target_type() in {ResourceType.UTC, ResourceType.BTC, ResourceType.BIC}:
-        if installation is None or not gff_specialized:
-            editor = GFFEditor(None, installation)
-        else:
-            editor = UTCEditor(None, installation)
+    if restype in {ResourceType.MDL, ResourceType.MDX}:
+        editor = _instantiate_editor(MDLEditor)
 
-    elif restype.target_type() in {ResourceType.UTP, ResourceType.BTP}:
-        if installation is None or not gff_specialized:
-            editor = GFFEditor(None, installation)
-        else:
-            editor = UTPEditor(None, installation)
+    elif restype.target_type().contents == "gff" and editor is None:
+        editor = _instantiate_editor(GFFEditor)
 
-    elif restype.target_type() in {ResourceType.UTD, ResourceType.BTD}:
-        if installation is None or not gff_specialized:
-            editor = GFFEditor(None, installation)
-        else:
-            editor = UTDEditor(None, installation)
-
-    elif restype.target_type() is ResourceType.IFO:
-        if installation is None or not gff_specialized:  # noqa: SIM108
-            editor = GFFEditor(None, installation)
-        else:
-            editor = IFOEditor(None, installation)
-
-    elif restype.target_type() is ResourceType.UTS:
-        if installation is None or not gff_specialized:  # noqa: SIM108
-            editor = GFFEditor(None, installation)
-        else:
-            editor = UTSEditor(None, installation)
-
-    elif restype.target_type() in {ResourceType.UTT, ResourceType.BTT}:
-        if installation is None or not gff_specialized:  # noqa: SIM108
-            editor = GFFEditor(None, installation)
-        else:
-            editor = UTTEditor(None, installation)
-
-    elif restype.target_type() in {ResourceType.UTM, ResourceType.BTM}:
-        if installation is None or not gff_specialized:  # noqa: SIM108
-            editor = GFFEditor(None, installation)
-        else:
-            editor = UTMEditor(None, installation)
-
-    elif restype.target_type() is ResourceType.UTW:
-        if installation is None or not gff_specialized:  # noqa: SIM108
-            editor = GFFEditor(None, installation)
-        else:
-            editor = UTWEditor(None, installation)
-
-    elif restype.target_type() in {ResourceType.UTE, ResourceType.BTE}:
-        if installation is None or not gff_specialized:  # noqa: SIM108
-            editor = GFFEditor(None, installation)
-        else:
-            editor = UTEEditor(None, installation)
-
-    elif restype.target_type() in {ResourceType.UTI, ResourceType.BTI}:
-        if installation is None or not gff_specialized:  # noqa: SIM108
-            editor = GFFEditor(None, installation)
-        else:
-            editor = UTIEditor(None, installation)
-
-    elif restype.target_type() is ResourceType.JRL:
-        if installation is None or not gff_specialized:  # noqa: SIM108
-            editor = GFFEditor(None, installation)
-        else:
-            editor = JRLEditor(None, installation)
-
-    elif restype.target_type() is ResourceType.ARE:
-        if installation is None or not gff_specialized:  # noqa: SIM108
-            editor = GFFEditor(None, installation)
-        else:
-            editor = AREEditor(None, installation)
-
-    elif restype.target_type() is ResourceType.PTH:
-        if installation is None or not gff_specialized:  # noqa: SIM108
-            editor = GFFEditor(None, installation)
-        else:
-            editor = PTHEditor(None, installation)
-
-    elif restype.target_type() is ResourceType.GIT:
-        if installation is None or not gff_specialized:  # noqa: SIM108
-            editor = GFFEditor(None, installation)
-        else:
-            editor = GITEditor(None, installation)
-
-    elif restype.category == "Audio":
-        editor = WAVEditor(None, installation)
-
-    elif restype.name in (ResourceType.ERF, ResourceType.SAV, ResourceType.MOD, ResourceType.RIM, ResourceType.BIF):
-        editor = ERFEditor(None, installation)
-
-    elif restype in {ResourceType.MDL, ResourceType.MDX}:
-        editor = MDLEditor(None, installation)
-
-    elif restype.target_type().contents == "gff":
-        editor = GFFEditor(None, installation)
-
-    elif restype.contents == "plaintext":
+    elif restype.contents == "plaintext" and editor is None:
         editor = TXTEditor(None)
 
     if editor is None:
-        QMessageBox(
-            QMessageBox.Icon.Critical,
-            tr("Failed to open file"),
-            trf("The selected file format '{format}' is not yet supported.", format=str(restype)),
-            QMessageBox.StandardButton.Ok,
-            parent_window_widget,
-            flags=Qt.WindowType.Window
-            | Qt.WindowType.Dialog
-            | Qt.WindowType.WindowStaysOnTopHint,  # pyright: ignore[reportArgumentType]
-        ).show()
+        from toolset.gui.helpers.message_box import show_error_message
+        show_error_message(tr("Failed to open file"), trf("The selected file format '{format}' is not yet supported.", format=str(restype)), parent_window_widget)
         return None, None
 
     try:
@@ -356,14 +358,37 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
             head = bytes(data[:16])
             if head:
                 data_signature = f"\n\nData signature (first 16 bytes): {head.hex(' ')}"
-        QMessageBox(
-            QMessageBox.Icon.Critical,
-            tr("An unexpected error has occurred"),
-            f"{(e.__class__.__name__, str(e))}{data_signature}",
-            QMessageBox.StandardButton.Ok,
-            parent_window_widget,
-            flags=Qt.WindowType.Window | Qt.WindowType.Dialog | Qt.WindowType.WindowStaysOnTopHint,  # pyright: ignore[reportArgumentType]
-        ).show()
+        from toolset.gui.helpers.message_box import show_error_message
+        show_error_message(tr("An unexpected error has occurred"), f"{(e.__class__.__name__, str(e))}{data_signature}", parent_window_widget)
         return None, None
     else:
         return filepath, editor
+
+
+def open_resource_editor_from_path(
+    filepath: os.PathLike | str,
+    installation: HTInstallation | None = None,
+    parent_window: QWidget | None = None,
+    *,
+    gff_specialized: bool | None = None,
+    open_as_generic_gff: bool = False,
+) -> tuple[os.PathLike | str | None, Editor | QMainWindow | None]:
+    """Open the resource at the given file path in the appropriate editor.
+
+    Infers resname/restype from the path and reads file data, then delegates to
+    open_resource_editor. Used by the file tree context menu and double-click.
+    """
+    path = Path(filepath) if not isinstance(filepath, Path) else filepath
+    if not path.is_file():
+        RobustLogger().warning("open_resource_editor_from_path: not a file: %s", path)
+        from toolset.gui.helpers.message_box import show_warning_message
+        show_warning_message(tr("File not found"), trf("The path is not a file: {path}", path=str(path)), parent_window if isinstance(parent_window, QWidget) else None)
+        return None, None
+    resource = FileResource.from_path(path)
+    return open_resource_editor(
+        resource,
+        installation=installation,
+        parent_window=parent_window,
+        gff_specialized=gff_specialized,
+        open_as_generic_gff=open_as_generic_gff,
+    )

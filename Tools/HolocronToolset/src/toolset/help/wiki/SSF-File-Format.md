@@ -45,7 +45,7 @@ SSF files define a set of 28 sound effects that creatures can play during variou
 
 ## Binary format
 
-### file header
+### File Header
 
 The file header is 12 bytes in size:
 

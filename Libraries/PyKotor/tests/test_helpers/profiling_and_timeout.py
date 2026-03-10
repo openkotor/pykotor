@@ -11,13 +11,11 @@ import os
 import pstats
 import re
 import time
+
 from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeoutError
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Iterator
-
-if TYPE_CHECKING:
-    import pytest
 
 
 def get_profile_threshold_ms() -> int:
@@ -160,6 +158,7 @@ def _run_test_with_timeout_worker(
         return True, result, ""
     except Exception as e:
         import traceback
+
         return False, None, f"{type(e).__name__}: {e}\n{traceback.format_exc()}"
 
 
@@ -217,4 +216,3 @@ def run_test_with_timeout(
 # The profile_if_enabled context manager should be used directly in conftest.py
 # pytest hooks (pytest_runtest_call, pytest_runtest_setup, pytest_runtest_makereport)
 # to enable profiling for slow tests.
-

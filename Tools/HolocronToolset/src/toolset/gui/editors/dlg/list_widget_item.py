@@ -1,10 +1,13 @@
+"""DLG list widget item: QListWidgetItem that holds a DLGLink for the link list view."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QListWidgetItem
+
+from loggerplus import RobustLogger
 
 if TYPE_CHECKING:
     import weakref

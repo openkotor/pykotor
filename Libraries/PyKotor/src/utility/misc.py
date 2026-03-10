@@ -18,7 +18,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from xml.etree.ElementTree import Element
 
-    from typing_extensions import Buffer, Literal, Self, SupportsIndex
+from utility.string_util import is_non_empty_string
+from typing_extensions import Buffer, Literal, Self, SupportsIndex
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -140,9 +141,9 @@ def get_system_info() -> dict[str, Any]:
 
         # RAM Information
         svmem = psutil.virtual_memory()
-        info["Total Memory"] = f"{svmem.total / (1024 ** 3):.2f} GB"
-        info["Available Memory"] = f"{svmem.available / (1024 ** 3):.2f} GB"
-        info["Used Memory"] = f"{svmem.used / (1024 ** 3):.2f} GB"
+        info["Total Memory"] = f"{svmem.total / (1024**3):.2f} GB"
+        info["Available Memory"] = f"{svmem.available / (1024**3):.2f} GB"
+        info["Used Memory"] = f"{svmem.used / (1024**3):.2f} GB"
         info["Memory Usage"] = f"{svmem.percent}%"
 
     # GPU Information
@@ -266,7 +267,9 @@ def get_file_attributes(
     }
 
     # Check if file is hidden
-    attributes["is_hidden"] = path.name.startswith(".") or bool(path.stat().st_file_attributes & stat.FILE_ATTRIBUTE_HIDDEN) if hasattr(stat, "FILE_ATTRIBUTE_HIDDEN") else False
+    attributes["is_hidden"] = (
+        path.name.startswith(".") or bool(path.stat().st_file_attributes & stat.FILE_ATTRIBUTE_HIDDEN) if hasattr(stat, "FILE_ATTRIBUTE_HIDDEN") else False
+    )
 
     # Check if file is read-only
     attributes["is_readonly"] = not os.access(path, os.W_OK)
@@ -298,11 +301,11 @@ def get_file_attributes(
 
         # Check if file is archived (based on extension)
         archive_extensions = {".tar", ".gz", ".bz2", ".xz", ".zip", ".7z", ".rar"}
-        attributes["is_archive"] = path.suffix.lower() in archive_extensions
+        attributes["is_archive"] = get_normalized_extension(path) in archive_extensions
 
         # Check if file is compressed (based on extension)
         compressed_extensions = {".gz", ".bz2", ".xz", ".zip", ".7z", ".rar"}
-        attributes["is_compressed"] = path.suffix.lower() in compressed_extensions
+        attributes["is_compressed"] = get_normalized_extension(path) in compressed_extensions
 
         # Check if file is encrypted (based on extension, not reliable)
         encrypted_extensions = {".gpg", ".enc", ".asc"}
@@ -335,15 +338,15 @@ def indent(
     """
     i: str = "\n" + level * "  "
     if len(elem):
-        if not elem.text or not elem.text.strip():
+        if not is_non_empty_string(elem.text):
             elem.text = f"{i}  "
-        if not elem.tail or not elem.tail.strip():
+        if not is_non_empty_string(elem.tail):
             elem.tail = i
         for e in elem:
             indent(e, level + 1)
-        if not elem.tail or not elem.tail.strip():
+        if not is_non_empty_string(elem.tail):
             elem.tail = i
-    elif level and (not elem.tail or not elem.tail.strip()):
+    elif level and not is_non_empty_string(elem.tail):
         elem.tail = i
 
 
@@ -404,3 +407,70 @@ def to_kwargs(
         except StopIteration as e:  # noqa: PERF203
             raise ValueError("Too many positional arguments for the available keyword arguments.") from e  # noqa: B904
     return dict(kwargs)
+
+
+def is_valid_path(path: Path | str | None) -> bool:
+    """Check if a path is valid (not None and exists).
+
+    Args:
+    ----
+        path: The path to validate
+
+    Returns:
+    -------
+        True if path is not None and exists, False otherwise
+    """
+    return path is not None and Path(path).exists()
+
+
+def get_normalized_extension(path: Path | str) -> str:
+    """Get the file extension in lowercase.
+
+    Args:
+    ----
+        path: The file path
+
+    Returns:
+    -------
+        The file extension in lowercase (e.g., '.txt', '.mdl')
+    """
+    return Path(path).suffix.lower()
+
+
+def ensure_directory_exists(path: Path | str) -> None:
+    """Ensure that a directory exists, creating it if necessary.
+
+    Args:
+    ----
+        path: The directory path to ensure exists
+    """
+    Path(path).mkdir(parents=True, exist_ok=True)
+
+
+def format_exception_message(exception: Exception) -> str:
+    """Format an exception into a consistent string format.
+
+    Args:
+    ----
+        exception: The exception to format
+
+    Returns:
+    -------
+        Formatted exception message as "ExceptionClass: message"
+    """
+    return f"{exception.__class__.__name__}: {exception}"
+
+
+def is_installation_path(path: object) -> bool:
+    """Check if a path object is an Installation instance.
+
+    Args:
+    ----
+        path: The path object to check
+
+    Returns:
+    -------
+        True if the path is an Installation instance, False otherwise
+    """
+    from pykotor.extract.installation import Installation  # Import here to avoid circular imports
+    return isinstance(path, Installation)

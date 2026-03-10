@@ -14,28 +14,25 @@ This module contains a high-level, in-memory representation of that data:
 
 References:
 ----------
-    Based on swkotor.exe BWM structure:
-    - LoadWalkMesh @ 0x00579520 - CSWSRoom::LoadWalkMesh (62 bytes, 2 callees)
-      * Loads walkmesh for a room via CSWCollisionMesh::LoadMesh
-      * Sets resref from room resref
-      * Signature: undefined4 __thiscall CSWSRoom::LoadWalkMesh(CSWSRoom *this, int param_1)
-    - LoadMesh @ 0x00596670 - CSWCollisionMesh::LoadMesh (536 bytes, 3 callees)
-      * Main walkmesh loading function
-      * Checks for binary walkmesh (BWM) first, falls back to text walkmesh (MDL)
-      * Creates CResBWM or CResMDL resource objects
-      * Calls CRes::Demand to load the resource
-      * Signature: undefined4 __thiscall CSWCollisionMesh::LoadMesh(CSWCollisionMesh *this, int param_1)
-    - LoadMeshText @ 0x00582d70 - CSWRoomSurfaceMesh::LoadMeshText (3882 bytes, 1 callee)
-      * Loads text-based walkmesh format (ASCII MDL format)
-      * Parses walkmesh geometry from text data
-      * Signature: undefined4 __thiscall CSWRoomSurfaceMesh::LoadMeshText(CSWRoomSurfaceMesh *this, byte *param_1, ulong param_2)
-    - CResBWM::CResBWM @ 0x005ceab0 - BWM resource constructor (25 bytes, 1 callee)
-    - CResBWM::~CResBWM @ 0x005cead0 - BWM resource destructor (11 bytes, 1 callee)
-    - CResBWM::~CResBWM @ 0x005ceb50 - BWM resource destructor variant (27 bytes, 2 callees)
-    - GetResourceForBinaryWalkMesh @ 0x005ce8b0 - Gets resource reference for binary walkmesh (174 bytes, 6 callees)
-    - "BWM V1.0" string @ 0x0074a098 - BWM file version identifier
-    - "bwm" extension string @ 0x0074dc88 - BWM file extension
-    - "ERROR: opening a Binary walkmesh file for writeing that already exists (File: %s)" @ 0x0074a0a8 - Error message
+    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) BWM structure.
+    Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+
+    - CSWSRoom::LoadWalkMesh — loads walkmesh for a room via CSWCollisionMesh::LoadMesh; sets resref from room resref.
+      K1: 0x00579520, TSL: TODO
+      Signature: undefined4 __thiscall CSWSRoom::LoadWalkMesh(CSWSRoom *this, int param_1)
+    - CSWCollisionMesh::LoadMesh — main walkmesh loading; checks BWM first, falls back to text MDL; creates CResBWM/CResMDL, CRes::Demand.
+      K1: 0x00596670, TSL: TODO
+      Signature: undefined4 __thiscall CSWCollisionMesh::LoadMesh(CSWCollisionMesh *this, int param_1)
+    - CSWRoomSurfaceMesh::LoadMeshText — loads text-based walkmesh (ASCII MDL); parses geometry from text.
+      K1: 0x00582d70, TSL: TODO
+      Signature: undefined4 __thiscall CSWRoomSurfaceMesh::LoadMeshText(CSWRoomSurfaceMesh *this, byte *param_1, ulong param_2)
+    - CResBWM::CResBWM (BWM resource constructor): K1: 0x005ceab0, TSL: TODO
+    - CResBWM::~CResBWM (destructor): K1: 0x005cead0, TSL: TODO
+    - CResBWM::~CResBWM (destructor variant): K1: 0x005ceb50, TSL: TODO
+    - GetResourceForBinaryWalkMesh: K1: 0x005ce8b0, TSL: TODO
+    - "BWM V1.0" string (BWM file version identifier): K1: 0x0074a098, TSL: TODO
+    - "bwm" extension string: K1: 0x0074dc88, TSL: TODO
+    - "ERROR: opening a Binary walkmesh file for writeing that already exists (File: %s)": K1: 0x0074a0a8, TSL: TODO
     - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
     Derivations and Other Implementations:
         ----------
@@ -117,14 +114,10 @@ class BWMType(IntEnum):
 
     References:
     ----------
-    Based on swkotor.exe BWM structure:
-    - LoadWalkMesh @ 0x00579520 - CSWSRoom::LoadWalkMesh loads walkmesh for rooms
-    - LoadMesh @ 0x00596670 - CSWCollisionMesh::LoadMesh handles BWM/MDL loading
-    - CResBWM::CResBWM @ 0x005ceab0 - BWM resource constructor
-    - "BWM V1.0" string @ 0x0074a098 - BWM file version identifier
-    - Walkmesh type field at offset 0x08 in BWM header (4 bytes, uint32)
-      * 0 = PlaceableOrDoor (PWK/DWK format)
-      * 1 = AreaModel (WOK format with AABB trees)
+    Based on unified K1/TSL BWM structure. See module docstring for full addresses (K1 + TSL TODO).
+    - CSWSRoom::LoadWalkMesh (K1: 0x00579520, TSL: TODO), CSWCollisionMesh::LoadMesh (K1: 0x00596670, TSL: TODO)
+    - CResBWM::CResBWM (K1: 0x005ceab0, TSL: TODO), "BWM V1.0" (K1: 0x0074a098, TSL: TODO)
+    - Walkmesh type field at offset 0x08 in BWM header (4 bytes, uint32): 0 = PlaceableOrDoor (PWK/DWK), 1 = AreaModel (WOK)
     - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
     Derivations and Other Implementations:
     ----------
@@ -158,23 +151,10 @@ class BWM(ComparableMixin):
 
     References:
     ----------
-    Based on swkotor.exe BWM structure:
-    - LoadWalkMesh @ 0x00579520 - CSWSRoom::LoadWalkMesh (62 bytes, 2 callees)
-      * Loads walkmesh for a room via CSWCollisionMesh::LoadMesh
-      * Sets resref from room resref before loading
-    - LoadMesh @ 0x00596670 - CSWCollisionMesh::LoadMesh (536 bytes, 3 callees)
-      * Main walkmesh loading function
-      * Checks for binary walkmesh (BWM) first via GetResourceForBinaryWalkMesh
-      * Falls back to text walkmesh (MDL) if BWM not found
-      * Creates CResBWM or CResMDL resource objects via CExoResMan::GetResObject
-      * Calls CRes::Demand to load the resource data
-    - LoadMeshText @ 0x00582d70 - CSWRoomSurfaceMesh::LoadMeshText (3882 bytes)
-      * Loads text-based walkmesh format (ASCII MDL format)
-      * Parses walkmesh geometry, faces, vertices from text data
-    - CResBWM::CResBWM @ 0x005ceab0 - BWM resource constructor (25 bytes, 1 callee)
-    - GetResourceForBinaryWalkMesh @ 0x005ce8b0 - Gets resource reference for binary walkmesh (174 bytes, 6 callees)
-    - "BWM V1.0" string @ 0x0074a098 - BWM file version identifier (first 8 bytes of BWM files)
-    - "bwm" extension string @ 0x0074dc88 - BWM file extension
+    Based on unified K1/TSL BWM structure. See module docstring for full addresses (K1 + TSL TODO).
+    - LoadWalkMesh (K1: 0x00579520), LoadMesh (K1: 0x00596670), LoadMeshText (K1: 0x00582d70)
+    - CResBWM::CResBWM (K1: 0x005ceab0), GetResourceForBinaryWalkMesh (K1: 0x005ce8b0)
+    - "BWM V1.0" (K1: 0x0074a098), "bwm" extension (K1: 0x0074dc88)
     - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
     Derivations and Other Implementations:
     ----------
@@ -225,35 +205,27 @@ class BWM(ComparableMixin):
     COMPARABLE_SEQUENCE_FIELDS = ("faces",)
 
     def __init__(self):
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:60
         # Walkmesh type (AreaModel=WOK or PlaceableOrDoor=PWK/DWK)
         self.walkmesh_type: BWMType = BWMType.AreaModel
 
-        
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:37
         # List of triangular faces (vertices, material, transitions)
         self.faces: list[BWMFace] = []
 
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:36
         # 3D position offset for walkmesh (typically 0,0,0 for areas)
         self.position: Vector3 = Vector3.from_null()
 
-        
         # First relative hook position (door/transition placement, relative to walkmesh)
         self.relative_hook1: Vector3 = Vector3.from_null()
 
-        
         # Second relative hook position (door/transition placement, relative to walkmesh)
         self.relative_hook2: Vector3 = Vector3.from_null()
 
-        
         # First absolute hook position (door/transition placement, world space)
         self.absolute_hook1: Vector3 = Vector3.from_null()
 
-        
         # Second absolute hook position (door/transition placement, world space)
         self.absolute_hook2: Vector3 = Vector3.from_null()
 
@@ -530,10 +502,8 @@ class BWM(ComparableMixin):
 
         # Build mapping from walkable face index to overall face index
         # This is needed because adjacencies use overall face indices, but we iterate over walkable faces
-        walkable_to_overall: dict[int, int] = {}
-        for walkable_idx, walkable_face in enumerate(walkable):
-            overall_idx = self._index_by_identity(walkable_face)
-            walkable_to_overall[walkable_idx] = overall_idx
+        walkable_to_overall: dict[int, int] = {walkable_idx: self._index_by_identity(walkable_face) for walkable_idx, walkable_face in enumerate(walkable)}
+        overall_to_walkable: dict[int, int] = {overall_idx: walkable_idx for walkable_idx, overall_idx in walkable_to_overall.items()}
 
         visited: set[int] = set()
         edges: list[BWMEdge] = []
@@ -550,7 +520,7 @@ class BWM(ComparableMixin):
             perimeter_length: int = 0
             while next_face != -1:
                 # Find the walkable face index for this overall face index to access adjacencies
-                walkable_idx_for_face = next((w_idx for w_idx, o_idx in walkable_to_overall.items() if o_idx == next_face), None)
+                walkable_idx_for_face = overall_to_walkable.get(next_face)
                 if walkable_idx_for_face is not None:
                     adj_edge: BWMAdjacency | None = adjacencies[walkable_idx_for_face][next_edge]
                     if adj_edge is not None:
@@ -673,8 +643,7 @@ class BWM(ComparableMixin):
         max_distance: float,
         materials: set[SurfaceMaterial],
     ) -> tuple[BWMFace, float] | None:
-        """Recursively raycast through AABB tree.
-        """
+        """Recursively raycast through AABB tree."""
         # Test ray against AABB bounds
         if not self._ray_aabb_intersect(origin, direction, node.bb_min, node.bb_max, max_distance):
             return None
@@ -717,8 +686,7 @@ class BWM(ComparableMixin):
         max_distance: float,
         materials: set[SurfaceMaterial],
     ) -> tuple[BWMFace, float] | None:
-        """Brute force raycast testing all faces.
-        """
+        """Brute force raycast testing all faces."""
         best_result: tuple[BWMFace, float] | None = None
         best_distance = max_distance
 
@@ -912,20 +880,20 @@ class BWM(ComparableMixin):
         materials: set[SurfaceMaterial] | None = None,
     ) -> float | None:
         """Get the Z-height (elevation) at a given (X, Y) point.
-        
+
         Finds the walkable face containing the point and returns its Z coordinate at that location.
         Uses AABB tree for efficient spatial queries on area walkmeshes.
-        
+
         Args:
         ----
             x: X coordinate
             y: Y coordinate
             materials: Set of materials to consider (None = all walkable materials)
-            
+
         Returns:
         -------
             float | None: Z coordinate if point is on a walkable face, None otherwise
-            
+
         References:
         ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -936,7 +904,7 @@ class BWM(ComparableMixin):
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:497-504 (isPointWalkable)
         Libraries/PyKotor/src/utility/common/geometry.py:1270-1292 (Face.determine_z)
 
-            
+
         Example:
         -------
             >>> bwm = read_bwm(data)
@@ -947,17 +915,17 @@ class BWM(ComparableMixin):
         # Default to walkable materials if not specified
         if materials is None:
             materials = {mat for mat in SurfaceMaterial if mat.walkable()}
-        
+
         # Find face containing the point
         face = self.find_face_at(x, y, materials)
         if face is None:
             return None
-        
+
         # Check if face is flat (all vertices have same Z)
         if abs(face.v1.z - face.v2.z) < 1e-6 and abs(face.v2.z - face.v3.z) < 1e-6:
             # Flat face: return Z coordinate directly
             return face.v1.z
-        
+
         # Use face's determine_z method to compute Z coordinate
         try:
             return face.determine_z(x, y)
@@ -1530,13 +1498,10 @@ class BWMFace(Face, ComparableMixin):
         v2: Vector3,
         v3: Vector3,
     ):
-        
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:80-84
         # Three vertices defining the triangular face
         super().__init__(v1, v2, v3)
 
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/WalkmeshEdge.ts:16
         # Optional transition indices for each edge (stored in edges table in binary)
         # Edge 0 (v1->v2): transition index into LYT door hooks
@@ -1560,12 +1525,7 @@ class BWMFace(Face, ComparableMixin):
         parent_eq = super().__eq__(other)
         if parent_eq is NotImplemented:
             return NotImplemented  # type: ignore[no-any-return]
-        return (
-            parent_eq
-            and self.trans1 == other.trans1
-            and self.trans2 == other.trans2
-            and self.trans3 == other.trans3
-        )
+        return parent_eq and self.trans1 == other.trans1 and self.trans2 == other.trans2 and self.trans3 == other.trans3
 
     def __hash__(self):  # type: ignore[override]
         return hash((super().__hash__(), self.trans1, self.trans2, self.trans3))
@@ -1673,36 +1633,25 @@ class BWMNodeAABB(ComparableMixin):
             - Sets the splitting face and most significant plane
             - Sets the left and right child nodes.
         """
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/interface/odyssey/IOdysseyModelAABBNode.ts
         # Minimum bounds of axis-aligned bounding box
         self.bb_min: Vector3 = bb_min
 
-        
-        
         # Maximum bounds of axis-aligned bounding box
         self.bb_max: Vector3 = bb_max
 
-        
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:191
         # Face referenced by this node (None for internal nodes, face for leaves)
         self.face: BWMFace | None = face
 
-        
-        
         # Most significant splitting plane (axis: 0=X, 1=Y, 2=Z)
         self.sigplane: BWMMostSignificantPlane = BWMMostSignificantPlane(sigplane)
 
-        
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:192
         # Left child node (None for leaf nodes)
         self.left: BWMNodeAABB | None = left
 
-        
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:193
         # Right child node (None for leaf nodes)
         self.right: BWMNodeAABB | None = right
@@ -1774,12 +1723,10 @@ class BWMAdjacency(ComparableMixin):
         face: BWMFace,
         index: int,
     ):
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:96
         # Target face that shares an edge with source face
         self.face: BWMFace = face
 
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:98-100
         # Edge index of target face (0, 1, or 2)
         self.edge: int = index
@@ -1852,21 +1799,20 @@ class BWMEdge(ComparableMixin):
         final: bool = False,
     ):
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/WalkmeshEdge.ts:22
-        
+
         # Face this perimeter edge belongs to
         self.face: BWMFace = face
 
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/WalkmeshEdge.ts:27
-        
+
         # Edge index on face (0, 1, or 2)
         self.index: int = index
 
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/WalkmeshEdge.ts:16
-        
+
         # Transition index into LYT door hooks (-1 for no transition)
         self.transition: int = transition
 
-        
         # Flag indicating final edge of perimeter loop
         self.final: bool = final
 

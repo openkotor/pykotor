@@ -27,7 +27,7 @@ pykotorcli diff "D:\workspace\Dantooine_Modifications\danm13" "C:\Program Files 
 pykotorcli diff "C:\Program Files (x86)\Steam\steamapps\common\swkotor" "D:\workspace\folder_with_various_gffs_2das_etc\"
 ```
 
-[KEY](KEY-File-Format) [flags](GFF-File-Format#gff-data-types):
+[KEY](KEY-File-Format) flags:
 
 - `--path1/--path2/--path3/--path` for multi-path comparisons
 - `--filter` to constrain resources/modules

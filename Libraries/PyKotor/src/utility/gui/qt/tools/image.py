@@ -5,10 +5,11 @@ import sys
 from io import BytesIO
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import QFileInfo, QObject, QTemporaryFile, QTimer, Qt, Signal
 from qtpy.QtGui import QIcon, QImage, QPainter, QPixmap
 from qtpy.QtWidgets import QApplication, QFileIconProvider, QStyle
+
+from loggerplus import RobustLogger
 
 if TYPE_CHECKING:
     import pathlib
@@ -24,6 +25,7 @@ def load_icon_task(file_path: str) -> concurrent.futures.Future:
     app.exec()
     return future
 
+
 def _load_icon_task(file_path: str, future: concurrent.futures.Future) -> None:
     icon = QFileIconProvider().icon(QFileInfo(file_path))
     future.set_result((file_path, icon))
@@ -35,6 +37,7 @@ def load_thumbnail_task(file_path: str) -> concurrent.futures.Future:
     QTimer.singleShot(0, lambda: _load_thumbnail_task(file_path, future))
     app.exec()
     return future
+
 
 def _load_thumbnail_task(file_path: str, future: concurrent.futures.Future) -> None:
     image = QImage(file_path)
@@ -121,6 +124,7 @@ def _process_qt_image(filepath_obj: pathlib.Path, mipmap: int) -> tuple[int, int
             return qimg.width(), qimg.height(), bytes(qimg.constBits().asarray())
     return None
 
+
 def _process_pil_image(filepath_obj: pathlib.Path, mipmap: int, img_format: str) -> tuple[int, int, bytes] | None:
     from PIL import Image
 
@@ -131,6 +135,7 @@ def _process_pil_image(filepath_obj: pathlib.Path, mipmap: int, img_format: str)
             pil_img = resized_img.convert(img_format if img_format != "Default" else resized_img.mode)
         return pil_img.width, pil_img.height, pil_img.tobytes()
     return None
+
 
 def _process_tpc_image(filepath_obj: pathlib.Path, mipmap: int) -> tuple[int, int, bytes] | None:
     if filepath_obj.suffix.lower() == ".tpc":

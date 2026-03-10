@@ -1,15 +1,18 @@
 """Generate Holocron-compatible kits from installation modules."""
+
 from __future__ import annotations
 
 import logging
 import sys
-from argparse import Namespace
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.cli.kit_generator import generate_kit, normalize_module_name
 
 if TYPE_CHECKING:
+    from argparse import Namespace
+
     from loggerplus import RobustLogger
 
 LEVEL_MAP = {
@@ -67,4 +70,3 @@ def cmd_kit_generate(args: Namespace, logger: RobustLogger) -> int:
         logger.exception("Kit generation failed: %s: %s", error_name, msg)
         print(f"[Error] {error_name}: {msg}", file=sys.stderr)  # noqa: T201
         return 1
-

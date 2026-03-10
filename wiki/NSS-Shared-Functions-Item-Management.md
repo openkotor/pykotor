@@ -13,6 +13,7 @@ This document provides detailed documentation for NWScript item management funct
 ### Understanding Items and Inventory
 
 Items in KotOR are objects that can be:
+
 - **Possessed** by creatures (in inventory)
 - **Equipped** in specific inventory slots
 - **Stacked** (multiple instances in one stack)
@@ -36,20 +37,24 @@ Items can be equipped in specific inventory slots. Different item types go in di
 **Routine:** 31
 
 #### Function Signature
+
 ```nss
 object CreateItemOnObject(string sItemTemplate, object oTarget = OBJECT_SELF, int nStackSize = 1, int bHideMessage = 0);
 ```
 
 #### Description
+
 Creates an item from a template and adds it to the target object's inventory (creature or placeable). The item is added immediately to the inventory.
 
 #### Parameters
+
 - `sItemTemplate`: Item template resref (without `.uti` extension, e.g., "g_w_lghtsbr01")
 - `oTarget`: Target object to add item to (creature or placeable, default: `OBJECT_SELF`)
 - `nStackSize`: Number of items in the stack (default: 1)
 - `bHideMessage`: If `TRUE`, hides the "Item Added" message (TSL only, default: 0)
 
 #### Returns
+
 - Created item object
 - `OBJECT_INVALID` if creation failed or template doesn't exist
 
@@ -73,6 +78,7 @@ CreateItemOnObject("g_w_vibroblade01", oContainer);
 ```
 
 **Pattern: Conditional Item Creation**
+
 ```nss
 // Create different items based on condition
 string sItemTemplate;
@@ -87,6 +93,7 @@ CreateItemOnObject(sItemTemplate, GetFirstPC(), 1, 1);
 ```
 
 **Pattern: Create and Equip**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/950COR_Coruscant_(cutscene)/a_createpcsaber.nss
 object oLightsaber = CreateItemOnObject("g_w_lghtsbr10", GetFirstPC(), 1, 1);
@@ -96,6 +103,7 @@ AssignCommand(GetFirstPC(), ActionEquipItem(oRobe, INVENTORY_SLOT_BODY, 0));
 ```
 
 #### Notes
+
 - Item template must exist (defined in `.uti` files)
 - Items are added immediately to inventory
 - If target is a creature, item goes to inventory (not automatically equipped)
@@ -110,18 +118,22 @@ AssignCommand(GetFirstPC(), ActionEquipItem(oRobe, INVENTORY_SLOT_BODY, 0));
 **Routine:** 30
 
 #### Function Signature
+
 ```nss
 object GetItemPossessedBy(object oCreature, string sItemTag);
 ```
 
 #### Description
+
 Gets an item with the specified tag from a creature's inventory (including equipped items).
 
 #### Parameters
+
 - `oCreature`: Creature to search in
 - `sItemTag`: Tag of the item to find
 
 #### Returns
+
 - Item object with the specified tag
 - `OBJECT_INVALID` if item not found
 
@@ -136,6 +148,7 @@ if (GetIsObjectValid(oItem)) {
 ```
 
 **Pattern: Remove Item from Player**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_take_item.nss
 object oItem = GetItemPossessedBy(GetPartyLeader(), "quest_item");
@@ -157,17 +170,21 @@ if (GetIsObjectValid(oItem)) {
 **Routine:** 29
 
 #### Function Signature
+
 ```nss
 object GetItemPossessor(object oItem);
 ```
 
 #### Description
+
 Gets the creature or placeable that possesses (has in inventory) the specified item.
 
 #### Parameters
+
 - `oItem`: Item to find the possessor of
 
 #### Returns
+
 - Object that possesses the item
 - `OBJECT_INVALID` if item has no possessor or is invalid
 
@@ -189,14 +206,17 @@ if (GetIsObjectValid(oOwner)) {
 **Routine:** 202
 
 #### Function Signature
+
 ```nss
 object GetItemInSlot(int nInventorySlot, object oCreature = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the item equipped in a specific inventory slot on a creature.
 
 #### Parameters
+
 - `nInventorySlot`: Inventory slot constant:
   - `INVENTORY_SLOT_HEAD` (0) - Head slot
   - `INVENTORY_SLOT_BODY` (1) - Body/armor slot
@@ -214,6 +234,7 @@ Gets the item equipped in a specific inventory slot on a creature.
 - `oCreature`: Creature to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Item equipped in the slot
 - `OBJECT_INVALID` if no item in slot or slot is invalid
 
@@ -235,6 +256,7 @@ object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, GetFirstPC());
 ```
 
 **Pattern: Store Equipment Before Change**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/950COR_Coruscant_(cutscene)/a_createpcsaber.nss
 object oBodyItem = GetItemInSlot(INVENTORY_SLOT_BODY, GetFirstPC());
@@ -254,14 +276,17 @@ object oHeadItem = GetItemInSlot(INVENTORY_SLOT_HEAD, GetFirstPC());
 **Routine:** 32
 
 #### Function Signature
+
 ```nss
 void ActionEquipItem(object oItem, int nInventorySlot, int bInstant = FALSE);
 ```
 
 #### Description
+
 Queues an action to equip an item into a specific inventory slot. The item must be in the creature's inventory.
 
 #### Parameters
+
 - `oItem`: Item to equip (must be in creature's inventory)
 - `nInventorySlot`: Inventory slot constant (see `GetItemInSlot` for list)
 - `bInstant`: If `TRUE`, equips immediately without animation (default: `FALSE`)
@@ -283,6 +308,7 @@ ActionEquipItem(oItem, INVENTORY_SLOT_RIGHTWEAPON, TRUE); // Instant equip
 ```
 
 **Pattern: Create and Equip Sequence**
+
 ```nss
 // Create item and equip it
 object oLightsaber = CreateItemOnObject("g_w_lghtsbr01", GetFirstPC(), 1, 1);
@@ -290,6 +316,7 @@ AssignCommand(GetFirstPC(), ActionEquipItem(oLightsaber, INVENTORY_SLOT_RIGHTWEA
 ```
 
 #### Notes
+
 - Item must be in the creature's inventory first
 - If slot already has an item, the old item is unequipped
 - Use `bInstant = TRUE` for cutscenes or immediate equip needs
@@ -301,14 +328,17 @@ AssignCommand(GetFirstPC(), ActionEquipItem(oLightsaber, INVENTORY_SLOT_RIGHTWEA
 **Routine:** 33
 
 #### Function Signature
+
 ```nss
 void ActionUnequipItem(object oItem, int bInstant = FALSE);
 ```
 
 #### Description
+
 Queues an action to unequip an item. The item remains in inventory but is no longer equipped.
 
 #### Parameters
+
 - `oItem`: Item to unequip
 - `bInstant`: If `TRUE`, unequips immediately without animation (default: `FALSE`)
 
@@ -342,14 +372,17 @@ if (GetIsObjectValid(oWeapon)) ActionUnequipItem(oWeapon, TRUE);
 **Routine:** 135
 
 #### Function Signature
+
 ```nss
 void ActionGiveItem(object oItem, object oGiveTo);
 ```
 
 #### Description
+
 Queues an action to give an item to another creature. The item is transferred from the giver's inventory to the receiver's inventory.
 
 #### Parameters
+
 - `oItem`: Item to give (must be in the acting creature's inventory)
 - `oGiveTo`: Creature to give the item to
 
@@ -363,6 +396,7 @@ ActionGiveItem(oItem, oNPC);
 ```
 
 **Pattern: Store Equipment**
+
 ```nss
 // Store equipped items in a placeable
 object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, GetFirstPC());
@@ -377,14 +411,17 @@ AssignCommand(GetFirstPC(), ActionGiveItem(oWeapon, oStorage));
 **Routine:** 136
 
 #### Function Signature
+
 ```nss
 void ActionTakeItem(object oItem, object oTakeFrom);
 ```
 
 #### Description
+
 Queues an action to take an item from another creature or placeable. The item is transferred to the acting creature's inventory.
 
 #### Parameters
+
 - `oItem`: Item to take
 - `oTakeFrom`: Creature or placeable to take the item from
 
@@ -404,14 +441,17 @@ ActionTakeItem(oItem, oNPC);
 **Routine:** 34
 
 #### Function Signature
+
 ```nss
 void ActionPickUpItem(object oItem);
 ```
 
 #### Description
+
 Queues an action to pick up an item from the ground. The item is added to the creature's inventory.
 
 #### Parameters
+
 - `oItem`: Item on the ground to pick up
 
 #### Usage Examples
@@ -429,14 +469,17 @@ ActionPickUpItem(oItem);
 **Routine:** 35
 
 #### Function Signature
+
 ```nss
 void ActionPutDownItem(object oItem);
 ```
 
 #### Description
+
 Queues an action to drop an item on the ground at the creature's feet. The item is removed from inventory and placed as a ground object.
 
 #### Parameters
+
 - `oItem`: Item to drop (must be in creature's inventory)
 
 #### Usage Examples
@@ -456,17 +499,21 @@ ActionPutDownItem(oItem);
 **Routine:** 722 (TSL only, may be available in K1)
 
 #### Function Signature
+
 ```nss
 int GetItemStackSize(object oItem);
 ```
 
 #### Description
+
 Gets the stack size (quantity) of an item. Stackable items (like medpacs, grenades) can have multiple instances in one stack.
 
 #### Parameters
+
 - `oItem`: Item to check
 
 #### Returns
+
 - Stack size (number of items in the stack, 1 if not stackable)
 - `0` if item is invalid
 
@@ -484,6 +531,7 @@ if (GetIsObjectValid(oItem)) {
 ```
 
 **Pattern: Remove Quantity from Stack**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_take_item.nss
 object oItem = GetItemPossessedBy(GetPartyLeader(), "quest_item");
@@ -505,14 +553,17 @@ if (GetIsObjectValid(oItem)) {
 **Routine:** 723 (TSL only, may be available in K1)
 
 #### Function Signature
+
 ```nss
 void SetItemStackSize(object oItem, int nStackSize);
 ```
 
 #### Description
+
 Sets the stack size (quantity) of an item. The stack size determines how many of that item are in the stack.
 
 #### Parameters
+
 - `oItem`: Item to modify
 - `nStackSize`: New stack size (must be 1 or greater)
 
@@ -525,6 +576,7 @@ SetItemStackSize(oItem, 10);
 ```
 
 **Pattern: Increment Stack Size**
+
 ```nss
 // Add to existing stack
 object oItem = GetItemPossessedBy(GetFirstPC(), "g_i_medpac01");
@@ -535,6 +587,7 @@ if (GetIsObjectValid(oItem)) {
 ```
 
 **Pattern: Safe Stack Size Modification**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/K1/Modules/M26AD_Manaan_Docking_Bay_manm26ad/k_man_com43.nss
 int nCurrent = GetItemStackSize(oItem);
@@ -551,6 +604,7 @@ if (nAmount > 0) {
 ```
 
 #### Notes
+
 - Stack size must be 1 or greater
 - Setting stack size to 0 or less may cause errors
 - Destroy the item instead of setting stack to 0
@@ -562,6 +616,7 @@ if (nAmount > 0) {
 ### Common Inventory Slots
 
 #### Equipment Slots (K1 & TSL)
+
 - `INVENTORY_SLOT_HEAD` (0) - Head slot (helmets, headgear)
 - `INVENTORY_SLOT_BODY` (1) - Body slot (armor, robes)
 - `INVENTORY_SLOT_HANDS` (3) - Hands slot (gloves)
@@ -573,12 +628,14 @@ if (nAmount > 0) {
 - `INVENTORY_SLOT_BELT` (10) - Belt slot
 
 #### Concealed Slots (TSL only)
+
 - `INVENTORY_SLOT_CWEAPON_L` (14) - Concealed weapon left
 - `INVENTORY_SLOT_CWEAPON_R` (15) - Concealed weapon right
 - `INVENTORY_SLOT_CWEAPON_B` (16) - Concealed weapon both
 - `INVENTORY_SLOT_CARMOUR` (17) - Concealed armor
 
 #### Additional Slots (TSL only)
+
 - `INVENTORY_SLOT_RIGHTWEAPON2` (18) - Second right weapon slot
 - `INVENTORY_SLOT_LEFTWEAPON2` (19) - Second left weapon slot
 

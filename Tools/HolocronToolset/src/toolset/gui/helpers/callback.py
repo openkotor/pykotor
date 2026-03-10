@@ -1,3 +1,5 @@
+"""Message box helpers, standard button enums, and callback utilities for the toolset UI."""
+
 from __future__ import annotations
 
 from enum import IntEnum
@@ -6,14 +8,14 @@ from typing import TYPE_CHECKING, Any, Union
 from qtpy import QtGui, QtWidgets
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QIcon, QPalette
-from qtpy.QtWidgets import QApplication, QLabel, QMessageBox
+from qtpy.QtWidgets import QApplication, QMessageBox
 
 from loggerplus import RobustLogger
 from utility.gui.base import UserCommunication
 
 if TYPE_CHECKING:
     from qtpy.QtGui import QIcon
-    from qtpy.QtWidgets import QStatusBar
+    from qtpy.QtWidgets import QLabel, QStatusBar
     from typing_extensions import Self  # pyright: ignore[reportMissingModuleSource]
 
 
@@ -271,10 +273,7 @@ class BetterMessageBox(QtWidgets.QDialog):
         self,
         title: str,
         message: str,
-        flags=Qt.WindowType.Dialog
-        | Qt.WindowType.WindowTitleHint
-        | Qt.WindowType.WindowCloseButtonHint
-        | Qt.WindowType.WindowStaysOnTopHint,  # Adjusted default flags
+        flags=Qt.WindowType.Dialog | Qt.WindowType.WindowTitleHint | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowStaysOnTopHint,  # Adjusted default flags
         *args,
         icon: QtWidgets.QStyle.StandardPixmap = QtWidgets.QStyle.StandardPixmap.SP_MessageBoxInformation,
         buttons: QMessageBox.StandardButton = QMessageBox.StandardButton.Ok,

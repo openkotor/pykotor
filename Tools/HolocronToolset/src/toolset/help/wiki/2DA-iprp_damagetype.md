@@ -2,7 +2,7 @@
 
 Part of the [2DA File Format Documentation](2DA-File-Format).
 
-**Engine Usage**: Maps item property values to damage type [flags](GFF-File-Format#gff-data-types). The engine uses this file to determine damage type calculations for item properties.
+**Engine Usage**: Maps item property values to damage type flags. The engine uses this file to determine damage type calculations for item properties.
 
 **Row index**: Item Property Value (integer)
 

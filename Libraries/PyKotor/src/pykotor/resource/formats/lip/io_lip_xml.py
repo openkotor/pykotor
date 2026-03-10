@@ -1,3 +1,5 @@
+"""XML read/write for LIP (lip sync) keyframes; uses defusedxml when available."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -22,17 +24,16 @@ if TYPE_CHECKING:
 
 class LIPXMLReader(ResourceReader):
     """Reads LIP files from XML format.
-    
+
     XML is a human-readable format for easier editing of lip-sync animation data.
-    
+
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-
+        See lip_data module docstring for engine addresses (K1 + TSL TODO).
 
         Note: XML format structure may vary between tools
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,

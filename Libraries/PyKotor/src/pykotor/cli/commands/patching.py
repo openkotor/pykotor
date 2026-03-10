@@ -12,7 +12,7 @@ References:
         KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
             - GFF structures are loaded via CResGFF class throughout the engine
             - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-            - DLG unskippable flag: See dlg/base.py - Skippable (BYTE) field at 0x005a2ae0
+            - DLG: See gff_data module docstring for LoadDialog (K1: 0x005a2ae0); Skippable (BYTE) field see dlg/base.py
         Tools/BatchPatcher/src/batchpatcher/__main__.py - Original implementation
         Libraries/PyKotor/src/pykotor/tools/patching.py - Core patching functions
 
@@ -21,9 +21,9 @@ References:
 from __future__ import annotations
 
 import pathlib
-from argparse import Namespace
 
-from loggerplus import RobustLogger as Logger  # type: ignore[import-untyped]
+from typing import TYPE_CHECKING
+
 from pykotor.common.language import Language
 from pykotor.tools.patching import (
     PatchingConfig,
@@ -33,6 +33,11 @@ from pykotor.tools.patching import (
     patch_folder,
     patch_install,
 )
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from loggerplus import RobustLogger as Logger
 
 
 def cmd_batch_patch(args: Namespace, logger: Logger) -> int:

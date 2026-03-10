@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+
 from importlib.metadata import PackageNotFoundError, version
 
 if sys.version_info >= (3, 8):

@@ -1,3 +1,5 @@
+"""NCS compilers: inbuilt (native) and external (nwnnsscomp) NSS-to-NCS compilation."""
+
 from __future__ import annotations
 
 import subprocess
@@ -28,26 +30,16 @@ class InbuiltNCSCompiler(NCSCompiler):
     This compiler provides full NSS compilation without external dependencies,
     supporting all KOTOR/TSL script features including:
     - Functions, variables, structs
-    - Control flow (if/else, while, for, do-while, switch)  
+    - Control flow (if/else, while, for, do-while, switch)
     - All data types (int, float, string, object, vector, etc.)
     - #include directive support
     - Optimization passes
-    
+
     References:
     ----------
-        Based on swkotor.exe NCS/NSS compilation:
-        - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor (29 bytes)
-        - ReadScriptFile @ 0x005d2260 - Reads NCS script file (371 bytes)
-          * Validates "NCS V1.0" header
-          * Checks magic byte 0x42
-          * Initializes script for virtual machine
-        - InitializeScript @ 0x005d461b - Initializes script execution context
-        - CVirtualMachineInternal - NWScript virtual machine implementation
-        
-        Note: PyKotor implements its own NSS compiler that produces NCS bytecode compatible
-        with the game engine's virtual machine. The compiler follows NWScript language specification
-        and produces bytecode that matches the engine's expected format.
-        
+        See ncs_data module docstring for engine addresses (K1 + TSL TODO). CResNCS::CResNCS (K1: 0x005d4c30),
+        ReadScriptFile (K1: 0x005d2260), InitializeScript (K1: 0x005d461b, TSL: TODO). CVirtualMachineInternal — NWScript VM.
+        Note: PyKotor NSS compiler produces NCS bytecode compatible with the engine VM.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (NSS compilation reference)
@@ -85,7 +77,7 @@ class ExternalCompilerConfig(NamedTuple):
 
 class KnownExternalCompilers(Enum):
     """Known external NSS compilers and their configurations.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -97,6 +89,7 @@ class KnownExternalCompilers(Enum):
 
 
     """
+
     TSLPATCHER = ExternalCompilerConfig(
         sha256="539EB689D2E0D3751AEED273385865278BEF6696C46BC0CAB116B40C3B2FE820",
         name="TSLPatcher",

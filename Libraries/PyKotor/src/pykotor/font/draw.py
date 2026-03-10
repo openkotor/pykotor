@@ -1,3 +1,5 @@
+"""Font drawing: PIL-based bitmap font rendering and TXI font info for KotOR text."""
+
 from __future__ import annotations
 
 import math
@@ -9,6 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from pykotor.resource.formats.txi.txi_data import TXIFontInformation
 from pykotor.tools.encoding import get_charset_from_singlebyte_encoding
+from utility.misc import ensure_directory_exists
 
 if TYPE_CHECKING:
     import os
@@ -69,10 +72,7 @@ class _BitmapGrid:
         self.num_chars: int = num_chars
         self.chars_per_col: int = math.ceil(math.sqrt(num_chars))
         self.chars_per_row: int = math.ceil(math.sqrt(num_chars))
-        self.cell_size: int = min(
-            resolution[0] // self.chars_per_row,
-            resolution[1] // self.chars_per_col
-        )
+        self.cell_size: int = min(resolution[0] // self.chars_per_row, resolution[1] // self.chars_per_col)
         self.cell_height: float = resolution[1] / self.chars_per_row
 
 
@@ -205,7 +205,7 @@ def write_bitmap_font(
     # Normalize and set font metrics
     txi_font_info.set_font_metrics(resolution, metrics.max_char_height, metrics.baseline_height, custom_scaling)
 
-    target_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_directory_exists(target_path.parent)
     charset_image.save(target_path.with_suffix(".tga"), format="TGA")
 
     # Generate and save the TXI data
@@ -235,7 +235,7 @@ def write_bitmap_fonts(
         font_color: RGBA color tuple for the font (default: white)
     """
     target_path: Path = Path(target)
-    target_path.mkdir(parents=True, exist_ok=True)
+    ensure_directory_exists(target_path)
 
     for font_name in TXIFontInformation.FONT_TEXTURES:
         if font_name == "fnt_console":

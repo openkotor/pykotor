@@ -12,7 +12,6 @@ import uuid
 from concurrent.futures import (
     Future as _ConcurrentFuture,
     ProcessPoolExecutor,
-    ThreadPoolExecutor,
 )
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -27,12 +26,12 @@ Future = _ConcurrentFuture
 sys.modules.setdefault("FileActionsExecutor", sys.modules[__name__])
 CONTROL_KEYWORDS: set[str] = {"progress_queue", "pause_flag", "cancel_flag"}
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import (
     QObject,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
 
+from loggerplus import RobustLogger
 from utility.gui.qt.common.expensive_functions import FileOperations
 
 if qtpy.QT5:
@@ -107,6 +106,7 @@ class FileActionsExecutor(QObject):
         AllTasksCompleted: Signal emitted when all queued tasks complete.
         ProgressUpdated: Signal emitted for overall progress (completed: int, total: int).
     """
+
     TaskStarted: ClassVar[Signal] = Signal(str)
     TaskCompleted: ClassVar[Signal] = Signal(str, object)
     TaskFailed: ClassVar[Signal] = Signal(str, Exception)
@@ -135,7 +135,7 @@ class FileActionsExecutor(QObject):
             self.tasks: DictProxy[str, Task] = {}  # type: ignore[assignment]
             self.futures: dict[str, _ConcurrentFuture] = {}
             return
-        
+
         worker_count: int = max_workers or multiprocessing.cpu_count()
         RobustLogger().debug(f"Initializing FileActionsExecutor with max_workers: {worker_count}")
         # Use multiprocessing exclusively, never threading
@@ -206,9 +206,7 @@ class FileActionsExecutor(QObject):
         submitter = self.process_pool.submit
 
         if custom_function is not None and not self._is_picklable(custom_function):
-            RobustLogger().warning(
-                f"Task {task_id} custom function is not picklable; multiprocessing may fail"
-            )
+            RobustLogger().warning(f"Task {task_id} custom function is not picklable; multiprocessing may fail")
 
         future: _ConcurrentFuture[Any] = submitter(
             self._execute_task,
@@ -257,14 +255,14 @@ class FileActionsExecutor(QObject):
         # Check for handle_operation method - legitimate dynamic lookup
         handle_op = getattr(func_obj, "handle_operation", None)
         if callable(handle_op):
-            handle_callable = cast(Callable[..., Any], handle_op)
+            handle_callable = cast("Callable[..., Any]", handle_op)
             return handle_callable(*args, **kwargs)
 
         # Check for handle_multiple method - legitimate dynamic lookup
         handle_multi = getattr(func_obj, "handle_multiple", None)
         if callable(handle_multi):
             paths: list[str] = args[0] if args else kwargs.get("paths", [])
-            handle_multi_callable = cast(Callable[..., Any], handle_multi)
+            handle_multi_callable = cast("Callable[..., Any]", handle_multi)
             return handle_multi_callable(paths, **kwargs)
 
         RobustLogger().debug(f"FileOperations.{operation} is not callable and has no handler methods")
@@ -289,9 +287,7 @@ class FileActionsExecutor(QObject):
             signature = inspect.signature(func)
         except (TypeError, ValueError):
             return kwargs
-        accepts_var_kw: bool = any(
-            parameter.kind == inspect.Parameter.VAR_KEYWORD for parameter in signature.parameters.values()
-        )
+        accepts_var_kw: bool = any(parameter.kind == inspect.Parameter.VAR_KEYWORD for parameter in signature.parameters.values())
         if accepts_var_kw:
             return kwargs
         allowed_keys = set(signature.parameters.keys())

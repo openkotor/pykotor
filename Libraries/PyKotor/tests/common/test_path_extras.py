@@ -5,6 +5,7 @@ import pathlib
 import subprocess
 import sys
 import unittest
+
 from tempfile import TemporaryDirectory
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
@@ -25,9 +26,9 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 import contextlib
 
+from pathlib import Path
+
 from utility.system.path import Path
-from pykotor.tools.path import CaseAwarePath
-from pathlib import Path, PosixPath, PurePath, PurePosixPath, PureWindowsPath, WindowsPath
 
 
 class TestPathExtras(unittest.TestCase):

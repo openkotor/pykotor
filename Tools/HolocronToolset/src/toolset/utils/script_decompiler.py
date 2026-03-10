@@ -1,12 +1,14 @@
+"""NCS decompilation for the toolset: run external decompiler and return NSS source."""
+
 from __future__ import annotations
 
 import uuid
 
 from pathlib import Path
 
-from loggerplus import RobustLogger
 from qtpy.QtWidgets import QFileDialog
 
+from loggerplus import RobustLogger
 from pykotor.common.misc import Game
 from pykotor.common.stream import BinaryWriter
 from pykotor.resource.formats.ncs.compilers import ExternalNCSCompiler, KnownExternalCompilers
@@ -15,6 +17,7 @@ from toolset.gui.widgets.settings.installations import GlobalSettings, NoConfigu
 from toolset.utils.script_utils import NoOpRegistrySpoofer, handle_permission_error, setup_extract_path
 
 log = RobustLogger()
+
 
 def ht_decompile_script(
     compiled_bytes: bytes,

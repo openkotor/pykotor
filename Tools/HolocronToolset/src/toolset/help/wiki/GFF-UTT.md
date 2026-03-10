@@ -38,7 +38,7 @@ UTT files define [trigger templates](GFF-File-Format#utt-trigger) for invisible 
 | ----- | ---- | ----------- |
 | `LinkedTo` | [CExoString](GFF-File-Format#gff-data-types) | Destination waypoint tag |
 | `LinkedToModule` | [ResRef](GFF-File-Format#gff-data-types) | Destination module [ResRef](GFF-File-Format#gff-data-types) |
-| `LinkedToFlags` | Byte | Transition behavior [flags](GFF-File-Format#gff-data-types) |
+| `LinkedToFlags` | Byte | Transition behavior flags |
 | `LoadScreenID` | Word | Loading screen ID |
 | `PortraitId` | Word | Portrait ID (unused) |
 

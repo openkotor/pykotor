@@ -20,9 +20,7 @@ class Language(IntEnum):
 
     References:
     ----------
-        Based on swkotor.exe TLK structure:
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
-        - CTlkFile::CTlkFile @ 0x0041d810 - Constructor for TLK file reader
+        See pykotor.resource.formats.tlk.tlk_data for engine addresses (K1 + TSL TODO). CTlkTable::AddFile (K1: 0x0041d920), CTlkFile::CTlkFile (K1: 0x0041d810).
 
     Derivations and Other Implementations:
     ----------
@@ -619,6 +617,7 @@ class Gender(IntEnum):
 
 class IntKeyDict(dict):
     """This purely exists because something is setting the data with string key numbers incorrectly. This is a HACK:."""
+
     def __setitem__(self, key, value):
         if not isinstance(key, int):
             try:
@@ -700,10 +699,7 @@ class LocalizedString:
         return other._substrings == self._substrings
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "stringref": self.stringref,
-            "substrings": self._substrings
-        }
+        return {"stringref": self.stringref, "substrings": self._substrings}
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Self:

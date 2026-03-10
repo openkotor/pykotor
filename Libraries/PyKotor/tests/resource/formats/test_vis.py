@@ -4,6 +4,7 @@ import os
 import pathlib
 import sys
 import unittest
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
@@ -58,7 +59,7 @@ DOES_NOT_EXIST_FILE = "./thisfiledoesnotexist"
 
 class TestVIS(TestCase):
     def test_binary_io(self):
-        vis = VISAsciiReader(ASCII_TEST_DATA.encode('utf-8')).load()
+        vis = VISAsciiReader(ASCII_TEST_DATA.encode("utf-8")).load()
         self.validate_io(vis)
 
         data = bytearray()
@@ -68,10 +69,10 @@ class TestVIS(TestCase):
 
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
-        import tempfile
         import os
+        import tempfile
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.vis', delete=False, encoding='utf-8') as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".vis", delete=False, encoding="utf-8") as tmp:
             tmp.write(ASCII_TEST_DATA)
             tmp_path = tmp.name
 
@@ -105,7 +106,7 @@ class TestVIS(TestCase):
         else:
             self.assertRaises(IsADirectoryError, read_vis, ".")
         self.assertRaises(FileNotFoundError, read_vis, DOES_NOT_EXIST_FILE)
-        self.assertRaises(ValueError, read_vis, CORRUPT_ASCII_TEST_DATA.encode('utf-8'))
+        self.assertRaises(ValueError, read_vis, CORRUPT_ASCII_TEST_DATA.encode("utf-8"))
 
     def test_write_raises(self):
         # sourcery skip: no-conditionals-in-tests

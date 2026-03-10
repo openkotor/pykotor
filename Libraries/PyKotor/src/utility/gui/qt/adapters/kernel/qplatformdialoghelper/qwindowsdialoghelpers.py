@@ -8,7 +8,6 @@ from qtpy.QtCore import QEventLoop, Qt
 from qtpy.QtGui import QColor, QFont
 from qtpy.QtWidgets import QDialog, QFileDialog, QFontDialog
 
-from utility.system.win32.com.interfaces import COMDLG_FILTERSPEC, IShellItem
 from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper import (
     QFileDialogPlatformHelper,
     QPlatformColorDialogHelper,
@@ -16,6 +15,7 @@ from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper 
     QPlatformFileDialogHelper,
     QPlatformFontDialogHelper,
 )
+from utility.system.win32.com.interfaces import COMDLG_FILTERSPEC, IShellItem
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractProxyModel, QObject, QUrl
@@ -327,6 +327,7 @@ class QWindowsFileDialogHelper(QWindowsDialogHelperBase, QPlatformFileDialogHelp
 
     def isSupportedUrl(self, url: str) -> bool:
         from qtpy.QtCore import QUrl
+
         parsed_url = QUrl(url)
         return parsed_url.isValid() and parsed_url.scheme() in ["file", ""]
 
@@ -513,7 +514,6 @@ class QWindowsFontDialogHelper(QWindowsDialogHelperBase, QPlatformFontDialogHelp
 
     def styleHint(self) -> QPlatformDialogHelper.StyleHint:
         return self.defaultStyleHint()
-
 
     def updateFont(self, font: QFont):
         self.setCurrentFont(font)

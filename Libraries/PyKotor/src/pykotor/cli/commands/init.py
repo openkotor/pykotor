@@ -1,10 +1,14 @@
 """Init command implementation."""
+
 from __future__ import annotations
 
 import subprocess
+
 from argparse import Namespace
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from utility.misc import ensure_directory_exists
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -106,7 +110,7 @@ def _create_directory_structure(target_dir: Path, logger: Logger) -> None:
     ]
 
     for subdir in subdirs:
-        (target_dir / subdir).mkdir(parents=True, exist_ok=True)
+        ensure_directory_exists(target_dir / subdir)
 
     kotorcli_dir = target_dir / ".pykotorcli"
     kotorcli_dir.mkdir(exist_ok=True)
@@ -202,7 +206,7 @@ def cmd_init(args: Namespace, logger: Logger) -> int:
         Exit code (0 for success, non-zero for error)
     """
     target_dir = Path(args.dir if args.dir else ".").resolve()
-    target_dir.mkdir(parents=True, exist_ok=True)
+    ensure_directory_exists(target_dir)
 
     config_path = target_dir / "pykotorcli.cfg"
     if config_path.exists():
@@ -243,6 +247,3 @@ def cmd_init(args: Namespace, logger: Logger) -> int:
     logger.info("  4. Run 'pykotorcli pack' to build your module")
 
     return 0
-
-
-

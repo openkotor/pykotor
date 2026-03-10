@@ -1,3 +1,5 @@
+"""TSLPatcher install/uninstall: apply mods to capsules and create backups."""
+
 from __future__ import annotations
 
 import os
@@ -10,7 +12,6 @@ from pathlib import PurePath
 from typing import TYPE_CHECKING, Callable
 
 from loggerplus import RobustLogger
-
 from pykotor.common.stream import BinaryReader, BinaryWriter
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import ResourceIdentifier
@@ -25,6 +26,8 @@ from pykotor.tslpatcher.memory import PatcherMemory
 from pykotor.tslpatcher.mods.install import InstallFile, create_backup
 from pykotor.tslpatcher.mods.nss import ModificationsNSS, MutableString
 from pykotor.tslpatcher.mods.template import OverrideType
+from utility.string_util import normalize_string
+from utility.misc import ensure_directory_exists, get_normalized_extension
 
 if TYPE_CHECKING:
     from threading import Event
@@ -39,10 +42,10 @@ if TYPE_CHECKING:
 
 class ModInstaller:
     """Core mod installer implementing TSLPatcher/HoloPatcher logic.
-    
+
     Handles mod installation, backup creation, and applying patches from changes.ini files.
     This is a Python rewrite of the original TSLPatcher Perl implementation.
-    
+
     References:
     ----------
         Based on swkotor.exe GFF structure:
@@ -53,6 +56,7 @@ class ModInstaller:
 
 
     """
+
     def __init__(
         self,
         mod_path: os.PathLike | str,
@@ -161,7 +165,7 @@ class ModInstaller:
             self.log.add_warning(f"Could not initialize uninstall directory: {(e.__class__.__name__, str(e))}")
         backup_dir = backup_dir / "backup" / timestamp
         try:  # sourcery skip: remove-redundant-exception
-            backup_dir.mkdir(parents=True, exist_ok=True)
+            ensure_directory_exists(backup_dir)
         except (PermissionError, OSError) as e:
             self.log.add_warning(f"Could not create backup folder: {(e.__class__.__name__, str(e))}")
         self.log.add_note(f"Using backup directory: '{backup_dir}'")
@@ -198,7 +202,9 @@ class ModInstaller:
             module_root: str = Installation.get_module_root(output_container_path)
             tslrcm_omitted_rims: tuple[Literal["702KOR"], Literal["401DXN"]] = ("702KOR", "401DXN")
             if module_root.upper() not in tslrcm_omitted_rims and is_rim_file(output_container_path):
-                self.log.add_warning(f"This mod is patching RIM file Modules/{output_container_path.name}!\nPatching RIMs is highly incompatible, not recommended, and widely considered bad practice. Please request the mod developer to fix this.")  # noqa: E501
+                self.log.add_warning(
+                    f"This mod is patching RIM file Modules/{output_container_path.name}!\nPatching RIMs is highly incompatible, not recommended, and widely considered bad practice. Please request the mod developer to fix this."
+                )  # noqa: E501
             if not output_container_path.is_file():
                 if is_mod_file(output_container_path):
                     self.log.add_note(
@@ -270,7 +276,8 @@ class ModInstaller:
                 return self.load_resource_file(output_container_path / patch.saveas)
             return capsule.resource(*ResourceIdentifier.from_path(patch.saveas).unpack())
         except OSError as e:
-            self.log.add_error(f"Could not load source file to {patch.action.lower().strip()}:{os.linesep}{(e.__class__.__name__, str(e))}")
+            action_normalized = normalize_string(patch.action)
+            self.log.add_error(f"Could not load source file to {action_normalized}:{os.linesep}{(e.__class__.__name__, str(e))}")
             return None
 
     def handle_modrim_shadow(
@@ -304,7 +311,7 @@ class ModInstaller:
                 - For rename, renames the file with incrementing number if filename exists.
                 - For warn, logs a warning that the file is shadowing the mod's changes.
         """
-        override_type: str = patch.override_type.lower().strip()
+        override_type: str = normalize_string(patch.override_type)
         if not override_type or override_type == OverrideType.IGNORE:
             return
 
@@ -441,7 +448,8 @@ class ModInstaller:
 
                 data_to_patch: bytes | None = self.lookup_resource(patch, output_container_path, exists, capsule)
                 if data_to_patch is None:
-                    self.log.add_error(f"Could not locate resource to {patch.action.lower().strip()}: '{patch.sourcefile}'")
+                    action_normalized = normalize_string(patch.action)
+                    self.log.add_error(f"Could not locate resource to {action_normalized}: '{patch.sourcefile}'")
                     continue
                 if not data_to_patch:
                     self.log.add_note(f"'{patch.sourcefile}' has no content/data and is completely empty.")
@@ -458,7 +466,7 @@ class ModInstaller:
                 else:
                     # if self.game.is_ios():  # TODO(th3w1zard1):
                     #    patch.saveas = patch.saveas.lower()
-                    output_container_path.mkdir(exist_ok=True, parents=True)  # Create non-existing folders when the patch demands it.
+                    ensure_directory_exists(output_container_path)  # Create non-existing folders when the patch demands it.
                     BinaryWriter.dump(output_container_path / patch.saveas, patched_data)
                 self.log.complete_patch()
             except Exception as e:  # pylint: disable=W0718  # noqa: BLE001
@@ -502,9 +510,9 @@ class ModInstaller:
         temp_script_folder: CaseAwarePath = self.mod_path / "temp_nss_working_dir"
         if temp_script_folder.is_dir():
             shutil.rmtree(temp_script_folder, ignore_errors=True)
-        temp_script_folder.mkdir(exist_ok=True, parents=True)
+        ensure_directory_exists(temp_script_folder)
         for file in self.mod_path.iterdir():
-            if file.suffix.lower() != ".nss" or not file.is_file():
+            if get_normalized_extension(file) != ".nss" or not file.is_file():
                 continue
             shutil.copy(file, temp_script_folder)
 
@@ -512,7 +520,7 @@ class ModInstaller:
         scripts_list: list[CaseAwarePath] = [*set(temp_script_folder.iterdir())]
         log.add_verbose(f"Preprocessing #StrRef# and #2DAMEMORY# tokens for all {len(scripts_list)} scripts, before running [CompileList]")
         for script in temp_script_folder.iterdir():
-            if script.suffix.lower() != ".nss" or not script.is_file():
+            if get_normalized_extension(script) != ".nss" or not script.is_file():
                 continue
             log.add_verbose(f"Parsing tokens in '{script.name}'...")
             with script.open(mode="rb") as f:
@@ -543,11 +551,7 @@ class ModInstaller:
 
         if female_dialog_file.is_file():
             female_tlk_patches: ModificationsTLK = deepcopy(patches_tlk)
-            female_tlk_patches.sourcefile = (
-                female_tlk_patches.sourcefile_f
-                if (self.mod_path / female_tlk_patches.sourcefile_f).is_file()
-                else patches_tlk.sourcefile
-            )
+            female_tlk_patches.sourcefile = female_tlk_patches.sourcefile_f if (self.mod_path / female_tlk_patches.sourcefile_f).is_file() else patches_tlk.sourcefile
             female_tlk_patches.saveas = female_dialog_filename
             tlk_patches.append(female_tlk_patches)
 

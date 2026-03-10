@@ -51,9 +51,22 @@ from pykotor.tslpatcher.diff.resolution import (
 )
 from pykotor.tools.reference_cache import StrRefReferenceCache
 
+
+def __getattr__(name: str):
+    if name in {"DiffConfig", "run_application"}:
+        from pykotor.diff_tool.app import DiffConfig, run_application
+
+        exports = {
+            "DiffConfig": DiffConfig,
+            "run_application": run_application,
+        }
+        return exports[name]
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
 __all__ = [
     "CachedFileComparison",
     "ContextFormatter",
+    "DiffConfig",
     "DefaultFormatter",
     "DiffAnalyzerFactory",
     "DiffCache",
@@ -83,6 +96,7 @@ __all__ = [
     "load_diff_cache",
     "resolve_resource_in_installation",
     "restore_strref_cache_from_cache",
+    "run_application",
     "save_diff_cache",
     "validate_tslpatchdata_arguments",
 ]

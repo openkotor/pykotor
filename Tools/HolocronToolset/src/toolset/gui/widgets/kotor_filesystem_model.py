@@ -1,3 +1,5 @@
+"""KotOR filesystem model: file tree over installation/capsule with icons and resource types."""
+
 from __future__ import annotations
 
 import os
@@ -11,7 +13,6 @@ from typing import TYPE_CHECKING, Any, ClassVar, Protocol, TypeVar, Union, cast
 import qtpy
 
 from loggerplus import RobustLogger
-
 from pykotor.extract.capsule import LazyCapsule
 from utility.gui.qt.adapters.filesystem.pyfilesystemmodel import PyFileSystemModel
 from utility.gui.qt.tools.image import qicon_from_file_ext, qpixmap_to_qicon
@@ -61,23 +62,20 @@ if toolset_path.exists():
 from pathlib import Path  # noqa: E402
 
 from qtpy.QtCore import QAbstractItemModel, QDir, QModelIndex, QObject, Qt, Signal  # noqa: E402, F401
-from qtpy.QtGui import QColor, QDrag, QIcon, QImage, QPalette, QPixmap  # noqa: E402
+from qtpy.QtGui import QDrag, QIcon, QImage, QPalette, QPixmap  # noqa: E402
 from qtpy.QtWidgets import (  # noqa: E402
     QFileSystemModel,  # pyright: ignore[reportPrivateImportUsage]
-    QHBoxLayout,
-    QLineEdit,
-    QPushButton,
 )
 
 from pykotor.extract.file import FileResource  # noqa: E402
 from pykotor.tools.misc import is_capsule_file  # noqa: E402
 from toolset.gui.dialogs.load_from_location_result import ResourceItems  # noqa: E402
-from toolset.gui.widgets.settings.installations import InstallationConfig  # noqa: E402
+from toolset.gui.widgets.settings.installations import GlobalSettings  # noqa: E402
 from toolset.main_init import main_init  # noqa: E402
-from toolset.utils.window import open_resource_editor  # noqa: E402
-from utility.system.os_helper import get_size_on_disk  # noqa: E402
+from toolset.utils.window import open_resource_editor_from_path  # noqa: E402
 from utility.gui.qt.widgets.itemviews.html_delegate import ICONS_DATA_ROLE, HTMLDelegate  # noqa: E402
 from utility.gui.qt.widgets.itemviews.treeview import RobustTreeView  # noqa: E402
+from utility.system.os_helper import get_size_on_disk  # noqa: E402
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QPoint, QRect
@@ -86,6 +84,7 @@ if TYPE_CHECKING:
     from typing_extensions import Literal
 
     from toolset.data.installation import HTInstallation
+    from toolset.gui.widgets.settings.installations import InstallationConfig
     from toolset.gui.windows.main import ToolWindow
     from utility.gui.qt.adapters.filesystem.pyfilesystemmodel import PyFileSystemModel
 
@@ -106,10 +105,7 @@ class TreeItem:
         if self.parent is None:
             return -1
         if not hasattr(self.parent, "children"):
-            raise RuntimeError(
-                "INVALID parent item! Parent items must expose a children list, "
-                f"but parent was: '{self.parent.__class__.__name__}'"
-            )
+            raise RuntimeError(f"INVALID parent item! Parent items must expose a children list, but parent was: '{self.parent.__class__.__name__}'")
         parent_children = getattr(self.parent, "children")
         if self not in parent_children:
             parent_path = getattr(self.parent, "path", "<virtual>")
@@ -223,7 +219,6 @@ class InstallationItem(DirItem):
 
     def loadChildren(self, model: KotorFileSystemModel | ResourceFileSystemModel) -> list[TreeItem]:
         """Load category nodes (Core, Modules, Override, Textures, Saves) as children."""
-        from toolset.data.installation import HTInstallation
 
         idx: QModelIndex = model.indexFromItem(self)
         if self.childCount() > 0:
@@ -232,29 +227,29 @@ class InstallationItem(DirItem):
             model.endRemoveRows()
 
         print(f"{self.__class__.__name__}({self.name}).loadChildren, row={self.row()}")
-        
+
         # Create category nodes
         children: list[TreeItem] = []
-        
+
         # Core category
         core_path = self.path / "data"
         if core_path.exists() and core_path.is_dir():
             children.append(CategoryItem("Core", core_path, self))
-        
+
         # Modules category
         modules_path = self.path / "modules"
         if modules_path.exists() and modules_path.is_dir():
             children.append(CategoryItem("Modules", modules_path, self))
-        
+
         # Override category
         override_path = self.path / "override"
         if override_path.exists() and override_path.is_dir():
             children.append(CategoryItem("Override", override_path, self))
-        
+
         # Textures category (same as Override but filtered)
         if override_path.exists() and override_path.is_dir():
             children.append(CategoryItem("Textures", override_path, self, filter_textures=True))
-        
+
         # Saves category
         saves_path = self.path / "saves"
         if saves_path.exists() and saves_path.is_dir():
@@ -266,14 +261,14 @@ class InstallationItem(DirItem):
             model.endInsertRows()
         else:
             self.children = []
-        
+
         self._children_loaded = True
         return self.children
 
 
 class CategoryItem(DirItem):
     """Represents a category node (Core, Modules, Override, Textures, Saves) under an installation."""
-    
+
     def __init__(
         self,
         category_name: str,
@@ -311,27 +306,27 @@ class CategoryItem(DirItem):
 
         print(f"{self.__class__.__name__}({self.category_name}).loadChildren, row={self.row()}")
         children: list[TreeItem] = []
-        
+
         if not self.path.exists() or not self.path.is_dir():
             self._children_loaded = True
             return self.children
 
         qdir = QDir(str(self.path))
         qdir.setFilter(model.filter())
-        
+
         for entry in qdir.entryInfoList():
             child_path = Path(entry.filePath())
-            
+
             # Filter for texture files if this is the Textures category
             if self.filter_textures:
                 if child_path.is_file():
                     ext = child_path.suffix.lower()
-                    if ext not in ['.tpc', '.tga', '.png', '.jpg', '.jpeg', '.bmp', '.dds']:
+                    if ext not in [".tpc", ".tga", ".png", ".jpg", ".jpeg", ".bmp", ".dds"]:
                         continue
                 else:
                     # Skip directories in Textures category
                     continue
-            
+
             if child_path.is_dir():
                 item = DirItem(child_path, self)
             elif is_capsule_file(child_path):
@@ -346,11 +341,11 @@ class CategoryItem(DirItem):
             model.endInsertRows()
         else:
             self.children = []
-        
+
         self._children_loaded = True
         for child in self.children:
             model.setData(model.index(self.children.index(child), 0, idx), child.iconData(), Qt.ItemDataRole.DecorationRole)
-        
+
         return self.children
 
 
@@ -623,7 +618,7 @@ class ResourceFileSystemWidget(QWidget):
             print("<SDM> [fileSystemModelDoubleClick scope] ToolWindow: ", mw)
             if mw is None:
                 return
-            open_resource_editor(item.path, item.resource.resname(), item.resource.restype(), item.resource.data(), installation=mw.active, parentWindow=None)
+            open_resource_editor_from_path(item.path, installation=mw.active, gff_specialized=GlobalSettings().gffSpecializedEditors)
         elif isinstance(item, DirItem):
             if not item.children and isinstance(self.fs_model, (KotorFileSystemModel, ResourceFileSystemModel, QFileSystemModel)):
                 item.loadChildren(self.fs_model)
@@ -769,12 +764,12 @@ class ResourceFileSystemWidget(QWidget):
         print("<SDM> [fileSystemModelContextMenu scope] m: ", m)
 
         m.addAction("Open").triggered.connect(
-            lambda: [open_resource_editor(r.filepath(), r.resname(), r.restype(), r.data(), installation=active_installation) for r in resources]
+            lambda: [open_resource_editor_from_path(r.filepath(), installation=active_installation, gff_specialized=GlobalSettings().gffSpecializedEditors) for r in resources]
         )  # pyright: ignore[reportOptionalMemberAccess]
 
         if all(r.restype().contents == "gff" for r in resources):
             m.addAction("Open with GFF Editor").triggered.connect(
-                lambda: [open_resource_editor(r.filepath(), r.resname(), r.restype(), r.data(), installation=active_installation, gff_specialized=False) for r in resources]
+                lambda: [open_resource_editor_from_path(r.filepath(), installation=active_installation, open_as_generic_gff=True) for r in resources]
             )  # pyright: ignore[reportOptionalMemberAccess]
 
         m.addSeparator()
@@ -813,7 +808,7 @@ T = TypeVar("T", bound=Union[SupportsRichComparison, str])
 class KotorFileSystemModel(QAbstractItemModel):
     # Signals
     address_changed = Signal()  # Emitted when the address bar should be updated
-    
+
     COLUMN_TO_STAT_MAP: ClassVar[dict[str, str]] = {
         "Size on Disk": "size_on_disk",
         "Size Ratio": "size_ratio",
@@ -1055,7 +1050,7 @@ class KotorFileSystemModel(QAbstractItemModel):
         pixmap: QPixmap | None = None
         try:
             if ext == "tpc":
-                from pykotor.resource.formats.tpc import read_tpc, TPCTextureFormat
+                from pykotor.resource.formats.tpc import TPCTextureFormat, read_tpc
 
                 tpc = read_tpc(data)
                 if tpc.convert(TPCTextureFormat.RGB):
@@ -1236,7 +1231,10 @@ class KotorFileSystemModel(QAbstractItemModel):
             if column_name == "Size":
                 assert isinstance(item, (DirItem, ResourceItem))
                 size_value = 0 if isinstance(item, DirItem) else item.resource.size()
-                key = (0 if is_dir else 1, size_value)  # Directories first, then by size in bytes  # pyright: ignore[reportCallIssue, reportArgumentType, reportAssignmentType]
+                key = (
+                    0 if is_dir else 1,
+                    size_value,
+                )  # Directories first, then by size in bytes  # pyright: ignore[reportCallIssue, reportArgumentType, reportAssignmentType]
             else:
                 if column_name == "Name":
                     key_value = item.path.name if isinstance(item, DirItem) else item.path.name  # noqa: PTH119

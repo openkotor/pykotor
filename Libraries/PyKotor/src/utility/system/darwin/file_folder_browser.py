@@ -17,17 +17,40 @@ if TYPE_CHECKING:
 
 def _get_tk_root() -> Tk:
     import tkinter as tk
+
     if tk._default_root is None:  # pyright: ignore[reportAttributeAccessIssue]  # noqa: SLF001
         root = tk.Tk()
         root.withdraw()
         return root
     return tk._default_root  # pyright: ignore[reportAttributeAccessIssue]  # noqa: SLF001
 
+
 def _run_apple_script(script: str) -> str:
     result = subprocess.run(
-        ["osascript", "-e", script], check=True, capture_output=True, text=True  # noqa: S607, S603
+        ["osascript", "-e", script],
+        check=True,
+        capture_output=True,
+        text=True,  # noqa: S607, S603
     )
     return result.stdout.strip()
+
+
+def _format_file_types_for_applescript(filetypes: list[tuple[str, str | list[str]]]) -> str:
+    """Format file types for AppleScript file dialogs.
+
+    Args:
+    ----
+        filetypes: List of (description, extensions) tuples
+
+    Returns:
+    -------
+        Formatted file types string for AppleScript
+    """
+    return ", ".join([
+        f'"{ft[1]}"' if isinstance(ft[1], str) else "{" + ", ".join([f'"{ext}"' for ext in ft[1]]) + "}"
+        for ft in filetypes
+    ])
+
 
 def _run_cocoa_dialog(  # noqa: C901, PLR0913
     dialog_type: str,
@@ -91,7 +114,9 @@ def _run_cocoa_dialog(  # noqa: C901, PLR0913
                 allowed_file_types.append(NSString_from_str(ft[1]))
             else:
                 allowed_file_types.extend(NSString_from_str(ext) for ext in ft[1])
-        allowed_file_types_nsarray = libobjc.objc_msgSend(NSArray, libobjc.sel_registerName(b"arrayWithObjects:count:"), (cID * len(allowed_file_types))(*allowed_file_types), len(allowed_file_types))
+        allowed_file_types_nsarray = libobjc.objc_msgSend(
+            NSArray, libobjc.sel_registerName(b"arrayWithObjects:count:"), (cID * len(allowed_file_types))(*allowed_file_types), len(allowed_file_types)
+        )
         libobjc.objc_msgSend(panel, libobjc.sel_registerName(b"setAllowedFileTypes:"), allowed_file_types_nsarray)
 
     if defaultextension:
@@ -108,15 +133,10 @@ def _run_cocoa_dialog(  # noqa: C901, PLR0913
     return None
 
 
-def askdirectory(
-    *,
-    initialdir: os.PathLike | str | None = None,
-    mustexist: bool | None = None,
-    parent: Misc | None = None,
-    title: str | None = None
-) -> str:
+def askdirectory(*, initialdir: os.PathLike | str | None = None, mustexist: bool | None = None, parent: Misc | None = None, title: str | None = None) -> str:
     try:
         from tkinter import filedialog
+
         result = filedialog.askdirectory(
             initialdir=initialdir,
             mustexist=mustexist,
@@ -136,7 +156,7 @@ def askdirectory(
         except Exception:  # noqa: BLE001
             try:
                 script = f"""
-                    set directory to POSIX path of (choose folder with prompt "{title}"{f' default location POSIX file "{initialdir}"' if initialdir else ''})
+                    set directory to POSIX path of (choose folder with prompt "{title}"{f' default location POSIX file "{initialdir}"' if initialdir else ""})
                     return directory
                 """
                 result = _run_apple_script(script)
@@ -158,6 +178,7 @@ def askopenfile(  # noqa: PLR0913
 ) -> IO[Any] | None:
     try:
         from tkinter import filedialog
+
         return filedialog.askopenfile(
             mode,
             defaultextension=defaultextension,
@@ -188,7 +209,7 @@ def askopenfile(  # noqa: PLR0913
                     script += f' default location POSIX file "{initialdir}"'
 
                 if filetypes:
-                    file_types_str = ", ".join([f'"{ft[1]}"' if isinstance(ft[1], str) else "{"+", ".join([f'"{ext}"' for ext in ft[1]])+"}" for ft in filetypes])
+                    file_types_str = _format_file_types_for_applescript(filetypes)
                     script += f" of type {{{file_types_str}}}"
 
                 script += ")"
@@ -198,6 +219,7 @@ def askopenfile(  # noqa: PLR0913
                 return None if not result or not result.strip() else open(result, mode)  # noqa: SIM115, PTH123
             except Exception as e3:
                 raise RuntimeError("All methods to open file dialog failed") from e3
+
 
 def askopenfilename(  # noqa: PLR0913
     *,
@@ -211,6 +233,7 @@ def askopenfilename(  # noqa: PLR0913
 ) -> str:
     try:
         from tkinter import filedialog
+
         result = filedialog.askopenfilename(
             defaultextension=defaultextension,
             filetypes=[] if filetypes is None else filetypes,  # rem: do not send None
@@ -241,7 +264,7 @@ def askopenfilename(  # noqa: PLR0913
                     script += f' default location POSIX file "{initialdir}"'
 
                 if filetypes:
-                    file_types_str = ", ".join([f'"{ft[1]}"' if isinstance(ft[1], str) else "{"+", ".join([f'"{ext}"' for ext in ft[1]])+"}" for ft in filetypes])
+                    file_types_str = _format_file_types_for_applescript(filetypes)
                     script += f" of type {{{file_types_str}}}"
 
                 script += ")"
@@ -265,6 +288,7 @@ def askopenfilenames(  # noqa: PLR0913
 ) -> tuple[str, ...] | Literal[""]:
     try:
         from tkinter import filedialog
+
         result = filedialog.askopenfilenames(
             defaultextension=defaultextension,
             filetypes=[] if filetypes is None else filetypes,
@@ -293,7 +317,7 @@ def askopenfilenames(  # noqa: PLR0913
                 if initialdir:
                     script += f' default location POSIX file "{initialdir}"'
                 if filetypes:
-                    file_types_str = ", ".join([f'"{ft[1]}"' if isinstance(ft[1], str) else "{"+", ".join([f'"{ext}"' for ext in ft[1]])+"}" for ft in filetypes])
+                    file_types_str = _format_file_types_for_applescript(filetypes)
                     script += f" of type {{{file_types_str}}}"
                 script += " with multiple selections allowed"
                 script += "\nreturn files as POSIX path"
@@ -316,6 +340,7 @@ def askopenfiles(  # noqa: PLR0913
 ) -> tuple[IO[Any], ...] | None:
     try:
         from tkinter import filedialog
+
         result = filedialog.askopenfiles(
             mode=mode,
             defaultextension=defaultextension,
@@ -345,7 +370,7 @@ def askopenfiles(  # noqa: PLR0913
                 if initialdir:
                     script += f' default location POSIX file "{initialdir}"'
                 if filetypes:
-                    file_types_str = ", ".join([f'"{ft[1]}"' if isinstance(ft[1], str) else "{"+", ".join([f'"{ext}"' for ext in ft[1]])+"}" for ft in filetypes])
+                    file_types_str = _format_file_types_for_applescript(filetypes)
                     script += f" of type {{{file_types_str}}}"
                 script += " with multiple selections allowed"
                 script += "\nreturn files as POSIX path"
@@ -369,6 +394,7 @@ def asksaveasfile(  # noqa: PLR0913
 ) -> IO[Any] | None:
     try:
         from tkinter import filedialog
+
         return filedialog.asksaveasfile(
             mode,
             confirmoverwrite=confirmoverwrite,
@@ -394,7 +420,7 @@ def asksaveasfile(  # noqa: PLR0913
             return None if not result or not result[0].strip() else open(result[0], mode)  # noqa: PTH123, SIM115
         except Exception:  # noqa: BLE001
             script = f"""
-                set file to POSIX path of (choose file name with prompt "{title}"{f' default location POSIX file "{initialdir}"' if initialdir else ''}{f' default name "{initialfile}"' if initialfile else ''})
+                set file to POSIX path of (choose file name with prompt "{title}"{f' default location POSIX file "{initialdir}"' if initialdir else ""}{f' default name "{initialfile}"' if initialfile else ""})
                 return file
             """
             result = _run_apple_script(script)
@@ -414,6 +440,7 @@ def asksaveasfilename(  # noqa: PLR0913
 ) -> str:
     try:
         from tkinter import filedialog
+
         result = filedialog.asksaveasfilename(
             confirmoverwrite=confirmoverwrite,
             defaultextension=defaultextension,
@@ -439,7 +466,7 @@ def asksaveasfilename(  # noqa: PLR0913
             return "" if not result or not result.strip() else result
         except Exception:  # noqa: BLE001
             script = f"""
-                set file to POSIX path of (choose file name with prompt "{title}"{f' default location POSIX file "{initialdir}"' if initialdir else ''}{f' default name "{initialfile}"' if initialfile else ''})
+                set file to POSIX path of (choose file name with prompt "{title}"{f' default location POSIX file "{initialdir}"' if initialdir else ""}{f' default name "{initialfile}"' if initialfile else ""})
                 return file
             """  # noqa: E501
             result = _run_apple_script(script)

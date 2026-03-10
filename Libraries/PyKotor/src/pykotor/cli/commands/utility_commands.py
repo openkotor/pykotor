@@ -8,9 +8,8 @@ from __future__ import annotations
 import pathlib
 import sys
 
-from argparse import Namespace
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from loggerplus import RobustLogger as Logger  # type: ignore[import-untyped]
 
@@ -18,9 +17,14 @@ from loggerplus import RobustLogger as Logger  # type: ignore[import-untyped]
 from pykotor.cli.logger import LogLevel, OutputMode
 from pykotor.diff_tool.logger import DiffLogger
 from pykotor.extract.installation import Installation
-from pykotor.resource.formats.gff import GFF, read_gff, write_gff
+from pykotor.resource.formats.gff import read_gff, write_gff
 from pykotor.tools.misc import is_capsule_file
 from pykotor.tools.utilities import get_file_stats, grep_in_file, validate_file
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from pykotor.resource.formats.gff import GFF
 
 
 def _diff_archives_or_directories(
@@ -143,12 +147,18 @@ def _diff_archives_or_directories(
                     differences_found = True
                     diff_logger.info(f"Files differ: {resource_key}")
 
-        # Summary
+        # Summary: print only in full mode (normal = diff only, quiet = log only)
         if not differences_found:
-            diff_logger.info(f"'{args.path1}' MATCHES '{args.path2}'")
+            msg = f"'{args.path1}' MATCHES '{args.path2}'"
+            diff_logger.info(msg)
+            if output_mode == OutputMode.FULL:
+                print(msg)
             return 0
         else:
-            diff_logger.info(f"'{args.path1}' DOES NOT MATCH '{args.path2}'")
+            msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
+            diff_logger.info(msg)
+            if output_mode == OutputMode.FULL:
+                print(msg)
             return 1
 
     except Exception:
@@ -269,7 +279,7 @@ def cmd_diff(
     output_mode = output_mode_map.get(output_mode_str, OutputMode.NORMAL)
 
     # Display CLI arguments (for parity with other diff tools)
-    if output_mode != OutputMode.QUIET:
+    if output_mode == OutputMode.FULL:
         print(f"Using --path1='{args.path1}'")
         print(f"Using --path2='{args.path2}'")
         print("Using --ignore-rims=False")
@@ -281,7 +291,8 @@ def cmd_diff(
 
     # Handle special case: identical paths should always match
     if args.path1 == args.path2:
-        print(f"'{args.path1}' MATCHES '{args.path2}'")
+        if output_mode == OutputMode.FULL:
+            print(f"'{args.path1}' MATCHES '{args.path2}'")
         return 0
 
     # Handle output redirection
@@ -339,11 +350,17 @@ def cmd_diff(
                 format_type=format_type,
             )
 
-            # Add summary message
+            # Add summary message in full mode only
             if result:
-                diff_logger.info(f"'{args.path1}' MATCHES '{args.path2}'")
+                msg = f"'{args.path1}' MATCHES '{args.path2}'"
+                diff_logger.info(msg)
+                if output_mode == OutputMode.FULL:
+                    print(msg)
             else:
-                diff_logger.info(f"'{args.path1}' DOES NOT MATCH '{args.path2}'")
+                msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
+                diff_logger.info(msg)
+                if output_mode == OutputMode.FULL:
+                    print(msg)
 
             return 0 if result else 1
 
@@ -357,9 +374,30 @@ def cmd_diff(
     # Check if we need to generate TSLPatcher INI files
     generate_ini = getattr(args, "generate_ini", False)
 
+    # Handle two plain directories (no installation, no archive) via n-way diff engine
+    if (
+        isinstance(path1, Path)
+        and isinstance(path2, Path)
+        and path1.is_dir()
+        and path2.is_dir()
+        and not (path1 / "chitin.key").exists()
+        and not (path2 / "chitin.key").exists()
+    ):
+        from pykotor.diff_tool.app import DiffConfig, run_application  # noqa: PLC0415
+
+        config = DiffConfig(
+            paths=[path1, path2],
+            output_mode=output_mode_str,
+            compare_hashes=True,
+            logging_enabled=output_mode != OutputMode.QUIET,
+        )
+        exit_code = run_application(config)
+        # Map app exit codes to CLI: 0=match, 2/3=differ/error -> 1
+        return 0 if exit_code == 0 else 1
+
     if generate_ini:
         # Use the full TSLPatcher application for INI generation
-        from pykotor.cli.diff_tool.app import DiffConfig, handle_diff, run_application  # noqa: PLC0415
+        from pykotor.diff_tool.app import DiffConfig, run_application  # noqa: PLC0415
 
         # Convert Path objects to the format expected by TSLPatcher
         paths_for_tslpatcher: list[Path | Installation] = []
@@ -372,15 +410,20 @@ def cmd_diff(
             else:
                 paths_for_tslpatcher.append(path)
 
+        # Default tslpatchdata to current directory when --generate-ini is used
+        tslpatchdata_path = Path.cwd() / "tslpatchdata"
+        ini_filename = getattr(args, "ini", "changes.ini")
+
         config = DiffConfig(
             paths=paths_for_tslpatcher,
-            output_mode=getattr(args, "output_mode", "full").lower(),  # full by default when generating tslpatcher ini
+            output_mode=getattr(args, "output_mode", "full").lower(),
             use_incremental_writer=True,
+            tslpatchdata_path=tslpatchdata_path,
+            ini_filename=ini_filename,
         )
 
-        run_application(config)
-        result, exit_code = handle_diff(config)
-        return 1 if exit_code is None else exit_code
+        exit_code = run_application(config)
+        return exit_code
 
     # For archives and directories, implement proper diff display
     try:
@@ -435,11 +478,17 @@ def cmd_diff(
                 format_type=format_type,
             )
 
-            # Add summary message (but not in normal mode)
+            # Add summary message in full mode only
             if result:
-                diff_logger.info(f"'{args.path1}' MATCHES '{args.path2}'")
+                msg = f"'{args.path1}' MATCHES '{args.path2}'"
+                diff_logger.info(msg)
+                if output_mode == OutputMode.FULL:
+                    print(msg)
             else:
-                diff_logger.info(f"'{args.path1}' DOES NOT MATCH '{args.path2}'")
+                msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
+                diff_logger.info(msg)
+                if output_mode == OutputMode.FULL:
+                    print(msg)
 
             return 0 if result else 1
 
@@ -465,7 +514,7 @@ def cmd_grep(
             - GFF structures are loaded via CResGFF class throughout the engine
             - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
             - 2DA structures loaded via C2DA class (see 2da/io_2da.py for references)
-            - TLK structures loaded via CTlkTable class (see tlk/io_tlk.py for references)
+            - TLK structures loaded via CTlkTable class (see pykotor.resource.formats.tlk.tlk_data for K1/TSL addresses)
 
 
     """
@@ -555,7 +604,7 @@ def cmd_merge(
             - GFF structures are loaded via CResGFF class throughout the engine
             - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
             - 2DA structures loaded via C2DA class (see 2da/io_2da.py for references)
-            - TLK structures loaded via CTlkTable class (see tlk/io_tlk.py for references)
+            - TLK structures loaded via CTlkTable class (see pykotor.resource.formats.tlk.tlk_data for K1/TSL addresses)
         Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py - GFFStruct.merge()
 
 

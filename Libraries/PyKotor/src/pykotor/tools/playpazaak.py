@@ -5,10 +5,10 @@ Note: Pazaak is a card game minigame in KotOR with specific card types and scori
 from __future__ import annotations
 
 import random
-from enum import Enum
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import ClassVar
 
 

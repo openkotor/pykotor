@@ -5,39 +5,55 @@ game data, including character templates, areas, dialogs, and more.
 
 References:
 ----------
-        Based on swkotor.exe GFF implementation:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates new GFF file with file_type and version
-          * Sets file_type from 4-character string (e.g., "UTI ", "DLG ", "ARE ")
-          * Sets file_version from GFFVersion string "V3.2" @ 0x0073e2c8
-          * Creates root struct with AddStruct(this, 0xffffffff)
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
-          * Opens file with "wb" mode
-          * Calls Pack() to prepare data
-          * Calls WriteGFFData() to write binary format
-        - CResGFF::WriteGFFData @ 0x004113d0 - Writes GFF header and data sections
-          * Writes 0x38 byte header
-          * Writes structs (12 bytes each)
-          * Writes fields (12 bytes each)
-          * Writes labels (16 bytes each)
-          * Writes field_data, field_indices, list_indices
-        - GFFVersion string "V3.2" @ 0x0073e2c8 - Hardcoded GFF version identifier
-        - "gff" string @ 0x0074dd00 - GFF format identifier
-        
-        Note: GFF is used for all structured game data; critical to understand for modding.
-        All game resources (UTM, GUI, UTI, UTP, UTC, UTD, UTW, UTT, UTS, UTE, PTH, JRL, IFO, ARE, FAC, DLG)
-        are stored as GFF files with different 4-character type identifiers.
+    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) GFF implementation.
+    Addresses: (K1: swkotor.exe, TSL: swkotor2.exe Aspyr build).
 
+    - CResGFF::CreateGFFFile
+        K1: 0x00411260, TSL: 0x00626530
+        Creates new GFF file with file_type and version.
+        * Sets file_type from 4-character string (e.g., "UTI ", "DLG ", "ARE ")
+        * Sets file_version from GFFVersion string "V3.2" (see below)
+        * Creates root struct with AddStruct(this, 0xffffffff)
+
+    - CResGFF::WriteGFFFile
+        K1: 0x00413030, TSL: 0x00626700
+        Writes GFF data to file.
+        * Opens file with "wb" mode
+        * Calls Pack() to prepare data
+        * Calls WriteGFFData() to write binary format
+
+    - CResGFF::WriteGFFData
+        K1: 0x004113d0, TSL: 0x006267d0
+        Writes GFF header and data sections.
+        * Writes 0x38 byte header
+        * Writes structs (12 bytes each), fields (12 bytes each), labels (16 bytes each)
+        * Writes field_data, field_indices, list_indices
+
+    - GFFVersion string "V3.2" (hardcoded GFF version identifier)
+        K1: 0x0073e2c8, TSL: 0x0099794c (CreateGFFFile uses pointer at 0x009f44d8)
+
+    - "gff" string (GFF format/extension identifier, resource extension table)
+        K1: 0x0074dd00 (referenced by CreateResourceExtensionTable @ 0x005e6d20)
+        TSL: TODO: locate in swkotor2.exe (resource table layout differs)
+
+    Dialog (DLG) loading (GFF-based):
+        - CSWSDialog::LoadDialog (loads dialog from GFF structure): K1: 0x005a2ae0, TSL: TODO
+        - CSWSDialog::LoadDialogBase (loads dialog base properties): K1: 0x0059f5f0, TSL: TODO
+        - CSWSDialog::LoadDialogLinkedNode (loads linked dialog nodes; called from LoadDialog): K1: 0x0059ec10, TSL: TODO
+
+    Note: GFF is used for all structured game data; critical to understand for modding.
+    All game resources (UTM, GUI, UTI, UTP, UTC, UTD, UTW, UTT, UTS, UTE, PTH, JRL, IFO, ARE, FAC, DLG)
+    are stored as GFF files with different 4-character type identifiers.
 """
 
 from __future__ import annotations
 
 import difflib
 import math
-import sys
 
 from contextlib import contextmanager
 from copy import copy, deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
@@ -50,6 +66,7 @@ from pykotor.resource.type import ResourceType
 from utility.common.geometry import Vector3, Vector4
 from utility.common.misc_string.util import format_text
 from utility.error_handling import safe_repr  # pyright: ignore[reportMissingImports]
+from utility.string_util import normalize_string
 
 if TYPE_CHECKING:
     import os
@@ -63,6 +80,10 @@ U = TypeVar("U")
 GFFStructType = TypeVar("GFFStructType", bound="GFFStruct")
 
 
+# Max lines per side for difflib; larger inputs use a short summary to avoid O(n*m) timeout
+_FORMAT_DIFF_MAX_LINES = 4000
+
+
 def format_diff(
     old_value: object,
     new_value: object,
@@ -73,6 +94,14 @@ def format_diff(
     # Convert values to strings if they aren't already
     str_old_value: list[str] = str(old_value).splitlines(keepends=True)
     str_new_value: list[str] = str(new_value).splitlines(keepends=True)
+
+    # Avoid difflib on huge inputs (SequenceMatcher is O(n*m), can timeout)
+    if len(str_old_value) > _FORMAT_DIFF_MAX_LINES or len(str_new_value) > _FORMAT_DIFF_MAX_LINES:
+        return (
+            f"(old){name}: {len(str_old_value)} lines\n"
+            f"(new){name}: {len(str_new_value)} lines\n"
+            "(diff omitted: value too large)"
+        )
 
     # Generate diff based on format type
     if format_type == "unified":
@@ -162,7 +191,7 @@ class GFFContent(Enum):
             if content_enum in res_contents:
                 gff_extensions.add("res")
                 continue
-            gff_extensions.add(content_enum.value.lower().strip())
+            gff_extensions.add(normalize_string(content_enum.value))
         return gff_extensions
 
     @classmethod
@@ -173,7 +202,7 @@ class GFFContent(Enum):
             if content_enum in res_contents:
                 gff_restypes.add(ResourceType.RES)
                 continue
-            gff_restypes.add(ResourceType.from_extension(content_enum.value.lower().strip()).target_type())
+            gff_restypes.add(ResourceType.from_extension(normalize_string(content_enum.value)).target_type())
         return gff_restypes
 
     @classmethod
@@ -189,6 +218,116 @@ class GFFContent(Enum):
         elif lower_resname == "inventory":
             gff_content = GFFContent.INV
         return gff_content
+
+
+def _normalize_string_for_compare(value: object) -> str:
+    """Normalize string for comparison to avoid false positives from whitespace/line endings.
+
+    Engine behavior: GFF string fields are compared byte-wise; trailing whitespace and
+    CRLF vs LF can differ between tools. Normalizing allows semantically equal values
+    to match. Used in GFFStruct.compare for String and LocalizedString fields.
+    """
+    if not isinstance(value, str):
+        return str(value) if value is not None else ""
+    # Normalize line endings to \n, strip trailing whitespace from each line and overall
+    return "\n".join(line.rstrip() for line in value.replace("\r\n", "\n").replace("\r", "\n").split("\n")).rstrip()
+
+
+@dataclass
+class GFFListSemanticConfig:
+    """Configuration for semantic identity matching of GFF list elements.
+
+    Used to correctly detect modified entries (same logical item, different fields)
+    vs added/removed entries. Prevents false "2 added + 2 removed" when the same
+    structs have optional fields added (e.g., GuaranteedCount in UTE CreatureList).
+
+    Attributes:
+    ----------
+        identity_fields: Field names that uniquely identify a list entry. Used to
+            match structs across old/new (e.g., ResRef+CR+Appearance for creature spawns).
+        default_when_absent: Map field_name -> default value. When a field is absent
+            in one side, treat it as this default for identity and comparison.
+            E.g., {"GuaranteedCount": 0} for UTE CreatureList (K2 field, default 0).
+        ignorable_when_value: Map field_name -> value(s). When a field is added with
+            this value (or removed when the effective value would be this), treat as
+            no change. E.g., {"GuaranteedCount": 0} - adding GuaranteedCount=0 is
+            ignorable (K2 default; engine reads 0 when absent).
+    """
+
+    identity_fields: tuple[str, ...]
+    default_when_absent: dict[str, Any] = field(default_factory=dict)
+    ignorable_when_value: dict[str, Any] = field(default_factory=dict)
+
+
+# Registry: (GFFContent, list_field_name) -> semantic config for list comparison.
+# When present, list entries are matched by identity_fields + default_when_absent,
+# so "same creature, new optional field" is reported as MODIFIED not ADDED+REMOVED.
+# Engine: K1 ReadEncounterFromGff @ 0x00592430 reads ResRef, CR, SingleSpawn only (no Appearance).
+# TSL FUN_007eb810 reads ResRef, CR, SingleSpawn, GuaranteedCount. Appearance is toolset-only.
+_GFF_LIST_SEMANTIC_REGISTRY: dict[tuple[GFFContent, str], GFFListSemanticConfig] = {
+    # Engine: K1 ReadEncounterFromGff @ 0x00592430, TSL FUN_007eb810 read ResRef, CR, SingleSpawn (+ GuaranteedCount TSL).
+    # Appearance is toolset-only; use ResRef+CR+SingleSpawn for identity so K1/TSL files match correctly.
+    (GFFContent.UTE, "CreatureList"): GFFListSemanticConfig(
+        identity_fields=("ResRef", "CR", "SingleSpawn"),
+        default_when_absent={"GuaranteedCount": 0, "Appearance": 0},
+        ignorable_when_value={"GuaranteedCount": 0},
+    ),
+}
+
+# Registry of ignorable field values, keyed by (GFFContent, list_field_name | None).
+# list_field_name: apply only when comparing structs inside that list (e.g. "CreatureList").
+# None: apply to root/toplevel struct fields.
+# Used when comparing GFFs: fields added/removed with these values are treated as no-change.
+# Prefer GFFContent enum; never use raw strings for content type.
+#
+# Engine references:
+#   K1 SaveEncounter @ 0x00591350: CreatureList writes ResRef, CR, SingleSpawn only.
+#   TSL FUN_007ed770: CreatureList writes ResRef, CR, SingleSpawn, GuaranteedCount.
+#   K1 lacks GuaranteedCount; TSL default 0 when absent. Ignorable for diff.
+_GFF_IGNORABLE_FIELD_VALUES: dict[tuple[GFFContent, str | None], dict[str, frozenset[Any]]] = {
+    (GFFContent.UTE, "CreatureList"): {"GuaranteedCount": frozenset({0})},
+}
+
+
+def _build_ignorable_for_content(content: GFFContent) -> dict[str, set[Any]] | None:
+    """Merge all ignorable field values for a GFF content type.
+
+    Merges entries keyed by (content, list_field) and (content, None).
+    Returns None if no ignorable entries exist.
+    """
+    merged: dict[str, set[Any]] = {}
+    for (gff_content, _list_field), field_map in _GFF_IGNORABLE_FIELD_VALUES.items():
+        if gff_content != content:
+            continue
+        for label, values in field_map.items():
+            existing = merged.get(label)
+            vals = set(values)
+            merged[label] = (existing | vals) if existing else vals
+    return merged if merged else None
+
+
+def _infer_gff_content_from_path(path: PureWindowsPath | str | None) -> GFFContent | None:
+    """Infer GFF content type from path (e.g., 'foo.ute' -> GFFContent.UTE)."""
+    if path is None:
+        return None
+    parts = PureWindowsPath(str(path)).parts
+    if not parts:
+        return None
+    first = parts[0]
+    if "." in first:
+        ext = normalize_string(first.split(".")[-1])
+        for content in GFFContent:
+            if normalize_string(content.value) == ext:
+                return content
+    return None
+
+
+def _list_field_name_from_path(path: PureWindowsPath | str | None) -> str | None:
+    """Extract the list field name from path (e.g., 'root/CreatureList' -> 'CreatureList')."""
+    if path is None:
+        return None
+    parts = PureWindowsPath(str(path)).parts
+    return parts[-1] if parts else None
 
 
 class GFFFieldType(IntEnum):
@@ -427,35 +566,40 @@ class GFF(ComparableMixin):
             if not isinstance(other, GFF):
                 return False
             comparison_result = comparison_result or GFFComparisonResult()
+            ign = _build_ignorable_for_content(self.content)
             return self.root.compare(
                 other.root,
                 log_func,
                 path,
                 ignore_default_changes,
+                ignore_values=ign,
                 comparison_result=comparison_result,
                 format_type=format_type,
+                gff_content=self.content,
             )
 
         if not isinstance(other, GFF):
             log_func("", message_type="diff")
             log_func("", message_type="diff")
             return False
-        
-        # Don't check field count here if ignoring default changes - let GFFStruct.compare() handle it
-        # as it can check if extra fields are all default/empty
-        if not ignore_default_changes and len(self.root) != len(other.root):
-            log_func(f"GFF counts have changed at '{path}': '{len(self.root)}' --> '{len(other.root)}'", message_type="diff")
-            log_func("", message_type="diff")
-            return False
-        
+
+        # Build ignorable field values from content type (e.g. UTE CreatureList GuaranteedCount=0)
+        ignorable = _build_ignorable_for_content(self.content)
+
+        # Always do the full recursive comparison via GFFStruct.compare() so that
+        # every added/removed/changed field is reported with its full GFF-internal
+        # path (e.g. "c_dewback2.utc/FeatList/[2]/Feat").  GFFStruct.compare()
+        # already handles field-count mismatches itself and continues the diff.
         comparison_result = comparison_result or GFFComparisonResult()
         return self.root.compare(
             other.root,
             log_func,
             path,
             ignore_default_changes,
+            ignore_values=ignorable or None,
             comparison_result=comparison_result,
             format_type=format_type,
+            gff_content=self.content,
         )
 
     def __str__(self) -> str:
@@ -525,11 +669,11 @@ class GFFStruct(ComparableMixin, dict):
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates new GFF file with file_type and version
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
-        - CResGFF::WriteGFFData @ 0x004113d0 - Writes GFF header and data sections
-        - GFFVersion string "V3.2" @ 0x0073e2c8 - Hardcoded GFF version identifier
+        Based on unified K1/TSL GFF structure. See module docstring for full addresses.
+        - CResGFF::CreateGFFFile (K1: 0x00411260, TSL: 0x00626530)
+        - CResGFF::WriteGFFFile (K1: 0x00413030, TSL: 0x00626700)
+        - CResGFF::WriteGFFData (K1: 0x004113d0, TSL: 0x006267d0)
+        - GFFVersion "V3.2" (K1: 0x0073e2c8, TSL: 0x0099794c)
         GFF struct format specification
 
 
@@ -711,10 +855,7 @@ class GFFStruct(ComparableMixin, dict):
 
         Returns immutable views so callers cannot mutate `_fields` directly.
         """
-        return [
-            GFFFieldView(label or "", field.field_type(), field.value())
-            for label, field in self._fields.items()
-        ]
+        return [GFFFieldView(label or "", field.field_type(), field.value()) for label, field in self._fields.items()]
 
     def remove(
         self,
@@ -754,6 +895,7 @@ class GFFStruct(ComparableMixin, dict):
         ignore_values: dict[str, set[Any]] | None = None,
         comparison_result: GFFComparisonResult | None = None,
         format_type: str = "structured",
+        gff_content: GFFContent | None = None,
     ) -> bool:
         """Recursively compares two GFFStructs.
 
@@ -808,16 +950,12 @@ class GFFStruct(ComparableMixin, dict):
             return False
         # Create dictionaries for both old and new structures (needed for field count check with ignore_default_changes)
         old_dict_pre: dict[str, tuple[GFFFieldType, Any]] = {
-            label or f"gffstruct({idx})": (ftype, value)
-            for idx, (label, ftype, value) in enumerate(self)
-            if label not in ignore_labels
+            label or f"gffstruct({idx})": (ftype, value) for idx, (label, ftype, value) in enumerate(self) if label not in ignore_labels
         }
         new_dict_pre: dict[str, tuple[GFFFieldType, Any]] = {
-            label or f"gffstruct({idx})": (ftype, value)
-            for idx, (label, ftype, value) in enumerate(other)
-            if label not in ignore_labels
+            label or f"gffstruct({idx})": (ftype, value) for idx, (label, ftype, value) in enumerate(other) if label not in ignore_labels
         }
-        
+
         # Check field count difference, but only report if not ignoring default changes or if extra fields are non-default
         if len(old_dict_pre) != len(new_dict_pre):
             if not ignore_default_changes:
@@ -828,29 +966,23 @@ class GFFStruct(ComparableMixin, dict):
                 # When ignoring default changes, check if extra fields in old/new are all default/empty
                 extra_in_old = set(old_dict_pre.keys()) - set(new_dict_pre.keys())
                 extra_in_new = set(new_dict_pre.keys()) - set(old_dict_pre.keys())
-                
+
                 # If no extra fields in either direction, no mismatch
                 if not extra_in_old and not extra_in_new:
                     pass  # Field counts match after filtering
                 else:
                     # Check if extra fields in old are all ignorable (empty sets return True from all())
-                    all_extra_ignorable = (
-                        not extra_in_old or
-                        all(is_ignorable_value(label, old_dict_pre[label][1]) for label in extra_in_old)
-                    )
-                    
+                    all_extra_ignorable = not extra_in_old or all(is_ignorable_value(label, old_dict_pre[label][1]) for label in extra_in_old)
+
                     # Check if extra fields in new are all ignorable
-                    all_new_extra_ignorable = (
-                        not extra_in_new or
-                        all(is_ignorable_value(label, new_dict_pre[label][1]) for label in extra_in_new)
-                    )
-                    
+                    all_new_extra_ignorable = not extra_in_new or all(is_ignorable_value(label, new_dict_pre[label][1]) for label in extra_in_new)
+
                     # Only report mismatch if extra fields are non-default
                     if not all_extra_ignorable or not all_new_extra_ignorable:
                         log_func("", message_type="diff")
                         log_func(f"GFFStruct: number of fields have changed at '{current_path}': '{len(old_dict_pre)}' --> '{len(new_dict_pre)}'", message_type="diff")
                         comparison_result.add_field_count_mismatch(str(current_path), len(old_dict_pre), len(new_dict_pre))
-        
+
         if self.struct_id != other.struct_id:
             log_func("", message_type="diff")
             comparison_result.add_struct_id_mismatch(str(current_path), self.struct_id, other.struct_id)
@@ -875,7 +1007,10 @@ class GFFStruct(ComparableMixin, dict):
                 if new_ftype is None:
                     msg: str = f"new_ftype shouldn't be None here. Relevance: old_ftype={old_ftype!r}, old_value={old_value!r}, new_value={new_value!r}"
                     raise RuntimeError(msg)
-                log_func(f"Extra '{new_ftype.name}' field found at '{child_path}': {format_text(safe_repr(new_value))}", message_type="diff")
+                # When ignore_default_changes: treat "field added with default value" as ignorable
+                if ignore_default_changes and is_ignorable_value(label, new_value):
+                    continue
+                log_func(f"Field '{label}' ({new_ftype.name}) added: {format_text(safe_repr(new_value))}", message_type="diff")
                 comparison_result.add_field_stat("extra", label)
                 continue
 
@@ -907,6 +1042,7 @@ class GFFStruct(ComparableMixin, dict):
                     ignore_values=ignore_values,
                     comparison_result=comparison_result,
                     format_type=format_type,
+                    gff_content=gff_content,
                 ):
                     continue
             elif old_ftype == GFFFieldType.List:
@@ -919,19 +1055,28 @@ class GFFStruct(ComparableMixin, dict):
                     ignore_values=ignore_values,
                     comparison_result=comparison_result,
                     format_type=format_type,
+                    gff_content=gff_content,
                 ):
                     continue
+            elif old_ftype == GFFFieldType.String and isinstance(old_value, str) and isinstance(new_value, str):
+                # Normalize to avoid false positives from CRLF vs LF, trailing whitespace
+                if _normalize_string_for_compare(old_value) == _normalize_string_for_compare(new_value):
+                    comparison_result.add_field_stat("used", label)
+                    continue
+                log_func("", message_type="diff")
+                log_func(format_diff(old_value, new_value, label), message_type="diff")
+                comparison_result.add_field_stat("mismatched", label)
+                comparison_result.add_value_mismatch(str(child_path), old_ftype.name, old_value, new_value)
+                continue
             elif old_value != new_value:
-                if (
-                    isinstance(old_value, float)
-                    and isinstance(new_value, float)
-                    and math.isclose(old_value, new_value, rel_tol=1e-4, abs_tol=1e-4)
-                ):
+                if isinstance(old_value, float) and isinstance(new_value, float) and math.isclose(old_value, new_value, rel_tol=1e-4, abs_tol=1e-4):
                     comparison_result.add_field_stat("used", label)
                     continue
 
                 if str(old_value) == str(new_value):
-                    log_func(f"Field '{old_ftype.name}' is different at '{child_path}': String representations match, but have other properties that don't (such as a lang id difference).")  # noqa: E501
+                    log_func(
+                        f"Field '{old_ftype.name}' is different at '{child_path}': String representations match, but have other properties that don't (such as a lang id difference)."
+                    )  # noqa: E501
                     continue
                 log_func("", message_type="diff")
                 log_func(format_diff(old_value, new_value, label), message_type="diff")
@@ -967,17 +1112,22 @@ class GFFStruct(ComparableMixin, dict):
         -------
             The field value. If the field does not exist or the value type does not match the specified type then the default is returned instead.
         """
-        assert isinstance(default, object), f"{type(default).__name__}: {default}"
+        default_cls = default.__class__
+        assert isinstance(default, object), f"{default_cls.__name__}: {default}"
         value: T = default
         if object_type is None:
-            object_type = default.__class__
+            object_type = default_cls
         if (
-            self.exists(label) and object_type is not None
-            #   and isinstance(self[label], object_type)  # TODO(th3w1zard1): uncomment this and assert type after fixing all the call typings
+            self.exists(label)
+            and object_type is not None
         ):
             value = self[label]
-        if object_type is bool and value.__class__ is int:
-            value = bool(value)  # type: ignore[assignment]  # pyright: ignore[reportAssignmentType]
+            try:
+                print(f"value: {value} cls: {value.__class__} (isinstance? {isinstance(value, object_type)} {object_type})")
+            except Exception:
+                ...
+        if object_type is bool and issubclass(value.__class__, int):
+            value = bool(value)
         return value
 
     def value(
@@ -2118,251 +2268,291 @@ class GFFList(ComparableMixin, list):
         ignore_values: dict[str, set[Any]] | None = None,
         comparison_result: GFFComparisonResult | None = None,
         format_type: str = "structured",
+        gff_content: GFFContent | None = None,
     ) -> bool:
-        """Compare two GFFLists recursively with content-based detection of moved/reordered entries.
+        """Compare two GFFLists with semantic identity matching and merge-aware output.
 
-        Functionally the same as __eq__, but will also log/print the differences.
-        Similar to TLK comparison, this detects when structs have been shifted/reordered but still exist.
+        Uses a registry of known list types (e.g., UTE CreatureList) to match entries by
+        identity fields (ResRef, CR, etc.) rather than raw field set. This correctly
+        reports "N modified (field X added)" instead of false "N added + N removed"
+        when the same entries have optional fields added (e.g., GuaranteedCount in K2).
 
-        Args:
-        ----
-            other: object - the GFF List to compare to
-            log_func: the function to use for logging. Defaults to print.
-            current_path: PureWindowsPath - Path being compared
-            ignore_default_changes: {bool}: Whether to ignore default/empty changes
-            ignore_values: {dict[str, set[Any]] | None}: Dictionary of field labels and their ignorable values
-            comparison_result: {GFFComparisonResult | None}: Object to store comparison statistics
-
-
-        Returns:
-        -------
-            is_same_result: bool - Whether the lists are the same
-
-        Processing Logic:
-        ----------------
-            - Build content-based lookup to detect moved/reordered structs
-            - Compare list lengths and log differences
-            - Detect truly added/removed structs (content-based, not index-based)
-            - Detect moved/reordered structs (same content, different index)
-            - Compare structs at same index that haven't moved
+        Output format (canonical, industry-standard):
+        - MODIFIED: Same logical entry, different fields (field-level diff); merge-safe
+        - ADDED: Entry present only in new
+        - REMOVED: Entry present only in old
+        - REORDERED: Same entry, different index
+        - Summary: X modified, Y added, Z removed, W reordered
         """
-        # For unified diff format, use a no-op logger to skip structured logging
         if format_type == "unified":
 
             def noop_log_func(*args, **kwargs): ...
 
             log_func = noop_log_func
 
-        current_path = current_path or PureWindowsPath("GFFList")
-        is_same_result = True
+        current_path = PureWindowsPath(str(current_path or "GFFList"))
+        comparison_result = comparison_result or GFFComparisonResult()
 
         if not isinstance(other, GFFList):
-            log_func(f"GFFList counts have changed at '{current_path}': '{len(self)}' --> '<unknown>'", message_type="diff")
+            log_func(
+                f"GFFList '{current_path}': type mismatch (old has {len(self)} entries, new is not a GFFList)",
+                message_type="diff",
+            )
             log_func("", message_type="diff")
-            is_same_result = False
-            return is_same_result
+            return False
 
-        # Build content-based lookup to detect moved/reordered structs
+        len1, len2 = len(self), len(other)
+        path_str = str(current_path)
+
+        # Helpers for hashable/normalized values (used by both semantic and content keys)
+        _FLOAT_KEY_PRECISION = 6
+
         def _hashable_value(value: Any) -> Any:
-            """Convert a GFF field value into a hashable, comparable representation."""
             from pykotor.common.language import LocalizedString
             from pykotor.common.misc import ResRef
-            from utility.common.geometry import Vector3, Vector4  # Local import to avoid circular deps
+            from utility.common.geometry import Vector3, Vector4
 
-            if value is None or isinstance(value, (int, float, str, bool, bytes)):
+            if value is None or isinstance(value, (int, str, bool, bytes)):
                 return value
+            if isinstance(value, float):
+                return round(value, _FLOAT_KEY_PRECISION)
             if isinstance(value, ResRef):
                 return ("ResRef", str(value))
             if isinstance(value, Vector3):
-                return ("Vector3", value.x, value.y, value.z)
+                return ("Vector3", round(value.x, _FLOAT_KEY_PRECISION), round(value.y, _FLOAT_KEY_PRECISION), round(value.z, _FLOAT_KEY_PRECISION))
             if isinstance(value, Vector4):
-                return ("Vector4", value.x, value.y, value.z, value.w)
-            if isinstance(value, LocalizedString):
                 return (
-                    "LocalizedString",
-                    value.stringref,
-                    tuple((lang, gender, text) for lang, gender, text in value),
+                    "Vector4",
+                    round(value.x, _FLOAT_KEY_PRECISION),
+                    round(value.y, _FLOAT_KEY_PRECISION),
+                    round(value.z, _FLOAT_KEY_PRECISION),
+                    round(value.w, _FLOAT_KEY_PRECISION),
                 )
+            if isinstance(value, LocalizedString):
+                return ("LocalizedString", value.stringref, tuple((lang, gender, text) for lang, gender, text in value))
             if isinstance(value, GFFStruct):
                 return struct_key(value)
             if isinstance(value, GFFList):
-                return tuple(struct_key(child_struct) for child_struct in value)
+                return tuple(sorted(struct_key(s) for s in value))
             if isinstance(value, (list, tuple, set)):
                 return tuple(_hashable_value(item) for item in value)
             if isinstance(value, dict):
                 return tuple(sorted((key, _hashable_value(val)) for key, val in value.items()))
-
-            # Fallback: use repr for deterministic but comparable form
             return ("repr", repr(value))
 
         def struct_key(struct: GFFStruct) -> tuple[int, tuple[tuple[str, GFFFieldType, Any], ...]]:
-            """Create a hashable key for a struct based on struct_id and field contents.
-
-            This allows us to detect when structs have been moved/reordered.
-            """
-            fields_tuple: tuple[tuple[str, GFFFieldType, Any], ...] = tuple(
-                sorted(
-                    (
-                        label,
-                        field_type,
-                        _hashable_value(value),
-                    )
-                    for label, field_type, value in struct
-                )
+            return (
+                struct.struct_id,
+                tuple(sorted((label, field_type, _hashable_value(value)) for label, field_type, value in struct)),
             )
-            return (struct.struct_id, fields_tuple)
 
-        # Build maps of content to indices
-        old_structs_map: dict[tuple[int, tuple[tuple[str, GFFFieldType, Any], ...]], list[int]] = {}  # content -> list of indices
-        new_structs_map: dict[tuple[int, tuple[tuple[str, GFFFieldType, Any], ...]], list[int]] = {}  # content -> list of indices
+        # Semantic config: match by identity fields + default_when_absent.
+        # Prefer explicit gff_content from caller (GFF.compare); fallback to path inference.
+        content_for_lookup = gff_content or _infer_gff_content_from_path(current_path)
+        list_field = _list_field_name_from_path(current_path)
+        semantic_config: GFFListSemanticConfig | None = None
+        if content_for_lookup and list_field:
+            semantic_config = _GFF_LIST_SEMANTIC_REGISTRY.get((content_for_lookup, list_field))
 
-        for idx, struct in enumerate(self):
-            key = struct_key(struct)
-            if key not in old_structs_map:
-                old_structs_map[key] = []
-            old_structs_map[key].append(idx)
+        def _get_field_val(struct: GFFStruct, label: str, defaults: dict[str, Any]) -> Any:
+            for lbl, ftype, val in struct:
+                if lbl == label:
+                    return _hashable_value(val)
+            return _hashable_value(defaults.get(label))
 
-        for idx, struct in enumerate(other):
-            key = struct_key(struct)
-            if key not in new_structs_map:
-                new_structs_map[key] = []
-            new_structs_map[key].append(idx)
+        def semantic_identity_key(struct: GFFStruct, config: GFFListSemanticConfig) -> tuple[Any, ...]:
+            return tuple((label, _get_field_val(struct, label, config.default_when_absent)) for label in config.identity_fields)
 
-        # Find structs that exist in both (at any index) vs truly added/removed
-        added_keys = set(new_structs_map.keys()) - set(old_structs_map.keys())
-        removed_keys = set(old_structs_map.keys()) - set(new_structs_map.keys())
-        common_keys = set(old_structs_map.keys()) & set(new_structs_map.keys())
+        # Use semantic matching when config exists
+        if semantic_config is not None:
+            old_sem_map: dict[tuple[Any, ...], list[tuple[int, GFFStruct]]] = {}
+            new_sem_map: dict[tuple[Any, ...], list[tuple[int, GFFStruct]]] = {}
+            for idx, s in enumerate(self):
+                key = semantic_identity_key(s, semantic_config)
+                old_sem_map.setdefault(key, []).append((idx, s))
+            for idx, s in enumerate(other):
+                key = semantic_identity_key(s, semantic_config)
+                new_sem_map.setdefault(key, []).append((idx, s))
 
-        # Track which indices we've reported
-        reported_indices_old: set[int] = set()
-        reported_indices_new: set[int] = set()
+            matched_keys = set(old_sem_map.keys()) & set(new_sem_map.keys())
+            added_keys = set(new_sem_map.keys()) - set(old_sem_map.keys())
+            removed_keys = set(old_sem_map.keys()) - set(new_sem_map.keys())
 
-        # Report size difference
-        len1 = len(self)
-        len2 = len(other)
+            modified_count = 0
+            added_count = 0
+            removed_count = 0
+            reordered_count = 0
+
+            # Report size mismatch
+            if len1 != len2:
+                log_func(
+                    f"GFFList '{path_str}': length {len1} -> {len2} (diff: {len2 - len1:+d})",
+                    message_type="diff",
+                )
+                comparison_result.add_field_count_mismatch(path_str, len1, len2)
+
+            # MODIFIED or REORDERED: same semantic identity
+            for key in sorted(matched_keys, key=lambda k: (new_sem_map[k][0][0],) + k):
+                old_entries = old_sem_map[key]
+                new_entries = new_sem_map[key]
+                for (old_idx, old_struct), (new_idx, new_struct) in zip(old_entries, new_entries):
+                    full_old_key = struct_key(old_struct)
+                    full_new_key = struct_key(new_struct)
+                    if full_old_key != full_new_key:
+                        child_result = GFFComparisonResult()
+                        old_struct.compare(
+                            new_struct,
+                            lambda *a, **k: None,  # no-op during probe
+                            current_path / str(new_idx),
+                            ignore_default_changes=ignore_default_changes,
+                            ignore_values=ignore_values,
+                            comparison_result=child_result,
+                            format_type=format_type,
+                            gff_content=gff_content,
+                        )
+                        if child_result.has_field_differences():
+                            modified_count += 1
+                            log_func(
+                                f"\nGFFList '{path_str}': entry [old:{old_idx}] <-> [new:{new_idx}] MODIFIED (same logical entry, field changes; merge-safe)",
+                                message_type="diff",
+                            )
+                            old_struct.compare(
+                                new_struct,
+                                log_func,
+                                current_path / str(new_idx),
+                                ignore_default_changes=ignore_default_changes,
+                                ignore_values=ignore_values,
+                                comparison_result=comparison_result,
+                                format_type=format_type,
+                                gff_content=gff_content,
+                            )
+                    elif old_idx != new_idx:
+                        reordered_count += 1
+                        log_func(
+                            f"GFFList '{path_str}': entry moved [old:{old_idx}] -> [new:{new_idx}] (REORDERED, no field change)",
+                            message_type="diff",
+                        )
+
+            # ADDED: only in new (not mergeable—new entry)
+            for key in sorted(added_keys, key=lambda k: new_sem_map[k][0][0]):
+                for idx, struct in new_sem_map[key]:
+                    added_count += 1
+                    log_func(f"\nGFFList '{path_str}': entry [new:{idx}] ADDED (present only in new file; merge-safe to add):", message_type="diff")
+                    for label, field_type, val in struct:
+                        log_func(f"  + {field_type.name} {label}: {format_text(val)}", message_type="diff")
+                    comparison_result.add_field_stat("extra", path_str)
+
+            # REMOVED: only in old (not mergeable—deleted entry)
+            for key in sorted(removed_keys, key=lambda k: old_sem_map[k][0][0]):
+                for idx, struct in old_sem_map[key]:
+                    removed_count += 1
+                    log_func(f"\nGFFList '{path_str}': entry [old:{idx}] REMOVED (present only in old file; merge-safe to delete):", message_type="diff")
+                    for label, field_type, val in struct:
+                        log_func(f"  - {field_type.name} {label}: {format_text(val)}", message_type="diff")
+                    comparison_result.add_field_stat("missing", path_str)
+
+            has_diff = bool(modified_count or added_count or removed_count or reordered_count or len1 != len2)
+            if has_diff:
+                parts: list[str] = []
+                if modified_count:
+                    parts.append(f"{modified_count} modified (same logical entry, field changes; merge-safe)")
+                if added_count:
+                    parts.append(f"{added_count} added (only in new)")
+                if removed_count:
+                    parts.append(f"{removed_count} removed (only in old)")
+                if reordered_count:
+                    parts.append(f"{reordered_count} reordered")
+                log_func(
+                    f"\nGFFList '{path_str}' Summary: {', '.join(parts)}",
+                    message_type="diff",
+                )
+            return not has_diff
+
+        # Fallback: full content key (no semantic config)
+        old_map: dict[tuple[Any, ...], list[int]] = {}
+        new_map: dict[tuple[Any, ...], list[int]] = {}
+        for idx, s in enumerate(self):
+            k = struct_key(s)
+            old_map.setdefault(k, []).append(idx)
+        for idx, s in enumerate(other):
+            k = struct_key(s)
+            new_map.setdefault(k, []).append(idx)
+
+        added_keys = set(new_map.keys()) - set(old_map.keys())
+        removed_keys = set(old_map.keys()) - set(new_map.keys())
+        common_keys = set(old_map.keys()) & set(new_map.keys())
 
         if len1 != len2:
-            log_func(f"GFFList size mismatch at '{current_path}': Old has {len1} structs, New has {len2} structs (diff: {len2 - len1:+d})")
-            if comparison_result is not None:
-                comparison_result.add_field_count_mismatch(str(current_path), len1, len2)
+            log_func(f"GFFList '{path_str}': length {len1} -> {len2} (diff: {len2 - len1:+d})", message_type="diff")
+            comparison_result.add_field_count_mismatch(path_str, len1, len2)
 
-        # Report added structs (in new file only, by content)
-        if added_keys:
-            log_func(f"\n{len(added_keys)} struct(s) added in new GFFList at '{current_path}':")
-            for key in sorted(added_keys, key=lambda k: new_structs_map[k][0]):  # Sort by first occurrence
-                indices = new_structs_map[key]
-                for idx in indices:
-                    struct = other[idx]
-                    log_func(f"  [New:{idx}] Struct#{struct.struct_id} (struct_id={struct.struct_id})")
-                    log_func("", message_type="diff")
-                    for label, field_type, field_value in struct:
-                        log_func(f"    {field_type.name}: {label}: {format_text(field_value)}")
-                    log_func("", message_type="diff")
-                    reported_indices_new.add(idx)
-            is_same_result = False
-            if comparison_result is not None:
-                comparison_result.add_field_stat("extra", str(current_path))
-
-        # Report removed structs (in old file only, by content)
-        if removed_keys:
-            log_func(f"\n{len(removed_keys)} struct(s) removed from old GFFList at '{current_path}':")
-            for key in sorted(removed_keys, key=lambda k: old_structs_map[k][0]):  # Sort by first occurrence
-                indices = old_structs_map[key]
-                for idx in indices:
-                    struct = self[idx]
-                    log_func(f"  [Old:{idx}] Struct#{struct.struct_id} (struct_id={struct.struct_id})")
-                    log_func("", message_type="diff")
-                    for label, field_type, field_value in struct:
-                        log_func(f"    {field_type.name}: {label}: {format_text(field_value)}")
-                    log_func("", message_type="diff")
-                    reported_indices_old.add(idx)
-            is_same_result = False
-            if comparison_result is not None:
-                comparison_result.add_field_stat("missing", str(current_path))
-
-        # Detect moved/reordered structs (same content, different index)
-        moved_count = 0
-        for key in common_keys:
-            old_indices = old_structs_map[key]
-            new_indices = new_structs_map[key]
-
-            # If indices don't match, structs have been moved/reordered
-            if set(old_indices) != set(new_indices):
-                if moved_count == 0:
-                    log_func("", message_type="diff")
-                moved_count += 1
-                struct_id = key[0]
-                old_indices_str = ", ".join(str(i) for i in sorted(old_indices))
-                new_indices_str = ", ".join(str(i) for i in sorted(new_indices))
-                log_func("", message_type="diff")
-                # Mark these indices as reported so we don't double-report them
-                reported_indices_old.update(old_indices)
-                reported_indices_new.update(new_indices)
-
-        if moved_count > 0:
-            log_func("", message_type="diff")
-            is_same_result = False
-            if comparison_result is not None:
-                comparison_result.add_field_stat("mismatched", str(current_path))
-
-        # Check for structs at same index that have different content (genuine modifications)
+        reported_old: set[int] = set()
+        reported_new: set[int] = set()
         modified_count = 0
-        max_index = min(len1, len2)
-        for idx in range(max_index):
-            if idx in reported_indices_old or idx in reported_indices_new:
+        moved_count = 0
+
+        for key in sorted(added_keys, key=lambda k: new_map[k][0]):
+            for idx in new_map[key]:
+                log_func(f"\nGFFList '{path_str}': entry [new:{idx}] ADDED:", message_type="diff")
+                for label, ftype, val in other[idx]:
+                    log_func(f"  + {ftype.name} {label}: {format_text(val)}", message_type="diff")
+                comparison_result.add_field_stat("extra", path_str)
+                reported_new.add(idx)
+
+        for key in sorted(removed_keys, key=lambda k: old_map[k][0]):
+            for idx in old_map[key]:
+                log_func(f"\nGFFList '{path_str}': entry [old:{idx}] REMOVED:", message_type="diff")
+                for label, ftype, val in self[idx]:
+                    log_func(f"  - {ftype.name} {label}: {format_text(val)}", message_type="diff")
+                comparison_result.add_field_stat("missing", path_str)
+                reported_old.add(idx)
+
+        for key in common_keys:
+            oidxs, nidxs = old_map[key], new_map[key]
+            if set(oidxs) != set(nidxs):
+                moved_count += 1
+                log_func(
+                    f"GFFList '{path_str}': entry REORDERED [{sorted(oidxs)}] -> [{sorted(nidxs)}]",
+                    message_type="diff",
+                )
+                reported_old.update(oidxs)
+                reported_new.update(nidxs)
+
+        max_idx = min(len1, len2)
+        for idx in range(max_idx):
+            if idx in reported_old or idx in reported_new:
                 continue
-
-            old_struct = self[idx]
-            new_struct = other[idx]
-
-            # Compare structs at same index
-            old_key = struct_key(old_struct)
-            new_key = struct_key(new_struct)
-
-            if old_key != new_key:
-                # This is a genuine content change at the same index
-                if modified_count == 0:
-                    log_func("", message_type="diff")
+            if struct_key(self[idx]) != struct_key(other[idx]):
                 modified_count += 1
-                log_func("", message_type="diff")
-                log_func("", message_type="diff")
-                # Do detailed comparison of the structs
-                if not old_struct.compare(
-                    new_struct,
+                log_func(f"\nGFFList '{path_str}': entry [{idx}] MODIFIED:", message_type="diff")
+                self[idx].compare(
+                    other[idx],
                     log_func,
                     current_path / str(idx),
-                    ignore_default_changes,
+                    ignore_default_changes=ignore_default_changes,
                     comparison_result=comparison_result,
-                ):
-                    is_same_result = False
-                reported_indices_old.add(idx)
-                reported_indices_new.add(idx)
+                    format_type=format_type,
+                    gff_content=gff_content,
+                )
+                comparison_result.add_field_stat("mismatched", path_str)
 
-        # For structs at same index with same content (not moved, not modified), still do comparison
-        # to catch any nested differences
-        for idx in range(max_index):
-            if idx in reported_indices_old or idx in reported_indices_new:
+        for idx in range(max_idx):
+            if idx in reported_old or idx in reported_new:
                 continue
-
-            old_struct = self[idx]
-            new_struct = other[idx]
-
-            # These should be identical at the top level, but check nested structures
-            if not old_struct.compare(
-                new_struct,
+            self[idx].compare(
+                other[idx],
                 log_func,
                 current_path / str(idx),
-                ignore_default_changes,
+                ignore_default_changes=ignore_default_changes,
                 comparison_result=comparison_result,
-            ):
-                is_same_result = False
+                format_type=format_type,
+                gff_content=gff_content,
+            )
 
-        if modified_count > 0 and comparison_result is not None:
-            comparison_result.add_field_stat("mismatched", str(current_path))
-
-        # Summary
-        has_differences = bool(added_keys or removed_keys or moved_count or modified_count)
-        if has_differences:
-            log_func(f"\nGFFList Summary at '{current_path}': {len(added_keys)} added, {len(removed_keys)} removed, {moved_count} moved/reordered, {modified_count} modified")
-
-        return not has_differences
+        has_diff = bool(added_keys or removed_keys or moved_count or modified_count or len1 != len2)
+        if has_diff:
+            log_func(
+                f"\nGFFList '{path_str}' Summary: {modified_count} modified, {len(added_keys)} added, {len(removed_keys)} removed, {moved_count} reordered",
+                message_type="diff",
+            )
+        return not has_diff

@@ -1,3 +1,5 @@
+"""Twine 2 HTML to DLG conversion: read Twine story format and write as KotOR dialog GFF."""
+
 from __future__ import annotations
 
 import uuid
@@ -15,10 +17,10 @@ if TYPE_CHECKING:
 
 class GFFTwineReader(ResourceReader):
     """Reads Twine 2 HTML format and converts to DLG.
-    
+
     Twine is an interactive fiction authoring tool. This reader converts Twine story
     format (HTML) to KotOR dialog (DLG) format for use in modding.
-    
+
     References:
     ----------
         Based on swkotor.exe dialog structure:
@@ -26,7 +28,7 @@ class GFFTwineReader(ResourceReader):
         - CSWSDialog::LoadDialogBase @ 0x0059f5f0 - Loads dialog base properties
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         - Twine 2 format specification (twinejs.com)
-        
+
         Note: Twine conversion is PyKotor-specific functionality, not a standard game format.
         The engine uses binary DLG (GFF) format exclusively. Twine conversion allows
         easier dialog authoring for modders using interactive fiction tools.
@@ -126,6 +128,8 @@ class GFFTwineWriter(ResourceWriter):
         # Convert entries and replies to passages
         entries: list[DLGEntry] = self.dlg.all_entries()
         replies: list[DLGReply] = self.dlg.all_replies()
+        reply_to_index: dict[int, int] = {id(r): i for i, r in enumerate(replies)}
+        entry_to_index: dict[int, int] = {id(e): i for i, e in enumerate(entries)}
 
         # Start with entries
         for i, entry in enumerate(entries):
@@ -133,15 +137,15 @@ class GFFTwineWriter(ResourceWriter):
             passage.set("pid", str(i))
             passage.set("name", entry.speaker or f"Entry {i}")
             passage.set("tags", "entry")
-            passage.set("position", f"{i*100},{i*100}")
+            passage.set("position", f"{i * 100},{i * 100}")
             passage.text = entry.text.get(Language.ENGLISH, Gender.MALE)
 
             # Add links to replies
             link_to_reply: DLGLink[DLGReply]
             for link_to_reply in entry.links:
-                if link_to_reply.node not in replies:
+                reply_index = reply_to_index.get(id(link_to_reply.node))
+                if reply_index is None:
                     continue
-                reply_index: int = replies.index(link_to_reply.node)
                 link_elem: ET.Element = ET.SubElement(passage, "link")
                 link_elem.set("pid", str(reply_index))
 
@@ -151,23 +155,23 @@ class GFFTwineWriter(ResourceWriter):
             passage.set("pid", str(len(entries) + i))
             passage.set("name", f"Reply {i}")
             passage.set("tags", "reply")
-            passage.set("position", f"{i*100},{(i+len(entries))*100}")
+            passage.set("position", f"{i * 100},{(i + len(entries)) * 100}")
             passage.text = reply.text.get(Language.ENGLISH, Gender.MALE)
 
             # Add links to entries
             link_to_entry: DLGLink[DLGEntry]
             for link_to_entry in reply.links:
-                if link_to_entry.node not in entries:
+                entry_index = entry_to_index.get(id(link_to_entry.node))
+                if entry_index is None:
                     continue
-                entry_index: int = entries.index(link_to_entry.node)
                 link_elem = ET.SubElement(passage, "link")
                 link_elem.set("pid", str(entry_index))
 
         # Set starting node if exists
         if self.dlg.starters:
-            first_node: DLGEntry = self.dlg.starters[0].node
-            if first_node in entries:
-                self.xml_root.set("startnode", str(entries.index(first_node)))
+            start_idx = entry_to_index.get(id(self.dlg.starters[0].node))
+            if start_idx is not None:
+                self.xml_root.set("startnode", str(start_idx))
 
         # Write the XML
         self._writer.write_bytes(ET.tostring(self.xml_root, encoding="utf-8"))

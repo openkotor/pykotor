@@ -26,7 +26,6 @@ from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING, Mapping
 
 from loggerplus import RobustLogger
-
 from pykotor.resource.formats.twoda import bytes_2da, read_2da
 from pykotor.tslpatcher.mods.template import PatcherModifications
 
@@ -105,11 +104,7 @@ class Target:
             - For label column, checks for label column, then iterates rows to find match
             - Returns matching row or None.
         """
-        value: str | int = (
-            self.value.value(memory, twoda, None)
-            if isinstance(self.value, (RowValueTLKMemory, RowValue2DAMemory))
-            else self.value
-        )
+        value: str | int = self.value.value(memory, twoda, None) if isinstance(self.value, (RowValueTLKMemory, RowValue2DAMemory)) else self.value
         source_row: TwoDARow | None = None
         if self.target_type == TargetType.ROW_INDEX:
             source_row = twoda.get_row(int(value))
@@ -243,6 +238,7 @@ class RowValueHigh(RowValue):
 
 class RowValueRowIndex(RowValue):
     """The row index of the row."""
+
     def __init__(self): ...
 
     def __str__(self):
@@ -257,6 +253,7 @@ class RowValueRowIndex(RowValue):
 
 class RowValueRowLabel(RowValue):
     """The row label of the row."""
+
     def __init__(self): ...
 
     def __str__(self):
@@ -271,6 +268,7 @@ class RowValueRowLabel(RowValue):
 
 class RowValueRowCell(RowValue):
     """The value of a cell in the row."""
+
     def __init__(self, column: str):
         self.column: str = column
 
@@ -664,6 +662,7 @@ class Modifications2DA(PatcherModifications):
         "upcrystals.2da": 256,
         "upgrade.2da": 32,
     }
+
     def __init__(self, filename: str):
         super().__init__(filename)
         self.modifiers: list[Modify2DA] = []
@@ -708,4 +707,6 @@ class Modifications2DA(PatcherModifications):
         cur_row_count = len(mutable_data._rows)
         rows_added = cur_row_count - twoda_row_limit
         if cur_row_count > twoda_row_limit:
-            raise ValueError(f"{self.saveas} has a max row count of {twoda_row_limit}. Adding more will break the game. This mod attempted to add {rows_added} rows and have not been applied.")
+            raise ValueError(
+                f"{self.saveas} has a max row count of {twoda_row_limit}. Adding more will break the game. This mod attempted to add {rows_added} rows and have not been applied."
+            )

@@ -17,14 +17,16 @@ from qtpy.QtWidgets import (
     QFileDialog,
     QMainWindow,
     QMessageBox,
-    QWidget,
 )
 
-from pykotor.extract.installation import Installation
 from pykotor.diff_tool.app import DiffConfig, run_application
+from pykotor.extract.installation import Installation
 
 if TYPE_CHECKING:
-    from qtpy.QtWidgets import QLineEdit
+    from qtpy.QtWidgets import (
+        QLineEdit,
+        QWidget,
+    )
 
     from toolset.data.installation import HTInstallation
 
@@ -90,12 +92,14 @@ class KotorDiffWindow(QMainWindow):
         self._installations: dict[str, HTInstallation] = installations or {}
         self._active_installation: HTInstallation | None = active_installation
         from toolset.utils.misc import get_qsettings_organization
+
         self._settings = QSettings(get_qsettings_organization("HolocronToolset"), "KotorDiff")
         self._setup_ui()
         self._load_settings()
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -112,6 +116,7 @@ class KotorDiffWindow(QMainWindow):
 
         # Set up TSLPatchData placeholder text
         from toolset.gui.common.localization import translate as tr
+
         self.ui.tslpatchdataEdit.setPlaceholderText(tr("Path to tslpatchdata folder"))
 
         # Connect TSLPatchData checkbox signals
@@ -123,9 +128,11 @@ class KotorDiffWindow(QMainWindow):
         # Connect button signals
         self.ui.runBtn.clicked.connect(self._run_diff)
         self.ui.clearBtn.clicked.connect(self.ui.outputText.clear)
+
         # QPushButton.clicked emits a bool; QWidget.close takes no args.
         def _close_window(*_):
             self.close()
+
         self.ui.closeBtn.clicked.connect(_close_window)
 
     def _setup_path_selector(
@@ -155,10 +162,9 @@ class KotorDiffWindow(QMainWindow):
 
         # Set current installation as default for path 1
         if is_first and self._active_installation:
-            for i in range(installation_combo.count()):
-                if installation_combo.itemData(i) == self._active_installation:
-                    installation_combo.setCurrentIndex(i)
-                    break
+            idx = installation_combo.findData(self._active_installation)
+            if idx >= 0:
+                installation_combo.setCurrentIndex(idx)
 
         # Connect radio buttons
         installation_radio.toggled.connect(installation_combo.setEnabled)
@@ -227,15 +233,11 @@ class KotorDiffWindow(QMainWindow):
 
             if use_installation:
                 installation_radio.setChecked(True)
-                # Find and set the installation
-                for i in range(combo.count()):
-                    if combo.itemText(i) == installation_name:
-                        combo.setCurrentIndex(i)
-                        break
-                else:
-                    # If not found, set as text
-                    if installation_name:
-                        combo.setCurrentText(installation_name)
+                idx = combo.findText(installation_name) if installation_name else -1
+                if idx >= 0:
+                    combo.setCurrentIndex(idx)
+                elif installation_name:
+                    combo.setCurrentText(installation_name)
             else:
                 custom_radio.setChecked(True)
                 edit.setText(custom_path)
@@ -304,16 +306,8 @@ class KotorDiffWindow(QMainWindow):
         # Build configuration
         config = DiffConfig(
             paths=paths,
-            tslpatchdata_path=(
-                Path(self.ui.tslpatchdataEdit.text().strip()) 
-                if self.ui.tslpatchdataCheck.isChecked() 
-                and self.ui.tslpatchdataEdit.text().strip() 
-                else None
-            ),
-            ini_filename=(
-                self.ui.iniNameEdit.text().strip() 
-                or "changes.ini"
-            ),
+            tslpatchdata_path=(Path(self.ui.tslpatchdataEdit.text().strip()) if self.ui.tslpatchdataCheck.isChecked() and self.ui.tslpatchdataEdit.text().strip() else None),
+            ini_filename=(self.ui.iniNameEdit.text().strip() or "changes.ini"),
             output_log_path=None,
             log_level=self.ui.logLevelCombo.currentText(),
             output_mode="quiet",

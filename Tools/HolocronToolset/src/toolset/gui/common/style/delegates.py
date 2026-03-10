@@ -1,3 +1,5 @@
+"""Item delegates: HTMLDelegate for rich text in list/tree views and icon painting."""
+
 from __future__ import annotations
 
 import re
@@ -6,10 +8,11 @@ from typing import TYPE_CHECKING, Any, Callable
 
 import qtpy
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import QEvent, QPoint, QRect, QSize, Qt
 from qtpy.QtGui import QBrush, QColor, QFont, QIcon, QImage, QMouseEvent, QPainter, QPalette, QPen, QPixmap, QTextDocument, QTextOption
 from qtpy.QtWidgets import QApplication, QListView, QListWidget, QStyle, QStyledItemDelegate, QToolTip, QTreeView, QTreeWidget, QWidget
+
+from loggerplus import RobustLogger
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QModelIndex, QObject
@@ -103,7 +106,7 @@ class HTMLDelegate(QStyledItemDelegate):
                 palette = app.palette()
             else:
                 palette = QPalette()
-        
+
         background_color = palette.color(QPalette.ColorRole.Base)
         border_color = palette.color(QPalette.ColorRole.Mid)
         text_color = palette.color(QPalette.ColorRole.WindowText)

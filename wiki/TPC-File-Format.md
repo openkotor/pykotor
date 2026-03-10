@@ -76,7 +76,7 @@ TPC supports the following encodings (documented in `TPCTextureFormat`):
 | `0x02` (RGB) | 24-bit RGB | Linear bytes, may be swizzled on Xbox |
 | `0x04` (RGBA) | 32-bit RGBA | Linear bytes |
 | `0x0C` (BGRA) | 32-bit BGRA swizzled | Xbox-specific swizzle; PyKotor deswizzles on load |
-| DXT1 | Block-compressed (4×4 blocks, 8 bytes) | Detected via `data_size` and encoding [flags](GFF-File-Format#gff-data-types) |
+| DXT1 | Block-compressed (4×4 blocks, 8 bytes) | Detected via `data_size` and encoding flags |
 | DXT3/DXT5 | Block-compressed (4×4 blocks, 16 bytes) | Chosen based on `pixel_type` and compression [flag](GFF-File-Format#gff-data-types) |
 
 **Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py:54-178`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py#L54-L178)

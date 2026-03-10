@@ -9,7 +9,6 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import (
     QDir,
     QFile,
@@ -42,6 +41,7 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from utility.gui.qt.common.actions_dispatcher import ActionsDispatcher
 from utility.gui.qt.common.tasks.actions_executor import FileActionsExecutor
 from utility.gui.qt.common.tasks.task_details_dialog import TaskDetailsDialog
@@ -50,7 +50,6 @@ from utility.gui.qt.tools.image import IconLoader
 from utility.gui.qt.widgets.itemviews.abstractview import RobustAbstractItemView
 
 if TYPE_CHECKING:
-
     from types import TracebackType
 
     from qtpy.QtCore import QAbstractItemModel, QModelIndex, QPoint
@@ -203,10 +202,12 @@ class FileSystemExplorerWidget(QMainWindow):
         if platform.system() == "Windows":
             try:
                 import comtypes.client as cc  # pyright: ignore[reportMissingTypeStubs]
+
                 self.shell = cc.CreateObject("Shell.Application")
             except ImportError:
                 try:
                     import win32com.client
+
                     self.shell = win32com.client.Dispatch("Shell.Application")
                 except ImportError:
                     RobustLogger().warning("Neither comtypes nor pywin32 is available. COM interfaces will not be used.")
@@ -865,6 +866,7 @@ class FileSystemExplorerWidget(QMainWindow):
 
 
 if __name__ == "__main__":
+
     def onAppCrash(
         exc_type: type[BaseException],
         exc_value: BaseException,
@@ -883,6 +885,7 @@ if __name__ == "__main__":
     main_window.resize(1000, 600)
     main_window.show()
     sys.exit(app.exec())
+
 
 class PropertiesDialog(QDialog):
     def __init__(

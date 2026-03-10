@@ -1,3 +1,5 @@
+"""NSS (NWScript) lexer: PLY lex tokenization and keyword/operator mapping."""
+
 from __future__ import annotations
 
 from typing import ClassVar
@@ -21,10 +23,10 @@ from pykotor.resource.formats.ncs.compiler.classes import (
 
 class NssLexer:
     """NSS (NWScript Source) lexer/tokenizer.
-    
+
     Tokenizes NSS source code into tokens for parsing. Handles keywords, operators,
     literals, identifiers, and special values (OBJECTSELF, OBJECTINVALID, etc.).
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -35,6 +37,7 @@ class NssLexer:
         PLY (Python Lex-Yacc) library for lexer generation
 
     """
+
     def __init__(
         self,
         errorlog=lex.NullLogger(),  # noqa: B008
@@ -315,7 +318,7 @@ class NssLexer:
         value = t.value[1:-1]  # Remove quotes
         # Basic escape sequence handling (order matters - do \\ first)
         value = value.replace("\\\\", "\\")
-        value = value.replace("\\\"", "\"")
+        value = value.replace('\\"', '"')
         value = value.replace("\\n", "\n")
         value = value.replace("\\r", "\r")
         value = value.replace("\\t", "\t")

@@ -7,9 +7,10 @@ import logging
 import sys
 
 from enum import Enum
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
-from loggerplus import RobustLogger  # type: ignore[import-untyped]
+if TYPE_CHECKING:
+    from loggerplus import RobustLogger
 
 
 class LogLevel(Enum):

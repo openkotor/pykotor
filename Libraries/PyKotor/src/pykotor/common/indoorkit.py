@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-"""Indoor-kit data model (headless).
+"""Indoor-kit data model.
 
 This module contains the **classes** for the Holocron indoor-kit format:
 - `Kit`, `KitComponent`, `KitDoor`, `KitComponentHook`
@@ -15,19 +13,22 @@ Design rule (repo convention):
 Toolset/Qt-specific behavior (e.g. QImage previews) must live outside this module.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
-from utility.common.more_collections import CaseInsensitiveDict
 from utility.common.geometry import Vector3
+from utility.common.more_collections import CaseInsensitiveDict
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from PIL.Image import Image  # pyright: ignore[reportMissingImports, reportPrivateImportUsage, reportMissingTypeStubs]  # type: ignore[import-not-found, import-untyped]
+    from qtpy.QtGui import QImage  # pyright: ignore[reportMissingImports, reportPrivateImportUsage, reportMissingTypeStubs]  # type: ignore[import-not-found, import-untyped]
+
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.generics.utd import UTD
-    from utility.common.geometry import Vector3
-    from qtpy.QtGui import QImage  # pyright: ignore[reportMissingImports, reportPrivateImportUsage, reportMissingTypeStubs]  # type: ignore[import-not-found, import-untyped]
-    from PIL.Image import Image  # pyright: ignore[reportMissingImports, reportPrivateImportUsage, reportMissingTypeStubs]  # type: ignore[import-not-found, import-untyped]
 
 
 class Kit:
@@ -138,5 +139,3 @@ class KitDoor:
 class MDLMDXTuple(NamedTuple):
     mdl: bytes
     mdx: bytes
-
-

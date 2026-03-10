@@ -1,3 +1,5 @@
+"""Base list widgets for DLG editor: items that wrap DLGLink and list with hover/context menu."""
+
 from __future__ import annotations
 
 import json
@@ -5,11 +7,11 @@ import weakref
 
 from typing import TYPE_CHECKING, Any
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QColor, QPalette
 from qtpy.QtWidgets import QApplication, QListWidget, QListWidgetItem, QWidget
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.resource.generics.dlg import DLGEntry, DLGLink
 from toolset.gui.editors.dlg.constants import QT_STANDARD_ITEM_FORMAT, _DLG_MIME_DATA_ROLE, _EXTRA_DISPLAY_ROLE
 from utility.gui.qt.widgets.itemviews.html_delegate import HTMLDelegate
@@ -161,7 +163,7 @@ class DLGListWidget(QListWidget):
         """Refreshes the item text and formatting based on the node data."""
         assert self.editor is not None
         link_parent_path, link_partial_path, node_path = self.editor.get_item_dlg_paths(item) if cached_paths is None else cached_paths
-        
+
         # Get palette colors for entry/reply (same logic as model.py)
         app = QApplication.instance()
         if app is not None and isinstance(app, QApplication):
@@ -169,12 +171,12 @@ class DLGListWidget(QListWidget):
         else:
             # Fallback to default palette
             palette = QPalette()
-        
+
         link_color = palette.color(QPalette.ColorRole.Link)
         if not link_color.isValid():
             # If link color is invalid, use a default based on theme
             link_color = QColor(0, 120, 212)  # Default blue
-        
+
         if isinstance(item.link.node, DLGEntry):
             # Entry: Red-ish derived from link color
             entry_color_obj = QColor(link_color)

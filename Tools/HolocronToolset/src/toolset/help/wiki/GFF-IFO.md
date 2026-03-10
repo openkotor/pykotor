@@ -115,7 +115,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 | `Mod_CacheNSSData` | Byte | Cache compiled scripts |
 | `Mod_XPScale` | Byte | Experience point multiplier (0-200%) |
 
-**Module [flags](GFF-File-Format#gff-data-types):**
+**Module flags:**
 
 - **Mod_IsSaveGame**: Internal flag (always 0 in files)
 - **Mod_CacheNSSData**: Performance optimization

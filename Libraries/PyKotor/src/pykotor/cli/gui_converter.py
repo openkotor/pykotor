@@ -12,12 +12,15 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Iterable, Sequence
+from typing import TYPE_CHECKING, Callable, Iterable, Sequence
 
 from loggerplus import RobustLogger
 from pykotor.resource.formats.gff import GFF, GFFContent, read_gff, write_gff
-from pykotor.resource.formats.gff.gff_data import GFFList, GFFStruct
 from pykotor.tools.path import CaseAwarePath
+from utility.misc import ensure_directory_exists
+
+if TYPE_CHECKING:
+    from pykotor.resource.formats.gff.gff_data import GFFList, GFFStruct
 
 ASPECT_RATIO_TO_RESOLUTION: dict[str, list[tuple[int, int]]] = {
     "16:9": [
@@ -197,7 +200,7 @@ def _parse_resolution_spec(resolution: str) -> list[ResolutionTarget]:
         msg = "Resolution is required."
         raise ValueError(msg)
 
-    parts = [spec_part.strip() for spec_part in spec.split(",") if spec_part.strip()]
+    parts = [part for spec_part in spec.split(",") if (part := spec_part.strip())]
     if not parts:
         msg = "No valid resolutions provided."
         raise ValueError(msg)
@@ -276,7 +279,7 @@ def convert_gui_inputs(
         return 1
 
     case_output = CaseAwarePath(output)
-    case_output.mkdir(parents=True, exist_ok=True)
+    ensure_directory_exists(case_output)
 
     gathered = _gather_gui_inputs(inputs, warn)
     if not gathered:
@@ -300,7 +303,7 @@ def convert_gui_inputs(
                 continue
 
             dest = case_output / target.label / relative_dir / gui_file.name
-            dest.parent.mkdir(parents=True, exist_ok=True)
+            ensure_directory_exists(dest.parent)
             try:
                 write_gff(adjusted, dest)
                 log(f"Wrote GUI for {target.label} -> {dest}")
@@ -319,6 +322,7 @@ def convert_gui_inputs(
 def launch_gui_converter() -> None:  # noqa: PLR0915
     """Open a minimal Tk GUI for interactive conversions."""
     import tkinter as tk  # noqa: PLC0415  # imported lazily to avoid headless dependency
+
     from tkinter import filedialog, messagebox, scrolledtext  # noqa: PLC0415
 
     root = tk.Tk()

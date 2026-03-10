@@ -13,6 +13,7 @@ This document provides detailed documentation for NWScript string manipulation f
 ### Understanding Strings in NWScript
 
 Strings in NWScript are:
+
 - **Immutable** - String functions return new strings rather than modifying originals
 - **Case-Sensitive** - String comparisons are case-sensitive by default
 - **Indexed from 0** - String positions start at 0 (first character is at position 0)
@@ -20,6 +21,7 @@ Strings in NWScript are:
 ### String Operations
 
 String functions are used for:
+
 - Text processing and parsing
 - Building dynamic dialogue strings
 - Extracting data from strings
@@ -35,17 +37,21 @@ String functions are used for:
 **Routine:** 59
 
 #### Function Signature
+
 ```nss
 int GetStringLength(string sString);
 ```
 
 #### Description
+
 Gets the length (number of characters) of a string.
 
 #### Parameters
+
 - `sString`: String to measure
 
 #### Returns
+
 - Length of the string (number of characters)
 - `-1` on error
 
@@ -66,6 +72,7 @@ if (GetStringLength(sInput) == 0) {
 ```
 
 **Pattern: Validate String**
+
 ```nss
 // Validate non-empty string
 string sName = GetGlobalString("PlayerName");
@@ -84,17 +91,21 @@ if (GetStringLength(sName) > 0) {
 **Routine:** 60
 
 #### Function Signature
+
 ```nss
 string GetStringUpperCase(string sString);
 ```
 
 #### Description
+
 Converts all characters in a string to uppercase.
 
 #### Parameters
+
 - `sString`: String to convert
 
 #### Returns
+
 - Uppercase version of the string
 - Empty string ("") on error
 
@@ -122,17 +133,21 @@ if (sUpper == "YES") {
 **Routine:** 61
 
 #### Function Signature
+
 ```nss
 string GetStringLowerCase(string sString);
 ```
 
 #### Description
+
 Converts all characters in a string to lowercase.
 
 #### Parameters
+
 - `sString`: String to convert
 
 #### Returns
+
 - Lowercase version of the string
 - Empty string ("") on error
 
@@ -145,6 +160,7 @@ string sLower = GetStringLowerCase(sText); // Returns "hello world"
 ```
 
 **Pattern: Case-Insensitive Comparison**
+
 ```nss
 // Compare strings ignoring case
 string sInput = "Yes";
@@ -163,19 +179,23 @@ if (sLower == "yes") {
 **Routine:** 65
 
 #### Function Signature
+
 ```nss
 string GetSubString(string sString, int nStart, int nCount);
 ```
 
 #### Description
+
 Extracts a substring from a string, starting at a specific position and taking a specified number of characters.
 
 #### Parameters
+
 - `sString`: Source string
 - `nStart`: Starting position (0-based index)
 - `nCount`: Number of characters to extract
 
 #### Returns
+
 - Substring extracted from the source string
 - Empty string ("") on error or if indices are invalid
 
@@ -194,6 +214,7 @@ string sSub = GetSubString(sText, 6, 5); // Returns "World"
 ```
 
 **Pattern: Extract Prefix**
+
 ```nss
 // Extract first N characters
 string sTag = "npc_merchant_01";
@@ -201,6 +222,7 @@ string sPrefix = GetSubString(sTag, 0, 4); // Returns "npc_"
 ```
 
 **Pattern: Parse String Data**
+
 ```nss
 // Extract data from formatted string
 string sData = "Item:123:Description";
@@ -208,6 +230,7 @@ string sItem = GetSubString(sData, 5, 3); // Extract "123"
 ```
 
 #### Notes
+
 - String indices start at 0
 - `nStart` must be within string bounds
 - `nCount` cannot exceed remaining characters
@@ -220,18 +243,22 @@ string sItem = GetSubString(sData, 5, 3); // Extract "123"
 **Routine:** 63
 
 #### Function Signature
+
 ```nss
 string GetStringLeft(string sString, int nCount);
 ```
 
 #### Description
+
 Gets the first `nCount` characters from the left (beginning) of a string.
 
 #### Parameters
+
 - `sString`: Source string
 - `nCount`: Number of characters to extract from the left
 
 #### Returns
+
 - Left portion of the string
 - Empty string ("") if `nCount` is 0 or negative, or if string is empty
 
@@ -250,6 +277,7 @@ string sPrefix = GetStringLeft(sTag, 4); // Returns "npc_"
 ```
 
 **Pattern: Check String Prefix**
+
 ```nss
 // Check if string starts with prefix
 string sTag = "npc_merchant";
@@ -266,18 +294,22 @@ if (sPrefix == "npc_") {
 **Routine:** 62
 
 #### Function Signature
+
 ```nss
 string GetStringRight(string sString, int nCount);
 ```
 
 #### Description
+
 Gets the last `nCount` characters from the right (end) of a string.
 
 #### Parameters
+
 - `sString`: Source string
 - `nCount`: Number of characters to extract from the right
 
 #### Returns
+
 - Right portion of the string
 - Empty string ("") if `nCount` is 0 or negative, or if string is empty
 
@@ -296,6 +328,7 @@ string sSuffix = GetStringRight(sTag, 2); // Returns "01"
 ```
 
 **Pattern: Extract File Extension**
+
 ```nss
 // Extract extension from filename
 string sFile = "script.nss";
@@ -311,18 +344,22 @@ string sExt = GetStringRight(sFile, 3); // Returns "nss"
 **Routine:** 66
 
 #### Function Signature
+
 ```nss
 int FindSubString(string sString, string sSubString);
 ```
 
 #### Description
+
 Finds the position of a substring within a string. Returns the index of the first occurrence.
 
 #### Parameters
+
 - `sString`: String to search in
 - `sSubString`: Substring to search for
 
 #### Returns
+
 - Position (0-based index) of the first occurrence of the substring
 - `-1` if substring is not found or on error
 
@@ -344,6 +381,7 @@ if (nPos >= 0) {
 ```
 
 **Pattern: Check if String Contains Substring**
+
 ```nss
 // Check if string contains specific text
 string sName = GetName(GetFirstPC());
@@ -353,6 +391,7 @@ if (FindSubString(sName, "Revan") >= 0) {
 ```
 
 **Pattern: Extract After Substring**
+
 ```nss
 // Extract text after a marker
 string sData = "Item:123:Description";
@@ -364,6 +403,7 @@ if (nPos >= 0) {
 ```
 
 #### Notes
+
 - Returns -1 if substring not found
 - Search is case-sensitive
 - Returns position of first occurrence only
@@ -377,19 +417,23 @@ if (nPos >= 0) {
 **Routine:** 64
 
 #### Function Signature
+
 ```nss
 string InsertString(string sDestination, string sString, int nPosition);
 ```
 
 #### Description
+
 Inserts a string into another string at a specified position.
 
 #### Parameters
+
 - `sDestination`: Destination string to insert into
 - `sString`: String to insert
 - `nPosition`: Position (0-based index) where to insert
 
 #### Returns
+
 - New string with the insertion
 - Empty string ("") on error or if position is invalid
 
@@ -408,6 +452,7 @@ string sNew = InsertString(sText, "Hello ", 0); // Returns "Hello World"
 ```
 
 **Pattern: Build Dynamic String**
+
 ```nss
 // Build string by inserting parts
 string sMessage = "Welcome!";
@@ -416,6 +461,7 @@ string sFinal = InsertString(sMessage, sName + " ", 8); // "Welcome [Name]!"
 ```
 
 #### Notes
+
 - Position must be within string bounds (0 to length)
 - Insertion happens before the character at the position
 - Original strings are not modified (strings are immutable)
@@ -429,17 +475,21 @@ string sFinal = InsertString(sMessage, sName + " ", 8); // "Welcome [Name]!"
 **Routine:** 232
 
 #### Function Signature
+
 ```nss
 int StringToInt(string sString);
 ```
 
 #### Description
+
 Converts a string to an integer. Parses the numeric value from the string.
 
 #### Parameters
+
 - `sString`: String containing a number
 
 #### Returns
+
 - Integer value parsed from the string
 - `0` if string is not a valid number or on error
 
@@ -462,6 +512,7 @@ if (nPos >= 0) {
 ```
 
 **Pattern: Parse Numeric Data**
+
 ```nss
 // Extract and convert number
 string sGlobal = GetGlobalString("QuestProgress");
@@ -472,6 +523,7 @@ if (nProgress > 0) {
 ```
 
 #### Notes
+
 - Returns 0 for invalid strings
 - Only parses integer portion (stops at first non-digit)
 - Negative numbers are supported if string starts with "-"
@@ -483,17 +535,21 @@ if (nProgress > 0) {
 **Routine:** 92
 
 #### Function Signature
+
 ```nss
 string IntToString(int nInteger);
 ```
 
 #### Description
+
 Converts an integer to a string representation.
 
 #### Parameters
+
 - `nInteger`: Integer to convert
 
 #### Returns
+
 - String representation of the integer
 
 #### Usage Examples
@@ -505,6 +561,7 @@ string sLevel = IntToString(nLevel); // Returns "15"
 ```
 
 **Pattern: Build Dynamic Messages**
+
 ```nss
 // Include numbers in messages
 int nHP = GetCurrentHitPoints(GetFirstPC());
@@ -514,6 +571,7 @@ SpeakString(sMessage, TALKVOLUME_TALK);
 ```
 
 **Pattern: Format Quest Progress**
+
 ```nss
 // Format progress string
 int nProgress = GetGlobalNumber("QuestProgress");
@@ -527,17 +585,21 @@ string sProgress = "Progress: " + IntToString(nProgress) + "%";
 **Routine:** 233
 
 #### Function Signature
+
 ```nss
 float StringToFloat(string sString);
 ```
 
 #### Description
+
 Converts a string to a float. Parses the numeric value from the string.
 
 #### Parameters
+
 - `sString`: String containing a number (can include decimal point)
 
 #### Returns
+
 - Float value parsed from the string
 - `0.0` if string is not a valid number or on error
 
@@ -566,19 +628,23 @@ if (nPos >= 0) {
 **Routine:** 3
 
 #### Function Signature
+
 ```nss
 string FloatToString(float fFloat, int nWidth = 0, int nDecimals = 0);
 ```
 
 #### Description
+
 Converts a float to a string representation with optional formatting.
 
 #### Parameters
+
 - `fFloat`: Float to convert
 - `nWidth`: Minimum width of the string (pads with spaces if needed, 0 = no padding)
 - `nDecimals`: Number of decimal places (0 = no decimals)
 
 #### Returns
+
 - String representation of the float
 
 #### Usage Examples
@@ -596,6 +662,7 @@ string sValue = FloatToString(fValue, 0, 2); // Returns "123.46" (rounded)
 ```
 
 **Pattern: Format Distance**
+
 ```nss
 // Format distance with 1 decimal
 float fDist = GetDistanceBetween(OBJECT_SELF, oTarget);
@@ -697,6 +764,7 @@ if (sPrefix == "npc_") {
 ### String Immutability
 
 Strings in NWScript are immutable:
+
 - Functions return new strings
 - Original strings are never modified
 - Always assign results: `sNew = GetStringUpperCase(sOld);`
@@ -711,6 +779,7 @@ Strings in NWScript are immutable:
 ### Common String Operations
 
 **Concatenation:**
+
 ```nss
 string s1 = "Hello";
 string s2 = "World";
@@ -718,6 +787,7 @@ string s3 = s1 + " " + s2; // "Hello World"
 ```
 
 **Comparison:**
+
 ```nss
 if (s1 == s2) {
     // Strings are equal (case-sensitive)
@@ -725,6 +795,7 @@ if (s1 == s2) {
 ```
 
 **Empty String Check:**
+
 ```nss
 if (GetStringLength(s) == 0) {
     // String is empty

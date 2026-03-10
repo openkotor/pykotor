@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+
 from pathlib import Path
 
 from pykotor.common.misc import Game
@@ -55,6 +56,7 @@ def main() -> int:
     args.outdir.mkdir(parents=True, exist_ok=True)
     orig_mdl = args.outdir / f"{args.resname}.mdl"
     orig_mdx = args.outdir / f"{args.resname}.mdx"
+
     def _res_bytes(res) -> bytes:
         data_attr = getattr(res, "data", None)
         if callable(data_attr):
@@ -123,5 +125,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-

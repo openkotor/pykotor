@@ -1,3 +1,5 @@
+"""GitHub fork selector: choose Holocron Toolset fork for updates and release checks."""
+
 from __future__ import annotations
 
 import base64
@@ -11,22 +13,26 @@ from contextlib import suppress
 from pathlib import PurePosixPath
 from typing import TYPE_CHECKING, Any, Sequence
 
+import requests
+import requests.structures
+
 # Handle optional requests dependency
 try:
     import requests
 except ImportError:
     # For type checking, we need a dummy type for requests.structures
     if TYPE_CHECKING:
-        import requests
-        import requests.structures
+        pass
     else:
+
         class CaseInsensitiveDict:  # noqa: PYI024
             pass
+
         class _RequestsStructures:
             CaseInsensitiveDict = CaseInsensitiveDict
+
         requests.structures = _RequestsStructures()  # type: ignore[assignment]
 
-from loggerplus import RobustLogger
 from qtpy import QtCore
 from qtpy.QtCore import QTimer, Qt
 from qtpy.QtGui import QBrush, QPalette
@@ -40,6 +46,7 @@ from qtpy.QtWidgets import (
     QTreeWidgetItem,
 )
 
+from loggerplus import RobustLogger
 from toolset.gui.common.localization import translate as tr, trf  # type: ignore[import-not-found]
 from utility.updater.github import CompleteRepoData, TreeInfoData, extract_owner_repo, get_api_url, get_forks_url, get_main_url
 
@@ -89,12 +96,11 @@ class GitHubFileSelector(QDialog):
         super().__init__(parent)
         self.setWindowFlags(
             QtCore.Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
-            | QtCore.Qt.WindowType.WindowCloseButtonHint
-            & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint
-            & ~QtCore.Qt.WindowType.WindowMinMaxButtonsHint
+            | QtCore.Qt.WindowType.WindowCloseButtonHint & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint & ~QtCore.Qt.WindowType.WindowMinMaxButtonsHint
         )
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -124,6 +130,7 @@ class GitHubFileSelector(QDialog):
         self.rate_limit_remaining: int | None = None
 
         from toolset.uic.qtpy.dialogs.github_selector import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
 
@@ -173,7 +180,11 @@ class GitHubFileSelector(QDialog):
                     self.start_rate_limit_timer(e)
                 return None
 
-            QMessageBox.critical(self, tr("Repository Not Found"), trf("The repository '{owner}/{repo}' had an unexpected error:<br><br>{error}", owner=self.owner, repo=self.repo, error=str(e)))
+            QMessageBox.critical(
+                self,
+                tr("Repository Not Found"),
+                trf("The repository '{owner}/{repo}' had an unexpected error:<br><br>{error}", owner=self.owner, repo=self.repo, error=str(e)),
+            )
             forks_url = f"https://api.github.com/repos/{self.owner}/{self.repo}/forks"
             try:
                 response: requests.Response = requests.get(forks_url, timeout=15)
@@ -295,7 +306,12 @@ class GitHubFileSelector(QDialog):
     ) -> None:
         if self.repo_data is None or self.repo_data.tree is None:
             return
-        paths_to_highlight: list[str] = [item.path for item in self.repo_data.tree for partial_file_or_folder_name in partial_file_or_folder_names if partial_file_or_folder_name in item.path.split("/")[-1].lower()]
+        paths_to_highlight: list[str] = [
+            item.path
+            for item in self.repo_data.tree
+            for partial_file_or_folder_name in partial_file_or_folder_names
+            if partial_file_or_folder_name in item.path.split("/")[-1].lower()
+        ]
         self.expand_and_highlight_paths(set(paths_to_highlight))
 
     def expand_and_highlight_paths(
@@ -601,11 +617,13 @@ class GitHubFileSelector(QDialog):
                     filename: str = self.convert_item_to_web_url(item).split("/")[-1]
                     with open(filename, "wb") as file:  # noqa: PTH123
                         file.write(content)
-                    QMessageBox.information(self, tr("Download Successful"), trf("Downloaded {filename} to {path}", filename=filename, path=os.path.join(os.path.curdir, filename)))  # noqa: PTH118
+                    QMessageBox.information(
+                        self, tr("Download Successful"), trf("Downloaded {filename} to {path}", filename=filename, path=os.path.join(os.path.curdir, filename))
+                    )  # noqa: PTH118
                 else:
                     QMessageBox.critical(self, tr("Download Failed"), tr("Failed to download the file content."))
             except requests.exceptions.RequestException as e:  # noqa: PERF203
-                QMessageBox.critical(self, tr("Download Failed"), trf("Failed to download {name}: {error}", name=url.split('/')[-1], error=str(e)))
+                QMessageBox.critical(self, tr("Download Failed"), trf("Failed to download {name}: {error}", name=url.split("/")[-1], error=str(e)))
 
     def collect_urls(
         self,

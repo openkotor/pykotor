@@ -16,8 +16,8 @@ paths beyond what step 1 already executed.
 
 from __future__ import annotations
 
-import contextlib
 import cProfile
+import contextlib
 import io
 import os
 import pathlib
@@ -45,11 +45,28 @@ if KOTORDIFF_PATH.as_posix() not in sys.path:
 if HOLOPATCHER_PATH.as_posix() not in sys.path:
     sys.path.insert(0, HOLOPATCHER_PATH.as_posix())
 
-from holopatcher.core import uninstall_mod, install_mod, load_mod, validate_game_directory, validate_install_paths, format_install_time  # pyright: ignore[reportMissingImports]
+from pathlib import Path
+
+import pytest
+
+try:
+    from holopatcher.core import (  # pyright: ignore[reportMissingImports]
+        format_install_time,
+        install_mod,
+        load_mod,
+        uninstall_mod,
+        validate_game_directory,
+        validate_install_paths,
+    )
+    HAS_HOLOPATCHER = True
+except ModuleNotFoundError:
+    HAS_HOLOPATCHER = False
+
+pytestmark = pytest.mark.skipif(not HAS_HOLOPATCHER, reason="holopatcher not installed")
+
 from pykotor.diff_tool.app import DiffConfig, run_application
 from pykotor.extract.installation import Installation  # pyright: ignore[reportMissingImports]
 from pykotor.tslpatcher.logger import PatchLogger  # pyright: ignore[reportMissingImports]
-from pathlib import Path
 
 
 @contextlib.contextmanager
@@ -546,6 +563,7 @@ class TestKotorDiffFullExecution(unittest.TestCase):
         finally:
             profiler.disable()
             self._save_profiler_results(profiler, profiler_output_file, profiler_summary_file, "Step 4: Uninstall Patch")
+
 
 def report_test_errors(errors: list[str], test_case: unittest.TestCase):
     """Report all errors at the end."""

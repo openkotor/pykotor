@@ -3,21 +3,24 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from qtpy.QtCore import QObject, Slot
+from qtpy.QtCore import Slot
 from qtpy.QtWidgets import QHBoxLayout, QPushButton, QVBoxLayout
-
-# Local imports
-from .widgets import HolocronStatus, HolocronToolbar
 
 # Spyder imports
 from spyder.api.translations import get_translation
 from spyder.api.widgets.main_container import PluginMainContainer
 from toolset.gui.windows.main import ToolWindow
 
+# Local imports
+from .widgets import HolocronStatus, HolocronToolbar
+
 if TYPE_CHECKING:
+    from qtpy.QtCore import QObject
+
     from .plugin import HolocronToolset as HolocronToolsetPlugin
 
 _ = get_translation("spyder_holocron_toolset.spyder")
+
 
 class HolocronToolsetContainer(PluginMainContainer):
     def __init__(self, name, plugin: "HolocronToolsetPlugin", parent: QObject | None = None):

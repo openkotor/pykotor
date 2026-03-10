@@ -105,7 +105,7 @@ class TestVendorTwoDADiffAnalyzer(TestCase):
         self.assertEqual(len(modifications.modifiers), 1)
         modifier = modifications.modifiers[0]
         self.assertIsInstance(modifier, AddColumn2DA)
-        modifier = cast(AddColumn2DA, modifier)
+        modifier = cast("AddColumn2DA", modifier)
 
         self.assertEqual(modifier.header, "B")
         self.assertEqual(modifier.default, "****")
@@ -146,7 +146,7 @@ class TestVendorTwoDADiffAnalyzer(TestCase):
         self.assertEqual(len(modifications.modifiers), 1)
         modifier = modifications.modifiers[0]
         self.assertIsInstance(modifier, AddRow2DA)
-        modifier = cast(AddRow2DA, modifier)
+        modifier = cast("AddRow2DA", modifier)
 
         self.assertEqual(modifier.row_label, "2")
         self.assertIn("A", modifier.cells)

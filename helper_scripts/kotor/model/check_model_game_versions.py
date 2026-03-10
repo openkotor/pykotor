@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import struct
+
 from pathlib import Path
 
 mdl_dir = Path("vendor/PyKotor/Libraries/PyKotor/tests/test_files/mdl")

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Debug script to decode node headers from MDL files."""
+
 from __future__ import annotations
 
 import struct
-from typing import Any
+
 from pathlib import Path
+from typing import Any
 
 base = Path(r"C:\Users\boden\AppData\Local\Temp\mdl_aio_aratech3")
 orig_mdl = base / "aratech_sign-original.mdl"

@@ -5,6 +5,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()

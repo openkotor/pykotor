@@ -16,12 +16,12 @@ from pathlib import Path, PurePath
 from typing import IO, TYPE_CHECKING, Any, Callable
 
 from loggerplus import RobustLogger
-
 from utility.misc import ProcessorArchitecture
 from utility.system.os_helper import get_app_dir, get_mac_dot_app_dir, is_frozen, remove_any, win_hide_file
 from utility.system.path import ChDir
 from utility.updater.downloader import FileDownloader, download_mega_file_url
 from utility.updater.restarter import RestartStrategy, Restarter, UpdateStrategy
+from utility.misc import get_normalized_extension, ensure_directory_exists
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -245,24 +245,37 @@ class LibUpdate:
         self._is_downloading = False
         return self._download_status
 
-    def _extract_update(self):
-        self.log.info("Main extraction, starting in working dir '%s'", self.update_folder)
+    def _find_archive_path(self) -> Path | None:
+        """Find the first existing archive path from the list of archive names.
+
+        Returns
+        -------
+            Path | None: The path to the first existing archive, or None if none found.
+        """
         with ChDir(self.update_folder):
-            archive_path: Path | None = None
             for archive_name in self.get_archive_names():
                 archive_path = Path.cwd().joinpath(archive_name).absolute()
                 if archive_path.is_file():
-                    self.log.info("Found archive %s", archive_name)
-                    break
-                self.log.warning("Archive not found, attempting to find it via similar extensions")
-                for ext in (".gz", ".tar", ".zip", ".bz2"):
-                    test_path = archive_path.with_suffix(ext)
-                    if test_path.is_file():
-                        self.log.info("Found archive %s", test_path.name)
-                        self._recursive_extract(test_path)
-                        return
+                    return archive_path
+        return None
+
+    def _extract_update(self):
+        self.log.info("Main extraction, starting in working dir '%s'", self.update_folder)
+        with ChDir(self.update_folder):
+            archive_path = self._find_archive_path()
             if archive_path is not None:
+                self.log.info("Found archive %s", archive_path.name)
                 self._recursive_extract(archive_path)
+            else:
+                self.log.warning("Archive not found, attempting to find it via similar extensions")
+                for archive_name in self.get_archive_names():
+                    base_path = Path.cwd().joinpath(archive_name).absolute()
+                    for ext in (".gz", ".tar", ".zip", ".bz2"):
+                        test_path = base_path.with_suffix(ext)
+                        if test_path.is_file():
+                            self.log.info("Found archive %s", test_path.name)
+                            self._recursive_extract(test_path)
+                            return
 
     @classmethod
     def _recursive_extract(
@@ -276,7 +289,7 @@ class LibUpdate:
             raise PermissionError(errno.EACCES, os.strerror(errno.EACCES), str(archive_path))
 
         log.debug(f"(recursive) Extracting '{archive_path}'...")  # noqa: G004
-        archive_ext = archive_path.suffix.lower()
+        archive_ext = get_normalized_extension(archive_path)
         if archive_ext in {".gz", ".bz2", ".tar"}:
             cls.extract_tar(archive_path, recursive_extract=True)
         elif archive_ext == ".zip":
@@ -301,7 +314,7 @@ class LibUpdate:
                     # Sanitize and extract each file
                     member_path: tuple[str, ...] = PurePath(member.name).parts
                     sanitized_path: Path = Path.cwd() / PurePath(*[p for p in member_path if p not in ("/", "..", "")])
-                    sanitized_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
+                    ensure_directory_exists(sanitized_path.parent)  # Ensure directory exists
                     with sanitized_path.open("wb") as f:
                         extracted_member: IO[bytes] | None = tfile.extractfile(member)
                         if not extracted_member:
@@ -313,7 +326,7 @@ class LibUpdate:
                         log.warning("Expected '%s' to exist after extraction, but it does not.", sanitized_path)
                     if not recursive_extract:
                         continue
-                    if sanitized_path.suffix.lower() in {".gz", ".bz2", ".tar", ".zip"} and sanitized_path.is_file():
+                    if get_normalized_extension(sanitized_path) in {".gz", ".bz2", ".tar", ".zip"} and sanitized_path.is_file():
                         cls._recursive_extract(sanitized_path)
         except Exception as err:  # pragma: no cover
             log = RobustLogger()
@@ -340,7 +353,7 @@ class LibUpdate:
                         log.info("Successfully extracted '%s'", extracted_path)
                     else:
                         log.warning("Expected '%s' to exist after extraction, but it does not.", extracted_path)
-                    if extracted_path.suffix.lower() in {".gz", ".bz2", ".tar", ".zip"} and extracted_path.is_file():
+                    if get_normalized_extension(extracted_path) in {".gz", ".bz2", ".tar", ".zip"} and extracted_path.is_file():
                         cls._recursive_extract(extracted_path)
         except Exception as err:  # pragma: no cover
             log.debug(err, exc_info=True)
@@ -349,11 +362,7 @@ class LibUpdate:
     def _is_downloaded(self) -> bool | None:
         """Checks if latest update is already downloaded."""
         # TODO(th3w1zard1): Compare file hashes to ensure security
-        with ChDir(self.update_folder):
-            for archive_name in self.get_archive_names():
-                if Path(archive_name).is_file():
-                    return True
-        return False
+        return self._find_archive_path() is not None
 
     def _full_update(self) -> bool:
         self.log.debug("Starting full update")
@@ -509,7 +518,7 @@ class AppUpdate(LibUpdate):  # pragma: no cover
     def _unix_restart(self):
         self.log.debug("Restarting %s", self.filename)
         app_path: Path = Path(self._current_app_dir, self.filename)
-        if platform.system() == "Darwin" and app_path.suffix.lower() == ".app":
+        if platform.system() == "Darwin" and get_normalized_extension(app_path) == ".app":
             self.log.debug(f"Must be a .app bundle: '{app_path}'")  # noqa: G004
             mac_app_binary_dir: Path = app_path.joinpath("Contents", "MacOS")
 
@@ -616,7 +625,9 @@ class AppUpdate(LibUpdate):  # pragma: no cover
             return old_app_path, cur_app_filepath
 
         try:
-            r = Restarter(cur_app_filepath, temp_app_filepath, restart_strategy=self.r_strategy, filename=self.filename, update_strategy=self.u_strategy, exithook=self.exithook)
+            r = Restarter(
+                cur_app_filepath, temp_app_filepath, restart_strategy=self.r_strategy, filename=self.filename, update_strategy=self.u_strategy, exithook=self.exithook
+            )
             r.process()
         except OSError as e:
             if not is_frozen():

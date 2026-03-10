@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from argparse import Namespace
+from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger as Logger  # type: ignore[import-untyped]
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from loggerplus import RobustLogger as Logger
 
 
 def cmd_diff_installation(args: Namespace, logger: Logger) -> int:
@@ -76,9 +79,7 @@ def cmd_diff_installation(args: Namespace, logger: Logger) -> int:
         return kotordiff_main(argv)
     except ImportError:
         logger.error(
-            "diff operations functionality requires the 'kotordiff' package to be installed.\n"
-            "Install it with: pip install kotordiff\n"
-            "Or use the standalone kotordiff tool."
+            "diff operations functionality requires the 'kotordiff' package to be installed.\nInstall it with: pip install kotordiff\nOr use the standalone kotordiff tool."
         )
         return 1
     except Exception:

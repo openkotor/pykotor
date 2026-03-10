@@ -5,7 +5,6 @@ from __future__ import annotations
 import pathlib
 import sys
 
-
 THIS_FILE = pathlib.Path(__file__).resolve()
 REPO_ROOT = THIS_FILE.parents[5]
 PYKOTOR_SRC = REPO_ROOT / "Libraries" / "PyKotor" / "src"
@@ -16,13 +15,14 @@ for path in (PYKOTOR_SRC, UTILITY_SRC):
     if as_posix not in sys.path:
         sys.path.insert(0, as_posix)
 
-from utility.common.geometry import Vector3
 from pykotor.resource.formats.gff import GFFList  # pyright: ignore[reportMissingImports]
+from utility.common.geometry import Vector3
 
 
-def _silent_logger(message: object = "") -> None:
-    # Helper logger that swallows output during tests.
+def _silent_logger(message: object = "", **kwargs: object) -> None:
+    # Helper logger that swallows output during tests (accepts message_type= etc.).
     _ = message
+    _ = kwargs
 
 
 def test_gfflist_compare_handles_vector_values_without_type_error() -> None:
@@ -64,4 +64,3 @@ def test_gfflist_compare_handles_vector_values_without_type_error() -> None:
     result = old_list.compare(new_list, log_func=_silent_logger)
 
     assert result is False
-

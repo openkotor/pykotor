@@ -2,13 +2,19 @@
 
 This module provides CLI commands for creating archives (ERF, RIM) from directories.
 """
+
 from __future__ import annotations
 
 import pathlib
-from argparse import Namespace
 
-from loggerplus import RobustLogger as Logger  # type: ignore[import-untyped, note]
+from typing import TYPE_CHECKING
+
 from pykotor.tools.archives import create_erf_from_directory, create_rim_from_directory
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+
+    from loggerplus import RobustLogger as Logger
 
 
 def cmd_create_archive(args: Namespace, logger: Logger) -> int:
@@ -57,4 +63,3 @@ def cmd_create_archive(args: Namespace, logger: Logger) -> int:
         return 1
     else:
         return 0
-

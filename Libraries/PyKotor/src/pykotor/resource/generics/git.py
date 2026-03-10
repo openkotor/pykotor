@@ -1,13 +1,14 @@
+"""GIT (game instance) generic: GFF-based area instance data (creatures, doors, placeables, etc.)."""
+
 from __future__ import annotations
 
 import math
 
 from abc import ABC, abstractmethod
 from enum import IntEnum
-from typing import TYPE_CHECKING, Any, NoReturn, cast
+from typing import TYPE_CHECKING, Any, ClassVar, NoReturn, cast
 
 from loggerplus import RobustLogger
-
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Color, Game, ResRef
 from pykotor.extract.file import ResourceIdentifier
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
 
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
+
 def _iterate_gff_list(struct: GFFStruct, label: str) -> list[GFFStruct]:
     try:
         gff_list = struct.get_list(label)
@@ -42,12 +44,12 @@ def _iterate_gff_list(struct: GFFStruct, label: str) -> list[GFFStruct]:
 
 class GIT:
     """Game Instance Template (GIT) file handler.
-    
+
     GIT files store dynamic area information including creatures, doors, placeables,
     triggers, waypoints, stores, encounters, sounds, and cameras. This is the runtime
     instance data for areas, stored as a GFF file. GIT files define where objects are
     placed in an area, their positions, orientations, and instance-specific properties.
-    
+
     References:
     ----------
         Based on swkotor.exe GIT structure:
@@ -64,7 +66,52 @@ class GIT:
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/GFF FileTypes/GIT.cs (GIT class)
 
     """
+
     BINARY_TYPE = ResourceType.GIT
+    _ITERATION_SECTIONS: tuple[str, ...] = (
+        "cameras",
+        "creatures",
+        "doors",
+        "encounters",
+        "stores",
+        "placeables",
+        "sounds",
+        "triggers",
+        "waypoints",
+    )
+    _SERIALIZE_SECTIONS: tuple[str, ...] = (
+        "creatures",
+        "doors",
+        "placeables",
+        "waypoints",
+        "triggers",
+        "encounters",
+        "sounds",
+        "stores",
+        "cameras",
+    )
+    _RESOURCE_IDENTIFIER_SECTIONS: tuple[tuple[str, ResourceType], ...] = (
+        ("creatures", ResourceType.UTC),
+        ("doors", ResourceType.UTD),
+        ("encounters", ResourceType.UTE),
+        ("placeables", ResourceType.UTP),
+        ("sounds", ResourceType.UTS),
+        ("stores", ResourceType.UTM),
+        ("triggers", ResourceType.UTT),
+        ("waypoints", ResourceType.UTW),
+    )
+    _TYPE_NAMES: dict[str, str] = {
+        "creatures": "Creature",
+        "doors": "Door",
+        "encounters": "Encounter",
+        "placeables": "Placeable",
+        "sounds": "Sound",
+        "stores": "Store",
+        "triggers": "Trigger",
+        "waypoints": "Waypoint",
+        "cameras": "Camera",
+    }
+    _INSTANCE_TYPE_MAP: dict[type[GITCreature | GITDoor | GITEncounter | GITPlaceable | GITSound | GITStore | GITTrigger | GITWaypoint | GITCamera], str] | None = None
 
     def __init__(self):
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:29-37
@@ -89,95 +136,68 @@ class GIT:
         self.waypoints: list[GITWaypoint] = []  # WaypointList (waypoint markers)
 
     def __iter__(self) -> Generator[ResRef, Any, None]:
-        # Iterate over creatures
-        for creature in self.creatures:
-            yield creature.resref
-        # Iterate over doors
-        for door in self.doors:
-            yield door.resref
-        for encounter in self.encounters:
-            yield encounter.resref
-        for store in self.stores:
-            yield store.resref
-        for placeable in self.placeables:
-            yield placeable.resref
-        for sound in self.sounds:
-            yield sound.resref
-        for trigger in self.triggers:
-            yield trigger.resref
-        for waypoint in self.waypoints:
-            yield waypoint.resref
+        for section_name, _ in self._RESOURCE_IDENTIFIER_SECTIONS:
+            for instance in cast("list[GITInstance]", getattr(self, section_name)):
+                yield instance.resref
 
     def iter_resource_identifiers(self) -> Generator[ResourceIdentifier, Any, None]:
-        for creature in self.creatures:
-            yield ResourceIdentifier(str(creature.resref), ResourceType.UTC)
-        for door in self.doors:
-            yield ResourceIdentifier(str(door.resref), ResourceType.UTD)
-        for encounter in self.encounters:
-            yield ResourceIdentifier(str(encounter.resref), ResourceType.UTE)
-        for store in self.stores:
-            yield ResourceIdentifier(str(store.resref), ResourceType.UTM)
-        for placeable in self.placeables:
-            yield ResourceIdentifier(str(placeable.resref), ResourceType.UTP)
-        for sound in self.sounds:
-            yield ResourceIdentifier(str(sound.resref), ResourceType.UTS)
-        for trigger in self.triggers:
-            yield ResourceIdentifier(str(trigger.resref), ResourceType.UTT)
-        for waypoint in self.waypoints:
-            yield ResourceIdentifier(str(waypoint.resref), ResourceType.UTW)
+        for section_name, res_type in self._RESOURCE_IDENTIFIER_SECTIONS:
+            for instance in cast("list[GITInstance]", getattr(self, section_name)):
+                yield ResourceIdentifier(str(instance.resref), res_type)
 
-    def instances(self) -> list[GITInstance]:
+    def instances(self) -> list[GITObject]:
         """Returns a list of all instances stored inside the GIT, regardless of the type.
 
         Returns:
         -------
             A list of all stored instances.
         """
-        return cast(
-            "list[GITInstance]",
-            [
-                *self.cameras,
-                *self.creatures,
-                *self.doors,
-                *self.encounters,
-                *self.placeables,
-                *self.sounds,
-                *self.stores,
-                *self.triggers,
-                *self.waypoints,
-            ]
-        )
+        return [
+            instance
+            for section_name in self._ITERATION_SECTIONS
+            for instance in cast("list[GITObject]", getattr(self, section_name))
+        ]
 
     def next_camera_id(self) -> int:
         """Get a unique new camera id for this git to use with a new GITCamera."""
         return max(camera.camera_id for camera in self.cameras) + 1
 
+    def _get_instance_list(self, instance: GITObject) -> list[GITObject]:
+        """Get the appropriate instance list for the given instance type.
+        
+        Maps an instance to its corresponding list (creatures, doors, placeables, etc).
+        Used internally to reduce isinstance dispatch duplication.
+        
+        Args:
+        ----
+            instance: The GIT instance to find the list for.
+            
+        Returns:
+        -------
+            The list containing this instance type, or None if unknown type.
+        """
+        type_map = self._build_instance_type_map()
+        for instance_type, section_name in type_map.items():
+            if isinstance(instance, instance_type):
+                return cast("list[GITObject]", getattr(self, section_name))
+        msg = f"Unknown instance type: {type(instance)!r}"
+        raise ValueError(msg)
+
     def remove(
         self,
-        instance: GITInstance,
+        instance: GITObject,
     ):
-        if isinstance(instance, GITCreature):
-            self.creatures.remove(instance)
-        elif isinstance(instance, GITPlaceable):
-            self.placeables.remove(instance)
-        elif isinstance(instance, GITDoor):
-            self.doors.remove(instance)
-        elif isinstance(instance, GITTrigger):
-            self.triggers.remove(instance)
-        elif isinstance(instance, GITEncounter):
-            self.encounters.remove(instance)
-        elif isinstance(instance, GITWaypoint):
-            self.waypoints.remove(instance)
-        elif isinstance(instance, GITCamera):
-            self.cameras.remove(instance)
-        elif isinstance(instance, GITSound):
-            self.sounds.remove(instance)
-        elif isinstance(instance, GITStore):
-            self.stores.remove(instance)
+        """Remove an instance from its respective list.
+        
+        Args:
+        ----
+            instance: The instance to remove.
+        """
+        self._get_instance_list(instance).remove(instance)
 
     def index(
         self,
-        instance: GITInstance,
+        instance: GITObject,
     ) -> int:
         """Finds the index of an instance in the particular list it belongs to inside the GIT object.
 
@@ -193,31 +213,62 @@ class GIT:
         -------
             The index into one of the GIT instance lists.
         """
-        if isinstance(instance, GITCreature):
-            return self.creatures.index(instance)
-        if isinstance(instance, GITPlaceable):
-            return self.placeables.index(instance)
-        if isinstance(instance, GITDoor):
-            return self.doors.index(instance)
-        if isinstance(instance, GITTrigger):
-            return self.triggers.index(instance)
-        if isinstance(instance, GITEncounter):
-            return self.encounters.index(instance)
-        if isinstance(instance, GITWaypoint):
-            return self.waypoints.index(instance)
-        if isinstance(instance, GITCamera):
-            return self.cameras.index(instance)
-        if isinstance(instance, GITSound):
-            return self.sounds.index(instance)
-        if isinstance(instance, GITStore):
-            return self.stores.index(instance)
+        return self._get_instance_list(instance).index(instance)
 
-        msg = "Could not find instance in GIT object."
-        raise ValueError(msg)
+    def _get_instance_type_name(self, instance: GITObject) -> str:
+        """Get a human-readable name for an instance type.
+        
+        Args:
+        ----
+            instance: The GIT instance to get the name for.
+            
+        Returns:
+        -------
+            A string like "Creature", "Door", "Placeable", etc.
+        """
+        section_name = self._find_section_for_instance(instance)
+        return self._TYPE_NAMES.get(section_name or "", "Unknown")
+
+    @classmethod
+    def _build_instance_type_map(cls) -> dict[type[GITCreature | GITDoor | GITEncounter | GITPlaceable | GITSound | GITStore | GITTrigger | GITWaypoint | GITCamera], str]:
+        if cls._INSTANCE_TYPE_MAP is not None:
+            return cls._INSTANCE_TYPE_MAP
+        from pykotor.resource.generics.git import (
+            GITCamera,
+            GITCreature,
+            GITDoor,
+            GITEncounter,
+            GITPlaceable,
+            GITSound,
+            GITStore,
+            GITTrigger,
+            GITWaypoint,
+        )
+
+        type_map = {
+            GITCreature: "creatures",
+            GITDoor: "doors",
+            GITEncounter: "encounters",
+            GITPlaceable: "placeables",
+            GITSound: "sounds",
+            GITStore: "stores",
+            GITTrigger: "triggers",
+            GITWaypoint: "waypoints",
+            GITCamera: "cameras",
+        }
+        cls._INSTANCE_TYPE_MAP = type_map
+        return type_map
+
+    def _find_section_for_instance(self, instance: GITObject) -> str | None:
+        type_map = self._build_instance_type_map()
+        for instance_type, section_name in type_map.items():
+            if isinstance(instance, instance_type):
+                return section_name
+        return None
 
     def add(
         self,
-        instance: GITInstance,
+        instance: GITObject,
     ) -> None:
         """Adds instance to the relevant list in the GIT.
 
@@ -229,45 +280,12 @@ class GIT:
         ------
             ValueError: If the instance already is stored inside the GIT.
         """
-        if isinstance(instance, GITCreature):
-            if instance in self.creatures:
-                raise ValueError("Creature instance already exists inside the GIT object.")
-            return self.creatures.append(instance)
-        if isinstance(instance, GITPlaceable):
-            if instance in self.placeables:
-                raise ValueError("Placeable instance already exists inside the GIT object.")
-            return self.placeables.append(instance)
-        if isinstance(instance, GITDoor):
-            if instance in self.doors:
-                raise ValueError("Door instance already exists inside the GIT object.")
-            return self.doors.append(instance)
-        if isinstance(instance, GITTrigger):
-            if instance in self.triggers:
-                raise ValueError("Trigger instance already exists inside the GIT object.")
-            return self.triggers.append(instance)
-        if isinstance(instance, GITEncounter):
-            if instance in self.encounters:
-                raise ValueError("Encounter instance already exists inside the GIT object.")
-            return self.encounters.append(instance)
-        if isinstance(instance, GITWaypoint):
-            if instance in self.waypoints:
-                raise ValueError("Waypoint instance already exists inside the GIT object.")
-            return self.waypoints.append(instance)
-        if isinstance(instance, GITCamera):
-            if instance in self.cameras:
-                raise ValueError("Camera instance already exists inside the GIT object.")
-            return self.cameras.append(instance)
-        if isinstance(instance, GITSound):
-            if instance in self.sounds:
-                raise ValueError("Sound instance already exists inside the GIT object.")
-            return self.sounds.append(instance)
-        if isinstance(instance, GITStore):
-            if instance in self.stores:
-                raise ValueError("Store instance already exists inside the GIT object.")
-            return self.stores.append(instance)
-
-        msg = "Tried to add invalid instance."
-        raise ValueError(msg)
+        instance_list = self._get_instance_list(instance)
+        type_name = self._get_instance_type_name(instance)
+        
+        if instance in instance_list:
+            raise ValueError(f"{type_name} instance already exists inside the GIT object.")
+        instance_list.append(instance)
 
     def serialize(self) -> dict[str, Any]:
         """Serialize a complete GIT to JSON-compatible dict.
@@ -277,19 +295,15 @@ class GIT:
             Dictionary representation
         """
         return {
-            "creatures": [c.serialize() for c in self.creatures],
-            "doors": [d.serialize() for d in self.doors],
-            "placeables": [p.serialize() for p in self.placeables],
-            "waypoints": [w.serialize() for w in self.waypoints],
-            "triggers": [t.serialize() for t in self.triggers],
-            "encounters": [e.serialize() for e in self.encounters],
-            "sounds": [s.serialize() for s in self.sounds],
-            "stores": [s.serialize() for s in self.stores],
-            "cameras": [c.serialize() for c in self.cameras],
+            section_name: [instance.serialize() for instance in cast("list[GITObject]", getattr(self, section_name))]
+            for section_name in self._SERIALIZE_SECTIONS
         }
 
 
-class GITInstance(ABC):
+class GITObject(ABC):
+    GFF_CLASSIFICATION: ClassVar[str] = ""
+    GFF_STRUCT_ID: ClassVar[int] = 0
+
     def __init__(self, x: float, y: float, z: float):
         """Initializes a GIT instance with the given position coordinates.
 
@@ -300,7 +314,6 @@ class GITInstance(ABC):
             z (float): The z-coordinate of the position.
         """
         self.position: Vector3 = Vector3(x, y, z)
-        self.resref: ResRef = ResRef.from_blank()
 
     def __repr__(self):
         if isinstance(self, GITCamera):
@@ -341,15 +354,15 @@ class GITInstance(ABC):
         roll: float,
     ): ...
 
-    @abstractmethod
-    def classification(self) -> str: ...
+    def classification(self) -> str:
+        return self.GFF_CLASSIFICATION
 
     @abstractmethod
     def yaw(self) -> float | None:
         """Returns the yaw rotation (in radians) of the instance if the instance supports it, otherwise returns None."""
 
     def serialize(self) -> dict[str, Any]:
-        """Serialize a GITInstance to JSON-compatible dict.
+        """Serialize a GITObject to JSON-compatible dict.
 
         Returns:
         -------
@@ -371,15 +384,52 @@ class GITInstance(ABC):
         """Serialize instance-specific data. Override in subclasses."""
         return {}
 
+    def _translate(
+        self,
+        x: float,
+        y: float,
+        z: float,
+    ) -> None:
+        """Apply a delta translation to the object's position."""
+        self.position.x += x
+        self.position.y += y
+        self.position.z += z
+
+class GITInstance(GITObject):
+    """Backward-compatible instance base class.
+
+    New abstractions should target `GITObject`; `GITInstance` remains to preserve
+    runtime/type compatibility for existing consumers.
+    """
+    GFF_GEOMETRY_STRUCT_ID: ClassVar[int] = 0
+    GFF_SPAWN_STRUCT_ID: ClassVar[int] = 0
+
+    def __init__(self, x: float, y: float, z: float):
+        super().__init__(x, y, z)
+        self.resref: ResRef = ResRef.from_blank()
+
+    def _rotate_bearing(
+        self,
+        yaw: float,
+    ) -> None:
+        """Apply a yaw delta to bearing-based instances."""
+        self.bearing += yaw
+
+    def _resource_identifier(
+        self,
+        resource_type: ResourceType,
+    ) -> ResourceIdentifier:
+        """Build a standard ResourceIdentifier from this instance's resref."""
+        return ResourceIdentifier(str(self.resref), resource_type)
 
 
-class GITCamera(GITInstance):
+class GITCamera(GITObject):
     """Represents a camera instance in a GIT file.
-    
+
     Cameras define camera positions and orientations for area cutscenes and scripted
     camera movements. Each camera has a unique ID, position, orientation (quaternion),
     field of view, height, pitch, and microphone range.
-    
+
     References:
     ----------
         Based on swkotor.exe GIT structure:
@@ -389,7 +439,9 @@ class GITCamera(GITInstance):
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs (CameraInfo class)
 
     """
+
     GFF_STRUCT_ID = 14
+    GFF_CLASSIFICATION = "Camera"
 
     def __init__(
         self,
@@ -402,32 +454,27 @@ class GITCamera(GITInstance):
         camera_id: int = 0,
     ):
         super().__init__(x, y, z)
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:42
         # Unique camera identifier (CameraID field)
         self.camera_id: int = camera_id
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:48
         # Field of view angle in degrees (FieldOfView field)
         self.fov: float = 45
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:47
         # Camera height offset (Height field)
         self.height: float = 0.0
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:45
         # Microphone range for audio occlusion (MicRange field)
         self.mic_range: float = 0.0
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:46
         # Camera pitch angle in radians (Pitch field)
         self.pitch: float = 0.0
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:46
         # Camera orientation quaternion (Orientation field, glm::quat)
         # NOTE: PyKotor converts from Euler angles, reone stores as quaternion directly
@@ -444,9 +491,7 @@ class GITCamera(GITInstance):
         y: float,
         z: float,
     ):
-        self.position.x += x
-        self.position.y += y
-        self.position.z += z
+        self._translate(x, y, z)
 
     def rotate(
         self,
@@ -465,9 +510,6 @@ class GITCamera(GITInstance):
 
     def blank(self) -> bytes | None:
         return None
-
-    def classification(self) -> str:
-        return "Camera"
 
     def yaw(self) -> float | None:
         return math.pi - self.orientation.to_euler().x
@@ -489,10 +531,10 @@ class GITCamera(GITInstance):
 
 class GITCreature(GITInstance):
     """Represents a creature instance in a GIT file.
-    
+
     Creature instances define where creatures spawn in an area. Each creature references
     a UTC template file (TemplateResRef) and has a position and bearing (rotation).
-    
+
     References:
     ----------
         Based on swkotor.exe GIT structure:
@@ -502,7 +544,9 @@ class GITCreature(GITInstance):
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs (CreatureInfo class)
 
     """
+
     GFF_STRUCT_ID = 4
+    GFF_CLASSIFICATION = "Creature"
 
     def __init__(
         self,
@@ -511,12 +555,7 @@ class GITCreature(GITInstance):
         z: float = 0.0,
     ):
         super().__init__(x, y, z)
-        
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:58
-        # ResRef of UTC template file (TemplateResRef field)
-        self.resref: ResRef = ResRef.from_blank()
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:53-57
         # Creature bearing/rotation angle (computed from XOrientation/YOrientation)
         # NOTE: PyKotor computes bearing from XOrientation/YOrientation using Vector2.angle()
@@ -529,9 +568,7 @@ class GITCreature(GITInstance):
         y: float,
         z: float,
     ):
-        self.position.x += x
-        self.position.y += y
-        self.position.z += z
+        self._translate(x, y, z)
 
     def rotate(
         self,
@@ -539,19 +576,16 @@ class GITCreature(GITInstance):
         pitch: float,
         roll: float,
     ):
-        self.bearing += yaw
+        self._rotate_bearing(yaw)
 
     def identifier(self) -> ResourceIdentifier:
-        return ResourceIdentifier(str(self.resref), ResourceType.UTC)
+        return self._resource_identifier(ResourceType.UTC)
 
     def blank(self) -> bytes:
         return bytes_utc(UTC())
 
     def extension(self) -> ResourceType:
         return ResourceType.UTC
-
-    def classification(self) -> str:
-        return "Creature"
 
     def yaw(self) -> float:
         return self.bearing
@@ -572,10 +606,10 @@ class GITModuleLink(IntEnum):
 
 class GITDoor(GITInstance):
     """Represents a door instance in a GIT file.
-    
+
     Door instances define where doors are placed in an area. Doors can link to other
     areas/modules, have transition destinations, and support color tweaking.
-    
+
     References:
     ----------
         Based on swkotor.exe GIT structure:
@@ -585,7 +619,9 @@ class GITDoor(GITInstance):
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs (DoorInfo class)
 
     """
+
     GFF_STRUCT_ID = 8
+    GFF_CLASSIFICATION = "Door"
 
     def __init__(
         self,
@@ -594,43 +630,32 @@ class GITDoor(GITInstance):
         z: float = 0.0,
     ):
         super().__init__(x, y, z)
-        
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:63
-        # ResRef of UTD template file (TemplateResRef field)
-        self.resref: ResRef = ResRef.from_blank()
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:72
         # Door bearing/rotation angle (Bearing field)
         self.bearing: float = 0.0
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:73-74
         # Color tweak for door appearance (TweakColor/UseTweakColor fields)
         # NOTE: TODO comment indicates tweak color needs fixing in dismantle/construct
         self.tweak_color: Color | None = None  # TODO: fix tweak color in dismantle/construct
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:66
         # Tag of linked door/waypoint (LinkedTo field)
         self.linked_to: str = ""
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:67
         # Link type flags (LinkedToFlags field: 0=NoLink, 1=ToDoor, 2=ToWaypoint)
         self.linked_to_flags: GITModuleLink = GITModuleLink.NoLink
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:65
         # ResRef of linked module (LinkedToModule field)
         self.linked_to_module: ResRef = ResRef.from_blank()
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:68
         # Localized transition destination name (TransitionDestin field)
         self.transition_destination: LocalizedString = LocalizedString.from_invalid()
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:64
         # Door tag identifier (Tag field)
         self.tag: str = ""
@@ -641,9 +666,7 @@ class GITDoor(GITInstance):
         y: float,
         z: float,
     ):
-        self.position.x += x
-        self.position.y += y
-        self.position.z += z
+        self._translate(x, y, z)
 
     def rotate(
         self,
@@ -651,7 +674,7 @@ class GITDoor(GITInstance):
         pitch: float,
         roll: float,
     ):
-        self.bearing += yaw
+        self._rotate_bearing(yaw)
 
     def blank(self) -> bytes:
         return bytes_utd(UTD())
@@ -673,10 +696,7 @@ class GITDoor(GITInstance):
             - Create ResourceIdentifier object from reference and type
             - Return ResourceIdentifier
         """
-        return ResourceIdentifier(str(self.resref), ResourceType.UTD)
-
-    def classification(self) -> str:
-        return "Door"
+        return self._resource_identifier(ResourceType.UTD)
 
     def yaw(self) -> float:
         return self.bearing
@@ -685,7 +705,7 @@ class GITDoor(GITInstance):
         """Serialize GITDoor-specific data."""
         # transition_destination is a LocalizedString, not Vector3
         transition_locstring = self.transition_destination
-        transition_stringref = transition_locstring.stringref if hasattr(transition_locstring, 'stringref') else -1
+        transition_stringref = transition_locstring.stringref if hasattr(transition_locstring, "stringref") else -1
 
         return {
             "resref": str(self.resref),
@@ -693,7 +713,7 @@ class GITDoor(GITInstance):
             "tag": self.tag,
             "linked_to_module": str(self.linked_to_module),
             "linked_to": self.linked_to,
-            "linked_to_flags": self.linked_to_flags.value if hasattr(self.linked_to_flags, 'value') else int(self.linked_to_flags),
+            "linked_to_flags": self.linked_to_flags.value if hasattr(self.linked_to_flags, "value") else int(self.linked_to_flags),
             "transition_destination_stringref": transition_stringref,
         }
 
@@ -715,6 +735,7 @@ class GITEncounter(GITInstance):
     GFF_STRUCT_ID = 7
     GFF_GEOMETRY_STRUCT_ID = 1
     GFF_SPAWN_STRUCT_ID = 2
+    GFF_CLASSIFICATION = "Encounter"
 
     def __init__(
         self,
@@ -725,7 +746,6 @@ class GITEncounter(GITInstance):
         super().__init__(x, y, z)
         self.geometry: Polygon3 = Polygon3()
         self.spawn_points: list[GITEncounterSpawnPoint] = []
-        self.resref: ResRef = ResRef.from_blank()
 
     def move(
         self,
@@ -748,9 +768,7 @@ class GITEncounter(GITInstance):
             - Adds the passed z value to the current z coordinate
             - Updates the object's position with the new coordinates.
         """
-        self.position.x += x
-        self.position.y += y
-        self.position.z += z
+        self._translate(x, y, z)
 
     def rotate(
         self,
@@ -762,13 +780,10 @@ class GITEncounter(GITInstance):
         raise NotImplementedError(msg)
 
     def identifier(self) -> ResourceIdentifier:
-        return ResourceIdentifier(str(self.resref), ResourceType.UTE)
+        return self._resource_identifier(ResourceType.UTE)
 
     def blank(self) -> bytes:
         return bytes_ute(UTE())
-
-    def classification(self) -> str:
-        return "Encounter"
 
     def yaw(self) -> None:
         return None
@@ -793,6 +808,7 @@ class GITEncounter(GITInstance):
 
 class GITPlaceable(GITInstance):
     GFF_STRUCT_ID = 9
+    GFF_CLASSIFICATION = "Placeable"
 
     def __init__(
         self,
@@ -801,7 +817,6 @@ class GITPlaceable(GITInstance):
         z: float = 0.0,
     ):
         super().__init__(x, y, z)
-        self.resref: ResRef = ResRef.from_blank()
         self.bearing: float = 0.0
         self.tweak_color: Color | None = None
         self.tag: str = ""
@@ -827,9 +842,7 @@ class GITPlaceable(GITInstance):
             - Adds the passed z value to the current z coordinate
             - Updates the object's position with the new coordinates.
         """
-        self.position.x += x
-        self.position.y += y
-        self.position.z += z
+        self._translate(x, y, z)
 
     def rotate(
         self,
@@ -837,16 +850,13 @@ class GITPlaceable(GITInstance):
         pitch: float,
         roll: float,
     ):
-        self.bearing += yaw
+        self._rotate_bearing(yaw)
 
     def identifier(self) -> ResourceIdentifier:
-        return ResourceIdentifier(str(self.resref), ResourceType.UTP)
+        return self._resource_identifier(ResourceType.UTP)
 
     def blank(self) -> bytes:
         return bytes_utp(UTP())
-
-    def classification(self) -> str:
-        return "Placeable"
 
     def yaw(self) -> float:
         return self.bearing
@@ -862,6 +872,7 @@ class GITPlaceable(GITInstance):
 
 class GITSound(GITInstance):
     GFF_STRUCT_ID = 6
+    GFF_CLASSIFICATION = "Sound"
 
     def __init__(
         self,
@@ -870,7 +881,6 @@ class GITSound(GITInstance):
         z: float = 0.0,
     ):
         super().__init__(x, y, z)
-        self.resref: ResRef = ResRef.from_blank()
         self.tag: str = ""
 
     def move(
@@ -879,9 +889,7 @@ class GITSound(GITInstance):
         y: float,
         z: float,
     ):
-        self.position.x += x
-        self.position.y += y
-        self.position.z += z
+        self._translate(x, y, z)
 
     def rotate(
         self,
@@ -893,13 +901,10 @@ class GITSound(GITInstance):
         raise ValueError(msg)
 
     def identifier(self) -> ResourceIdentifier:
-        return ResourceIdentifier(str(self.resref), ResourceType.UTS)
+        return self._resource_identifier(ResourceType.UTS)
 
     def blank(self) -> bytes:
         return bytes_uts(UTS())
-
-    def classification(self) -> str:
-        return "Sound"
 
     def yaw(self) -> None:
         return None
@@ -913,6 +918,7 @@ class GITSound(GITInstance):
 
 class GITStore(GITInstance):
     GFF_STRUCT_ID = 11
+    GFF_CLASSIFICATION = "Store"
 
     def __init__(
         self,
@@ -921,7 +927,6 @@ class GITStore(GITInstance):
         z: float = 0.0,
     ):
         super().__init__(x, y, z)
-        self.resref: ResRef = ResRef.from_blank()
         self.bearing: float = 0.0
 
     def move(
@@ -930,9 +935,7 @@ class GITStore(GITInstance):
         y: float,
         z: float,
     ):
-        self.position.x += x
-        self.position.y += y
-        self.position.z += z
+        self._translate(x, y, z)
 
     def rotate(
         self,
@@ -940,16 +943,13 @@ class GITStore(GITInstance):
         pitch: float,
         roll: float,
     ):
-        self.bearing += yaw
+        self._rotate_bearing(yaw)
 
     def identifier(self) -> ResourceIdentifier:
-        return ResourceIdentifier(str(self.resref), ResourceType.UTM)
+        return self._resource_identifier(ResourceType.UTM)
 
     def blank(self) -> bytes:
         return bytes_utm(UTM())
-
-    def classification(self) -> str:
-        return "Store"
 
     def yaw(self) -> float:
         return self.bearing
@@ -965,6 +965,7 @@ class GITStore(GITInstance):
 class GITTrigger(GITInstance):
     GFF_STRUCT_ID = 1
     GFF_GEOMETRY_STRUCT_ID = 3
+    GFF_CLASSIFICATION = "Trigger"
 
     def __init__(
         self,
@@ -973,7 +974,6 @@ class GITTrigger(GITInstance):
         z: float = 0.0,
     ):
         super().__init__(x, y, z)
-        self.resref: ResRef = ResRef.from_blank()
         self.geometry: Polygon3 = Polygon3()
         self.tag: str = ""
         self.linked_to: str = ""
@@ -987,9 +987,7 @@ class GITTrigger(GITInstance):
         y: float,
         z: float,
     ):
-        self.position.x += x
-        self.position.y += y
-        self.position.z += z
+        self._translate(x, y, z)
 
     def rotate(
         self,
@@ -1001,13 +999,10 @@ class GITTrigger(GITInstance):
         raise ValueError(msg)
 
     def identifier(self) -> ResourceIdentifier:
-        return ResourceIdentifier(str(self.resref), ResourceType.UTT)
+        return self._resource_identifier(ResourceType.UTT)
 
     def blank(self) -> bytes:
         return bytes_utt(UTT())
-
-    def classification(self) -> str:
-        return "Trigger"
 
     def yaw(self) -> float:
         """Triggers do not have a bearing/yaw property. Returns 0.0 by default."""
@@ -1019,7 +1014,7 @@ class GITTrigger(GITInstance):
 
         # transition_destination is a LocalizedString
         transition_locstring = self.transition_destination
-        transition_stringref = transition_locstring.stringref if hasattr(transition_locstring, 'stringref') else -1
+        transition_stringref = transition_locstring.stringref if hasattr(transition_locstring, "stringref") else -1
 
         return {
             "resref": str(self.resref),
@@ -1027,7 +1022,7 @@ class GITTrigger(GITInstance):
             "geometry": geometry,
             "linked_to_module": str(self.linked_to_module),
             "linked_to": self.linked_to,
-            "linked_to_flags": self.linked_to_flags.value if hasattr(self.linked_to_flags, 'value') else int(self.linked_to_flags),
+            "linked_to_flags": self.linked_to_flags.value if hasattr(self.linked_to_flags, "value") else int(self.linked_to_flags),
             "transition_destination_stringref": transition_stringref,
         }
 
@@ -1049,6 +1044,7 @@ class GITTransitionTrigger(GITTrigger):
 
 class GITWaypoint(GITInstance):
     GFF_STRUCT_ID = 5
+    GFF_CLASSIFICATION = "Waypoint"
 
     def __init__(
         self,
@@ -1057,7 +1053,6 @@ class GITWaypoint(GITInstance):
         z: float = 0.0,
     ):
         super().__init__(x, y, z)
-        self.resref: ResRef = ResRef.from_blank()
         self.tag: str = ""
         self.name: LocalizedString = LocalizedString.from_invalid()
         self.map_note: LocalizedString | None = LocalizedString.from_invalid()
@@ -1071,9 +1066,7 @@ class GITWaypoint(GITInstance):
         y: float,
         z: float,
     ):
-        self.position.x += x
-        self.position.y += y
-        self.position.z += z
+        self._translate(x, y, z)
 
     def rotate(
         self,
@@ -1081,16 +1074,13 @@ class GITWaypoint(GITInstance):
         pitch: float,
         roll: float,
     ):
-        self.bearing += yaw
+        self._rotate_bearing(yaw)
 
     def identifier(self) -> ResourceIdentifier:
-        return ResourceIdentifier(str(self.resref), ResourceType.UTW)
+        return self._resource_identifier(ResourceType.UTW)
 
     def blank(self) -> bytes:
         return bytes_utw(UTW())
-
-    def classification(self) -> str:
-        return "Waypoint"
 
     def yaw(self) -> float:
         return self.bearing
@@ -1110,10 +1100,28 @@ class GITWaypoint(GITInstance):
 def construct_git(
     gff: GFF,
 ) -> GIT:
+    """REVA GIT load path:
+
+    Args:
+    ----
+        gff: The GFF structure to construct from.
+
+    Returns:
+    -------
+        GIT: The constructed GIT object.
+
+    K1 LoadGIT @ 0x0050dd80 (LoadArea 0x0050e1d7)
+        → LoadProperties 0x00507490 (GetStructFromStruct AreaProperties)
+        → CSWSAmbientSound::Load @ 0x005c95f0 (ReadFieldINT MusicDelay/MusicDay/MusicNight/MusicBattle/AmbientSndDay/AmbientSndNight/AmbientSndDayVol/AmbientSndNitVol default current/0)
+        → LoadCreatures/LoadDoors/LoadTriggers/LoadEncounters/LoadWaypoints/LoadSounds/LoadPlaceables/LoadStores/LoadPlaceableCameras.
+    TSL Aspyr LoadGIT @ 0x0071ae10.
+    """
     git = GIT()
 
     root = gff.root
+    # AreaProperties: K1 LoadProperties 0x00507490 GetStructFromStruct(AreaProperties); CSWSAmbientSound::Load 0x005c95f0 ReadFieldINT defaults 0/current. Omit struct → use defaults.
     properties_struct = root.acquire("AreaProperties", GFFStruct())
+    # AmbientSndDayVol/AmbientSndDay/EnvAudio/MusicDay/MusicBattle/MusicDelay: K1 0x005c95f0 ReadFieldINT default 0. Omit OK.
     git.ambient_volume = properties_struct.acquire("AmbientSndDayVol", 0)
     git.ambient_sound_id = properties_struct.acquire("AmbientSndDay", 0)
     git.env_audio = properties_struct.acquire("EnvAudio", 0)
@@ -1121,6 +1129,7 @@ def construct_git(
     git.music_battle_id = properties_struct.acquire("MusicBattle", 0)
     git.music_delay = properties_struct.acquire("MusicDelay", 0)
 
+    # CameraList: K1 LoadGIT 0x0050dd80 → LoadPlaceableCameras; list omit → empty. Per-struct: CameraID 0, FieldOfView/Height/MicRange/Pitch 0.0, Orientation/Position null. Omit OK.
     for camera_struct in _iterate_gff_list(gff.root, "CameraList"):
         camera = GITCamera()
         git.cameras.append(camera)
@@ -1133,6 +1142,7 @@ def construct_git(
         camera.position = camera_struct.acquire("Position", Vector3.from_null())
         camera.pitch = camera_struct.acquire("Pitch", 0.0)
 
+    # Creature List: K1 LoadGIT 0x0050dd80 → LoadCreatures. TemplateResRef blank, X/Y/ZPosition 0.0, X/YOrientation 0.0. Omit list → empty. Omit OK.
     for creature_struct in _iterate_gff_list(gff.root, "Creature List"):
         creature = GITCreature()
         git.creatures.append(creature)
@@ -1146,6 +1156,7 @@ def construct_git(
         )
         creature.bearing = Vector2(rot_x, rot_y).angle() - math.pi / 2
 
+    # Door List: K1 LoadGIT 0x0050dd80 → LoadDoors. Bearing 0.0, Tag/LinkedTo "", TemplateResRef/LinkedToModule blank, LinkedToFlags 0, TransitionDestin invalid, X/Y/Z 0.0, UseTweakColor 0. Omit OK.
     for door_struct in _iterate_gff_list(gff.root, "Door List"):
         door = GITDoor()
         git.doors.append(door)
@@ -1162,6 +1173,7 @@ def construct_git(
         tweak_enabled = door_struct.acquire("UseTweakColor", 0)
         door.tweak_color = Color.from_bgr_integer(door_struct.acquire("TweakColor", 0)) if tweak_enabled else None
 
+    # Encounter List: K1 LoadGIT 0x0050dd80 → LoadEncounters. X/Y/ZPosition 0.0, TemplateResRef blank; Geometry omit → default triangle; SpawnPointList X/Y/Z/Orientation 0.0. Omit OK.
     for encounter_struct in _iterate_gff_list(gff.root, "Encounter List"):
         x = encounter_struct.acquire("XPosition", 0.0)
         y = encounter_struct.acquire("YPosition", 0.0)
@@ -1180,12 +1192,6 @@ def construct_git(
                     y = geometry_struct.acquire("Y", 0.0)
                     z = geometry_struct.acquire("Z", 0.0)
                     encounter.geometry.append(Vector3(x, y, z))
-            if geometry_list is None or not geometry_list:
-                RobustLogger().warning("Encounter geometry list is empty! Creating a default triangle at its position.")
-                encounter.geometry.create_triangle(origin=encounter.position)
-        else:
-            RobustLogger().warning("Encounter geometry list missing! Creating a default triangle at its position.")
-            encounter.geometry.create_triangle(origin=encounter.position)
 
         for spawn_struct in _iterate_gff_list(encounter_struct, "SpawnPointList"):
             spawn = GITEncounterSpawnPoint()
@@ -1195,6 +1201,7 @@ def construct_git(
             spawn.orientation = spawn_struct.acquire("Orientation", 0.0)
             encounter.spawn_points.append(spawn)
 
+    # Placeable List: K1 LoadGIT 0x0050dd80 → LoadPlaceables. TemplateResRef blank, X/Y/Z 0.0, Bearing 0.0, UseTweakColor 0. Omit OK.
     for placeable_struct in _iterate_gff_list(gff.root, "Placeable List"):
         placeable = GITPlaceable()
         git.placeables.append(placeable)
@@ -1209,6 +1216,7 @@ def construct_git(
         tweak_int = placeable_struct.acquire("TweakColor", 0)
         placeable.tweak_color = Color.from_bgr_integer(tweak_int) if tweak_enabled else None
 
+    # SoundList: K1 LoadGIT 0x0050dd80 → LoadSounds. TemplateResRef blank, X/Y/ZPosition 0.0. Omit OK.
     for sound_struct in _iterate_gff_list(gff.root, "SoundList"):
         sound = GITSound()
         git.sounds.append(sound)
@@ -1218,6 +1226,7 @@ def construct_git(
         sound.position.y = sound_struct.acquire("YPosition", 0.0)
         sound.position.z = sound_struct.acquire("ZPosition", 0.0)
 
+    # StoreList: K1 LoadGIT 0x0050dd80 → LoadStores. ResRef blank, X/Y/ZPosition 0.0, X/YOrientation 0.0. Omit OK.
     for store_struct in _iterate_gff_list(gff.root, "StoreList"):
         store = GITStore()
         git.stores.append(store)
@@ -1233,6 +1242,7 @@ def construct_git(
         )
         store.bearing = Vector2(rot_x, rot_y).angle() - math.pi / 2
 
+    # TriggerList: K1 LoadGIT 0x0050dd80 → LoadTriggers. TemplateResRef/Tag/LinkedTo/LinkedToModule blank, LinkedToFlags 0, X/Y/ZPosition 0.0; Geometry omit → default triangle. Omit OK.
     for trigger_struct in _iterate_gff_list(gff.root, "TriggerList"):
         trigger = GITTrigger()
         git.triggers.append(trigger)
@@ -1255,13 +1265,8 @@ def construct_git(
                     y = geometry_struct.acquire("PointY", 0.0)
                     z = geometry_struct.acquire("PointZ", 0.0)
                     trigger.geometry.append(Vector3(x, y, z))
-            if geometry_list is None or not geometry_list:
-                RobustLogger().warning("Trigger geometry list is empty! Creating a default triangle at its position.")
-                trigger.geometry.create_triangle(origin=trigger.position)
-        else:
-            RobustLogger().warning("Trigger geometry list missing! Creating a default triangle at its position.")
-            trigger.geometry.create_triangle(origin=trigger.position)
 
+    # WaypointList: K1 LoadGIT 0x0050dd80 → LoadWaypoints. LocalizedName/Tag invalid/blank, TemplateResRef blank, X/Y/ZPosition 0.0, HasMapNote 0, X/YOrientation 0.0. Omit OK.
     for waypoint_struct in _iterate_gff_list(gff.root, "WaypointList"):
         waypoint = GITWaypoint()
         git.waypoints.append(waypoint)
@@ -1297,12 +1302,16 @@ def dismantle_git(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
+    """REVA GIT write path: K1 SaveGIT @ 0x0050ba00 (SaveModuleInProgress 0x004c3bf9) → SaveProperties 0x00506090 (AddStructToStruct AreaProperties),
+    CSWSAmbientSound::Save @ 0x005c96e0 (WriteFieldINT MusicDelay/MusicDay/MusicNight/MusicBattle/AmbientSndDay/AmbientSndNight/AmbientSndDayVol/AmbientSndNitVol). TSL SaveGIT analogous."""
     gff = GFF(GFFContent.GIT)
-
     root = gff.root
+
+    # UseTemplates: K1 LoadGIT 0x0050dd80 ReadFieldBYTE default 0; SaveGIT 0x0050ba00 writes 1. Omit OK.
     root.set_uint8("UseTemplates", 1)
 
-    properties_struct = root.set_struct("AreaProperties", GFFStruct(100))
+    # AreaProperties: K1 SaveProperties 0x00506090 AddStructToStruct(AreaProperties,100); CSWSAmbientSound::Save 0x005c96e0 writes INT fields. Defaults 0.
+    properties_struct = GFFStruct(100)
     properties_struct.set_int32("AmbientSndDayVol", git.ambient_volume)
     properties_struct.set_int32("AmbientSndDay", git.ambient_sound_id)
     properties_struct.set_int32("AmbientSndNitVol", git.ambient_volume)
@@ -1312,7 +1321,9 @@ def dismantle_git(
     properties_struct.set_int32("MusicNight", git.music_standard_id)
     properties_struct.set_int32("MusicBattle", git.music_battle_id)
     properties_struct.set_int32("MusicDelay", git.music_delay)
+    root.set_struct("AreaProperties", properties_struct)
 
+    # CameraList/Creature List/Door List/Encounter List/Placeable List/SoundList/StoreList/TriggerList/WaypointList: K1 SaveGIT 0x0050ba00 writes each list; list omit → empty. Defaults per type.
     camera_list = root.set_list("CameraList", GFFList())
     for camera in git.cameras:
         camera_struct = camera_list.add(GITCamera.GFF_STRUCT_ID)
@@ -1321,7 +1332,7 @@ def dismantle_git(
         camera_struct.set_single("Height", camera.height)
         camera_struct.set_single("MicRange", camera.mic_range)
         orientation = Vector4(*camera.orientation)
-        #orientation.z = 0.0  # Pitch has its own field.  # comment out to pass the test? idk
+        # orientation.z = 0.0  # Pitch has its own field.  # comment out to pass the test? idk
         camera_struct.set_vector4("Orientation", orientation)
         camera_struct.set_vector3("Position", camera.position)
         camera_struct.set_single("Pitch", camera.pitch)
@@ -1366,10 +1377,6 @@ def dismantle_git(
         encounter_struct.set_single("XPosition", encounter.position.x)
         encounter_struct.set_single("YPosition", encounter.position.y)
         encounter_struct.set_single("ZPosition", encounter.position.z)
-
-        if not encounter.geometry:
-            RobustLogger().warning("Missing encounter geometry for '%s', creating a default triangle at its position...", encounter.resref)
-            encounter.geometry.create_triangle(origin=encounter.position)
 
         geometry_list = encounter_struct.set_list("Geometry", GFFList())
         for point in encounter.geometry:
@@ -1443,10 +1450,6 @@ def dismantle_git(
         trigger_struct.set_uint8("LinkedToFlags", trigger.linked_to_flags.value)
         trigger_struct.set_resref("LinkedToModule", trigger.linked_to_module)
         trigger_struct.set_locstring("TransitionDestin", trigger.transition_destination)
-
-        if not trigger.geometry:
-            RobustLogger().warning("Missing trigger geometry for '%s', creating a default triangle at its position...", trigger.resref)
-            trigger.geometry.create_triangle(origin=trigger.position)
 
         geometry_list = trigger_struct.set_list("Geometry", GFFList())
         for point in trigger.geometry:

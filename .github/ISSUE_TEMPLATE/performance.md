@@ -24,7 +24,7 @@ What performance level would be acceptable?
 ## Environment
 
 - **OS**: [e.g., Windows 11, macOS 14.0, Ubuntu 22.04]
-- **Python Version**: [e.g., 3.11.5]
+- **Python Version**: [e.g., 3.8–3.13]
 - **PyKotor Version**: [e.g., 2.0.2]
 - **Hardware**: [e.g., CPU, RAM, Storage type]
 

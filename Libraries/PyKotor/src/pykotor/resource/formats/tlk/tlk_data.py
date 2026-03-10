@@ -6,14 +6,15 @@ to localized text and associated voice-over audio files.
 
 References:
 ----------
-    Based on swkotor.exe TLK structure:
-    - CResTLK::CResTLK - TLK resource constructor
-    - LoadTLK - Loads TLK file from resource
-    - GetString - Gets string by StrRef index
-    - "TLK " file type identifier - First 4 bytes of TLK files
-    - "V3.0" version identifier - Bytes 4-7 of KotOR TLK files
-    - "V4.0" version identifier - Bytes 4-7 of Jade Empire TLK files
-    - "dialog.tlk" - Default TLK filename loaded by game
+    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) TLK structure.
+    Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+
+    - CTlkTable::CTlkTable (talk table manager constructor): K1: 0x0041d8d0, TSL: TODO
+    - CTlkTable::AddFile (adds TLK file to table; loads .tlk and .tlkf): K1: 0x0041d920, TSL: TODO
+    - CTlkFile::CTlkFile (TLK file reader constructor): K1: 0x0041d810, TSL: TODO
+    - TLK resource type "TLK ": K1: 0x0073ecb0, TSL: TODO
+    - "tlk" extension string: K1: 0x0074dd40, TSL: TODO
+    - CResTLK::CResTLK, LoadTLK, GetString — see engine TLK loading. "TLK " (first 4 bytes), "V3.0"/"V4.0" (bytes 4–7), "dialog.tlk" default.
     - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
     TLK file format specification
 
@@ -52,30 +53,18 @@ if TYPE_CHECKING:
 
 class TLK(ComparableMixin):
     """Talk Table containing localized strings and voice-over references.
-    
+
     The TLK file is the central localization mechanism for KotOR, mapping string reference
     numbers (StrRef) to localized text and optional voice-over audio files. The game loads
     dialog.tlk at startup and references strings throughout the game using StrRef numbers.
-    
+
     References:
     ----------
-    Based on swkotor.exe TLK structure:
-    - CResTLK::CResTLK - TLK resource constructor
-    - LoadTLK - Loads TLK file from resource manager
-    - GetString - Gets localized string by StrRef index
-    - "TLK " file type identifier - First 4 bytes of TLK files
-    - "V3.0" version identifier - Bytes 4-7 of KotOR TLK files (offset 0x04)
-    - "V4.0" version identifier - Bytes 4-7 of Jade Empire TLK files
-    - Language ID field at offset 0x08 (4 bytes, int32)
-    - String Count field at offset 0x0C (4 bytes, int32)
-    - String Entries Offset at offset 0x10 (4 bytes, int32)
-    - String Data Table starts at offset 0x14 (40 bytes per entry)
-    - "dialog.tlk" - Default TLK filename loaded by game at startup
-    - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
+    See module docstring for engine addresses (K1 + TSL TODO). CResTLK::CResTLK, LoadTLK, GetString; "TLK ", "V3.0"/"V4.0"; Language ID @ 0x08, String Count @ 0x0C, String Entries Offset @ 0x10, String Data Table @ 0x14 (40 bytes/entry); "dialog.tlk". Original BioWare engine binaries (swkotor.exe, swkotor2.exe).
     TLK file format specification
 
 
-        
+
     Attributes:
     ----------
         entries: List of TLKEntry objects indexed by StrRef
@@ -84,7 +73,7 @@ class TLK(ComparableMixin):
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/TLK.cs:93 (String_Data_Table)
             StrRef numbers are array indices (0-based)
             Game uses StrRef -1 to indicate no string reference
-            
+
         language: Language identifier for this talk table
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/TLKBinaryStructure.cs:63 (LanguageID field)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/TLK.cs:84 (LanguageID property)
@@ -92,7 +81,7 @@ class TLK(ComparableMixin):
             NOTE: Game ignores this field in KotOR, always uses dialog.tlk
             Used primarily for modding tools to identify language
     """
-    
+
     BINARY_TYPE = ResourceType.TLK
     COMPARABLE_FIELDS = ("language",)
     COMPARABLE_SEQUENCE_FIELDS = ("entries",)
@@ -103,7 +92,7 @@ class TLK(ComparableMixin):
     ):
         # List of string entries indexed by StrRef (0-based array index)
         self.entries: list[TLKEntry] = []
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:63
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/TLK.cs:84
         # Language ID field - unused by game but present in file format
@@ -295,10 +284,10 @@ class TLK(ComparableMixin):
 
 class TLKEntry(ComparableMixin):
     """A single string entry in a Talk Table.
-    
+
     Each entry represents one localized string that can be referenced by its StrRef (array index).
     Entries contain the text content and an optional reference to a voice-over audio file.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -320,9 +309,9 @@ class TLKEntry(ComparableMixin):
         0x20   | 4    | int32  | String Size (length in bytes)
         0x24   | 4    | float  | Sound Length (seconds)
 
-        
+
         Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/TLKBinaryStructure.cs:92-130, KotOR_IO/TLK.cs:194-200
-    
+
     Attributes:
     ----------
         text: The localized text string
@@ -331,22 +320,23 @@ class TLKEntry(ComparableMixin):
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/TLK.cs:191 (StringText property)
             Encoding: ASCII for English, language-specific for others
             Can contain special tokens like <CUSTOM0>, <FullName>, etc.
-            
+
         voiceover: Reference to voice-over WAV file (ResRef)
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/TLKBinaryStructure.cs:97 (SoundResRef property)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/TLK.cs:197 (SoundResRef field, 16 chars)
             Max 16 characters, stored as null-terminated string in binary
             If empty/blank, no voice-over is associated with this entry
             Game looks for WAV files in StreamVoice/ or StreamWaves/ folders
-            
+
         sound_length: Duration of voice-over audio in seconds
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/TLKBinaryStructure.cs:102 (Length property, float)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/TLK.cs:206 (SoundLength field)
             NOTE: Unused by KotOR game engine, but present in file format
             Primarily used by modding tools for audio synchronization
     """
-    
+
     COMPARABLE_FIELDS = ("text", "voiceover")
+
     def __init__(
         self,
         text: str,
@@ -357,10 +347,10 @@ class TLKEntry(ComparableMixin):
         # https://github.com/th3w1zard1/TSLPatcher/tree/master/lib/site/Bioware/TLK.pm:76-79
         # Localized text string (encoding depends on language)
         self.text: str = text
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:97
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/TLK.cs:197
-        
+
         # Voice-over WAV file reference (max 16 chars)
         self.voiceover: ResRef = voiceover
 
@@ -375,6 +365,7 @@ class TLKEntry(ComparableMixin):
     def text_present(self) -> bool:
         """Always True; present for compatibility (TLK field)."""
         return True
+
     @text_present.setter
     def text_present(self, value: bool):
         self._text_present = value
@@ -383,6 +374,7 @@ class TLKEntry(ComparableMixin):
     def sound_present(self) -> bool:
         """Always True; present for compatibility (TLK field)."""
         return True
+
     @sound_present.setter
     def sound_present(self, value: bool):
         self._sound_present = value
@@ -391,6 +383,7 @@ class TLKEntry(ComparableMixin):
     def soundlength_present(self) -> bool:
         """Always True; present for compatibility (TLK field)."""
         return True
+
     @soundlength_present.setter
     def soundlength_present(self, value: bool):
         self._soundlength_present = value
@@ -421,6 +414,7 @@ class TLKEntry(ComparableMixin):
     @property
     def text_length(self) -> int:
         return len(self.text)
+
     @text_length.setter
     def text_length(self, value: int):
         self._text_length = value

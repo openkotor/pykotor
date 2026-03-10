@@ -1,3 +1,5 @@
+"""UTW (waypoint) generic: GFF-based waypoint definitions and map notes."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -20,23 +22,23 @@ class UTW:
 
     References:
     ----------
-        KotOR I (swkotor.exe):
-            - 0x005c7f30 - CSWSWaypoint::LoadWaypoint (767 bytes, 106 lines)
-                - Main UTW GFF parser entry point
-                - Loads all waypoint fields from GFF structure
-                - Function signature: LoadWaypoint(CSWSWaypoint* this, CResGFF* param_2, CResStruct* param_3)
-                - Called from LoadWaypoints (0x00505360) and LoadFromTemplate (0x005c83b0)
-            - 0x00505360 - CSWSArea::LoadWaypoints
-                - Loads waypoints from area GIT file
-            - 0x005c83b0 - CSWSWaypoint::LoadFromTemplate
-                - Loads waypoint template from ResRef
-                - Calls LoadWaypoint after loading GFF
-        
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally equivalent UTW parsing logic
-            - Same GFF field structure and parsing behavior
-            - String references at different addresses due to binary layout differences
-        
+        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) UTW implementation.
+        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe). TSL addresses: resolve in REVA when
+        PyKotorGhidraProject.gpr is open (project may be locked by another process).
+
+        - CSWSWaypoint::LoadWaypoint (main UTW GFF parser)
+            K1: 0x005c7f30, TSL: TODO
+            Loads all waypoint fields from GFF structure.
+            Signature: LoadWaypoint(CSWSWaypoint* this, CResGFF* param_2, CResStruct* param_3).
+            Called from LoadWaypoints and LoadFromTemplate.
+
+        - CSWSArea::LoadWaypoints (load waypoints from area GIT)
+            K1: 0x00505360, TSL: TODO
+
+        - CSWSWaypoint::LoadFromTemplate (load waypoint template from ResRef)
+            K1: 0x005c83b0, TSL: TODO
+            Loads GFF then calls LoadWaypoint.
+
         GFF Field Structure (from LoadWaypoint analysis):
             - Root struct fields:
                 - "Tag" (CExoString) - Waypoint tag identifier
@@ -50,7 +52,7 @@ class UTW:
                 - "HasMapNote" (BYTE) - Whether waypoint has a map note
                 - "MapNoteEnabled" (BYTE) - Whether map note is enabled (only read if HasMapNote is true)
                 - "MapNote" (CExoLocString) - Localized map note text (only read if HasMapNote is true)
-        
+
         Note: UTW files are GFF format files with specific structure definitions (GFFContent.UTW)
 
     Attributes:
@@ -113,15 +115,27 @@ class UTW:
 def construct_utw(
     gff: GFF,
 ) -> UTW:
+    """Constructs a UTW object from a GFF structure.
+
+    Defaults when field missing (from engine): K1 CSWSWaypoint::LoadWaypoint (K1: 0x005c7f30, TSL: TODO).
+    Tag "", TemplateResRef "", LocalizedName empty; HasMapNote/MapNoteEnabled 0, MapNote empty.
+    Position/orient come from GIT (not in UTW root). Optional when missing.
+
+    Reference functions: (1) LoadWaypoint root UTW parser, (2) LoadWaypoints area waypoints,
+    (3) LoadFromTemplate, (4) CResGFF::ReadField* for Tag, LocalizedName, HasMapNote, MapNote,
+    MapNoteEnabled. TSL same semantics; addresses in UTW class References.
+    """
     utw = UTW()
 
     root: GFFStruct = gff.root
+    # Identity/toolset: Appearance, LinkedTo, TemplateResRef, Tag, LocalizedName, Description. K1 LoadWaypoint 0x005c7f30 (Tag/LocalizedName); Appearance/LinkedTo/Description toolset-only. TSL same (addresses in UTW References). Optional.
     utw.appearance_id = root.acquire("Appearance", 0)
     utw.linked_to = root.acquire("LinkedTo", "")
     utw.resref = root.acquire("TemplateResRef", ResRef.from_blank())
     utw.tag = root.acquire("Tag", "")
     utw.name = root.acquire("LocalizedName", LocalizedString.from_invalid())
     utw.description = root.acquire("Description", LocalizedString.from_invalid())
+    # Map note: HasMapNote 0, MapNote empty, MapNoteEnabled 0. K1/TSL LoadWaypoint. Optional.
     utw.has_map_note = bool(root.acquire("HasMapNote", 0))
     utw.map_note = root.acquire("MapNote", LocalizedString.from_invalid())
     utw.map_note_enabled = bool(root.acquire("MapNoteEnabled", 0))
@@ -137,19 +151,30 @@ def dismantle_utw(
     *,
     use_deprecated: bool = True,  # noqa: ARG001
 ) -> GFF:
+    """Dismantles a UTW object into a GFF structure. Write same defaults as engine read. K1 LoadWaypoint 0x005c7f30; TSL same (addresses in UTW References)."""
     gff = GFF(GFFContent.UTW)
 
     root: GFFStruct = gff.root
     root.set_uint8("Appearance", utw.appearance_id)
+    # LinkedTo: CExoString; toolset-only. Default "". Omit OK for engine.
     root.set_string("LinkedTo", utw.linked_to)
+    # TemplateResRef: CResRef; template ref. Default blank. Omit OK.
     root.set_resref("TemplateResRef", utw.resref)
+    # Tag: CExoString; engine default "". K1 LoadWaypoint 0x005c7f30 ReadFieldCExoString default "".
     root.set_string("Tag", utw.tag)
+    # LocalizedName: CExoLocString; engine default empty. K1 LoadWaypoint 0x005c7f30 ReadFieldCExoLocString.
     root.set_locstring("LocalizedName", utw.name)
+    # Description: CExoLocString; toolset-only. Default empty. Omit OK.
     root.set_locstring("Description", utw.description)
+    # HasMapNote: BYTE; engine default 0. K1 LoadWaypoint 0x005c7f30 ReadFieldBYTE(..., 0).
     root.set_uint8("HasMapNote", utw.has_map_note)
+    # MapNote: CExoLocString; read only when HasMapNote. Default empty. K1 LoadWaypoint 0x005c7f30.
     root.set_locstring("MapNote", utw.map_note)
+    # MapNoteEnabled: BYTE; engine default 0. K1 LoadWaypoint 0x005c7f30 ReadFieldBYTE(..., 0).
     root.set_uint8("MapNoteEnabled", utw.map_note_enabled)
+    # PaletteID: BYTE; toolset-only. Default 0. Omit OK.
     root.set_uint8("PaletteID", utw.palette_id)
+    # Comment: CExoString; toolset-only. Default "". Omit OK.
     root.set_string("Comment", utw.comment)
 
     return gff

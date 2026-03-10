@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from qtpy.QtWidgets import QComboBox, QTableWidgetItem
+from qtpy.QtWidgets import QComboBox, QLineEdit
 
 from pykotor.common.misc import ResRef
 from pykotor.resource.formats.gff import write_gff
@@ -17,6 +17,7 @@ from toolset.gui.editor import Editor
 if TYPE_CHECKING:
     import os
 
+    from pykotor.common.language import LocalizedString
     from toolset.data.installation import HTInstallation
 
 
@@ -54,33 +55,42 @@ class IFOEditor(Editor):
     def _setup_signals(self):
         """Connect UI signals to handler methods."""
         # Basic info fields
-        self.ui.tagEdit.textChanged.connect(self.on_value_changed)
         self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
-        self.ui.voIdEdit.textChanged.connect(self.on_value_changed)
-        self.ui.hakEdit.textChanged.connect(self.on_value_changed)
-        self.ui.creatorIdSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.versionSpin.valueChanged.connect(self.on_value_changed)
+        for signal in (
+            self.ui.tagEdit.textChanged,
+            self.ui.voIdEdit.textChanged,
+            self.ui.hakEdit.textChanged,
+            self.ui.creatorIdSpin.valueChanged,
+            self.ui.versionSpin.valueChanged,
+        ):
+            signal.connect(self.on_value_changed)
 
         # Module name and description - connect to editing finished signal
         self.ui.modNameEdit.sig_editing_finished.connect(self.on_mod_name_changed)
         self.ui.descriptionEdit.sig_editing_finished.connect(self.on_description_changed)
 
         # Entry point fields
-        self.ui.entryAreaEdit.textChanged.connect(self.on_value_changed)
-        self.ui.entryXSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.entryYSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.entryZSpin.valueChanged.connect(self.on_value_changed)
+        for signal in (
+            self.ui.entryAreaEdit.textChanged,
+            self.ui.entryXSpin.valueChanged,
+            self.ui.entryYSpin.valueChanged,
+            self.ui.entryZSpin.valueChanged,
+        ):
+            signal.connect(self.on_value_changed)
         self.ui.entryDirectionSpin.valueChanged.connect(self.on_entry_direction_changed)
 
         # Time settings (deprecated but still supported)
-        self.ui.dawnHourSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.duskHourSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.timeScaleSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.startMonthSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.startDaySpin.valueChanged.connect(self.on_value_changed)
-        self.ui.startHourSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.startYearSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.xpScaleSpin.valueChanged.connect(self.on_value_changed)
+        for signal in (
+            self.ui.dawnHourSpin.valueChanged,
+            self.ui.duskHourSpin.valueChanged,
+            self.ui.timeScaleSpin.valueChanged,
+            self.ui.startMonthSpin.valueChanged,
+            self.ui.startDaySpin.valueChanged,
+            self.ui.startHourSpin.valueChanged,
+            self.ui.startYearSpin.valueChanged,
+            self.ui.xpScaleSpin.valueChanged,
+        ):
+            signal.connect(self.on_value_changed)
 
         # Script fields - map UI names to IFO attribute names
         self._script_field_mapping = {
@@ -102,16 +112,19 @@ class IFOEditor(Editor):
         }
 
         for ui_name, ifo_attr in self._script_field_mapping.items():
-            widget = getattr(self.ui, ui_name)
+            widget: QComboBox | QLineEdit = getattr(self.ui, ui_name)
             if hasattr(widget, "currentTextChanged"):
                 widget.currentTextChanged.connect(self.on_value_changed)
             elif hasattr(widget, "textChanged"):
                 widget.textChanged.connect(self.on_value_changed)
 
         # Advanced settings
-        self.ui.expansionPackSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.minGameVerEdit.textChanged.connect(self.on_value_changed)
-        self.ui.cacheNSSDataCheck.stateChanged.connect(self.on_value_changed)
+        for signal in (
+            self.ui.expansionPackSpin.valueChanged,
+            self.ui.minGameVerEdit.textChanged,
+            self.ui.cacheNSSDataCheck.stateChanged,
+        ):
+            signal.connect(self.on_value_changed)
 
         # Area list management (if implemented)
         self.ui.addAreaButton.clicked.connect(self.add_area)
@@ -147,65 +160,53 @@ class IFOEditor(Editor):
         self.ui.descriptionEdit.set_installation(installation)
 
         # Setup script field context menus and reference search
-        script_field_names: list[str] = [
-            "onHeartbeatEdit",
-            "onLoadEdit",
-            "onStartEdit",
-            "onEnterEdit",
-            "onLeaveEdit",
-            "onActivateItemEdit",
-            "onAcquireItemEdit",
-            "onUnacquireItemEdit",
-            "onPlayerDeathEdit",
-            "onPlayerDyingEdit",
-            "onPlayerLevelupEdit",
-            "onPlayerRespawnEdit",
-            "onUserDefinedEdit",
-            "onPlayerRestEdit",
-            "startMovieEdit",
-        ]
-        
-        script_fields: list[QComboBox | None] = [getattr(self.ui, name, None) for name in script_field_names]
-        
+        script_fields: list[QComboBox | QLineEdit] = self._script_widgets()
+
         for field in script_fields:
-            if field is None:
-                continue
             installation.setup_file_context_menu(
                 field,
                 [ResourceType.NSS, ResourceType.NCS],
                 enable_reference_search=True,
                 reference_search_type="script",
             )
-            tooltip = field.toolTip() or ""
-            if "Right-click" not in tooltip:
-                field.setToolTip(
-                    tr("Right-click to find references to this script in the installation.")
-                    if not tooltip
-                    else f"{tooltip}\n\n{tr('Right-click to find references to this script in the installation.')}",
-                )
+            self._append_reference_tooltip(field, tr("Right-click to find references to this script in the installation."))
             # Set maxLength for FilterComboBox script fields (ResRefs are max 16 characters)
-            line_edit = field.lineEdit() if hasattr(field, "lineEdit") else None
+            line_edit: QLineEdit | None = field.lineEdit() if hasattr(field, "lineEdit") else None
             if line_edit is not None:
                 line_edit.setMaxLength(16)
 
         # Populate script combo boxes with available scripts
         relevant_scripts: list[str] = sorted(
             iter(
-                {
-                    res.resname().lower()
-                    for res in installation.get_relevant_resources(ResourceType.NCS, self._filepath)
-                },
+                {res.resname().lower() for res in installation.get_relevant_resources(ResourceType.NCS, self._filepath)},
             ),
         )
 
         from toolset.gui.common.widgets.combobox import FilterComboBox
-        for ui_name in self._script_field_mapping.keys():
-            widget = getattr(self.ui, ui_name)
+
+        for widget in self._script_widgets():
             if isinstance(widget, FilterComboBox):
                 widget.populate_combo_box(relevant_scripts)
             elif isinstance(widget, (QComboBox,)):
                 widget.clear()
                 widget.addItems([""] + relevant_scripts)
+
+    def _script_widgets(self) -> list[QComboBox | QLineEdit]:
+        """Return valid script widgets from the script field mapping."""
+        widgets: list[QComboBox | QLineEdit] = []
+        for ui_name in self._script_field_mapping:
+            widget = getattr(self.ui, ui_name, None)
+            if widget is not None:
+                widgets.append(widget)
+        return widgets
+
+    @staticmethod
+    def _append_reference_tooltip(field: QComboBox | QLineEdit, helper_text: str) -> None:
+        """Append reference-search helper text only once to an existing tooltip."""
+        tooltip = field.toolTip() or ""
+        if "Right-click" in tooltip:
+            return
+        field.setToolTip(helper_text if not tooltip else f"{tooltip}\n\n{helper_text}")
 
     def generate_tag(self):
         """Generate tag from module name/resref."""
@@ -213,10 +214,11 @@ class IFOEditor(Editor):
             return
 
         # Try to generate tag from module name or resref
-        locstring = self.ui.modNameEdit.locstring()
+        locstring: LocalizedString = self.ui.modNameEdit.locstring()
         if locstring and locstring.stringref != -1:
             # Try to get English text
-            from pykotor.common.language import Language, Gender
+            from pykotor.common.language import Gender, Language
+
             name = locstring.get(Language.ENGLISH, Gender.MALE) or ""
             if not name and self._installation:
                 name = self._installation.string(locstring) or ""
@@ -251,14 +253,14 @@ class IFOEditor(Editor):
         restype: ResourceType,
         data: bytes | bytearray,
     ) -> None:
-        """Load an IFO file."""
+        """Load IFO from bytes. Defaults when field missing: Mod_ID empty, Mod_VO_ID/Mod_Tag "", Mod_Name/Mod_Entry_Area blank, Mod_Entry_X/Y/Z 0.0, Mod_On* blank, Expansion_Pack 0, Mod_Area_list optional. K1 LoadModuleStart @ 0x004c9050 (MainLoop @ 0x004babb0), TSL LoadModuleStart @ 0x0072aaa0 (MainLoop @ 0x007b6bb0)."""
         super().load(filepath, resref, restype, data)
         self.ifo = read_ifo(data)
         self.update_ui_from_ifo()
 
     def build(self) -> tuple[bytes, bytes]:
-        """Build IFO file data."""
-        if not self.ifo:
+        """Build IFO bytes from editor state. Write values match engine read (Mod_ID, Mod_Tag, Mod_Entry_*, Mod_On*, Mod_Area_list). K1 LoadModuleStart @ 0x004c9050, TSL @ 0x0072aaa0."""
+        if self.ifo is None:
             return b"", b""
 
         data = bytearray()
@@ -272,11 +274,11 @@ class IFOEditor(Editor):
         self.update_ui_from_ifo()
 
     def update_ui_from_ifo(self) -> None:
-        """Update UI elements from IFO data."""
+        """Update UI elements from IFO data. Defaults as in construct_ifo (K1 0x004c9050, TSL 0x0072aaa0)."""
         if self.ifo is None or self._installation is None:
             return
 
-        # Basic Info
+        # Basic Info: Mod_Name/Mod_Tag/Mod_VO_ID "" or empty when missing (K1/TSL LoadModuleStart).
         self.ui.modNameEdit.set_locstring(self.ifo.mod_name)
         self.ui.tagEdit.setText(self.ifo.tag)
         self.ui.voIdEdit.setText(self.ifo.vo_id)
@@ -291,7 +293,7 @@ class IFOEditor(Editor):
         self.ui.creatorIdSpin.setValue(self.ifo.creator_id)
         self.ui.versionSpin.setValue(self.ifo.version)
 
-        # Entry Point
+        # Entry Point: Mod_Entry_Area blank, Mod_Entry_X/Y/Z 0.0, Mod_Entry_Dir 1,0 when missing (K1 ~174-186).
         self.ui.entryAreaEdit.setText(str(self.ifo.resref))
         self.ui.entryXSpin.setValue(self.ifo.entry_position.x)
         self.ui.entryYSpin.setValue(self.ifo.entry_position.y)
@@ -322,20 +324,20 @@ class IFOEditor(Editor):
         for ui_name, ifo_attr in self._script_field_mapping.items():
             widget = getattr(self.ui, ui_name)
             script_value = str(getattr(self.ifo, ifo_attr))
-            if hasattr(widget, "setCurrentText"):
+            if isinstance(widget, QComboBox):
                 widget.setCurrentText(script_value)
-            elif hasattr(widget, "setText"):
+            elif isinstance(widget, (QLineEdit,)):
                 widget.setText(script_value)
 
         # Advanced settings
         self.ui.expansionPackSpin.setValue(self.ifo.expansion_id)
 
     def on_value_changed(self) -> None:
-        """Handle UI value changes."""
+        """Handle UI value changes. Persisted via dismantle_ifo (K1 0x004c9050, TSL 0x0072aaa0)."""
         if not self.ifo:
             return
 
-        # Basic Info
+        # Basic Info: same defaults as construct_ifo/dismantle_ifo.
         self.ifo.tag = self.ui.tagEdit.text()
         self.ifo.vo_id = self.ui.voIdEdit.text()
         self.ifo.hak = self.ui.hakEdit.text()
@@ -390,4 +392,11 @@ class IFOEditor(Editor):
         self.ifo.expansion_id = self.ui.expansionPackSpin.value()
 
         # TODO: determine if this is needed
-        #self.signal_modified.emit()
+        # self.signal_modified.emit()
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("ifo"))

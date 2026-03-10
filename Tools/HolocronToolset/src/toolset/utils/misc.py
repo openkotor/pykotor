@@ -1,7 +1,9 @@
+"""Toolset utils: Qt key/mouse string conversion, QSettings org, archive helpers."""
+
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 import qtpy
 
@@ -33,6 +35,37 @@ MODIFIER_KEY_NAMES: dict[Qt.Key, str] = {
     Qt.Key.Key_ScrollLock: "SCROLLLOCK",
 }
 MODIFIER_KEYNAME_TO_KEY: dict[str, Qt.Key] = {v: k for k, v in MODIFIER_KEY_NAMES.items()}
+
+# Map Qt.KeyboardModifier (e.g. from QWheelEvent.modifiers()) to Qt.Key for bind checks.
+_MODIFIER_FLAG_TO_KEY: list[tuple[object, Qt.Key]] = []
+if hasattr(Qt, "KeyboardModifier"):
+    km = Qt.KeyboardModifier  # type: ignore[attr-defined]
+    _MODIFIER_FLAG_TO_KEY = [
+        (km.ControlModifier, Qt.Key.Key_Control),  # type: ignore[attr-defined]
+        (km.ShiftModifier, Qt.Key.Key_Shift),  # type: ignore[attr-defined]
+        (km.AltModifier, Qt.Key.Key_Alt),  # type: ignore[attr-defined]
+        (km.MetaModifier, Qt.Key.Key_Meta),  # type: ignore[attr-defined]
+    ]
+
+
+def keyboard_modifiers_to_qt_keys(modifiers: Qt.KeyboardModifier) -> set[Qt.Key]:  # type: ignore[name-defined]
+    """Map Qt.KeyboardModifier flags (e.g. from QWheelEvent.modifiers()) to a set of Qt.Key.
+
+    Used so scroll handlers see the modifier state at scroll time even when the
+    widget does not have keyboard focus (keyPress/keyRelease are focus-dependent).
+    """
+    result: set[Qt.Key] = set()
+    try:
+        mod_int = int(modifiers)  # pyright: ignore[reportArgumentType]
+    except (TypeError, ValueError):
+        return result
+    for flag, key in _MODIFIER_FLAG_TO_KEY:
+        try:
+            if mod_int & int(flag):  # pyright: ignore[reportArgumentType]
+                result.add(key)
+        except (TypeError, ValueError):
+            pass
+    return result
 
 
 MOUSE_BUTTON_NAMES: dict[Qt.MouseButton, str] = {
@@ -120,14 +153,14 @@ STRING_KEY_TO_INT: dict[str, int] = {k: v.value if qtpy.QT6 else v for k, v in Q
 
 def get_qsettings_organization(organization: str) -> str:
     """Get Qt API-specific organization name for QSettings.
-    
+
     This ensures that PyQt5, PyQt6, PySide2, and PySide6 each use separate
     settings storage locations to prevent conflicts.
-    
+
     Args:
     ----
         organization: Base organization name (e.g., "HolocronToolsetV4")
-    
+
     Returns:
     -------
         Organization name with Qt API suffix (e.g., "HolocronToolsetV4_PyQt6")
@@ -137,8 +170,9 @@ def get_qsettings_organization(organization: str) -> str:
         api_name = API_NAME
     except (AttributeError, NameError):
         import os
+
         api_name = os.environ.get("QT_API", "Unknown")
-    
+
     return f"{organization}_{api_name}"
 
 
@@ -213,10 +247,16 @@ def get_qt_key_string(
 def get_qt_key_string_localized(
     key: Qt.Key | str | int | bytes,
 ) -> str:
-    return MODIFIER_KEY_NAMES.get(
-        key,  # type: ignore[arg-type]
-        getattr(key, "name", QKeySequence(key).toString()),
-    ).upper().strip().replace("KEY_", "").replace("CONTROL", "CTRL")
+    return (
+        MODIFIER_KEY_NAMES.get(
+            key,  # type: ignore[arg-type]
+            getattr(key, "name", QKeySequence(key).toString()),
+        )
+        .upper()
+        .strip()
+        .replace("KEY_", "")
+        .replace("CONTROL", "CTRL")
+    )
 
 
 def get_qt_button_string(
@@ -293,17 +333,34 @@ def get_resource_from_file(
     return data
 
 
+def safe_callback_execution(
+    callbacks: list[Callable[..., Any]],
+    *args: Any,
+    logger: Any = None,
+    callback_type: str = "callback",
+    **kwargs: Any,
+) -> None:
+    """Execute callbacks safely with shared exception handling.
+
+    Args:
+    ----
+        callbacks: Callback callables to invoke.
+        *args: Positional args passed to each callback.
+        logger: Optional logger with an ``error`` method.
+        callback_type: Label used in error messages.
+        **kwargs: Keyword args passed to each callback.
+    """
+    for callback in callbacks:
+        try:
+            callback(*args, **kwargs)
+        except Exception as e:  # noqa: BLE001
+            if logger is not None:
+                logger.error(f"Error in {callback_type} callback: {e}")
+
+
 if __name__ == "__main__":  # quick test
-    all_keys: list[Qt.Key] = [
-        getattr(Qt.Key, key)
-        for key in dir(Qt.Key)
-        if key.startswith("Key_")
-    ]
-    all_buttons: list[Qt.MouseButton] = [
-        getattr(Qt.MouseButton, button)
-        for button in dir(Qt.MouseButton)
-        if "Button" in button and button not in ("AllButtons", "NoButton")
-    ]
+    all_keys: list[Qt.Key] = [getattr(Qt.Key, key) for key in dir(Qt.Key) if key.startswith("Key_")]
+    all_buttons: list[Qt.MouseButton] = [getattr(Qt.MouseButton, button) for button in dir(Qt.MouseButton) if "Button" in button and button not in ("AllButtons", "NoButton")]
 
     for key in all_keys:
         key_string: str = get_qt_key_string(key)

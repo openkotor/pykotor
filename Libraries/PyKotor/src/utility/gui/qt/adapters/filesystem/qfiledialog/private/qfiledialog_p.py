@@ -1126,6 +1126,7 @@ class QFileDialogPrivate:
             # Match C++: if (::GetVolumeInformation(...) == false) return -1;
             try:
                 import ctypes
+
                 from ctypes import wintypes
 
                 kernel32 = ctypes.windll.kernel32

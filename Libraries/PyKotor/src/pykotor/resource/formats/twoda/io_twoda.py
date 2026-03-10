@@ -1,3 +1,5 @@
+"""Binary 2DA read/write: V2.0/V2.b headers, DEFAULT row, and tab-separated cells."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -11,10 +13,10 @@ if TYPE_CHECKING:
 
 class TwoDABinaryReader(ResourceReader):
     """Reads 2DA (Two-Dimensional Array) files.
-    
+
     2DA files store tabular data used throughout KotOR for game configuration, item stats,
     spell data, and other structured information.
-    
+
     References:
     ----------
         Based on swkotor.exe 2DA structure:
@@ -31,6 +33,7 @@ class TwoDABinaryReader(ResourceReader):
         - Token reading approaches differ between implementations
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -103,7 +106,7 @@ class TwoDABinaryReader(ResourceReader):
             row_id: int = i // column_count
             column_header = columns[column_id]
             self._reader.seek(cell_data_offset + cell_offsets[i])
-            
+
             # NOTE: reone uses readCStringAt with limit, PyKotor uses read_terminated_string
             # Should verify buffer limits match vendor behavior
             cell_value: str = self._reader.read_terminated_string("\0")
@@ -157,19 +160,20 @@ class TwoDABinaryWriter(ResourceWriter):
 
         values: list[str] = []
         value_offsets: list[int] = []
+        value_to_offset: dict[str, int] = {}  # O(1) lookup instead of values.index(value) per cell
         cell_offsets: list[int] = []
         data_size: int = 0
 
         for row in self._twoda:
             for header in self._twoda.get_headers():
                 value = row.get_string(header) + "\0"
-                if value not in values:
+                if value not in value_to_offset:
                     value_offset = len(values[-1]) + value_offsets[-1] if value_offsets else 0
+                    value_to_offset[value] = value_offset
                     values.append(value)
                     value_offsets.append(value_offset)
                     data_size += len(value)
-                cell_offset = value_offsets[values.index(value)]
-                cell_offsets.append(cell_offset)
+                cell_offsets.append(value_to_offset[value])
 
         for cell_offset in cell_offsets:
             self._writer.write_uint16(cell_offset)

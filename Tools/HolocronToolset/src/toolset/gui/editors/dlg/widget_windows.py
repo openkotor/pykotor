@@ -1,3 +1,5 @@
+"""DLG editor dialog widgets: reference chooser, list windows, and link list items."""
+
 from __future__ import annotations
 
 import weakref
@@ -6,7 +8,6 @@ from typing import TYPE_CHECKING, ClassVar
 
 import qtpy
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import (
     Qt,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
@@ -14,6 +15,7 @@ from qtpy.QtCore import (
 from qtpy.QtGui import QTextDocument
 from qtpy.QtWidgets import QDialog, QListWidgetItem, QStyle, QStyleOptionViewItem
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.resource.generics.dlg import DLGLink
 from toolset.gui.editors.dlg.list_widget_base import DLGListWidget, DLGListWidgetItem
 from utility.gui.qt.widgets.itemviews.html_delegate import HTMLDelegate
@@ -22,7 +24,7 @@ if TYPE_CHECKING:
     import weakref
 
     from qtpy.QtCore import QObject
-    from qtpy.QtWidgets import QPushButton
+    from qtpy.QtWidgets import QListWidget, QPushButton
 
     from pykotor.resource.generics.dlg import DLGLink
     from toolset.gui.editors.dlg.editor import DLGEditor
@@ -48,13 +50,14 @@ class ReferenceChooserDialog(QDialog):
 
         # Load UI from .ui file
         from toolset.uic.qtpy.dialogs.reference_chooser import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
 
         self.editor: DLGEditor = parent
-        
+
         # Replace QListWidget with custom DLGListWidget
-        from qtpy.QtWidgets import QListWidget
+
         list_widget_placeholder: QListWidget | None = self.ui.listWidget
         if list_widget_placeholder is not None:
             # Get the parent layout and index
@@ -73,9 +76,10 @@ class ReferenceChooserDialog(QDialog):
             self.list_widget.use_hover_text = True
             self.list_widget.setItemDelegate(HTMLDelegate(self.list_widget))
             self.ui.verticalLayout.insertWidget(0, self.list_widget)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter: NoScrollEventFilter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -151,9 +155,9 @@ class ReferenceChooserDialog(QDialog):
         return int(doc.idealWidth())
 
     def get_stylesheet(self) -> str:
-        from qtpy.QtWidgets import QApplication
         from qtpy.QtGui import QPalette
-        
+        from qtpy.QtWidgets import QApplication
+
         # Get palette color for dialog background
         app = QApplication.instance()
         if app is not None and isinstance(app, QApplication):
@@ -165,7 +169,7 @@ class ReferenceChooserDialog(QDialog):
             default_palette = QPalette()
             window_color = default_palette.color(QPalette.ColorRole.Window)
             bg_color = window_color.name()
-        
+
         font_size = 12
         return f"""
         QListWidget {{

@@ -1,15 +1,17 @@
+"""Help updater: fetch help content from GitHub and refresh the help window."""
+
 from __future__ import annotations
 
 import sys
 import zipfile
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QMessageBox
 
+from loggerplus import RobustLogger
 from toolset.config import get_remote_toolset_update_info, is_remote_version_newer
 from toolset.gui.dialogs.asyncloader import AsyncLoader
 from toolset.gui.widgets.settings.installations import GlobalSettings
@@ -59,6 +61,7 @@ class HelpUpdater:
 
             new_version = str(remote_info["help"]["version"])
             from toolset.gui.common.localization import translate as tr
+
             if self.help_window.help_content.version is None:
                 title = tr("Help book missing")
                 text = tr("You do not seem to have a valid help booklet downloaded, would you like to download it?")
@@ -71,6 +74,7 @@ class HelpUpdater:
         except Exception as e:  # noqa: BLE001
             error_msg = str((e.__class__.__name__, str(e))).replace("\n", "<br>")
             from toolset.gui.common.localization import translate as tr
+
             err_msg_box = QMessageBox(
                 QMessageBox.Icon.Information,
                 tr("An unexpected error occurred while parsing the help booklet."),

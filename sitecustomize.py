@@ -16,6 +16,7 @@ Unix/Linux/macOS (colons) regardless of the format in .env file.
 from __future__ import annotations
 
 import os
+
 from pathlib import Path
 
 

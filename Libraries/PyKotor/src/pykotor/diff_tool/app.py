@@ -19,10 +19,8 @@ from pykotor.common.misc import Game
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats import gff
 from pykotor.tools.reference_cache import StrRefReferenceCache
-
 from pykotor.tslpatcher.diff.engine import (
     diff_data,
-    get_module_root,
     run_differ_from_args_impl,
 )
 from pykotor.tslpatcher.diff.generator import (
@@ -104,10 +102,12 @@ def log_output(*args, **kwargs):
         print(msg, end="")
         return
 
-    # Use logging for other messages
+    # Use logging for other messages (skip INFO in quiet mode)
     import logging
-    logger = logging.getLogger(__name__)
-    if msg.strip():
+
+    output_mode = _global_config.config.output_mode if _global_config.config is not None else "normal"
+    if output_mode != "quiet" and msg.strip():
+        logger = logging.getLogger(__name__)
         logger.info(msg.strip())
 
     if _global_config.config is None:
@@ -208,12 +208,19 @@ def _setup_logging(config: DiffConfig) -> None:
     Args:
         config: diff operations configuration
     """
+    import logging
+
     from pykotor.cli.logger import LogLevel, OutputMode
     from pykotor.diff_tool.logger import setup_logger
 
     log_level = getattr(LogLevel, config.log_level.upper())
     output_mode = getattr(OutputMode, config.output_mode.upper())
     use_colors = config.use_colors
+
+    # In quiet mode, suppress INFO/DEBUG from all pykotor loggers and root
+    if output_mode == OutputMode.QUIET:
+        for logger_name in ("pykotor", "pykotor.diff_tool", "pykotor.tslpatcher", "pykotor.extract", "root"):
+            logging.getLogger(logger_name).setLevel(logging.ERROR)
 
     # Set up output file if specified
     output_file: TextIO | None = None
@@ -299,6 +306,7 @@ def generate_tslpatcher_data(
 
         for tlk_mod in modifications.tlk:
             from pykotor.tslpatcher.diff.analyzers import analyze_tlk_strref_references
+
             try:
                 # Build the tuple expected by new analyze_tlk_strref_references signature.
                 # Here we do not have strref_mappings directly, so pass empty mapping for now.
@@ -426,41 +434,41 @@ def handle_diff(config: DiffConfig) -> tuple[bool | None, int | None]:
                 base_path = candidate_path
                 break
 
-        if config.use_incremental_writer:
-            # Determine game from first valid directory path
-            game: Game | None = None
-            if base_path is not None:
-                try:
-                    game = base_path.game() if isinstance(base_path, Installation) else Game.K1
-                except Exception as e:  # noqa: BLE001
-                    log_output(f"[Warning] Could not determine game: {e.__class__.__name__}: {e}")
-                    log_output("Full traceback:")
-                    for line in traceback.format_exc().splitlines():
-                        log_output(f"  {line}")
+        # When writing to tslpatchdata, always use the incremental writer so INI and files are produced
+        # Determine game from first valid directory path
+        game: Game | None = None
+        if base_path is not None:
+            try:
+                game = base_path.game() if isinstance(base_path, Installation) else Game.K1
+            except Exception as e:  # noqa: BLE001
+                log_output(f"[Warning] Could not determine game: {e.__class__.__name__}: {e}")
+                log_output("Full traceback:")
+                for line in traceback.format_exc().splitlines():
+                    log_output(f"  {line}")
 
-            # Create StrRef cache if we have a valid game
-            strref_cache = StrRefReferenceCache(game) if game else None
+        # Create StrRef cache if we have a valid game
+        strref_cache = StrRefReferenceCache(game) if game else None
 
-            # Create 2DA memory caches if we have a valid game
-            # Structure: {installation_index: CaseInsensitiveDict[TwoDAMemoryReferenceCache]}
-            # Initialize caches for all installations
-            from utility.common.more_collections import CaseInsensitiveDict  # noqa: PLC0415
+        # Create 2DA memory caches if we have a valid game
+        # Structure: {installation_index: CaseInsensitiveDict[TwoDAMemoryReferenceCache]}
+        # Initialize caches for all installations
+        from utility.common.more_collections import CaseInsensitiveDict  # noqa: PLC0415
 
-            twoda_caches: dict[int, CaseInsensitiveDict[TwoDAMemoryReferenceCache]] = {}
-            if game is not None:
-                # Initialize caches for each path index
-                for idx in range(len(all_paths)):
-                    twoda_caches[idx] = CaseInsensitiveDict()
+        twoda_caches: dict[int, CaseInsensitiveDict[TwoDAMemoryReferenceCache]] = {}
+        if game is not None:
+            # Initialize caches for each path index
+            for idx in range(len(all_paths)):
+                twoda_caches[idx] = CaseInsensitiveDict()
 
-            incremental_writer = IncrementalTSLPatchDataWriter(
-                config.tslpatchdata_path,
-                config.ini_filename,
-                base_data_path=base_path if isinstance(base_path, Path) else None,
-                strref_cache=strref_cache,
-                twoda_caches=twoda_caches if twoda_caches else None,
-                log_func=log_output,
-            )
-            log_output(f"Using incremental writer for tslpatchdata: {config.tslpatchdata_path}")
+        incremental_writer = IncrementalTSLPatchDataWriter(
+            config.tslpatchdata_path,
+            config.ini_filename,
+            base_data_path=base_path if isinstance(base_path, Path) else None,
+            strref_cache=strref_cache,
+            twoda_caches=twoda_caches if twoda_caches else None,
+            log_func=log_output,
+        )
+        log_output(f"Using incremental writer for tslpatchdata: {config.tslpatchdata_path}")
 
     comparison, _ = handle_diff_internal(
         all_paths,
@@ -470,7 +478,7 @@ def handle_diff(config: DiffConfig) -> tuple[bool | None, int | None]:
 
     # Finalize TSLPatcher data if requested
     if config.tslpatchdata_path is not None:
-        if config.use_incremental_writer and incremental_writer is not None:
+        if incremental_writer is not None:
             try:
                 # Finalize INI by writing InstallList section
                 incremental_writer.finalize()
@@ -489,23 +497,6 @@ def handle_diff(config: DiffConfig) -> tuple[bool | None, int | None]:
                 log_output(f"  Install folders: {len(incremental_writer.install_folders)}")
             except Exception as gen_error:  # noqa: BLE001
                 log_output(f"[Error] Failed to finalize TSLPatcher data: {(gen_error.__class__.__name__, str(gen_error))}")
-                log_output("Full traceback:")
-                for line in traceback.format_exc().splitlines():
-                    log_output(f"  {line}")
-                return None, 1
-            else:
-                return None, 0
-        elif not config.use_incremental_writer:
-            try:
-                assert _global_config.modifications_by_type is not None, "Modifications by type cannot be None"
-                generate_tslpatcher_data(
-                    config.tslpatchdata_path,
-                    config.ini_filename,
-                    _global_config.modifications_by_type,
-                    base_data_path=base_path if isinstance(base_path, Path) else None,
-                )
-            except Exception as gen_error:  # noqa: BLE001
-                log_output(f"[Error] Failed to generate TSLPatcher data: {(gen_error.__class__.__name__, str(gen_error))}")
                 log_output("Full traceback:")
                 for line in traceback.format_exc().splitlines():
                     log_output(f"  {line}")
@@ -550,8 +541,9 @@ def run_differ_from_args(
         *,
         separator: bool = False,
         separator_above: bool = False,
+        **kwargs: Any,
     ):
-        """Wrapper for log_output with separator support."""
+        """Wrapper for log_output with separator support. Accepts message_type and other kwargs for GFF compare."""
         if separator or separator_above:
             log_output_with_separator(msg, above=separator_above)
         else:

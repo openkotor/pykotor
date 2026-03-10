@@ -27,15 +27,14 @@ def has_pyopengl() -> bool:
 def require_pyopengl(usage: str = "OpenGL rendering") -> None:
     """Raise a clear error if PyOpenGL is required but missing."""
     if not has_pyopengl():
-        raise MissingPyOpenGLError(
-            f"PyOpenGL is required for {usage}. Install PyOpenGL."
-        )
+        raise MissingPyOpenGLError(f"PyOpenGL is required for {usage}. Install PyOpenGL.")
 
 
 def safe_gl_error_module():
     """Return the OpenGL.error module when available, otherwise a shim with NullFunctionError."""
     if has_pyopengl():
         from OpenGL import error as gl_error  # noqa: F401
+
         return gl_error
     return SimpleNamespace(NullFunctionError=MissingPyOpenGLError)
 
@@ -44,10 +43,7 @@ def missing_gl_func(name: str) -> Callable[..., Any]:
     """Create a stub that raises a helpful error when a GL function is unavailable."""
 
     def _missing(*_args: Any, **_kwargs: Any) -> None:
-        raise MissingPyOpenGLError(
-            f"PyOpenGL function '{name}' is unavailable because PyOpenGL is not installed. "
-            f"Install PyOpenGL."
-        )
+        raise MissingPyOpenGLError(f"PyOpenGL function '{name}' is unavailable because PyOpenGL is not installed. Install PyOpenGL.")
 
     return _missing
 
@@ -67,22 +63,22 @@ if HAS_PYOPENGL:
         GL_BLEND,
         GL_COLOR_BUFFER_BIT,
         GL_CULL_FACE,
-        GL_DEPTH_TEST,
         GL_DEPTH_BUFFER_BIT,
         GL_DEPTH_COMPONENT,
+        GL_DEPTH_TEST,
+        GL_LEQUAL,  # pyright: ignore[reportMissingImports]
         GL_ONE,
         GL_ONE_MINUS_SRC_ALPHA,
-        GL_SRC_COLOR,
         GL_SRC_ALPHA,
-        glDepthMask,
+        GL_SRC_COLOR,
+        glBlendFunc,
         glClear,
         glClearColor,
-        glBlendFunc,
         glDepthFunc,
+        glDepthMask,
         glDisable,
         glEnable,
     )
-    from OpenGL.raw.GL.VERSION.GL_1_0 import GL_LEQUAL  # pyright: ignore[reportMissingImports]
     from OpenGL.raw.GL.VERSION.GL_1_2 import GL_BGRA, GL_UNSIGNED_INT_8_8_8_8  # pyright: ignore[reportMissingImports]
 else:
     glReadPixels = missing_gl_func("glReadPixels")

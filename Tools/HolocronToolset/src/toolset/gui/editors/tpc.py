@@ -1,3 +1,5 @@
+"""TPC (texture) editor: image preview, mip levels, and export."""
+
 from __future__ import annotations
 
 import warnings
@@ -10,7 +12,7 @@ try:
 except ImportError:
     Image = None  # type: ignore[assignment, unused-ignore]
 
-from qtpy.QtCore import QBuffer, QEasingCurve, QIODevice, QPropertyAnimation, Qt  # type: ignore[attr-defined]
+from qtpy.QtCore import QBuffer, QEasingCurve, QIODevice, QPropertyAnimation, QTimer, Qt  # type: ignore[attr-defined]
 from qtpy.QtGui import (
     QColor,
     QDrag,
@@ -68,6 +70,12 @@ class TPCEditor(Editor):
         self._current_mipmap: int = 0
         self._zoom_factor: float = 1.0
         self._fit_to_window: bool = False
+        self._display_cache: QImage | None = None
+        self._display_cache_key: tuple[int, int] = (-1, -1)
+        self._zoom_redraw_timer = QTimer(self)
+        self._zoom_redraw_timer.setSingleShot(True)
+        self._zoom_redraw_timer.timeout.connect(self._on_zoom_redraw_timeout)
+        self._is_zoom_interacting: bool = False
 
         from toolset.uic.qtpy.editors.tpc import Ui_MainWindow
 
@@ -82,9 +90,10 @@ class TPCEditor(Editor):
         self._setup_context_menu()
         self._setup_drag_drop()
         self._setup_properties_panel()
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -147,6 +156,8 @@ class TPCEditor(Editor):
         """Connect widget signals to handlers."""
         # Zoom controls
         self.ui.zoomSlider.valueChanged.connect(self._on_zoom_slider_changed)
+        self.ui.zoomSlider.sliderPressed.connect(self._on_zoom_slider_pressed)
+        self.ui.zoomSlider.sliderReleased.connect(self._on_zoom_slider_released)
         self.ui.zoomInButton.clicked.connect(self._zoom_in)
         self.ui.zoomOutButton.clicked.connect(self._zoom_out)
 
@@ -189,9 +200,7 @@ class TPCEditor(Editor):
         self.ui.actionFlipVertical.setIcon(QIcon.fromTheme("object-flip-vertical"))
 
         # Other
-        self.ui.actionToggleTXIEditor.setIcon(
-            style.standardIcon(QStyle.StandardPixmap.SP_FileDialogDetailedView)
-        )
+        self.ui.actionToggleTXIEditor.setIcon(style.standardIcon(QStyle.StandardPixmap.SP_FileDialogDetailedView))
 
     def _setup_context_menu(self) -> None:
         """Set up context menu for texture display."""
@@ -227,7 +236,7 @@ class TPCEditor(Editor):
         # Create drag object
         drag = QDrag(self)
         mime_data = drag.mimeData()
-        
+
         # Set image data
         image = pixmap.toImage()
         buffer = QBuffer()
@@ -289,6 +298,7 @@ class TPCEditor(Editor):
             self._animate_copy_action()
 
             from toolset.gui.common.localization import translate as tr, trf
+
             self.ui.statusbar.showMessage(tr("Texture copied to clipboard"), 2000)
         except Exception as e:  # noqa: BLE001
             QMessageBox.critical(self, tr("Copy Failed"), trf("Failed to copy texture:\n{error}", error=str(e)))
@@ -296,17 +306,18 @@ class TPCEditor(Editor):
     def _animate_copy_action(self) -> None:
         """Animate the texture label when copying."""
         original_style: str = self.ui.textureLabel.styleSheet()
-        
+
         # Flash effect
         # Get palette color for success/confirmation indicator
         from qtpy.QtGui import QPalette
+
         app = QApplication.instance()
         if app is not None and isinstance(app, QApplication):
             palette = app.palette()
         else:
             # Use default palette for fallback
             palette = QPalette()
-        
+
         link_color = palette.color(QPalette.ColorRole.Link)
         # Use link color for success (green-like), or create a green variant
         success_color = QColor(link_color)
@@ -324,15 +335,15 @@ class TPCEditor(Editor):
             success_color.setGreen(min(255, int(success_color.green() * 0.8 + 30)))
             success_color.setBlue(min(255, int(success_color.blue() * 0.2)))
         border_color = success_color.name()
-        
+
         animation = QPropertyAnimation(self.ui.textureLabel, b"styleSheet", self)
         animation.setDuration(200)
         animation.setStartValue(original_style)
         animation.setEndValue(f"{original_style} border: 3px solid {border_color};")
-        
+
         def restore_style():
             self.ui.textureLabel.setStyleSheet(original_style)
-        
+
         animation.finished.connect(restore_style)
         animation.start()
 
@@ -350,6 +361,7 @@ class TPCEditor(Editor):
             pixmap: QPixmap = clipboard.pixmap()
             if pixmap.isNull():
                 from toolset.gui.common.localization import translate as tr
+
                 QMessageBox.warning(self, tr("No Image"), tr("Clipboard does not contain an image."))
                 return
             image = pixmap.toImage()
@@ -376,6 +388,7 @@ class TPCEditor(Editor):
             self._tpc.set_single(image_bytes, TPCTextureFormat.RGBA, width, height)
             self._current_frame = 0
             self._current_mipmap = 0
+            self._invalidate_display_cache()
 
             # Animate paste action
             self._animate_paste_action()
@@ -387,6 +400,7 @@ class TPCEditor(Editor):
             self._update_properties_panel()
 
             from toolset.gui.common.localization import translate as tr, trf
+
             self.ui.statusbar.showMessage(tr("Texture pasted from clipboard"), 2000)
         except Exception as e:  # noqa: BLE001
             QMessageBox.critical(self, tr("Paste Failed"), trf("Failed to paste texture:\n{error}", error=str(e)))
@@ -394,27 +408,28 @@ class TPCEditor(Editor):
     def _animate_paste_action(self) -> None:
         """Animate the texture label when pasting."""
         original_style = self.ui.textureLabel.styleSheet()
-        
+
         # Flash effect with different color - use palette link color for paste action
         from qtpy.QtGui import QPalette
+
         app = QApplication.instance()
         if app is not None and isinstance(app, QApplication):
             palette = app.palette()
         else:
             # Use default palette for fallback
             palette = QPalette()
-        
+
         link_color = palette.color(QPalette.ColorRole.Link)
         border_color = link_color.name()
-        
+
         animation = QPropertyAnimation(self.ui.textureLabel, b"styleSheet", self)
         animation.setDuration(200)
         animation.setStartValue(original_style)
         animation.setEndValue(f"{original_style} border: 3px solid {border_color};")
-        
+
         def restore_style():
             self.ui.textureLabel.setStyleSheet(original_style)
-        
+
         animation.finished.connect(restore_style)
         animation.start()
 
@@ -521,45 +536,49 @@ class TPCEditor(Editor):
         try:
             # Store original format for error recovery
             original_format = self._tpc.format()
-            
+
             # Perform the conversion
             self._tpc.convert(target_format)
-            
+
             # Verify the conversion succeeded by checking the format
             if self._tpc.format() != target_format:
                 raise ValueError(f"Conversion failed: format is {self._tpc.format().name} instead of {target_format.name}")
-            
+
             # Verify we still have valid mipmap data
             if not self._tpc.layers or not self._tpc.layers[0].mipmaps:
                 raise ValueError("Conversion resulted in empty texture data")
-            
+
             # Check that the first mipmap has valid data
             first_mipmap = self._tpc.layers[0].mipmaps[0]
             if not first_mipmap.data or len(first_mipmap.data) == 0:
                 raise ValueError("Conversion resulted in empty mipmap data")
-            
+
             # Update all displays and controls
             self._current_mipmap = 0  # Reset to first mipmap after conversion
+            self._invalidate_display_cache()
             self._update_texture_display()
             self._update_frame_controls()
             self._update_mipmap_controls()
             self._update_status_bar()
             self._update_properties_panel()
-            
+
             from toolset.gui.common.localization import translate as tr, trf
+
             self.ui.statusbar.showMessage(trf("Texture format converted to {format}", format=target_format.name), 3000)
         except Exception as e:  # noqa: BLE001
             # Attempt to restore original format if conversion failed
             try:
                 if original_format != self._tpc.format():
                     self._tpc.convert(original_format)
+                    self._invalidate_display_cache()
                     self._update_texture_display()
                     self._update_status_bar()
                     self._update_properties_panel()
             except Exception:  # noqa: BLE001
                 pass  # If restore fails, at least show the error
-            
+
             from toolset.gui.common.localization import translate as tr, trf
+
             QMessageBox.critical(
                 self,
                 tr("Conversion Failed"),
@@ -611,6 +630,7 @@ class TPCEditor(Editor):
     def _on_mipmap_changed(self, value: int) -> None:
         """Handle mipmap selection change."""
         self._current_mipmap = value
+        self._invalidate_display_cache()
         self._update_texture_display()
         self._update_status_bar()
 
@@ -635,7 +655,7 @@ class TPCEditor(Editor):
         self.ui.dimensionsValue.setText(f"{width} × {height}")
         self.ui.formatValue.setText(self._tpc.format().name)
         self.ui.layersValue.setText(str(len(self._tpc.layers)))
-        
+
         mipmap_count = len(self._tpc.layers[0].mipmaps) if self._tpc.layers else 0
         self.ui.mipmapsValue.setText(str(mipmap_count))
         self.ui.alphaTestSpinBox.setValue(self._tpc.alpha_test)
@@ -650,6 +670,7 @@ class TPCEditor(Editor):
             return
 
         self._current_frame = max(0, min(self._current_frame + direction, frame_count - 1))
+        self._invalidate_display_cache()
         self._update_texture_display()
         self._update_frame_controls()
         self._update_status_bar()
@@ -668,12 +689,16 @@ class TPCEditor(Editor):
 
     def _zoom_fit(self) -> None:
         """Fit texture to window."""
+        self._stop_zoom_redraw_timer()
+        self._is_zoom_interacting = False
         self._fit_to_window = True
         self.ui.zoomPercentLabel.setText("Fit")
         self._update_texture_display()
 
     def _zoom_reset(self) -> None:
         """Reset zoom to 100%."""
+        self._stop_zoom_redraw_timer()
+        self._is_zoom_interacting = False
         self._fit_to_window = False
         self.ui.zoomSlider.setValue(100)
         self.ui.zoomPercentLabel.setText("100%")
@@ -683,11 +708,36 @@ class TPCEditor(Editor):
         self._fit_to_window = False
         self._zoom_factor = value / 100.0
         self.ui.zoomPercentLabel.setText(f"{value}%")
+        self._is_zoom_interacting = True
+        self._schedule_zoom_redraw()
+
+    def _on_zoom_slider_pressed(self) -> None:
+        """Track start of interactive zoom changes."""
+        self._is_zoom_interacting = True
+
+    def _on_zoom_slider_released(self) -> None:
+        """Render one final high-quality frame after zoom drag ends."""
+        self._stop_zoom_redraw_timer()
+        self._on_zoom_redraw_timeout()
+
+    def _schedule_zoom_redraw(self) -> None:
+        """Throttle redraw while zoom controls emit rapid changes."""
+        self._zoom_redraw_timer.start(50)
+
+    def _stop_zoom_redraw_timer(self) -> None:
+        """Stop pending zoom redraws."""
+        if self._zoom_redraw_timer.isActive():
+            self._zoom_redraw_timer.stop()
+
+    def _on_zoom_redraw_timeout(self) -> None:
+        """Draw final zoom frame and return to quality scaling."""
+        self._is_zoom_interacting = False
         self._update_texture_display()
 
     def _rotate_left(self) -> None:
         """Rotate texture 90° counter-clockwise."""
         self._tpc.rotate90(-1)
+        self._invalidate_display_cache()
         self._update_texture_display()
         self._update_status_bar()
         self._update_properties_panel()
@@ -695,6 +745,7 @@ class TPCEditor(Editor):
     def _rotate_right(self) -> None:
         """Rotate texture 90° clockwise."""
         self._tpc.rotate90(1)
+        self._invalidate_display_cache()
         self._update_texture_display()
         self._update_status_bar()
         self._update_properties_panel()
@@ -702,11 +753,13 @@ class TPCEditor(Editor):
     def _flip_horizontal(self) -> None:
         """Flip texture horizontally."""
         self._tpc.flip_horizontally()
+        self._invalidate_display_cache()
         self._update_texture_display()
 
     def _flip_vertical(self) -> None:
         """Flip texture vertically."""
         self._tpc.flip_vertically()
+        self._invalidate_display_cache()
         self._update_texture_display()
 
     def _toggle_txi_editor(self, checked: bool) -> None:
@@ -781,7 +834,7 @@ class TPCEditor(Editor):
                 save_format = format_map.get(file_ext, "PNG")
                 if not qimage.save(file_path, save_format):
                     raise RuntimeError(f"Failed to save image as {save_format}")
-            
+
             QMessageBox.information(self, "Export Successful", f"Texture exported to:\n{file_path}")
         except Exception as e:  # noqa: BLE001
             QMessageBox.critical(self, "Export Failed", f"Failed to export texture:\n{str(e)}")
@@ -789,6 +842,7 @@ class TPCEditor(Editor):
     def _update_texture_display(self) -> None:
         """Update the texture display with current zoom and frame."""
         if not self._tpc.layers or not self._tpc.layers[0].mipmaps:
+            self._invalidate_display_cache()
             self.ui.textureLabel.clear()
             return
 
@@ -798,42 +852,56 @@ class TPCEditor(Editor):
             layer_index = max(0, min(self._current_frame, len(self._tpc.layers) - 1))
 
         mipmap_index = max(0, min(self._current_mipmap, len(self._tpc.layers[layer_index].mipmaps) - 1))
-        mipmap: TPCMipmap = self._tpc.layers[layer_index].mipmaps[mipmap_index].copy()
-        display_format = mipmap.tpc_format
-
-        # Convert to displayable format (decompress DXT formats for display)
-        if display_format == TPCTextureFormat.DXT1:
-            mipmap.convert(TPCTextureFormat.RGB)
-        elif display_format in (TPCTextureFormat.DXT3, TPCTextureFormat.DXT5):
-            mipmap.convert(TPCTextureFormat.RGBA)
-        elif display_format == TPCTextureFormat.BGRA:
-            mipmap.convert(TPCTextureFormat.RGBA)
-        elif display_format == TPCTextureFormat.BGR:
-            mipmap.convert(TPCTextureFormat.RGB)
-        elif display_format == TPCTextureFormat.Greyscale:
-            mipmap.convert(TPCTextureFormat.RGBA)
-
-        target_format = mipmap.tpc_format
-
-        # Validate data before creating QImage
-        expected_size = mipmap.width * mipmap.height * target_format.bytes_per_pixel()
-        if len(mipmap.data) < expected_size:
-            # Data is corrupted or incomplete, clear display
-            self.ui.textureLabel.clear()
-            return
+        display_key = (layer_index, mipmap_index)
+        source_image: QImage | None = None
+        if display_key == self._display_cache_key and self._display_cache is not None:
+            source_image = self._display_cache
 
         # Create QImage from mipmap data
         try:
-            image = QImage(
-                bytes(mipmap.data),
-                mipmap.width,
-                mipmap.height,
-                target_format.to_qimage_format(),
+            if source_image is None:
+                mipmap: TPCMipmap = self._tpc.layers[layer_index].mipmaps[mipmap_index].copy()
+                display_format = mipmap.tpc_format
+
+                # Convert to displayable format (decompress DXT formats for display)
+                if display_format == TPCTextureFormat.DXT1:
+                    mipmap.convert(TPCTextureFormat.RGB)
+                elif display_format in (TPCTextureFormat.DXT3, TPCTextureFormat.DXT5):
+                    mipmap.convert(TPCTextureFormat.RGBA)
+                elif display_format == TPCTextureFormat.BGRA:
+                    mipmap.convert(TPCTextureFormat.RGBA)
+                elif display_format == TPCTextureFormat.BGR:
+                    mipmap.convert(TPCTextureFormat.RGB)
+                elif display_format == TPCTextureFormat.Greyscale:
+                    mipmap.convert(TPCTextureFormat.RGBA)
+
+                target_format = mipmap.tpc_format
+
+                # Validate data before creating QImage
+                expected_size = mipmap.width * mipmap.height * target_format.bytes_per_pixel()
+                if len(mipmap.data) < expected_size:
+                    # Data is corrupted or incomplete, clear display
+                    self.ui.textureLabel.clear()
+                    return
+
+                source_image = QImage(
+                    bytes(mipmap.data),
+                    mipmap.width,
+                    mipmap.height,
+                    target_format.to_qimage_format(),
+                )
+                if source_image.isNull():
+                    self.ui.textureLabel.clear()
+                    return
+                source_image = source_image.mirrored(False, True)  # Flip vertically for correct display
+                self._display_cache = source_image
+                self._display_cache_key = display_key
+
+            transform_mode = (
+                Qt.TransformationMode.FastTransformation
+                if self._is_zoom_interacting
+                else Qt.TransformationMode.SmoothTransformation
             )
-            if image.isNull():
-                self.ui.textureLabel.clear()
-                return
-            image = image.mirrored(False, True)  # Flip vertically for correct display
 
             # Calculate display size
             if self._fit_to_window:
@@ -841,10 +909,12 @@ class TPCEditor(Editor):
                 if viewport is None:
                     return
                 scroll_area_size = viewport.size()
-                available_width = scroll_area_size.width() - 20
-                available_height = scroll_area_size.height() - 20
+                available_width = max(1, scroll_area_size.width() - 20)
+                available_height = max(1, scroll_area_size.height() - 20)
 
-                aspect_ratio = mipmap.width / mipmap.height if mipmap.height else 1.0
+                image_width = source_image.width()
+                image_height = source_image.height()
+                aspect_ratio = image_width / image_height if image_height else 1.0
                 if available_width / available_height > aspect_ratio:
                     display_height = available_height
                     display_width = int(display_height * aspect_ratio)
@@ -852,22 +922,22 @@ class TPCEditor(Editor):
                     display_width = available_width
                     display_height = int(display_width / aspect_ratio)
 
-                image = image.scaled(
+                image = source_image.scaled(
                     display_width,
                     display_height,
                     Qt.AspectRatioMode.KeepAspectRatio,
-                    Qt.TransformationMode.SmoothTransformation,
+                    transform_mode,
                 )
             else:
                 # Apply zoom factor
-                display_width = int(mipmap.width * self._zoom_factor)
-                display_height = int(mipmap.height * self._zoom_factor)
+                display_width = max(1, int(source_image.width() * self._zoom_factor))
+                display_height = max(1, int(source_image.height() * self._zoom_factor))
 
-                image = image.scaled(
+                image = source_image.scaled(
                     display_width,
                     display_height,
                     Qt.AspectRatioMode.KeepAspectRatio,
-                    Qt.TransformationMode.SmoothTransformation,
+                    transform_mode,
                 )
 
             pixmap = QPixmap.fromImage(image)
@@ -880,12 +950,14 @@ class TPCEditor(Editor):
             self.ui.textureLabel.clear()
             return
 
-        # Update TXI editor
-        self.ui.txiEdit.setPlainText(self._tpc.txi)
+        # Update TXI editor only when content changed to avoid resets on every redraw.
+        if self.ui.txiEdit.toPlainText() != self._tpc.txi:
+            self.ui.txiEdit.setPlainText(self._tpc.txi)
 
     def wheelEvent(self, a0: QWheelEvent) -> None:
         """Handle mouse wheel events for zooming."""
         if a0.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self._is_zoom_interacting = True
             delta = a0.angleDelta().y()
             if delta > 0:
                 self._zoom_in()
@@ -898,11 +970,13 @@ class TPCEditor(Editor):
     def new(self) -> None:
         """Create a new blank texture."""
         super().new()
+        self._stop_zoom_redraw_timer()
         self._tpc = TPC.from_blank()
         self._current_frame = 0
         self._current_mipmap = 0
         self._zoom_factor = 1.0
         self._fit_to_window = False
+        self._invalidate_display_cache()
         self.ui.zoomSlider.setValue(100)
         self._update_texture_display()
         self._update_frame_controls()
@@ -919,6 +993,7 @@ class TPCEditor(Editor):
     ) -> None:
         """Load a texture from file data."""
         super().load(filepath, resref, restype, data)
+        self._stop_zoom_redraw_timer()
 
         self._tpc = TPC()
         if restype in {ResourceType.TPC, ResourceType.TGA}:
@@ -927,7 +1002,8 @@ class TPCEditor(Editor):
         else:
             # Load from standard image format
             supported_formats: list[str] = [
-                x.data().decode().strip().lstrip(".") for x in QImageReader.supportedImageFormats()  # pyright: ignore[reportGeneralTypeIssues]
+                x.data().decode().strip().lstrip(".")
+                for x in QImageReader.supportedImageFormats()  # pyright: ignore[reportGeneralTypeIssues]
             ]
             if restype.extension.lstrip(".") not in supported_formats:
                 warnings.warn(f"Unsupported image format: {restype.extension!r}", stacklevel=1)
@@ -953,7 +1029,7 @@ class TPCEditor(Editor):
             const_bits = image.constBits()
             if const_bits is None:
                 raise ValueError("Failed to extract image data")
-            
+
             bytes_per_pixel = tpc_format.bytes_per_pixel()
             data_size = width * height * bytes_per_pixel
             image_bytes = bytearray(const_bits.asarray(data_size))  # type: ignore[attr-defined]
@@ -964,6 +1040,7 @@ class TPCEditor(Editor):
         self._current_mipmap = 0
         self._zoom_factor = 1.0
         self._fit_to_window = False
+        self._invalidate_display_cache()
         self.ui.zoomSlider.setValue(100)
         self._update_texture_display()
         self._update_frame_controls()
@@ -982,3 +1059,15 @@ class TPCEditor(Editor):
             return bytes(data), b""
 
         return bytes(data), b""
+
+    def _invalidate_display_cache(self) -> None:
+        """Invalidate cached decoded image for content-changing actions."""
+        self._display_cache = None
+        self._display_cache_key = (-1, -1)
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("tpc"))

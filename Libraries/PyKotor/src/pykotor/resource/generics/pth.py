@@ -1,3 +1,5 @@
+"""PTH (path) generic: GFF-based waypoints and path connections for pathfinding."""
+
 from __future__ import annotations
 
 from copy import copy
@@ -16,28 +18,15 @@ if TYPE_CHECKING:
 
 class PTH:
     """Stores the path data for a module.
-    
-    PTH files are GFF-based format files that store pathfinding data including
-    waypoints and connections for NPC navigation.
-    
-    References:
-    ----------
-        KotOR I (swkotor.exe):
-            - 0x00508400 - CSWSArea::LoadPathPoints (704 bytes, 109 lines)
-                - Main PTH GFF parser entry point
-                - Loads path points and connections from GFF structure
-                - Function signature: LoadPathPoints(CSWSArea* this, CResStruct* param_1)
-                - Called from LoadArea (0x0050e190)
-            - Reads Path_Points list:
-                - X (FLOAT) - X coordinate
-                - Y (FLOAT) - Y coordinate
-                - Conections (DWORD) - connection count
-                - First_Conection (DWORD) - first connection index
-            - Reads Path_Conections list:
-                - Destination (DWORD) - destination point index
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally identical to K1 implementation
-            - Same GFF structure and parsing logic
+
+    PTH files are GFF-based; Path_Points (X, Y, Conections, First_Conection) and
+    Path_Conections (Destination) define waypoints and edges for NPC pathfinding.
+
+    References (REVA):
+    ------------------
+        LoadPathPoints @ (K1: 0x00508400, TSL: 0x00721db0) - main PTH GFF parser.
+        Caller: LoadArea @ (K1: 0x0050e190, TSL: 0x00718860). Path_Points: X/Y FLOAT 0.0,
+        Conections/First_Conection DWORD 0; Path_Conections: Destination DWORD 0. Lists optional when missing.
     """
 
     BINARY_TYPE = ResourceType.PTH
@@ -162,10 +151,22 @@ class PTHEdge:
 def construct_pth(
     gff: GFF,
 ) -> PTH:
+    """Construct PTH from GFF.
+
+    Defaults when field missing: Path_Points/Path_Conections optional (empty list);
+    per-point X/Y 0.0, Conections/First_Conection 0; per-connection Destination 0.
+
+    Reference functions (5 K1, 5 TSL):
+    K1: (1) LoadPathPoints @ 0x00508400 (Path_Points, Path_Conections), (2) LoadArea @ 0x0050e190 (caller),
+    (3) GetList Path_Points, (4) GetList Path_Conections, (5) ReadFieldFLOAT/DWORD X,Y,Conections,First_Conection,Destination.
+    TSL: (1) LoadPathPoints @ 0x00721db0, (2) LoadArea @ 0x00718860 (caller), (3)-(5) same semantics.
+    """
     pth = PTH()
 
+    # Path_Conections: per-element Destination DWORD 0. K1 0x00508400, TSL 0x00721db0. Optional.
     connections_list: GFFList = gff.root.acquire("Path_Conections", GFFList())
 
+    # Path_Points: X/Y 0.0, Conections/First_Conection 0. K1/TSL LoadPathPoints ReadField*. Optional.
     for point_struct in gff.root.acquire("Path_Points", GFFList()):
         connections: int = point_struct.acquire("Conections", 0)
         first_connection: int = point_struct.acquire("First_Conection", 0)
@@ -190,8 +191,14 @@ def dismantle_pth(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
+    """Build PTH GFF from PTH. Write values match engine read defaults.
+
+    Reference functions: same as construct_pth (K1 LoadPathPoints @ 0x00508400, LoadArea @ 0x0050e190;
+    TSL LoadPathPoints @ 0x00721db0, LoadArea @ 0x00718860). Empty lists accepted.
+    """
     gff = GFF(GFFContent.PTH)
 
+    # Path_Points / Path_Conections: engine default 0/0.0 when field missing. K1 0x00508400, TSL 0x00721db0.
     connections_list: GFFList = gff.root.set_list("Path_Conections", GFFList())
     points_list: GFFList = gff.root.set_list("Path_Points", GFFList())
 
@@ -199,6 +206,7 @@ def dismantle_pth(
         outgoings: list[PTHEdge] = pth.outgoing(i)
 
         point_struct = points_list.add(2)
+        # Conections, First_Conection, X, Y: engine default 0/0.0 if missing. K1/TSL LoadPathPoints.
         point_struct.set_uint32("Conections", len(outgoings))
         point_struct.set_uint32("First_Conection", len(connections_list))
         point_struct.set_single("X", point.x)
@@ -206,6 +214,7 @@ def dismantle_pth(
 
         for outgoing in outgoings:
             connection_struct = connections_list.add(3)
+            # Destination DWORD 0 when missing. K1/TSL LoadPathPoints.
             connection_struct.set_uint32("Destination", outgoing.target)
 
     return gff

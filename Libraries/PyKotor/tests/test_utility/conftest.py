@@ -2,10 +2,12 @@
 
 Sets up headless Qt testing and provides common fixtures.
 """
+
 from __future__ import annotations
 
 import os
 import sys
+
 from pathlib import Path
 
 # Normalize PYTHONPATH for cross-platform compatibility
@@ -48,12 +50,14 @@ for path in [PYKOTOR_PATH, UTILITY_PATH, PYKOTORGL_PATH, TOOLSET_SRC]:
 
 # Import shared profiling and timeout utilities
 import pytest
+
 _test_helpers_path = str(Path(__file__).resolve().parents[1])
 if _test_helpers_path not in sys.path:
     sys.path.insert(0, _test_helpers_path)
 
+from typing import Any, Iterator
+
 from test_helpers.profiling_and_timeout import profile_if_enabled
-from typing import Iterator, Any
 
 
 @pytest.hookimpl(hookwrapper=True)

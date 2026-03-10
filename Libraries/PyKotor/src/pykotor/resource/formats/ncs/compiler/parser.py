@@ -1,3 +1,5 @@
+"""NSS (NWScript) parser: PLY yacc grammar and AST construction."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -76,11 +78,11 @@ else:
 
 class NssParser:
     """NSS (NWScript Source) parser.
-    
+
     Parses tokenized NSS source code into an abstract syntax tree (AST) using
     recursive descent parsing. Handles includes, function definitions, statements,
     expressions, and control flow constructs.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -91,6 +93,7 @@ class NssParser:
         PLY (Python Lex-Yacc) library for parser generation
 
     """
+
     def __init__(
         self,
         functions: list[ScriptFunction],
@@ -117,7 +120,21 @@ class NssParser:
     literals: list[str] = NssLexer.literals
 
     precedence: tuple[tuple[str, ...], ...] = (
-        ("right", "=", "ADDITION_ASSIGNMENT_OPERATOR", "SUBTRACTION_ASSIGNMENT_OPERATOR", "MULTIPLICATION_ASSIGNMENT_OPERATOR", "DIVISION_ASSIGNMENT_OPERATOR", "MOD_ASSIGNMENT_OPERATOR", "BITWISE_AND_ASSIGNMENT_OPERATOR", "BITWISE_OR_ASSIGNMENT_OPERATOR", "BITWISE_XOR_ASSIGNMENT_OPERATOR", "BITWISE_LEFT_ASSIGNMENT_OPERATOR", "BITWISE_RIGHT_ASSIGNMENT_OPERATOR", "BITWISE_UNSIGNED_RIGHT_ASSIGNMENT_OPERATOR"),
+        (
+            "right",
+            "=",
+            "ADDITION_ASSIGNMENT_OPERATOR",
+            "SUBTRACTION_ASSIGNMENT_OPERATOR",
+            "MULTIPLICATION_ASSIGNMENT_OPERATOR",
+            "DIVISION_ASSIGNMENT_OPERATOR",
+            "MOD_ASSIGNMENT_OPERATOR",
+            "BITWISE_AND_ASSIGNMENT_OPERATOR",
+            "BITWISE_OR_ASSIGNMENT_OPERATOR",
+            "BITWISE_XOR_ASSIGNMENT_OPERATOR",
+            "BITWISE_LEFT_ASSIGNMENT_OPERATOR",
+            "BITWISE_RIGHT_ASSIGNMENT_OPERATOR",
+            "BITWISE_UNSIGNED_RIGHT_ASSIGNMENT_OPERATOR",
+        ),
         ("right", "?"),
         ("left", "OR"),
         ("left", "AND"),
@@ -147,9 +164,7 @@ class NssParser:
             code_root.objects.append(p[2])
             p[0] = code_root
         else:
-            p[0] = CodeRoot(
-                constants=self.constants, functions=self.functions, library_lookup=self.library_lookup, library=self.library
-            )
+            p[0] = CodeRoot(constants=self.constants, functions=self.functions, library_lookup=self.library_lookup, library=self.library)
 
     def p_code_root_object(self, p):
         """
@@ -616,9 +631,12 @@ class NssParser:
 
         # identifier is an Identifier object, need to get its label for comparison
         identifier_label = identifier.label if isinstance(identifier, Identifier) else str(identifier)
-        engine_function = next((x for x in self.functions if x.name == identifier_label), None)
-        if engine_function:
-            routine_id = self.functions.index(engine_function)
+        # Single pass: get (index, function) to avoid separate index() call
+        routine_id, engine_function = next(
+            ((i, x) for i, x in enumerate(self.functions) if x.name == identifier_label),
+            (None, None),
+        )
+        if engine_function is not None and routine_id is not None:
             data_type = DynamicDataType(engine_function.returntype)
             p[0] = EngineCallExpression(engine_function, routine_id, data_type, args)
         else:

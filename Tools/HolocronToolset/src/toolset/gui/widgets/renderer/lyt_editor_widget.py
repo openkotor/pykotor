@@ -3,6 +3,7 @@
 Provides the user interface elements around the core LYT editor,
 including toolbars, property panels, etc.
 """
+
 from __future__ import annotations
 
 import concurrent.futures
@@ -27,24 +28,30 @@ from qtpy.QtCore import (
     Qt,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
-from qtpy.QtGui import QAction, QActionGroup, QDrag, QHelpEvent, QIcon, QKeySequence, QPainter, QPalette, QPixmap, QShortcut, QUndoCommand
+from qtpy.QtGui import (
+    QAction,
+    QActionGroup,
+    QDrag,
+    QHelpEvent,
+    QIcon,
+    QKeySequence,
+    QPainter,
+    QPalette,
+    QPixmap,
+    QShortcut,
+    QUndoCommand,
+)
 from qtpy.QtWidgets import (
     QApplication,
     QDialog,
     QDockWidget,
-    QDoubleSpinBox,
     QErrorMessage,
     QFileDialog,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
     QInputDialog,
     QLabel,
     QMenu,
     QMessageBox,
-    QPushButton,
     QSlider,
-    QSpinBox,
     QSplitter,
     QStatusBar,
     QToolBar,
@@ -59,7 +66,7 @@ from loggerplus import RobustLogger
 from pykotor.resource.formats.lyt.lyt_auto import write_lyt
 from pykotor.resource.formats.lyt.lyt_data import LYT, LYTDoorHook, LYTRoom
 from pykotor.resource.resource_auto import BWM
-from toolset.data.lyt_structures import ExtendedLYTDoorHook, ExtendedLYTObstacle, ExtendedLYTRoom, ExtendedLYTTrack
+from toolset.data.lyt_structures import ExtendedLYTObstacle, ExtendedLYTTrack
 from toolset.gui.common.localization import translate as tr
 from toolset.gui.dialogs.lyt_dialogs import DoorHookPropertiesDialog, ObstaclePropertiesDialog, RoomPropertiesDialog, TrackPropertiesDialog
 from toolset.gui.editors.lyt import LYTEditor
@@ -86,7 +93,6 @@ if TYPE_CHECKING:
         QObject,
     )
     from qtpy.QtGui import (
-        QAction,
         QCloseEvent,
         QContextMenuEvent,
         QDragEnterEvent,
@@ -100,13 +106,11 @@ if TYPE_CHECKING:
         QShowEvent,
         QWheelEvent,
     )
-    from qtpy.QtWidgets import QMenu
     from typing_extensions import Literal
 
+    from toolset.data.lyt_structures import ExtendedLYTDoorHook, ExtendedLYTRoom
     from toolset.gui.editors.lyt import LYTEditor
     from toolset.gui.widgets.renderer.module import ModuleRenderer
-
-
 
 
 class LYTEditorWidget(QWidget):
@@ -158,6 +162,7 @@ class LYTEditorWidget(QWidget):
 
         # Apply localization
         from toolset.gui.common.localization import translate as tr
+
         self.ui.roomGroup.setTitle(tr("Room Properties"))
         self.ui.positionLabel.setText(tr("Position:"))
         self.ui.modelLabel.setText(tr("Model:"))
@@ -402,8 +407,7 @@ class LYTEditorWidget(QWidget):
         self.texture_dock: QDockWidget = QDockWidget(tr("Textures"), self)
         self.texture_dock.setWidget(self.texture_browser)
         self.texture_dock.setFeatures(
-            QDockWidget.DockWidgetFeature.DockWidgetMovable
-            | QDockWidget.DockWidgetFeature.DockWidgetFloatable,
+            QDockWidget.DockWidgetFeature.DockWidgetMovable | QDockWidget.DockWidgetFeature.DockWidgetFloatable,
         )
         self.right_layout.addWidget(self.texture_dock)
 
@@ -411,8 +415,7 @@ class LYTEditorWidget(QWidget):
         self.walkmesh_dock: QDockWidget = QDockWidget(tr("Walkmesh Editor"), self)
         self.walkmesh_dock.setWidget(self.walkmesh_editor)
         self.walkmesh_dock.setFeatures(
-            QDockWidget.DockWidgetFeature.DockWidgetMovable
-            | QDockWidget.DockWidgetFeature.DockWidgetFloatable,
+            QDockWidget.DockWidgetFeature.DockWidgetMovable | QDockWidget.DockWidgetFeature.DockWidgetFloatable,
         )
         self.right_layout.addWidget(self.walkmesh_dock)
 
@@ -1086,7 +1089,9 @@ class LYTEditorWidget(QWidget):
         lyt = self.get_lyt()
         if lyt:
             results.extend(("Room", room.model) for room in lyt.rooms if search_text.lower() in room.model.lower())
-            results.extend(("Texture", texture) for texture in self.texture_browser.get_textures() if search_text.lower() in texture.lower())  # FIXME: get_textures attribute not found
+            results.extend(
+                ("Texture", texture) for texture in self.texture_browser.get_textures() if search_text.lower() in texture.lower()
+            )  # FIXME: get_textures attribute not found
             results.extend(("Track", track.model) for track in lyt.tracks if search_text.lower() in track.model.lower())
             results.extend(("Obstacle", obstacle.model) for obstacle in lyt.obstacles if search_text.lower() in obstacle.model.lower())
         return results
@@ -1132,13 +1137,13 @@ class LYTEditorWidget(QWidget):
 
     def show_search_results(self, results: list[tuple[str, str]]):
         from toolset.uic.qtpy.dialogs.search_results_dialog import Ui_Dialog
-        
+
         result_dialog = QDialog(self)
         ui = Ui_Dialog()
         ui.setupUi(result_dialog)
-        
+
         result_dialog.setWindowTitle(tr("Search Results"))
-        
+
         # Add result labels to the scroll area layout
         for result_type, result_name in results:
             result_label = QLabel(f"{result_type}: {result_name}")
@@ -1146,10 +1151,10 @@ class LYTEditorWidget(QWidget):
             result_label.setCursor(Qt.CursorShape.PointingHandCursor)
             result_label.setToolTip("Click to go to this item")
             ui.resultsLayout.addWidget(result_label)
-        
+
         # Connect close button
-        ui.closeButton.clicked.connect(result_dialog.accept)
-        
+        ui.closeButton.clicked.connect(lambda: result_dialog.accept())
+
         result_dialog.setModal(False)
         result_dialog.exec()
 
@@ -1276,7 +1281,9 @@ class LYTEditorWidget(QWidget):
         lyt = self.get_lyt()
         if lyt:
             results.extend(("Room", room.model) for room in lyt.rooms if search_text.lower() in room.model.lower())
-            results.extend(("Texture", texture) for texture in self.texture_browser.get_textures() if search_text.lower() in texture.lower())  # FIXME: get_textures attribute not found
+            results.extend(
+                ("Texture", texture) for texture in self.texture_browser.get_textures() if search_text.lower() in texture.lower()
+            )  # FIXME: get_textures attribute not found
             results.extend(("Track", track.model) for track in lyt.tracks if search_text.lower() in track.model.lower())
             results.extend(("Obstacle", obstacle.model) for obstacle in lyt.obstacles if search_text.lower() in obstacle.model.lower())
         return results
@@ -1289,13 +1296,13 @@ class LYTEditorWidget(QWidget):
 
     def show_quick_search_results(self, results: list[tuple[str, str]]):
         from toolset.uic.qtpy.dialogs.search_results_dialog import Ui_Dialog
-        
+
         result_dialog = QDialog(self)
         ui = Ui_Dialog()
         ui.setupUi(result_dialog)
-        
+
         result_dialog.setWindowTitle(tr("Quick Search Results"))
-        
+
         # Add result labels to the scroll area layout
         for result_type, result_name in results:
             result_label = QLabel(f"{result_type}: {result_name}")
@@ -1303,10 +1310,10 @@ class LYTEditorWidget(QWidget):
             result_label.setCursor(Qt.CursorShape.PointingHandCursor)
             result_label.setToolTip("Click to go to this item")
             ui.resultsLayout.addWidget(result_label)
-        
+
         # Connect close button
-        ui.closeButton.clicked.connect(result_dialog.accept)
-        
+        ui.closeButton.clicked.connect(lambda: result_dialog.accept())
+
         result_dialog.setModal(False)
         result_dialog.exec()
 

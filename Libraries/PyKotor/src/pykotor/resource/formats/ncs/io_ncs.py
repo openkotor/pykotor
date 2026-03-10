@@ -1,3 +1,5 @@
+"""Binary NCS (NWScript compiled script) read/write and VM validation."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -16,28 +18,20 @@ NCS_HEADER_SIZE = 13  # "NCS " (4) + "V1.0" (4) + magic_byte (1) + size (4)
 
 class NCSBinaryReader(ResourceReader):
     """Reads NCS (NWScript Compiled Script) files.
-    
+
     NCS files contain compiled bytecode for NWScript, the scripting language used in KotOR.
     Instructions include operations, constants, function calls, jumps, and control flow.
-    
+
     References:
     ----------
-        Based on swkotor.exe NCS structure:
-        - CResNCS::CResNCS @ 0x005d4c30 - Constructor for NCS resource
-          * Initializes NCS resource with vtable
-          * Sets is_loaded = 0, size = 0, data = nullptr
-        - CResNCS::~CResNCS @ 0x005d4c50, @ 0x005d4c90 - Destructors for NCS resource
-        - ReadScriptFile @ 0x005d2260 - Reads NCS script file from resource
-        - ReadScriptsFromGff @ 0x004ebf20 - Reads script references from GFF structures
-        - LoadScripts @ 0x0066c420, @ 0x0066c740, @ 0x0066d180 - Loads scripts from various sources
-        - ExecuteCommandExecuteScript @ 0x00535b70 - Executes NCS scripts
-        - NCS file format: "NCS " type, "V1.0" version, magic byte 0x42
-        
-        Note: NCS files contain compiled NWScript bytecode. The engine loads NCS files
-        as resources and executes them through the NWScript virtual machine.
+        See ncs_data module docstring for full engine addresses (K1 + TSL TODO).
+        CResNCS::CResNCS (K1: 0x005d4c30), destructors (0x005d4c50, 0x005d4c90), ReadScriptFile (0x005d2260),
+        ReadScriptsFromGff (0x004ebf20), ExecuteCommandExecuteScript (0x00535b70). NCS format: "NCS " type, "V1.0", magic 0x42.
+        Note: Engine loads NCS as resources and executes via NWScript VM.
 
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -89,7 +83,7 @@ class NCSBinaryReader(ResourceReader):
         self._jumps = []
 
         # Read the header fields
-        
+
         magic_byte = self._reader.read_uint8()  # Position 8
         total_size = self._reader.read_uint32(big=True)  # Positions 9-12: Total file size
 
@@ -101,10 +95,7 @@ class NCSBinaryReader(ResourceReader):
         # Validate size field
         actual_file_size = self._reader.size()
         if total_size > actual_file_size:
-            msg = (
-                f"NCS size field ({total_size}) is larger than actual file size ({actual_file_size}). "
-                f"File may be corrupted or truncated."
-            )
+            msg = f"NCS size field ({total_size}) is larger than actual file size ({actual_file_size}). File may be corrupted or truncated."
             raise ValueError(msg)
 
         # Check for empty or minimal NCS files
@@ -141,11 +132,12 @@ class NCSBinaryReader(ResourceReader):
                     if all(b == 0 for b in remaining_data):
                         # This is zero-padding - the size field incorrectly includes padding
                         import sys  # noqa: PLC0415
+
                         print(
                             f"Warning: NCS file has incorrect size field (includes zero-padding). "
                             f"Size field: {total_size}, actual code ends at: {offset}, "
                             f"found {len(remaining_data)} bytes of padding",
-                            file=sys.stderr
+                            file=sys.stderr,
                         )
                         break
 

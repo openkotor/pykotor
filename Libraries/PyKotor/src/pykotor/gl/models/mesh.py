@@ -1,3 +1,5 @@
+"""Mesh rendering: OpenGL VAO/VBO for MDL geometry (vertices, normals, UVs, indices)."""
+
 from __future__ import annotations
 
 import ctypes
@@ -10,7 +12,7 @@ from pykotor.gl.compat import (
     missing_gl_func,
     safe_gl_error_module,
 )
-from pykotor.gl.glm_compat import mat4, Vector3, Vector4, value_ptr
+from pykotor.gl.glm_compat import Vector3, Vector4, mat4, value_ptr
 
 HAS_PYOPENGL = has_pyopengl()
 gl_error = safe_gl_error_module()
@@ -50,7 +52,6 @@ from pykotor.gl.native import fastmath
 
 if TYPE_CHECKING:
     from pykotor.gl.glm_compat import mat4
-
     from pykotor.gl.models.node import Node
     from pykotor.gl.scene import Scene
     from pykotor.gl.shader import Shader
@@ -58,18 +59,18 @@ if TYPE_CHECKING:
 
 class Mesh:
     """Mesh class for rendering 3D geometry.
-    
+
     Performance notes:
     - Uses __slots__ to reduce memory and improve attribute access speed
     - VAO/VBO/EBO are created once and reused
     - Texture lookups go through scene.texture() which has its own caching
-    
+
     Note: We intentionally do NOT cache texture references at the mesh level because:
     1. Textures can be loaded asynchronously and replaced
     2. Scene.texture() already provides O(1) dict lookup
     3. Caching stale texture references causes rendering bugs (wrong textures)
     """
-    
+
     __slots__ = (
         "_scene",
         "_node",
@@ -87,7 +88,7 @@ class Mesh:
         "_face_count",
         "_vertex_blob_cache",
     )
-    
+
     def __init__(
         self,
         scene: Scene,
@@ -164,7 +165,7 @@ class Mesh:
         override_texture: str | None = None,
     ):
         """Draw the mesh.
-        
+
         Args:
             shader: The shader program to use.
             transform: The model transformation matrix.
@@ -172,17 +173,17 @@ class Mesh:
         """
         if not HAS_PYOPENGL:
             raise gl_error.NullFunctionError("PyOpenGL is unavailable.")
-        
+
         shader.set_matrix4("model", transform)
 
         # Get textures from scene (scene.texture() has O(1) dict lookup + caching)
         tex_name = override_texture if override_texture else self.texture
         texture = self._scene.texture(tex_name)
         lightmap = self._scene.texture(self.lightmap, lightmap=True)
-        
+
         glActiveTexture(GL_TEXTURE0)
         texture.use()
-        
+
         glActiveTexture(GL_TEXTURE1)
         lightmap.use()
 
@@ -200,9 +201,7 @@ class Mesh:
             return None
         mv = memoryview(self.vertex_data)
         matrix_values = [value_ptr(transform)[i] for i in range(16)]
-        bounds_min, bounds_max = fastmath.transform_bounds(
-            mv, vertex_count, self.mdx_size, self.mdx_vertex, matrix_values
-        )
+        bounds_min, bounds_max = fastmath.transform_bounds(mv, vertex_count, self.mdx_size, self.mdx_vertex, matrix_values)
         return Vector3(*bounds_min), Vector3(*bounds_max)
 
     def bounds(

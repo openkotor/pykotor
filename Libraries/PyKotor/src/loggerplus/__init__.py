@@ -18,6 +18,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Tuple
 import asyncio
 
+from utility.misc import ensure_directory_exists
+
 try:
     from utility.error_handling import format_exception_with_variables
 except ImportError:
@@ -372,7 +374,7 @@ def get_log_directory(subdir: os.PathLike | str | None = None) -> Path:
     def check(path: Path) -> Path:
         if not path.exists() or not path.is_dir():
             path.unlink(missing_ok=True)
-            path.mkdir(parents=True, exist_ok=True)  # Attempt to create the fallback directory
+            ensure_directory_exists(path)  # Attempt to create the fallback directory
         if _dir_requires_admin(path, ignore_errors=False):
             raise PermissionError(f"Directory '{path}' requires admin.")
         return path

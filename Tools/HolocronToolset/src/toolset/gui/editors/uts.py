@@ -1,3 +1,5 @@
+"""UTS (sound) editor: sound list, 3D position, and audio preview."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -67,6 +69,7 @@ class UTSEditor(Editor):
 
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -86,23 +89,23 @@ class UTSEditor(Editor):
             - Connects style radio buttons toggled signals to changeStyle method
             - Connects play random/specific/everywhere radio buttons toggled signals to changePlay method.
         """
-        self.ui.addSoundButton.clicked.connect(self.add_sound)
-        self.ui.removeSoundButton.clicked.connect(self.remove_sound)
-        self.ui.playSoundButton.clicked.connect(self.play_sound)
-        self.ui.stopSoundButton.clicked.connect(self.player.stop)
-        self.ui.moveUpButton.clicked.connect(self.move_sound_up)
-        self.ui.moveDownButton.clicked.connect(self.move_sound_down)
+        for signal, handler in [
+            (self.ui.addSoundButton.clicked, self.add_sound),
+            (self.ui.removeSoundButton.clicked, self.remove_sound),
+            (self.ui.playSoundButton.clicked, self.play_sound),
+            (self.ui.stopSoundButton.clicked, self.player.stop),
+            (self.ui.moveUpButton.clicked, self.move_sound_up),
+            (self.ui.moveDownButton.clicked, self.move_sound_down),
+            (self.ui.tagGenerateButton.clicked, self.generate_tag),
+            (self.ui.resrefGenerateButton.clicked, self.generate_resref),
+        ]:
+            signal.connect(handler)
 
-        self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
-        self.ui.resrefGenerateButton.clicked.connect(self.generate_resref)
+        for signal in (self.ui.styleOnceRadio.toggled, self.ui.styleSeamlessRadio.toggled, self.ui.styleRepeatRadio.toggled):
+            signal.connect(self.change_style)
 
-        self.ui.styleOnceRadio.toggled.connect(self.change_style)
-        self.ui.styleSeamlessRadio.toggled.connect(self.change_style)
-        self.ui.styleRepeatRadio.toggled.connect(self.change_style)
-
-        self.ui.playRandomRadio.toggled.connect(self.change_play)
-        self.ui.playSpecificRadio.toggled.connect(self.change_play)
-        self.ui.playEverywhereRadio.toggled.connect(self.change_play)
+        for signal in (self.ui.playRandomRadio.toggled, self.ui.playSpecificRadio.toggled, self.ui.playEverywhereRadio.toggled):
+            signal.connect(self.change_play)
 
     def _setup_installation(self, installation: HTInstallation):
         self._installation = installation
@@ -115,6 +118,7 @@ class UTSEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
+        """Load resource and populate UI from UTS. Defaults from construct_uts (K1 LoadSounds 0x00505560, TSL 0x0071c730 (Aspyr))."""
         super().load(filepath, resref, restype, data)
 
         uts: UTS = read_uts(data)
@@ -130,13 +134,7 @@ class UTSEditor(Editor):
         ----
             uts (UTS): UTS object to load
 
-        Processing Logic:
-        ----------------
-            - Sets basic property values like name, tag, etc
-            - Sets advanced playback options like random, specific position
-            - Loads sounds list
-            - Sets positioning options like style, distances
-            - Loads comments.
+        Defaults from construct_uts; K1 LoadSounds 0x00505560, TSL 0x0071c730 (Aspyr). Sets basic, playback, positioning, sounds list, comment.
         """
         self._uts = uts
 
@@ -148,15 +146,7 @@ class UTSEditor(Editor):
         self.ui.activeCheckbox.setChecked(uts.active)
 
         # Advanced
-        self.ui.playRandomRadio.setChecked(False)
-        self.ui.playSpecificRadio.setChecked(False)
-        self.ui.playEverywhereRadio.setChecked(False)
-        if uts.random_range_x != 0 and uts.random_range_y != 0:
-            self.ui.playRandomRadio.setChecked(True)
-        elif uts.positional:
-            self.ui.playSpecificRadio.setChecked(True)
-        else:
-            self.ui.playEverywhereRadio.setChecked(True)
+        self._apply_play_mode_from_uts(uts)
 
         self.ui.orderSequentialRadio.setChecked(uts.random_pick == 0)
         self.ui.orderRandomRadio.setChecked(uts.random_pick == 1)
@@ -174,15 +164,7 @@ class UTSEditor(Editor):
             self.ui.soundList.addItem(item)
 
         # Positioning
-        self.ui.styleOnceRadio.setChecked(False)
-        self.ui.styleSeamlessRadio.setChecked(False)
-        self.ui.styleRepeatRadio.setChecked(False)
-        if uts.continuous and uts.looping:
-            self.ui.styleSeamlessRadio.setChecked(True)
-        elif uts.looping:
-            self.ui.styleRepeatRadio.setChecked(True)
-        else:
-            self.ui.styleOnceRadio.setChecked(True)
+        self._apply_style_mode_from_uts(uts)
 
         self.ui.cutoffSpin.setValue(uts.min_distance)
         self.ui.maxVolumeDistanceSpin.setValue(uts.max_distance)
@@ -194,18 +176,13 @@ class UTSEditor(Editor):
         self.ui.commentsEdit.setPlainText(uts.comment)
 
     def build(self) -> tuple[bytes, bytes]:
-        """Builds a UTS from UI fields.
+        """Builds a UTS from UI data.
 
         Returns:
         -------
-            tuple[bytes, bytes]: A tuple containing the unit data and log.
+            tuple[bytes, bytes]: GFF data and log.
 
-        Processing Logic:
-        ----------------
-            - Collects input from UI elements and assigns to _uts attribute
-            - Loops through sound list adding each sound to _uts
-            - Writes _uts to bytearray using dismantle_uts and write_gff
-            - Returns bytearray tuple.
+        Populates UTS from UI, then dismantle_uts (K1 LoadSounds 0x00505560, TSL 0x0071c730 (Aspyr)). Returns GFF bytes and log.
         """
         uts: UTS = deepcopy(self._uts)
 
@@ -225,13 +202,11 @@ class UTSEditor(Editor):
         uts.pitch_variation = self.ui.pitchVariationSlider.value() / 100
 
         # Sounds
-        uts.sounds = []
-        for i in range(self.ui.soundList.count()):
-            cur_item: QListWidgetItem | None = self.ui.soundList.item(i)
-            if cur_item is None:
-                continue
-            sound = ResRef(cur_item.text())
-            uts.sounds.append(sound)
+        uts.sounds = [
+            ResRef(item.text())
+            for i in range(self.ui.soundList.count())
+            if (item := self.ui.soundList.item(i)) is not None
+        ]
 
         # Positioning
         uts.continuous = self.ui.styleSeamlessRadio.isChecked()
@@ -254,6 +229,30 @@ class UTSEditor(Editor):
     def new(self):
         super().new()
         self._loadUTS(UTS())
+
+    def _apply_play_mode_from_uts(self, uts: UTS) -> None:
+        """Update play mode radio buttons from UTS playback fields."""
+        for radio in (self.ui.playRandomRadio, self.ui.playSpecificRadio, self.ui.playEverywhereRadio):
+            radio.setChecked(False)
+
+        if uts.random_range_x != 0 and uts.random_range_y != 0:
+            self.ui.playRandomRadio.setChecked(True)
+        elif uts.positional:
+            self.ui.playSpecificRadio.setChecked(True)
+        else:
+            self.ui.playEverywhereRadio.setChecked(True)
+
+    def _apply_style_mode_from_uts(self, uts: UTS) -> None:
+        """Update style radio buttons from UTS looping/continuous fields."""
+        for radio in (self.ui.styleOnceRadio, self.ui.styleSeamlessRadio, self.ui.styleRepeatRadio):
+            radio.setChecked(False)
+
+        if uts.continuous and uts.looping:
+            self.ui.styleSeamlessRadio.setChecked(True)
+        elif uts.looping:
+            self.ui.styleRepeatRadio.setChecked(True)
+        else:
+            self.ui.styleOnceRadio.setChecked(True)
 
     def change_name(self):
         assert self._installation is not None
@@ -364,3 +363,10 @@ class UTSEditor(Editor):
 
     def closeEvent(self, e: QCloseEvent):
         self.player.stop()
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("uts"))

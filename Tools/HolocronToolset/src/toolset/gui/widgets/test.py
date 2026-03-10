@@ -163,10 +163,10 @@ class ResourceList(MainWindowList):
     ):
         index = self.ui.resourceTree.indexAt(event.pos())  # type: ignore[arg-type]
         if index.isValid():
-            model_index: QModelIndex = cast(QSortFilterProxyModel, self.ui.resourceTree.model()).mapToSource(index)  # pyright: ignore[reportArgumentType]
+            model_index: QModelIndex = cast("QSortFilterProxyModel", self.ui.resourceTree.model()).mapToSource(index)  # pyright: ignore[reportArgumentType]
             item: ResourceStandardItem | QStandardItem | None = cast(
-                QStandardItemModel,
-                cast(QSortFilterProxyModel, self.ui.resourceTree.model()).sourceModel(),
+                "QStandardItemModel",
+                cast("QSortFilterProxyModel", self.ui.resourceTree.model()).sourceModel(),
             ).itemFromIndex(model_index)
             if isinstance(item, ResourceStandardItem):
                 self.tooltip_text = str(item.resource.filepath())
@@ -248,7 +248,7 @@ class ResourceList(MainWindowList):
         self,
         resource: FileResource,
     ):
-        model: ResourceModel = cast(QSortFilterProxyModel, self.ui.resourceTree.model()).sourceModel()  # type: ignore[attribute-access]
+        model: ResourceModel = cast("QSortFilterProxyModel", self.ui.resourceTree.model()).sourceModel()  # type: ignore[attribute-access]
         assert isinstance(model, ResourceModel)
 
         def select(parent, child):
@@ -681,7 +681,7 @@ class TextureList(MainWindowList):
                 self.texture_models[section] = QStandardItemModel()
 
         # Set the model for the current section
-        if self.ui.sectionCombo.count() > 0:
+        if self.ui.sectionCombo.count():
             current_section: str = self.ui.sectionCombo.itemData(0, Qt.ItemDataRole.UserRole)
             self.textures_proxy_model.setSourceModel(self.texture_models[current_section])
 

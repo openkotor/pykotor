@@ -1,3 +1,5 @@
+"""VIS (visibility) ASCII read/write: room-to-room visibility for occlusion culling."""
+
 from __future__ import annotations
 
 import os
@@ -13,23 +15,27 @@ if TYPE_CHECKING:
 
 class VISAsciiReader(ResourceReader):
     """Reads VIS (Visibility) files.
-    
+
     VIS files define which rooms are visible from other rooms, used for occlusion culling
     and level-of-detail management in KotOR modules.
-    
+
     References:
     ----------
         Based on swkotor.exe VIS structure:
-        - LoadVisibility @ 0x004568d0 - Loads VIS file for area visibility culling
-        - "%s/%s.VIS" format string @ 0x007415e8 - VIS file path format
-        - ".vis" extension @ 0x00741604 - VIS file extension identifier
-        
+        - LoadVisibility @ 0x004568d0 - Loads VIS file for visibility culling
+          * Parses ASCII format
+          * Reads parent room names and child room counts
+          * Builds visibility graph for occlusion culling
+        - "%s/%s.VIS" file path format - Used by engine to locate VIS files
+        - ".vis" file extension - VIS file extension
+        - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
         Note: VIS files define which rooms are visible from other rooms, used for occlusion culling
-        and level-of-detail management in KotOR modules. VIS files are ASCII text files with a
-        simple format: parent room names followed by indented child room names.
+        and level-of-detail management in KotOR modules. VIS files are ASCII text files with the
+        following format: parent room names followed by indented child room names.
 
 
     """
+
     def __init__(self, source: SOURCE_TYPES, offset: int = 0, size: int = 0):
         super().__init__(source, offset, size)
         self._vis: VIS | None = None

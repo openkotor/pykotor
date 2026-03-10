@@ -1,14 +1,15 @@
+"""FAC (faction) editor: faction list, reputation, and parent relationships."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from qtpy.QtGui import QStandardItem, QStandardItemModel
-from qtpy.QtWidgets import QMenu, QMessageBox, QShortcut, QTreeView
+from qtpy.QtWidgets import QMenu, QShortcut, QTreeView
 
 from pykotor.resource.formats.gff import write_gff
 from pykotor.resource.generics.fac import FAC, FACFaction, FACReputation, dismantle_fac, read_fac
 from pykotor.resource.type import ResourceType
-from toolset.data.installation import HTInstallation
 from toolset.gui.editor import Editor
 
 if TYPE_CHECKING:
@@ -16,6 +17,8 @@ if TYPE_CHECKING:
 
     from qtpy.QtCore import QItemSelection, QPoint
     from qtpy.QtWidgets import QWidget
+
+    from toolset.data.installation import HTInstallation
 
 
 class FACEditor(Editor):
@@ -51,9 +54,10 @@ class FACEditor(Editor):
             self.ui.factionTree.setSelectionMode(QTreeView.SelectionMode.SingleSelection)
             self.ui.reputationTree.setModel(self._reputation_model)
             self.ui.reputationTree.setSelectionMode(QTreeView.SelectionMode.SingleSelection)
-            
+
             # Setup event filter to prevent scroll wheel interaction with controls
             from toolset.gui.common.filters import NoScrollEventFilter
+
             self._no_scroll_filter = NoScrollEventFilter(self)
             self._no_scroll_filter.setup_filter(parent_widget=self)
         except ImportError:
@@ -96,6 +100,7 @@ class FACEditor(Editor):
 
             # Setup event filter to prevent scroll wheel interaction with controls
             from toolset.gui.common.filters import NoScrollEventFilter
+
             self._no_scroll_filter = NoScrollEventFilter(self)
             self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -128,6 +133,34 @@ class FACEditor(Editor):
 
         QShortcut("Del", self).activated.connect(self.on_delete_shortcut)
 
+    def _create_item_with_data(self, data) -> QStandardItem:
+        """Create a QStandardItem and set its data.
+
+        Args:
+        ----
+            data: The data to store in the item
+
+        Returns:
+        -------
+            QStandardItem: The created item with data set
+        """
+        item = QStandardItem()
+        item.setData(data)
+        return item
+
+    def _get_all_model_items(self, model: QStandardItemModel) -> list[QStandardItem]:
+        """Get all items from a QStandardItemModel.
+
+        Args:
+        ----
+            model: The model to get items from
+
+        Returns:
+        -------
+            List of all items in the model
+        """
+        return [model.item(i) for i in range(model.rowCount())]
+
     def load(
         self,
         filepath: os.PathLike | str,
@@ -136,6 +169,10 @@ class FACEditor(Editor):
         data: bytes,
     ):
         """Load faction data from a file.
+
+        FAC GFF defaults (REVA): FactionName "" (K1 0x0052b5c0, TSL Aspyr 0x007ef390, TSL Legacy 0x005acf30);
+        FactionGlobal 0 when present, 1 when field missing (all three); FactionParentID 0 (engine) / we use 0xFFFFFFFF for no parent;
+        FactionID1/2/Rep 0; FactionRep clamped 0-100. Lists FactionList/RepList omit → empty.
 
         Args:
         ----
@@ -151,21 +188,23 @@ class FACEditor(Editor):
         # Populate faction tree
         self._faction_model.clear()
         for i, faction in enumerate(self._fac.factions):
-            faction_item = QStandardItem()
-            faction_item.setData(faction)
+            faction_item = self._create_item_with_data(faction)
             self.refresh_faction_item(faction_item)
             self._faction_model.appendRow(faction_item)
 
         # Populate reputation tree
         self._reputation_model.clear()
         for rep in self._fac.reputations:
-            rep_item = QStandardItem()
-            rep_item.setData(rep)
+            rep_item = self._create_item_with_data(rep)
             self.refresh_reputation_item(rep_item)
             self._reputation_model.appendRow(rep_item)
 
     def build(self) -> tuple[bytes, bytes]:
-        """Build the FAC data for saving."""
+        """Build the FAC data for saving.
+
+        Write path matches engine: FactionList then RepList (K1 SaveModuleFAC 0x004c3960, SaveFactions 0x0052b790,
+        SaveReputations 0x0052b830; TSL Aspyr 0x007ef910, 0x007ef9d0; TSL Legacy 0x005ad100, 0x005ad1a0).
+        """
         data = bytearray()
         write_gff(dismantle_fac(self._fac), data)
         return data, b""
@@ -308,22 +347,22 @@ class FACEditor(Editor):
     def add_faction(self, faction: FACFaction):
         """Add a faction to the FAC."""
         self._fac.factions.append(faction)
-        faction_item = QStandardItem()
-        faction_item.setData(faction)
+        faction_item = self._create_item_with_data(faction)
         self.refresh_faction_item(faction_item)
         self._faction_model.appendRow(faction_item)
 
     def remove_faction(self, faction_item: QStandardItem):
         """Remove a faction from the FAC."""
         faction: FACFaction = faction_item.data()
+        faction_id = self._fac.factions.index(faction)
         self._faction_model.removeRow(faction_item.row())
         self._fac.factions.remove(faction)
 
         # Remove all reputations involving this faction
         to_remove = [
             rep_item
-            for rep_item in [self._reputation_model.item(i) for i in range(self._reputation_model.rowCount())]
-            if rep_item is not None and (rep_item.data().faction_id1 == self._fac.factions.index(faction) or rep_item.data().faction_id2 == self._fac.factions.index(faction))
+            for rep_item in self._get_all_model_items(self._reputation_model)
+            if rep_item is not None and (rep_item.data().faction_id1 == faction_id or rep_item.data().faction_id2 == faction_id)
         ]
         for rep_item in to_remove:
             if rep_item is not None:
@@ -332,8 +371,7 @@ class FACEditor(Editor):
     def add_reputation(self, reputation: FACReputation):
         """Add a reputation to the FAC."""
         self._fac.reputations.append(reputation)
-        rep_item = QStandardItem()
-        rep_item.setData(reputation)
+        rep_item = self._create_item_with_data(reputation)
         self.refresh_reputation_item(rep_item)
         self._reputation_model.appendRow(rep_item)
 
@@ -343,3 +381,9 @@ class FACEditor(Editor):
         self._reputation_model.removeRow(rep_item.row())
         self._fac.reputations.remove(reputation)
 
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("fac"))

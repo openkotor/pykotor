@@ -1,9 +1,11 @@
+"""Scene graph node: transform hierarchy and optional mesh for OpenGL rendering."""
+
 from __future__ import annotations
 
 from copy import copy
 from typing import TYPE_CHECKING
 
-from pykotor.gl.glm_compat import decompose, mat4, mat4_cast, quat, translate, Vector3, Vector4
+from pykotor.gl.glm_compat import Vector3, Vector4, decompose, mat4, mat4_cast, quat, translate
 
 if TYPE_CHECKING:
     from pykotor.gl.models.mesh import Mesh

@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-from io import BytesIO
-import os
 import pathlib
 import pickle
 import sys
 import unittest
+
+from io import BytesIO
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[3].joinpath("src")
 UTILITY_PATH = THIS_SCRIPT_PATH.parents[5].joinpath("Libraries", "Utility", "src")
+
+
 def add_sys_path(p: pathlib.Path):
     working_dir = str(p)
     if working_dir not in sys.path:
@@ -22,8 +24,6 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
-from pykotor.resource.formats.tpc.tpc_data import TPC
-from utility.common.more_collections import CaseInsensitiveDict
 from pykotor.common.language import LocalizedString
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import ResourceIdentifier
@@ -32,10 +32,16 @@ from pykotor.resource.type import ResourceType
 
 # Import create_installation from test_diff_comprehensive
 sys.path.insert(0, str(THIS_SCRIPT_PATH.parents[1] / "cli"))
+import tempfile
+
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from test_diff_comprehensive import DiffTestDataHelper
 
-import tempfile
-from pathlib import Path
+if TYPE_CHECKING:
+    from pykotor.resource.formats.tpc.tpc_data import TPC
+    from utility.common.more_collections import CaseInsensitiveDict
 
 
 class TestInstallation(TestCase):
@@ -125,8 +131,8 @@ class TestInstallation(TestCase):
         assert installation.resource("xxx", ResourceType.WAV, [SearchLocation.MUSIC]) is None
         assert installation.resource("n_gendro_coms1", ResourceType.LIP, [SearchLocation.LIPS]) is not None
         assert installation.resource("xxx", ResourceType.LIP, [SearchLocation.LIPS]) is None
-        #assert installation.resource("darkjedi", ResourceType.SSF, [SearchLocation.RIMS]) is not None
-        #assert installation.resource("xxx", ResourceType.SSF, [SearchLocation.RIMS]) is None
+        # assert installation.resource("darkjedi", ResourceType.SSF, [SearchLocation.RIMS]) is not None
+        # assert installation.resource("xxx", ResourceType.SSF, [SearchLocation.RIMS]) is None
         assert installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPA]) is not None
         assert installation.resource("xxx", ResourceType.TPC, [SearchLocation.TEXTURES_TPA]) is None
         assert installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPB]) is not None
@@ -184,12 +190,12 @@ class TestInstallation(TestCase):
         ]
         lips_results = installation.resources(lips_resources, [SearchLocation.LIPS])
         self._assert_from_path_tests(lips_results, "n_gendro_coms1.lip", "x.lip")
-        #rims_resources = [
+        # rims_resources = [
         #    ResourceIdentifier.from_path("darkjedi.ssf"),
         #    ResourceIdentifier.from_path("x.ssf"),
-        #]
-        #rims_results = installation.resources(rims_resources, [SearchLocation.RIMS])
-        #self._assert_from_path_tests(rims_results, "darkjedi.ssf", "x.ssf")
+        # ]
+        # rims_results = installation.resources(rims_resources, [SearchLocation.RIMS])
+        # self._assert_from_path_tests(rims_results, "darkjedi.ssf", "x.ssf")
         texa_resources = [
             ResourceIdentifier.from_path("blood.tpc"),
             ResourceIdentifier.from_path("x.tpc"),
@@ -243,8 +249,8 @@ class TestInstallation(TestCase):
         assert not installation.location("xxx", ResourceType.WAV, [SearchLocation.MUSIC])
         assert installation.location("n_gendro_coms1", ResourceType.LIP, [SearchLocation.LIPS])
         assert not installation.location("xxx", ResourceType.LIP, [SearchLocation.LIPS])
-        #assert installation.location("darkjedi", ResourceType.SSF, [SearchLocation.RIMS])
-        #assert not installation.location("xxx", ResourceType.SSF, [SearchLocation.RIMS])
+        # assert installation.location("darkjedi", ResourceType.SSF, [SearchLocation.RIMS])
+        # assert not installation.location("xxx", ResourceType.SSF, [SearchLocation.RIMS])
         assert installation.location("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPA])
         assert not installation.location("xxx", ResourceType.TPC, [SearchLocation.TEXTURES_TPA])
         assert installation.location("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPB])
@@ -293,12 +299,12 @@ class TestInstallation(TestCase):
         ]
         lips_results = installation.locations(lips_resources, [SearchLocation.LIPS])
         self._assert_from_path_tests(lips_results, "n_gendro_coms1.lip", "x.lip")
-        #rims_resources = [
+        # rims_resources = [
         #    ResourceIdentifier.from_path("darkjedi.ssf"),
         #    ResourceIdentifier.from_path("x.ssf"),
-        #]
-        #rims_results = installation.locations(rims_resources, [SearchLocation.RIMS])
-        #self._assert_from_path_tests(rims_results, "darkjedi.ssf", "x.ssf")
+        # ]
+        # rims_results = installation.locations(rims_resources, [SearchLocation.RIMS])
+        # self._assert_from_path_tests(rims_results, "darkjedi.ssf", "x.ssf")
         texa_resources = [
             ResourceIdentifier.from_path("blood.tpc"),
             ResourceIdentifier.from_path("x.tpc"),
@@ -401,10 +407,10 @@ class TestInstallation(TestCase):
         assert chitin_results["as_an_dantext_01"] is not None
         assert chitin_results["x"] is None
 
-        #rim_sounds = ["FS_metal1", "x"]
-        #rim_results = installation.sounds(rim_sounds, [SearchLocation.RIMS])
-        #assert rim_results["FS_metal1"] is not None
-        #assert rim_results["x"] is None
+        # rim_sounds = ["FS_metal1", "x"]
+        # rim_results = installation.sounds(rim_sounds, [SearchLocation.RIMS])
+        # assert rim_results["FS_metal1"] is not None
+        # assert rim_results["x"] is None
 
         sound_sounds = ["al_an_flybuzz_01", "x"]
         sound_results = installation.sounds(sound_sounds, [SearchLocation.SOUND])
@@ -471,7 +477,7 @@ class TestInstallation(TestCase):
 if __name__ == "__main__":
     try:
         import pytest
-    except ImportError: # pragma: no cover
+    except ImportError:  # pragma: no cover
         unittest.main()
     else:
         pytest.main(["-v", __file__])

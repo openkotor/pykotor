@@ -1,39 +1,31 @@
-from __future__ import annotations
+"""BWM (walkmesh) editor: face list, materials, and 2D camera for module designer."""
 
-import struct
+from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from qtpy.QtCore import Qt
-from qtpy.QtGui import QColor, QIcon, QImage, QPixmap
 from qtpy.QtWidgets import QListWidgetItem, QShortcut  # pyright: ignore[reportPrivateImportUsage]
 
-from pykotor.common.misc import Color  # pyright: ignore[reportMissingImports]
 from pykotor.resource.formats.bwm import read_bwm, write_bwm  # pyright: ignore[reportMissingImports]
 from pykotor.resource.type import ResourceType  # pyright: ignore[reportMissingImports]
+from toolset.gui.common.interaction.camera import calculate_zoom_strength, handle_standard_2d_camera_movement
+from toolset.gui.common.walkmesh_materials import get_walkmesh_material_colors, populate_material_list_widget
 from toolset.gui.editor import Editor
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
-from utility.common.geometry import SurfaceMaterial
 
 if TYPE_CHECKING:
     import os
 
+    from qtpy.QtGui import QColor
     from qtpy.QtWidgets import QWidget
 
     from pykotor.resource.formats.bwm import BWM, BWMFace  # pyright: ignore[reportMissingImports]
     from toolset.data.installation import HTInstallation
-    from utility.common.geometry import Vector2, Vector3
+    from utility.common.geometry import SurfaceMaterial, Vector2, Vector3
 
 _TRANS_FACE_ROLE = Qt.ItemDataRole.UserRole + 1  # type: ignore[attr-defined]
 _TRANS_EDGE_ROLE = Qt.ItemDataRole.UserRole + 2  # type: ignore[attr-defined]
-
-
-def calculate_zoom_strength(delta_y: float, sens_setting: int) -> float:
-    m = 0.00202
-    b = 1
-    factor_in = (m * sens_setting + b)
-    return 1 / abs(factor_in) if delta_y < 0 else abs(factor_in)
-
 
 class BWMEditor(Editor):
     def __init__(self, parent: QWidget | None, installation: HTInstallation | None = None):
@@ -58,50 +50,26 @@ class BWMEditor(Editor):
         super().__init__(parent, "Walkmesh Painter", "walkmesh", supported, supported, installation)
 
         from toolset.uic.qtpy.editors.bwm import Ui_MainWindow
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
-        
+
         self._setup_menus()
         self._add_help_action()
         self._setup_signals()
 
         self._bwm: BWM | None = None
 
-        moduleDesignerSettings = ModuleDesignerSettings()
-
-        def int_to_qcolor(intvalue: int) -> QColor:
-            color = Color.from_rgba_integer(intvalue)
-            return QColor(int(color.r * 255), int(color.g * 255), int(color.b * 255), int(color.a * 255))
-
-        self.material_colors: dict[SurfaceMaterial, QColor] = {
-            SurfaceMaterial.UNDEFINED: int_to_qcolor(moduleDesignerSettings.undefinedMaterialColour),
-            SurfaceMaterial.OBSCURING: int_to_qcolor(moduleDesignerSettings.obscuringMaterialColour),
-            SurfaceMaterial.DIRT: int_to_qcolor(moduleDesignerSettings.dirtMaterialColour),
-            SurfaceMaterial.GRASS: int_to_qcolor(moduleDesignerSettings.grassMaterialColour),
-            SurfaceMaterial.STONE: int_to_qcolor(moduleDesignerSettings.stoneMaterialColour),
-            SurfaceMaterial.WOOD: int_to_qcolor(moduleDesignerSettings.woodMaterialColour),
-            SurfaceMaterial.WATER: int_to_qcolor(moduleDesignerSettings.waterMaterialColour),
-            SurfaceMaterial.NON_WALK: int_to_qcolor(moduleDesignerSettings.nonWalkMaterialColour),
-            SurfaceMaterial.TRANSPARENT: int_to_qcolor(moduleDesignerSettings.transparentMaterialColour),
-            SurfaceMaterial.CARPET: int_to_qcolor(moduleDesignerSettings.carpetMaterialColour),
-            SurfaceMaterial.METAL: int_to_qcolor(moduleDesignerSettings.metalMaterialColour),
-            SurfaceMaterial.PUDDLES: int_to_qcolor(moduleDesignerSettings.puddlesMaterialColour),
-            SurfaceMaterial.SWAMP: int_to_qcolor(moduleDesignerSettings.swampMaterialColour),
-            SurfaceMaterial.MUD: int_to_qcolor(moduleDesignerSettings.mudMaterialColour),
-            SurfaceMaterial.LEAVES: int_to_qcolor(moduleDesignerSettings.leavesMaterialColour),
-            SurfaceMaterial.LAVA: int_to_qcolor(moduleDesignerSettings.lavaMaterialColour),
-            SurfaceMaterial.BOTTOMLESS_PIT: int_to_qcolor(moduleDesignerSettings.bottomlessPitMaterialColour),
-            SurfaceMaterial.DEEP_WATER: int_to_qcolor(moduleDesignerSettings.deepWaterMaterialColour),
-            SurfaceMaterial.DOOR: int_to_qcolor(moduleDesignerSettings.doorMaterialColour),
-            SurfaceMaterial.NON_WALK_GRASS: int_to_qcolor(moduleDesignerSettings.nonWalkGrassMaterialColour),
-            SurfaceMaterial.TRIGGER: int_to_qcolor(moduleDesignerSettings.nonWalkGrassMaterialColour),
-        }
+        self.material_colors: dict[SurfaceMaterial, QColor] = get_walkmesh_material_colors()
         self.ui.renderArea.material_colors = self.material_colors
+        self.ui.renderArea.show_room_boundaries = True
+        self.ui.renderArea.show_grid = False
         self.rebuild_materials()
 
         self.new()
@@ -109,9 +77,14 @@ class BWMEditor(Editor):
     def _setup_signals(self) -> None:
         self.ui.renderArea.sig_mouse_moved.connect(self.on_mouse_moved)
         self.ui.renderArea.sig_mouse_scrolled.connect(self.on_mouse_scrolled)
+        self.ui.actionShowRoomBoundaries.toggled.connect(lambda value: setattr(self.ui.renderArea, "show_room_boundaries", value))
+        self.ui.actionShowRoomBoundaries.toggled.connect(lambda _: self.ui.renderArea.update())
+        self.ui.actionShowGrid.toggled.connect(lambda value: setattr(self.ui.renderArea, "show_grid", value))
+        self.ui.actionShowGrid.toggled.connect(lambda _: self.ui.renderArea.update())
 
-        # Use "=" (base key) for zoom in instead of "+" (which requires Shift).
+        # Use "=" (base key) for zoom in as well as "+" (which requires Shift).
         QShortcut("=", self).activated.connect(lambda: self.ui.renderArea.camera.set_zoom(2))
+        QShortcut("+", self).activated.connect(lambda: self.ui.renderArea.camera.set_zoom(2))
         QShortcut("-", self).activated.connect(lambda: self.ui.renderArea.camera.set_zoom(-2))
 
     def rebuild_materials(self):
@@ -126,14 +99,7 @@ class BWMEditor(Editor):
             - Create list item with icon and text
             - Add item to material list.
         """
-        self.ui.materialList.clear()
-        for material, color in self.material_colors.items():
-            image = QImage(struct.pack("BBB", color.red(), color.green(), color.blue()) * 16 * 16, 16, 16, QImage.Format.Format_RGB888)
-            icon = QIcon(QPixmap(image))
-            text = material.name.replace("_", " ").title()
-            item = QListWidgetItem(icon, text)
-            item.setData(Qt.ItemDataRole.UserRole, material)  # type: ignore[attr-defined]
-            self.ui.materialList.addItem(item)
+        populate_material_list_widget(self.ui.materialList, self.material_colors)
 
     def load(
         self,
@@ -204,18 +170,16 @@ class BWMEditor(Editor):
         assert self._bwm is not None
         face: BWMFace | None = self._bwm.faceAt(world.x, world.y)
 
-        if Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Control in keys:  # type: ignore[attr-defined]
-            self.ui.renderArea.do_cursor_lock(screen)
-            self.ui.renderArea.camera.nudge_position(-world_data.x, -world_data.y)
-        elif Qt.MouseButton.MiddleButton in buttons and Qt.Key.Key_Control in keys:  # type: ignore[attr-defined]
-            self.ui.renderArea.do_cursor_lock(screen)
-            self.ui.renderArea.camera.nudge_rotation(delta.x / 50)
-        # Painting: require Shift + LeftButton to avoid conflicts with normal selection/drag
-        elif Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Shift in keys and face is not None:  # type: ignore[attr-defined]
+        handled_cam = handle_standard_2d_camera_movement(
+            self.ui.renderArea, screen, delta, world_data, buttons, keys
+        )
+
+        # Paint with left-drag unless camera movement consumed the input.
+        if not handled_cam and Qt.MouseButton.LeftButton in buttons and face is not None:  # type: ignore[attr-defined]
             self.change_face_material(face)
 
         coords_text = f"x: {world.x:.2f}, {world.y:.2f}"
-        face_text = f', face: {"None" if face is None else self._bwm.faces.index(face)}'
+        face_text = f", face: {'None' if face is None else self._bwm.faces.index(face)}"
 
         screen = self.ui.renderArea.to_render_coords(world.x, world.y)
         xy = f" || x: {screen.x:.2f}, " + f"y: {screen.y:.2f}, "
@@ -256,8 +220,17 @@ class BWMEditor(Editor):
     def onTransitionSelect(self):
         if self.ui.transList.currentItem():
             item: QListWidgetItem | None = self.ui.transList.currentItem()  # type: ignore[union-attr]  # pyright: ignore[reportOptionalMemberAccess]
+            if item is None:
+                return
             face: BWMFace | None = item.data(_TRANS_FACE_ROLE)
             edge: int | None = item.data(_TRANS_EDGE_ROLE)
             self.ui.renderArea.setHighlightedTrans(face, edge)
         else:
             self.ui.renderArea.setHighlightedTrans(None, None)
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("bwm"))

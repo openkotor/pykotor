@@ -9,11 +9,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-
-from pykotor.resource.formats.ncs.ncs_data import NCS, NCSInstruction, NCSInstructionType
+from pykotor.resource.formats.ncs.ncs_data import NCSInstructionType
 
 if TYPE_CHECKING:
-    pass
+    from pykotor.resource.formats.ncs.ncs_data import NCS, NCSInstruction
 
 logger: RobustLogger = RobustLogger()
 
@@ -69,9 +68,8 @@ def _validate_instruction_sequence(ncs: NCS, issues: list[str]) -> None:
         # Check for consecutive stack operations that might cause issues
         if i > 0:
             prev_instr = instructions[i - 1]
-            if (_is_stack_operation(instr.ins_type) and _is_stack_operation(prev_instr.ins_type) and
-                _stack_operations_conflict(instr, prev_instr)):
-                issues.append(f"Conflicting stack operations at positions {i-1} and {i}")
+            if _is_stack_operation(instr.ins_type) and _is_stack_operation(prev_instr.ins_type) and _stack_operations_conflict(instr, prev_instr):
+                issues.append(f"Conflicting stack operations at positions {i - 1} and {i}")
 
 
 def _validate_stack_operations(ncs: NCS, issues: list[str]) -> None:
@@ -86,10 +84,9 @@ def _validate_stack_operations(ncs: NCS, issues: list[str]) -> None:
         # Track basic stack operations
         if instr.ins_type in (NCSInstructionType.CPDOWNSP, NCSInstructionType.CPTOPSP):
             # Stack pointer manipulation
-            if hasattr(instr, 'size') and instr.size < 0:
+            if hasattr(instr, "size") and instr.size < 0:
                 stack_depth += abs(instr.size)  # Negative size means allocating stack space
-        elif instr.ins_type in (NCSInstructionType.CONSTI, NCSInstructionType.CONSTF,
-                           NCSInstructionType.CONSTS, NCSInstructionType.CONSTO):
+        elif instr.ins_type in (NCSInstructionType.CONSTI, NCSInstructionType.CONSTF, NCSInstructionType.CONSTS, NCSInstructionType.CONSTO):
             # Constants push values onto stack
             stack_depth += 1
         elif instr.ins_type == NCSInstructionType.ACTION:
@@ -112,6 +109,8 @@ def _validate_stack_operations(ncs: NCS, issues: list[str]) -> None:
 def _validate_control_flow(ncs: NCS, issues: list[str]) -> None:
     """Validate control flow instructions."""
     instructions = ncs.instructions
+    # O(1) lookup for jump target index instead of O(n) list.index() per instruction
+    instr_to_index: dict[int, int] = {id(instr): i for i, instr in enumerate(instructions)}
 
     for i, instr in enumerate(instructions):
         if instr.ins_type in (NCSInstructionType.JMP, NCSInstructionType.JZ, NCSInstructionType.JNZ, NCSInstructionType.JSR):
@@ -120,7 +119,7 @@ def _validate_control_flow(ncs: NCS, issues: list[str]) -> None:
                 continue
 
             # Check jump target bounds
-            target_index = instructions.index(instr.jump)
+            target_index = instr_to_index.get(id(instr.jump), -1)
             if target_index < 0 or target_index >= len(instructions):
                 issues.append(f"Jump instruction at position {i} targets invalid location {target_index}")
                 continue
@@ -157,10 +156,13 @@ def _validate_execution_safety(ncs: NCS, issues: list[str]) -> None:
 def _is_stack_operation(instr_type: NCSInstructionType) -> bool:
     """Check if an instruction type manipulates the stack."""
     return instr_type in (
-        NCSInstructionType.CPDOWNSP, NCSInstructionType.CPTOPSP,
-        NCSInstructionType.CPDOWNBP, NCSInstructionType.CPTOPBP,
-        NCSInstructionType.MOVSP, NCSInstructionType.SAVEBP,
-        NCSInstructionType.RESTOREBP
+        NCSInstructionType.CPDOWNSP,
+        NCSInstructionType.CPTOPSP,
+        NCSInstructionType.CPDOWNBP,
+        NCSInstructionType.CPTOPBP,
+        NCSInstructionType.MOVSP,
+        NCSInstructionType.SAVEBP,
+        NCSInstructionType.RESTOREBP,
     )
 
 
@@ -169,11 +171,10 @@ def _stack_operations_conflict(instr1: NCSInstruction, instr2: NCSInstruction) -
     # This is a simplified check - full analysis would be more complex
     # For example, CPDOWNSP followed by CPTOPSP with incompatible sizes
 
-    if (instr1.ins_type == NCSInstructionType.CPDOWNSP and
-        instr2.ins_type == NCSInstructionType.CPTOPSP):
+    if instr1.ins_type == NCSInstructionType.CPDOWNSP and instr2.ins_type == NCSInstructionType.CPTOPSP:
         # Check if sizes are compatible
-        size1 = getattr(instr1, 'size', 0)
-        size2 = getattr(instr2, 'size', 0)
+        size1 = getattr(instr1, "size", 0)
+        size2 = getattr(instr2, "size", 0)
         if size1 != size2 and size1 != 0 and size2 != 0:
             return True
 

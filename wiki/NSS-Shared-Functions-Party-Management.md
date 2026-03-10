@@ -13,6 +13,7 @@ This document provides detailed documentation for NWScript party management func
 ### Understanding the Party System
 
 KotOR supports a party of up to 3 members:
+
 - **Party Leader** (index 0) - The active character controlled by the player
 - **Party Member 1** (index 1) - First companion
 - **Party Member 2** (index 2) - Second companion
@@ -22,6 +23,7 @@ The party leader is always at index 0. When the leader changes, party order may 
 ### NPC Constants
 
 Party members are identified by NPC constants:
+
 - `NPC_PLAYER` (-1) - Player character
 - `NPC_BASTILA` (0) - Bastila Shan (K1)
 - `NPC_CANDEROUS` (1) - Canderous Ordo (K1)
@@ -44,17 +46,21 @@ Party members are identified by NPC constants:
 **Routine:** 577
 
 #### Function Signature
+
 ```nss
 object GetPartyMemberByIndex(int nIndex);
 ```
 
 #### Description
+
 Gets the party member at a specific index. The party leader is always at index 0. The order may change when the party leader changes.
 
 #### Parameters
+
 - `nIndex`: Party member index (0 = leader, 1 = first companion, 2 = second companion)
 
 #### Returns
+
 - Party member object at the specified index
 - `OBJECT_INVALID` if index is invalid or no member at that index
 
@@ -71,6 +77,7 @@ object oCompanion1 = GetPartyMemberByIndex(1);
 ```
 
 **Pattern: Iterate Through Party**
+
 ```nss
 // Loop through all party members
 int i = 0;
@@ -89,6 +96,7 @@ while (GetIsObjectValid(oMember)) {
 ```
 
 #### Notes
+
 - Index 0 is always the party leader
 - Party order may change when leader changes
 - Always validate objects before use
@@ -101,17 +109,21 @@ while (GetIsObjectValid(oMember)) {
 **Routine:** 576
 
 #### Function Signature
+
 ```nss
 int IsObjectPartyMember(object oCreature);
 ```
 
 #### Description
+
 Checks if a creature is currently a member of the active party.
 
 #### Parameters
+
 - `oCreature`: Creature to check
 
 #### Returns
+
 - `TRUE` (1) if the creature is a party member
 - `FALSE` (0) if not a party member or object is invalid
 
@@ -126,6 +138,7 @@ if (IsObjectPartyMember(oNPC)) {
 ```
 
 **Pattern: Area Entry with Party Check**
+
 ```nss
 // From vendor/K1_Community_Patch/Source/k_pman_init02.nss
 void main() {
@@ -139,6 +152,7 @@ void main() {
 ```
 
 **Pattern: Conditional Based on Party Membership**
+
 ```nss
 // Check party composition
 object oNPC = GetObjectByTag("Jolee");
@@ -150,6 +164,7 @@ if (IsObjectPartyMember(oNPC)) {
 ```
 
 #### Notes
+
 - Works on any creature object
 - Returns `FALSE` for objects that aren't party members
 - Party members are tracked dynamically
@@ -163,18 +178,22 @@ if (IsObjectPartyMember(oNPC)) {
 **Routine:** 574
 
 #### Function Signature
+
 ```nss
 int AddPartyMember(int nNPC, object oCreature);
 ```
 
 #### Description
+
 Adds a creature to the party. The creature must be available and the party must not be full (max 3 members).
 
 #### Parameters
+
 - `nNPC`: NPC constant (e.g., `NPC_BASTILA`, `NPC_HK_47`)
 - `oCreature`: Creature object to add (must match the NPC type)
 
 #### Returns
+
 - `TRUE` (1) if the creature was successfully added
 - `FALSE` (0) if addition failed (party full, creature already in party, etc.)
 
@@ -190,6 +209,7 @@ if (nResult) {
 ```
 
 **Pattern: Add Party Member After Event**
+
 ```nss
 // Add party member after quest completion
 if (GetGlobalBoolean("Quest_Completed")) {
@@ -201,6 +221,7 @@ if (GetGlobalBoolean("Quest_Completed")) {
 ```
 
 #### Notes
+
 - Party can have at most 3 members (including leader)
 - Creature must match the NPC constant type
 - Returns `FALSE` if party is full or NPC is already in party
@@ -213,17 +234,21 @@ if (GetGlobalBoolean("Quest_Completed")) {
 **Routine:** 575
 
 #### Function Signature
+
 ```nss
 int RemovePartyMember(int nNPC);
 ```
 
 #### Description
+
 Removes a creature from the party by NPC constant. The creature is removed from the active party but may remain available for re-adding later.
 
 #### Parameters
+
 - `nNPC`: NPC constant of the party member to remove (e.g., `NPC_BASTILA`)
 
 #### Returns
+
 - `TRUE` (1) if the creature was successfully removed
 - `FALSE` (0) if removal failed (not in party, invalid NPC, etc.)
 
@@ -238,6 +263,7 @@ if (nResult) {
 ```
 
 **Pattern: Conditional Party Removal**
+
 ```nss
 // Remove party member based on condition
 if (GetGlobalBoolean("Bastila_Left")) {
@@ -246,6 +272,7 @@ if (GetGlobalBoolean("Bastila_Left")) {
 ```
 
 #### Notes
+
 - Cannot remove the party leader (player character)
 - Party must have at least 1 member (the leader)
 - Returns `FALSE` if NPC is not in party
@@ -260,17 +287,21 @@ if (GetGlobalBoolean("Bastila_Left")) {
 **Routine:** 1739
 
 #### Function Signature
+
 ```nss
 int SetPartyLeader(int nNPC);
 ```
 
 #### Description
+
 Changes the party leader to the specified NPC constant. The party leader is the active character controlled by the player.
 
 #### Parameters
+
 - `nNPC`: NPC constant to set as leader (use `NPC_PLAYER` (-1) for player character)
 
 #### Returns
+
 - `TRUE` (1) if leader was successfully changed
 - `FALSE` (0) if change failed (NPC not in party, etc.)
 
@@ -282,6 +313,7 @@ SetPartyLeader(NPC_PLAYER);
 ```
 
 **Pattern: Reset Leader After Cutscene**
+
 ```nss
 // From vendor/K1_Community_Patch/Source/k_pman_init02.nss
 void main() {
@@ -293,6 +325,7 @@ void main() {
 ```
 
 **Pattern: Switch Leader to NPC**
+
 ```nss
 // Temporarily switch leader to NPC for dialogue
 SetPartyLeader(NPC_BASTILA);
@@ -303,6 +336,7 @@ SetPartyLeader(NPC_PLAYER);
 ```
 
 #### Notes
+
 - Use `NPC_PLAYER` (-1) to set player character as leader
 - NPC must be in the party to become leader
 - Party order may change when leader changes
@@ -398,6 +432,7 @@ if (IsObjectPartyMember(oJolee)) {
 ### Party Leader
 
 The party leader:
+
 - Is always at index 0 in `GetPartyMemberByIndex()`
 - Is the active character controlled by the player
 - Can be changed with `SetPartyLeader()`
@@ -406,6 +441,7 @@ The party leader:
 ### NPC Availability
 
 Some NPCs must be "available" before they can be added to the party. Availability is typically managed through:
+
 - Quest progression
 - Global variables
 - Special events
@@ -414,6 +450,7 @@ Some NPCs must be "available" before they can be added to the party. Availabilit
 ### Party Order
 
 Party order (indices 0, 1, 2):
+
 - **Index 0**: Party leader (always player or currently active leader)
 - **Index 1**: First companion
 - **Index 2**: Second companion
@@ -423,6 +460,7 @@ When the leader changes, party order may shift to maintain the new leader at ind
 ### Party Member Objects
 
 Party member objects:
+
 - Persist across area transitions
 - Are created when added to party
 - May remain in areas after removal (implementation dependent)

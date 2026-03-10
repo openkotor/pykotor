@@ -15,18 +15,22 @@ This document provides detailed documentation for NWScript combat-related functi
 **Routine:** 320
 
 #### Function Signature
+
 ```nss
 int GetIsInCombat(object oCreature = OBJECT_SELF, int bOnlyCountReal = FALSE);
 ```
 
 #### Description
+
 Returns `TRUE` if the specified creature is currently in combat. Used to check combat status before performing combat-related actions.
 
 #### Parameters
+
 - `oCreature`: Creature to check (default: `OBJECT_SELF`)
 - `bOnlyCountReal`: If `TRUE`, only returns `TRUE` for "real" combat (TSL only, advanced usage - typically use `FALSE`)
 
 #### Returns
+
 - `TRUE` if the creature is in combat
 - `FALSE` if not in combat or if the creature is invalid
 
@@ -48,6 +52,7 @@ if (GetIsInCombat(oEnemy)) {
 ```
 
 **Pattern: Check Combat Before Action**
+
 ```nss
 // Only attack if not already in combat
 if (!GetIsInCombat()) {
@@ -65,14 +70,17 @@ if (!GetIsInCombat()) {
 **Routine:** 54
 
 #### Function Signature
+
 ```nss
 void CancelCombat(object oCreature = OBJECT_SELF);
 ```
 
 #### Description
+
 Cancels combat for the specified creature, ending their combat state. The creature will stop attacking and leave combat. Used in cutscenes, dialogue triggers, or scripted events that need to interrupt combat.
 
 #### Parameters
+
 - `oCreature`: Creature to cancel combat for (default: `OBJECT_SELF`)
 
 #### Usage Examples
@@ -91,6 +99,7 @@ ClearAllActions(oNPC);
 ```
 
 **Pattern: End Combat for Cutscene**
+
 ```nss
 // From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
 object oKreia = GetObjectByTag("kreia", 0);
@@ -111,17 +120,21 @@ AssignCommand(GetFirstPC(), ClearAllEffects());
 **Routine:** 316
 
 #### Function Signature
+
 ```nss
 object GetAttackTarget(object oCreature = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the current attack target of the specified creature. **Only works when the creature is in combat.**
 
 #### Parameters
+
 - `oCreature`: Creature to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Target object if creature is in combat and has a target
 - `OBJECT_INVALID` if not in combat or no target
 
@@ -144,6 +157,7 @@ if (GetAttackTarget() == oEnemy) {
 ```
 
 **Pattern: Check Current Target**
+
 ```nss
 if (GetIsInCombat()) {
     object oCurrentTarget = GetAttackTarget();
@@ -168,17 +182,21 @@ if (GetIsInCombat()) {
 **Routine:** 36
 
 #### Function Signature
+
 ```nss
 object GetLastAttacker(object oAttackee = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the last creature that attacked the specified target. Useful for retaliation scripts or identifying threat sources.
 
 #### Parameters
+
 - `oAttackee`: Creature that was attacked (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Object of the last attacker
 - `OBJECT_INVALID` if no attacker or invalid object
 
@@ -209,17 +227,21 @@ if (GetLastAttacker() == oEnemy) {
 **Routine:** 727 (TSL only)
 
 #### Function Signature
+
 ```nss
 object GetFirstAttacker(object oCreature = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the first creature in the attacker list for the specified creature. Used to identify the primary threat.
 
 #### Parameters
+
 - `oCreature`: Creature to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - First attacker object, or `OBJECT_INVALID` if none
 
 ---
@@ -231,20 +253,25 @@ Gets the first creature in the attacker list for the specified creature. Used to
 **Routine:** 317
 
 #### Function Signature
+
 ```nss
 int GetLastAttackType(object oCreature = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the type of the creature's last attack. **Only works when the creature is in combat.**
 
 #### Parameters
+
 - `oCreature`: Creature to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Attack type constant (`SPECIAL_ATTACK_*`), or invalid if not in combat
 
 #### Attack Type Constants
+
 - `SPECIAL_ATTACK_NONE` - No special attack
 - `SPECIAL_ATTACK_CALLED_SHOT_LEG` - Called shot to leg
 - `SPECIAL_ATTACK_CALLED_SHOT_ARM` - Called shot to arm
@@ -264,20 +291,25 @@ Gets the type of the creature's last attack. **Only works when the creature is i
 **Routine:** 318
 
 #### Function Signature
+
 ```nss
 int GetLastAttackMode(object oCreature = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the combat mode of the creature's last attack. **Only works when the creature is in combat.**
 
 #### Parameters
+
 - `oCreature`: Creature to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Combat mode constant (`COMBAT_MODE_*`)
 
 #### Combat Mode Constants
+
 - `COMBAT_MODE_RANGED` - Ranged attack
 - `COMBAT_MODE_MELEE` - Melee attack
 
@@ -288,17 +320,21 @@ Gets the combat mode of the creature's last attack. **Only works when the creatu
 **Routine:** 725 (TSL only)
 
 #### Function Signature
+
 ```nss
 int GetLastAttackResult(object oAttacker = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the result of the attacker's last attack attempt.
 
 #### Parameters
+
 - `oAttacker`: Attacker to check (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Attack result constant (hit, miss, critical, etc.)
 
 ---
@@ -310,14 +346,17 @@ Gets the result of the attacker's last attack attempt.
 **Routine:** 37
 
 #### Function Signature
+
 ```nss
 void ActionAttack(object oAttackee, int bPassive = FALSE);
 ```
 
 #### Description
+
 Queues an attack action on the specified target. The creature will attempt to attack the target in combat. Attacks execute according to combat rules (attack rolls, damage, etc.).
 
 #### Parameters
+
 - `oAttackee`: Target to attack
 - `bPassive`: If `TRUE`, uses passive attack mode (default: `FALSE`)
 
@@ -332,6 +371,7 @@ if (GetIsObjectValid(oEnemy)) {
 ```
 
 **Pattern: AI Combat Routine**
+
 ```nss
 // From vendor/K1_Community_Patch/Source/k_inc_generic.nss
 if (GetIsObjectValid(oIntruder)) {
@@ -349,6 +389,7 @@ if (GetIsObjectValid(oIntruder)) {
 ```
 
 **Pattern: Attack Nearest Enemy**
+
 ```nss
 if (!GetIsInCombat()) {
     object oEnemy = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
@@ -366,14 +407,17 @@ if (!GetIsInCombat()) {
 **Routine:** 379 (TSL only)
 
 #### Function Signature
+
 ```nss
 void SurrenderToEnemies(object oCreature = OBJECT_SELF);
 ```
 
 #### Description
+
 Makes the creature surrender to enemies, ending combat and making them non-hostile.
 
 #### Parameters
+
 - `oCreature`: Creature to surrender (default: `OBJECT_SELF`)
 
 #### Usage Examples

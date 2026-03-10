@@ -43,7 +43,7 @@
          <widget class="QWidget" name="threeDPage">
           <layout class="QVBoxLayout" name="verticalLayout_8">
            <item>
-            <widget class="QOpenGLWidget" name="openGLWidget"/>
+            <widget class="QWidget" name="openGLWidget"/>
            </item>
           </layout>
          </widget>

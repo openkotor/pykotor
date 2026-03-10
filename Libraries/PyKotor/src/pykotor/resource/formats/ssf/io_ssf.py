@@ -54,22 +54,23 @@ if TYPE_CHECKING:
 
 class SSFBinaryReader(ResourceReader):
     """Reads SSF (Sound Set File) files.
-    
+
     SSF files map sound event types to sound resource IDs. Used for creature sound sets
     that define battle cries, grunts, pain sounds, and other audio events.
-    
+
     References:
     ----------
         Based on swkotor.exe SSF structure:
         - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
         - CResSSF::~CResSSF @ 0x006db670, @ 0x006db6b0 - Destructors for SSF resource
         - SSF file format: "SSF " type, "V1.1" version
-        
+
         Note: SSF files map sound event types (BattleCry, Attack, Pain, etc.) to sound
         resource IDs. Used for creature sound sets that define battle cries, grunts,
         pain sounds, and other audio events.
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -97,7 +98,6 @@ class SSFBinaryReader(ResourceReader):
         sounds_offset = self._reader.read_uint32()
         self._reader.seek(sounds_offset)
 
-        
         # Read sound set entries (uint32 array, -1 indicates no sound)
         self._ssf.set_data(SSFSound.BATTLE_CRY_1, self._reader.read_uint32(max_neg1=True))
         self._ssf.set_data(SSFSound.BATTLE_CRY_2, self._reader.read_uint32(max_neg1=True))
@@ -149,34 +149,8 @@ class SSFBinaryWriter(ResourceWriter):
         self._writer.write_string("V1.1")
         self._writer.write_uint32(12)
 
-        self._writer.write_uint32(self._ssf.get(SSFSound.BATTLE_CRY_1) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.BATTLE_CRY_2) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.BATTLE_CRY_3) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.BATTLE_CRY_4) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.BATTLE_CRY_5) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.BATTLE_CRY_6) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.SELECT_1) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.SELECT_2) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.SELECT_3) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.ATTACK_GRUNT_1) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.ATTACK_GRUNT_2) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.ATTACK_GRUNT_3) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.PAIN_GRUNT_1) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.PAIN_GRUNT_2) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.LOW_HEALTH) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.DEAD) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.CRITICAL_HIT) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.TARGET_IMMUNE) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.LAY_MINE) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.DISARM_MINE) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.BEGIN_STEALTH) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.BEGIN_SEARCH) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.BEGIN_UNLOCK) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.UNLOCK_FAILED) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.UNLOCK_SUCCESS) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.SEPARATED_FROM_PARTY) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.REJOINED_PARTY) or 0, max_neg1=True)
-        self._writer.write_uint32(self._ssf.get(SSFSound.POISONED) or 0, max_neg1=True)
+        for sound in SSFSound:
+            self._writer.write_uint32(self._ssf.get(sound) or 0, max_neg1=True)
 
         for _ in range(12):
             self._writer.write_uint32(0xFFFFFFFF)

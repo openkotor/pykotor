@@ -1,3 +1,5 @@
+"""NCS bytecode optimizers: remove NOPs and other peephole optimizations."""
+
 from __future__ import annotations
 
 import logging
@@ -15,12 +17,12 @@ logger = logging.getLogger(__name__)
 
 class RemoveNopOptimizer(NCSOptimizer):
     """Removes NOP (no-operation) instructions from compiled NCS bytecode.
-    
+
     NCS Compiler uses NOP instructions as stubs to simplify the compilation process
     however as their name suggests they do not perform any actual function. This optimizer
     removes all occurrences of NOP instructions from the compiled script, updating jump
     targets to skip over removed NOPs.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -43,6 +45,7 @@ class RemoveNopOptimizer(NCSOptimizer):
             - For each NOP, finds all links jumping to it and updates them to jump to the next instruction instead
             - Removes all NOP instructions from the NCS instruction list.
         """
+
         def find_index(target: NCSInstruction) -> int:
             for idx, instruction in enumerate(ncs.instructions):
                 if instruction is target:
@@ -95,10 +98,11 @@ class RemoveMoveSPEqualsZeroOptimizer(NCSOptimizer):
 
     def optimize(self, ncs: NCS):
         movsp0: list[NCSInstruction] = [inst for inst in ncs.instructions if inst.ins_type == NCSInstructionType.MOVSP and inst.args[0] == 0]
+        instr_to_index: dict[int, int] = {id(inst): i for i, inst in enumerate(ncs.instructions)}
 
         # Process instructions which jump to a MOVSP=0 and set them to jump to the proceeding instruction instead
         for op in movsp0:
-            nop_index: int = ncs.instructions.index(op)
+            nop_index: int = instr_to_index[id(op)]
             for link in ncs.links_to(op):
                 link.jump = ncs.instructions[nop_index + 1]
 
@@ -173,6 +177,7 @@ class RemoveJMPToAdjacentOptimizer(NCSOptimizer):
 
 class RemoveUnusedBlocksOptimizer(NCSOptimizer):
     def optimize(self, ncs: NCS):
+        instr_to_index: dict[int, int] = {id(inst): i for i, inst in enumerate(ncs.instructions)}
         # Find list of unreachable instructions
         reachable = set()
         checking: list[int] = [0]
@@ -192,10 +197,10 @@ class RemoveUnusedBlocksOptimizer(NCSOptimizer):
                 NCSInstructionType.JSR,
             }:
                 assert instruction.jump is not None, f"{instruction} has a NoneType jump."
-                checking.extend((ncs.instructions.index(instruction.jump), check + 1))
+                checking.extend((instr_to_index[id(instruction.jump)], check + 1))
             elif instruction.ins_type == NCSInstructionType.JMP:
                 assert instruction.jump is not None, f"{instruction} has a NoneType jump."
-                checking.append(ncs.instructions.index(instruction.jump))
+                checking.append(instr_to_index[id(instruction.jump)])
             elif instruction.ins_type == NCSInstructionType.RETN:
                 ...
             else:

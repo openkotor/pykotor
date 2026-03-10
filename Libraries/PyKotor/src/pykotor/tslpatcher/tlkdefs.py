@@ -10,9 +10,14 @@ from __future__ import annotations
 import os
 
 from typing import Literal
+from pathlib import Path
+from typing import TYPE_CHECKING, Literal
 
 from pykotor.common.misc import Game
 from pykotor.tools.path import CaseAwarePath
+
+if TYPE_CHECKING:
+    import os
 
 # Vanilla TLK entry counts for different game versions
 VANILLA_TLK_COUNTS = {

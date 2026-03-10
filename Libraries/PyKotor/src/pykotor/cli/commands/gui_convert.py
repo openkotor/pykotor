@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import logging
-from argparse import Namespace
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.cli.gui_converter import convert_gui_inputs, launch_gui_converter
 
 if TYPE_CHECKING:
+    from argparse import Namespace
+
     from loggerplus import RobustLogger
 
 LEVEL_MAP = {

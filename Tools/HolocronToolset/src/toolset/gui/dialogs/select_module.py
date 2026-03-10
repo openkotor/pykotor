@@ -1,12 +1,14 @@
+"""Module selection dialog: pick module (MOD/RIM) from installation or file."""
+
 from __future__ import annotations
 
 from pathlib import PurePath
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QDialog, QFileDialog, QListWidgetItem
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.common.module import Module
 
 if TYPE_CHECKING:
@@ -39,8 +41,7 @@ class SelectModuleDialog(QDialog):
             Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | Qt.WindowType.WindowCloseButtonHint
             | Qt.WindowType.WindowStaysOnTopHint
-            | Qt.WindowType.WindowMinMaxButtonsHint
-            & ~Qt.WindowType.WindowContextHelpButtonHint
+            | Qt.WindowType.WindowMinMaxButtonsHint & ~Qt.WindowType.WindowContextHelpButtonHint
         )
 
         self._installation: HTInstallation = installation
@@ -48,16 +49,18 @@ class SelectModuleDialog(QDialog):
         self.module: str = ""
 
         from toolset.uic.qtpy.dialogs.select_module import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
         self.ui.openButton.clicked.connect(self.confirm)
-        self.ui.cancelButton.clicked.connect(self.reject)
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())
         self.ui.browseButton.clicked.connect(self.browse)
         self.ui.moduleList.currentRowChanged.connect(self.on_row_changed)
         self.ui.moduleList.doubleClicked.connect(self.confirm)
@@ -83,12 +86,7 @@ class SelectModuleDialog(QDialog):
         listed_modules: set[str] = set()
 
         for module in self._installation.modules_list():
-            casefold_module_file_name = str(
-                PurePath(module).with_name(
-                    Module.filepath_to_root(module)
-                    + PurePath(module).suffix
-                )
-            ).casefold().strip()
+            casefold_module_file_name = str(PurePath(module).with_name(Module.filepath_to_root(module) + PurePath(module).suffix)).casefold().strip()
             if casefold_module_file_name in listed_modules:
                 continue
             listed_modules.add(casefold_module_file_name)

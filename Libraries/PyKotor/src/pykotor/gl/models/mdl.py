@@ -1,3 +1,5 @@
+"""MDL (model) GL representation: load binary MDL, build node hierarchy, and render with OpenGL."""
+
 from __future__ import annotations
 
 import ctypes
@@ -10,11 +12,12 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pykotor.gl.compat import has_pyopengl, missing_constant, missing_gl_func, safe_gl_error_module
-
 from pykotor.gl import glm, mat4, quat
+from pykotor.gl.compat import has_pyopengl, missing_constant, missing_gl_func, safe_gl_error_module
 from utility.common.geometry import Vector3, Vector4
 
+HAS_PYOPENGL = has_pyopengl()
+gl_error = safe_gl_error_module()
 
 if TYPE_CHECKING:
     from pykotor.gl.scene import Scene
@@ -34,6 +37,7 @@ else:
         from OpenGL.raw.GL.VERSION.GL_1_5 import GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, glBindBuffer, glBufferData  # pyright: ignore[reportMissingImports]
         from OpenGL.raw.GL.VERSION.GL_2_0 import glEnableVertexAttribArray  # pyright: ignore[reportMissingImports]
         from OpenGL.raw.GL.VERSION.GL_3_0 import glBindVertexArray  # pyright: ignore[reportMissingImports]
+
         from pykotor.gl.compat import GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_SRC_COLOR, glBlendFunc, glDepthMask  # noqa: E501
     else:
         glGenBuffers = missing_gl_func("glGenBuffers")
@@ -366,7 +370,7 @@ class Mesh:
         else:  # Default blend mode
             glDepthMask(True)
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            shader.set_float("alphaCutoff", 0.0)
+            shader.set_float("alphaCutoff", alpha_cutoff)
 
         glActiveTexture(GL_TEXTURE1)
         self._scene.texture(self.lightmap, lightmap=True).use()
@@ -381,7 +385,7 @@ class Mesh:
 
     def vertex_blob(self) -> bytes:
         """Generate an interleaved vertex blob for rendering.
-        
+
         Returns a bytes object containing interleaved vertex data:
         - 3 floats for position (x, y, z)
         - 2 floats for diffuse UV (u, v)
@@ -498,7 +502,7 @@ class Cube:
                 glBufferData(GL_ARRAY_BUFFER, len(vertices) * 4, vertices, GL_STATIC_DRAW)
 
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._ebo)
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, len(elements) * 4, elements, GL_STATIC_DRAW)
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements.nbytes, elements, GL_STATIC_DRAW)
 
                 glEnableVertexAttribArray(1)
                 glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12, ctypes.c_void_p(0))
@@ -507,9 +511,7 @@ class Cube:
                 glBindVertexArray(0)
                 self._buffers_supported = True
             except gl_error.NullFunctionError:
-                logger.warning(
-                    "OpenGL buffer objects are unavailable; falling back to CPU-only cube bounds."
-                )
+                logger.warning("OpenGL buffer objects are unavailable; falling back to CPU-only cube bounds.")
                 self._face_count = 0
                 self._vao = 0
                 self._vbo = 0
@@ -518,7 +520,6 @@ class Cube:
             self._vao = 0
             self._vbo = 0
             self._ebo = 0
-
 
     def draw(self, shader: Shader, transform: mat4):
         if not self._buffers_supported:
@@ -529,7 +530,7 @@ class Cube:
         shader.set_matrix4("model", transform)
         glBindVertexArray(self._vao)
         glDrawElements(GL_TRIANGLES, self._face_count, GL_UNSIGNED_SHORT, None)
-    
+
     def vertex_blob(self) -> bytes:
         """Interleaved vertex data (position only)."""
         vertex_count = len(self._vertex_data) // 3
@@ -567,7 +568,7 @@ class Boundary:
                 glBufferData(GL_ARRAY_BUFFER, len(vertices_np) * 4, vertices_np, GL_STATIC_DRAW)
 
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._ebo)
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, len(elements_np) * 4, elements_np, GL_STATIC_DRAW)
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_np.nbytes, elements_np, GL_STATIC_DRAW)
 
                 glEnableVertexAttribArray(1)
                 glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12, ctypes.c_void_p(0))
@@ -576,9 +577,7 @@ class Boundary:
                 glBindVertexArray(0)
                 self._buffers_supported = True
             except gl_error.NullFunctionError:
-                logger.warning(
-                    "OpenGL buffer objects are unavailable; boundary rendering disabled."
-                )
+                logger.warning("OpenGL buffer objects are unavailable; boundary rendering disabled.")
                 self._face_count = 0
                 self._vao = 0
                 self._vbo = 0
@@ -623,7 +622,7 @@ class Boundary:
         shader.set_matrix4("model", transform)
         glBindVertexArray(self._vao)
         glDrawElements(GL_TRIANGLES, self._face_count, GL_UNSIGNED_SHORT, None)
-    
+
     def vertex_blob(self) -> bytes:
         """Interleaved vertex data (position only)."""
         vertex_count = len(self._vertex_data) // 3
@@ -655,5 +654,4 @@ class Empty:
     def __init__(self, scene: Scene):
         self._scene: Scene = scene
 
-    def draw(self, shader: Shader, transform: mat4):
-        ...
+    def draw(self, shader: Shader, transform: mat4): ...

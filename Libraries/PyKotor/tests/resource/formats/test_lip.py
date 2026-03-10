@@ -4,6 +4,7 @@ import os
 import pathlib
 import sys
 import unittest
+
 from unittest import TestCase
 
 THIS_SCRIPT_PATH: pathlib.Path = pathlib.Path(__file__).resolve()
@@ -23,11 +24,10 @@ if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
 from pykotor.resource.formats.lip import LIP, LIPBinaryReader, LIPShape, LIPXMLReader, detect_lip, read_lip, write_lip
-
 from pykotor.resource.type import ResourceType
 
 # Inlined test.lip binary content
-BINARY_TEST_DATA = b'LIP V1.0\x00\x00\xc0?\x03\x00\x00\x00\x00\x00\x00\x00\x00Y\x17G?\x05\x00\x00\xa0?\n'
+BINARY_TEST_DATA = b"LIP V1.0\x00\x00\xc0?\x03\x00\x00\x00\x00\x00\x00\x00\x00Y\x17G?\x05\x00\x00\xa0?\n"
 
 # Inlined test.lip.xml content
 XML_TEST_DATA = """<lip duration="1.50">
@@ -37,7 +37,7 @@ XML_TEST_DATA = """<lip duration="1.50">
 </lip>"""
 
 # Inlined test_corrupted.lip binary content
-CORRUPT_BINARY_TEST_DATA = b'LIP V1.0345345\x00\x00\x00\x00\x00\x00\x00Y\x17G?\x05\x00\x00\xa0?\n'
+CORRUPT_BINARY_TEST_DATA = b"LIP V1.0345345\x00\x00\x00\x00\x00\x00\x00Y\x17G?\x05\x00\x00\xa0?\n"
 
 # Inlined test_corrupted.lip.xml content
 CORRUPT_XML_TEST_DATA = """<lip duration="1.50">
@@ -63,10 +63,10 @@ class TestLIP(TestCase):
 
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
-        import tempfile
         import os
+        import tempfile
 
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.lip', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".lip", delete=False) as tmp:
             tmp.write(BINARY_TEST_DATA)
             tmp_path = tmp.name
 
@@ -78,9 +78,9 @@ class TestLIP(TestCase):
             os.unlink(tmp_path)
 
     def test_xml_io(self):
-        assert detect_lip(XML_TEST_DATA.encode('utf-8')) == ResourceType.LIP_XML
+        assert detect_lip(XML_TEST_DATA.encode("utf-8")) == ResourceType.LIP_XML
 
-        lip: LIP = LIPXMLReader(XML_TEST_DATA.encode('utf-8')).load()
+        lip: LIP = LIPXMLReader(XML_TEST_DATA.encode("utf-8")).load()
         self.validate_io(lip)
 
         data = bytearray()
@@ -107,7 +107,7 @@ class TestLIP(TestCase):
             self.assertRaises(IsADirectoryError, read_lip, ".")
         self.assertRaises(FileNotFoundError, read_lip, DOES_NOT_EXIST_FILE)
         self.assertRaises(ValueError, read_lip, CORRUPT_BINARY_TEST_DATA)
-        self.assertRaises(ValueError, read_lip, CORRUPT_XML_TEST_DATA.encode('utf-8'))
+        self.assertRaises(ValueError, read_lip, CORRUPT_XML_TEST_DATA.encode("utf-8"))
 
     def test_write_raises(self):
         if os.name == "nt":

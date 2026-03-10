@@ -1,3 +1,5 @@
+"""Script (NSS/NCS) dialogs and permission messages: compile/decompile UI and registry spoofing."""
+
 from __future__ import annotations
 
 import os
@@ -7,9 +9,10 @@ import uuid
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger
 from qtpy.QtWidgets import QFileDialog, QMessageBox
 
+from loggerplus import RobustLogger
+from toolset.gui.helpers.message_box import show_warning_message
 from pykotor.common.misc import Game
 from pykotor.common.stream import BinaryWriter
 from pykotor.extract.file import ResourceIdentifier
@@ -38,10 +41,12 @@ NON_TSLPATCHER_NWNNSSCOMP_PERMISSION_MSG = (
 
 log = RobustLogger()
 
+
 class NoOpRegistrySpoofer:
     def __enter__(self):
         log.debug("Enter NoOpRegistrySpoofer")
         return self
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         log.debug(f"NoOpRegistrySpoofer.__exit__({exc_type}, {exc_val}, {exc_tb})")
 
@@ -124,6 +129,7 @@ def ht_decompile_script(
         raise ValueError(stderr)  # noqa: TRY301
     return temp_decompiled_path.read_text(encoding="windows-1252")
 
+
 def setup_extract_path() -> Path:
     global_settings = GlobalSettings()
     extract_path = Path(global_settings.extractPath)
@@ -135,6 +141,7 @@ def setup_extract_path() -> Path:
             msg = "Temp directory has not been set or is invalid."
             raise NoConfigurationSetError(msg)
     return extract_path
+
 
 def ht_compile_script(
     source: str,
@@ -184,6 +191,7 @@ def ht_compile_script(
     # This should never be reached, leave in for static type checkers.
     raise ValueError("Could not get the NCS bytes.")  # noqa: TRY003, EM101
 
+
 def _prompt_additional_include_dirs(  # noqa: PLR0913
     extCompiler: ExternalNCSCompiler,
     source: str,
@@ -214,7 +222,7 @@ def _prompt_additional_include_dirs(  # noqa: PLR0913
             if file.stem.lower() not in source_nss_lowercase and file.stem.lower() not in stderr.lower():
                 continue  # Skip any files in the include_path that aren't referenced by the script (faster)
 
-            if ResourceIdentifier.from_path(file).restype is not ResourceType.NSS:
+            if ResourceIdentifier.from_path(file).restype != ResourceType.NSS:
                 log.debug("%s is not an NSS script, skipping...", file.name)
                 continue
             if not file.is_file():
@@ -229,6 +237,7 @@ def _prompt_additional_include_dirs(  # noqa: PLR0913
         log.debug("stdout: %s\nstderr: %s", stdout, stderr)
 
     return stdout, stderr
+
 
 def _execute_nwnnsscomp_compile(
     global_settings: GlobalSettings,
@@ -261,23 +270,15 @@ def _execute_nwnnsscomp_compile(
             stdout, stderr = extCompiler.compile_script(tempSourcePath, tempCompiledPath, gameEnum)
             log.debug("stdout: %s\nstderr: %s", stdout, stderr)
         except EntryPointError:
-            QMessageBox.warning(
-                None,
+            show_warning_message(
                 "Include scripts cannot be compiled",
                 "This script is an include script, compiling it serves no purpose. If this warning is incorrect, check that your script has an entry point and then compile again.",
+                None,
             )
             raise  # TODO(th3w1zard1): return something ignorable.
         else:
             if stderr:
-                stdout, stderr = _prompt_additional_include_dirs(
-                    extCompiler,
-                    source,
-                    stderr,
-                    tempSourcePath,
-                    tempCompiledPath,
-                    extract_path,
-                    gameEnum
-                )
+                stdout, stderr = _prompt_additional_include_dirs(extCompiler, source, stderr, tempSourcePath, tempCompiledPath, extract_path, gameEnum)
             if stderr:
                 raise ValueError(f"{stdout}\n{stderr}")
 
@@ -308,6 +309,7 @@ def _execute_nwnnsscomp_compile(
     # All the abstraction work is now complete... verify the file exists one last time then return the compiled script's data.
     if not tempCompiledPath.is_file():
         import errno
+
         raise FileNotFoundError(errno.ENOENT, "Could not find the temp compiled script!", str(tempCompiledPath))  # noqa: TRY003, EM102
     return tempCompiledPath.read_bytes()
 
@@ -348,11 +350,7 @@ def _prompt_user_for_compiler_option() -> int:
     msgBox.setWindowTitle("Choose a NCS compiler")
     msgBox.setText("Would you like to use 'nwnnsscomp.exe' or Holocron Toolset's built-in compiler?")
     msgBox.setInformativeText("Choose one of the options below:")
-    msgBox.setStandardButtons(
-        QMessageBox.StandardButton.Yes
-        | QMessageBox.StandardButton.No
-        | QMessageBox.StandardButton.Abort
-    )
+    msgBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Abort)
     msgBox.setDefaultButton(QMessageBox.StandardButton.Abort)
 
     # Set the button text

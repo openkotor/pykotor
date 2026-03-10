@@ -18,13 +18,14 @@ import asyncio
 import hashlib
 import json
 import os
-from collections.abc import Iterable, Iterator
+import sys
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 try:
-    from uvicorn import Config, Server as UvicornServer
+    from uvicorn import Config
+    from uvicorn import Server as UvicornServer
 except ImportError:
     UvicornServer = None  # type: ignore[assignment, misc]
     Config = None  # type: ignore[assignment, misc]
@@ -36,13 +37,17 @@ from mcp import types
 from mcp.server.lowlevel import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 from pykotor.common.misc import Game
-from pykotor.extract.file import FileResource, ResourceResult
 from pykotor.extract.installation import Installation, SearchLocation
 from pykotor.resource.formats.gff.gff_auto import read_gff
 from pykotor.resource.formats.tlk.tlk_auto import read_tlk
 from pykotor.resource.formats.twoda.twoda_auto import read_2da
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath, find_kotor_paths_from_default
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator
+
+    from pykotor.extract.file import FileResource, ResourceResult
 
 SERVER = Server("KotorMCP")
 
@@ -122,7 +127,8 @@ def _load_installation(game: Game, explicit_path: str | None = None) -> Installa
             INSTALLATIONS[game] = Installation(candidate)
             return INSTALLATIONS[game]
 
-    raise ValueError(f"Unable to locate installation for {game.name}. Provide --path or set {ENV_HINTS[game][0]}.")
+    msg = f"Unable to locate installation for {game.name}. Provide --path or set {ENV_HINTS[game][0]}."
+    raise ValueError(msg)
 
 
 def _parse_resource_types(raw: Iterable[str] | None) -> set[ResourceType]:
@@ -140,7 +146,8 @@ def _parse_resource_types(raw: Iterable[str] | None) -> set[ResourceType]:
         try:
             parsed.add(ResourceType.from_extension(cleaned))
         except ValueError:
-            raise ValueError(f"Unknown resource type '{token}'") from None
+            msg = f"Unknown resource type '{token}'"
+            raise ValueError(msg) from None
     return parsed
 
 
@@ -291,9 +298,9 @@ def _describe_resource(result: ResourceResult) -> dict[str, Any]:
     data = result.data
     if result.restype in GFF_HEAVY_TYPES:
         summary["analysis"] = _summarize_gff(data)
-    elif result.restype is ResourceType.TLK:
+    elif result.restype == ResourceType.TLK:
         summary["analysis"] = _summarize_tlk(data)
-    elif result.restype is ResourceType.TwoDA:
+    elif result.restype == ResourceType.TwoDA:
         summary["analysis"] = _summarize_2da(data)
     else:
         summary["analysis"] = {"size": len(data), "head": data[:64].hex()}
@@ -304,7 +311,8 @@ def _journal_entries(installation: Installation) -> list[dict[str, Any]]:
     """Parse global.jrl and extract plot entries (structure documented in xoreos journal.cpp)."""
     resource = installation.resource("global", ResourceType.JRL)
     if resource is None:
-        raise ValueError("Unable to locate global.jrl in the current installation.")
+        msg = "Unable to locate global.jrl in the current installation."
+        raise ValueError(msg)
     gff = read_gff(BytesIO(resource.data))
     categories = []
     for entry in gff.root.get_list("Categories", default=[]):
@@ -428,7 +436,8 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> types.CallTo
     if name == "loadInstallation":
         game = _resolve_game(arguments.get("game"))
         if game is None:
-            raise ValueError("Specify game as k1 or k2.")
+            msg = "Specify game as k1 or k2."
+            raise ValueError(msg)
         path = arguments.get("path")
         installation = _load_installation(game, path)
         return _json_content({"game": game.name, "path": str(installation.path())})
@@ -436,7 +445,8 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> types.CallTo
     if name == "listResources":
         game = _resolve_game(arguments.get("game"))
         if game is None:
-            raise ValueError("Specify game parameter (k1/k2).")
+            msg = "Specify game parameter (k1/k2)."
+            raise ValueError(msg)
         installation = _load_installation(game)
         location = arguments.get("location", "all")
         module_filter = arguments.get("moduleFilter")
@@ -457,7 +467,8 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> types.CallTo
     if name == "describeResource":
         game = _resolve_game(arguments.get("game"))
         if game is None:
-            raise ValueError("Specify game parameter (k1/k2).")
+            msg = "Specify game parameter (k1/k2)."
+            raise ValueError(msg)
         installation = _load_installation(game)
         resref = arguments["resref"]
         restype = arguments["restype"]
@@ -471,19 +482,22 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> types.CallTo
         for label in order_labels:
             upper = label.upper()
             if upper not in SearchLocation.__members__:
-                raise ValueError(f"Unknown SearchLocation '{label}'")
+                msg = f"Unknown SearchLocation '{label}'"
+                raise ValueError(msg)
             order.append(SearchLocation[upper])
         resource_type = _parse_resource_types([restype]).pop()
         result = installation.resource(resref, resource_type, order=order)
         if result is None:
-            raise ValueError(f"{resref}.{resource_type.extension} not found.")
+            msg = f"{resref}.{resource_type.extension} not found."
+            raise ValueError(msg)
         summary = _describe_resource(result)
         return _json_content(summary)
 
     if name == "journalOverview":
         game = _resolve_game(arguments.get("game"))
         if game is None:
-            raise ValueError("Specify game parameter (k1/k2).")
+            msg = "Specify game parameter (k1/k2)."
+            raise ValueError(msg)
         installation = _load_installation(game)
         payload = _journal_entries(installation)
         return _json_content({"count": len(payload), "categories": payload})
@@ -525,7 +539,7 @@ async def _run_sse(port: int = 8000, host: str = "localhost") -> None:
         if scope["type"] == "http":
             path = scope.get("path", "")
             method = scope.get("method", "")
-            
+
             if method == "GET" and path == "/mcp":
                 # SSE connection - establishes Server-Sent Events stream
                 await transport.connect_sse(scope, receive, send)
@@ -534,15 +548,19 @@ async def _run_sse(port: int = 8000, host: str = "localhost") -> None:
                 await transport.handle_post_message(scope, receive, send)
             else:
                 # 404 for other paths
-                await send({
-                    "type": "http.response.start",
-                    "status": 404,
-                    "headers": [[b"content-type", b"text/plain"]],
-                })
-                await send({
-                    "type": "http.response.body",
-                    "body": b"Not Found",
-                })
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 404,
+                        "headers": [[b"content-type", b"text/plain"]],
+                    }
+                )
+                await send(
+                    {
+                        "type": "http.response.body",
+                        "body": b"Not Found",
+                    }
+                )
         else:
             msg = f"Unsupported scope type: {scope['type']}"
             raise ValueError(msg)
@@ -580,15 +598,19 @@ async def _run_http(port: int = 8000, host: str = "localhost") -> None:
                 # The transport manages the connection and message flow
                 await transport.handle_request(scope, receive, send)
             else:
-                await send({
-                    "type": "http.response.start",
-                    "status": 405,
-                    "headers": [[b"content-type", b"text/plain"]],
-                })
-                await send({
-                    "type": "http.response.body",
-                    "body": b"Method Not Allowed",
-                })
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 405,
+                        "headers": [[b"content-type", b"text/plain"]],
+                    }
+                )
+                await send(
+                    {
+                        "type": "http.response.body",
+                        "body": b"Method Not Allowed",
+                    }
+                )
         else:
             msg = f"Unsupported scope type: {scope['type']}"
             raise ValueError(msg)
@@ -606,79 +628,66 @@ async def _run_http(port: int = 8000, host: str = "localhost") -> None:
 
 def _get_invocation_command() -> str:
     """Get the actual command used to invoke the CLI."""
-    import os
-    import sys
-    from pathlib import Path
-    
+
     if not sys.argv:
         return "kotormcp"
-    
+
     # Try to detect if we're being run via "uv run" by checking parent process
     is_uv_run = False
     try:
-        import psutil  # type: ignore[import-untyped]
+        import psutil  # type: ignore[import-untyped]  # noqa: PLC0415
+
         current_process = psutil.Process()
         parent = current_process.parent()
         if parent and "uv" in parent.name().lower():
             is_uv_run = True
-    except (ImportError, Exception):  # noqa: BLE001
+    except (ImportError, Exception):
         # psutil not available or can't access parent process
         # Try alternative detection: check if UV_* env vars exist
-        if any("UV" in k.upper() for k in os.environ.keys()):
+        if any("UV" in k.upper() for k in os.environ):
             is_uv_run = True
-    
+
     script_path = Path(sys.argv[0]).resolve()
     cwd = Path.cwd().resolve()
-    
+
     # Try to make path relative to current directory
     try:
         rel_script = script_path.relative_to(cwd)
         rel_script_str = str(rel_script).replace("\\", "/")  # Use forward slashes for consistency
     except ValueError:
         rel_script_str = str(script_path)
-    
+
     # If detected as uv run, prefix with "uv run"
     if is_uv_run:
         return f"uv run {rel_script_str}"
-    
+
     # Check for "python -m" pattern
     if len(sys.argv) >= 3 and sys.argv[1] == "-m":
         # python -m kotormcp.server
         return f"python -m {sys.argv[2]}"
-    
+
     # Check if we're being run via python (not as a module)
     python_exe = Path(sys.executable).name.lower()
     if python_exe in ("python", "python3", "python.exe", "python3.exe", "py", "py.exe"):
         # python script.py
         return f"python {rel_script_str}"
-    
+
     # For direct execution, return the relative path
     return rel_script_str
 
 
 def main(argv: list[str] | None = None) -> None:
-    import sys
-    from pathlib import Path
-    
+
     prog = _get_invocation_command()
     parser = argparse.ArgumentParser(prog=prog, description="Run the KotorMCP server.")
     parser.add_argument(
         "--mode",
         choices=["stdio", "sse", "http"],
         default="stdio",
-        help="Transport to use (stdio for command-line, sse for Server-Sent Events, http for HTTP streaming)"
+        help="Transport to use (stdio for command-line, sse for Server-Sent Events, http for HTTP streaming)",
     )
-    parser.add_argument(
-        "--host",
-        default="localhost",
-        help="Host to bind to for HTTP/SSE modes (default: localhost)"
-    )
-    parser.add_argument(
-        "--port",
-        type=int,
-        default=8000,
-        help="Port to bind to for HTTP/SSE modes (default: 8000)"
-    )
+    parser.add_argument("--host", default="localhost", help="Host to bind to for HTTP/SSE modes (default: localhost)")
+    parser.add_argument("--port", type=int, default=8000, help="Port to bind to for HTTP/SSE modes (default: 8000)")
     args = parser.parse_args(argv)
 
     if args.mode == "stdio":
@@ -694,4 +703,3 @@ def main(argv: list[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
-

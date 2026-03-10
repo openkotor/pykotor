@@ -1,3 +1,5 @@
+"""UTI (item) editor: properties, portrait/icon picker, and load-from-location."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -23,10 +25,11 @@ from pykotor.resource.formats.twoda.twoda_data import TwoDA
 from pykotor.resource.generics.uti import UTI, UTIProperty, dismantle_uti, read_uti
 from pykotor.resource.type import ResourceType
 from toolset.data.installation import HTInstallation
-from toolset.gui.common.localization import translate as tr
+from toolset.gui.common.localization import translate as tr, translate_with_format as trf
 from toolset.gui.dialogs.edit.locstring import LocalizedStringDialog
 from toolset.gui.dialogs.load_from_location_result import FileSelectionWindow, ResourceItems
 from toolset.gui.editor import Editor
+from toolset.gui.widgets.settings.installations import GlobalSettings
 from toolset.utils.window import add_window
 
 if TYPE_CHECKING:
@@ -60,6 +63,7 @@ class UTIEditor(Editor):
         super().__init__(parent, "Item Editor", "item", supported, supported, installation)
 
         self._uti = UTI()
+        self.globalSettings: GlobalSettings = GlobalSettings()
 
         from toolset.uic.qtpy.editors.uti import Ui_MainWindow
 
@@ -86,31 +90,137 @@ class UTIEditor(Editor):
         self.ui.iconLabel.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)  # pyright: ignore[reportArgumentType]
         self.ui.iconLabel.customContextMenuRequested.connect(self._icon_label_context_menu)
 
-        # Setup reference search for Tag field
-        if installation is not None:
-            installation.setup_file_context_menu(self.ui.tagEdit, [], enable_reference_search=True, reference_search_type="tag")
-            self.ui.tagEdit.setToolTip(tr("Right-click to find references to this tag in the installation."))
-            # Setup reference search for TemplateResRef field
-            installation.setup_file_context_menu(self.ui.resrefEdit, [], enable_reference_search=True, reference_search_type="template_resref")
-            self.ui.resrefEdit.setToolTip(tr("Right-click to find references to this template resref in the installation."))
+        # Initialize model info widget state (collapsed by default)
+        self.ui.itemModelInfoLabel.setVisible(False)
+        self.ui.itemModelInfoSummaryLabel.setVisible(True)
 
+        # Setup reference search for Tag field (append to .ui tooltip)
+        if installation is not None:
+            for widget, resource_types, reference_type, tooltip_suffix in self._reference_field_specs():
+                self._setup_reference_field(widget, resource_types, reference_type, tooltip_suffix)
+
+        self.update3dPreview()
         self.new()
+
+    def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+        if installation is None:
+            return
+        self._setup_installation(installation)
+        self.update3dPreview()
+
+    def _setup_reference_field(
+        self,
+        widget,
+        resource_types: list[ResourceType],
+        reference_type: str,
+        tooltip_suffix: str,
+    ) -> None:
+        """Configure context-menu reference search and append helper tooltip text."""
+        assert self._installation is not None
+        self._installation.setup_file_context_menu(
+            widget,
+            resource_types,
+            enable_reference_search=True,
+            reference_search_type=reference_type,
+        )
+        tooltip = widget.toolTip() or ""
+        widget.setToolTip(f"{tooltip} {tooltip_suffix}".strip())
+
+    def _reference_field_specs(self) -> list[tuple[object, list[ResourceType], str, str]]:
+        """Return common reference-search field configuration for this editor."""
+        return [
+            (
+                self.ui.tagEdit,
+                [],
+                "tag",
+                tr("Right-click to find references to this tag in the installation."),
+            ),
+            (
+                self.ui.resrefEdit,
+                [],
+                "template_resref",
+                tr("Right-click to find references to this template resref in the installation."),
+            ),
+        ]
+
+    @staticmethod
+    def _connect_signals(signals: Sequence[object], *handlers: object) -> None:
+        """Connect each signal in `signals` to each handler in `handlers`."""
+        for signal in signals:
+            for handler in handlers:
+                signal.connect(handler)
 
     def _setup_signals(self):
         """Set up signal connections for UI elements."""
-        self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
-        self.ui.tagGenerateButton.setToolTip(tr("Reset this custom tag so it matches the resref"))
-        self.ui.resrefGenerateButton.clicked.connect(self.generate_resref)
-        self.ui.editPropertyButton.clicked.connect(self.edit_selected_property)
-        self.ui.removePropertyButton.clicked.connect(self.remove_selected_property)
-        self.ui.addPropertyButton.clicked.connect(self.add_selected_property)
-        self.ui.availablePropertyList.doubleClicked.connect(self.on_available_property_list_double_clicked)
-        self.ui.assignedPropertiesList.doubleClicked.connect(self.on_assigned_property_list_double_clicked)
+        signal_connections = [
+            (self.ui.tagGenerateButton.clicked, self.generate_tag),
+            (self.ui.resrefGenerateButton.clicked, self.generate_resref),
+            (self.ui.editPropertyButton.clicked, self.edit_selected_property),
+            (self.ui.removePropertyButton.clicked, self.remove_selected_property),
+            (self.ui.addPropertyButton.clicked, self.add_selected_property),
+            (self.ui.availablePropertyList.doubleClicked, self.on_available_property_list_double_clicked),
+            (self.ui.assignedPropertiesList.doubleClicked, self.on_assigned_property_list_double_clicked),
+            (self.ui.previewRenderer.resourcesLoaded, self._on_textures_loaded),
+        ]
+        for signal, handler in signal_connections:
+            signal.connect(handler)
 
-        self.ui.modelVarSpin.valueChanged.connect(self.on_update_icon)
-        self.ui.bodyVarSpin.valueChanged.connect(self.on_update_icon)
-        self.ui.textureVarSpin.valueChanged.connect(self.on_update_icon)
-        self.ui.baseSelect.currentIndexChanged.connect(self.on_update_icon)
+        update_signals = (
+            self.ui.modelVarSpin.valueChanged,
+            self.ui.bodyVarSpin.valueChanged,
+            self.ui.textureVarSpin.valueChanged,
+            self.ui.baseSelect.currentIndexChanged,
+        )
+        self._connect_signals(update_signals, self.on_update_icon, self.update3dPreview)
+
+    def _load_basic_fields(self, uti: UTI):
+        self.ui.nameEdit.set_locstring(uti.name)
+        self.ui.descEdit.set_locstring(uti.description)
+        self.ui.tagEdit.setText(uti.tag)
+        self.ui.resrefEdit.setText(str(uti.resref))
+        self.ui.baseSelect.setCurrentIndex(uti.base_item)
+        self.ui.costSpin.setValue(uti.cost)
+        self.ui.additionalCostSpin.setValue(uti.add_cost)
+        self.ui.upgradeSpin.setValue(uti.upgrade_level)
+        self.ui.plotCheckbox.setChecked(bool(uti.plot))
+        self.ui.chargesSpin.setValue(uti.charges)
+        self.ui.stackSpin.setValue(uti.stack_size)
+        self.ui.modelVarSpin.setValue(uti.model_variation)
+        self.ui.bodyVarSpin.setValue(uti.body_variation)
+        self.ui.textureVarSpin.setValue(uti.texture_variation)
+
+    def _save_basic_fields(self, uti: UTI):
+        uti.name = self.ui.nameEdit.locstring()
+        uti.description = self.ui.descEdit.locstring()
+        uti.tag = self.ui.tagEdit.text()
+        uti.resref = ResRef(self.ui.resrefEdit.text())
+        uti.base_item = self.ui.baseSelect.currentIndex()
+        uti.cost = self.ui.costSpin.value()
+        uti.add_cost = self.ui.additionalCostSpin.value()
+        uti.upgrade_level = self.ui.upgradeSpin.value()
+        uti.plot = self.ui.plotCheckbox.isChecked()
+        uti.charges = self.ui.chargesSpin.value()
+        uti.stack_size = self.ui.stackSpin.value()
+        uti.model_variation = self.ui.modelVarSpin.value()
+        uti.body_variation = self.ui.bodyVarSpin.value()
+        uti.texture_variation = self.ui.textureVarSpin.value()
+
+    def _load_assigned_properties(self, uti: UTI):
+        self.ui.assignedPropertiesList.clear()
+        for uti_property in uti.properties:
+            text = self.property_summary(uti_property)
+            item = QListWidgetItem(text)
+            item.setData(Qt.ItemDataRole.UserRole, uti_property)
+            self.ui.assignedPropertiesList.addItem(item)  # pyright: ignore[reportArgumentType, reportCallIssue]
+
+    def _save_assigned_properties(self, uti: UTI):
+        uti.properties.clear()
+        for i in range(self.ui.assignedPropertiesList.count()):
+            item: QListWidgetItem | None = self.ui.assignedPropertiesList.item(i)
+            if item is None:
+                RobustLogger().warning(f"Failed to retrieve property item at index {i} from assigned properties list. Skipping...")
+                continue
+            uti.properties.append(item.data(Qt.ItemDataRole.UserRole))
 
     def _setup_installation(
         self,
@@ -168,66 +278,32 @@ class UTIEditor(Editor):
         restype: ResourceType,
         data: bytes | bytearray,
     ):
+        """Load resource and populate UI from UTI. Defaults from construct_uti (K1 LoadDataFromGff 0x0055fcd0, LoadItem 0x00560970; TSL TODO)."""
         super().load(filepath, resref, restype, data)
 
         uti = read_uti(data)
         self._loadUTI(uti)
 
     def _loadUTI(self, uti: UTI):
+        """Loads UTI data into UI. Defaults from construct_uti; K1 LoadDataFromGff 0x0055fcd0, LoadItem 0x00560970; TSL same (addresses TODO)."""
         self._uti: UTI = uti
 
         # Basic
-        self.ui.nameEdit.set_locstring(uti.name)
-        self.ui.descEdit.set_locstring(uti.description)
-        self.ui.tagEdit.setText(uti.tag)
-        self.ui.resrefEdit.setText(str(uti.resref))
-        self.ui.baseSelect.setCurrentIndex(uti.base_item)
-        self.ui.costSpin.setValue(uti.cost)
-        self.ui.additionalCostSpin.setValue(uti.add_cost)
-        self.ui.upgradeSpin.setValue(uti.upgrade_level)
-        self.ui.plotCheckbox.setChecked(bool(uti.plot))
-        self.ui.chargesSpin.setValue(uti.charges)
-        self.ui.stackSpin.setValue(uti.stack_size)
-        self.ui.modelVarSpin.setValue(uti.model_variation)
-        self.ui.bodyVarSpin.setValue(uti.body_variation)
-        self.ui.textureVarSpin.setValue(uti.texture_variation)
+        self._load_basic_fields(uti)
 
         # Properties
-        self.ui.assignedPropertiesList.clear()
-        for uti_property in uti.properties:
-            text = self.property_summary(uti_property)
-            item = QListWidgetItem(text)
-            item.setData(Qt.ItemDataRole.UserRole, uti_property)
-            self.ui.assignedPropertiesList.addItem(item)  # pyright: ignore[reportArgumentType, reportCallIssue]
+        self._load_assigned_properties(uti)
 
         # Comments
         self.ui.commentsEdit.setPlainText(uti.comment)
 
     def build(self) -> tuple[bytes, bytes]:
+        """Builds UTI from UI. Populates from UI then dismantle_uti (K1 LoadDataFromGff 0x0055fcd0, LoadItem 0x00560970; TSL TODO). Returns GFF bytes and log."""
         uti: UTI = deepcopy(self._uti)
 
         # Basic
-        uti.name = self.ui.nameEdit.locstring()
-        uti.description = self.ui.descEdit.locstring()
-        uti.tag = self.ui.tagEdit.text()
-        uti.resref = ResRef(self.ui.resrefEdit.text())
-        uti.base_item = self.ui.baseSelect.currentIndex()
-        uti.cost = self.ui.costSpin.value()
-        uti.add_cost = self.ui.additionalCostSpin.value()
-        uti.upgrade_level = self.ui.upgradeSpin.value()
-        uti.plot = self.ui.plotCheckbox.isChecked()
-        uti.charges = self.ui.chargesSpin.value()
-        uti.stack_size = self.ui.stackSpin.value()
-        uti.model_variation = self.ui.modelVarSpin.value()
-        uti.body_variation = self.ui.bodyVarSpin.value()
-        uti.texture_variation = self.ui.textureVarSpin.value()
-        uti.properties.clear()
-        for i in range(self.ui.assignedPropertiesList.count()):
-            item: QListWidgetItem | None = self.ui.assignedPropertiesList.item(i)
-            if item is None:
-                RobustLogger().warning(f"Failed to retrieve property item at index {i} from assigned properties list. Skipping...")
-                continue
-            uti.properties.append(item.data(Qt.ItemDataRole.UserRole))
+        self._save_basic_fields(uti)
+        self._save_assigned_properties(uti)
 
         # Comments
         uti.comment = self.ui.commentsEdit.toPlainText()
@@ -383,32 +459,26 @@ class UTIEditor(Editor):
         icon_path: str = self._installation.get_item_icon_path(base_item, model_variation, texture_variation)
 
         summary_item_icon_action = QAction(tr("Icon Summary"), self)
-        summary_item_icon_action.triggered.connect(lambda: self._copy_icon_tooltip())
-
-        copy_base_item_action = QAction(trf("Base Item: {base_item}", base_item=base_item), self)
-        copy_base_item_action.triggered.connect(lambda: self._copy_to_clipboard(f"{base_item}"))
-
-        copy_model_variation_action = QAction(trf("Model Variation: {model_variation}", model_variation=model_variation), self)
-        copy_model_variation_action.triggered.connect(lambda: self._copy_to_clipboard(f"{model_variation}"))
-
-        copy_texture_variation_action = QAction(trf("Texture Variation: {texture_variation}", texture_variation=texture_variation), self)
-        copy_texture_variation_action.triggered.connect(lambda: self._copy_to_clipboard(f"{texture_variation}"))
-
-        copy_icon_path_action = QAction(trf("Icon Name: '{icon_path}'", icon_path=icon_path), self)
-        copy_icon_path_action.triggered.connect(lambda: self._copy_to_clipboard(f"{icon_path}"))
-
+        summary_item_icon_action.triggered.connect(self._copy_icon_tooltip)
         copy_menu.addAction(summary_item_icon_action)
         copy_menu.addSeparator()
-        copy_menu.addAction(copy_base_item_action)
-        copy_menu.addAction(copy_model_variation_action)
-        copy_menu.addAction(copy_texture_variation_action)
-        copy_menu.addAction(copy_icon_path_action)
+
+        copy_actions: list[tuple[str, str]] = [
+            (trf("Base Item: {base_item}", base_item=base_item), f"{base_item}"),
+            (trf("Model Variation: {model_variation}", model_variation=model_variation), f"{model_variation}"),
+            (trf("Texture Variation: {texture_variation}", texture_variation=texture_variation), f"{texture_variation}"),
+            (trf("Icon Name: '{icon_path}'", icon_path=icon_path), f"{icon_path}"),
+        ]
+        for action_text, clipboard_value in copy_actions:
+            action = QAction(action_text, self)
+            action.triggered.connect(lambda _checked=False, value=clipboard_value: self._copy_to_clipboard(value))
+            copy_menu.addAction(action)
 
         file_menu = context_menu.addMenu("File...")
         assert file_menu is not None
         locations: dict[ResourceIdentifier, list[LocationResult]] = self._installation.locations(
             ([icon_path], [ResourceType.TGA, ResourceType.TPC]),
-            order=[SearchLocation.OVERRIDE, SearchLocation.TEXTURES_GUI, SearchLocation.TEXTURES_TPA, SearchLocation.TEXTURES_TPB, SearchLocation.TEXTURES_TPC],
+            order=[SearchLocation.OVERRIDE, SearchLocation.TEXTURES_GUI, SearchLocation.TEXTURES_TPA, SearchLocation.TEXTURES_TPB, SearchLocation.TEXTURES_TPC, SearchLocation.CHITIN],
         )
         flat_locations: list[LocationResult] = [item for sublist in locations.values() for item in sublist]
         if flat_locations:
@@ -421,7 +491,9 @@ class UTIEditor(Editor):
             file_menu.addAction("Details...").triggered.connect(lambda: self._open_details(flat_locations))
 
         context_menu.addMenu(copy_menu)
-        context_menu.exec(self.ui.iconLabel.mapToGlobal(position))  # pyright: ignore[reportArgumentType]
+        icon_label = self.ui.iconLabel
+        target = icon_label if icon_label is not None else self
+        context_menu.exec(target.mapToGlobal(position))  # pyright: ignore[reportArgumentType]
 
     def _open_details(
         self,
@@ -449,10 +521,78 @@ class UTIEditor(Editor):
         model_variation: int = self.ui.modelVarSpin.value()
         texture_variation: int = self.ui.textureVarSpin.value()
         pixmap: QPixmap | None = self._installation.get_item_icon(base_item, model_variation, texture_variation)
+        icon_label = self.ui.iconLabel
         if pixmap is not None:
-            self.ui.iconLabel.setPixmap(pixmap)  # pyright: ignore[reportArgumentType]
+            icon_label.setPixmap(pixmap)  # pyright: ignore[reportArgumentType]
             # Update the tooltip whenever the icon changes
-            self.ui.iconLabel.setToolTip(self._generate_icon_tooltip(as_html=True))
+            icon_label.setToolTip(self._generate_icon_tooltip(as_html=True))
+
+    def update3dPreview(self):
+        """Updates the 3D preview and model info.
+
+        Hides BOTH the preview renderer AND the model info groupbox when preview is hidden.
+        """
+        show_preview = self.globalSettings.showPreviewUTI
+        self.ui.previewRenderer.setVisible(show_preview)
+        self.ui.itemModelInfoGroupBox.setVisible(show_preview)
+
+        if show_preview:
+            self.resize(max(800, self.sizeHint().width()), max(400, self.sizeHint().height()))
+
+            if self._installation is not None:
+                # Build item data and set it on the renderer (if it supports set_item, e.g. ItemRenderer)
+                data, _ = self.build()
+                uti: UTI = read_uti(data)
+                self.ui.previewRenderer.set_item(uti)
+                self._update_model_info(uti)
+        else:
+            self.resize(max(800 - 200, self.sizeHint().width()), max(400, self.sizeHint().height()))
+
+    def _update_model_info(self, uti: UTI):
+        """Updates the model information label with item model details.
+
+        Args:
+        ----
+            uti: The UTI object to analyze
+        """
+        if self._installation is None:
+            return
+
+        info_lines: list[str] = []
+
+        try:
+            # Get the base item data to find the model path
+            baseitems: TwoDA | None = self._installation.ht_get_cache_2da(HTInstallation.TwoDA_BASEITEMS)
+            if baseitems is None or uti.base_item >= baseitems.get_height():
+                info_lines.append("Model: Unknown (invalid base item)")
+            else:
+                model_type: int = baseitems.get_row(uti.base_item).get_integer("ModelType") or 0
+                model_name: str = baseitems.get_row(uti.base_item).get_string("ModelName") or "Unknown"
+                info_lines.append(f"Model: {model_name} (type {model_type})")
+                info_lines.append(f"Variation: {uti.model_variation}")
+
+            # Basic summary
+            summary = " | ".join(info_lines[:2]) if info_lines else "No model info available"
+            self.ui.itemModelInfoSummaryLabel.setText(summary)
+
+            # Detailed info
+            detail = "\n".join(info_lines)
+            self.ui.itemModelInfoLabel.setText(detail)
+        except Exception as e:
+            RobustLogger().error(f"Error updating item model info: {e}")
+            self.ui.itemModelInfoSummaryLabel.setText("Error loading model info")
+            self.ui.itemModelInfoLabel.setText(str(e))
+
+    def toggle_preview(self):
+        """Toggle the 3D preview visibility."""
+        self.globalSettings.showPreviewUTI = not self.globalSettings.showPreviewUTI
+        self.update3dPreview()
+
+    def _on_textures_loaded(self):
+        """Called when textures finish loading in the preview renderer."""
+        # Optional: update model info with texture details if renderer has that info
+        # For now, just log that textures loaded
+        pass
 
     def on_available_property_list_double_clicked(self):
         for item in self.ui.availablePropertyList.selectedItems():
@@ -714,3 +854,10 @@ class PropertyEditor(QDialog):
         if self.ui.upgradeSelect.currentIndex() == 0:
             self._uti_property.upgrade_type = None
         return self._uti_property
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("uti"))

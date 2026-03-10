@@ -28,7 +28,12 @@ if __name__ == "__main__" and not __package__:
     sys.path.insert(0, str(this_script_file_path.parents[1]))
     __init__ = __import__(str(this_script_file_path.parent.name)).__init__  # type: ignore[misc]
 
+from typing import TYPE_CHECKING
+
 from pykotor.tools.path import CaseAwarePath  # noqa: E402  # pyright: ignore[reportMissingImports]
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 class TestCaseAwarePath(unittest.TestCase):
@@ -38,7 +43,6 @@ class TestCaseAwarePath(unittest.TestCase):
             CaseAwarePath("/path/to/dir")
         except Exception as e:
             self.fail(f"Unexpected exception raised: {e}")
-
 
     def test_hashing(self):
         path1 = CaseAwarePath("test\\path\\to\\nothing")
@@ -76,7 +80,7 @@ class TestCaseAwarePath(unittest.TestCase):
     def test_find_closest_match(self):
         items = [CaseAwarePath("test"), CaseAwarePath("TEST"), CaseAwarePath("TesT"), CaseAwarePath("teSt")]
         # find_closest_match expects a generator, not a list
-        from collections.abc import Generator
+
         items_gen: Generator = (item for item in items)
         result = CaseAwarePath.find_closest_match("teST", items_gen)
         assert result == "teSt"
@@ -179,7 +183,7 @@ class TestIsRelativeTo(unittest.TestCase):
 if __name__ == "__main__":
     try:
         import pytest
-    except ImportError: # pragma: no cover
+    except ImportError:  # pragma: no cover
         unittest.main()
     else:
         pytest.main(["-v", __file__])

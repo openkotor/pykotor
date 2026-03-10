@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal, TypeVar
 
 from loggerplus import RobustLogger
-
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Color, Game, ResRef
 from pykotor.resource.formats.gff.gff_auto import bytes_gff, read_gff, write_gff
@@ -81,53 +80,50 @@ def construct_dlg(  # noqa: C901, PLR0915
         -------
             None - Populates the node in-place
         """
-        
-        
+
         node.text = gff_struct.acquire("Text", LocalizedString.from_invalid())
-        
+
         node.listener = gff_struct.acquire("Listener", "")
-        
+
         node.vo_resref = gff_struct.acquire("VO_ResRef", ResRef.from_blank())
-        
+
         node.script1 = gff_struct.acquire("Script", ResRef.from_blank())
-        
+
         # Discrepancy: PyKotor converts 0xFFFFFFFF to -1, reone stores as-is
         delay: int = gff_struct.acquire("Delay", 0)
         node.delay = -1 if delay == 0xFFFFFFFF else delay  # noqa: PLR2004
-        
+
         node.comment = gff_struct.acquire("Comment", "")
-        
+
         node.sound = gff_struct.acquire("Sound", ResRef.from_blank())
-        
+
         node.quest = gff_struct.acquire("Quest", "")
-        
+
         node.plot_index = gff_struct.acquire("PlotIndex", -1)
-        
+
         node.plot_xp_percentage = gff_struct.acquire("PlotXPPercentage", 0.0)
-        
+
         node.wait_flags = gff_struct.acquire("WaitFlags", 0)
-        
+
         node.camera_angle = gff_struct.acquire("CameraAngle", 0)
-        
+
         node.fade_type = gff_struct.acquire("FadeType", 0)
-        
+
         node.sound_exists = gff_struct.acquire("SoundExists", 0)
-        
+
         node.vo_text_changed = gff_struct.acquire("VOTextChanged", default=False)
 
-        
-        
         # AnimList contains participant animations for this dialog node
         anim_list: GFFList = gff_struct.acquire("AnimList", GFFList())
         for anim_struct in anim_list:
             anim = DLGAnimation()
-            
+
             anim.animation_id = anim_struct.acquire("Animation", 0)
             # PyKotor-specific hack: Some animation IDs are offset by 10000
             # Discrepancy: reone doesn't apply this offset, may be KotOR-specific quirk
             if anim.animation_id > 10000:  # HACK(th3w1zard1): can't remember why this was needed.  # noqa: PLR2004
                 anim.animation_id -= 10000
-            
+
             anim.participant = anim_struct.acquire("Participant", "")
             node.animations.append(anim)
 
@@ -211,27 +207,26 @@ def construct_dlg(  # noqa: C901, PLR0915
     dlg = DLG()
 
     root: GFFStruct = gff.root
-
+    # K1/TSL dialog load: EntryList/ReplyList lists; NumWords 0, EndConverAbort/EndConversation "", Skippable 0. Omit OK.
     all_entries: list[DLGEntry] = [DLGEntry() for _ in range(len(root.acquire("EntryList", GFFList())))]
     all_replies: list[DLGReply] = [DLGReply() for _ in range(len(root.acquire("ReplyList", GFFList())))]
 
-    
     dlg.word_count = root.acquire("NumWords", 0)
-    
+
     dlg.on_abort = root.acquire("EndConverAbort", ResRef.from_blank())
-    
+
     dlg.on_end = root.acquire("EndConversation", ResRef.from_blank())
-    
+
     dlg.skippable = root.acquire("Skippable", default=False)
-    
+
     dlg.ambient_track = root.acquire("AmbientTrack", ResRef.from_blank())
-    
+
     dlg.animated_cut = root.acquire("AnimatedCut", 0)
-    
+
     dlg.camera_model = root.acquire("CameraModel", ResRef.from_blank())
-    
+
     dlg.computer_type = DLGComputerType(root.acquire("ComputerType", 0))
-    
+
     dlg.conversation_type = DLGConversationType(root.acquire("ConversationType", 0))
 
     dlg.old_hit_check = root.acquire("OldHitCheck", default=False)
@@ -250,9 +245,9 @@ def construct_dlg(  # noqa: C901, PLR0915
     for stunt_struct in stunt_list:
         stunt = DLGStunt()
         dlg.stunts.append(stunt)
-        
+
         stunt.participant = stunt_struct.acquire("Participant", "")
-        
+
         stunt.stunt_model = stunt_struct.acquire("StuntModel", ResRef.from_blank())
 
     starting_list: GFFList = root.acquire("StartingList", GFFList())
@@ -348,6 +343,7 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
         link: DLGLink,
         nodes: list,
         list_name: str,
+        node_to_index: dict[int, int],
     ):
         """Disassembles a link into a GFFStruct.
 
@@ -356,7 +352,8 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
             gff_struct: GFFStruct - The struct to populate
             link: DLGLink - The link to disassemble
             nodes: list - The list of nodes
-            list_name: str - The name of the GFF list.
+            list_name: str - The name of the GFF list
+            node_to_index: id(node) -> index for O(1) lookup
 
         Returns:
         -------
@@ -369,7 +366,7 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
             - If game is K2, sets additional link properties on the GFFStruct.
         """
         object.__setattr__(link, "__class__", DLGLink)
-        node_list_index = nodes.index(link.node)
+        node_list_index = node_to_index.get(id(link.node), nodes.index(link.node))
         gff_struct.set_uint32("Index", node_list_index)
 
         if list_name != "StartingList":
@@ -400,6 +397,7 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
         node: DLGNode,
         nodes: list[DLGEntry] | list[DLGReply],
         list_name: Literal["EntriesList", "RepliesList"],
+        node_to_index: dict[int, int],
     ):
         """Disassembles a DLGNode into a GFFStruct.
 
@@ -409,6 +407,7 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
             node: DLGNode - The DLGNode to dismantle into a EntryList/ReplyList GFFStruct node.
             nodes: list - The nodes list (abstracted EntryList/ReplyList represented as list[DLGEntry] | list[DLGReply])
             list_name: Literal["EntriesList", "RepliesList"] - the name of the nested linked list. If nodes is list[DLGEntry], should be 'RepliesList' and vice versa.
+            node_to_index: id(node) -> index for O(1) link target lookup when dismantling links.
 
         Processing Logic:
         ----------------
@@ -497,14 +496,18 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
         sorted_links: list[DLGLink] = sorted(node.links, key=lambda link: (link.list_index == -1, link.list_index))
         for i, link in enumerate(sorted_links):
             link_struct: GFFStruct = link_list.add(i)
-            dismantle_link(link_struct, link, nodes, list_name)
+            dismantle_link(link_struct, link, nodes, list_name, node_to_index)
 
     all_entries: list[DLGEntry] = dlg.all_entries(as_sorted=True)
     all_replies: list[DLGReply] = dlg.all_replies(as_sorted=True)
+    # O(1) node index lookup when writing links instead of O(n) list.index() per link
+    entry_index: dict[int, int] = {id(e): i for i, e in enumerate(all_entries)}
+    reply_index: dict[int, int] = {id(r): i for i, r in enumerate(all_replies)}
 
     gff = GFF(GFFContent.DLG)
 
     root: GFFStruct = gff.root
+    # DLG defaults per engine; NumWords 0, ResRefs "", Skippable 0. Omit OK.
     root.set_uint32("NumWords", dlg.word_count)
     root.set_resref("EndConverAbort", dlg.on_abort)
     root.set_resref("EndConversation", dlg.on_end)
@@ -544,18 +547,18 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
     sorted_links: list[DLGLink] = sorted(dlg.starters, key=lambda link: (link.list_index == -1, link.list_index))
     for link_list_index, starter in enumerate(sorted_links):
         starting_struct: GFFStruct = starting_list.add(link_list_index)
-        dismantle_link(starting_struct, starter, all_entries, "StartingList")
+        dismantle_link(starting_struct, starter, all_entries, "StartingList", entry_index)
 
     entry_list: GFFList = root.set_list("EntryList", GFFList())
     for node_list_index, entry in enumerate(all_entries):
         entry_struct: GFFStruct = entry_list.add(node_list_index)
         entry_struct.set_string("Speaker", entry.speaker)
-        dismantle_node(entry_struct, entry, all_replies, "RepliesList")
+        dismantle_node(entry_struct, entry, all_replies, "RepliesList", reply_index)
 
     reply_list: GFFList = root.set_list("ReplyList", GFFList())
     for node_list_index, reply in enumerate(all_replies):
         reply_struct: GFFStruct = reply_list.add(node_list_index)
-        dismantle_node(reply_struct, reply, all_entries, "EntriesList")
+        dismantle_node(reply_struct, reply, all_entries, "EntriesList", entry_index)
 
     return gff
 

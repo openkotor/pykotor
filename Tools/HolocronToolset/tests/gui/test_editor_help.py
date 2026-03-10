@@ -26,7 +26,7 @@ os.environ["QT_QPA_PLATFORM"] = "offscreen"
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from qtpy.QtWidgets import QMenu, QMenuBar
+from qtpy.QtWidgets import QApplication, QMenu, QMenuBar
 
 from toolset.gui.dialogs.editor_help import EditorHelpDialog, get_wiki_path
 from toolset.gui.editors.are import AREEditor
@@ -59,8 +59,9 @@ def test_get_wiki_path_development_mode(tmp_path, monkeypatch):
             mock_file.parent.parent.parent.parent.parent = repo_root
             mock_path_class.return_value = mock_file
 
-            path = get_wiki_path()
-            # Should find the wiki directory
+            toolset_wiki, root_wiki = get_wiki_path()
+            # Should find the wiki directory (first element is toolset wiki path)
+            path = toolset_wiki
             assert path.exists() or str(path) == str(wiki_dir)
 
 
@@ -75,25 +76,19 @@ def test_get_wiki_path_frozen_mode(tmp_path, monkeypatch):
     # Mock sys.executable
     with patch("sys.executable", str(exe_dir / "HolocronToolset.exe")):
         with patch("toolset.gui.dialogs.editor_help.is_frozen", return_value=True):
-            path = get_wiki_path()
-            assert path.exists()
-            assert path == wiki_dir
+            toolset_wiki, root_wiki = get_wiki_path()
+            assert toolset_wiki.exists()
+            assert toolset_wiki == wiki_dir
 
 
 def test_get_wiki_path_fallback(tmp_path, monkeypatch):
-    """Test wiki path fallback when wiki not found."""
-    with patch("toolset.gui.dialogs.editor_help.is_frozen", return_value=False):
-        # Create a temporary directory structure that doesn't have a wiki
-        fake_editor_help_file = tmp_path / "toolset" / "gui" / "dialogs" / "editor_help.py"
-        fake_editor_help_file.parent.mkdir(parents=True, exist_ok=True)
-
-        # Patch __file__ to point to our fake location
-        with patch("toolset.gui.dialogs.editor_help.__file__", str(fake_editor_help_file)):
-            path = get_wiki_path()
-            # Should return fallback path (as Path object) when wiki doesn't exist
-            assert isinstance(path, Path)
-            # The fallback is Path("./wiki")
-            assert path == Path("./wiki")
+    """Test wiki path fallback when wiki not found (frozen mode uses ./wiki)."""
+    with patch("toolset.gui.dialogs.editor_help.is_frozen", return_value=True):
+        toolset_wiki, root_wiki = get_wiki_path()
+        # When frozen and no wiki next to exe, fallback is Path("./wiki")
+        assert isinstance(toolset_wiki, Path)
+        assert toolset_wiki == Path("./wiki")
+        assert root_wiki is None
 
 
 # ============================================================================
@@ -120,7 +115,7 @@ def test_editor_help_dialog_load_existing_file(qtbot: QtBot, tmp_path: Path, mon
     test_file.write_text("# Test Document\n\nThis is a test.")
 
     # Mock get_wiki_path to return our test wiki
-    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=wiki_dir):
+    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=(wiki_dir, None)):
         dialog = EditorHelpDialog(None, "test.md")
         qtbot.addWidget(dialog)
 
@@ -134,7 +129,7 @@ def test_editor_help_dialog_load_nonexistent_file(qtbot: QtBot, tmp_path: Path, 
     wiki_dir = tmp_path / "wiki"
     wiki_dir.mkdir()
 
-    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=wiki_dir):
+    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=(wiki_dir, None)):
         dialog = EditorHelpDialog(None, "nonexistent.md")
         qtbot.addWidget(dialog)
 
@@ -164,7 +159,7 @@ def test():
 ```
 """)
 
-    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=wiki_dir):
+    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=(wiki_dir, None)):
         dialog = EditorHelpDialog(None, "test.md")
         qtbot.addWidget(dialog)
 
@@ -182,7 +177,7 @@ def test_editor_help_dialog_error_handling(qtbot: QtBot, tmp_path: Path, monkeyp
     test_file = wiki_dir / "test.md"
     test_file.write_text("# Test")
 
-    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=wiki_dir):
+    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=(wiki_dir, None)):
         # Mock read_bytes to raise an exception
         with patch.object(Path, "read_bytes", side_effect=IOError("Permission denied")):
             dialog = EditorHelpDialog(None, "test.md")
@@ -417,7 +412,7 @@ def test_editor_show_help_dialog_opens_dialog(qtbot: QtBot, installation: HTInst
     editor = AREEditor(None, installation)
     qtbot.addWidget(editor)
 
-    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=wiki_dir):
+    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=(wiki_dir, None)):
         # Show help dialog
         editor._show_help_dialog("test.md")
 
@@ -441,7 +436,7 @@ def test_editor_help_action_triggered_opens_dialog(qtbot: QtBot, installation: H
     qtbot.addWidget(editor)
     editor._add_help_action()
 
-    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=wiki_dir):
+    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=(wiki_dir, None)):
         # Find Documentation action
         menubar = editor.menuBar()
         help_menu = None
@@ -558,27 +553,36 @@ def test_editor_wiki_map_files_exist():
     """Test that all wiki files referenced in EDITOR_WIKI_MAP actually exist in the wiki directory."""
     from toolset.gui.dialogs.editor_help import get_wiki_path
 
-    wiki_path = get_wiki_path()
+    toolset_wiki, root_wiki = get_wiki_path()
 
     # Skip test if wiki path doesn't exist (e.g., in CI without wiki)
-    assert isinstance(wiki_path, Path), "wiki_path is not a Path"
-    if wiki_path is None or not wiki_path.exists():
+    assert isinstance(toolset_wiki, Path), "toolset_wiki is not a Path"
+    search_paths = [toolset_wiki]
+    if root_wiki is not None and root_wiki.exists():
+        search_paths.append(root_wiki)
+    if not toolset_wiki.exists() and (root_wiki is None or not root_wiki.exists()):
         import pytest
 
-        pytest.skip(f"Wiki path does not exist: {wiki_path}")
+        pytest.skip(f"Wiki path does not exist: {toolset_wiki}")
 
     missing_files: list[tuple[str, str, Path]] = []
     for editor_name, wiki_file in EDITOR_WIKI_MAP.items():
         if wiki_file is not None:
-            file_path = wiki_path / wiki_file
-            if not file_path.exists():
+            found = False
+            for wiki_path in search_paths:
+                file_path = wiki_path / wiki_file
+                if file_path.exists():
+                    found = True
+                    break
+            if not found:
+                file_path = toolset_wiki / wiki_file
                 missing_files.append((editor_name, wiki_file, file_path))
 
     if missing_files:
         error_msg = "The following editors reference wiki files that do not exist:\n"
         for editor_name, wiki_file, file_path in missing_files:
             error_msg += f"  - {editor_name}: {wiki_file} (expected at {file_path})\n"
-        error_msg += f"\nWiki path: {wiki_path}"
+        error_msg += f"\nWiki path: {toolset_wiki}"
         raise AssertionError(error_msg)
 
 
@@ -647,7 +651,7 @@ def test_f1_shortcut_opens_help(qtbot: QtBot, installation: HTInstallation, tmp_
     qtbot.addWidget(editor)
     editor._add_help_action()
 
-    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=wiki_dir):
+    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=(wiki_dir, None)):
         # Find Documentation action and verify it has F1 shortcut
         menubar = editor.menuBar()
         help_menu = None
@@ -721,7 +725,7 @@ def test_editor_help_dialog_handles_invalid_markdown(qtbot: QtBot, tmp_path: Pat
     test_file = wiki_dir / "test.md"
     test_file.write_bytes(b"\x00\x01\x02\x03\xff\xfe\xfd")
 
-    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=wiki_dir):
+    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=(wiki_dir, None)):
         # Should not crash, should show error or handle gracefully
         dialog = EditorHelpDialog(None, "test.md")
         qtbot.addWidget(dialog)
@@ -737,7 +741,7 @@ def test_editor_help_dialog_handles_unicode_content(qtbot: QtBot, tmp_path: Path
     test_file = wiki_dir / "test.md"
     test_file.write_text("# Test Document\n\nUnicode: 测试 🎮 émoji", encoding="utf-8")
 
-    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=wiki_dir):
+    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=(wiki_dir, None)):
         dialog = EditorHelpDialog(None, "test.md")
         qtbot.addWidget(dialog)
 
@@ -774,7 +778,7 @@ ARE files define static area properties.
     editor = AREEditor(None, installation)
     qtbot.addWidget(editor)
 
-    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=wiki_dir):
+    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=(wiki_dir, None)):
         # Verify help menu exists
         menubar = editor.menuBar()
         help_menu: QMenu | None = None
@@ -822,7 +826,7 @@ def test_help_dialog_can_be_opened_multiple_times(qtbot: QtBot, installation: HT
     editor = AREEditor(None, installation)
     qtbot.addWidget(editor)
 
-    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=wiki_dir):
+    with patch("toolset.gui.dialogs.editor_help.get_wiki_path", return_value=(wiki_dir, None)):
         # Open dialog multiple times
         editor._show_help_dialog("test.md")
         QApplication.processEvents()

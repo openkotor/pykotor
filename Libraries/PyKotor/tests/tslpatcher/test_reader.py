@@ -43,7 +43,6 @@ from pykotor.tslpatcher.mods.gff import (  # pyright: ignore[reportMissingImport
     FieldValueTLKMemory,
     LocalizedStringDelta,
     ModifyFieldGFF,
-    ModifyGFF,
 )
 from pykotor.tslpatcher.mods.twoda import (  # pyright: ignore[reportMissingImports]
     AddRow2DA,
@@ -61,6 +60,9 @@ from pykotor.tslpatcher.reader import ConfigReader
 from utility.common.geometry import Vector3, Vector4  # pyright: ignore[reportMissingImports]
 
 if TYPE_CHECKING:
+    from pykotor.tslpatcher.mods.gff import (  # pyright: ignore[reportMissingImports]
+        ModifyGFF,
+    )
     from pykotor.tslpatcher.mods.ssf import ModifySSF  # pyright: ignore[reportMissingImports]
     from pykotor.tslpatcher.mods.tlk import ModifyTLK  # pyright: ignore[reportMissingImports]
     from pykotor.tslpatcher.mods.twoda import AddColumn2DA, ChangeRow2DA  # pyright: ignore[reportMissingImports]
@@ -197,11 +199,11 @@ class TestConfigReader(unittest.TestCase):
         self.mod_path.mkdir(exist_ok=True, parents=True)
 
         # Create complex.tlk from inlined XML data
-        complex_tlk = read_tlk(COMPLEX_TLK_XML.encode('utf-8'), file_format=ResourceType.TLK_XML)
+        complex_tlk = read_tlk(COMPLEX_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
         write_tlk(complex_tlk, str(self.mod_path / "complex.tlk"), ResourceType.TLK)
 
         # Create append.tlk from inlined XML data
-        append_tlk = read_tlk(APPEND_TLK_XML.encode('utf-8'), file_format=ResourceType.TLK_XML)
+        append_tlk = read_tlk(APPEND_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
         write_tlk(append_tlk, str(self.mod_path / "append.tlk"), ResourceType.TLK)
 
         # write it to a real file
@@ -327,8 +329,7 @@ class TestConfigReader(unittest.TestCase):
             modifier.load()
         assert len(self.config.patches_tlk.modifiers) == 26
         modifiers_dict2: dict[int, dict[str, str | ResRef | bool]] = {
-            mod.token_id: {"text": mod.text, "voiceover": mod.sound, "is_replacement": mod.is_replacement}
-            for mod in modifiers2
+            mod.token_id: {"text": mod.text, "voiceover": mod.sound, "is_replacement": mod.is_replacement} for mod in modifiers2
         }
         for k in modifiers_dict2.copy():
             modifiers_dict2[k].pop("is_replacement")
@@ -339,7 +340,7 @@ class TestConfigReader(unittest.TestCase):
             {
                 0: {"text": "Yavin", "voiceover": ResRef.from_blank()},
                 1: {
-                    "text": "Climate: Artificially Controled\n" "Terrain: Space Station\n" "Docking: Orbital Docking\n" "Native Species: Unknown",
+                    "text": "Climate: Artificially Controled\nTerrain: Space Station\nDocking: Orbital Docking\nNative Species: Unknown",
                     "voiceover": ResRef.from_blank(),
                 },
                 2: {"text": "Tatooine", "voiceover": ResRef.from_blank()},
@@ -349,7 +350,7 @@ class TestConfigReader(unittest.TestCase):
                 },
                 4: {"text": "Manaan", "voiceover": ResRef.from_blank()},
                 5: {
-                    "text": "Climate: Temperate\n" "Terrain: Ocean\n" "Docking: Ahto City Docking Bay\n" "Native Species: Selkath",
+                    "text": "Climate: Temperate\nTerrain: Ocean\nDocking: Ahto City Docking Bay\nNative Species: Selkath",
                     "voiceover": ResRef.from_blank(),
                 },
                 6: {"text": "Kashyyyk", "voiceover": ResRef.from_blank()},
@@ -386,7 +387,7 @@ class TestConfigReader(unittest.TestCase):
                     "voiceover": ResRef.from_blank(),
                 },
                 123720: {
-                    "text": "Climate: Temperate\n" "Terrain: Decaying urban zones\n" "Docking: Refugee Landing Pad\n" "Native Species: None",
+                    "text": "Climate: Temperate\nTerrain: Decaying urban zones\nDocking: Refugee Landing Pad\nNative Species: None",
                     "voiceover": ResRef.from_blank(),
                 },
                 123722: {
@@ -398,11 +399,11 @@ class TestConfigReader(unittest.TestCase):
                     "voiceover": ResRef.from_blank(),
                 },
                 123726: {
-                    "text": "Climate: Temperate\n" "Terrain: Grasslands\n" "Docking: Khoonda Plains Settlement\n" "Native Species: None",
+                    "text": "Climate: Temperate\nTerrain: Grasslands\nDocking: Khoonda Plains Settlement\nNative Species: None",
                     "voiceover": ResRef.from_blank(),
                 },
                 123728: {
-                    "text": "Climate: Tectonic-Generated Storms\n" "Terrain: Shattered Planetoid\n" "Docking: No Docking Facilities Present\n" "Native Species: None",
+                    "text": "Climate: Tectonic-Generated Storms\nTerrain: Shattered Planetoid\nDocking: No Docking Facilities Present\nNative Species: None",
                     "voiceover": ResRef.from_blank(),
                 },
                 123730: {
@@ -410,11 +411,11 @@ class TestConfigReader(unittest.TestCase):
                     "voiceover": ResRef.from_blank(),
                 },
                 124112: {
-                    "text": "Climate: Artificially Maintained \n" "Terrain: Droid Cityscape\n" "Docking: Landing Arm\n" "Native Species: Unknown",
+                    "text": "Climate: Artificially Maintained \nTerrain: Droid Cityscape\nDocking: Landing Arm\nNative Species: Unknown",
                     "voiceover": ResRef.from_blank(),
                 },
                 125863: {
-                    "text": "Climate: Artificially Maintained\n" "Terrain: Space Station\n" "Docking: Landing Zone\n" "Native Species: None",
+                    "text": "Climate: Artificially Maintained\nTerrain: Space Station\nDocking: Landing Zone\nNative Species: None",
                     "voiceover": ResRef.from_blank(),
                 },
             },
@@ -1535,8 +1536,8 @@ class TestConfigReader(unittest.TestCase):
         self._assert_batch(mod_6, 123)
 
     def _assert_batch(self, this_mod: ModifyGFF | AddFieldGFF, stored):
-        this_mod = cast(AddFieldGFF, this_mod)
-        this_mod.value = cast(FieldValueConstant, this_mod.value)
+        this_mod = cast("AddFieldGFF", this_mod)
+        this_mod.value = cast("FieldValueConstant", this_mod.value)
         assert isinstance(this_mod, AddFieldGFF)
         assert isinstance(this_mod.value, FieldValueConstant)
         assert str(this_mod.path) == "SomeList"

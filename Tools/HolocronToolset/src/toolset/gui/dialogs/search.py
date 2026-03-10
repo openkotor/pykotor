@@ -1,3 +1,5 @@
+"""Reference search dialog: run reference finder and open results in editors."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -256,7 +258,7 @@ class FileResults(QDialog):
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
         self.ui.openButton.clicked.connect(self.open)
-        self.ui.okButton.clicked.connect(self.accept)
+        self.ui.okButton.clicked.connect(lambda: self.accept())
         self.ui.resultList.itemDoubleClicked.connect(self.open)
 
         self.selection: FileResource | None = None

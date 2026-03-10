@@ -10,31 +10,35 @@ from __future__ import annotations
 import subprocess
 import threading
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import QTimer
-from qtpy.QtWidgets import QMessageBox, QWidget
+from qtpy.QtWidgets import QMessageBox
 
-from toolset.blender import BlenderInfo, launch_blender_with_ipc
-from toolset.blender.commands import BlenderEditorController, BlenderEditorMode, get_blender_controller
-from toolset.blender.detection import get_blender_settings
-from toolset.blender.ipc_client import ConnectionState
-
+from loggerplus import RobustLogger
 from pykotor.resource.generics.git import (
     GITCamera,
     GITCreature,
     GITDoor,
+    GITObject,
     GITPlaceable,
     GITStore,
     GITWaypoint,
 )
+from toolset.blender.commands import get_blender_controller
+from toolset.blender.detection import BlenderInfo, get_blender_settings, launch_blender_with_ipc
+from toolset.gui.helpers.message_box import ask_question, show_error_message, show_warning_message
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from qtpy.QtWidgets import QWidget
+
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
-    from pykotor.resource.generics.git import GIT, GITInstance
+    from pykotor.resource.generics.git import GIT, GITObject
+    from toolset.blender.commands import BlenderEditorController, BlenderEditorMode
+    from toolset.blender.ipc_client import ConnectionState
 
 
 class BlenderEditorMixin:
@@ -105,22 +109,20 @@ class BlenderEditorMixin:
         blender_info = settings.get_blender_info()
 
         if not blender_info.is_valid:
-            QMessageBox.warning(
-                self,  # type: ignore[arg-type]
+            show_warning_message(
                 "Blender Not Found",
                 blender_info.error,
+                self,  # type: ignore[arg-type]
             )
             return False
 
         if not blender_info.has_kotorblender:
-            result = QMessageBox.warning(
-                self,  # type: ignore[arg-type]
+            result = ask_question(
                 "kotorblender Not Found",
                 f"{blender_info.error}\n\nDo you want to continue without kotorblender support?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No,
+                self,  # type: ignore[arg-type]
             )
-            if result != QMessageBox.Yes:
+            if result != QMessageBox.StandardButton.Yes:
                 return False
 
         # Launch Blender with IPC
@@ -132,10 +134,10 @@ class BlenderEditorMixin:
         )
 
         if self._blender_process is None:
-            QMessageBox.critical(
-                self,  # type: ignore[arg-type]
+            show_error_message(
                 "Launch Failed",
                 "Failed to launch Blender. Please check your Blender installation.",
+                self,  # type: ignore[arg-type]
             )
             return False
 
@@ -156,7 +158,9 @@ class BlenderEditorMixin:
         installation_path: str | Path,
     ):
         """Connect to Blender IPC server and load data."""
+        settings = get_blender_settings()
         self._blender_controller = get_blender_controller()
+        self._blender_controller._client.set_endpoint(port=settings.ipc_port)  # noqa: SLF001
 
         # Store data for loading after connection
         self._pending_lyt = lyt
@@ -172,9 +176,9 @@ class BlenderEditorMixin:
         self._blender_controller.on_context_menu_requested(self._on_blender_context_menu_requested)
         self._blender_controller.on_instance_changed(self._on_blender_instance_changed)
         self._blender_controller.on_instance_updated(self._on_blender_instance_updated)
-        
+
         # Register material/texture change handler
-        if hasattr(self._blender_controller, 'on_material_changed'):
+        if hasattr(self._blender_controller, "on_material_changed"):
             self._blender_controller.on_material_changed(self._on_blender_material_changed)
 
         # Start connection attempts
@@ -200,11 +204,10 @@ class BlenderEditorMixin:
         if self._connection_attempts > self._max_connection_attempts:
             if self._blender_connection_timer:
                 self._blender_connection_timer.stop()
-            QMessageBox.warning(
-                self,  # type: ignore[arg-type]
+            show_warning_message(
                 "Connection Failed",
-                "Failed to connect to Blender IPC server.\n"
-                "Please make sure Blender started correctly and kotorblender is installed.",
+                "Failed to connect to Blender IPC server.\nPlease make sure Blender started correctly and kotorblender is installed.",
+                self,  # type: ignore[arg-type]
             )
             self.stop_blender_mode()
             self._on_blender_connection_failed()
@@ -241,10 +244,10 @@ class BlenderEditorMixin:
             RobustLogger().info("Module loaded in Blender successfully")
             self._on_blender_module_loaded()
         else:
-            QMessageBox.warning(
-                self,  # type: ignore[arg-type]
+            show_warning_message(
                 "Load Failed",
                 "Failed to load module in Blender. Check the Blender console for errors.",
+                self,  # type: ignore[arg-type]
             )
 
     def stop_blender_mode(self):
@@ -269,7 +272,7 @@ class BlenderEditorMixin:
         self._blender_enabled = False
         self._on_blender_mode_stopped()
 
-    def sync_selection_to_blender(self, instances: list[GITInstance]):
+    def sync_selection_to_blender(self, instances: list[GITObject]):
         """Sync selection to Blender.
 
         Args:
@@ -280,7 +283,7 @@ class BlenderEditorMixin:
 
         self._blender_controller.select_instances(instances)
 
-    def sync_instance_to_blender(self, instance: GITInstance):
+    def sync_instance_to_blender(self, instance: GITObject):
         """Sync instance position/rotation to Blender.
 
         Args:
@@ -309,7 +312,7 @@ class BlenderEditorMixin:
                 orientation=(ori.x, ori.y, ori.z, ori.w),
             )
 
-    def add_instance_to_blender(self, instance: GITInstance) -> str | None:
+    def add_instance_to_blender(self, instance: GITObject) -> str | None:
         """Add an instance to Blender.
 
         Args:
@@ -323,7 +326,7 @@ class BlenderEditorMixin:
 
         return self._blender_controller.add_instance(instance)
 
-    def remove_instance_from_blender(self, instance: GITInstance) -> bool:
+    def remove_instance_from_blender(self, instance: GITObject) -> bool:
         """Remove an instance from Blender.
 
         Args:
@@ -424,9 +427,9 @@ class BlenderEditorMixin:
 
     def _on_blender_material_changed(self, payload: dict):
         """Handle material/texture changes from Blender.
-        
+
         Override this to update textures/models in the toolset.
-        
+
         Args:
             payload: Event payload containing:
                 - object_name: Blender object name
@@ -474,6 +477,14 @@ def check_blender_and_ask(
     Returns:
         Tuple of (use_blender, blender_info)
     """
+    from toolset.gui.dialogs.blender_choice import show_blender_choice_dialog
+
+    choice, _remember_choice = show_blender_choice_dialog(parent, context)
+    if choice == "cancelled":
+        return False, None
+
+    blender_info = get_blender_settings().get_blender_info()
+    return choice == "blender", blender_info
     # TODO: Re-enable Blender choice dialog once it's finished
     # FIXME: The Blender choice dialog is currently unfinished and disabled
     # from toolset.gui.dialogs.blender_choice import show_blender_choice_dialog
@@ -483,12 +494,13 @@ def check_blender_and_ask(
     # if choice == "cancelled":
     #     return False, None
     # elif choice == "blender":
+    #     # Only fetch Blender info when user chose Blender (avoids wasted work and
+    #     # confusing (False, blender_info) when choice was e.g. "builtin").
     #     settings = get_blender_settings()
     #     info = settings.get_blender_info()
     #     return True, info
     # else:
     #     return False, None
-    
+
     # Temporarily always return False to use built-in editor
     return False, None
-

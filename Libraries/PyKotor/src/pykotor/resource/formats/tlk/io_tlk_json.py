@@ -1,3 +1,5 @@
+"""JSON read/write for TLK (talk table); used for tooling and round-trip."""
+
 from __future__ import annotations
 
 import json
@@ -25,22 +27,17 @@ if TYPE_CHECKING:
 
 class TLKJSONReader(ResourceReader):
     """Reads TLK files from JSON format.
-    
+
     JSON is a PyKotor-specific convenience format for easier editing of talk tables.
-    
+
     References:
     ----------
-        Based on swkotor.exe TLK structure:
-        - CTlkTable::CTlkTable @ 0x0041d8d0 - Constructor for talk table manager
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table (loads .tlk and .tlkf files)
-        - CTlkFile::CTlkFile @ 0x0041d810 - Constructor for TLK file reader
-        - TLK resource type "TLK " @ 0x0073ecb0 - Resource type identifier
-        - "tlk" extension string @ 0x0074dd40 - File extension identifier
-        
+        See tlk_data module docstring for engine addresses (K1 + TSL TODO). CTlkTable::CTlkTable, CTlkTable::AddFile, CTlkFile::CTlkFile, "TLK ", "tlk" extension.
         Note: JSON format is PyKotor-specific, not a standard game format.
         The engine uses binary TLK format exclusively. JSON conversion allows easier editing
         and programmatic manipulation of talk table entries.
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -78,11 +75,7 @@ class TLKJSONWriter(ResourceWriter):
     @autoclose
     def write(self, *, auto_close: bool = True):  # noqa: FBT001, FBT002, ARG002  # pyright: ignore[reportUnusedParameters]
         for stringref, entry in self._tlk:
-            string: TLKStringEntry = {
-                "_index": str(stringref),
-                "text": entry.text,
-                "soundResRef": str(entry.voiceover)
-            }
+            string: TLKStringEntry = {"_index": str(stringref), "text": entry.text, "soundResRef": str(entry.voiceover)}
             self._json["strings"].append(string)
 
         json_dump = json.dumps(self._json, indent=4)

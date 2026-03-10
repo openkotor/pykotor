@@ -7,6 +7,7 @@ Repo rule:
 This module exists as a compatibility shim for Toolset code that historically imported
 `toolset.data.indoormap.*`.
 """
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -21,7 +22,7 @@ from pykotor.common.indoormap import (  # re-exported for Toolset imports
     IndoorMapRoom,
     MissingRoomInfo,
 )
-from pykotor.common.indoorkit.qt_preview import ensure_component_image
+from toolset.data.indoorkit.qt_preview import ensure_component_image
 from utility.common.geometry import Vector2, Vector3
 
 if TYPE_CHECKING:

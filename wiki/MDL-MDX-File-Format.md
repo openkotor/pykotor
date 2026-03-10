@@ -313,7 +313,7 @@ The Node Header is 80 bytes in size and is present in all node types. It defines
 
 | Name                     | type        | offset | Description                                                                        |
 | ------------------------ | ----------- | ------ | ---------------------------------------------------------------------------------- |
-| node type [flags](GFF-File-Format#gff-data-types)          | [uint16](GFF-File-Format#gff-data-types)      | 0 (0x0)     | [bitmask](GFF-File-Format#gff-data-types) indicating node features (see [Node Type Bitmasks](#node-type-bitmasks)). Field #1 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("node type"). |
+| node type flags          | [uint16](GFF-File-Format#gff-data-types)      | 0 (0x0)     | [bitmask](GFF-File-Format#gff-data-types) indicating node features (see [Node Type Bitmasks](#node-type-bitmasks)). Field #1 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("node type"). |
 | node index               | [uint16](GFF-File-Format#gff-data-types)      | 2 (0x2)     | Sequential index of this node in the model. Field #3 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("node number").                                        |
 | node Name index          | [uint16](GFF-File-Format#gff-data-types)      | 4 (0x4)     | index into the names array for this node's name. Field #2 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("supernode").                                   |
 | Padding                  | [uint16](GFF-File-Format#gff-data-types)      | 6 (0x6)     | Padding for alignment. Fields #4-5 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure (described as "unknown").                                                             |
@@ -335,7 +335,7 @@ The Node Header is 80 bytes in size and is present in all node types. It defines
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:1590-1622`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L1590-L1622) - [node](MDL-MDX-File-Format#node-structures) header reading  
 **Reference**: [`vendor/reone/src/libs/graphics/format/mdlmdxreader.cpp:135-150`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp#L135-L150) - [node](MDL-MDX-File-Format#node-structures) header reading  
 **Reference**: [`vendor/kotorblender/io_scene_kotor/format/mdl/reader.py:189-250`](https://github.com/th3w1zard1/kotorblender/blob/master/io_scene_kotor/format/mdl/reader.py#L189-L250) - [node](MDL-MDX-File-Format#node-structures) header reading and [node](MDL-MDX-File-Format#node-structures) type processing  
-**Reference**: [`vendor/reone/src/libs/graphics/format/mdlmdxreader.cpp:153-155`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp#L153-L155) - Unsupported [node](MDL-MDX-File-Format#node-structures) [flags](GFF-File-Format#gff-data-types) validation  
+**Reference**: [`vendor/reone/src/libs/graphics/format/mdlmdxreader.cpp:153-155`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp#L153-L155) - Unsupported [node](MDL-MDX-File-Format#node-structures) flags validation  
 **Reference**: [`vendor/kotor/docs/mdl.md:9-27`](https://github.com/th3w1zard1/kotor/blob/master/docs/mdl.md#node-chunk) - [node](MDL-MDX-File-Format#node-structures) chunk structure analysis with [byte](GFF-File-Format#gff-data-types)-level layout
 
 **Note:** The orientation [quaternion](MDL-MDX-File-Format#node-header) is stored in W, X, Y, Z order. The [node](MDL-MDX-File-Format#node-structures) index (offset 2) is a sequential identifier used for [node](MDL-MDX-File-Format#node-structures) lookup. [controllers](MDL-MDX-File-Format#controllers) are stored separately from the [node](MDL-MDX-File-Format#node-structures) structure and referenced via offsets.
@@ -385,7 +385,7 @@ The Trimesh header defines static mesh [geometry](MDL-MDX-File-Format#geometry-h
 | UV Jitter                    | [float](GFF-File-Format#gff-data-types)        | 244 (0xF4)       | UV [animation](MDL-MDX-File-Format#animation-header) jitter amount.                                                                 |
 | UV Jitter Speed              | [float](GFF-File-Format#gff-data-types)        | 248 (0xF8)       | UV [animation](MDL-MDX-File-Format#animation-header) jitter speed.                                                                  |
 | MDX [vertex](MDL-MDX-File-Format#vertex-structure) size              | [uint32](GFF-File-Format#gff-data-types)       | 252 (0xFC)       | size in bytes of each [vertex](MDL-MDX-File-Format#vertex-structure) in MDX data.                                                   |
-| MDX data [flags](GFF-File-Format#gff-data-types)               | [uint32](GFF-File-Format#gff-data-types)       | 256 (0x100)       | [bitmask](GFF-File-Format#gff-data-types) of present [vertex](MDL-MDX-File-Format#vertex-structure) attributes (see [MDX Data Bitmap Masks](#mdx-data-bitmap-masks)).|
+| MDX data flags               | [uint32](GFF-File-Format#gff-data-types)       | 256 (0x100)       | [bitmask](GFF-File-Format#gff-data-types) of present [vertex](MDL-MDX-File-Format#vertex-structure) attributes (see [MDX Data Bitmap Masks](#mdx-data-bitmap-masks)).|
 | MDX [vertices](MDL-MDX-File-Format#vertex-structure) offset          | [int32](GFF-File-Format#gff-data-types)        | 260 (0x104)       | Relative offset to [vertex](MDL-MDX-File-Format#vertex-structure) positions in MDX (or -1 if none).                                 |
 | MDX Normals offset           | [int32](GFF-File-Format#gff-data-types)        | 264 (0x108)       | Relative offset to [vertex](MDL-MDX-File-Format#vertex-structure) normals in MDX (or -1 if none).                                   |
 | MDX [vertex](MDL-MDX-File-Format#vertex-structure) colors offset     | [int32](GFF-File-Format#gff-data-types)        | 268 (0x10C)       | Relative offset to [vertex](MDL-MDX-File-Format#vertex-structure) colors in MDX (or -1 if none).                                    |
@@ -534,7 +534,7 @@ The Emitter header follows the [node](MDL-MDX-File-Format#node-structures) heade
 | Frame Blending           | [uint8](GFF-File-Format#gff-data-types)        | 186 (0xBA)   | `1` if frame blending enabled, `0` otherwise.                                    |
 | Depth [texture](TPC-File-Format) Name       | [byte](GFF-File-Format#gff-data-types)     | 187 (0xBB)   | Depth/softparticle [texture](TPC-File-Format) name ([null-terminated](https://en.cppreference.com/w/c/string/byte)).                               |
 | Padding                  | [uint8](GFF-File-Format#gff-data-types)        | 219 (0xDB)   | Padding [byte](GFF-File-Format#gff-data-types) for alignment.                                                      |
-| [flags](GFF-File-Format#gff-data-types)                    | [uint32](GFF-File-Format#gff-data-types)       | 220 (0xDC)   | Emitter behavior [flags](GFF-File-Format#gff-data-types) bitmask (P2P, bounce, inherit, etc.).                     |
+| flags                    | [uint32](GFF-File-Format#gff-data-types)       | 220 (0xDC)   | Emitter behavior flags bitmask (P2P, bounce, inherit, etc.).                     |
 
 ### Reference header
 
@@ -711,11 +711,11 @@ Common [node](MDL-MDX-File-Format#node-structures) types are created by combinin
 
 ## MDX data format
 
-The MDX file contains additional [mesh](MDL-MDX-File-Format#trimesh-header) data that complements the MDL file. The data is organized based on [flags](GFF-File-Format#gff-data-types) indicating the presence of different data types.
+The MDX file contains additional [mesh](MDL-MDX-File-Format#trimesh-header) data that complements the MDL file. The data is organized based on flags indicating the presence of different data types.
 
 ### MDX data Bitmap [masks](GFF-File-Format#gff-data-types)
 
-The `MDX Data Flags` field in the Trimesh header uses [bitmask](GFF-File-Format#gff-data-types) [flags](GFF-File-Format#gff-data-types) to indicate which [vertex](MDL-MDX-File-Format#vertex-structure) attributes are present in the MDX files:
+The `MDX Data Flags` field in the Trimesh header uses [bitmask](GFF-File-Format#gff-data-types) flags to indicate which [vertex](MDL-MDX-File-Format#vertex-structure) attributes are present in the MDX files:
 
 ```c
 #define MDX_VERTICES        0x00000001  // Vertex positions (3 floats: X, Y, Z)
@@ -731,7 +731,7 @@ The `MDX Data Flags` field in the Trimesh header uses [bitmask](GFF-File-Format#
 #define MDX_BONE_INDICES    0x00001000  // Bone indices for skinning (4 floats, cast to uint16)
 ```
 
-**Note:** The bone weight and bone index flags (`0x00000800`, `0x00001000`) are not actually stored in the MDX data [flags](GFF-File-Format#gff-data-types) field but are used internally by parsers to track skin [mesh](MDL-MDX-File-Format#trimesh-header) [vertex](MDL-MDX-File-Format#vertex-structure) data presence.
+**Note:** The bone weight and bone index flags (`0x00000800`, `0x00001000`) are not actually stored in the MDX data flags field but are used internally by parsers to track skin [mesh](MDL-MDX-File-Format#trimesh-header) [vertex](MDL-MDX-File-Format#vertex-structure) data presence.
 
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:260-285`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L260-L285) - MDX data bitmap definitions and row structure  
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:2324-2404`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L2324-L2404) - MDX data reading with interleaved [vertex](MDL-MDX-File-Format#vertex-structure) attributes  
@@ -749,7 +749,7 @@ For skin [meshes](MDL-MDX-File-Format#trimesh-header), additional [vertex](MDL-M
   
 - **Bone indices** (MDX Bone indices offset): 4 floats per vertex (cast to [uint16](GFF-File-Format#gff-data-types)) representing indices into the [mesh](MDL-MDX-File-Format#trimesh-header)'s bone map array. Each index maps to a skeleton bone that influences the [vertex](MDL-MDX-File-Format#vertex-structure).
 
-The MDX data for skin [meshes](MDL-MDX-File-Format#trimesh-header) is interleaved based on the MDX [vertex](MDL-MDX-File-Format#vertex-structure) size and the active [flags](GFF-File-Format#gff-data-types). The bone weight and bone index data are stored as separate attributes and accessed via their respective offsets.
+The MDX data for skin [meshes](MDL-MDX-File-Format#trimesh-header) is interleaved based on the MDX [vertex](MDL-MDX-File-Format#vertex-structure) size and the active flags. The bone weight and bone index data are stored as separate attributes and accessed via their respective offsets.
 
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:2374-2395`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L2374-L2395) - Skin [mesh](MDL-MDX-File-Format#trimesh-header) bone weight processing in MDX data  
 **Reference**: [`vendor/reone/src/libs/graphics/format/mdlmdxreader.cpp:263-295`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp#L263-L295) - Skin [mesh](MDL-MDX-File-Format#trimesh-header) header and bone data reading  
@@ -905,7 +905,7 @@ For normal/bump mapping, tangent and bitangent vectors are calculated per [face]
 
 ---
 
-## model Classification [flags](GFF-File-Format#gff-data-types)
+## model Classification flags
 
 The model header's Classification byte (offset 0 in model header, offset 92 from MDL data start) uses these values to categorize the model type:
 
@@ -920,7 +920,7 @@ The model header's Classification byte (offset 0 in model header, offset 92 from
 | Placeable      | 0x20  | Placeable object model (furniture, containers, switches).      |
 | Flyer          | 0x40  | Flying vehicle or creature model.                              |
 
-**Note:** These values are not [bitmask](GFF-File-Format#gff-data-types) [flags](GFF-File-Format#gff-data-types) and should not be combined. Each model has exactly one classification value.
+**Note:** These values are not [bitmask](GFF-File-Format#gff-data-types) flags and should not be combined. Each model has exactly one classification value.
 
 ---
 

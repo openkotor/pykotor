@@ -6,10 +6,11 @@ import sys
 from io import BytesIO
 from typing import TYPE_CHECKING, Literal
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import QFileInfo, QObject, QTemporaryFile, QTimer, Qt, Signal
 from qtpy.QtGui import QIcon, QImage, QPainter, QPixmap
 from qtpy.QtWidgets import QApplication, QFileIconProvider, QStyle
+
+from loggerplus import RobustLogger
 
 if TYPE_CHECKING:
     import os
@@ -25,6 +26,7 @@ def load_icon_task(file_path: str) -> concurrent.futures.Future:
     app.exec()
     return future
 
+
 def _load_icon_task(file_path: str, future: concurrent.futures.Future) -> None:
     icon = QFileIconProvider().icon(QFileInfo(file_path))
     future.set_result((file_path, icon))
@@ -36,6 +38,7 @@ def load_thumbnail_task(file_path: str) -> concurrent.futures.Future:
     QTimer.singleShot(0, lambda: _load_thumbnail_task(file_path, future))
     app.exec()
     return future
+
 
 def _load_thumbnail_task(file_path: str, future: concurrent.futures.Future) -> None:
     image = QImage(file_path)

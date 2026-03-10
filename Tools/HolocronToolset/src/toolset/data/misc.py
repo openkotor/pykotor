@@ -1,12 +1,16 @@
+"""Toolset data helpers: ControlItem (key/mouse bindings) and related types."""
+
 from __future__ import annotations
 
-from typing import Set, Tuple, Union
+from typing import TYPE_CHECKING, Set, Tuple, Union
+
+from qtpy.QtCore import Qt
 
 from loggerplus import RobustLogger
-from qtpy.QtCore import Qt
-from qtpy.QtGui import QKeySequence
-
 from toolset.utils.misc import get_qt_button_string, get_qt_key_string
+
+if TYPE_CHECKING:
+    from qtpy.QtGui import QKeySequence
 
 Bind = Tuple[Set[Qt.Key], Union[Set[Qt.MouseButton], None]]
 
@@ -40,8 +44,8 @@ class ControlItem:
             bool: Whether the input is satisfied.
         """
         no_buttons: bool = self.mouse is None
-        any_buttons: bool = self.mouse is not None and len(self.mouse) == 0
-        any_keys: bool = len(self.keys) == 0
+        any_buttons: bool = self.mouse is not None and not self.mouse
+        any_keys: bool = not self.keys
         if exact_keys_and_buttons:
             mouse_equal: bool = self.mouse == buttons
             mouse_satisfied: bool = no_buttons or any_buttons or mouse_equal

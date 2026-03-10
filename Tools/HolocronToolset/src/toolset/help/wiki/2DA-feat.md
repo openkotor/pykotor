@@ -36,7 +36,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `reqskill` | Integer (optional) | Required skill ID |
 | `reqskillrank` | Integer (optional) | Required skill rank |
 | `constant` | Integer (optional) | Constant value for feat calculations |
-| `toolscategories` | Integer (optional) | Tool categories [flags](GFF-File-Format#gff-data-types) |
+| `toolscategories` | Integer (optional) | Tool categories flags |
 | `effecticon` | ResRef (optional) | Effect icon [ResRef](GFF-File-Format#gff-data-types) |
 | `effectdesc` | StrRef (optional) | Effect description string reference |
 | `effectcategory` | Integer (optional) | Effect category identifier |

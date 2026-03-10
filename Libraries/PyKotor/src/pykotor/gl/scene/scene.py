@@ -1,9 +1,10 @@
+"""OpenGL scene: models, camera, picking, and render loop for module designer."""
+
 from __future__ import annotations
 
-from typing import TypeVar, cast
+from typing import TYPE_CHECKING, TypeVar, cast
 
-from pykotor.common.module import Module
-from pykotor.extract.installation import Installation, SearchLocation
+from pykotor.extract.installation import SearchLocation
 from pykotor.gl.compat import (
     GL_BGRA,
     GL_BLEND,
@@ -26,10 +27,10 @@ from pykotor.gl.compat import (
     glEnable,
     glReadPixels,
 )
-from pykotor.gl.glm_compat import mat4, Vector3, Vector4, unProject
-from pykotor.gl.models.mdl import Model
+from pykotor.gl.glm_compat import Vector3 as GlmVector3, Vector4, mat4, unProject
+from pykotor.gl.models.axis_gizmo import AxisGizmo
 from pykotor.gl.scene.frustum import CullingStats, Frustum
-from pykotor.gl.scene.scene_base import RenderObject, SceneBase
+from pykotor.gl.scene.scene_base import SceneBase
 from pykotor.gl.scene.scene_cache import SceneCache
 from pykotor.gl.shader import (
     KOTOR_FSHADER,
@@ -53,7 +54,13 @@ from pykotor.resource.generics.git import (
     GITTrigger,
     GITWaypoint,
 )
-from utility.common.geometry import Vector3
+from utility.common.geometry import Vector3 as GeomVector3
+
+if TYPE_CHECKING:
+    from pykotor.common.module import Module
+    from pykotor.extract.installation import Installation
+    from pykotor.gl.models.mdl import Model
+    from pykotor.gl.scene.scene_base import RenderObject
 
 T = TypeVar("T")
 SEARCH_ORDER_2DA: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN]
@@ -68,7 +75,7 @@ class Scene(SceneBase):
     - Cached view/projection matrices (set once per frame, not per object)
     - Cached bounding spheres for frustum culling
     - Incremental cache building (only rebuilds when dirty)
-    - Lazy cursor position calculation
+    - Cached camera focus gizmo placement
 
     Reference implementations:
     - reone: src/graphics/renderpipeline.cpp
@@ -102,10 +109,12 @@ class Scene(SceneBase):
             self.picker_shader: Shader = Shader(PICKER_VSHADER, PICKER_FSHADER)
             self.plain_shader: Shader = Shader(PLAIN_VSHADER, PLAIN_FSHADER)
             self.shader: Shader = Shader(KOTOR_VSHADER, KOTOR_FSHADER)
+            self._axis_gizmo: AxisGizmo = AxisGizmo()
         else:
             self.picker_shader = None  # type: ignore[assignment]
             self.plain_shader = None  # type: ignore[assignment]
             self.shader = None  # type: ignore[assignment]
+            self._axis_gizmo = None  # type: ignore[assignment]
 
         # Frustum culling
         self.frustum: Frustum = Frustum()
@@ -278,9 +287,15 @@ class Scene(SceneBase):
                     if not self.enable_frustum_culling or self._is_object_visible(obj):
                         obj.boundary(self).draw(self.plain_shader, obj.transform())
 
-            if self.show_cursor:
-                self.plain_shader.set_vector4("color", Vector4(1.0, 0.0, 0.0, 0.4))
-                self._render_object(self.plain_shader, self.cursor, identity)
+            # Draw the axis gizmo at the camera focal point (view focus), not at
+            # the mouse-world anchor (`scene.cursor`), which may change every frame.
+            if self.show_focus_point_gizmo and self._axis_gizmo is not None:
+                focus_point = self.camera_focal_point()
+                self._axis_gizmo.draw(
+                    self.plain_shader,
+                    GlmVector3(focus_point.x, focus_point.y, focus_point.z),
+                    self.camera.distance,
+                )
 
             # End frame statistics
             if self.enable_frustum_culling:
@@ -299,6 +314,61 @@ class Scene(SceneBase):
                 # If OpenGL isn't importable for some reason, just re-raise the original error.
                 pass
             raise
+
+    # Depth value at or above this threshold is treated as "sky" (no geometry hit).
+    _FAR_PLANE_DEPTH_THRESHOLD: float = 0.9999
+
+    def screen_to_world_from_depth_buffer(self, x: int, y: int) -> GeomVector3:
+        """Convert screen coordinates to world coordinates using the *current* depth buffer.
+
+        This is a fast-path for interactive tools (e.g. the Module Designer) that already
+        rendered the scene this frame and just need to unproject the mouse position.
+
+        Unlike `screen_to_world()`, this does **not** clear the framebuffer or perform an
+        extra depth-only render pass. It simply reads a single depth pixel and unprojects.
+
+        When the depth value is at the far plane (no geometry under the cursor), the
+        camera's focal point is returned instead of a position at near-infinity. This
+        keeps mouse-projected placement coordinates finite and stable over empty sky.
+
+        Preconditions:
+        - A valid GL context is current.
+        - The scene has been rendered at least once with the current camera configuration
+          (so the depth buffer and cached matrices are up-to-date).
+        """
+        if self.is_shutdown:
+            return GeomVector3(0.0, 0.0, 0.0)
+
+        # Use cached matrices if available (these are refreshed once per render()).
+        if self._cached_view is not None and self._cached_projection is not None:
+            view = self._cached_view
+            projection = self._cached_projection
+        else:
+            view = self.camera.view()
+            projection = self.camera.projection()
+
+        zpos = glReadPixels(
+            x,
+            self.camera.height - y,
+            1,
+            1,
+            GL_DEPTH_COMPONENT,
+            GL_FLOAT,
+        )[0][0]  # type: ignore[]
+
+        # If the depth sample is at the far plane (sky / no geometry), fall back to the
+        # camera focal point. Unprojecting z=1.0 places the point thousands of units
+        # away, which is not useful for placement/manipulation workflows.
+        if float(zpos) >= self._FAR_PLANE_DEPTH_THRESHOLD:
+            return self.camera_focal_point()
+
+        cursor_glm: GlmVector3 = unProject(
+            GlmVector3(float(x), float(self.camera.height - y), float(zpos)),
+            view,
+            projection,
+            Vector4(0, 0, self.camera.width, self.camera.height),
+        )
+        return GeomVector3(cursor_glm.x, cursor_glm.y, cursor_glm.z)
 
     def _prepare_gl_and_shader_optimized(self):
         """Optimized GL state preparation using cached matrices."""
@@ -344,26 +414,26 @@ class Scene(SceneBase):
         self,
         obj: RenderObject,
     ) -> bool:
-        result = False
-        if isinstance(obj.data, GITCreature) and self.hide_creatures:
-            result = True
-        elif isinstance(obj.data, GITPlaceable) and self.hide_placeables:
-            result = True
-        elif isinstance(obj.data, GITDoor) and self.hide_doors:
-            result = True
-        elif isinstance(obj.data, GITTrigger) and self.hide_triggers:
-            result = True
-        elif isinstance(obj.data, GITEncounter) and self.hide_encounters:
-            result = True
-        elif isinstance(obj.data, GITWaypoint) and self.hide_waypoints:
-            result = True
-        elif isinstance(obj.data, GITSound) and self.hide_sounds:
-            result = True
-        elif isinstance(obj.data, GITStore) and self.hide_sounds:
-            result = True
-        elif isinstance(obj.data, GITCamera) and self.hide_cameras:
-            result = True
-        return result
+        type_to_hide_attr = {
+            GITCreature: "hide_creatures",
+            GITPlaceable: "hide_placeables",
+            GITDoor: "hide_doors",
+            GITTrigger: "hide_triggers",
+            GITEncounter: "hide_encounters",
+            GITWaypoint: "hide_waypoints",
+            GITSound: "hide_sounds",
+            GITStore: "hide_sounds",
+            GITCamera: "hide_cameras",
+        }
+
+        for obj_type, hide_attr in type_to_hide_attr.items():
+            if isinstance(obj.data, obj_type):
+                return bool(getattr(self, hide_attr, False))
+        return False
+
+    def _object_list_snapshot(self) -> list[RenderObject]:
+        """Return a stable snapshot of objects for index-based rendering workflows."""
+        return list(self.objects.values())
 
     def _render_object(
         self,
@@ -375,7 +445,7 @@ class Scene(SceneBase):
             return
 
         model: Model = self.model(obj.model)
-        next_transform = cast(mat4, transform * obj.transform())
+        next_transform = cast("mat4", transform * obj.transform())
         model.draw(shader, next_transform, override_texture=obj.override_texture)
 
         for child in obj.children:
@@ -409,12 +479,12 @@ class Scene(SceneBase):
 
         # Use enumerate instead of list.index() which is O(n) per call
         identity = mat4()
-        instances: list[RenderObject] = list(self.objects.values())
+        instances: list[RenderObject] = self._object_list_snapshot()
         for idx, obj in enumerate(instances):
             r: int = idx & 0xFF
             g: int = (idx >> 8) & 0xFF
             b: int = (idx >> 16) & 0xFF
-            color = Vector3(r / 0xFF, g / 0xFF, b / 0xFF)
+            color = GlmVector3(r / 0xFF, g / 0xFF, b / 0xFF)
             self.picker_shader.set_vector3("colorId", color)
             self._picker_render_object(obj, identity)
 
@@ -423,7 +493,7 @@ class Scene(SceneBase):
             return
 
         model: Model = self.model(obj.model)
-        model.draw(self.picker_shader, cast(mat4, transform * obj.transform()))
+        model.draw(self.picker_shader, cast("mat4", transform * obj.transform()))
         for child in obj.children:
             self._picker_render_object(child, obj.transform())
 
@@ -434,7 +504,7 @@ class Scene(SceneBase):
     ) -> RenderObject | None:
         self.picker_render()
         pixel: int = glReadPixels(x, y, 1, 1, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8)[0][0] >> 8  # type: ignore[]
-        instances: list[RenderObject] = list(self.objects.values())
+        instances: list[RenderObject] = self._object_list_snapshot()
         return instances[pixel] if pixel != 0xFFFFFF else None  # noqa: PLR2004
 
     def select(
@@ -463,7 +533,7 @@ class Scene(SceneBase):
         self,
         x: int,
         y: int,
-    ) -> Vector3:
+    ) -> GeomVector3:
         """Convert screen coordinates to world coordinates.
 
         Optimized to:
@@ -472,7 +542,7 @@ class Scene(SceneBase):
         - Minimize GL state changes
         """
         if self.is_shutdown:
-            return Vector3(0.0, 0.0, 0.0)
+            return GeomVector3(0.0, 0.0, 0.0)
 
         # Prepare GL state efficiently
         glClearColor(0.5, 0.5, 1, 1.0)
@@ -510,13 +580,13 @@ class Scene(SceneBase):
             GL_FLOAT,
         )[0][0]  # type: ignore[]
 
-        cursor: Vector3 = unProject(
-            Vector3(x, self.camera.height - y, zpos),
+        cursor_glm: GlmVector3 = unProject(
+            GlmVector3(float(x), float(self.camera.height - y), float(zpos)),
             view,
             projection,
             Vector4(0, 0, self.camera.width, self.camera.height),
         )
-        return Vector3(cursor.x, cursor.y, cursor.z)
+        return GeomVector3(cursor_glm.x, cursor_glm.y, cursor_glm.z)
 
     def _prepare_gl_and_shader(self):
         """Legacy method for backward compatibility."""

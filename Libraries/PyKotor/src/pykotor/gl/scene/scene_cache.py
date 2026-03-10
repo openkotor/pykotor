@@ -1,8 +1,9 @@
+"""Scene cache: incremental GIT/instance resolution and render object updates for the module designer."""
+
 from __future__ import annotations
 
 import math
 
-from copy import copy
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from loggerplus import RobustLogger
@@ -10,7 +11,6 @@ from pykotor.extract.installation import SearchLocation
 from pykotor.gl.glm_compat import eulerAngles, quat
 from pykotor.gl.models.mdl import Boundary
 from pykotor.gl.scene import RenderObject
-from pykotor.resource.generics.git import GIT, GITCamera, GITCreature, GITDoor, GITEncounter, GITPlaceable, GITSound, GITStore, GITTrigger, GITWaypoint
 from pykotor.resource.generics.utd import UTD
 from pykotor.resource.generics.utp import UTP
 from pykotor.resource.generics.uts import UTS
@@ -20,7 +20,7 @@ from utility.common.geometry import Vector3
 if TYPE_CHECKING:
     from pykotor.gl.scene.scene import Scene
     from pykotor.resource.formats.lyt import LYTRoom
-    from pykotor.resource.generics.git import GIT, GITInstance
+    from pykotor.resource.generics.git import GITInstance
 
 T = TypeVar("T")
 SEARCH_ORDER_2DA: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN]
@@ -62,23 +62,23 @@ class SceneCache:
 
         for identifier in scene.clear_cache_buffer:
             for git_creature in scene.git.creatures.copy():
-                if identifier.resname == git_creature.resref and identifier.restype is ResourceType.UTC:
+                if identifier.resname == git_creature.resref and identifier.restype == ResourceType.UTC:
                     del scene.objects[git_creature]
             for placeable in scene.git.placeables.copy():
-                if identifier.resname == placeable.resref and identifier.restype is ResourceType.UTP:
+                if identifier.resname == placeable.resref and identifier.restype == ResourceType.UTP:
                     del scene.objects[placeable]
             for door in scene.git.doors.copy():
-                if door.resref == identifier.resname and identifier.restype is ResourceType.UTD:
+                if door.resref == identifier.resname and identifier.restype == ResourceType.UTD:
                     del scene.objects[door]
             if identifier.restype in {ResourceType.TPC, ResourceType.TGA}:
                 del scene.textures[identifier.resname]
             if identifier.restype in {ResourceType.MDL, ResourceType.MDX}:
                 del scene.models[identifier.resname]
-            if identifier.restype is ResourceType.GIT:
+            if identifier.restype == ResourceType.GIT:
                 for instance in scene.git.instances():
                     del scene.objects[instance]
                 scene.git = scene._get_git()
-            if identifier.restype is ResourceType.LYT:
+            if identifier.restype == ResourceType.LYT:
                 for room in scene.layout.rooms:
                     del scene.objects[room]
                 scene.layout = scene._get_lyt()
@@ -112,10 +112,10 @@ class SceneCache:
                                 )
                         else:
                             RobustLogger().warning(
-                                f"Door '{door.resref}.utd' references appearance_id {utd.appearance_id} " f"which does not exist in doors.2da. Using default model 'unknown'."
+                                f"Door '{door.resref}.utd' references appearance_id {utd.appearance_id} which does not exist in doors.2da. Using default model 'unknown'."
                             )
                 except (IndexError, KeyError) as e:
-                    RobustLogger().warning(f"Could not get the model name from the UTD '{door.resref}.utd' " f"and/or the doors.2da: {e}. Using default model 'unknown'.")
+                    RobustLogger().warning(f"Could not get the model name from the UTD '{door.resref}.utd' and/or the doors.2da: {e}. Using default model 'unknown'.")
                 except Exception:  # noqa: BLE001
                     RobustLogger().exception(f"Could not get the model name from the UTD '{door.resref}.utd' and/or the appearance.2da")
                 if utd is None:
@@ -155,7 +155,7 @@ class SceneCache:
                             )
                 except (IndexError, KeyError) as e:
                     RobustLogger().warning(
-                        f"Could not get the model name from the UTP '{placeable.resref}.utp' " f"and/or the placeables.2da: {e}. Using default model 'unknown'."
+                        f"Could not get the model name from the UTP '{placeable.resref}.utp' and/or the placeables.2da: {e}. Using default model 'unknown'."
                     )
                 except Exception:  # noqa: BLE001
                     RobustLogger().exception(f"Could not get the model name from the UTP '{placeable.resref}.utp' and/or the appearance.2da")
@@ -285,31 +285,12 @@ class SceneCache:
                 -euler.x + math.pi / 2,
             )
 
-        # Detect if GIT objects still exist; if they do not then remove them from the render list
-        for obj in copy(scene.objects):
-            SceneCache._del_git_objects(obj, scene.git, scene.objects)
+        # --- Detect removed GIT objects and clean them from the render list ---
+        # Old approach: copy(scene.objects) + 9 isinstance + `in` list checks (O(n²)) per frame.
+        # Optimized: build a frozenset of all live GIT instances once, then do O(1) lookups.
+        _live_instances: frozenset[GITInstance | LYTRoom] = frozenset(scene.git.instances()) | frozenset(scene.layout.rooms)
+        _to_remove: list[GITInstance | LYTRoom] = [obj for obj in scene.objects if obj not in _live_instances]
+        for obj in _to_remove:
+            del scene.objects[obj]
 
-    @staticmethod
-    def _del_git_objects(
-        obj: GITInstance | LYTRoom,
-        git: GIT,
-        objects: dict[GITInstance | LYTRoom, RenderObject],
-    ):
-        if isinstance(obj, GITCreature) and obj not in git.creatures:
-            del objects[obj]
-        if isinstance(obj, GITPlaceable) and obj not in git.placeables:
-            del objects[obj]
-        if isinstance(obj, GITDoor) and obj not in git.doors:
-            del objects[obj]
-        if isinstance(obj, GITTrigger) and obj not in git.triggers:
-            del objects[obj]
-        if isinstance(obj, GITStore) and obj not in git.stores:
-            del objects[obj]
-        if isinstance(obj, GITCamera) and obj not in git.cameras:
-            del objects[obj]
-        if isinstance(obj, GITWaypoint) and obj not in git.waypoints:
-            del objects[obj]
-        if isinstance(obj, GITEncounter) and obj not in git.encounters:
-            del objects[obj]
-        if isinstance(obj, GITSound) and obj not in git.sounds:
-            del objects[obj]
+    # _del_git_objects removed - replaced by frozenset-based O(1) lookup in build_cache.

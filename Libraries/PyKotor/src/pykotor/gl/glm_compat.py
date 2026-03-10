@@ -10,10 +10,8 @@ from __future__ import annotations
 
 import importlib
 import math
-from typing import TYPE_CHECKING
 
-# Import geometry classes and alias to lowercase (GLM-compatible names)
-from utility.common.geometry import Matrix4, Vector2, Vector3, Vector4
+from typing import TYPE_CHECKING
 
 # Import GLM-compatible functions
 from pykotor.common.geometry_utils import (
@@ -30,6 +28,9 @@ from pykotor.common.geometry_utils import (
     unProject,
     value_ptr,
 )
+
+# Import geometry classes and alias to lowercase (GLM-compatible names)
+from utility.common.geometry import Matrix4, Vector2, Vector3, Vector4
 
 # GLM-compatible aliases (lowercase)
 vec2 = Vector2  # noqa: N801
@@ -85,6 +86,7 @@ def quat(*args) -> Vector4:  # noqa: N802
         return Vector4(float(x), float(y), float(z), float(w))
     raise TypeError(f"quat() takes 0, 1, or 4 arguments, got {len(args)}")
 
+
 # Re-export all functions
 __all__ = [
     "vec2",
@@ -116,6 +118,7 @@ if not TYPE_CHECKING and importlib.util.find_spec("pyglm"):  # type: ignore[attr
             vec3 as _pyglm_vec3,
             vec4 as _pyglm_vec4,
         )
+
         # Use PyGLM if available (better performance)
         vec3 = _pyglm_vec3  # type: ignore[assignment]
         vec4 = _pyglm_vec4  # type: ignore[assignment]

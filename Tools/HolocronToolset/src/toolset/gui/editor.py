@@ -1,3 +1,5 @@
+"""Editor factory and base: open/save/close, recent files, and resource loading for all editors."""
+
 from __future__ import annotations
 
 import tempfile
@@ -15,10 +17,11 @@ from qtpy.QtGui import QIcon, QPixmap
 from qtpy.QtMultimedia import QMediaPlayer
 from qtpy.QtWidgets import (
     QApplication,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
     QFileDialog,
-    QHBoxLayout,
     QLabel,
-    QLineEdit,
     QMainWindow,
     QMenu,
     QMessageBox,
@@ -27,6 +30,8 @@ from qtpy.QtWidgets import (
     QShortcut,  # pyright: ignore[reportPrivateImportUsage]
     QSlider,
     QStyle,
+    QToolBar,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -44,13 +49,17 @@ from pykotor.resource.type import ResourceType
 from pykotor.tools import module
 from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_capsule_file, is_rim_file, is_sav_file
 from pykotor.tools.path import CaseAwarePath
+from toolset.gui.common.tooltip_utils import copy_tooltips_to_form_labels
 from toolset.gui.dialogs.load_from_module import LoadFromModuleDialog
 from toolset.gui.dialogs.save.to_bif import BifSaveDialog, BifSaveOption
 from toolset.gui.dialogs.save.to_module import SaveToModuleDialog
 from toolset.gui.dialogs.save.to_rim import RimSaveDialog, RimSaveOption
-from toolset.gui.widgets.settings.installations import GlobalSettings
+from toolset.data.installation import HTInstallation
+from toolset.gui.widgets.installation_toolbar import StandaloneWindowMixin
+from toolset.gui.widgets.settings.installations import GlobalSettings, InstallationsWidget
+from toolset.utils.window import TOOLSET_WINDOWS
 from ui import stylesheet_resources  # noqa: PLC0415, F401, I001  # pylint: disable=C0415
-from utility.error_handling import assert_with_variable_trace, format_exception_with_variables, universal_simplify_exception
+from utility.error_handling import assert_with_variable_trace, format_exception_with_variables
 from utility.system.os_helper import remove_any
 
 if qtpy.API_NAME == "PySide2":
@@ -72,7 +81,11 @@ if TYPE_CHECKING:
     from PyQt6.QtMultimedia import QMediaPlayer as PyQt6MediaPlayer
     from PySide6.QtMultimedia import QMediaPlayer as PySide6MediaPlayer
     from qtpy.QtGui import QFocusEvent, QMouseEvent, QShowEvent
-    from qtpy.QtWidgets import QAction, QMenuBar  # pyright: ignore[reportPrivateImportUsage]
+    from qtpy.QtWidgets import (  # pyright: ignore[reportPrivateImportUsage]
+        QAction,
+        QLineEdit,
+        QMenuBar,
+    )
 
     from pykotor.common.language import LocalizedString
     from pykotor.resource.formats.rim.rim_data import RIM
@@ -286,7 +299,7 @@ class MediaPlayerWidget(QWidget):
         super().showEvent(event)
 
 
-class Editor(QMainWindow):
+class Editor(QMainWindow, StandaloneWindowMixin):
     """Editor is a base class for all file-specific editors.
 
     Provides methods for saving and loading files that are stored directly in folders and for files that are encapsulated in a MOD or RIM.
@@ -381,12 +394,140 @@ class Editor(QMainWindow):
 
         self.setupEditorFilters(readSupported, writeSupported)
 
+        # Unified editor toolbar: subclasses add installation combobox and custom controls via _populate_editor_toolbar.
+        self._editor_toolbar: QToolBar = QToolBar(self)
+        self._editor_toolbar.setObjectName("editorToolbar")
+        self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self._editor_toolbar)
+        self._installation_combo: QComboBox | None = None
+        self._installation_cache: dict[str, HTInstallation] = {}
+        self._saved_installations: dict[str, dict[str, str | bool]] = {}
+        self._installation_combo_in_update: bool = False
+
+    def _populate_editor_toolbar(self, toolbar: QToolBar) -> None:
+        """Override in subclasses to add installation combobox and editor-specific controls.
+
+        Subclasses that need an installation should call _add_installation_combobox_to_toolbar(toolbar)
+        and then add their own widgets. Call this at the end of the subclass __init__.
+        """
+        pass
+
+    def _add_installation_combobox_to_toolbar(self, toolbar: QToolBar) -> None:
+        """Add Installation: combobox and Reload/Manage buttons to the editor toolbar.
+
+        Populates from GlobalSettings; when self._installation is already set (embedded),
+        selects that installation in the combobox. Connects selection to _on_installation_changed.
+        """
+        from toolset.gui.common.localization import translate as tr
+
+        toolbar.addWidget(QLabel(tr("Installation:")))
+        self._installation_combo = QComboBox(self)
+        self._installation_combo.setMinimumWidth(180)
+        toolbar.addWidget(self._installation_combo)
+        reload_btn = QPushButton(tr("Reload"), self)
+        reload_btn.clicked.connect(self._reload_installation_combo)
+        toolbar.addWidget(reload_btn)
+        manage_btn = QPushButton(tr("Manage..."), self)
+        manage_btn.clicked.connect(self._open_installations_manage_dialog)
+        toolbar.addWidget(manage_btn)
+        self._reload_installation_combo()
+        self._installation_combo.currentIndexChanged.connect(self._on_installation_combo_changed)
+
+    def _reload_installation_combo(self) -> None:
+        """Reload installation list from GlobalSettings and preserve current selection or set from self._installation."""
+        if self._installation_combo is None:
+            return
+        current_key = self._installation_combo.currentData()
+        self._saved_installations = {
+            name: {"path": config.path, "tsl": config.tsl, "name": name}
+            for name, config in self._global_settings.installations().items()
+        }
+        self._installation_combo_in_update = True
+        try:
+            self._installation_combo.clear()
+            self._installation_combo.addItem("(None)", None)
+            for name, config in sorted(self._saved_installations.items()):
+                self._installation_combo.addItem(f"{name} ({config['path']})", name)
+            if self._installation is not None and hasattr(self._installation, "name"):
+                key = getattr(self._installation, "name", None)
+                idx = self._installation_combo.findData(key)
+                if idx >= 0:
+                    self._installation_combo.setCurrentIndex(idx)
+            elif current_key is not None:
+                idx = self._installation_combo.findData(current_key)
+                if idx >= 0:
+                    self._installation_combo.setCurrentIndex(idx)
+        finally:
+            self._installation_combo_in_update = False
+
+    def _open_installations_manage_dialog(self) -> None:
+        """Open Manage Installations dialog and reload combobox on save."""
+        from toolset.gui.common.localization import translate as tr
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(tr("Manage Installations"))
+        layout = QVBoxLayout(dialog)
+        widget = InstallationsWidget(dialog)
+        layout.addWidget(widget)
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel,
+            dialog,
+        )
+        layout.addWidget(button_box)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            widget.save()
+            self._reload_installation_combo()
+
+    def _on_installation_combo_changed(self, _index: int) -> None:
+        """Resolve selected installation and call _on_installation_changed."""
+        if self._installation_combo_in_update:
+            return
+        installation = self._get_installation_from_combo()
+        self._installation = installation
+        self._on_installation_changed(installation)
+
+    def _get_installation_from_combo(self) -> HTInstallation | None:
+        """Resolve current combobox selection to HTInstallation."""
+        if self._installation_combo is None:
+            return None
+        selected_name = self._installation_combo.currentData()
+        if selected_name is None:
+            return None
+        cache_key = str(selected_name)
+        if cache_key in self._installation_cache:
+            return self._installation_cache[cache_key]
+        config = self._saved_installations.get(cache_key)
+        if config is None:
+            return None
+        try:
+            installation = HTInstallation(
+                config["path"],
+                config["name"],
+                tsl=bool(config.get("tsl")),
+            )
+            self._installation_cache[cache_key] = installation
+            return installation
+        except Exception as exc:
+            self._logger.exception("Failed to create installation '%s': %s", cache_key, exc)
+            QMessageBox.warning(
+                self,
+                "Invalid Installation",
+                f"Could not load installation '{cache_key}'.",
+            )
+            return None
+
     def showEvent(self, event: QShowEvent):
+        # Copy field tooltips to their labels once so hovering labels shows the same help
+        if not getattr(self, "_tooltips_copied_to_labels", False):
+            copy_tooltips_to_form_labels(self)
+            self._tooltips_copied_to_labels = True  # type: ignore[attr-defined]
         # Set minimum size based on the current size
         self.setMinimumSize(
             self.size().width() + QApplication.font().pointSize() * 2,
             self.size().height(),
         )
+        super().showEvent(event)
 
     def _setupMenus(self):
         """Sets up menu actions and keyboard shortcuts.
@@ -406,28 +547,34 @@ class Editor(QMainWindow):
         menu: QMenu | None = cast("Optional[QMenu]", menuActions[0].menu())
         if menu is None:
             raise TypeError(f"self.menuBar().actions()[0].menu() returned a {type(menu).__name__} object, expected QMenu.")
+
+        # Map action text to handler methods
+        action_handlers = {
+            "New": self.new,
+            "Open": self.open,
+            "Save": self.save,
+            "Save As": self.save_as,
+            "Revert": self.revert,
+            "Exit": lambda *_: self.close(),
+        }
         for action in menu.actions():
-            if action.text() == "New":  # sourcery skip: extract-method
-                action.triggered.connect(self.new)
-            if action.text() == "Open":
-                action.triggered.connect(self.open)
-            if action.text() == "Save":
-                action.triggered.connect(self.save)
-            if action.text() == "Save As":
-                action.triggered.connect(self.save_as)
-            if action.text() == "Revert":
-                action.triggered.connect(self.revert)
+            handler = action_handlers.get(action.text())
+            if handler is not None:
+                action.triggered.connect(handler)
             if action.text() == "Revert":
                 action.setEnabled(False)
-            if action.text() == "Exit":
-                # QAction.triggered emits a bool; QWidget.close takes no args.
-                action.triggered.connect(lambda *_: self.close())
-        QShortcut("Ctrl+N", self).activated.connect(self.new)
-        QShortcut("Ctrl+O", self).activated.connect(self.open)
-        QShortcut("Ctrl+S", self).activated.connect(self.save)
-        QShortcut("Ctrl+Shift+S", self).activated.connect(self.save_as)
-        QShortcut("Ctrl+R", self).activated.connect(self.revert)
-        QShortcut("Ctrl+Q", self).activated.connect(self.exit)
+
+        # Map shortcuts to handlers
+        shortcut_handlers = {
+            "Ctrl+N": self.new,
+            "Ctrl+O": self.open,
+            "Ctrl+S": self.save,
+            "Ctrl+Shift+S": self.save_as,
+            "Ctrl+R": self.revert,
+            "Ctrl+Q": self.exit,
+        }
+        for shortcut, handler in shortcut_handlers.items():
+            QShortcut(shortcut, self).activated.connect(handler)
 
     def _setup_menus(self):
         """Alias for _setupMenus() to match snake_case naming convention."""
@@ -754,7 +901,7 @@ class Editor(QMainWindow):
         rim: RIM = read_rim(self._filepath)
 
         # MDL is a special case - we need to save the MDX file with the MDL file.
-        if self._restype is ResourceType.MDL:
+        if self._restype == ResourceType.MDL:
             rim.set_data(self._resname, ResourceType.MDX, data_ext)
 
         rim.set_data(self._resname, self._restype, data)
@@ -787,15 +934,26 @@ class Editor(QMainWindow):
 
         # At this point, c_filepath points to the physical ERF/RIM on disk
         # and c_parent_filepath points to the physical folder containing the file.
-        erf_or_rim: ERF | RIM = read_rim(c_filepath) if ResourceType.from_extension(c_parent_filepath.suffix) is ResourceType.RIM else read_erf(c_filepath)
+        erf_or_rim: ERF | RIM = read_rim(c_filepath) if ResourceType.from_extension(c_parent_filepath.suffix) == ResourceType.RIM else read_erf(c_filepath)
         nested_capsules: list[tuple[PurePath, ERF | RIM]] = [(c_filepath, erf_or_rim)]
         for capsule_path in reversed(nested_paths[:-1]):
             nested_erf_or_rim_data = erf_or_rim.get(capsule_path.stem, ResourceType.from_extension(capsule_path.suffix))
-            if nested_erf_or_rim_data is None:  # TODO(th3w1zard1): loop through all windows and send hotkey ctrl+s?
-                msg = f"You must save the ERFEditor for '{capsule_path.relative_to(c_parent_filepath)}' to before modifying its nested resources. Do so and try again."
-                raise ValueError(msg)
+            if nested_erf_or_rim_data is None:
+                # Save all open editors to ensure nested resources are available
+                for window in TOOLSET_WINDOWS:
+                    if hasattr(window, 'save') and hasattr(window, '_filepath') and window._filepath is not None:
+                        try:
+                            window.save()
+                        except Exception as e:
+                            self._logger.warning(f"Failed to save editor {window.__class__.__name__}: {e}")
+                # Re-read the capsule after saving
+                erf_or_rim = read_rim(c_filepath) if ResourceType.from_extension(c_parent_filepath.suffix) == ResourceType.RIM else read_erf(c_filepath)
+                nested_erf_or_rim_data = erf_or_rim.get(capsule_path.stem, ResourceType.from_extension(capsule_path.suffix))
+                if nested_erf_or_rim_data is None:
+                    msg = f"You must save the ERFEditor for '{capsule_path.relative_to(c_parent_filepath)}' before modifying its nested resources. Do so and try again."
+                    raise ValueError(msg)
 
-            erf_or_rim = read_rim(nested_erf_or_rim_data) if ResourceType.from_extension(capsule_path.suffix) is ResourceType.RIM else read_erf(nested_erf_or_rim_data)
+            erf_or_rim = read_rim(nested_erf_or_rim_data) if ResourceType.from_extension(capsule_path.suffix) == ResourceType.RIM else read_erf(nested_erf_or_rim_data)
             nested_capsules.append((capsule_path, erf_or_rim))
 
         # Let's now save each erf/rim to its parent.
@@ -856,7 +1014,7 @@ class Editor(QMainWindow):
         erf.erf_type = erftype
 
         # MDL is a special case - we need to save the MDX file with the MDL file.
-        if self._restype is ResourceType.MDL:
+        if self._restype == ResourceType.MDL:
             assert data_ext is not None, assert_with_variable_trace(data_ext is not None)
             erf.set_data(self._resname, ResourceType.MDX, data_ext)
 
@@ -876,7 +1034,7 @@ class Editor(QMainWindow):
             file.write(data)
 
         # MDL is a special case - we need to save the MDX file with the MDL file.
-        if self._restype is ResourceType.MDL:
+        if self._restype == ResourceType.MDL:
             with c_filepath.with_suffix(".mdx").open("wb") as file:
                 file.write(data_ext)
         self.savedFile.emit(self._filepath, self._resname, self._restype, data)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import pathlib
 import sys
 import unittest
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -35,7 +36,7 @@ try:
 except ImportError:
     charset_normalizer = None
 
-import unittest
+
 
 class TestDecodeBytes(unittest.TestCase):
     def test_basic(self):

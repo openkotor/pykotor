@@ -18,6 +18,7 @@ This document provides detailed documentation for NWScript module and area funct
 ### Area Events
 
 When objects enter or exit areas/triggers, event scripts are fired:
+
 - **OnEnter**: Fired when an object enters an area or trigger
 - **OnExit**: Fired when an object exits an area or trigger
 
@@ -30,17 +31,21 @@ When objects enter or exit areas/triggers, event scripts are fired:
 **Routine:** 24
 
 #### Function Signature
+
 ```nss
 object GetArea(object oTarget = OBJECT_SELF);
 ```
 
 #### Description
+
 Gets the area object that contains the specified object. Every object in the game exists within an area.
 
 #### Parameters
+
 - `oTarget`: Object to get the area for (default: `OBJECT_SELF`)
 
 #### Returns
+
 - Area object containing the target
 - `OBJECT_INVALID` if object is invalid or has no area
 
@@ -67,6 +72,7 @@ if (GetArea(oPC) == GetArea(oTarget)) {
 ```
 
 **Pattern: Area-Specific Script Logic**
+
 ```nss
 // Run logic only if in specific area
 object oCurrentArea = GetArea();
@@ -85,18 +91,22 @@ if (sAreaTag == "tar_uppercity") {
 **Routine:** 25
 
 #### Function Signature
+
 ```nss
 object GetEnteringObject();
 ```
 
 #### Description
+
 Gets the object that last entered the caller. The behavior depends on the object type of the caller:
+
 - **Door or Placeable**: Returns the object that last triggered/used it
 - **Trigger, Area, Module, or Encounter**: Returns the object that last entered it
 
 This function is typically used in `OnEnter` event scripts.
 
 #### Returns
+
 - Object that entered/triggered the caller
 - `OBJECT_INVALID` if no object entered or caller is invalid
 
@@ -114,6 +124,7 @@ void main() {
 ```
 
 **Pattern: Area Entry Detection**
+
 ```nss
 // From vendor/K1_Community_Patch/Source/k_pman_init02.nss
 void main() {
@@ -128,6 +139,7 @@ void main() {
 ```
 
 **Pattern: PC Entry Check**
+
 ```nss
 // Common pattern in area entry scripts
 object oEntering = GetEnteringObject();
@@ -138,6 +150,7 @@ if (GetIsPC(oEntering)) {
 ```
 
 #### Notes
+
 - Only works in event scripts (OnEnter, OnUsed, etc.)
 - Returns the last object that entered, not all objects
 - Always validate the returned object with `GetIsObjectValid()`
@@ -149,16 +162,19 @@ if (GetIsPC(oEntering)) {
 **Routine:** 26
 
 #### Function Signature
+
 ```nss
 object GetExitingObject();
 ```
 
 #### Description
+
 Gets the object that last left the caller. This function works on triggers, areas of effect, modules, areas, and encounters.
 
 This function is typically used in `OnExit` event scripts.
 
 #### Returns
+
 - Object that exited the caller
 - `OBJECT_INVALID` if no object exited or caller is invalid
 
@@ -176,6 +192,7 @@ void main() {
 ```
 
 **Pattern: Area Exit Detection**
+
 ```nss
 // Track when PC leaves area
 void main() {
@@ -189,6 +206,7 @@ void main() {
 ```
 
 #### Notes
+
 - Only works in event scripts (OnExit, etc.)
 - Returns the last object that exited
 - Always validate the returned object
@@ -202,16 +220,19 @@ void main() {
 **Routine:** 348
 
 #### Function Signature
+
 ```nss
 object GetFirstPC();
 ```
 
 #### Description
+
 Gets the first player character (PC). In KotOR, there is typically only one player character, so this returns the main player.
 
 This is the most common way to get a reference to the player character in scripts.
 
 #### Returns
+
 - Player character object
 - `OBJECT_INVALID` if no PC exists
 
@@ -232,6 +253,7 @@ if (GetIsObjectValid(oPC)) {
 ```
 
 **Pattern: PC Interaction**
+
 ```nss
 // Start conversation with PC
 object oPC = GetFirstPC();
@@ -240,6 +262,7 @@ AssignCommand(oNPC, ActionStartConversation(oPC));
 ```
 
 **Pattern: PC Location Check**
+
 ```nss
 // Check PC's location
 object oPC = GetFirstPC();
@@ -252,6 +275,7 @@ if (fDistance <= 5.0) {
 ```
 
 #### Notes
+
 - Always returns the player character (main PC)
 - In single-player games, this is the only PC
 - Always validate with `GetIsObjectValid()` before use
@@ -346,14 +370,17 @@ if (GetIsObjectValid(oPC)) {
 **Routine:** 2900
 
 #### Function Signature
+
 ```nss
 object GetModule();
 ```
 
 #### Description
+
 Gets the module object. The module object represents the overall game module.
 
 #### Returns
+
 - Module object
 - `OBJECT_INVALID` if module is not available
 
@@ -371,14 +398,17 @@ object oModule = GetModule();
 **Routine:** 4075
 
 #### Function Signature
+
 ```nss
 void StartNewModule(string sModuleName, string sWayPoint = "", string sMovie1 = "", string sMovie2 = "", string sMovie3 = "", string sMovie4 = "", string sMovie5 = "", string sMovie6 = "");
 ```
 
 #### Description
+
 Transitions to a new module. This loads a different module file (`.mod`). The current module is unloaded and the new module is loaded.
 
 #### Parameters
+
 - `sModuleName`: Name of the module file (without `.mod` extension) to load
 - `sWayPoint`: Waypoint tag to spawn at in the new module (optional)
 - `sMovie1` through `sMovie6`: Movie files (`.bik`) to play during transition (optional, up to 6)
@@ -401,6 +431,7 @@ StartNewModule("new_module", "wp_entry", "intro_cutscene.bik");
 ```
 
 #### Notes
+
 - Current module state is saved before transition
 - Party members are preserved across transitions
 - Module transitions can take time - scripts continue immediately but loading happens asynchronously
@@ -421,6 +452,7 @@ StartNewModule("new_module", "wp_entry", "intro_cutscene.bik");
 ### Area Events
 
 Area and trigger event scripts are fired automatically:
+
 - **OnEnter**: When an object enters the area/trigger
 - **OnExit**: When an object exits the area/trigger
 - **OnHeartbeat**: Periodically while objects are in the area
@@ -431,6 +463,7 @@ Use `GetEnteringObject()` and `GetExitingObject()` in these event scripts to rea
 ### Player Character Access
 
 `GetFirstPC()` is the standard way to access the player character. It:
+
 - Returns the main player character
 - Works in all script contexts
 - Should always be validated before use
@@ -438,6 +471,7 @@ Use `GetEnteringObject()` and `GetExitingObject()` in these event scripts to rea
 ### Area Object
 
 The area object returned by `GetArea()`:
+
 - Can be used with `GetTag()` to identify the area
 - Contains all objects within that area
 - Used for area-specific scripting

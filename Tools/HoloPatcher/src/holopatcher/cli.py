@@ -5,9 +5,8 @@ import sys
 from threading import Event
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger
-
 from holopatcher import core
+from loggerplus import RobustLogger
 from pykotor.tslpatcher.logger import PatchLogger
 
 if TYPE_CHECKING:
@@ -113,4 +112,3 @@ def execute_cli(cmdline_args: Namespace):
         error_name, msg = e.__class__.__name__, str(e)
         print(f"[Error] {error_name}: {msg}", file=sys.stderr)  # noqa: T201
         sys.exit(ExitCode.EXCEPTION_DURING_INSTALL)
-

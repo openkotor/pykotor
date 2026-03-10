@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import lzma
 import tempfile
-from pathlib import Path
 import unittest
+
+from pathlib import Path
 
 from pykotor.common.misc import ResRef
 from pykotor.common.stream import BinaryWriter
@@ -11,16 +12,16 @@ from pykotor.resource.formats.bif import (
     BIF,
     BIFResource,
     BIFType,
+    bytes_bif,
     read_bif,
     write_bif,
-    bytes_bif,
 )
 from pykotor.resource.type import ResourceType
 
 K1_BIF_TEST_FILE = "Libraries/PyKotor/tests/test_files/k1_player.bif"
 
-class TestBIFFormats(unittest.TestCase):
 
+class TestBIFFormats(unittest.TestCase):
     def create_test_bzf(self) -> bytes | bytearray:
         """Create a test BZF file with known content."""
         data: bytearray = bytearray()
@@ -196,6 +197,7 @@ class TestBIFFormats(unittest.TestCase):
 
             self.assertTrue(output_path.exists(), "BIF output file was not created.")
             self.assertEqual(reference_path.stat().st_size, output_path.stat().st_size, "Size of written file has changed.")
+
 
 if __name__ == "__main__":
     unittest.main()

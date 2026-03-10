@@ -1,10 +1,11 @@
+"""Pre-init and application settings: QSettings and app-wide defaults before QApplication."""
+
 from __future__ import annotations
 
 import os
 
 from typing import TYPE_CHECKING
 
-from qtpy.QtGui import QFont, QFontDatabase
 from qtpy.QtWidgets import QApplication
 
 from toolset.gui.widgets.settings.widgets.application import ApplicationSettings

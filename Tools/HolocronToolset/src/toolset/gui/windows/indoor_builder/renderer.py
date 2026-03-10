@@ -1,39 +1,43 @@
+"""Indoor builder 2D renderer: draw rooms and components for the canvas."""
+
 from __future__ import annotations
 
 import math
 
-from dataclasses import dataclass
 from copy import deepcopy
-from typing import TYPE_CHECKING, Callable
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Callable, ClassVar
 
 import qtpy
 
 from qtpy import QtCore
-from qtpy.QtCore import QPoint, QPointF, QRectF, QTimer, Qt
-from qtpy.QtGui import QColor, QImage, QKeyEvent, QMouseEvent, QPainter, QPainterPath, QPen, QTransform, QWheelEvent
+from qtpy.QtCore import QPointF, QRectF, QTimer, Qt, Signal
+from qtpy.QtGui import QColor, QPainter, QPainterPath, QPalette, QPen, QPolygonF, QTransform
 from qtpy.QtWidgets import (
     QApplication,
     QWidget,
 )
 
-
 if qtpy.QT5:
     from qtpy.QtGui import QCloseEvent, QPaintEvent
     from qtpy.QtWidgets import QUndoStack  # type: ignore[reportPrivateImportUsage]
 elif qtpy.QT6:
-    from qtpy.QtGui import QPaintEvent, QUndoStack  # type: ignore[assignment]  # pyright: ignore[reportPrivateImportUsage]
 
     try:
         from qtpy.QtGui import QCloseEvent
     except ImportError:
         # Fallback for Qt6 where QCloseEvent may be in QtCore
-        from qtpy.QtCore import QCloseEvent  # type: ignore[assignment, attr-defined, no-redef]
+        pass  # type: ignore[assignment, attr-defined, no-redef]
 else:
     raise ValueError(f"Invalid QT_API: '{qtpy.API_NAME}'")
 
-from pykotor.common.indoorkit import KitComponent, KitComponentHook
+from pykotor.common.indoorkit import KitComponentHook
 from pykotor.common.indoormap import IndoorMap, IndoorMapRoom
-from pykotor.resource.formats.bwm import BWM  # type: ignore[reportPrivateImportUsage]
+from toolset.gui.common.marquee import (
+    MARQUEE_MOVE_THRESHOLD_PIXELS,
+    draw_marquee_rect,
+)
+from toolset.gui.common.snapping import snap_value
 from toolset.gui.windows.indoor_builder.builder import SnapResult
 from toolset.gui.windows.indoor_builder.constants import (
     BACKGROUND_COLOR,
@@ -64,9 +68,6 @@ from toolset.gui.windows.indoor_builder.constants import (
     HOOK_SNAP_DISCONNECT_BASE_THRESHOLD,
     HOOK_SNAP_DISCONNECT_SCALE_FACTOR,
     HOOK_SNAP_SCALE_FACTOR,
-    MARQUEE_BORDER_COLOR,
-    MARQUEE_FILL_COLOR,
-    MARQUEE_MOVE_THRESHOLD_PIXELS,
     MAX_CAMERA_ZOOM,
     MIN_CAMERA_ZOOM,
     POSITION_CHANGE_EPSILON,
@@ -89,12 +90,18 @@ from toolset.gui.windows.indoor_builder.constants import (
     WARP_POINT_RADIUS,
     DragMode,
 )
+from toolset.utils.misc import keyboard_modifiers_to_qt_keys
 from utility.common.geometry import SurfaceMaterial, Vector2, Vector3
 
 if TYPE_CHECKING:
-    from qtpy.QtGui import QFocusEvent
+    from qtpy.QtCore import QCloseEvent, QPoint
+    from qtpy.QtGui import QFocusEvent, QImage, QKeyEvent, QMouseEvent, QPaintEvent, QUndoStack, QWheelEvent
 
-    from pykotor.resource.formats.bwm import BWMFace  # pyright: ignore[reportMissingImports]
+    from pykotor.common.indoorkit import KitComponent
+    from pykotor.resource.formats.bwm import (
+        BWM,
+        BWMFace,  # pyright: ignore[reportMissingImports]
+    )
 
 
 # =============================================================================
@@ -126,15 +133,15 @@ class _BWMSurfaceCache:
 
 
 class IndoorMapRenderer(QWidget):
-    sig_mouse_moved = QtCore.Signal(object, object, object, object)  # pyright: ignore[reportPrivateImportUsage]
-    sig_mouse_scrolled = QtCore.Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
-    sig_mouse_released = QtCore.Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
-    sig_mouse_pressed = QtCore.Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
-    sig_mouse_double_clicked = QtCore.Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
-    sig_rooms_moved = QtCore.Signal(object, object, object)  # rooms, old_positions, new_positions  # pyright: ignore[reportPrivateImportUsage]
-    sig_rooms_rotated = QtCore.Signal(object, object, object)  # rooms, old_rotations, new_rotations  # pyright: ignore[reportPrivateImportUsage]
-    sig_warp_moved = QtCore.Signal(object, object)  # old_position, new_position  # pyright: ignore[reportPrivateImportUsage]
-    sig_marquee_select = QtCore.Signal(object, object)  # rooms selected, additive  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_moved: ClassVar[Signal] = Signal(object, object, object, object)  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_scrolled: ClassVar[Signal] = Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_released: ClassVar[Signal] = Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_pressed: ClassVar[Signal] = Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_double_clicked: ClassVar[Signal] = Signal(object, object, object)  # pyright: ignore[reportPrivateImportUsage]
+    sig_rooms_moved: ClassVar[Signal] = Signal(object, object, object)  # rooms, old_positions, new_positions  # pyright: ignore[reportPrivateImportUsage]
+    sig_rooms_rotated: ClassVar[Signal] = Signal(object, object, object)  # rooms, old_rotations, new_rotations  # pyright: ignore[reportPrivateImportUsage]
+    sig_warp_moved: ClassVar[Signal] = Signal(object, object)  # old_position, new_position  # pyright: ignore[reportPrivateImportUsage]
+    sig_marquee_select: ClassVar[Signal] = Signal(object, object)  # rooms selected, additive  # pyright: ignore[reportPrivateImportUsage]
 
     def __init__(self, parent: QWidget):
         super().__init__(parent)
@@ -196,6 +203,7 @@ class IndoorMapRenderer(QWidget):
         # Visual options
         self.hide_magnets: bool = False
         self.show_grid: bool = False
+        self.show_room_labels: bool = True
         self.highlight_rooms_hover: bool = True
 
         # Snap visualization
@@ -217,6 +225,8 @@ class IndoorMapRenderer(QWidget):
         # Walkmesh visualization
         self._material_colors: dict[SurfaceMaterial, QColor] = {}
         self._colorize_materials: bool = False
+        self._vis_matrix: dict[int, set[int]] = {}
+        self._show_vis_overlay: bool = True
         # Walkable materials - must match SurfaceMaterial.walkable() exactly (see geometry.py)
         # Using SurfaceMaterial enum values for clarity and maintainability
         self._walkable_values: set[SurfaceMaterial] = {
@@ -294,7 +304,7 @@ class IndoorMapRenderer(QWidget):
     def set_status_callback(self, callback: Callable[[QPoint | Vector2 | None, set[int | Qt.MouseButton], set[int | Qt.Key]], None] | None) -> None:
         self._status_callback = callback  # type: ignore[assignment]  # pyright: ignore[reportAssignmentType]
 
-    def select_room(self, room: IndoorMapRoom, *, clear_existing: bool):
+    def select_room(self, room: IndoorMapRoom, *, clear_existing: bool = True):
         if clear_existing:
             self._selected_rooms.clear()
         if room in self._selected_rooms:
@@ -377,7 +387,7 @@ class IndoorMapRenderer(QWidget):
         room: IndoorMapRoom,
         hook_index: int,
         *,
-        clear_existing: bool,
+        clear_existing: bool = True,
     ):
         # Validate hook index
         if hook_index < 0 or hook_index >= len(room.component.hooks):
@@ -395,6 +405,14 @@ class IndoorMapRenderer(QWidget):
         self._colorize_materials = enabled
         self.mark_dirty()
 
+    def set_vis_matrix(self, vis_matrix: dict[int, set[int]]):
+        self._vis_matrix = {room_id: set(targets) for room_id, targets in vis_matrix.items()}
+        self.mark_dirty()
+
+    def set_show_vis_overlay(self, enabled: bool):
+        self._show_vis_overlay = enabled
+        self.mark_dirty()
+
     def set_snap_to_grid(self, enabled: bool):
         self.snap_to_grid = enabled
         self.mark_dirty()
@@ -405,6 +423,10 @@ class IndoorMapRenderer(QWidget):
 
     def set_show_grid(self, enabled: bool):
         self.show_grid = enabled
+        self.mark_dirty()
+
+    def set_show_room_labels(self, enabled: bool):
+        self.show_room_labels = enabled
         self.mark_dirty()
 
     def set_hide_magnets(self, enabled: bool):
@@ -494,8 +516,8 @@ class IndoorMapRenderer(QWidget):
         if not self.snap_to_grid:
             return pos
         return Vector3(
-            round(pos.x / self.grid_size) * self.grid_size,
-            round(pos.y / self.grid_size) * self.grid_size,
+            snap_value(pos.x, self.grid_size),
+            snap_value(pos.y, self.grid_size),
             pos.z,
         )
 
@@ -777,8 +799,8 @@ class IndoorMapRenderer(QWidget):
     def camera_rotation(self) -> float:
         return self._cam_rotation
 
-    def set_camera_rotation(self, radians: float):
-        self._cam_rotation = radians
+    def set_camera_rotation(self, angle: float):
+        self._cam_rotation = angle
         self.mark_dirty()
 
     def rotate_camera(self, radians: float):
@@ -910,6 +932,55 @@ class IndoorMapRenderer(QWidget):
             selected=self._selected_hook,
             room_for_selection=room,
         )
+
+    def _draw_room_labels(
+        self,
+        painter: QPainter,
+    ):
+        """Draw room model labels in screen space near each room center."""
+        if not self.show_room_labels:
+            return
+
+        palette = QApplication.instance().palette() if QApplication.instance() is not None else None
+        if palette is not None:
+            text_color = palette.color(QPalette.ColorRole.WindowText)
+            bg_color = palette.color(QPalette.ColorRole.Window)
+            bg_color.setAlpha(180)
+        else:
+            text_color = QColor(255, 255, 255, 255)
+            bg_color = QColor(0, 0, 0, 180)
+
+        for room in self._map.rooms:
+            base_bwm = room.base_walkmesh()
+            vertices = base_bwm.vertices()
+            if not vertices:
+                continue
+
+            world_vertices = [self._room_local_to_world(room, vertex) for vertex in vertices]
+            min_x = min(vertex.x for vertex in world_vertices)
+            max_x = max(vertex.x for vertex in world_vertices)
+            min_y = min(vertex.y for vertex in world_vertices)
+            max_y = max(vertex.y for vertex in world_vertices)
+            center_world = QPointF((min_x + max_x) * 0.5, (min_y + max_y) * 0.5)
+            center_screen = painter.transform().map(center_world)
+
+            painter.save()
+            painter.resetTransform()
+            painter.setPen(QPen(text_color, 1))
+            painter.setBrush(bg_color)
+            room_name = room.model
+            text_rect = painter.fontMetrics().boundingRect(room_name)
+            text_x = center_screen.x() - text_rect.width() / 2
+            text_y = center_screen.y() + text_rect.height() / 2
+            bg_rect = QRectF(
+                text_x - 3,
+                text_y - text_rect.height() - 3,
+                text_rect.width() + 6,
+                text_rect.height() + 6,
+            )
+            painter.drawRect(bg_rect)
+            painter.drawText(int(text_x), int(text_y), room_name)
+            painter.restore()
 
     def _draw_cursor_walkmesh(self, painter: QPainter):
         """Draw the cursor preview using walkmesh geometry.
@@ -1231,23 +1302,94 @@ class IndoorMapRenderer(QWidget):
         painter.drawLine(QPointF(coords.x - line_len, coords.y), QPointF(coords.x + line_len, coords.y))
 
     def _draw_marquee(self, painter: QPainter):
-        """Draw the marquee selection rectangle."""
+        """Draw the marquee selection rectangle (shared style via toolset.gui.common.marquee)."""
         if not self._marquee_active:
             return
-
-        # Reset transform to draw in screen coords
         painter.resetTransform()
+        draw_marquee_rect(painter, self._marquee_start, self._marquee_end)
 
-        # Calculate rectangle
-        x1, y1 = self._marquee_start.x, self._marquee_start.y
-        x2, y2 = self._marquee_end.x, self._marquee_end.y
+    def _draw_vis_overlay(self, painter: QPainter):
+        if not self._show_vis_overlay or len(self._map.rooms) < 2 or not self._vis_matrix:
+            return
 
-        rect = QRectF(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
+        room_by_id: dict[int, IndoorMapRoom] = {id(room): room for room in self._map.rooms}
+        selected_ids = {id(room) for room in self._selected_rooms}
+        filter_to_selection = bool(selected_ids)
+        seen_pairs: set[tuple[int, int]] = set()
 
-        # Draw semi-transparent fill
-        painter.setBrush(QColor(MARQUEE_FILL_COLOR[0], MARQUEE_FILL_COLOR[1], MARQUEE_FILL_COLOR[2], MARQUEE_FILL_COLOR[3]))
-        painter.setPen(QPen(QColor(MARQUEE_BORDER_COLOR[0], MARQUEE_BORDER_COLOR[1], MARQUEE_BORDER_COLOR[2], MARQUEE_BORDER_COLOR[3]), 1, Qt.PenStyle.DashLine))
-        painter.drawRect(rect)
+        line_width = max(1.0, (CONNECTION_LINE_WIDTH_SCALE * 0.7) / max(self._cam_scale, 1e-6))
+        bidirectional_pen = QPen(QColor(80, 180, 255, 175), line_width)
+        one_way_pen = QPen(QColor(255, 170, 70, 195), line_width)
+        one_way_pen.setStyle(Qt.PenStyle.DashLine)
+        one_way_fill = QColor(255, 170, 70, 215)
+        arrow_len = max(3.5, 9.0 / max(self._cam_scale, 1e-6))
+        arrow_width = arrow_len * 0.6
+
+        for src_room_id, visible_targets in self._vis_matrix.items():
+            src_room = room_by_id.get(src_room_id)
+            if src_room is None:
+                continue
+
+            for dst_room_id in visible_targets:
+                dst_room = room_by_id.get(dst_room_id)
+                if dst_room is None or dst_room is src_room:
+                    continue
+
+                pair = (min(src_room_id, dst_room_id), max(src_room_id, dst_room_id))
+                if pair in seen_pairs:
+                    continue
+                seen_pairs.add(pair)
+
+                if filter_to_selection and src_room_id not in selected_ids and dst_room_id not in selected_ids:
+                    continue
+
+                src_has_dst = dst_room_id in self._vis_matrix.get(src_room_id, set())
+                dst_has_src = src_room_id in self._vis_matrix.get(dst_room_id, set())
+                src_point = QPointF(src_room.position.x, src_room.position.y)
+                dst_point = QPointF(dst_room.position.x, dst_room.position.y)
+
+                is_bidirectional = src_has_dst and dst_has_src
+                painter.setPen(bidirectional_pen if is_bidirectional else one_way_pen)
+                painter.drawLine(src_point, dst_point)
+
+                if is_bidirectional:
+                    continue
+
+                direction_start = src_point if src_has_dst else dst_point
+                direction_end = dst_point if src_has_dst else src_point
+
+                dx = direction_end.x() - direction_start.x()
+                dy = direction_end.y() - direction_start.y()
+                length = math.hypot(dx, dy)
+                if length <= 1e-6:
+                    continue
+
+                ux = dx / length
+                uy = dy / length
+                px = -uy
+                py = ux
+
+                t = 0.60
+                tip = QPointF(
+                    direction_start.x() + dx * t,
+                    direction_start.y() + dy * t,
+                )
+                base = QPointF(
+                    tip.x() - ux * arrow_len,
+                    tip.y() - uy * arrow_len,
+                )
+                left = QPointF(
+                    base.x() + px * arrow_width * 0.5,
+                    base.y() + py * arrow_width * 0.5,
+                )
+                right = QPointF(
+                    base.x() - px * arrow_width * 0.5,
+                    base.y() - py * arrow_width * 0.5,
+                )
+
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(one_way_fill)
+                painter.drawPolygon(QPolygonF([tip, left, right]))
 
     def _build_face(self, face: BWMFace) -> QPainterPath:
         v1 = Vector2(face.v1.x, face.v1.y)
@@ -1286,7 +1428,11 @@ class IndoorMapRenderer(QWidget):
         # Draw rooms using walkmesh geometry (NOT QImage - QImage is only for sidebar preview)
         for room in self._map.rooms:
             self._draw_room_walkmesh(painter, room)
+        self._draw_room_labels(painter)
+        self._draw_vis_overlay(painter)
 
+        # Draw hooks (magnets)
+        for room in self._map.rooms:
             # Draw hooks (magnets)
             if not self.hide_magnets:
                 for hook_index, hook in enumerate(room.component.hooks):
@@ -1355,10 +1501,11 @@ class IndoorMapRenderer(QWidget):
     # =========================================================================
 
     def wheelEvent(self, e: QWheelEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
+        keys_to_emit = self._keys_down | keyboard_modifiers_to_qt_keys(e.modifiers())
         self.sig_mouse_scrolled.emit(
             Vector2(e.angleDelta().x(), e.angleDelta().y()),
             e.buttons(),
-            self._keys_down,
+            keys_to_emit,
         )
         self.mark_dirty()
 
@@ -1636,12 +1783,7 @@ class IndoorMapRenderer(QWidget):
         """Handle focus out - cancel operations that require focus (standard Windows behavior)."""
         super().focusOutEvent(e)
         # Cancel drag operations when focus is lost (prevents stuck states)
-        if (
-            self._dragging
-            or self._dragging_hook
-            or self._dragging_warp
-            or self._marquee_active
-        ):
+        if self._dragging or self._dragging_hook or self._dragging_warp or self._marquee_active:
             self.end_drag()
             self._dragging_hook = False
             self._dragging_warp = False

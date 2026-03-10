@@ -1,24 +1,27 @@
+"""Door (UTD) model and resource resolution using genericdoors.2da and installation."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import SearchLocation
-from pykotor.resource.formats.mdl import MDL, MDLNode, read_mdl
+from pykotor.resource.formats.mdl import read_mdl
 from pykotor.resource.formats.tpc import read_tpc
 from pykotor.resource.formats.twoda import TwoDA, read_2da
-from pykotor.resource.generics.utd import UTD, read_utd
+from pykotor.resource.generics.utd import read_utd
 from pykotor.resource.type import ResourceType
 from pykotor.tools.model import iterate_textures
 from pykotor.tools.path import CaseAwarePath
+from pykotor.tools.resource_lookup import load_2da_with_fallback, read_location_data
 from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
     from pykotor.common.module import Module
-    from pykotor.extract.file import ResourceResult
     from pykotor.extract.installation import Installation
+    from pykotor.resource.formats.mdl import MDL, MDLNode
+    from pykotor.resource.generics.utd import UTD
     from pykotor.resource.type import SOURCE_TYPES
 
 
@@ -29,7 +32,7 @@ def get_model(
     genericdoors: TwoDA | SOURCE_TYPES | None = None,
 ) -> str:
     """Returns the model name for the given door.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -40,7 +43,7 @@ def get_model(
 
 
         Note: Door model lookup uses genericdoors.2da
-    
+
 
     If no value is specified for the genericdoor parameters then it will be loaded from the given installation.
 
@@ -59,10 +62,10 @@ def get_model(
         ValueError: genericdoors.2da not found in passed arguments OR the installation.
     """
     if genericdoors is None:
-        result: ResourceResult | None = installation.resource("genericdoors", ResourceType.TwoDA)
-        if not result:
+        loaded = load_2da_with_fallback(installation, "genericdoors", RobustLogger())
+        if loaded is None:
             raise ValueError("Resource 'genericdoors.2da' not found in the installation, cannot get UTD model.")
-        genericdoors = read_2da(result.data)
+        genericdoors = loaded
     if not isinstance(genericdoors, TwoDA):
         genericdoors = read_2da(genericdoors)
 
@@ -74,53 +77,22 @@ def load_genericdoors_2da(
     logger: RobustLogger | None = None,
 ) -> TwoDA | None:
     """Load genericdoors.2da from installation using priority order.
-    
+
     Tries locations() first (more reliable), then falls back to resource().
     Searches in Override first, then Chitin.
-    
+
     Args:
     ----
         installation: The game installation instance
         logger: Optional logger for debugging
-        
+
     Returns:
     -------
         TwoDA object if found, None otherwise
     """
     if logger is None:
         logger = RobustLogger()
-    
-    genericdoors_2da: TwoDA | None = None
-    
-    # Try locations() first (more reliable, handles BIF files)
-    try:
-        location_results = installation.locations(
-            [ResourceIdentifier(resname="genericdoors", restype=ResourceType.TwoDA)],
-            order=[SearchLocation.OVERRIDE, SearchLocation.CHITIN],
-        )
-        for res_ident, loc_list in location_results.items():
-            if loc_list:
-                loc = loc_list[0]  # Use first location (Override takes precedence)
-                if loc.filepath and CaseAwarePath(loc.filepath).exists():
-                    # Read from file (handles both direct files and BIF files)
-                    with loc.filepath.open("rb") as f:
-                        f.seek(loc.offset)
-                        data = f.read(loc.size)
-                    genericdoors_2da = read_2da(data)
-                    break
-    except Exception as e:  # noqa: BLE001
-        logger.debug(f"locations() failed for genericdoors.2da: {e}")
-    
-    # Fallback: try resource() if locations() didn't work
-    if genericdoors_2da is None:
-        try:
-            genericdoors_result = installation.resource("genericdoors", ResourceType.TwoDA)
-            if genericdoors_result and genericdoors_result.data:
-                genericdoors_2da = read_2da(genericdoors_result.data)
-        except Exception as e:  # noqa: BLE001
-            logger.debug(f"resource() also failed for genericdoors.2da: {e}")
-    
-    return genericdoors_2da
+    return load_2da_with_fallback(installation, "genericdoors", logger)
 
 
 def extract_door_walkmeshes(
@@ -131,10 +103,10 @@ def extract_door_walkmeshes(
     logger: RobustLogger | None = None,
 ) -> dict[str, bytes]:
     """Extract door walkmeshes (DWK files) for a door.
-    
+
     Doors have 3 walkmesh states: closed (0), open1 (1), open2 (2)
     Format: <modelname>0.dwk, <modelname>1.dwk, <modelname>2.dwk
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -144,44 +116,44 @@ def extract_door_walkmeshes(
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleDoor.ts:992
 
 
-    
+
     Args:
     ----
         utd_data: UTD door data bytes
         installation: The game installation instance
         module: Optional Module instance to search for DWK files in module resources first
         logger: Optional logger for debugging
-        
+
     Returns:
     -------
         Dictionary mapping dwk_key ("dwk0", "dwk1", "dwk2") to DWK file data bytes
     """
     if logger is None:
         logger = RobustLogger()
-    
+
     door_walkmeshes: dict[str, bytes] = {}
-    
+
     try:
         utd = read_utd(utd_data)
-        
+
         # Get door model name from UTD using genericdoors.2da
         genericdoors_2da = load_genericdoors_2da(installation, logger)
         if not genericdoors_2da:
             logger.debug("Could not load genericdoors.2da, cannot extract door walkmeshes")
             return door_walkmeshes
-        
+
         door_model_name = get_model(utd, installation, genericdoors=genericdoors_2da)
         if not door_model_name:
             logger.debug(f"Could not get model name for door (appearance_id={utd.appearance_id})")
             return door_walkmeshes
-        
+
         # Try to extract DWK files: modelname0.dwk, modelname1.dwk, modelname2.dwk
         dwk_variants = [
             (f"{door_model_name}0", "dwk0"),
             (f"{door_model_name}1", "dwk1"),
             (f"{door_model_name}2", "dwk2"),
         ]
-        
+
         for dwk_resname, dwk_key in dwk_variants:
             try:
                 # Try to find DWK in module resources first (if module provided)
@@ -193,7 +165,7 @@ def extract_door_walkmeshes(
                             door_walkmeshes[dwk_key] = dwk_data
                             logger.debug(f"Found DWK '{dwk_resname}' (state: {dwk_key}) from module")
                             continue
-                
+
                 # Try installation locations
                 dwk_locations = installation.locations(
                     [ResourceIdentifier(resname=dwk_resname, restype=ResourceType.DWK)],
@@ -206,30 +178,31 @@ def extract_door_walkmeshes(
                 for dwk_ident, dwk_loc_list in dwk_locations.items():
                     if dwk_loc_list:
                         dwk_loc = dwk_loc_list[0]
-                        with dwk_loc.filepath.open("rb") as f:
-                            f.seek(dwk_loc.offset)
-                            door_walkmeshes[dwk_key] = f.read(dwk_loc.size)
+                        dwk_data = read_location_data(dwk_loc)
+                        if dwk_data is None:
+                            continue
+                        door_walkmeshes[dwk_key] = dwk_data
                         logger.debug(f"Found DWK '{dwk_resname}' (state: {dwk_key}) from installation")
                         break
             except Exception:  # noqa: BLE001
                 # DWK variant not found, skip it
                 pass
-        
+
     except Exception as e:  # noqa: BLE001
         logger.debug(f"Could not extract DWK walkmeshes: {e}")
-    
+
     return door_walkmeshes
 
 
 def _get_model_variations(model_name: str) -> list[str]:
     """Get list of model name variations to try when searching for resources.
-    
+
     Some doors have models that don't exist, so we try various name formats.
-    
+
     Args:
     ----
         model_name: Original model name
-        
+
     Returns:
     -------
         List of model name variations (original case, lowercase, uppercase, normalized)
@@ -240,7 +213,7 @@ def _get_model_variations(model_name: str) -> list[str]:
         model_name.upper(),  # Uppercase
         model_name.lower().replace(".mdl", "").replace(".mdx", ""),  # Normalized lowercase
     ]
-    
+
     # Remove duplicates while preserving order
     seen = set()
     return [v for v in variations if v not in seen and not seen.add(v)]
@@ -252,22 +225,22 @@ def _load_mdl_with_variations(
     logger: RobustLogger | None = None,
 ) -> tuple[MDL | None, bytes | None]:
     """Load MDL file trying multiple name variations.
-    
+
     Args:
     ----
         model_name: Base model name to try
         installation: The game installation instance
         logger: Optional logger for debugging
-        
+
     Returns:
     -------
         Tuple of (MDL object, MDL data bytes) if found, (None, None) otherwise
     """
     if logger is None:
         logger = RobustLogger()
-    
+
     model_variations = _get_model_variations(model_name)
-    
+
     # Try locations() first (more reliable, searches multiple locations)
     for model_var in model_variations:
         try:
@@ -283,16 +256,16 @@ def _load_mdl_with_variations(
                 if loc_list:
                     loc = loc_list[0]
                     try:
-                        with loc.filepath.open("rb") as f:
-                            f.seek(loc.offset)
-                            mdl_data = f.read(loc.size)
+                        mdl_data = read_location_data(loc)
+                        if mdl_data is None:
+                            continue
                         mdl = read_mdl(mdl_data)
                         return mdl, mdl_data
                     except Exception:  # noqa: BLE001
                         continue
         except Exception:  # noqa: BLE001
             continue
-    
+
     # Fallback to resource() if locations() didn't work
     for model_var in model_variations:
         try:
@@ -302,7 +275,7 @@ def _load_mdl_with_variations(
                 return mdl, mdl_result.data
         except Exception:  # noqa: BLE001
             continue
-    
+
     return None, None
 
 
@@ -313,30 +286,30 @@ def _get_door_dimensions_from_model(
     logger: RobustLogger | None = None,
 ) -> tuple[float, float] | None:
     """Calculate door dimensions from MDL bounding box.
-    
+
     Doors are typically oriented along Y axis (width) and Z axis (height).
     X is typically depth/thickness.
-    
+
     Args:
     ----
         mdl: MDL model object
         model_name: Model name for logging
         door_name: Optional door name for logging
         logger: Optional logger for debugging
-        
+
     Returns:
     -------
         Tuple of (width, height) if calculated successfully, None otherwise
     """
     if logger is None:
         logger = RobustLogger()
-    
+
     if not mdl or not mdl.root:
         return None
-    
+
     bb_min = Vector3(1000000, 1000000, 1000000)
     bb_max = Vector3(-1000000, -1000000, -1000000)
-    
+
     # Iterate through all nodes and their meshes
     nodes_to_check: list[MDLNode] = [mdl.root]
     mesh_count = 0
@@ -361,38 +334,29 @@ def _get_door_dimensions_from_model(
                     bb_max.x = max(bb_max.x, vertex.x)
                     bb_max.y = max(bb_max.y, vertex.y)
                     bb_max.z = max(bb_max.z, vertex.z)
-        
+
         # Check child nodes
         nodes_to_check.extend(node.children)
-    
+
     # Calculate dimensions from bounding box
     # Width is typically the Y dimension (horizontal when door is closed)
     # Height is typically the Z dimension (vertical)
     if bb_min.x < 1000000:  # Valid bounding box calculated
         width = abs(bb_max.y - bb_min.y)
         height = abs(bb_max.z - bb_min.z)
-        
+
         # Only use calculated values if they're reasonable (not zero or extremely large)
         if 0.1 < width < 50.0 and 0.1 < height < 50.0:
             door_name_str = f"'{door_name}'" if door_name else ""
-            logger.debug(
-                f"[DOOR DEBUG] Extracted dimensions for door {door_name_str}: "
-                f"{width:.2f} x {height:.2f} (from {mesh_count} meshes, model='{model_name}')"
-            )
+            logger.debug(f"[DOOR DEBUG] Extracted dimensions for door {door_name_str}: {width:.2f} x {height:.2f} (from {mesh_count} meshes, model='{model_name}')")
             return width, height
         else:
             door_name_str = f"'{door_name}'" if door_name else ""
-            logger.warning(
-                f"Calculated dimensions for door {door_name_str} out of range: "
-                f"{width:.2f} x {height:.2f}, using defaults"
-            )
+            logger.warning(f"Calculated dimensions for door {door_name_str} out of range: {width:.2f} x {height:.2f}, using defaults")
     else:
         door_name_str = f"'{door_name}'" if door_name else ""
-        logger.warning(
-            f"Could not calculate bounding box for door {door_name_str} "
-            f"(processed {mesh_count} meshes), using defaults"
-        )
-    
+        logger.warning(f"Could not calculate bounding box for door {door_name_str} (processed {mesh_count} meshes), using defaults")
+
     return None
 
 
@@ -403,29 +367,29 @@ def _get_door_dimensions_from_texture(
     logger: RobustLogger | None = None,
 ) -> tuple[float, float] | None:
     """Calculate door dimensions from door texture as fallback.
-    
+
     Typical door textures are 256x512 or 512x1024 pixels.
     Typical door dimensions are 2-6 units wide, 2.5-3.5 units tall.
     Assuming 1 pixel ≈ 0.008-0.01 world units for doors.
-    
+
     Args:
     ----
         model_name: Model name to get textures from
         installation: The game installation instance
         door_name: Optional door name for logging
         logger: Optional logger for debugging
-        
+
     Returns:
     -------
         Tuple of (width, height) if calculated successfully, None otherwise
     """
     if logger is None:
         logger = RobustLogger()
-    
+
     # Get textures from the model
     texture_names: list[str] = []
     model_variations = _get_model_variations(model_name)
-    
+
     for model_var in model_variations:
         try:
             mdl_result = installation.resource(model_var, ResourceType.MDL)
@@ -434,24 +398,24 @@ def _get_door_dimensions_from_texture(
                 break
         except Exception:  # noqa: BLE001
             continue
-    
+
     if not texture_names:
         return None
-    
+
     # Try to load the first texture
     texture_name = texture_names[0]
     texture_result = installation.resource(texture_name, ResourceType.TPC)
     if not texture_result:
         # Try TGA as fallback
         texture_result = installation.resource(texture_name, ResourceType.TGA)
-    
+
     if not texture_result or not texture_result.data:
         return None
-    
+
     # Read texture to get dimensions
     tex_width = 0
     tex_height = 0
-    
+
     if texture_result.restype == ResourceType.TPC:
         tpc = read_tpc(texture_result.data)
         tex_width, tex_height = tpc.dimensions()
@@ -460,10 +424,10 @@ def _get_door_dimensions_from_texture(
         if len(texture_result.data) >= 18:
             tex_width = int.from_bytes(texture_result.data[12:14], "little")
             tex_height = int.from_bytes(texture_result.data[14:16], "little")
-    
+
     if tex_width <= 0 or tex_height <= 0:
         return None
-    
+
     # Convert texture pixels to world units
     # Use aspect ratio to determine which dimension is width vs height
     # Doors are typically taller than wide, so height > width
@@ -481,11 +445,11 @@ def _get_door_dimensions_from_texture(
         door_height = tex_height * scale_factor
         # Width is typically 0.6-0.8x height for doors
         door_width = door_height * 0.7
-    
+
     # Clamp to reasonable values
     door_width = max(1.0, min(door_width, 10.0))
     door_height = max(1.5, min(door_height, 10.0))
-    
+
     return door_width, door_height
 
 
@@ -500,17 +464,17 @@ def get_door_dimensions(
     logger: RobustLogger | None = None,
 ) -> tuple[float, float]:
     """Get door dimensions (width, height) from model or texture.
-    
+
     Tries to extract dimensions from MDL bounding box first, then falls back
     to texture-based estimation if model extraction fails.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
         Original BioWare engine binaries
         Door dimension calculation logic from kit.py extract_kit()
 
-    
+
     Args:
     ----
         utd_data: UTD door data bytes
@@ -519,42 +483,34 @@ def get_door_dimensions(
         default_width: Default width if extraction fails (default: 2.0)
         default_height: Default height if extraction fails (default: 3.0)
         logger: Optional logger for debugging
-        
+
     Returns:
     -------
         Tuple of (width, height) in world units
     """
     if logger is None:
         logger = RobustLogger()
-    
+
     door_width = default_width
     door_height = default_height
     door_name_str = f"'{door_name}'" if door_name else ""
-    
+
     try:
         utd = read_utd(utd_data)
-        logger.debug(
-            f"[DOOR DEBUG] Processing door {door_name_str} "
-            f"(appearance_id={utd.appearance_id})"
-        )
-        
+        logger.debug(f"[DOOR DEBUG] Processing door {door_name_str} (appearance_id={utd.appearance_id})")
+
         # Get door model name from UTD using genericdoors.2da
         # Use pre-loaded genericdoors_2da if provided, otherwise load it
         genericdoors_2da = genericdoors if genericdoors is not None else load_genericdoors_2da(installation, logger)
         if not genericdoors_2da:
-            logger.warning(
-                f"Could not load genericdoors.2da for door {door_name_str}, using defaults"
-            )
+            logger.warning(f"Could not load genericdoors.2da for door {door_name_str}, using defaults")
             return door_width, door_height
-        
+
         model_name = get_model(utd, installation, genericdoors=genericdoors_2da)
         if not model_name:
-            logger.warning(
-                f"Could not get model name for door {door_name_str} "
-                f"(appearance_id={utd.appearance_id}), using defaults"
-            )
+            logger.warning(f"Could not get model name for door {door_name_str} (appearance_id={utd.appearance_id}), using defaults")
             return door_width, door_height
-        
+
         # Try method 1: Get dimensions from model bounding box
         mdl, mdl_data = _load_mdl_with_variations(model_name, installation, logger)
         if mdl:
@@ -563,10 +519,7 @@ def get_door_dimensions(
                 door_width, door_height = dimensions
                 return door_width, door_height
             else:
-                logger.warning(
-                    f"Could not extract dimensions from model '{model_name}' "
-                    f"for door {door_name_str}, trying texture fallback"
-                )
+                logger.warning(f"Could not extract dimensions from model '{model_name}' for door {door_name_str}, trying texture fallback")
         else:
             model_variations = _get_model_variations(model_name)
             logger.warning(
@@ -574,25 +527,16 @@ def get_door_dimensions(
                 f"for door {door_name_str} "
                 f"(appearance_id={utd.appearance_id}), trying texture fallback"
             )
-        
+
         # Fallback: Get dimensions from door texture if model-based extraction failed
         dimensions = _get_door_dimensions_from_texture(model_name, installation, door_name, logger)
         if dimensions:
             door_width, door_height = dimensions
         else:
-            logger.debug(
-                f"[DOOR DEBUG] Door {door_name_str}: "
-                f"Using default dimensions ({default_width} x {default_height}) - "
-                f"model and texture extraction failed"
-            )
-    
+            logger.debug(f"[DOOR DEBUG] Door {door_name_str}: Using default dimensions ({default_width} x {default_height}) - model and texture extraction failed")
+
     except Exception as e:  # noqa: BLE001
-        logger.warning(
-            f"Failed to get dimensions for door {door_name_str}: {e}"
-        )
-    
-    logger.debug(
-        f"[DOOR DEBUG] Final dimensions for door {door_name_str}: "
-        f"width={door_width:.2f}, height={door_height:.2f}"
-    )
+        logger.warning(f"Failed to get dimensions for door {door_name_str}: {e}")
+
+    logger.debug(f"[DOOR DEBUG] Final dimensions for door {door_name_str}: width={door_width:.2f}, height={door_height:.2f}")
     return door_width, door_height

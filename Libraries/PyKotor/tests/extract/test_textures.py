@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from pathlib import Path
-from collections import defaultdict, Counter
-import shutil
 import traceback
 
+from collections import Counter, defaultdict
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from pykotor.resource.formats.tpc.tpc_auto import read_tpc
-from pykotor.resource.formats.tpc.tpc_data import TPC
+
+if TYPE_CHECKING:
+    from pykotor.resource.formats.tpc.tpc_data import TPC
 
 
 def analyze_textures(texture_dir: Path):
@@ -107,7 +110,7 @@ def print_summary(
         print(f"  {layers} layers: {count} files")
 
     print(f"\nTotal number of textures: {sum(format_counts.values())}")
-    print(f"Total size of all textures: {total_size / (1024*1024):.2f} MB")
+    print(f"Total size of all textures: {total_size / (1024 * 1024):.2f} MB")
     print(f"Number of errors encountered: {error_count}")
 
     # Additional potentially useful statistics

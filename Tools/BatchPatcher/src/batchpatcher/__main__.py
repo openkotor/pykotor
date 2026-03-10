@@ -5,7 +5,6 @@ import concurrent.futures
 import os
 import pathlib
 import sys
-import tempfile
 import tkinter as tk
 import traceback
 
@@ -41,9 +40,8 @@ if getattr(sys, "frozen", False) is False:
 
 from pathlib import Path, PurePath
 
-from loggerplus import RobustLogger
-
 from batchpatcher.translate.language_translator import TranslationOption, Translator
+from loggerplus import RobustLogger
 from pykotor.common.alien_sounds import ALIEN_SOUNDS
 from pykotor.common.language import Language, LocalizedString
 from pykotor.common.misc import Game, ResRef
@@ -299,68 +297,68 @@ def convert_gff_game(
         savepath = converted_data
     else:
         # TODO(th3w1zard1): define this up the stack
-        #savepath = (
+        # savepath = (
         #    resource.filepath().with_name(f"{resource.filepath().stem}_{to_game.name!s}{resource.filepath().suffix}")
         #    if SCRIPT_GLOBALS.always_backup
         #    else resource.filepath()
-        #)
+        # )
         savepath = resource.filepath()
     log_output(f"Converting {resource.path_ident().parent}/{resource.path_ident().name} to {to_game.name}")
     generic: Any
     try:
-        if resource.restype() is ResourceType.ARE:
+        if resource.restype() == ResourceType.ARE:
             generic = read_are(resource.data(), offset=0, size=resource.size())
             write_are(generic, converted_data, to_game)
 
-        elif resource.restype() is ResourceType.DLG:
+        elif resource.restype() == ResourceType.DLG:
             generic = read_dlg(resource.data(), offset=0, size=resource.size())
             write_dlg(generic, converted_data, to_game)
 
-        elif resource.restype() is ResourceType.GIT:
+        elif resource.restype() == ResourceType.GIT:
             generic = read_git(resource.data(), offset=0, size=resource.size())
             write_git(generic, converted_data, to_game)
 
-        elif resource.restype() is ResourceType.JRL:
+        elif resource.restype() == ResourceType.JRL:
             generic = read_jrl(resource.data(), offset=0, size=resource.size())
             write_jrl(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.PTH:
+        elif resource.restype() == ResourceType.PTH:
             generic = read_pth(resource.data(), offset=0, size=resource.size())
             write_pth(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTC:
+        elif resource.restype() == ResourceType.UTC:
             generic = read_utc(resource.data(), offset=0, size=resource.size())
             write_utc(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTD:
+        elif resource.restype() == ResourceType.UTD:
             generic = read_utd(resource.data(), offset=0, size=resource.size())
             write_utd(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTE:
+        elif resource.restype() == ResourceType.UTE:
             generic = read_ute(resource.data(), offset=0, size=resource.size())
             write_ute(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTI:
+        elif resource.restype() == ResourceType.UTI:
             generic = read_uti(resource.data(), offset=0, size=resource.size())
             write_uti(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTM:
+        elif resource.restype() == ResourceType.UTM:
             generic = read_utm(resource.data(), offset=0, size=resource.size())
             write_utm(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTP:
+        elif resource.restype() == ResourceType.UTP:
             generic = read_utp(resource.data(), offset=0, size=resource.size())
             write_utp(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTS:
+        elif resource.restype() == ResourceType.UTS:
             generic = read_uts(resource.data(), offset=0, size=resource.size())
             write_uts(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTT:
+        elif resource.restype() == ResourceType.UTT:
             generic = read_utt(resource.data(), offset=0, size=resource.size())
             write_utt(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTW:
+        elif resource.restype() == ResourceType.UTW:
             generic = read_utw(resource.data(), offset=0, size=resource.size())
             write_utw(generic, converted_data, game=to_game)
 
@@ -415,11 +413,10 @@ def process_translations(tlk: TLK, from_lang: Language):
         if "actual text to be translated" in text:
             return text, text
         return text, SCRIPT_GLOBALS.pytranslator.translate(text, from_lang=from_lang)
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=SCRIPT_GLOBALS.max_threads) as executor:
         # Create a future for each translation task
-        future_to_strref: dict[concurrent.futures.Future[tuple[str, str]], int] = {
-            executor.submit(translate_entry, tlkentry, from_lang): strref for strref, tlkentry in tlk
-        }
+        future_to_strref: dict[concurrent.futures.Future[tuple[str, str]], int] = {executor.submit(translate_entry, tlkentry, from_lang): strref for strref, tlkentry in tlk}
 
         for future in concurrent.futures.as_completed(future_to_strref):
             strref: int = future_to_strref[future]
@@ -436,7 +433,6 @@ def process_translations(tlk: TLK, from_lang: Language):
 
 
 def patch_resource(resource: FileResource) -> GFF | TPC | None:
-
     if resource.restype().extension.lower() == "tlk" and SCRIPT_GLOBALS.translate and SCRIPT_GLOBALS.pytranslator:
         tlk: TLK | None = None
         log_output(f"Loading TLK '{resource.filepath()}'")
@@ -474,7 +470,6 @@ def patch_resource(resource: FileResource) -> GFF | TPC | None:
             log_output(traceback.format_exc())
             return None
 
-
     if resource.restype().name.upper() in {x.name for x in GFFContent}:
         if SCRIPT_GLOBALS.k1_convert_gffs and not resource.inside_capsule:
             convert_gff_game(Game.K2, resource)
@@ -497,25 +492,12 @@ def patch_resource(resource: FileResource) -> GFF | TPC | None:
                 gff,
                 resource.path_ident(),  # noqa: SLF001
             )
-            if (
-                SCRIPT_GLOBALS.set_unskippable
-                and alien_owner in {0, "0", None}
-                and alien_vo_count != -1
-                and alien_vo_count < 3
-                and gff.content is GFFContent.DLG
-            ):
+            if SCRIPT_GLOBALS.set_unskippable and alien_owner in {0, "0", None} and alien_vo_count != -1 and alien_vo_count < 3 and gff.content is GFFContent.DLG:
                 skippable = gff.root.acquire("Skippable", None)
                 if skippable not in {0, "0"}:
                     conversationtype = gff.root.acquire("ConversationType", None)
                     if conversationtype not in {"1", 1}:
-                        print(
-                            "Skippable",
-                            skippable,
-                            "alien_vo_count",
-                            alien_vo_count,
-                            "ConversationType",
-                            conversationtype
-                        )
+                        print("Skippable", skippable, "alien_vo_count", alien_vo_count, "ConversationType", conversationtype)
                         log_output(f"Setting dialog {resource.path_ident()} as unskippable")
                         made_change |= True
                         gff.root.set_uint8("Skippable", 0)
@@ -654,7 +636,7 @@ def patch_erf_or_rim(
         elif isinstance(patched_data, TPC):
             log_output(f"Adding patched TPC resource '{resource.resname()}' to {new_filename}")
             txi_resource: FileResource | None = next(
-                (res for res in resources if res.resname() == resource.resname() and res.restype() is ResourceType.TXI),
+                (res for res in resources if res.resname() == resource.resname() and res.restype() == ResourceType.TXI),
                 None,
             )
             if txi_resource:
@@ -722,7 +704,7 @@ def patch_install(install_path: os.PathLike | str):
             res_ident = ResourceIdentifier.from_path(module_name)
             filename = str(res_ident)
             filepath = k_install.path().joinpath("Modules", filename)
-            if res_ident.restype is ResourceType.RIM:
+            if res_ident.restype == ResourceType.RIM:
                 if filepath.with_suffix(".mod").is_file():
                     log_output(f"Skipping {filepath}, a .mod already exists at this path.")
                     continue
@@ -733,7 +715,7 @@ def patch_install(install_path: os.PathLike | str):
 
             elif res_ident.restype.name in (ResourceType.ERF, ResourceType.MOD, ResourceType.SAV):
                 new_erf = ERF(ERFType.from_extension(filepath.suffix))
-                if res_ident.restype is ResourceType.SAV:
+                if res_ident.restype == ResourceType.SAV:
                     new_erf.is_save = True
                 new_erf_filename = patch_erf_or_rim(resources, module_name, new_erf)
                 log_output(f"Saving '{new_erf_filename}'")
@@ -973,7 +955,7 @@ class KOTORPatchingToolUI:
         browse_folder_button.grid(row=row, column=3, padx=2)  # Stick to both sides within its cell
         browse_folder_button.config(width=15)
         browse_file_button = ttk.Button(self.root, text="Browse File", command=self.browse_source_file)
-        browse_file_button.grid(row=row+1, column=3, padx=2)  # Stick to both sides within its cell
+        browse_file_button.grid(row=row + 1, column=3, padx=2)  # Stick to both sides within its cell
         browse_file_button.config(width=15)
         row += 1
 
@@ -1273,15 +1255,16 @@ class KOTORPatchingToolUI:
         -------
             Hex color string (e.g., "#FFFFFF") if found, None otherwise
         """
-        if not hasattr(self, 'path') or not self.path.get():
+        if not hasattr(self, "path") or not self.path.get():
             return None
 
         try:
-            from pykotor.resource.formats.gff import read_gff
-            from pykotor.resource.formats.gff.gff_data import GFFStruct, GFFList
-            from pykotor.resource.type import ResourceType
-            from pykotor.extract.installation import Installation
             from pathlib import Path
+
+            from pykotor.extract.installation import Installation
+            from pykotor.resource.formats.gff import read_gff
+            from pykotor.resource.formats.gff.gff_data import GFFList, GFFStruct
+            from pykotor.resource.type import ResourceType
 
             install_path = Path(self.path.get())
             if not install_path.exists():
@@ -1291,10 +1274,7 @@ class KOTORPatchingToolUI:
             installation = Installation(install_path)
 
             # Look for GUI files that might contain font color information
-            gui_files = [
-                "mainmenu.gui", "dialog.gui", "journal.gui", "charinfo.gui",
-                "ingame.gui", "loadscreen.gui", "partyselect.gui"
-            ]
+            gui_files = ["mainmenu.gui", "dialog.gui", "journal.gui", "charinfo.gui", "ingame.gui", "loadscreen.gui", "partyselect.gui"]
 
             for gui_filename in gui_files:
                 try:
@@ -1342,7 +1322,7 @@ class KOTORPatchingToolUI:
             color_field = struct.acquire("COLOR", None)
             if color_field is not None:
                 # COLOR is stored as a vector3 (RGB 0.0-1.0)
-                if hasattr(color_field, '__iter__') and len(color_field) >= 3:
+                if hasattr(color_field, "__iter__") and len(color_field) >= 3:
                     # Convert from 0.0-1.0 range to 0-255 range
                     r = int(color_field[0] * 255)
                     g = int(color_field[1] * 255)

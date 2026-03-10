@@ -3,15 +3,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from qtpy.QtCore import Signal  # pyright: ignore[reportPrivateImportUsage]
-from qtpy.QtGui import QFont
+from qtpy.QtGui import QFont, QFontDatabase
 from qtpy.QtWidgets import QHBoxLayout, QLabel, QSizePolicy, QTextEdit, QVBoxLayout, QWidget
 
 from utility.gui.qt.widgets.font.font_item_widget import FontItemWidget
 from utility.gui.qt.widgets.font.size_widget import SizeWidget
 from utility.gui.qt.widgets.font.style_widget import StyleWidget
-
-if TYPE_CHECKING:
-    from qtpy.QtGui import QFontDatabase
 
 
 class FontWidget(QWidget):

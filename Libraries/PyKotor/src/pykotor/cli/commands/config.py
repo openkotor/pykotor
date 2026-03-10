@@ -1,15 +1,16 @@
 """Config command implementation."""
+
 from __future__ import annotations
 
 import os
 import platform
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from argparse import Namespace
     from logging import Logger
-
 
 
 try:
@@ -141,4 +142,3 @@ def cmd_config(args: Namespace, logger: Logger) -> int:
     # No operation specified
     logger.error("No configuration operation specified. Use --get, --set, --unset, or --list")
     return 1
-

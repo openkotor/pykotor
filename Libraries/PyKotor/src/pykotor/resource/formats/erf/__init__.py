@@ -1,3 +1,5 @@
+"""ERF (archive) package: ERF/MOD/SAV data and binary I/O (read_erf, write_erf, bytes_erf)."""
+
 from __future__ import annotations
 
 from pykotor.resource.formats.erf.erf_data import (
@@ -21,4 +23,3 @@ __all__ = [
     "read_erf",
     "write_erf",
 ]
-

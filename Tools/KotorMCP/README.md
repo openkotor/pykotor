@@ -4,7 +4,7 @@
 
 [![Version](https://img.shields.io/github/v/release/th3w1zard1/PyKotor?label=KotorMCP)](https://github.com/OldRepublicDevs/PyKotor/releases)
 [![License](https://img.shields.io/github/license/th3w1zard1/PyKotor)](https://github.com/OldRepublicDevs/PyKotor/blob/main/LICENSE)
-[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
 [![MCP](https://img.shields.io/badge/MCP-Protocol-blueviolet)](https://modelcontextprotocol.io)
 
 **Model Context Protocol server for Knights of the Old Republic game resources**
@@ -43,7 +43,7 @@ A Model Context Protocol (MCP) server that exposes context-rich tools for AI age
 
 ### Prerequisites
 
-- Python 3.11 or higher
+- Python 3.8+
 - A valid KOTOR 1 or KOTOR 2 installation
 - MCP-compatible client (Claude Desktop, Cursor, etc.)
 
@@ -465,7 +465,7 @@ Tools/KotorMCP/
 ### Dependencies
 
 - `mcp>=0.1.1` - Model Context Protocol Python SDK
-- `pykotor>=2.2.0` - PyKotor core library for KOTOR file format support
+- `pykotor>=2.3.0` - PyKotor core library for KOTOR file format support
 
 ## Contributing
 

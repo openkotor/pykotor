@@ -13,6 +13,7 @@ This document provides detailed documentation for NWScript sound and music funct
 ### Understanding Audio in KotOR
 
 KotOR has multiple audio layers:
+
 - **Background Music** - Area-specific music that plays continuously
 - **Battle Music** - Music that plays during combat
 - **Ambient Sounds** - Environmental sounds (wind, machinery, etc.)
@@ -20,6 +21,7 @@ KotOR has multiple audio layers:
 - **Voice Lines** - Character dialogue sounds
 
 Music tracks are defined in `ambientmusic.2da`. Each area can have:
+
 - Day track
 - Night track
 - Battle track
@@ -33,14 +35,17 @@ Music tracks are defined in `ambientmusic.2da`. Each area can have:
 **Routine:** 46
 
 #### Function Signature
+
 ```nss
 void PlaySound(string sSoundName);
 ```
 
 #### Description
+
 Plays a sound effect. The sound is played immediately from the caller's position. Sounds are typically `.wav` files.
 
 #### Parameters
+
 - `sSoundName`: Sound file resref (without extension, e.g., "explosion01")
 
 #### Usage Examples
@@ -57,6 +62,7 @@ AssignCommand(oNPC, PlaySound("footstep01"));
 ```
 
 **Pattern: Sound on Event**
+
 ```nss
 // Play sound when object is used
 void main() {
@@ -68,6 +74,7 @@ void main() {
 ```
 
 #### Notes
+
 - Sound file must exist in game resources
 - Sound plays from caller's position
 - Sounds are one-shot (play once and stop)
@@ -82,14 +89,17 @@ void main() {
 **Routine:** 360
 
 #### Function Signature
+
 ```nss
 void MusicBackgroundPlay(object oArea);
 ```
 
 #### Description
+
 Starts playing the background music for an area. The music plays the day track by default (or current track based on time of day).
 
 #### Parameters
+
 - `oArea`: Area object to play music for
 
 #### Usage Examples
@@ -101,6 +111,7 @@ MusicBackgroundPlay(oArea);
 ```
 
 **Pattern: Start Music on Area Entry**
+
 ```nss
 // In area's OnEnter script
 void main() {
@@ -116,14 +127,17 @@ void main() {
 **Routine:** 361
 
 #### Function Signature
+
 ```nss
 void MusicBackgroundStop(object oArea);
 ```
 
 #### Description
+
 Stops the background music for an area.
 
 #### Parameters
+
 - `oArea`: Area object to stop music for
 
 #### Usage Examples
@@ -135,6 +149,7 @@ MusicBackgroundStop(oArea);
 ```
 
 **Pattern: Stop Music for Cutscene**
+
 ```nss
 // Stop music before cutscene
 object oArea = GetArea();
@@ -151,14 +166,17 @@ DelayCommand(10.0, MusicBackgroundPlay(oArea));
 **Routine:** 362
 
 #### Function Signature
+
 ```nss
 void MusicBackgroundChangeDay(object oArea, int nTrack);
 ```
 
 #### Description
+
 Changes the day music track for an area. The track number refers to an entry in `ambientmusic.2da`.
 
 #### Parameters
+
 - `oArea`: Area object to change music for
 - `nTrack`: Music track index (from `ambientmusic.2da`)
 
@@ -171,6 +189,7 @@ MusicBackgroundChangeDay(oArea, 5); // Track 5 from ambientmusic.2da
 ```
 
 **Pattern: Dynamic Music Change**
+
 ```nss
 // Change music based on quest state
 object oArea = GetArea();
@@ -189,14 +208,17 @@ MusicBackgroundPlay(oArea);
 **Routine:** 363
 
 #### Function Signature
+
 ```nss
 void MusicBackgroundChangeNight(object oArea, int nTrack);
 ```
 
 #### Description
+
 Changes the night music track for an area. The track number refers to an entry in `ambientmusic.2da`.
 
 #### Parameters
+
 - `oArea`: Area object to change music for
 - `nTrack`: Music track index (from `ambientmusic.2da`)
 
@@ -215,17 +237,21 @@ MusicBackgroundChangeNight(oArea, 7);
 **Routine:** 414
 
 #### Function Signature
+
 ```nss
 int MusicBackgroundGetDayTrack(object oArea);
 ```
 
 #### Description
+
 Gets the current day music track number for an area.
 
 #### Parameters
+
 - `oArea`: Area object to check
 
 #### Returns
+
 - Day music track index (from `ambientmusic.2da`)
 - `-1` if area is invalid or no track is set
 
@@ -244,17 +270,21 @@ int nTrack = MusicBackgroundGetDayTrack(oArea);
 **Routine:** 415
 
 #### Function Signature
+
 ```nss
 int MusicBackgroundGetNightTrack(object oArea);
 ```
 
 #### Description
+
 Gets the current night music track number for an area.
 
 #### Parameters
+
 - `oArea`: Area object to check
 
 #### Returns
+
 - Night music track index (from `ambientmusic.2da`)
 - `-1` if area is invalid or no track is set
 
@@ -273,17 +303,21 @@ int nNightTrack = MusicBackgroundGetNightTrack(oArea);
 **Routine:** 569
 
 #### Function Signature
+
 ```nss
 int MusicBackgroundGetBattleTrack(object oArea);
 ```
 
 #### Description
+
 Gets the battle music track number for an area. Battle music plays automatically during combat.
 
 #### Parameters
+
 - `oArea`: Area object to check
 
 #### Returns
+
 - Battle music track index (from `ambientmusic.2da`)
 - `-1` if area is invalid or no track is set
 
@@ -302,14 +336,17 @@ int nBattleTrack = MusicBackgroundGetBattleTrack(oArea);
 **Routine:** 427
 
 #### Function Signature
+
 ```nss
 void MusicBackgroundSetDelay(object oArea, int nDelay);
 ```
 
 #### Description
+
 Sets the delay (in milliseconds) before background music starts playing in an area.
 
 #### Parameters
+
 - `oArea`: Area object to set delay for
 - `nDelay`: Delay in milliseconds before music starts
 
@@ -323,6 +360,7 @@ MusicBackgroundPlay(oArea);
 ```
 
 #### Notes
+
 - Delay is in milliseconds, not seconds
 - 1000 milliseconds = 1 second
 
@@ -333,14 +371,17 @@ MusicBackgroundPlay(oArea);
 **Routine:** 430
 
 #### Function Signature
+
 ```nss
 void MusicBattlePlay(object oArea);
 ```
 
 #### Description
+
 Starts playing the battle music for an area. Battle music typically plays automatically during combat, but can be triggered manually.
 
 #### Parameters
+
 - `oArea`: Area object to play battle music for
 
 #### Usage Examples
@@ -358,14 +399,17 @@ MusicBattlePlay(oArea);
 **Routine:** 431
 
 #### Function Signature
+
 ```nss
 void MusicBattleStop(object oArea);
 ```
 
 #### Description
+
 Stops the battle music for an area.
 
 #### Parameters
+
 - `oArea`: Area object to stop battle music for
 
 #### Usage Examples
@@ -383,14 +427,17 @@ MusicBattleStop(oArea);
 **Routine:** 432
 
 #### Function Signature
+
 ```nss
 void MusicBattleChange(object oArea, int nTrack);
 ```
 
 #### Description
+
 Changes the battle music track for an area. The track number refers to an entry in `ambientmusic.2da`.
 
 #### Parameters
+
 - `oArea`: Area object to change battle music for
 - `nTrack`: Battle music track index (from `ambientmusic.2da`)
 
@@ -411,14 +458,17 @@ MusicBattleChange(oArea, 20); // Boss battle music
 **Routine:** 367
 
 #### Function Signature
+
 ```nss
 void AmbientSoundPlay(object oArea);
 ```
 
 #### Description
+
 Starts playing the ambient sound for an area. Ambient sounds are environmental audio effects (wind, machinery, etc.).
 
 #### Parameters
+
 - `oArea`: Area object to play ambient sound for
 
 #### Usage Examples
@@ -436,14 +486,17 @@ AmbientSoundPlay(oArea);
 **Routine:** 368
 
 #### Function Signature
+
 ```nss
 void AmbientSoundStop(object oArea);
 ```
 
 #### Description
+
 Stops the ambient sound for an area.
 
 #### Parameters
+
 - `oArea`: Area object to stop ambient sound for
 
 #### Usage Examples
@@ -461,14 +514,17 @@ AmbientSoundStop(oArea);
 **Routine:** 369
 
 #### Function Signature
+
 ```nss
 void AmbientSoundChangeDay(object oArea, int nTrack);
 ```
 
 #### Description
+
 Changes the day ambient sound track for an area.
 
 #### Parameters
+
 - `oArea`: Area object to change ambient sound for
 - `nTrack`: Ambient sound track index
 
@@ -487,14 +543,17 @@ AmbientSoundChangeDay(oArea, 2);
 **Routine:** 370
 
 #### Function Signature
+
 ```nss
 void AmbientSoundChangeNight(object oArea, int nTrack);
 ```
 
 #### Description
+
 Changes the night ambient sound track for an area.
 
 #### Parameters
+
 - `oArea`: Area object to change ambient sound for
 - `nTrack`: Ambient sound track index
 
@@ -513,14 +572,17 @@ AmbientSoundChangeNight(oArea, 3);
 **Routine:** 567
 
 #### Function Signature
+
 ```nss
 void AmbientSoundSetDayVolume(object oArea, int nVolume);
 ```
 
 #### Description
+
 Sets the volume for the day ambient sound in an area.
 
 #### Parameters
+
 - `oArea`: Area object to set volume for
 - `nVolume`: Volume level (0-100, where 100 is maximum)
 
@@ -539,14 +601,17 @@ AmbientSoundSetDayVolume(oArea, 75); // 75% volume
 **Routine:** 568
 
 #### Function Signature
+
 ```nss
 void AmbientSoundSetNightVolume(object oArea, int nVolume);
 ```
 
 #### Description
+
 Sets the volume for the night ambient sound in an area.
 
 #### Parameters
+
 - `oArea`: Area object to set volume for
 - `nVolume`: Volume level (0-100, where 100 is maximum)
 
@@ -567,17 +632,21 @@ AmbientSoundSetNightVolume(oArea, 50); // 50% volume
 **Routine:** 571
 
 #### Function Signature
+
 ```nss
 float GetStrRefSoundDuration(int nStrRef);
 ```
 
 #### Description
+
 Gets the duration (in seconds) of the sound attached to a string reference. String references can have associated voice sounds.
 
 #### Parameters
+
 - `nStrRef`: String reference ID to check
 
 #### Returns
+
 - Duration in seconds of the sound
 - `0.0` if no sound is attached or no duration is stored
 
@@ -589,6 +658,7 @@ float fDuration = GetStrRefSoundDuration(12345);
 ```
 
 **Pattern: Delay Based on Voice Duration**
+
 ```nss
 // Wait for voice line to finish
 int nStrRef = 12345;
@@ -679,6 +749,7 @@ void main() {
 ### Music Track System
 
 Music tracks are stored in `ambientmusic.2da`:
+
 - Each track has a resource name (music file)
 - Tracks can have multiple stingers (short musical cues)
 - Day/night tracks automatically switch based on time of day
@@ -687,6 +758,7 @@ Music tracks are stored in `ambientmusic.2da`:
 ### Ambient Sounds
 
 Ambient sounds:
+
 - Play continuously while in an area
 - Can have different day/night versions
 - Volume can be adjusted independently
@@ -695,6 +767,7 @@ Ambient sounds:
 ### Sound Files
 
 Sound files:
+
 - Typically `.wav` format
 - Stored in game resources
 - Referenced by resref (without extension)
@@ -703,6 +776,7 @@ Sound files:
 ### Audio Layering
 
 Audio layers (in order of priority, highest first):
+
 1. **Voice Lines** - Character dialogue
 2. **Sound Effects** - Immediate audio events
 3. **Battle Music** - Combat music

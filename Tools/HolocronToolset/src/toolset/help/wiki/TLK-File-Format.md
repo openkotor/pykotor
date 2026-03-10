@@ -48,7 +48,7 @@ TLK files store localized strings in a binary format. The game loads `dialog.tlk
 
 ## Binary format
 
-### file header
+### File Header
 
 The file header is 20 bytes in size:
 
@@ -68,7 +68,7 @@ The string data table contains metadata for each string entry. Each entry is 40 
 
 | Name              | type      | offset | size | Description                                                      |
 | ----------------- | --------- | ------ | ---- | ---------------------------------------------------------------- |
-| [flags](GFF-File-Format#gff-data-types)             | [uint32](GFF-File-Format#gff-data-types)    | 0 (0x00) | 4    | bit [flags](GFF-File-Format#gff-data-types): bit 0=text present, bit 1=sound present, bit 2=sound length present |
+| flags             | [uint32](GFF-File-Format#gff-data-types)    | 0 (0x00) | 4    | bit flags: bit 0=text present, bit 1=sound present, bit 2=sound length present |
 | Sound [ResRef](GFF-File-Format#gff-data-types)      | [char](GFF-File-Format#gff-data-types)  | 4 (0x04) | 16   | Voice-over audio filename ([null-terminated](https://en.cppreference.com/w/c/string/byte), max 16 chars)        |
 | Volume Variance   | [uint32](GFF-File-Format#gff-data-types)    | 20 (0x14) | 4    | Unused in KotOR (always 0)                                      |
 | Pitch Variance    | [uint32](GFF-File-Format#gff-data-types)    | 24 (0x18) | 4    | Unused in KotOR (always 0)                                      |
@@ -88,20 +88,20 @@ The string data table contains metadata for each string entry. Each entry is 40 
 
 Common [flag](GFF-File-Format#gff-data-types) patterns in KotOR TLK files:
 
-| [flags](GFF-File-Format#gff-data-types) | Hex | Description | Usage |
+| flags | Hex | Description | Usage |
 | ----- | --- | ----------- | ----- |
 | `0x0001` | `0x01` | Text only | Menu options, item descriptions, non-voiced dialog |
 | `0x0003` | `0x03` | Text + Sound | Voiced dialog lines (most common for party/NPC speech) |
 | `0x0007` | `0x07` | Text + Sound + Length | Fully voiced with duration data (cutscenes, important dialog) |
 | `0x0000` | `0x00` | Empty entry | Unused [StrRef](TLK-File-Format#string-references-strref) slots |
 
-The engine uses these [flags](GFF-File-Format#gff-data-types) to decide:
+The engine uses these flags to decide:
 
 - Whether to display subtitles (Text present [flag](GFF-File-Format#gff-data-types))
 - Whether to play voice-over audio (Sound present [flag](GFF-File-Format#gff-data-types))
 - How long to wait before auto-advancing dialog (Sound length present [flag](GFF-File-Format#gff-data-types))
 
-Missing [flags](GFF-File-Format#gff-data-types) are treated as `false` - if Text present is not set, the string is treated as empty even if text data exists.
+Missing flags are treated as `false` - if Text present is not set, the string is treated as empty even if text data exists.
 
 ### string Entries
 

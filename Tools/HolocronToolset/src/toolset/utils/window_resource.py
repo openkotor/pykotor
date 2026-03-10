@@ -1,10 +1,11 @@
+"""Open resource by path: reuse existing editor or create new one and focus."""
+
 from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-
 from toolset.utils.window_editor import create_editor_window, get_editor_by_filepath
 
 if TYPE_CHECKING:

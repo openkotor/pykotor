@@ -4,14 +4,19 @@ Extraction is delegated to :func:`pykotor.tools.kit.extract_kit`
 (see `Libraries/PyKotor/src/pykotor/tools/kit.py`, around the extract_kit
 implementation) so behavior stays aligned with the library implementation.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger
 from pykotor.extract.installation import Installation
 from pykotor.tools.kit import extract_kit as _extract_kit
 from pykotor.tools.path import CaseAwarePath
+from utility.misc import ensure_directory_exists
+
+if TYPE_CHECKING:
+    from loggerplus import RobustLogger
 
 
 def normalize_module_name(raw_module: str) -> str:
@@ -51,7 +56,7 @@ def generate_kit(
     installation = Installation(case_installation)
 
     case_output = CaseAwarePath(output_path)
-    case_output.mkdir(parents=True, exist_ok=True)
+    ensure_directory_exists(case_output)
 
     _extract_kit(
         installation=installation,
@@ -60,4 +65,3 @@ def generate_kit(
         kit_id=kit_id,
         logger=logger,
     )
-

@@ -1,13 +1,15 @@
 """Key pack command implementation - create KEY files from directories."""
+
 from __future__ import annotations
 
 import pathlib
-from argparse import Namespace
+
 from typing import TYPE_CHECKING
 
 from pykotor.tools.archives import create_key_from_directory
 
 if TYPE_CHECKING:
+    from argparse import Namespace
     from logging import Logger
 
 
@@ -49,4 +51,3 @@ def cmd_key_pack(args: Namespace, logger: Logger) -> int:
         return 1
     else:
         return 0
-

@@ -154,11 +154,11 @@ def execute_cli(cmdline_args: Namespace):
     Args:
         cmdline_args: Parsed command line arguments
     """
-    from pykotor.diff_tool.app import DiffConfig, run_application
-    from pykotor.extract.installation import Installation
-
     # Set up logging ONCE at the CLI level
     import logging
+
+    from pykotor.diff_tool.app import DiffConfig, run_application
+    from pykotor.extract.installation import Installation
 
     output_mode = getattr(cmdline_args, "output_mode", "normal")
     log_level_arg = getattr(cmdline_args, "log_level", None)
@@ -240,54 +240,50 @@ def execute_cli(cmdline_args: Namespace):
             # Fall back to Path object (for folders/files)
             resolved_paths.append(path_obj)
 
-    if (
-        len(resolved_paths) == 2
-        and all(isinstance(path, Path)
-        and path.is_file()
-        for path in resolved_paths)
-        and output_mode == "normal"
-    ):
+    if len(resolved_paths) == 2 and all(isinstance(path, Path) and path.is_file() for path in resolved_paths) and output_mode == "normal":
         # Use direct file-to-file diff for unified output
         from pykotor.tslpatcher.diff.engine import DiffContext, diff_data
 
-        path1, path2 = resolved_paths
+        path1 = resolved_paths[0]
+        path2 = resolved_paths[1]
+        assert isinstance(path1, Path)
+        assert isinstance(path2, Path)
+
         context = DiffContext(
             file1_rel=Path(
                 os.path.relpath(
-                    os.path.dirname(path1.path() if isinstance(path1, Installation) else path1),
-                    path1.path() if isinstance(path1, Installation) else path1,
+                    os.path.dirname(path1),
+                    path1,
                 )
             ),
             file2_rel=Path(
                 os.path.relpath(
-                    os.path.dirname(path2.path() if isinstance(path2, Installation) else path2),
-                    path2.path() if isinstance(path2, Installation) else path2,
+                    os.path.dirname(path2),
+                    path2,
                 )
             ),
             ext=(
-                (path1.path() if isinstance(path1, Installation) else path1).suffix.casefold().lstrip(".").strip()
-                or (path2.path() if isinstance(path2, Installation) else path2).suffix.casefold().lstrip(".").strip()
+                path1.suffix.casefold().lstrip(".").strip()
+                or path2.suffix.casefold().lstrip(".").strip()
             ),
-            resname=(path1.path() if isinstance(path1, Installation) else path1).name,
-            file1_location_type="Installation" if isinstance(path1, Installation) else "Path",
-            file2_location_type="Installation" if isinstance(path2, Installation) else "Path",
-            file1_filepath=(path1.path() if isinstance(path1, Installation) else path1),
-            file2_filepath=(path2.path() if isinstance(path2, Installation) else path2),
-            file1_installation=path1 if isinstance(path1, Installation) else None,
-            file2_installation=path2 if isinstance(path2, Installation) else None,
+            resname=path1.name,
+            file1_location_type="Path",
+            file2_location_type="Path",
+            file1_filepath=path1,
+            file2_filepath=path2,
+            file1_installation=None,
+            file2_installation=None,
         )
 
         try:
             result = diff_data(
-                (path1.path() if isinstance(path1, Installation) else path1).read_bytes(),
-                (path2.path() if isinstance(path2, Installation) else path2).read_bytes(),
+                path1.read_bytes(),
+                path2.read_bytes(),
                 context,
                 log_func=print,
                 compare_hashes=not bool(cmdline_args.compare_hashes),
                 format_type="unified",
             )
-            path1 = path1.path() if isinstance(path1, Installation) else path1
-            path2 = path2.path() if isinstance(path2, Installation) else path2
             if result:
                 print(f"{path1} MATCHES {path2}")
             else:
@@ -323,9 +319,4 @@ def execute_cli(cmdline_args: Namespace):
 
 def has_cli_paths(cmdline_args: Namespace) -> bool:
     """Check if CLI paths were provided."""
-    return bool(
-        cmdline_args.path1
-        or cmdline_args.path2
-        or cmdline_args.path3
-        or cmdline_args.extra_paths
-    )
+    return bool(cmdline_args.path1 or cmdline_args.path2 or cmdline_args.path3 or cmdline_args.extra_paths)

@@ -7,10 +7,10 @@ import subprocess
 import sys
 import threading
 import time
+
 from contextlib import suppress
 
 from loggerplus import RobustLogger
-
 from utility.misc import is_frozen
 
 
@@ -207,6 +207,7 @@ def terminate_main_process(
 
 
 if __name__ == "__main__":
+
     def main():
         """Test the shutdown process."""
         start_shutdown_process()
