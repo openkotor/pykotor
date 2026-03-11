@@ -19,6 +19,11 @@ from pathlib import Path
 
 import pytest
 
+from _fake_install import (
+    build_minimal_k1_installation,
+    build_minimal_k2_installation,
+)
+
 # Ensure the vendored PyKotor + Utility sources in this repo are used instead of any
 # globally-installed copies that may exist on the machine running the tests.
 _PYKOTOR_SRC = Path(__file__).resolve().parents[1] / "src"
@@ -27,6 +32,51 @@ for _p in (_PYKOTOR_SRC, _UTILITY_SRC):
     _ps = str(_p)
     if _p.exists() and _ps not in sys.path:
         sys.path.insert(0, _ps)
+
+from pykotor.common.misc import Game
+from pykotor.tools.heuristics import determine_game
+
+
+def _normalize_game_from_label(label: str) -> Game | None:
+    if label == "k1":
+        return Game.K1
+    if label == "k2":
+        return Game.K2
+    return None
+
+
+def _resolve_or_create_install_path(label: str, env_path: str | None) -> Path:
+    """Resolve an installation path, falling back to a synthetic test install.
+
+    A path is accepted only when:
+    - the directory exists,
+    - it has chitin.key,
+    - determine_game() can identify the expected game.
+    """
+    expected_game = _normalize_game_from_label(label)
+    if env_path:
+        candidate = Path(env_path).expanduser()
+        key_path = candidate / "chitin.key"
+        if candidate.is_dir() and key_path.exists():
+            detected = determine_game(candidate)
+            if detected == expected_game:
+                return candidate
+
+    if label == "k1":
+        synthetic = build_minimal_k1_installation()
+    else:
+        synthetic = build_minimal_k2_installation()
+
+    # Keep skipIf/env-based tests alive by exporting the resolved path.
+    os.environ["K1_PATH" if label == "k1" else "K2_PATH"] = str(synthetic)
+    if label == "k2":
+        os.environ["TSL_PATH"] = str(synthetic)
+    return synthetic
+
+
+# Prime env vars early so module-level skipIf checks in tests can use fake installs.
+_resolve_or_create_install_path("k1", os.environ.get("K1_PATH"))
+_resolve_or_create_install_path("k2", os.environ.get("TSL_PATH") or os.environ.get("K2_PATH"))
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:  # noqa: ARG001
@@ -54,18 +104,16 @@ def _discover_game_install_roots() -> list[tuple[str, Path]]:
     roots: list[tuple[str, Path]] = []
     seen: set[str] = set()
 
-    def _add(label: str, value: str | None):
-        if not value:
-            return
-        p = Path(value).expanduser()
+    k1_root = _resolve_or_create_install_path("k1", os.environ.get("K1_PATH"))
+    k2_root = _resolve_or_create_install_path("k2", os.environ.get("TSL_PATH") or os.environ.get("K2_PATH"))
+
+    for label, p in (("k1", k1_root), ("k2", k2_root)):
         key = str(p.resolve()) if p.exists() else str(p)
         if key in seen:
-            return
+            continue
         seen.add(key)
         roots.append((label, p))
 
-    _add("k1", os.environ.get("K1_PATH"))
-    _add("k2", os.environ.get("TSL_PATH") or os.environ.get("K2_PATH"))
     return roots
 
 
@@ -89,21 +137,6 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
         return
 
     roots = _discover_game_install_roots()
-    if not roots:
-        metafunc.parametrize(
-            "game_install_root",
-            [
-                pytest.param(
-                    ("missing", Path(".")),
-                    marks=pytest.mark.skip(
-                        reason="Requires K1_PATH and/or TSL_PATH/K2_PATH to be set to a game installation root.",
-                    ),
-                    id="missing-install",
-                ),
-            ],
-            indirect=True,
-        )
-        return
 
     params = [pytest.param(r, id=r[0]) for r in roots]
     metafunc.parametrize("game_install_root", params, indirect=True)
