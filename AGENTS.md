@@ -54,3 +54,13 @@ Python 3.8–3.13, uv, g++/gfortran (for numpy build), and Qt6/OpenGL/xcb system
 ### Known codebase issues
 
 - **HolocronToolset startup fails**: `toolset/blender/commands.py` uses `@requires_connection(return_value=False)` but the decorator does not accept that keyword argument. This prevents `uv run holocrontoolset` from launching. This is a pre-existing code bug, not an environment issue.
+
+## Learned User Preferences
+
+- Edit only `.ui` files under `Tools/HolocronToolset/src/ui/`; never edit generated files under `uic/`.
+- After changing any `.ui` file, run `Tools/HolocronToolset/src/ui/convertui.py` to regenerate Python bindings.
+- Do not use `getattr(self.ui, "widgetName", None)` or similar for UI widgets; reference widgets directly (e.g. `self.ui.toolbarModuleCombo`) and compile the UI first so the uic has the widget.
+
+## Learned Workspace Facts
+
+- Holocron UI workflow is compile-first: change `.ui` → run convertui → then use `self.ui.<name>` in code; defensive getattr for UI is prohibited in `.cursorrules`.

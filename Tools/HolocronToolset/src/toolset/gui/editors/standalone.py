@@ -25,7 +25,7 @@ import sys
 
 from contextlib import suppress
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from qtpy.QtWidgets import QApplication, QWidget
@@ -77,7 +77,7 @@ EDITOR_REGISTRY: dict[str, tuple[str, str, str, list[str]]] = {
 # Standalone non-editor apps that should support direct launch and script entry points.
 APP_REGISTRY: dict[str, tuple[str, str, str, bool]] = {
     # name: (module_path, class_name, description, requires_installation)
-    "module-designer": ("toolset.gui.windows.module_designer", "ModuleDesigner", "Module Designer", True),
+    "module-designer": ("toolset.gui.windows.module_designer", "ModuleDesigner", "Module Designer", False),
     "indoor-builder": ("toolset.gui.windows.indoor_builder.builder", "IndoorMapBuilder", "Indoor Builder", False),
 }
 
@@ -234,138 +234,6 @@ def create_installation_from_path(
     return HTInstallation(game_path, name, tsl=tsl)
 
 
-def get_saved_installations() -> dict[str, dict[str, Any]]:
-    """Retrieve saved installations from toolset settings.
-
-    Returns:
-        Dict mapping installation name to config dict with 'path' and 'tsl' keys.
-    """
-    try:
-        from toolset.gui.widgets.settings.installations import GlobalSettings  # noqa: PLC0415
-        settings = GlobalSettings()
-        installations = settings.installations()
-        return {
-            name: {"path": config.path, "tsl": config.tsl, "name": name}
-            for name, config in installations.items()
-        }
-    except Exception:  # noqa: BLE001
-        return {}
-
-
-def pick_installation_interactive() -> HTInstallation | None:
-    """Show a dialog for the user to pick or configure a game installation.
-
-    Returns:
-        HTInstallation if user selected one, None if cancelled.
-    """
-    from qtpy.QtWidgets import (  # noqa: PLC0415
-        QComboBox,
-        QDialog,
-        QDialogButtonBox,
-        QFileDialog,
-        QFormLayout,
-        QHBoxLayout,
-        QLabel,
-        QLineEdit,
-        QMessageBox,
-        QPushButton,
-        QVBoxLayout,
-    )
-
-    saved = get_saved_installations()
-
-    dialog = QDialog()
-    dialog.setWindowTitle("Select KotOR Installation")
-    dialog.setMinimumWidth(500)
-
-    layout = QVBoxLayout(dialog)
-
-    # Header
-    header = QLabel(
-        "Select a KotOR game installation to enable full editor functionality.\n"
-        "Without an installation, editors will have limited features\n"
-        "(no talk table, 2DA lookups, or game resource access)."
-    )
-    header.setWordWrap(True)
-    layout.addWidget(header)
-
-    # Saved installations combo
-    if saved:
-        form = QFormLayout()
-        combo = QComboBox()
-        combo.addItem("(None - Limited functionality)", None)
-        for name, config in saved.items():
-            combo.addItem(f"{name} ({config['path']})", config)
-        form.addRow("Saved Installation:", combo)
-        layout.addLayout(form)
-    else:
-        combo = None
-        layout.addWidget(QLabel("No saved installations found."))
-
-    # Custom path section
-    layout.addWidget(QLabel("\n--- Or specify a custom path ---"))
-    path_layout = QHBoxLayout()
-    path_edit = QLineEdit()
-    path_edit.setPlaceholderText("Path to KotOR or TSL game directory...")
-    browse_btn = QPushButton("Browse...")
-    path_layout.addWidget(path_edit)
-    path_layout.addWidget(browse_btn)
-    layout.addLayout(path_layout)
-
-    def browse():
-        dir_path = QFileDialog.getExistingDirectory(dialog, "Select KotOR/TSL Game Directory")
-        if dir_path:
-            path_edit.setText(dir_path)
-    browse_btn.clicked.connect(browse)
-
-    # Buttons
-    button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-
-    # Add "Skip" button for running without installation
-    skip_btn = button_box.addButton("Skip (No Installation)", QDialogButtonBox.ButtonRole.ActionRole)
-
-    skip_result = [False]
-    def on_skip():
-        skip_result[0] = True
-        dialog.accept()
-    skip_btn.clicked.connect(on_skip)
-
-    button_box.accepted.connect(dialog.accept)
-    button_box.rejected.connect(dialog.reject)
-    layout.addWidget(button_box)
-
-    if dialog.exec() == QDialog.DialogCode.Rejected:
-        return None
-
-    if skip_result[0]:
-        return None
-
-    # Check custom path first
-    custom_path = path_edit.text().strip()
-    if custom_path and Path(custom_path).is_dir():
-        try:
-            return create_installation_from_path(custom_path)
-        except Exception as e:  # noqa: BLE001
-            QMessageBox.warning(dialog, "Invalid Path", f"Could not load installation from path:\n{e}")
-            return None
-
-    # Check combo selection
-    if combo is not None:
-        selected = combo.currentData()
-        if selected is not None:
-            try:
-                return create_installation_from_path(
-                    selected["path"],
-                    name=selected["name"],
-                    tsl=selected.get("tsl"),
-                )
-            except Exception as e:  # noqa: BLE001
-                QMessageBox.warning(dialog, "Invalid Installation", f"Could not load installation:\n{e}")
-                return None
-
-    return None
-
-
 # ---------------------------------------------------------------------------
 # Editor Instantiation
 # ---------------------------------------------------------------------------
@@ -438,12 +306,14 @@ def create_app(
     app_class = getattr(module, class_name)
 
     if app_name == "module-designer":
-        if installation is None:
-            raise ValueError("Module Designer requires an installation.")
         mod_filepath = Path(file_path).resolve() if file_path is not None else None
         window = app_class(parent, installation, mod_filepath)
         if hasattr(window, "enable_standalone_mode"):
             window.enable_standalone_mode()
+        if installation is not None and hasattr(window, "_installation_toolbar") and getattr(window, "_installation_toolbar", None) is not None:
+            toolbar = getattr(window, "_installation_toolbar")
+            if hasattr(toolbar, "set_override_installation"):
+                toolbar.set_override_installation(installation)
         return window
 
     if app_name == "indoor-builder":
@@ -506,7 +376,6 @@ def launch_editor(
     *,
     tsl: bool | None = None,
     installation: HTInstallation | None = None,
-    ask_installation: bool = True,
     argv: list[str] | None = None,
 ) -> int:
     """Launch a standalone editor.
@@ -520,7 +389,6 @@ def launch_editor(
         game_path: Optional path to KotOR/TSL installation.
         tsl: Whether the game installation is TSL. Auto-detected if None.
         installation: Pre-configured HTInstallation. Overrides game_path.
-        ask_installation: If True and no installation provided, shows a picker dialog.
         argv: Command-line arguments for QApplication.
 
     Returns:
@@ -550,15 +418,6 @@ def launch_editor(
         except Exception as e:  # noqa: BLE001
             print(f"Warning: Could not load game installation from '{game_path}': {e}", file=sys.stderr)
             print("Continuing without installation (limited functionality).", file=sys.stderr)
-
-    if installation is None and ask_installation:
-        # If this editor requires installation, be more insistent about it
-        if editor_name in EDITORS_REQUIRING_INSTALLATION:
-            print(
-                f"Note: The {EDITOR_REGISTRY[editor_name][2]} requires a game installation for full functionality.",
-                file=sys.stderr,
-            )
-        installation = pick_installation_interactive()
 
     if installation is None and editor_name in EDITORS_REQUIRING_INSTALLATION:
         print(
@@ -604,7 +463,6 @@ def launch_app(
     *,
     tsl: bool | None = None,
     installation: HTInstallation | None = None,
-    ask_installation: bool = True,
     argv: list[str] | None = None,
 ) -> int:
     """Launch a standalone non-editor app from APP_REGISTRY."""
@@ -626,14 +484,6 @@ def launch_app(
 
     app_display_name = APP_REGISTRY[app_name][2]
     requires_installation = APP_REGISTRY[app_name][3]
-
-    if installation is None and ask_installation:
-        if requires_installation:
-            print(
-                f"Note: {app_display_name} requires a game installation for full functionality.",
-                file=sys.stderr,
-            )
-        installation = pick_installation_interactive()
 
     if installation is None and requires_installation:
         print(
@@ -697,7 +547,6 @@ def build_parser() -> argparse.ArgumentParser:
             "Examples:\n"
             "  kotor-editor --editor twoda myfile.2da\n"
             "  kotor-editor myfile.utc --game-path \"C:/Games/KOTOR\"\n"
-            "  kotor-editor --editor nss --no-installation\n"
             "  kotor-editor --list\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -725,12 +574,6 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=None,
         help="Specify that the game installation is TSL (The Sith Lords).",
-    )
-    parser.add_argument(
-        "--no-installation", "-n",
-        action="store_true",
-        default=False,
-        help="Skip installation picker dialog. Run with limited functionality.",
     )
     parser.add_argument(
         "--list", "-l",
@@ -776,7 +619,6 @@ def main(argv: list[str] | None = None) -> int:
         file_path=args.file,
         game_path=args.game_path,
         tsl=args.tsl if args.tsl else None,
-        ask_installation=not args.no_installation,
         argv=sys.argv[:1],  # Pass just the program name to QApplication
     )
 
@@ -793,7 +635,6 @@ def launch_editor_cli(editor_name: str, argv: list[str] | None = None) -> int:
     parser.add_argument("file", nargs="?", default=None, help="File to open.")
     parser.add_argument("--game-path", "-g", default=None, help="Path to KotOR/TSL game directory.")
     parser.add_argument("--tsl", action="store_true", default=None, help="TSL installation.")
-    parser.add_argument("--no-installation", "-n", action="store_true", default=False, help="Skip installation picker.")
     args = parser.parse_args(argv)
 
     return launch_editor(
@@ -801,7 +642,6 @@ def launch_editor_cli(editor_name: str, argv: list[str] | None = None) -> int:
         file_path=args.file,
         game_path=args.game_path,
         tsl=args.tsl if args.tsl else None,
-        ask_installation=not args.no_installation,
         argv=sys.argv[:1],
     )
 
@@ -824,7 +664,6 @@ def launch_app_cli(app_name: str, argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--game-path", "-g", default=None, help="Path to KotOR/TSL game directory.")
     parser.add_argument("--tsl", action="store_true", default=None, help="TSL installation.")
-    parser.add_argument("--no-installation", "-n", action="store_true", default=False, help="Skip installation picker.")
     args = parser.parse_args(argv)
 
     return launch_app(
@@ -832,7 +671,6 @@ def launch_app_cli(app_name: str, argv: list[str] | None = None) -> int:
         file_path=args.file,
         game_path=args.game_path,
         tsl=args.tsl if args.tsl else None,
-        ask_installation=not args.no_installation,
         argv=sys.argv[:1],
     )
 

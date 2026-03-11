@@ -56,7 +56,6 @@ def _get_default_body_values(
 ) -> tuple[str, str, str, str]:
     model_column = "modela"
     tex_column = "texaevil" if utc.alignment <= 25 else "texa"
-    tex_append = "01"
     body_model = utc_appearance_row.get_string(model_column, context=f"Fetching model 'modela'{context_base}")
     override_texture = utc_appearance_row.get_string(tex_column, context=f"Fetching default texture{context_base}")
     return body_model, override_texture, model_column, tex_column
@@ -70,6 +69,15 @@ def get_body_model(  # noqa: C901, PLR0912, PLR0915
     baseitems: TwoDA | None = None,
 ) -> tuple[str | None, str | None]:
     """Return the body model and texture names for the given creature UTC.
+
+    Args:
+    ----
+        utc: UTC object of the target creature.
+        installation: The relevant installation.
+
+    Returns:
+    -------
+        Returns a tuple containing the name of the body model and the texture to apply to the model. The texture value may be None, in which case the default texture provided by the model should be used.
 
     References:
     ----------

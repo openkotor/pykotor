@@ -25,19 +25,17 @@ if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
 from pykotor.common.language import LocalizedString
+from pykotor.common.misc import Game
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import Installation, SearchLocation
 from pykotor.resource.type import ResourceType
-
-# Import create_installation from test_diff_comprehensive
-sys.path.insert(0, str(THIS_SCRIPT_PATH.parents[1] / "cli"))
 import tempfile
 
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from test_diff_comprehensive import DiffTestDataHelper
+from pykotor.tools.create_installation import create_installation
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.tpc.tpc_data import TPC
@@ -52,8 +50,9 @@ class TestInstallation(TestCase):
         cls.install_path: Path = cls.temp_dir / "test_install"
 
         # Create installation with all resources needed for tests
-        DiffTestDataHelper.create_installation(
+        create_installation(
             cls.install_path,
+            Game.K1,
             with_override=True,
             # BIF resources (CHITIN)
             bif_resources={

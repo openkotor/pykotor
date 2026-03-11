@@ -26,6 +26,7 @@ from qtpy.QtWidgets import (
 
 from loggerplus import RobustLogger
 from toolset.data.installation import HTInstallation
+from toolset.gui.dialogs.asyncloader import AsyncLoader
 from toolset.gui.widgets.settings.installations import GlobalSettings, InstallationsWidget
 
 if TYPE_CHECKING:
@@ -57,6 +58,7 @@ class InstallationToolbar(QWidget):
         self._requires_installation: bool = requires_installation
         self._settings = GlobalSettings()
         self._installation_cache: dict[str, HTInstallation] = {}
+        self._override_installation: HTInstallation | None = None
         self._folder_edits: dict[str, QLineEdit] = {}
         self._saved_installations: dict[str, dict[str, str | bool]] = {}
         self._in_update = False
@@ -133,12 +135,24 @@ class InstallationToolbar(QWidget):
         self.manage_btn.clicked.connect(self._open_installations_settings)
         self.mode_group.buttonToggled.connect(self._on_mode_changed)
 
+    def set_override_installation(self, installation: HTInstallation | None) -> None:
+        """Set an installation passed from CLI (e.g. --game-path). Shows in combo and emits so the window uses it."""
+        self._override_installation = installation
+        self.reload_installations()
+        if installation is not None:
+            self._installation_cache["__override__"] = installation
+        # reload_installations() already called _emit_current_state(), which emits the selected installation
+
     def reload_installations(self) -> None:
         current_key = self.installation_combo.currentData()
         self._saved_installations = {name: {"path": config.path, "tsl": config.tsl, "name": name} for name, config in self._settings.installations().items()}
         self._in_update = True
         try:
             self.installation_combo.clear()
+            if self._override_installation is not None:
+                path_str = str(self._override_installation.path())
+                self.installation_combo.addItem(f"Current: {path_str}", "__override__")
+                self._installation_cache["__override__"] = self._override_installation
             self.installation_combo.addItem("(None)", None)
             for name, config in sorted(self._saved_installations.items()):
                 self.installation_combo.addItem(f"{name} ({config['path']})", name)
@@ -146,6 +160,8 @@ class InstallationToolbar(QWidget):
                 idx = self.installation_combo.findData(current_key)
                 if idx >= 0:
                     self.installation_combo.setCurrentIndex(idx)
+            elif self._override_installation is not None:
+                self.installation_combo.setCurrentIndex(0)
         finally:
             self._in_update = False
         self._emit_current_state()
@@ -172,7 +188,68 @@ class InstallationToolbar(QWidget):
     def _on_installation_selection_changed(self, _index: int) -> None:
         if self._in_update:
             return
-        self._emit_current_state()
+        use_paths = self.mode_folder_radio.isChecked() and bool(self._specs) and not self._requires_installation
+        if use_paths:
+            self._emit_current_state()
+            return
+        selected_name = self.installation_combo.currentData()
+        if selected_name == "__override__":
+            self.installation_changed.emit(self._installation_cache.get("__override__"))
+            self.folder_paths_changed.emit({})
+            return
+        if selected_name is None:
+            self.installation_changed.emit(None)
+            self.folder_paths_changed.emit({})
+            return
+        cache_key = str(selected_name)
+        if cache_key in self._installation_cache:
+            self.installation_changed.emit(self._installation_cache[cache_key])
+            self.folder_paths_changed.emit({})
+            return
+        config = self._saved_installations.get(cache_key)
+        if config is None:
+            self.installation_changed.emit(None)
+            self.folder_paths_changed.emit({})
+            return
+        # Cache miss: load installation in background and show AsyncLoader
+        parent_window = self.window()
+        if parent_window is None:
+            parent_window = self
+
+        def task() -> HTInstallation | None:
+            try:
+                inst = HTInstallation(config["path"], config["name"], tsl=bool(config.get("tsl")))
+                return inst
+            except Exception as exc:  # noqa: BLE001
+                self._log.exception("Failed to create installation '%s': %s", cache_key, exc)
+                raise
+
+        loader = AsyncLoader(
+            parent_window,
+            "Loading installation...",
+            task,
+            error_title="Invalid Installation",
+            start_immediately=True,
+            initial_message="Loading installation... Please wait.",
+        )
+
+        def on_finish(inst: HTInstallation | None) -> None:
+            if inst is not None:
+                self._installation_cache[cache_key] = inst
+            self.installation_changed.emit(inst)
+            self.folder_paths_changed.emit({})
+
+        loader.optional_finish_hook.connect(on_finish)
+        prev_index = self.installation_combo.currentIndex()
+        loader.exec()
+        if loader.dialog_result_code() != QDialog.DialogCode.Accepted:
+            self._in_update = True
+            try:
+                self.installation_combo.setCurrentIndex(prev_index)
+            finally:
+                self._in_update = False
+            self.installation_changed.emit(self._get_selected_installation())
+            self.folder_paths_changed.emit({})
 
     def _on_mode_changed(self, _button, checked: bool) -> None:
         if not checked:
@@ -185,6 +262,8 @@ class InstallationToolbar(QWidget):
         selected_name = self.installation_combo.currentData()
         if selected_name is None:
             return None
+        if selected_name == "__override__":
+            return self._installation_cache.get("__override__")
 
         cache_key = str(selected_name)
         if cache_key in self._installation_cache:

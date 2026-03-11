@@ -60,6 +60,8 @@ def update_preview_image_size(
     if label_size.width() <= 0 or label_size.height() <= 0:
         label_size = label.sizeHint()
     if label_size.width() <= 0 or label_size.height() <= 0:
+        label_size = label.minimumSize()
+    if label_size.width() <= 0 or label_size.height() <= 0:
         label_size = QSize(128, 128)
 
     pixmap: QPixmap = QPixmap.fromImage(source_image)

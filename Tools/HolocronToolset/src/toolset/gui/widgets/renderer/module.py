@@ -166,16 +166,7 @@ class ModuleRenderer(QOpenGLWidget):
         self._show_vis_overlay: bool = True
 
     @property
-    def scene(self) -> Scene:
-        if self._scene is None:
-            instance: QtCore.QCoreApplication | None = QApplication.instance()  # pyright: ignore[reportAttributeAccessIssue]
-            assert instance is not None
-            if QThread.currentThread() == instance.thread():
-                self.show_scene_not_ready_message()
-            else:
-                QMetaObject.invokeMethod(self, "showSceneNotReadyMessage", Qt.ConnectionType.QueuedConnection)
-            raise ValueError("Scene is not initialized.")
-        assert self._scene is not None
+    def scene(self) -> Scene | None:
         return self._scene
 
     def show_scene_not_ready_message(self):

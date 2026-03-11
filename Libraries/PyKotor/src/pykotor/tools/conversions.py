@@ -1,19 +1,8 @@
 """Format conversion utility functions for KOTOR game resources.
 
 This module provides reusable, abstract functions for converting between different
-formats (GFF↔XML, TLK↔XML, SSF↔XML, 2DA↔CSV, etc.). These functions are tool-agnostic
+formats (GFF<->XML, TLK<->XML, SSF<->XML, 2DA<->CSV, etc.). These functions are tool-agnostic
 and can be used by any application that needs format conversions.
-
-References:
-----------
-        Based on swkotor.exe GFF/TLK/SSF/2DA structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
-        - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
-        Original BioWare engine binaries
-
-
 """
 
 from __future__ import annotations
@@ -76,17 +65,6 @@ def convert_gff_to_xml(input_path: Path, output_path: Path) -> None:
     ----
         input_path: Path to the input GFF file (binary or JSON)
         output_path: Path to write the output XML file
-
-    References:
-    ----------
-        Based on swkotor.exe GFF/TLK/SSF/2DA structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
-        - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
-        Original BioWare engine binaries
-
-
     """
     _convert_resource(input_path, output_path, read_gff, write_gff, write_format=ResourceType.GFF_XML)
 
@@ -99,17 +77,6 @@ def convert_xml_to_gff(input_path: Path, output_path: Path, *, gff_content_type:
         input_path: Path to the input XML file
         output_path: Path to write the output GFF file
         gff_content_type: Optional GFF content type (e.g., "IFO ", "UTC ") - auto-detected if None
-
-    References:
-    ----------
-        Based on swkotor.exe GFF/TLK/SSF/2DA structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
-        - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
-        Original BioWare engine binaries
-
-
     """
     _convert_resource(input_path, output_path, read_gff, write_gff, read_format=ResourceType.GFF_XML, write_format=ResourceType.GFF)
 
@@ -121,17 +88,6 @@ def convert_tlk_to_xml(input_path: Path, output_path: Path) -> None:
     ----
         input_path: Path to the input TLK file
         output_path: Path to write the output XML file
-
-    References:
-    ----------
-        Based on swkotor.exe GFF/TLK/SSF/2DA structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
-        - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
-        Original BioWare engine binaries
-
-
     """
     _convert_resource(input_path, output_path, read_tlk, write_tlk, write_format=ResourceType.TLK_XML)
 
@@ -144,17 +100,6 @@ def convert_xml_to_tlk(input_path: Path, output_path: Path, *, language: Languag
         input_path: Path to the input XML file
         output_path: Path to write the output TLK file
         language: Optional language specification - auto-detected from XML if None
-
-    References:
-    ----------
-        Based on swkotor.exe GFF/TLK/SSF/2DA structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
-        - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
-        Original BioWare engine binaries
-
-
     """
     _convert_resource(
         input_path,
@@ -197,17 +142,6 @@ def convert_2da_to_csv(input_path: Path, output_path: Path, *, delimiter: str = 
         input_path: Path to the input 2DA file (binary or ASCII)
         output_path: Path to write the output CSV file
         delimiter: CSV delimiter character (default: comma)
-
-    References:
-    ----------
-        Based on swkotor.exe GFF/TLK/SSF/2DA structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
-        - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
-        Original BioWare engine binaries
-
-
     """
     _convert_resource(input_path, output_path, read_2da, write_2da, write_format=ResourceType.TwoDA_CSV)
 
@@ -220,17 +154,6 @@ def convert_csv_to_2da(input_path: Path, output_path: Path, *, delimiter: str = 
         input_path: Path to the input CSV file
         output_path: Path to write the output 2DA file
         delimiter: CSV delimiter character (default: comma)
-
-    References:
-    ----------
-        Based on swkotor.exe GFF/TLK/SSF/2DA structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
-        - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
-        Original BioWare engine binaries
-
-
     """
     _convert_resource(input_path, output_path, read_2da, write_2da, read_format=ResourceType.TwoDA_CSV, write_format=ResourceType.TwoDA)
 

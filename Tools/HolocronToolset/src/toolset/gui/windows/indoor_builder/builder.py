@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import html as html_module
+import logging
 from collections import deque
 from copy import deepcopy
 from dataclasses import dataclass
@@ -11,7 +13,7 @@ from typing import TYPE_CHECKING, Any, TextIO, cast
 import qtpy
 
 from qtpy.QtCore import QEvent, QPoint, QTimer, Qt
-from qtpy.QtGui import QColor, QIcon, QImage, QPixmap, QShortcut
+from qtpy.QtGui import QColor, QIcon, QImage, QPixmap, QShortcut, QTextCursor
 from qtpy.QtWidgets import (
     QAction,  # pyright: ignore[reportPrivateImportUsage]
     QApplication,
@@ -61,6 +63,7 @@ from toolset.gui.common.editor_pipelines import (
     update_preview_image_size,
 )
 from toolset.gui.common.filters import NoScrollEventFilter
+from toolset.gui.common.log_bridge import LEVEL_COLORS, LogRecordEmitter, QtLogHandler
 from toolset.gui.common.indoor_builder_ops import (
     add_connected_indoor_rooms_to_selection,
     apply_flip_selected_rooms,
@@ -238,11 +241,14 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             left_dock.visibilityChanged.connect(self._on_dock_visibility_changed)
             # Use event filter to update preview after geometry changes
             left_dock.installEventFilter(self)
+            # Apply dock-width-based preview min size after first layout
+            QTimer.singleShot(0, self._apply_preview_minimum_size_from_dock)
         right_dock: QDockWidget | None = self.ui.rightDockWidget
         if right_dock is not None:
             right_dock.visibilityChanged.connect(self._on_dock_visibility_changed)
 
         self._setup_status_bar()
+        self._setup_log_pane()
         # Walkmesh painter state
         self._painting_walkmesh: bool = False
         self._colorize_materials: bool = True
@@ -285,6 +291,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         try:
             self._setup_settings_toolbar()
             self._setup_modules()
+            self._sync_toolbar_installation_from_left()
             self._refresh_window_title()
         except Exception:
             self.log.exception("Failed to refresh after installation switch")
@@ -293,10 +300,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         """Override: place installation toolbar in left dock above Modules instead of above the map."""
         if self._installation_toolbar is not None:
             return
-        container = getattr(self.ui, "installationToolbarContainer", None)
-        if container is None:
-            super().enable_standalone_mode()
-            return
+        container = self.ui.installationToolbarContainer
         self._standalone_folder_paths = {}
         self._installation_toolbar = InstallationToolbar(
             container,
@@ -308,6 +312,57 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         layout = container.layout()
         if layout is not None:
             layout.addWidget(self._installation_toolbar)
+        QTimer.singleShot(0, self._sync_toolbar_installation_from_left)
+
+    def _sync_toolbar_installation_from_left(self) -> None:
+        """Copy installation list and selection from left panel to toolbar combo (no signal loops)."""
+        if self._toolbar_installation_syncing:
+            return
+        toolbar_combo = self.ui.toolbarInstallationCombo
+        if self._installation_toolbar is None:
+            return
+        left = self._installation_toolbar.installation_combo
+        self._toolbar_installation_syncing = True
+        try:
+            toolbar_combo.clear()
+            for i in range(left.count()):
+                toolbar_combo.addItem(left.itemText(i), left.itemData(i))
+            idx = left.currentIndex()
+            if 0 <= idx < toolbar_combo.count():
+                toolbar_combo.setCurrentIndex(idx)
+        finally:
+            self._toolbar_installation_syncing = False
+
+    def _on_toolbar_installation_changed(self, index: int) -> None:
+        """User changed installation in toolbar; sync to left panel so it loads."""
+        if self._toolbar_installation_syncing or self._installation_toolbar is None:
+            return
+        toolbar_combo = self.ui.toolbarInstallationCombo
+        left = self._installation_toolbar.installation_combo
+        data = toolbar_combo.currentData()
+        for i in range(left.count()):
+            if left.itemData(i) == data:
+                self._installation_toolbar._in_update = True
+                try:
+                    left.setCurrentIndex(i)
+                finally:
+                    self._installation_toolbar._in_update = False
+                break
+
+    def _on_toolbar_open_module_clicked(self) -> None:
+        """Load selected module from toolbar module combo into the builder."""
+        module_root = self.ui.toolbarModuleCombo.currentData()
+        if isinstance(module_root, str):
+            self.load_module_from_name(module_root)
+
+    def _open_settings_dialog(self) -> None:
+        """Open settings dialog (keybinds for walkmesh area, etc.)."""
+        from toolset.gui.dialogs.settings import SettingsDialog
+
+        dialog = SettingsDialog(self)
+        dialog.setWindowTitle(tr("Settings"))
+        # Default to Module Designer / keybind page if available
+        dialog.exec()
 
     def _get_semantic_colors(self) -> dict[str, str]:
         """Get semantic colors from the application palette.
@@ -382,6 +437,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         # Kit/component selection
         self.ui.kitSelect.currentIndexChanged.connect(self.on_kit_selected)
         self.ui.componentList.currentItemChanged.connect(self.onComponentSelected)
+        self.ui.kitDownloadUpdateButton.clicked.connect(self.open_kit_downloader)
 
         # Module/component selection
         self.ui.moduleSelect.currentIndexChanged.connect(self.on_module_selected)
@@ -455,6 +511,16 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.warpCodeEdit.textChanged.connect(self._on_settings_changed)
         self.ui.skyboxSelect.currentIndexChanged.connect(self._on_settings_changed)
         self.ui.gameTypeSelect.currentIndexChanged.connect(self._on_settings_changed)
+
+        # Top-toolbar installation/module workflow (sync with left panel, open module)
+        self._toolbar_installation_syncing = False
+        self.ui.toolbarInstallationCombo.currentIndexChanged.connect(self._on_toolbar_installation_changed)
+        self.ui.toolbarOpenModuleButton.clicked.connect(self._on_toolbar_open_module_clicked)
+        self.ui.toolbarRefreshModulesButton.clicked.connect(self._setup_modules)
+        QTimer.singleShot(100, self._sync_toolbar_installation_from_left)
+
+        # View menu: Settings action (keybind dialog)
+        self.ui.actionSettings.triggered.connect(self._open_settings_dialog)
 
     def _setup_settings_toolbar(self):
         """Add settings widget to toolbar and populate skybox/game type. Set installation on nameEdit."""
@@ -659,10 +725,11 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.moduleComponentList.clear()
 
         if self._installation is None or self._module_kit_manager is None:
-            # Disable modules UI if no installation is available
             self.ui.modulesGroupBox.setEnabled(False)
             return
+        self.ui.modulesGroupBox.setEnabled(True)
         populate_module_root_combobox(self.ui.moduleSelect, self._module_kit_manager)
+        populate_module_root_combobox(self.ui.toolbarModuleCombo, self._module_kit_manager)
 
     def _set_preview_image(
         self,
@@ -671,8 +738,19 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         """Render a component preview into the unified preview pane."""
         self._preview_source_image = set_preview_source_image(self.ui.previewImage, image)
 
+    def _apply_preview_minimum_size_from_dock(self) -> None:
+        """Set preview label minimum size from left dock width so it does not collapse."""
+        left_dock = self.ui.leftDockWidget
+        container = left_dock.widget()
+        if container is None:
+            return
+        w = max(120, container.size().width())
+        h = max(90, w * 9 // 16)
+        self.ui.previewImage.setMinimumSize(w, h)
+
     def _update_preview_image_size(self):
         """Update preview image to match current label size."""
+        self._apply_preview_minimum_size_from_dock()
         update_preview_image_size(self.ui.previewImage, self._preview_source_image)
 
     def _on_splitter_moved(
@@ -777,6 +855,32 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         layout.addWidget(self._mode_label)
 
         bar.addWidget(container, 1)
+
+    def _setup_log_pane(self) -> None:
+        """Attach root logger to the bottom log dock with color-coded output (QTextEdit, max lines trimmed)."""
+        log_widget = self.ui.logPlainTextEdit
+        # Use QTextEdit document max block count to avoid UI stalls from unbounded growth
+        try:
+            log_widget.document().setMaximumBlockCount(5000)
+        except Exception:  # noqa: BLE001
+            pass
+        self._log_emitter = LogRecordEmitter(self)
+        self._log_handler = QtLogHandler(self._log_emitter)
+        self._log_handler.setFormatter(logging.Formatter("%(levelname)s(%(name)s): %(message)s"))
+        self._log_handler.setLevel(logging.DEBUG)
+        root = logging.getLogger()
+        root.addHandler(self._log_handler)
+
+        def on_record(levelno: int, message: str, logger_name: str) -> None:
+            color = LEVEL_COLORS.get(levelno, "inherit")
+            safe_msg = html_module.escape(message)
+            line = f'<span style="color:{color}">[{logger_name}] {safe_msg}</span><br/>'
+            cursor = log_widget.textCursor()
+            cursor.movePosition(QTextCursor.MoveOperation.End)
+            log_widget.setTextCursor(cursor)
+            log_widget.insertHtml(line)
+
+        self._log_emitter.record_emitted.connect(on_record)
 
     def on_module_selected(
         self,
@@ -2148,6 +2252,14 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
     def closeEvent(self, e: QCloseEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
         """Handle window close event - ensure proper cleanup of all resources."""
+        # Detach log handler from root logger to avoid duplicate handlers and leaks
+        if getattr(self, "_log_handler", None) is not None:
+            try:
+                logging.getLogger().removeHandler(self._log_handler)
+            except Exception:
+                pass
+            self._log_handler = None  # type: ignore[assignment]
+
         # Stop renderer timer first
         try:
             self.ui.mapRenderer._render_timer.stop()

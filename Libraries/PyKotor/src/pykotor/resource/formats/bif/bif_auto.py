@@ -113,10 +113,11 @@ def _merge_key_data(
     bif: BIF,
     keys: dict[int, str],
 ) -> None:
-    for i, resource in enumerate(bif):
-        if i not in keys:
+    for resource in bif.resources:
+        resource_id = resource.resname_key_index
+        if resource_id not in keys:
             continue
-        resource.resref = ResRef(keys[i])
+        resource.resref = ResRef(keys[resource_id])
 
 
 def write_bif(

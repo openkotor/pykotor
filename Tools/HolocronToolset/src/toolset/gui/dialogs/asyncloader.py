@@ -121,6 +121,7 @@ class AsyncLoader(QDialog, Generic[T]):
         *,
         start_immediately: bool = True,
         realtime_progress: bool = False,
+        initial_message: str | None = None,
     ):
         """Initializes a progress dialog.
 
@@ -129,6 +130,7 @@ class AsyncLoader(QDialog, Generic[T]):
             parent: QWidget: The parent widget of the dialog.
             title: str: The title of the dialog window.
             task: Callable or list of Callables: The task(s) to run asynchronously.
+            initial_message: Optional message shown for single-task non-realtime loads.
 
         Returns:
         -------
@@ -138,6 +140,7 @@ class AsyncLoader(QDialog, Generic[T]):
         ----------------
             - Creates a QProgressBar and QLabel to display progress
             - Sets the dialog layout, title and size
+            - For single-task non-realtime loads, shows a visible message (title or initial_message).
             - Starts an AsyncWorker thread to run the task asynchronously
             - Connects callbacks for successful/failed task completion.
         """
@@ -193,8 +196,14 @@ class AsyncLoader(QDialog, Generic[T]):
 
         # Get references to UI labels
         self._main_task_text: QLabel = self.ui.mainTaskText
-        self._main_task_text.setText("")
-        self._main_task_text.setVisible(realtime_progress or isinstance(task, list))
+        single_task_no_realtime = not isinstance(task, list) and not realtime_progress
+        if single_task_no_realtime:
+            msg = initial_message if initial_message else title
+            self._main_task_text.setText(msg or "Please wait...")
+            self._main_task_text.setVisible(True)
+        else:
+            self._main_task_text.setText("")
+            self._main_task_text.setVisible(realtime_progress or isinstance(task, list))
 
         self._sub_task_text: QLabel = self.ui.subTaskText
         self._sub_task_text.setText("")

@@ -98,6 +98,8 @@ git add file1.cs file2.cs && git commit -m "refactor(scope): simplify logic"
 
 Edit only `Tools/HolocronToolset/src/ui/`. Never edit `uic/`. Run `convertui.py` after UI changes.
 
+**Prohibited**: Do not use `getattr(self.ui, "widgetName", None)` or similar to access UI widgets. The UI must be compiled first; then reference widgets directly (e.g. `self.ui.toolbarModuleCombo`). Defensive getattr for UI elements hides missing widgets and breaks the compile-first workflow.
+
 ## 6. Testing and Environment
 
 - Enforce timeouts (120s/test, 300s/suite).

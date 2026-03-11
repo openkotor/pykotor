@@ -141,7 +141,3 @@ python Tools\KotorDiff\src\__main__.py
 **Read First**
 - CONVENTIONS.md – root coding conventions and typing/performance rules.
 - README.md – overview, features, quick install.
-- docs/SETUP.md – dev environment, dependency managers, testing.
-- docs/QUICK_START.md – targeted test commands for TSLPatcher.
-- Tools/HolocronToolset/CONVENTIONS.md – dual-mode UI integration.
-- .cursorrules – game engine fidelity + commit discipline (mirrored above).

@@ -134,7 +134,6 @@ Tools/tests/
 Tools/HolocronToolset/src/toolset/wiki/
 docs/reva_roadmap/
 vendor/kotor_re_things/
-vendor/kotor_re_things/
 agentdecompile_projects/my_project.gpr
 agentdecompile_projects/my_project.lock
 agentdecompile_projects/my_project.lock~
@@ -146,3 +145,4 @@ Libraries/PyKotor/pytest_result.txt
 tmp_danm13_rebuilt*.mod
 *.prompt.md
 .cursor/hooks/state/*.json
+tmp/

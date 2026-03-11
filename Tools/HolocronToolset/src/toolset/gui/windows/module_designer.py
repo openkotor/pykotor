@@ -10,7 +10,7 @@ import time
 
 from collections import deque
 from copy import deepcopy
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Any, Callable, Sequence, TextIO, Union, cast
 
 import qtpy
@@ -22,6 +22,9 @@ from qtpy.QtWidgets import (
     QAction,  # pyright: ignore[reportPrivateImportUsage]
     QApplication,
     QCheckBox,
+    QComboBox,
+    QFileDialog,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QListWidgetItem,
@@ -30,6 +33,7 @@ from qtpy.QtWidgets import (
     QMessageBox,
     QPlainTextEdit,
     QProgressDialog,
+    QPushButton,
     QSplitter,
     QStackedWidget,
     QStatusBar,
@@ -422,7 +426,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     def __init__(
         self,
         parent: QWidget | None,
-        installation: HTInstallation,
+        installation: HTInstallation | None,
         mod_filepath: Path | None = None,
         use_blender: bool = False,
     ):
@@ -469,7 +473,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self._last_undo_index: int = 0
         self._indoor_preview_source_image: QImage | None = None
 
-        self._installation: HTInstallation = installation
+        self._installation: HTInstallation | None = installation
         self._module: Module | None = None
         self._orig_filepath: Path | None = mod_filepath
 
@@ -558,6 +562,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 self._module_kit_manager = ModuleKitManager(installation)
             except Exception:
                 self.log.warning("Failed to initialize ModuleKitManager, module kits will be unavailable")
+        self._module_combo_updating: bool = False
 
         # --- Camera bookmarks (Ctrl+1..9 to save, 1..9 to recall) ---
         self._camera_bookmarks: dict[int, tuple[float, float, float, float, float, float]] = {}
@@ -625,14 +630,17 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         if mod_filepath is None:  # Use singleShot timer so the ui window opens while the loading is happening.
             QTimer().singleShot(33, self.open_module_with_dialog)
-        else:
+        elif self._installation is not None:
             QTimer().singleShot(33, lambda: self.open_module(mod_filepath))
+        else:
+            QTimer().singleShot(33, self.open_module_with_dialog)
 
     def _on_installation_changed(self, installation: HTInstallation | None) -> None:
         if installation is None:
             return
         self._installation = installation
         try:
+            self._populate_module_combo()
             self._setup_indoor_modules()
             self._refresh_window_title()
         except Exception:
@@ -2774,6 +2782,26 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         )
 
     def _init_ui(self):
+        # Module selector in top toolbar: label, combobox, Browse (inserted before Mode)
+        from toolset.gui.common.localization import translate as tr
+        self.moduleLabel = QLabel(tr("Module:"), self.ui.centralwidget)
+        self.moduleLabel.setObjectName("moduleLabel")
+        self.moduleCombo = QComboBox(self.ui.centralwidget)
+        self.moduleCombo.setObjectName("moduleCombo")
+        self.moduleCombo.setMinimumContentsLength(20)
+        self.moduleCombo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.moduleBrowseBtn = QPushButton(tr("Browse..."), self.ui.centralwidget)
+        self.moduleBrowseBtn.setObjectName("moduleBrowseBtn")
+        self.moduleSeparator = QFrame(self.ui.centralwidget)
+        self.moduleSeparator.setFrameShape(QFrame.Shape.VLine)
+        self.moduleSeparator.setFrameShadow(QFrame.Shadow.Sunken)
+        self.moduleSeparator.setObjectName("moduleSeparator")
+        for i, w in enumerate([self.moduleLabel, self.moduleCombo, self.moduleBrowseBtn, self.moduleSeparator]):
+            self.ui.horizontalLayout_2.insertWidget(i, w)
+        self._populate_module_combo()
+        self.moduleCombo.currentIndexChanged.connect(self._on_module_combo_activated)
+        self.moduleBrowseBtn.clicked.connect(self._on_browse_module_clicked)
+
         self.custom_status_bar = QStatusBar(self)
         self.setStatusBar(self.custom_status_bar)
 
@@ -3321,10 +3349,11 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             )
 
     def _refresh_window_title(self):
+        inst_name = self._installation.name if self._installation else "No installation"
         if self._module is None:
-            title = f"No Module - {self._installation.name} - Module Designer[*]"
+            title = f"No Module - {inst_name} - Module Designer[*]"
         else:
-            title = f"{self._module.root()} - {self._installation.name} - Module Designer[*]"
+            title = f"{self._module.root()} - {inst_name} - Module Designer[*]"
         self.setWindowTitle(title)
         self.setWindowModified(self.has_unsaved_changes())
 
@@ -3336,7 +3365,111 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 layout.save()
             self.rebuild_resource_tree()
 
+    def _populate_module_combo(self) -> None:
+        """Fill the module combobox from the current installation's module list."""
+        self._module_combo_updating = True
+        try:
+            self.moduleCombo.clear()
+            self.moduleCombo.addItem("—", None)
+            if self._installation is None:
+                return
+            module_names = self._installation.module_names()
+            listed: set[str] = set()
+            for module in self._installation.modules_list():
+                casefold_name = str(PurePath(module).with_name(Module.filepath_to_root(module) + PurePath(module).suffix)).casefold().strip()
+                if casefold_name in listed:
+                    continue
+                listed.add(casefold_name)
+                display = f"{module_names[module]}  [{casefold_name}]"
+                self.moduleCombo.addItem(display, casefold_name)
+            # Restore selection to current module if any
+            if self._module is not None:
+                root = self._module.root()
+                idx = self.moduleCombo.findData(root)
+                if idx >= 0:
+                    self.moduleCombo.setCurrentIndex(idx)
+        finally:
+            self._module_combo_updating = False
+
+    def _on_module_combo_activated(self, index: int) -> None:
+        """Open the selected module when combobox selection changes. Prompts if unsaved."""
+        if self._module_combo_updating:
+            return
+        module_root = self.moduleCombo.currentData()
+        if module_root is None:
+            return
+        if self.has_unsaved_changes():
+            from toolset.gui.common.localization import translate as tr
+            from toolset.gui.helpers.message_box import ask_question
+            reply = ask_question(
+                tr("Unsaved Changes"),
+                tr("You have unsaved changes. Open another module anyway?"),
+                self,
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                self._module_combo_updating = True
+                try:
+                    if self._module is not None:
+                        idx = self.moduleCombo.findData(self._module.root())
+                        if idx >= 0:
+                            self.moduleCombo.setCurrentIndex(idx)
+                finally:
+                    self._module_combo_updating = False
+                return
+        if self._installation is None:
+            return
+        mod_filepath = self._installation.module_path() / module_root
+        self.open_module(mod_filepath)
+
+    def _on_browse_module_clicked(self) -> None:
+        """Browse for a module file (same as Open Module dialog's Browse). Prompts if unsaved."""
+        if self._installation is None:
+            from toolset.gui.common.localization import translate as tr
+            QMessageBox.information(
+                self,
+                tr("Open Module"),
+                tr("Select an installation first using the Installation dropdown above."),
+            )
+            return
+        if self.has_unsaved_changes():
+            from toolset.gui.common.localization import translate as tr
+            from toolset.gui.helpers.message_box import ask_question
+            reply = ask_question(
+                tr("Unsaved Changes"),
+                tr("You have unsaved changes. Open another module anyway?"),
+                self,
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+        filepath, _ = QFileDialog.getOpenFileName(
+            self,
+            tr("Select module to open"),
+            str(self._installation.module_path()),
+            "Module File (*.mod *.rim *.erf)",
+        )
+        if not filepath or not filepath.strip():
+            return
+        from pykotor.common.module import Module as ModuleClass
+        self.open_module(Path(filepath))
+        self._module_combo_updating = True
+        try:
+            root = ModuleClass.filepath_to_root(filepath)
+            casefold_full = (root + Path(filepath).suffix).casefold().strip()
+            idx = self.moduleCombo.findData(casefold_full)
+            if idx >= 0:
+                self.moduleCombo.setCurrentIndex(idx)
+        finally:
+            self._module_combo_updating = False
+
     def open_module_with_dialog(self):
+        if self._installation is None:
+            from toolset.gui.common.localization import translate as tr
+            QMessageBox.information(
+                self,
+                tr("Open Module"),
+                tr("Select an installation first using the Installation dropdown above."),
+            )
+            return
         dialog = SelectModuleDialog(self, self._installation)
 
         if dialog.exec():
@@ -3456,6 +3589,17 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         self.show()
         # Inherently calls On3dSceneInitialized when done.
+
+        # Sync module combobox to the opened module
+        self._module_combo_updating = True
+        try:
+            for ext in (".rim", ".mod"):
+                idx = self.moduleCombo.findData((mod_root + ext).casefold())
+                if idx >= 0:
+                    self.moduleCombo.setCurrentIndex(idx)
+                    break
+        finally:
+            self._module_combo_updating = False
 
         # Mark initial state as clean (no unsaved changes)
         self._mark_clean_state()
