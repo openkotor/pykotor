@@ -64,7 +64,7 @@
           <item row="1" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_16">
             <item>
-             <widget class="LocalizedStringLineEdit" name="tagEdit">
+             <widget class="QLineEdit" name="tagEdit">
               <property name="toolTip">
                <string>Tag (GFF: Tag). CExoString. Unique waypoint identifier for
                 scripts and transitions. Default when missing: "". Modders: keep

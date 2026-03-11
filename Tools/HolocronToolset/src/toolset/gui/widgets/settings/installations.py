@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import uuid
 
 from pathlib import Path
@@ -13,11 +14,12 @@ from qtpy.QtCore import (
     QSettings,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
-from qtpy.QtGui import QStandardItem, QStandardItemModel
-from qtpy.QtWidgets import QWidget
+from qtpy.QtGui import QIcon, QStandardItem, QStandardItemModel
+from qtpy.QtWidgets import QApplication, QFileDialog, QStyle, QWidget
 
 from loggerplus import RobustLogger, get_log_directory
 from pykotor.common.misc import Game
+from pykotor.extract.installation import Installation
 from pykotor.tools.path import CaseAwarePath, find_kotor_paths_from_default
 from toolset.data.settings import Settings
 
@@ -51,6 +53,7 @@ class InstallationsWidget(QWidget):
 
         self.installations_model: QStandardItemModel = QStandardItemModel()
         self.settings: GlobalSettings = GlobalSettings()
+        self._merge_found_kotor_paths_into_settings()
 
         from toolset.uic.qtpy.widgets.settings.installations import Ui_Form
 
@@ -59,11 +62,121 @@ class InstallationsWidget(QWidget):
         self.setup_values()
         self.setup_signals()
 
+    @staticmethod
+    def _normalize_path_for_dedup(raw: str) -> str | None:
+        """Return a comparable path string for deduplication, or None if invalid."""
+        s = (raw or "").strip()
+        if not s:
+            return None
+        try:
+            return os.path.normcase(str(Path(s).resolve()))
+        except (OSError, RuntimeError):
+            return None
+
+    def _merge_found_kotor_paths_into_settings(self) -> None:
+        """Merge paths from find_kotor_paths_from_default() into settings.
+
+        Deduplicates existing installations by normalized path (keeps first per path),
+        then adds only paths from find_kotor_paths_from_default that are not already
+        present, with unique names.
+        """
+        raw_installations: dict[str, dict[str, Any]] = dict(
+            self.settings.settings.value("installations", {}) or {},
+        )
+        # Deduplicate: keep one installation per normalized path (first occurrence wins)
+        seen_paths: set[str] = set()
+        installations: dict[str, dict[str, Any]] = {}
+        for name, inst in raw_installations.items():
+            norm = self._normalize_path_for_dedup(inst.get("path") or "")
+            if norm is not None and norm in seen_paths:
+                continue
+            if norm is not None:
+                seen_paths.add(norm)
+            installations[name] = inst
+
+        existing_paths: set[str] = set(seen_paths)
+
+        def _next_counter(g: Game, names: dict[str, Any]) -> int:
+            base = "KotOR" if g.is_k1() else "TSL"
+            n = 1
+            if base in names:
+                n = 2
+            pattern = re.compile(re.escape(base) + r"\s*\((\d+)\)\Z")
+            for key in names:
+                m = pattern.match(key)
+                if m:
+                    n = max(n, int(m.group(1), 10) + 1)
+            return n
+
+        counters: dict[Game, int] = {
+            Game.K1: _next_counter(Game.K1, installations),
+            Game.K2: _next_counter(Game.K2, installations),
+        }
+        added_any = False
+        for game, paths in find_kotor_paths_from_default().items():
+            for path in paths:
+                if not CaseAwarePath.is_dir(path):
+                    continue
+                norm = self._normalize_path_for_dedup(str(path))
+                if norm is None or norm in existing_paths:
+                    continue
+                base_name: str = "KotOR" if game.is_k1() else "TSL"
+                name = base_name
+                while name in installations:
+                    name = f"{base_name} ({counters[game]})"
+                    counters[game] += 1
+                installations[name] = {
+                    "name": name,
+                    "path": str(path),
+                    "tsl": game.is_k2(),
+                }
+                existing_paths.add(norm)
+                added_any = True
+
+        # Persist if we removed duplicates or added new installations
+        deduped = len(installations) < len(raw_installations)
+        if added_any or deduped:
+            self.settings.settings.setValue("installations", installations)
+
+    def _warning_icon(self) -> QIcon | None:
+        style = self.style() or (QApplication.instance() and QApplication.instance().style())
+        if style is None:
+            return None
+        return style.standardIcon(QStyle.StandardPixmap.SP_MessageBoxWarning)
+
+    def _is_valid_installation_path(self, path: str) -> bool:
+        """Return True if path exists and passes determine_game() check."""
+        raw = (path or "").strip()
+        if not raw:
+            return False
+        try:
+            if not Path(raw).exists():
+                return False
+        except (OSError, RuntimeError):
+            return False
+        return Installation.determine_game(raw) is not None
+
+    def _apply_installation_validation(self, item: QStandardItem) -> None:
+        """Set warning icon and tooltip on item if path is missing or invalid."""
+        from toolset.gui.common.localization import translate as tr
+
+        data: dict[str, Any] = item.data() or {}
+        path: str = (data.get("path") or "").strip()
+        valid = self._is_valid_installation_path(path)
+        icon = self._warning_icon()
+        if valid:
+            item.setIcon(QIcon())
+            item.setToolTip("")
+        elif icon is not None:
+            item.setIcon(icon)
+            item.setToolTip(tr("The path does not appear to be a valid KotOR installation."))
+
     def setup_values(self):
         self.installations_model.clear()
         for installation in self.settings.installations().values():
             item = QStandardItem(installation.name)
             item.setData({"path": installation.path, "tsl": installation.tsl})
+            self._apply_installation_validation(item)
             self.installations_model.appendRow(item)
 
     def setup_signals(self):
@@ -71,6 +184,7 @@ class InstallationsWidget(QWidget):
 
         self.ui.addPathButton.clicked.connect(self.add_new_installation)
         self.ui.removePathButton.clicked.connect(self.remove_selected_installation)
+        self.ui.pathBrowseButton.clicked.connect(self.browse_installation_path)
         self.ui.pathNameEdit.textEdited.connect(self.update_installation)
         self.ui.pathDirEdit.textEdited.connect(self.update_installation)
         self.ui.pathTslCheckbox.stateChanged.connect(self.update_installation)
@@ -96,8 +210,24 @@ class InstallationsWidget(QWidget):
 
         item: QStandardItem = QStandardItem(tr("New"))
         item.setData({"path": "", "tsl": False})
+        self._apply_installation_validation(item)
         self.installations_model.appendRow(item)
         self.sig_settings_edited.emit()
+
+    def browse_installation_path(self) -> None:
+        """Open a directory dialog and set the Path field to the selected folder."""
+        from toolset.gui.common.localization import translate as tr
+
+        start_dir = self.ui.pathDirEdit.text().strip() or None
+        directory = QFileDialog.getExistingDirectory(
+            self,
+            tr("Select KotOR/TSL Game Directory"),
+            start_dir or "",
+            QFileDialog.Option.ShowDirsOnly | QFileDialog.Option.DontResolveSymlinks,
+        )
+        if directory:
+            self.ui.pathDirEdit.setText(directory)
+            self.update_installation()
 
     def remove_selected_installation(self):
         if len(self.ui.pathList.selectedIndexes()) > 0:
@@ -123,6 +253,7 @@ class InstallationsWidget(QWidget):
         item.setData(data)
 
         item.setText(self.ui.pathNameEdit.text())
+        self._apply_installation_validation(item)
 
         self.sig_settings_edited.emit()
 

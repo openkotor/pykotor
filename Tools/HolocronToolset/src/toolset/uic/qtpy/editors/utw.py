@@ -40,7 +40,7 @@ class Ui_MainWindow(object):
         self.formLayout_10.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_14)
         self.horizontalLayout_16 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_16.setObjectName("horizontalLayout_16")
-        self.tagEdit = LocalizedStringLineEdit(parent=self.tab)
+        self.tagEdit = QtWidgets.QLineEdit(parent=self.tab)
         self.tagEdit.setObjectName("tagEdit")
         self.horizontalLayout_16.addWidget(self.tagEdit)
         self.tagGenerateButton = QtWidgets.QPushButton(parent=self.tab)
