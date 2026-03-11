@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import PurePath
 from typing import TYPE_CHECKING, Iterator
 
+from pykotor.common.misc import ResRef
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath
@@ -19,7 +20,6 @@ if TYPE_CHECKING:
 
     from typing_extensions import Literal, Self  # pyright: ignore[reportMissingModuleSource]
 
-    from pykotor.common.misc import ResRef
     from pykotor.common.stream import BinaryReader
 
 
@@ -625,6 +625,25 @@ class ResourceResult:
     def identifier(self) -> ResourceIdentifier:
         return ResourceIdentifier(self.resname, self.restype)
 
+    def decode(self, as_type: ResourceType | None = None) -> Any:
+        """Decode raw bytes to the domain object using the central decoder registry.
+
+        Args:
+        ----
+            as_type: ResourceType to decode as; defaults to self.restype.
+
+        Returns:
+        -------
+            Decoded domain object (e.g. UTC, GFF, LYT), or None if no decoder is registered.
+        """
+        from pykotor.resource.decoders import get_decoder
+
+        restype = as_type if as_type is not None else self.restype
+        decoder = get_decoder(restype)
+        if decoder is None:
+            return None
+        return decoder(self.data)
+
 
 @dataclass(frozen=True)
 class LocationResult:
@@ -837,3 +856,19 @@ class ResourceIdentifier:
 
         resname, restype = _split_resource_filename(filename)
         return cls(resname, restype)
+
+
+@dataclass(frozen=True)
+class ResourceQuery:
+    """Explicit query for a single resource by resref and restype.
+
+    Use with Installation.find_one(), find_many(), and find_locations()
+    for a consistent, non-overloaded API.
+    """
+
+    resref: str | ResRef
+    restype: ResourceType
+
+    def to_identifier(self) -> ResourceIdentifier:
+        """Return a ResourceIdentifier for this query."""
+        return ResourceIdentifier(str(self.resref), self.restype)

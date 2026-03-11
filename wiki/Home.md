@@ -21,6 +21,11 @@
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices)
 - [KotorDiff Integration in PyKotorCLI](KotorDiff-Integration)
 
+### Internal Documentation
+
+- [HoloPatcher](HoloPatcher-README-for-mod-developers.)
+- [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic)
+
 ### Official Bioware Aurora Documentation
 
 The following documents are official Bioware Aurora Engine file format specifications. These are authoritative references for the underlying file formats used by KotOR:
@@ -52,11 +57,11 @@ The following documents are official Bioware Aurora Engine file format specifica
 
 The following information describes the resource system used by **KotOR and TSL**. While KotOR is derived from the Aurora engine (Neverwinter Nights) and shares the same resource system, this section focuses on **KotOR-specific** behavior and file locations. Some details (like `nwn.ini`) are NWN-specific and are noted as such.
 
-#### KEY Files
+#### Important Files
 
 - **[`chitin.key`](KEY-File-Format)**: Master index file that maps resource names to [BIF archives](BIF-File-Format) locations. Given a resource name, [chitin.key](KEY-File-Format) can be used to locate the master data file ([BIF](BIF-File-Format)) containing the resource.
 - **[`dialog.tlk`](TLK-File-Format)**: Text resource file containing localized strings referenced by [StrRef](TLK-File-Format#string-references-strref) IDs. This centralizes strings for easy localization and allows changing text without modifying or recompiling scripts. Different language versions of [dialog.tlk](TLK-File-Format) can be installed for localization support.
-- **`kotor.ini`**: Configuration file with `[Alias]` section mapping logical directory names to physical paths. This allows the game to locate data files regardless of installation directory structure. **Note**: `nwn.ini` is the Neverwinter Nights equivalent and is not used in KotOR.
+- **`kotor.ini`**: Configuration file with `[Alias]` section mapping logical directory names to physical paths. This allows the game to locate data files regardless of installation directory structure.
 
 **Reference**: [`vendor/xoreos-docs/specs/torlack/basics.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/basics.html) - Tim Smith (Torlack)'s Aurora engine basics documentation (NWN-focused)
 
@@ -298,14 +303,9 @@ This language ID usually is represented as an enum. It is equivalent within all 
 - [VIS File Format](VIS-File-Format) ← Visibility format
 - [WAV File Format](WAV-File-Format) ← Wave audio format
 
-### Internal Documentation
-
-- [HoloPatcher](HoloPatcher-README-for-mod-developers.)
-- [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic)
-
 ## Vendor Implementations
 
-PyKotor includes many vendor submodules that provide alternative implementations of KotOR tools and engines. These serve as reference implementations and enable comparison of different approaches to the same problems.
+PyKotor is not the first of its kind, below you'll find other KotOR tools, resources, projects, and even full engine rewrites.
 
 ### Engine Reimplementations
 
@@ -313,16 +313,19 @@ Complete game engine rewrites that can load and play KotOR:
 
 - **[xoreos](https://github.com/xoreos/xoreos)** - C++ reimplementation of BioWare's Aurora/Odyssey/Eclipse engine, supports multiple BioWare games including KotOR. ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos))
 - **[reone](https://github.com/seedhartha/reone)** - Modern C++ KotOR engine with OpenGL rendering. Focus on performance and clean architecture. ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone))
+  - **NOTE**: This project seems to be abandoned by seedhartha, but was picked up by the community here: https://github.com/modawan/reone though I can't speak to its authority)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** - TypeScript/JavaScript engine running in browsers via WebGL. Enables playing KotOR directly in web browsers. ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js))
 - **[NorthernLights](https://github.com/lachjames/NorthernLights)** - .NET/C# engine implementation with Unity integration capabilities (based on KotOR-Unity project with further improvements) ([Mirror: th3w1zard1/NorthernLights](https://github.com/th3w1zard1/NorthernLights))
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** - Unity-based KotOR engine rewrite. Leverages Unity's rendering and physics. ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity))
 
-### file format Libraries
+### File Format Libraries
 
 Libraries focused on reading/writing KotOR file formats:
 
 - **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** - Command-line tools for extracting and converting Aurora file formats ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools))
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** - .NET library for KotOR file formats with builder APIs
+- **[BioWare.NET](https://github.com/th3w1zard1/BioWare.NET)** - Another .NET library for KotOR file formats, intended to be a direct port of PyKotor
+- **[Rakata](https://codeberg.org/Synchro/rakata)** - A rust-native codebase for working with the Odyssey engine.
 
 ### 3D Modeling Tools
 
@@ -336,10 +339,9 @@ Tools for working with KotOR 3D [models](MDL-MDX-File-Format) and [textures](TPC
 
 ### Script Development
 
-Tools for writing and editing NWScript:
+Tools and Resources for working with NWScript in KotOR:
 
-- **[HoloLSP](https://github.com/th3w1zard1/HoloLSP)** - Language Server Protocol implementation for NWScript
-(enables IDE integration)
+- **[HoloLSP](https://github.com/th3w1zard1/HoloLSP)** - Language Server Protocol implementation for NWScript, complete with all kotor-specific constants and functions, as well as everything else from each game's (k1/tsl's) `nwscript.nss`
 - **[nwscript-mode.el](https://github.com/implicit-image/nwscript-mode.el)** - Emacs major mode for NWScript editing ([Mirror: th3w1zard1/nwscript-mode.el](https://github.com/th3w1zard1/nwscript-mode.el))
 - **[Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)** - Decompiled vanilla KotOR scripts for reference ([Mirror: th3w1zard1/Vanilla_KOTOR_Script_Source](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source))
 
@@ -350,7 +352,7 @@ Tools for creating and installing mods:
 - **PyKotorCLI (PyKotor)** - CLI-first toolset for packing, conversion, Holocron kit generation, and [GUI](GFF-File-Format#gui-graphical-user-interface) layout scaling. `uvx --refresh pykotor kit-generate --installation <path> --module <module> --output <dir>` runs headless; launching with no arguments opens the Tkinter kit generator [GUI](GFF-File-Format#gui-graphical-user-interface) for interactive use. `uvx --refresh pykotor gui-convert --input <gui_or_folder> --output <dir> --resolution ALL` runs headless for [GUI](GFF-File-Format#gui-graphical-user-interface) resizing; omitting args opens the converter [GUI](GFF-File-Format#gui-graphical-user-interface). Developers: `uv run --directory Libraries/PyKotor/src --module pykotor` for local source. (Implementations: `kit_generator.py` wraps `Libraries/PyKotor/src/pykotor/tools/kit.py`; `Libraries/PyKotor/src/pykotor/cli/gui_converter.py` delegates to `pykotor.resource.formats.gff`.)
 - **[HoloPatcher.NET](https://github.com/th3w1zard1/HoloPatcher.NET)** - .NET reimplementation of TSLPatcher
 - **[Kotor-Patch-Manager](https://github.com/LaneDibello/Kotor-Patch-Manager)** - Alternative mod manager ([Mirror: th3w1zard1/Kotor-Patch-Manager](https://github.com/th3w1zard1/Kotor-Patch-Manager))
-- **[KotOR ModSync](https://github.com/th3w1zard1/KotORModSync)** - Mod synchronization and installation
+- **[ModSync](https://github.com/th3w1zard1/KotORModSync)** - Mod synchronization and installation
 - **[StarForge](https://github.com/th3w1zard1/StarForge)** - Module editor and modding toolkit
 - **[KotorModTools](https://github.com/Box65535/KotorModTools)** - Collection of modding utilities ([Mirror: th3w1zard1/KotorModTools](https://github.com/th3w1zard1/KotorModTools))
 
@@ -361,7 +363,7 @@ Tools for editing KotOR save games:
 - **[sotor](https://github.com/StarfishXeno/sotor)** - Terminal-based save editor ([Mirror: th3w1zard1/sotor](https://github.com/th3w1zard1/sotor))
 - **[KSELinux](https://github.com/Bolche/KSELinux)** - KotOR Save Editor for Linux ([Mirror: th3w1zard1/KSELinux](https://github.com/th3w1zard1/KSELinux))
 - **[KotOR-Save-Editor](https://github.com/Fair-Strides/KotOR-Save-Editor)** - [GUI](GFF-File-Format#gui-graphical-user-interface) save editor ([Mirror: th3w1zard1/KotOR-Save-Editor](https://github.com/th3w1zard1/KotOR-Save-Editor))
-- **[kotor-savegame-editor](https://github.com/th3w1zard1/kotor-savegame-editor)** - Web-based save editor
+- **[kotor-savegame-editor](https://github.com/nadrino/kotor-savegame-editor)** - Web-based save editor ([Mirror: th3w1zard1/kotor-savegame-editor](https://github.com/th3w1zard1/kotor-savegame-editor))
 
 ### Audio Tools
 
@@ -389,7 +391,7 @@ Reference documentation from related projects (external sources):
   - **Official BioWare specifications** (`specs/bioware/`): Official Aurora Engine file format PDFs from the now-defunct nwn.bioware.com developer site. These documents are authoritative references for formats used across Aurora engine games including KotOR.
   - **Torlack's reverse-engineered specs** (`specs/torlack/`): Tim Smith (Torlack)'s reverse-engineered format documentation from his now-defunct website (torlock.com). These include detailed field-by-field breakdowns for formats like BIF, KEY, ERF (MOD), GFF (ITP), NCS, and binary MDL files.
   - **KotOR-specific documentation** (`specs/kotor_mdl.html`): Partial KotOR model format specifications with detailed field descriptions.
-  - **Binary templates** (`templates/`): 010 Editor binary template files for analyzing binary file structures (**NWN1, NWN2, Jade Empire formats - NOT KotOR-specific**).
+  - **Binary templates** (`templates/`): 010 Editor binary template files for analyzing binary file structures
   
   **Note:** Much of the KotOR-relevant content from xoreos-docs has been comprehensively integrated into this wiki. See individual format documentation pages for specific source references.
 - **[nwn-docs](https://github.com/kucik/nwn-docs)** - Neverwinter Nights documentation (shares Aurora formats)

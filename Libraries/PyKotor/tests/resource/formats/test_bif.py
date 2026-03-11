@@ -16,6 +16,8 @@ from pykotor.resource.formats.bif import (
     read_bif,
     write_bif,
 )
+from pykotor.resource.formats.key import KEY, BifEntry, KeyEntry
+from pykotor.resource.formats.key.key_auto import write_key
 from pykotor.resource.type import ResourceType
 
 K1_BIF_TEST_FILE = "Libraries/PyKotor/tests/test_files/k1_player.bif"
@@ -197,6 +199,47 @@ class TestBIFFormats(unittest.TestCase):
 
             self.assertTrue(output_path.exists(), "BIF output file was not created.")
             self.assertEqual(reference_path.stat().st_size, output_path.stat().st_size, "Size of written file has changed.")
+
+    def test_read_bif_with_key_source_lookup_by_resref(self):
+        """After read_bif(..., key_source=...), lookup by resref (try_get_resource) returns the merged resource."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            key_path = Path(tmpdir, "chitin.key")
+            bif_path = Path(tmpdir, "data", "test.bif")
+            bif_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # KEY: one BIF entry, one resource with composite ID bif_index=1, res_index=0
+            resource_id = (1 << 20) | 0
+            key = KEY()
+            key.bif_entries.append(BifEntry())
+            key.bif_entries[0].filename = "data/test.bif"
+            key.bif_entries[0].filesize = 0
+            key.key_entries.append(KeyEntry("mergetest", ResourceType.TXT, resource_id))
+
+            bif = BIF()
+            bif.bif_type = BIFType.BIF
+            res = BIFResource(ResRef(""), ResourceType.TXT, b"merged", resource_id)
+            bif.resources.append(res)
+
+            write_key(key, key_path)
+            write_bif(bif, bif_path)
+
+            loaded = read_bif(bif_path, key_source=key_path)
+            found_ok, found = loaded.try_get_resource(ResRef("mergetest"), ResourceType.TXT)
+            self.assertTrue(found_ok, "try_get_resource(mergetest, TXT) should find resource after KEY merge")
+            self.assertIsNotNone(found)
+            self.assertEqual(found.data, b"merged", "Merged resource data should match")
+
+    def test_bif_composite_id_nonzero_bif_index(self):
+        """BIF resource IDs use KEY bit layout: bits 31-20 = BIF index, 19-0 = resource index."""
+        bif: BIF = read_bif(K1_BIF_TEST_FILE)
+        self.assertGreater(len(bif.resources), 0)
+        # k1_player.bif is not BIF index 0; first resource has resname_key_index 20971520 = 20 << 20
+        first = bif.resources[0]
+        self.assertEqual(first.resname_key_index, 20971520, "First resource ID should be 20<<20 (bif_index 20)")
+        bif_index = first.resname_key_index >> 20
+        res_index = first.resname_key_index & 0xFFFFF
+        self.assertEqual(bif_index, 20)
+        self.assertEqual(res_index, 0)
 
 
 if __name__ == "__main__":

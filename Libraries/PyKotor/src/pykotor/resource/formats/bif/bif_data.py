@@ -112,12 +112,11 @@ class BIFResource(ArchiveResource):
 
     Attributes:
     ----------
-        resname_key_index: Resource ID that matches KEY file entries
+        resname_key_index: Composite resource ID that matches KEY file entries (same bit layout as KeyEntry.resource_id)
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:53 (ResourceID property)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:203 (ID field)
-            This is a unique identifier within the BIF file
-            Upper 20 bits encode BIF index, lower 14 bits encode resource index
-            Used to match resources between BIF and KEY files
+            Bits 31-20: BIF index in KEY file table. Bits 19-0: resource index within this BIF.
+            Used to match resources between BIF and KEY files.
 
         _offset: Byte offset to resource data within BIF file
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:54 (Offset property)

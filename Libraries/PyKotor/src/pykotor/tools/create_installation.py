@@ -280,9 +280,31 @@ def create_installation(
     return root
 
 
-def create_minimal_installation(path: Path, game: Game) -> Path:
-    """Scaffold a minimal but readable KotOR installation."""
+def create_minimal_installation(
+    path: Path,
+    game: Game,
+    *,
+    validate_existing: bool = False,
+) -> Path:
+    """Scaffold a minimal but readable KotOR installation.
+
+    If ``chitin.key`` already exists and ``validate_existing`` is False (default),
+    returns immediately without creating or modifying other files. Use this when
+    you only need a valid KEY and want to avoid overwriting an existing layout.
+
+    When ``validate_existing=True`` (e.g. for tests or CI), a partial root is
+    completed: directory layout and missing required files (e.g. dialog.tlk,
+    dialogf.tlk) are created even if ``chitin.key`` is already present. Existing
+    chitin.key and BIFs are not overwritten. Use this to ensure a minimal
+    installation is fully usable when the root may have been partially created.
+    """
     root = Path(path)
-    if (root / "chitin.key").exists():
+    root.mkdir(parents=True, exist_ok=True)
+    if (root / "chitin.key").exists() and not validate_existing:
+        return root
+    if (root / "chitin.key").exists() and validate_existing:
+        _prepare_root_layout(root, game)
+        if not (root / "dialog.tlk").is_file():
+            _write_talk_tables(root, dialog_tlk_data=None, dialogf_tlk_data=None, dialog_entries=("", "", _DEFAULT_TLK_TEXT))
         return root
     return create_installation(root, game)

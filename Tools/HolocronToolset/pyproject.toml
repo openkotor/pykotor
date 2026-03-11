@@ -31,29 +31,27 @@ dependencies = [
   "comtypes>=1.4.0; sys_platform == \"win32\"",
   "idna>=3.11",
   "jsonpickle>=4.1.1",
-  "Markdown>=3.4.4,<3.9; python_version<\"3.9\"",
-  "Markdown>=3.4.4; python_version>=\"3.9\"",
-  "numpy>=1.19.0,<1.25.0; python_version<\"3.9\"",
-  "numpy>=1.19.0; python_version>=\"3.9\"",
-  "Pillow>=12.1.1",
+  "Markdown>=3.4.4",
+  "numpy>=1.19.0,<1.25; python_version < \"3.9\"",
+  "numpy>=1.25; python_version >= \"3.9\"",
+  "Pillow>=10.0.0,<11; python_version < \"3.10\"",
+  "Pillow>=12.1.1; python_version >= \"3.10\"",
   "pykotor[encodings,extra,font,gl,updater]>=2.3.1",
-  "PyQt5-Qt5>=5.15; python_version==\"3.8\"",
-  "PyQt5-sip>=12.10; python_version==\"3.8\"",
-  "PyQt5>=5.15; python_version==\"3.8\"",
-  "PyQt6-Qt6>=6.10.1; python_version>=\"3.9\"",
-  "PyQt6-Qt6>=6.6.1,<6.10.1; python_version==\"3.8\"",
-  "PyQt6-sip>=12.10,<13.10.3; python_version<\"3.10\"",
-  "PyQt6-sip>=13.10.3; python_version>=\"3.10\"",
-  "PyQt6>=6.10.1; python_version>=\"3.9\"",
-  "PyQt6>=6.6.1,<6.10.1; python_version==\"3.8\"",
+  "PyQt5>=5.15,<6; python_version < \"3.9\"",
+  "PyQt5-sip>=12.10,<13; python_version < \"3.9\"",
+  "PyQt6-Qt6>=6.10.1; python_version >= \"3.9\"",
+  "PyQt6-sip>=12.10,<13.10.3; python_version >= \"3.9\" and python_version < \"3.10\"",
+  "PyQt6-sip>=13.10.3; python_version >= \"3.10\"",
+  "PyQt6>=6.10.1; python_version >= \"3.9\"",
   "PySide6_Addons>=6.10.1; python_implementation == 'PyPy' and python_version >= '3.9'",
   "PySide6_Essentials>=6.10.1; python_implementation == 'PyPy' and python_version >= '3.9'",
-  "PySide6; python_implementation == 'PyPy' and python_version >= '3.9'",
   "PySide6>=6.10.1; python_implementation == 'PyPy' and python_version >= '3.9'",
   "qtpy>=2.4.3",
-  "requests>=2.32.4",
+  "requests>=2.23.0,<2.32.5; python_version < \"3.9\"",
+  "requests>=2.32.4; python_version >= \"3.9\"",
   "send2trash>=1.8.3",
-  "urllib3>=2.6.3",
+  "urllib3>=1.21.1,<2.6.3; python_version < \"3.9\"",
+  "urllib3>=2.6.3; python_version >= \"3.9\"",
 ]
 authors = [{ name = "Nick Hugi" }, { name = "th3w1zard1" }]
 maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
@@ -91,6 +89,8 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Topic :: Games/Entertainment",
@@ -148,43 +148,42 @@ keywords = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.8,<3.14"
 pykotor = { version = "^2.3.1", extras = ["encodings", "extra", "font", "gl", "updater"] }
 certifi = ">=2021.10.8"
 comtypes = { version = ">=1.4.0", markers = "sys_platform == 'win32'" }
 idna = ">=3.11"
 jsonpickle = ">=4.1.1"
-Markdown = [
-  { version = ">=3.4.4,<3.9", markers = "python_version < \"3.9\"" },
-  { version = ">=3.4.4", markers = "python_version >= \"3.9\"" },
-]
+Markdown = ">=3.4.4"
 numpy = [
-  { version = ">=1.19.0,<1.25.0", markers = "python_version < \"3.9\"" },
-  { version = ">=1.19.0", markers = "python_version >= \"3.9\"" },
+  { version = ">=1.19.0,<1.25", markers = "python_version < \"3.9\"" },
+  { version = ">=1.25", markers = "python_version >= \"3.9\"" },
 ]
-Pillow = { version = ">=12.1.1" }
-PyQt5 = { version = ">=5.15", markers = "python_version == \"3.8\"" }
-PyQt5-Qt5 = { version = ">=5.15", markers = "python_version == \"3.8\"" }
-PyQt5-sip = { version = ">=12.10", markers = "python_version == \"3.8\"" }
-PyQt6 = [
-  { version = ">=6.10.1", markers = "python_version >= \"3.9\"" },
-  { version = ">=6.6.1,<6.10.1", markers = "python_version == \"3.8\"" },
+Pillow = [
+  { version = ">=10.0.0,<11", markers = "python_version < \"3.10\"" },
+  { version = ">=12.1.1", markers = "python_version >= \"3.10\"" },
 ]
-PyQt6-Qt6 = [
-  { version = ">=6.10.1", markers = "python_version >= \"3.9\"" },
-  { version = ">=6.6.1,<6.10.1", markers = "python_version == \"3.8\"" },
-]
+PyQt5 = { version = ">=5.15,<6", markers = "python_version < \"3.9\"" }
+PyQt5-sip = { version = ">=12.10,<13", markers = "python_version < \"3.9\"" }
+PyQt6 = { version = ">=6.10.1", markers = "python_version >= \"3.9\"" }
+PyQt6-Qt6 = { version = ">=6.10.1", markers = "python_version >= \"3.9\"" }
 PyQt6-sip = [
-  { version = ">=12.10,<13.10.3", markers = "python_version < \"3.10\"" },
+  { version = ">=12.10,<13.10.3", markers = "python_version >= \"3.9\" and python_version < \"3.10\"" },
   { version = ">=13.10.3", markers = "python_version >= \"3.10\"" },
 ]
 PySide6 = { version = ">=6.10.1", markers = "python_implementation == 'PyPy' and python_version >= '3.9'" }
 PySide6_Addons = { version = ">=6.10.1", markers = "python_implementation == 'PyPy' and python_version >= '3.9'" }
 PySide6_Essentials = { version = ">=6.10.1", markers = "python_implementation == 'PyPy' and python_version >= '3.9'" }
 qtpy = ">=2.4.3"
-requests = ">=2.32.4"
+requests = [
+  { version = ">=2.23.0,<2.32.5", markers = "python_version < \"3.9\"" },
+  { version = ">=2.32.4", markers = "python_version >= \"3.9\"" },
+]
 send2trash = ">=1.8.3"
-urllib3 = ">=2.6.3"
+urllib3 = [
+  { version = ">=1.21.1,<2.6.3", markers = "python_version < \"3.9\"" },
+  { version = ">=2.6.3", markers = "python_version >= \"3.9\"" },
+]
 
 [tool.poetry.group.dev.dependencies]
 pytest-qt = ">=4.2.0"

@@ -80,9 +80,10 @@ dev = [
   "python-dateutil>=2.9.0.post0",
   "python-dotenv; python_version<\"3.9\"",
   "python-dotenv>=1.2.1; python_version>=\"3.9\"",
-  "python-multipart>=0.0.22",
-  "ruff>=0.5.3",
-  "ruff>=0.5.3,<0.6.0; python_version<\"3.9\"",
+  "python-multipart>=0.0.9,<0.0.21; python_version < \"3.10\"",
+  "python-multipart>=0.0.22; python_version >= \"3.10\"",
+  "ruff>=0.5.3,<0.6.0; python_version < \"3.9\"",
+  "ruff>=0.5.3; python_version >= \"3.9\"",
   "snakeviz; python_version<\"3.9\"",
   "snakeviz>=2.2.2; python_version>=\"3.9\"",
   "tomli-w>=1.2.0; python_version>\"3.11\"",
@@ -115,18 +116,21 @@ extra = [
   "psutil>=7.2.2",
 ]
 font = [
-  "pillow>=12.1.1",
+  "pillow>=10.0.0,<11; python_version < \"3.10\"",
+  "pillow>=12.1.1; python_version >= \"3.10\"",
 ]
 gl = [
   "PyGLM>=2.0,<2.8; python_implementation == 'CPython'",
   "PyOpenGL>=3.1",
-  "numpy>=1.22",
+  "numpy>=1.22,<1.25; python_version < \"3.9\"",
+  "numpy>=1.25; python_version >= \"3.9\"",
 ]
 gl_exp = ["moderngl"]
 updater = [
   "certifi>=2021.10.8",
   "pycryptodome>=3.19.0",
-  "requests>=2.32.4",
+  "requests>=2.23.0,<2.32.5; python_version < \"3.9\"",
+  "requests>=2.32.4; python_version >= \"3.9\"",
 ]
 
 [project.scripts]
@@ -163,7 +167,10 @@ ply = ">=3.11,<4"
 charset-normalizer = { version = ">=2.0", optional = true }
 certifi = { version = ">=2021.10.8", optional = true }
 pycryptodome = { version = ">=3.19.0", optional = true }
-requests = { version = ">=2.32.4", optional = true }
+requests = [
+  { version = ">=2.23.0,<2.32.5", optional = true, markers = "python_version < \"3.9\"" },
+  { version = ">=2.32.4", optional = true, markers = "python_version >= \"3.9\"" },
+]
 fusepy = { version = ">=3.0.1", optional = true }
 pywin32 = { version = ">=38", optional = true }
 PyYAML = { version = ">=6.0", optional = true }
@@ -171,10 +178,16 @@ colorama = { version = ">=0.4.6", optional = true }
 comtypes = { version = ">=1.4.0", optional = true }
 gputil = { version = ">=1.4.0", optional = true }
 psutil = { version = ">=7.2.2", optional = true }
-pillow = { version = ">=12.1.1", optional = true }
+pillow = [
+  { version = ">=10.0.0,<11", optional = true, markers = "python_version < \"3.10\"" },
+  { version = ">=12.1.1", optional = true, markers = "python_version >= \"3.10\"" },
+]
 PyGLM = { version = ">=2.0,<2.9", optional = true }
 PyOpenGL = { version = ">=3.1", optional = true }
-numpy = { version = ">=1.22", optional = true }
+numpy = [
+  { version = ">=1.22,<1.25", optional = true, markers = "python_version < \"3.9\"" },
+  { version = ">=1.25", optional = true, markers = "python_version >= \"3.9\"" },
+]
 moderngl = { version = "*", optional = true }
 
 [tool.poetry.scripts]
@@ -235,7 +248,7 @@ python-dotenv = [
   { version = ">=1.2.1", markers = "python_version >= \"3.9\"" },
 ]
 python-multipart = [
-  { version = ">=0.0.22", markers = "python_version < \"3.10\"" },
+  { version = ">=0.0.9,<0.0.21", markers = "python_version < \"3.10\"" },
   { version = ">=0.0.22", markers = "python_version >= \"3.10\"" },
 ]
 ruff = [

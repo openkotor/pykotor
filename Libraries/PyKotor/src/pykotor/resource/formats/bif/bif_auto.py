@@ -83,6 +83,7 @@ def read_bif(
     if key_source:
         keys: dict[int, str] = _read_key_data(key_source)
         _merge_key_data(bif, keys)
+        bif.build_lookup_tables()
 
     return bif
 
@@ -95,13 +96,13 @@ def _read_key_data(
         bif_count: int = reader.read_uint32()
         key_count: int = reader.read_uint32()
         file_table_offset: int = reader.read_uint32()
-        reader.skip(4)  # Skip key table offset
+        key_table_offset: int = reader.read_uint32()
 
-        reader.seek(file_table_offset + bif_count * 12)  # Skip file table
+        reader.seek(key_table_offset)
 
         keys: dict[int, str] = {}
         for _ in range(key_count):
-            resref: str = reader.read_string(16)
+            resref: str = reader.read_string(16).rstrip("\0").lower()
             reader.skip(2)  # Skip restype_id
             res_id: int = reader.read_uint32()
             keys[res_id] = resref

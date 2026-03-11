@@ -11,6 +11,12 @@ dev = [
     "pytest-timeout>=2.4.0",
 ]
 
+# Pin PyQt5-Qt5 to a version that has Windows wheels (5.15.11+ dropped win). Required for Python 3.8.
+[tool.uv]
+override-dependencies = [
+  "pyqt5-qt5>=5.15.2,<5.15.11",
+]
+
 [project]
 name = "pykotor-workspace"
 authors = [{ name = "Nick Hugi" }, { name = "th3w1zard1" }]

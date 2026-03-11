@@ -34,7 +34,6 @@ QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and 
 - Set `QT_QPA_PLATFORM=offscreen` for headless Qt test execution; `xvfb` is available but `offscreen` is simpler.
 - The pytest process may crash (exit 134 / SIGABRT) during teardown due to PyQt6 thread cleanup. This is a known upstream issue and does not affect test results. Check the output for pass/fail counts before the crash.
 - Many test failures are expected without KotOR game files installed (the `K1_PATH` and `K2_PATH` environment variables point to Windows paths by default in `.env`).
-- Several HolocronToolset test files fail during collection due to a `requires_connection()` signature issue in `toolset/blender/commands.py`. This is a pre-existing codebase issue, not an environment problem.
 
 ### Building / running the application
 
@@ -51,9 +50,15 @@ Run `CXX=g++ uv sync --all-packages --all-extras` (not bare `uv sync`) to instal
 
 Python 3.8–3.13, uv, g++/gfortran (for numpy build), and Qt6/OpenGL/xcb system libraries are pre-installed. The `CXX=g++` env var may be needed when `uv sync` rebuilds numpy from source.
 
-### Known codebase issues
+### UI regeneration (convertui)
 
-- **HolocronToolset startup fails**: `toolset/blender/commands.py` uses `@requires_connection(return_value=False)` but the decorator does not accept that keyword argument. This prevents `uv run holocrontoolset` from launching. This is a pre-existing code bug, not an environment issue.
+After changing any `.ui` file under `Tools/HolocronToolset/src/ui/`, run convertui to regenerate Python bindings under `toolset/uic/qtpy/`:
+
+```bash
+uv run python Tools/HolocronToolset/src/ui/convertui.py
+```
+
+This works after a successful `uv sync --all-packages --all-extras`. **Python 3.8 is the minimum target.** Dependencies are pinned so that on 3.8 the highest version compatible with 3.8 is used (e.g. `numpy>=1.19.0,<1.25`, `requests>=2.23.0,<2.32.5`, PyQt5 on 3.8 with PyQt5-Qt5 constrained to a version that has Windows wheels). On 3.9+ the same packages use `>=` current/min versions (e.g. `numpy>=1.25`, `requests>=2.32.4`). All such splits use `python_version < \"3.9\"` vs `python_version >= \"3.9\"` (and where needed, e.g. Pillow/PyQt6-sip, additional splits for 3.10+). This keeps 3.9–3.13 working with newer releases while 3.8 gets the latest 3.8-compatible versions.
 
 ## Learned User Preferences
 

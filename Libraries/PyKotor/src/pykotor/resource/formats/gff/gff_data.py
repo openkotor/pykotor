@@ -1122,10 +1122,6 @@ class GFFStruct(ComparableMixin, dict):
             and object_type is not None
         ):
             value = self[label]
-            try:
-                print(f"value: {value} cls: {value.__class__} (isinstance? {isinstance(value, object_type)} {object_type})")
-            except Exception:
-                ...
         if object_type is bool and issubclass(value.__class__, int):
             value = bool(value)
         return value

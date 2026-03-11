@@ -19,7 +19,7 @@ from pykotor.common.language import Gender, Language, LocalizedString
 from pykotor.common.misc import Game, ResRef
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.chitin import Chitin
-from pykotor.extract.file import FileResource, LocationResult, ResourceIdentifier, ResourceResult
+from pykotor.extract.file import FileResource, LocationResult, ResourceIdentifier, ResourceQuery, ResourceResult
 from pykotor.extract.savedata import SaveFolderEntry
 from pykotor.extract.talktable import TalkTable
 from pykotor.resource.formats.gff import GFFFieldType, read_gff
@@ -91,13 +91,17 @@ class SearchLocation(IntEnum):
     """Encapsulated resources in the installation's 'lips' directory."""
 
     RIMS = 11
-    """Encapsulated resources in the installation's 'rims' directory. note: these `rims` only exist in the first game and are not used by the vanilla game at all."""
+    """Encapsulated resources in the installation's 'rims' directory. note: these `rims` only exist in the first game and are NOT even used in that game."""
 
     CUSTOM_MODULES = 12
     """Encapsulated resources stored in the capsules specified in method parameters."""
 
     CUSTOM_FOLDERS = 13
     """Resource files stored in the folders specified in the method parameters."""
+
+
+# Explicit search scope: ordered sequence of locations to search (same as legacy "order" parameter).
+SearchScope = Sequence[SearchLocation]
 
 
 class TexturePackNames(Enum):
@@ -1193,6 +1197,144 @@ class Installation:
         """
         return self._female_talktable
 
+    @staticmethod
+    def _normalize_queries(
+        queries: list[ResourceIdentifier] | tuple[Sequence[str], Sequence[ResourceType] | Sequence[ResourceIdentifier]],
+    ) -> list[ResourceIdentifier]:
+        """Normalize polymorphic queries to a list of ResourceIdentifier."""
+        if isinstance(queries, tuple):
+            resnames, restypes = queries
+            result: list[ResourceIdentifier] = []
+            for resname, restype in itertools.product(resnames, restypes):
+                rt = restype if isinstance(restype, ResourceType) else restype.restype
+                result.append(ResourceIdentifier(resname, rt))
+            return result
+        return list(queries)
+
+    def find_one(
+        self,
+        query: ResourceQuery,
+        scope: SearchScope | None = None,
+        *,
+        capsules: Sequence[Capsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> ResourceResult | None:
+        """Find a single resource by explicit query and scope."""
+        ident = query.to_identifier()
+        locs_map = self.find_locations(
+            [query],
+            scope=scope,
+            capsules=capsules,
+            folders=folders,
+            module_root=module_root,
+            logger=logger,
+        )
+        loc_list = locs_map.get(ident, [])
+        if not loc_list:
+            return None
+        loc = loc_list[0]
+        with loc.filepath.open("rb") as fh:
+            fh.seek(loc.offset)
+            data = fh.read(loc.size)
+        result = ResourceResult(
+            ident.resname,
+            ident.restype,
+            loc.filepath,
+            data,
+        )
+        result.set_file_resource(
+            FileResource(ident.resname, ident.restype, loc.size, loc.offset, loc.filepath),
+        )
+        return result
+
+    def find_many(
+        self,
+        queries: Sequence[ResourceQuery],
+        scope: SearchScope | None = None,
+        *,
+        capsules: Sequence[LazyCapsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> dict[ResourceIdentifier, ResourceResult | None]:
+        """Find multiple resources by explicit queries and scope."""
+        idents = [q.to_identifier() for q in queries]
+        return self.resources(
+            idents,
+            order=scope,
+            capsules=capsules,
+            folders=folders,
+            module_root=module_root,
+            logger=logger,
+        )
+
+    def find_locations(
+        self,
+        queries: Sequence[ResourceQuery],
+        scope: SearchScope | None = None,
+        *,
+        capsules: Sequence[LazyCapsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> dict[ResourceIdentifier, list[LocationResult]]:
+        """Find all locations for the given queries and scope."""
+        idents = [q.to_identifier() for q in queries]
+        return self.locations(
+            idents,
+            order=scope,
+            capsules=capsules,
+            folders=folders,
+            module_root=module_root,
+            logger=logger,
+        )
+
+    def get_decoded(
+        self,
+        resref: str | ResRef,
+        restype: ResourceType,
+        scope: SearchScope | None = None,
+        *,
+        capsules: Sequence[Capsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> Any | None:
+        """Find one resource and decode it to the domain object (e.g. UTC, GFF).
+
+        Convenience for find_one(ResourceQuery(...)).decode(). Returns None if not found
+        or if no decoder is registered for the restype.
+        """
+        result = self.find_one(
+            ResourceQuery(resref, restype),
+            scope=scope,
+            capsules=capsules,
+            folders=folders,
+            module_root=module_root,
+            logger=logger,
+        )
+        return result.decode() if result is not None else None
+
+    def get_utc(
+        self,
+        resref: str | ResRef,
+        scope: SearchScope | None = None,
+        **kwargs: Any,
+    ) -> Any | None:
+        """Convenience for get_decoded(resref, ResourceType.UTC, ...). Returns UTC or None."""
+        return self.get_decoded(resref, ResourceType.UTC, scope=scope, **kwargs)
+
+    def get_utp(
+        self,
+        resref: str | ResRef,
+        scope: SearchScope | None = None,
+        **kwargs: Any,
+    ) -> Any | None:
+        """Convenience for get_decoded(resref, ResourceType.UTP, ...). Returns UTP or None."""
+        return self.get_decoded(resref, ResourceType.UTP, scope=scope, **kwargs)
+
     @overload
     def resource(
         self,
@@ -1261,6 +1403,16 @@ class Installation:
             # Sequence[ResourceType]; for unordered containers (set), ordering is arbitrary.
             restypes = list(restype)
 
+        if len(restypes) == 1:
+            return self.find_one(
+                ResourceQuery(resname, restypes[0]),
+                scope=order,
+                capsules=capsules,
+                folders=folders,
+                module_root=module_root,
+                logger=logger,
+            )
+
         queries = [ResourceIdentifier(resname, rt) for rt in restypes]
         batch: dict[ResourceIdentifier, ResourceResult | None] = self.resources(
             queries,
@@ -1314,9 +1466,10 @@ class Installation:
             A dictionary mapping the given items in the queries argument to a list of ResourceResult objects.
         """
         order_list: list[SearchLocation] | None = list(order) if order is not None else None
+        norm_queries: list[ResourceIdentifier] = self._normalize_queries(queries)
         results: dict[ResourceIdentifier, ResourceResult | None] = {}
         locations: dict[ResourceIdentifier, list[LocationResult]] = self.locations(
-            queries,
+            norm_queries,
             order_list,
             capsules=capsules,
             folders=folders,
@@ -1326,7 +1479,7 @@ class Installation:
 
         handles: dict[ResourceIdentifier, io.BufferedReader] = {}
 
-        for query in queries:
+        for query in norm_queries:
             assert isinstance(query, ResourceIdentifier), f"{type(query).__name__}: {query}"
             location_list: list[LocationResult] = locations.get(query, [])
 
@@ -1537,14 +1690,7 @@ class Installation:
                 logger(f"Installation-wide search for '{query}':")
                 logger("  Checking each location:")
 
-        real_queries: set[ResourceIdentifier] = set()
-
-        if isinstance(queries, tuple):
-            resnames, restypes = queries
-            for resname, restype in itertools.product(resnames, restypes):
-                real_queries.add(ResourceIdentifier(resname, restype if isinstance(restype, ResourceType) else restype.restype))
-        else:
-            real_queries.update(queries)
+        real_queries = set(self._normalize_queries(queries))
 
         locations: dict[ResourceIdentifier, list[LocationResult]] = {}
         for qident in real_queries:

@@ -23,21 +23,15 @@ from qtpy.QtCore import (
 from qtpy.QtGui import QAction, QIcon, QPixmap
 from qtpy.QtWidgets import (
     QApplication,
-    QComboBox,
-    QDialog,
-    QDialogButtonBox,
     QFileDialog,
-    QLabel,
     QLineEdit,
     QMainWindow,
     QMenu,
     QMessageBox,
     QPlainTextEdit,  # pyright: ignore[reportPrivateImportUsage]
-    QPushButton,
     QShortcut,  # pyright: ignore[reportPrivateImportUsage]
     QStyle,
     QToolBar,
-    QVBoxLayout,
     QWidget,
 )
 
@@ -54,15 +48,15 @@ from pykotor.resource.type import ResourceType
 from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_capsule_file, is_rim_file, is_sav_file
 from pykotor.tools.module import rim_to_mod
 from toolset.data.installation import HTInstallation
+from toolset.gui.widgets.settings.installations import GlobalSettings
 from toolset.gui.common.localization import tr, trf
 from toolset.gui.dialogs.load_from_module import LoadFromModuleDialog
 from toolset.gui.dialogs.save.to_bif import BifSaveDialog, BifSaveOption
 from toolset.gui.dialogs.save.to_module import SaveToModuleDialog
 from toolset.gui.dialogs.save.to_rim import RimSaveDialog, RimSaveOption
 from toolset.gui.widgets.edit.locstring import LocalizedStringLineEdit
-from toolset.gui.widgets.installation_toolbar import StandaloneWindowMixin
+from toolset.gui.widgets.installation_toolbar import InstallationToolbar, StandaloneWindowMixin
 from toolset.gui.widgets.media_player_widget import MediaPlayerWidget
-from toolset.gui.widgets.settings.installations import GlobalSettings, InstallationsWidget
 from utility.error_handling import format_exception_with_variables
 
 if TYPE_CHECKING:
@@ -123,164 +117,47 @@ class Editor(QMainWindow, StandaloneWindowMixin):
 
         self.setup_editor_filters(read_supported, write_supported)
 
-        # Installation toolbar — always visible, allows switching installation at any time.
+        # Installation toolbar — reusable widget (same as standalone windows).
         self._editor_toolbar: QToolBar = QToolBar(self)
         self._editor_toolbar.setObjectName("editorToolbar")
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self._editor_toolbar)
-        self._installation_combo: QComboBox | None = None
-        self._installation_cache: dict[str, HTInstallation] = {}
-        self._saved_installations: dict[str, dict[str, str | bool]] = {}
-        self._installation_combo_in_update: bool = False
-        self._folder_path_edits: dict[str, QLineEdit] = {}
-        self._add_installation_combobox_to_toolbar(self._editor_toolbar)
-
-        # Editors that declare STANDALONE_FOLDER_PATHS get a second toolbar row of folder path overrides.
-        if self.STANDALONE_FOLDER_PATHS:
-            self._folder_toolbar: QToolBar = QToolBar(self)
-            self._folder_toolbar.setObjectName("folderPathsToolbar")
-            self.addToolBarBreak(Qt.ToolBarArea.TopToolBarArea)
-            self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self._folder_toolbar)
-            self._add_folder_path_inputs_to_toolbar(self._folder_toolbar)
+        self._installation_toolbar = InstallationToolbar(
+            self,
+            folder_path_specs=list(self.STANDALONE_FOLDER_PATHS),
+            requires_installation=False,
+        )
+        self._installation_toolbar.installation_changed.connect(self._handle_installation_changed)
+        self._installation_toolbar.folder_paths_changed.connect(self._handle_folder_paths_changed)
+        self._editor_toolbar.addWidget(self._installation_toolbar)
+        if self._installation is not None:
+            idx = self._installation_toolbar.installationCombo.findData(self._installation.name)
+            if idx >= 0:
+                self._installation_toolbar.installationCombo.setCurrentIndex(idx)
 
     def _populate_editor_toolbar(self, toolbar: QToolBar) -> None:
-        """Override in subclasses to append editor-specific controls after the installation combobox.
+        """Override in subclasses to append editor-specific controls after the installation toolbar.
 
-        The base class already adds the installation combobox (and folder path inputs for editors
-        that declare STANDALONE_FOLDER_PATHS) automatically in __init__, so subclasses should NOT
-        call _add_installation_combobox_to_toolbar here.
+        The base class already adds the InstallationToolbar widget automatically in __init__.
         """
 
     def enable_standalone_mode(self) -> None:
         """Editors always show installation controls in their toolbar; no extra panel needed."""
 
-    def _add_folder_path_inputs_to_toolbar(self, toolbar: QToolBar) -> None:
-        """Add a label + QLineEdit + Browse button for every FolderPathSpec declared by the editor."""
-        for spec in self.STANDALONE_FOLDER_PATHS:
-            toolbar.addWidget(QLabel(f"{spec.label}:"))
-            edit = QLineEdit(self)
-            edit.setPlaceholderText("(optional)" if not spec.required else "(required)")
-            edit.setMinimumWidth(110)
-            edit.setToolTip(spec.tooltip)
-            toolbar.addWidget(edit)
-            browse_btn = QPushButton("Browse...", self)
-            browse_btn.clicked.connect(lambda _checked=False, k=spec.key: self._browse_folder_path(k))
-            toolbar.addWidget(browse_btn)
-            edit.editingFinished.connect(self._emit_folder_paths_changed)
-            self._folder_path_edits[spec.key] = edit
-
-    def _browse_folder_path(self, key: str) -> None:
-        """Open a directory chooser and store the chosen path in the matching folder edit."""
-        directory = QFileDialog.getExistingDirectory(self, "Select Folder")
-        if directory and key in self._folder_path_edits:
-            self._folder_path_edits[key].setText(directory)
-            self._emit_folder_paths_changed()
-
-    def _emit_folder_paths_changed(self) -> None:
-        """Collect current folder path edit values and forward to _on_folder_paths_changed."""
-        paths: dict[str, Path | None] = {
-            spec.key: (Path(text) if (text := self._folder_path_edits[spec.key].text().strip()) else None)
-            for spec in self.STANDALONE_FOLDER_PATHS
-            if spec.key in self._folder_path_edits
-        }
-        self._on_folder_paths_changed(paths)
-
-    def _add_installation_combobox_to_toolbar(self, toolbar: QToolBar) -> None:
-        """Add Installation: combobox and Reload/Manage buttons to the editor toolbar."""
-        toolbar.addWidget(QLabel("Installation:"))
-        self._installation_combo = QComboBox(self)
-        self._installation_combo.setMinimumWidth(180)
-        toolbar.addWidget(self._installation_combo)
-        reload_btn = QPushButton("Reload", self)
-        reload_btn.clicked.connect(self._reload_installation_combo)
-        toolbar.addWidget(reload_btn)
-        manage_btn = QPushButton("Manage...", self)
-        manage_btn.clicked.connect(self._open_installations_manage_dialog)
-        toolbar.addWidget(manage_btn)
-        self._reload_installation_combo()
-        self._installation_combo.currentIndexChanged.connect(self._on_installation_combo_changed)
-
-    def _reload_installation_combo(self) -> None:
-        """Reload installation list from GlobalSettings and preserve current selection or set from self._installation."""
-        if self._installation_combo is None:
-            return
-        current_key = self._installation_combo.currentData()
-        self._saved_installations = {name: {"path": config.path, "tsl": config.tsl, "name": name} for name, config in self._global_settings.installations().items()}
-        self._installation_combo_in_update = True
-        try:
-            self._installation_combo.clear()
-            self._installation_combo.addItem("(None)", None)
-            for name, config in sorted(self._saved_installations.items()):
-                self._installation_combo.addItem(f"{name} ({config['path']})", name)
-            if self._installation is not None:
-                key = self._installation.name
-                idx = self._installation_combo.findData(key)
-                if idx >= 0:
-                    self._installation_combo.setCurrentIndex(idx)
-            elif current_key is not None:
-                idx = self._installation_combo.findData(current_key)
-                if idx >= 0:
-                    self._installation_combo.setCurrentIndex(idx)
-        finally:
-            self._installation_combo_in_update = False
-
-    def _open_installations_manage_dialog(self) -> None:
-        """Open Manage Installations dialog and reload combobox on save."""
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Manage Installations")
-        layout = QVBoxLayout(dialog)
-        widget = InstallationsWidget(dialog)
-        layout.addWidget(widget)
-        button_box = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel,
-            dialog,
-        )
-        layout.addWidget(button_box)
-        button_box.accepted.connect(dialog.accept)
-        button_box.rejected.connect(dialog.reject)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            widget.save()
-            self._reload_installation_combo()
-
-    def _on_installation_combo_changed(self, _index: int) -> None:
-        """Resolve selected installation and call _on_installation_changed."""
-        if self._installation_combo_in_update:
-            return
-        installation = self._get_installation_from_combo()
+    def _handle_installation_changed(self, installation: HTInstallation | None) -> None:
+        """Forward InstallationToolbar signal to overridable handler."""
         self._installation = installation
         self._on_installation_changed(installation)
 
-    def _get_installation_from_combo(self) -> HTInstallation | None:
-        """Resolve current combobox selection to HTInstallation."""
-        if self._installation_combo is None:
-            return None
-        selected_name: str | None = self._installation_combo.currentData()
-        if selected_name is None:
-            return None
-        cache_key: str = str(selected_name)
-        if cache_key in self._installation_cache:
-            return self._installation_cache[cache_key]
-        config: dict[str, Any] | None = self._saved_installations.get(cache_key)
-        if config is None:
-            return None
-        try:
-            installation = HTInstallation(
-                str(config["path"]),
-                str(config["name"]),
-                tsl=bool(config.get("tsl") or False),
-            )
-            self._installation_cache[cache_key] = installation
-            return installation
-        except Exception as exc:
-            self._logger.exception("Failed to create installation '%s': %s", cache_key, exc)
-            QMessageBox.warning(
-                self,
-                "Invalid Installation",
-                f"Could not load installation '{cache_key}'.",
-            )
-            return None
+    def _handle_folder_paths_changed(self, paths: dict[str, Path | None]) -> None:
+        """Forward InstallationToolbar signal to overridable handler."""
+        self._on_folder_paths_changed(paths)
 
     def _on_installation_changed(self, installation: HTInstallation | None) -> None:
         """Override in subclasses that need to react to installation changes."""
+        return
+
+    def _on_folder_paths_changed(self, paths: dict[str, Path | None]) -> None:
+        """Override in subclasses that support folder-path mode."""
         return
 
     @abstractmethod
