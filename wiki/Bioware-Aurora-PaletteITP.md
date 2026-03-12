@@ -727,5 +727,5 @@ Present only if the tileset has height transitions.
 
 ### See also
 
-- [GFF-File-Format](GFF-File-Format) — GFF structure; [Bioware-Aurora-GFF](Bioware-Aurora-GFF) — Aurora GFF spec
-- [KEY-File-Format](KEY-File-Format) — Resource resolution; [TSLPatcher-GFFList-Syntax](TSLPatcher-GFFList-Syntax) — Patching GFF
+- [GFF-File-Format](GFF-File-Format) -- GFF structure; [Bioware-Aurora-GFF](Bioware-Aurora-GFF) -- Aurora GFF spec
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution; [TSLPatcher-GFFList-Syntax](TSLPatcher-GFFList-Syntax) -- Patching GFF

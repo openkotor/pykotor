@@ -12,13 +12,13 @@ Override resources refer to the resources stored in the game's override folder. 
 
 The "Override" tab allows you to navigate through the override files. In TSL you can store files in nested folders and navigate through existing folders using the dropdown menu. This functionality is not present for KotOR 1.
 
-- **Refresh** — Refreshes the list of nested folders in the override directory.
-- **Reload** — Reloads the list of resources in the selected folder. If a resource is changed outside of the toolset, press this or an error may occur.
+- **Refresh** -- Refreshes the list of nested folders in the override directory.
+- **Reload** -- Reloads the list of resources in the selected folder. If a resource is changed outside of the toolset, press this or an error may occur.
 
 ![Override Tab](https://raw.githubusercontent.com/OldRepublicDevs/PyKotor/master/Tools/HolocronToolset/src/toolset/help/images/introduction_1-overrideResources=1.png)
 
 ### See Also
 
-- [Concepts](Concepts#override-folder) — Override folder and resource resolution
-- [Mod Creation Best Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files) — When to use override vs MOD
-- [KEY-File-Format](KEY-File-Format#key-file-purpose) — Resolution order
+- [Concepts](Concepts#override-folder) -- Override folder and resource resolution
+- [Mod Creation Best Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files) -- When to use override vs MOD
+- [KEY-File-Format](KEY-File-Format#key-file-purpose) -- Resolution order

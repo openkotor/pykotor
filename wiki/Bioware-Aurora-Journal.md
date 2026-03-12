@@ -112,5 +112,5 @@ category.
 
 ### See also
 
-- [GFF-JRL](GFF-JRL) — KotOR journal implementation; [GFF-File-Format](GFF-File-Format) — GFF structure
-- [NSS-File-Format](NSS-File-Format) — Journal scripting; [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [GFF-JRL](GFF-JRL) -- KotOR journal implementation; [GFF-File-Format](GFF-File-Format) -- GFF structure
+- [NSS-File-Format](NSS-File-Format) -- Journal scripting; [KEY-File-Format](KEY-File-Format) -- Resource resolution

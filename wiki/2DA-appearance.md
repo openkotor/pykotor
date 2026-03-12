@@ -123,8 +123,8 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure and column reference
-- [GFF-UTC](GFF-UTC) — Creature templates; [MDL-MDX-File-Format](MDL-MDX-File-Format), [TPC-File-Format](TPC-File-Format) — Models and textures
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax), [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure and column reference
+- [GFF-UTC](GFF-UTC) -- Creature templates; [MDL-MDX-File-Format](MDL-MDX-File-Format), [TPC-File-Format](TPC-File-Format) -- Models and textures
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax), [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) -- Patching 2DA
 
 ---

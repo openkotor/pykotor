@@ -93,7 +93,7 @@ KotOR models are defined using two files:
 - **MDL**: Contains the primary model data, including [geometry](MDL-MDX-File-Format#geometry-header) and [Node](MDL-MDX-File-Format#node-structures) structures.
 - **MDX**: Contains additional [Mesh](MDL-MDX-File-Format#trimesh-header) data, such as [vertex](MDL-MDX-File-Format#vertex-structure) buffers.
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/) — canonical layout and reading order. Binary layout is validated against the game engine (K1/TSL); see [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/VERIFICATION_REPORT.md`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/VERIFICATION_REPORT.md) for engine addresses and comparison.
+**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/) -- canonical layout and reading order. Binary layout is validated against the game engine (K1/TSL); see [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/VERIFICATION_REPORT.md`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/VERIFICATION_REPORT.md) for engine addresses and comparison.
 
 **Documentation sources:** Layout and field descriptions are merged from cchargin (mdl_info), xoreos-docs (kotor_mdl.html, torlack/binmdl.html), and vendor parsers (reone, mdlops, kotorblender). Where sources differ, PyKotor and the VERIFICATION_REPORT are treated as authoritative.
 

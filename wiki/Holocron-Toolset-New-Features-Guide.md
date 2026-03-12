@@ -66,10 +66,10 @@
 1. Select multiple resources (Shift+Click or Ctrl+Click)
 2. Right-click → "Batch Operations..." (or Ctrl+Shift+O)
 3. Choose operation:
-   - **Extract All** — Save all to a folder
-   - **Duplicate All to Override** — Copy all to Override
-   - **Delete All** — Remove all (with confirmation)
-   - **Rename with Pattern** — Bulk rename with wildcards
+   - **Extract All** -- Save all to a folder
+   - **Duplicate All to Override** -- Copy all to Override
+   - **Delete All** -- Remove all (with confirmation)
+   - **Rename with Pattern** -- Bulk rename with wildcards
 4. Watch progress bar
 5. Get summary: "Success: 47, Failed: 0, Skipped: 2"
 
@@ -188,11 +188,11 @@ Saves go to the Override folder (or current location); file browser refreshes; "
 
 ## Safety features
 
-- **Override-only operations** — Core game files cannot be modified by rename/move
-- **Collision detection** — Prompted before overwriting files
-- **Validation** — Invalid operations prevented before execution
-- **Clear error messages** — Explains what went wrong
-- **Operation summaries** — See what succeeded/failed after batch operations
+- **Override-only operations** -- Core game files cannot be modified by rename/move
+- **Collision detection** -- Prompted before overwriting files
+- **Validation** -- Invalid operations prevented before execution
+- **Clear error messages** -- Explains what went wrong
+- **Operation summaries** -- See what succeeded/failed after batch operations
 
 ---
 

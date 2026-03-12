@@ -20,7 +20,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-spells](2DA-spells) — Spell/effect data
-- [NSS-Shared-Functions-Combat-Functions](NSS-Shared-Functions-Combat-Functions) — Combat/effect scripts; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [2DA-spells](2DA-spells) -- Spell/effect data
+- [NSS-Shared-Functions-Combat-Functions](NSS-Shared-Functions-Combat-Functions) -- Combat/effect scripts; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

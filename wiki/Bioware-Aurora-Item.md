@@ -1948,5 +1948,5 @@ Armor type. Use as column name in weaponsounds.2da.
 
 ### See also
 
-- [GFF-UTI](GFF-UTI) — Item GFF in KotOR; [GFF-File-Format](GFF-File-Format) — GFF types
-- [2DA-baseitems](2DA-baseitems), [2DA-ammunitiontypes](2DA-ammunitiontypes) — Item/ammo 2DA; [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [GFF-UTI](GFF-UTI) -- Item GFF in KotOR; [GFF-File-Format](GFF-File-Format) -- GFF types
+- [2DA-baseitems](2DA-baseitems), [2DA-ammunitiontypes](2DA-ammunitiontypes) -- Item/ammo 2DA; [KEY-File-Format](KEY-File-Format) -- Resource resolution

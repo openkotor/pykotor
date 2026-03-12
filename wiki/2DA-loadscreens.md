@@ -22,7 +22,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-ARE](GFF-ARE) — Area LoadScreenID
-- [TPC-File-Format](TPC-File-Format), [2DA-ambientmusic](2DA-ambientmusic) — Images and music; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [GFF-ARE](GFF-ARE) -- Area LoadScreenID
+- [TPC-File-Format](TPC-File-Format), [2DA-ambientmusic](2DA-ambientmusic) -- Images and music; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

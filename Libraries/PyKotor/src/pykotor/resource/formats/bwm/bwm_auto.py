@@ -85,6 +85,8 @@ def read_bwm(
     source: SOURCE_TYPES,
     offset: int = 0,
     size: int | None = None,
+    *,
+    regenerate_derived: bool = True,
 ) -> BWM:
     """Returns an WOK instance from the source.
 
@@ -96,6 +98,7 @@ def read_bwm(
         source: The source of the data (path, bytes, or stream).
         offset: The byte offset of the file inside the data
         size: Number of bytes to allowed to read from the stream. If not specified, uses the whole stream.
+        regenerate_derived: If True (default), enforce transition invariant (perimeter-only) and assert after load.
 
     Raises:
     ------
@@ -103,6 +106,7 @@ def read_bwm(
         IsADirectoryError: If the specified path is a directory (Unix-like systems only).
         PermissionError: If the file could not be accessed.
         ValueError: If the file was corrupted.
+        AssertionError: If regenerate_derived is True and transitions on non-perimeter edges remain after enforce.
 
     Returns:
     -------
@@ -110,17 +114,24 @@ def read_bwm(
     """
     peek = _get_bwm_peek(source, offset, size)
     if len(peek) >= 4 and peek[:4] == BWM_MAGIC:
-        return BWMBinaryReader(source, offset, size or 0).load()
-    if _is_ascii_bwm(peek):
+        bwm = BWMBinaryReader(source, offset, size or 0).load()
+    elif _is_ascii_bwm(peek):
         data = _read_full_source(source, offset, size)
-        return BWMAsciiReader(io.BytesIO(data), 0, 0).load()
-    return BWMBinaryReader(source, offset, size or 0).load()
+        bwm = BWMAsciiReader(io.BytesIO(data), 0, 0).load()
+    else:
+        bwm = BWMBinaryReader(source, offset, size or 0).load()
+    if regenerate_derived:
+        bwm.enforce_transition_invariant()
+        bwm.assert_transition_arrows_invariant()
+    return bwm
 
 
 def write_bwm(
     wok: BWM,
     target: TARGET_TYPES,
     file_format: ResourceType = ResourceType.WOK,
+    *,
+    regenerate_derived: bool = True,
 ):
     """Writes the WOK data to the target location with the specified format (WOK only).
 
@@ -129,15 +140,17 @@ def write_bwm(
         wok: The WOK file being written.
         target: The location to write the data to.
         file_format: The file format.
+        regenerate_derived: If True (default), enforce transition invariant and assert before writing.
 
     Raises:
     ------
         IsADirectoryError: If the specified path is a directory (Unix-like systems only).
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
+        AssertionError: If regenerate_derived is True and invariant fails after enforce.
     """
     if file_format == ResourceType.WOK:
-        BWMBinaryWriter(wok, target).write()
+        BWMBinaryWriter(wok, target, regenerate_derived=regenerate_derived).write()
     else:
         msg = "Unsupported format specified; use WOK."
         raise ValueError(msg)
@@ -166,6 +179,8 @@ def write_bwm_ascii(
 def bytes_bwm(
     bwm: BWM,
     file_format: ResourceType = ResourceType.WOK,
+    *,
+    regenerate_derived: bool = True,
 ) -> bytes:
     """Returns the BWM data in the specified format (WOK only) as a bytes object.
 
@@ -175,15 +190,17 @@ def bytes_bwm(
     ----
         bwm: The target BWM.
         file_format: The file format.
+        regenerate_derived: If True (default), enforce transition invariant and assert before writing.
 
     Raises:
     ------
         ValueError: If the specified format was unsupported.
+        AssertionError: If regenerate_derived is True and invariant fails after enforce.
 
     Returns:
     -------
         The BWM data.
     """
     data = bytearray()
-    write_bwm(bwm, data, file_format)
+    write_bwm(bwm, data, file_format, regenerate_derived=regenerate_derived)
     return bytes(data)

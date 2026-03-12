@@ -19,7 +19,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-classes](2DA-classes) — Class progression
-- [GFF-UTC](GFF-UTC) — Creature XP; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [2DA-classes](2DA-classes) -- Class progression
+- [GFF-UTC](GFF-UTC) -- Creature XP; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

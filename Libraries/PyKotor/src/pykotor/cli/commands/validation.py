@@ -34,6 +34,7 @@ from pykotor.tools.validation import (
     check_2da_file,
     check_missing_resources_referenced,
     check_txi_files,
+    get_installation_summary,
     get_module_referenced_resources,
     investigate_module_structure,
     validate_installation,
@@ -121,22 +122,26 @@ def cmd_validate_installation(args: Namespace, logger: Logger) -> int:
         return 1
 
     logger.info(f"Validating installation: {installation.path()}")  # noqa: G004
-    results = validate_installation(installation, check_essential_files=args.check_essential)
+    summary = get_installation_summary(installation, check_essential_files=args.check_essential)
     ok, _fail = ok_fail_symbols()
 
-    if results["valid"]:
+    if summary["valid"]:
         logger.info(f"{ok} Installation is valid")  # noqa: G004
+        if summary.get("game"):
+            logger.info(f"  Game: {summary['game']}")  # noqa: G004
+        if args.verbose:
+            logger.info(f"  Modules: {summary.get('module_count', 0)}, Override files: {summary.get('override_file_count', 0)}")  # noqa: G004
         return 0
 
-    missing_files_raw = results["missing_files"]
-    assert isinstance(missing_files_raw, (Sized, list)), "missing_files must be a list or a sized iterable"
-    missing_files: list[str] = missing_files_raw
+    missing_files_raw = summary["missing"]
+    assert isinstance(missing_files_raw, (Sized, list)), "missing must be a list or a sized iterable"
+    missing_files = missing_files_raw
     if bool(missing_files):
         logger.warning(f"Missing files ({len(missing_files)}):")  # noqa: G004
         for file in missing_files:
             logger.warning(f"  - {file}")  # noqa: G004
 
-    errors_raw = results["errors"]
+    errors_raw = summary["errors"]
     assert isinstance(errors_raw, list), "errors must be a list"
     errors: list[str] = errors_raw  # pyright: ignore[reportGeneralTypeIssues]
     if bool(errors):

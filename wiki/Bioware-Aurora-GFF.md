@@ -721,6 +721,6 @@ element.
 
 ### See also
 
-- [GFF-File-Format](GFF-File-Format) — KotOR GFF implementation and field types
-- [GFF-ARE](GFF-ARE), [GFF-IFO](GFF-IFO), [GFF-UTI](GFF-UTI), [GFF-UTC](GFF-UTC) — KotOR GFF-based resources
-- [KEY-File-Format](KEY-File-Format) — Resource resolution; [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Patching GFF
+- [GFF-File-Format](GFF-File-Format) -- KotOR GFF implementation and field types
+- [GFF-ARE](GFF-ARE), [GFF-IFO](GFF-IFO), [GFF-UTI](GFF-UTI), [GFF-UTC](GFF-UTC) -- KotOR GFF-based resources
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution; [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Patching GFF

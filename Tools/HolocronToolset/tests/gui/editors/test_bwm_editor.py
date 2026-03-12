@@ -16,7 +16,8 @@ try:
     from qtpy.QtTest import QTest
     from qtpy.QtWidgets import QApplication
 except (ImportError, ModuleNotFoundError):
-    Qt, QTest, QApplication = object, object, object  # type: ignore[misc, assignment]
+    if not TYPE_CHECKING:
+        Qt, QTest, QApplication = object, object, object  # type: ignore[misc, assignment]
 
 absolute_file_path = pathlib.Path(__file__).resolve()
 TESTS_FILES_PATH = next(f for f in absolute_file_path.parents if f.name == "tests") / "test_files"
@@ -46,8 +47,9 @@ if __name__ == "__main__" and getattr(sys, "frozen", False) is False:
 K1_PATH = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
 K2_PATH = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
 
-from pykotor.extract.file import ResourceIdentifier, ResourceResult
+from pykotor.extract.file import FileResource, ResourceIdentifier, ResourceResult
 from pykotor.extract.installation import Installation
+from pykotor.resource.formats.bwm import BWMType
 from pykotor.resource.formats.bwm.bwm_auto import bytes_bwm, read_bwm
 from pykotor.resource.type import ResourceType
 
@@ -502,6 +504,10 @@ class BWMTransitionIntegrityTest(TestCase):
         # Verify we still have at least one transition
         assert len(faces_with_transitions) > 0, "Should have at least one face with transitions"
 
+        # Plan: transitions only on perimeter edges after load/save/reload (regenerate_derived=True)
+        if loaded_bwm.walkmesh_type == BWMType.AreaModel:
+            loaded_bwm.assert_transition_arrows_invariant()
+
     def test_roundtrip_with_working_module_data(self):
         """Test roundtrip with real module data from v2.0.4 (working version).
 
@@ -839,6 +845,26 @@ def test_bwm_editor_transition_list_selection(qtbot: QtBot, installation: HTInst
         assert "Transition" in current_item.text()
 
 
+def test_bwm_editor_renderer_highlight_boundaries_no_exception(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
+    """With highlight_boundaries=True, renderer draws perimeter/arrows without raising (plan 4.2)."""
+    editor = BWMEditor(None, installation)
+    qtbot.addWidget(editor)
+    editor.show()
+    QApplication.processEvents()
+
+    bwm_file = test_files_dir / "zio006j.wok"
+    if not bwm_file.exists():
+        pytest.skip("zio006j.wok not found")
+
+    original_data = bwm_file.read_bytes()
+    editor.load(bwm_file, "zio006j", ResourceType.WOK, original_data)
+    QApplication.processEvents()
+
+    editor.ui.renderArea.highlight_boundaries = True
+    editor.ui.renderArea.update()
+    QApplication.processEvents()
+
+
 # ============================================================================
 # KEYBOARD SHORTCUT TESTS
 # ============================================================================
@@ -1064,11 +1090,11 @@ def test_bwm_editor_load_from_installation(qtbot: QtBot, installation: HTInstall
 
     # Try to find any walkmesh resource in the installation by enumerating known resources.
     # (Installation.resources() expects explicit name+type queries, not a tuple of types.)
-    file_res = next((r for r in installation if r.restype in (ResourceType.WOK, ResourceType.DWK)), None)
+    file_res: FileResource | None = next((r for r in installation if r.restype() in (ResourceType.WOK, ResourceType.DWK)), None)
     if file_res is None:
         pytest.skip("No WOK/DWK resources found in installation")
 
-    bwm_resource = installation.resource(file_res.resname, file_res.restype)
+    bwm_resource: ResourceResult | None = installation.resource(file_res.resname(), file_res.restype())
     if bwm_resource is None:
         pytest.skip(f"Could not load BWM data for {file_res.resname}")
 

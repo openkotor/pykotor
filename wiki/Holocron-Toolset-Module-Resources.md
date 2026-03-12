@@ -14,13 +14,13 @@ A single module can have its resources stored across multiple module files and y
 
 The "Module" tab allows you to navigate through the various module files through a dropdown menu and view the resources stored inside them. Like the Core tab you can search for resources using the textbox.
 
-- **Refresh** — Refreshes the list of module files stored in the game's folder.
-- **Reload** — Reloads the list of resources stored in the module file selected in the dropdown menu. If a resource is changed outside of the toolset, you will need to press this button or an error may occur.
+- **Refresh** -- Refreshes the list of module files stored in the game's folder.
+- **Reload** -- Reloads the list of resources stored in the module file selected in the dropdown menu. If a resource is changed outside of the toolset, you will need to press this button or an error may occur.
 
 ![Module tab](https://raw.githubusercontent.com/OldRepublicDevs/PyKotor/master/Tools/HolocronToolset/src/toolset/help/images/introduction_3-moduleResources=1.png)
 
 ### See also
 
-- [ERF-File-Format](ERF-File-Format) — MOD/RIM container format
-- [Concepts](Concepts#mod--erf) — MOD/ERF and resource resolution
+- [ERF-File-Format](ERF-File-Format) -- MOD/RIM container format
+- [Concepts](Concepts#mod--erf) -- MOD/ERF and resource resolution
 - [Holocron Toolset Getting Started](Holocron-Toolset-Getting-Started)

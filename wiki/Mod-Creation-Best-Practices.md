@@ -135,11 +135,11 @@ label=YavinHgrDoor1
 
 ### See also
 
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — Mod tooling and workflow
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher installation and usage
-- [GFF File Format](GFF-File-Format) — GFF structure; [GIT](GFF-File-Format#git-game-instance-template), [UTC](GFF-File-Format#utc-creature), [UTP](GFF-UTP)
-- [NSS File Format](NSS-File-Format) — Scripting; [NCS](NCS-File-Format) bytecode
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — End-user mod installation
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums archives for tutorials and community knowledge
-- [KEY-File-Format](KEY-File-Format#key-file-purpose) — Resource resolution order
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax), [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax), [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Merging and patching
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Mod tooling and workflow
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher installation and usage
+- [GFF File Format](GFF-File-Format) -- GFF structure; [GIT](GFF-File-Format#git-game-instance-template), [UTC](GFF-File-Format#utc-creature), [UTP](GFF-UTP)
+- [NSS File Format](NSS-File-Format) -- Scripting; [NCS](NCS-File-Format) bytecode
+- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- End-user mod installation
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums archives for tutorials and community knowledge
+- [KEY-File-Format](KEY-File-Format#key-file-purpose) -- Resource resolution order
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax), [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax), [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Merging and patching

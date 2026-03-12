@@ -156,9 +156,9 @@ QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib \
 
 ### See Also
 
-- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) — User workflow for Indoor Maps
-- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) — Implementation Details
-- [BWM File Format](BWM-File-Format) — Walkmesh Format
-- [MDL/MDX File Format](MDL-MDX-File-Format) — Model Format
-- [LYT-File-Format](LYT-File-Format) — Room Layout; [GFF-GIT](GFF-GIT) — Instance Data
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for *MDL/LYT* workflows and *kotorblender*
+- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- User workflow for Indoor Maps
+- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Implementation Details
+- [BWM File Format](BWM-File-Format) -- Walkmesh Format
+- [MDL/MDX File Format](MDL-MDX-File-Format) -- Model Format
+- [LYT-File-Format](LYT-File-Format) -- Room Layout; [GFF-GIT](GFF-GIT) -- Instance Data
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for *MDL/LYT* workflows and *kotorblender*

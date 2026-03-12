@@ -136,6 +136,6 @@ source code @ [tslpatcher.mods.template](https://github.com/OldRepublicDevs/PyKo
 
 ### See also
 
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — User installation; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — Mod development
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher syntax; [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax), [TSLPatcher InstallList Syntax](TSLPatcher-InstallList-Syntax) — Patch list docs
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- User installation; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Mod development
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher syntax; [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax), [TSLPatcher InstallList Syntax](TSLPatcher-InstallList-Syntax) -- Patch list docs
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution

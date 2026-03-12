@@ -225,7 +225,7 @@ The encoding allows a single 32-bit integer to precisely locate any resource in 
 - [GFF File Format](GFF-File-Format) - Common content type resolved via KEY/BIF
 - [Bioware Aurora KeyBIF](Bioware-Aurora-KeyBIF) - Official BioWare KEY/BIF specification
 - [Home](Home) - Resource resolution order and override folder
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for override and resolution troubleshooting
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for override and resolution troubleshooting
 
 ---
 

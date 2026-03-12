@@ -546,7 +546,7 @@ All controls share these base properties:
 
 ### See also
 
-- [GFF-File-Format](GFF-File-Format) — Generic format underlying GUI
+- [GFF-File-Format](GFF-File-Format) -- Generic format underlying GUI
 - [TPC File Format](TPC-File-Format), [TXI File Format](TXI-File-Format) - Textures used by GUI controls
 - [TLK File Format](TLK-File-Format) - String references for GUI text
 - [NCS File Format](NCS-File-Format) - Scripts that drive GUI behavior

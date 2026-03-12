@@ -32,7 +32,7 @@ from qtpy.QtGui import (
 from qtpy.QtWidgets import QApplication, QWidget
 
 from pykotor.resource.formats.bwm import BWM
-from pykotor.resource.formats.bwm.bwm_data import BWMFace
+from pykotor.resource.formats.bwm.bwm_data import BWMType, BWMFace
 from pykotor.resource.formats.tpc import TPCTextureFormat
 from pykotor.resource.generics.are import ARENorthAxis
 from pykotor.resource.generics.git import (
@@ -932,6 +932,7 @@ class WalkmeshRenderer(QWidget):
                 painter.drawLine(QPointF(p1.x, p1.y), QPointF(p2.x, p2.y))
 
         if self.highlight_boundaries:
+            arrow_size_world = 0.25  # world-space length for transition arrows (inward direction)
             for walkmesh in self._walkmeshes:
                 for face in walkmesh.walkable_faces():
                     painter.setPen(QPen(boundary_color, 3 / self.camera.zoom()))
@@ -946,6 +947,23 @@ class WalkmeshRenderer(QWidget):
                         path.moveTo(face.v1.x, face.v1.y)
                         path.lineTo(face.v3.x, face.v3.y)
                     painter.drawPath(path)
+                # Draw inward-pointing arrows on perimeter edges with transitions (KotOR.js convention)
+                if walkmesh.walkmesh_type == BWMType.AreaModel:
+                    for edge in walkmesh.edges():
+                        if edge.transition < 0:
+                            continue
+                        mid, direction = BWM.edge_inward_direction_xy(edge.face, edge.index)
+                        end_x = mid.x + direction.x * arrow_size_world
+                        end_y = mid.y + direction.y * arrow_size_world
+                        self._draw_arrowhead(
+                            painter,
+                            mid.x,
+                            mid.y,
+                            end_x,
+                            end_y,
+                            arrow_size_world,
+                            boundary_color,
+                        )
 
         # Draw room boundaries and names from LYT layout
         if self.show_room_boundaries and self._layout is not None:

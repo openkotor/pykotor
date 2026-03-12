@@ -1455,7 +1455,7 @@ Common [GFF](GFF-File-Format)-based file types you can modify:
 ### TSLPatcher Versions
 
 - **[1.2.10b](TSLPatcher's-Official-Readme#change-log-for-version-1210b1-rel)** (2007-09-19): Fixed ExoLocString substring linefeed handling (use `<#LF#>` for newlines)
-- **[1.2.9b](TSLPatcher's-Official-Readme#change-log-for-version-129b-rel)** (2007-08-13): Changed behavior when adding duplicate fields—now modifies existing field instead of skipping
+- **[1.2.9b](TSLPatcher's-Official-Readme#change-log-for-version-129b-rel)** (2007-08-13): Changed behavior when adding duplicate fields--now modifies existing field instead of skipping
 - **[1.2.8b10](TSLPatcher's-Official-Readme#change-log-for-version-128b10-rel)** (2006-12-10): Bug fixes for required file checks
 - **[1.2.8b6](TSLPatcher's-Official-Readme#change-log-for-version-128b6-rel)** (2006-10-03): Added `!OverrideType` support for [ERF](ERF-File-Format)/RIM destinations
 - **[1.2.7b9](TSLPatcher's-Official-Readme#change-log-for-version-127b9-rel)** (2006-07-23): **Dynamic field paths** - Added `!FieldPath` support for storing and using field paths via `2DAMEMORY#` tokens
@@ -1469,12 +1469,12 @@ Common [GFF](GFF-File-Format)-based file types you can modify:
 
 ### See also
 
-- [GFF File Format](GFF-File-Format) — GFF structure and field types
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher overview and change log
-- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) — 2DA and text patching
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — HoloPatcher usage
-- [KEY-File-Format](KEY-File-Format) — Resource resolution and override order
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums for GFF modding examples
+- [GFF File Format](GFF-File-Format) -- GFF structure and field types
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher overview and change log
+- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) -- 2DA and text patching
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- HoloPatcher usage
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution and override order
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for GFF modding examples
 
 ---
 

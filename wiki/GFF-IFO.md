@@ -292,7 +292,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 ### See also
 
-- [GFF-File-Format](GFF-File-Format) — Generic format underlying IFO
+- [GFF-File-Format](GFF-File-Format) -- Generic format underlying IFO
 - [GFF-ARE (Area)](GFF-ARE) - Area properties; Mod_Entry_Area and Mod_Area_list
 - [GIT (Game Instance Template)](GFF-File-Format#git-game-instance-template) - Dynamic area contents
 - [Bioware Aurora IFO Format](Bioware-Aurora-IFO) - Official module info specification

@@ -43,6 +43,6 @@ pykotorcli diff "C:\Program Files (x86)\Steam\steamapps\common\swkotor" "D:\work
 
 ### See also
 
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher overview; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — Patching workflow
-- [KEY-File-Format](KEY-File-Format) — Resource resolution; [ERF-File-Format](ERF-File-Format), [GFF-File-Format](GFF-File-Format) — Diffed resources
-- [TLK-File-Format](TLK-File-Format) — StrRef handling in incremental output
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher overview; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Patching workflow
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution; [ERF-File-Format](ERF-File-Format), [GFF-File-Format](GFF-File-Format) -- Diffed resources
+- [TLK-File-Format](TLK-File-Format) -- StrRef handling in incremental output

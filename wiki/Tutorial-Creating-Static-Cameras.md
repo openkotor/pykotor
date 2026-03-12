@@ -7,7 +7,7 @@ Static cameras are fixed viewpoints you can place in an area to control dialogue
 ## Prerequisites
 
 1. **Holocron Toolset** (or KotOR Tool for extraction if you prefer).
-2. **K1 Utility Armbands** mod — provides an in-game “orientation armband” that outputs position and quaternion values needed for camera orientation. Install via TSLPatcher. (A modified version that adds quaternion X/Y for cameras may be referenced in the original tutorial; the armband gives player position and orientation.)
+2. **K1 Utility Armbands** mod -- provides an in-game “orientation armband” that outputs position and quaternion values needed for camera orientation. Install via TSLPatcher. (A modified version that adds quaternion X/Y for cameras may be referenced in the original tutorial; the armband gives player position and orientation.)
 3. **Cheats enabled** in-game.
 
 ---
@@ -79,8 +79,8 @@ You can add a delay if needed. Save the dialogue file.
 
 If you extracted the GIT and edited it externally, you need to put the modified GIT (and any modified DLG) back into the game:
 
-1. **Option A — Override:** Place the modified GIT and DLG in the **override** folder with the correct names. The engine may load them for the module depending on how the game resolves resources (override can override module resources in some setups).
-2. **Option B — MOD file:** Create a .mod that contains the original module files plus your modified GIT and DLG. The game loads a .mod in place of the .rim pair when present. You can use an ERF/MOD editor to create the .mod, add all files from the original RIMs, then add/replace with your modified GIT and DLG. Place the .mod in the game’s **modules** folder.
+1. **Option A -- Override:** Place the modified GIT and DLG in the **override** folder with the correct names. The engine may load them for the module depending on how the game resolves resources (override can override module resources in some setups).
+2. **Option B -- MOD file:** Create a .mod that contains the original module files plus your modified GIT and DLG. The game loads a .mod in place of the .rim pair when present. You can use an ERF/MOD editor to create the .mod, add all files from the original RIMs, then add/replace with your modified GIT and DLG. Place the .mod in the game’s **modules** folder.
 
 With **Holocron Toolset**, editing the GIT (and DLG) from the Modules tab and saving usually updates the module or writes to override, so you may not need a separate packaging step.
 
@@ -94,7 +94,7 @@ Load a save from **before** you entered the area (so the module/GIT is reloaded)
 
 ## See also
 
-- [GFF-GIT](GFF-File-Format#git-game-instance-template) — Game Instance Template (CameraList and camera structs)
-- [GFF-DLG](GFF-DLG) — Dialogue format (CameraID and camera angle)
-- [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor) — Opening and editing modules
-- [Holocron Toolset: Module resources](Holocron-Toolset-Module-Resources) — Module tab and GIT access
+- [GFF-GIT](GFF-File-Format#git-game-instance-template) -- Game Instance Template (CameraList and camera structs)
+- [GFF-DLG](GFF-DLG) -- Dialogue format (CameraID and camera angle)
+- [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor) -- Opening and editing modules
+- [Holocron Toolset: Module resources](Holocron-Toolset-Module-Resources) -- Module tab and GIT access

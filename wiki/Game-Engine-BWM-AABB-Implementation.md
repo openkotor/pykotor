@@ -1,18 +1,18 @@
 # Game Engine BWM/AABB/Walkmesh Implementation Analysis
 
-This document analyzes how the original KOTOR game engine (`swkotor.exe` / `swkotor2.exe`) handles BWM files, AABB trees, and walkmeshes, based on reverse-engineered source code from `vendor/swkotor.c` and `vendor/swkotor.h`. Those paths refer to **local or decompilation-derived sources** (not GitHub repositories); structure and line references in this doc are to that local/vendor copy.
+This document analyzes how the original *KOTOR* game engine (`/K1/k1_win_gog_swkotor.exe` / `/TSL/k2_win_gog_aspyr_swkotor2.exe`) handles *BWM* files, *AABB* trees, and walkmeshes. Those paths refer to **local or decompilation-derived sources** (not GitHub repositories); structure and line references in this doc are to that local/vendor copy.
 
 ## Overview
 
-The game engine uses several key data structures and functions to manage walkmeshes for collision detection, pathfinding, and spatial queries. This analysis is critical for ensuring our PyKotor/HolocronToolset implementation matches the game's behavior.
+The game engine uses several key data structures and functions to manage walkmeshes for *collision detection*, *pathfinding*, and *spatial queries*.
 
 ---
 
 ## Key Data Structures
 
-### `CSWWalkMeshHeader` (vendor/swkotor.h:2225-2250)
+### `CSWWalkMeshHeader`
 
-The BWM file header structure that the game reads directly from disk:
+The *[BWM](BWM-File-Format)* file header structure that the game reads directly from disk:
 
 ```c
 struct CSWWalkMeshHeader {
@@ -43,20 +43,20 @@ struct CSWWalkMeshHeader {
 
 **Key Findings:**
 
-1. **`world_coords` field (offset 0x08)**: The game explicitly checks this field to determine coordinate space
-   - `0` = local coordinates (PWK/DWK) - vertices transformed by object position/rotation at runtime
-   - `1` = world coordinates (WOK) - vertices already in world space
+1. **`world_coords` field (Offset 0x08)**: The game explicitly checks this field to determine coordinate space
+   - `0` = Local coordinates (*PWK/DWK*) - vertices transformed by object position/rotation at runtime
+   - `1` = World coordinates (*WOK*) - vertices already in world space
    - Referenced in: `CSWCollisionMesh__LoadMeshBinary`, `CSWCollisionMesh__WorldToLocal`, `CSWCollisionMesh__LocalToWorld`
 
-2. **`aabb_root` field (offset 0x6C)**: Stores the root node index for AABB tree traversal
-   - Used in: `CheckAABBNode` function calls (vendor/swkotor.c:280842, 280868, 280877)
-   - This confirms AABB trees use 0-based array indexing
+2. **`aabb_root` field (Offset 0x6C)**: Stores the root node index for AABB tree traversal
+   - Used in: `CheckAABBNode` function calls
+   - This confirms ***AABB* trees use 0-based array indexing**
 
-3. **File structure**: Header is exactly **136 bytes (0x88)**, followed by data tables at specified offsets
+3. **File structure**: Header is *exactly* **136 bytes (0x88)**, followed by data tables at specified offsets
 
-### `CSWRoomSurfaceMesh` (vendor/swkotor.h:17825-17845)
+### `CSWRoomSurfaceMesh`
 
-The runtime mesh structure that loads BWM data:
+The runtime *mesh* structure that loads *BWM* data:
 
 ```c
 struct CSWRoomSurfaceMesh {
@@ -84,41 +84,40 @@ struct CSWRoomSurfaceMesh {
 
 **Key Findings:**
 
-1. **Material masks**: The game uses bitmasks to filter faces by material type
+1. **Material Bitmasks**: The game uses bitmasks to filter faces by material type
    - `walkable_material_mask`: Determines which materials are walkable
    - `los_material_mask`: Determines which materials block line of sight
    - This is why material IDs matter - they're used as bit positions in masks
 
-2. **Adjacency storage**: Adjacencies are stored as a flat array indexed by `face_index * 3 + edge_index`
-   - Confirmed in: vendor/swkotor.c:280215-280216
+2. **Adjacency Storage**: *Adjacencies* are stored as a flat array indexed by `face_index * 3 + edge_index`
 
 3. **AABB tree**: Stored as a dynamic array (`CExoArrayList__SurfaceMeshAABB`)
    - Tree is accessed via `aabb_root` index
-   - Nodes reference children by array index (0-based)
+   - Nodes reference children by *array index (0-based)*
 
-### `AABB_t` Node Structure (vendor/swkotor.h:1873-1880)
+### `AABB_t` Node Structure
 
 ```c
 struct AABB {
-    Vector field0_0x0;                  // Min bounds
-    Vector field1_0xc;                  // Max bounds
+    Vector min_bounds_0x0;                  // Min bounds
+    Vector max_bounds_0xc;                  // Max bounds
     struct AABB_t *right_child;         // Right child pointer
     struct AABB_t *left_child;          // Left child pointer
-    undefined4 field5_0x24;             // Most significant plane
+    undefined4 most_significant_plane_0x24;             // Most significant plane
 };
 ```
 
 **Key Findings:**
 
-1. **Child pointers**: In the binary file, these are stored as 32-bit unsigned integers (indices)
-2. **Node size**: Each AABB node is **44 bytes** on disk
-3. **Traversal**: The game uses recursive traversal starting from `aabb_root`
+1. **Child pointers**: In the *binary* file, these are stored as 32-bit unsigned integers (indices)
+2. **Node size**: Each *AABB* node is **44 (0x2C) bytes** on disk
+3. **Traversal**: The game uses recursive traversal starting from `aabb_root` (root node index for AABB tree)
 
 ---
 
 ## Critical Functions
 
-### `CSWCollisionMesh__LoadMeshBinary` (vendor/swkotor.c:280206-280232)
+### `CSWCollisionMesh__LoadMeshBinary`
 
 Loads BWM data from file into runtime structures:
 
@@ -144,16 +143,16 @@ if (iVar2 != 0) {
 
 **Key Findings:**
 
-1. **Offset 0x6C (108)**: `aabb_root` is read from file header
-2. **Offset 0x74 (116)**: Adjacency offset
-3. **Offset 0x78 (120)**: Edge count
-4. **Offset 0x7C (124)**: Edge offset
+1. **Offset 108 (0x6C)**: `aabb_root` is read from file header
+2. **Offset 116 (0x74)**: Adjacency offset
+3. **Offset 120 (0x78)**: Edge count
+4. **Offset 124 (0x7C)**: Edge offset
 
-This confirms our BWM-File-Format.md documentation is correct!
+This confirms our [BWM](BWM-File-Format) documentation is correct!
 
-### `CheckAABBNode` / `HitCheckAABBnode` (vendor/swkotor.c:45920-46297)
+### `CheckAABBNode` / `HitCheckAABBnode`
 
-Recursive AABB tree traversal for raycasting:
+Recursive *AABB* tree traversal for raycasting:
 
 ```c
 ulong __cdecl HitCheckAABBnode(AABB_t *param_1, Vector *param_2, Vector *param_3, float param_4) {
@@ -178,7 +177,7 @@ ulong __cdecl HitCheckAABBnode(AABB_t *param_1, Vector *param_2, Vector *param_3
 
 1. **Direction heuristic**: The game uses `AABBDirectionHeuristic` to determine traversal order
    - This optimizes raycasting by testing closer children first
-   - The `field5_0x24` (most significant plane) stores the split axis
+   - The `most_significant_plane_0x24` (most significant plane) stores the split axis
 
 2. **Recursive traversal**: Both children are tested, not early-exit on first hit
    - This is why the function returns a count (`local_80 + uVar10`)
@@ -186,7 +185,7 @@ ulong __cdecl HitCheckAABBnode(AABB_t *param_1, Vector *param_2, Vector *param_3
 
 3. **Leaf node detection**: When `face_index != -1`, node is a leaf
 
-### `CSWCollisionMesh__WorldToLocal` (vendor/swkotor.c:280950, 281023)
+### `CSWCollisionMesh__WorldToLocal`
 
 Converts world coordinates to local mesh coordinates:
 
@@ -209,7 +208,7 @@ local_50.z = -m1000_0;
 2. **Z-axis range**: Uses large Z values (±1000.0) for vertical ray casts
 3. **Material filtering**: Material masks are applied BEFORE tree traversal (not during)
 
-### Writing BWM Files (vendor/swkotor.c:280808-280821)
+### Writing BWM Files
 
 The game writes BWM files in this exact order:
 
@@ -282,7 +281,7 @@ When placed at (100.0, 200.0, 0.0) with 0° rotation:
 
 **Game engine transformation sequence:**
 
-1. Read `world_coords` from BWM header (offset 0x08)
+1. Read `world_coords` from [BWM](BWM-File-Format) header (offset 0x08)
 2. If `world_coords == 0`:
    - Call `CSWCollisionMesh__LocalToWorld` to transform vertices
    - Apply placeable/door transformation matrix
@@ -291,7 +290,7 @@ When placed at (100.0, 200.0, 0.0) with 0° rotation:
 
 ---
 
-## AABB Tree Implementation Details
+## *AABB* Tree Implementation Details
 
 ### Child Index Encoding
 
@@ -306,7 +305,7 @@ When placed at (100.0, 200.0, 0.0) with 0° rotation:
 
 **Proof from game engine:**
 
-1. **Writing** (vendor/swkotor.c:280811):
+1. **Writing**:
 
    ```c
    _fwrite(this_->aabbs).data, 0x2c, header.aabb_count, _File);
@@ -315,7 +314,7 @@ When placed at (100.0, 200.0, 0.0) with 0° rotation:
    - Writes AABB array sequentially
    - No index transformation applied
 
-2. **Reading** (vendor/swkotor.c:280222):
+2. **Reading**:
 
    ```c
    iVar2 = *(int *)((int)param_1->data + 0x6c);
@@ -325,7 +324,7 @@ When placed at (100.0, 200.0, 0.0) with 0° rotation:
    - Reads root index directly from file
    - No offset adjustment
 
-3. **Traversal** (vendor/swkotor.c:45920-46297):
+3. **Traversal**:
 
    ```c
    HitCheckAABBnode(pAVar4->left_child, ...);
@@ -339,7 +338,7 @@ When placed at (100.0, 200.0, 0.0) with 0° rotation:
 
 ### Most Significant Plane Values
 
-From `vendor/swkotor.c:45920-46297` analysis:
+From `CheckAABBNode` / `HitCheckAABBnode` analysis:
 
 - `0x00` (0): No split (leaf node)
 - `0x01` (1): Split on positive X axis
@@ -407,28 +406,36 @@ This is why material IDs must be consistent - they're used as bit positions!
 
 ### Walkable vs. Non-Walkable Materials
 
-From `vendor/swkotor.c:191690-191695`:
+From `CSWRoomSurfaceMesh__GetSurfaceMaterialWalkCheckOnly`:
 
 ```c
-iVar2 = CSWRoomSurfaceMesh__GetSurfaceMaterialWalkCheckOnly(
-    *(CSWRoomSurfaceMesh **)(iVar2 + 0x3c), VVar1
+// Get the surface material ID for walk check only, for the mesh at mesh_ptr and vertex vertex_index
+int surface_material_id = CSWRoomSurfaceMesh__GetSurfaceMaterialWalkCheckOnly(
+    *(CSWRoomSurfaceMesh **)(mesh_ptr + 0x3c), vertex_index
 );
-CExoString__CExoString(&local_14, "Walk");
-local_4 = 0;
-C2DA__GetINTEntry(Rules->internal).all_2DAs)->surfacemat, iVar2, &local_14, &local_18);
+
+// Prepare string to look for "Walk" column in 2DA
+CExoString walk_column_name;
+CExoString__CExoString(&walk_column_name, "Walk");
+
+// Query the value from the surfacemat 2DA table: 
+// Parameters: (2da_table, row_index, column_name_str, output_int_ptr)
+int is_walkable = 0;
+C2DA__GetINTEntry(Rules->internal->all_2DAs->surfacemat, surface_material_id, &walk_column_name, &is_walkable);
 ```
 
-The game reads walkability from `surfacemat.2da` at runtime!
 
-**Key Insight**: Material walkability is NOT hardcoded - it's data-driven via 2DA files.
+The game reads *walkability* from `surfacemat.2da` at runtime!
+
+**Key Insight**: *Material walkability* is **NOT** hardcoded - it's *data-driven* via [2DA files](2DA-File-Format).
 
 ---
 
-## Adjacency Encoding
+## *Adjacency* Encoding
 
-### Storage Format
+### *Storage* Format
 
-Adjacencies are stored as a flat `int32` array:
+*Adjacencies* are stored as a flat `int32` array:
 
 - **Size**: `walkable_face_count * 3` entries
 - **Indexing**: `adjacency[face_idx * 3 + edge_idx]`
@@ -442,12 +449,12 @@ _fwrite(this_->adjacencies, 4, header.adjacency_count * 3, _File);
 ```
 
 - 4 bytes per entry (int32)
-- `adjacency_count * 3` total entries
-- `adjacency_count` = number of walkable faces
+- `adjacency_count * 3` Total Entries
+- `adjacency_count` = Number of Walkable Faces
 
 ### Decoding Formula
 
-Given adjacency value `adj`:
+Given *adjacency* value `adj`:
 
 ```c
 face_index = adj / 3;
@@ -461,12 +468,12 @@ adj = 38
 face_index = 38 / 3 = 12
 edge_index = 38 % 3 = 2
 
-This means: edge connects to face 12, edge 2
+This means: *edge* connects to *face 12*, *edge 2*
 ```
 
 ### Bidirectional Requirement
 
-If face A edge 0 connects to face B edge 2:
+If ***face A*** *edge 0* connects to ***face B*** *edge 2*:
 
 - `adjacencies[A * 3 + 0] = B * 3 + 2`
 - `adjacencies[B * 3 + 2] = A * 3 + 0`
@@ -479,7 +486,7 @@ The game **requires** bidirectional linking for pathfinding!
 
 ### Edge Format
 
-Each edge is **8 bytes**:
+Each *edge* is **8 bytes**:
 
 ```c
 struct SurfaceMeshEdge {
@@ -494,9 +501,9 @@ struct SurfaceMeshEdge {
 _fwrite(this_->edges).data, 8, header.edge_count, _File);
 ```
 
-### Perimeter Format
+### *Perimeter* Format
 
-Perimeters are **1-based loop end indices**:
+*Perimeters* are **1-based loop end indices**:
 
 ```c
 _fwrite(this_->perimeters).data, 4, header.perimeter_count, _File);
@@ -506,8 +513,8 @@ _fwrite(this_->perimeters).data, 4, header.perimeter_count, _File);
 
 **Interpretation**:
 
-- `perimeters[0] = N`: Loop 1 contains edges 0 to N-1
-- `perimeters[1] = M`: Loop 2 contains edges N to M-1
+- `perimeters[0] = N`: *Loop 1* contains *edges 0 to N-1*
+- `perimeters[1] = M`: *Loop 2* contains *edges N to M-1*
 - etc.
 
 **Example:**
@@ -515,68 +522,66 @@ _fwrite(this_->perimeters).data, 4, header.perimeter_count, _File);
 ```
 perimeters = [59, 66, 73]
 
-Loop 1: edges 0-58   (59 edges)
-Loop 2: edges 59-65  (7 edges)
-Loop 3: edges 66-72  (7 edges)
+*Loop 1*: *edges 0-58*   (59 edges)
+*Loop 2*: *edges 59-65*  (7 edges)
+*Loop 3*: *edges 66-72*  (7 edges)
 ```
 
 ---
 
 ## Implementation Recommendations
 
-Based on this analysis, our PyKotor/HolocronToolset implementation MUST:
+Based on this analysis, our *PyKotor/HolocronToolset* implementation **MUST**:
 
 1. **Coordinate spaces**:
-   - WOK files: Write `world_coords = 1`, store vertices in world space
-   - PWK/DWK files: Write `world_coords = 0`, store vertices in local space
-   - ModuleKit: Do NOT translate WOK vertices when building composite modules
+   - *WOK* files: Write `world_coords = 1`, store vertices in world space
+   - *PWK/DWK* files: Write `world_coords = 0`, store vertices in local space
+   - *ModuleKit*: Do ***NOT*** translate *[WOK](BWM-File-Format)* vertices when building composite modules
 
 2. **AABB trees**:
    - Use **0-based array indexing** for child node references
-   - Write `aabb_root` as array index (not byte offset)
+   - Write `aabb_root` as array index (**NOT** byte offset)
    - Ensure tree is balanced for optimal query performance
    - Write 44 bytes per node
 
 3. **Materials**:
    - Preserve material IDs exactly (they're used as bitmask positions)
-   - Do NOT remap materials during transformations
+   - Do ***NOT*** remap materials during transformations
    - Validate materials are in range [0, 22]
 
 4. **Adjacencies**:
    - Encode as `face_index * 3 + edge_index`
    - Ensure bidirectional linking
-   - Write 12 bytes per walkable face (3 edges × 4 bytes)
+   - Write 12 (0x0C) bytes per walkable face (3 edges × 4 bytes)
 
 5. **Edges and perimeters**:
-   - Write 8 bytes per edge (edge_index, transition)
+   - Write 8 (0x08) bytes per edge (edge_index, transition)
    - Write 1-based perimeter loop end indices
    - Ensure perimeter loops are closed
 
 6. **File structure**:
-   - Write header (136 bytes)
-   - Write data tables in exact order: vertices, faces, materials, normals, distances, AABBs, adjacencies, edges, perimeters
-   - Update header offsets correctly
+   - Write header (136 (0x88) bytes)
+   - Write data tables in exact order: *vertices*, *faces*, *materials*, *normals*, *distances*, *AABBs*, *adjacencies*, *edges*, *perimeters*
+   - Update header offsets **correctly**
 
 ---
 
 ## References
 
-- `vendor/swkotor.c` - Decompiled game engine source
-- `vendor/swkotor.h` - Decompiled game engine headers
-- `wiki/BWM-File-Format.md` - Complete BWM format specification
-- `Libraries/PyKotor/src/pykotor/resource/formats/bwm/` - PyKotor BWM implementation
-- `commands/indoor_builder.py` - Indoor map builder using BWM
+- *`vendor/swkotor.c`* — Decompiled game engine source
+- *`vendor/swkotor.h`* — Decompiled game engine headers
+- [BWM-File-Format](BWM-File-Format) — **Format specification** (binary layout, header, vertices, faces, AABB, adjacency, edges, perimeters). This document describes engine behavior only; the BWM wiki is the canonical format reference.
 
 ### See also
 
-- [BWM-File-Format](BWM-File-Format) — BWM structure and edges
-- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide), [Kit-Structure-Documentation](Kit-Structure-Documentation) — Walkmesh extraction
-- [reverse_engineering_findings](reverse_engineering_findings) — Engine analysis
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for walkmesh and engine behavior
+- *[BWM-File-Format](BWM-File-Format)* — BWM structure and edges
+- *[Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide)*, *[Kit-Structure-Documentation](Kit-Structure-Documentation)* -- Walkmesh extraction
+- *[reverse_engineering_findings](reverse_engineering_findings)* -- Engine analysis
+- *[Community sources and archives](Home#community-sources-and-archives)* -- DeadlyStream, forums for walkmesh and engine behavior
 
 ---
 
-**Last Updated**: 2025-12-26
+**Last Updated**: 2026-03-12
 
-**Analysis Based On**: `vendor/swkotor.c` and `vendor/swkotor.h` (Ghidra decompilation of `swkotor.exe` / `swkotor2.exe`)
+**Analysis Based On**: *`vendor/swkotor.c`* and *`vendor/swkotor.h`* (Ghidra decompilation of *`swkotor.exe`* / *`swkotor2.exe`*)
 

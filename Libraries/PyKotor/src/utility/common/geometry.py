@@ -1470,11 +1470,10 @@ class Face:
         return hash((self.v1, self.v2, self.v3, self.material))
 
     def normal(self) -> Vector3:
-        """Returns the normal for the face.
+        """Returns the normal for the face (cross product of edges, normalized).
 
-        Returns:
-        -------
-            A new Vector3 instance representing the face normal.
+        Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:741-746 (rebuild: cb = v3-v2, ab = v1-v2, normal = cb.cross(ab)).
+        Equivalent: (v2-v1)×(v3-v2) = (v3-v2)×(v1-v2).
         """
         u: Vector3 = self.v2 - self.v1
         v: Vector3 = self.v3 - self.v2
@@ -1494,6 +1493,9 @@ class Face:
         return 0.25 * math.sqrt((a + b + c) * (-a + b + c) * (a - b + c) * (a + b - c))
 
     def planar_distance(self) -> float:
+        """Plane coefficient d for plane equation n·x + d = 0 (n = normal, v1 on plane).
+        Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:749 (rebuild: coeff = -dot(v1, normal)).
+        """
         return -1.0 * (self.normal().dot(self.v1))
 
     def centre(self) -> Vector3:

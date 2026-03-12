@@ -40,6 +40,6 @@ All routines are documented with their decompiled pseudocode in the source code 
 
 ### See also
 
-- [KEY-File-Format](KEY-File-Format) — Resource resolution order and BIF/KEY layout
-- [BIF-File-Format](BIF-File-Format), [ERF-File-Format](ERF-File-Format) — Container formats
-- [2DA-File-Format](2DA-File-Format) — Key table structure; [reverse_engineering_findings](reverse_engineering_findings) — Engine analysis
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution order and BIF/KEY layout
+- [BIF-File-Format](BIF-File-Format), [ERF-File-Format](ERF-File-Format) -- Container formats
+- [2DA-File-Format](2DA-File-Format) -- Key table structure; [reverse_engineering_findings](reverse_engineering_findings) -- Engine analysis

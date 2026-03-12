@@ -1,7 +1,10 @@
 
 __pycache__
-.*
 .history
+.venv*/
+.firecrawl/
+.*_cache/
+venv*/
 *.cpuprofile
 *.egg-info*
 *.exe.manifest
@@ -126,7 +129,6 @@ Tools/*/.github/
 !.vscode
 !.pre-commit-config.yaml
 _tmp*
-vendor/**/
 test_output.txt
 .cursor/plans/*.md
 Tools/HolocronToolset/src/ui/**/*_ui.py

@@ -874,6 +874,6 @@ load the polygon correctly and without errors.
 
 ### See also
 
-- [GFF-UTT](GFF-UTT) — KotOR trigger implementation; [GFF-File-Format](GFF-File-Format) — GFF structure
-- [GFF-GIT](GFF-GIT) — Trigger instances; [NSS-File-Format](NSS-File-Format) — Trigger scripts
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [GFF-UTT](GFF-UTT) -- KotOR trigger implementation; [GFF-File-Format](GFF-File-Format) -- GFF structure
+- [GFF-GIT](GFF-GIT) -- Trigger instances; [NSS-File-Format](NSS-File-Format) -- Trigger scripts
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution

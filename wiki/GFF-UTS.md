@@ -78,6 +78,6 @@ UTS files define [sound object templates](GFF-File-Format#uts-sound) for ambient
 
 ### See also
 
-- [GFF-File-Format](GFF-File-Format) — GFF structure; [Bioware-Aurora-SoundObject](Bioware-Aurora-SoundObject) — Aurora sound spec
-- [WAV-File-Format](WAV-File-Format) — Audio resources; [GFF-GIT](GFF-GIT) — Sound instances in areas
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [GFF-File-Format](GFF-File-Format) -- GFF structure; [Bioware-Aurora-SoundObject](Bioware-Aurora-SoundObject) -- Aurora sound spec
+- [WAV-File-Format](WAV-File-Format) -- Audio resources; [GFF-GIT](GFF-GIT) -- Sound instances in areas
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution

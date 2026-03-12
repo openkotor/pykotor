@@ -405,6 +405,6 @@ are displayed during player character creation.
 
 ### See also
 
-- [SSF-File-Format](SSF-File-Format) — KotOR SSF implementation; [GFF-File-Format](GFF-File-Format) — GFF structure
-- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) — Modifying SSF; [TLK-File-Format](TLK-File-Format) — StrRef
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [SSF-File-Format](SSF-File-Format) -- KotOR SSF implementation; [GFF-File-Format](GFF-File-Format) -- GFF structure
+- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) -- Modifying SSF; [TLK-File-Format](TLK-File-Format) -- StrRef
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution

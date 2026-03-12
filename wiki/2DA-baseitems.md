@@ -108,8 +108,8 @@ The following columns are accessed by the reone engine:
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTI](GFF-UTI) — Item templates
-- [2DA-itemprops](2DA-itemprops), [2DA-itempropdef](2DA-itempropdef) — Item properties; [TLK-File-Format](TLK-File-Format) — StrRef names
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [GFF-UTI](GFF-UTI) -- Item templates
+- [2DA-itemprops](2DA-itemprops), [2DA-itempropdef](2DA-itempropdef) -- Item properties; [TLK-File-Format](TLK-File-Format) -- StrRef names
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

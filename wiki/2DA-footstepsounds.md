@@ -34,7 +34,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-appearance](2DA-appearance) — Creature appearance
-- [MDL-MDX-File-Format](MDL-MDX-File-Format) — Surface material; [WAV-File-Format](WAV-File-Format) — Sound files; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [2DA-appearance](2DA-appearance) -- Creature appearance
+- [MDL-MDX-File-Format](MDL-MDX-File-Format) -- Surface material; [WAV-File-Format](WAV-File-Format) -- Sound files; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

@@ -38,8 +38,8 @@ This step is essential for a successful mod installation on iOS devices, ensurin
 
 ### See also
 
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — Mod development and patching syntax
-- [Mod Creation Best Practices](Mod-Creation-Best-Practices) — Workarounds and compatibility
-- [KEY-File-Format](KEY-File-Format) — Resource resolution and override order
-- [2DA-File-Format](2DA-File-Format) — Game data tables (e.g. appearance.2da)
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for troubleshooting and guides
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Mod development and patching syntax
+- [Mod Creation Best Practices](Mod-Creation-Best-Practices) -- Workarounds and compatibility
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution and override order
+- [2DA-File-Format](2DA-File-Format) -- Game data tables (e.g. appearance.2da)
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for troubleshooting and guides

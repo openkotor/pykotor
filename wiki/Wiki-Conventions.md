@@ -32,11 +32,11 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 
 ## Content
 
-- **Goal:** This wiki aims to be **complete, comprehensive, accurate, specific, and accessible** for any use—modders, developers, and researchers. Prefer linking to canonical pages (KEY-File-Format, GFF-File-Format, official BioWare specs) and to PyKotor/vendor code; cite community sources (DeadlyStream, LucasForums archives) where they add consensus or history.
+- **Goal:** This wiki aims to be **complete, comprehensive, accurate, specific, and accessible** for any use--modders, developers, and researchers. Prefer linking to canonical pages (KEY-File-Format, GFF-File-Format, official BioWare specs) and to PyKotor/vendor code; cite community sources (DeadlyStream, LucasForums archives) where they add consensus or history.
 - **One page per format or tool:** Keep each page focused on one format, one tool feature, or one task.
 - **Link to official specs:** For formats with an official BioWare (or other) specification, link to it and document only extensions, quirks, or tool-specific behavior.
 - **Single source of truth (SSOT):** Do not duplicate long specs or repeated concepts. Link to the canonical page instead:
-  - **Concepts (single overview):** [Concepts](Concepts) — definitions for resource resolution order, ResRef, override folder, BIF/KEY, MOD/ERF, GFF, 2DA.
+  - **Concepts (single overview):** [Concepts](Concepts) -- definitions for resource resolution order, ResRef, override folder, BIF/KEY, MOD/ERF, GFF, 2DA.
   - **Resource resolution order:** [KEY-File-Format](KEY-File-Format#key-file-purpose) (and [Home](Home) Odyssey Engine Basics).
   - **ResRef:** [GFF-File-Format](GFF-File-Format#gff-data-types) (GFF data types).
   - **Override folder:** [Concepts](Concepts#override-folder) or [resource resolution order](KEY-File-Format#key-file-purpose).
@@ -111,7 +111,7 @@ Goal: one sentence describing what the reader will achieve.
 
 ### See also
 
-- [Home](Home) — Wiki overview and format index
-- [Concepts](Concepts) — Resource resolution, ResRef, override, BIF/KEY, MOD/ERF, GFF, 2DA
-- [KEY-File-Format](KEY-File-Format), [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) — Canonical format pages
-- [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme), [HoloPatcher-README-for-mod-developers](HoloPatcher-README-for-mod-developers) — Tool docs
+- [Home](Home) -- Wiki overview and format index
+- [Concepts](Concepts) -- Resource resolution, ResRef, override, BIF/KEY, MOD/ERF, GFF, 2DA
+- [KEY-File-Format](KEY-File-Format), [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) -- Canonical format pages
+- [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme), [HoloPatcher-README-for-mod-developers](HoloPatcher-README-for-mod-developers) -- Tool docs

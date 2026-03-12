@@ -241,6 +241,6 @@ and BIF File Format document for a table containing ResType values and their mea
 
 ### See also
 
-- [ERF-File-Format](ERF-File-Format) — KotOR ERF/MOD/RIM implementation
-- [KEY-File-Format](KEY-File-Format), [BIF-File-Format](BIF-File-Format) — Resource resolution and BIF layout
-- [GFF-File-Format](GFF-File-Format) — GFF resources inside ERF modules
+- [ERF-File-Format](ERF-File-Format) -- KotOR ERF/MOD/RIM implementation
+- [KEY-File-Format](KEY-File-Format), [BIF-File-Format](BIF-File-Format) -- Resource resolution and BIF layout
+- [GFF-File-Format](GFF-File-Format) -- GFF resources inside ERF modules

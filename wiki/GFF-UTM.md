@@ -12,6 +12,6 @@ UTM files define [merchant templates](GFF-File-Format#utm-merchant) with invento
 
 ### See also
 
-- [GFF-File-Format](GFF-File-Format) — GFF structure; [Bioware-Aurora-Store](Bioware-Aurora-Store) — Aurora store spec
-- [GFF-UTI](GFF-UTI) — Item format; [GFF-GIT](GFF-GIT) — Store instances in areas
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [GFF-File-Format](GFF-File-Format) -- GFF structure; [Bioware-Aurora-Store](Bioware-Aurora-Store) -- Aurora store spec
+- [GFF-UTI](GFF-UTI) -- Item format; [GFF-GIT](GFF-GIT) -- Store instances in areas
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution

@@ -187,6 +187,6 @@ Structs document.
 
 ### See also
 
-- [GFF-UTW](GFF-UTW) — KotOR waypoint implementation; [GFF-File-Format](GFF-File-Format) — GFF structure
-- [GFF-GIT](GFF-GIT) — Waypoint instances; [GFF-PTH](GFF-PTH) — Path data
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [GFF-UTW](GFF-UTW) -- KotOR waypoint implementation; [GFF-File-Format](GFF-File-Format) -- GFF structure
+- [GFF-GIT](GFF-GIT) -- Waypoint instances; [GFF-PTH](GFF-PTH) -- Path data
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution

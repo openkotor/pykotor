@@ -1341,10 +1341,10 @@ The `[2DAList]` section provides powerful tools for modifying [2DA files](2DA-Fi
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure and columns
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) — Creating [StrRef](TLK-File-Format#string-references-strref) tokens
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Using 2DAMEMORY tokens in [GFF files](GFF-File-Format)
-- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) — Using tokens in binary patches
-- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) — Using tokens in sound sets
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums for 2DA modding examples
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — CompileList and overview
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure and columns
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- Creating [StrRef](TLK-File-Format#string-references-strref) tokens
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Using 2DAMEMORY tokens in [GFF files](GFF-File-Format)
+- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) -- Using tokens in binary patches
+- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) -- Using tokens in sound sets
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for 2DA modding examples
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- CompileList and overview

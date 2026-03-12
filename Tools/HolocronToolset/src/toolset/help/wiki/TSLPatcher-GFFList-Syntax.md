@@ -969,7 +969,7 @@ GFFList does not support [2DA](2DA-File-Format)-style ExclusiveColumn.
   - Adding STRUCT to LIST: `Label=` blank, `Path=` points to list name
   - Adding field to STRUCT: `Label=` required, `Path=` can be empty (inherits)
 - **Path inheritance confusion**: Remember that when adding a struct to a list, child fields with empty `Path=` inherit the resolved path including the list index. You don't need to (and shouldn't) manually specify the index.
-- **Container fields**: Don't assign `Value=` to `Struct` or `List` fields—they are containers. Set values in their child fields instead.
+- **Container fields**: Don't assign `Value=` to `Struct` or `List` fields--they are containers. Set values in their child fields instead.
 - **List index resolution**: The index where a struct is added is automatically determined at runtime. You cannot manually set or predict the exact index ahead of time if other mods might add structs to the same list.
 
 ### Localized string Syntax
@@ -1455,7 +1455,7 @@ Common [GFF](GFF-File-Format)-based file types you can modify:
 ### TSLPatcher Versions
 
 - **[1.2.10b](TSLPatcher's-Official-Readme.md#change-log-for-version-1210b1-rel)** (2007-09-19): Fixed ExoLocString substring linefeed handling (use `<#LF#>` for newlines)
-- **[1.2.9b](TSLPatcher's-Official-Readme.md#change-log-for-version-129b-rel)** (2007-08-13): Changed behavior when adding duplicate fields—now modifies existing field instead of skipping
+- **[1.2.9b](TSLPatcher's-Official-Readme.md#change-log-for-version-129b-rel)** (2007-08-13): Changed behavior when adding duplicate fields--now modifies existing field instead of skipping
 - **[1.2.8b10](TSLPatcher's-Official-Readme.md#change-log-for-version-128b10-rel)** (2006-12-10): Bug fixes for required file checks
 - **[1.2.8b6](TSLPatcher's-Official-Readme.md#change-log-for-version-128b6-rel)** (2006-10-03): Added `!OverrideType` support for [ERF](ERF-File-Format)/RIM destinations
 - **[1.2.7b9](TSLPatcher's-Official-Readme.md#change-log-for-version-127b9-rel)** (2006-07-23): **Dynamic field paths** - Added `!FieldPath` support for storing and using field paths via `2DAMEMORY#` tokens

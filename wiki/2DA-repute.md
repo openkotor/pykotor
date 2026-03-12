@@ -45,8 +45,8 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-FAC](GFF-FAC) — Faction files
-- [GFF-UTC](GFF-UTC), [GFF-UTD](GFF-UTD), [GFF-UTE](GFF-UTE), [GFF-UTT](GFF-UTT) — Faction/repute usage
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [GFF-FAC](GFF-FAC) -- Faction files
+- [GFF-UTC](GFF-UTC), [GFF-UTD](GFF-UTD), [GFF-UTE](GFF-UTE), [GFF-UTT](GFF-UTT) -- Faction/repute usage
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

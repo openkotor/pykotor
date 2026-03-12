@@ -21,8 +21,8 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTE](GFF-UTE) — Encounter difficulty index
-- [Bioware-Aurora-Encounter](Bioware-Aurora-Encounter) — Aurora encounter spec
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [GFF-UTE](GFF-UTE) -- Encounter difficulty index
+- [Bioware-Aurora-Encounter](Bioware-Aurora-Encounter) -- Aurora encounter spec
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

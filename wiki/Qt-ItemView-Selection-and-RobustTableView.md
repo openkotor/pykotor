@@ -26,7 +26,7 @@ To keep Qt’s selection model behavior correct, `RobustTableView` must:
 
 ### See also
 
-- [Wiki-Conventions](Wiki-Conventions) — Wiki structure; [HolocronToolset](Home) — Toolset overview
+- [Wiki-Conventions](Wiki-Conventions) -- Wiki structure; [HolocronToolset](Home) -- Toolset overview
 - Qt docs: [QItemSelectionModel](https://doc.qt.io/qt-6/qitemselectionmodel.html), [QAbstractItemView](https://doc.qt.io/qt-6/qabstractitemview.html)
 
 

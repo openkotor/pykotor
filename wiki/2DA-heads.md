@@ -39,8 +39,8 @@ The complete column structure is defined in reone's heads parser:
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-appearance](2DA-appearance) — Appearance and head IDs
-- [GFF-UTC](GFF-UTC) — Creature templates; [MDL-MDX-File-Format](MDL-MDX-File-Format), [TPC-File-Format](TPC-File-Format) — Models and textures
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [2DA-appearance](2DA-appearance) -- Appearance and head IDs
+- [GFF-UTC](GFF-UTC) -- Creature templates; [MDL-MDX-File-Format](MDL-MDX-File-Format), [TPC-File-Format](TPC-File-Format) -- Models and textures
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

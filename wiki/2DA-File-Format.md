@@ -3479,7 +3479,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 - [KEY File Format](KEY-File-Format) - Resource resolution order for 2DA by ResRef
 - [2DA-appearance](2DA-appearance), [2DA-baseitems](2DA-baseitems), [2DA-classes](2DA-classes) - Example table docs
 - [Bioware Aurora 2DA](Bioware-Aurora-2DA) - Official BioWare 2DA specification
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for 2DA modding and column references
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for 2DA modding and column references
 
 ---
 

@@ -648,9 +648,9 @@ Implications:
 
 ### See also
 
-- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) — End-user workflow
-- [Kit-Structure-Documentation](Kit-Structure-Documentation) — Kit format and components
-- [LYT-File-Format](LYT-File-Format), [BWM-File-Format](BWM-File-Format), [VIS-File-Format](VIS-File-Format) — Generated formats
-- [GFF-File-Format](GFF-File-Format), [GFF-ARE](GFF-ARE), [ERF-File-Format](ERF-File-Format) — Module output
-- [Blender-Integration](Blender-Integration) — 3D editing bridge
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for module and kit development
+- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- End-user workflow
+- [Kit-Structure-Documentation](Kit-Structure-Documentation) -- Kit format and components
+- [LYT-File-Format](LYT-File-Format), [BWM-File-Format](BWM-File-Format), [VIS-File-Format](VIS-File-Format) -- Generated formats
+- [GFF-File-Format](GFF-File-Format), [GFF-ARE](GFF-ARE), [ERF-File-Format](ERF-File-Format) -- Module output
+- [Blender-Integration](Blender-Integration) -- 3D editing bridge
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for module and kit development

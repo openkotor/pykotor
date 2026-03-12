@@ -637,6 +637,6 @@ if (GetLocalInt(OBJECT_SELF, "HasMetPC") == 1) {
 
 ### See also
 
-- [NSS-File-Format](NSS-File-Format) — NWScript source; [NCS-File-Format](NCS-File-Format) — Compiled bytecode
-- [NSS-Shared-Functions-Module-and-Area](NSS-Shared-Functions-Module-and-Area) — Area/object context; [GFF-DLG](GFF-DLG) — Dialogue actions
-- [2DA-File-Format](2DA-File-Format) — Game data; [GFF-UTC](GFF-UTC), [GFF-UTD](GFF-UTD) — Creature and door scripts
+- [NSS-File-Format](NSS-File-Format) -- NWScript source; [NCS-File-Format](NCS-File-Format) -- Compiled bytecode
+- [NSS-Shared-Functions-Module-and-Area](NSS-Shared-Functions-Module-and-Area) -- Area/object context; [GFF-DLG](GFF-DLG) -- Dialogue actions
+- [2DA-File-Format](2DA-File-Format) -- Game data; [GFF-UTC](GFF-UTC), [GFF-UTD](GFF-UTD) -- Creature and door scripts

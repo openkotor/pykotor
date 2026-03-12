@@ -2,9 +2,9 @@
 
 Exhaustive file-by-file mapping of **Forge** (`vendor/KotOR.js/src/apps/forge/`) features to **Toolset** (`Tools/HolocronToolset/src/toolset/`) counterparts, with what to merge.
 
-**📖 Companion Document**: [docs/LEVEL_EDITOR_CHECKLIST.md](docs/LEVEL_EDITOR_CHECKLIST.md) — Comprehensive Unity/UE5-class feature roadmap for the unified Module Designer.
+**📖 Companion Document**: [docs/LEVEL_EDITOR_CHECKLIST.md](docs/LEVEL_EDITOR_CHECKLIST.md) -- Comprehensive Unity/UE5-class feature roadmap for the unified Module Designer.
 
-**🎯 Vision**: Transform the Module Designer into an **All-In-One level editor** where Indoor Builder room assembly, Forge-style walkmesh editing, and full GIT object placement happen in a single unified canvas with contextual modes — comparable to Unity, Unreal Engine, Valve Hammer, and Bethesda Creation Kit.
+**🎯 Vision**: Transform the Module Designer into an **All-In-One level editor** where Indoor Builder room assembly, Forge-style walkmesh editing, and full GIT object placement happen in a single unified canvas with contextual modes -- comparable to Unity, Unreal Engine, Valve Hammer, and Bethesda Creation Kit.
 
 ---
 
@@ -14,15 +14,15 @@ Each Forge editor has a matching Toolset editor. Forge adds **inline 3D preview*
 
 | # | Forge File | What It Does | Toolset File | Merge Opportunity |
 |---|-----------|-------------|-------------|-------------------|
-| 1 | `components/tabs/tab-utc-editor/TabUTCEditor.tsx` | Creature blueprint editor — appearance, stats, equipment slots, classes, scripts, **inline 3D model preview** | `gui/editors/utc.py` | Add 3D model preview panel, improve equipment slot UI |
-| 2 | `components/tabs/tab-utd-editor/TabUTDEditor.tsx` | Door blueprint editor — lock/trap settings, scripts, appearance, **inline 3D preview** | `gui/editors/utd.py` | Add 3D door model preview, improve lock/trap UI |
-| 3 | `components/tabs/tab-ute-editor/TabUTEEditor.tsx` | Encounter blueprint editor — creature lists, spawn options, difficulty, scripts | `gui/editors/ute.py` | Add encounter difficulty settings, improve creature list UI |
-| 4 | `components/tabs/tab-uti-editor/TabUTIEditor.tsx` | Item blueprint editor — base item, cost, properties, model variation, **inline 3D preview** | `gui/editors/uti.py` | Add 3D item model preview, better property editing |
-| 5 | `components/tabs/tab-utm-editor/TabUTMEditor.tsx` | Store/merchant blueprint editor — inventory list, buy/sell flags, markup, scripts | `gui/editors/utm.py` | Improve store inventory list with item thumbnails |
-| 6 | `components/tabs/tab-utp-editor/TabUTPEditor.tsx` | Placeable blueprint editor — appearance, locks, traps, scripts, inventory, **inline 3D preview** | `gui/editors/utp.py` | Add 3D placeable model preview |
-| 7 | `components/tabs/tab-uts-editor/TabUTSEditor.tsx` | Sound blueprint editor — sound list with **audio preview/selector**, distance, volume, looping, priority | `gui/editors/uts.py` | Add inline audio preview/playback for sound entries |
-| 8 | `components/tabs/tab-utt-editor/TabUTTEditor.tsx` | Trigger blueprint editor — trap settings, scripts, faction, cursor | `gui/editors/utt.py` | Improve trap/script UI layout |
-| 9 | `components/tabs/tab-utw-editor/TabUTWEditor.tsx` | Waypoint blueprint editor — name, map note, appearance, linked-to | `gui/editors/utw.py` | Minor UI improvements |
+| 1 | `components/tabs/tab-utc-editor/TabUTCEditor.tsx` | Creature blueprint editor -- appearance, stats, equipment slots, classes, scripts, **inline 3D model preview** | `gui/editors/utc.py` | Add 3D model preview panel, improve equipment slot UI |
+| 2 | `components/tabs/tab-utd-editor/TabUTDEditor.tsx` | Door blueprint editor -- lock/trap settings, scripts, appearance, **inline 3D preview** | `gui/editors/utd.py` | Add 3D door model preview, improve lock/trap UI |
+| 3 | `components/tabs/tab-ute-editor/TabUTEEditor.tsx` | Encounter blueprint editor -- creature lists, spawn options, difficulty, scripts | `gui/editors/ute.py` | Add encounter difficulty settings, improve creature list UI |
+| 4 | `components/tabs/tab-uti-editor/TabUTIEditor.tsx` | Item blueprint editor -- base item, cost, properties, model variation, **inline 3D preview** | `gui/editors/uti.py` | Add 3D item model preview, better property editing |
+| 5 | `components/tabs/tab-utm-editor/TabUTMEditor.tsx` | Store/merchant blueprint editor -- inventory list, buy/sell flags, markup, scripts | `gui/editors/utm.py` | Improve store inventory list with item thumbnails |
+| 6 | `components/tabs/tab-utp-editor/TabUTPEditor.tsx` | Placeable blueprint editor -- appearance, locks, traps, scripts, inventory, **inline 3D preview** | `gui/editors/utp.py` | Add 3D placeable model preview |
+| 7 | `components/tabs/tab-uts-editor/TabUTSEditor.tsx` | Sound blueprint editor -- sound list with **audio preview/selector**, distance, volume, looping, priority | `gui/editors/uts.py` | Add inline audio preview/playback for sound entries |
+| 8 | `components/tabs/tab-utt-editor/TabUTTEditor.tsx` | Trigger blueprint editor -- trap settings, scripts, faction, cursor | `gui/editors/utt.py` | Improve trap/script UI layout |
+| 9 | `components/tabs/tab-utw-editor/TabUTWEditor.tsx` | Waypoint blueprint editor -- name, map note, appearance, linked-to | `gui/editors/utw.py` | Minor UI improvements |
 
 ### Forge Blueprint Data Models (reference for field completeness)
 
@@ -30,14 +30,14 @@ These hold the full GFF field definitions for each blueprint type. Use these `py
 
 | # | Forge File | Relevant PyKotor File(s) | What It Represents |
 |---|-----------|--------------------------|-------------------|
-| 10 | `module-editor/ForgeCreature.ts` | `resource/generics/utc.py` (+ helper: `tools/creature.py`) | All UTC fields — appearance, stats, equipment, classes, scripts |
-| 11 | `module-editor/ForgeDoor.ts` | `resource/generics/utd.py` (+ helper: `tools/door.py`) | All UTD fields — lock, trap, scripts, appearance, walkmeshes |
-| 12 | `module-editor/ForgePlaceable.ts` | `resource/generics/utp.py` (+ helper: `tools/placeable.py`) | All UTP fields — appearance, lock, trap, scripts, inventory |
-| 13 | `module-editor/ForgeSound.ts` | `resource/generics/uts.py` | All UTS fields — sound resrefs, volume, distance, looping |
+| 10 | `module-editor/ForgeCreature.ts` | `resource/generics/utc.py` (+ helper: `tools/creature.py`) | All UTC fields -- appearance, stats, equipment, classes, scripts |
+| 11 | `module-editor/ForgeDoor.ts` | `resource/generics/utd.py` (+ helper: `tools/door.py`) | All UTD fields -- lock, trap, scripts, appearance, walkmeshes |
+| 12 | `module-editor/ForgePlaceable.ts` | `resource/generics/utp.py` (+ helper: `tools/placeable.py`) | All UTP fields -- appearance, lock, trap, scripts, inventory |
+| 13 | `module-editor/ForgeSound.ts` | `resource/generics/uts.py` | All UTS fields -- sound resrefs, volume, distance, looping |
 | 14 | `module-editor/ForgeTrigger.ts` | `resource/generics/utt.py` | All UTT fields + polygon vertices for area-of-effect |
-| 15 | `module-editor/ForgeWaypoint.ts` | `resource/generics/utw.py` | All UTW fields — map note, appearance, linked-to |
+| 15 | `module-editor/ForgeWaypoint.ts` | `resource/generics/utw.py` | All UTW fields -- map note, appearance, linked-to |
 | 16 | `module-editor/ForgeEncounter.ts` | `resource/generics/ute.py` | All UTE fields + spawn-point list + region polygon |
-| 17 | `module-editor/ForgeCamera.ts` | `resource/generics/git.py` (`class GITCamera`) | GIT camera fields — FOV, pitch, position, orientation |
+| 17 | `module-editor/ForgeCamera.ts` | `resource/generics/git.py` (`class GITCamera`) | GIT camera fields -- FOV, pitch, position, orientation |
 
 ---
 
@@ -47,14 +47,14 @@ The crown jewel. Forge's module editor is a full 3D scene editor with transform 
 
 | # | Forge File | What It Does | Toolset File | Merge Opportunity |
 |---|-----------|-------------|-------------|-------------------|
-| 18 | `components/tabs/tab-module-editor/TabModuleEditor.tsx` | Full 3D module editor — transform/rotate/add-object toolbar, context menus, sidebar, scene graph | `gui/windows/module_designer.py` | Port tool palette, transform gizmos, context menus, object-add workflow |
-| 19 | `components/ModuleEditorSidebarComponent.tsx` | Module editor sidebar — scene graph tree + GIT instance property editor for selected objects | `gui/windows/module_designer.py` | Port sidebar with scene graph + property panel for selected instances |
+| 18 | `components/tabs/tab-module-editor/TabModuleEditor.tsx` | Full 3D module editor -- transform/rotate/add-object toolbar, context menus, sidebar, scene graph | `gui/windows/module_designer.py` | Port tool palette, transform gizmos, context menus, object-add workflow |
+| 19 | `components/ModuleEditorSidebarComponent.tsx` | Module editor sidebar -- scene graph tree + GIT instance property editor for selected objects | `gui/windows/module_designer.py` | Port sidebar with scene graph + property panel for selected instances |
 | 20 | `components/UI3DRendererView.tsx` | React canvas wrapper for 3D renderer with camera-view menu bar | `gui/widgets/renderer/module.py` | Port camera-view selector menu |
-| 21 | `components/UI3DToolPalette.tsx` | Floating toolbar for 3D editors — selectable/expandable tool buttons with icons | `gui/windows/designer_controls.py` | Port floating tool palette with select/translate/rotate/place modes |
+| 21 | `components/UI3DToolPalette.tsx` | Floating toolbar for 3D editors -- selectable/expandable tool buttons with icons | `gui/windows/designer_controls.py` | Port floating tool palette with select/translate/rotate/place modes |
 | 22 | `components/UI3DOverlayComponent.tsx` | HUD overlay showing real-time camera position and rotation | `gui/widgets/renderer/module.py` | Add camera position/rotation HUD overlay |
 | 23 | `components/SceneGraphTreeView.tsx` | Hierarchical tree-view of scene objects with expand/collapse and selection | `gui/windows/module_designer.py` | Port scene graph tree view into module designer sidebar |
-| 24 | `UI3DRenderer.tsx` | Core Three.js 3D rendering engine — scene, cameras (orbit/first-person), transform controls, raycasting, groups, render loop | `gui/widgets/renderer/module.py` | Port transform control modes (translate/rotate/scale gizmos), orbit camera, first-person camera, improved raycasting |
-| 25 | `states/tabs/TabModuleEditorState.tsx` | Module editor state — loads IFO/ARE/GIT, manages 3D scene, object selection, transform controls, add-object modes | `gui/windows/module_designer.py` + `data/me_controls.py` | Port formal control mode state machine (select/move/rotate/place) |
+| 24 | `UI3DRenderer.tsx` | Core Three.js 3D rendering engine -- scene, cameras (orbit/first-person), transform controls, raycasting, groups, render loop | `gui/widgets/renderer/module.py` | Port transform control modes (translate/rotate/scale gizmos), orbit camera, first-person camera, improved raycasting |
+| 25 | `states/tabs/TabModuleEditorState.tsx` | Module editor state -- loads IFO/ARE/GIT, manages 3D scene, object selection, transform controls, add-object modes | `gui/windows/module_designer.py` + `data/me_controls.py` | Port formal control mode state machine (select/move/rotate/place) |
 | 26 | `enum/EditorControlsTool.ts` | Enum: None, Select, Object Move/Rotate, Camera Move/Rotate, Placeable | `gui/windows/designer_controls.py` | Port explicit tool mode enum |
 | 27 | `enum/EditorControlsCameraMode.ts` | Enum: Editor (free), Static, Animated camera modes | `data/me_controls.py` | Port camera mode switching |
 | 28 | `enum/ModuleEditorTabMode.ts` | Enum: Edit vs Preview mode | `gui/windows/module_designer.py` | Port edit/preview mode toggle |
@@ -63,11 +63,11 @@ The crown jewel. Forge's module editor is a full 3D scene editor with transform 
 
 | # | Forge File | What It Represents |
 |---|-----------|-------------------|
-| 29 | `module-editor/ForgeModule.ts` | Module data — IFO fields (entry point, areas, scripts, time, description) |
-| 30 | `module-editor/ForgeArea.ts` | Area data — loads ARE/GIT/LYT/VIS, manages rooms and all GIT-listed game objects |
-| 31 | `module-editor/ForgeRoom.ts` | Room data — loads room model + walkmesh by name, manages VIS linked-room visibility |
+| 29 | `module-editor/ForgeModule.ts` | Module data -- IFO fields (entry point, areas, scripts, time, description) |
+| 30 | `module-editor/ForgeArea.ts` | Area data -- loads ARE/GIT/LYT/VIS, manages rooms and all GIT-listed game objects |
+| 31 | `module-editor/ForgeRoom.ts` | Room data -- loads room model + walkmesh by name, manages VIS linked-room visibility |
 | 32 | `module-editor/ForgePath.ts` | Path object (stub placeholder) |
-| 33 | `module-editor/ForgeGameObject.ts` | Abstract base for all game objects — position/rotation/scale, Object3D container, bounding box |
+| 33 | `module-editor/ForgeGameObject.ts` | Abstract base for all game objects -- position/rotation/scale, Object3D container, bounding box |
 | 34 | `module-editor/ForgeMiniGame.ts` | Mini-game data model |
 | 35 | `module-editor/ForgeMGEnemy.ts` | Mini-game enemy |
 | 36 | `module-editor/ForgeMGPlayer.ts` | Mini-game player |
@@ -86,8 +86,8 @@ Forge has a dedicated walkmesh editor with face/vertex/edge selection and materi
 
 | # | Forge File | What It Does | Toolset File | Merge Opportunity |
 |---|-----------|-------------|-------------|-------------------|
-| 43 | `components/tabs/tab-wok-editor/TabWOKEditor.tsx` | 3D walkmesh editor — face/vertex/edge selection modes, material property sidebar | `gui/editors/bwm.py` | Port face/vertex/edge selection modes, material editing sidebar |
-| 44 | `states/tabs/TabWOKEditorState.tsx` | WOK editor state — loads walkmesh, manages selection modes, 3D visualization with helpers | `gui/widgets/renderer/walkmesh.py` + `gui/widgets/renderer/walkmesh_editor.py` | Port selection state machine, visualization helpers |
+| 43 | `components/tabs/tab-wok-editor/TabWOKEditor.tsx` | 3D walkmesh editor -- face/vertex/edge selection modes, material property sidebar | `gui/editors/bwm.py` | Port face/vertex/edge selection modes, material editing sidebar |
+| 44 | `states/tabs/TabWOKEditorState.tsx` | WOK editor state -- loads walkmesh, manages selection modes, 3D visualization with helpers | `gui/widgets/renderer/walkmesh.py` + `gui/widgets/renderer/walkmesh_editor.py` | Port selection state machine, visualization helpers |
 
 ---
 
@@ -97,9 +97,9 @@ Forge's LIP editor has a 3D head preview that animates lip shapes in real-time s
 
 | # | Forge File | What It Does | Toolset File | Merge Opportunity |
 |---|-----------|-------------|-------------|-------------------|
-| 45 | `components/tabs/tab-lip-editor/TabLIPEditor.tsx` | LIP editor — **3D head preview with live lip animation**, keyframe timeline, waveform, shape controls | `gui/editors/lip/lip_editor.py` | Port 3D head preview with live lip-shape animation synced to audio |
-| 46 | `components/tabs/tab-lip-editor/TabLIPEditorOptions.tsx` | LIP editor options sidebar — scene graph/keyframe utility panel | `gui/editors/lip/lip_editor.py` | Port options sidebar |
-| 47 | `states/tabs/tab-lip-editor/TabLIPEditorState.tsx` | LIP editor state — audio playback, keyframe manipulation, head model management, 3D scene | `gui/editors/lip/lip_editor.py` | Port audio-synced playback state machine, keyframe editing logic |
+| 45 | `components/tabs/tab-lip-editor/TabLIPEditor.tsx` | LIP editor -- **3D head preview with live lip animation**, keyframe timeline, waveform, shape controls | `gui/editors/lip/lip_editor.py` | Port 3D head preview with live lip-shape animation synced to audio |
+| 46 | `components/tabs/tab-lip-editor/TabLIPEditorOptions.tsx` | LIP editor options sidebar -- scene graph/keyframe utility panel | `gui/editors/lip/lip_editor.py` | Port options sidebar |
+| 47 | `states/tabs/tab-lip-editor/TabLIPEditorState.tsx` | LIP editor state -- audio playback, keyframe manipulation, head model management, 3D scene | `gui/editors/lip/lip_editor.py` | Port audio-synced playback state machine, keyframe editing logic |
 | 48 | `states/tabs/tab-lip-editor/TabLIPEditorOptionsState.tsx` | LIP options sub-state | `gui/editors/lip/lip_editor.py` | Port options state |
 | 49 | `data/LIPShapeLabels.ts` | LIP shape label data (phoneme --> shape name mapping) | `gui/editors/lip/lip_editor.py` | Port shape label definitions if missing |
 
@@ -111,10 +111,10 @@ Forge has a global audio player and individual audio playback within editors. To
 
 | # | Forge File | What It Does | Toolset File | Merge Opportunity |
 |---|-----------|-------------|-------------|-------------------|
-| 50 | `components/AudioPlayer.tsx` | Global audio player widget — play/pause/stop/seek with waveform | `gui/widgets/media_player_widget.py` | Port waveform visualization, improve transport controls |
-| 51 | `states/AudioPlayerState.ts` | Audio player state — Web Audio API source/gain/analyser, playback control | `gui/widgets/media_player_widget.py` | Port audio analyser (for waveform/visualization) |
+| 50 | `components/AudioPlayer.tsx` | Global audio player widget -- play/pause/stop/seek with waveform | `gui/widgets/media_player_widget.py` | Port waveform visualization, improve transport controls |
+| 51 | `states/AudioPlayerState.ts` | Audio player state -- Web Audio API source/gain/analyser, playback control | `gui/widgets/media_player_widget.py` | Port audio analyser (for waveform/visualization) |
 | 52 | `components/tabs/tab-audio-player/TabAudioPlayer.tsx` | Standalone audio player tab with waveform canvas and full transport controls | `gui/editors/wav.py` | Port waveform display, improve audio editor |
-| 53 | `components/tabs/tab-bik-player/TabBIKPlayer.tsx` | BIK (Bink Video) player — frame-by-frame WebGL YUV decoding with playback controls | No equivalent | Add BIK video playback support (new feature) |
+| 53 | `components/tabs/tab-bik-player/TabBIKPlayer.tsx` | BIK (Bink Video) player -- frame-by-frame WebGL YUV decoding with playback controls | No equivalent | Add BIK video playback support (new feature) |
 | 54 | `components/tabs/tab-bik-player/yuvWebGL.ts` | WebGL YUV-to-RGB shader for BIK frame rendering | No equivalent | Reference for BIK rendering |
 
 ---
@@ -125,10 +125,10 @@ Forge has a 3D model viewer with animation timeline and scene graph. Toolset has
 
 | # | Forge File | What It Does | Toolset File | Merge Opportunity |
 |---|-----------|-------------|-------------|-------------------|
-| 55 | `components/tabs/tab-model-viewer/TabModelViewer.tsx` | 3D model viewer — animation keyframe timeline, scene graph sidebar, camera overlay | `gui/editors/mdl.py` + `gui/widgets/renderer/model.py` | Port animation timeline, scene graph sidebar, camera controls |
-| 56 | `components/ModelViewerSidebarComponent.tsx` | Model viewer sidebar — animation selector, layout selector, camera speed, scene graph tree | `gui/editors/mdl.py` | Port animation selector sidebar, camera speed control |
-| 57 | `components/KeyFrameTimelineComponent.tsx` | Reusable animation keyframe timeline — animation list, seek bar, zoom, play/pause/loop | `gui/editors/mdl.py` + `gui/editors/lip/lip_editor.py` | Port as reusable timeline widget for both model viewer and LIP editor |
-| 58 | `states/tabs/TabModelViewerState.tsx` | Model viewer state — loads MDL/MDX, manages animations, timeline scrubbing, layout overlays | `gui/editors/mdl.py` | Port animation state management |
+| 55 | `components/tabs/tab-model-viewer/TabModelViewer.tsx` | 3D model viewer -- animation keyframe timeline, scene graph sidebar, camera overlay | `gui/editors/mdl.py` + `gui/widgets/renderer/model.py` | Port animation timeline, scene graph sidebar, camera controls |
+| 56 | `components/ModelViewerSidebarComponent.tsx` | Model viewer sidebar -- animation selector, layout selector, camera speed, scene graph tree | `gui/editors/mdl.py` | Port animation selector sidebar, camera speed control |
+| 57 | `components/KeyFrameTimelineComponent.tsx` | Reusable animation keyframe timeline -- animation list, seek bar, zoom, play/pause/loop | `gui/editors/mdl.py` + `gui/editors/lip/lip_editor.py` | Port as reusable timeline widget for both model viewer and LIP editor |
+| 58 | `states/tabs/TabModelViewerState.tsx` | Model viewer state -- loads MDL/MDX, manages animations, timeline scrubbing, layout overlays | `gui/editors/mdl.py` | Port animation state management |
 
 ---
 
@@ -164,7 +164,7 @@ Forge has a 3D model viewer with animation timeline and scene graph. Toolset has
 
 | # | Forge File | What It Does | Toolset File | Merge Opportunity |
 |---|-----------|-------------|-------------|-------------------|
-| 66 | `components/tabs/tab-gui-editor/TabGUIEditor.tsx` | KotOR GUI menu layout editor (`.gui` files) — 3D renderer with zoom/pan | `gui/editors/gff.py` (currently just GFF) | Port as dedicated GUI layout visual editor (currently no visual GUI editor exists) |
+| 66 | `components/tabs/tab-gui-editor/TabGUIEditor.tsx` | KotOR GUI menu layout editor (`.gui` files) -- 3D renderer with zoom/pan | `gui/editors/gff.py` (currently just GFF) | Port as dedicated GUI layout visual editor (currently no visual GUI editor exists) |
 
 ---
 
@@ -172,8 +172,8 @@ Forge has a 3D model viewer with animation timeline and scene graph. Toolset has
 
 | # | Forge File | What It Does | Toolset File | Merge Opportunity |
 |---|-----------|-------------|-------------|-------------------|
-| 67 | `components/tabs/tab-pth-editor/TabPTHEditor.tsx` | 3D pathfinding editor — select/add points, add connections between them | `gui/editors/pth.py` | Port 3D point/connection editing, improve over current basic editor |
-| 68 | `states/tabs/TabPTHEditorState.tsx` | PTH editor state — path points, connections, layout/walkmesh overlay | `gui/editors/pth.py` | Port state management for point/connection editing |
+| 67 | `components/tabs/tab-pth-editor/TabPTHEditor.tsx` | 3D pathfinding editor -- select/add points, add connections between them | `gui/editors/pth.py` | Port 3D point/connection editing, improve over current basic editor |
+| 68 | `states/tabs/TabPTHEditorState.tsx` | PTH editor state -- path points, connections, layout/walkmesh overlay | `gui/editors/pth.py` | Port state management for point/connection editing |
 
 ---
 
@@ -185,7 +185,7 @@ Forge has a 3D model viewer with animation timeline and scene graph. Toolset has
 | 70 | `components/tabs/tab-script-compile-log/TabScriptCompileLog.tsx` | NWScript compilation log display | `gui/editors/nss.py` | Port compilation log panel |
 | 71 | `components/tabs/tab-script-error-log/TabScriptErrorLog.tsx` | Script error/warning diagnostics with click-to-navigate | `gui/editors/nss.py` | Port error log with click-to-line navigation |
 | 72 | `components/tabs/tab-script-inspector/TabScriptInspector.tsx` | NCS bytecode disassembler showing assembly instructions | `gui/editors/nss.py` | Port bytecode inspector/disassembler view |
-| 73 | `states/NWScriptLanguageService.ts` | NWScript language server — parsing, linting, completion | `gui/common/language_server_client.py` | Reference for language server features |
+| 73 | `states/NWScriptLanguageService.ts` | NWScript language server -- parsing, linting, completion | `gui/common/language_server_client.py` | Reference for language server features |
 | 74 | `states/LYTLanguageService.ts` | LYT file language service | No equivalent | Reference for LYT syntax support |
 
 ---
@@ -205,7 +205,7 @@ Forge has a 3D model viewer with animation timeline and scene graph. Toolset has
 | # | Forge File | What It Does | Toolset File | Merge Opportunity |
 |---|-----------|-------------|-------------|-------------------|
 | 78 | `components/CExoLocStringEditor/CExoLocStringEditor.tsx` | Multi-language localized string editor with TLK resref lookup | `gui/dialogs/edit/locstring.py` + `gui/widgets/edit/locstring.py` | Port improved multi-language UI |
-| 79 | `components/TLKSearchModal/TLKSearchModal.tsx` | TLK search modal — query text, select string-ref | `gui/dialogs/edit/locstring.py` (already ported) | Already ported |
+| 79 | `components/TLKSearchModal/TLKSearchModal.tsx` | TLK search modal -- query text, select string-ref | `gui/dialogs/edit/locstring.py` (already ported) | Already ported |
 
 ---
 
@@ -238,7 +238,7 @@ Forge has a 3D model viewer with animation timeline and scene graph. Toolset has
 
 | # | Forge File | What It Does | Toolset File | Merge Opportunity |
 |---|-----------|-------------|-------------|-------------------|
-| 91 | `App.tsx` | Root app — game directory, layout (explorer + tabs), loading screen | `gui/windoorws/main.py` | Reference for layout organization |
+| 91 | `App.tsx` | Root app -- game directory, layout (explorer + tabs), loading screen | `gui/windoorws/main.py` | Reference for layout organization |
 | 92 | `components/LayoutContainer/LayoutContainer.tsx` | Resizable docking-panel layout (N/S/E/W + center) with draggable splitters | `gui/windows/main.py` + `gui/windows/module_designer.py` | Port improved docking/splitting layout |
 | 93 | `components/common/MenuBar.tsx` | Application menu bar | `gui/windows/main.py` | Reference for menu organization |
 | 94 | `components/common/ContextMenu.tsx` | Reusable context menu component | Various editors | Reference for context menu patterns |
@@ -257,14 +257,14 @@ Forge has a 3D model viewer with animation timeline and scene graph. Toolset has
 
 | # | Forge File | What It Does | Toolset File | Merge Opportunity |
 |---|-----------|-------------|-------------|-------------------|
-| 103 | `states/ForgeState.ts` | Central app state — project, tab managers, explorer tabs, recent files, NWScript parser, init | `data/settings.py` + `gui/windows/main.py` | Reference for centralized state management patterns |
-| 104 | `managers/EditorTabManager.ts` | Tab management — add/remove/show/hide, single-instance enforcement, tab events | `utils/window.py` | Port single-instance tab enforcement (already partially done) |
-| 105 | `FileTypeManager.ts` | File-type router — maps extensions to editor tab state classes | `utils/window.py` (open_resource_editor) | Reference for file-type dispatch |
-| 106 | `EditorFile.ts` | Open file abstraction — read/write from game FS/project FS/system FS, save state | `gui/editor/file.py` | Reference for file save-state tracking |
+| 103 | `states/ForgeState.ts` | Central app state -- project, tab managers, explorer tabs, recent files, NWScript parser, init | `data/settings.py` + `gui/windows/main.py` | Reference for centralized state management patterns |
+| 104 | `managers/EditorTabManager.ts` | Tab management -- add/remove/show/hide, single-instance enforcement, tab events | `utils/window.py` | Port single-instance tab enforcement (already partially done) |
+| 105 | `FileTypeManager.ts` | File-type router -- maps extensions to editor tab state classes | `utils/window.py` (open_resource_editor) | Reference for file-type dispatch |
+| 106 | `EditorFile.ts` | Open file abstraction -- read/write from game FS/project FS/system FS, save state | `gui/editor/file.py` | Reference for file save-state tracking |
 | 107 | `EditorModule.ts` | Minimal module wrapper | `gui/windows/module_designer.py` | Reference |
 | 108 | `ForgeFileSystem.ts` | File system abstraction (Electron + browser FS API) | N/A (desktop app uses OS directly) | Not applicable |
 | 109 | `ProjectFileSystem.ts` | Project-scoped virtual file system | No equivalent | Reference for project FS concept |
-| 110 | `Project.ts` | Project model — settings, module areas, project directory | No equivalent | Port project concept |
+| 110 | `Project.ts` | Project model -- settings, module areas, project directory | No equivalent | Port project concept |
 | 111 | `RecentProject.ts` | Recent project tracking | `data/settings.py` | Reference |
 | 112 | `SceneGraphNode.ts` | Scene graph node data class | `gui/windows/module_designer.py` | Reference for scene graph data model |
 | 113 | `EventListenerModel.ts` | Event listener model | N/A (Qt uses signals) | Not applicable |
@@ -364,7 +364,7 @@ Forge has a 3D model viewer with animation timeline and scene graph. Toolset has
 
 ## 21. Indoor Map Builder <--> Forge Module Editor / Walkmesh Editor / LYT+VIS Engine
 
-The Toolset's Indoor Map Builder has **no direct Forge equivalent by name**, but Forge's **module editor**, **walkmesh editor**, and **LYT/VIS engine** collectively cover the same domain — assembling rooms into a playable module with walkmeshes, doors, visibility, and game objects. The difference: Forge edits **existing** modules in 3D; the Toolset **creates new** indoor modules from kit pieces in 2D.
+The Toolset's Indoor Map Builder has **no direct Forge equivalent by name**, but Forge's **module editor**, **walkmesh editor**, and **LYT/VIS engine** collectively cover the same domain -- assembling rooms into a playable module with walkmeshes, doors, visibility, and game objects. The difference: Forge edits **existing** modules in 3D; the Toolset **creates new** indoor modules from kit pieces in 2D.
 
 ### 21a. Forge Files That Map to Indoor Builder Features
 
@@ -374,9 +374,9 @@ The Toolset's Indoor Map Builder has **no direct Forge equivalent by name**, but
 |---|-----------|-------------|---------------------------|-------------|
 | 191 | `module-editor/ForgeArea.ts` | Loads ARE+GIT+LYT+VIS, creates rooms, manages all GIT objects, caches walkmeshes for raycasting | `builder.py` + `pykotor.common.indoormap` | LYT/VIS-aware room management, GIT object lists, walkmesh cache for hit-testing |
 | 192 | `module-editor/ForgeRoom.ts` | Loads room MDL/MDX + WOK walkmesh, tracks VIS-linked rooms, property-change reload | `pykotor.common.indoorkit` (`KitComponent`) | Per-room walkmesh loading, VIS room linking |
-| 193 | `module-editor/ForgeModule.ts` | Module container — IFO fields, entry point, area ownership | `pykotor.common.indoormap` (`IndoorMap.build()` generates IFO) | IFO field editing (entry pos, scripts, description) |
+| 193 | `module-editor/ForgeModule.ts` | Module container -- IFO fields, entry point, area ownership | `pykotor.common.indoormap` (`IndoorMap.build()` generates IFO) | IFO field editing (entry pos, scripts, description) |
 | 194 | `module-editor/ForgeDoor.ts` | Door with UTD blueprint + 3 walkmeshes (closed, open1, open2) | `builder.py` auto-generates doors from hook connections | Door walkmesh (DWK) handling, UTD property editing |
-| 195 | `module-editor/ForgeGameObject.ts` | Base object — position/rotation/scale, bounding box, GIT serialization | No equivalent (indoor builder has no GIT objects) | **NEW**: object placement base class |
+| 195 | `module-editor/ForgeGameObject.ts` | Base object -- position/rotation/scale, bounding box, GIT serialization | No equivalent (indoor builder has no GIT objects) | **NEW**: object placement base class |
 | 196 | `module-editor/ForgeCreature.ts` | Creature with UTC blueprint + 3D model | No equivalent | **NEW**: creature placement in indoor modules |
 | 197 | `module-editor/ForgePlaceable.ts` | Placeable with UTP blueprint + PWK walkmesh | No equivalent | **NEW**: placeable placement with PWK collision |
 | 198 | `module-editor/ForgeTrigger.ts` | Trigger with editable polygon vertices + UTT blueprint | No equivalent | **NEW**: trigger zone placement with vertex editing |
@@ -390,14 +390,14 @@ The Toolset's Indoor Map Builder has **no direct Forge equivalent by name**, but
 
 | # | Forge File | What It Does | Indoor Builder Counterpart | What to Port |
 |---|-----------|-------------|---------------------------|-------------|
-| 204 | `states/tabs/TabWOKEditorState.tsx` | WOK editor state — face/vertex/edge selection, surface material editing, wireframe overlay, normal arrows, grid | `renderer.py` (material painting only) | Face/vertex/edge selection modes, vertex drag-editing, normal visualization |
-| 205 | `components/tabs/tab-wok-editor/TabWOKEditor.tsx` | WOK editor UI — 3D viewport, tool palette (Face/Vertex/Edge modes), sidebar with face properties | `renderer.py` + `builder.py` (paint mode) | Selection mode toolbar, face property sidebar (material + walkable flags + adjacency) |
+| 204 | `states/tabs/TabWOKEditorState.tsx` | WOK editor state -- face/vertex/edge selection, surface material editing, wireframe overlay, normal arrows, grid | `renderer.py` (material painting only) | Face/vertex/edge selection modes, vertex drag-editing, normal visualization |
+| 205 | `components/tabs/tab-wok-editor/TabWOKEditor.tsx` | WOK editor UI -- 3D viewport, tool palette (Face/Vertex/Edge modes), sidebar with face properties | `renderer.py` + `builder.py` (paint mode) | Selection mode toolbar, face property sidebar (material + walkable flags + adjacency) |
 
 **3D infrastructure** (cross-ref §2 #20-24; listed for what indoor builder lacks):
 
 | # | Forge File | What It Does | Indoor Builder Counterpart | What to Port |
 |---|-----------|-------------|---------------------------|-------------|
-| 206 | `UI3DRenderer.tsx` | 3D engine — gizmos, orbit/fly camera, raycaster, scene groups, walkmesh visibility toggle | `renderer.py` (2D QPainter only) | **MAJOR**: 3D viewport option with orbit camera, transform gizmos |
+| 206 | `UI3DRenderer.tsx` | 3D engine -- gizmos, orbit/fly camera, raycaster, scene groups, walkmesh visibility toggle | `renderer.py` (2D QPainter only) | **MAJOR**: 3D viewport option with orbit camera, transform gizmos |
 | 207 | `components/UI3DRendererView.tsx` | Canvas + camera-view menu (Top/Bottom/Left/Right/Front/Back) | Single 2D view | Camera view presets (at minimum: orthographic top-down) |
 | 208 | `components/UI3DToolPalette.tsx` | Floating toolbar (Select/Move/Rotate/Scale/Add) | `builder.py` toolbar (separate Qt actions) | Unified floating tool palette widget |
 | 209 | `managers/SceneGraphTreeViewManager.ts` | Builds scene tree grouped by type (Rooms, Doors, Creatures, etc.) | Room list widget in builder | Hierarchical scene tree showing rooms + objects per room |
@@ -406,20 +406,20 @@ The Toolset's Indoor Map Builder has **no direct Forge equivalent by name**, but
 
 | # | Forge File | What It Does | PyKotor Equivalent | What to Port |
 |---|-----------|-------------|-------------------|-------------|
-| 210 | `resource/LYTObject.ts` | LYT parser — rooms, doorhooks, tracks, obstacles | `pykotor.resource.formats.lyt` | **Doorhook export**: Toolset only writes room entries, not doorhooks/tracks |
-| 211 | `resource/VISObject.ts` | VIS parser — room-->visible-rooms graph | `pykotor.resource.formats.vis` | **Per-room VIS editing**: Toolset currently does `set_all_visible()` |
+| 210 | `resource/LYTObject.ts` | LYT parser -- rooms, doorhooks, tracks, obstacles | `pykotor.resource.formats.lyt` | **Doorhook export**: Toolset only writes room entries, not doorhooks/tracks |
+| 211 | `resource/VISObject.ts` | VIS parser -- room-->visible-rooms graph | `pykotor.resource.formats.vis` | **Per-room VIS editing**: Toolset currently does `set_all_visible()` |
 
 **Walkmesh engine** (runtime classes the WOK editor builds on):
 
 | # | Forge File | What It Does | PyKotor Equivalent | What to Port |
 |---|-----------|-------------|-------------------|-------------|
-| 212 | `odyssey/OdysseyWalkMesh.ts` | Core walkmesh — binary WOK read/write, face/vertex/edge/AABB, surface materials, perimeter building, geometry gen | `pykotor.resource.formats.bwm` | Already equivalent; use for vertex editing extensions |
+| 212 | `odyssey/OdysseyWalkMesh.ts` | Core walkmesh -- binary WOK read/write, face/vertex/edge/AABB, surface materials, perimeter building, geometry gen | `pykotor.resource.formats.bwm` | Already equivalent; use for vertex editing extensions |
 | 213 | `odyssey/WalkmeshEdge.ts` | Edge with normal, transition index, face ref | `pykotor.resource.formats.bwm` (internal) | Edge selection/visualization data |
 | 214 | `odyssey/OdysseyFace3.ts` | Face with surfacemat, adjacency, walk/walkCheck/lineOfSight bools, centroid, normal | `pykotor.resource.formats.bwm` (BWMFace) | Face selection and property display |
 | 215 | `engine/SurfaceMaterial.ts` | Surface material definition (walk, walkCheck, lineOfSight, grass) from surfacemat.2da | `constants.py` (material colors) + surfacemat.2da | Surface material metadata for property sidebar |
 | 216 | `engine/TileColor.ts` | Color per surface material for walkmesh rendering | `constants.py` (MATERIAL_COLOURS dict) | Already equivalent |
 
-**Pathfinding engine** (PTH editor loads walkmeshes as background — relevant to indoor builder):
+**Pathfinding engine** (PTH editor loads walkmeshes as background -- relevant to indoor builder):
 
 | # | Forge File | What It Does | Indoor Relevance |
 |---|-----------|-------------|-----------------|
@@ -478,18 +478,18 @@ To absorb the Indoor Builder and Forge's Walkmesh Editor, `module_designer.ui` w
 
 ### 21c. Current Indoor File Inventory (23 files across 2 trees)
 
-**Libraries/PyKotor/src/pykotor/** (headless core — 6 files):
+**Libraries/PyKotor/src/pykotor/** (headless core -- 6 files):
 
 | # | Current Path | What It Does |
 |---|-------------|-------------|
 | 220 | `common/indoorkit.py` | Data model classes: `Kit`, `KitComponent`, `KitDoor`, `KitComponentHook`, `MDLMDXTuple` |
 | 221 | `common/indoormap.py` | Data model + headless builder: `IndoorMap`, `IndoorMapRoom`, `.build_mod()`, `.to_dict()`/`.from_dict()` |
-| 222 | `tools/indoorkit.py` | Workflow: `load_kits()`, `load_kits_with_missing_files()` — parses kit JSON + resources from disk |
-| 223 | `tools/indoormap.py` | Workflow: `build_mod_from_indoor_file()`, `extract_indoor_from_module()` — high-level CLI ops |
+| 222 | `tools/indoorkit.py` | Workflow: `load_kits()`, `load_kits_with_missing_files()` -- parses kit JSON + resources from disk |
+| 223 | `tools/indoormap.py` | Workflow: `build_mod_from_indoor_file()`, `extract_indoor_from_module()` -- high-level CLI ops |
 | 224 | `cli/indoor_builder.py` | Tiny CLI helpers: `parse_game_argument()`, `determine_game_from_installation()` |
 | 225 | `cli/commands/indoor_builder.py` | CLI command impls: `cmd_indoor_build()`, `cmd_indoor_extract()` |
 
-**Tools/HolocronToolset/src/toolset/** (Qt UI — 17 files):
+**Tools/HolocronToolset/src/toolset/** (Qt UI -- 17 files):
 
 | # | Current Path | What It Does |
 |---|-------------|-------------|
@@ -501,7 +501,7 @@ To absorb the Indoor Builder and Forge's Walkmesh Editor, `module_designer.ui` w
 | 231 | `data/indoorkit/qt_preview.py` | Qt preview image generation |
 | 232 | `gui/windows/indoor_builder/__init__.py` | Package init + re-exports `IndoorMapBuilder`, `IndoorMapRenderer` |
 | 233 | `gui/windows/indoor_builder/builder.py` | Main `IndoorMapBuilder` window (QMainWindow) |
-| 234 | `gui/windows/indoor_builder/renderer.py` | `IndoorMapRenderer` widget — 2D top-down walkmesh canvas |
+| 234 | `gui/windows/indoor_builder/renderer.py` | `IndoorMapRenderer` widget -- 2D top-down walkmesh canvas |
 | 235 | `gui/windows/indoor_builder/constants.py` | Material colors, walkmesh constants |
 | 236 | `gui/windows/indoor_builder/kit_downloader.py` | `KitDownloader` dialog |
 | 237 | `gui/windows/indoor_builder/undo_commands.py` | QUndoCommand subclasses for room operations |
@@ -516,7 +516,7 @@ To absorb the Indoor Builder and Forge's Walkmesh Editor, `module_designer.ui` w
 **Problem**: 8 files named `indoorkit.py` / `indoormap.py` / `indoor_builder.py` in different directories.
 
 **Phase 1: Delete the deprecated duplicate**
-- DELETE `data/indoorkit/indoorkit_base.py` — marked DEPRECATED, duplicates `pykotor.common.indoorkit`
+- DELETE `data/indoorkit/indoorkit_base.py` -- marked DEPRECATED, duplicates `pykotor.common.indoorkit`
 
 **Phase 2: Merge tiny Toolset data shims**
 - MERGE `data/indoorkit/indoorkit_utils.py` --> `data/indoorkit/indoorkit_loader.py`
@@ -543,10 +543,10 @@ To absorb the Indoor Builder and Forge's Walkmesh Editor, `module_designer.ui` w
 ### Critical Path (Phase 1-6)
 
 **Phase 1: Unified Environment** (Merge Indoor Builder --> Module Designer)
-- [x] Integrate `indoor_builder` room-assembly logic into `module_designer.py` as "Layout Mode" — EditorMode enum, mode selector, indoor state, kit/module selectors, renderer signals
+- [x] Integrate `indoor_builder` room-assembly logic into `module_designer.py` as "Layout Mode" -- EditorMode enum, mode selector, indoor state, kit/module selectors, renderer signals
 - [ ] Retire standalone `indoor_builder.ui` and consolidate into mode-based workflow _(deferred until full builder.py migration)_
-- [x] Add toolbar mode selector (Layout/Object/Walkmesh/Lighting/Terrain/NavMesh) — QComboBox with Object/Layout/Walkmesh modes, tab visibility per mode
-- [ ] Port doorhook snapping, room rotation/flip, multi-select from indoor builder _(done: snap checkboxes wired, all room ops ported — place, delete, duplicate, merge, rotate, flip, clipboard, context menu)_
+- [x] Add toolbar mode selector (Layout/Object/Walkmesh/Lighting/Terrain/NavMesh) -- QComboBox with Object/Layout/Walkmesh modes, tab visibility per mode
+- [ ] Port doorhook snapping, room rotation/flip, multi-select from indoor builder _(done: snap checkboxes wired, all room ops ported -- place, delete, duplicate, merge, rotate, flip, clipboard, context menu)_
 
 **Phase 2: Walkmesh Vertex Editing** (Forge Port)
 - [ ] Implement face/vertex/edge raycast picking in PyOpenGL `ModuleRenderer`
@@ -581,23 +581,23 @@ To absorb the Indoor Builder and Forge's Walkmesh Editor, `module_designer.ui` w
 
 ### Forge Feature Priorities (Ranked by Impact)
 
-1. **Module Designer Unification** (#18-28, #42, #191-219, §21) — **CRITICAL** — Merge Indoor Builder + Walkmesh Editor into Module Designer with contextual modes
-2. **Walkmesh Vertex Editing** (#43-44, #204-205) — Face/vertex/edge selection, vertex drag gizmo, material sidebar
-3. **Scene Graph Tree** (#23, #42, #209) — Unity Hierarchy analog showing Module --> Areas --> Rooms --> Objects
-4. **Transform Gizmos** (#24, #206) — Three.js-style translate/rotate/scale handles with axis constraints
-5. **Multi-View Layout** (#207) — 4-panel orthographic + perspective (Hammer-standard)
-6. **LIP Sync Editor** (#45-49) — 3D head preview with live lip animation synced to audio, keyframe timeline
-7. **Model Viewer** (#55-58) — Animation timeline, scene graph sidebar, camera controls
-8. **Blueprint 3D Previews** (#1-9) — Inline 3D model previews in UTC/UTD/UTI/UTP editors
-9. **Audio Waveform** (#50-52) — Waveform visualization in audio player and UTS editor
-10. **GUI Layout Editor** (#66) — Visual `.gui` file editor (entirely new capability for Toolset)
-11. **PTH Editor** (#67-68) — 3D pathfinding point/connection editing with walkmesh background
-12. **Blueprint Browser** (#86-87, #219) — Search/filter modal with thumbnails, drag-to-place
-13. **Script Inspector** (#72) — NCS bytecode disassembler view
-14. **BIK Video Player** (#53-54) — Bink Video playback support
-15. **2DA Editor** (#63-65) — Cell editing and column header improvements
-16. **Welcome Tab** (#102) — Recent files landing page
-17. **Indoor File Cleanup** (#220-242) — Consolidate 23 --> 19 files, delete deprecated duplicate, merge shims
+1. **Module Designer Unification** (#18-28, #42, #191-219, §21) -- **CRITICAL** -- Merge Indoor Builder + Walkmesh Editor into Module Designer with contextual modes
+2. **Walkmesh Vertex Editing** (#43-44, #204-205) -- Face/vertex/edge selection, vertex drag gizmo, material sidebar
+3. **Scene Graph Tree** (#23, #42, #209) -- Unity Hierarchy analog showing Module --> Areas --> Rooms --> Objects
+4. **Transform Gizmos** (#24, #206) -- Three.js-style translate/rotate/scale handles with axis constraints
+5. **Multi-View Layout** (#207) -- 4-panel orthographic + perspective (Hammer-standard)
+6. **LIP Sync Editor** (#45-49) -- 3D head preview with live lip animation synced to audio, keyframe timeline
+7. **Model Viewer** (#55-58) -- Animation timeline, scene graph sidebar, camera controls
+8. **Blueprint 3D Previews** (#1-9) -- Inline 3D model previews in UTC/UTD/UTI/UTP editors
+9. **Audio Waveform** (#50-52) -- Waveform visualization in audio player and UTS editor
+10. **GUI Layout Editor** (#66) -- Visual `.gui` file editor (entirely new capability for Toolset)
+11. **PTH Editor** (#67-68) -- 3D pathfinding point/connection editing with walkmesh background
+12. **Blueprint Browser** (#86-87, #219) -- Search/filter modal with thumbnails, drag-to-place
+13. **Script Inspector** (#72) -- NCS bytecode disassembler view
+14. **BIK Video Player** (#53-54) -- Bink Video playback support
+15. **2DA Editor** (#63-65) -- Cell editing and column header improvements
+16. **Welcome Tab** (#102) -- Recent files landing page
+17. **Indoor File Cleanup** (#220-242) -- Consolidate 23 --> 19 files, delete deprecated duplicate, merge shims
 
 ---
 
@@ -620,7 +620,7 @@ To absorb the Indoor Builder and Forge's Walkmesh Editor, `module_designer.ui` w
    - Use `ModuleKit` and `ModuleKitManager` so that level designers can seamlessly browse, preview, and drag-and-drop rooms from the vanilla modules directly into their new module workspace.
    - Ensure you read and understand the `ModuleKitManager` lazy-loading pipeline; don't reinvent module loading.
 
-5. **Walkmesh Face / Vertex Picking**: Add raycast-based triangle picking in `ModuleRenderer` using PyOpenGL, returning the clicked `BWMFace` index — this acts as the foundation for the new "Walkmesh Mode" vertex editing.
+5. **Walkmesh Face / Vertex Picking**: Add raycast-based triangle picking in `ModuleRenderer` using PyOpenGL, returning the clicked `BWMFace` index -- this acts as the foundation for the new "Walkmesh Mode" vertex editing.
 
 6. **Build the Scene Graph Tree**: Create a `QTreeView` widget that mirrors Unity's Hierarchy, populating it from the loaded module's ARE/GIT/LYT data with icons per object type.
 
@@ -655,18 +655,18 @@ The Module Designer will be considered **feature-complete** when:
 - **Forge (KotOR.js)**: Module editor, WOK editor, Scene graph, Tool palette, Blueprint browser
 
 ### Key Design Principles:
-1. **Everything in one window** — No floating dialogs, no separate apps, no mode-switching hell
-2. **Contextual tools** — Right tool auto-selected based on selection (select object --> transform gizmo appears)
-3. **Undo everything** — Every action reversible with Ctrl+Z, even across modes
-4. **Visual feedback** — Gizmos, overlays, highlights for all interactions (no "invisible state")
-5. **Non-destructive editing** — Can always revert to original blueprints (changes saved to GIT, not blueprints)
-6. **Keyboard-first** — All common actions have shortcuts (W/E/R for tools, F to focus, Delete to remove)
-7. **Instant feedback** — No "Apply" buttons; changes reflected in viewport immediately
-8. **Progressive disclosure** — Advanced features hidden until needed (don't overwhelm beginners)
+1. **Everything in one window** -- No floating dialogs, no separate apps, no mode-switching hell
+2. **Contextual tools** -- Right tool auto-selected based on selection (select object --> transform gizmo appears)
+3. **Undo everything** -- Every action reversible with Ctrl+Z, even across modes
+4. **Visual feedback** -- Gizmos, overlays, highlights for all interactions (no "invisible state")
+5. **Non-destructive editing** -- Can always revert to original blueprints (changes saved to GIT, not blueprints)
+6. **Keyboard-first** -- All common actions have shortcuts (W/E/R for tools, F to focus, Delete to remove)
+7. **Instant feedback** -- No "Apply" buttons; changes reflected in viewport immediately
+8. **Progressive disclosure** -- Advanced features hidden until needed (don't overwhelm beginners)
 
 ---
 
-**End of Plan** — See [docs/LEVEL_EDITOR_CHECKLIST.md](docs/LEVEL_EDITOR_CHECKLIST.md) for the detailed 200+ feature breakdown.
-13. **Blueprint Browser** (#86-87, #219) — Search/filter modal with thumbnails
-14. **Welcome Tab** (#102) — Recent files landing page
-15. **Indoor File Cleanup** (#220-242) — Consolidate 23 --> 19 files, delete deprecated duplicate, merge shims
+**End of Plan** -- See [docs/LEVEL_EDITOR_CHECKLIST.md](docs/LEVEL_EDITOR_CHECKLIST.md) for the detailed 200+ feature breakdown.
+13. **Blueprint Browser** (#86-87, #219) -- Search/filter modal with thumbnails
+14. **Welcome Tab** (#102) -- Recent files landing page
+15. **Indoor File Cleanup** (#220-242) -- Consolidate 23 --> 19 files, delete deprecated duplicate, merge shims

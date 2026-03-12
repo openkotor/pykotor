@@ -232,6 +232,6 @@ _Note: The complete thread container continues with 260+ posts across all 6 page
 
 ### See also
 
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — Current TSLPatcher documentation
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — PyKotor patcher; [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — User guide
-- [TLK-File-Format](TLK-File-Format), [2DA-File-Format](2DA-File-Format), [GFF-File-Format](GFF-File-Format) — Patched resources
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- Current TSLPatcher documentation
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- PyKotor patcher; [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- User guide
+- [TLK-File-Format](TLK-File-Format), [2DA-File-Format](2DA-File-Format), [GFF-File-Format](GFF-File-Format) -- Patched resources

@@ -19,7 +19,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-feat](2DA-feat), [2DA-classes](2DA-classes) — Feat and class data
-- [GFF-UTC](GFF-UTC) — Creature class/level; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [2DA-feat](2DA-feat), [2DA-classes](2DA-classes) -- Feat and class data
+- [GFF-UTC](GFF-UTC) -- Creature class/level; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

@@ -55,10 +55,10 @@ NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. The sour
 | 4 (0x04)   | 4    | Version `"V1.0"` |
 | 8 (0x08)   | 1    | Program size marker opcode (`0x42`) |
 | 9 (0x09)   | 4    | Total file size ([big-endian](https://en.wikipedia.org/wiki/Endianness) UInt32) |
-| 13 (0x0D)+  | —    | Stream of bytecode instructions |
+| 13 (0x0D)+  | --    | Stream of bytecode instructions |
 
 - The *VM* executes sequential instructions; control-flow opcodes (`JMP`, `JZ`, `JSR`) adjust the instruction pointer.  
-- *KotOR* introduces no custom container sections—scripts are a flat stream.  
+- *KotOR* introduces no custom container sections--scripts are a flat stream.  
 - All major reverse-engineered engines (`vendor/reone`, `vendor/xoreos`, `vendor/Kotor.NET`, `vendor/NorthernLights`) decode the same structure; **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** uses a WebAssembly VM but identical [byte](https://en.wikipedia.org/wiki/Byte) layouts.
 - The program size marker at offset 8 (`0x42`) is not a real instruction but a metadata field containing the total file size. Execution begins at offset 13 (*0x0D*) after the header.
 
@@ -88,7 +88,7 @@ SP --> -4:  j: 1        (topmost)
 
 **Stack Entry types:**
 
-- **Constants**: Immutable values (`CONSTx`) reawd from instructions — *int*, [*float*](GFF-File-Format#gff-data-types), *string*, *object*
+- **Constants**: Immutable values (`CONSTx`) reawd from instructions -- *int*, [*float*](GFF-File-Format#gff-data-types), *string*, *object*
 - **Variables**: Assignable stack slots created via `RSADDx`, modified via `CPDOWNSP`/`CPDOWNBP`
 - **structures**: Composite types spanning multiple positions (vectors = 3 positions/12 bytes, custom = 4-[*Byte*](https://en.wikipedia.org/wiki/Byte) multiples)
 

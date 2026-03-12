@@ -91,7 +91,7 @@ This “-v1.00 / -co” form is **not** the same as the PyKotor V1 config above;
 **Notes:**
 
 - Output is specified with **`-o`** (not positional).
-- No `-g` or `--outputdir`; TSLPatcher places nwscript.nss and NSS in tslpatchdata and calls the compiler from that context. Optional extra parameters can be passed via the INI key **ScriptCompilerFlags** (Settings section) — see TSLPatcher’s Official Readme (change log 2006-01-14).
+- No `-g` or `--outputdir`; TSLPatcher places nwscript.nss and NSS in tslpatchdata and calls the compiler from that context. Optional extra parameters can be passed via the INI key **ScriptCompilerFlags** (Settings section) -- see TSLPatcher’s Official Readme (change log 2006-01-14).
 
 ---
 
@@ -184,8 +184,8 @@ So: same flags and argument order as Fred Tetra’s KOTOR Tool; only the binary 
 
 ## Primary sources
 
-- **PyKotor:** `Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py` — `ExternalCompilerConfig`, `KnownExternalCompilers`, `NwnnsscompConfig.get_compile_args` / `get_decompile_args`.
-- **TSLPatcher:** `wiki/TSLPatcher's-Official-Readme.md` — nwscript.nss + nwnnsscomp in tslpatchdata, tk102 custom build, ScriptCompilerFlags (Settings), CompileList behavior.
+- **PyKotor:** `Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py` -- `ExternalCompilerConfig`, `KnownExternalCompilers`, `NwnnsscompConfig.get_compile_args` / `get_decompile_args`.
+- **TSLPatcher:** `wiki/TSLPatcher's-Official-Readme.md` -- nwscript.nss + nwnnsscomp in tslpatchdata, tk102 custom build, ScriptCompilerFlags (Settings), CompileList behavior.
 - **Community:** Deadly Stream “NWNNSSCOMP versions”; LucasForums/MixnMojo threads on nwnnsscomp -v1.00, -co, batch compile; SourceForge kotortoolset (nwnnsscomp-kotor 1.05); Hazard’s “KotOR Script Compiler Sourcecode”; KobaltBlu KotOR-Scripting-Tool (GUI, same CLI as KOTOR Tool for the bundled nwnnsscomp).
 
 ---

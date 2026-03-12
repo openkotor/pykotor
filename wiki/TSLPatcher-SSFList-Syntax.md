@@ -544,10 +544,10 @@ This means that memory tokens set in TLKList and 2DAList will be available when 
 
 ### See also
 
-- [SSF-File-Format](SSF-File-Format) — Sound set structure
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) — StrRef tokens; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Token usage
+- [SSF-File-Format](SSF-File-Format) -- Sound set structure
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- StrRef tokens; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Token usage
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme); [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums for soundset modding
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for soundset modding
 
 ---
 

@@ -11,7 +11,8 @@ import sys
 
 from typing import TYPE_CHECKING
 
-from pykotor.resource.formats.bwm import read_bwm, write_bwm, write_bwm_ascii
+from pykotor.resource.formats.bwm import BWM, read_bwm, write_bwm, write_bwm_ascii
+from pykotor.resource.formats.bwm.bwm_data import BWMType
 from pykotor.tools.resources import (
     convert_ascii_to_bwm,
     convert_ascii_to_mdl,
@@ -129,7 +130,11 @@ def cmd_model_convert(args: Namespace, logger: Logger) -> int:
 
 
 def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
-    """Rebuild BWM AABB/adjacency/edges from geometry (read then write regenerates derived data)."""
+    """Rebuild BWM AABB/adjacency/edges from geometry (read then write regenerates derived data).
+
+    Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:729-754 (rebuild), 834-1019 (toExportBuffer).
+    See .cursor/plans/kotorjs_walkmesh_port_plan.md for full port mapping.
+    """
     input_path = pathlib.Path(args.input)
 
     if not input_path.exists():
@@ -173,34 +178,56 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
             f"Loaded: {len(verts)} vertices, {n_faces} faces ({n_walkable} walkable, {n_unwalkable} unwalkable), type={type_name}",
         )
 
-        # Count faces with at least one transition (door/area edge)
-        n_with_trans = sum(
-            1 for f in bwm.faces if f.trans1 is not None or f.trans2 is not None or f.trans3 is not None
-        )
-        if n_with_trans:
-            logger.info(f"Faces with transitions (doors/area links): {n_with_trans} (preserved as-is)")  # noqa: G004
+        def _count_transitions(w: BWM) -> int:
+            return sum(
+                1 for f in w.faces for t in (f.trans1, f.trans2, f.trans3) if t is not None
+            )
 
-        # ---- What we regenerate ----
-        logger.info("Regenerating derived data from geometry:")  # noqa: G004
-        logger.info("  - AABB tree (spatial acceleration; WOK only)")  # noqa: G004
-        logger.info("  - Adjacency table (which face borders which, by shared edges)")  # noqa: G004
-        logger.info("  - Perimeter edges (boundary edges with no walkable neighbor)")  # noqa: G004
-        logger.info("  - Perimeter loop markers (where each boundary loop ends)")  # noqa: G004
-        logger.info("  - Face normals and planar distances (from vertex positions)")  # noqa: G004
-        logger.info("Transitions (trans1/trans2/trans3) on faces are preserved and re-emitted on the edge list.")  # noqa: G004
+        trans_before = _count_transitions(bwm)
+        if trans_before:
+            logger.info(f"Input: {trans_before} edge(s) with transitions (door/area links); keeping only those on outer boundary.")  # noqa: G004
+
+        # ---- Regenerate derived data (AABB, adjacency, perimeter, normals) ----
+        logger.info("Rebuilding from geometry: AABB tree, adjacency, perimeter edges, loop markers, face normals.")  # noqa: G004
+
+        # ---- Transition invariant: only perimeter edges may have transitions; arrow = inward ----
+        cleared = bwm.enforce_transition_invariant()
+        trans_after = _count_transitions(bwm)
+
+        if bwm.walkmesh_type == BWMType.AreaModel:
+            n_perimeter = len(bwm.perimeter_edge_set())
+            logger.info(f"Perimeter: {n_perimeter} boundary edge(s) (outer walkable boundary).")  # noqa: G004
+            if trans_after:
+                if cleared:
+                    logger.info(  # noqa: G004
+                        f"Transitions: {trans_before} → {trans_after} (cleared {cleared} from internal edges). "
+                        f"{trans_after} arrow(s) on perimeter, pointing inward."
+                    )
+                else:
+                    logger.info(f"Transitions: {trans_after} on perimeter (all valid). Arrows point inward.")  # noqa: G004
+            else:
+                if cleared:
+                    logger.info(f"Transitions: cleared {cleared} (were on internal edges); 0 remain on perimeter.")  # noqa: G004
+                else:
+                    logger.info("Transitions: 0 (no door/area links on this walkmesh).")  # noqa: G004
+        else:
+            logger.info("Transitions: preserved (placeable/door walkmesh).")  # noqa: G004
 
         # ---- Write ----
-        logger.info(f"Writing binary to: {output_path} (AABB tree, adjacency, perimeter edges, and loop markers from geometry)...")  # noqa: G004
+        logger.info(f"Writing: {output_path}")  # noqa: G004
         sys.stdout.flush()
         sys.stderr.flush()
         write_bwm(bwm, output_path)
         out_size = output_path.stat().st_size
-        logger.info(f"Wrote: {out_size} bytes. Rebuilt walkmesh: {output_path}")  # noqa: G004
+        logger.info(f"Wrote {out_size} bytes → {output_path}")  # noqa: G004
 
         if getattr(args, "ascii", False):
             ascii_path = output_path.with_suffix(output_path.suffix + ".ascii")
             write_bwm_ascii(bwm, ascii_path)
             logger.info(f"Wrote ASCII: {ascii_path}")  # noqa: G004
+    except AssertionError as e:
+        logger.error(f"Transition invariant failed (perimeter-only transitions): {e}")  # noqa: G004
+        return 1
     except Exception:
         logger.exception(f"Failed to rebuild walkmesh {input_path}")  # noqa: G004
         return 1

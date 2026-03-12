@@ -307,6 +307,6 @@ Struct's own Comment.
 
 ### See also
 
-- [GFF-DLG](GFF-DLG) — KotOR dialogue implementation
-- [NSS-File-Format](NSS-File-Format), [NCS-File-Format](NCS-File-Format) — Scripts in dialogue; [TLK-File-Format](TLK-File-Format) — Strings
-- [GFF-File-Format](GFF-File-Format) — GFF structure; [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [GFF-DLG](GFF-DLG) -- KotOR dialogue implementation
+- [NSS-File-Format](NSS-File-Format), [NCS-File-Format](NCS-File-Format) -- Scripts in dialogue; [TLK-File-Format](TLK-File-Format) -- Strings
+- [GFF-File-Format](GFF-File-Format) -- GFF structure; [KEY-File-Format](KEY-File-Format) -- Resource resolution

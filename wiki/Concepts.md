@@ -40,7 +40,7 @@ The **override folder** is the directory named `override` in your KotOR or TSL g
 
 ### See also
 
-- [KEY-File-Format](KEY-File-Format) — Resolution order, BIF index
-- [GFF-File-Format](GFF-File-Format) — ResRef and GFF types
-- [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices) — Where to put files, merging
-- [Home](Home) — Wiki hub and resource table
+- [KEY-File-Format](KEY-File-Format) -- Resolution order, BIF index
+- [GFF-File-Format](GFF-File-Format) -- ResRef and GFF types
+- [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices) -- Where to put files, merging
+- [Home](Home) -- Wiki hub and resource table

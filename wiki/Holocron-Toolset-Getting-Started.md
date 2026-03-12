@@ -36,7 +36,7 @@ You're now ready to start modding!
 
 ### See also
 
-- [Blender Integration](Blender-Integration) — Use Blender with KotOR models and layouts
-- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) — Build new areas from kits
-- [Mod Creation Best Practices](Mod-Creation-Best-Practices) — Override, merging, and compatibility
-- [Concepts](Concepts) — Resource resolution and override folder
+- [Blender Integration](Blender-Integration) -- Use Blender with KotOR models and layouts
+- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Build new areas from kits
+- [Mod Creation Best Practices](Mod-Creation-Best-Practices) -- Override, merging, and compatibility
+- [Concepts](Concepts) -- Resource resolution and override folder

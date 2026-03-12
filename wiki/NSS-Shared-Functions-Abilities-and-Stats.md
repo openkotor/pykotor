@@ -519,6 +519,6 @@ Force Points are used for Force powers:
 
 ### See also
 
-- [NSS-File-Format](NSS-File-Format) — Script format; [NCS-File-Format](NCS-File-Format) — Compiled scripts
-- [NSS-Shared-Functions-Combat-Functions](NSS-Shared-Functions-Combat-Functions) — Damage and combat; [GFF-UTC](GFF-UTC) — Creature stats
-- [NSS-Shared-Functions-Object-Query-and-Manipulation](NSS-Shared-Functions-Object-Query-and-Manipulation) — Object handles
+- [NSS-File-Format](NSS-File-Format) -- Script format; [NCS-File-Format](NCS-File-Format) -- Compiled scripts
+- [NSS-Shared-Functions-Combat-Functions](NSS-Shared-Functions-Combat-Functions) -- Damage and combat; [GFF-UTC](GFF-UTC) -- Creature stats
+- [NSS-Shared-Functions-Object-Query-and-Manipulation](NSS-Shared-Functions-Object-Query-and-Manipulation) -- Object handles

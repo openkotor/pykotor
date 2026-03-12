@@ -276,8 +276,8 @@ To extend these findings or verify behavior against a specific binary:
 
 ### See also
 
-- [CExoResMan](CExoResMan) — Resource manager; [KEY-File-Format](KEY-File-Format) — Resolution order
-- [NCS-File-Format](NCS-File-Format), [NSS-File-Format](NSS-File-Format) — Script execution; [MDL-MDX-File-Format](MDL-MDX-File-Format) — Model loading
-- [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) — Engine data formats
-- [Concepts](Concepts) — Resource resolution, ResRef, override folder
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums for RE and tool history
+- [CExoResMan](CExoResMan) -- Resource manager; [KEY-File-Format](KEY-File-Format) -- Resolution order
+- [NCS-File-Format](NCS-File-Format), [NSS-File-Format](NSS-File-Format) -- Script execution; [MDL-MDX-File-Format](MDL-MDX-File-Format) -- Model loading
+- [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) -- Engine data formats
+- [Concepts](Concepts) -- Resource resolution, ResRef, override folder
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for RE and tool history

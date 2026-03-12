@@ -79,7 +79,7 @@ In summary, HACKList writes unsigned WORDs (sized at two bytes) to offsets in th
 
 ### See also
 
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — End-user installation
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher syntax; [TSLPatcher TLKList](TSLPatcher-TLKList-Syntax), [TSLPatcher SSFList](TSLPatcher-SSFList-Syntax) — Other patch lists
-- [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic) — Implementation; [KEY-File-Format](KEY-File-Format) — Resource resolution
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums for patching workflows
+- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- End-user installation
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher syntax; [TSLPatcher TLKList](TSLPatcher-TLKList-Syntax), [TSLPatcher SSFList](TSLPatcher-SSFList-Syntax) -- Other patch lists
+- [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic) -- Implementation; [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for patching workflows

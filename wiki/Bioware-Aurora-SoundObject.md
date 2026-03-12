@@ -472,6 +472,6 @@ default VolumeVrtn
 
 ### See also
 
-- [GFF-UTS](GFF-UTS) — KotOR sound object implementation; [GFF-File-Format](GFF-File-Format) — GFF structure
-- [WAV-File-Format](WAV-File-Format) — Audio resources; [GFF-GIT](GFF-GIT) — Sound instances
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [GFF-UTS](GFF-UTS) -- KotOR sound object implementation; [GFF-File-Format](GFF-File-Format) -- GFF structure
+- [WAV-File-Format](WAV-File-Format) -- Audio resources; [GFF-GIT](GFF-GIT) -- Sound instances
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution

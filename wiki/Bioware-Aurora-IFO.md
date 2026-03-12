@@ -556,6 +556,6 @@ List of scripting variables and their values. See Section 3 of the Common GFF St
 
 ### See also
 
-- [GFF-IFO](GFF-IFO) — KotOR module info implementation
-- [ERF-File-Format](ERF-File-Format) — MOD/SAV containers; [GFF-File-Format](GFF-File-Format) — GFF structure
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [GFF-IFO](GFF-IFO) -- KotOR module info implementation
+- [ERF-File-Format](ERF-File-Format) -- MOD/SAV containers; [GFF-File-Format](GFF-File-Format) -- GFF structure
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution

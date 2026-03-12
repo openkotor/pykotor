@@ -1569,9 +1569,9 @@ And finally thanks to YOU, for enduring my English and reading all the way down 
 
 ### See also
 
-- [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) — LucasForums thread container (Stoffe’s posts, changelogs)
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — GFF patching; [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) — 2DA/text
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — HoloPatcher usage
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — End-user installation
-- [GFF File Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format), [TLK-File-Format](TLK-File-Format) — Patched resources
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums archives for setup help and history
+- [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) -- LucasForums thread container (Stoffe’s posts, changelogs)
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- GFF patching; [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) -- 2DA/text
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- HoloPatcher usage
+- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- End-user installation
+- [GFF File Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format), [TLK-File-Format](TLK-File-Format) -- Patched resources
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums archives for setup help and history

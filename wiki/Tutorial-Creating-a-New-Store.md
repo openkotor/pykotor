@@ -67,8 +67,8 @@ Use a save from before escaping Taris (or `warp ebo_m12aa` with cheats). Talk to
 
 ### See Also
 
-- [GFF-UTM](GFF-File-Format#utm-merchant) — Merchant (UTM) Format
-- [GFF-UTC](GFF-UTC) — Creature (UTC) Format
-- [GFF-DLG](GFF-DLG) — Dialogue (DLG) Format
-- [NSS-File-Format](NSS-File-Format), [NCS-File-Format](NCS-File-Format) — Scripts Format
-- [GFF-GIT](GFF-File-Format#git-game-instance-template) — Placing Instances in Modules
+- [GFF-UTM](GFF-File-Format#utm-merchant) -- Merchant (UTM) Format
+- [GFF-UTC](GFF-UTC) -- Creature (UTC) Format
+- [GFF-DLG](GFF-DLG) -- Dialogue (DLG) Format
+- [NSS-File-Format](NSS-File-Format), [NCS-File-Format](NCS-File-Format) -- Scripts Format
+- [GFF-GIT](GFF-File-Format#git-game-instance-template) -- Placing Instances in Modules

@@ -105,8 +105,8 @@ The following columns are accessed by the reone engine:
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTC](GFF-UTC) — Creature power lists
-- [2DA-classes](2DA-classes), [2DA-feat](2DA-feat) — Class and feat tables; [TLK-File-Format](TLK-File-Format) — StrRef names
-- [NSS-File-Format](NSS-File-Format) — Script references; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [GFF-UTC](GFF-UTC) -- Creature power lists
+- [2DA-classes](2DA-classes), [2DA-feat](2DA-feat) -- Class and feat tables; [TLK-File-Format](TLK-File-Format) -- StrRef names
+- [NSS-File-Format](NSS-File-Format) -- Script references; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

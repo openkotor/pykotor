@@ -1,10 +1,11 @@
 """Binary reader/writer for KotOR walkmeshes (BWM/WOK).
 
+KotOR.js walkmesh port: see .cursor/plans/kotorjs_walkmesh_port_plan.md
+
 This module translates between on-disk WOK/BWM files and the in-memory BWM model
 defined in `bwm_data.py`. The binary layout mirrors the game's expectations:
 
-- Header:  "BWM " + "V1.0"
-- Walkmesh properties (type, hooks, position)
+- Header:  "BWM " + "V1.0" + walkMeshType (4) + reserved (48) + position (12) + 16× uint32 (KotOR.js 1:1)
 - Vertex array (float32 triplets)
 - Face indices (uint32 triplets into the vertex array)
 - Materials per face (uint32 SurfaceMaterial id)
@@ -113,6 +114,7 @@ class BWMBinaryReader(ResourceReader):
             - Applies per-edge transitions to faces
             - Populates BWM.faces
         """
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:294-395 (readBinary)
         self._wok = BWM()
 
         file_type = self._reader.read_string(4)
@@ -126,12 +128,12 @@ class BWMBinaryReader(ResourceReader):
             msg = f"Unsupported BWM version: got '{file_version}', expected 'V1.0'"
             raise ValueError(msg)
 
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:492-514 (readHeader), 876-918 (header write).
+        # KotOR.js layout: walkMeshType (4), reserved (48), position (12); no hook vectors in file.
         self._wok.walkmesh_type = BWMType(self._reader.read_uint32())
-        self._wok.relative_hook1 = self._reader.read_vector3()
-        self._wok.relative_hook2 = self._reader.read_vector3()
-        self._wok.absolute_hook1 = self._reader.read_vector3()
-        self._wok.absolute_hook2 = self._reader.read_vector3()
+        _ = self._reader.read_bytes(48)  # KotOR.js reserved; not stored (writer emits 48 zeros)
         self._wok.position = self._reader.read_vector3()
+        # BWM keeps relative_hook1/2, absolute_hook1/2 for API compat; leave as default (from_null)
 
         vertices_count = self._reader.read_uint32()
         vertices_offset = self._reader.read_uint32()
@@ -172,6 +174,7 @@ class BWMBinaryReader(ResourceReader):
             if face.material.walkable():
                 walkable_count += 1
 
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:379-385 (edges Map, index + transition).
         # Read edges table (transition mapping) and apply transitions to faces.
         self._reader.seek(edges_offset)
         edges_table: list[tuple[int, int]] = []
@@ -205,9 +208,12 @@ class BWMBinaryWriter(ResourceWriter):
         self,
         wok: BWM,
         target: TARGET_TYPES,
+        *,
+        regenerate_derived: bool = True,
     ):
         super().__init__(target)
         self._wok: BWM = wok
+        self._regenerate_derived: bool = regenerate_derived
 
     @autoclose
     def write(self, *, auto_close: bool = True):  # noqa: FBT001, FBT002, ARG002  # pyright: ignore[reportUnusedParameters]
@@ -224,9 +230,15 @@ class BWMBinaryWriter(ResourceWriter):
             2. Packs sections and computes offsets
             3. Writes header, counts and offsets, followed by section data
         """
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:834-1019 (toExportBuffer)
+        if self._regenerate_derived:
+            self._wok.enforce_transition_invariant()
+            self._wok.assert_transition_arrows_invariant()
         vertices: list[Vector3] = self._wok.vertices()
 
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:834-836 (toExportBuffer calls buildPerimeters).
         # Emit the canonical ordering (walkable faces first) to match engine/tooling expectations.
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:729-731 (rebuild: sort walkable first).
         walkable: list[BWMFace] = [face for face in self._wok.faces if face.material.walkable()]
         unwalkable: list[BWMFace] = [face for face in self._wok.faces if not face.material.walkable()]
         faces: list[BWMFace] = walkable + unwalkable
@@ -253,6 +265,7 @@ class BWMBinaryWriter(ResourceWriter):
         for face in faces:
             material_data += struct.pack("I", face.material.value)
 
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:735-750 (rebuild: normal and coeff from vertices).
         normal_offset = material_offset + len(material_data)
         normal_data = bytearray()
         for face in faces:
@@ -264,11 +277,12 @@ class BWMBinaryWriter(ResourceWriter):
         for face in faces:
             coeffeicent_data += struct.pack("f", face.planar_distance())
 
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:958-962 (toExportBuffer AABB write: min.z+10, max.z-10).
         aabb_offset = coefficient_offset + len(coeffeicent_data)
         aabb_data = bytearray()
         for aabb in aabbs:
-            aabb_data += struct.pack("fff", aabb.bb_min.x, aabb.bb_min.y, aabb.bb_min.z)
-            aabb_data += struct.pack("fff", aabb.bb_max.x, aabb.bb_max.y, aabb.bb_max.z)
+            aabb_data += struct.pack("fff", aabb.bb_min.x, aabb.bb_min.y, aabb.bb_min.z + 10.0)
+            aabb_data += struct.pack("fff", aabb.bb_max.x, aabb.bb_max.y, aabb.bb_max.z - 10.0)
             # Find face index by object identity
             face_idx = 0xFFFFFFFF if aabb.face is None else next(i for i, f in enumerate(faces) if f is aabb.face)
             aabb_data += struct.pack("I", face_idx)
@@ -284,6 +298,7 @@ class BWMBinaryWriter(ResourceWriter):
             aabb_data += struct.pack("I", left_idx)
             aabb_data += struct.pack("I", right_idx)
 
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:968-991 (adjacency matrix write).
         adjacency_offset = aabb_offset + len(aabb_data)
         adjacency_data = bytearray()
         for face in walkable:
@@ -298,6 +313,7 @@ class BWMBinaryWriter(ResourceWriter):
                     indexes.append(idx * 3 + adjacency.edge)
             adjacency_data += struct.pack("iii", *indexes)
 
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:838 (edge_size from perimeters), 993-1001 (edges from perimeter loops).
         edge_offset = adjacency_offset + len(adjacency_data)
         # Get perimeter edges from the walkmesh
         # NOTE: edges() returns perimeter edges based on walkable face indices
@@ -333,27 +349,26 @@ class BWMBinaryWriter(ResourceWriter):
             edge_index_map[edge_index] = new_edge
             edges.append(new_edge)
 
-        # Preserve all per-edge transitions, even for non-perimeter edges.
-        # Some game files include transition indices on edges that are not classified
-        # as perimeter by our adjacency pass. We must emit those transition entries
-        # to ensure roundtrip fidelity of face transitions.
-        for face in faces:
-            face_idx = face_index_map[id(face)]
-            transitions = (face.trans1, face.trans2, face.trans3)
-            for edge_idx, transition in enumerate(transitions):
-                if transition is None:
-                    continue
-                edge_index = face_idx * 3 + edge_idx
-                if edge_index in edge_index_map:
-                    existing = edge_index_map[edge_index]
-                    if existing.transition == -1:
-                        existing.transition = transition
-                    continue
-                from pykotor.resource.formats.bwm.bwm_data import BWMEdge
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:838, 998-1006 (edges only from buildPerimeters).
+        # When regenerating, emit perimeter-only edges (no non-perimeter roundtrip).
+        if not self._regenerate_derived:
+            for face in faces:
+                face_idx = face_index_map[id(face)]
+                transitions = (face.trans1, face.trans2, face.trans3)
+                for edge_idx, transition in enumerate(transitions):
+                    if transition is None:
+                        continue
+                    edge_index = face_idx * 3 + edge_idx
+                    if edge_index in edge_index_map:
+                        existing = edge_index_map[edge_index]
+                        if existing.transition == -1:
+                            existing.transition = transition
+                        continue
+                    from pykotor.resource.formats.bwm.bwm_data import BWMEdge
 
-                new_edge = BWMEdge(face, edge_idx, transition)
-                edge_index_map[edge_index] = new_edge
-                edges.append(new_edge)
+                    new_edge = BWMEdge(face, edge_idx, transition)
+                    edge_index_map[edge_index] = new_edge
+                    edges.append(new_edge)
 
         edge_data = bytearray()
         for edge in edges:
@@ -362,8 +377,8 @@ class BWMBinaryWriter(ResourceWriter):
             edge_index = face_idx * 3 + edge.index
             edge_data += struct.pack("ii", edge_index, edge.transition)
 
-        # Find edge indices by object identity for perimeters
-        # Build edge identity map for efficient lookup
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:1004-1009 (offset += perimeter.edges.length; write offset).
+        # Find edge indices by object identity for perimeters (1-based index of last edge of each loop).
         edge_identity_map: dict[int, int] = {id(edge): idx for idx, edge in enumerate(edges)}
         perimeters: list[int] = [edge_identity_map[id(edge)] + 1 for edge in edges if edge.final]
         perimeter_offset = edge_offset + len(edge_data)
@@ -373,12 +388,10 @@ class BWMBinaryWriter(ResourceWriter):
         edges_count_out = len(edges)
         perimeters_count_out = len(perimeters)
 
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:876-918 (header write: fileType, version, walkMeshType, 48 zeros, position).
         self._writer.write_string("BWM V1.0")
         self._writer.write_uint32(self._wok.walkmesh_type.value)
-        self._writer.write_vector3(self._wok.relative_hook1)
-        self._writer.write_vector3(self._wok.relative_hook2)
-        self._writer.write_vector3(self._wok.absolute_hook1)
-        self._writer.write_vector3(self._wok.absolute_hook2)
+        self._writer.write_bytes(bytes(48))  # KotOR.js reserved; no hook vectors in file
         self._writer.write_vector3(self._wok.position)
 
         self._writer.write_uint32(len(vertices))

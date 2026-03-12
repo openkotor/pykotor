@@ -97,6 +97,6 @@ indicate success, or indicate failure and return a blank string if none was foun
 
 ### See also
 
-- [GFF-File-Format](GFF-File-Format) — CExoLocString in GFF; [TLK-File-Format](TLK-File-Format) — Talk table and StrRef
-- [Bioware-Aurora-TalkTable](Bioware-Aurora-TalkTable) — Aurora talk table spec
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [GFF-File-Format](GFF-File-Format) -- CExoLocString in GFF; [TLK-File-Format](TLK-File-Format) -- Talk table and StrRef
+- [Bioware-Aurora-TalkTable](Bioware-Aurora-TalkTable) -- Aurora talk table spec
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution

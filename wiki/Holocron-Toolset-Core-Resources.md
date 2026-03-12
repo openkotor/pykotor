@@ -12,6 +12,6 @@ For module-specific and override content, see [Holocron Toolset: Module resource
 
 ### See also
 
-- [KEY-File-Format](KEY-File-Format), [BIF-File-Format](BIF-File-Format) — How core resources are indexed and stored
-- [Concepts](Concepts) — Resource resolution order
+- [KEY-File-Format](KEY-File-Format), [BIF-File-Format](BIF-File-Format) -- How core resources are indexed and stored
+- [Concepts](Concepts) -- Resource resolution order
 - [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started)

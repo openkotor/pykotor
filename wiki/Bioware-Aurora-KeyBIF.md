@@ -597,6 +597,6 @@ Fixed Resource Parts (as defined in the fixed resource table).
 
 ### See also
 
-- [KEY-File-Format](KEY-File-Format) — KotOR KEY implementation and resolution order
-- [BIF-File-Format](BIF-File-Format) — KotOR BIF implementation
-- [ERF-File-Format](ERF-File-Format) — MOD/RIM containers; [GFF-File-Format](GFF-File-Format) — GFF resources
+- [KEY-File-Format](KEY-File-Format) -- KotOR KEY implementation and resolution order
+- [BIF-File-Format](BIF-File-Format) -- KotOR BIF implementation
+- [ERF-File-Format](ERF-File-Format) -- MOD/RIM containers; [GFF-File-Format](GFF-File-Format) -- GFF resources

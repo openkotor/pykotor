@@ -33,10 +33,10 @@ In the main window **Modules** tab click **Refresh**, find your module, and open
 
 Set:
 
-- **Links To Waypoint** — transition will teleport to a waypoint in the target module
-- **Link To Module** — **danm13** (Jedi Enclave warp code)
-- **Link To Tag** — tag of the waypoint in the *target* module we will teleport to (e.g. **from_nthenc**)
-- **Transition Name** — text shown when facing the transition
+- **Links To Waypoint** -- transition will teleport to a waypoint in the target module
+- **Link To Module** -- **danm13** (Jedi Enclave warp code)
+- **Link To Tag** -- tag of the waypoint in the *target* module we will teleport to (e.g. **from_nthenc**)
+- **Transition Name** -- text shown when facing the transition
 
 ![Door settings](https://raw.githubusercontent.com/OldRepublicDevs/PyKotor/master/Tools/HolocronToolset/src/toolset/help/tutorials/3f.png)
 
@@ -60,10 +60,10 @@ Open the **Jedi Enclave** module GIT (e.g. danm13).
 
 Right-click behind the Ebon Hawk → **Insert Trigger**. Right-click the trigger → **Edit Instance**. Set:
 
-- **ResRef** and **Tag** — e.g. **from_nthenc** (Tag must match the door’s **Link To Tag** in the new module)
+- **ResRef** and **Tag** -- e.g. **from_nthenc** (Tag must match the door’s **Link To Tag** in the new module)
 - **Links To Waypoint**
-- **Link To Module** — **nthenc** (your new module)
-- **Link To Tag** — **from_danm13** (waypoint in the new module)
+- **Link To Module** -- **nthenc** (your new module)
+- **Link To Tag** -- **from_danm13** (waypoint in the new module)
 - **Transition Name**
 
 ![Trigger instance](https://raw.githubusercontent.com/OldRepublicDevs/PyKotor/master/Tools/HolocronToolset/src/toolset/help/tutorials/3l.png)
@@ -93,8 +93,8 @@ You should be able to move between the Jedi Enclave and the new module via the d
 
 ### See also
 
-- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) — Building modules
-- [GFF-UTD](GFF-File-Format#utd-door) — Door instances and links
-- [GFF-UTT](GFF-UTT) — Trigger format
-- [GFF-UTW](GFF-File-Format#utw-waypoint) — Waypoints
-- [GFF-GIT](GFF-File-Format#git-game-instance-template) — Placing instances
+- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Building modules
+- [GFF-UTD](GFF-File-Format#utd-door) -- Door instances and links
+- [GFF-UTT](GFF-UTT) -- Trigger format
+- [GFF-UTW](GFF-File-Format#utw-waypoint) -- Waypoints
+- [GFF-GIT](GFF-File-Format#git-game-instance-template) -- Placing instances

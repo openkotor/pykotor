@@ -78,8 +78,8 @@ The complete column structure is defined in reone's placeables parser:
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTP](GFF-UTP) — Placeable templates
-- [GFF-GIT](GFF-GIT) — Placeable instances; [Bioware-Aurora-DoorPlaceableGFF](Bioware-Aurora-DoorPlaceableGFF) — Aurora spec
-- [MDL-MDX-File-Format](MDL-MDX-File-Format), [TLK-File-Format](TLK-File-Format); [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [GFF-UTP](GFF-UTP) -- Placeable templates
+- [GFF-GIT](GFF-GIT) -- Placeable instances; [Bioware-Aurora-DoorPlaceableGFF](Bioware-Aurora-DoorPlaceableGFF) -- Aurora spec
+- [MDL-MDX-File-Format](MDL-MDX-File-Format), [TLK-File-Format](TLK-File-Format); [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

@@ -256,5 +256,5 @@ null-terminated strings. As soon as one string ends, the next one begins.
 
 ### See also
 
-- [TLK-File-Format](TLK-File-Format) — KotOR TLK implementation
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) — Modifying TLK; [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [TLK-File-Format](TLK-File-Format) -- KotOR TLK implementation
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- Modifying TLK; [KEY-File-Format](KEY-File-Format) -- Resource resolution

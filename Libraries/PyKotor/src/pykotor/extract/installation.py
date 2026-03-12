@@ -1680,13 +1680,8 @@ class Installation:
             A dictionary mapping a resource identifier to a list of locations.
         """
         if order is None:
-            order = [
-                SearchLocation.CUSTOM_FOLDERS,
-                SearchLocation.OVERRIDE,
-                SearchLocation.CUSTOM_MODULES,
-                SearchLocation.MODULES,
-                SearchLocation.CHITIN,
-            ]
+            from pykotor.tools.finder import canonical_search_order
+            order = canonical_search_order()
         capsules = [] if capsules is None else capsules
         folders = [] if folders is None else folders
 

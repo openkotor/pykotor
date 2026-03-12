@@ -57,6 +57,6 @@ You can edit the controls in **Settings** (Main Window) under the **Module Desig
 
 ### See also
 
-- [GFF-GIT](GFF-File-Format#git-game-instance-template) — Game Instance Template (placeables, creatures, doors, etc.)
-- [GFF-ARE](GFF-ARE) — Area format
-- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) — Building new areas
+- [GFF-GIT](GFF-File-Format#git-game-instance-template) -- Game Instance Template (placeables, creatures, doors, etc.)
+- [GFF-ARE](GFF-ARE) -- Area format
+- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Building new areas

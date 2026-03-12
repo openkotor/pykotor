@@ -314,8 +314,8 @@ The build process creates:
 
 ### See also
 
-- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) — Technical details for developers
-- [Kit-Structure-Documentation](Kit-Structure-Documentation) — Kit layout and components
-- [LYT-File-Format](LYT-File-Format) — Room layout structure; [BWM-File-Format](BWM-File-Format) — Walkmesh
-- [Blender-Integration](Blender-Integration) — 3D editing workflow
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for module and layout workflows
+- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Technical details for developers
+- [Kit-Structure-Documentation](Kit-Structure-Documentation) -- Kit layout and components
+- [LYT-File-Format](LYT-File-Format) -- Room layout structure; [BWM-File-Format](BWM-File-Format) -- Walkmesh
+- [Blender-Integration](Blender-Integration) -- 3D editing workflow
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for module and layout workflows

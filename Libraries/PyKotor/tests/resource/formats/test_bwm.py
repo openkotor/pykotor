@@ -602,6 +602,99 @@ class TestBWMTransitions:
         # The shared edge v2-v3 should NOT be a perimeter edge
         assert len(edges) > 0
 
+    def test_perimeter_edge_set(self):
+        """perimeter_edge_set returns (face_index, edge_index) for AreaModel only."""
+        bwm = BWM()
+        bwm.walkmesh_type = BWMType.AreaModel
+        v1, v2, v3 = Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 1, 0)
+        face = BWMFace(v1, v2, v3)
+        face.material = SurfaceMaterial.DIRT
+        bwm.faces = [face]
+        pset = bwm.perimeter_edge_set()
+        assert isinstance(pset, set)
+        assert (0, 0) in pset or (0, 1) in pset or (0, 2) in pset
+        bwm_pwk = BWM()
+        bwm_pwk.walkmesh_type = BWMType.PlaceableOrDoor
+        assert bwm_pwk.perimeter_edge_set() == set()
+
+    def test_enforce_transition_invariant_clears_internal(self):
+        """enforce_transition_invariant clears transitions on non-perimeter edges."""
+        bwm = BWM()
+        bwm.walkmesh_type = BWMType.AreaModel
+        v1 = Vector3(0, 0, 0)
+        v2 = Vector3(1, 0, 0)
+        v3 = Vector3(0, 1, 0)
+        v4 = Vector3(1, 1, 0)
+        f1 = BWMFace(v1, v2, v3)
+        f1.material = SurfaceMaterial.DIRT
+        f1.trans1 = 1
+        f1.trans2 = 2
+        f1.trans3 = 3
+        f2 = BWMFace(v2, v4, v3)
+        f2.material = SurfaceMaterial.DIRT
+        bwm.faces = [f1, f2]
+        cleared = bwm.enforce_transition_invariant()
+        perimeter = bwm.perimeter_edge_set()
+        assert (0, 1) not in perimeter, "Edge 1 (v2-v3) is shared, not perimeter"
+        assert f1.trans2 is None, "Internal edge transition should be cleared"
+        assert cleared >= 1
+
+    def test_assert_transition_arrows_invariant_valid(self):
+        """assert_transition_arrows_invariant does not raise when all transitions are on perimeter."""
+        if not TEST_WOK_FILE.exists():
+            pytest.skip(f"Test file not found: {TEST_WOK_FILE}")
+        bwm = read_bwm(TEST_WOK_FILE.read_bytes())
+        bwm.enforce_transition_invariant()
+        bwm.assert_transition_arrows_invariant()
+
+    def test_assert_transition_arrows_invariant_invalid(self):
+        """assert_transition_arrows_invariant raises when a transition is on non-perimeter edge."""
+        bwm = BWM()
+        bwm.walkmesh_type = BWMType.AreaModel
+        v1, v2, v3 = Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 1, 0)
+        v4 = Vector3(1, 1, 0)
+        f1 = BWMFace(v1, v2, v3)
+        f1.material = SurfaceMaterial.DIRT
+        f2 = BWMFace(v2, v4, v3)
+        f2.material = SurfaceMaterial.DIRT
+        # Shared edge is f2 edge 2 (v3->v1 = (0,1)-(1,0)); put transition there so it's internal
+        f2.trans3 = 5
+        bwm.faces = [f1, f2]
+        with pytest.raises(AssertionError, match="not a perimeter edge"):
+            bwm.assert_transition_arrows_invariant()
+
+    def test_read_bwm_regenerate_derived_true_enforces(self):
+        """read_bwm(..., regenerate_derived=True) leaves only perimeter transitions."""
+        if not TEST_WOK_FILE.exists():
+            pytest.skip(f"Test file not found: {TEST_WOK_FILE}")
+        raw = TEST_WOK_FILE.read_bytes()
+        bwm = read_bwm(raw, regenerate_derived=True)
+        bwm.assert_transition_arrows_invariant()
+
+    def test_read_bwm_regenerate_derived_false_skips_enforce(self):
+        """read_bwm(..., regenerate_derived=False) loads without enforcing (no assert)."""
+        if not TEST_WOK_FILE.exists():
+            pytest.skip(f"Test file not found: {TEST_WOK_FILE}")
+        raw = TEST_WOK_FILE.read_bytes()
+        bwm = read_bwm(raw, regenerate_derived=False)
+        assert len(bwm.faces) > 0
+        # With regenerate_derived=True, invariant is enforced and asserted
+        bwm2 = read_bwm(raw, regenerate_derived=True)
+        bwm2.assert_transition_arrows_invariant()
+
+    def test_edge_inward_direction_xy(self):
+        """edge_inward_direction_xy returns midpoint and normalized direction toward centroid."""
+        v1 = Vector3(0, 0, 0)
+        v2 = Vector3(2, 0, 0)
+        v3 = Vector3(0, 2, 0)
+        face = BWMFace(v1, v2, v3)
+        mid, direction = BWM.edge_inward_direction_xy(face, 0)
+        assert abs(mid.x - 1) < 1e-6 and abs(mid.y) < 1e-6
+        dx = direction.x
+        dy = direction.y
+        assert abs(dx * dx + dy * dy - 1) < 1e-6
+        assert dx < 0 or dy > 0
+
 
 class TestBWMEdges:
     """Test BWM edge/perimeter computation based on vendor implementations.

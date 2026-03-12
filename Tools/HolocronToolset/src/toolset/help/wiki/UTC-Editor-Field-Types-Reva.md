@@ -114,7 +114,7 @@ Field types and ranges were determined by inspecting the creature-stats reader i
 
 ## Verification (Reva)
 
-Verified against K1 `k1_win_gog_swkotor.exe` (and TSL where applicable) via PyKotor-RE. Function: `CSWSCreatureStats::ReadStatsFromGff` — K1 @ 0x005afce0, TSL @ 0x006ec350.
+Verified against K1 `k1_win_gog_swkotor.exe` (and TSL where applicable) via PyKotor-RE. Function: `CSWSCreatureStats::ReadStatsFromGff` -- K1 @ 0x005afce0, TSL @ 0x006ec350.
 
 **K1 (swkotor.exe) confirmations:**
 

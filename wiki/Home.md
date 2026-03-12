@@ -17,27 +17,27 @@ Installation, tool use, and step-by-step guides:
 - [HoloPatcher Feature Coverage Overview](Explanations-on-HoloPatcher-Internal-Logic)
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
 - [TSLPatcher Thread Complete Container](TSLPatcher_Thread_Complete)
-- **[TSLPatcher InstallList Syntax Guide](TSLPatcher-InstallList-Syntax)** — File installation
-- **[TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax)** — TLK ([TalkTable](TLK-File-Format)) modifications
-- **[TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax)** — [2DA](2DA-File-Format) patches
-- **[TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax)** — [GFF](GFF-File-Format) modifications
-- **[TSLPatcher SSFList Syntax Guide](TSLPatcher-SSFList-Syntax)** — SSF ([sound set files](SSF-File-Format))
-- **[TSLPatcher HACKList Syntax Guide](TSLPatcher-HACKList-Syntax)** — Binary patches
+- **[TSLPatcher InstallList Syntax Guide](TSLPatcher-InstallList-Syntax)** -- File installation
+- **[TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax)** -- TLK ([TalkTable](TLK-File-Format)) modifications
+- **[TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax)** -- [2DA](2DA-File-Format) patches
+- **[TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax)** -- [GFF](GFF-File-Format) modifications
+- **[TSLPatcher SSFList Syntax Guide](TSLPatcher-SSFList-Syntax)** -- SSF ([sound set files](SSF-File-Format))
+- **[TSLPatcher HACKList Syntax Guide](TSLPatcher-HACKList-Syntax)** -- Binary patches
 - [Blender Integration](Blender-Integration)
-- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) — Build indoor modules from kits
-- [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions) — Understanding why room crossing fails and what must agree: layout, walkmesh, roomlinks, LYT/VIS
-- [Indoor Area Room Layout and Walkmesh Guide](Indoor-Area-Room-Layout-and-Walkmesh-Guide) — Complete modder workflow for indoor rooms, walkmeshes, roomlinks, doors, LYT, and VIS
+- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Build indoor modules from kits
+- [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions) -- Understanding why room crossing fails and what must agree: layout, walkmesh, roomlinks, LYT/VIS
+- [Indoor Area Room Layout and Walkmesh Guide](Indoor-Area-Room-Layout-and-Walkmesh-Guide) -- Complete modder workflow for indoor rooms, walkmeshes, roomlinks, doors, LYT, and VIS
 - [KotorDiff Integration in PyKotorCLI](KotorDiff-Integration)
 
 **Holocron Toolset (in-app help):**
 
 - [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started)
-- [Holocron Toolset: New Features Quick Guide](Holocron-Toolset-New-Features-Guide) — Favorites, batch ops, rename, Open With, etc.
-- [Holocron Toolset: Core resources](Holocron-Toolset-Core-Resources) — Core tab (KEY/BIF)
+- [Holocron Toolset: New Features Quick Guide](Holocron-Toolset-New-Features-Guide) -- Favorites, batch ops, rename, Open With, etc.
+- [Holocron Toolset: Core resources](Holocron-Toolset-Core-Resources) -- Core tab (KEY/BIF)
 - [Holocron Toolset: Module resources](Holocron-Toolset-Module-Resources)
 - [Holocron Toolset: Override resources](Holocron-Toolset-Override-Resources)
-- [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor) — Module Designer controls
-- [Holocron Toolset: Map Builder](Holocron-Toolset-Map-Builder) — Indoor Map Builder controls
+- [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor) -- Module Designer controls
+- [Holocron Toolset: Map Builder](Holocron-Toolset-Map-Builder) -- Indoor Map Builder controls
 
 **Tutorials:**
 
@@ -352,7 +352,7 @@ Binary layout, engine behaviour, and implementation details for developers and r
 - [Game Engine BWM AABB Implementation](Game-Engine-BWM-AABB-Implementation)
 - [Qt ItemView selection and RobustTableView](Qt-ItemView-Selection-and-RobustTableView)
 - [UTC Editor field types (Reva)](UTC-Editor-Field-Types-Reva)
-- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) — Technical details (distinct from the [user guide](Indoor-Map-Builder-User-Guide) in Guides and tutorials)
+- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Technical details (distinct from the [user guide](Indoor-Map-Builder-User-Guide) in Guides and tutorials)
 - [HoloPatcher internal logic](Explanations-on-HoloPatcher-Internal-Logic)
 
 ## Vendor Implementations
@@ -449,11 +449,11 @@ For **complete, comprehensive, and accurate** wiki coverage, the following commu
 
 **Further reading (community):**
 
-- [DeadlyStream: Help setting up TSLPatcher](https://deadlystream.com/topic/5785-help-setting-up-the-tslpatcher-for-mods/) — TSLPatcher setup
-- [DeadlyStream: TSL Patcher, TLKEd, and accessories](https://deadlystream.com/files/file/1039-tsl-patcher-tlked-and-accessories/) — Modding tools
-- [DeadlyStream: Modding tools category](https://deadlystream.com/files/category/17-modding-tools/) — Tool releases
-- [LucasForums Archive: TSLPatcher v1.2.10b1](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer/) — Original TSLPatcher thread (see also [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) in this wiki)
-- [LucasForums Archive: Editing / Modding](https://lucasforumsarchive.com/forum/521) — Holowan Laboratories and tutorials
+- [DeadlyStream: Help setting up TSLPatcher](https://deadlystream.com/topic/5785-help-setting-up-the-tslpatcher-for-mods/) -- TSLPatcher setup
+- [DeadlyStream: TSL Patcher, TLKEd, and accessories](https://deadlystream.com/files/file/1039-tsl-patcher-tlked-and-accessories/) -- Modding tools
+- [DeadlyStream: Modding tools category](https://deadlystream.com/files/category/17-modding-tools/) -- Tool releases
+- [LucasForums Archive: TSLPatcher v1.2.10b1](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer/) -- Original TSLPatcher thread (see also [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) in this wiki)
+- [LucasForums Archive: Editing / Modding](https://lucasforumsarchive.com/forum/521) -- Holowan Laboratories and tutorials
 
 **How to use these sources:**
 
@@ -480,6 +480,6 @@ Reference documentation from related projects (external sources):
 
 ### See also
 
-- [KEY-File-Format](KEY-File-Format) — Resource resolution; [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) — Core formats
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — Mod installation; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — Mod development
-- [Wiki-Conventions](Wiki-Conventions) — Wiki structure and style
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution; [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) -- Core formats
+- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- Mod installation; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Mod development
+- [Wiki-Conventions](Wiki-Conventions) -- Wiki structure and style

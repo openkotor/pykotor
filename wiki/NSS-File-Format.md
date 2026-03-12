@@ -6683,9 +6683,9 @@ See [Other Constants](NSS-TSL-Only-Constants-Other-Constants) for detailed docum
 
 ### See also
 
-- [NCS File Format](NCS-File-Format) — Compiled NWScript bytecode
-- [NSS Shared Functions - Actions](NSS-Shared-Functions-Actions) — Action functions
-- [NSS Shared Constants](NSS-Shared-Constants-Object-Type-Constants) — Object type and script constants
-- [GFF-DLG](GFF-DLG) — Dialogue files that trigger NCS scripts
-- [2DA File Format](2DA-File-Format) — Game data tables referenced by scripts
-- [Home](Home#community-sources-and-archives) — Community sources and archives
+- [NCS File Format](NCS-File-Format) -- Compiled NWScript bytecode
+- [NSS Shared Functions - Actions](NSS-Shared-Functions-Actions) -- Action functions
+- [NSS Shared Constants](NSS-Shared-Constants-Object-Type-Constants) -- Object type and script constants
+- [GFF-DLG](GFF-DLG) -- Dialogue files that trigger NCS scripts
+- [2DA File Format](2DA-File-Format) -- Game data tables referenced by scripts
+- [Home](Home#community-sources-and-archives) -- Community sources and archives

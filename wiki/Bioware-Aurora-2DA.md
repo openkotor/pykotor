@@ -165,6 +165,6 @@ Try to ensure that no existing data, in a 2da or otherwise, references the starr
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — KotOR 2DA implementation and column reference
-- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax), [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [2DA-File-Format](2DA-File-Format) -- KotOR 2DA implementation and column reference
+- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax), [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution

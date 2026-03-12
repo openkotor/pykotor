@@ -480,11 +480,11 @@ Complex types require accessing data from the field data section:
 
 ### See also
 
-- [GFF-ARE](GFF-ARE), [GFF-DLG](GFF-DLG), [GFF-IFO](GFF-IFO), [GFF-UTI](GFF-UTI), [GFF-UTC](GFF-UTC), [GIT](GFF-File-Format#git-game-instance-template) — GFF-based game resources
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Patching GFF via HoloPatcher/TSLPatcher
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
-- [Bioware-Aurora-GFF](Bioware-Aurora-GFF) — Aurora GFF specification
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for GFF structure and modding
+- [GFF-ARE](GFF-ARE), [GFF-DLG](GFF-DLG), [GFF-IFO](GFF-IFO), [GFF-UTI](GFF-UTI), [GFF-UTC](GFF-UTC), [GIT](GFF-File-Format#git-game-instance-template) -- GFF-based game resources
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Patching GFF via HoloPatcher/TSLPatcher
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [Bioware-Aurora-GFF](Bioware-Aurora-GFF) -- Aurora GFF specification
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for GFF structure and modding
 
 ---
 

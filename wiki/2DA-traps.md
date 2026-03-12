@@ -44,7 +44,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTT](GFF-UTT) — Trigger trap type; [MDL-MDX-File-Format](MDL-MDX-File-Format) — Trap models
-- [NCS-File-Format](NCS-File-Format) — Trap scripts; [TLK-File-Format](TLK-File-Format) — StrRef; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [GFF-UTT](GFF-UTT) -- Trigger trap type; [MDL-MDX-File-Format](MDL-MDX-File-Format) -- Trap models
+- [NCS-File-Format](NCS-File-Format) -- Trap scripts; [TLK-File-Format](TLK-File-Format) -- StrRef; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

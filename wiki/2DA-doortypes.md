@@ -22,8 +22,8 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTD](GFF-UTD) — Door templates
-- [GFF-GIT](GFF-GIT) — Door instances; [Bioware-Aurora-DoorPlaceableGFF](Bioware-Aurora-DoorPlaceableGFF) — Aurora spec
-- [MDL-MDX-File-Format](MDL-MDX-File-Format), [TLK-File-Format](TLK-File-Format); [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [GFF-UTD](GFF-UTD) -- Door templates
+- [GFF-GIT](GFF-GIT) -- Door instances; [Bioware-Aurora-DoorPlaceableGFF](Bioware-Aurora-DoorPlaceableGFF) -- Aurora spec
+- [MDL-MDX-File-Format](MDL-MDX-File-Format), [TLK-File-Format](TLK-File-Format); [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

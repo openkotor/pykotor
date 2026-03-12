@@ -20,7 +20,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-racialtypes](2DA-racialtypes) — Race types
-- [GFF-UTC](GFF-UTC) — Creature subrace; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [2DA-racialtypes](2DA-racialtypes) -- Race types
+- [GFF-UTC](GFF-UTC) -- Creature subrace; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

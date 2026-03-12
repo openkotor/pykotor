@@ -229,11 +229,11 @@ TLK files support multiple languages through the Language ID field:
 
 ### See also
 
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) — Modifying TLK via HoloPatcher/TSLPatcher
-- [2DA-File-Format](2DA-File-Format), [GFF-File-Format](GFF-File-Format) — StrRef consumers; [NSS-File-Format](NSS-File-Format) — Script strings
-- [Bioware-Aurora-TalkTable](Bioware-Aurora-TalkTable) — Aurora talk table spec
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
-- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for TLK/StrRef modding
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- Modifying TLK via HoloPatcher/TSLPatcher
+- [2DA-File-Format](2DA-File-Format), [GFF-File-Format](GFF-File-Format) -- StrRef consumers; [NSS-File-Format](NSS-File-Format) -- Script strings
+- [Bioware-Aurora-TalkTable](Bioware-Aurora-TalkTable) -- Aurora talk table spec
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for TLK/StrRef modding
 
 ---
 

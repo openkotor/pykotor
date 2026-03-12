@@ -25,8 +25,8 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-ARE](GFF-ARE) — Area music fields
-- [WAV-File-Format](WAV-File-Format) — Audio; [2DA-loadscreens](2DA-loadscreens) — Loading music
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [GFF-ARE](GFF-ARE) -- Area music fields
+- [WAV-File-Format](WAV-File-Format) -- Audio; [2DA-loadscreens](2DA-loadscreens) -- Loading music
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

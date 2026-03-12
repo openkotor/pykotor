@@ -9,7 +9,7 @@ This page documents how PyKotor interprets both formats and how it aligns with r
 
 **Implementation**
 
-- **PyKotor:** [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py) — standard and BioWare DDS read/write; detection in `tpc_auto.py`.
+- **PyKotor:** [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py) -- standard and BioWare DDS read/write; detection in `tpc_auto.py`.
 
 **Vendor References:**
 

@@ -27,8 +27,8 @@ TPC (texture Pack Container) is KotOR's native texture format. It supports palet
 | 12 (0x0C)   | 1    | Pixel encoding flag |
 | 13 (0x0D)   | 1    | Mipmap count |
 | 14 (0x0E)   | 114 (0x72) | Reserved / padding |
-| 128 (0x80)   | —    | texture data (per layer, per mipmap) |
-| ...    | —    | Optional ASCII [TXI](TXI-File-Format) footer |
+| 128 (0x80)   | --    | texture data (per layer, per mipmap) |
+| ...    | --    | Optional ASCII [TXI](TXI-File-Format) footer |
 
 This layout is identical across PyKotor, Reone, Xoreos, KotOR.js, and the original Bioware tools; KotOR-Unity and NorthernLights consume the same header.
 
