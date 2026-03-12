@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import pytest
-
+from typing import TYPE_CHECKING
 from qtpy.QtWidgets import QWidget
 
 from pykotor.resource.formats.bwm import BWM
 from pykotor.resource.formats.bwm.bwm_data import BWMFace
 from pykotor.resource.formats.lyt import LYT, LYTRoom
 from utility.common.geometry import SurfaceMaterial, Vector3
+
+if TYPE_CHECKING:
+    from pytestqt.qtbot import QtBot
 
 
 def _make_template_walkmesh() -> BWM:
@@ -20,7 +23,7 @@ def _make_template_walkmesh() -> BWM:
     return walkmesh
 
 
-def test_generate_walkmeshes_reanchors_template(qtbot):
+def test_generate_walkmeshes_reanchors_template(qtbot: QtBot):
     from toolset.gui.widgets.renderer.walkmesh import WalkmeshRenderer
 
     parent = QWidget()
@@ -34,7 +37,7 @@ def test_generate_walkmeshes_reanchors_template(qtbot):
 
     renderer.generate_walkmeshes(layout, walkmesh_templates={"m_testroom": template})
 
-    generated = renderer._walkmeshes[0]  # noqa: SLF001
+    generated: BWM = renderer._walkmeshes[0]  # noqa: SLF001
     bbmin, bbmax = generated.box()
     center_x = (bbmin.x + bbmax.x) / 2.0
     center_y = (bbmin.y + bbmax.y) / 2.0
@@ -44,12 +47,12 @@ def test_generate_walkmeshes_reanchors_template(qtbot):
     assert all(face.material == SurfaceMaterial.GRASS for face in generated.faces)
 
 
-def test_generate_walkmeshes_falls_back_to_default_floor(qtbot):
+def test_generate_walkmeshes_falls_back_to_default_floor(qtbot: QtBot):
     from toolset.gui.widgets.renderer.walkmesh import DEFAULT_ROOM_FLOOR_SIZE, WalkmeshRenderer
 
     parent = QWidget()
     qtbot.addWidget(parent)
-    renderer = WalkmeshRenderer(parent)
+    renderer: WalkmeshRenderer = WalkmeshRenderer(parent)
     qtbot.addWidget(renderer)
 
     layout = LYT()
@@ -57,7 +60,7 @@ def test_generate_walkmeshes_falls_back_to_default_floor(qtbot):
 
     renderer.generate_walkmeshes(layout, walkmesh_templates={})
 
-    generated = renderer._walkmeshes[0]  # noqa: SLF001
+    generated: BWM = renderer._walkmeshes[0]  # noqa: SLF001
     bbmin, bbmax = generated.box()
 
     assert bbmin.x == pytest.approx(-DEFAULT_ROOM_FLOOR_SIZE)

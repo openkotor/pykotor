@@ -31,8 +31,8 @@ IFO files define module-level metadata including entry configuration, expansion 
 | `Mod_ID` | Void (16 bytes) | Unique module identifier (GUID) |
 | `Mod_Tag` | [CExoString](GFF-File-Format#gff-data-types) | Module tag identifier |
 | `Mod_Name` | [CExoLocString](GFF-File-Format#gff-data-types) | Module name (localized) |
-| `Mod_Creator_ID` | [uint32](GFF-File-Format#gff-data-types) | Toolset creator ID |
-| `Mod_Version` | [uint32](GFF-File-Format#gff-data-types) | Module version number |
+| `Mod_Creator_ID` | UInt32 | Toolset creator ID |
+| `Mod_Version` | UInt32 | Module version number |
 | `Mod_VO_ID` | [CExoString](GFF-File-Format#gff-data-types) | Voice-over folder name |
 
 **Module Identification:**
@@ -143,7 +143,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 | ----- | ---- | ----------- |
 | `Mod_DawnHour` | [byte](GFF-File-Format#gff-data-types) | Dawn start hour (unused) |
 | `Mod_DuskHour` | [byte](GFF-File-Format#gff-data-types) | Dusk start hour (unused) |
-| `Mod_MinPerHour` | [uint32](GFF-File-Format#gff-data-types) | Minutes per hour (unused) |
+| `Mod_MinPerHour` | UInt32 | Minutes per hour (unused) |
 
 **Day/Night Cycle:**
 

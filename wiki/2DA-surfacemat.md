@@ -2,7 +2,7 @@
 
 Part of the [2DA File Format Documentation](2DA-File-Format).
 
-**Engine Usage**: Defines surface [material](MDL-MDX-File-Format#trimesh-header) properties for [walkmesh](BWM-File-Format) surfaces, including walkability, line of sight blocking, and grass rendering. The engine uses this file to determine surface behavior during pathfinding and rendering.
+**Engine Usage**: Defines surface [material](MDL-MDX-File-Format#trimesh-header) properties for [walkmesh](BWM-File-Format) surfaces, including walkability, line of sight blocking, and grass rendering. The engine uses this file to determine surface behavior during pathfinding and rendering. Walkmesh face materials index into this table; **walkability** is determined by the `walk` column. When authoring or painting room walkmeshes, correct material IDs (e.g. Stone/Metal = walkable, Nonwalk = walls) must be used so the engine and pathfinding see the intended surfaces.
 
 **Row index**: Surface [material](MDL-MDX-File-Format#trimesh-header) ID (integer)
 

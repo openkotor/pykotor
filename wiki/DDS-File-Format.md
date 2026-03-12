@@ -5,7 +5,18 @@ DirectDraw Surface (DDS) [textures](TPC-File-Format) appear in two flavours acro
 - **Standard DirectX DDS** (header magic `0x44445320`, 124-byte header) used by downstream tools/ports.
 - **BioWare DDS variant** (no magic; width/height/bpp/dataSize leading integers) used in **KotOR and Neverwinter Nights** game assets (shared Aurora engine format).
 
-This page documents how PyKotor interprets both formats and how it aligns with reference implementations in `vendor/xoreos` and `vendor/xoreos-tools`. When the engine or tools load DDS by ResRef, they use the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+This page documents how PyKotor interprets both formats and how it aligns with reference implementations in [xoreos](https://github.com/xoreos/xoreos) and [xoreos-tools](https://github.com/xoreos/xoreos-tools). When the engine or tools load DDS by ResRef, they use the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+
+**Implementation**
+
+- **PyKotor:** [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py) — standard and BioWare DDS read/write; detection in `tpc_auto.py`.
+
+**Vendor References:**
+
+Repositories (original first, mirror second): **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)), **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)).
+
+- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) - Engine DDS loading (standard and BioWare variant).
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)): [`src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) - Command-line DDS conversion tools.
 
 **For mod developers:** DDS is an alternative texture format; KotOR typically uses [TPC](TPC-File-Format). See [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
 
@@ -18,14 +29,14 @@ This page documents how PyKotor interprets both formats and how it aligns with r
   - `dwFlags` bit `0x00020000` signals mipmap count; otherwise one mipmap is assumed.
   - `dwHeight`, `dwWidth` validated up to 0x8000.
   - `DDPIXELFORMAT` describes layout:
-    - FourCC `DXT1` → TPC `DXT1`
-    - FourCC `DXT3` → TPC `DXT3`
-    - FourCC `DXT5` → TPC `DXT5`
-    - Uncompressed 32-bit BGRA masks (`00FF0000/0000FF00/000000FF/FF000000`) → TPC `BGRA`
-    - Uncompressed 24-bit BGR masks (`00FF0000/0000FF00/000000FF`) → TPC `BGR`
-    - 16-bit ARGB 1-5-5-5 (`7C00/03E0/001F/8000`) → converted to RGBA
-    - 16-bit ARGB 4-4-4-4 (`0F00/00F0/000F/F000`) → converted to RGBA
-    - 16-bit RGB 5-6-5 (`F800/07E0/001F/0`) → converted to RGB
+    - FourCC `DXT1` --> TPC `DXT1`
+    - FourCC `DXT3` --> TPC `DXT3`
+    - FourCC `DXT5` --> TPC `DXT5`
+    - Uncompressed 32-bit BGRA masks (`00FF0000/0000FF00/000000FF/FF000000`) --> TPC `BGRA`
+    - Uncompressed 24-bit BGR masks (`00FF0000/0000FF00/000000FF`) --> TPC `BGR`
+    - 16-bit ARGB 1-5-5-5 (`7C00/03E0/001F/8000`) --> converted to RGBA
+    - 16-bit ARGB 4-4-4-4 (`0F00/00F0/000F/F000`) --> converted to RGBA
+    - 16-bit RGB 5-6-5 (`F800/07E0/001F/0`) --> converted to RGB
   - Cubemap detection via `dwCaps2 & 0x00000200`; faces counted from `dwCaps2 & 0x0000FC00`.
 - Each mip size is computed with the format-aware block sizing from `TPCTextureFormat.get_size`.
 - data layouts that are not directly usable (4444, 1555, 565) are expanded into RGBA/RGB before storing in the `TPC` object.
@@ -33,13 +44,13 @@ This page documents how PyKotor interprets both formats and how it aligns with r
 Implementation reference:
 
 - `Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py` (standard DDS path and format mapping)
-- `vendor/xoreos/src/graphics/images/dds.cpp` and `vendor/xoreos-tools/src/images/dds.cpp` (baseline behaviour and [mask](GFF-File-Format#gff-data-types) checks)
+- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) and **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)): [`src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) (baseline behaviour and [mask](GFF-File-Format#gff-data-types) checks)
 
 ### BioWare DDS variant
 
-- No magic; header is four [little-endian](https://en.wikipedia.org/wiki/Endianness) [uint32](GFF-File-Format#gff-data-types) values:
+- No magic; header is four [little-endian](https://en.wikipedia.org/wiki/Endianness) UInt32 values:
   - `width`, `height` (must be powers of two, < 0x8000)
-  - `bytesPerPixel` (`3` → DXT1, `4` → DXT5)
+  - `bytesPerPixel` (`3` --> DXT1, `4` --> DXT5)
   - `dataSize` (must match `(width*height)/2` for DXT1 or `width*height` for DXT5)
 - Followed by an unused [float](GFF-File-Format#gff-data-types), then the compressed payload and inferred mip levels until data is exhausted.
 - Mipmap count is inferred by walking expected block sizes until data would underflow.
@@ -48,13 +59,13 @@ Implementation reference:
 Implementation reference:
 
 - `Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py` (BioWare header path)
-- `vendor/xoreos/src/graphics/images/dds.cpp` lines around the BioWare branch for comparison.
+- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) (BioWare branch for comparison).
 
 ### Writer Behaviour (PyKotor)
 
 - `TPCDDSWriter` emits only standard DDS headers:
   - Supports `DXT1`, `DXT3`, `DXT5`, and uncompressed `BGR/BGRA`.
-  - Non-DDS-friendly formats are converted (`RGB`→`BGR`, `RGBA`→`BGRA`).
+  - Non-DDS-friendly formats are converted (`RGB`-->`BGR`, `RGBA`-->`BGRA`).
   - Mipmap counts validated per layer; cubemaps set caps (`DDSCAPS2_CUBEMAP|ALLFACES`).
 - Payloads are written in the already-compressed/uncompressed form stored in the `TPC` instance; no re-compression occurs.
 

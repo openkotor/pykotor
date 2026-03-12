@@ -25,17 +25,17 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 - LIP files are always binary (`"LIP V1.0"` signature) and contain only [animation](MDL-MDX-File-Format#animation-header) data.  
 - They are paired with [WAV](WAV-File-Format) voice-over resources of identical duration; the LIP `length` field must match the [WAV](WAV-File-Format) `data` playback time for glitch-free [animation](MDL-MDX-File-Format#animation-header).  
 - [keyframes](MDL-MDX-File-Format#controller-structure) are sorted chronologically and store a timestamp ([float](GFF-File-Format#gff-data-types) seconds) plus a 1-[byte](https://en.wikipedia.org/wiki/Byte) viseme index (0–15).  
-- The layout is identical across `vendor/reone`, `vendor/xoreos`, `vendor/Kotor.NET`, `vendor/KotOR.js`, and `vendor/mdlops`, so the header/[keyframe](MDL-MDX-File-Format#controller-structure) offsets below are cross-confirmed against those implementations.  
+- The layout is identical across **[reone](https://github.com/seedhartha/reone)**, **[xoreos](https://github.com/xoreos/xoreos)**, **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**, **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**, and **mdlops**, so the header/[keyframe](MDL-MDX-File-Format#controller-structure) offsets below are cross-confirmed against those implementations.  
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lip)
 
 **Vendor References:**
 
-- [`vendor/reone/src/libs/graphics/format/lipreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/lipreader.cpp) - Complete C++ LIP parser implementation
-- [`vendor/xoreos/src/graphics/aurora/lipfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/graphics/aurora/lipfile.cpp) - Generic Aurora LIP implementation (shared format)
-- [`vendor/KotOR.js/src/resource/LIPObject.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LIPObject.ts) - TypeScript LIP parser with [animation](MDL-MDX-File-Format#animation-header) playback
-- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorLIP/LIP.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLIP/LIP.cs) - .NET LIP reader/writer
-- [`vendor/mdlops/mdlops/`](https://github.com/th3w1zard1/mdlops/tree/master/mdlops) - Legacy Python LIP generation tools
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/graphics/format/lipreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/graphics/format/lipreader.cpp) - Complete C++ LIP parser implementation
+- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/aurora/lipfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/lipfile.cpp) - Generic Aurora LIP implementation (shared format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/LIPObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LIPObject.ts) - TypeScript LIP parser with [animation](MDL-MDX-File-Format#animation-header) playback
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorLIP/LIP.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLIP/LIP.cs) - .NET LIP reader/writer
+- **[mdlops](https://github.com/th3w1zard1/mdlops)** (canonical repo): [`mdlops/`](https://github.com/th3w1zard1/mdlops/tree/master/mdlops) - Legacy Python LIP generation tools
 
 ### See also
 
@@ -54,13 +54,13 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 | file type     | [char](GFF-File-Format#gff-data-types) | 0 (0x00)   | 4    | Always `"LIP "` |
 | file Version  | [char](GFF-File-Format#gff-data-types) | 4 (0x04)   | 4    | Always `"V1.0"` |
 | Sound Length  | [float32](GFF-File-Format#gff-data-types) | 8 (0x08)   | 4    | Duration in seconds (must equal [WAV](WAV-File-Format) length) |
-| Entry count   | [uint32](GFF-File-Format#gff-data-types)  | 12 (0x0C)   | 4    | Number of [keyframes](MDL-MDX-File-Format#controller-structure) immediately following |
+| Entry count   | UInt32  | 12 (0x0C)   | 4    | Number of [keyframes](MDL-MDX-File-Format#controller-structure) immediately following |
 
 **References**
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/graphics/format/lipreader.cpp:27-42`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/lipreader.cpp#L27-L42) - LIP header parsing
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/graphics/format/lipreader.cpp:27-42`](https://github.com/seedhartha/reone/blob/master/src/libs/graphics/format/lipreader.cpp#L27-L42) - LIP header parsing
 
 ### [keyframe](MDL-MDX-File-Format#controller-structure) Table
 
@@ -72,13 +72,13 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 | Shape      | [uint8](GFF-File-Format#gff-data-types)   | 4 (0x04)               | 1    | Viseme index (`0–15`) |
 
 - Entries are stored sequentially and **must** be sorted ascending by timestamp.  
-- Libraries average multiple implementations to validate this layout (`vendor/reone`, `vendor/xoreos`, `vendor/KotOR.js`, `vendor/Kotor.NET`).  
+- Libraries average multiple implementations to validate this layout ([reone](https://github.com/seedhartha/reone), [xoreos](https://github.com/xoreos/xoreos), [KotOR.js](https://github.com/KobaltBlu/KotOR.js), [Kotor.NET](https://github.com/NickHugi/Kotor.NET)).  
 
 **References**
 
 **Vendor Implementations:**
 
-- [`vendor/KotOR.js/src/resource/LIPObject.ts:93-146`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LIPObject.ts#L93-L146) - Keyframe table parsing
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/LIPObject.ts:93-146`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LIPObject.ts#L93-L146) - Keyframe table parsing
 
 ---
 
@@ -126,9 +126,9 @@ KotOR reuses the 16-shape Preston Blair [phoneme](https://en.wikipedia.org/wiki/
 - **Binary Reader:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py)  
 - **data [model](MDL-MDX-File-Format):** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py)  
 - **Reference Implementations:**  
-  - [`vendor/reone/src/libs/graphics/format/lipreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/lipreader.cpp)  
-  - [`vendor/xoreos/src/aurora/lipfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/lipfile.cpp)  
-  - [`vendor/KotOR.js/src/resource/LIPObject.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LIPObject.ts)  
-  - [`vendor/Kotor.NET/Kotor.NET/Formats/KotorLIP/LIP.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLIP/LIP.cs)  
+  - **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/graphics/format/lipreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/graphics/format/lipreader.cpp)  
+  - **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/lipfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lipfile.cpp)  
+  - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/LIPObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LIPObject.ts)  
+  - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorLIP/LIP.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLIP/LIP.cs)  
 
 The references above implement the same header layout and [keyframe](MDL-MDX-File-Format#controller-structure) encoding, ensuring PyKotor stays compatible with the other toolchains.

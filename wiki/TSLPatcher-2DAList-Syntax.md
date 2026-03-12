@@ -78,27 +78,27 @@ appearance=2DAMEMORY10
 
 - **Modification types**: `ChangeRow#`, `AddRow#`, `CopyRow#`, `AddColumn#`
 - **Row targeting**:
-  - `RowIndex=#` → Target by numeric row index (0-based)
-  - `RowLabel=label` → Target by row label (first column value)
-  - `LabelIndex=value` → Find row where "label" column equals value
+  - `RowIndex=#` --> Target by numeric row index (0-based)
+  - `RowLabel=label` --> Target by row label (first column value)
+  - `LabelIndex=value` --> Find row where "label" column equals value
 - **Cell values**:
-  - `ColumnName=value` → Set cell to constant string
-  - `ColumnName=[StrRef](TLK-File-Format#string-references-strref)#` → Use [TLK](TLK-File-Format) stringref token
-  - `ColumnName=2DAMEMORY#` → Use [2DA](2DA-File-Format) memory token
-  - `ColumnName=high()` → Maximum value in that column
-  - `ColumnName=RowIndex` → Current row's index
-  - `ColumnName=RowLabel` → Current row's label
-  - `ColumnName=RowCell('column')` → value from another cell
-  - `ColumnName=****` → Empty string
+  - `ColumnName=value` --> Set cell to constant string
+  - `ColumnName=[StrRef](TLK-File-Format#string-references-strref)#` --> Use [TLK](TLK-File-Format) stringref token
+  - `ColumnName=2DAMEMORY#` --> Use [2DA](2DA-File-Format) memory token
+  - `ColumnName=high()` --> Maximum value in that column
+  - `ColumnName=RowIndex` --> Current row's index
+  - `ColumnName=RowLabel` --> Current row's label
+  - `ColumnName=RowCell('column')` --> value from another cell
+  - `ColumnName=****` --> Empty string
 - **Memory storage**:
-  - `2DAMEMORY#=RowIndex` → Store row index
-  - `2DAMEMORY#=RowLabel` → Store row label
-  - `2DAMEMORY#=ColumnName` → Store cell value from that column
-  - `[StrRef](TLK-File-Format#string-references-strref)#=value` → Store stringref for later use
+  - `2DAMEMORY#=RowIndex` --> Store row index
+  - `2DAMEMORY#=RowLabel` --> Store row label
+  - `2DAMEMORY#=ColumnName` --> Store cell value from that column
+  - `[StrRef](TLK-File-Format#string-references-strref)#=value` --> Store stringref for later use
 - **Special row properties**:
-  - `RowLabel=value` → Set row label (for AddRow/CopyRow)
-  - `NewRowLabel=value` → Alternative name for RowLabel
-  - `ExclusiveColumn=name` → Check for existing row by column value (AddRow/CopyRow)
+  - `RowLabel=value` --> Set row label (for AddRow/CopyRow)
+  - `NewRowLabel=value` --> Alternative name for RowLabel
+  - `ExclusiveColumn=name` --> Check for existing row by column value (AddRow/CopyRow)
 
 ## Basic structure
 
@@ -267,8 +267,8 @@ Adds a new row to the [2DA file](2DA-File-Format). If `ExclusiveColumn` is speci
 
 **Optional Keys:**
 
-- `ExclusiveColumn=column_name` → Check if a row with the same value in this column already exists; if so, modify it instead of adding
-- `RowLabel=value` or `NewRowLabel=value` → Set the row label (defaults to current row count if not specified)
+- `ExclusiveColumn=column_name` --> Check if a row with the same value in this column already exists; if so, modify it instead of adding
+- `RowLabel=value` or `NewRowLabel=value` --> Set the row label (defaults to current row count if not specified)
 - Any column name (to set cell values)
 - `2DAMEMORY#=value` (to store values in memory)
 - `[StrRef](TLK-File-Format#string-references-strref)#=value` (to store stringref values in memory)
@@ -317,8 +317,8 @@ Copies an existing row (identified by a target) and optionally adds it as a new 
 
 **Optional Keys:**
 
-- `ExclusiveColumn=column_name` → If a row with the same value in this column already exists, modify that row instead of adding a new one
-- `RowLabel=value` or `NewRowLabel=value` → Set the new row's label (defaults to current row count if not specified)
+- `ExclusiveColumn=column_name` --> If a row with the same value in this column already exists, modify that row instead of adding a new one
+- `RowLabel=value` or `NewRowLabel=value` --> Set the new row's label (defaults to current row count if not specified)
 - Any column name (to override cell values from the copied row)
 - `2DAMEMORY#=value` (to store values in memory)
 - `[StrRef](TLK-File-Format#string-references-strref)#=value` (to store stringref values in memory)
@@ -364,14 +364,14 @@ Adds a new column to the [2DA file](2DA-File-Format) with a default value for al
 
 **Required Keys:**
 
-- `ColumnLabel=column_name` → The name of the new column
-- `DefaultValue=value` → Default value for all rows (use `****` for empty string)
+- `ColumnLabel=column_name` --> The name of the new column
+- `DefaultValue=value` --> Default value for all rows (use `****` for empty string)
 
 **Optional Keys:**
 
-- `I#=value` → Set value for row at index `#` (e.g., `I5=CustomValue` sets row index 5)
-- `Llabel=value` → Set value for row with label `label` (e.g., `L1=CustomValue` sets row with label "1")
-- `2DAMEMORY#=I#` or `2DAMEMORY#=Llabel` → Store the cell value from the new column into memory token `#` after the column is created
+- `I#=value` --> Set value for row at index `#` (e.g., `I5=CustomValue` sets row index 5)
+- `Llabel=value` --> Set value for row with label `label` (e.g., `L1=CustomValue` sets row with label "1")
+- `2DAMEMORY#=I#` or `2DAMEMORY#=Llabel` --> Store the cell value from the new column into memory token `#` after the column is created
   - Use `I#` format to reference by row index (e.g., `2DAMEMORY10=I5` stores the value from row index 5 in the new column)
   - Use `Llabel` format to reference by row label (e.g., `2DAMEMORY10=L1` stores the value from the row with label "1" in the new column)
   - Memory storage happens **after** the column is created and all insert values are applied
@@ -1084,8 +1084,8 @@ I5=Value
 
 **Solutions:**
 
-- `RowLabel=value` → Uses the row's label (first column value) to find the row
-- `LabelIndex=value` → Searches the "label" column for a matching value
+- `RowLabel=value` --> Uses the row's label (first column value) to find the row
+- `LabelIndex=value` --> Searches the "label" column for a matching value
 - Use `RowLabel` when you know the row label value
 - Use `LabelIndex` when you need to search within a column named "label"
 
@@ -1346,4 +1346,5 @@ The `[2DAList]` section provides powerful tools for modifying [2DA files](2DA-Fi
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Using 2DAMEMORY tokens in [GFF files](GFF-File-Format)
 - [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) — Using tokens in binary patches
 - [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) — Using tokens in sound sets
+- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums for 2DA modding examples
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — CompileList and overview

@@ -25,14 +25,18 @@ VIS (Visibility) files describe which module rooms can be seen from other rooms.
 - Child room lines are indented by two spaces. Empty lines are ignored and names are case-insensitive.  
 - files usually ship as `moduleXXX.vis` pairs; the `moduleXXXs.vis` (or `.vis` appended inside [ERF](ERF-File-Format)) uses the same syntax.  
 
+**Modding note:** When debugging room layout or first testing new rooms, VIS can be omitted (or simplified) to reduce variables; VIS adds complexity on top of [LYT](LYT-File-Format) and walkmesh setup.
+
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/vis/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/vis)
 
 **Vendor References:**
 
-- [`vendor/reone/src/libs/resource/format/visreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/visreader.cpp) - Complete C++ VIS parser implementation
-- [`vendor/xoreos/src/aurora/visfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/visfile.cpp) - Generic Aurora VIS implementation (shared format)
-- [`vendor/KotOR.js/src/resource/VISObject.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/VISObject.ts) - TypeScript VIS parser with rendering integration
-- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/VISObject.cs`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/VISObject.cs) - C# Unity VIS loader with occlusion culling
+Repositories (original first, mirror second): **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)), **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)), **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)), **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)).
+
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/visreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/visreader.cpp) - Complete C++ VIS parser implementation
+- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/visfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/visfile.cpp) - Generic Aurora VIS implementation (shared format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/VISObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/VISObject.ts) - TypeScript VIS parser with rendering integration
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Scripts/FileObjects/VISObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/VISObject.cs) - C# Unity VIS loader with occlusion culling
 
 ### See also
 
@@ -76,7 +80,7 @@ room012 3
 
 **Vendor Implementations:**
 
-- [`vendor/KotOR.js/src/resource/VISObject.ts:71-126`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/VISObject.ts#L71-L126) - Parent/child line parsing
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/VISObject.ts:71-126`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/VISObject.ts#L71-L126) - Parent/child line parsing
 
 ---
 
@@ -99,10 +103,10 @@ VIS files are crucial for performance in large areas:
 
 **Common Issues:**
 
-- **Missing Room**: Room not in any VIS list → never renders → appears invisible
-- **One-way Visibility**: Room A lists B, but B doesn't list A → asymmetric rendering
-- **Performance Problems**: All rooms list each other → defeats purpose of VIS optimization
-- **Doorway Artifacts**: Door rooms not mutually visible → walls clip during door [animations](MDL-MDX-File-Format#animation-header)
+- **Missing Room**: Room not in any VIS list --> never renders --> appears invisible
+- **One-way Visibility**: Room A lists B, but B doesn't list A --> asymmetric rendering
+- **Performance Problems**: All rooms list each other --> defeats purpose of VIS optimization
+- **Doorway Artifacts**: Door rooms not mutually visible --> walls clip during door [animations](MDL-MDX-File-Format#animation-header)
 
 Module designers balance between performance (fewer visible rooms) and visual quality (no pop-in/clipping). Testing VIS changes in-game is essential.  
 

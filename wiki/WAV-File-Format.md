@@ -4,7 +4,7 @@ KotOR stores both standard WAV voice-over lines and Bioware-obfuscated sound-eff
 
 **For mod developers:** WAV files are referenced by [TLK](TLK-File-Format) (voice-over) and [SSF](SSF-File-Format); see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
 
-**Related formats:** WAV is referenced by [TLK](TLK-File-Format) (StrRef → sound), [SSF](SSF-File-Format), [LIP](LIP-File-Format), and [DLG](GFF-DLG) (VO_ResRef).
+**Related formats:** WAV is referenced by [TLK](TLK-File-Format) (StrRef --> sound), [SSF](SSF-File-Format), [LIP](LIP-File-Format), and [DLG](GFF-DLG) (VO_ResRef).
 
 ## Table of Contents
 
@@ -80,7 +80,7 @@ KotOR voice-over WAVs add a `"fact"` chunk with a 32-bit sample count, which PyK
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/audio/format/wavreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/audio/format/wavreader.cpp) - WAV/SFX header and RIFF parsing
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/audio/format/wavreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/audio/format/wavreader.cpp) - WAV/SFX header and RIFF parsing
 
 ---
 
@@ -99,9 +99,9 @@ External tooling such as SithCodec and `SWKotOR-Audio-Encoder` implement the sam
 - **Binary Reader/Writer:** [`Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py)  
 - **data [model](MDL-MDX-File-Format):** [`Libraries/PyKotor/src/pykotor/resource/formats/wav/wav_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/wav_data.py)  
 - **Reference Implementations:**  
-  - [`vendor/reone/src/libs/audio/format/wavreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/audio/format/wavreader.cpp)  
-  - [`vendor/SithCodec`](https://github.com/th3w1zard1/SithCodec) (encoding/decoding utility)  
-  - [`vendor/SWKotOR-Audio-Encoder`](https://github.com/th3w1zard1/SWKotOR-Audio-Encoder)  
+  - **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/audio/format/wavreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/audio/format/wavreader.cpp)  
+  - **[SithCodec](https://github.com/BBBrassil/SithCodec)** ([Mirror: th3w1zard1/SithCodec](https://github.com/th3w1zard1/SithCodec)) - encoding/decoding utility  
+  - **[SWKotOR-Audio-Encoder](https://github.com/LoranRendel/SWKotOR-Audio-Encoder)** ([Mirror: th3w1zard1/SWKotOR-Audio-Encoder](https://github.com/th3w1zard1/SWKotOR-Audio-Encoder))  
 
 With this structure, WAV assets authored in PyKotor will play identically in the base game and in the other vendor tools.
 

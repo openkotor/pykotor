@@ -68,12 +68,12 @@ The string data table contains metadata for each string entry. Each entry is 40 
 
 | Name              | type      | offset | size | Description                                                      |
 | ----------------- | --------- | ------ | ---- | ---------------------------------------------------------------- |
-| flags             | [uint32](GFF-File-Format#gff-data-types)    | 0 (0x00) | 4    | bit flags: bit 0=text present, bit 1=sound present, bit 2=sound length present |
+| flags             | UInt32    | 0 (0x00) | 4    | bit flags: bit 0=text present, bit 1=sound present, bit 2=sound length present |
 | Sound *ResRef*      | [char](GFF-File-Format#gff-data-types)  | 4 (0x04) | 16   | Voice-over audio filename ([null-terminated](https://en.cppreference.com/w/c/string/byte), max 16 chars)        |
-| Volume Variance   | [uint32](GFF-File-Format#gff-data-types)    | 20 (0x14) | 4    | Unused in KotOR (always 0)                                      |
-| Pitch Variance    | [uint32](GFF-File-Format#gff-data-types)    | 24 (0x18) | 4    | Unused in KotOR (always 0)                                      |
-| offset to string  | [uint32](GFF-File-Format#gff-data-types)    | 28 (0x1C) | 4    | offset to string text (relative to string Entries offset)       |
-| string size       | [uint32](GFF-File-Format#gff-data-types)    | 32 (0x20) | 4    | Length of string text in bytes                                  |
+| Volume Variance   | UInt32    | 20 (0x14) | 4    | Unused in KotOR (always 0)                                      |
+| Pitch Variance    | UInt32    | 24 (0x18) | 4    | Unused in KotOR (always 0)                                      |
+| offset to string  | UInt32    | 28 (0x1C) | 4    | offset to string text (relative to string Entries offset)       |
+| string size       | UInt32    | 32 (0x20) | 4    | Length of string text in bytes                                  |
 | Sound Length      | [float](GFF-File-Format#gff-data-types)     | 36 (0x24) | 4    | Duration of voice-over audio in seconds                         |
 
 **Reference**: [`vendor/Kotor.NET/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:57-90`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L57-L90)
@@ -175,7 +175,7 @@ The game can load multiple TLK files:
 1. `dialog.tlk` - Primary game text
 2. `dialogf.tlk` - Female-specific variants (polish K1 only)
 
-Priority: Custom TLKs → dialogf.tlk → `dialog.tlk`
+Priority: Custom TLKs --> dialogf.tlk --> `dialog.tlk`
 
 ---
 

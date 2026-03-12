@@ -22,8 +22,10 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/resource/gff.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/gff.cpp) - C++ GFF reader (UTI uses generic GFF structure)
-- [`vendor/KotOR.js/src/resource/GFFObject.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/GFFObject.ts) - TypeScript GFF parser
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/gff.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/gff.cpp) - C++ GFF reader (UTI uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/GFFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts) - TypeScript GFF parser
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorGFF/GFF.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs) - .NET GFF reader/writer (UTI uses generic GFF structure)
+- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)) - Generic Aurora GFF implementation; UTI loaded as GFF in engine
 
 ## Core Identity fields
 
@@ -41,8 +43,8 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `BaseItem` | [int32](GFF-File-Format#gff-data-types) | Index into [`baseitems.2da`](2DA-File-Format#baseitems2da) (defines item type) |
-| `Cost` | [uint32](GFF-File-Format#gff-data-types) | Base value in credits |
-| `AddCost` | [uint32](GFF-File-Format#gff-data-types) | Additional cost from properties |
+| `Cost` | UInt32 | Base value in credits |
+| `AddCost` | UInt32 | Additional cost from properties |
 | `Plot` | [byte](GFF-File-Format#gff-data-types) | Plot-critical item (cannot be sold/destroyed) |
 | `Charges` | [byte](GFF-File-Format#gff-data-types) | Number of uses remaining |
 | `StackSize` | [word](GFF-File-Format#gff-data-types) | Current stack quantity |

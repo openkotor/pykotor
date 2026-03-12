@@ -38,7 +38,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Appearance_Type` | [uint32](GFF-File-Format#gff-data-types) | Index into [`appearance.2da`](2DA-appearance) |
+| `Appearance_Type` | UInt32 | Index into [`appearance.2da`](2DA-appearance) |
 | `PortraitId` | [word](GFF-File-Format#gff-data-types) | Index into [`portraits.2da`](2DA-portraits); 65535 (0xFFFF) = use Portrait ResRef instead |
 | `Gender` | [byte](GFF-File-Format#gff-data-types) | 0=Male, 1=Female, 2=Both, 3=Other, 4=None (engine clamps values > 4 to 4) |
 | `Race` | [byte](GFF-File-Format#gff-data-types) | Index into [`racialtypes.2da`](2DA-racialtypes). If value is greater than or equal to the number of rows in race.2da, the creature fails to load. |
@@ -69,7 +69,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `ClassList` | [List](GFF-File-Format#gff-data-types) | List of character classes with levels |
-| `Experience` | [uint32](GFF-File-Format#gff-data-types) | Total experience points |
+| `Experience` | UInt32 | Total experience points |
 | `LevelUpStack` | [List](GFF-File-Format#gff-data-types) | Pending level-up choices |
 | `SkillList` | [List](GFF-File-Format#gff-data-types) | Skill ranks (index + rank) |
 | `FeatList` | [List](GFF-File-Format#gff-data-types) | Acquired feats |

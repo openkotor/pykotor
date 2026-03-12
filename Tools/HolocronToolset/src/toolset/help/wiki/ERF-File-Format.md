@@ -58,15 +58,15 @@ The file header is 160 bytes in size:
 | ------------------------- | ------- | ------ | ---- | ---------------------------------------------- |
 | file type                 | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | `"ERF "`, `"MOD "`, `"SAV "`, or `"HAK "`     |
 | file Version              | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | Always `"V1.0"`                                 |
-| Language count            | [uint32](GFF-File-Format#gff-data-types)  | 8 (0x08) | 4    | Number of localized string entries             |
-| Localized string size     | [uint32](GFF-File-Format#gff-data-types)  | 12 (0x0C) | 4    | Total size of localized string data in bytes   |
-| Entry count               | [uint32](GFF-File-Format#gff-data-types)  | 16 (0x10) | 4    | Number of resources in the container              |
-| offset to Localized string List | [uint32](GFF-File-Format#gff-data-types) | 20 (0x14) | 4 | offset to localized string entries             |
-| offset to [KEY](KEY-File-Format) List        | [uint32](GFF-File-Format#gff-data-types)  | 24 (0x18) | 4    | offset to [KEY](KEY-File-Format) entries array                    |
-| offset to Resource List   | [uint32](GFF-File-Format#gff-data-types)  | 28 (0x1C) | 4    | offset to resource entries array                |
-| Build Year                | [uint32](GFF-File-Format#gff-data-types)  | 32 (0x20) | 4    | Build year (years since 1900)                   |
-| Build Day                 | [uint32](GFF-File-Format#gff-data-types)  | 36 (0x24) | 4    | Build day (days since Jan 1)                   |
-| Description [StrRef](TLK-File-Format#string-references-strref)        | [uint32](GFF-File-Format#gff-data-types)  | 40 (0x28) | 4    | [TLK](TLK-File-Format) string reference for description           |
+| Language count            | UInt32  | 8 (0x08) | 4    | Number of localized string entries             |
+| Localized string size     | UInt32  | 12 (0x0C) | 4    | Total size of localized string data in bytes   |
+| Entry count               | UInt32  | 16 (0x10) | 4    | Number of resources in the container              |
+| offset to Localized string List | UInt32 | 20 (0x14) | 4 | offset to localized string entries             |
+| offset to [KEY](KEY-File-Format) List        | UInt32  | 24 (0x18) | 4    | offset to [KEY](KEY-File-Format) entries array                    |
+| offset to Resource List   | UInt32  | 28 (0x1C) | 4    | offset to resource entries array                |
+| Build Year                | UInt32  | 32 (0x20) | 4    | Build year (years since 1900)                   |
+| Build Day                 | UInt32  | 36 (0x24) | 4    | Build day (days since Jan 1)                   |
+| Description [StrRef](TLK-File-Format#string-references-strref)        | UInt32  | 40 (0x28) | 4    | [TLK](TLK-File-Format) string reference for description           |
 | Reserved                  | [byte](https://en.wikipedia.org/wiki/Byte) | 44 (0x2C)  | 116  | Padding (usually zeros)                         |
 
 **Build Date Fields:**
@@ -81,8 +81,8 @@ These timestamps are primarily informational and used by development tools to tr
 **Example Calculation:**
 
 ```plaintext
-Build Year: 103 → 1900 + 103 = 2003
-Build Day: 247 → September 4th (the 247th day of 2003)
+Build Year: 103 --> 1900 + 103 = 2003
+Build Day: 247 --> September 4th (the 247th day of 2003)
 ```
 
 Most mod tools either zero out these fields or set them to the current date when creating/modifying ERF files.
@@ -109,8 +109,8 @@ Localized strings provide descriptions in multiple languages:
 
 | Name         | type    | size | Description                                                      |
 | ------------ | ------- | ---- | ---------------------------------------------------------------- |
-| Language ID  | [uint32](GFF-File-Format#gff-data-types)  | 4    | Language identifier (see Language enum)                          |
-| string size  | [uint32](GFF-File-Format#gff-data-types)  | 4    | Length of string in bytes                                       |
+| Language ID  | UInt32  | 4    | Language identifier (see Language enum)                          |
+| string size  | UInt32  | 4    | Length of string in bytes                                       |
 | string data  | [char](GFF-File-Format#gff-data-types)[]  | N    | `windows-1252` encoded text                     |
 
 **Localized string Usage:**
@@ -143,7 +143,7 @@ Each [KEY](KEY-File-Format) entry is 24 bytes and maps ResRefs to resource indic
 | Name        | type     | offset | size | Description                                                      |
 | ----------- | -------- | ------ | ---- | ---------------------------------------------------------------- |
 | *ResRef*      | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 16   | Resource filename (null-padded, max 16 chars)                    |
-| Resource ID | [uint32](GFF-File-Format#gff-data-types)   | 16 (0x10) | 4    | index into resource list                                         |
+| Resource ID | UInt32   | 16 (0x10) | 4    | index into resource list                                         |
 | Resource type | [uint16](GFF-File-Format#gff-data-types) | 20 (0x14) | 2    | Resource type identifier                                         |
 | Unused      | [uint16](GFF-File-Format#gff-data-types)   | 22 (0x16) | 2    | Padding                                                           |
 
@@ -160,8 +160,8 @@ Each resource entry is 8 bytes:
 
 | Name          | type   | offset | size | Description                                                      |
 | ------------- | ------ | ------ | ---- | ---------------------------------------------------------------- |
-| offset to data | [uint32](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | offset to resource data in file                                  |
-| Resource size | [uint32](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | size of resource data in bytes                                   |
+| offset to data | UInt32 | 0 (0x00) | 4    | offset to resource data in file                                  |
+| Resource size | UInt32 | 4 (0x04) | 4    | size of resource data in bytes                                   |
 
 **Reference**: [`vendor/Kotor.NET/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:119-120`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L119-L120)
 

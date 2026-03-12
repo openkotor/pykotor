@@ -587,7 +587,7 @@ Components are identified using the following process:
    - It's listed as a [room model](LYT-File-Format#room-definitions) in the [LYT file](LYT-File-Format)
    - It has both [MDL](MDL-MDX-File-Format) and [WOK files](BWM-File-Format)
    - It's not a skybox (skyboxes have [MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format) but no [WOK](BWM-File-Format))
-4. **Component Name Mapping**: Component IDs are mapped from [model](MDL-MDX-File-Format) names using `_get_component_name_mapping()` to create friendly names (e.g., `danm13_room01` → `room_01`)
+4. **Component Name Mapping**: Component IDs are mapped from [model](MDL-MDX-File-Format) names using `_get_component_name_mapping()` to create friendly names (e.g., `danm13_room01` --> `room_01`)
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/src/pykotor/tools/kit.py:600-767`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L600-L767)
 
@@ -950,7 +950,7 @@ The kit extraction process is based on reverse-engineered implementations from m
 
 **reone Implementation** (`vendor/reone/src/libs/resource/provider/`):
 
-- Resource resolution follows KOTOR priority: Override → Modules → Chitin
+- Resource resolution follows KOTOR priority: Override --> Modules --> Chitin
 - `.mod` files take precedence over `.rim` files in Modules directory
 - **PyKotor Implementation**: Matches reone exactly - uses same priority order via `_get_resource_priority()`
 

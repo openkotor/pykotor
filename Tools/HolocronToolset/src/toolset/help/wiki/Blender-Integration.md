@@ -35,7 +35,7 @@ requiring Blender to import the Toolset’s full Python environment directly.
 
 ## What the live bridge currently supports
 
-The Toolset ↔ Blender bridge supports:
+The Toolset <--> Blender bridge supports:
 
 - Blender process launch and add-on enablement
 - JSON-RPC ping/version negotiation
@@ -153,7 +153,7 @@ QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib \
 ## Current limitations
 
 - The bridge is focused on the **Toolset editing session**, not on replacing every Blender-native workflow.
-- External asset import is supported, but end-to-end "import arbitrary asset → automatically ship as final KotOR resource" is still a guided pipeline rather than a one-click conversion path.
+- External asset import is supported, but end-to-end "import arbitrary asset --> automatically ship as final KotOR resource" is still a guided pipeline rather than a one-click conversion path.
 - Engine-level documentation updates that require direct K1 + TSL binary analysis were **not** added here, because those binaries were not available in the current environment during this work.
 
 ## Related pages

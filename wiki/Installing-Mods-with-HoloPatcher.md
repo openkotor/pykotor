@@ -4,6 +4,8 @@ _This page explains how to install mods with HoloPatcher. If you are a mod devel
 
 HoloPatcher aims to offer a user experience identical to TSLPatcher. Follow these steps for a smooth mod installation:
 
+**Before you install:** Point HoloPatcher at your **game root directory** (the folder that contains `swkotor.exe` or `swkotor2.exe` and the `override` folder). Ensure you have a clean backup or know how to restore if something goes wrong. Install one mod at a time when testing compatibility; use the patcher’s backup/restore before switching options or reinstalling. See [Mod Creation Best Practices](Mod-Creation-Best-Practices#testing-and-compatibility) for testing and [Concepts](Concepts) for override and resource order.
+
 **Select Mod Folder:** Direct HoloPatcher to the mod folder containing the 'tslpatchdata' folder.
 **Select Game Directory:** Point HoloPatcher to your KotOR game directory. These paths are often pre-populated in dropdown menus for convenience.
 **Choose Installation Option:** If the mod provides multiple installation options (indicated by a namespaces.ini file), select your preferred option from the first dropdown menu.
@@ -17,7 +19,7 @@ To undo the modifications made by a recent mod installation:
 Important: Avoid Multiple Installations
 Do not reinstall the same mod using the same option without first reverting previous changes. This is crucial for several reasons:
 
-**Partial Installations:** If an installation is interrupted (for example, if the app is closed prematurely) and then restarted, the mod is reapplied over partially modified files. This can result in duplication within critical game files, such as [appearance.2da](2DA-appearance), leading to potential game-breaking issues.
+**Partial Installations:** If an installation is interrupted (for example, if the app is closed prematurely) and then restarted, the mod is reapplied over partially modified files. This can result in duplication within critical game files, such as [appearance.2da](2DA-File-Format#appearance2da), leading to potential game-breaking issues.
 
 **Correcting Mistakes:** If you inadvertently install a mod multiple times without reverting, the game files may contain redundant modifications. However, HoloPatcher keeps backups for each installation. To correct this, you must use the Uninstall Mod/Restore Backup feature twice:
 
@@ -40,3 +42,4 @@ This step is essential for a successful mod installation on iOS devices, ensurin
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) — Workarounds and compatibility
 - [KEY-File-Format](KEY-File-Format) — Resource resolution and override order
 - [2DA-File-Format](2DA-File-Format) — Game data tables (e.g. appearance.2da)
+- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for troubleshooting and guides

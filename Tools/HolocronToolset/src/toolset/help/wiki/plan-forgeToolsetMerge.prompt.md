@@ -1,4 +1,4 @@
-# Forge → Toolset Merge Plan
+# Forge --> Toolset Merge Plan
 
 Exhaustive file-by-file mapping of **Forge** (`vendor/KotOR.js/src/apps/forge/`) features to **Toolset** (`Tools/HolocronToolset/src/toolset/`) counterparts, with what to merge.
 
@@ -101,7 +101,7 @@ Forge's LIP editor has a 3D head preview that animates lip shapes in real-time s
 | 46 | `components/tabs/tab-lip-editor/TabLIPEditorOptions.tsx` | LIP editor options sidebar — scene graph/keyframe utility panel | `gui/editors/lip/lip_editor.py` | Port options sidebar |
 | 47 | `states/tabs/tab-lip-editor/TabLIPEditorState.tsx` | LIP editor state — audio playback, keyframe manipulation, head model management, 3D scene | `gui/editors/lip/lip_editor.py` | Port audio-synced playback state machine, keyframe editing logic |
 | 48 | `states/tabs/tab-lip-editor/TabLIPEditorOptionsState.tsx` | LIP options sub-state | `gui/editors/lip/lip_editor.py` | Port options state |
-| 49 | `data/LIPShapeLabels.ts` | LIP shape label data (phoneme → shape name mapping) | `gui/editors/lip/lip_editor.py` | Port shape label definitions if missing |
+| 49 | `data/LIPShapeLabels.ts` | LIP shape label data (phoneme --> shape name mapping) | `gui/editors/lip/lip_editor.py` | Port shape label definitions if missing |
 
 ---
 
@@ -362,7 +362,7 @@ Forge has a 3D model viewer with animation timeline and scene graph. Toolset has
 
 ---
 
-## 21. Indoor Map Builder ↔ Forge Module Editor / Walkmesh Editor / LYT+VIS Engine
+## 21. Indoor Map Builder <--> Forge Module Editor / Walkmesh Editor / LYT+VIS Engine
 
 The Toolset's Indoor Map Builder has **no direct Forge equivalent by name**, but Forge's **module editor**, **walkmesh editor**, and **LYT/VIS engine** collectively cover the same domain — assembling rooms into a playable module with walkmeshes, doors, visibility, and game objects. The difference: Forge edits **existing** modules in 3D; the Toolset **creates new** indoor modules from kit pieces in 2D.
 
@@ -407,7 +407,7 @@ The Toolset's Indoor Map Builder has **no direct Forge equivalent by name**, but
 | # | Forge File | What It Does | PyKotor Equivalent | What to Port |
 |---|-----------|-------------|-------------------|-------------|
 | 210 | `resource/LYTObject.ts` | LYT parser — rooms, doorhooks, tracks, obstacles | `pykotor.resource.formats.lyt` | **Doorhook export**: Toolset only writes room entries, not doorhooks/tracks |
-| 211 | `resource/VISObject.ts` | VIS parser — room→visible-rooms graph | `pykotor.resource.formats.vis` | **Per-room VIS editing**: Toolset currently does `set_all_visible()` |
+| 211 | `resource/VISObject.ts` | VIS parser — room-->visible-rooms graph | `pykotor.resource.formats.vis` | **Per-room VIS editing**: Toolset currently does `set_all_visible()` |
 
 **Walkmesh engine** (runtime classes the WOK editor builds on):
 
@@ -446,7 +446,7 @@ Instead of keeping the "Indoor Builder" as a separate, limited 2D tool, all of i
 
 To absorb the Indoor Builder and Forge's Walkmesh Editor, `module_designer.ui` will be redesigned with these structural changes:
 
-1. **Combining the UI & Logic (`indoor_builder.ui` / `indoor_builder` → `module_designer.ui` / `module_designer.py`)**:
+1. **Combining the UI & Logic (`indoor_builder.ui` / `indoor_builder` --> `module_designer.ui` / `module_designer.py`)**:
    - The entire contents/logic of `indoor_builder` must be migrated. The `leftDockWidget` and `rightDockWidget` from `indoor_builder.ui` (containing kit instances, room lists, builder properties) need to be ported into `module_designer.ui` as dockable panels or integrated into the existing sidebars. 
    - `indoor_builder.ui` and the standalone `indoor_builder` module will be fully deprecated once this functionality is mapped.
 2. **Toolbar Mode Selector (The "Squish" Fix)**:
@@ -519,20 +519,20 @@ To absorb the Indoor Builder and Forge's Walkmesh Editor, `module_designer.ui` w
 - DELETE `data/indoorkit/indoorkit_base.py` — marked DEPRECATED, duplicates `pykotor.common.indoorkit`
 
 **Phase 2: Merge tiny Toolset data shims**
-- MERGE `data/indoorkit/indoorkit_utils.py` → `data/indoorkit/indoorkit_loader.py`
-- RENAME result → `data/indoorkit/kit_loader.py`
-- RENAME `data/indoormap.py` → `data/indoor_minimap.py`
+- MERGE `data/indoorkit/indoorkit_utils.py` --> `data/indoorkit/indoorkit_loader.py`
+- RENAME result --> `data/indoorkit/kit_loader.py`
+- RENAME `data/indoormap.py` --> `data/indoor_minimap.py`
 
 **Phase 3: Merge tiny CLI files**
 - MERGE `cli/indoor_builder.py` (60 lines, 2 functions) INTO `cli/commands/indoor_builder.py`
 
 **Phase 4: Rename for clarity**
-- RENAME `common/indoorkit.py` → `common/indoor_kit.py`
-- RENAME `common/indoormap.py` → `common/indoor_map.py`
-- RENAME `tools/indoorkit.py` → `tools/indoor_kit_loader.py`
-- RENAME `tools/indoormap.py` → `tools/indoor_map_builder.py`
+- RENAME `common/indoorkit.py` --> `common/indoor_kit.py`
+- RENAME `common/indoormap.py` --> `common/indoor_map.py`
+- RENAME `tools/indoorkit.py` --> `tools/indoor_kit_loader.py`
+- RENAME `tools/indoormap.py` --> `tools/indoor_map_builder.py`
 
-**Result: 23 files → 19 files**, every filename unique and descriptive.
+**Result: 23 files --> 19 files**, every filename unique and descriptive.
 
 ---
 
@@ -542,7 +542,7 @@ To absorb the Indoor Builder and Forge's Walkmesh Editor, `module_designer.ui` w
 
 ### Critical Path (Phase 1-6)
 
-**Phase 1: Unified Environment** (Merge Indoor Builder → Module Designer)
+**Phase 1: Unified Environment** (Merge Indoor Builder --> Module Designer)
 - [x] Integrate `indoor_builder` room-assembly logic into `module_designer.py` as "Layout Mode" — EditorMode enum, mode selector, indoor state, kit/module selectors, renderer signals
 - [ ] Retire standalone `indoor_builder.ui` and consolidate into mode-based workflow _(deferred until full builder.py migration)_
 - [x] Add toolbar mode selector (Layout/Object/Walkmesh/Lighting/Terrain/NavMesh) — QComboBox with Object/Layout/Walkmesh modes, tab visibility per mode
@@ -561,7 +561,7 @@ To absorb the Indoor Builder and Forge's Walkmesh Editor, `module_designer.ui` w
 - [ ] Implement bidirectional room linking (Forge-style)
 
 **Phase 4: Scene Hierarchy & Object Placement** (Unity-style)
-- [ ] Build hierarchical scene graph tree (Module → Areas → Rooms → Objects)
+- [ ] Build hierarchical scene graph tree (Module --> Areas --> Rooms --> Objects)
 - [ ] Implement blueprint browser drag-and-drop placement
 - [ ] Add transform gizmos (translate/rotate/scale) with axis constraints
 - [ ] Support all 11 GIT object types with property inspector
@@ -583,7 +583,7 @@ To absorb the Indoor Builder and Forge's Walkmesh Editor, `module_designer.ui` w
 
 1. **Module Designer Unification** (#18-28, #42, #191-219, §21) — **CRITICAL** — Merge Indoor Builder + Walkmesh Editor into Module Designer with contextual modes
 2. **Walkmesh Vertex Editing** (#43-44, #204-205) — Face/vertex/edge selection, vertex drag gizmo, material sidebar
-3. **Scene Graph Tree** (#23, #42, #209) — Unity Hierarchy analog showing Module → Areas → Rooms → Objects
+3. **Scene Graph Tree** (#23, #42, #209) — Unity Hierarchy analog showing Module --> Areas --> Rooms --> Objects
 4. **Transform Gizmos** (#24, #206) — Three.js-style translate/rotate/scale handles with axis constraints
 5. **Multi-View Layout** (#207) — 4-panel orthographic + perspective (Hammer-standard)
 6. **LIP Sync Editor** (#45-49) — 3D head preview with live lip animation synced to audio, keyframe timeline
@@ -597,7 +597,7 @@ To absorb the Indoor Builder and Forge's Walkmesh Editor, `module_designer.ui` w
 14. **BIK Video Player** (#53-54) — Bink Video playback support
 15. **2DA Editor** (#63-65) — Cell editing and column header improvements
 16. **Welcome Tab** (#102) — Recent files landing page
-17. **Indoor File Cleanup** (#220-242) — Consolidate 23 → 19 files, delete deprecated duplicate, merge shims
+17. **Indoor File Cleanup** (#220-242) — Consolidate 23 --> 19 files, delete deprecated duplicate, merge shims
 
 ---
 
@@ -635,7 +635,7 @@ The Module Designer will be considered **feature-complete** when:
 ✅ A modder can **create a new module from scratch** (rooms, objects, walkmeshes, VIS) without leaving the editor  
 ✅ The **scene hierarchy** mirrors Unity's clarity (expand/collapse, search/filter, visibility toggles)  
 ✅ **4-panel orthographic view** matches Hammer/Radiant workflows for precise alignment  
-✅ **Walkmesh vertex editing** is as intuitive as Blender's (click vertex → drag gizmo → update mesh)  
+✅ **Walkmesh vertex editing** is as intuitive as Blender's (click vertex --> drag gizmo --> update mesh)  
 ✅ **Build + Launch** compiles a playable `.mod` in < 30 seconds  
 ✅ **Undo/redo** works flawlessly for every operation (room placement, object transforms, walkmesh edits)  
 ✅ The UI is **intuitive enough** that a Unity/UE5 user can start editing with zero training  
@@ -656,7 +656,7 @@ The Module Designer will be considered **feature-complete** when:
 
 ### Key Design Principles:
 1. **Everything in one window** — No floating dialogs, no separate apps, no mode-switching hell
-2. **Contextual tools** — Right tool auto-selected based on selection (select object → transform gizmo appears)
+2. **Contextual tools** — Right tool auto-selected based on selection (select object --> transform gizmo appears)
 3. **Undo everything** — Every action reversible with Ctrl+Z, even across modes
 4. **Visual feedback** — Gizmos, overlays, highlights for all interactions (no "invisible state")
 5. **Non-destructive editing** — Can always revert to original blueprints (changes saved to GIT, not blueprints)
@@ -669,4 +669,4 @@ The Module Designer will be considered **feature-complete** when:
 **End of Plan** — See [docs/LEVEL_EDITOR_CHECKLIST.md](docs/LEVEL_EDITOR_CHECKLIST.md) for the detailed 200+ feature breakdown.
 13. **Blueprint Browser** (#86-87, #219) — Search/filter modal with thumbnails
 14. **Welcome Tab** (#102) — Recent files landing page
-15. **Indoor File Cleanup** (#220-242) — Consolidate 23 → 19 files, delete deprecated duplicate, merge shims
+15. **Indoor File Cleanup** (#220-242) — Consolidate 23 --> 19 files, delete deprecated duplicate, merge shims

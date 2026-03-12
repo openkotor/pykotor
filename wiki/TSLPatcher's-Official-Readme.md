@@ -97,6 +97,8 @@ SWKotORII:The Sith Lords game (though it will work with SWKotOR1 as well). Its p
 intended use is as an installer-type of application to distribute with Mods to make them easier
 to install and make compatible with other Mods.
 
+**Modder quick reference:** Point TSLPatcher at your **game root directory** (the folder containing `swkotor.exe` or `swkotor2.exe` and the `override` folder), not at the override folder itself. Use 2DAList and TLKList to **merge** 2DA and TLK changes so multiple mods can coexist; raw file copies overwrite. Make sure "Make Backups" is enabled so you can revert. If using Steam Workshop (e.g. TSLRCM), direct TSLPatcher to the Workshop mod folder when installing mods that must merge with it. For concepts (override, resource order, ResRef), see [Concepts](Concepts) and [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices).
+
 It does not claim to be the "Ultimate Mod Installer". While it can be useful for many types of
 MODs, it will not help in all situations. See the bullet list below to for some examples to see  if
 you can gain anything from using it with your Mod.
@@ -1567,7 +1569,9 @@ And finally thanks to YOU, for enduring my English and reading all the way down 
 
 ### See also
 
+- [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) — LucasForums thread container (Stoffe’s posts, changelogs)
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — GFF patching; [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) — 2DA/text
 - [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — HoloPatcher usage
 - [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — End-user installation
 - [GFF File Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format), [TLK-File-Format](TLK-File-Format) — Patched resources
+- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums archives for setup help and history

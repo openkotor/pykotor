@@ -22,7 +22,9 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/resource/parser/are.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/parser/are.cpp) - C++ ARE parser (if present; otherwise generic GFF reader)
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/parser/are.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/are.cpp) - C++ ARE parser (if present; otherwise generic GFF reader)
+- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)) - Aurora ARE loading via generic GFF; area metadata and lighting
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)) - TypeScript GFF parser used for ARE and other GFF types
 
 ## Core Identity fields
 
@@ -31,10 +33,10 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique area identifier |
 | `Name` | [CExoLocString](GFF-File-Format#gff-data-types) | Area name (localized) |
 | `Comments` | [CExoString](GFF-File-Format#gff-data-types) | Developer notes/documentation |
-| `Creator_ID` | [uint32](GFF-File-Format#gff-data-types) | Toolset creator identifier (unused at runtime) |
-| `ID` | [uint32](GFF-File-Format#gff-data-types) | Unique area ID (unused at runtime) |
-| `Version` | [uint32](GFF-File-Format#gff-data-types) | Area version (unused at runtime) |
-| `Flags` | [uint32](GFF-File-Format#gff-data-types) | Area flags (unused in KotOR) |
+| `Creator_ID` | UInt32 | Toolset creator identifier (unused at runtime) |
+| `ID` | UInt32 | Unique area ID (unused at runtime) |
+| `Version` | UInt32 | Area version (unused at runtime) |
+| `Flags` | UInt32 | Area flags (unused in KotOR) |
 
 ## Lighting & Sun
 
@@ -142,15 +144,15 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `DirtyARGBOne` (KotOR2) | [uint32](GFF-File-Format#gff-data-types) | First dust color ARGB |
+| `DirtyARGBOne` (KotOR2) | UInt32 | First dust color ARGB |
 | `DirtySizeOne` (KotOR2) | [float](GFF-File-Format#gff-data-types) | First dust particle size |
 | `DirtyFormulaOne` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | First dust formula type |
 | `DirtyFuncOne` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | First dust function |
-| `DirtyARGBTwo` (KotOR2) | [uint32](GFF-File-Format#gff-data-types) | Second dust color ARGB |
+| `DirtyARGBTwo` (KotOR2) | UInt32 | Second dust color ARGB |
 | `DirtySizeTwo` (KotOR2) | [float](GFF-File-Format#gff-data-types) | Second dust particle size |
 | `DirtyFormulaTwo` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Second dust formula type |
 | `DirtyFuncTwo` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Second dust function |
-| `DirtyARGBThree` (KotOR2) | [uint32](GFF-File-Format#gff-data-types) | Third dust color ARGB |
+| `DirtyARGBThree` (KotOR2) | UInt32 | Third dust color ARGB |
 | `DirtySizeThree` (KotOR2) | [float](GFF-File-Format#gff-data-types) | Third dust particle size |
 | `DirtyFormulaThre` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Third dust formula type |
 | `DirtyFuncThree` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Third dust function |
@@ -264,9 +266,9 @@ The game engine uses a linear [transformation](BWM-File-Format#walkable-adjacenc
 2. **Converting player position** to minimap coordinates for the minimap UI
 3. **Placing map notes** at correct positions on the minimap
 
-**Mathematical Formula (World → Map [texture](TPC-File-Format) coordinates):**
+**Mathematical Formula (World --> Map [texture](TPC-File-Format) coordinates):**
 
-Reference: `vendor/reone/src/libs/game/gui/map.cpp` - `getMapPosition()`
+Reference: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/gui/map.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/game/gui/map.cpp) - `getMapPosition()`
 
 For **NorthAxis 0 or 1** (PositiveY or NegativeY):
 
@@ -286,7 +288,7 @@ mapPos.x = (world.y - WorldPt1Y) * scaleY + MapPt1X
 mapPos.y = (world.x - WorldPt1X) * scaleX + MapPt1Y
 ```
 
-**Inverse Transformation (Map [texture](TPC-File-Format) → World coordinates):**
+**Inverse Transformation (Map [texture](TPC-File-Format) --> World coordinates):**
 
 For rendering the minimap [texture](TPC-File-Format) in world space:
 
@@ -310,8 +312,8 @@ originY = WorldPt1Y - MapPt1Y * worldScaleY
 | ----- | ---- | ----------- | ------------------ |
 | 0 | PositiveY | +Y is north | Direct X/Y mapping |
 | 1 | NegativeY | -Y is north | Direct X/Y mapping |
-| 2 | PositiveX | +X is north | Swapped: world.x → map.y, world.y → map.x |
-| 3 | NegativeX | -X is north | Swapped: world.x → map.y, world.y → map.x |
+| 2 | PositiveX | +X is north | Swapped: world.x --> map.y, world.y --> map.x |
+| 3 | NegativeX | -X is north | Swapped: world.x --> map.y, world.y --> map.x |
 
 **NorthAxis Usage:**
 
@@ -362,8 +364,8 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 
 **Reference Implementations:**
 
-- `vendor/reone/src/libs/game/gui/map.cpp` - `getMapPosition()` function
-- `vendor/reone/src/libs/resource/parser/gff/are.cpp` - are parsing
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/gui/map.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/game/gui/map.cpp) - `getMapPosition()` function
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/parser/gff/are.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/are.cpp) - are parsing
 - `Libraries/PyKotor/src/pykotor/resource/generics/are.py` - PyKotor are implementation
 - `Tools/HolocronToolset/src/toolset/gui/widgets/renderer/[walkmesh](BWM-File-Format).py` - Minimap rendering
 
@@ -518,7 +520,7 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 
 The inverse [transformation](BWM-File-Format#walkable-adjacencies) is derived from reone's forward [transformation](BWM-File-Format#walkable-adjacencies):
 
-Forward (World → Map): `mapPos.x = (world.x - WorldPt1X) * scaleX + MapPt1X`
+Forward (World --> Map): `mapPos.x = (world.x - WorldPt1X) * scaleX + MapPt1X`
 
 Solving for world.x:
 
@@ -550,7 +552,7 @@ world.x = WorldPt1X - MapPt1X * worldScaleX
    - **Pattern**: `map_point = rotate(map_point - 0.5, angle) + 0.5` ❌ (WRONG)
 
 2. **Precision Loss Bug:**
-   - **Symptom**: coordinates drift during save/load (e.g., 0.667 → 0.67)
+   - **Symptom**: coordinates drift during save/load (e.g., 0.667 --> 0.67)
    - **Cause**: UI spinboxes with insufficient decimal precision (default 2 decimals)
    - **Fix**: Set spinbox decimals to 6+ for normalized coordinates
    - **Impact**: Causes cumulative misalignment over multiple roundtrips
@@ -577,7 +579,7 @@ The blue walkable area rendered in editors comes from the walkmesh ([BWM file](B
 **Testing & Validation:**
 
 1. **Roundtrip Validation:**
-   - Load are file → Save without changes → Load saved file
+   - Load are file --> Save without changes --> Load saved file
    - Verify all map coordinates (`MapPt1X/Y`, `MapPt2X/Y`, `WorldPt1X/Y`, `WorldPt2X/Y`) preserve exactly (tolerance: 0.0001)
    - Verify NorthAxis, MapZoom, MapResX preserve exactly
 
@@ -596,8 +598,8 @@ The blue walkable area rendered in editors comes from the walkmesh ([BWM file](B
 
 **Reference Code Locations:**
 
-- **Reone Forward [transformation](BWM-File-Format#walkable-adjacencies)**: `vendor/reone/src/libs/game/gui/map.cpp:174-199` - `getMapPosition()`
-- **Reone are Parsing**: `vendor/reone/src/libs/resource/parser/gff/are.cpp:284-297` - Map struct parsing
+- **Reone Forward [transformation](BWM-File-Format#walkable-adjacencies)**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/gui/map.cpp:174-199`](https://github.com/seedhartha/reone/blob/master/src/libs/game/gui/map.cpp#L174-L199) - `getMapPosition()`
+- **Reone are Parsing**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/parser/gff/are.cpp:284-297`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/are.cpp#L284-L297) - Map struct parsing
 - **PyKotor are Class**: `Libraries/PyKotor/src/pykotor/resource/generics/are.py:250-260` - Map coordinate storage
 - **PyKotor Minimap Rendering**: `Tools/HolocronToolset/src/toolset/gui/widgets/renderer/[walkmesh](BWM-File-Format).py:555-603` - [texture](TPC-File-Format) rendering implementation
 

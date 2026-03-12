@@ -62,7 +62,7 @@ class HTInstallation(Installation):
 
     This class provides access to canonical 2DA file names that are verified to be loaded
     by the game engine. All 2DA constants below reference files confirmed through reverse
-    engineering analysis of swkotor.exe and swkotor2.exe using Ghidra (Reva MCP server).
+    engineering analysis of swkotor.exe and swkotor2.exe using Ghidra (RE server).
 
     See TwoDARegistry class docstring for detailed function references showing where each
     2DA file is loaded in the game executables.
@@ -811,7 +811,7 @@ class HTInstallation(Installation):
 
         This method caches 2DA files that are verified to be loaded by the game engine.
         All 2DA files accessible through this cache are confirmed through reverse engineering
-        analysis of swkotor.exe and swkotor2.exe using Ghidra (Reva MCP server).
+        analysis of swkotor.exe and swkotor2.exe using Ghidra (RE server).
 
         See TwoDARegistry class in Libraries/PyKotor/src/pykotor/extract/twoda.py for the
         complete list of verified 2DA files and their game engine loading functions.
@@ -928,7 +928,7 @@ class HTInstallation(Installation):
         This method efficiently caches multiple 2DA files that are verified to be loaded
         by the game engine. All 2DA files accessible through this cache are confirmed
         through reverse engineering analysis of swkotor.exe and swkotor2.exe using Ghidra
-        (Reva MCP server).
+        (RE server).
 
         Args:
         ----

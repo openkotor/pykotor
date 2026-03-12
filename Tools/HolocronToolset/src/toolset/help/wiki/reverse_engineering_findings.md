@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document contains findings from reverse engineering the Star Wars: Knights of the Old Republic game executables using Ghidra and the Reva MCP tools. The analysis provides insights into the game's engine architecture that can inform improvements to the PyKotor library and toolset.
+This document contains findings from reverse engineering the Star Wars: Knights of the Old Republic game executables using Ghidra and the RE tools. The analysis provides insights into the game's engine architecture that can inform improvements to the PyKotor library and toolset.
 
 ## Engine Architecture
 
@@ -255,12 +255,12 @@ The detailed `ExecuteCode` analysis validates PyKotor's script interpretation ap
 
 ## Tools Used
 
-- **Reva MCP:** Ghidra integration for reverse engineering
+- **RE:** Ghidra integration for reverse engineering
 - **Ghidra:** Binary analysis and decompilation
 - **Function Analysis:** Cross-referencing and call graph analysis
 
 ## References
 
 - Original game executables: swkotor.exe, swkotor2.exe
-- Analysis conducted using Reva MCP tools in Ghidra
+- Analysis conducted using RE tools in Ghidra
 - Findings validated against PyKotor library implementation

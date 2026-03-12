@@ -168,7 +168,7 @@ A connection point on a component.
 
 - Hooks use **local coordinates** (centered at origin)
 - Transformed to world coordinates via `IndoorMapRoom.hook_position()`
-- [transformation](BWM-File-Format#walkable-adjacencies) order: flip → rotate → translate
+- [transformation](BWM-File-Format#walkable-adjacencies) order: flip --> rotate --> translate
 
 ### KitDoor
 
@@ -653,3 +653,4 @@ Implications:
 - [LYT-File-Format](LYT-File-Format), [BWM-File-Format](BWM-File-Format), [VIS-File-Format](VIS-File-Format) — Generated formats
 - [GFF-File-Format](GFF-File-Format), [GFF-ARE](GFF-ARE), [ERF-File-Format](ERF-File-Format) — Module output
 - [Blender-Integration](Blender-Integration) — 3D editing bridge
+- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for module and kit development

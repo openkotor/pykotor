@@ -110,23 +110,23 @@ All ResRef fields (TemplateResRef, Conversation, Portrait, script ResRefs, etc.)
 
 ## Methodology
 
-Field types and ranges were determined by inspecting the creature-stats reader in the game executables: locating the GFF field name and the corresponding `ReadField*` call (ReadFieldBYTE, ReadFieldSHORT, ReadFieldWORD, ReadFieldINT, ReadFieldCResRef, etc.) and applying type-appropriate min/max (e.g. BYTE → 0–255; SHORT → 0–32767 for non-negative; WORD → 0–65535).
+Field types and ranges were determined by inspecting the creature-stats reader in the game executables: locating the GFF field name and the corresponding `ReadField*` call (ReadFieldBYTE, ReadFieldSHORT, ReadFieldWORD, ReadFieldINT, ReadFieldCResRef, etc.) and applying type-appropriate min/max (e.g. BYTE --> 0–255; SHORT --> 0–32767 for non-negative; WORD --> 0–65535).
 
 ## Verification (Reva)
 
-Verified against K1 `k1_win_gog_swkotor.exe` (and TSL where applicable) via PyKotor-reva MCP. Function: `CSWSCreatureStats::ReadStatsFromGff` — K1 @ 0x005afce0, TSL @ 0x006ec350.
+Verified against K1 `k1_win_gog_swkotor.exe` (and TSL where applicable) via PyKotor-RE. Function: `CSWSCreatureStats::ReadStatsFromGff` — K1 @ 0x005afce0, TSL @ 0x006ec350.
 
 **K1 (swkotor.exe) confirmations:**
 
-- **Gender:** `ReadFieldBYTE(…, "Gender", …)` then `if (4 < bVar7) bVar7 = 4` → effective 0–4.
-- **GoodEvil:** `ReadFieldBYTE(…, "GoodEvil", …)` then `if (100 < uVar12) uVar12 = 100` → effective 0–100.
+- **Gender:** `ReadFieldBYTE(…, "Gender", …)` then `if (4 < bVar7) bVar7 = 4` --> effective 0–4.
+- **GoodEvil:** `ReadFieldBYTE(…, "GoodEvil", …)` then `if (100 < uVar12) uVar12 = 100` --> effective 0–100.
 - **Race:** `ReadFieldBYTE(…, "Race", …)`; if `(Rules->internal).race_row_count <= bVar7` then return 0x5f4 (load fails).
-- **Str, Dex, Con, Int, Wis, Cha:** `ReadFieldBYTE` with no clamp → 0–255.
-- **NaturalAC:** `ReadFieldBYTE(…, "NaturalAC", …)` → 0–255.
+- **Str, Dex, Con, Int, Wis, Cha:** `ReadFieldBYTE` with no clamp --> 0–255.
+- **NaturalAC:** `ReadFieldBYTE(…, "NaturalAC", …)` --> 0–255.
 - **PortraitId:** `ReadFieldWORD(…, "PortraitId", …, 0xffff)`; if `uVar12 < 0xfffe` use as 2DA row, else use Portrait ResRef.
-- **FactionID:** `ReadFieldWORD(…, "FactionID", …)` → 0–65535.
+- **FactionID:** `ReadFieldWORD(…, "FactionID", …)` --> 0–65535.
 - **ChallengeRating:** `ReadFieldFLOAT(…, "ChallengeRating", …)`; no clamp in reader.
-- **fortbonus, refbonus, willbonus:** `ReadFieldSHORT(param_2, "willbonus", …, (short)(char)this->will_bonus)` (and same for fortbonus, refbonus); result stored in byte → effective -128–127.
+- **fortbonus, refbonus, willbonus:** `ReadFieldSHORT(param_2, "willbonus", …, (short)(char)this->will_bonus)` (and same for fortbonus, refbonus); result stored in byte --> effective -128–127.
 - **ClassLevel:** `ReadFieldSHORT` in ClassList element.
 - **PerceptionRange:** `ReadFieldBYTE(…, "PerceptionRange", …, 0xb)`; invalid index can return 0x5f5.
 

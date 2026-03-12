@@ -28,7 +28,7 @@ and structural equivalency checks.
 References:
 ----------
     Based on swkotor.exe (K1) and swkotor2.exe (TSL) MDL structure. All addresses verified
-    via REVA MCP tools through string cross-references, call chain analysis, and decompilation.
+    via RE tools through string cross-references, call chain analysis, and decompilation.
 
     For general MDL format information, see __init__.py.
     For low-level reverse engineering details about engine-level model loading

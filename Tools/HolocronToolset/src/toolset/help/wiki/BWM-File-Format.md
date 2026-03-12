@@ -222,15 +222,15 @@ Faces are typically ordered with walkable faces first, followed by non-walkable 
 
 The vertex order determines the face's normal direction (via the right-hand rule). The engine uses this to determine which side of the face is "up" (walkable) versus "down" (non-walkable). Faces should be oriented such that their normals point upward for walkable surfaces.
 
-Normals follow right-hand rule: counter-clockwise vertex order (v1 → v2 → v3) when viewed from front yields upward-pointing normal for walkable surfaces. Cross product formulas `(v2 - v1) × (v3 - v1)` and `(v3 - v2) × (v1 - v2)` are mathematically equivalent.
+Normals follow right-hand rule: counter-clockwise vertex order (v1 --> v2 --> v3) when viewed from front yields upward-pointing normal for walkable surfaces. Cross product formulas `(v2 - v1) × (v3 - v1)` and `(v3 - v2) × (v1 - v2)` are mathematically equivalent.
 
 **Edge Numbering:**
 
 Each triangle has 3 edges, numbered 0, 1, and 2:
 
-- Edge 0: From vertex V1 to vertex V2 (V1 → V2)
-- Edge 1: From vertex V2 to vertex V3 (V2 → V3)
-- Edge 2: From vertex V3 to vertex V1 (V3 → V1)
+- Edge 0: From vertex V1 to vertex V2 (V1 --> V2)
+- Edge 1: From vertex V2 to vertex V3 (V2 --> V3)
+- Edge 2: From vertex V3 to vertex V1 (V3 --> V1)
 
 ### Materials
 

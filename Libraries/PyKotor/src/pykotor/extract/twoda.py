@@ -559,7 +559,7 @@ class TwoDARegistry:
     ----------------
     The following 2DA files are confirmed to be loaded and used by the game engine,
     as verified through reverse engineering analysis of swkotor.exe and swkotor2.exe
-    using Ghidra (via Reva MCP server):
+    using Ghidra (via RE server):
 
     **swkotor.exe (KotOR 1) - Loaded via Load2DArrays() and related functions:**
     - ambientmusic.2da: Load2DArrays_AmbientMusic() - CResRef("AmbientMusic")
@@ -662,12 +662,12 @@ class TwoDARegistry:
 
         Note: This registry is PyKotor-specific for tooling and modding purposes.
 
-        Game engine analysis performed via Ghidra reverse engineering (Reva MCP server).
+        Game engine analysis performed via Ghidra reverse engineering (RE server).
     """
 
     # Canonical 2DA file names (single source of truth)
     # All file names below are verified to be loaded by the game engine via reverse engineering
-    # analysis of swkotor.exe and swkotor2.exe using Ghidra (Reva MCP server).
+    # analysis of swkotor.exe and swkotor2.exe using Ghidra (RE server).
     # See class docstring for detailed function references.
     APPEARANCES: ClassVar[str] = "appearance"  # swkotor.exe: Load2DArrays_Appearance()
     BASEITEMS: ClassVar[str] = "baseitems"  # swkotor.exe: CSWBaseItemArray::Load()

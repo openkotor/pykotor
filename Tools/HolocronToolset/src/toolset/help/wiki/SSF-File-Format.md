@@ -53,7 +53,7 @@ The file header is 12 bytes in size:
 | ------------------- | ------- | ------ | ---- | ---------------------------------------------- |
 | file type           | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | Always `"SSF "` (space-padded)                 |
 | file Version        | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | Always `"V1.1"`                                 |
-| offset to Sound Table | [uint32](GFF-File-Format#gff-data-types) | 8 (0x08) | 4    | offset to sound table (typically 12)          |
+| offset to Sound Table | UInt32 | 8 (0x08) | 4    | offset to sound table (typically 12)          |
 
 **Reference**: [`vendor/Kotor.NET/Kotor.NET/Formats/KotorSSF/SSFBinaryStructure.cs:10-91`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorSSF/SSFBinaryStructure.cs#L10-L91)
 

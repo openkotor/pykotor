@@ -106,38 +106,40 @@ KotOR models are defined using two files:
 
 **Vendor References:**
 
-- [`vendor/reone/src/libs/graphics/format/mdlreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/mdlreader.cpp) - Complete C++ MDL/MDX parser with [animation](MDL-MDX-File-Format#animation-header) support
-- [`vendor/reone/include/reone/graphics/model.h`](https://github.com/th3w1zard1/reone/blob/master/include/reone/graphics/model.h) - Runtime model class definition
-- [`vendor/xoreos/src/graphics/aurora/model.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/graphics/aurora/model.cpp) - Generic Aurora model implementation (shared format across KotOR, NWN, and other Aurora games)
-- [`vendor/KotOR.js/src/odyssey/OdysseyModel.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/odyssey/OdysseyModel.ts) - TypeScript MDL parser with WebGL rendering
-- [`vendor/KotOR.js/src/odyssey/OdysseyModel3.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/odyssey/OdysseyModel3.ts) - Enhanced model loader with skinning support
-- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/AuroraModel.cs`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/AuroraModel.cs) - C# Unity model loader
-- [`vendor/NorthernLights/src/Model/`](https://github.com/th3w1zard1/NorthernLights/tree/master/src/Model) - .NET model reader with [animation](MDL-MDX-File-Format#animation-header) [Controllers](MDL-MDX-File-Format#controllers)
-- [`vendor/kotorblender/io_scene_kotor/format/mdl/`](https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl) - Blender MDL import/export with full [animation](MDL-MDX-File-Format#animation-header) support
-- [`vendor/mdlops/mdlops/`](https://github.com/th3w1zard1/mdlops/tree/master/mdlops) - Legacy Python MDL toolkit for conversions
-- [`vendor/xoreos-tools/src/aurora/model.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/aurora/model.cpp) - Command-line model extraction tools
+Repositories (original first, mirror second): **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)), **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)), **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)), **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)), **[NorthernLights](https://github.com/lachjames/NorthernLights)** ([Mirror: th3w1zard1/NorthernLights](https://github.com/th3w1zard1/NorthernLights)), **[kotorblender](https://github.com/ndixUR/kotorblender)** ([Mirror: th3w1zard1/kotorblender](https://github.com/th3w1zard1/kotorblender)), **[mdlops](https://github.com/ndixUR/mdlops)** ([Mirror: th3w1zard1/mdlops](https://github.com/th3w1zard1/mdlops)), **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)).
+
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/graphics/format/mdlreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/graphics/format/mdlreader.cpp) - Complete C++ MDL/MDX parser with [animation](MDL-MDX-File-Format#animation-header) support
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`include/reone/graphics/model.h`](https://github.com/seedhartha/reone/blob/master/include/reone/graphics/model.h) - Runtime model class definition
+- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/aurora/model.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/model.cpp) - Generic Aurora model implementation (shared format across KotOR, NWN, and other Aurora games)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/odyssey/OdysseyModel.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyModel.ts) - TypeScript MDL parser with WebGL rendering
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/odyssey/OdysseyModel3.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyModel3.ts) - Enhanced model loader with skinning support
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Scripts/FileObjects/AuroraModel.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/AuroraModel.cs) - C# Unity model loader
+- **[NorthernLights](https://github.com/lachjames/NorthernLights)** ([Mirror: th3w1zard1/NorthernLights](https://github.com/th3w1zard1/NorthernLights)): [`src/Model/`](https://github.com/lachjames/NorthernLights/tree/master/src/Model) - .NET model reader with [animation](MDL-MDX-File-Format#animation-header) [Controllers](MDL-MDX-File-Format#controllers)
+- **[kotorblender](https://github.com/ndixUR/kotorblender)** ([Mirror: th3w1zard1/kotorblender](https://github.com/th3w1zard1/kotorblender)): [`io_scene_kotor/format/mdl/`](https://github.com/ndixUR/kotorblender/tree/master/io_scene_kotor/format/mdl) - Blender MDL import/export with full [animation](MDL-MDX-File-Format#animation-header) support
+- **[mdlops](https://github.com/ndixUR/mdlops)** ([Mirror: th3w1zard1/mdlops](https://github.com/th3w1zard1/mdlops)): [`mdlops/`](https://github.com/ndixUR/mdlops/tree/master/mdlops) - Legacy Python MDL toolkit for conversions
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)): [`src/aurora/model.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/model.cpp) - Command-line model extraction tools
 
 ### Rendering notes (depth + alpha)
 
 Some MDL meshes use layered geometry and masked textures (for example: thin planes laid over other geometry). Renderers typically use:
 
 - **Depth testing**: enabled while drawing 3D meshes.  
-  **Reference**: xoreos enables depth testing in its renderer ([`vendor/xoreos/src/graphics/graphics.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/graphics/graphics.cpp#L433)).  
+  **Reference**: xoreos enables depth testing in its renderer ([**xoreos**](https://github.com/xoreos/xoreos) ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/graphics.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/graphics.cpp#L433)).  
   **Reference**: OpenGL `glEnable(GL_DEPTH_TEST)` ([Khronos refpage](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glEnable.xhtml)) and `glDepthFunc` ([Khronos refpage](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDepthFunc.xhtml)).
 
 - **Alpha cutout / alpha testing**: masked texels are rejected before contributing to the framebuffer (commonly handled as fixed-function alpha test in legacy pipelines, or as a fragment-shader discard).  
-  **Reference**: xoreos toggles `GL_ALPHA_TEST` around Aurora model rendering ([`vendor/xoreos/src/graphics/aurora/modelnode.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/graphics/aurora/modelnode.cpp#L755-L771)).  
+  **Reference**: xoreos toggles `GL_ALPHA_TEST` around Aurora model rendering ([**xoreos**](https://github.com/xoreos/xoreos) ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/aurora/modelnode.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/modelnode.cpp#L755-L771)).  
   **Reference**: OpenGL `glAlphaFunc` (legacy) ([Khronos refpage](https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glAlphaFunc.xml)).  
   **Reference**: PyKotorGL preview applies an alpha cutoff in the fragment shader and uses standard alpha blending ([`Libraries/PyKotor/src/pykotor/gl/shader/shader.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/gl/shader/shader.py), [`Libraries/PyKotor/src/pykotor/gl/scene/scene.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/gl/scene/scene.py)).
 
 - **Alpha blending**: a conventional blend function when drawing textures with meaningful alpha.  
-  **Reference**: xoreos uses `glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)` ([`vendor/xoreos/src/graphics/graphics.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/graphics/graphics.cpp#L438)).  
+  **Reference**: xoreos uses `glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)` ([**xoreos**](https://github.com/xoreos/xoreos) ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/graphics.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/graphics.cpp#L438)).  
   **Reference**: OpenGL `glBlendFunc` ([Khronos refpage](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml)).
 
 **Additional Documentation Sources:**
 
-- [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) - Partial KotOR model format specification from xoreos-docs
-- [`vendor/xoreos-docs/specs/torlack/binmdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/binmdl.html) - Tim Smith (Torlack)'s binary model format documentation for Aurora engine models
+- **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) - Partial KotOR model format specification
+- **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html) - Tim Smith (Torlack)'s binary model format documentation for Aurora engine models
 
 ### See also
 
@@ -177,9 +179,9 @@ The MDL file header is 12 bytes in size and contains the following fields:
 
 | Name         | type    | offset | Description            |
 | ------------ | ------- | ------ | ---------------------- |
-| Unused       | [uint32](GFF-File-Format#gff-data-types)  | 0 (0x0)     | Always set to `0`.     |
-| MDL size     | [uint32](GFF-File-Format#gff-data-types)  | 4 (0x4)     | size of the MDL file.  |
-| MDX size     | [uint32](GFF-File-Format#gff-data-types)  | 8 (0x8)     | size of the MDX file.  |
+| Unused       | UInt32  | 0 (0x0)     | Always set to `0`.     |
+| MDL size     | UInt32  | 4 (0x4)     | size of the MDL file.  |
+| MDX size     | UInt32  | 8 (0x8)     | size of the MDX file.  |
 
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:162`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L162) - file header structure definition  
 **Reference**: [`vendor/reone/src/libs/graphics/format/mdlmdxreader.cpp:56-59`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp#L56-L59) - file header reading  
@@ -197,23 +199,23 @@ The model header is 116 bytes in size and immediately follows the [geometry](MDL
 | Subclassification            | [uint8](GFF-File-Format#gff-data-types)           | 1 (0x1)     | model subclassification value.                                              |
 | Unknown                      | [uint8](GFF-File-Format#gff-data-types)           | 2 (0x2)     | Purpose unknown (possibly smoothing-related).                               |
 | Affected By Fog              | [uint8](GFF-File-Format#gff-data-types)           | 3 (0x3)     | `0`: Not affected by fog, `1`: Affected by fog.                             |
-| Child model count            | [uint32](GFF-File-Format#gff-data-types)          | 4 (0x4)     | Number of child models.                                                     |
-| [animation](MDL-MDX-File-Format#animation-header) array offset       | [uint32](GFF-File-Format#gff-data-types)          | 8 (0x8)     | offset to the [animation](MDL-MDX-File-Format#animation-header) array.                                              |
-| [animation](MDL-MDX-File-Format#animation-header) count              | [uint32](GFF-File-Format#gff-data-types)          | 12 (0xC)    | Number of [animations](MDL-MDX-File-Format#animation-header).                                                       |
-| [animation](MDL-MDX-File-Format#animation-header) Count (duplicate)  | [uint32](GFF-File-Format#gff-data-types)          | 16 (0x10)    | Duplicate value of [animation](MDL-MDX-File-Format#animation-header) count.                                         |
-| Parent model pointer         | [uint32](GFF-File-Format#gff-data-types)          | 20 (0x14)    | pointer to parent model (context-dependent).                                |
+| Child model count            | UInt32          | 4 (0x4)     | Number of child models.                                                     |
+| [animation](MDL-MDX-File-Format#animation-header) array offset       | UInt32          | 8 (0x8)     | offset to the [animation](MDL-MDX-File-Format#animation-header) array.                                              |
+| [animation](MDL-MDX-File-Format#animation-header) count              | UInt32          | 12 (0xC)    | Number of [animations](MDL-MDX-File-Format#animation-header).                                                       |
+| [animation](MDL-MDX-File-Format#animation-header) Count (duplicate)  | UInt32          | 16 (0x10)    | Duplicate value of [animation](MDL-MDX-File-Format#animation-header) count.                                         |
+| Parent model pointer         | UInt32          | 20 (0x14)    | pointer to parent model (context-dependent).                                |
 | [Bounding Box](MDL-MDX-File-Format#model-header) Min             | [float](GFF-File-Format#gff-data-types)        | 24 (0x18)    | Minimum coordinates of the [bounding box](MDL-MDX-File-Format#model-header) (X, Y, Z).                          |
 | [Bounding Box](MDL-MDX-File-Format#model-header) Max             | [float](GFF-File-Format#gff-data-types)        | 36 (0x24)    | Maximum coordinates of the [bounding box](MDL-MDX-File-Format#model-header) (X, Y, Z).                          |
 | Radius                       | [float](GFF-File-Format#gff-data-types)           | 48 (0x30)    | Radius of the model's bounding sphere.                                      |
 | [animation](MDL-MDX-File-Format#animation-header) scale              | [float](GFF-File-Format#gff-data-types)           | 52 (0x34)    | scale factor for animations (typically 1.0).                                |
 | Supermodel Name              | [byte](https://en.wikipedia.org/wiki/Byte)        | 56 (0x38)    | Name of the supermodel ([null-terminated string](https://en.cppreference.com/w/c/string/byte)).                            |
-| Super Root Offset            | [uint32](GFF-File-Format#gff-data-types)          | 88 (0x58)    | offset to super root node (for model inheritance).                          |
-| Unknown                      | [uint32](GFF-File-Format#gff-data-types)          | 92 (0x5C)    | Unknown field from Names array header. Purpose unknown but preserved for format compatibility. |
-| MDX Size                     | [uint32](GFF-File-Format#gff-data-types)          | 96 (0x60)    | Size of the MDX file data.                                                  |
-| MDX Offset                   | [uint32](GFF-File-Format#gff-data-types)          | 100 (0x64)   | offset to MDX data within the MDX file.                                     |
-| Name Offsets Offset          | [uint32](GFF-File-Format#gff-data-types)          | 104 (0x68)   | offset to name offsets array.                                               |
-| Name Offsets Count           | [uint32](GFF-File-Format#gff-data-types)          | 108 (0x6C)   | Number of name offsets.                                                     |
-| Name Offsets Count (duplicate) | [uint32](GFF-File-Format#gff-data-types)        | 112 (0x70)   | Duplicate value of name offsets count.                                      |
+| Super Root Offset            | UInt32          | 88 (0x58)    | offset to super root node (for model inheritance).                          |
+| Unknown                      | UInt32          | 92 (0x5C)    | Unknown field from Names array header. Purpose unknown but preserved for format compatibility. |
+| MDX Size                     | UInt32          | 96 (0x60)    | Size of the MDX file data.                                                  |
+| MDX Offset                   | UInt32          | 100 (0x64)   | offset to MDX data within the MDX file.                                     |
+| Name Offsets Offset          | UInt32          | 104 (0x68)   | offset to name offsets array.                                               |
+| Name Offsets Count           | UInt32          | 108 (0x6C)   | Number of name offsets.                                                     |
+| Name Offsets Count (duplicate) | UInt32        | 112 (0x70)   | Duplicate value of name offsets count.                                      |
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py) - model header reading (`_ModelHeader`, 116 bytes after geometry)  
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:164`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L164) - model header structure definition
@@ -232,14 +234,14 @@ The geometry header is 80 bytes in size and is located at offset 12 in the file 
 
 | Name                        | type        | offset | Description                                                                                     |
 | --------------------------- | ----------- | ------ | ----------------------------------------------------------------------------------------------- |
-| Function pointer 0          | [uint32](GFF-File-Format#gff-data-types)      | 0 (0x0)     | Game engine version identifier (see [KotOR 1 vs KotOR 2 Models](#kotor-1-vs-kotor-2-models)).  |
-| Function pointer 1          | [uint32](GFF-File-Format#gff-data-types)      | 4 (0x4)     | Function pointer to parse ASCII model lines (used by the game engine's ASCII model parser).                                             |
+| Function pointer 0          | UInt32      | 0 (0x0)     | Game engine version identifier (see [KotOR 1 vs KotOR 2 Models](#kotor-1-vs-kotor-2-models)).  |
+| Function pointer 1          | UInt32      | 4 (0x4)     | Function pointer to parse ASCII model lines (used by the game engine's ASCII model parser).                                             |
 | model Name                  | [byte](https://en.wikipedia.org/wiki/Byte)    | 8 (0x8)     | Name of the model ([null-terminated string](https://en.cppreference.com/w/c/string/byte)).                                                     |
-| Root [Node](MDL-MDX-File-Format#node-structures) offset            | [uint32](GFF-File-Format#gff-data-types)      | 40 (0x28)    | offset to the root [Node](MDL-MDX-File-Format#node-structures) structure (relative to MDL data offset 12).                             |
-| [Node](MDL-MDX-File-Format#node-structures) count                  | [uint32](GFF-File-Format#gff-data-types)      | 44 (0x2C)    | Total number of [nodes](MDL-MDX-File-Format#node-structures) in the model hierarchy.                                                   |
-| Unknown array Definition 1  | [uint32](GFF-File-Format#gff-data-types)   | 48 (0x30)    | array definition structure (offset, count, count duplicate). Purpose unknown.                   |
-| Unknown array Definition 2  | [uint32](GFF-File-Format#gff-data-types)   | 60 (0x3C)    | array definition structure (offset, count, count duplicate). Purpose unknown.                   |
-| Reference count             | [uint32](GFF-File-Format#gff-data-types)      | 72 (0x48)    | Reference count initialized to 0. When another model references this model, this value is incremented. When the referencing model dereferences this model, the count is decremented. When this count goes to zero, the model can be deleted since it is no longer needed.                                                 |
+| Root [Node](MDL-MDX-File-Format#node-structures) offset            | UInt32      | 40 (0x28)    | offset to the root [Node](MDL-MDX-File-Format#node-structures) structure (relative to MDL data offset 12).                             |
+| [Node](MDL-MDX-File-Format#node-structures) count                  | UInt32      | 44 (0x2C)    | Total number of [nodes](MDL-MDX-File-Format#node-structures) in the model hierarchy.                                                   |
+| Unknown array Definition 1  | UInt32   | 48 (0x30)    | array definition structure (offset, count, count duplicate). Purpose unknown.                   |
+| Unknown array Definition 2  | UInt32   | 60 (0x3C)    | array definition structure (offset, count, count duplicate). Purpose unknown.                   |
+| Reference count             | UInt32      | 72 (0x48)    | Reference count initialized to 0. When another model references this model, this value is incremented. When the referencing model dereferences this model, the count is decremented. When this count goes to zero, the model can be deleted since it is no longer needed.                                                 |
 | [geometry](MDL-MDX-File-Format#geometry-header) type               | [uint8](GFF-File-Format#gff-data-types)       | 76 (0x4C)    | type of [geometry](MDL-MDX-File-Format#geometry-header) header: `0x01`: Basic [geometry](MDL-MDX-File-Format#geometry-header) header (not in models), `0x02`: model [geometry](MDL-MDX-File-Format#geometry-header), `0x05`: [animation](MDL-MDX-File-Format#animation-header) [geometry](MDL-MDX-File-Format#geometry-header). If bit 7 (0x80) is set, the model is a compiled binary model loaded from disk and converted to absolute addresses.                    |
 | Padding                     | [uint8](GFF-File-Format#gff-data-types)    | 77 (0x4D)    | Padding bytes for alignment.                                                                    |
 
@@ -259,13 +261,13 @@ The Names header is located at file offset 180 (28 bytes). It contains metadata 
 
 | Name                | type    | offset | Description                                                                 |
 | ------------------- | ------- | ------ | --------------------------------------------------------------------------- |
-| Root [Node](MDL-MDX-File-Format#node-structures) offset    | [uint32](GFF-File-Format#gff-data-types)  | 0 (0x0)     | offset to the root [Node](MDL-MDX-File-Format#node-structures) (often a duplicate of the [geometry header](MDL-MDX-File-Format#geometry-header) value).   |
-| Unknown/Padding     | [uint32](GFF-File-Format#gff-data-types)  | 4 (0x4)     | Unknown field, typically unused or padding.                                 |
-| MDX data size       | [uint32](GFF-File-Format#gff-data-types)  | 8 (0x8)     | size of the MDX file data in bytes.                                         |
-| MDX data offset     | [uint32](GFF-File-Format#gff-data-types)  | 12 (0xC)    | offset to MDX data within the MDX file (typically 0).                       |
-| Names array offset  | [uint32](GFF-File-Format#gff-data-types)  | 16 (0x10)    | offset to the array of name string offsets.                                 |
-| Names count         | [uint32](GFF-File-Format#gff-data-types)  | 20 (0x14)    | Number of [Node](MDL-MDX-File-Format#node-structures) names in the array.                                          |
-| Names Count (dup)   | [uint32](GFF-File-Format#gff-data-types)  | 24 (0x18)    | Duplicate value of names count.                                             |
+| Root [Node](MDL-MDX-File-Format#node-structures) offset    | UInt32  | 0 (0x0)     | offset to the root [Node](MDL-MDX-File-Format#node-structures) (often a duplicate of the [geometry header](MDL-MDX-File-Format#geometry-header) value).   |
+| Unknown/Padding     | UInt32  | 4 (0x4)     | Unknown field, typically unused or padding.                                 |
+| MDX data size       | UInt32  | 8 (0x8)     | size of the MDX file data in bytes.                                         |
+| MDX data offset     | UInt32  | 12 (0xC)    | offset to MDX data within the MDX file (typically 0).                       |
+| Names array offset  | UInt32  | 16 (0x10)    | offset to the array of name string offsets.                                 |
+| Names count         | UInt32  | 20 (0x14)    | Number of [Node](MDL-MDX-File-Format#node-structures) names in the array.                                          |
+| Names Count (dup)   | UInt32  | 24 (0x18)    | Duplicate value of names count.                                             |
 
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:165`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L165) - Names header structure definition  
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:810-843`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L810-L843) - Names header and name array reading  
@@ -286,10 +288,10 @@ Each animation begins with a [Geometry Header](MDL-MDX-File-Format#geometry-head
 | animation Length      | [float](GFF-File-Format#gff-data-types)           | 80 (0x50)    | Duration of the animation in seconds.                      |
 | Transition Time       | [float](GFF-File-Format#gff-data-types)           | 84 (0x54)    | Transition/blend time to this animation in seconds.        |
 | animation Root        | [byte](https://en.wikipedia.org/wiki/Byte)        | 88 (0x58)    | Root [Node](MDL-MDX-File-Format#node-structures) name for the animation ([null-terminated](https://en.cppreference.com/w/c/string/byte) string). |
-| Event array offset    | [uint32](GFF-File-Format#gff-data-types)          | 120 (0x78)   | offset to animation events array.                          |
-| Event count           | [uint32](GFF-File-Format#gff-data-types)          | 124 (0x7C)   | Number of [animation](MDL-MDX-File-Format#animation-header) events.                                |
-| Event Count (dup)     | [uint32](GFF-File-Format#gff-data-types)          | 128 (0x80)   | Duplicate value of event count.                            |
-| Unknown               | [uint32](GFF-File-Format#gff-data-types)          | 132 (0x84)   | Purpose unknown.                                           |
+| Event array offset    | UInt32          | 120 (0x78)   | offset to animation events array.                          |
+| Event count           | UInt32          | 124 (0x7C)   | Number of [animation](MDL-MDX-File-Format#animation-header) events.                                |
+| Event Count (dup)     | UInt32          | 128 (0x80)   | Duplicate value of event count.                            |
+| Unknown               | UInt32          | 132 (0x84)   | Purpose unknown.                                           |
 
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:169`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L169) - [animation](MDL-MDX-File-Format#animation-header) header structure definition  
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:1339-1363`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L1339-L1363) - [animation](MDL-MDX-File-Format#animation-header) header reading  
@@ -312,9 +314,9 @@ Each [animation](MDL-MDX-File-Format#animation-header) event is 36 bytes in size
 
 ---
 
-## node structures
+## Node Structures
 
-### node header
+### Node Header
 
 The Node Header is 80 bytes in size and is present in all node types. It defines the node's position in the hierarchy, its transform, and references to child nodes and [animation](MDL-MDX-File-Format#animation-header) [Controllers](MDL-MDX-File-Format#controllers).
 
@@ -324,19 +326,19 @@ The Node Header is 80 bytes in size and is present in all node types. It defines
 | node index               | [uint16](GFF-File-Format#gff-data-types)      | 2 (0x2)     | Sequential index of this node in the model. Field #3 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("node number").                                        |
 | node Name index          | [uint16](GFF-File-Format#gff-data-types)      | 4 (0x4)     | index into the names array for this node's name. Field #2 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("supernode").                                   |
 | Padding                  | [uint16](GFF-File-Format#gff-data-types)      | 6 (0x6)     | Padding for alignment. Fields #4-5 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure (described as "unknown").                                                             |
-| Root [Node](MDL-MDX-File-Format#node-structures) offset         | [uint32](GFF-File-Format#gff-data-types)      | 8 (0x8)     | offset to the model's root [Node](MDL-MDX-File-Format#node-structures).                                                   |
-| Parent [Node](MDL-MDX-File-Format#node-structures) offset       | [uint32](GFF-File-Format#gff-data-types)      | 12 (0xC)    | offset to this [Node](MDL-MDX-File-Format#node-structures)'s parent node (0 if root). Field #6 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("location of parent node").                                     |
+| Root [Node](MDL-MDX-File-Format#node-structures) offset         | UInt32      | 8 (0x8)     | offset to the model's root [Node](MDL-MDX-File-Format#node-structures).                                                   |
+| Parent [Node](MDL-MDX-File-Format#node-structures) offset       | UInt32      | 12 (0xC)    | offset to this [Node](MDL-MDX-File-Format#node-structures)'s parent node (0 if root). Field #6 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("location of parent node").                                     |
 | position                 | [float](GFF-File-Format#gff-data-types)    | 16 (0x10)    | [Node](MDL-MDX-File-Format#node-structures) position in local space (X, Y, Z). Fields #7-9 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("position X/Y/Z, same value as position controller").                                            |
 | orientation              | [float](GFF-File-Format#gff-data-types)    | 28 (0x1C)    | [Node](MDL-MDX-File-Format#node-structures) orientation as quaternion (W, X, Y, Z). Fields #10-13 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("rotation W/X/Y/Z, same value as rotation controller").                                       |
-| Child array offset       | [uint32](GFF-File-Format#gff-data-types)      | 44 (0x2C)    | offset to array of child [Node](MDL-MDX-File-Format#node-structures) offsets. Field #14 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("location of the array of child node locations").                                             |
-| Child count              | [uint32](GFF-File-Format#gff-data-types)      | 48 (0x30)    | Number of child [nodes](MDL-MDX-File-Format#node-structures). Field #15 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("number of items in array in item 8").                                                             |
-| Child Count (dup)        | [uint32](GFF-File-Format#gff-data-types)      | 52 (0x34)    | Duplicate value of child count. Field #16 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("duplicate of item 9").                                                    |
-| [Controller](MDL-MDX-File-Format#controllers) array offset  | [uint32](GFF-File-Format#gff-data-types)      | 56 (0x38)    | offset to array of [Controller](MDL-MDX-File-Format#controllers) structures. Field #17 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("location of the array of controllers").                                          |
-| [Controller](MDL-MDX-File-Format#controllers) count         | [uint32](GFF-File-Format#gff-data-types)      | 60 (0x3C)    | Number of [Controllers](MDL-MDX-File-Format#controllers) attached to this [Node](MDL-MDX-File-Format#node-structures). Field #18 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("number of items in array in item 11").                                       |
-| [Controller](MDL-MDX-File-Format#controllers) Count (dup)   | [uint32](GFF-File-Format#gff-data-types)      | 64 (0x40)    | Duplicate value of [Controller](MDL-MDX-File-Format#controllers) count. Field #19 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("duplicate of item 12").                                               |
-| [Controller](MDL-MDX-File-Format#controllers) data offset   | [uint32](GFF-File-Format#gff-data-types)      | 68 (0x44)    | offset to [Controller](MDL-MDX-File-Format#controllers) [keyframe](MDL-MDX-File-Format#controller-structure)/data array. Field #20 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("location of the array of controller data").                                          |
-| [Controller](MDL-MDX-File-Format#controllers) data count    | [uint32](GFF-File-Format#gff-data-types)      | 72 (0x48)    | Number of floats in [Controller](MDL-MDX-File-Format#controllers) data array. Field #21 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("number of items in array in item 14").                                         |
-| [Controller](MDL-MDX-File-Format#controllers) data count    | [uint32](GFF-File-Format#gff-data-types)      | 76 (0x4C)    | Duplicate value of [Controller](MDL-MDX-File-Format#controllers) data count. Field #22 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("duplicate of item 15").                                          |
+| Child array offset       | UInt32      | 44 (0x2C)    | offset to array of child [Node](MDL-MDX-File-Format#node-structures) offsets. Field #14 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("location of the array of child node locations").                                             |
+| Child count              | UInt32      | 48 (0x30)    | Number of child [nodes](MDL-MDX-File-Format#node-structures). Field #15 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("number of items in array in item 8").                                                             |
+| Child Count (dup)        | UInt32      | 52 (0x34)    | Duplicate value of child count. Field #16 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("duplicate of item 9").                                                    |
+| [Controller](MDL-MDX-File-Format#controllers) array offset  | UInt32      | 56 (0x38)    | offset to array of [Controller](MDL-MDX-File-Format#controllers) structures. Field #17 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("location of the array of controllers").                                          |
+| [Controller](MDL-MDX-File-Format#controllers) count         | UInt32      | 60 (0x3C)    | Number of [Controllers](MDL-MDX-File-Format#controllers) attached to this [Node](MDL-MDX-File-Format#node-structures). Field #18 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("number of items in array in item 11").                                       |
+| [Controller](MDL-MDX-File-Format#controllers) Count (dup)   | UInt32      | 64 (0x40)    | Duplicate value of [Controller](MDL-MDX-File-Format#controllers) count. Field #19 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("duplicate of item 12").                                               |
+| [Controller](MDL-MDX-File-Format#controllers) data offset   | UInt32      | 68 (0x44)    | offset to [Controller](MDL-MDX-File-Format#controllers) [keyframe](MDL-MDX-File-Format#controller-structure)/data array. Field #20 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("location of the array of controller data").                                          |
+| [Controller](MDL-MDX-File-Format#controllers) data count    | UInt32      | 72 (0x48)    | Number of floats in [Controller](MDL-MDX-File-Format#controllers) data array. Field #21 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("number of items in array in item 14").                                         |
+| [Controller](MDL-MDX-File-Format#controllers) data count    | UInt32      | 76 (0x4C)    | Duplicate value of [Controller](MDL-MDX-File-Format#controllers) data count. Field #22 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("duplicate of item 15").                                          |
 
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:172`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L172) - [Node](MDL-MDX-File-Format#node-structures) header structure definition  
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:1590-1622`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L1590-L1622) - [Node](MDL-MDX-File-Format#node-structures) header reading  
@@ -353,11 +355,11 @@ The Trimesh header defines static mesh [geometry](MDL-MDX-File-Format#geometry-h
 
 | Name                         | type         | offset     | Description                                                                                 |
 | ---------------------------- | ------------ | ---------- | ------------------------------------------------------------------------------------------- |
-| Function pointer 0           | [uint32](GFF-File-Format#gff-data-types)       | 0 (0x0)         | Game engine function pointer (version-specific).                                            |
-| Function pointer 1           | [uint32](GFF-File-Format#gff-data-types)       | 4 (0x4)         | Secondary game engine function pointer.                                                     |
-| [faces](MDL-MDX-File-Format#face-structure) array offset           | [uint32](GFF-File-Format#gff-data-types)       | 8 (0x8)         | offset to [face](MDL-MDX-File-Format#face-structure) definitions array.                                                           |
-| [faces](MDL-MDX-File-Format#face-structure) count                  | [uint32](GFF-File-Format#gff-data-types)       | 12 (0xC)        | Number of triangular [faces](MDL-MDX-File-Format#face-structure) in the mesh.                                                     |
-| [faces](MDL-MDX-File-Format#face-structure) Count (dup)            | [uint32](GFF-File-Format#gff-data-types)       | 16 (0x10)        | Duplicate of [faces](MDL-MDX-File-Format#face-structure) count.                                                                   |
+| Function pointer 0           | UInt32       | 0 (0x0)         | Game engine function pointer (version-specific).                                            |
+| Function pointer 1           | UInt32       | 4 (0x4)         | Secondary game engine function pointer.                                                     |
+| [faces](MDL-MDX-File-Format#face-structure) array offset           | UInt32       | 8 (0x8)         | offset to [face](MDL-MDX-File-Format#face-structure) definitions array.                                                           |
+| [faces](MDL-MDX-File-Format#face-structure) count                  | UInt32       | 12 (0xC)        | Number of triangular [faces](MDL-MDX-File-Format#face-structure) in the mesh.                                                     |
+| [faces](MDL-MDX-File-Format#face-structure) Count (dup)            | UInt32       | 16 (0x10)        | Duplicate of [faces](MDL-MDX-File-Format#face-structure) count.                                                                   |
 | [bounding box](MDL-MDX-File-Format#model-header) Min             | [float](GFF-File-Format#gff-data-types)     | 20 (0x14)        | Minimum [bounding box](MDL-MDX-File-Format#model-header) coordinates (X, Y, Z).                                                 |
 | [bounding box](MDL-MDX-File-Format#model-header) Max             | [float](GFF-File-Format#gff-data-types)     | 32 (0x20)        | Maximum [bounding box](MDL-MDX-File-Format#model-header) coordinates (X, Y, Z).                                                 |
 | Radius                       | [float](GFF-File-Format#gff-data-types)        | 44 (0x2C)        | Bounding sphere radius.                                                                     |
@@ -370,29 +372,29 @@ The Trimesh header defines static mesh [geometry](MDL-MDX-File-Format#geometry-h
 | Ambient color R               | [float](GFF-File-Format#gff-data-types)     | 72 (0x48)        | [material](MDL-MDX-File-Format#trimesh-header) ambient color red component (range 0.0-1.0). Fields #19-21 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) trimesh header structure.                                            |
 | Ambient color G               | [float](GFF-File-Format#gff-data-types)     | 76 (0x4C)        | [material](MDL-MDX-File-Format#trimesh-header) ambient color green component (range 0.0-1.0).                                            |
 | Ambient color B               | [float](GFF-File-Format#gff-data-types)     | 80 (0x50)        | [material](MDL-MDX-File-Format#trimesh-header) ambient color blue component (range 0.0-1.0).                                            |
-| Transparency Hint            | [uint32](GFF-File-Format#gff-data-types)       | 84 (0x54)        | Transparency rendering mode. Field #22 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) trimesh header structure (described as "unknown" float).                                                                |
+| Transparency Hint            | UInt32       | 84 (0x54)        | Transparency rendering mode. Field #22 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) trimesh header structure (described as "unknown" float).                                                                |
 | [texture](TPC-File-Format) 0 Name               | [byte](https://en.wikipedia.org/wiki/Byte)     | 88 (0x58)        | Primary diffuse [texture](TPC-File-Format) name ([null-terminated](https://en.cppreference.com/w/c/string/byte)). Field #23 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) trimesh header structure ("name for texture map 1").                                             |
 | [texture](TPC-File-Format) 1 Name               | [byte](https://en.wikipedia.org/wiki/Byte)     | 120 (0x78)       | Secondary [texture](TPC-File-Format) name, often lightmap ([null-terminated](https://en.cppreference.com/w/c/string/byte)). Field #24 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) trimesh header structure ("name for texture map 2").                                   |
 | [texture](TPC-File-Format) 2 Name               | [byte](https://en.wikipedia.org/wiki/Byte)     | 152 (0x98)       | Tertiary [texture](TPC-File-Format) name ([null-terminated](https://en.cppreference.com/w/c/string/byte)). Note: Field #25 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) describes offset 152 as "unknown" (24 bytes), which may include texture 2 and 3 names.                                                    |
 | [texture](TPC-File-Format) 3 Name               | [byte](https://en.wikipedia.org/wiki/Byte)     | 164 (0xA4)       | Quaternary [texture](TPC-File-Format) name ([null-terminated](https://en.cppreference.com/w/c/string/byte)).                                                  |
-| indices count array offset   | [uint32](GFF-File-Format#gff-data-types)       | 176 (0xB0)       | offset to [vertex](MDL-MDX-File-Format#vertex-structure) indices count array.                                                       |
-| indices count array count    | [uint32](GFF-File-Format#gff-data-types)       | 180 (0xB4)       | Number of entries in indices count array.                                                   |
-| indices count array count    | [uint32](GFF-File-Format#gff-data-types)       | 184 (0xB8)       | Duplicate of indices count array count.                                                     |
-| indices offset array offset  | [uint32](GFF-File-Format#gff-data-types)       | 188 (0xBC)       | offset to [vertex](MDL-MDX-File-Format#vertex-structure) indices offset array.                                                      |
-| indices offset array count   | [uint32](GFF-File-Format#gff-data-types)       | 192 (0xC0)       | Number of entries in indices offset array.                                                  |
-| indices offset array count   | [uint32](GFF-File-Format#gff-data-types)       | 196 (0xC4)       | Duplicate of indices offset array count.                                                    |
-| Inverted Counter array offset| [uint32](GFF-File-Format#gff-data-types)       | 200 (0xC8)       | offset to inverted counter array.                                                           |
-| Inverted Counter array count | [uint32](GFF-File-Format#gff-data-types)       | 204 (0xCC)       | Number of entries in inverted counter array.                                                |
-| Inverted Counter array count | [uint32](GFF-File-Format#gff-data-types)       | 208 (0xD0)       | Duplicate of inverted counter array count.                                                  |
+| indices count array offset   | UInt32       | 176 (0xB0)       | offset to [vertex](MDL-MDX-File-Format#vertex-structure) indices count array.                                                       |
+| indices count array count    | UInt32       | 180 (0xB4)       | Number of entries in indices count array.                                                   |
+| indices count array count    | UInt32       | 184 (0xB8)       | Duplicate of indices count array count.                                                     |
+| indices offset array offset  | UInt32       | 188 (0xBC)       | offset to [vertex](MDL-MDX-File-Format#vertex-structure) indices offset array.                                                      |
+| indices offset array count   | UInt32       | 192 (0xC0)       | Number of entries in indices offset array.                                                  |
+| indices offset array count   | UInt32       | 196 (0xC4)       | Duplicate of indices offset array count.                                                    |
+| Inverted Counter array offset| UInt32       | 200 (0xC8)       | offset to inverted counter array.                                                           |
+| Inverted Counter array count | UInt32       | 204 (0xCC)       | Number of entries in inverted counter array.                                                |
+| Inverted Counter array count | UInt32       | 208 (0xD0)       | Duplicate of inverted counter array count.                                                  |
 | Unknown values               | [int32](GFF-File-Format#gff-data-types)     | 212 (0xD4)       | Typically `{-1, -1, 0}`. Purpose unknown.                                                   |
 | Saber Unknown data           | [byte](https://en.wikipedia.org/wiki/Byte)      | 224 (0xE0)       | data specific to lightsaber [meshes](MDL-MDX-File-Format#trimesh-header).                                                         |
-| Unknown                      | [uint32](GFF-File-Format#gff-data-types)       | 232 (0xE8)       | Purpose unknown.                                                                            |
+| Unknown                      | UInt32       | 232 (0xE8)       | Purpose unknown.                                                                            |
 | UV Direction X               | [float](GFF-File-Format#gff-data-types)        | 236 (0xEC)       | UV [animation](MDL-MDX-File-Format#animation-header) direction X component.                                                         |
 | UV Direction Y               | [float](GFF-File-Format#gff-data-types)        | 240 (0xF0)       | UV [animation](MDL-MDX-File-Format#animation-header) direction Y component.                                                         |
 | UV Jitter                    | [float](GFF-File-Format#gff-data-types)        | 244 (0xF4)       | UV [animation](MDL-MDX-File-Format#animation-header) jitter amount.                                                                 |
 | UV Jitter Speed              | [float](GFF-File-Format#gff-data-types)        | 248 (0xF8)       | UV [animation](MDL-MDX-File-Format#animation-header) jitter speed.                                                                  |
-| MDX [vertex](MDL-MDX-File-Format#vertex-structure) size              | [uint32](GFF-File-Format#gff-data-types)       | 252 (0xFC)       | size in bytes of each [vertex](MDL-MDX-File-Format#vertex-structure) in MDX data.                                                   |
-| MDX data flags               | [uint32](GFF-File-Format#gff-data-types)       | 256 (0x100)       | [bitmask](GFF-File-Format#gff-data-types) of present [vertex](MDL-MDX-File-Format#vertex-structure) attributes (see [MDX Data Bitmap Masks](#mdx-data-bitmap-masks)).|
+| MDX [vertex](MDL-MDX-File-Format#vertex-structure) size              | UInt32       | 252 (0xFC)       | size in bytes of each [vertex](MDL-MDX-File-Format#vertex-structure) in MDX data.                                                   |
+| MDX data flags               | UInt32       | 256 (0x100)       | [bitmask](GFF-File-Format#gff-data-types) of present [vertex](MDL-MDX-File-Format#vertex-structure) attributes (see [MDX Data Bitmap Masks](#mdx-data-bitmap-masks)).|
 | MDX [vertices](MDL-MDX-File-Format#vertex-structure) offset          | [int32](GFF-File-Format#gff-data-types)        | 260 (0x104)       | Relative offset to [vertex](MDL-MDX-File-Format#vertex-structure) positions in MDX (or -1 if none).                                 |
 | MDX Normals offset           | [int32](GFF-File-Format#gff-data-types)        | 264 (0x108)       | Relative offset to [vertex](MDL-MDX-File-Format#vertex-structure) normals in MDX (or -1 if none).                                   |
 | MDX [vertex](MDL-MDX-File-Format#vertex-structure) colors offset     | [int32](GFF-File-Format#gff-data-types)        | 268 (0x10C)       | Relative offset to [vertex](MDL-MDX-File-Format#vertex-structure) colors in MDX (or -1 if none).                                    |
@@ -415,11 +417,11 @@ The Trimesh header defines static mesh [geometry](MDL-MDX-File-Format#geometry-h
 | Unknown flag                 | [uint8](GFF-File-Format#gff-data-types)        | 314 (0x13A)       | Purpose unknown (possibly UV [animation](MDL-MDX-File-Format#animation-header) enable).                                             |
 | Padding                      | [uint8](GFF-File-Format#gff-data-types)        | 315 (0x13B)       | Padding [byte](https://en.wikipedia.org/wiki/Byte).                                                                               |
 | Total Area                   | [float](GFF-File-Format#gff-data-types)        | 316 (0x13C)       | Total surface area of all [faces](MDL-MDX-File-Format#face-structure).                                                            |
-| Unknown                      | [uint32](GFF-File-Format#gff-data-types)       | 320 (0x140)       | Purpose unknown.                                                                            |
-| **K2 Unknown 1**             | **[uint32](GFF-File-Format#gff-data-types)**   | **324**    | **KotOR 2 only:** Additional unknown field.                                                 |
-| **K2 Unknown 2**             | **[uint32](GFF-File-Format#gff-data-types)**   | **328**    | **KotOR 2 only:** Additional unknown field.                                                 |
-| MDX data offset              | [uint32](GFF-File-Format#gff-data-types)       | 324/332    | Absolute offset to this [Mesh](MDL-MDX-File-Format#trimesh-header)'s [vertex](MDL-MDX-File-Format#vertex-structure) data in the MDX files.                                 |
-| MDL [vertices](MDL-MDX-File-Format#vertex-structure) offset          | [uint32](GFF-File-Format#gff-data-types)       | 328/336    | offset to [vertex](MDL-MDX-File-Format#vertex-structure) coordinate array in MDL file (for [walkmesh](BWM-File-Format)/[AABB](BWM-File-Format#aabb-tree) [nodes](MDL-MDX-File-Format#node-structures)).                    |
+| Unknown                      | UInt32       | 320 (0x140)       | Purpose unknown.                                                                            |
+| **K2 Unknown 1**             | **UInt32**   | **324**    | **KotOR 2 only:** Additional unknown field.                                                 |
+| **K2 Unknown 2**             | **UInt32**   | **328**    | **KotOR 2 only:** Additional unknown field.                                                 |
+| MDX data offset              | UInt32       | 324/332    | Absolute offset to this [Mesh](MDL-MDX-File-Format#trimesh-header)'s [vertex](MDL-MDX-File-Format#vertex-structure) data in the MDX files.                                 |
+| MDL [vertices](MDL-MDX-File-Format#vertex-structure) offset          | UInt32       | 328/336    | offset to [vertex](MDL-MDX-File-Format#vertex-structure) coordinate array in MDL file (for [walkmesh](BWM-File-Format)/[AABB](BWM-File-Format#aabb-tree) [nodes](MDL-MDX-File-Format#node-structures)).                    |
 
 ### Danglymesh header
 
@@ -428,13 +430,13 @@ The Danglymesh header extends the Trimesh header with 28 additional bytes for ph
 | Name                   | type    | offset     | Description                                                                      |
 | ---------------------- | ------- | ---------- | -------------------------------------------------------------------------------- |
 | *Trimesh header*       | *...*   | *0-331*    | *Standard Trimesh Header (332 bytes K1, 340 bytes K2).*                          |
-| Constraints offset     | [uint32](GFF-File-Format#gff-data-types)  | 332/340    | offset to [vertex](MDL-MDX-File-Format#vertex-structure) constraint values array.                                        |
-| Constraints count      | [uint32](GFF-File-Format#gff-data-types)  | 336/344    | Number of [vertex](MDL-MDX-File-Format#vertex-structure) constraints (matches [vertex](MDL-MDX-File-Format#vertex-structure) count).                             |
-| Constraints Count (dup)| [uint32](GFF-File-Format#gff-data-types)  | 340/348    | Duplicate of constraints count.                                                  |
+| Constraints offset     | UInt32  | 332/340    | offset to [vertex](MDL-MDX-File-Format#vertex-structure) constraint values array.                                        |
+| Constraints count      | UInt32  | 336/344    | Number of [vertex](MDL-MDX-File-Format#vertex-structure) constraints (matches [vertex](MDL-MDX-File-Format#vertex-structure) count).                             |
+| Constraints Count (dup)| UInt32  | 340/348    | Duplicate of constraints count.                                                  |
 | Displacement           | [float](GFF-File-Format#gff-data-types)   | 344/352    | Maximum displacement distance for physics simulation.                            |
 | Tightness              | [float](GFF-File-Format#gff-data-types)   | 348/356    | Tightness/stiffness of the spring simulation (0.0-1.0).                          |
 | Period                 | [float](GFF-File-Format#gff-data-types)   | 352/360    | Oscillation period in seconds.                                                   |
-| Unknown                | [uint32](GFF-File-Format#gff-data-types)  | 356/364    | Purpose unknown. Field #7 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) danglymesh header structure.                                                                 |
+| Unknown                | UInt32  | 356/364    | Purpose unknown. Field #7 in [`vendor/xoreos-docs/specs/kotor_mdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/kotor_mdl.html) danglymesh header structure.                                                                 |
 
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:289`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L289) - Danglymesh header structure definition  
 **Reference**: [`vendor/reone/src/libs/graphics/format/mdlmdxreader.cpp:297-320`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp#L297-L320) - Danglymesh constraint and [vertex](MDL-MDX-File-Format#vertex-structure) position reading  
@@ -448,17 +450,17 @@ The Skinmesh header extends the Trimesh header with 100 additional bytes for ske
 | ------------------------------------- | ---------- | ---------- | -------------------------------------------------------------------------------- |
 | *Trimesh header*                      | *...*      | *0-331*    | *Standard Trimesh Header (332 bytes K1, 340 bytes K2).*                          |
 | Unknown Weights                       | [int32](GFF-File-Format#gff-data-types)   | 332/340    | Purpose unknown (possibly compilation weights).                                  |
-| MDX Bone Weights offset               | [uint32](GFF-File-Format#gff-data-types)     | 344/352    | offset to bone weight data in MDX file (4 floats per [vertex](MDL-MDX-File-Format#vertex-structure)).                    |
-| MDX Bone indices offset               | [uint32](GFF-File-Format#gff-data-types)     | 348/356    | offset to bone index data in MDX file (4 floats per [vertex](MDL-MDX-File-Format#vertex-structure), cast to [uint16](GFF-File-Format#gff-data-types)).    |
-| Bone Map offset                       | [uint32](GFF-File-Format#gff-data-types)     | 352/360    | offset to bone map array (maps local bone indices to skeleton bone numbers).    |
-| Bone Map count                        | [uint32](GFF-File-Format#gff-data-types)     | 356/364    | Number of bones referenced by this mesh (max 16).                                |
-| QBones offset                         | [uint32](GFF-File-Format#gff-data-types)     | 360/368    | offset to [quaternion](MDL-MDX-File-Format#node-header) bind pose array (4 floats per bone).                        |
-| QBones count                          | [uint32](GFF-File-Format#gff-data-types)     | 364/372    | Number of [quaternion](MDL-MDX-File-Format#node-header) bind poses.                                                 |
-| QBones Count (dup)                    | [uint32](GFF-File-Format#gff-data-types)     | 368/376    | Duplicate of QBones count.                                                       |
-| TBones offset                         | [uint32](GFF-File-Format#gff-data-types)     | 372/380    | offset to translation bind pose array (3 floats per bone).                       |
-| TBones count                          | [uint32](GFF-File-Format#gff-data-types)     | 376/384    | Number of translation bind poses.                                                |
-| TBones Count (dup)                    | [uint32](GFF-File-Format#gff-data-types)     | 380/388    | Duplicate of TBones count.                                                       |
-| Unknown array                         | [uint32](GFF-File-Format#gff-data-types)  | 384/392    | Purpose unknown.                                                                 |
+| MDX Bone Weights offset               | UInt32     | 344/352    | offset to bone weight data in MDX file (4 floats per [vertex](MDL-MDX-File-Format#vertex-structure)).                    |
+| MDX Bone indices offset               | UInt32     | 348/356    | offset to bone index data in MDX file (4 floats per [vertex](MDL-MDX-File-Format#vertex-structure), cast to [uint16](GFF-File-Format#gff-data-types)).    |
+| Bone Map offset                       | UInt32     | 352/360    | offset to bone map array (maps local bone indices to skeleton bone numbers).    |
+| Bone Map count                        | UInt32     | 356/364    | Number of bones referenced by this mesh (max 16).                                |
+| QBones offset                         | UInt32     | 360/368    | offset to [quaternion](MDL-MDX-File-Format#node-header) bind pose array (4 floats per bone).                        |
+| QBones count                          | UInt32     | 364/372    | Number of [quaternion](MDL-MDX-File-Format#node-header) bind poses.                                                 |
+| QBones Count (dup)                    | UInt32     | 368/376    | Duplicate of QBones count.                                                       |
+| TBones offset                         | UInt32     | 372/380    | offset to translation bind pose array (3 floats per bone).                       |
+| TBones count                          | UInt32     | 376/384    | Number of translation bind poses.                                                |
+| TBones Count (dup)                    | UInt32     | 380/388    | Duplicate of TBones count.                                                       |
+| Unknown array                         | UInt32  | 384/392    | Purpose unknown.                                                                 |
 | Bone [Node](MDL-MDX-File-Format#node-structures) Serial Numbers              | [uint16](GFF-File-Format#gff-data-types) | 396/404    | Serial indices of bone nodes (0xFFFF for unused slots).                          |
 | Padding                               | [uint16](GFF-File-Format#gff-data-types)     | 428/436    | Padding for alignment.                                                           |
 
@@ -476,11 +478,11 @@ The Lightsaber header extends the Trimesh header with 20 additional bytes for li
 | Name                   | type    | offset     | Description                                                                      |
 | ---------------------- | ------- | ---------- | -------------------------------------------------------------------------------- |
 | *Trimesh header*       | *...*   | *0-331*    | *Standard Trimesh Header (332 bytes K1, 340 bytes K2).*                          |
-| [vertices](MDL-MDX-File-Format#vertex-structure) offset        | [uint32](GFF-File-Format#gff-data-types)  | 332/340    | offset to [vertex](MDL-MDX-File-Format#vertex-structure) position array in MDL file (3 floats × 8 [vertices](MDL-MDX-File-Format#vertex-structure) × 20 pieces).|
-| TexCoords offset       | [uint32](GFF-File-Format#gff-data-types)  | 336/344    | offset to [texture](TPC-File-Format) coordinates array in MDL file (2 floats × 8 [vertices](MDL-MDX-File-Format#vertex-structure) × 20).   |
-| Normals offset         | [uint32](GFF-File-Format#gff-data-types)  | 340/348    | offset to [vertex](MDL-MDX-File-Format#vertex-structure) normals array in MDL file (3 floats × 8 [vertices](MDL-MDX-File-Format#vertex-structure) × 20).        |
-| Unknown 1              | [uint32](GFF-File-Format#gff-data-types)  | 344/352    | Purpose unknown.                                                                 |
-| Unknown 2              | [uint32](GFF-File-Format#gff-data-types)  | 348/356    | Purpose unknown.                                                                 |
+| [vertices](MDL-MDX-File-Format#vertex-structure) offset        | UInt32  | 332/340    | offset to [vertex](MDL-MDX-File-Format#vertex-structure) position array in MDL file (3 floats × 8 [vertices](MDL-MDX-File-Format#vertex-structure) × 20 pieces).|
+| TexCoords offset       | UInt32  | 336/344    | offset to [texture](TPC-File-Format) coordinates array in MDL file (2 floats × 8 [vertices](MDL-MDX-File-Format#vertex-structure) × 20).   |
+| Normals offset         | UInt32  | 340/348    | offset to [vertex](MDL-MDX-File-Format#vertex-structure) normals array in MDL file (3 floats × 8 [vertices](MDL-MDX-File-Format#vertex-structure) × 20).        |
+| Unknown 1              | UInt32  | 344/352    | Purpose unknown.                                                                 |
+| Unknown 2              | UInt32  | 348/356    | Purpose unknown.                                                                 |
 
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:2081`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L2081) - Lightsaber header structure definition  
 **Reference**: [`vendor/reone/src/libs/graphics/format/mdlmdxreader.cpp:327-378`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp#L327-L378) - Lightsaber [vertex](MDL-MDX-File-Format#vertex-structure) data reading and reorganization
@@ -492,26 +494,26 @@ The Light header follows the [Node](MDL-MDX-File-Format#node-structures) header 
 | Name                        | type    | offset | Description                                                                      |
 | --------------------------- | ------- | ------ | -------------------------------------------------------------------------------- |
 | Unknown/Padding             | [float](GFF-File-Format#gff-data-types)| 0 (0x0)     | Purpose unknown, possibly padding or reserved values.                            |
-| Flare Sizes offset          | [uint32](GFF-File-Format#gff-data-types)  | 16 (0x10)    | offset to flare sizes array (floats).                                            |
-| Flare Sizes count           | [uint32](GFF-File-Format#gff-data-types)  | 20 (0x14)    | Number of flare size entries.                                                    |
-| Flare Sizes Count (dup)     | [uint32](GFF-File-Format#gff-data-types)  | 24 (0x18)    | Duplicate of flare sizes count.                                                  |
-| Flare positions offset      | [uint32](GFF-File-Format#gff-data-types)  | 28 (0x1C)    | offset to flare positions array (floats, 0.0-1.0 along light ray).               |
-| Flare positions count       | [uint32](GFF-File-Format#gff-data-types)  | 32 (0x20)    | Number of flare position entries.                                                |
-| Flare positions Count (dup) | [uint32](GFF-File-Format#gff-data-types)  | 36 (0x24)    | Duplicate of flare positions count.                                              |
-| Flare color Shifts offset   | [uint32](GFF-File-Format#gff-data-types)  | 40 (0x28)    | offset to flare color shift array (RGB floats).                                  |
-| Flare color Shifts count    | [uint32](GFF-File-Format#gff-data-types)  | 44 (0x2C)    | Number of flare color shift entries.                                             |
-| Flare color Shifts count    | [uint32](GFF-File-Format#gff-data-types)  | 48 (0x30)    | Duplicate of flare color shifts count.                                           |
-| Flare [texture](TPC-File-Format) Names offset  | [uint32](GFF-File-Format#gff-data-types)  | 52 (0x34)    | offset to flare [texture](TPC-File-Format) name string offsets array.                               |
-| Flare [texture](TPC-File-Format) Names count   | [uint32](GFF-File-Format#gff-data-types)  | 56 (0x38)    | Number of flare [texture](TPC-File-Format) names.                                                   |
-| Flare [texture](TPC-File-Format) Names count   | [uint32](GFF-File-Format#gff-data-types)  | 60 (0x3C)    | Duplicate of flare [texture](TPC-File-Format) names count.                                          |
+| Flare Sizes offset          | UInt32  | 16 (0x10)    | offset to flare sizes array (floats).                                            |
+| Flare Sizes count           | UInt32  | 20 (0x14)    | Number of flare size entries.                                                    |
+| Flare Sizes Count (dup)     | UInt32  | 24 (0x18)    | Duplicate of flare sizes count.                                                  |
+| Flare positions offset      | UInt32  | 28 (0x1C)    | offset to flare positions array (floats, 0.0-1.0 along light ray).               |
+| Flare positions count       | UInt32  | 32 (0x20)    | Number of flare position entries.                                                |
+| Flare positions Count (dup) | UInt32  | 36 (0x24)    | Duplicate of flare positions count.                                              |
+| Flare color Shifts offset   | UInt32  | 40 (0x28)    | offset to flare color shift array (RGB floats).                                  |
+| Flare color Shifts count    | UInt32  | 44 (0x2C)    | Number of flare color shift entries.                                             |
+| Flare color Shifts count    | UInt32  | 48 (0x30)    | Duplicate of flare color shifts count.                                           |
+| Flare [texture](TPC-File-Format) Names offset  | UInt32  | 52 (0x34)    | offset to flare [texture](TPC-File-Format) name string offsets array.                               |
+| Flare [texture](TPC-File-Format) Names count   | UInt32  | 56 (0x38)    | Number of flare [texture](TPC-File-Format) names.                                                   |
+| Flare [texture](TPC-File-Format) Names count   | UInt32  | 60 (0x3C)    | Duplicate of flare [texture](TPC-File-Format) names count.                                          |
 | Flare Radius                | [float](GFF-File-Format#gff-data-types)   | 64 (0x40)    | Radius of the flare effect.                                                      |
-| Light Priority              | [uint32](GFF-File-Format#gff-data-types)  | 68 (0x44)    | Rendering priority for light culling/sorting.                                    |
-| Ambient Only                | [uint32](GFF-File-Format#gff-data-types)  | 72 (0x48)    | `1` if light only affects ambient, `0` for full lighting.                        |
-| Dynamic type                | [uint32](GFF-File-Format#gff-data-types)  | 76 (0x4C)    | type of dynamic lighting behavior.                                               |
-| Affect Dynamic              | [uint32](GFF-File-Format#gff-data-types)  | 80 (0x50)    | `1` if light affects dynamic objects, `0` otherwise.                             |
-| Shadow                      | [uint32](GFF-File-Format#gff-data-types)  | 84 (0x54)    | `1` if light casts shadows, `0` otherwise.                                       |
-| Flare                       | [uint32](GFF-File-Format#gff-data-types)  | 88 (0x58)    | `1` if lens flare effect enabled, `0` otherwise.                                 |
-| Fading Light                | [uint32](GFF-File-Format#gff-data-types)  | 92 (0x5C)    | `1` if light intensity fades with distance, `0` otherwise.                       |
+| Light Priority              | UInt32  | 68 (0x44)    | Rendering priority for light culling/sorting.                                    |
+| Ambient Only                | UInt32  | 72 (0x48)    | `1` if light only affects ambient, `0` for full lighting.                        |
+| Dynamic type                | UInt32  | 76 (0x4C)    | type of dynamic lighting behavior.                                               |
+| Affect Dynamic              | UInt32  | 80 (0x50)    | `1` if light affects dynamic objects, `0` otherwise.                             |
+| Shadow                      | UInt32  | 84 (0x54)    | `1` if light casts shadows, `0` otherwise.                                       |
+| Flare                       | UInt32  | 88 (0x58)    | `1` if lens flare effect enabled, `0` otherwise.                                 |
+| Fading Light                | UInt32  | 92 (0x5C)    | `1` if light intensity fades with distance, `0` otherwise.                       |
 
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:175`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L175) - Light header structure definition  
 **Reference**: [`vendor/reone/src/libs/graphics/format/mdlmdxreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp) - Light [Node](MDL-MDX-File-Format#node-structures) reading (see light processing)  
@@ -528,23 +530,23 @@ The Emitter header follows the [Node](MDL-MDX-File-Format#node-structures) heade
 | Dead Space               | [float](GFF-File-Format#gff-data-types)        | 0 (0x0)     | Minimum distance from emitter before particles become visible.                   |
 | Blast Radius             | [float](GFF-File-Format#gff-data-types)        | 4 (0x4)     | Radius of explosive/blast particle effects.                                      |
 | Blast Length             | [float](GFF-File-Format#gff-data-types)        | 8 (0x8)     | Length/duration of blast effects.                                                |
-| Branch count             | [uint32](GFF-File-Format#gff-data-types)       | 12 (0xC)    | Number of branching paths for particle trails.                                   |
+| Branch count             | UInt32       | 12 (0xC)    | Number of branching paths for particle trails.                                   |
 | Control Point Smoothing  | [float](GFF-File-Format#gff-data-types)        | 16 (0x10)    | Smoothing factor for particle path control points.                               |
-| X Grid                   | [uint32](GFF-File-Format#gff-data-types)       | 20 (0x14)    | Grid subdivisions along X axis for particle spawning.                            |
-| Y Grid                   | [uint32](GFF-File-Format#gff-data-types)       | 24 (0x18)    | Grid subdivisions along Y axis for particle spawning.                            |
-| Padding/Unknown          | [uint32](GFF-File-Format#gff-data-types)       | 28 (0x1C)    | Purpose unknown or padding.                                                      |
+| X Grid                   | UInt32       | 20 (0x14)    | Grid subdivisions along X axis for particle spawning.                            |
+| Y Grid                   | UInt32       | 24 (0x18)    | Grid subdivisions along Y axis for particle spawning.                            |
+| Padding/Unknown          | UInt32       | 28 (0x1C)    | Purpose unknown or padding.                                                      |
 | Update Script            | [byte](https://en.wikipedia.org/wiki/Byte)     | 32 (0x20)    | Update behavior script name (e.g., "single", "fountain").                        |
 | Render Script            | [byte](https://en.wikipedia.org/wiki/Byte)     | 64 (0x40)    | Render mode script name (e.g., "normal", "billboard_to_local_z").                |
 | Blend Script             | [byte](https://en.wikipedia.org/wiki/Byte)     | 96 (0x60)    | Blend mode script name (e.g., "normal", "lighten").                              |
 | [texture](TPC-File-Format) Name             | [byte](https://en.wikipedia.org/wiki/Byte)     | 128 (0x80)   | Particle [texture](TPC-File-Format) name ([null-terminated](https://en.cppreference.com/w/c/string/byte)).                                         |
 | Chunk Name               | [byte](https://en.wikipedia.org/wiki/Byte)     | 160 (0xA0)   | Associated model chunk name ([null-terminated](https://en.cppreference.com/w/c/string/byte)).                                   |
-| Two-Sided [texture](TPC-File-Format)        | [uint32](GFF-File-Format#gff-data-types)       | 176 (0xB0)   | `1` if [texture](TPC-File-Format) should render two-sided, `0` for single-sided.                    |
-| Loop                     | [uint32](GFF-File-Format#gff-data-types)       | 180 (0xB4)   | `1` if particle system loops, `0` for single playback.                           |
+| Two-Sided [texture](TPC-File-Format)        | UInt32       | 176 (0xB0)   | `1` if [texture](TPC-File-Format) should render two-sided, `0` for single-sided.                    |
+| Loop                     | UInt32       | 180 (0xB4)   | `1` if particle system loops, `0` for single playback.                           |
 | Render Order             | [uint16](GFF-File-Format#gff-data-types)       | 184 (0xB8)   | Rendering priority/order for particle sorting.                                   |
 | Frame Blending           | [uint8](GFF-File-Format#gff-data-types)        | 186 (0xBA)   | `1` if frame blending enabled, `0` otherwise.                                    |
 | Depth [texture](TPC-File-Format) Name       | [byte](https://en.wikipedia.org/wiki/Byte)     | 187 (0xBB)   | Depth/softparticle [texture](TPC-File-Format) name ([null-terminated](https://en.cppreference.com/w/c/string/byte)).                               |
 | Padding                  | [uint8](GFF-File-Format#gff-data-types)        | 219 (0xDB)   | Padding [byte](https://en.wikipedia.org/wiki/Byte) for alignment.                                                      |
-| flags                    | [uint32](GFF-File-Format#gff-data-types)       | 220 (0xDC)   | Emitter behavior flags bitmask (P2P, bounce, inherit, etc.).                     |
+| flags                    | UInt32       | 220 (0xDC)   | Emitter behavior flags bitmask (P2P, bounce, inherit, etc.).                     |
 
 ### Reference header
 
@@ -553,7 +555,7 @@ The Reference header follows the [Node](MDL-MDX-File-Format#node-structures) hea
 | Name          | type     | offset | Description                                                                      |
 | ------------- | -------- | ------ | -------------------------------------------------------------------------------- |
 | model *ResRef*  | [byte](https://en.wikipedia.org/wiki/Byte) | 0 (0x0)     | Referenced model resource name without extension ([null-terminated](https://en.cppreference.com/w/c/string/byte)).              |
-| Reattachable  | [uint32](GFF-File-Format#gff-data-types)   | 32 (0x20)    | `1` if model can be detached and reattached dynamically, `0` if permanent.       |
+| Reattachable  | UInt32   | 32 (0x20)    | `1` if model can be detached and reattached dynamically, `0` if permanent.       |
 
 **Reference**: [`vendor/mdlops/MDLOpsM.pm:178,190`](https://github.com/th3w1zard1/mdlops/blob/master/MDLOpsM.pm#L178-L190) - Reference header structure definitions for K1 and K2  
 **Reference**: [`vendor/reone/src/libs/graphics/format/mdlmdxreader.cpp:179-180`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp#L179-L180) - Reference [Node](MDL-MDX-File-Format#node-structures) reading  
@@ -569,7 +571,7 @@ Each `Controller` is 16 bytes in size and defines [animation](MDL-MDX-File-Forma
 
 | Name              | type     | offset | Description                                                                                    |
 | ----------------- | -------- | ------ | ---------------------------------------------------------------------------------------------- |
-| type              | [uint32](GFF-File-Format#gff-data-types)   | 0 (0x0)     | `Controller` type identifier (e.g., 8=position, 20=orientation, 36=scale).                       |
+| type              | UInt32   | 0 (0x0)     | `Controller` type identifier (e.g., 8=position, 20=orientation, 36=scale).                       |
 | Unknown           | [uint16](GFF-File-Format#gff-data-types)   | 4 (0x4)     | Purpose unknown, typically `0xFFFF`.                                                           |
 | Row count         | [uint16](GFF-File-Format#gff-data-types)   | 6 (0x6)     | Number of keyframe rows (timepoints) for this controller.                                      |
 | Time index        | [uint16](GFF-File-Format#gff-data-types)   | 8 (0x8)     | index into [Controller](MDL-MDX-File-Format#controllers) data array where time values begin.                                      |
@@ -591,8 +593,8 @@ Each `Controller` is 16 bytes in size and defines [animation](MDL-MDX-File-Forma
 
 Controller data is variable-length and laid out according to each controller's row count, time index, data index, and column count. Example for one node with two controllers sharing one data block:
 
-- **Controller 1:** type 8 (position), 2 rows, time index 0, data index 2, 3 columns → time, X, Y, Z per keyframe.
-- **Controller 2:** type 20 (orientation), 2 rows, time index 8, data index 10, 4 columns → time, X, Y, Z, W (quaternion) per keyframe.
+- **Controller 1:** type 8 (position), 2 rows, time index 0, data index 2, 3 columns --> time, X, Y, Z per keyframe.
+- **Controller 2:** type 20 (orientation), 2 rows, time index 8, data index 10, 4 columns --> time, X, Y, Z, W (quaternion) per keyframe.
 
 Raw data (floats): `0 1 0 0 0 1 2 3 0 1 0 0 0 1 0 0 0 1`. Interpreted:
 
@@ -809,7 +811,7 @@ Each face (triangle) is defined by:
 | ------------------- | ------- | ------------------------------------------------ |
 | Normal              | [vertex](MDL-MDX-File-Format#vertex-structure)  | Normal vector of the face plane.                 |
 | Plane Coefficient   | [float](GFF-File-Format#gff-data-types)   | D component of the face plane equation.          |
-| [material](MDL-MDX-File-Format#trimesh-header)            | [uint32](GFF-File-Format#gff-data-types)  | [material](MDL-MDX-File-Format#trimesh-header) index (refers to `surfacemat.2da`).     |
+| [material](MDL-MDX-File-Format#trimesh-header)            | UInt32  | [material](MDL-MDX-File-Format#trimesh-header) index (refers to `surfacemat.2da`).     |
 | face [adjacency](BWM-File-Format#walkable-adjacencies) 1    | [uint16](GFF-File-Format#gff-data-types)  | index of adjacent face 1.                        |
 | face [adjacency](BWM-File-Format#walkable-adjacencies) 2    | [uint16](GFF-File-Format#gff-data-types)  | index of adjacent face 2.                        |
 | [face](MDL-MDX-File-Format#face-structure) [adjacency](BWM-File-Format#walkable-adjacencies) 3    | [uint16](GFF-File-Format#gff-data-types)  | index of adjacent [face](MDL-MDX-File-Format#face-structure) 3.                        |
@@ -829,7 +831,7 @@ Each face (triangle) is defined by:
 
 The Trimesh header contains arrays for organizing [vertex](MDL-MDX-File-Format#vertex-structure) indices used by [faces](MDL-MDX-File-Format#face-structure). These arrays allow efficient [vertex](MDL-MDX-File-Format#vertex-structure) sharing and indexing:
 
-- **indices count array**: Contains the number of [vertex](MDL-MDX-File-Format#vertex-structure) indices for each [vertex](MDL-MDX-File-Format#vertex-structure) group. Each entry is a [uint32](GFF-File-Format#gff-data-types) indicating how many indices reference that [vertex](MDL-MDX-File-Format#vertex-structure) position.
+- **indices count array**: Contains the number of [vertex](MDL-MDX-File-Format#vertex-structure) indices for each [vertex](MDL-MDX-File-Format#vertex-structure) group. Each entry is a UInt32 indicating how many indices reference that [vertex](MDL-MDX-File-Format#vertex-structure) position.
 - **indices offset array**: Contains offsets into the [vertex](MDL-MDX-File-Format#vertex-structure) index data, allowing access to the actual index values for each [vertex](MDL-MDX-File-Format#vertex-structure) group.
 - **Inverted Counter array**: Used for optimization and culling, tracking [face](MDL-MDX-File-Format#face-structure) connectivity information.
 
@@ -1048,9 +1050,9 @@ arrays in binary models consist of three elements:
 
 | offset | type   | Description                                    |
 | ------ | ------ | ---------------------------------------------- |
-| 0x0000 | [uint32](GFF-File-Format#gff-data-types) | pointer/offset to the first element            |
-| 0x0004 | [uint32](GFF-File-Format#gff-data-types) | Number of used entries in the array            |
-| 0x0008 | [uint32](GFF-File-Format#gff-data-types) | Number of allocated entries in the array       |
+| 0x0000 | UInt32 | pointer/offset to the first element            |
+| 0x0004 | UInt32 | Number of used entries in the array            |
+| 0x0008 | UInt32 | Number of allocated entries in the array       |
 
 For binary model files, the number of used entries and allocated entries are always the same. During runtime or compilation, these values may differ as arrays grow dynamically.
 
@@ -1107,7 +1109,7 @@ Bezier interpolation provides smooth, non-linear [animation](MDL-MDX-File-Format
 | 0x0018 | [AABB](BWM-File-Format#aabb-tree) Entry Ptr | Left child [Node](MDL-MDX-File-Format#node-structures) pointer                        |
 | 0x001C | [AABB](BWM-File-Format#aabb-tree) Entry Ptr | Right child [Node](MDL-MDX-File-Format#node-structures) pointer                       |
 | 0x0020 | [int32](GFF-File-Format#gff-data-types)          | Leaf [face](MDL-MDX-File-Format#face-structure) part number (or -1 if not a leaf)   |
-| 0x0024 | [uint32](GFF-File-Format#gff-data-types)         | Most significant plane [bitmask](GFF-File-Format#gff-data-types)                |
+| 0x0024 | UInt32         | Most significant plane [bitmask](GFF-File-Format#gff-data-types)                |
 
 The plane [bitmask](GFF-File-Format#gff-data-types) indicates which axis plane is used for tree splitting:
 
@@ -1119,6 +1121,8 @@ The plane [bitmask](GFF-File-Format#gff-data-types) indicates which axis plane i
 - `0x20` = Negative Z
 
 **Reference**: [`vendor/xoreos-docs/specs/torlack/binmdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/binmdl.html) - [AABB](BWM-File-Format#aabb-tree) [Node](MDL-MDX-File-Format#node-structures) structure
+
+**Room models:** Room models can contain AABB nodes used for **camera collision**; the standalone [WOK](BWM-File-Format) holds the main pathfinding and transition data. For room/walkmesh context and troubleshooting room crossing, see [BWM File Format](BWM-File-Format) and [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions).
 
 ---
 

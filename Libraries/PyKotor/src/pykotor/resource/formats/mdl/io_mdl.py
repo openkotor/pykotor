@@ -617,12 +617,12 @@ These functions correspond to the game engine's MDL/MDX parsing implementation:
         * Input::Read() @ (K1: 0x004a1465, TSL: 0x004ce8c0) - file extension check (call site within Input::Read)
         * LoadAddInAnimations() @ (K1: 0x004408ce, TSL: 0x004538d0) - appends to model name for file opening
       * Usage: Used to construct file paths when loading MDL files
-      * Verified via REVA MCP: Found in TSL at 0x007b8d28, referenced in LoadAddInAnimations() decompilation
+      * Verified via RE: Found in TSL at 0x007b8d28, referenced in LoadAddInAnimations() decompilation
 
 References:
 ----------
     Based on swkotor.exe (K1) and swkotor2.exe (TSL) MDL/MDX I/O implementation.
-    All addresses verified via REVA MCP tools through string cross-references,
+    All addresses verified via RE tools through string cross-references,
     call chain analysis, and decompilation.
 """
 

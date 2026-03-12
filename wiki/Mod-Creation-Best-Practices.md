@@ -1,14 +1,51 @@
 # Mod Creation Best Practices
 
-This page provides common workaround strategies for mod creation. For modding tools and syntax guides, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.) and [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme).
+This page provides common workaround strategies and community-backed guidance for KotOR/TSL mod creation. For tool syntax and installation, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.) and [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). The practices below are drawn from long-standing community consensus on [DeadlyStream](https://deadlystream.com), [LucasForums archives](https://lucasforumsarchive.com), and tool documentation.
+
+## File priority and where to put your files
+
+The game resolves resources in a fixed order. Understanding this order is essential for knowing where to place your mod's files and how conflicts arise.
+
+**Resolution order (summary):** The engine checks (1) the **override folder** (`override/`), (2) currently loaded **MOD/ERF** files (e.g. modules in the Modules folder), (3) the current **save game** when in-game, then (4) **KEY/BIF** (vanilla game data). So override and MOD content take precedence over vanilla BIFs. See [KEY-File-Format](KEY-File-Format#key-file-purpose) and [Home](Home) (Resource Resolution Order) for the full sequence.
+
+**Where to put files:**
+
+- **Override folder:** Use for most standalone mod content: textures, models, scripts, 2DA edits, dialog TLK changes, and GFF-based resources (creatures, items, placeables) that are meant to replace or add to the base game globally. Files in `override/` are loaded for every module and save. If your mod only adds or replaces a few files and does not need an installer, placing files directly in `override/` is standard.
+- **MOD files (ERF):** Use for module-specific content: area GFFs (ARE, GIT, etc.), module-specific 2DAs or scripts, and anything that should load only when that module is played. TSLPatcher and HoloPatcher can write into both override and MOD; when building a MOD, your installer typically packs resources into a `.mod` file and optionally copies shared files (e.g. global 2DAs) to override. Putting everything in override can work but increases the chance of overwriting or being overwritten by other mods; merging 2DAs via TSLPatcher reduces conflicts.
+- **Folder priorities (community convention):** Community guidance (e.g. DeadlyStream: "Folder priorities: Where to put your mod's files") recommends: unless files differ per module, place them in override. Use MODs when content is module-specific or when you need TSLPatcher's 2DA/TLK/GFF merging. Point TSLPatcher at the **game root directory**, not directly at the override folder, so the patcher can resolve paths correctly.
+
+**Special cases:** Some data (e.g. certain creature or trigger state) is stored in save games. Changing those after a save is loaded may require new playthroughs or script-based workarounds. See "Removing GFF structs" below for script-based removal of instances when patchers cannot delete structs.
+
+## TSLPatcher setup and 2DA/TLK merging
+
+**TSLPatcher setup:** Point TSLPatcher at your **main game installation directory** (the folder that contains `swkotor.exe` or `swkotor2.exe` and the `override` folder), not at the override folder itself. If you use Steam Workshop content (e.g. TSLRCM), point the patcher at that workshop folder when installing mods that need to merge with Workshop content. This ensures the patcher finds the correct 2DA, TLK, and GFF files and can merge rather than overwrite when configured to do so.
+
+**Merging 2DA files:** When multiple mods change the same 2DA (e.g. `spells.2da`, `appearance.2da`), raw overwrites would make only one mod's changes take effect. TSLPatcher can **merge** 2DA changes: it adds or updates rows based on your 2DAList instructions so that several mods' additions coexist. Configure your mod's 2DAList (and optionally TLKList for string references) so that your rows are appended or matched by key column; the patcher then merges instead of replacing the whole file. See [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) for exact syntax.
+
+**Merging TLK (dialog.tlk):** Similarly, TLKList allows adding or changing string entries without wiping the rest of the TLK. Use TLKList so that your mod's new StrRefs are appended and existing entries are updated only where intended. See [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax).
+
+**GFF merging:** TSLPatcher GFFList can add or edit structs and fields in GFF files (e.g. adding a new item to a 2DA or editing a creature template). It cannot remove structs; for that, use a script-based workaround (see below) or a tool that supports deletion.
+
+## Community tools and format editing (reference)
+
+Many modders use GUI tools to edit GFF and 2DA files when building mods manually or to inspect game data. Community knowledge (including LucasForums archives) frequently references:
+
+- **KotOR Tool:** Provides a graphical interface for editing GFF and 2DA files, reducing the need to hand-edit binary formats. It can open BIF/ERF and edit creatures, items, 2DAs, and other resources.
+- **K-GFF:** A standalone GFF editor with search; useful for inspecting or editing GFF structure when you need field-level control.
+- **GFF2XML / XML2GFF (tk102):** Command-line utilities to convert GFF to XML and back, enabling diff-friendly and scriptable edits.
+- **2DA editing:** Historically, Werf's 2DA editor was used to convert between compiled (v2.b) and text (v2.0) 2DA formats. Modern tools (e.g. KotOR Tool, Holocron Toolset) often handle 2DA internally. When merging 2DAs by hand, copy unique rows from one file into the other and update any references in your mod's GFF/scripts that point to row indices.
+
+When combining multiple mods that touch the same 2DA, manual merging involves copying unique lines from one 2DA into the other and updating references in affected files; using TSLPatcher 2DAList is preferred when possible for repeatable installs.
 
 ## Common Workaround Strategies
 
 A common problem you may encounter when creating a mod, is the inability to remove a [GFF](GFF-File-Format) struct. Let's say you want to remove a [GIT](GFF-File-Format#git-game-instance-template) instance to be compatible with another mod. Both HoloPatcher and TSLPatcher do not support this. However, you can work around it.
 
-## Removing [GFF](GFF-File-Format) struct's?
+## Removing [GFF](GFF-File-Format) structs when patchers cannot
 
-In this example, I needed to remove all (20+) box placeables, 2 of 4 droids in the module and move the remaining 2 droids to other positions. I tried several possible solutions, including `GetFirstObjectInShape / GetNextObjectInShape` and `GetNearestObjectToLocation` functions. I think these functions worked well with a small number of objects, but at times left a few of the 20+ boxes placed on the level. So I switched to `GetObjectByTag / DestroyObject` functions.
+Neither HoloPatcher nor TSLPatcher supports **removing** a GFF struct (e.g. deleting a [GIT](GFF-File-Format#git-game-instance-template) instance) from an ARE or other GFF. If you need to remove placeables, creatures, or other instances for compatibility or design reasons, you must do it at runtime with a script: locate the objects and destroy them, and run that script once (e.g. gated by a local variable) so it does not run every frame or conflict with other mods.
+
+**Example scenario:** Remove all (20+) box placeables, remove 2 of 4 droids, and move the remaining 2 droids to new positions. I tried several possible solutions, including `GetFirstObjectInShape / GetNextObjectInShape` and `GetNearestObjectToLocation` functions. I think these functions worked well with a small number of objects, but at times left a few of the 20+ boxes placed on the level. So I switched to `GetObjectByTag / DestroyObject` functions.
 
 The summary:
 
@@ -49,6 +86,13 @@ void DestroyPlaceablesAndCreaturesInArea(location oLoc1, int nShape, float areaS
   }
 }
 ```
+
+## Testing and compatibility
+
+- **Install order:** Many mods depend on load order (override and MOD order). Document recommended order in your mod’s readme; when using TSLPatcher/HoloPatcher, merging 2DA/TLK reduces order sensitivity for those files.
+- **Clean install:** Test on a clean game install or a known-good backup so conflicts are attributable to your mod or to a specific combination.
+- **Reversion:** Use the patcher’s backup/restore (e.g. HoloPatcher “Uninstall Mod/Restore Backup”) before reinstalling or switching options; installing twice without reverting can duplicate 2DA rows or TLK entries and cause crashes. See [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher).
+- **iOS/mobile:** For mobile (e.g. iOS), file names must be lowercase; use HoloPatcher’s “Fix iOS Case Sensitivity” when targeting mobile. See [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher#installing-mods-on-ios-devices).
 
 ## Storing 2DAMEMORY without duplicating/creating a row
 
@@ -96,3 +140,6 @@ label=YavinHgrDoor1
 - [GFF File Format](GFF-File-Format) — GFF structure; [GIT](GFF-File-Format#git-game-instance-template), [UTC](GFF-File-Format#utc-creature), [UTP](GFF-UTP)
 - [NSS File Format](NSS-File-Format) — Scripting; [NCS](NCS-File-Format) bytecode
 - [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — End-user mod installation
+- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums archives for tutorials and community knowledge
+- [KEY-File-Format](KEY-File-Format#key-file-purpose) — Resource resolution order
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax), [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax), [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Merging and patching

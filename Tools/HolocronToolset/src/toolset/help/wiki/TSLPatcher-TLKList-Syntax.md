@@ -88,7 +88,7 @@ TSLPatcher was designed by Stoffe to be **append-only** for [TLK](TLK-File-Forma
 
 ### Acceptable Uses of Replace
 
-- ✅ Fixing typos in base game text (e.g., "teh" → "the")
+- ✅ Fixing typos in base game text (e.g., "teh" --> "the")
 - ✅ Correcting grammar mistakes in vanilla content
 - ✅ Fixing broken or corrupted entries
 - ✅ Community patch projects (like K1CP) that systematically fix errors
@@ -436,11 +436,11 @@ HoloPatcher Execution Order:
 
 ### Analysis: Order Comparison
 
-**TSLPatcher's reasoning** (TLKList → InstallList):
+**TSLPatcher's reasoning** (TLKList --> InstallList):
 
 - Allows [ERF](ERF-File-Format)/MOD/RIM files to be placed before [GFF](GFF-File-Format)/Compile sections that save into them
 
-**HoloPatcher's reasoning** (InstallList → TLKList):
+**HoloPatcher's reasoning** (InstallList --> TLKList):
 
 - ✅ **More flexible**: Users can install a custom base [`dialog.tlk`](TLK-File-Format) file via InstallList, then [TLK](TLK-File-Format) appending modifies it
 - ✅ **Better for testing**: Allows installing known-good [TLK files](TLK-File-Format) before appending new entries
@@ -608,10 +608,10 @@ File0=my_npc.dlg
 AppendFile0=items.tlk
 
 [items.tlk]
-0=10  ; Item name → token StrRef10
-1=11  ; Item description → token StrRef11
-2=12  ; Another item name → token StrRef12
-3=13  ; Another item description → token StrRef13
+0=10  ; Item name --> token StrRef10
+1=11  ; Item description --> token StrRef11
+2=12  ; Another item name --> token StrRef12
+3=13  ; Another item description --> token StrRef13
 
 [GFFList]
 File0=new_item.uti
@@ -859,7 +859,7 @@ StrRef2=2
 - **KotOR1 Polish only**: The dual-[TLK](TLK-File-Format) system ([`dialog.tlk`](TLK-File-Format) + `dialogf.tlk`) is exclusively for KotOR1 Polish localization
 - **Maintain parallel files**: If supporting Polish, maintain both `append.tlk` and `appendf.tlk`
 - **Exact entry matching**: Entry counts must match exactly between `append.tlk` and `appendf.tlk`
-- **Map indices**: Each index must correspond between the two files (index 0 → index 0, index 1 → index 1, etc.)
+- **Map indices**: Each index must correspond between the two files (index 0 --> index 0, index 1 --> index 1, etc.)
 - **Handle duplicates**: If a string has no feminine form, use the same text in both files
 - **Use configuration keys**: Set `!SourceFileF` to specify the feminine version filename
 - **Documentation**: Document language support in your mod's README
@@ -884,11 +884,11 @@ StrRef2=2
 
 ```python
 # After StrRef append
-# StrRef0=0 → Creates token StrRef0
+# StrRef0=0 --> Creates token StrRef0
 # Memory: memory.memory_str[0] = new_stringref (from dialog.tlk append)
 
 # After AppendFile append
-# Subsection: 10=10 → Creates token StrRef10
+# Subsection: 10=10 --> Creates token StrRef10
 # Memory: memory.memory_str[10] = new_stringref (from dialog.tlk append)
 ```
 

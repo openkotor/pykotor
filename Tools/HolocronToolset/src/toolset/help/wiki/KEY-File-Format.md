@@ -26,7 +26,7 @@ KEY files map resource names ([ResRefs](GFF-File-Format#gff-data-types)) and typ
 
 The KEY file serves as the master index for the game's resource system:
 
-1. **Resource Lookup**: Maps *ResRef* + ResourceType → [BIF](BIF-File-Format) location
+1. **Resource Lookup**: Maps *ResRef* + ResourceType --> [BIF](BIF-File-Format) location
 2. **[BIF](BIF-File-Format) Registration**: Tracks all [BIF files](BIF-File-Format) and their install paths
 3. **Resource Naming**: Provides the filename (*ResRef*) missing from [BIF files](BIF-File-Format)
 4. **Drive Mapping**: Historical feature indicating which media (CD/HD) contained each [BIF](BIF-File-Format)
@@ -71,12 +71,12 @@ The file header is 64 bytes in size:
 | ------------------- | ------- | ------ | ---- | ---------------------------------------------- |
 | file type           | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | Always `"KEY "` (space-padded)                 |
 | file Version        | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | `"V1  "` or `"V1.1"`                           |
-| [BIF](BIF-File-Format) count           | [uint32](GFF-File-Format#gff-data-types)  | 8 (0x08) | 4    | Number of [BIF files](BIF-File-Format) referenced                 |
-| KEY count           | [uint32](GFF-File-Format#gff-data-types)  | 12 (0x0C) | 4    | Number of resource entries                     |
-| offset to file Table | [uint32](GFF-File-Format#gff-data-types) | 16 (0x10) | 4    | offset to [BIF file](BIF-File-Format) entries array               |
-| offset to KEY Table | [uint32](GFF-File-Format#gff-data-types) | 20 (0x14) | 4    | offset to resource entries array               |
-| Build Year          | [uint32](GFF-File-Format#gff-data-types)  | 24 (0x18) | 4    | Build year (years since 1900)                  |
-| Build Day           | [uint32](GFF-File-Format#gff-data-types)  | 28 (0x1C) | 4    | Build day (days since Jan 1)                   |
+| [BIF](BIF-File-Format) count           | UInt32  | 8 (0x08) | 4    | Number of [BIF files](BIF-File-Format) referenced                 |
+| KEY count           | UInt32  | 12 (0x0C) | 4    | Number of resource entries                     |
+| offset to file Table | UInt32 | 16 (0x10) | 4    | offset to [BIF file](BIF-File-Format) entries array               |
+| offset to KEY Table | UInt32 | 20 (0x14) | 4    | offset to resource entries array               |
+| Build Year          | UInt32  | 24 (0x18) | 4    | Build year (years since 1900)                  |
+| Build Day           | UInt32  | 28 (0x1C) | 4    | Build day (days since Jan 1)                   |
 | Reserved            | [byte](https://en.wikipedia.org/wiki/Byte) | 32 (0x20) | 32   | Padding (usually zeros)                        |
 
 **Note on header Variations**: [`vendor/xoreos-docs/specs/torlack/key.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/key.html) (Tim Smith/Torlack's reverse-engineered documentation) shows the header ending at offset 0x0040 with unknown values at offset 0x0018. The structure shown here (with Build Year/Day and Reserved fields) matches the actual KotOR KEY file format.
@@ -90,8 +90,8 @@ Each file entry is 12 bytes:
 
 | Name            | type   | offset | size | Description                                                      |
 | --------------- | ------ | ------ | ---- | ---------------------------------------------------------------- |
-| file size       | [uint32](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | size of [BIF file](BIF-File-Format) on disk                                         |
-| Filename offset | [uint32](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | offset into filename table                                       |
+| file size       | UInt32 | 0 (0x00) | 4    | size of [BIF file](BIF-File-Format) on disk                                         |
+| Filename offset | UInt32 | 4 (0x04) | 4    | offset into filename table                                       |
 | Filename Length | [uint16](GFF-File-Format#gff-data-types) | 8 (0x08) | 2    | Length of filename in bytes                                      |
 | Drives          | [uint16](GFF-File-Format#gff-data-types) | 10 (0x0A) | 2    | Drive flags (0x0001=HD0, 0x0002=CD1, etc.)                      |
 
@@ -140,7 +140,7 @@ Each KEY entry is 22 bytes:
 | ----------- | -------- | ------ | ---- | ---------------------------------------------------------------- |
 | *ResRef*      | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 16   | Resource filename (null-padded, max 16 chars)                   |
 | Resource type | [uint16](GFF-File-Format#gff-data-types) | 16 (0x10) | 2    | Resource type identifier                                         |
-| Resource ID | [uint32](GFF-File-Format#gff-data-types)   | 18 (0x12) | 4    | Encoded resource location (see [Resource ID Encoding](#resource-id-encoding)) |
+| Resource ID | UInt32   | 18 (0x12) | 4    | Encoded resource location (see [Resource ID Encoding](#resource-id-encoding)) |
 
 **Critical structure Packing Note:**
 
@@ -196,7 +196,7 @@ Resource Index: 0x23456 (Resource #144,470 within that BIF)
 The encoding allows a single 32-bit integer to precisely locate any resource in the entire [BIF](BIF-File-Format) system.
 
 **Reference**: [`vendor/reone/src/libs/resource/format/keyreader.cpp:95-100`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/keyreader.cpp#L95-L100)  
-**Reference**: [`vendor/xoreos-docs/specs/torlack/key.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/key.html) - [BIF](BIF-File-Format) ID encoding explanation with example (0x00400029 → [BIF](BIF-File-Format) #4, Resource #41)
+**Reference**: [`vendor/xoreos-docs/specs/torlack/key.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/key.html) - [BIF](BIF-File-Format) ID encoding explanation with example (0x00400029 --> [BIF](BIF-File-Format) #4, Resource #41)
 
 ---
 

@@ -168,7 +168,7 @@ A connection point on a component.
 
 - Hooks use **local coordinates** (centered at origin)
 - Transformed to world coordinates via `IndoorMapRoom.hook_position()`
-- [transformation](BWM-File-Format#walkable-adjacencies) order: flip → rotate → translate
+- [transformation](BWM-File-Format#walkable-adjacencies) order: flip --> rotate --> translate
 
 ### KitDoor
 

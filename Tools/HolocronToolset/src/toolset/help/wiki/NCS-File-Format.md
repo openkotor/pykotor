@@ -54,7 +54,7 @@ NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts 
 | 0 (0x00)   | 4    | Signature `"NCS "` |
 | 4 (0x04)   | 4    | Version `"V1.0"` |
 | 8 (0x08)   | 1    | Program size marker opcode (`0x42`) |
-| 9 (0x09)   | 4    | Total file size ([big-endian](https://en.wikipedia.org/wiki/Endianness) [uint32](GFF-File-Format#gff-data-types)) |
+| 9 (0x09)   | 4    | Total file size ([big-endian](https://en.wikipedia.org/wiki/Endianness) UInt32) |
 | 13 (0x0D)+  | —    | Stream of bytecode instructions |
 
 - The VM executes sequential instructions; control-flow opcodes (`JMP`, `JZ`, `JSR`) adjust the instruction pointer.  
@@ -74,15 +74,15 @@ NWScript uses a stack-based VM where all operations work on a stack rather than 
 **Stack Layout Example:**
 
 ```plaintext
-SP → -4:  j: 1        (topmost)
+SP --> -4:  j: 1        (topmost)
      -8:  i: 12       (second element)
      -12: (previous frame)
 ```
 
 **position Calculations:**
 
-- [byte](https://en.wikipedia.org/wiki/Byte) offset to position: `-offset / 4` (e.g., `-12` → position 3)
-- [byte](https://en.wikipedia.org/wiki/Byte) size to elements: `size / 4` (e.g., 12 bytes → 3 elements)
+- [byte](https://en.wikipedia.org/wiki/Byte) offset to position: `-offset / 4` (e.g., `-12` --> position 3)
+- [byte](https://en.wikipedia.org/wiki/Byte) size to elements: `size / 4` (e.g., 12 bytes --> 3 elements)
 
 **Global Variables:** Accessed via base pointer (BP). The `#globals` routine initializes globals before `main()`, then `SAVEBP` saves current SP as BP. Functions access globals via `CPTOPBP`/`CPDOWNBP`. `RESTOREBP` restores previous BP.
 
@@ -92,14 +92,14 @@ SP → -4:  j: 1        (topmost)
 - **Variables**: Assignable stack slots created via `RSADDx`, modified via `CPDOWNSP`/`CPDOWNBP`
 - **structures**: Composite types spanning multiple positions (vectors = 3 positions/12 bytes, custom = 4-[byte](https://en.wikipedia.org/wiki/Byte) multiples)
 
-**Lifecycle:** Create (`CONSTx`, `RSADDx`, `CPTOPSP`) → Modify (`CPDOWNSP`, `INCxSP`) → Consume (operations, `MOVSP`) → Destroy (`DESTRUCT`)
+**Lifecycle:** Create (`CONSTx`, `RSADDx`, `CPTOPSP`) --> Modify (`CPDOWNSP`, `INCxSP`) --> Consume (operations, `MOVSP`) --> Destroy (`DESTRUCT`)
 
 **Decompilation Tracking:**
 
 - **Reference Counting**: Track variable usage per stack instance
 - **Assignment Status**: Distinguish initialized vs uninitialized variables
 - **type Inference**: Infer types through operation chains
-- **structure Recognition**: 12-[byte](https://en.wikipedia.org/wiki/Byte) copies → vectors (z, y, x order), other multiples of 4 → custom structures
+- **structure Recognition**: 12-[byte](https://en.wikipedia.org/wiki/Byte) copies --> vectors (z, y, x order), other multiples of 4 --> custom structures
 - **Variable Naming**: Generate names from type + position or infer from usage patterns
 
 **Reference:** [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:105-172`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L105-L172) (SP/BP), [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:389-394`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L389-L394) (globals), [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:1039-1060`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L1039-L1060) (SAVEBP/RESTOREBP), [`vendor/reone/src/libs/script/format/ncsreader.cpp:52-97`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncsreader.cpp#L52-L97) (parsing), [`vendor/xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/xoreos-tools/src/nwscript/ncsfile.cpp) (decompilation), [`vendor/KotOR.js/src/odyssey/NWScriptInstance.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/odyssey/NWScriptInstance.ts) (JS runtime), [`vendor/NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs) (Unity)
@@ -113,7 +113,7 @@ SP → -4:  j: 1        (topmost)
 | file type         | [char](GFF-File-Format#gff-data-types) | 0 (0x00)   | 4    | `"NCS "` (must match exactly, ASCII bytes: `0x4E 0x43 0x53 0x20`) |
 | file Version      | [char](GFF-File-Format#gff-data-types) | 4 (0x04)   | 4    | `"V1.0"` (must match exactly, ASCII bytes: `0x56 0x31 0x2E 0x30`) |
 | size Marker       | [uint8](GFF-File-Format#gff-data-types)   | 8 (0x08)   | 1    | Program size marker opcode (`0x42`) |
-| Total file size   | [uint32](GFF-File-Format#gff-data-types)  | 9 (0x09)   | 4    | Total file size in bytes ([big-endian](https://en.wikipedia.org/wiki/Endianness)) |
+| Total file size   | UInt32  | 9 (0x09)   | 4    | Total file size in bytes ([big-endian](https://en.wikipedia.org/wiki/Endianness)) |
 
 The header is 13 bytes total. The size marker (`0x42`) is not a real instruction but a metadata field. All implementations validate that this byte equals `0x42` before reading the size field. The actual instruction stream begins at offset 13 (0x0D).
 
@@ -123,7 +123,7 @@ All implementations validate:
 
 1. file signature: `"NCS V1.0"` (bytes `[0x4E, 0x43, 0x53, 0x20, 0x56, 0x31, 0x2E, 0x30]`)
 2. size marker at offset 8: `0x42` (metadata, not an instruction)
-3. file size ([big-endian](https://en.wikipedia.org/wiki/Endianness) [uint32](GFF-File-Format#gff-data-types) at offset 9) ≤ actual file size
+3. file size ([big-endian](https://en.wikipedia.org/wiki/Endianness) UInt32 at offset 9) ≤ actual file size
 4. Seek to offset 13 (0x0D) to begin parsing
 
 Reject file if any validation fails.
@@ -267,12 +267,12 @@ Jump offsets are **relative to the start of the jump instruction itself**, not t
 All multi-[byte](https://en.wikipedia.org/wiki/Byte) values in NCS files are stored in **[big-endian](https://en.wikipedia.org/wiki/Endianness)** ([network byte order](https://en.wikipedia.org/wiki/Endianness#Networking)):
 
 - 16-bit values ([uint16](GFF-File-Format#gff-data-types), [int16](GFF-File-Format#gff-data-types)): Most significant [byte](https://en.wikipedia.org/wiki/Byte) first
-- 32-bit values ([uint32](GFF-File-Format#gff-data-types), [int32](GFF-File-Format#gff-data-types), [float32](GFF-File-Format#gff-data-types)): Most significant [byte](https://en.wikipedia.org/wiki/Byte) first
+- 32-bit values (UInt32, [int32](GFF-File-Format#gff-data-types), [float32](GFF-File-Format#gff-data-types)): Most significant [byte](https://en.wikipedia.org/wiki/Byte) first
 - This applies to: offsets, sizes, constants, jump targets, and all numeric arguments
 
 **Instruction Parsing:**
 
-Standard process: Read opcode + qualifier → Determine argument format via lookup → Read arguments (0 to variable bytes) → Advance IP by total instruction size → Repeat until EOF
+Standard process: Read opcode + qualifier --> Determine argument format via lookup --> Read arguments (0 to variable bytes) --> Advance IP by total instruction size --> Repeat until EOF
 
 **Variable-Length Instructions:**
 
@@ -293,7 +293,7 @@ All multi-[byte](https://en.wikipedia.org/wiki/Byte) values: [big-endian](https:
 - **BP**: Base pointer (globals area, set by `SAVEBP`/`RESTOREBP`)
 - **Return Stack**: Separate stack for `JSR`/`RETN` addresses
 
-**Execution Loop:** Parse instruction → Execute (manipulate stack/IP/BP, call functions) → Advance IP → Repeat until termination
+**Execution Loop:** Parse instruction --> Execute (manipulate stack/IP/BP, call functions) --> Advance IP --> Repeat until termination
 
 **Instruction Sizes:** 2B base + arguments: None (2B), Int/[float](GFF-File-Format#gff-data-types)/Object (6B), String (2+N B), Jump (6B), Stack copy (8B), ACTION (5B), DESTRUCT (8B), STORE_STATE (10B), Struct compare (4B)
 
@@ -426,9 +426,9 @@ Jumps 16 bytes backward if top of stack is zero (consumes the integer from stack
 
 **position Conversion:**
 
-- [byte](https://en.wikipedia.org/wiki/Byte) offset → position: `-offset / 4` (e.g., -8 → 2, -12 → 3)
-- size → elements: `size / 4` (e.g., 12B → 3 elements)
-- position → offset: `-position * 4`
+- [byte](https://en.wikipedia.org/wiki/Byte) offset --> position: `-offset / 4` (e.g., -8 --> 2, -12 --> 3)
+- size --> elements: `size / 4` (e.g., 12B --> 3 elements)
+- position --> offset: `-position * 4`
 
 **Examples:** offset -4 = position 1 (top), -8 = position 2, vector (12B) at -12 = positions 1-3
 
@@ -443,9 +443,9 @@ All use opcode `0x04`, qualifier determines type:
 - `CONSTS` (0x05): `[0x04][0x05][uint16 len][ASCII]` (2+N B), SP+4 (pointer only, content stored separately), no [null terminator](https://en.cppreference.com/w/c/string/byte)
 - `CONSTO` (0x06): `[0x04][0x06][signed32]` (6B), SP+4, special: `0x00000000` = OBJECT_SELF, `0x00000001`/`0xFFFFFFFF` = OBJECT_INVALID
 
-**Parsing:** Read opcode (0x04) → qualifier → type-specific args ([uint32](GFF-File-Format#gff-data-types)/[float32](GFF-File-Format#gff-data-types)/string length+data/signed32)
+**Parsing:** Read opcode (0x04) --> qualifier --> type-specific args (UInt32/[float32](GFF-File-Format#gff-data-types)/string length+data/signed32)
 
-**Behavior:** Read value → Create immutable constant entry → Push onto stack (SP+4) → Remains until consumed/removed
+**Behavior:** Read value --> Create immutable constant entry --> Push onto stack (SP+4) --> Remains until consumed/removed
 
 **Reference:** [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:500-545`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L500-L545), [`vendor/reone/src/libs/script/format/ncsreader.cpp:60-73`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncsreader.cpp#L60-L73), [`vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs), [`vendor/NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs), [`vendor/xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/xoreos-tools/src/nwscript/ncsfile.cpp), [`vendor/KotOR.js/src/odyssey/NWScriptDef.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/odyssey/NWScriptDef.ts)
 
@@ -522,7 +522,7 @@ Example: If a structure occupies positions 3-5 (12 bytes) and only the middle el
 - Arguments: `[uint16 size][int16 stackOffset][uint16 sizeNoDestroy]` (6 bytes total, 8 bytes including opcode and qualifier)
 - The preserved element is extracted from the destruction range and placed at the top of the stack, effectively replacing the destroyed elements with just the preserved value.
 
-During decompilation, DESTRUCT identifies structure field accesses (preserved element position → field).
+During decompilation, DESTRUCT identifies structure field accesses (preserved element position --> field).
 
 - `STORE_STATE` (0x2C): Save stack state for delayed execution. format: `[0x2C][qualifier][int32 size][int32 sizeLocals]` (10B). Used with `DelayCommand`. `size` = total stack bytes, `sizeLocals` = local variable bytes. Separates temp values from persistent locals. Decompilers typically emit as-is with comments.
 
@@ -534,7 +534,7 @@ During decompilation, DESTRUCT identifies structure field accesses (preserved el
 - `JZ`/`JNZ`: Consume top int (removed regardless of jump)
 - `DESTRUCT`: Atomic multi-element removal with preservation (structure unpacking)
 
-**Examples:** JMP @100 +20 → 120, JZ @200 -16 → 184, JSR @300 +50 → 350 (return addr 306)
+**Examples:** JMP @100 +20 --> 120, JZ @200 -16 --> 184, JSR @300 +50 --> 350 (return addr 306)
 
 **Reference:** [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:712-768`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L712-L768), [`vendor/reone/src/libs/script/format/ncsreader.cpp:81-91`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncsreader.cpp#L81-L91), [`vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs), [`vendor/NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs), [`vendor/xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/xoreos-tools/src/nwscript/ncsfile.cpp), [`vendor/KotOR.js/src/odyssey/controllers/NWScriptController.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/odyssey/controllers/NWScriptController.ts)
 
@@ -544,7 +544,7 @@ During decompilation, DESTRUCT identifies structure field accesses (preserved el
 
 **Function Table:**
 
-Engine-specific mapping: routine number → function (name, params, return type). Used for decompilation (routine 1 → `GetFirstObject`). Invalid routine = error.
+Engine-specific mapping: routine number --> function (name, params, return type). Used for decompilation (routine 1 --> `GetFirstObject`). Invalid routine = error.
 
 **Actions data file:** Lists engine functions, format: `return_type function_name(param_type param, ...)`. Example: `int GetFirstObject(int nObjectFilter, object oArea);`
 
@@ -581,21 +581,21 @@ The decompiler parses this file to build a lookup table mapping routine numbers 
 
 **Calling Conventions:**
 
-**Script Subroutines:** Reserve return space → Push args (reverse) → `JSR` → Subroutine removes args → Return value at reserved location
+**Script Subroutines:** Reserve return space --> Push args (reverse) --> `JSR` --> Subroutine removes args --> Return value at reserved location
 
-**Engine Routines:** Push args (reverse) → `ACTION` (routine #, arg count) → Engine removes args → Engine pushes return
+**Engine Routines:** Push args (reverse) --> `ACTION` (routine #, arg count) --> Engine removes args --> Engine pushes return
 
 **Example:** `int j = DoSomeScriptSubroutine(12, 14);`
 
-Before: `SP → -4: Arg1(12), -8: Arg2(14), -12: Return(??), -16: j(??)`  
-After: `SP → -4: Return(??), -8: j(??)`
+Before: `SP --> -4: Arg1(12), -8: Arg2(14), -12: Return(??), -16: j(??)`  
+After: `SP --> -4: Return(??), -8: j(??)`
 
 **Example Stack Layout for Engine Routine Call:**
 
 Before call to `int j = DoSomeEngineRoutine(12, 14);`:
 
 ```plaintext
-SP → -4:  Arg1: 12
+SP --> -4:  Arg1: 12
      -8:  Arg2: 14
      -12: j: ??
 ```
@@ -603,7 +603,7 @@ SP → -4:  Arg1: 12
 After call:
 
 ```plaintext
-SP → -4:  Return: ??
+SP --> -4:  Return: ??
      -8:  j: ??
 ```
 
@@ -645,17 +645,17 @@ All use identical opcodes (0x01-0x2D, 0x42 marker), qualifiers (0x03-0x3C), and 
 
 **Decompilation Overview:**
 
-Core analyses: Stack tracking (variable assignments/reads via copy ops), Control flow (jumps → if/loops/switches), Subroutine analysis (JSR → function calls, infer params/returns), Variable naming (type + position or usage patterns), Dead code elimination
+Core analyses: Stack tracking (variable assignments/reads via copy ops), Control flow (jumps --> if/loops/switches), Subroutine analysis (JSR --> function calls, infer params/returns), Variable naming (type + position or usage patterns), Dead code elimination
 
 **Analysis Passes:**
 
-1. **Parse**: Bytecode → instructions + control flow graph (jumps as [edges](BWM-File-Format#edges))
+1. **Parse**: Bytecode --> instructions + control flow graph (jumps as [edges](BWM-File-Format#edges))
 2. **Subroutines**: Identify boundaries via `JSR`/`RETN`, analyze separately
-3. **type Inference**: Operations reveal types (`ADDII` → ints, calls → engine function table)
+3. **type Inference**: Operations reveal types (`ADDII` --> ints, calls --> engine function table)
 4. **Prototyping**: Infer subroutine signatures from usage (may need multiple passes for recursion)
 5. **Stack Tracking**: Track state per instruction (variables, types, assignment), clone/merge at control flow joins
-6. **structure Recognition**: 12-[byte](https://en.wikipedia.org/wiki/Byte) copies → vectors, other multiples of 4 → custom structs
-7. **Control Flow**: Jumps → `if`/loops (forward jumps = conditionals, backward = loops), multi-target = switch
+6. **structure Recognition**: 12-[byte](https://en.wikipedia.org/wiki/Byte) copies --> vectors, other multiples of 4 --> custom structs
+7. **Control Flow**: Jumps --> `if`/loops (forward jumps = conditionals, backward = loops), multi-target = switch
 8. **Code Gen**: Emit source with named variables, typed declarations, high-level constructs
 9. **Cleanup**: Remove dead code, optimize names, format
 

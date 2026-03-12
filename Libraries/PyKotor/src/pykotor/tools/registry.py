@@ -259,7 +259,7 @@ class SpoofKotorRegistry:
         self.spoofed_path: Path = Path(installation_path).resolve()
 
         if game is not None:
-            determined_game = game
+            determined_game: Game = game
         else:
             determined_game = Installation.determine_game(installation_path)
             if determined_game is None:
@@ -310,6 +310,8 @@ def set_registry_key_value(
         import winreg
 
         # Parse the hive from the full key path
+        hive_name: str
+        sub_key: str
         hive_name, sub_key = full_key_path.split("\\", 1)
         hive: int | None = {
             "HKEY_CLASSES_ROOT": winreg.HKEY_CLASSES_ROOT,

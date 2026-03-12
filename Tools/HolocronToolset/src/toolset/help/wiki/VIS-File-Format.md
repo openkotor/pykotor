@@ -91,10 +91,10 @@ VIS files are crucial for performance in large areas:
 
 **Common Issues:**
 
-- **Missing Room**: Room not in any VIS list → never renders → appears invisible
-- **One-way Visibility**: Room A lists B, but B doesn't list A → asymmetric rendering
-- **Performance Problems**: All rooms list each other → defeats purpose of VIS optimization
-- **Doorway Artifacts**: Door rooms not mutually visible → walls clip during door [animations](MDL-MDX-File-Format#animation-header)
+- **Missing Room**: Room not in any VIS list --> never renders --> appears invisible
+- **One-way Visibility**: Room A lists B, but B doesn't list A --> asymmetric rendering
+- **Performance Problems**: All rooms list each other --> defeats purpose of VIS optimization
+- **Doorway Artifacts**: Door rooms not mutually visible --> walls clip during door [animations](MDL-MDX-File-Format#animation-header)
 
 Module designers balance between performance (fewer visible rooms) and visual quality (no pop-in/clipping). Testing VIS changes in-game is essential.  
 

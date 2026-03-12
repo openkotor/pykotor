@@ -2,42 +2,60 @@
 
 ## Documentation
 
-**Start here:** New to modding? [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) → [Mod Creation Best Practices](Mod-Creation-Best-Practices) → [File Formats](#file-formats) or [TSLPatcher guides](TSLPatcher's-Official-Readme) as needed. Contributing to the wiki? See [Wiki Conventions](Wiki-Conventions).
+**Start here:** New to modding? [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) → [Mod Creation Best Practices](Mod-Creation-Best-Practices) → [File formats and specifications](#file-formats-and-specifications) or [TSLPatcher guides](TSLPatcher's-Official-Readme) as needed. Core terms: [Concepts](Concepts). Binary and engine-level detail: [Low-level structures and implementations](#low-level-structures-and-implementations). [Community sources and archives](#community-sources-and-archives). Contributing: [Wiki Conventions](Wiki-Conventions).
 
 ### For End Users
 
 - [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher)
 
-### For Mod Developers
+### Guides and tutorials
 
+Installation, tool use, and step-by-step guides:
+
+- [Mod Creation Best Practices](Mod-Creation-Best-Practices)
 - [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.)
-- [Blender Integration](Blender-Integration)
+- [HoloPatcher Feature Coverage Overview](Explanations-on-HoloPatcher-Internal-Logic)
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
 - [TSLPatcher Thread Complete Container](TSLPatcher_Thread_Complete)
-- [HoloPatcher Feature Coverage Overview](Explanations-on-HoloPatcher-Internal-Logic)
-- **[TSLPatcher InstallList Syntax Guide](TSLPatcher-InstallList-Syntax)** ← Complete reference for file installation
-- **[TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax)** ← Complete reference for TLK ([TalkTable](TLK-File-Format)) modifications
-- **[TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax)** ← Complete reference for [2DA (Two-Dimensional array)](2DA-File-Format) patches
-- **[TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax)** ← Complete reference for [GFF](GFF-File-Format) modifications
-- **[TSLPatcher SSFList Syntax Guide](TSLPatcher-SSFList-Syntax)** ← Complete reference for SSF ([sound set files](SSF-File-Format)) modifications
-- **[TSLPatcher HACKList Syntax Guide](TSLPatcher-HACKList-Syntax)** ← Complete reference for binary patches
-- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) ← Build indoor modules from kits
-- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) ← Technical details for developers
-- [Mod Creation Best Practices](Mod-Creation-Best-Practices)
+- **[TSLPatcher InstallList Syntax Guide](TSLPatcher-InstallList-Syntax)** — File installation
+- **[TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax)** — TLK ([TalkTable](TLK-File-Format)) modifications
+- **[TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax)** — [2DA](2DA-File-Format) patches
+- **[TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax)** — [GFF](GFF-File-Format) modifications
+- **[TSLPatcher SSFList Syntax Guide](TSLPatcher-SSFList-Syntax)** — SSF ([sound set files](SSF-File-Format))
+- **[TSLPatcher HACKList Syntax Guide](TSLPatcher-HACKList-Syntax)** — Binary patches
+- [Blender Integration](Blender-Integration)
+- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) — Build indoor modules from kits
+- [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions) — Understanding why room crossing fails and what must agree: layout, walkmesh, roomlinks, LYT/VIS
+- [Indoor Area Room Layout and Walkmesh Guide](Indoor-Area-Room-Layout-and-Walkmesh-Guide) — Complete modder workflow for indoor rooms, walkmeshes, roomlinks, doors, LYT, and VIS
 - [KotorDiff Integration in PyKotorCLI](KotorDiff-Integration)
 
-### Internal Documentation
+**Holocron Toolset (in-app help):**
 
-- [HoloPatcher](HoloPatcher-README-for-mod-developers.)
-- [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic)
+- [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started)
+- [Holocron Toolset: New Features Quick Guide](Holocron-Toolset-New-Features-Guide) — Favorites, batch ops, rename, Open With, etc.
+- [Holocron Toolset: Core resources](Holocron-Toolset-Core-Resources) — Core tab (KEY/BIF)
+- [Holocron Toolset: Module resources](Holocron-Toolset-Module-Resources)
+- [Holocron Toolset: Override resources](Holocron-Toolset-Override-Resources)
+- [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor) — Module Designer controls
+- [Holocron Toolset: Map Builder](Holocron-Toolset-Map-Builder) — Indoor Map Builder controls
 
-### Internal & reverse engineering
+**Tutorials:**
 
-- [Reverse engineering findings](reverse_engineering_findings)
-- [CExoResMan](CExoResMan)
-- [Game engine BWM AABB implementation](Game-Engine-BWM-AABB-Implementation)
-- [Qt ItemView selection and RobustTableView](Qt-ItemView-Selection-and-RobustTableView)
-- [UTC Editor field types (Reva)](UTC-Editor-Field-Types-Reva)
+- [Tutorial: Creating custom robes](Tutorial-Creating-Custom-Robes)
+- [Tutorial: Creating a new store](Tutorial-Creating-a-New-Store)
+- [Tutorial: Area transitions](Tutorial-Area-Transitions)
+- [Tutorial: Creating static cameras](Tutorial-Creating-Static-Cameras)
+
+**Scripting (NWScript):** Function and constant reference for writing scripts. Full index and all routine/constant pages: [NSS File Format](NSS-File-Format). Quick links to major categories:
+
+- [NSS Shared Functions: Actions](NSS-Shared-Functions-Actions) · [Combat](NSS-Shared-Functions-Combat-Functions) · [Dialog and conversation](NSS-Shared-Functions-Dialog-and-Conversation-Functions) · [Effects](NSS-Shared-Functions-Effects-System) · [Item management](NSS-Shared-Functions-Item-Management) · [Module and area](NSS-Shared-Functions-Module-and-Area-Functions) · [Party](NSS-Shared-Functions-Party-Management) · [Skills and feats](NSS-Shared-Functions-Skills-and-Feats)
+- [NSS Shared Constants: Ability](NSS-Shared-Constants-Ability-Constants) · [Object type](NSS-Shared-Constants-Object-Type-Constants) · [Class type](NSS-Shared-Constants-Class-Type-Constants) · [Visual effects](NSS-Shared-Constants-Visual-Effects-(VFX))
+- [NSS K1-Only constants and functions](NSS-K1-Only-Constants-NPC-Constants) (see [NSS File Format](NSS-File-Format) for full K1 index)
+- [NSS TSL-Only constants and functions](NSS-TSL-Only-Functions-Combat-Functions) (see [NSS File Format](NSS-File-Format) for full TSL index)
+
+### File formats and specifications
+
+Reference for binary layout, field definitions, and format behaviour. For scripting usage see [Scripting (NWScript)](#guides-and-tutorials) above; for implementation details see [Low-level structures and implementations](#low-level-structures-and-implementations).
 
 ### Official Bioware Aurora Documentation
 
@@ -82,7 +100,7 @@ Both games use the same high-level flow: the executable initializes an applicati
 - **[`dialog.tlk`](TLK-File-Format)**: Text resource file containing localized strings referenced by [StrRef](TLK-File-Format#string-references-strref) IDs. This centralizes strings for easy localization and allows changing text without modifying or recompiling scripts. Different language versions of [dialog.tlk](TLK-File-Format) can be installed for localization support.
 - **`kotor.ini`**: Configuration file with `[Alias]` section mapping logical directory names to physical paths. This allows the game to locate data files regardless of installation directory structure.
 
-**Reference**: [`vendor/xoreos-docs/specs/torlack/basics.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/basics.html) - Tim Smith (Torlack)'s Aurora engine basics documentation (NWN-focused)
+**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/basics.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/basics.html) - Tim Smith (Torlack)'s Aurora engine basics documentation (NWN-focused)
 
 #### Resource Resolution Order
 
@@ -178,7 +196,7 @@ This language ID usually is represented as an enum. It is equivalent within all 
 
 **KotOR** (odyssey) specifically can only support
 
-**Reference**: [`vendor/xoreos-docs/specs/torlack/basics.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/basics.html) - Language ID definitions (NWN-focused but applicable to KotOR)
+**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/basics.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/basics.html) - Language ID definitions (NWN-focused but applicable to KotOR)
 
 | Language        | ID | Notes                                |
 | --------------- | -- |                                      |
@@ -189,7 +207,7 @@ This language ID usually is represented as an enum. It is equivalent within all 
 | Spanish         | 4  |                                      |
 | Polish          | 5  |  cp-1250, only released for KotOR 1  |
 
-**Reference**: [`vendor/xoreos-docs/specs/torlack/basics.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/basics.html) - Tim Smith (Torlack)'s NWN data file Basics documentation (Aurora engine fundamentals)
+**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/basics.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/basics.html) - Tim Smith (Torlack)'s NWN data file Basics documentation (Aurora engine fundamentals)
 
 ### File Formats
 
@@ -311,6 +329,7 @@ This language ID usually is represented as an enum. It is equivalent within all 
   - [UTS (Sound)](GFF-UTS)
   - [UTT (Trigger)](GFF-UTT)
   - [UTW (Waypoint)](GFF-UTW)
+- [DDS File Format](DDS-File-Format) ← DirectDraw Surface texture format
 - [LIP File Format](LIP-File-Format) ← [LIP](LIP-File-Format) sync format
 - [LTR File Format](LTR-File-Format) ← Letter format
 - [LYT File Format](LYT-File-Format) ← Layout format
@@ -323,6 +342,18 @@ This language ID usually is represented as an enum. It is equivalent within all 
 - [TXI File Format](TXI-File-Format) ← [texture](TPC-File-Format) Info format
 - [VIS File Format](VIS-File-Format) ← Visibility format
 - [WAV File Format](WAV-File-Format) ← Wave audio format
+
+### Low-level structures and implementations
+
+Binary layout, engine behaviour, and implementation details for developers and reverse engineering:
+
+- [Reverse Engineering Findings](reverse_engineering_findings)
+- [CExoResMan](CExoResMan)
+- [Game Engine BWM AABB Implementation](Game-Engine-BWM-AABB-Implementation)
+- [Qt ItemView selection and RobustTableView](Qt-ItemView-Selection-and-RobustTableView)
+- [UTC Editor field types (Reva)](UTC-Editor-Field-Types-Reva)
+- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) — Technical details (distinct from the [user guide](Indoor-Map-Builder-User-Guide) in Guides and tutorials)
+- [HoloPatcher internal logic](Explanations-on-HoloPatcher-Internal-Logic)
 
 ## Vendor Implementations
 
@@ -404,11 +435,40 @@ Guides, patches, and community-maintained resources:
 - **[kotor_combat_faq](https://github.com/statsjedi/kotor_combat_faq)** - Combat mechanics documentation ([Mirror: th3w1zard1/kotor_combat_faq](https://github.com/th3w1zard1/kotor_combat_faq))
 - **[ds-kotor-modding-wiki](https://github.com/DeadlyStream/ds-kotor-modding-wiki)** - DeadlyStream modding wiki container ([Mirror: th3w1zard1/ds-kotor-modding-wiki](https://github.com/th3w1zard1/ds-kotor-modding-wiki))
 
+### Community sources and archives
+
+For **complete, comprehensive, and accurate** wiki coverage, the following community sites and archives hold historical and ongoing KotOR/TSL modding knowledge. Use them to cross-check format behavior, tool usage, and engine quirks.
+
+| Source | Description | Use for |
+|--------|-------------|--------|
+| **[DeadlyStream](https://deadlystream.com)** | Primary KotOR modding hub: mod releases, tutorials, Script Shack, tool discussions. | File format questions, TSLPatcher/HoloPatcher usage, nwscript.nss and animation references, override practices. |
+| **[LucasForums Container](https://lucasforumscontainer.com)** | Archive of original LucasForums (StarWarsKnights.com) threads, reconstructed from the Wayback Machine. | TSLPatcher history and changelogs, Stoffe’s posts, format and tool discussions (2004–2007). |
+| **[LucasForums Archive](https://lucasforumsarchive.com)** | Alternative archive project (Editing/Modding, Holowan Laboratories, tutorials). | TSLPatcher thread, KotOR tool docs, mod-finding threads. |
+| **Holowan Laboratories / Mixmojo** | Historical KotOR modding forums (MixNMojo/Mixmojo). | Early format and tool discussions; some content may be in archives or mirrors. |
+| **Reddit** (e.g. r/kotor) | General KotOR community. | Mod installation, troubleshooting, links to DeadlyStream and wiki. |
+
+**Further reading (community):**
+
+- [DeadlyStream: Help setting up TSLPatcher](https://deadlystream.com/topic/5785-help-setting-up-the-tslpatcher-for-mods/) — TSLPatcher setup
+- [DeadlyStream: TSL Patcher, TLKEd, and accessories](https://deadlystream.com/files/file/1039-tsl-patcher-tlked-and-accessories/) — Modding tools
+- [DeadlyStream: Modding tools category](https://deadlystream.com/files/category/17-modding-tools/) — Tool releases
+- [LucasForums Archive: TSLPatcher v1.2.10b1](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer/) — Original TSLPatcher thread (see also [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) in this wiki)
+- [LucasForums Archive: Editing / Modding](https://lucasforumsarchive.com/forum/521) — Holowan Laboratories and tutorials
+
+**How to use these sources:**
+
+- **DeadlyStream:** Search the forums for specific topics (e.g. "override folder", "TSLPatcher 2DA merge", "GFF struct", "nwscript"). The Script Shack and modding tools sections contain tutorials and tool releases. When the wiki documents a format or tool, DeadlyStream threads often provide real-world modder reports (e.g. which 2DA columns are safe to add, TSLPatcher setup gotchas). Cite threads in "See also" or "Further reading" when they are the best source for a given detail.
+- **LucasForums Container / LucasForums Archive:** Use for historical and authoritative context. The original TSLPatcher thread (Stoffe, etc.), KotOR Tool discussions, and early GFF/2DA explanations live in these archives. Search by keyword (e.g. "2da", "GFF", "TSLPatcher") in the Editing/Modding or Holowan Laboratories sections. Content may be fragmented across Wayback reconstructions; when a thread is cited, prefer stable archive URLs.
+- **Holowan / Mixmojo:** Early KotOR modding community; some content is preserved in archives or linked from LucasForums. Use for very old format or tool history when other sources do not cover it.
+- **Reddit (r/kotor):** Useful for installation help, troubleshooting, and links to DeadlyStream or this wiki. For format or engine-level accuracy, prefer this wiki and the format pages; for "how do I install X" or "why does my mod conflict with Y", community posts can complement the docs.
+
+This wiki aims to consolidate and cite that knowledge where relevant. When adding or refining format or tool pages, prefer linking to authoritative specs (e.g. [KEY-File-Format](KEY-File-Format), [GFF-File-Format](GFF-File-Format), official BioWare Aurora docs) and to PyKotor/vendor implementation paths; for community consensus or historical context, link to DeadlyStream threads or LucasForums archive threads where appropriate.
+
 ### External Documentation
 
 Reference documentation from related projects (external sources):
 
-- **[xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)** - Aurora engine format documentation repository containing file format specifications for reverse-engineering BioWare's Aurora engine games. Part of the [xoreos project](https://xoreos.org/). The repository includes:
+- **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** - Aurora engine format documentation repository containing file format specifications for reverse-engineering BioWare's Aurora engine games ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)). Part of the [xoreos project](https://xoreos.org/). The repository includes:
   - **Official BioWare specifications** (`specs/bioware/`): Official Aurora Engine file format PDFs from the now-defunct nwn.bioware.com developer site. These documents are authoritative references for formats used across Aurora engine games including KotOR.
   - **Torlack's reverse-engineered specs** (`specs/torlack/`): Tim Smith (Torlack)'s reverse-engineered format documentation from his now-defunct website (torlock.com). These include detailed field-by-field breakdowns for formats like BIF, KEY, ERF (MOD), GFF (ITP), NCS, and binary MDL files.
   - **KotOR-specific documentation** (`specs/kotor_mdl.html`): Partial KotOR model format specifications with detailed field descriptions.
@@ -416,6 +476,7 @@ Reference documentation from related projects (external sources):
   
   **Note:** Much of the KotOR-relevant content from xoreos-docs has been comprehensively integrated into this wiki. See individual format documentation pages for specific source references.
 - **[nwn-docs](https://github.com/kucik/nwn-docs)** - Neverwinter Nights documentation (shares Aurora formats)
+- **[bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats)** - Kaitai Struct format specifications for GFF, 2DA, BIF, ERF, TLK, and other BioWare/KotOR formats; useful for parser generation and cross-tool validation.
 
 ### See also
 

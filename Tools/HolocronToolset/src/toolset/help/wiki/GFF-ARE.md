@@ -248,7 +248,7 @@ The game engine uses a linear [transformation](BWM-File-Format#walkable-adjacenc
 2. **Converting player position** to minimap coordinates for the minimap UI
 3. **Placing map notes** at correct positions on the minimap
 
-**Mathematical Formula (World → Map [texture](TPC-File-Format) coordinates):**
+**Mathematical Formula (World --> Map [texture](TPC-File-Format) coordinates):**
 
 Reference: `vendor/reone/src/libs/game/gui/map.cpp` - `getMapPosition()`
 
@@ -270,7 +270,7 @@ mapPos.x = (world.y - WorldPt1Y) * scaleY + MapPt1X
 mapPos.y = (world.x - WorldPt1X) * scaleX + MapPt1Y
 ```
 
-**Inverse Transformation (Map [texture](TPC-File-Format) → World coordinates):**
+**Inverse Transformation (Map [texture](TPC-File-Format) --> World coordinates):**
 
 For rendering the minimap [texture](TPC-File-Format) in world space:
 
@@ -294,8 +294,8 @@ originY = WorldPt1Y - MapPt1Y * worldScaleY
 | ----- | ---- | ----------- | ------------------ |
 | 0 | PositiveY | +Y is north | Direct X/Y mapping |
 | 1 | NegativeY | -Y is north | Direct X/Y mapping |
-| 2 | PositiveX | +X is north | Swapped: world.x → map.y, world.y → map.x |
-| 3 | NegativeX | -X is north | Swapped: world.x → map.y, world.y → map.x |
+| 2 | PositiveX | +X is north | Swapped: world.x --> map.y, world.y --> map.x |
+| 3 | NegativeX | -X is north | Swapped: world.x --> map.y, world.y --> map.x |
 
 **NorthAxis Usage:**
 
@@ -502,7 +502,7 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 
 The inverse [transformation](BWM-File-Format#walkable-adjacencies) is derived from reone's forward [transformation](BWM-File-Format#walkable-adjacencies):
 
-Forward (World → Map): `mapPos.x = (world.x - WorldPt1X) * scaleX + MapPt1X`
+Forward (World --> Map): `mapPos.x = (world.x - WorldPt1X) * scaleX + MapPt1X`
 
 Solving for world.x:
 
@@ -534,7 +534,7 @@ world.x = WorldPt1X - MapPt1X * worldScaleX
    - **Pattern**: `map_point = rotate(map_point - 0.5, angle) + 0.5` ❌ (WRONG)
 
 2. **Precision Loss Bug:**
-   - **Symptom**: coordinates drift during save/load (e.g., 0.667 → 0.67)
+   - **Symptom**: coordinates drift during save/load (e.g., 0.667 --> 0.67)
    - **Cause**: UI spinboxes with insufficient decimal precision (default 2 decimals)
    - **Fix**: Set spinbox decimals to 6+ for normalized coordinates
    - **Impact**: Causes cumulative misalignment over multiple roundtrips
@@ -561,7 +561,7 @@ The blue walkable area rendered in editors comes from the walkmesh ([BWM file](B
 **Testing & Validation:**
 
 1. **Roundtrip Validation:**
-   - Load are file → Save without changes → Load saved file
+   - Load are file --> Save without changes --> Load saved file
    - Verify all map coordinates (`MapPt1X/Y`, `MapPt2X/Y`, `WorldPt1X/Y`, `WorldPt2X/Y`) preserve exactly (tolerance: 0.0001)
    - Verify NorthAxis, MapZoom, MapResX preserve exactly
 

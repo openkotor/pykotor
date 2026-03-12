@@ -14,14 +14,14 @@ This page documents how PyKotor interprets both formats and how it aligns with r
   - `dwFlags` bit `0x00020000` signals mipmap count; otherwise one mipmap is assumed.
   - `dwHeight`, `dwWidth` validated up to 0x8000.
   - `DDPIXELFORMAT` describes layout:
-    - FourCC `DXT1` → TPC `DXT1`
-    - FourCC `DXT3` → TPC `DXT3`
-    - FourCC `DXT5` → TPC `DXT5`
-    - Uncompressed 32-bit BGRA masks (`00FF0000/0000FF00/000000FF/FF000000`) → TPC `BGRA`
-    - Uncompressed 24-bit BGR masks (`00FF0000/0000FF00/000000FF`) → TPC `BGR`
-    - 16-bit ARGB 1-5-5-5 (`7C00/03E0/001F/8000`) → converted to RGBA
-    - 16-bit ARGB 4-4-4-4 (`0F00/00F0/000F/F000`) → converted to RGBA
-    - 16-bit RGB 5-6-5 (`F800/07E0/001F/0`) → converted to RGB
+    - FourCC `DXT1` --> TPC `DXT1`
+    - FourCC `DXT3` --> TPC `DXT3`
+    - FourCC `DXT5` --> TPC `DXT5`
+    - Uncompressed 32-bit BGRA masks (`00FF0000/0000FF00/000000FF/FF000000`) --> TPC `BGRA`
+    - Uncompressed 24-bit BGR masks (`00FF0000/0000FF00/000000FF`) --> TPC `BGR`
+    - 16-bit ARGB 1-5-5-5 (`7C00/03E0/001F/8000`) --> converted to RGBA
+    - 16-bit ARGB 4-4-4-4 (`0F00/00F0/000F/F000`) --> converted to RGBA
+    - 16-bit RGB 5-6-5 (`F800/07E0/001F/0`) --> converted to RGB
   - Cubemap detection via `dwCaps2 & 0x00000200`; faces counted from `dwCaps2 & 0x0000FC00`.
 - Each mip size is computed with the format-aware block sizing from `TPCTextureFormat.get_size`.
 - data layouts that are not directly usable (4444, 1555, 565) are expanded into RGBA/RGB before storing in the `TPC` object.
@@ -33,9 +33,9 @@ Implementation reference:
 
 ### BioWare DDS variant
 
-- No magic; header is four [little-endian](https://en.wikipedia.org/wiki/Endianness) [uint32](GFF-File-Format#gff-data-types) values:
+- No magic; header is four [little-endian](https://en.wikipedia.org/wiki/Endianness) UInt32 values:
   - `width`, `height` (must be powers of two, < 0x8000)
-  - `bytesPerPixel` (`3` → DXT1, `4` → DXT5)
+  - `bytesPerPixel` (`3` --> DXT1, `4` --> DXT5)
   - `dataSize` (must match `(width*height)/2` for DXT1 or `width*height` for DXT5)
 - Followed by an unused [float](GFF-File-Format#gff-data-types), then the compressed payload and inferred mip levels until data is exhausted.
 - Mipmap count is inferred by walking expected block sizes until data would underflow.
@@ -50,7 +50,7 @@ Implementation reference:
 
 - `TPCDDSWriter` emits only standard DDS headers:
   - Supports `DXT1`, `DXT3`, `DXT5`, and uncompressed `BGR/BGRA`.
-  - Non-DDS-friendly formats are converted (`RGB`→`BGR`, `RGBA`→`BGRA`).
+  - Non-DDS-friendly formats are converted (`RGB`-->`BGR`, `RGBA`-->`BGRA`).
   - Mipmap counts validated per layer; cubemaps set caps (`DDSCAPS2_CUBEMAP|ALLFACES`).
 - Payloads are written in the already-compressed/uncompressed form stored in the `TPC` instance; no re-compression occurs.
 

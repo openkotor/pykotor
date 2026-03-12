@@ -288,7 +288,7 @@ Each column name is terminated by a tab character (`0x09`). The entire header li
 
 | Name      | type    | offset | size | Description                    |
 | --------- | ------- | ------ | ---- | ------------------------------ |
-| Row count | [uint32](GFF-File-Format#gff-data-types)  | varies | 4    | Number of data rows in the file ([little-endian](https://en.wikipedia.org/wiki/Endianness)) |
+| Row count | UInt32  | varies | 4    | Number of data rows in the file ([little-endian](https://en.wikipedia.org/wiki/Endianness)) |
 
 The row count is stored as a 32-bit unsigned integer in [little-endian](https://en.wikipedia.org/wiki/Endianness) [byte](https://en.wikipedia.org/wiki/Byte) order. This value determines how many row labels and data rows follow.
 
@@ -416,7 +416,7 @@ The game engine parses cell values based on context and expected data type for e
 
 ## Confirmed Engine Usage
 
-The following 2DA files have been confirmed to be actively loaded and used by the KotOR game engine through comprehensive reverse engineering analysis of `swkotor.exe` and `swkotor2.exe` using Ghidra (via Reva MCP server). This analysis examined the actual game executables to identify all 2DA files loaded via `Load2DArrays()`, `CResRef__CResRef()` calls, and related loading functions.
+The following 2DA files have been confirmed to be actively loaded and used by the KotOR game engine through comprehensive reverse engineering analysis of `swkotor.exe` and `swkotor2.exe` using Ghidra (via RE server). This analysis examined the actual game executables to identify all 2DA files loaded via `Load2DArrays()`, `CResRef__CResRef()` calls, and related loading functions.
 
 ### Analysis Methodology
 
@@ -432,117 +432,117 @@ The game engine analysis was performed by:
 
 **Core Game Systems:**
 
-- `classes.2da` - LoadClassInfo() → CResRef("Classes")
-- `feat.2da` - LoadFeatInfo() → CResRef("Feat")
-- `featgain.2da` - CSWClass::LoadFeatGain() → CResRef("featgain")
-- `skills.2da` - LoadSkillInfo() → CResRef("Skills")
-- `spells.2da` - Load2DArrays_Spells() → CResRef("Spells")
-- `exptable.2da` - CSWRules::CSWRules() → CResRef("EXPTABLE")
-- `xptable.2da` - Load2DArrays_XpBase() → CResRef("XPTable")
+- `classes.2da` - LoadClassInfo() --> CResRef("Classes")
+- `feat.2da` - LoadFeatInfo() --> CResRef("Feat")
+- `featgain.2da` - CSWClass::LoadFeatGain() --> CResRef("featgain")
+- `skills.2da` - LoadSkillInfo() --> CResRef("Skills")
+- `spells.2da` - Load2DArrays_Spells() --> CResRef("Spells")
+- `exptable.2da` - CSWRules::CSWRules() --> CResRef("EXPTABLE")
+- `xptable.2da` - Load2DArrays_XpBase() --> CResRef("XPTable")
 
 **Character & Appearance:**
 
-- `appearance.2da` - Load2DArrays_Appearance() → CResRef("Appearance")
-- `racialtypes.2da` - LoadRaceInfo() → CResRef("RacialTypes")
-- `gender.2da` - Load2DArrays_Gender() → CResRef("GENDER")
-- `portraits.2da` - Load2DArrays_Portrait() → CResRef("Portraits")
-- `heads.2da` - Load2DArrays_Heads() → CResRef("Heads")
-- `creaturespeed.2da` - Load2DArrays_CreatureSpeed() → CResRef("CreatureSpeed")
-- `ranges.2da` - CSWRules::CSWRules() → CResRef("Ranges")
+- `appearance.2da` - Load2DArrays_Appearance() --> CResRef("Appearance")
+- `racialtypes.2da` - LoadRaceInfo() --> CResRef("RacialTypes")
+- `gender.2da` - Load2DArrays_Gender() --> CResRef("GENDER")
+- `portraits.2da` - Load2DArrays_Portrait() --> CResRef("Portraits")
+- `heads.2da` - Load2DArrays_Heads() --> CResRef("Heads")
+- `creaturespeed.2da` - Load2DArrays_CreatureSpeed() --> CResRef("CreatureSpeed")
+- `ranges.2da` - CSWRules::CSWRules() --> CResRef("Ranges")
 
 **Items & Equipment:**
 
-- `baseitems.2da` - CSWBaseItemArray::Load() → CResRef("BASEITEMS")
-- `itempropdef.2da` - Load2DArrays_ItemPropDef() → CResRef("ItemPropDef")
-- `itemprops.2da` - HandleServerToPlayerDebugInfo_Item() → CResRef("ITEMPROPS")
-- `upgrade.2da` - CSWGuiUpgrade() → CResRef("upgrade")
+- `baseitems.2da` - CSWBaseItemArray::Load() --> CResRef("BASEITEMS")
+- `itempropdef.2da` - Load2DArrays_ItemPropDef() --> CResRef("ItemPropDef")
+- `itemprops.2da` - HandleServerToPlayerDebugInfo_Item() --> CResRef("ITEMPROPS")
+- `upgrade.2da` - CSWGuiUpgrade() --> CResRef("upgrade")
 
 **Objects & Areas:**
 
-- `placeables.2da` - Load2DArrays_Placeables() → CResRef("Placeables")
-- `genericdoors.2da` - Load2DArrays_GenericDoors() → CResRef("GenericDoors")
-- `doortypes.2da` - Load2DArrays_DoorTypes() → CResRef("DoorTypes")
-- `traps.2da` - Load2DArrays_Traps() → CResRef("Traps")
-- `encdifficulty.2da` - Load2DArrays_EncDifficulty() → CResRef("EncDifficulty")
-- `loadscreens.2da` - Load2DArrays_AreaTransition() → CResRef("Loadscreens")
-- `modulesave.2da` - StartNewModule() → CResRef("modulesave")
+- `placeables.2da` - Load2DArrays_Placeables() --> CResRef("Placeables")
+- `genericdoors.2da` - Load2DArrays_GenericDoors() --> CResRef("GenericDoors")
+- `doortypes.2da` - Load2DArrays_DoorTypes() --> CResRef("DoorTypes")
+- `traps.2da` - Load2DArrays_Traps() --> CResRef("Traps")
+- `encdifficulty.2da` - Load2DArrays_EncDifficulty() --> CResRef("EncDifficulty")
+- `loadscreens.2da` - Load2DArrays_AreaTransition() --> CResRef("Loadscreens")
+- `modulesave.2da` - StartNewModule() --> CResRef("modulesave")
 
 **Audio & Visual:**
 
-- `ambientmusic.2da` - Load2DArrays_AmbientMusic() → CResRef("AmbientMusic")
-- `ambientsound.2da` - Load2DArrays_AmbientSound() → CResRef("AmbientSound")
-- `footstepsounds.2da` - Load2DArrays_FootstepSounds() → CResRef("FootstepSounds")
-- `appearancesndset.2da` - Load2DArrays_AppearanceSounds() → CResRef("AppearanceSounds")
-- `weaponsounds.2da` - Load2DArrays_WeaponSounds() → CResRef("WeaponSounds")
-- `placeablesounds.2da` - Load2DArrays_PlaceableSounds() → CResRef("PlaceableSounds")
-- `camerastyle.2da` - Load2DArrays_CameraStyle() → CResRef("CameraStyle")
-- `surfacemat.2da` - Load2DArrays_SurfaceMaterial() → CResRef("SurfaceMaterial")
-- `visualeffects.2da` - Load2DArrays_VisualEffect() → CResRef("VisualEffect")
-- `videoeffects.2da` - Load2DArrays_VideoEffects() → CResRef("VideoEffects")
-- `dialoganimations.2da` - Load2DArrays_DialogAnimations() → CResRef("DialogAnimations")
-- `cursors.2da` - Load2DArrays_Cursor() → CResRef("cursors")
+- `ambientmusic.2da` - Load2DArrays_AmbientMusic() --> CResRef("AmbientMusic")
+- `ambientsound.2da` - Load2DArrays_AmbientSound() --> CResRef("AmbientSound")
+- `footstepsounds.2da` - Load2DArrays_FootstepSounds() --> CResRef("FootstepSounds")
+- `appearancesndset.2da` - Load2DArrays_AppearanceSounds() --> CResRef("AppearanceSounds")
+- `weaponsounds.2da` - Load2DArrays_WeaponSounds() --> CResRef("WeaponSounds")
+- `placeablesounds.2da` - Load2DArrays_PlaceableSounds() --> CResRef("PlaceableSounds")
+- `camerastyle.2da` - Load2DArrays_CameraStyle() --> CResRef("CameraStyle")
+- `surfacemat.2da` - Load2DArrays_SurfaceMaterial() --> CResRef("SurfaceMaterial")
+- `visualeffects.2da` - Load2DArrays_VisualEffect() --> CResRef("VisualEffect")
+- `videoeffects.2da` - Load2DArrays_VideoEffects() --> CResRef("VideoEffects")
+- `dialoganimations.2da` - Load2DArrays_DialogAnimations() --> CResRef("DialogAnimations")
+- `cursors.2da` - Load2DArrays_Cursor() --> CResRef("cursors")
 
 **Item Properties (IPRP):**
 
-- `iprp_abilities.2da` - Load2DArrays_IPRPAbilities() → CResRef("IPRP_ABILITIES")
-- `iprp_acmodtype.2da` - LoadIPRPCostTables() → CResRef("IPRP_ACMODTYPE")
-- `iprp_aligngrp.2da` - LoadIPRPCostTables() → CResRef("IPRP_ALIGNGRP")
-- `iprp_ammotype.2da` - LoadIPRPCostTables() → CResRef("IPRP_AMMOTYPE")
-- `iprp_combatdam.2da` - LoadIPRPCostTables() → CResRef("IPRP_COMBATDAM")
-- `iprp_costtable.2da` - LoadIPRPCostTables() → CResRef("IPRP_COSTTABLE")
-- `iprp_damagecost.2da` - Load2DArrays_IPRPDamage() → CResRef("IPRP_DAMAGECOST")
-- `iprp_damagetype.2da` - LoadIPRPCostTables() → CResRef("IPRP_DAMAGETYPE")
-- `iprp_immunity.2da` - LoadIPRPCostTables() → CResRef("IPRP_IMMUNITY")
-- `iprp_lightcol.2da` - Load2DArrays_LightColor() → CResRef("LightColor")
-- `iprp_meleecost.2da` - Load2DArrays_IPRPMelee() → CResRef("IPRP_MeleeCost")
-- `iprp_mosterhit.2da` - LoadIPRPCostTables() → CResRef("IPRP_MONSTERHIT")
-- `iprp_onhit.2da` - Load2DArrays_OnHit() → CResRef("IPRP_ONHIT")
-- `iprp_paramtable.2da` - LoadIPRPParamTables() → CResRef("IPRP_PARAMTABLE")
-- `iprp_protection.2da` - LoadIPRPCostTables() → CResRef("IPRP_PROTECTION")
-- `iprp_saveelement.2da` - LoadIPRPCostTables() → CResRef("IPRP_SAVEELEMENT")
-- `iprp_savingthrow.2da` - LoadIPRPCostTables() → CResRef("IPRP_SAVINGTHROW")
-- `iprp_walk.2da` - LoadIPRPCostTables() → CResRef("IPRP_WALK")
+- `iprp_abilities.2da` - Load2DArrays_IPRPAbilities() --> CResRef("IPRP_ABILITIES")
+- `iprp_acmodtype.2da` - LoadIPRPCostTables() --> CResRef("IPRP_ACMODTYPE")
+- `iprp_aligngrp.2da` - LoadIPRPCostTables() --> CResRef("IPRP_ALIGNGRP")
+- `iprp_ammotype.2da` - LoadIPRPCostTables() --> CResRef("IPRP_AMMOTYPE")
+- `iprp_combatdam.2da` - LoadIPRPCostTables() --> CResRef("IPRP_COMBATDAM")
+- `iprp_costtable.2da` - LoadIPRPCostTables() --> CResRef("IPRP_COSTTABLE")
+- `iprp_damagecost.2da` - Load2DArrays_IPRPDamage() --> CResRef("IPRP_DAMAGECOST")
+- `iprp_damagetype.2da` - LoadIPRPCostTables() --> CResRef("IPRP_DAMAGETYPE")
+- `iprp_immunity.2da` - LoadIPRPCostTables() --> CResRef("IPRP_IMMUNITY")
+- `iprp_lightcol.2da` - Load2DArrays_LightColor() --> CResRef("LightColor")
+- `iprp_meleecost.2da` - Load2DArrays_IPRPMelee() --> CResRef("IPRP_MeleeCost")
+- `iprp_mosterhit.2da` - LoadIPRPCostTables() --> CResRef("IPRP_MONSTERHIT")
+- `iprp_onhit.2da` - Load2DArrays_OnHit() --> CResRef("IPRP_ONHIT")
+- `iprp_paramtable.2da` - LoadIPRPParamTables() --> CResRef("IPRP_PARAMTABLE")
+- `iprp_protection.2da` - LoadIPRPCostTables() --> CResRef("IPRP_PROTECTION")
+- `iprp_saveelement.2da` - LoadIPRPCostTables() --> CResRef("IPRP_SAVEELEMENT")
+- `iprp_savingthrow.2da` - LoadIPRPCostTables() --> CResRef("IPRP_SAVINGTHROW")
+- `iprp_walk.2da` - LoadIPRPCostTables() --> CResRef("IPRP_WALK")
 
 **Factions & Reputation:**
 
-- `repute.2da` - Load2DArrays_Repute() → CResRef("Repute")
+- `repute.2da` - Load2DArrays_Repute() --> CResRef("Repute")
 
 **Game Systems:**
 
-- `plot.2da` - Load2DArrays_PlotXP() → CResRef("Plot")
-- `planetary.2da` - Load2DArrays_Planetary() → CResRef("Planetary")
-- `loadscreenhints.2da` - CClientExoAppInternal::GetNextLoadScreenHintSTRREF() → CResRef("loadscreenhints")
-- `movies.2da` - Load2DArrays_Movies() → CResRef("Movies")
-- `globalcat.2da` - CSWGlobalVariableTable::ReadCatalogue() → CResRef("globalcat")
-- `tutorial.2da` - Load2DArrays_Tutorial() → CResRef("Tutorial")
-- `difficultyopt.2da` - Load2DArrays_DifficultyOptions() → CResRef("DifficultyOptions")
-- `gamma.2da` - Load2DArrays_Gamma() → CResRef("Gamma")
-- `statescripts.2da` - Load2DArrays_StateScripts() → CResRef("StateScripts")
-- `poison.2da` - Load2DArrays_Poison() → CResRef("Poison")
-- `disease.2da` - Load2DArrays_Disease() → CResRef("Disease")
-- `repaadjustments.2da` - Load2DArrays_RepAdjustments() → CResRef("RepAdjustments")
-- `fractionalcr.2da` - Load2DArrays_FractionalCR() → CResRef("FractionalCR")
-- `regeneration.2da` - Load2DArrays_Regeneration() → CResRef("Regeneration")
-- `ammunitiontypes.2da` - Load2DArrays_AmmunitionTypes() → CResRef("AmmunitionTypes")
-- `keymap.2da` - Load2DArrays_Keymap() → CResRef("Keymap")
-- `bindablekeys.2da` - Load2DArrays_BindableKey() → CResRef("BindableKey")
+- `plot.2da` - Load2DArrays_PlotXP() --> CResRef("Plot")
+- `planetary.2da` - Load2DArrays_Planetary() --> CResRef("Planetary")
+- `loadscreenhints.2da` - CClientExoAppInternal::GetNextLoadScreenHintSTRREF() --> CResRef("loadscreenhints")
+- `movies.2da` - Load2DArrays_Movies() --> CResRef("Movies")
+- `globalcat.2da` - CSWGlobalVariableTable::ReadCatalogue() --> CResRef("globalcat")
+- `tutorial.2da` - Load2DArrays_Tutorial() --> CResRef("Tutorial")
+- `difficultyopt.2da` - Load2DArrays_DifficultyOptions() --> CResRef("DifficultyOptions")
+- `gamma.2da` - Load2DArrays_Gamma() --> CResRef("Gamma")
+- `statescripts.2da` - Load2DArrays_StateScripts() --> CResRef("StateScripts")
+- `poison.2da` - Load2DArrays_Poison() --> CResRef("Poison")
+- `disease.2da` - Load2DArrays_Disease() --> CResRef("Disease")
+- `repaadjustments.2da` - Load2DArrays_RepAdjustments() --> CResRef("RepAdjustments")
+- `fractionalcr.2da` - Load2DArrays_FractionalCR() --> CResRef("FractionalCR")
+- `regeneration.2da` - Load2DArrays_Regeneration() --> CResRef("Regeneration")
+- `ammunitiontypes.2da` - Load2DArrays_AmmunitionTypes() --> CResRef("AmmunitionTypes")
+- `keymap.2da` - Load2DArrays_Keymap() --> CResRef("Keymap")
+- `bindablekeys.2da` - Load2DArrays_BindableKey() --> CResRef("BindableKey")
 
 ### KotOR 2/TSL (swkotor2.exe) - Additional 2DA Files
 
 The following 2DA files are loaded in KotOR 2 but not in KotOR 1:
 
-- `emotion.2da` - FUN_00612fb0() → CResRef("Emotion")
-- `facialanim.2da` - FUN_005e6ac0() → CResRef("FacialAnim")
-- `subrace.2da` - FUN_00612ab0() → CResRef("Subrace")
-- `soundset.2da` - FUN_006ce0c0() → CResRef("SoundSet")
-- `pazaakdecks.2da` - FUN_00754f60() → CResRef("PazaakDecks")
-- `upcrystals.2da` - FUN_00730970() → CResRef("upcrystals")
-- `iprp_monstcost.2da` - FUN_00611120() → CResRef("IPRP_MONSTCOST")
-- `iprp_bonuscost.2da` - FUN_006111c0() → CResRef("IPRP_BONUSCOST")
-- `iprp_srcost.2da` - FUN_00611260() → CResRef("IPRP_SRCOST")
-- `iprp_neg5cost.2da` - FUN_00611300() → CResRef("IPRP_NEG5COST")
-- `iprp_onhitdur.2da` - FUN_006114e0() → CResRef("IPRP_ONHITDUR")
-- `iprp_pc.2da` - FUN_00612b50() → CResRef("IPRP_PC")
+- `emotion.2da` - FUN_00612fb0() --> CResRef("Emotion")
+- `facialanim.2da` - FUN_005e6ac0() --> CResRef("FacialAnim")
+- `subrace.2da` - FUN_00612ab0() --> CResRef("Subrace")
+- `soundset.2da` - FUN_006ce0c0() --> CResRef("SoundSet")
+- `pazaakdecks.2da` - FUN_00754f60() --> CResRef("PazaakDecks")
+- `upcrystals.2da` - FUN_00730970() --> CResRef("upcrystals")
+- `iprp_monstcost.2da` - FUN_00611120() --> CResRef("IPRP_MONSTCOST")
+- `iprp_bonuscost.2da` - FUN_006111c0() --> CResRef("IPRP_BONUSCOST")
+- `iprp_srcost.2da` - FUN_00611260() --> CResRef("IPRP_SRCOST")
+- `iprp_neg5cost.2da` - FUN_00611300() --> CResRef("IPRP_NEG5COST")
+- `iprp_onhitdur.2da` - FUN_006114e0() --> CResRef("IPRP_ONHITDUR")
+- `iprp_pc.2da` - FUN_00612b50() --> CResRef("IPRP_PC")
 
 **Note:** All files listed above have been verified through decompilation analysis of the game executables. Function names in `swkotor2.exe` are obfuscated (shown as `FUN_*` addresses), but the 2DA file loading calls have been confirmed. Files documented below that are not listed here may be remnants from Neverwinter Nights (NWN), unused by the game engine, or used in ways not yet identified.
 

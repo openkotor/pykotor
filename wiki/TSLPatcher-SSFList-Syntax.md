@@ -522,8 +522,8 @@ This means that memory tokens set in TLKList and 2DAList will be available when 
 
 - header: "[SSF](SSF-File-Format) " (4 bytes)
 - Version: "V1.1" (4 bytes)
-- offset to sound data: 4 bytes ([uint32](GFF-File-Format#gff-data-types))
-- Sound entries: 28 x 4 bytes ([uint32](GFF-File-Format#gff-data-types) each) = 112 bytes
+- offset to sound data: 4 bytes (UInt32)
+- Sound entries: 28 x 4 bytes (UInt32 each) = 112 bytes
 - Padding: 12 x 4 bytes (0xFFFFFFFF) = 48 bytes
 - Total size: ~160 bytes
 
@@ -547,6 +547,7 @@ This means that memory tokens set in TLKList and 2DAList will be available when 
 - [SSF-File-Format](SSF-File-Format) — Sound set structure
 - [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) — StrRef tokens; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Token usage
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme); [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
+- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums for soundset modding
 
 ---
 

@@ -1,6 +1,6 @@
 # Game Engine BWM/AABB/Walkmesh Implementation Analysis
 
-This document analyzes how the original KOTOR game engine (`swkotor.exe` / `swkotor2.exe`) handles BWM files, AABB trees, and walkmeshes, based on reverse-engineered source code from `vendor/swkotor.c` and `vendor/swkotor.h`.
+This document analyzes how the original KOTOR game engine (`swkotor.exe` / `swkotor2.exe`) handles BWM files, AABB trees, and walkmeshes, based on reverse-engineered source code from `vendor/swkotor.c` and `vendor/swkotor.h`. Those paths refer to **local or decompilation-derived sources** (not GitHub repositories); structure and line references in this doc are to that local/vendor copy.
 
 ## Overview
 
@@ -572,6 +572,7 @@ Based on this analysis, our PyKotor/HolocronToolset implementation MUST:
 - [BWM-File-Format](BWM-File-Format) — BWM structure and edges
 - [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide), [Kit-Structure-Documentation](Kit-Structure-Documentation) — Walkmesh extraction
 - [reverse_engineering_findings](reverse_engineering_findings) — Engine analysis
+- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for walkmesh and engine behavior
 
 ---
 

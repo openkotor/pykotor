@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document contains findings from reverse engineering the Star Wars: Knights of the Old Republic game executables using Ghidra and the Reva MCP tools. The analysis provides insights into the game's engine architecture that can inform improvements to the PyKotor library and toolset.
+This document contains findings from reverse engineering the Star Wars: Knights of the Old Republic game executables using Ghidra and the RE tools. The analysis provides insights into the game's engine architecture that can inform improvements to the PyKotor library and toolset. For continued analysis, open a game binary (e.g. `k1_win_gog_swkotor.exe` or `k2_win_gog_aspyr_swkotor2.exe`) in Ghidra and use the **agdec-http** MCP server (list-functions, search-strings, list-exports, list-cross-references, etc.) to map entry points, format usage, and engine behavior; see [Community sources and archives](Home#community-sources-and-archives) and [Game Engine BWM AABB Implementation](Game-Engine-BWM-AABB-Implementation) for related documentation.
 
 ## Engine Architecture
 
@@ -253,16 +253,25 @@ The detailed `ExecuteCode` analysis validates PyKotor's script interpretation ap
 4. **Memory Management:** Heap allocation patterns
 5. **Optimization Differences:** TSL-specific improvements
 
+## Using agdec-http for further analysis
+
+To extend these findings or verify behavior against a specific binary:
+
+1. **Open a game binary in Ghidra:** Load `swkotor.exe` or `swkotor2.exe` (or a variant such as `k1_win_gog_swkotor.exe`, `k2_win_gog_aspyr_swkotor2.exe`) into a Ghidra project. Ensure the program is **loaded and analyzed** (e.g. Auto Analysis complete); agdec-http tools require an open program to query.
+2. **Use the agdec-http MCP server:** With the binary loaded, tools such as `list-functions`, `search-strings`, `list-exports`, and `list-cross-references` can map entry points, locate format-related strings (e.g. "KEY ", "GFF ", "NCS "), and trace call graphs. This is useful for confirming which functions read KEY/BIF, parse GFF or 2DA, or execute NCS.
+3. **Match findings to format docs:** Cross-reference addresses and function names with vendor implementations (e.g. reone, xoreos) and with this wiki’s format pages. Document engine-specific quirks (e.g. alignment, field order) in the relevant format page or in [Game-Engine-BWM-AABB-Implementation](Game-Engine-BWM-AABB-Implementation) for geometry/walkmesh.
+4. **Community and archives:** For historical RE notes and tool discussions, see [Community sources and archives](Home#community-sources-and-archives) (DeadlyStream, LucasForums archives). Wiki content stays conceptual; do not paste raw RE dumps or tool names into format pages—link to this document or CExoResMan for engine-level detail.
+
 ## Tools Used
 
-- **Reva MCP:** Ghidra integration for reverse engineering
+- **RE / agdec-http:** Ghidra integration for reverse engineering (list-functions, search-strings, list-exports, list-cross-references)
 - **Ghidra:** Binary analysis and decompilation
 - **Function Analysis:** Cross-referencing and call graph analysis
 
 ## References
 
 - Original game executables: swkotor.exe, swkotor2.exe
-- Analysis conducted using Reva MCP tools in Ghidra
+- Analysis conducted using RE tools in Ghidra
 - Findings validated against PyKotor library implementation
 
 ### See also
@@ -270,3 +279,5 @@ The detailed `ExecuteCode` analysis validates PyKotor's script interpretation ap
 - [CExoResMan](CExoResMan) — Resource manager; [KEY-File-Format](KEY-File-Format) — Resolution order
 - [NCS-File-Format](NCS-File-Format), [NSS-File-Format](NSS-File-Format) — Script execution; [MDL-MDX-File-Format](MDL-MDX-File-Format) — Model loading
 - [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) — Engine data formats
+- [Concepts](Concepts) — Resource resolution, ResRef, override folder
+- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums for RE and tool history

@@ -8,9 +8,9 @@ HoloPatcher is a rewrite of TSLPatcher written in Python, utilizing the PyKotor 
 
 **Vendor Mod Installers:**
 
-- [`vendor/TSLPatcher/`](https://github.com/th3w1zard1/TSLPatcher) - Original Perl TSLPatcher by stoffe (reference implementation)
-- [`vendor/Kotor-Patch-Manager/`](https://github.com/th3w1zard1/Kotor-Patch-Manager) - Alternative mod manager with different patching approach
-- [`vendor/KotORModSync/`](https://github.com/th3w1zard1/KotORModSync) - Mod synchronization and installation tool
+- **[TSLPatcher](https://github.com/Fair-Strides/TSLPatcher)** - Original Perl TSLPatcher by stoffe (reference implementation) ([Mirror: th3w1zard1/TSLPatcher-1](https://github.com/th3w1zard1/TSLPatcher-1))
+- **[Kotor-Patch-Manager](https://github.com/LaneDibello/Kotor-Patch-Manager)** - Alternative mod manager with different patching approach ([Mirror: th3w1zard1/Kotor-Patch-Manager](https://github.com/th3w1zard1/Kotor-Patch-Manager))
+- **[KotORModSync](https://github.com/th3w1zard1/KotORModSync)** - Mod synchronization and installation tool (canonical repo)
 
 **Related PyKotor Tools:**
 
@@ -82,3 +82,4 @@ In summary, HACKList writes unsigned WORDs (sized at two bytes) to offsets in th
 - [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — End-user installation
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher syntax; [TSLPatcher TLKList](TSLPatcher-TLKList-Syntax), [TSLPatcher SSFList](TSLPatcher-SSFList-Syntax) — Other patch lists
 - [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic) — Implementation; [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums for patching workflows

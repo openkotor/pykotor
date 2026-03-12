@@ -89,10 +89,10 @@ The PLT file header is 24 bytes:
 | --------- | ------- | ------ | ---- | ---------------------------------------------- |
 | Signature | [char](GFF-File-Format#gff-data-types) | 0 (0x0000) | 4    | Always `"PLT "` (space-padded)                  |
 | Version   | [char](GFF-File-Format#gff-data-types) | 4 (0x0004) | 4    | Always `"V1  "` (space-padded)                  |
-| Unknown   | [uint32](GFF-File-Format#gff-data-types)  | 8 (0x0008) | 4    | Unknown value                                  |
-| Unknown   | [uint32](GFF-File-Format#gff-data-types)  | 12 (0x000C) | 4    | Unknown value                                  |
-| Width     | [uint32](GFF-File-Format#gff-data-types)  | 16 (0x0010) | 4    | [texture](TPC-File-Format) width in pixels                         |
-| Height    | [uint32](GFF-File-Format#gff-data-types)  | 20 (0x0014) | 4    | [texture](TPC-File-Format) height in pixels                       |
+| Unknown   | UInt32  | 8 (0x0008) | 4    | Unknown value                                  |
+| Unknown   | UInt32  | 12 (0x000C) | 4    | Unknown value                                  |
+| Width     | UInt32  | 16 (0x0010) | 4    | [texture](TPC-File-Format) width in pixels                         |
+| Height    | UInt32  | 20 (0x0014) | 4    | [texture](TPC-File-Format) height in pixels                       |
 
 **Reference**: [`vendor/xoreos-docs/specs/torlack/plt.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/plt.html) - PLT file header structure
 

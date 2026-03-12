@@ -50,7 +50,7 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 | file type     | [char](GFF-File-Format#gff-data-types) | 0 (0x00)   | 4    | Always `"LIP "` |
 | file Version  | [char](GFF-File-Format#gff-data-types) | 4 (0x04)   | 4    | Always `"V1.0"` |
 | Sound Length  | [float32](GFF-File-Format#gff-data-types) | 8 (0x08)   | 4    | Duration in seconds (must equal [WAV](WAV-File-Format) length) |
-| Entry count   | [uint32](GFF-File-Format#gff-data-types)  | 12 (0x0C)   | 4    | Number of [keyframes](MDL-MDX-File-Format#controller-structure) immediately following |
+| Entry count   | UInt32  | 12 (0x0C)   | 4    | Number of [keyframes](MDL-MDX-File-Format#controller-structure) immediately following |
 
 **Reference:** [`vendor/reone/src/libs/graphics/format/lipreader.cpp:27-42`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/lipreader.cpp#L27-L42)
 

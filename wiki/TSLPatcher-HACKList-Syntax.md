@@ -620,6 +620,7 @@ I have no idea why this is the exclusive instance of Stoffe's variables that doe
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) - General TSLPatcher documentation
 - [DeNCS Documentation](http://nwvault.ign.com/View.php?view=Other.Detail&id=416) - [NCS](NCS-File-Format) disassembler
 - [NCS Instruction Reference](https://nwn.wiki/compiler/instructions) - Detailed bytecode documentation
+- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums for HACKList/binary patching
 
 ## Advanced Topics
 

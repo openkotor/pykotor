@@ -10,9 +10,9 @@
 **What it does:** Jump directly to any bookmarked resource with one click
 
 **How to use:**
-1. Bookmark resources (Ctrl+B or right-click → Add to Favorites)
+1. Bookmark resources (Ctrl+B or right-click --> Add to Favorites)
 2. Open Favorites (Ctrl+Shift+B)
-3. Select a favorite → Click "Go To"
+3. Select a favorite --> Click "Go To"
 4. ✨ Instantly navigates to that resource in the file browser
 
 **Why it's useful:** No more searching through thousands of files to find frequently used resources!
@@ -35,7 +35,7 @@
 - Detects name collisions before renaming
 - Shows clear error messages if something goes wrong
 
-**Example:** Rename `my_texture.tpc` → `character_head.tpc` in seconds!
+**Example:** Rename `my_texture.tpc` --> `character_head.tpc` in seconds!
 
 ---
 
@@ -44,9 +44,9 @@
 
 **How to use:**
 1. Select resource(s) in Override
-2. Cut (Ctrl+X or right-click → Cut)
+2. Cut (Ctrl+X or right-click --> Cut)
 3. Navigate to destination folder
-4. Paste (Ctrl+V or right-click → Paste)
+4. Paste (Ctrl+V or right-click --> Paste)
 5. ✅ Resources moved, model updated automatically
 
 **Example:** Organize your Override folder by moving all textures into a `textures/` subfolder!
@@ -58,7 +58,7 @@
 
 **How to use:**
 1. Select multiple resources (Shift+Click or Ctrl+Click)
-2. Right-click → "Batch Operations..." (or Ctrl+Shift+O)
+2. Right-click --> "Batch Operations..." (or Ctrl+Shift+O)
 3. Choose operation:
    - **Extract All** - Save all to a folder
    - **Duplicate All to Override** - Copy all to Override
@@ -76,7 +76,7 @@
 
 **How to use:**
 1. Select files to rename
-2. Batch Operations → "Rename with Pattern"
+2. Batch Operations --> "Rename with Pattern"
 3. Enter find pattern: `old_*.tpc` (use * for any text)
 4. Enter replace pattern: `new_*.tpc`
 5. Preview: "15 files will be renamed"
@@ -84,9 +84,9 @@
 7. ✅ All matching files renamed instantly!
 
 **Examples:**
-- `texture_*` → `char_*` renames `texture_001.tpc` to `char_001.tpc`
-- `temp_*` → `*` removes "temp_" prefix from all files
-- `*_old` → `*` removes "_old" suffix
+- `texture_*` --> `char_*` renames `texture_001.tpc` to `char_001.tpc`
+- `temp_*` --> `*` removes "temp_" prefix from all files
+- `*_old` --> `*` removes "_old" suffix
 
 **Why it's powerful:** Rename 50 files in seconds instead of manually one-by-one!
 
@@ -120,7 +120,7 @@
 **What it does:** Create new resources from templates with one dialog
 
 **How to use:**
-1. Right-click on any folder OR File → New
+1. Right-click on any folder OR File --> New
 2. Select "New Resource..."
 3. Choose resource type from list:
    - 2DA Table, Script Source, Creatures, Placeables
@@ -162,7 +162,7 @@
 - Refreshes the file browser
 - Shows "Saved: filename.ext" message
 
-**Example:** Edit 3 different dialog files, press Ctrl+S → "Save All" → all changes written to disk!
+**Example:** Edit 3 different dialog files, press Ctrl+S --> "Save All" --> all changes written to disk!
 
 ---
 
@@ -194,7 +194,7 @@
 - All batch operations
 - All navigation commands
 
-**Example:** Press Ctrl+Shift+P, type "new", select "File: New Resource" → create dialog opens!
+**Example:** Press Ctrl+Shift+P, type "new", select "File: New Resource" --> create dialog opens!
 
 ---
 
@@ -222,14 +222,14 @@
 5. Replace: `mymod_*.tpc`
 6. Preview: "23 files will be renamed"
 7. OK
-8. ✅ All textures renamed: `texture.tpc` → `mymod_texture.tpc`
+8. ✅ All textures renamed: `texture.tpc` --> `mymod_texture.tpc`
 
 ---
 
 ### Scenario 3: Creating a New Mod
 **Goal:** Create new creature, dialog, and items from scratch
 
-1. File → New Resource (or right-click folder)
+1. File --> New Resource (or right-click folder)
 2. Create Creature (UTC):
    - Select "Creature (.utc)"
    - Name: `my_npc`
@@ -297,11 +297,11 @@ Bookmark your mod's main files (master dialog, main script, key creatures) for i
 Need to extract, duplicate, or delete 100+ files? Use batch operations instead of one-by-one!
 
 ### Tip 3: Pattern Renaming Saves Hours
-Renaming 50 textures? Use patterns: `*.tpc` → `mymod_*.tpc` (literally 5 seconds vs 10+ minutes)
+Renaming 50 textures? Use patterns: `*.tpc` --> `mymod_*.tpc` (literally 5 seconds vs 10+ minutes)
 
 ### Tip 4: Open With for Advanced Editing
-Need to see raw GFF structure? Use "Open With..." → Generic GFF Editor
-Need specialized editing? Use "Open With..." → Specialized Editor
+Need to see raw GFF structure? Use "Open With..." --> Generic GFF Editor
+Need specialized editing? Use "Open With..." --> Specialized Editor
 
 ### Tip 5: Create Resources from Templates
 Never copy-paste templates again! Create new resources with proper structure built-in.

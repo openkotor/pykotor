@@ -10,25 +10,17 @@ NSS (NWScript Source) files contain human-readable NWScript source code that com
 
 **Vendor Script Compilers:**
 
-- [`vendor/xoreos-tools/src/nwscript/`](https://github.com/th3w1zard1/xoreos-tools/tree/master/src/nwscript) - NWScript compiler and decompiler
-- [`vendor/KotOR-Scripting-Tool/`](https://github.com/th3w1zard1/KotOR-Scripting-Tool) - Visual NWScript IDE with integrated compiler
-- [`vendor/HoloLSP/`](https://github.com/th3w1zard1/HoloLSP) - Language Server Protocol implementation for NWScript
-- [`vendor/nwscript-mode.el/`](https://github.com/th3w1zard1/nwscript-mode.el) - Emacs major mode for NWScript editing
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** - NWScript compiler and decompiler (`src/nwscript/`) ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools))
+- **[KotOR-Scripting-Tool](https://github.com/KobaltBlu/KotOR-Scripting-Tool)** - Visual NWScript IDE with integrated compiler ([Mirror: th3w1zard1/KotOR-Scripting-Tool](https://github.com/th3w1zard1/KotOR-Scripting-Tool))
+- **[HoloLSP](https://github.com/th3w1zard1/HoloLSP)** - Language Server Protocol implementation for NWScript (canonical repo)
+- **[nwscript-mode.el](https://github.com/implicit-image/nwscript-mode.el)** - Emacs major mode for NWScript editing ([Mirror: th3w1zard1/nwscript-mode.el](https://github.com/th3w1zard1/nwscript-mode.el))
 
 **Vendor Script Implementations:**
 
-- [`vendor/xoreos/src/engines/nwscript/`](https://github.com/th3w1zard1/xoreos/tree/master/src/engines/nwscript) - Complete NWScript virtual machine implementation
-- [`vendor/reone/src/libs/script/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script) - Script execution engine
-- [`vendor/KotOR.js/src/nwscript/`](https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript) - TypeScript NWScript interpreter
-- [`vendor/Vanilla_KOTOR_Script_Source/`](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source) - Decompiled vanilla KotOR scripts for reference
-
-### See also
-
-- [NCS File Format](NCS-File-Format) - Compiled NWScript bytecode format
-- [NSS Shared Functions - Actions](NSS-Shared-Functions-Actions) - Action functions documentation
-- [NSS Shared Constants](NSS-Shared-Constants-Object-Type-Constants) - Script constants reference
-- [GFF-DLG](GFF-DLG) - [dialogue files](GFF-File-Format) that trigger [NCS](NCS-File-Format) scripts
-- [2DA Files](2DA-File-Format) - Game data tables referenced by scripts
+- **[xoreos](https://github.com/xoreos/xoreos)** - Complete NWScript virtual machine implementation (`src/engines/nwscript/`) ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos))
+- **[reone](https://github.com/seedhartha/reone)** - Script execution engine (`src/libs/script/`) ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone))
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** - TypeScript NWScript interpreter (`src/nwscript/`) ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js))
+- **[Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)** - Decompiled vanilla KotOR scripts for reference ([Mirror: th3w1zard1/Vanilla_KOTOR_Script_Source](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source))
 
 ## Table of Contents
 
@@ -6419,7 +6411,7 @@ if (nPlanet == PLANET_TARIS) { ... }
 // Generates: CONSTI 1 (pushes integer 1 onto stack)
 ```
 
-**Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py:126-205`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py), [`wiki/NCS-File-Format.md#engine-function-calls`](NCS-File-Format)
+**Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py:126-205`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py), [NCS-File-Format#engine-function-calls](NCS-File-Format#engine-function-calls)
 
 ---
 
@@ -6688,3 +6680,12 @@ See [Other Constants](NSS-TSL-Only-Constants-Other-Constants) for detailed docum
 - **[NCS File Format](NCS-File-Format)**: Compiled bytecode format that NSS compiles to
 - **[GFF File Format](GFF-File-Format)**: Scripts [ARE](GFF-File-Format) stored in [GFF](GFF-File-Format) files ([UTC](GFF-File-Format), [UTD](GFF-File-Format), etc.)
 - **[KEY File Format](KEY-File-Format)**: nwscript.nss is stored in [chitin.key](KEY-File-Format)
+
+### See also
+
+- [NCS File Format](NCS-File-Format) — Compiled NWScript bytecode
+- [NSS Shared Functions - Actions](NSS-Shared-Functions-Actions) — Action functions
+- [NSS Shared Constants](NSS-Shared-Constants-Object-Type-Constants) — Object type and script constants
+- [GFF-DLG](GFF-DLG) — Dialogue files that trigger NCS scripts
+- [2DA File Format](2DA-File-Format) — Game data tables referenced by scripts
+- [Home](Home#community-sources-and-archives) — Community sources and archives

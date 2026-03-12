@@ -1,12 +1,12 @@
 # KotOR GFF file format Documentation
 
-This document provides a detailed description of the GFF (Generic file format) used in Knights of the Old Republic (KotOR) games. GFF is a container format used for many different game resource types, including character templates, areas, dialogs, placeables, creatures, items, and more.
+This document describes the GFF (Generic File Format) used in Knights of the Old Republic (KotOR) and The Sith Lords (TSL). GFF is BioWare's binary container for structured game data: areas, creatures, items, dialogues, placeables, triggers, and more. **Audience:** modders editing or creating GFF-based resources, and developers implementing read/write support.
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine GFF format specification, see [Bioware Aurora GFF Format](Bioware-Aurora-GFF) and [Bioware Aurora Common GFF Structs](Bioware-Aurora-CommonGFFStructs).
 
 **For mod developers:** To modify GFF files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
 
-**Related formats:** GFF files often reference other formats such as [2DA files](2DA-File-Format) for configuration data, [TLK files](TLK-File-Format) for text strings, [MDL/MDX files](MDL-MDX-File-Format) for 3D [models](MDL-MDX-File-Format), and [NCS files](NCS-File-Format) for scripts. Loading any GFF (ARE, DLG, UTC, UTI, etc.) uses the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources: override, then loaded MOD/SAV, then KEY/BIF.
+**Related formats:** GFF files often reference other formats such as [2DA files](2DA-File-Format) for configuration data, [TLK files](TLK-File-Format) for text strings, [MDL/MDX files](MDL-MDX-File-Format) for 3D [models](MDL-MDX-File-Format), and [NCS files](NCS-File-Format) for scripts. Loading any GFF (ARE, DLG, UTC, UTI, etc.) uses the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources: override, then loaded MOD/SAV, then KEY/BIF. **Modder note:** Tools like KotOR Tool, K-GFF, and Holocron Toolset edit GFF; TSLPatcher/HoloPatcher [GFFList](TSLPatcher-GFFList-Syntax) can add or modify fields but not remove structs—see [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#removing-gff-structs-when-patchers-cannot) for script-based removal. [Concepts](Concepts) defines GFF and related terms.
 
 ## Table of Contents
 
@@ -86,13 +86,15 @@ Every `.utc` ([UTC](GFF-File-Format#utc-creature)), `.uti` ([UTI](GFF-File-Forma
 
 **Vendor References:**
 
-- [`vendor/reone/src/libs/resource/gff.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/gff.cpp) - Complete C++ GFF reader/writer implementation
-- [`vendor/reone/include/reone/resource/gff.h`](https://github.com/th3w1zard1/reone/blob/master/include/reone/resource/gff.h) - GFF type definitions and API
-- [`vendor/xoreos/src/aurora/gff3file.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/gff3file.cpp) - Generic Aurora GFF3 implementation (shared format)
-- [`vendor/KotOR.js/src/resource/GFFObject.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/GFFObject.ts) - TypeScript GFF parser with schema validation
-- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/GFFObject.cs`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/GFFObject.cs) - C# Unity GFF loader
-- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorGFF/GFF.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs) - .NET GFF reader/writer
-- [`vendor/xoreos-tools/src/aurora/gff3file.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/aurora/gff3file.cpp) - Command-line GFF tools implementation
+Repositories (original first, mirror second): **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)), **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)), **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)), **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)), **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)), **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)), **[bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats)** - Kaitai Struct format specs for GFF and other BioWare formats.
+
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/gff.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/gff.cpp) - Complete C++ GFF reader/writer implementation
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`include/reone/resource/gff.h`](https://github.com/seedhartha/reone/blob/master/include/reone/resource/gff.h) - GFF type definitions and API
+- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/gff3file.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/gff3file.cpp) - Generic Aurora GFF3 implementation (shared format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/GFFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts) - TypeScript GFF parser with schema validation
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Scripts/FileObjects/GFFObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/GFFObject.cs) - C# Unity GFF loader
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorGFF/GFF.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs) - .NET GFF reader/writer
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)): [`src/aurora/gff3file.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/gff3file.cpp) - Command-line GFF tools implementation
 
 ### See also
 
@@ -113,18 +115,18 @@ The file header is 56 bytes in size:
 | ------------------- | ------- | ------ | ---- | ---------------------------------------------- |
 | file type           | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | Content type (e.g., `"GFF "`, `"ARE "`, `"UTC "`) |
 | file Version        | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | format version (`"V3.2"` for KotOR)           |
-| Struct array offset | [uint32](GFF-File-Format#gff-data-types)  | 8 (0x08) | 4    | offset to struct array                        |
-| Struct count        | [uint32](GFF-File-Format#gff-data-types)  | 12 (0x0C) | 4    | Number of structs                              |
-| field array offset  | [uint32](GFF-File-Format#gff-data-types)  | 16 (0x10) | 4    | offset to field array                         |
-| field count         | [uint32](GFF-File-Format#gff-data-types)  | 20 (0x14) | 4    | Number of fields                               |
-| Label array offset   | [uint32](GFF-File-Format#gff-data-types)  | 24 (0x18) | 4    | offset to label array                         |
-| Label count          | [uint32](GFF-File-Format#gff-data-types)  | 28 (0x1C) | 4    | Number of labels                               |
-| field data offset    | [uint32](GFF-File-Format#gff-data-types)  | 32 (0x20) | 4    | offset to field data section                  |
-| field data count     | [uint32](GFF-File-Format#gff-data-types)  | 36 (0x24) | 4    | size of field data section in bytes           |
-| field indices offset | [uint32](GFF-File-Format#gff-data-types)  | 40 (0x28) | 4    | offset to field indices array                 |
-| field indices count  | [uint32](GFF-File-Format#gff-data-types)  | 44 (0x2C) | 4    | Number of field indices                       |
-| List indices offset  | [uint32](GFF-File-Format#gff-data-types)  | 48 (0x30) | 4    | offset to list indices array                  |
-| List indices count   | [uint32](GFF-File-Format#gff-data-types)  | 52 (0x34) | 4    | Number of list indices                        |
+| Struct array offset | UInt32  | 8 (0x08) | 4    | offset to struct array                        |
+| Struct count        | UInt32  | 12 (0x0C) | 4    | Number of structs                              |
+| field array offset  | UInt32  | 16 (0x10) | 4    | offset to field array                         |
+| field count         | UInt32  | 20 (0x14) | 4    | Number of fields                               |
+| Label array offset   | UInt32  | 24 (0x18) | 4    | offset to label array                         |
+| Label count          | UInt32  | 28 (0x1C) | 4    | Number of labels                               |
+| field data offset    | UInt32  | 32 (0x20) | 4    | offset to field data section                  |
+| field data count     | UInt32  | 36 (0x24) | 4    | size of field data section in bytes           |
+| field indices offset | UInt32  | 40 (0x28) | 4    | offset to field indices array                 |
+| field indices count  | UInt32  | 44 (0x2C) | 4    | Number of field indices                       |
+| List indices offset  | UInt32  | 48 (0x30) | 4    | offset to list indices array                  |
+| List indices count   | UInt32  | 52 (0x34) | 4    | Number of list indices                        |
 
 **References**
 
@@ -153,8 +155,8 @@ Each struct entry is 12 bytes:
 | Name       | type   | offset | size | Description                                                      |
 | ---------- | ------ | ------ | ---- | ---------------------------------------------------------------- |
 | Struct ID  | [int32](GFF-File-Format#gff-data-types)  | 0 (0x00) | 4    | structure type identifier                                        |
-| data/offset| [uint32](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | field index (if 1 field) or offset to field indices (if multiple) |
-| field count| [uint32](GFF-File-Format#gff-data-types) | 8 (0x08) | 4    | Number of fields in this struct (0, 1, or >1)                   |
+| data/offset| UInt32 | 4 (0x04) | 4    | field index (if 1 field) or offset to field indices (if multiple) |
+| field count| UInt32 | 8 (0x08) | 4    | Number of fields in this struct (0, 1, or >1)                   |
 
 **References**
 
@@ -168,9 +170,9 @@ Each field entry is 12 bytes:
 
 | Name        | type   | offset | size | Description                                                      |
 | ----------- | ------ | ------ | ---- | ---------------------------------------------------------------- |
-| field type  | [uint32](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | data type (see [GFF Data Types](#gff-data-types))              |
-| Label index | [uint32](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | index into label array for field name                           |
-| data/offset | [uint32](GFF-File-Format#gff-data-types) | 8 (0x08) | 4    | Inline data (simple types) or offset to field data (complex types) |
+| field type  | UInt32 | 0 (0x00) | 4    | data type (see [GFF Data Types](#gff-data-types))              |
+| Label index | UInt32 | 4 (0x04) | 4    | index into label array for field name                           |
+| data/offset | UInt32 | 8 (0x08) | 4    | Inline data (simple types) or offset to field data (complex types) |
 
 **References**
 
@@ -482,6 +484,7 @@ Complex types require accessing data from the field data section:
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Patching GFF via HoloPatcher/TSLPatcher
 - [KEY-File-Format](KEY-File-Format) — Resource resolution
 - [Bioware-Aurora-GFF](Bioware-Aurora-GFF) — Aurora GFF specification
+- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, forums for GFF structure and modding
 
 ---
 

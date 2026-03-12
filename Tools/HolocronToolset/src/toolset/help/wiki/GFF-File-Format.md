@@ -113,18 +113,18 @@ The file header is 56 bytes in size:
 | ------------------- | ------- | ------ | ---- | ---------------------------------------------- |
 | file type           | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | Content type (e.g., `"GFF "`, `"ARE "`, `"UTC "`) |
 | file Version        | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | format version (`"V3.2"` for KotOR)           |
-| Struct array offset | [uint32](GFF-File-Format#gff-data-types)  | 8 (0x08) | 4    | offset to struct array                        |
-| Struct count        | [uint32](GFF-File-Format#gff-data-types)  | 12 (0x0C) | 4    | Number of structs                              |
-| field array offset  | [uint32](GFF-File-Format#gff-data-types)  | 16 (0x10) | 4    | offset to field array                         |
-| field count         | [uint32](GFF-File-Format#gff-data-types)  | 20 (0x14) | 4    | Number of fields                               |
-| Label array offset   | [uint32](GFF-File-Format#gff-data-types)  | 24 (0x18) | 4    | offset to label array                         |
-| Label count          | [uint32](GFF-File-Format#gff-data-types)  | 28 (0x1C) | 4    | Number of labels                               |
-| field data offset    | [uint32](GFF-File-Format#gff-data-types)  | 32 (0x20) | 4    | offset to field data section                  |
-| field data count     | [uint32](GFF-File-Format#gff-data-types)  | 36 (0x24) | 4    | size of field data section in bytes           |
-| field indices offset | [uint32](GFF-File-Format#gff-data-types)  | 40 (0x28) | 4    | offset to field indices array                 |
-| field indices count  | [uint32](GFF-File-Format#gff-data-types)  | 44 (0x2C) | 4    | Number of field indices                       |
-| List indices offset  | [uint32](GFF-File-Format#gff-data-types)  | 48 (0x30) | 4    | offset to list indices array                  |
-| List indices count   | [uint32](GFF-File-Format#gff-data-types)  | 52 (0x34) | 4    | Number of list indices                        |
+| Struct array offset | UInt32  | 8 (0x08) | 4    | offset to struct array                        |
+| Struct count        | UInt32  | 12 (0x0C) | 4    | Number of structs                              |
+| field array offset  | UInt32  | 16 (0x10) | 4    | offset to field array                         |
+| field count         | UInt32  | 20 (0x14) | 4    | Number of fields                               |
+| Label array offset   | UInt32  | 24 (0x18) | 4    | offset to label array                         |
+| Label count          | UInt32  | 28 (0x1C) | 4    | Number of labels                               |
+| field data offset    | UInt32  | 32 (0x20) | 4    | offset to field data section                  |
+| field data count     | UInt32  | 36 (0x24) | 4    | size of field data section in bytes           |
+| field indices offset | UInt32  | 40 (0x28) | 4    | offset to field indices array                 |
+| field indices count  | UInt32  | 44 (0x2C) | 4    | Number of field indices                       |
+| List indices offset  | UInt32  | 48 (0x30) | 4    | offset to list indices array                  |
+| List indices count   | UInt32  | 52 (0x34) | 4    | Number of list indices                        |
 
 **Reference**: [`vendor/reone/src/libs/resource/format/gffreader.cpp:30-44`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L30-L44)
 
@@ -145,8 +145,8 @@ Each struct entry is 12 bytes:
 | Name       | type   | offset | size | Description                                                      |
 | ---------- | ------ | ------ | ---- | ---------------------------------------------------------------- |
 | Struct ID  | [int32](GFF-File-Format#gff-data-types)  | 0 (0x00) | 4    | structure type identifier                                        |
-| data/offset| [uint32](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | field index (if 1 field) or offset to field indices (if multiple) |
-| field count| [uint32](GFF-File-Format#gff-data-types) | 8 (0x08) | 4    | Number of fields in this struct (0, 1, or >1)                   |
+| data/offset| UInt32 | 4 (0x04) | 4    | field index (if 1 field) or offset to field indices (if multiple) |
+| field count| UInt32 | 8 (0x08) | 4    | Number of fields in this struct (0, 1, or >1)                   |
 
 **Reference**: [`vendor/reone/src/libs/resource/format/gffreader.cpp:40-62`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L40-L62)
 
@@ -156,9 +156,9 @@ Each field entry is 12 bytes:
 
 | Name        | type   | offset | size | Description                                                      |
 | ----------- | ------ | ------ | ---- | ---------------------------------------------------------------- |
-| field type  | [uint32](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | data type (see [GFF Data Types](#gff-data-types))              |
-| Label index | [uint32](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | index into label array for field name                           |
-| data/offset | [uint32](GFF-File-Format#gff-data-types) | 8 (0x08) | 4    | Inline data (simple types) or offset to field data (complex types) |
+| field type  | UInt32 | 0 (0x00) | 4    | data type (see [GFF Data Types](#gff-data-types))              |
+| Label index | UInt32 | 4 (0x04) | 4    | index into label array for field name                           |
+| data/offset | UInt32 | 8 (0x08) | 4    | Inline data (simple types) or offset to field data (complex types) |
 
 **Reference**: [`vendor/reone/src/libs/resource/format/gffreader.cpp:67-76`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L67-L76)
 

@@ -12,6 +12,8 @@ A BWM file is a file format used by BioWare games to store walkmesh data. A walk
 - **PWK (Placeable Walkmesh)**: Used for placeable objects (chests, tables, etc.). Contains vertices in local coordinates (relative to the placeable's position), collision-only (no pathfinding), typically no AABB tree.
 - **DWK (Door Walkmesh)**: Used for doors. Similar to PWK, contains vertices in local coordinates, collision-only, typically no AABB tree.
 
+Area rooms can have **two** walkmesh-related data sources: (1) the **WOK file** (standalone BWM)—used for pathfinding and room transitions (adjacency, perimeters, transition IDs); (2) **AABB/walkmesh data embedded in the room MDL**—used by the engine for camera collision in some code paths. Both must be consistent for correct behavior.
+
 **What walkmeshes do:**
 
 Walkmeshes serve multiple critical functions in KotOR:
@@ -24,6 +26,19 @@ Walkmeshes serve multiple critical functions in KotOR:
 **Related formats:** BWM files are used in conjunction with [GFF ARE files](GFF-File-Format#are-area) which define area properties and contain references to walkmesh files. WOK/PWK/DWK files are resolved using the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Game Engine Implementation**: See [Game Engine BWM/AABB Implementation](Game-Engine-BWM-AABB-Implementation) for detailed analysis of how the original KOTOR engine handles BWM files, based on reverse-engineered source code.
+
+**Implementation**
+
+- **PyKotor:** [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm) — binary and ASCII read/write ([`io_bwm.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py), [`bwm_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py), [`io_bwm_ascii.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm_ascii.py)).
+
+**Vendor References:**
+
+Repositories (original first, mirror second): **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)), **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)), **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)), **[WalkmeshVisualizer](https://github.com/glasnonck/WalkmeshVisualizer)** ([Mirror: th3w1zard1/WalkmeshVisualizer](https://github.com/th3w1zard1/WalkmeshVisualizer)).
+
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)) - WOK/PWK/DWK loading for area and placeable collision; walkmesh scene nodes and AABB usage (see [Game Engine BWM/AABB Implementation](Game-Engine-BWM-AABB-Implementation)).
+- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)) - Aurora walkmesh implementation (WOK/PWK/DWK) shared across KotOR and NWN.
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)) - TypeScript WOK/PWK/DWK parsing and `OdysseyWalkMesh` integration for pathfinding and collision.
+- **[WalkmeshVisualizer](https://github.com/glasnonck/WalkmeshVisualizer)** ([Mirror: th3w1zard1/WalkmeshVisualizer](https://github.com/th3w1zard1/WalkmeshVisualizer)) - Standalone walkmesh viewing and debugging tool for KotOR 1 & 2.
 
 ---
 
@@ -240,15 +255,15 @@ Faces are typically ordered with walkable faces first, followed by non-walkable 
 
 The vertex order determines the face's normal direction (via the right-hand rule). The engine uses this to determine which side of the face is "up" (walkable) versus "down" (non-walkable). Faces should be oriented such that their normals point upward for walkable surfaces.
 
-Normals follow right-hand rule: counter-clockwise vertex order (v1 → v2 → v3) when viewed from front yields upward-pointing normal for walkable surfaces. Cross product formulas `(v2 - v1) × (v3 - v1)` and `(v3 - v2) × (v1 - v2)` are mathematically equivalent.
+Normals follow right-hand rule: counter-clockwise vertex order (v1 --> v2 --> v3) when viewed from front yields upward-pointing normal for walkable surfaces. Cross product formulas `(v2 - v1) × (v3 - v1)` and `(v3 - v2) × (v1 - v2)` are mathematically equivalent.
 
 **Edge Numbering:**
 
 Each triangle has 3 edges, numbered 0, 1, and 2:
 
-- Edge 0: From vertex V1 to vertex V2 (V1 → V2)
-- Edge 1: From vertex V2 to vertex V3 (V2 → V3)
-- Edge 2: From vertex V3 to vertex V1 (V3 → V1)
+- Edge 0: From vertex V1 to vertex V2 (V1 --> V2)
+- Edge 1: From vertex V2 to vertex V3 (V2 --> V3)
+- Edge 2: From vertex V3 to vertex V1 (V3 --> V1)
 
 ### Materials
 
@@ -517,7 +532,7 @@ The transition value is a **0-based room index** corresponding to the order room
 
 **Both rooms must reference each other.** If Room A has a perimeter edge with a transition pointing to Room B's index, Room B must have a matching perimeter edge at that boundary pointing back to Room A's index. Without reciprocal transitions the engine cannot route the player across the boundary. Each room keeps its own walkmesh (WOK); room walkmeshes are never merged across rooms — the boundary is traversed via the paired transition edges.
 
-When the indoor map builder processes a room's walkmesh, it remaps transitions from dummy indices (from the kit component) to actual room indices (in the built module).
+When the indoor map builder processes a room's walkmesh, it remaps transitions from dummy indices (from the kit component) to actual room indices (in the built module). When **adding or rearranging rooms**, existing roomlinks (transition indices) no longer match the new layout and must be **reassigned** in a layout-aware tool. For more on this and troubleshooting room crossing, see [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions).
 
 ### Perimeters
 
@@ -527,7 +542,7 @@ When the indoor map builder processes a room's walkmesh, it remaps transitions f
 
 **What are Perimeters?**
 
-Perimeters mark the end of closed loops of perimeter edges. Each perimeter value is an index into the edge array, indicating where a perimeter loop ends. This allows the engine to traverse complete boundary loops for pathfinding and area transitions.
+Perimeters mark the end of closed loops of perimeter edges. Each perimeter value is an index into the edge array, indicating where a perimeter loop ends. This allows the engine to traverse complete boundary loops for pathfinding and area transitions. At boundary edges the engine relies on **correct alignment of perimeter edges and AABB/face connectivity**; misaligned or degenerate AABB at seams can cause "can't cross" issues. See [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions) for troubleshooting.
 
 **Perimeter Loop Construction:**
 

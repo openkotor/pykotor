@@ -66,9 +66,9 @@ The file header is 20 bytes in size:
 | ------------------------- | ------- | ------ | ---- | ---------------------------------------------- |
 | file type                 | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | `"BIFF"` for BIF, `"BZF "` for compressed BIF  |
 | file Version              | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | `"V1  "` for BIF, `"V1.0"` for BZF             |
-| Variable Resource count   | [uint32](GFF-File-Format#gff-data-types)  | 8 (0x08) | 4    | Number of variable-size resources              |
-| Fixed Resource count      | [uint32](GFF-File-Format#gff-data-types)  | 12 (0x0C) | 4    | Number of fixed-size resources (unused, always 0) |
-| offset to Variable Resource Table | [uint32](GFF-File-Format#gff-data-types) | 16 (0x10) | 4 | offset to variable resource entries            |
+| Variable Resource count   | UInt32  | 8 (0x08) | 4    | Number of variable-size resources              |
+| Fixed Resource count      | UInt32  | 12 (0x0C) | 4    | Number of fixed-size resources (unused, always 0) |
+| offset to Variable Resource Table | UInt32 | 16 (0x10) | 4 | offset to variable resource entries            |
 
 **Note on Fixed Resources:** The "Fixed Resource count" field is a legacy holdover from **Neverwinter Nights** (not used in KotOR) where some resource types had predetermined sizes. In KotOR, this field is always `0` and fixed resource tables are never used. All resources are stored in the variable resource table regardless of their size.
 
@@ -84,10 +84,10 @@ Each variable resource entry is 16 bytes:
 
 | Name        | type   | offset | size | Description                                                      |
 | ----------- | ------ | ------ | ---- | ---------------------------------------------------------------- |
-| Resource ID | [uint32](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | Resource ID (matches [KEY file](KEY-File-Format) entry, encodes BIF index and resource index) |
-| offset      | [uint32](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | offset to resource data in file (absolute file offset)                    |
-| file size   | [uint32](GFF-File-Format#gff-data-types) | 8 (0x08) | 4    | Uncompressed size of resource data (bytes)                                 |
-| Resource type | [uint32](GFF-File-Format#gff-data-types) | 12 (0x0C) | 4    | Resource type identifier (see ResourceType enum)                          |
+| Resource ID | UInt32 | 0 (0x00) | 4    | Resource ID (matches [KEY file](KEY-File-Format) entry, encodes BIF index and resource index) |
+| offset      | UInt32 | 4 (0x04) | 4    | offset to resource data in file (absolute file offset)                    |
+| file size   | UInt32 | 8 (0x08) | 4    | Uncompressed size of resource data (bytes)                                 |
+| Resource type | UInt32 | 12 (0x0C) | 4    | Resource type identifier (see ResourceType enum)                          |
 
 **Entry Reading Order:**
 

@@ -38,7 +38,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Appearance` | [uint32](GFF-File-Format#gff-data-types) | Index into [`placeables.2da`](2DA-placeables) |
+| `Appearance` | UInt32 | Index into [`placeables.2da`](2DA-placeables) |
 | `Type` | [byte](GFF-File-Format#gff-data-types) | Placeable type category |
 | `AnimationState` | [byte](GFF-File-Format#gff-data-types) | Current [animation](MDL-MDX-File-Format#animation-header) state |
 

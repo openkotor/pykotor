@@ -49,7 +49,7 @@ LocalizedName(strref)=12345
 Comment(lang0)=Hello there
 ```
 
-4. Add a brand-new field using `AddField#` → create another section for its details:
+4. Add a brand-new field using `AddField#` --> create another section for its details:
 
 ```ini
 AddField0=new_property
@@ -76,12 +76,12 @@ That's it. The rest of this page explains the knobs and dials you'll use as your
 - Paths use backslashes: `Parent\Child\Field`
 - Lists use numbers: `RepliesList\0\Text`
 - Localized strings use parentheses on the field name:
-  - `(strref)` → set the [dialog.tlk](TLK-File-Format) reference
-  - `(lang0)`..`(lang9)` → set per-language text
+  - `(strref)` --> set the [dialog.tlk](TLK-File-Format) reference
+  - `(lang0)`..`(lang9)` --> set per-language text
 - vectors: `Position=1.5|2.0|3.0`, `Orientation=0.0|0.0|0.0|1.0`
 - Tokens as values:
-  - `[StrRef](TLK-File-Format#string-references-strref)#` → a [TLK](TLK-File-Format) token you set elsewhere
-  - `2DAMEMORY#` → a [2DA](2DA-File-Format) token you set elsewhere
+  - `[StrRef](TLK-File-Format#string-references-strref)#` --> a [TLK](TLK-File-Format) token you set elsewhere
+  - `2DAMEMORY#` --> a [2DA](2DA-File-Format) token you set elsewhere
 - Tokens for dynamic field targets and list indices:
   - In AddField: `2DAMEMORY#=ListIndex` saves where a struct was inserted
   - `2DAMEMORY#=!FieldPath` saves the full path to a field you just added
@@ -469,7 +469,7 @@ Value=2
 | Char (Int8) | 8-bit signed | -128 to 127 | `Value=-50` |
 | Word ([uint16](GFF-File-Format#gff-data-types)) | 16-bit unsigned | 0 to 65535 | `Value=1024` |
 | Short ([int16](GFF-File-Format#gff-data-types)) | 16-bit signed | -32768 to 32767 | `Value=-4096` |
-| DWORD ([uint32](GFF-File-Format#gff-data-types)) | 32-bit unsigned | 0 to 4294967295 | `Value=123456` |
+| DWORD (UInt32) | 32-bit unsigned | 0 to 4294967295 | `Value=123456` |
 | Int ([int32](GFF-File-Format#gff-data-types)) | 32-bit signed | -2147483648 to 2147483647 | `Value=-1000000` |
 | Int64 | 64-bit signed | -9223372036854775808 to 9223372036854775807 | `Value=1234567890` |
 
@@ -1474,6 +1474,7 @@ Common [GFF](GFF-File-Format)-based file types you can modify:
 - [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) — 2DA and text patching
 - [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — HoloPatcher usage
 - [KEY-File-Format](KEY-File-Format) — Resource resolution and override order
+- [Community sources and archives](Home#community-sources-and-archives) — DeadlyStream, LucasForums for GFF modding examples
 
 ---
 

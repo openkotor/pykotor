@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This report compares the Python MDL/MDX implementation in `pykotor.resource.formats.mdl` against the actual game engine implementations in `swkotor.exe` (K1) and `swkotor2.exe` (TSL) using REVA MCP analysis.
+This report compares the Python MDL/MDX implementation in `pykotor.resource.formats.mdl` against the actual game engine implementations in `swkotor.exe` (K1) and `swkotor2.exe` (TSL) using RE analysis.
 
 **Status**: ✅ **Mostly Correct** - The implementation matches the engine logic with minor documentation clarifications needed.
 

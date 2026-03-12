@@ -38,8 +38,8 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Appearance` | [uint32](GFF-File-Format#gff-data-types) | Index into `genericdoors.2da` |
-| `GenericType` | [uint32](GFF-File-Format#gff-data-types) | Generic door type category |
+| `Appearance` | UInt32 | Index into `genericdoors.2da` |
+| `GenericType` | UInt32 | Generic door type category |
 | `AnimationState` | [byte](GFF-File-Format#gff-data-types) | Current [animation](MDL-MDX-File-Format#animation-header) state (always 0 in templates) |
 
 **Appearance System:**
