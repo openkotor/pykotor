@@ -24,7 +24,7 @@ This document provides a detailed description of the TLK (Talk Table) file forma
 
 ## file structure Overview
 
-TLK files store localized strings in a binary format. The game loads `dialog.tlk` at startup and references strings throughout the game using [StrRef](TLK-File-Format#string-references-strref) numbers (array indices).
+TLK files store localized strings in a binary format. The game loads `dialog.tlk` at startup and references strings throughout the game using [StrRef](TLK-File-Format#string-references-strref) numbers (array indices). String lookups use the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, then module/SAV, then KEY/BIF), so custom TLKs in override or in a MOD take precedence over the base game `dialog.tlk`.
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/)
 
