@@ -54,34 +54,34 @@ def get_tools() -> list[types.Tool]:
     return [
         types.Tool(
             name="journalOverview",
-            description="Summarise global.jrl plot categories and entries for the active installation. Read-only.",
+            description="Use when you need a summary of global.jrl plot categories and entries for the installation. Read-only.",
             inputSchema={
                 "type": "object",
-                "properties": {"game": {"type": "string", "description": "k1 or k2"}},
+                "properties": {"game": {"type": "string", "description": "Game alias: k1 or k2"}},
                 "required": ["game"],
             },
         ),
         types.Tool(
             name="kotor_lookup_2da",
-            description="Query a 2DA table by row index, column name, or value search. Read-only.",
+            description="Use when you need to query a 2DA table by row index, column name, or value search. Read-only.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "game": {"type": "string"},
-                    "table_name": {"type": "string"},
-                    "row_index": {"type": "integer", "minimum": 0},
-                    "column": {"type": "string"},
-                    "value_search": {"type": "string"},
+                    "game": {"type": "string", "description": "Game alias: k1 or k2"},
+                    "table_name": {"type": "string", "description": "2DA table resref"},
+                    "row_index": {"type": "integer", "minimum": 0, "description": "Row index"},
+                    "column": {"type": "string", "description": "Column name to filter or return"},
+                    "value_search": {"type": "string", "description": "Search value in a column"},
                 },
                 "required": ["game", "table_name"],
             },
         ),
         types.Tool(
             name="kotor_lookup_tlk",
-            description="Resolve a string reference (strref) to display text from dialog.tlk. Read-only.",
+            description="Use when you need to resolve a strref to display text from dialog.tlk. Read-only.",
             inputSchema={
                 "type": "object",
-                "properties": {"game": {"type": "string"}, "strref": {"type": "integer"}},
+                "properties": {"game": {"type": "string", "description": "Game alias: k1 or k2"}, "strref": {"type": "integer", "description": "TLK string reference ID"}},
                 "required": ["game", "strref"],
             },
         ),

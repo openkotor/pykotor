@@ -675,6 +675,7 @@ Compare two paths and show differences. Supports any combination of:
     get_parser.add_argument("--path", "-p", "--installation", "-i", dest="path", required=True, help="Path to KOTOR installation")
     get_parser.add_argument("--output", "-o", dest="output", default=".", help="Output path or directory (default: current directory)")
     get_parser.add_argument("--order", help="Comma-separated search order (e.g. CHITIN,OVERRIDE). Default: canonical resolution order")
+    get_parser.add_argument("--source", "-s", dest="source", help="Extract only from this location (e.g. OVERRIDE, CHITIN, MODULES). Takes precedence over --order")
 
     validate_installation_parser = subparsers.add_parser("validate-installation", help="Validate a KOTOR installation")
     validate_installation_parser.add_argument("--installation", "-i", required=True, help="Path to KOTOR installation")

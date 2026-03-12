@@ -217,7 +217,7 @@ def get_tools() -> list[types.Tool]:
     return [
         types.Tool(
             name="listResources",
-            description="List resources from override/modules/chitin/etc with optional filters. Read-only. Use when exploring installation contents.",
+            description="Use when exploring installation contents: list resources from override/modules/chitin with optional filters. Read-only.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -240,7 +240,7 @@ def get_tools() -> list[types.Tool]:
         ),
         types.Tool(
             name="describeResource",
-            description="Fetch and summarize a specific resource (GFF, TLK, 2DA, etc.) using resolution order. Read-only.",
+            description="Use when you need a short summary of a resource (GFF, TLK, 2DA) using resolution order. Read-only.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -258,7 +258,7 @@ def get_tools() -> list[types.Tool]:
         ),
         types.Tool(
             name="kotor_find_resource",
-            description="Resolve a resource using game resolution order (Override → MOD → KEY/BIF). Use when you need the first match for a resref or to see all locations. Supports glob patterns (e.g. 203tel*). Read-only.",
+            description="Use when you need the first match for a resref or to see all locations. Supports glob (e.g. 203tel*). Resolution order: Override → MOD → KEY/BIF. Read-only.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -272,15 +272,15 @@ def get_tools() -> list[types.Tool]:
         ),
         types.Tool(
             name="kotor_search_resources",
-            description="Regex search across resource names. Paginated. Prefer location/type filter on large installs. Read-only.",
+            description="Use when you need to search resource names by regex. Paginated; prefer location/type filter on large installs. Read-only.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "game": {"type": "string"},
                     "pattern": {"type": "string", "description": "Regex pattern to match resref"},
-                    "location": {"type": "string", "default": "all"},
-                    "limit": {"type": "integer", "minimum": 1, "maximum": 500, "default": 50},
-                    "offset": {"type": "integer", "minimum": 0, "default": 0},
+                    "location": {"type": "string", "default": "all", "description": "Filter by location (override, modules, core, etc.)"},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 500, "default": 50, "description": "Max results per page"},
+                    "offset": {"type": "integer", "minimum": 0, "default": 0, "description": "Skip first N results"},
                 },
                 "required": ["game", "pattern"],
             },

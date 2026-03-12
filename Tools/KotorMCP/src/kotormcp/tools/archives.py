@@ -11,6 +11,7 @@ from pykotor.extract.installation import SearchLocation
 from pykotor.resource.type import ResourceType
 from pykotor.tools.archives import list_bif, list_erf, list_key, list_rim
 from pykotor.tools.finder import canonical_search_order
+from pykotor.tools.path_safety import get_extract_base, resolve_and_validate_under_base
 
 from kotormcp.schemas.inputs import ExtractResourceInput, ListArchiveInput
 from kotormcp.state import load_installation, resolve_game
@@ -22,28 +23,29 @@ def get_tools() -> list[types.Tool]:
     return [
         types.Tool(
             name="kotor_list_archive",
-            description="List contents of any KEY/BIF/RIM/ERF/MOD with pagination. Read-only.",
+            description="Use when you need to list contents of a KEY/BIF/RIM/ERF/MOD file with pagination. Read-only.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "file_path": {"type": "string", "description": "Path to archive file"},
                     "key_file": {"type": "string", "description": "Path to KEY file (for BIF listing)"},
-                    "limit": {"type": "integer", "minimum": 1, "maximum": 500, "default": 50},
-                    "offset": {"type": "integer", "minimum": 0, "default": 0},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 500, "default": 50, "description": "Max results per page"},
+                    "offset": {"type": "integer", "minimum": 0, "default": 0, "description": "Skip first N results"},
                 },
                 "required": ["file_path"],
             },
         ),
         types.Tool(
             name="kotor_extract_resource",
-            description="Extract a resource from the installation to a target path (resolution order). Writes to disk.",
+            description="Use when you need to write a resolved resource to disk. Optional 'source' restricts to one location (OVERRIDE, CHITIN, MODULES). Writes to disk. [destructiveHint: writes to disk]",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "game": {"type": "string"},
-                    "resref": {"type": "string"},
-                    "restype": {"type": "string"},
-                    "output_path": {"type": "string"},
+                    "game": {"type": "string", "description": "Game alias: k1 or k2"},
+                    "resref": {"type": "string", "description": "Resource reference name"},
+                    "restype": {"type": "string", "description": "Resource type (extension or name)"},
+                    "output_path": {"type": "string", "description": "Output file or directory path (validated)"},
+                    "source": {"type": "string", "description": "Optional: extract only from this location (OVERRIDE, CHITIN, MODULES, etc.). Omit for first match in canonical order"},
                 },
                 "required": ["game", "resref", "restype", "output_path"],
             },
@@ -110,16 +112,30 @@ async def handle_extract_resource(arguments: dict[str, Any]) -> types.CallToolRe
     if game is None:
         raise ValueError("Specify game (k1/k2).")
     installation = load_installation(game)
-    order = canonical_search_order()
+    if inp.source and inp.source.strip():
+        name_to_loc = {e.name: e for e in SearchLocation}
+        loc = name_to_loc.get(inp.source.strip().upper())
+        if loc is not None:
+            order = [loc]
+        else:
+            order = canonical_search_order()
+    else:
+        order = canonical_search_order()
     restype = _parse_restype(inp.restype)
     if restype == ResourceType.INVALID:
         raise ValueError(f"Unknown resource type: {inp.restype}")
     result = installation.resource(inp.resref, restype, order=order)
     if result is None:
-        raise ValueError(f"Resource {inp.resref}.{restype.extension} not found.")
+        raise ValueError(
+            f"Resource {inp.resref}.{restype.extension} not found. Try kotor_find_resource with a glob pattern.",
+        )
     out_path = Path(inp.output_path)
     if out_path.suffix.lower() != f".{restype.extension}":
         out_path = out_path / f"{inp.resref}.{restype.extension}" if out_path.is_dir() else out_path.with_suffix(f".{restype.extension}")
+    try:
+        out_path = resolve_and_validate_under_base(out_path, get_extract_base(), allow_nonexistent=True)
+    except ValueError as e:
+        raise ValueError(f"Output path rejected: {e}") from e
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_bytes(result.data)
     return json_content({"status": "ok", "path": str(out_path), "bytes": len(result.data)})

@@ -30,7 +30,7 @@ def _game_from_uri_authority(authority: str) -> Game | None:
 
 
 def parse_kotor_uri(uri: str) -> dict[str, Any] | None:
-    """Parse kotor:// URI into components. Returns dict with game, type, path, etc. or None if invalid."""
+    """Parse kotor:// URI into components. Returns dict with game, type, path, authority, etc. or None if invalid."""
     if not uri.startswith("kotor://"):
         return None
     parts = uri[8:].split("/", 2)  # after "kotor://"
@@ -39,9 +39,9 @@ def parse_kotor_uri(uri: str) -> dict[str, Any] | None:
     authority, resource_type = parts[0].lower(), parts[1].lower()
     path = unquote(parts[2]) if len(parts) > 2 else ""
     game = _game_from_uri_authority(authority)
-    if game is None:
+    if game is None and authority != "docs":
         return None
-    return {"game": game, "type": resource_type, "path": path, "uri": uri}
+    return {"game": game, "type": resource_type, "path": path, "uri": uri, "authority": authority}
 
 
 async def list_resources() -> list[dict[str, Any]]:
@@ -56,8 +56,51 @@ async def list_resources() -> list[dict[str, Any]]:
         {"uri": "kotor://k2/2da/{table_name}", "name": "K2 2DA Table", "description": "2DA table as JSON", "mimeType": "application/json"},
         {"uri": "kotor://k1/tlk/{strref}", "name": "K1 TLK String", "description": "TLK string by strref", "mimeType": "text/plain"},
         {"uri": "kotor://k2/tlk/{strref}", "name": "K2 TLK String", "description": "TLK string by strref", "mimeType": "text/plain"},
+        {"uri": "kotor://docs/capabilities", "name": "KotorMCP capabilities", "description": "Resolution order, tool index, and when to use each tool (agent onboarding)", "mimeType": "text/markdown"},
     ]
     return templates
+
+
+def _get_capabilities_doc() -> str:
+    """One-page onboarding: resolution order, tool index, when to use."""
+    return """# KotorMCP capabilities
+
+## Resource resolution order
+
+Resources are resolved in this order (first match wins):
+
+1. **OVERRIDE** — Game override directory (user/mod content)
+2. **MODULES** — Module ERFs (e.g. 003ebo.erf) in load order
+3. **CHITIN** — Base game chitin.key / data
+
+Use optional `source` on `kotor_extract_resource` (or `--source` on `pykotor get`) to read from a single location (e.g. CHITIN only).
+
+## Tool index
+
+| Tool | Use when |
+|------|----------|
+| kotor_installation_info | Check game path, validity, module/override counts |
+| kotor_find_resource | Find files by resref/glob (e.g. `*.dlg`) before reading |
+| kotor_search_resources | Search by type/location with pagination |
+| kotor_extract_resource | Extract binary to disk (use `source` to restrict location) |
+| kotor_list_archive | List contents of an ERF/BIF |
+| kotor_list_modules | List modules (areas) in the installation |
+| kotor_describe_module | Module metadata and dependencies |
+| kotor_module_resources | Resources inside a module |
+| kotor_read_gff | Read GFF (DLG, UTC, etc.) as JSON |
+| kotor_read_2da | Read 2DA table as JSON |
+| kotor_read_tlk | Resolve TLK string by strref |
+| kotor_lookup_2da | Look up 2DA row by column value |
+| kotor_lookup_tlk | Look up TLK by substring (returns strref + text) |
+| kotor_list_references | List script/DLG/plot refs in a resource |
+| kotor_find_referrers | Find resources that reference a resref |
+| kotor_find_strref_referrers | Find resources that use a TLK strref |
+| kotor_describe_dlg | DLG structure and entry/reply links |
+| kotor_describe_jrl | Journal structure |
+| kotor_describe_resource_refs | Reference summary for any resource |
+
+Tools that write to disk: kotor_extract_resource. Paths are validated (allowlist, no traversal).
+"""
 
 
 async def read_resource(uri: str) -> dict[str, Any]:
@@ -65,9 +108,14 @@ async def read_resource(uri: str) -> dict[str, Any]:
     parsed = parse_kotor_uri(uri)
     if not parsed:
         raise ValueError(f"Invalid kotor:// URI: {uri}")
-    game = parsed["game"]
+    authority = parsed.get("authority", "")
     resource_type = parsed["type"]
     path = parsed["path"]
+    if authority == "docs" and resource_type == "capabilities":
+        return {"uri": uri, "mimeType": "text/markdown", "text": _get_capabilities_doc()}
+    game = parsed["game"]
+    if game is None:
+        raise ValueError(f"Invalid kotor:// URI: {uri}")
     installation = load_installation(game)
     if resource_type == "resource":
         # path = resref.ext
