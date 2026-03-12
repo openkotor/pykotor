@@ -43,4 +43,10 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 - [`vendor/reone/src/libs/game/reputes.cpp:36-62`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](BWM-File-Format#walkable-adjacencies) loading from [2DA](2DA-File-Format)
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-FAC](GFF-FAC) — Faction files
+- [GFF-UTC](GFF-UTC), [GFF-UTD](GFF-UTD), [GFF-UTE](GFF-UTE), [GFF-UTT](GFF-UTT) — Faction/repute usage
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

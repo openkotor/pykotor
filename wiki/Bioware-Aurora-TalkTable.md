@@ -253,3 +253,8 @@ If flag is unset, SoundLength is 0.0 seconds.
 The String Entry Table begins at the StringEntriesOffset specified in the Header of the file, and
 continues to the end of the file. All the localized text is contained in the String Entry Table as non-
 null-terminated strings. As soon as one string ends, the next one begins.
+
+### See also
+
+- [TLK-File-Format](TLK-File-Format) — KotOR TLK implementation
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) — Modifying TLK; [KEY-File-Format](KEY-File-Format) — Resource resolution

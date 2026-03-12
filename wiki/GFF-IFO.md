@@ -230,7 +230,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 - [IFO](GFF-File-Format#ifo-module-info) saved with current state
 - Entry position updated to save location
 - Module scripts preserved
-- Mod_IsSaveGame [flag](GFF-File-Format#gff-data-types) set
+- Mod_IsSaveGame flag set
 
 **Module Transitions:**
 
@@ -290,9 +290,9 @@ IFO files define module-level metadata including entry configuration, expansion 
 - Reduced XPScale
 - Special script hooks for teaching mechanics
 
-## See also
+### See also
 
-- [GFF File Format](GFF-File-Format) - Generic format underlying IFO
+- [GFF-File-Format](GFF-File-Format) — Generic format underlying IFO
 - [GFF-ARE (Area)](GFF-ARE) - Area properties; Mod_Entry_Area and Mod_Area_list
 - [GIT (Game Instance Template)](GFF-File-Format#git-game-instance-template) - Dynamic area contents
 - [Bioware Aurora IFO Format](Bioware-Aurora-IFO) - Official module info specification

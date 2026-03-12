@@ -942,12 +942,12 @@ StrRef2=2
 
 - Fixed bug that caused TSLPatcher to stop installation into games where the [`dialog.tlk`](TLK-File-Format) file was write-protected
 
-## Related Documentation
+### See also
 
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) - General TSLPatcher information and ChangeEdit usage
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) - How to modify [2DA](2DA-File-Format) files (can use [StrRef](TLK-File-Format#string-references-strref) tokens)
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - How to modify [GFF](GFF-File-Format) files (can use [StrRef](TLK-File-Format#string-references-strref) tokens)
-- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) - How to modify soundset files (can use [StrRef](TLK-File-Format#string-references-strref) tokens)
-- [TSLPatcher InstallList Syntax](TSLPatcher-InstallList-Syntax) - How to install files (includes script compilation)
-- [Mod Creation Best Practices](Mod-Creation-Best-Practices) - Best practices for modding
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.) - PyKotor implementation details
+- [TLK-File-Format](TLK-File-Format) — Talk table structure and StrRef
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — General TSLPatcher and ChangeEdit
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Modify [2DA](2DA-File-Format) with [StrRef](TLK-File-Format#string-references-strref) tokens
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Modify [GFF](GFF-File-Format) with StrRef tokens
+- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) — Modify soundset files with StrRef tokens
+- [TSLPatcher InstallList Syntax](TSLPatcher-InstallList-Syntax) — Install files and script compilation
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — PyKotor implementation

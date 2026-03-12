@@ -594,3 +594,9 @@ The Variable Resource Data block contains raw bytes of data pointed to by the Of
 Variable Resource Entries.
 3.6. Fixed Resource Data
 Fixed Resource Parts (as defined in the fixed resource table).
+
+### See also
+
+- [KEY-File-Format](KEY-File-Format) — KotOR KEY implementation and resolution order
+- [BIF-File-Format](BIF-File-Format) — KotOR BIF implementation
+- [ERF-File-Format](ERF-File-Format) — MOD/RIM containers; [GFF-File-Format](GFF-File-Format) — GFF resources

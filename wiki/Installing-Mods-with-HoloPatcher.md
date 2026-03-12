@@ -33,3 +33,10 @@ To prevent this issue, HoloPatcher includes a specific utility designed to addre
 - **Navigate to Tools -> Fix iOS Case Sensitivity within HoloPatcher.**
 - **Direct the tool to your KotOR directory or install folder.** If you're applying mods specifically for the mobile version of The Sith Lords Restored Content Mod (TSLRCM), point the tool to the 'mtslrcm' directory.
 This step is essential for a successful mod installation on iOS devices, ensuring stability and preventing crashes due to case sensitivity conflicts.
+
+### See also
+
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — Mod development and patching syntax
+- [Mod Creation Best Practices](Mod-Creation-Best-Practices) — Workarounds and compatibility
+- [KEY-File-Format](KEY-File-Format) — Resource resolution and override order
+- [2DA-File-Format](2DA-File-Format) — Game data tables (e.g. appearance.2da)

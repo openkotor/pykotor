@@ -567,6 +567,12 @@ Based on this analysis, our PyKotor/HolocronToolset implementation MUST:
 - `Libraries/PyKotor/src/pykotor/resource/formats/bwm/` - PyKotor BWM implementation
 - `commands/indoor_builder.py` - Indoor map builder using BWM
 
+### See also
+
+- [BWM-File-Format](BWM-File-Format) — BWM structure and edges
+- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide), [Kit-Structure-Documentation](Kit-Structure-Documentation) — Walkmesh extraction
+- [reverse_engineering_findings](reverse_engineering_findings) — Engine analysis
+
 ---
 
 **Last Updated**: 2025-12-26

@@ -17,4 +17,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 - [`vendor/KotOR.js/src/engine/rules/SWRuleSet.ts:101-105`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L101-L105) - Feat gain initialization from [2DA](2DA-File-Format)
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-feat](2DA-feat), [2DA-classes](2DA-classes) — Feat and class data
+- [GFF-UTC](GFF-UTC) — Creature class/level; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

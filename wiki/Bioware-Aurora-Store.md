@@ -265,3 +265,9 @@ List
 List of scripting variables stored on this object.
 StructID 0. See Section 3 of the Common GFF
 Structs document.
+
+### See also
+
+- [GFF-UTM](GFF-UTM) — KotOR merchant implementation; [GFF-File-Format](GFF-File-Format) — GFF structure
+- [GFF-UTI](GFF-UTI) — Item format; [GFF-GIT](GFF-GIT) — Store instances
+- [KEY-File-Format](KEY-File-Format) — Resource resolution

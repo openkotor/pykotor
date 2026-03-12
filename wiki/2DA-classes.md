@@ -71,4 +71,10 @@ The following columns are accessed by the reone engine:
 - [`vendor/reone/src/libs/game/d20/class.cpp:34-56`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/d20/class.cpp#L34-L56) - Class loading from [2DA](2DA-File-Format) with column access
 - [`vendor/reone/src/libs/game/d20/class.cpp:58-86`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/d20/class.cpp#L58-L86) - Class skills, saving throws, and attack bonuses loading
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTC](GFF-UTC) — Creature class fields
+- [2DA-feat](2DA-feat), [2DA-spells](2DA-spells) — Feats and spells; [TLK-File-Format](TLK-File-Format) — StrRef names
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

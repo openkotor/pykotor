@@ -40,3 +40,9 @@ pykotorcli diff "C:\Program Files (x86)\Steam\steamapps\common\swkotor" "D:\work
 - Diff orchestration, filtering, and incremental TSLPatcher generation live in `[Libraries/PyKotor/src/pykotor/diff_tool/app.py](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/diff_tool/app.py)` L40-L530. Incremental writer creation and [StrRef](TLK-File-Format#string-references-strref) analysis are handled in `handle_diff` and `generate_tslpatcher_data` (L295-L529).
 - CLI argument wiring and headless execution are defined in `[Libraries/PyKotor/src/pykotor/diff_tool/cli.py](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/diff_tool/cli.py)` L26-L238.
 - [GUI](GFF-File-Format#gui-graphical-user-interface) fallback is implemented in `[Libraries/PyKotor/src/pykotor/diff_tool/gui.py](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/diff_tool/gui.py)` (headless when arguments are present, UI when omitted).
+
+### See also
+
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher overview; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — Patching workflow
+- [KEY-File-Format](KEY-File-Format) — Resource resolution; [ERF-File-Format](ERF-File-Format), [GFF-File-Format](GFF-File-Format) — Diffed resources
+- [TLK-File-Format](TLK-File-Format) — StrRef handling in incremental output

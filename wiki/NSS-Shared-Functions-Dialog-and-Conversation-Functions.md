@@ -643,3 +643,9 @@ Additional dialog-related functions include:
 - `HoldWorldFadeInForDialog()` - Control fade during dialog (Routine 760, TSL)
 
 Each follows similar patterns to the functions documented above.
+
+### See also
+
+- [NSS-File-Format](NSS-File-Format) — NWScript source; [NCS-File-Format](NCS-File-Format) — Bytecode
+- [GFF-DLG](GFF-DLG) — Dialogue files; [NSS-Shared-Functions-Actions](NSS-Shared-Functions-Actions) — ActionStartConversation
+- [TLK-File-Format](TLK-File-Format) — Strings; [NSS-Shared-Functions-Sound-and-Music](NSS-Shared-Functions-Sound-and-Music) — Speak functions

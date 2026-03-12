@@ -17,4 +17,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 - [`vendor/xoreos/src/engines/kotor/gui/loadscreen/loadscreen.cpp:45`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotor/gui/loadscreen/loadscreen.cpp#L45) - Loading screen hints TODO comment (KotOR-specific)
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-loadscreens](2DA-loadscreens) — Loading screens
+- [TLK-File-Format](TLK-File-Format) — StrRef; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

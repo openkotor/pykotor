@@ -23,4 +23,10 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:398`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L398) - Music *ResRef* column definitions for ambientmusic.2da (K2: resource, stinger1, stinger2, stinger3)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:545-548`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L545-L548) - [GFF](GFF-File-Format) field mapping: "MusicDay", "MusicNight", "MusicBattle", "MusicDelay" -> ambientmusic.2da
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-ARE](GFF-ARE) — Area music fields
+- [WAV-File-Format](WAV-File-Format) — Audio; [2DA-loadscreens](2DA-loadscreens) — Loading music
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

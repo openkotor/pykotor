@@ -476,6 +476,13 @@ Complex types require accessing data from the field data section:
 
 **GFFStruct Class**: [`Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py:400-800`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L400-L800)
 
+### See also
+
+- [GFF-ARE](GFF-ARE), [GFF-DLG](GFF-DLG), [GFF-IFO](GFF-IFO), [GFF-UTI](GFF-UTI), [GFF-UTC](GFF-UTC), [GIT](GFF-File-Format#git-game-instance-template) — GFF-based game resources
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Patching GFF via HoloPatcher/TSLPatcher
+- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [Bioware-Aurora-GFF](Bioware-Aurora-GFF) — Aurora GFF specification
+
 ---
 
 This documentation aims to provide a comprehensive overview of the KotOR GFF file format, focusing on the detailed file structure and data formats used within the games.

@@ -133,3 +133,9 @@ source code @ [tslpatcher.mods.template](https://github.com/OldRepublicDevs/PyKo
 **Step 8: Cleanup post-processed scripts**: If [`SaveProcessedScripts=0`](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L395) or not available in the [changes.ini](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/config.py#L113), cleanup the temp folder created in the Final Validations.
 
 **Step 8:** Calculate the total patches completed.
+
+### See also
+
+- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — User installation; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — Mod development
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher syntax; [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax), [TSLPatcher InstallList Syntax](TSLPatcher-InstallList-Syntax) — Patch list docs
+- [KEY-File-Format](KEY-File-Format) — Resource resolution

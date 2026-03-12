@@ -307,3 +307,8 @@ Enemy witness faction reputation adjustment.
 If there is a witness from a global faction that is hostile to
 the target of the action, then adjust the witness's faction
 standing toward the perpetrator by this amount.
+
+### See also
+
+- [GFF-FAC](GFF-FAC) — KotOR faction implementation; [GFF-File-Format](GFF-File-Format) — GFF structure
+- [2DA-repute](2DA-repute) — Reputation table; [KEY-File-Format](KEY-File-Format) — Resource resolution

@@ -33,4 +33,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 - [`vendor/reone/src/libs/game/object/creature.cpp:1357-1366`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L1357-L1366) - Body bag loading from [2DA](2DA-File-Format)
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-appearance](2DA-appearance) — Appearance IDs
+- [GFF-UTC](GFF-UTC), [GFF-UTP](GFF-UTP) — Creature/placeable body bag; [MDL-MDX-File-Format](MDL-MDX-File-Format) — Models; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

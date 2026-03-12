@@ -238,3 +238,9 @@ Resource List specify where one file ends and another begins.
 Resource Types
 In an ERF Key, the ResType field specifies the file type of the associated file. See Section 1.3 of the Key
 and BIF File Format document for a table containing ResType values and their meanings.
+
+### See also
+
+- [ERF-File-Format](ERF-File-Format) — KotOR ERF/MOD/RIM implementation
+- [KEY-File-Format](KEY-File-Format), [BIF-File-Format](BIF-File-Format) — Resource resolution and BIF layout
+- [GFF-File-Format](GFF-File-Format) — GFF resources inside ERF modules

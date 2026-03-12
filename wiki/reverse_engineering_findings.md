@@ -264,3 +264,9 @@ The detailed `ExecuteCode` analysis validates PyKotor's script interpretation ap
 - Original game executables: swkotor.exe, swkotor2.exe
 - Analysis conducted using Reva MCP tools in Ghidra
 - Findings validated against PyKotor library implementation
+
+### See also
+
+- [CExoResMan](CExoResMan) — Resource manager; [KEY-File-Format](KEY-File-Format) — Resolution order
+- [NCS-File-Format](NCS-File-Format), [NSS-File-Format](NSS-File-Format) — Script execution; [MDL-MDX-File-Format](MDL-MDX-File-Format) — Model loading
+- [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) — Engine data formats

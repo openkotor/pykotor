@@ -416,3 +416,9 @@ Reference documentation from related projects (external sources):
   
   **Note:** Much of the KotOR-relevant content from xoreos-docs has been comprehensively integrated into this wiki. See individual format documentation pages for specific source references.
 - **[nwn-docs](https://github.com/kucik/nwn-docs)** - Neverwinter Nights documentation (shares Aurora formats)
+
+### See also
+
+- [KEY-File-Format](KEY-File-Format) — Resource resolution; [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) — Core formats
+- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — Mod installation; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — Mod development
+- [Wiki-Conventions](Wiki-Conventions) — Wiki structure and style

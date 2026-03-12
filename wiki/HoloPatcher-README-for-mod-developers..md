@@ -76,3 +76,9 @@ In summary, HACKList writes unsigned WORDs (sized at two bytes) to offsets in th
 #### [pykotor.tslpatcher.reader](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/reader.py#L697)
 
 #### [pykotor.tslpatcher.mods.ncs](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/mods/ncs.py)
+
+### See also
+
+- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — End-user installation
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher syntax; [TSLPatcher TLKList](TSLPatcher-TLKList-Syntax), [TSLPatcher SSFList](TSLPatcher-SSFList-Syntax) — Other patch lists
+- [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic) — Implementation; [KEY-File-Format](KEY-File-Format) — Resource resolution

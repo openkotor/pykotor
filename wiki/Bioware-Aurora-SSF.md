@@ -402,3 +402,9 @@ The soundset Type is used for filtering the list of selectable soundsets in the 
 displayed for each type is specified by its StrRef.
 As a special case, the game understands Type 0 to refer to player soundsets, and these are the ones that
 are displayed during player character creation.
+
+### See also
+
+- [SSF-File-Format](SSF-File-Format) — KotOR SSF implementation; [GFF-File-Format](GFF-File-Format) — GFF structure
+- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) — Modifying SSF; [TLK-File-Format](TLK-File-Format) — StrRef
+- [KEY-File-Format](KEY-File-Format) — Resource resolution

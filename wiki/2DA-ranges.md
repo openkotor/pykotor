@@ -19,4 +19,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 - [`vendor/reone/src/libs/game/object/creature.cpp:1398-1406`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L1398-L1406) - Perception range loading from [2DA](2DA-File-Format)
 - [`vendor/KotOR.js/src/module/ModuleCreature.ts:3178-3187`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleCreature.ts#L3178-L3187) - Perception range access from [2DA](2DA-File-Format)
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTC](GFF-UTC) — Creature perception
+- [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

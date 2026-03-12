@@ -24,4 +24,9 @@ To keep Qt’s selection model behavior correct, `RobustTableView` must:
 - **Delegate to Qt** (`QTableView`/`QAbstractItemView`) for the normal "all columns selectable" behavior.
 - Only apply the custom restriction logic in the "first column only" mode.
 
+### See also
+
+- [Wiki-Conventions](Wiki-Conventions) — Wiki structure; [HolocronToolset](Home) — Toolset overview
+- Qt docs: [QItemSelectionModel](https://doc.qt.io/qt-6/qitemselectionmodel.html), [QAbstractItemView](https://doc.qt.io/qt-6/qabstractitemview.html)
+
 

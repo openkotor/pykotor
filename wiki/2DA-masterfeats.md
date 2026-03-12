@@ -18,4 +18,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:138`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L138) - [StrRef](TLK-File-Format#string-references-strref) column definition for masterfeats.2da
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-feat](2DA-feat) — Feat definitions
+- [TLK-File-Format](TLK-File-Format) — StrRef; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

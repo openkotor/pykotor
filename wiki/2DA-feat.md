@@ -89,4 +89,10 @@ The following columns are accessed by the reone engine:
 - [`vendor/KotOR.js/src/talents/TalentFeat.ts:36-53`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/talents/TalentFeat.ts#L36-L53) - Feat structure with additional columns
 - [`vendor/KotOR.js/src/talents/TalentFeat.ts:122-132`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/talents/TalentFeat.ts#L122-L132) - Feat loading from [2DA](2DA-File-Format)
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTC](GFF-UTC) — Creature feat lists
+- [2DA-classes](2DA-classes), [2DA-spells](2DA-spells) — Class and spell tables; [TLK-File-Format](TLK-File-Format) — StrRef names
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

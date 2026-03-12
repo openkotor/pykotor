@@ -1467,6 +1467,14 @@ Common [GFF](GFF-File-Format)-based file types you can modify:
 
 - **Binary field type**: Support for adding/modifying Binary fields (not in classic TSLPatcher)
 
+### See also
+
+- [GFF File Format](GFF-File-Format) — GFF structure and field types
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher overview and change log
+- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) — 2DA and text patching
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — HoloPatcher usage
+- [KEY-File-Format](KEY-File-Format) — Resource resolution and override order
+
 ---
 
 **For issues or questions**, check PyKotor’s GitHub Issues or the KotOR modding forums.

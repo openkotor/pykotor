@@ -802,3 +802,9 @@ Additional object query functions include:
 - `GetObjectByID()` - Find object by unique ID (if available)
 
 Each follows similar patterns to the functions documented above.
+
+### See also
+
+- [NSS-File-Format](NSS-File-Format) — Script format; [NCS-File-Format](NCS-File-Format) — Compiled scripts
+- [NSS-Shared-Functions-Doors-and-Placeables](NSS-Shared-Functions-Doors-and-Placeables), [NSS-Shared-Functions-Module-and-Area](NSS-Shared-Functions-Module-and-Area) — Area and object context
+- [GFF-File-Format](GFF-File-Format) — Object types (UTC, UTD, UTP, etc.)

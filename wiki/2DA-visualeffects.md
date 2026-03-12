@@ -73,4 +73,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:593`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L593) - [GFF](GFF-File-Format) field mapping: "VisualType" -> visualeffects.2da
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [NSS-Shared-Constants-Visual-Effects-(VFX)](NSS-Shared-Constants-Visual-Effects-(VFX)) — VFX constants
+- [MDL-MDX-File-Format](MDL-MDX-File-Format) — Effect models; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

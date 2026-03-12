@@ -236,6 +236,12 @@ The Resource ID in the BIF file matches the Resource ID in the [KEY file](KEY-Fi
 
 **BIF Class**: [`Libraries/PyKotor/src/pykotor/resource/formats/bif/bif_data.py:100-575`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/bif_data.py#L100-L575)
 
+### See also
+
+- [KEY-File-Format](KEY-File-Format) — BIF indexing and resource resolution
+- [ERF-File-Format](ERF-File-Format) — MOD/RIM containers; [GFF-File-Format](GFF-File-Format) — GFF resources in BIF
+- [Bioware-Aurora-KeyBIF](Bioware-Aurora-KeyBIF) — Aurora KEY/BIF specification
+
 ---
 
 This documentation aims to provide a comprehensive overview of the KotOR BIF file format, focusing on the detailed file structure and data formats used within the games.

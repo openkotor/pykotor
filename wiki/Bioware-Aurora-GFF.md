@@ -718,3 +718,9 @@ but in the Field Indices Array.
 The starting address of a List is specified in its Field's DataOrDataOffset value as a byte offset into the
 Field Indices Array, at which is located a List element. Section 3.8 describes the structure a List
 element.
+
+### See also
+
+- [GFF-File-Format](GFF-File-Format) — KotOR GFF implementation and field types
+- [GFF-ARE](GFF-ARE), [GFF-IFO](GFF-IFO), [GFF-UTI](GFF-UTI), [GFF-UTC](GFF-UTC) — KotOR GFF-based resources
+- [KEY-File-Format](KEY-File-Format) — Resource resolution; [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Patching GFF

@@ -372,7 +372,7 @@ The renderer provides a 2D top-down view of the map.
 
 **Optimization**: Only repaints when dirty
 
-- `_dirty: bool` [flag](GFF-File-Format#gff-data-types)
+- `_dirty: bool` flag
 - `mark_dirty()` called on changes
 - ~60 FPS target (16ms timer)
 
@@ -400,7 +400,7 @@ The renderer provides a 2D top-down view of the map.
   - **Hover**: Room under cursor (if any).
   - **Selection**: Selected hook (room + index) or selected room count.
   - **Keys/Buttons**: Currently held keyboard modifiers and mouse buttons.
-  - **Status**: Paint mode/[material](MDL-MDX-File-Format#trimesh-header), colorization [flag](GFF-File-Format#gff-data-types), snap modes (grid/hook).
+  - **Status**: Paint mode/[material](MDL-MDX-File-Format#trimesh-header), colorization flag, snap modes (grid/hook).
 - Updated from renderer mouse/scroll/press/release signals via a callback set on `IndoorMapRenderer`.
 
 ### [walkmesh](BWM-File-Format) Visualization

@@ -78,15 +78,15 @@ The string data table contains metadata for each string entry. Each entry is 40 
 
 **Reference**: [`vendor/Kotor.NET/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:57-90`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L57-L90)
 
-**[flag](GFF-File-Format#gff-data-types) bits:**
+**flag bits:**
 
 - **bit 0 (0x0001)**: Text present - string has text content
 - **bit 1 (0x0002)**: Sound present - string has associated voice-over audio
 - **bit 2 (0x0004)**: Sound length present - sound length field is valid
 
-**[flag](GFF-File-Format#gff-data-types) Combinations:**
+**flag Combinations:**
 
-Common [flag](GFF-File-Format#gff-data-types) patterns in KotOR TLK files:
+Common flag patterns in KotOR TLK files:
 
 | flags | Hex | Description | Usage |
 | ----- | --- | ----------- | ----- |
@@ -97,9 +97,9 @@ Common [flag](GFF-File-Format#gff-data-types) patterns in KotOR TLK files:
 
 The engine uses these flags to decide:
 
-- Whether to display subtitles (Text present [flag](GFF-File-Format#gff-data-types))
-- Whether to play voice-over audio (Sound present [flag](GFF-File-Format#gff-data-types))
-- How long to wait before auto-advancing dialog (Sound length present [flag](GFF-File-Format#gff-data-types))
+- Whether to display subtitles (Text present flag)
+- Whether to play voice-over audio (Sound present flag)
+- How long to wait before auto-advancing dialog (Sound length present flag)
 
 Missing flags are treated as `false` - if Text present is not set, the string is treated as empty even if text data exists.
 

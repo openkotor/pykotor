@@ -871,3 +871,9 @@ that was drawn by the user is the one that is used. Figure 4.3b shows the applic
 figure show in Figure 4.3a.
 This rule is not required, in that if the points were in a different order, the toolset and game would still
 load the polygon correctly and without errors.
+
+### See also
+
+- [GFF-UTT](GFF-UTT) — KotOR trigger implementation; [GFF-File-Format](GFF-File-Format) — GFF structure
+- [GFF-GIT](GFF-GIT) — Trigger instances; [NSS-File-Format](NSS-File-Format) — Trigger scripts
+- [KEY-File-Format](KEY-File-Format) — Resource resolution

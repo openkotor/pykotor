@@ -121,4 +121,10 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 - [`vendor/reone/src/libs/game/object/creature.cpp:98-107`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L98-L107) - Appearance loading and column usage
 - [`vendor/reone/src/libs/game/object/creature.cpp:1156-1228`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L1156-L1228) - [model](MDL-MDX-File-Format) and [texture](TPC-File-Format) column access
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure and column reference
+- [GFF-UTC](GFF-UTC) — Creature templates; [MDL-MDX-File-Format](MDL-MDX-File-Format), [TPC-File-Format](TPC-File-Format) — Models and textures
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax), [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) — Patching 2DA
+
 ---

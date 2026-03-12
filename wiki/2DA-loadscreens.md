@@ -20,4 +20,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 - [`vendor/KotOR.js/src/module/ModuleArea.ts:210`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleArea.ts#L210) - Comment referencing loadscreens.2da for area loading screen index
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:549`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L549) - [GFF](GFF-File-Format) field mapping: "LoadScreenID" -> loadscreens.2da
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-ARE](GFF-ARE) — Area LoadScreenID
+- [TPC-File-Format](TPC-File-Format), [2DA-ambientmusic](2DA-ambientmusic) — Images and music; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

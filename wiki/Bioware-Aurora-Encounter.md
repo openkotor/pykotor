@@ -401,3 +401,9 @@ In an Encounter instance, the Geometry List contains the points that define the 
 Encounter.
 The toolset must enforce several rules for polygon geometry, as given in Section 4 of the Trigger
 Format document.
+
+### See also
+
+- [GFF-UTE](GFF-UTE) — KotOR encounter implementation; [GFF-File-Format](GFF-File-Format) — GFF structure
+- [2DA-encdifficulty](2DA-encdifficulty) — Difficulty table; [GFF-GIT](GFF-GIT) — Encounter instances
+- [Bioware-Aurora-Trigger](Bioware-Aurora-Trigger) — Geometry rules; [KEY-File-Format](KEY-File-Format) — Resource resolution

@@ -76,4 +76,10 @@ The complete column structure is defined in reone's placeables parser:
 - [`vendor/reone/src/libs/resource/parser/2da/placeables.cpp:29-49`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/parser/2da/placeables.cpp#L29-L49) - Complete column parsing implementation with all column names
 - [`vendor/reone/src/libs/game/object/placeable.cpp:59-60`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/placeable.cpp#L59-L60) - Placeable loading from [2DA](2DA-File-Format)
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTP](GFF-UTP) — Placeable templates
+- [GFF-GIT](GFF-GIT) — Placeable instances; [Bioware-Aurora-DoorPlaceableGFF](Bioware-Aurora-DoorPlaceableGFF) — Aurora spec
+- [MDL-MDX-File-Format](MDL-MDX-File-Format), [TLK-File-Format](TLK-File-Format); [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

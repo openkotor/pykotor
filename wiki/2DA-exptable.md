@@ -17,4 +17,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 - [`vendor/KotOR.js/src/module/ModuleCreature.ts:2926-2941`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleCreature.ts#L2926-L2941) - Experience table lookup from [2DA](2DA-File-Format)
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-classes](2DA-classes) — Class progression
+- [GFF-UTC](GFF-UTC) — Creature XP; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

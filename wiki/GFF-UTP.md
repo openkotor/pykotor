@@ -187,7 +187,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 - Footlockers, crates, corpses
 - Have inventory (ItemList populated)
 - Can be locked, trapped, destroyed
-- `HasInventory=1`, `BodyBag` [flag](GFF-File-Format#gff-data-types) for corpses
+- `HasInventory=1`, `BodyBag` flag for corpses
 
 **Switches & Terminals:**
 
@@ -247,7 +247,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **Corpses:**
 
-- BodyBag [flag](GFF-File-Format#gff-data-types) set
+- BodyBag flag set
 - Contain enemy loot
 - Disappear when looted (usually)
 

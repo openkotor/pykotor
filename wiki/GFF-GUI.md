@@ -173,7 +173,7 @@ All controls share these base properties:
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
 | `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Highlight color modulation |
-| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
+| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
 
 **Highlight Behavior:**
 
@@ -194,7 +194,7 @@ All controls share these base properties:
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
 | `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Selected state color modulation |
-| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
+| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
 
 **HILIGHTSELECTED Struct:**
 
@@ -208,7 +208,7 @@ All controls share these base properties:
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
 | `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Combined state color modulation |
-| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
+| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
 
 **State Priority:**
 
@@ -318,7 +318,7 @@ All controls share these base properties:
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
 | `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Progress fill color modulation |
-| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
+| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
 
 **CheckBox (type 7):**
 
@@ -509,7 +509,7 @@ All controls share these base properties:
 
 **Pulsing [animation](MDL-MDX-File-Format#animation-header):**
 
-- **PULSING** [flag](GFF-File-Format#gff-data-types) in BORDER, TEXT, HILIGHT, SELECTED structs
+- **PULSING** flag in BORDER, TEXT, HILIGHT, SELECTED structs
 - When enabled, control pulses (fades in/out)
 - Used for attention-grabbing effects
 - [animation](MDL-MDX-File-Format#animation-header) speed controlled by engine
@@ -544,9 +544,9 @@ All controls share these base properties:
 - Scripts can access controls by TAG or ID
 - [GUI](GFF-File-Format#gui-graphical-user-interface) state can be modified at runtime via scripts
 
-## See also
+### See also
 
-- [GFF File Format](GFF-File-Format) - Generic format underlying GUI
+- [GFF-File-Format](GFF-File-Format) — Generic format underlying GUI
 - [TPC File Format](TPC-File-Format), [TXI File Format](TXI-File-Format) - Textures used by GUI controls
 - [TLK File Format](TLK-File-Format) - String references for GUI text
 - [NCS File Format](NCS-File-Format) - Scripts that drive GUI behavior

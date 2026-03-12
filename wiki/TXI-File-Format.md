@@ -99,7 +99,7 @@ Each line encodes a UV triplet; UV coordinates follow standard UV mapping conven
 | ------- | ----------- |
 | `blending` | Selects additive or punchthrough blending (see [`TXIBlending.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/enums/graphics/txi/TXIBlending.ts)). |
 | `decal` | Toggles decal rendering so polygons project onto [geometry](MDL-MDX-File-Format#geometry-header). |
-| `isbumpmap`, `isdiffusebumpmap`, `isspecularbumpmap` | [flag](GFF-File-Format#gff-data-types) the [texture](TPC-File-Format) as a bump/normal map; controls how [material](MDL-MDX-File-Format#trimesh-header) shaders sample it. |
+| `isbumpmap`, `isdiffusebumpmap`, `isspecularbumpmap` | flag the [texture](TPC-File-Format) as a bump/normal map; controls how [material](MDL-MDX-File-Format#trimesh-header) shaders sample it. |
 | `bumpmaptexture`, `bumpyshinytexture`, `envmaptexture`, `bumpmapscaling` | Supply companion [textures](TPC-File-Format) and scales for per-pixel lighting. |
 | `cube` | Marks the [texture](TPC-File-Format) as a cube map; used with 6-[face](MDL-MDX-File-Format#face-structure) TPCs. |
 | `unique` | Forces the renderer to keep a dedicated instance instead of sharing. |

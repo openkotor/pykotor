@@ -304,3 +304,9 @@ the toolset Conversation Editor).
 If this is a link, then the Conversation Editor will show
 and edit the LinkComment instead of the Dialog
 Struct's own Comment.
+
+### See also
+
+- [GFF-DLG](GFF-DLG) — KotOR dialogue implementation
+- [NSS-File-Format](NSS-File-Format), [NCS-File-Format](NCS-File-Format) — Scripts in dialogue; [TLK-File-Format](TLK-File-Format) — Strings
+- [GFF-File-Format](GFF-File-Format) — GFF structure; [KEY-File-Format](KEY-File-Format) — Resource resolution

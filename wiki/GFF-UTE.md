@@ -61,7 +61,7 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 - `*ResRef*` (*ResRef*): [UTC](GFF-File-Format#utc-creature) template to spawn
 - `Appearance` (Int): Appearance type (optional override)
 - `CR` (Float): Challenge Rating
-- `SingleSpawn` (Byte): Unique spawn [flag](GFF-File-Format#gff-data-types)
+- `SingleSpawn` (Byte): Unique spawn flag
 
 **Spawn Selection:**
 

@@ -34,6 +34,12 @@ All routines are documented with their decompiled pseudocode in the source code 
 ## Notes for contributors
 - When adding new resource types, mimic the existing hash/lookup pattern.
 - Ensure that resource tables are updated on both K1 and TSL; the engines are nearly identical.
-- See the `2DA-File-Format.md` page for how key tables are structured.
+- See the [2DA-File-Format](2DA-File-Format) page for how key tables are structured.
 
 (Additional research pending: cross-reference with actual BIF/ERF parsing functions in the codebase.)
+
+### See also
+
+- [KEY-File-Format](KEY-File-Format) — Resource resolution order and BIF/KEY layout
+- [BIF-File-Format](BIF-File-Format), [ERF-File-Format](ERF-File-Format) — Container formats
+- [2DA-File-Format](2DA-File-Format) — Key table structure; [reverse_engineering_findings](reverse_engineering_findings) — Engine analysis

@@ -74,9 +74,9 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 - **Module JRLs**: Not typically used; most quests are global.
 - **XP Rewards**: `XP_Percentage` scales the `journal.2da` XP value for the quest.
 
-## See also
+### See also
 
-- [GFF File Format](GFF-File-Format) - Generic format underlying JRL
+- [GFF-File-Format](GFF-File-Format) — Generic format underlying JRL
 - [GFF-DLG (Dialogue)](GFF-DLG) - Quest/QuestEntry updates from conversations
 - [NCS File Format](NCS-File-Format) - Scripts that call journal API
 - [Bioware Aurora Journal Format](Bioware-Aurora-Journal) - Official journal specification

@@ -214,7 +214,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 - [IFO](GFF-File-Format#ifo-module-info) saved with current state
 - Entry position updated to save location
 - Module scripts preserved
-- Mod_IsSaveGame [flag](GFF-File-Format#gff-data-types) set
+- Mod_IsSaveGame flag set
 
 **Module Transitions:**
 

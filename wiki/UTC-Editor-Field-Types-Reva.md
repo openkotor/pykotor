@@ -138,3 +138,9 @@ TSL ReadStatsFromGff (0x006ec350) contains the same field names; BlindSpot and M
 |---------------|------------|---------------|------|-----|-----|-------|
 | FeatList | featList | Feat | BYTE | 0 | 255 | Index into feats.2da. Each list element stores one feat ID. ReadStatsFromGff @ 0x005afce0; SaveClassInfo writes. |
 | ClassList | powerList | Class, ClassLevel; KnownList0/1/2 Spell | INT, SHORT; WORD | - | - | ClassList holds classes and levels; KnownList entries contain Spell IDs (WORD) referencing spells.2da. Powers are aggregated from all classes for display. |
+
+### See also
+
+- [GFF-UTC](GFF-UTC) — Creature GFF structure; [GFF-File-Format](GFF-File-Format) — GFF types
+- [2DA-File-Format](2DA-File-Format), [2DA-appearance](2DA-appearance) — Appearance and feats/spells tables
+- [reverse_engineering_findings](reverse_engineering_findings) — Engine analysis

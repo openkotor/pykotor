@@ -660,3 +660,9 @@ CasterLevel
 MetaType
 
 ### BYTE
+
+### See also
+
+- [Bioware-Aurora-GFF](Bioware-Aurora-GFF) — Aurora GFF spec; [GFF-File-Format](GFF-File-Format) — KotOR GFF implementation
+- [GFF-IFO](GFF-IFO), [GFF-ARE](GFF-ARE), [GFF-UTC](GFF-UTC) — GFF files referencing common structs
+- [KEY-File-Format](KEY-File-Format) — Resource resolution

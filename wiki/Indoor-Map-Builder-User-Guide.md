@@ -308,8 +308,9 @@ The build process creates:
 - Disable [material](MDL-MDX-File-Format#trimesh-header) colorization for better performance
 - Close other applications to free up memory
 
-## Related Documentation
+### See also
 
-- [Indoor Map Builder - Implementation Guide](Indoor-Map-Builder-Implementation-Guide) - Technical details for developers
-- [LYT File Format](LYT-File-Format) - [layout files](LYT-File-Format) structure
-- [BWM File Format](BWM-File-Format) - [walkmesh](BWM-File-Format) file structure
+- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) — Technical details for developers
+- [Kit-Structure-Documentation](Kit-Structure-Documentation) — Kit layout and components
+- [LYT-File-Format](LYT-File-Format) — Room layout structure; [BWM-File-Format](BWM-File-Format) — Walkmesh
+- [Blender-Integration](Blender-Integration) — 3D editing workflow

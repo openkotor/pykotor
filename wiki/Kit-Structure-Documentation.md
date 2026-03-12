@@ -1151,6 +1151,15 @@ To achieve high granularity coordinate matching, the tests should be enhanced to
 12. **Comprehensive Extraction**: Extract all [DWK](BWM-File-Format) states and all referenced [textures](TPC-File-Format) for complete kits
 13. **Test Precision**: Consider enhancing tests to verify coordinate values, not just structure
 
+### See also
+
+- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) — User workflow
+- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) — Implementation
+- [LYT-File-Format](LYT-File-Format) — Room layout; [BWM-File-Format](BWM-File-Format) — Walkmesh
+- [TPC-File-Format](TPC-File-Format), [TXI-File-Format](TXI-File-Format) — Textures
+- [KEY-File-Format](KEY-File-Format), [ERF-File-Format](ERF-File-Format) — Resource resolution and modules
+- [Blender-Integration](Blender-Integration) — 3D editing workflow
+
 ---
 
 This documentation provides a comprehensive overview of the kit structure and how kits are used in the Holocron Toolset for generating indoor maps.

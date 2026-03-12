@@ -94,3 +94,9 @@ special cases).
 user's own LanguageID. The order to scan is: English, French, German, Italian, Spanish. At
 this time, no other languages are used as fall-backs. Return the first string found and a
 indicate success, or indicate failure and return a blank string if none was found.
+
+### See also
+
+- [GFF-File-Format](GFF-File-Format) — CExoLocString in GFF; [TLK-File-Format](TLK-File-Format) — Talk table and StrRef
+- [Bioware-Aurora-TalkTable](Bioware-Aurora-TalkTable) — Aurora talk table spec
+- [KEY-File-Format](KEY-File-Format) — Resource resolution

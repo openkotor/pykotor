@@ -229,3 +229,9 @@ As discussed, I uploaded the file at swk.com: (<http://www.starwarsknights.com/t
 ---
 
 _Note: The complete thread container continues with 260+ posts across all 6 pages. This file has been created with the extracted content from all pages. For the full detailed container with all posts from pages 2-6, please refer to the complete extraction which contains extensive discussions, tutorials, bug reports, feature requests, and Q&A sessions spanning from May 2005 to November 2007._
+
+### See also
+
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — Current TSLPatcher documentation
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — PyKotor patcher; [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — User guide
+- [TLK-File-Format](TLK-File-Format), [2DA-File-Format](2DA-File-Format), [GFF-File-Format](GFF-File-Format) — Patched resources

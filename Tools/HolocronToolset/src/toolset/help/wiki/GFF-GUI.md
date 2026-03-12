@@ -157,7 +157,7 @@ All controls share these base properties:
 | `INNEROFFSET` | Int | Inner padding X-axis |
 | `INNEROFFSETY` | Int | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Highlight color modulation |
-| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
+| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
 
 **Highlight Behavior:**
 
@@ -178,7 +178,7 @@ All controls share these base properties:
 | `INNEROFFSET` | Int | Inner padding X-axis |
 | `INNEROFFSETY` | Int | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Selected state color modulation |
-| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
+| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
 
 **HILIGHTSELECTED Struct:**
 
@@ -192,7 +192,7 @@ All controls share these base properties:
 | `INNEROFFSET` | Int | Inner padding X-axis |
 | `INNEROFFSETY` | Int | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Combined state color modulation |
-| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
+| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
 
 **State Priority:**
 
@@ -302,7 +302,7 @@ All controls share these base properties:
 | `INNEROFFSET` | Int | Inner padding X-axis |
 | `INNEROFFSETY` | Int | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Progress fill color modulation |
-| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
+| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
 
 **CheckBox (type 7):**
 
@@ -493,7 +493,7 @@ All controls share these base properties:
 
 **Pulsing [animation](MDL-MDX-File-Format#animation-header):**
 
-- **PULSING** [flag](GFF-File-Format#gff-data-types) in BORDER, TEXT, HILIGHT, SELECTED structs
+- **PULSING** flag in BORDER, TEXT, HILIGHT, SELECTED structs
 - When enabled, control pulses (fades in/out)
 - Used for attention-grabbing effects
 - [animation](MDL-MDX-File-Format#animation-header) speed controlled by engine

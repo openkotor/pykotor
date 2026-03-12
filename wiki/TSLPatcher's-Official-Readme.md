@@ -1564,3 +1564,10 @@ offered ideas, feedback and suggestions about the TSLPatcher.  An extra thanks t
 the most serious bugs. Big thanks!
 
 And finally thanks to YOU, for enduring my English and reading all the way down here. :P
+
+### See also
+
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — GFF patching; [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) — 2DA/text
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) — HoloPatcher usage
+- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) — End-user installation
+- [GFF File Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format), [TLK-File-Format](TLK-File-Format) — Patched resources

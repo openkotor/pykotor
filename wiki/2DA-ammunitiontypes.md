@@ -21,4 +21,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 - [`vendor/reone/src/libs/game/object/item.cpp:164-171`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/item.cpp#L164-L171) - Ammunition type loading from [2DA](2DA-File-Format)
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-baseitems](2DA-baseitems) — Weapon/item types
+- [GFF-UTI](GFF-UTI) — Item definitions; [MDL-MDX-File-Format](MDL-MDX-File-Format) — Ammo models; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

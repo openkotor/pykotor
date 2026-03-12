@@ -24,7 +24,7 @@ TPC (texture Pack Container) is KotOR's native texture format. It supports palet
 | 4 (0x04)   | 4    | Alpha test/threshold [float](GFF-File-Format#gff-data-types) |
 | 8 (0x08)   | 2    | Width ([uint16](GFF-File-Format#gff-data-types)) |
 | 10 (0x0A)   | 2    | Height ([uint16](GFF-File-Format#gff-data-types)) |
-| 12 (0x0C)   | 1    | Pixel encoding [flag](GFF-File-Format#gff-data-types) |
+| 12 (0x0C)   | 1    | Pixel encoding flag |
 | 13 (0x0D)   | 1    | Mipmap count |
 | 14 (0x0E)   | 114 (0x72) | Reserved / padding |
 | 128 (0x80)   | —    | texture data (per layer, per mipmap) |
@@ -81,7 +81,7 @@ TPC supports the following encodings (documented in `TPCTextureFormat`):
 | `0x04` (RGBA) | 32-bit RGBA | Linear bytes |
 | `0x0C` (BGRA) | 32-bit BGRA swizzled | Xbox-specific swizzle; PyKotor deswizzles on load |
 | DXT1 | Block-compressed (4×4 blocks, 8 bytes) | Detected via `data_size` and encoding flags |
-| DXT3/DXT5 | Block-compressed (4×4 blocks, 16 bytes) | Chosen based on `pixel_type` and compression [flag](GFF-File-Format#gff-data-types) |
+| DXT3/DXT5 | Block-compressed (4×4 blocks, 16 bytes) | Chosen based on `pixel_type` and compression flag |
 
 **References**
 

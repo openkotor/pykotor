@@ -482,3 +482,9 @@ The area object returned by `GetArea()`:
 - **Area**: A specific location within the module (`.are` file)
 
 A module can contain multiple areas. `GetArea()` returns the current area the object is in, not the module.
+
+### See also
+
+- [NSS-File-Format](NSS-File-Format) — Script format; [NCS-File-Format](NCS-File-Format) — Compiled scripts
+- [GFF-ARE](GFF-ARE) — Area resources; [GFF-IFO](GFF-IFO) — Module info; [GFF-GIT](GFF-GIT) — Area contents
+- [NSS-Shared-Functions-Doors-and-Placeables](NSS-Shared-Functions-Doors-and-Placeables) — Area transitions

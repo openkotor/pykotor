@@ -99,7 +99,7 @@ Each file entry is 12 bytes:
 
 Drive flags are a legacy feature from the multi-CD distribution era:
 
-| [flag](GFF-File-Format#gff-data-types) value | Meaning | Description |
+| flag value | Meaning | Description |
 | ---------- | ------- | ----------- |
 | `0x0001` | HD (Hard Drive) | [BIF](BIF-File-Format) is installed on the hard drive |
 | `0x0002` | CD1 | [BIF](BIF-File-Format) is on the first game disc |
@@ -111,7 +111,7 @@ Drive flags are a legacy feature from the multi-CD distribution era:
 
 In contemporary distributions (Steam, GOG, digital):
 
-- All [BIF files](BIF-File-Format) use `0x0001` (HD [flag](GFF-File-Format#gff-data-types)) since everything is installed locally
+- All [BIF files](BIF-File-Format) use `0x0001` (HD flag) since everything is installed locally
 - The engine doesn't prompt for disc swapping
 - Multiple flags can be combined (bitwise OR) if a [BIF](BIF-File-Format) could be on multiple sources
 - Mod tools typically set this to `0x0001` for all files

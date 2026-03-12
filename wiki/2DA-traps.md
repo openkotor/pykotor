@@ -42,4 +42,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 - [`vendor/KotOR.js/src/module/ModuleTrigger.ts:605-611`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleTrigger.ts#L605-L611) - Trap loading from [2DA](2DA-File-Format)
 - [`vendor/KotOR.js/src/module/ModuleObject.ts:1822`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleObject.ts#L1822) - Trap lookup from [2DA](2DA-File-Format)
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTT](GFF-UTT) — Trigger trap type; [MDL-MDX-File-Format](MDL-MDX-File-Format) — Trap models
+- [NCS-File-Format](NCS-File-Format) — Trap scripts; [TLK-File-Format](TLK-File-Format) — StrRef; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

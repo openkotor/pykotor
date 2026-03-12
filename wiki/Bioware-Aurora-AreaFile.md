@@ -832,3 +832,9 @@ Description
 Comment
 CExoString
 Module designer's comment
+
+### See also
+
+- [GFF-ARE](GFF-ARE) — KotOR area implementation; [GFF-GIT](GFF-GIT) — Instance data
+- [GFF-File-Format](GFF-File-Format) — GFF structure; [Bioware-Aurora-GFF](Bioware-Aurora-GFF) — Aurora GFF spec
+- [KEY-File-Format](KEY-File-Format) — Resource resolution

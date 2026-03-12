@@ -733,5 +733,5 @@ Replace#=<filename.ext>             ; Install file (replace if exists)
 
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) - Original TSLPatcher documentation
 - [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic) - Internal implementation details
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax.md) - Documentation for [GFF](GFF-File-Format) modifications
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Documentation for [GFF](GFF-File-Format) modifications
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) - Best practices for mod development

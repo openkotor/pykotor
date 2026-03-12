@@ -45,4 +45,10 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 - [`vendor/reone/src/libs/game/portraits.cpp:33-51`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/portraits.cpp#L33-L51) - Portrait loading from [2DA](2DA-File-Format) with all column access
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-appearance](2DA-appearance) — Appearance linkage
+- [GFF-UTC](GFF-UTC) — Creature portraits; [TPC-File-Format](TPC-File-Format) — Portrait images
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

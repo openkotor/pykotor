@@ -1339,10 +1339,11 @@ The `[2DAList]` section provides powerful tools for modifying [2DA files](2DA-Fi
 5. AddColumn runs last within a file, so new columns can't be used in earlier modifications
 6. All memory tokens are available to subsequent sections (GFFList, CompileList, HACKList, SSFList)
 
-For more information on related sections, see:
+### See also
 
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) - Creating [StrRef](TLK-File-Format#string-references-strref) tokens
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - Using 2DAMEMORY tokens in [GFF files](GFF-File-Format)
-- [TSLPatcher CompileList Syntax](TSLPatcher's-Official-Readme) - Using tokens in script compilation
-- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) - Using tokens in binary patches
-- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) - Using tokens in sound sets
+- [2DA-File-Format](2DA-File-Format) — 2DA structure and columns
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) — Creating [StrRef](TLK-File-Format#string-references-strref) tokens
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Using 2DAMEMORY tokens in [GFF files](GFF-File-Format)
+- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) — Using tokens in binary patches
+- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) — Using tokens in sound sets
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — CompileList and overview

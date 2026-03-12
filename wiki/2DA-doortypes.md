@@ -20,4 +20,10 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](TLK-File-Format#string-references-strref) column definition for doortypes.2da
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for doortypes.2da
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTD](GFF-UTD) — Door templates
+- [GFF-GIT](GFF-GIT) — Door instances; [Bioware-Aurora-DoorPlaceableGFF](Bioware-Aurora-DoorPlaceableGFF) — Aurora spec
+- [MDL-MDX-File-Format](MDL-MDX-File-Format), [TLK-File-Format](TLK-File-Format); [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

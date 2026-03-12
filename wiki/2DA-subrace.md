@@ -18,4 +18,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:457`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L457) - TwoDARegistry definition
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:56`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L56) - HTInstallation constant
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-racialtypes](2DA-racialtypes) — Race types
+- [GFF-UTC](GFF-UTC) — Creature subrace; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

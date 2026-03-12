@@ -542,6 +542,12 @@ This means that memory tokens set in TLKList and 2DAList will be available when 
 - Support for [TLK](TLK-File-Format) and [2DA](2DA-File-Format) memory token resolution
 - Replace file or modify existing file modes
 
+### See also
+
+- [SSF-File-Format](SSF-File-Format) — Sound set structure
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) — StrRef tokens; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Token usage
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme); [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
+
 ---
 
 **Last Updated:** Based on PyKotor implementation and TSLPatcher v1.2.10b compatibility

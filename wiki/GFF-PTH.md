@@ -35,4 +35,10 @@ PTH files define pathfinding data for modules, distinct from the navigation mesh
 - **Legacy Support**: Often redundant in modern engines with navigation [meshes](MDL-MDX-File-Format#trimesh-header), but used in Aurora/Odyssey for optimization.
 - **Editor**: Visualized as a web of lines connecting [nodes](MDL-MDX-File-Format#node-structures).
 
+### See also
+
+- [GFF-File-Format](GFF-File-Format) — GFF structure; [GFF-ARE](GFF-ARE) — Area and path resolution
+- [BWM-File-Format](BWM-File-Format) — Walkmesh and edges; [GFF-UTW](GFF-UTW) — Waypoints
+- [KEY-File-Format](KEY-File-Format) — Resource resolution
+
 ---

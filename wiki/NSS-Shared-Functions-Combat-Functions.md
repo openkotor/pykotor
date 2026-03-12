@@ -517,3 +517,9 @@ Additional combat-related functions include:
 - `CutsceneAttack()` - Perform a scripted attack for cutscenes (Routine 503, TSL)
 
 Each follows similar patterns to the functions documented above.
+
+### See also
+
+- [NSS-File-Format](NSS-File-Format) — Script format; [NCS-File-Format](NCS-File-Format) — Compiled scripts
+- [NSS-Shared-Functions-Abilities-and-Stats](NSS-Shared-Functions-Abilities-and-Stats) — Damage and stats; [GFF-UTC](GFF-UTC) — Creature data
+- [NSS-Shared-Functions-Object-Query-and-Manipulation](NSS-Shared-Functions-Object-Query-and-Manipulation) — Object handles

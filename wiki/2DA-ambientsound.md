@@ -25,4 +25,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:376`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L376) - Sound *ResRef* column definition for ambientsound.2da (K2: resource)
 - [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:6986-6988`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6986-L6988) - AmbientSoundPlay function comment
 
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [2DA-ambientmusic](2DA-ambientmusic) — Area music
+- [GFF-ARE](GFF-ARE) — Area sound refs; [WAV-File-Format](WAV-File-Format) — Sound files; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
+
 ---

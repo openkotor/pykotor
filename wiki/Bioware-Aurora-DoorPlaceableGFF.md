@@ -857,3 +857,9 @@ StrRef of the name to show in the toolset
 Appearance
 Integer
 Index into placeables.2da
+
+### See also
+
+- [GFF-UTD](GFF-UTD), [GFF-UTP](GFF-UTP) — KotOR door and placeable implementation; [GFF-File-Format](GFF-File-Format) — GFF structure
+- [GFF-GIT](GFF-GIT) — Door and placeable instances; [2DA-placeables](2DA-placeables), [2DA-doortypes](2DA-doortypes) — Appearance tables
+- [KEY-File-Format](KEY-File-Format) — Resource resolution

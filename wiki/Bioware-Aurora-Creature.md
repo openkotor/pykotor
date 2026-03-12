@@ -3728,3 +3728,8 @@ Integer
 StrRef of the range name if this is a creature perception
 range.
 **** for spell and weapon ranges.
+
+### See also
+
+- [GFF-UTC](GFF-UTC) — Creature GFF in KotOR; [GFF-File-Format](GFF-File-Format) — GFF types
+- [2DA-appearance](2DA-appearance), [2DA-classes](2DA-classes), [2DA-racialtypes](2DA-racialtypes), [2DA-ranges](2DA-ranges) — Creature 2DA refs; [KEY-File-Format](KEY-File-Format) — Resource resolution

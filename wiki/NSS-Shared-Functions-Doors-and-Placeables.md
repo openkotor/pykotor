@@ -599,3 +599,9 @@ Some doors link to other areas or modules:
 - When clicked, they trigger area/module transitions
 - These doors may not use standard open/close actions
 - Transition behavior is defined in the door's properties
+
+### See also
+
+- [NSS-File-Format](NSS-File-Format) — Script format; [NCS-File-Format](NCS-File-Format) — Compiled scripts
+- [GFF-UTD](GFF-UTD) — Door instances; [GFF-UTP](GFF-UTP) — Placeable instances; [GFF-DLG](GFF-DLG) — Conversation triggers
+- [NSS-Shared-Functions-Object-Query-and-Manipulation](NSS-Shared-Functions-Object-Query-and-Manipulation) — Object handles and queries

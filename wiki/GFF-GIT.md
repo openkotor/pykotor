@@ -311,3 +311,10 @@ Each instance type has common fields plus type-specific data:
 - Ambient sound emitters positioned strategically
 - Varied volumes and ranges
 - Random offsets for natural feel
+
+### See also
+
+- [GFF-File-Format](GFF-File-Format) — GFF structure; [GFF-ARE](GFF-ARE) — Area properties
+- [GFF-UTC](GFF-UTC), [GFF-UTD](GFF-UTD), [GFF-UTP](GFF-UTP), [GFF-UTT](GFF-UTT), [GFF-UTW](GFF-UTW) — Instance types
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) — Patching GIT via mod installers
+- [KEY-File-Format](KEY-File-Format) — Resource resolution

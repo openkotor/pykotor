@@ -156,9 +156,10 @@ QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib \
 - External asset import is supported, but end-to-end "import arbitrary asset → automatically ship as final KotOR resource" is still a guided pipeline rather than a one-click conversion path.
 - Engine-level documentation updates that require direct K1 + TSL binary analysis were **not** added here, because those binaries were not available in the current environment during this work.
 
-## Related pages
+### See also
 
-- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide)
-- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide)
-- [BWM File Format](BWM-File-Format)
-- [MDL/MDX File Format](MDL-MDX-File-Format)
+- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) — User workflow for indoor maps
+- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) — Implementation details
+- [BWM File Format](BWM-File-Format) — Walkmesh format
+- [MDL/MDX File Format](MDL-MDX-File-Format) — Model format
+- [LYT-File-Format](LYT-File-Format) — Room layout; [GFF-GIT](GFF-GIT) — Instance data

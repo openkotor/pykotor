@@ -99,11 +99,17 @@ The following columns are accessed by the reone engine:
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:609-620`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L609-L620) - get_item_base_name method using baseitems.2da
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:630-643`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L630-L643) - get_item_icon_path method using baseitems.2da for item class and icon path
 - [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:107-117`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L107-L117) - baseitems.2da loading and usage in UTI (item) editor for base item selection
-- [`Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py:668-704`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py#L668-L704) - baseitems.2da usage for equipment slot and droid/human [flag](GFF-File-Format#gff-data-types) lookup
+- [`Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py:668-704`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py#L668-L704) - baseitems.2da usage for equipment slot and droid/human flag lookup
 
 **Vendor Implementations:**
 
 - [`vendor/reone/src/libs/game/object/item.cpp:126-136`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/item.cpp#L126-L136) - Base item column access
 - [`vendor/reone/src/libs/game/object/item.cpp:160-171`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/item.cpp#L160-L171) - Ammunition type lookup from baseitems.2da
+
+### See also
+
+- [2DA-File-Format](2DA-File-Format) — 2DA structure; [GFF-UTI](GFF-UTI) — Item templates
+- [2DA-itemprops](2DA-itemprops), [2DA-itempropdef](2DA-itempropdef) — Item properties; [TLK-File-Format](TLK-File-Format) — StrRef names
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) — Patching 2DA
 
 ---
