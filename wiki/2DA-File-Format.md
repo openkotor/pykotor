@@ -223,7 +223,7 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 ## file structure Overview
 
-2DA files store tabular game data in a compact format used by the KotOR game engine. files use version "V2.b" and have the `.2da` extension.
+2DA files store tabular game data in a compact format used by the KotOR game engine. files use version "V2.b" and have the `.2da` extension. The engine loads 2DA files using the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/)
 

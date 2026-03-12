@@ -21,7 +21,7 @@ This document provides a detailed description of the SSF (sound set files) file 
 
 ## file structure Overview
 
-SSF files define a set of 28 sound effects that creatures can play during various game events (battle cries, pain grunts, selection sounds, etc.). The [StrRefs](TLK-File-Format#string-references-strref) point to entries in [`dialog.tlk`](TLK-File-Format) which contain the actual [WAV file](WAV-File-Format) references.
+SSF files define a set of 28 sound effects that creatures can play during various game events (battle cries, pain grunts, selection sounds, etc.). The [StrRefs](TLK-File-Format#string-references-strref) point to entries in [`dialog.tlk`](TLK-File-Format) which contain the actual [WAV file](WAV-File-Format) references. SSF files are loaded via the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/ssf/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/)
 
