@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from pykotor.resource.formats.bwm.bwm_auto import read_bwm, write_bwm, write_bwm_ascii
 from pykotor.resource.formats.mdl.mdl_auto import read_mdl, write_mdl
 from pykotor.resource.formats.tpc.tpc_auto import read_tpc, write_tpc
 from pykotor.resource.formats.wav.wav_auto import read_wav, write_wav
@@ -251,6 +252,30 @@ def convert_ascii_to_mdl(
         output_mdx_path = output_mdl_path.with_suffix(".mdx")
 
     write_mdl(mdl, output_mdl_path, file_format=ResourceType.MDL, target_ext=output_mdx_path)
+
+
+def convert_bwm_to_ascii(input_path: Path, output_path: Path) -> None:
+    """Convert a binary BWM/WOK file to ASCII walkmesh format.
+
+    Args:
+    ----
+        input_path: Path to the input BWM/WOK file (binary).
+        output_path: Path to write the output ASCII walkmesh file.
+    """
+    wok = read_bwm(input_path)
+    write_bwm_ascii(wok, output_path)
+
+
+def convert_ascii_to_bwm(input_path: Path, output_path: Path) -> None:
+    """Convert an ASCII walkmesh file to binary BWM/WOK format.
+
+    Args:
+    ----
+        input_path: Path to the input ASCII walkmesh file.
+        output_path: Path to write the output BWM/WOK file (binary).
+    """
+    wok = read_bwm(input_path)
+    write_bwm(wok, output_path, file_format=ResourceType.WOK)
 
 
 def convert_texture_format(

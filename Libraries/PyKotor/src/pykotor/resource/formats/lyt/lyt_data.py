@@ -146,8 +146,11 @@ class LYT(ComparableMixin):
         )
 
     def iter_resource_identifiers(self) -> Generator[ResourceIdentifier, Any, None]:
-        """Generate resources that utilise this LYT."""
+        """Generate resources that utilise this LYT. Skips rooms with invalid model refs (e.g. '****' placeholders in stunt modules)."""
         for room in self.rooms:
+            if not ResRef.is_valid(room.model):
+                print(f"LYT.iter_resource_identifiers(): Invalid room model: '{room.model}' (not a valid ResRef)")
+                continue
             yield ResourceIdentifier(room.model, ResourceType.MDL)
             yield ResourceIdentifier(room.model, ResourceType.MDX)
             yield ResourceIdentifier(room.model, ResourceType.WOK)

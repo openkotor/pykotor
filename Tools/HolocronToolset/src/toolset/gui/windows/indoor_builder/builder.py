@@ -99,10 +99,7 @@ from toolset.gui.common.indoor_builder_ops import (
     sync_indoor_options_ui_from_renderer,
     toggle_check_widget,
 )
-from toolset.gui.common.interaction.camera import (
-    calculate_zoom_strength,
-    handle_standard_2d_camera_movement,
-)
+from toolset.gui.common.interaction.camera import handle_standard_2d_camera_movement
 from toolset.gui.common.localization import translate as tr, translate_format as trf
 from toolset.gui.common.log_bridge import LEVEL_COLORS, LogRecordEmitter, QtLogHandler
 from toolset.gui.common.status_bar_utils import format_status_bar_keys_and_buttons
@@ -2160,11 +2157,18 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         # Use event keys; fallback to current keyboard modifiers for reliable Ctrl+scroll zoom
         ctrl_from_keys = Qt.Key.Key_Control in keys
         ctrl_from_mods = bool(QApplication.keyboardModifiers() & Qt.KeyboardModifier.ControlModifier)
+
+        def zoom_factor_from_wheel(delta_y: float) -> float:
+            # Fractional sensitivity (e.g. 0.03 = 3% per step); scale by delta so one click ~120 gives one step
+            step = delta_y / 120.0 if delta_y else 0.0
+            raw = 1.0 + ZOOM_WHEEL_SENSITIVITY * step
+            return max(0.5, min(2.0, raw))
+
         handle_indoor_scroll(
             self.ui.mapRenderer,
             delta_y=delta.y,
             ctrl_pressed=ctrl_from_keys or ctrl_from_mods,
-            zoom_factor_from_delta=lambda value: calculate_zoom_strength(value, ZOOM_WHEEL_SENSITIVITY),
+            zoom_factor_from_delta=zoom_factor_from_wheel,
         )
         self._refresh_status_bar(screen=None, buttons=buttons, keys=keys)  # type: ignore[reportArgumentType]
 
@@ -2301,16 +2305,20 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             key_new=Qt.Key.Key_N,
             key_open=Qt.Key.Key_O,
             on_escape=lambda: cancel_indoor_operations_and_clear_selection(renderer, cancel_operations=self._cancel_all_operations),
-            on_toggle_snap_grid=lambda: toggle_check_widget(self.ui.snapToGridCheck),
-            on_toggle_snap_hooks=lambda: toggle_check_widget(self.ui.snapToHooksCheck),
-            on_rotate_selected=lambda: run_if_any_indoor_rooms_selected(renderer, lambda: self._rotate_selected(self.ui.rotSnapSpin.value())),
-            on_flip_selected=lambda: run_if_any_indoor_rooms_selected(renderer, lambda: self._flip_selected(True, False)),
+            on_toggle_snap_grid=lambda: toggle_check_widget(self.ui.snapToGridCheck),  # pyright: ignore[reportArgumentType]
+            on_toggle_snap_hooks=lambda: toggle_check_widget(self.ui.snapToHooksCheck),  # pyright: ignore[reportArgumentType]
+            on_rotate_selected=lambda: run_if_any_indoor_rooms_selected(renderer, lambda: self._rotate_selected(self.ui.rotSnapSpin.value())),  # pyright: ignore[reportArgumentType]
+            on_flip_selected=lambda: run_if_any_indoor_rooms_selected(renderer, lambda: self._flip_selected(True, False)),  # pyright: ignore[reportArgumentType]
             on_select_all=self.select_all,
             on_delete_selected=self.delete_selected,
             on_cancel_placement=self._clear_placement_mode,
-            on_toggle_paint=lambda: toggle_check_widget(self.ui.enablePaintCheck),
+            on_toggle_paint=lambda: toggle_check_widget(self.ui.enablePaintCheck),  # pyright: ignore[reportArgumentType]
             on_reset_view=self.reset_view,
             on_refresh=lambda: cancel_indoor_operations_and_refresh(renderer, cancel_operations=self._cancel_all_operations),
+            key_zoom_in=(Qt.Key.Key_Equal, Qt.Key.Key_Plus),
+            key_zoom_out=(Qt.Key.Key_Minus,),
+            on_zoom_in=lambda: self.ui.mapRenderer.zoom_in_camera(ZOOM_STEP_FACTOR),
+            on_zoom_out=lambda: self.ui.mapRenderer.zoom_in_camera(1.0 / ZOOM_STEP_FACTOR),
         )
 
         if not handled:

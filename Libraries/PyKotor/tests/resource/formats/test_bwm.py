@@ -42,15 +42,65 @@ for path in (PYKOTOR_SRC, UTILITY_SRC):
     if as_posix not in sys.path:
         sys.path.insert(0, as_posix)
 
-from pykotor.resource.formats.bwm import read_bwm  # noqa: E402  # pyright: ignore[reportMissingImports]
+from pykotor.resource.formats.bwm import read_bwm, write_bwm, write_bwm_ascii  # noqa: E402  # pyright: ignore[reportMissingImports]
 from pykotor.resource.formats.bwm.bwm_auto import BWMBinaryReader, BWMBinaryWriter  # noqa: E402  # pyright: ignore[reportMissingImports]
+from pykotor.resource.formats.bwm.io_bwm_ascii import BWMAsciiWriter  # noqa: E402  # pyright: ignore[reportMissingImports]
 from pykotor.resource.formats.bwm.bwm_data import BWM, BWMFace, BWMType  # noqa: E402  # pyright: ignore[reportMissingImports]
 from utility.common.geometry import SurfaceMaterial, Vector3  # noqa: E402
 
 # Test file paths
 TESTS_DIR = THIS_FILE.parents[2]  # Goes up to 'tests' directory
+REPO_ROOT = THIS_FILE.parents[5]
 TEST_WOK_FILE = TESTS_DIR / "test_files" / "test.wok"
 TEST_TOOLSET_WOK_FILE = TESTS_DIR / "test_files" / "zio006j.wok"
+MODEL_203TELL_WOK = REPO_ROOT / "models" / "203tell.wok"
+ASCII_203TEL = REPO_ROOT / "203tel.wok.ascii"
+
+
+class TestBWMFormatDetection:
+    """Test read_bwm auto-detection of binary vs ASCII format."""
+
+    def test_read_bwm_binary_magic_uses_binary(self):
+        """Bytes starting with 'BWM ' are loaded as binary."""
+        if not TEST_WOK_FILE.exists():
+            pytest.skip(f"Test file not found: {TEST_WOK_FILE}")
+        data = TEST_WOK_FILE.read_bytes()
+        assert data[:4] == b"BWM "
+        loaded = read_bwm(data)
+        assert len(loaded.faces) > 0
+        assert loaded.walkmesh_type in (BWMType.AreaModel, BWMType.PlaceableOrDoor)
+
+    def test_read_bwm_ascii_detection(self):
+        """Bytes starting with 'node' are loaded as ASCII."""
+        ascii_content = (
+            b"node aabb\n"
+            b"    position 0.0 0.0 0.0\n"
+            b"    orientation 0.0 0.0 0.0 1.0\n"
+            b"    verts 3\n"
+            b"        0.0 0.0 0.0\n"
+            b"        1.0 0.0 0.0\n"
+            b"        0.0 1.0 0.0\n"
+            b"    faces 1\n"
+            b"        0 1 2 -1 -1 -1 -1 1\n"
+            b"    aabb\n"
+            b"        0.0 0.0 0.0 1.0 1.0 0.0 0\n"
+            b"endnode\n"
+        )
+        loaded = read_bwm(ascii_content)
+        assert len(loaded.faces) == 1
+        assert loaded.walkmesh_type == BWMType.AreaModel
+
+    def test_write_bwm_ascii_roundtrip(self):
+        """write_bwm_ascii then read_bwm preserves face count."""
+        if not TEST_WOK_FILE.exists():
+            pytest.skip(f"Test file not found: {TEST_WOK_FILE}")
+        data = TEST_WOK_FILE.read_bytes()
+        bwm = read_bwm(data)
+        buf = io.BytesIO()
+        BWMAsciiWriter(bwm, buf).write(auto_close=False)
+        ascii_bytes = buf.getvalue()
+        reloaded = read_bwm(ascii_bytes)
+        assert len(reloaded.faces) == len(bwm.faces)
 
 
 class TestBWMHeaderValidation:

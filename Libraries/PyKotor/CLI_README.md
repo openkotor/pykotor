@@ -320,6 +320,55 @@ Key options:
 - `--tslpatchdata` + `--ini`: emit TSLPatcher-ready output; add `--incremental` to stream writes during diffing
 - `--compare-hashes/--no-compare-hashes`: toggle hash comparison for unsupported resource types
 
+### walkmesh-rebuild (wok-rebuild)
+
+Rebuild walkmesh derived data (AABB tree, adjacency, perimeter edges, loop markers) from geometry. Reads a `.wok`, `.dwk`, `.pwk`, or ASCII walkmesh and writes a new binary so that all derived structures are regenerated; vertices, faces, and per-edge transitions are preserved. Run from the repository root. Use this prefix (do not change it):
+
+```bash
+uvx --with-editable Libraries/PyKotor --from . pykotor
+```
+
+**Help:**
+
+```bash
+uvx --with-editable Libraries/PyKotor --from . pykotor walkmesh-rebuild --help
+```
+
+**Rebuild to a new file (recommended):**
+
+```bash
+uvx --with-editable Libraries/PyKotor --from . pykotor walkmesh-rebuild "C:/Users/boden/Downloads/203tell.wok" -o "C:/Users/boden/Downloads/203tell_rebuilt.wok"
+```
+
+**Rebuild and overwrite the input:**
+
+```bash
+uvx --with-editable Libraries/PyKotor --from . pykotor walkmesh-rebuild "path/to/area.wok"
+```
+
+**Rebuild from ASCII input (output defaults to same stem with `.wok`):**
+
+```bash
+uvx --with-editable Libraries/PyKotor --from . pykotor walkmesh-rebuild "path/to/area.wok.ascii" -o "path/to/area.wok"
+```
+
+**Rebuild and also write an ASCII version of the result:**
+
+```bash
+uvx --with-editable Libraries/PyKotor --from . pykotor walkmesh-rebuild "path/to/area.wok" -o "path/to/area_rebuilt.wok" --ascii
+```
+
+**Compare original vs rebuilt (semantic: same geometry/transitions = MATCHES; byte-level differs):**
+
+```bash
+uvx --with-editable Libraries/PyKotor --from . pykotor diff "C:/Users/boden/Downloads/203tell.wok" "C:/Users/boden/Downloads/203tell_rebuilt.wok"
+```
+
+**Byte-level comparison (files differ after regen; Windows):**  
+`cmd /c "fc /b path\to\original.wok path\to\rebuilt.wok"`
+
+Alias: `wok-rebuild` can be used in place of `walkmesh-rebuild`.
+
 ### launch
 
 Convert, compile, pack, install, and launch target in-game.

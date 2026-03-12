@@ -108,11 +108,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pykotor.resource.formats.bwm import (  # noqa: E402
-    BWM,
-    BWMFace,
-    BWMType,
-)
+from pykotor.resource.formats.bwm.bwm_data import BWM, BWMFace, BWMType
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose  # noqa: E402
 from utility.common.geometry import SurfaceMaterial, Vector3  # noqa: E402
 
@@ -347,8 +343,9 @@ class BWMAsciiReader(ResourceReader):
         """
         self._bwm = BWM()
 
-        # Read entire input data
-        self._reader.seek(self._offset)
+        # Read entire input data (ResourceReader sets _offset only when use_binary_reader=False)
+        seek_pos = getattr(self, "_offset", 0)
+        self._reader.seek(seek_pos)
         input_data = self._reader.read_bytes(self._size if self._size > 0 else -1)
 
         # Initialize parsing state (mirroring engine local variables)

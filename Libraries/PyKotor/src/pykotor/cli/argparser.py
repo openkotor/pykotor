@@ -127,8 +127,8 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
     categories = {
         "Build & Development": ["init", "list", "unpack", "convert", "compile", "pack", "install", "launch", "serve", "play", "test"],
         "Format Conversion": ["gff2xml", "xml2gff", "gff2json", "json2gff", "tlk2xml", "xml2tlk", "tlk2json", "ssf2xml", "xml2ssf", "2da2csv", "csv22da", "capsule2json", "json2capsule"],
-        "Script Tools": ["decompile", "disassemble", "assemble"],
-        "Resource Tools": ["texture-convert", "sound-convert", "model-convert"],
+        "Script Tools": ["decompile", "disassemble", "assemble", "nwnnsscomp"],
+        "Resource Tools": ["texture-convert", "sound-convert", "model-convert", "walkmesh-convert"],
         "Archive Operations": [
             "extract",
             "list-archive",
@@ -143,6 +143,8 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
         ],
         "Analysis & Utilities": ["diff", "grep", "stats", "validate", "merge", "config"],
         "Validation & Investigation": [
+            "find",
+            "get",
             "check-txi",
             "check-2da",
             "validate-installation",
@@ -525,6 +527,30 @@ Extract files from Bioware archive formats including:
     assemble_parser.add_argument("--include", "-I", action="append", dest="include", help="Include directory for #include files")
     assemble_parser.add_argument("--debug", action="store_true", help="Enable debug output")
 
+    # nwnnsscomp: unified nwnnsscomp.exe-compatible CLI (all variant argument styles)
+    nwnnsscomp_parser = subparsers.add_parser(
+        "nwnnsscomp",
+        aliases=["script-compile"],
+        help="Compile NSS or decompile NCS (nwnnsscomp.exe-compatible; accepts all variant argument styles)",
+    )
+    nwnnsscomp_parser.add_argument("input", help="Input file (.nss to compile, .ncs to decompile)")
+    nwnnsscomp_parser.add_argument(
+        "output_positional",
+        nargs="?",
+        default=None,
+        help="Output file (V1-style positional; optional if -o or default)",
+    )
+    nwnnsscomp_parser.add_argument("-c", "--compile", dest="do_compile", action="store_true", help="Compile NSS to NCS")
+    nwnnsscomp_parser.add_argument("-d", "--decompile", dest="do_decompile", action="store_true", help="Decompile NCS to NSS")
+    nwnnsscomp_parser.add_argument("--output", "-o", dest="output", help="Output file path (or filename with --outputdir)")
+    nwnnsscomp_parser.add_argument("--outputdir", help="Output directory (KOTOR Tool style; use with -o for filename)")
+    nwnnsscomp_parser.add_argument("-g", dest="game", choices=["1", "2", "k1", "k2"], help="Game: 1/k1 = KOTOR 1, 2/k2 = TSL")
+    nwnnsscomp_parser.add_argument("--k1", action="store_true", help="Target KOTOR 1")
+    nwnnsscomp_parser.add_argument("--tsl", action="store_true", help="Target TSL (KOTOR 2)")
+    nwnnsscomp_parser.add_argument("--use-external", help="Path to nwnnsscomp.exe to use instead of built-in compiler")
+    nwnnsscomp_parser.add_argument("--timeout", type=int, default=5, help="Timeout in seconds for external compiler (default: 5)")
+    nwnnsscomp_parser.add_argument("--debug", action="store_true", help="Enable debug output (built-in compile only)")
+
     # Resource tools
     texture_parser = subparsers.add_parser("texture-convert", help="Convert texture files (TPC<->TGA)")
     texture_parser.add_argument("input", help="Input texture file (TPC or TGA)")
@@ -543,6 +569,21 @@ Extract files from Bioware archive formats including:
     model_parser.add_argument("--output", "-o", dest="output", help="Output MDL file")
     model_parser.add_argument("--to-ascii", action="store_true", help="Convert to ASCII format")
     model_parser.add_argument("--mdx", help="MDX file path (for MDL<->ASCII conversion)")
+
+    walkmesh_rebuild_parser = subparsers.add_parser(
+        "walkmesh-rebuild",
+        aliases=["wok-rebuild"],
+        help="Rebuild BWM/AABB/adjacency/edges from geometry (WOK, DWK, PWK, or ASCII)",
+    )
+    walkmesh_rebuild_parser.add_argument("input", help="Input walkmesh file (.wok, .dwk, .pwk, or .ascii)")
+    walkmesh_rebuild_parser.add_argument("--output", "-o", dest="output", help="Output path (default: overwrite input or infer from .ascii)")
+    walkmesh_rebuild_parser.add_argument("--ascii", action="store_true", help="Also write an ASCII version of the rebuilt walkmesh")
+
+    walkmesh_convert_parser = subparsers.add_parser("walkmesh-convert", help="Convert walkmesh BWM/WOK <-> ASCII")
+    walkmesh_convert_parser.add_argument("--input", "-i", required=True, help="Input walkmesh file (.wok, .dwk, .pwk, or .ascii)")
+    walkmesh_convert_parser.add_argument("--output", "-o", dest="output", help="Output path (default: input with .ascii or .wok)")
+    walkmesh_convert_parser.add_argument("--to-ascii", action="store_true", help="Convert to ASCII format")
+    walkmesh_convert_parser.add_argument("--to-binary", action="store_true", help="Convert to binary WOK format")
 
     # Utility commands
     diff_parser = subparsers.add_parser(
@@ -621,6 +662,19 @@ Compare two paths and show differences. Supports any combination of:
     check_2da_parser = subparsers.add_parser("check-2da", help="Check if a 2DA file exists in installation")
     check_2da_parser.add_argument("--2da", dest="two_da_name", required=True, help="2DA file name (without extension)")
     check_2da_parser.add_argument("--installation", "-i", dest="two_da_installation", required=True, help="Path to KOTOR installation")
+
+    find_parser = subparsers.add_parser("find", help="Find resource(s) in a KOTOR installation (resolution order: Override → MOD → Chitin)")
+    find_parser.add_argument("resref", help="Resource name with optional extension (e.g. 203tell.wok) or glob (e.g. 203tel*)")
+    find_parser.add_argument("--path", "-p", "--installation", "-i", dest="path", required=True, help="Path to KOTOR installation")
+    find_parser.add_argument("--type", "-t", dest="resource_type", help="Resource type (default: from extension)")
+    find_parser.add_argument("--order", help="Comma-separated search order (e.g. CHITIN,OVERRIDE). Default: canonical resolution order")
+    find_parser.add_argument("--all-locations", action="store_true", help="List all locations in priority order (default: show only selected)")
+
+    get_parser = subparsers.add_parser("get", help="Extract resource by name from installation (resolution order: Override → MOD → Chitin)")
+    get_parser.add_argument("resref", help="Resource name with extension (e.g. 203tell.wok)")
+    get_parser.add_argument("--path", "-p", "--installation", "-i", dest="path", required=True, help="Path to KOTOR installation")
+    get_parser.add_argument("--output", "-o", dest="output", default=".", help="Output path or directory (default: current directory)")
+    get_parser.add_argument("--order", help="Comma-separated search order (e.g. CHITIN,OVERRIDE). Default: canonical resolution order")
 
     validate_installation_parser = subparsers.add_parser("validate-installation", help="Validate a KOTOR installation")
     validate_installation_parser.add_argument("--installation", "-i", required=True, help="Path to KOTOR installation")

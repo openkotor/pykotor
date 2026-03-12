@@ -85,6 +85,7 @@ def setup_logger(level: str = "INFO", use_color: bool = True) -> RobustLogger:
     """
     logger: RobustLogger = logging.getLogger("pykotor.cli")  # type: ignore[assignment]
     logger.setLevel(getattr(logging, level.upper(), logging.INFO))
+    logger.propagate = False  # Prevent duplicate output from root logger
 
     # Remove existing handlers
     logger.handlers.clear()

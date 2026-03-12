@@ -95,6 +95,21 @@ GUI (omit paths or pass `--gui`):
 uvx --refresh kotordiff
 ```
 
+### 8. Rebuild walkmesh (WOK/DWK/PWK)
+
+From repo root, regenerate AABB/adjacency/perimeter from geometry (prefix fixed; do not change):
+
+```bash
+uvx --with-editable Libraries/PyKotor --from . pykotor walkmesh-rebuild "path/to/area.wok" -o "path/to/area_rebuilt.wok"
+uvx --with-editable Libraries/PyKotor --from . pykotor walkmesh-rebuild --help
+```
+
+Compare original vs rebuilt (semantic):
+
+```bash
+uvx --with-editable Libraries/PyKotor --from . pykotor diff "path/to/original.wok" "path/to/rebuilt.wok"
+```
+
 ## Common Workflows
 
 ### Starting from scratch

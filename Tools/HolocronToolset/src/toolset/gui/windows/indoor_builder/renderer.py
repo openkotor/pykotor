@@ -975,7 +975,7 @@ class IndoorMapRenderer(QWidget):
             painter.resetTransform()
             painter.setPen(QPen(text_color, 1))
             painter.setBrush(bg_color)
-            room_name = room.model
+            room_name = room.component.name or room.component.id
             text_rect = painter.fontMetrics().boundingRect(room_name)
             text_x = center_screen.x() - text_rect.width() / 2
             text_y = center_screen.y() + text_rect.height() / 2

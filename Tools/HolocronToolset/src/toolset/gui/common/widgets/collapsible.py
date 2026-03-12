@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QGroupBox, QSizePolicy, QWidget
 
 if TYPE_CHECKING:
@@ -112,7 +113,7 @@ class CollapsibleGroupBox(QGroupBox):
 
     def mousePressEvent(self, a0: QMouseEvent) -> None:
         """Toggle expand/collapse on single-click in the title region for discoverability."""
-        if a0.button() == a0.MouseButton.LeftButton and self._is_title_region(a0.pos()):
+        if a0.button() == Qt.MouseButton.LeftButton and self._is_title_region(a0.pos()):
             self._expanded = not self._expanded
             self._on_toggled(self._expanded)
             a0.accept()

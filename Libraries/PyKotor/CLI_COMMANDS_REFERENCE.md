@@ -10,7 +10,8 @@ This document catalogs all CLI commands, arguments, and parameters from the foll
 4. [nasher (squattingmonk/nasher)](#nasher-squattingmonknasher)
 5. [mdlops (ndixUR/mdlops)](#mdlops-ndixurmdlops)
 6. [ncs2nss (lachjames/ncs2nss)](#ncs2nss-lachjamesncs2nss)
-7. [Other CLI Tools](#other-cli-tools)
+7. [nwnnsscomp (PyKotor unified)](#nwnnsscomp-pykotor-unified)
+8. [Other CLI Tools](#other-cli-tools)
 
 ---
 
@@ -824,6 +825,54 @@ ncs2nss [options] <input.ncs> [output.nss]
 
 ---
 
+## nwnnsscomp (PyKotor unified)
+
+**Purpose**: Single CLI that accepts **all** defined nwnnsscomp.exe argument styles (V1, TSLPatcher, KOTOR Tool, KOTOR Scripting Tool) and uses PyKotor's built-in compiler/decompiler by default, or delegates to an external nwnnsscomp.exe with the correct argv per variant.
+
+**Variant reference**: For the exact argument matrix per variant, see [wiki/NWNNSSCOMP-Command-Line-Reference.md](wiki/NWNNSSCOMP-Command-Line-Reference.md). Implementation and known compiler configs: [Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py](Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py) (`KnownExternalCompilers`, `NwnnsscompConfig`, `ExternalNCSCompiler`).
+
+### Unified syntax
+
+```bash
+# Compile NSS to NCS (mode inferred from .nss, or use -c)
+pykotor nwnnsscomp -c <input.nss> [-o <output.ncs>]
+pykotor nwnnsscomp <input.nss> [<output.ncs>]   # V1-style positional output
+
+# Decompile NCS to NSS (mode inferred from .ncs, or use -d)
+pykotor nwnnsscomp -d <input.ncs> [-o <output.nss>]
+pykotor nwnnsscomp <input.ncs> [<output.nss>]   # V1-style positional output
+
+# KOTOR Tool / KOTOR Scripting Tool style: output directory + output filename
+pykotor nwnnsscomp -c script.nss --outputdir ./out -o script.ncs -g 2
+
+# Game selection
+pykotor nwnnsscomp -c script.nss -o script.ncs --tsl
+pykotor nwnnsscomp -c script.nss -o script.ncs -g 1
+
+# Use external nwnnsscomp.exe (correct argv for detected variant)
+pykotor nwnnsscomp -c script.nss -o script.ncs --use-external /path/to/nwnnsscomp.exe
+```
+
+**Options**:
+
+- `-c` / `--compile` - Compile NSS to NCS
+- `-d` / `--decompile` - Decompile NCS to NSS
+- `--output` / `-o` - Output file path (or filename when used with `--outputdir`)
+- `--outputdir` - Output directory (KOTOR Tool style)
+- `-g` 1|2|k1|k2 - Game: 1/k1 = KOTOR 1, 2/k2 = TSL
+- `--k1` / `--tsl` - Target KOTOR 1 or TSL
+- `--use-external` - Path to nwnnsscomp.exe to use instead of built-in
+- `--timeout` - Timeout in seconds for external compiler (default: 5)
+- `--debug` - Enable debug output (built-in compile only)
+
+**Notes**:
+
+- The existing `compile` (target-based), `assemble`, and `decompile` commands remain; `nwnnsscomp` is the drop-in compatible entry point for all nwnnsscomp argument forms.
+- When `--use-external` is omitted, PyKotor's built-in compiler/decompiler is used, so one executable handles every style without discrepancy.
+- The `compile` command (for project targets) also uses [compilers.py](Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py) when an external compiler is found: it invokes the correct argv per variant (V1, TSLPatcher, KOTOR Tool, KOTOR Scripting Tool) via `ExternalNCSCompiler` and `NwnnsscompConfig`.
+
+---
+
 ## Other CLI Tools
 
 ### nwnsc (nwneetools/nwnsc)
@@ -960,17 +1009,19 @@ Based on the comprehensive analysis above, PyKotorCLI should support:
 - `ssf2xml` / `xml2ssf` - SSF ↔ XML conversion
 - `2da2csv` / `csv2da` - 2DA ↔ CSV conversion
 
-### Script Tools (To Add)
+### Script Tools
 
-- `decompile` - Decompile NCS to NSS
-- `disassemble` - Disassemble NCS bytecode
-- `assemble` - Assemble NSS to NCS
+- `decompile` - Decompile NCS to NSS (built-in)
+- `disassemble` - Disassemble NCS bytecode (built-in)
+- `assemble` - Assemble NSS to NCS (built-in)
+- `nwnnsscomp` / `script-compile` - Unified nwnnsscomp.exe-compatible CLI: accepts all variant argument styles (V1, TSLPatcher, KOTOR Tool, KOTOR Scripting Tool); uses built-in compiler/decompiler or optional external exe with correct argv. Implementation and external invocation both rely on [compilers.py](Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py) (`KnownExternalCompilers`, `NwnnsscompConfig`).
 
 ### Resource Tools (To Add)
 
 - `texture-convert` - Convert textures (TPC↔TGA, etc.)
 - `sound-convert` - Convert sounds (SSF↔WAV, etc.)
 - `model-convert` - Convert models (MDL↔ASCII)
+- `walkmesh-rebuild` / `wok-rebuild` - Rebuild BWM derived data (AABB, adjacency, perimeter edges) from geometry
 
 ### Utility Commands (Implemented)
 
@@ -1030,6 +1081,37 @@ Implementation references:
 
 - `Libraries/PyKotor/src/pykotor/diff_tool/app.py` (orchestration, incremental TSLPatcher writer)
 - `Libraries/PyKotor/src/pykotor/diff_tool/cli.py` (argument wiring/headless execution)
+
+### walkmesh-rebuild (wok-rebuild)
+
+Rebuild walkmesh derived data (AABB tree, adjacency, perimeter edges, loop markers) from geometry. Run from the repository root. Use this prefix (do not change it):
+
+```bash
+uvx --with-editable Libraries/PyKotor --from . pykotor
+```
+
+**Full usage examples:**
+
+```bash
+# Help
+uvx --with-editable Libraries/PyKotor --from . pykotor walkmesh-rebuild --help
+
+# Rebuild to new file
+uvx --with-editable Libraries/PyKotor --from . pykotor walkmesh-rebuild "C:/path/to/203tell.wok" -o "C:/path/to/203tell_rebuilt.wok"
+
+# Overwrite input
+uvx --with-editable Libraries/PyKotor --from . pykotor walkmesh-rebuild "path/to/area.wok"
+
+# Also write ASCII
+uvx --with-editable Libraries/PyKotor --from . pykotor walkmesh-rebuild "path/to/area.wok" -o "path/to/out.wok" --ascii
+
+# Compare original vs rebuilt (semantic)
+uvx --with-editable Libraries/PyKotor --from . pykotor diff "path/to/original.wok" "path/to/rebuilt.wok"
+```
+
+- Input: `.wok`, `.dwk`, `.pwk`, or ASCII walkmesh (auto-detected)
+- Output: binary walkmesh; `-o`/`--output` optional (default: overwrite input or infer from `.ascii` stem)
+- `--ascii`: also write an ASCII version of the rebuilt walkmesh
 
 ### Advanced Commands (To Add)
 

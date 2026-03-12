@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pykotor.resource.formats.bwm.bwm_auto import bytes_bwm, read_bwm, write_bwm
+from pykotor.resource.formats.bwm.bwm_auto import bytes_bwm, read_bwm, write_bwm, write_bwm_ascii
 from pykotor.resource.formats.bwm.bwm_data import (
     BWM,
     BWMAdjacency,
@@ -26,4 +26,5 @@ __all__ = [
     "bytes_bwm",
     "read_bwm",
     "write_bwm",
+    "write_bwm_ascii",
 ]

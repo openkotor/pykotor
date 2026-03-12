@@ -948,6 +948,9 @@
    <property name="text">
     <string>Zoom In</string>
    </property>
+   <property name="toolTip">
+    <string>Zoom In (=, +, Numpad +, Ctrl+=)</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+=</string>
    </property>
@@ -955,6 +958,9 @@
   <action name="actionZoomOut">
    <property name="text">
     <string>Zoom Out</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom Out (-, Numpad -, Ctrl+-)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>

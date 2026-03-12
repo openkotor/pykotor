@@ -508,6 +508,7 @@ class BWM(ComparableMixin):
         visited: set[int] = set()
         edges: list[BWMEdge] = []
         perimeters: list[int] = []
+        max_steps_per_trace = max(2 * len(walkable) * 3, 1000)  # guard against infinite loops
         for i, j in itertools.product(range(len(walkable)), range(3)):
             # Convert walkable face index to overall face index for edge_index calculation
             overall_face_idx = walkable_to_overall[i]
@@ -518,7 +519,15 @@ class BWM(ComparableMixin):
             next_face: int = overall_face_idx
             next_edge: int = j
             perimeter_length: int = 0
+            steps = 0
+            seen_in_trace: set[tuple[int, int]] = set()
             while next_face != -1:
+                steps += 1
+                if steps > max_steps_per_trace:
+                    break  # degenerate perimeter; avoid infinite loop
+                if (next_face, next_edge) in seen_in_trace:
+                    break  # cycle in adjacency walk; avoid infinite loop
+                seen_in_trace.add((next_face, next_edge))
                 # Find the walkable face index for this overall face index to access adjacencies
                 walkable_idx_for_face = overall_to_walkable.get(next_face)
                 if walkable_idx_for_face is not None:

@@ -23,7 +23,7 @@ Walkmeshes serve multiple critical functions in KotOR:
 
 **Related formats:** BWM files are used in conjunction with [GFF ARE files](GFF-File-Format#are-area) which define area properties and contain references to walkmesh files.
 
-**Game Engine Implementation**: See [Game Engine BWM/AABB Implementation](Game-Engine-BWM-AABB-Implementation) for detailed analysis of how the original KOTOR engine handles BWM files, based on reverse-engineered source code.
+See also: [Game Engine BWM/AABB Implementation](Game-Engine-BWM-AABB-Implementation) for coordinate handling and traversal behavior.
 
 ---
 
@@ -47,12 +47,7 @@ Walkmeshes serve multiple critical functions in KotOR:
   - [Parsing Process](#parsing-process)
   - [Field Specifications](#field-specifications)
   - [Implementation Notes](#implementation-notes)
-- [Runtime Model](#runtime-model)
-  - [BWM Class](#bwm-class)
-  - [BWMFace Class](#bwmface-class)
-  - [BWMEdge Class](#bwmedge-class)
-  - [BWMNodeAABB Class](#bwmnodeaabb-class)
-  - [BWMAdjacency Class](#bwmadjacency-class)
+- [Format concepts](#format-concepts)
 
 ---
 
@@ -68,6 +63,8 @@ The file structure is:
 2. **Walkmesh Properties** (52 bytes): Coordinate mode, hook vectors, position
 3. **Data Table Offsets** (76 bytes): Counts and offsets for all data sections
 4. **Data Tables**: Vertices, faces, materials, normals, planar distances, AABB tree, adjacencies, edges, perimeters
+
+Data tables appear on disk in this order: vertices, face indices, materials, normals, planar distances, AABB nodes, adjacencies, edges, perimeters; header offsets point to each table.
 
 ---
 
@@ -100,15 +97,12 @@ The walkmesh properties section immediately follows the header and contains type
 - **0 (local)**: vertices are stored in local space and transformed by the engine at runtime (using the owning object's position/rotation).
 - **1 (world)**: vertices are stored in world space; the engine treats them as already-transformed.
 
-This is not just a documentation preference: the decompiled engine explicitly treats the field at offset `0x08` as a `world_coords` flag.
+The field at offset 0x08 specifies coordinate mode; engines use it to decide whether vertices are in local space (transformed at runtime) or world space (used as-is). See [Game Engine BWM/AABB Implementation](Game-Engine-BWM-AABB-Implementation) for coordinate handling and AABB traversal.
 
-References (engine source-of-truth):
+**Coordinate spaces:**
 
-- `vendor/swkotor.h`: `CSWWalkMeshHeader.world_coords`
-- `vendor/swkotor.c`: `CSWCollisionMesh__LoadMeshBinary` reads `world_coords` from `(data + 0x08)`
-- `vendor/swkotor.c`: `CSWCollisionMesh__WorldToLocal` and `CSWCollisionMesh__LocalToWorld` short-circuit when `world_coords != 0`
-- `vendor/swkotor.c`: `CSWCollisionMesh__TransformToWorld` sets `world_coords = 1` after baking translation into vertex data
-- See [Game Engine BWM/AABB Implementation](Game-Engine-BWM-AABB-Implementation#coordinate-spaces-and-transformations) for detailed coordinate space handling
+- **WOK**: Uses world coordinates. Vertices are already in world space; LYT does not translate WOK vertices.
+- **PWK/DWK**: Use local coordinates. Vertices are in object space; the engine applies position and rotation at runtime.
 
 **Walkmesh Types (by file extension):**
 
@@ -176,7 +170,7 @@ After the walkmesh properties, the header contains offset and count information 
 | Distances offset    | uint32 | 96 (0x60)   | 4    | Offset to planar distances array                                 |
 | AABB count          | uint32 | 100 (0x64)   | 4    | Number of AABB nodes (WOK only, 0 for PWK/DWK)                  |
 | AABB offset         | uint32 | 104 (0x68)   | 4    | Offset to AABB nodes array (WOK only)                            |
-| Unknown             | uint32 | 108 (0x6C)   | 4    | Unknown field (typically 0 or 4)                                 |
+| AABB root           | uint32 | 108 (0x6C)   | 4    | Root node index for AABB tree (0-based index into AABB nodes array; WOK only) |
 | Adjacency count     | uint32 | 112 (0x70)   | 4    | Number of walkable faces for adjacency (WOK only)                |
 | Adjacency offset    | uint32 | 116 (0x74)   | 4    | Offset to adjacency array (WOK only)                            |
 | Edge count          | uint32 | 120 (0x78)   | 4    | Number of perimeter edges (WOK only)                            |
@@ -270,6 +264,8 @@ Each face is assigned a material type that determines its physical properties an
 | 30 | Trigger           | Yes      | Trigger surface (PyKotor extended)                               |
 
 **Note**: Material 16 (BottomlessPit) walkability may vary between implementations. Some mark it as walkable (allowing the player to fall), while some game logic may treat it differently.
+
+**Material masks and walkability:** Material IDs are used as bit positions in runtime masks (e.g. walkable, line-of-sight). Walkability is defined by the `surfacemat.2DA` table ("Walk" column), not hardcoded. Preserve material IDs in range [0, 22] for compatibility.
 
 Materials control not just walkability but also:
 
@@ -367,7 +363,7 @@ Each AABB node is **44 bytes** and contains:
 | Left Child index      | uint32  | 36 (0x24) | 4    | Index to left child node (0-based array index, 0xFFFFFFFF = no child) |
 | Right Child index     | uint32  | 40 (0x28) | 4    | Index to right child node (0-based array index, 0xFFFFFFFF = no child) |
 
-**Important**: Child indices use **0-based array indexing**. The first node in the AABB array is at index 0, the second at index 1, and so on. The value `0xFFFFFFFF` indicates no child (leaf node or missing child). This matches standard array indexing in most programming languages. For implementation details and how different tools handle this, see the [Implementation Approaches and Differences](#implementation-approaches-and-differences) section.
+**Important**: Child indices use **0-based array indexing**. The first node in the AABB array is at index 0, the second at index 1, and so on. The value `0xFFFFFFFF` indicates no child (leaf node or missing child). This matches standard array indexing in most programming languages.
 
 **Most Significant Plane values:**
 
@@ -478,24 +474,9 @@ An edge is a perimeter edge if:
 1. It belongs to a walkable face (non-walkable faces don't have perimeter edges)
 2. It doesn't have an adjacent neighbor face (no other triangle shares that edge)
 
-The BWM.Edges() method finds all perimeter edges by:
+Perimeter edges are found by computing adjacency for each walkable face; an edge with no adjacent neighbor is a perimeter edge. Perimeter loops are formed by walking along connected perimeter edges.
 
-1. Getting all walkable faces
-2. Computing adjacency for each walkable face
-3. Finding edges that have no adjacency (null adjacency = perimeter edge)
-4. Following the perimeter loop by walking along connected perimeter edges
-
-**Transitions and Door Placement:**
-
-Transitions tell the game which rooms or areas are connected at this edge. When you place a door in the indoor map builder, it uses transitions to know where doors should go.
-
-The transition value comes from the face's Trans1, Trans2, or Trans3 property, depending on which edge this is:
-
-- Edge 0 (V1->V2): Uses face.Trans1
-- Edge 1 (V2->V3): Uses face.Trans2
-- Edge 2 (V3->V1): Uses face.Trans3
-
-When the indoor map builder processes a room's walkmesh, it remaps transitions from dummy indices (from the kit component) to actual room indices (in the built module).
+**Transitions:** Transition values (stored per edge in the edges array) reference door connections or area boundaries. A value of -1 indicates no transition (boundary edge); non-negative values index into room/area data.
 
 ### Perimeters
 
@@ -535,9 +516,9 @@ Perimeter indices are 1-based indices marking the end of each loop:
 
 The game engine also supports an ASCII text-based walkmesh format, typically used for development and toolset export/import. The ASCII format uses a hierarchical block structure similar to ASCII model files.
 
-The format is parsed by the game engine's `CSWRoomSurfaceMesh::LoadMeshText` function (K1: `0x00582d70` in `swkotor.exe`, TSL: `0x00577860` in `swkotor2.exe`).
+The engine parses this format line-by-line (256-byte line buffer, newline-terminated).
 
-**Note**: The ASCII format is primarily a development/toolset format, not typically used in-game. The binary format (BWM) is the runtime format used by the game. The engine supports both formats, detecting automatically in `LoadMesh`.
+**Note**: The ASCII format is primarily a development/toolset format, not typically used in-game. The binary format (BWM) is the runtime format used by the game. The engine supports both formats and detects which format is present automatically.
 
 ### Format Structure
 
@@ -598,25 +579,11 @@ endnode
 
 ### Parsing Process
 
-The engine parses ASCII walkmesh files line-by-line using a helper function `CSWCollisionMesh::LoadMeshString` (K1: `0x005968a0` in `swkotor.exe`, TSL: `0x005573e0` in `swkotor2.exe`). Both implementations read up to 256 bytes per line, stopping at newline characters (0x0A) and null-terminating the result.
+Lines are read up to 256 bytes, stopping at newline (0x0A), and null-terminated.
 
 #### Line Reading
 
-```c
-int LoadMeshString(byte** input_ptr, size_t* remaining, byte* buffer, size_t buffer_size) {
-    size_t bytes_read = 0;
-    while (bytes_read < (buffer_size - 1) && *remaining > 0) {
-        buffer[bytes_read] = **input_ptr;
-        (*input_ptr)++;
-        (*remaining)--;
-        if (buffer[bytes_read] == 0x0A) break;  // Newline
-        bytes_read++;
-    }
-    if (bytes_read >= buffer_size) return 0;  // Buffer overflow
-    buffer[bytes_read] = 0;  // Null-terminate
-    return 1;
-}
-```
+Lines are read into a buffer (up to 256 bytes), stopping at newline (0x0A), and the line is null-terminated.
 
 #### Whitespace Handling
 
@@ -636,35 +603,13 @@ while (*src == 0x20) {  // Space character
 
 The walkmesh must start with `"node aabb"` and end with `"endnode"`.
 
-**Detection Logic**:
-
-```c
-if (strncmp(src, "node", 4) == 0) {
-    src += 4;
-    if (strncmp(src, " aabb", 5) == 0) {
-        in_node_block = 1;
-    }
-}
-
-// End detection
-if (strncmp(src, "endnode", 7) == 0) {
-    in_node_block = 0;
-}
-```
+Leading whitespace is stripped before keyword detection. The block begins with the token `node aabb` and ends with `endnode`.
 
 #### 2. Position Field
 
 **Format**: `"position" SPACE float SPACE float SPACE float`
 
-**Parsing**:
-
-```c
-float x, y, z;
-sscanf(src, "position %f %f %f", &x, &y, &z);
-mesh->position.x = x;
-mesh->position.y = y;
-mesh->position.z = z;
-```
+**Parsing**: Three floats (x, y, z) after the keyword. Values are parsed with standard float parsing.
 
 **Storage**: Stored as a Vector3 in the mesh structure (offset 0x2C).
 
@@ -672,25 +617,7 @@ mesh->position.z = z;
 
 **Format**: `"orientation" SPACE float SPACE float SPACE float SPACE float`
 
-**Parsing**:
-
-```c
-float x, y, z, w;
-sscanf(src, "orientation %f %f %f %f", &x, &y, &z, &w);
-
-if (abs(x) < 0.0001 && abs(y) < 0.0001 && abs(z) < 0.0001) {
-    // Identity quaternion (0, 0, 0, 1)
-    mesh->orientation.x = 0.0;
-    mesh->orientation.y = 0.0;
-    mesh->orientation.z = 0.0;
-    mesh->orientation.w = 1.0;
-} else {
-    // Convert axis-angle to quaternion
-    Vector3 axis(x, y, z);
-    Quaternion q(axis, w);  // Axis-angle constructor
-    mesh->orientation = q;
-}
-```
+**Parsing**: Four floats (axis-angle: axis x, y, z and angle). Values are parsed with standard float parsing. When the axis is near zero, the orientation is treated as identity (0, 0, 0, 1).
 
 **Note**: The orientation field uses axis-angle representation (axis vector + angle), not direct xyzw quaternion. The engine converts this internally.
 
@@ -705,22 +632,7 @@ if (abs(x) < 0.0001 && abs(y) < 0.0001 && abs(z) < 0.0001) {
 (float SPACE float SPACE float NEWLINE)+
 ```
 
-**Parsing**:
-
-```c
-int vertex_count;
-sscanf(src, "verts %d", &vertex_count);
-mesh->SetVertexCount(vertex_count);
-
-for (int i = 0; i < vertex_count; i++) {
-    float x, y, z;
-    LoadMeshString(&input_ptr, &remaining, line_buffer, 256);
-    sscanf(line_buffer, "%f %f %f", &x, &y, &z);
-    mesh->vertices[i].x = x;
-    mesh->vertices[i].y = y;
-    mesh->vertices[i].z = z;
-}
-```
+**Parsing**: After the `verts` keyword and count (one integer), one line per vertex with three floats (x, y, z). Leading whitespace is stripped before keyword detection; values are parsed with standard float parsing.
 
 **Storage**: Vertices stored as an array of Vector3 structures (12 bytes each: 3 floats).
 
@@ -746,82 +658,9 @@ for (int i = 0; i < vertex_count; i++) {
 7. `adj4` - Adjacency data (read but not stored)
 8. `material` - Material ID
 
-**Parsing**:
+**Parsing**: After the `faces` keyword and count (one integer), one line per face with eight integers: v1, v2, v3, adj1, adj2, adj3, adj4, material. The adjacency values (adj1–adj4) are read but not stored in the binary output. Values are parsed with standard int parsing.
 
-```c
-int face_count;
-sscanf(src, "faces %d", &face_count);
-
-// Allocate temporary buffers
-uint32_t* vertex_indices = malloc(face_count * 12);  // 3 indices per face
-uint32_t* material_ids = malloc(face_count * 4);     // 1 material per face
-
-// Read all faces
-for (int i = 0; i < face_count; i++) {
-    int v1, v2, v3, adj1, adj2, adj3, adj4, material;
-    LoadMeshString(&input_ptr, &remaining, line_buffer, 256);
-    sscanf(line_buffer, "%d %d %d %d %d %d %d %d", 
-           &v1, &v2, &v3, &adj1, &adj2, &adj3, &adj4, &material);
-    
-    // Store only vertex indices and material ID
-    vertex_indices[i * 3 + 0] = v1;
-    vertex_indices[i * 3 + 1] = v2;
-    vertex_indices[i * 3 + 2] = v3;
-    material_ids[i] = material;
-    // Adjacency data (adj1-adj4) is read but not stored
-}
-```
-
-**Material Lookup and Walkability**:
-
-The engine determines walkability by looking up the material in the `surfacemat.2DA` table:
-
-```c
-int walkable_count = 0;
-int unwalkable_count = 0;
-uint32_t* walkable_indices = malloc(face_count * 4);
-uint32_t* unwalkable_indices = malloc(face_count * 4);
-
-for (int i = 0; i < face_count; i++) {
-    int walk_value;
-    C2DA::GetINTEntry(surfacemat_2da, material_ids[i], "Walk", &walk_value);
-    
-    if (walk_value == 0) {
-        // Material is NOT walkable
-        unwalkable_indices[unwalkable_count++] = i;
-    } else {
-        // Material IS walkable
-        walkable_indices[walkable_count++] = i;
-    }
-}
-```
-
-**Face Reordering**:
-
-Walkable faces are stored first, followed by unwalkable faces:
-
-```c
-// Copy walkable faces first
-for (int i = 0; i < walkable_count; i++) {
-    int src_idx = walkable_indices[i];
-    mesh->face_indices[i].vertex_1 = vertex_indices[src_idx * 3 + 0];
-    mesh->face_indices[i].vertex_2 = vertex_indices[src_idx * 3 + 1];
-    mesh->face_indices[i].vertex_3 = vertex_indices[src_idx * 3 + 2];
-    mesh->materials[i] = material_ids[src_idx];
-}
-
-// Copy unwalkable faces after walkable faces
-for (int i = 0; i < unwalkable_count; i++) {
-    int src_idx = unwalkable_indices[i];
-    int dst_idx = walkable_count + i;
-    mesh->face_indices[dst_idx].vertex_1 = vertex_indices[src_idx * 3 + 0];
-    mesh->face_indices[dst_idx].vertex_2 = vertex_indices[src_idx * 3 + 1];
-    mesh->face_indices[dst_idx].vertex_3 = vertex_indices[src_idx * 3 + 2];
-    mesh->materials[dst_idx] = material_ids[src_idx];
-}
-
-mesh->adjacency_count = walkable_count;  // Number of walkable faces
-```
+**Material lookup and face ordering**: Walkability is determined by the `surfacemat.2DA` "Walk" column. Walkable faces are stored first, followed by unwalkable faces; this ordering is required for adjacency table indexing in the binary format.
 
 **Final Structure**:
 
@@ -848,50 +687,7 @@ mesh->adjacency_count = walkable_count;  // Number of walkable faces
 6. `max_z` (float) - Maximum Z bound
 7. `face_index` (int) - Face index for leaf nodes (-1 for internal nodes)
 
-**Parsing**:
-
-```c
-while (/* more lines available */) {
-    float min_x, min_y, min_z, max_x, max_y, max_z;
-    int face_index;
-    LoadMeshString(&input_ptr, &remaining, line_buffer, 256);
-    
-    // Check if line is "aabb" keyword or data line
-    if (strncmp(line_buffer, "aabb", 4) == 0) {
-        continue;  // Skip keyword line
-    }
-    
-    sscanf(line_buffer, "%f %f %f %f %f %f %d",
-           &min_x, &min_y, &min_z, &max_x, &max_y, &max_z, &face_index);
-    
-    // Min/Max Swapping
-    if (max_x < min_x) { float tmp = min_x; min_x = max_x; max_x = tmp; }
-    if (max_y < min_y) { float tmp = min_y; min_y = max_y; max_y = tmp; }
-    if (max_z < min_z) { float tmp = min_z; min_z = max_z; max_z = tmp; }
-    
-    // Epsilon Expansion
-    const float EPSILON = 0.01f;  // 0x3C23D70A
-    min_x -= EPSILON;
-    min_y -= EPSILON;
-    min_z -= EPSILON;
-    max_x += EPSILON;
-    max_y += EPSILON;
-    max_z += EPSILON;
-    
-    // Face Index Mapping
-    // Maps face indices to reordered array (walkable first, unwalkable second)
-    if (face_index != -1) {
-        // Map to correct position in reordered face array
-    }
-    
-    // Store AABB node (44 bytes = 0x2c)
-    AABBNode* node = malloc(44);
-    node->bbox_min = Vector3(min_x, min_y, min_z);
-    node->bbox_max = Vector3(max_x, max_y, max_z);
-    node->face_index = face_index;
-    // ... other fields ...
-}
-```
+**Parsing**: After the `aabb` keyword, zero or more data lines. Each line has seven values: six floats (min_x, min_y, min_z, max_x, max_y, max_z) and one integer (face_index; -1 for internal nodes). Leading whitespace is stripped; values are parsed with standard float/int parsing. If max &lt; min for any axis, implementations may swap. An epsilon of 0.01 is typically applied to all bounding box coordinates to avoid floating-point precision issues.
 
 **AABB Node Structure** (44 bytes):
 
@@ -905,8 +701,6 @@ while (/* more lines available */) {
 **Tree Construction**: The engine builds a hierarchical AABB tree structure from the parsed nodes, linking parent-child relationships and calculating split planes based on bounding box dimensions. The complete tree building algorithm is complex and involves maintaining stacks of nodes with unresolved children.
 
 **Epsilon Constant**: `0.01` (0x3C23D70A) - Applied to all bounding box coordinates to prevent floating-point precision issues.
-
-<a id="implementation-approaches-and-differences"></a>
 
 ### Implementation Notes
 
@@ -926,11 +720,7 @@ while (/* more lines available */) {
 
 #### Error Handling
 
-The engine handles errors by:
-
-- Calling `LoadDefaultMesh` vtable function on parse errors
-- Returning `1` on error (not `0`)
-- Freeing all allocated memory on error
+On parse errors, implementations should abort parsing and release any allocated resources; the engine falls back to a default mesh when loading fails.
 
 #### Line Buffer
 
@@ -941,194 +731,24 @@ The engine handles errors by:
 #### Whitespace
 
 - **Leading Whitespace**: Stripped before keyword detection
-- **Inter-Token Whitespace**: Required between values (handled by `sscanf`)
-- **Newlines**: Required after each line (0x0A, consumed by `LoadMeshString`)
+- **Inter-Token Whitespace**: Required between values
+- **Newlines**: Required after each line (0x0A)
 
-#### Engine References
-
-- `CSWRoomSurfaceMesh::LoadMeshText` - K1: `0x00582d70` in `swkotor.exe`, TSL: `0x00577860` in `swkotor2.exe` (3882 bytes)
-- `CSWCollisionMesh::LoadMeshString` - K1: `0x005968a0` in `swkotor.exe`, TSL: `0x005573e0` in `swkotor2.exe` (95 bytes)
-- `CSWCollisionMesh::LoadMesh` - K1: `0x00596670` in `swkotor.exe` (entry point, detects ASCII vs binary)
-- `C2DA::GetINTEntry` - `0x0041d630` in both games (material lookup)
+Walkability for loaded materials is determined by the `surfacemat.2DA` "Walk" column. The binary BWM format is the runtime format; ASCII is used for toolset and development exchange.
 
 ---
 
-## Runtime Model
+## Format concepts
 
-The runtime model provides high-level, in-memory representations of walkmesh data that are easier to work with than raw binary structures. These classes abstract away the binary format details and provide convenient methods for common operations.
+This section describes the logical concepts used in the BWM format (on-disk and in-memory), without reference to any specific implementation.
 
-### BWM Class
+- **Face index**: A 0-based index into the face array. Each face is a triangle (three vertex indices).
+- **Edge index**: Each face has three edges (0, 1, 2). The global edge index for a face is `face_index * 3 + local_edge_index`. Edge 0: V1→V2, edge 1: V2→V3, edge 2: V3→V1.
+- **Perimeter array**: Stores 1-based loop-end indices. Loop 1 uses edges from index 0 to `perimeters[0] - 1`; loop N uses edges from `perimeters[N-2]` to `perimeters[N-1] - 1`. Perimeter edges are edges with no walkable neighbor (boundary of the walkable area).
+- **Adjacency**: Two faces are adjacent if they share exactly two vertices (a shared edge). The adjacency array encodes the neighbor for each walkable face edge as `face_index * 3 + edge_index`. Adjacency is bidirectional: if face A’s edge connects to face B’s edge, both A’s and B’s adjacency entries reference each other. This enables pathfinding to traverse in both directions along shared edges.
 
-The `BWM` class represents a complete walkmesh in memory, providing a high-level interface for working with walkmesh data.
-
-**Key Attributes:**
-
-- **`Faces`**: Ordered list of `BWMFace` objects representing all triangular faces in the walkmesh
-  - Faces are typically ordered with walkable faces first, followed by non-walkable faces
-  - The face list is the primary data structure for accessing walkmesh geometry
-- **`WalkmeshType`**: Type of walkmesh (`BWMType.AreaModel` for WOK, `BWMType.PlaceableOrDoor` for PWK/DWK)
-- **`Position`**: 3D position offset for the walkmesh in world space
-- **Positional hooks**: `RelativeHook1`, `RelativeHook2`, `AbsoluteHook1`, `AbsoluteHook2` - Used by the engine for positioning and interaction points
-
-**Helper Methods:**
-
-- `WalkableFaces()`: Returns a filtered list of only walkable faces (for pathfinding)
-- `UnwalkableFaces()`: Returns a filtered list of only non-walkable faces (for collision detection)
-- `Vertices()`: Returns unique vertex objects referenced by faces (identity-based uniqueness)
-- `Adjacencies(face)`: Computes adjacencies for a specific face
-- `Edges()`: Returns perimeter edges (edges with no walkable neighbor)
-- `Aabbs()`: Generates AABB tree for spatial acceleration
-- `Raycast(origin, direction, maxDistance, materials)`: Performs a raycast against the walkmesh
-- `FindFaceAt(x, y, materials)`: Finds which triangle contains a given (x, y) point
-- `GetHeightAt(x, y, materials)`: Gets the height (Z coordinate) of the walkmesh surface at a given (x, y) position
-
-### BWMFace Class
-
-Each `BWMFace` represents a single triangular face in the walkmesh, containing all information needed for collision detection, pathfinding, and rendering.
-
-**What is a BWMFace?**
-
-A BWMFace is a single triangle in a walkmesh. It represents one small piece of the walkable surface. The walkmesh is made up of many BWMFace objects, each one a triangle that covers part of the ground.
-
-**Key Attributes:**
-
-- **`V1`, `V2`, `V3`**: Vertex objects (`Vector3` instances) defining the triangle's three corners
-  - Vertices are shared by reference: multiple faces can reference the same vertex object
-  - This ensures geometric consistency and enables efficient adjacency calculations
-- **`Material`**: `SurfaceMaterial` enum determining walkability and physical properties
-  - Controls whether the face is walkable, blocks line of sight, produces sound effects, etc.
-- **`Trans1`, `Trans2`, `Trans3`**: Optional per-edge transition indices
-  - These are **NOT** unique identifiers and do **NOT** encode geometric adjacency
-  - They reference area/room transition data (e.g., door connections, area boundaries)
-  - Only present on edges that have corresponding entries in the edges array
-
-**How are Transitions Used?**
-
-Transitions tell the game which rooms or areas are connected at each edge of the triangle. When you place a door in the indoor map builder, it uses transitions to know where doors should go. The transition value is an index into the list of rooms in the module.
-
-For example:
-
-- If Trans1 = 5, it means edge 0 connects to room index 5
-- If Trans1 = null, it means edge 0 has no connection (is a boundary or wall)
-
-When the indoor map builder processes a room's walkmesh, it remaps transitions from dummy indices (from the kit component) to actual room indices (in the built module).
-
-**Material Inheritance:**
-
-BWMFace inherits from Face, which provides:
-
-- V1, V2, V3: The three vertices
-- Material: The surface material
-- Normal(): Calculates the triangle's normal vector
-- Area(): Calculates the triangle's area
-- Centre(): Gets the center point of the triangle
-- DetermineZ(x, y): Calculates height at a given (x, y) point
-
-The Material property is critical for walkability. When checking if a face is walkable, the code calls Material.Walkable() which checks if the material ID is in the walkable set.
-
-**Critical: Material Preservation During Transformations:**
-
-When a BWM is transformed (flipped, rotated, or translated), the Material property MUST be preserved. The BWM.Flip(), BWM.Rotate(), and BWM.Translate() methods only modify vertices, not materials, so materials are automatically preserved.
-
-However, when creating deep copies of BWMs (like in IndoorMap.ProcessBwm), you MUST ensure that Material is copied: `newFace.Material = face.Material`
-
-If materials are not preserved, faces that should be walkable will become non-walkable, causing bugs where levels/modules are NOT walkable despite having the right surface material.
-
-### BWMEdge Class
-
-The `BWMEdge` class represents a boundary edge (an edge with no walkable neighbor) computed from adjacency data.
-
-**What is a BWMEdge?**
-
-A BWMEdge represents an edge of a walkmesh triangle that is on the perimeter (boundary) of the walkable area. Perimeter edges are edges that don't have a neighboring triangle on one side - they form the outer boundary of the walkmesh.
-
-**Key Attributes:**
-
-- **`Face`**: The `BWMFace` object this edge belongs to
-- **`Index`**: The local edge index (0, 1, or 2) within the face
-  - Edge 0: between `v1` and `v2`
-  - Edge 1: between `v2` and `v3`
-  - Edge 2: between `v3` and `v1`
-- **`Transition`**: Optional transition ID linking to area/room transition data
-  - `-1` indicates no transition (just a boundary edge)
-  - Non-negative values reference door connections or area boundaries
-- **`Final`**: Boolean flag marking the end of a perimeter loop
-
-### BWMNodeAABB Class
-
-The `BWMNodeAABB` class represents a node in the AABB (Axis-Aligned Bounding Box) tree stored in a BWM file.
-
-**What is a BWMNodeAABB?**
-
-A BWMNodeAABB is a single node in a tree structure that helps the game quickly find which triangles are near a given point. It's like a filing cabinet where files (triangles) are organized into drawers (boxes) that are organized into bigger drawers (bigger boxes).
-
-The AABB tree is stored directly in the BWM file for WOK (area) walkmeshes. When the game loads a walkmesh, it can use this pre-built tree instead of building a new one from scratch. This saves time during loading.
-
-**Key Attributes:**
-
-- **`BbMin`, `BbMax`**: Minimum and maximum bounding box coordinates (x, y, z) defining the node's spatial extent
-- **`Face`**: For leaf nodes, the associated face; `null` for internal nodes
-- **`Sigplane`**: The "most significant plane" used to split this node
-  - This tells us which axis (X, Y, or Z) was used to divide triangles into left and right
-  - Used when building the tree to decide how to organize triangles
-- **`Left`, `Right`**: References to child nodes (for internal nodes) or `null` (for leaf nodes)
-
-**Leaf Nodes vs Internal Nodes:**
-
-- **Leaf Node** (contains a triangle):
-  - Face != null (points to a BWMFace)
-  - Left = null (no children)
-  - Right = null (no children)
-  - BbMin and BbMax form a box around the triangle
-
-- **Internal Node** (contains child nodes):
-  - Face = null (no triangle here)
-  - Left != null (has a left child)
-  - Right != null (has a right child)
-  - BbMin and BbMax form a box that contains both children's boxes
-
-### BWMAdjacency Class
-
-The `BWMAdjacency` class represents adjacency information between two walkmesh faces.
-
-**What is Adjacency?**
-
-Adjacency tells which triangles share edges with each other. Two triangles are adjacent (neighbors) if they share exactly two vertices, which forms a shared edge. This information is critical for pathfinding because the pathfinding algorithm needs to know which triangles can be reached from the current triangle.
-
-**What Data Does it Store?**
-
-A BWMAdjacency stores:
-
-1. **Face**: The adjacent (neighbor) triangle that shares an edge
-2. **Edge**: Which edge of the neighbor triangle connects to the current face
-   - Edge 0: V1 -> V2
-   - Edge 1: V2 -> V3
-   - Edge 2: V3 -> V1
-
-**How is it Used?**
-
-When computing adjacency for a walkmesh, the algorithm:
-
-1. Looks at each edge of each triangle
-2. Finds if any other triangle shares that same edge
-3. If found, creates a BWMAdjacency object linking them
-4. Stores this in the adjacency array using encoding: `faceIndex * 3 + edgeIndex`
-
-For example, if face 5's edge 1 is adjacent to face 12's edge 2:
-
-- The adjacency for face 5, edge 1 would be: BWMAdjacency(face12, edge2)
-- This is stored at index 5*3+1 = 16 in the adjacency array
-- The value stored is: 12*3+2 = 38 (encoding of face 12, edge 2)
-
-**Bidirectional Linking:**
-
-Adjacency is always bidirectional. If face A's edge connects to face B's edge, then:
-
-- Face A's adjacency points to face B
-- Face B's adjacency points to face A
-
-This ensures pathfinding can traverse in both directions along shared edges.
+The format is used by the engine and tools for pathfinding, collision detection, and area transitions. For a concrete implementation, see the PyKotor BWM module: `Libraries/PyKotor/src/pykotor/resource/formats/bwm/`.
 
 ---
 
-This documentation provides a comprehensive overview of the KotOR BWM file format, focusing on clear explanations of what each component does and how it works, based on the canonical implementation in the Andastra codebase.
+This document describes the BWM format as used by KotOR and compatible tools.

@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 from pykotor.cli.argparser import create_parser
 from pykotor.cli.commands import (
     cmd_2da2csv,
+    cmd_find,
+    cmd_get,
     cmd_archive_to_json,
     cmd_assemble,
     cmd_batch_patch,
@@ -23,6 +25,7 @@ from pykotor.cli.commands import (
     cmd_decompile,
     cmd_diff,
     cmd_disassemble,
+    cmd_nwnnsscomp,
     cmd_extract,
     cmd_gff2json,
     cmd_gff2xml,
@@ -41,6 +44,8 @@ from pykotor.cli.commands import (
     cmd_merge,
     cmd_model_convert,
     cmd_module_resources,
+    cmd_walkmesh_convert,
+    cmd_walkmesh_rebuild,
     cmd_pack,
     cmd_patch_file,
     cmd_patch_folder,
@@ -100,6 +105,10 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_launch(args, logger)
         if args.command == "extract":
             return cmd_extract(args, logger)
+        if args.command == "find":
+            return cmd_find(args, logger)
+        if args.command == "get":
+            return cmd_get(args, logger)
         if args.command in ("list-archive", "ls-archive"):
             return cmd_list_archive(args, logger)
         if args.command in ("create-archive", "pack-archive"):
@@ -140,6 +149,8 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_disassemble(args, logger)
         if args.command == "assemble":
             return cmd_assemble(args, logger)
+        if args.command in ("nwnnsscomp", "script-compile"):
+            return cmd_nwnnsscomp(args, logger)
         # Resource tools
         if args.command == "texture-convert":
             return cmd_texture_convert(args, logger)
@@ -147,6 +158,10 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_sound_convert(args, logger)
         if args.command == "model-convert":
             return cmd_model_convert(args, logger)
+        if args.command in ("walkmesh-rebuild", "wok-rebuild"):
+            return cmd_walkmesh_rebuild(args, logger)
+        if args.command == "walkmesh-convert":
+            return cmd_walkmesh_convert(args, logger)
         # Utility commands
         if args.command == "diff":
             return cmd_diff(args, logger)

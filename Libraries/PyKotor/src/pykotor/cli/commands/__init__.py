@@ -9,6 +9,8 @@ from pykotor.cli.commands.convert import cmd_convert
 from pykotor.cli.commands.create_archive import cmd_create_archive
 from pykotor.cli.commands.create_installation import cmd_create_installation
 from pykotor.cli.commands.extract import cmd_extract
+from pykotor.cli.commands.find_cmd import cmd_find
+from pykotor.cli.commands.get_cmd import cmd_get
 from pykotor.cli.commands.format_convert import (
     cmd_2da2csv,
     cmd_archive_to_json,
@@ -43,7 +45,10 @@ from pykotor.cli.commands.resource_tools import (
     cmd_model_convert,
     cmd_sound_convert,
     cmd_texture_convert,
+    cmd_walkmesh_convert,
+    cmd_walkmesh_rebuild,
 )
+from pykotor.cli.commands.nwnnsscomp_cmd import cmd_nwnnsscomp
 from pykotor.cli.commands.script_tools import (
     cmd_assemble,
     cmd_decompile,
@@ -86,6 +91,8 @@ __all__ = [
     "cmd_diff",
     "cmd_disassemble",
     "cmd_extract",
+    "cmd_find",
+    "cmd_get",
     "cmd_gff2json",
     "cmd_gff2xml",
     "cmd_grep",
@@ -102,6 +109,8 @@ __all__ = [
     "cmd_list_archive",
     "cmd_merge",
     "cmd_model_convert",
+    "cmd_nwnnsscomp",
+    "cmd_walkmesh_convert",
     "cmd_module_resources",
     "cmd_pack",
     "cmd_patch_file",
@@ -117,6 +126,7 @@ __all__ = [
     "cmd_unpack",
     "cmd_validate",
     "cmd_validate_installation",
+    "cmd_walkmesh_rebuild",
     "cmd_xml2gff",
     "cmd_xml2ssf",
     "cmd_xml2tlk",

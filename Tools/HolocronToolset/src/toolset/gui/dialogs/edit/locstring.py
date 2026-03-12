@@ -149,8 +149,6 @@ class LocalizedStringDialog(QDialog):
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
-        from toolset.gui.common.localization import translate as trf
-
         self.setWindowTitle(trf("{language} - {name} - Localized String Editor", language=installation.talktable().language().name.title(), name=installation.name))
 
         self.ui.stringrefSpin.valueChanged.connect(self.stringref_changed)

@@ -267,7 +267,18 @@ def handle_indoor_key_press_shortcuts(
     on_save: Callable[[], None] | None = None,
     on_new: Callable[[], None] | None = None,
     on_open: Callable[[], None] | None = None,
+    key_zoom_in: Sequence[object] = (),
+    key_zoom_out: Sequence[object] = (),
+    on_zoom_in: Callable[[], None] | None = None,
+    on_zoom_out: Callable[[], None] | None = None,
 ) -> bool:
+    if key in key_zoom_in and on_zoom_in is not None:
+        on_zoom_in()
+        return True
+    if key in key_zoom_out and on_zoom_out is not None:
+        on_zoom_out()
+        return True
+
     if key == key_escape:
         on_escape()
         return True
