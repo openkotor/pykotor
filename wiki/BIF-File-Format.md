@@ -36,7 +36,7 @@ BIF archives are the primary storage mechanism for game assets. The game organiz
 - `data/lips.bif`: [LIP](LIP-File-Format)-sync [animation](MDL-MDX-File-Format#animation-header) data ([LIP](LIP-File-Format))
 - Additional platform-specific BIFs (e.g., `dataxbox/`, `data_mac/`)
 
-The [modular structure](https://en.wikipedia.org/wiki/Modular_programming) allows for efficient loading and potential platform-specific optimizations. Resources in BIF files are read-only at runtime; mods override them via the `override/` directory or custom [ERF](ERF-File-Format)/MOD files.
+The [modular structure](https://en.wikipedia.org/wiki/Modular_programming) allows for efficient loading and potential platform-specific optimizations. Resources in BIF files are read-only at runtime; mods override them via the `override/` directory or custom [ERF](ERF-File-Format)/MOD files. The engine loads from BIF only when the resource is not found in [override](KEY-File-Format#key-file-purpose), loaded MOD, or save; the [KEY file](KEY-File-Format) supplies the mapping from ResRef to the correct BIF and offset.
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/bif/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/)
 
