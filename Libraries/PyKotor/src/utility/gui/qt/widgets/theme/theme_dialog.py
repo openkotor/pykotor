@@ -4,7 +4,15 @@ from typing import TYPE_CHECKING, Any
 
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QColor
-from qtpy.QtWidgets import QApplication, QComboBox, QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
+from qtpy.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QDialog,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+)
 
 from utility.gui.qt.widgets.theme.theme_apply import apply_style, get_original_style
 from utility.gui.qt.widgets.theme.theme_manager import ThemeManager

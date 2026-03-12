@@ -8,7 +8,18 @@ import qtpy
 
 from qtpy.QtCore import QRect, QSize, QSortFilterProxyModel, QStringListModel, QTimer, Qt
 from qtpy.QtGui import QFontMetrics, QStandardItem, QStandardItemModel
-from qtpy.QtWidgets import QApplication, QComboBox, QLineEdit, QListView, QMainWindow, QSizePolicy, QStyleOptionViewItem, QStyledItemDelegate, QVBoxLayout, QWidget
+from qtpy.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QLineEdit,
+    QListView,
+    QMainWindow,
+    QSizePolicy,
+    QStyleOptionViewItem,
+    QStyledItemDelegate,
+    QVBoxLayout,
+    QWidget,
+)
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QMargins, QModelIndex, QObject, QPoint
@@ -157,7 +168,7 @@ class CustomListView(QListView):
         viewport_pos: QPoint = viewport.mapFromGlobal(
             event.globalPos()  # pyright: ignore[reportAttributeAccessIssue]
             if qtpy.QT5
-            else event.globalPosition().toPoint()
+            else event.globalPosition().toPoint(),
         )
         index: QModelIndex | None = self.indexAt(viewport_pos)
         if index is not None and index.isValid():

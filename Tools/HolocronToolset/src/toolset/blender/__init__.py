@@ -84,7 +84,6 @@ def __getattr__(name: str) -> Any:
     bridge is unavailable. Delaying imports keeps package import cheap and
     prevents one broken integration submodule from poisoning the entire package.
     """
-
     if name not in _LAZY_EXPORTS:
         msg = f"module {__name__!r} has no attribute {name!r}"
         raise AttributeError(msg)

@@ -12,7 +12,14 @@ try:
 except ImportError:
     Image = None  # type: ignore[assignment, unused-ignore]
 
-from qtpy.QtCore import QBuffer, QEasingCurve, QIODevice, QPropertyAnimation, QTimer, Qt  # type: ignore[attr-defined]
+from qtpy.QtCore import (  # type: ignore[attr-defined]
+    QBuffer,
+    QEasingCurve,
+    QIODevice,
+    QPropertyAnimation,
+    QTimer,
+    Qt,
+)
 from qtpy.QtGui import (
     QColor,
     QDrag,
@@ -449,9 +456,7 @@ class TPCEditor(Editor):
         # Convert to displayable format (decompress DXT formats for display)
         if display_format == TPCTextureFormat.DXT1:
             mipmap.convert(TPCTextureFormat.RGB)
-        elif display_format in (TPCTextureFormat.DXT3, TPCTextureFormat.DXT5):
-            mipmap.convert(TPCTextureFormat.RGBA)
-        elif display_format == TPCTextureFormat.BGRA:
+        elif display_format in (TPCTextureFormat.DXT3, TPCTextureFormat.DXT5) or display_format == TPCTextureFormat.BGRA:
             mipmap.convert(TPCTextureFormat.RGBA)
         elif display_format == TPCTextureFormat.BGR:
             mipmap.convert(TPCTextureFormat.RGB)
@@ -837,7 +842,7 @@ class TPCEditor(Editor):
 
             QMessageBox.information(self, "Export Successful", f"Texture exported to:\n{file_path}")
         except Exception as e:  # noqa: BLE001
-            QMessageBox.critical(self, "Export Failed", f"Failed to export texture:\n{str(e)}")
+            QMessageBox.critical(self, "Export Failed", f"Failed to export texture:\n{e!s}")
 
     def _update_texture_display(self) -> None:
         """Update the texture display with current zoom and frame."""
@@ -866,9 +871,7 @@ class TPCEditor(Editor):
                 # Convert to displayable format (decompress DXT formats for display)
                 if display_format == TPCTextureFormat.DXT1:
                     mipmap.convert(TPCTextureFormat.RGB)
-                elif display_format in (TPCTextureFormat.DXT3, TPCTextureFormat.DXT5):
-                    mipmap.convert(TPCTextureFormat.RGBA)
-                elif display_format == TPCTextureFormat.BGRA:
+                elif display_format in (TPCTextureFormat.DXT3, TPCTextureFormat.DXT5) or display_format == TPCTextureFormat.BGRA:
                     mipmap.convert(TPCTextureFormat.RGBA)
                 elif display_format == TPCTextureFormat.BGR:
                     mipmap.convert(TPCTextureFormat.RGB)

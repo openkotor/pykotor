@@ -51,8 +51,8 @@ class TextureLoaderProcess(multiprocessing.Process):
         self,
         installation_path: str,
         is_tsl: bool,  # NOTE: is_tsl is stored but not used - Installation auto-detects game version
-        request_queue: "Queue[tuple[str, ResourceType, Any, int] | None]",
-        result_queue: "Queue[tuple[Any, bytes | None, str | None]]",
+        request_queue: Queue[tuple[str, ResourceType, Any, int] | None],
+        result_queue: Queue[tuple[Any, bytes | None, str | None]],
     ):
         """Initialize the texture loader process.
 
@@ -65,8 +65,8 @@ class TextureLoaderProcess(multiprocessing.Process):
         super().__init__(daemon=True, name="TextureLoaderProcess")
         self._installation_path: str = installation_path
         self._is_tsl: bool = is_tsl  # Stored but not passed to Installation - it auto-detects
-        self._request_queue: "Queue[tuple[str, ResourceType, Any, int] | None]" = request_queue
-        self._result_queue: "Queue[tuple[Any, bytes | None, str | None]]" = result_queue
+        self._request_queue: Queue[tuple[str, ResourceType, Any, int] | None] = request_queue
+        self._result_queue: Queue[tuple[Any, bytes | None, str | None]] = result_queue
         self._shutdown: MPEvent = multiprocessing.Event()
 
     def run(self):

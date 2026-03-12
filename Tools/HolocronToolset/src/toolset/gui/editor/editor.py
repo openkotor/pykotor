@@ -41,7 +41,13 @@ from pykotor.resource.formats.gff.gff_auto import bytes_gff, read_gff
 from pykotor.resource.formats.rim import read_rim, write_rim
 from pykotor.resource.type import ResourceType
 from pykotor.tools import module
-from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_capsule_file, is_rim_file, is_sav_file
+from pykotor.tools.misc import (
+    is_any_erf_type_file,
+    is_bif_file,
+    is_capsule_file,
+    is_rim_file,
+    is_sav_file,
+)
 from pykotor.tools.path import CaseAwarePath
 from toolset.data.installation import HTInstallation
 from toolset.gui.common.tooltip_utils import copy_tooltips_to_form_labels
@@ -414,7 +420,6 @@ class Editor(QMainWindow, StandaloneWindowMixin):
 
         The installation strip is already added by the base. Do not add another one.
         """
-        pass
 
     def _handle_installation_changed(self, installation: HTInstallation | None) -> None:
         """Forward InstallationToolbar signal to overridable handler."""
@@ -864,7 +869,7 @@ class Editor(QMainWindow, StandaloneWindowMixin):
             if nested_erf_or_rim_data is None:
                 # Save all open editors to ensure nested resources are available
                 for window in TOOLSET_WINDOWS:
-                    if hasattr(window, 'save') and hasattr(window, '_filepath') and window._filepath is not None:
+                    if hasattr(window, "save") and hasattr(window, "_filepath") and window._filepath is not None:
                         try:
                             window.save()
                         except Exception as e:

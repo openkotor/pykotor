@@ -52,7 +52,9 @@ elif qtpy.QT6:
     from qtpy.QtCore import QRegularExpression  # pyright: ignore[reportAttributeAccessIssue]
 
 
-from pykotor.resource.formats.ncs.compiler.classes import FunctionDefinition  # noqa: F401 - Used for type annotations in outline view
+from pykotor.resource.formats.ncs.compiler.classes import (
+    FunctionDefinition,  # noqa: F401 - Used for type annotations in outline view
+)
 from toolset.gui.common.localization import translate as tr, trf
 from toolset.gui.widgets.settings.installations import GlobalSettings
 from utility.gui.qt.widgets.itemviews.treewidget import RobustTreeWidget
@@ -71,7 +73,10 @@ if TYPE_CHECKING:
         QTextBlock,
     )
     from qtpy.QtWidgets import QAbstractItemView, QScrollBar, QTreeWidgetItem
-    from typing_extensions import Literal, Self  # noqa: F401  # pyright: ignore[reportMissingModuleSource]
+    from typing_extensions import (  # noqa: F401  # pyright: ignore[reportMissingModuleSource]
+        Literal,
+        Self,
+    )
 
 
 class CodeEditor(QPlainTextEdit):
@@ -516,7 +521,7 @@ class CodeEditor(QPlainTextEdit):
                     if i < len(text) - 1 and text[i : i + 2] == "//":
                         in_single_line_comment = True
                         break
-                    elif not in_single_line_comment:
+                    if not in_single_line_comment:
                         if char == "{":
                             open_braces += 1
                         elif char == "}":

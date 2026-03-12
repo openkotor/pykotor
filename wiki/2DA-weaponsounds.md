@@ -11,7 +11,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Base item label |
-| Additional columns | [ResRef](GFF-File-Format#gff-data-types) | Sound effect ResRefs for different attack types |
+| Additional columns | *ResRef* | Sound effect ResRefs for different attack types |
 
 **References**:
 

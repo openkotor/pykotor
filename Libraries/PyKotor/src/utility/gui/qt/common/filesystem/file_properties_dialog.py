@@ -6,7 +6,18 @@ from typing import Any
 
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QFont, QIcon
-from qtpy.QtWidgets import QCheckBox, QDialog, QGroupBox, QHBoxLayout, QLabel, QPushButton, QScrollArea, QTabWidget, QVBoxLayout, QWidget
+from qtpy.QtWidgets import (
+    QCheckBox,
+    QDialog,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QScrollArea,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 @dataclass(frozen=True)

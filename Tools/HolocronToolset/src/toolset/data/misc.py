@@ -25,7 +25,7 @@ class ControlItem:
 
     def satisfied(
         self,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],  # Do NOT send None here!
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],  # Do NOT send None here!
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
         *,
         exact_keys_and_buttons: bool = False,
@@ -68,10 +68,10 @@ class ControlItem:
         user_pressing_keys: list[str] = [get_qt_key_string(key) for key in iter(keys)]
 
         RobustLogger().debug(
-            f"Needed mouse: {needed_mouse}, user pressing {user_pressing_mouse}. Satisfied? {mouse_satisfied} no_buttons? {no_buttons} any_buttons? {any_buttons}"
+            f"Needed mouse: {needed_mouse}, user pressing {user_pressing_mouse}. Satisfied? {mouse_satisfied} no_buttons? {no_buttons} any_buttons? {any_buttons}",
         )  # noqa: E501
         RobustLogger().debug(
-            f"Needed keys: {needed_keys}, user pressing {user_pressing_keys} Satisfied? {keys_satisfied} any_keys? {any_keys} exactKeys? {exact_keys_and_buttons}"
+            f"Needed keys: {needed_keys}, user pressing {user_pressing_keys} Satisfied? {keys_satisfied} any_keys? {any_keys} exactKeys? {exact_keys_and_buttons}",
         )  # noqa: E501
 
         return bool(mouse_satisfied and keys_satisfied)

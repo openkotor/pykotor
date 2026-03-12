@@ -26,7 +26,10 @@ from pykotor.extract.file import FileResource
 from pykotor.resource.type import ResourceType
 from toolset.gui.dialogs.load_from_location_result import ResourceItems
 from toolset.gui.widgets.settings.installations import GlobalSettings
-from toolset.gui.widgets.texture_preview import load_resource_preview_mipmap, qimage_to_preview_mipmap
+from toolset.gui.widgets.texture_preview import (
+    load_resource_preview_mipmap,
+    qimage_to_preview_mipmap,
+)
 
 if TYPE_CHECKING:
     from concurrent.futures import Future
@@ -96,7 +99,9 @@ class ResourceList(MainWindowList):
             - Sets the section model as the model for the combo box.
         """
         super().__init__(parent)
-        from toolset.uic.qtpy.widgets.resource_list import Ui_Form  # noqa: PLC0415  # pylint: disable=C0415
+        from toolset.uic.qtpy.widgets.resource_list import (
+            Ui_Form,  # noqa: PLC0415  # pylint: disable=C0415
+        )
 
         self.tooltip_text: str = ""
         self.tooltip_pos: QPoint = QPoint(0, 0)
@@ -470,7 +475,7 @@ class ResourceModel(QStandardItemModel):
             [
                 ResourceStandardItem(resource.resname(), resource=resource),
                 QStandardItem(resource.restype().extension.upper()),
-            ]
+            ],
         )
 
     def resource_from_indexes(
@@ -551,7 +556,9 @@ class TextureList(MainWindowList):
         """Initialize the texture list."""
         super().__init__(parent)
 
-        from toolset.uic.qtpy.widgets.texture_list import Ui_Form  # noqa: PLC0415  # pylint: disable=C0415
+        from toolset.uic.qtpy.widgets.texture_list import (
+            Ui_Form,  # noqa: PLC0415  # pylint: disable=C0415
+        )
 
         self.ui = Ui_Form()
         self.ui.setupUi(self)

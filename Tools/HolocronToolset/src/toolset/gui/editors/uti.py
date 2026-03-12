@@ -41,7 +41,12 @@ if TYPE_CHECKING:
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
 
     from pykotor.common.module import GFF
-    from pykotor.extract.file import FileResource, LocationResult, ResourceIdentifier, ResourceResult
+    from pykotor.extract.file import (
+        FileResource,
+        LocationResult,
+        ResourceIdentifier,
+        ResourceResult,
+    )
     from pykotor.extract.twoda import TwoDARow
     from pykotor.resource.formats.twoda.twoda_data import TwoDA
 
@@ -592,7 +597,6 @@ class UTIEditor(Editor):
         """Called when textures finish loading in the preview renderer."""
         # Optional: update model info with texture details if renderer has that info
         # For now, just log that textures loaded
-        pass
 
     def on_available_property_list_double_clicked(self):
         for item in self.ui.availablePropertyList.selectedItems():
@@ -739,7 +743,7 @@ class PropertyEditor(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinimizeButtonHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinimizeButtonHint,
         )
 
         from toolset.uic.qtpy.dialogs.property import Ui_Dialog

@@ -16,8 +16,15 @@ from pykotor.gl.compat import (
 HAS_PYOPENGL = has_pyopengl()
 
 if HAS_PYOPENGL:
-    from OpenGL.GL import GL_NO_ERROR, glGenTextures, glGetError, glTexImage2D  # pyright: ignore[reportMissingImports]
-    from OpenGL.GL.framebufferobjects import glGenerateMipmap  # pyright: ignore[reportMissingImports]
+    from OpenGL.GL import (  # pyright: ignore[reportMissingImports]
+        GL_NO_ERROR,
+        glGenTextures,
+        glGetError,
+        glTexImage2D,
+    )
+    from OpenGL.GL.framebufferobjects import (
+        glGenerateMipmap,  # pyright: ignore[reportMissingImports]
+    )
     from OpenGL.GLU import gluErrorString  # pyright: ignore[reportMissingImports]
     from OpenGL.raw.GL.EXT.texture_compression_s3tc import (  # pyright: ignore[reportMissingImports]
         GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
@@ -40,7 +47,9 @@ if HAS_PYOPENGL:
         glTexParameteri,
     )
     from OpenGL.raw.GL.VERSION.GL_1_1 import glBindTexture  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_1_3 import glCompressedTexImage2D  # pyright: ignore[reportMissingImports]
+    from OpenGL.raw.GL.VERSION.GL_1_3 import (
+        glCompressedTexImage2D,  # pyright: ignore[reportMissingImports]
+    )
 else:
     glGenTextures = missing_gl_func("glGenTextures")
     glGetError = missing_gl_func("glGetError")

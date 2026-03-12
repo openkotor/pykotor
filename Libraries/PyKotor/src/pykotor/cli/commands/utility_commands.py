@@ -428,7 +428,11 @@ def cmd_diff(
     # For archives and directories, implement proper diff display
     try:
         from pykotor.tslpatcher.diff.engine import DiffContext, diff_data
-        from pykotor.tslpatcher.diff.formatters import ContextFormatter, SideBySideFormatter, UnifiedFormatter
+        from pykotor.tslpatcher.diff.formatters import (
+            ContextFormatter,
+            SideBySideFormatter,
+            UnifiedFormatter,
+        )
 
         # Get format from args (default to unified)
         format_type = getattr(args, "format", "unified").lower()

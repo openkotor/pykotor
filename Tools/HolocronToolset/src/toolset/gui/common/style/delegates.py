@@ -9,8 +9,31 @@ from typing import TYPE_CHECKING, Any, Callable
 import qtpy
 
 from qtpy.QtCore import QEvent, QPoint, QRect, QSize, Qt
-from qtpy.QtGui import QBrush, QColor, QFont, QIcon, QImage, QMouseEvent, QPainter, QPalette, QPen, QPixmap, QTextDocument, QTextOption
-from qtpy.QtWidgets import QApplication, QListView, QListWidget, QStyle, QStyledItemDelegate, QToolTip, QTreeView, QTreeWidget, QWidget
+from qtpy.QtGui import (
+    QBrush,
+    QColor,
+    QFont,
+    QIcon,
+    QImage,
+    QMouseEvent,
+    QPainter,
+    QPalette,
+    QPen,
+    QPixmap,
+    QTextDocument,
+    QTextOption,
+)
+from qtpy.QtWidgets import (
+    QApplication,
+    QListView,
+    QListWidget,
+    QStyle,
+    QStyledItemDelegate,
+    QToolTip,
+    QTreeView,
+    QTreeWidget,
+    QWidget,
+)
 
 from loggerplus import RobustLogger
 

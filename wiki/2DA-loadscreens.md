@@ -11,8 +11,8 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Loading screen label |
-| `bmpresref` | [ResRef](GFF-File-Format#gff-data-types) | Loading screen background image [ResRef](GFF-File-Format#gff-data-types) |
-| `musicresref` | [ResRef](GFF-File-Format#gff-data-types) | Music track [ResRef](GFF-File-Format#gff-data-types) to play during loading |
+| `bmpresref` | *ResRef* | Loading screen background image *ResRef* |
+| `musicresref` | *ResRef* | Music track *ResRef* to play during loading |
 | Additional columns | Various | Other loading screen properties |
 
 **References**:

@@ -12,8 +12,8 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 |------------|------|-------------|
 | `label` | string | Visual effect label |
 | `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for effect name |
-| `model` | ResRef (optional) | Effect [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `impactmodel` | ResRef (optional) | Impact [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `model` | ResRef (optional) | Effect [model](MDL-MDX-File-Format) *ResRef* |
+| `impactmodel` | ResRef (optional) | Impact [model](MDL-MDX-File-Format) *ResRef* |
 | `impactorient` | Integer | Impact orientation |
 | `impacttype` | Integer | Impact type identifier |
 | `duration` | Float | Effect duration in seconds |
@@ -21,7 +21,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `loop` | Boolean | Whether effect loops |
 | `render` | Boolean | Whether effect is rendered |
 | `renderhint` | Integer | Render hint flags |
-| `sound` | ResRef (optional) | Sound effect [ResRef](GFF-File-Format#gff-data-types) |
+| `sound` | ResRef (optional) | Sound effect *ResRef* |
 | `sounddelay` | Float | Sound delay in seconds |
 | `soundvariance` | Float | Sound variance |
 | `soundloop` | Boolean | Whether sound loops |

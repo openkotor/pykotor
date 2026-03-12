@@ -18,7 +18,6 @@ from pykotor.tools.path import CaseAwarePath
 from pykotor.tslpatcher.config import LogLevel
 from pykotor.tslpatcher.logger import PatchLogger
 from pykotor.tslpatcher.memory import NoTokenUsage, TokenUsage2DA, TokenUsageTLK
-from utility.string_util import normalize_string
 from pykotor.tslpatcher.mods.gff import (
     AddFieldGFF,
     AddStructToListGFF,
@@ -56,6 +55,7 @@ from pykotor.tslpatcher.namespaces import PatcherNamespace
 from utility.common.geometry import Vector3, Vector4
 from utility.common.more_collections import CaseInsensitiveDict
 from utility.misc import is_float, is_int
+from utility.string_util import normalize_string
 
 if TYPE_CHECKING:
     import os
@@ -172,7 +172,9 @@ class ConfigReader:
             - Populate its config attribute from the ConfigParser
             - Return the initialized instance
         """
-        from pykotor.tslpatcher.config import PatcherConfig  # noqa: PLC0415 Prevent circular imports
+        from pykotor.tslpatcher.config import (
+            PatcherConfig,  # noqa: PLC0415 Prevent circular imports
+        )
 
         resolved_file_path: Path = Path(file_path).resolve()
 

@@ -14,7 +14,11 @@ from pykotor.common.stream import BinaryWriter
 from pykotor.resource.formats.ncs.compilers import ExternalNCSCompiler, KnownExternalCompilers
 from pykotor.tools.registry import SpoofKotorRegistry
 from toolset.gui.widgets.settings.installations import GlobalSettings, NoConfigurationSetError
-from toolset.utils.script_utils import NoOpRegistrySpoofer, handle_permission_error, setup_extract_path
+from toolset.utils.script_utils import (
+    NoOpRegistrySpoofer,
+    handle_permission_error,
+    setup_extract_path,
+)
 
 log = RobustLogger()
 

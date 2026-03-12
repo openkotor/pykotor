@@ -23,6 +23,6 @@ __all__ = [
     "MDLMDXTuple",
     "ModuleKit",
     "ModuleKitManager",
-    "load_kits",
     "ensure_component_image",
+    "load_kits",
 ]

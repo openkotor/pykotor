@@ -6,7 +6,23 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Journal format specification, see [Bioware Aurora Journal Format](Bioware-Aurora-Journal).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/jrl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py)
+**For mod developers:** Journal updates are typically driven by [DLG](GFF-DLG) Quest/QuestEntry and scripts (`AddJournalQuestEntry`); see [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** JRL is referenced by [DLG](GFF-DLG) (Quest, QuestEntry), [NCS](NCS-File-Format) (journal API), and [2DA](2DA-File-Format) (e.g. journal.2da for XP).
+
+## References
+
+**PyKotor:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/generics/jrl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py) - JRL [GFF](GFF-File-Format) parsing and field definitions
+
+**HolocronToolset:**
+
+- Journal (JRL) editing in dialogue and module context
+
+**Vendor Implementations:**
+
+- reone/xoreos journal (JRL) GFF parsers
 
 ## Quest structure
 
@@ -14,7 +30,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Categories` | List | List of quests |
+| `Categories` | [List](GFF-File-Format#gff-data-types) | List of quests |
 
 ## Quest Category (JRLQuest)
 
@@ -23,10 +39,10 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique quest identifier |
 | `Name` | [CExoLocString](GFF-File-Format#gff-data-types) | Quest title |
 | `Comment` | [CExoString](GFF-File-Format#gff-data-types) | Developer comment |
-| `Priority` | Int | Sorting priority (0=Highest, 4=Lowest) |
-| `PlotIndex` | Int | Legacy plot index |
-| `PlanetID` | Int | Planet association (unused) |
-| `EntryList` | List | List of quest states |
+| `Priority` | [int32](GFF-File-Format#gff-data-types) | Sorting priority (0=Highest, 4=Lowest) |
+| `PlotIndex` | [int32](GFF-File-Format#gff-data-types) | Legacy plot index |
+| `PlanetID` | [int32](GFF-File-Format#gff-data-types) | Planet association (unused) |
+| `EntryList` | [List](GFF-File-Format#gff-data-types) | List of quest states |
 
 **Priority Levels:**
 
@@ -34,16 +50,16 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 - **1 (High)**: Important side quests
 - **2 (Medium)**: Standard side quests
 - **3 (Low)**: Minor tasks
-- **4 (Lowest)**: Completed/Archived
+- **4 (Lowest)**: Completed/Container
 
 ## Quest Entry (JRLEntry)
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `ID` | Int | State identifier (referenced by scripts/dialogue) |
+| `ID` | [int32](GFF-File-Format#gff-data-types) | State identifier (referenced by scripts/dialogue) |
 | `Text` | [CExoLocString](GFF-File-Format#gff-data-types) | [Journal](GFF-File-Format#jrl-journal) text displayed for this state |
-| `End` | Byte | 1 if this state completes the quest |
-| `XP_Percentage` | Float | XP reward multiplier for reaching this state |
+| `End` | [byte](GFF-File-Format#gff-data-types) | 1 if this state completes the quest |
+| `XP_Percentage` | [float](GFF-File-Format#gff-data-types) | XP reward multiplier for reaching this state |
 
 **Quest Updates:**
 
@@ -58,4 +74,9 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 - **Module JRLs**: Not typically used; most quests are global.
 - **XP Rewards**: `XP_Percentage` scales the `journal.2da` XP value for the quest.
 
----
+## See also
+
+- [GFF File Format](GFF-File-Format) - Generic format underlying JRL
+- [GFF-DLG (Dialogue)](GFF-DLG) - Quest/QuestEntry updates from conversations
+- [NCS File Format](NCS-File-Format) - Scripts that call journal API
+- [Bioware Aurora Journal Format](Bioware-Aurora-Journal) - Official journal specification

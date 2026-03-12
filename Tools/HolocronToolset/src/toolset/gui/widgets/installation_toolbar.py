@@ -4,20 +4,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, ClassVar
+from typing import Callable, ClassVar
 
 from qtpy.QtCore import Signal  # pyright: ignore[reportPrivateImportUsage]
 from qtpy.QtWidgets import (
-    QButtonGroup,
-    QComboBox,
     QDialog,
     QFileDialog,
-    QFormLayout,
-    QHBoxLayout,
-    QLineEdit,
     QMessageBox,
-    QPushButton,
-    QRadioButton,
     QVBoxLayout,
     QWidget,
 )
@@ -25,11 +18,22 @@ from qtpy.QtWidgets import (
 from loggerplus import RobustLogger
 from toolset.data.installation import HTInstallation
 from toolset.gui.dialogs.asyncloader import AsyncLoader
-from toolset.gui.widgets.settings.installations import GlobalSettings, InstallationsWidget
+from toolset.gui.widgets.settings.installations import (
+    GlobalSettings,
+    InstallationsWidget,
+    is_valid_installation_path,
+)
 from toolset.uic.qtpy.widgets.installation_toolbar import Ui_Form
 
-if TYPE_CHECKING:
-    pass
+
+# Path row widgets from installation_toolbar.ui (pathLabel0-3, pathEdit0-3, pathBrowse0-3)
+def _path_row_widgets(ui):
+    return [
+        (ui.pathLabel0, ui.pathEdit0, ui.pathBrowse0),
+        (ui.pathLabel1, ui.pathEdit1, ui.pathBrowse1),
+        (ui.pathLabel2, ui.pathEdit2, ui.pathBrowse2),
+        (ui.pathLabel3, ui.pathEdit3, ui.pathBrowse3),
+    ]
 
 
 @dataclass(frozen=True)
@@ -56,28 +60,32 @@ def open_manage_installations_dialog(
     layout = QVBoxLayout(ui.installationsWidgetPlaceholder)
     layout.setContentsMargins(0, 0, 0, 0)
     layout.addWidget(widget)
-    ui.buttonBox.accepted.connect(dialog.accept)
+
+    def on_accept() -> None:
+        valid, msg = widget.validate_can_save()
+        if not valid:
+            QMessageBox.warning(dialog, "Invalid installation(s)", msg)
+            return
+        dialog.accept()
+
+    try:
+        ui.buttonBox.accepted.disconnect(dialog.accept)
+    except (TypeError, RuntimeError):
+        pass
+    ui.buttonBox.accepted.connect(on_accept)
     ui.buttonBox.rejected.connect(dialog.reject)
+
     if dialog.exec() == QDialog.DialogCode.Accepted:
         widget.save()
         if on_save is not None:
             on_save()
 
 
-class InstallationToolbar(QWidget, Ui_Form):
+class InstallationToolbar(QWidget):
     """Reusable installation/folder-path strip; layout from installation_toolbar.ui."""
 
     installation_changed = Signal(object)  # HTInstallation | None
     folder_paths_changed = Signal(object)  # dict[str, Path | None]
-
-    # Set by setupUi(self) from Ui_Form
-    installationCombo: QComboBox
-    reloadBtn: QPushButton
-    manageBtn: QPushButton
-    modeFullRadio: QRadioButton
-    modeFolderRadio: QRadioButton
-    pathsWidget: QWidget
-    pathsLayout: QFormLayout
 
     def __init__(
         self,
@@ -93,49 +101,52 @@ class InstallationToolbar(QWidget, Ui_Form):
         self._settings = GlobalSettings()
         self._installation_cache: dict[str, HTInstallation] = {}
         self._override_installation: HTInstallation | None = None
-        self._folder_edits: dict[str, QLineEdit] = {}
         self._saved_installations: dict[str, dict[str, str | bool]] = {}
         self._in_update = False
+        # Map spec key -> row index (0.._MAX_PATH_ROWS-1) for UI path rows from .ui
+        self._path_row_index: dict[str, int] = {}
 
-        self.setupUi(self)
-        self.mode_group = QButtonGroup(self)
-        self.mode_group.addButton(self.modeFullRadio)
-        self.mode_group.addButton(self.modeFolderRadio)
+        self.ui = Ui_Form()
+        self.ui.setupUi(self)
 
         if not self._specs:
-            self.modeFullRadio.setChecked(True)
-            self.modeFolderRadio.hide()
-            self.modeFullRadio.hide()
-            self.pathsWidget.hide()
+            self.ui.modeFullRadio.setChecked(True)
+            self.ui.modeFolderRadio.hide()
+            self.ui.modeFullRadio.hide()
+            self.ui.pathsWidget.hide()
         elif self._requires_installation:
-            self.modeFullRadio.setChecked(True)
-            self.modeFolderRadio.setEnabled(False)
-            self.modeFolderRadio.setToolTip("This window requires a full installation.")
-            self.pathsWidget.hide()
+            self.ui.modeFullRadio.setChecked(True)
+            self.ui.modeFolderRadio.setEnabled(False)
+            self.ui.modeFolderRadio.setToolTip("This window requires a full installation.")
+            self.ui.pathsWidget.hide()
         else:
-            self.modeFullRadio.setChecked(True)
-            self.pathsWidget.hide()
+            self.ui.modeFullRadio.setChecked(True)
+            self.ui.pathsWidget.hide()
 
-        for spec in self._specs:
-            row = QWidget(self.pathsWidget)
-            row_layout = QHBoxLayout(row)
-            row_layout.setContentsMargins(0, 0, 0, 0)
-            row_layout.setSpacing(4)
-            edit = QLineEdit(row)
-            edit.setPlaceholderText("Optional folder path..." if not spec.required else "Required folder path...")
-            edit.setToolTip(spec.tooltip)
-            browse = QPushButton("Browse...", row)
-            browse.clicked.connect(lambda _=False, key=spec.key: self._browse_for_path(key))
-            edit.textChanged.connect(self._emit_current_state)
-            row_layout.addWidget(edit, 1)
-            row_layout.addWidget(browse)
-            self._folder_edits[spec.key] = edit
-            self.pathsLayout.addRow(f"{spec.label}:", row)
+        # Configure path rows from .ui (pathLabel0-3, pathEdit0-3, pathBrowse0-3)
+        path_rows = _path_row_widgets(self.ui)
+        for i, (label, edit, browse) in enumerate(path_rows):
+            if i < len(self._specs):
+                spec = self._specs[i]
+                self._path_row_index[spec.key] = i
+                label.setText(f"{spec.label}:")
+                edit.setPlaceholderText("Optional folder path..." if not spec.required else "Required folder path...")
+                edit.setToolTip(spec.tooltip)
+                edit.textChanged.connect(self._emit_current_state)
+                browse.clicked.connect(lambda _=False, key=spec.key: self._browse_for_path(key))
+                label.show()
+                edit.show()
+                browse.show()
+            else:
+                label.hide()
+                edit.hide()
+                browse.hide()
 
-        self.installationCombo.currentIndexChanged.connect(self._on_installation_selection_changed)
-        self.reloadBtn.clicked.connect(self.reload_installations)
-        self.manageBtn.clicked.connect(self._open_installations_settings)
-        self.mode_group.buttonToggled.connect(self._on_mode_changed)
+        self.ui.modeFullRadio.toggled.connect(self._on_mode_toggled)
+        self.ui.modeFolderRadio.toggled.connect(self._on_mode_toggled)
+        self.ui.installationCombo.currentIndexChanged.connect(self._on_installation_selection_changed)
+        self.ui.reloadBtn.clicked.connect(self.reload_installations)
+        self.ui.manageBtn.clicked.connect(self._open_installations_settings)
 
         self.reload_installations()
         self._emit_current_state()
@@ -143,7 +154,12 @@ class InstallationToolbar(QWidget, Ui_Form):
     @property
     def installation_combo(self):
         """Backward-compatible alias for installationCombo (e.g. indoor_builder sync)."""
-        return self.installationCombo
+        return self.ui.installationCombo
+
+    @property
+    def installationCombo(self):
+        """Expose for code that expects InstallationToolbar.installationCombo."""
+        return self.ui.installationCombo
 
     def set_override_installation(self, installation: HTInstallation | None) -> None:
         """Set an installation passed from CLI (e.g. --game-path). Shows in combo and emits so the window uses it."""
@@ -154,61 +170,67 @@ class InstallationToolbar(QWidget, Ui_Form):
         # reload_installations() already called _emit_current_state(), which emits the selected installation
 
     def reload_installations(self) -> None:
-        current_key = self.installationCombo.currentData()
+        current_key = self.ui.installationCombo.currentData()
         self._saved_installations = {name: {"path": config.path, "tsl": config.tsl, "name": name} for name, config in self._settings.installations().items()}
         self._in_update = True
         try:
-            self.installationCombo.clear()
+            self.ui.installationCombo.clear()
             if self._override_installation is not None:
                 path_str = str(self._override_installation.path())
-                self.installationCombo.addItem(f"Current: {path_str}", "__override__")
+                self.ui.installationCombo.addItem(f"Current: {path_str}", "__override__")
                 self._installation_cache["__override__"] = self._override_installation
-            self.installationCombo.addItem("(None)", None)
+            self.ui.installationCombo.addItem("(None)", None)
             for name, config in sorted(self._saved_installations.items()):
-                self.installationCombo.addItem(f"{name} ({config['path']})", name)
+                path_str = (config.get("path") or "").strip()
+                if not path_str or not is_valid_installation_path(path_str):
+                    continue
+                self.ui.installationCombo.addItem(f"{name} ({config['path']})", name)
             if current_key is not None:
-                idx = self.installationCombo.findData(current_key)
+                idx = self.ui.installationCombo.findData(current_key)
                 if idx >= 0:
-                    self.installationCombo.setCurrentIndex(idx)
+                    self.ui.installationCombo.setCurrentIndex(idx)
             elif self._override_installation is not None:
-                self.installationCombo.setCurrentIndex(0)
+                self.ui.installationCombo.setCurrentIndex(0)
         finally:
             self._in_update = False
         self._emit_current_state()
 
     def _browse_for_path(self, key: str) -> None:
         directory = QFileDialog.getExistingDirectory(self, "Select Folder")
-        if directory:
-            self._folder_edits[key].setText(directory)
+        if not directory or key not in self._path_row_index:
+            return
+        idx = self._path_row_index[key]
+        _path_row_widgets(self.ui)[idx][1].setText(directory)
 
     def _open_installations_settings(self) -> None:
         open_manage_installations_dialog(self, on_save=self.reload_installations)
 
+    def _on_mode_toggled(self, _checked: bool) -> None:
+        use_paths = self.ui.modeFolderRadio.isChecked() and bool(self._specs) and not self._requires_installation
+        self.ui.pathsWidget.setVisible(use_paths)
+        self._emit_current_state()
+
     def _on_installation_selection_changed(self, _index: int) -> None:
         if self._in_update:
             return
-        use_paths = self.modeFolderRadio.isChecked() and bool(self._specs) and not self._requires_installation
+        use_paths = self.ui.modeFolderRadio.isChecked() and bool(self._specs) and not self._requires_installation
         if use_paths:
             self._emit_current_state()
             return
-        selected_name = self.installationCombo.currentData()
+        selected_name = self.ui.installationCombo.currentData()
         if selected_name == "__override__":
             self.installation_changed.emit(self._installation_cache.get("__override__"))
-            self.folder_paths_changed.emit({})
             return
         if selected_name is None:
             self.installation_changed.emit(None)
-            self.folder_paths_changed.emit({})
             return
         cache_key = str(selected_name)
         if cache_key in self._installation_cache:
             self.installation_changed.emit(self._installation_cache[cache_key])
-            self.folder_paths_changed.emit({})
             return
         config = self._saved_installations.get(cache_key)
         if config is None:
             self.installation_changed.emit(None)
-            self.folder_paths_changed.emit({})
             return
         # Cache miss: load installation in background and show AsyncLoader
         parent_window = self.window()
@@ -240,29 +262,20 @@ class InstallationToolbar(QWidget, Ui_Form):
             if inst is not None:
                 self._installation_cache[cache_key] = inst
             self.installation_changed.emit(inst)
-            self.folder_paths_changed.emit({})
 
         loader.optional_finish_hook.connect(on_finish)
-        prev_index = self.installationCombo.currentIndex()
+        prev_index = self.ui.installationCombo.currentIndex()
         loader.exec()
         if loader.dialog_result_code() != QDialog.DialogCode.Accepted:
             self._in_update = True
             try:
-                self.installationCombo.setCurrentIndex(prev_index)
+                self.ui.installationCombo.setCurrentIndex(prev_index)
             finally:
                 self._in_update = False
             self.installation_changed.emit(self._get_selected_installation())
-            self.folder_paths_changed.emit({})
-
-    def _on_mode_changed(self, _button, checked: bool) -> None:
-        if not checked:
-            return
-        use_paths = self.modeFolderRadio.isChecked() and bool(self._specs) and not self._requires_installation
-        self.pathsWidget.setVisible(use_paths)
-        self._emit_current_state()
 
     def _get_selected_installation(self) -> HTInstallation | None:
-        selected_name = self.installationCombo.currentData()
+        selected_name = self.ui.installationCombo.currentData()
         if selected_name is None:
             return None
         if selected_name == "__override__":
@@ -290,16 +303,23 @@ class InstallationToolbar(QWidget, Ui_Form):
 
     def get_folder_paths(self) -> dict[str, Path | None]:
         result: dict[str, Path | None] = {}
+        path_rows = _path_row_widgets(self.ui)
         for spec in self._specs:
-            raw = self._folder_edits[spec.key].text().strip()
-            result[spec.key] = Path(raw) if raw else None
+            idx = self._path_row_index.get(spec.key)
+            if idx is not None:
+                edit = path_rows[idx][1]
+                raw = edit.text().strip()
+                result[spec.key] = Path(raw) if raw else None
+            else:
+                result[spec.key] = None
         return result
 
     def _emit_current_state(self) -> None:
-        use_paths = self.modeFolderRadio.isChecked() and bool(self._specs) and not self._requires_installation
+        use_paths = self.ui.modeFolderRadio.isChecked() and bool(self._specs) and not self._requires_installation
         selected_installation = None if use_paths else self._get_selected_installation()
         self.installation_changed.emit(selected_installation)
-        self.folder_paths_changed.emit(self.get_folder_paths() if use_paths else {})
+        if use_paths:
+            self.folder_paths_changed.emit(self.get_folder_paths())
 
 
 class StandaloneWindowMixin:
@@ -317,7 +337,7 @@ class StandaloneWindowMixin:
         main_window = self
         if not isinstance(main_window, QWidget):  # runtime safety for pyright/mixin
             return
-        central = getattr(main_window, "centralWidget")()
+        central = main_window.centralWidget()
         if central is None:
             return
 
@@ -336,14 +356,14 @@ class StandaloneWindowMixin:
         layout.setSpacing(0)
         layout.addWidget(self._installation_toolbar)
         layout.addWidget(central, 1)
-        getattr(main_window, "setCentralWidget")(container)
+        main_window.setCentralWidget(container)
 
     def set_installation(self, installation: HTInstallation | None) -> None:
-        setattr(self, "_installation", installation)
+        self._installation = installation
         self._on_installation_changed(installation)
 
     def _handle_installation_changed(self, installation: HTInstallation | None) -> None:
-        setattr(self, "_installation", installation)
+        self._installation = installation
         self._on_installation_changed(installation)
 
     def _handle_folder_paths_changed(self, paths: dict[str, Path | None]) -> None:

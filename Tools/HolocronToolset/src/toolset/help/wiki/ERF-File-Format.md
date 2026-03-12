@@ -1,6 +1,6 @@
 # KotOR ERF file format Documentation
 
-This document provides a detailed description of the ERF (Encapsulated Resource file) file format used in Knights of the Old Republic (KotOR) games. ERF files are self-contained archives used for modules, save games, [texture](TPC-File-Format) packs, and hak paks.
+This document provides a detailed description of the ERF (Encapsulated Resource file) file format used in Knights of the Old Republic (KotOR) games. ERF files are self-contained containers used for modules, save games, [texture](TPC-File-Format) packs, and hak paks.
 
 ## Table of Contents
 
@@ -15,17 +15,17 @@ This document provides a detailed description of the ERF (Encapsulated Resource 
     - [Resource Data](#resource-data)
     - [MOD/NWM File Format Quirk: Blank Data Block](#modnwm-file-format-quirk-blank-data-block)
   - [ERF Variants](#erf-variants)
-    - [MOD Files (module archives)](#mod-files-module-archives)
-    - [SAV Files (save game archives)](#sav-files-save-game-archives)
+    - [MOD Files (module containers)](#mod-files-module-containers)
+    - [SAV Files (save game containers)](#sav-files-save-game-containers)
     - [HAK Files (Override Paks)](#hak-files-override-paks)
-    - [ERF Files (Generic Archives)](#erf-files-generic-archives)
+    - [ERF Files (Generic Containers)](#erf-files-generic-containers)
   - [Implementation Details](#implementation-details)
 
 ---
 
 ## File Structure Overview
 
-ERF files are self-contained archives that store both resource names ([ResRefs](GFF-File-Format#gff-data-types)) and data in the same file. Unlike [BIF files](BIF-File-Format) which require a [KEY file](KEY-File-Format) for filename lookups, ERF files include [ResRef](GFF-File-Format#gff-data-types) information directly in the archive.
+ERF files are self-contained containers that store both resource names ([ResRefs](GFF-File-Format#gff-data-types)) and data in the same file. Unlike [BIF files](BIF-File-Format) which require a [KEY file](KEY-File-Format) for filename lookups, ERF files include *ResRef* information directly in the container.
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/erf/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/)
 
@@ -41,10 +41,10 @@ ERF files are self-contained archives that store both resource names ([ResRefs](
 
 **See Also:**
 
-- [BIF File Format](BIF-File-Format) - Alternative archive format used with [KEY](KEY-File-Format) files
-- [KEY File Format](KEY-File-Format) - index file for [BIF archives](BIF-File-Format)
-- [GFF File Format](GFF-File-Format) - Common content type stored in ERF archives
-- RIM File Format - Similar archive format for area resources
+- [BIF File Format](BIF-File-Format) - Alternative container format used with [KEY](KEY-File-Format) files
+- [KEY File Format](KEY-File-Format) - index file for [BIF containers](BIF-File-Format)
+- [GFF File Format](GFF-File-Format) - Common content type stored in ERF containers
+- RIM File Format - Similar container format for area resources
 
 ---
 
@@ -60,14 +60,14 @@ The file header is 160 bytes in size:
 | file Version              | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | Always `"V1.0"`                                 |
 | Language count            | [uint32](GFF-File-Format#gff-data-types)  | 8 (0x08) | 4    | Number of localized string entries             |
 | Localized string size     | [uint32](GFF-File-Format#gff-data-types)  | 12 (0x0C) | 4    | Total size of localized string data in bytes   |
-| Entry count               | [uint32](GFF-File-Format#gff-data-types)  | 16 (0x10) | 4    | Number of resources in the archive              |
+| Entry count               | [uint32](GFF-File-Format#gff-data-types)  | 16 (0x10) | 4    | Number of resources in the container              |
 | offset to Localized string List | [uint32](GFF-File-Format#gff-data-types) | 20 (0x14) | 4 | offset to localized string entries             |
 | offset to [KEY](KEY-File-Format) List        | [uint32](GFF-File-Format#gff-data-types)  | 24 (0x18) | 4    | offset to [KEY](KEY-File-Format) entries array                    |
 | offset to Resource List   | [uint32](GFF-File-Format#gff-data-types)  | 28 (0x1C) | 4    | offset to resource entries array                |
 | Build Year                | [uint32](GFF-File-Format#gff-data-types)  | 32 (0x20) | 4    | Build year (years since 1900)                   |
 | Build Day                 | [uint32](GFF-File-Format#gff-data-types)  | 36 (0x24) | 4    | Build day (days since Jan 1)                   |
 | Description [StrRef](TLK-File-Format#string-references-strref)        | [uint32](GFF-File-Format#gff-data-types)  | 40 (0x28) | 4    | [TLK](TLK-File-Format) string reference for description           |
-| Reserved                  | [byte](GFF-File-Format#gff-data-types) | 44 (0x2C)  | 116  | Padding (usually zeros)                         |
+| Reserved                  | [byte](https://en.wikipedia.org/wiki/Byte) | 44 (0x2C)  | 116  | Padding (usually zeros)                         |
 
 **Build Date Fields:**
 
@@ -115,7 +115,7 @@ Localized strings provide descriptions in multiple languages:
 
 **Localized string Usage:**
 
-ERF localized strings provide multi-language descriptions for the archive itself. These are primarily used in MOD files to display module names and descriptions in the game's module selection screen.
+ERF localized strings provide multi-language descriptions for the container itself. These are primarily used in MOD files to display module names and descriptions in the game's module selection screen.
 
 **Language IDs:**
 
@@ -142,17 +142,17 @@ Each [KEY](KEY-File-Format) entry is 24 bytes and maps ResRefs to resource indic
 
 | Name        | type     | offset | size | Description                                                      |
 | ----------- | -------- | ------ | ---- | ---------------------------------------------------------------- |
-| [ResRef](GFF-File-Format#gff-data-types)      | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 16   | Resource filename (null-padded, max 16 chars)                    |
+| *ResRef*      | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 16   | Resource filename (null-padded, max 16 chars)                    |
 | Resource ID | [uint32](GFF-File-Format#gff-data-types)   | 16 (0x10) | 4    | index into resource list                                         |
 | Resource type | [uint16](GFF-File-Format#gff-data-types) | 20 (0x14) | 2    | Resource type identifier                                         |
 | Unused      | [uint16](GFF-File-Format#gff-data-types)   | 22 (0x16) | 2    | Padding                                                           |
 
-**[ResRef](GFF-File-Format#gff-data-types) Padding Notes:**
+***ResRef* Padding Notes:**
 
 Resource names are padded with NULL bytes to 16 characters, but are not necessarily [null-terminated](https://en.cppreference.com/w/c/string/byte). If a resource name is exactly 16 characters long, no [null terminator](https://en.cppreference.com/w/c/string/byte) exists. Resource names can be mixed case, though most are lowercase in practice.
 
 **Reference**: [`vendor/Kotor.NET/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:115-168`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L115-L168)  
-**Reference**: [`vendor/xoreos-docs/specs/torlack/mod.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/mod.html) - Resource structure details and [ResRef](GFF-File-Format#gff-data-types) padding notes
+**Reference**: [`vendor/xoreos-docs/specs/torlack/mod.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/mod.html) - Resource structure details and *ResRef* padding notes
 
 ### Resource List
 
@@ -171,7 +171,7 @@ Resource data is stored at the offsets specified in the resource list:
 
 | Name         | type   | Description                                                      |
 | ------------ | ------ | ---------------------------------------------------------------- |
-| Resource data | [byte](GFF-File-Format#gff-data-types)[] | Raw binary data for each resource                               |
+| Resource data | [byte](https://en.wikipedia.org/wiki/Byte)[] | Raw binary data for each resource                               |
 
 ### MOD/NWM file format Quirk: Blank data Block
 
@@ -193,7 +193,7 @@ ERF files come in several variants based on file type:
 
 All variants use the same binary format structure, differing only in the file type signature.
 
-### MOD Files (module archives)
+### MOD Files (module containers)
 
 MOD files package all resources needed for a game module (level/area):
 
@@ -206,9 +206,9 @@ MOD files package all resources needed for a game module (level/area):
 - Character templates (`.utc`, `.utp`, `.utd`)
 - Waypoints and triggers (`.utw`, `.utt`)
 
-The game loads MOD files from the `modules/` directory. When entering a module, the engine mounts the MOD archive and prioritizes its resources over [BIF files](BIF-File-Format) but below the `override/` folder.
+The game loads MOD files from the `modules/` directory. When entering a module, the engine mounts the MOD container and prioritizes its resources over [BIF files](BIF-File-Format) but below the `override/` folder.
 
-### SAV Files (save game archives)
+### SAV Files (save game containers)
 
 SAV files store complete game state:
 
@@ -223,14 +223,14 @@ SAV files store complete game state:
 
 Save files preserve the state of all modified resources. When a placeable is looted or a door opened, the updated `.git` resource is stored in the SAV file.
 
-### ERF Files (Generic Archives)
+### ERF Files (Generic Containers)
 
 Generic ERF files serve miscellaneous purposes:
 
 - [texture](TPC-File-Format) packs
 - Audio replacement packs
 - Campaign-specific resources
-- Developer test archives
+- Developer test containers
 
 **Reference**: [`vendor/reone/src/libs/resource/format/erfreader.cpp:27-34`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/erfreader.cpp#L27-L34)
 

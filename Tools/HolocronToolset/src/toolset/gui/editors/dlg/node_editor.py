@@ -25,7 +25,13 @@ from toolset.gui.editors.dlg.editor import DLGEditor
 
 if TYPE_CHECKING:
     from qtpy.QtGui import QAction, QWheelEvent
-    from qtpy.QtWidgets import QGraphicsSceneContextMenuEvent, QGraphicsSceneHoverEvent, QGraphicsSceneMouseEvent, QStyleOptionGraphicsItem, QWidget
+    from qtpy.QtWidgets import (
+        QGraphicsSceneContextMenuEvent,
+        QGraphicsSceneHoverEvent,
+        QGraphicsSceneMouseEvent,
+        QStyleOptionGraphicsItem,
+        QWidget,
+    )
     from typing_extensions import Self  # pyright: ignore[reportMissingModuleSource]
 
     from pykotor.resource.generics.dlg import DLGLink, DLGNode
@@ -84,7 +90,7 @@ class Connection(QGraphicsPathItem):
                 q_app_style.palette().color(QPalette.ColorRole.Text),
                 2,
                 Qt.PenStyle.SolidLine,
-            )
+            ),
         )
         self.setAcceptHoverEvents(True)
 
@@ -282,7 +288,7 @@ class Node(QGraphicsRectItem):
                             y,
                             self.resize_handle_size,
                             self.resize_handle_size,
-                        )
+                        ),
                     )
 
     def contextMenuEvent(
@@ -1015,7 +1021,7 @@ class DialogueNodeEditor(QGraphicsView):
                     height=node.rect().height(),
                     pos=node.pos(),
                     dlg_node=node.dlg_node,
-                )
+                ),
             )
 
     def paste(self):

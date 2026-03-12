@@ -6,28 +6,32 @@ and atomic commit() to write modified archives and KEY.
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any, Sequence
+from typing import TYPE_CHECKING, Any, Sequence
 
 from pykotor.common.misc import ResRef
-from pykotor.extract.file import (
-    LocationResult,
-    ResourceIdentifier,
-    ResourceQuery,
-    ResourceResult,
-)
-from pykotor.extract.installation import Installation, SearchScope
+from pykotor.extract.installation import Installation
 from pykotor.resource.formats.bif import read_bif, write_bif
-from pykotor.resource.formats.bif.bif_data import BIF
 from pykotor.resource.formats.erf import read_erf, write_erf
 from pykotor.resource.formats.erf.erf_data import ERF, ERFType
 from pykotor.resource.formats.key import read_key, write_key
-from pykotor.resource.formats.key.key_data import KEY
 from pykotor.resource.formats.rim import read_rim, write_rim
 from pykotor.resource.formats.rim.rim_data import RIM
 from pykotor.resource.type import ResourceType
 from pykotor.tools.misc import is_bif_file, is_erf_file, is_mod_file, is_rim_file
 from pykotor.tools.path import CaseAwarePath
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from pykotor.extract.file import (
+        LocationResult,
+        ResourceIdentifier,
+        ResourceQuery,
+        ResourceResult,
+    )
+    from pykotor.extract.installation import SearchScope
+    from pykotor.resource.formats.bif.bif_data import BIF
+    from pykotor.resource.formats.key.key_data import KEY
 
 
 class InstallationWorkspace:

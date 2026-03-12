@@ -24,7 +24,7 @@ Kits are collections of reusable indoor map components for the Holocron Toolset.
   - [Doorway Padding](#doorway-padding)
   - [models Directory](#models-directory)
   - [Resource Extraction](#resource-extraction)
-    - [Archive file Support](#archive-file-support)
+    - [Container file Support](#container-file-support)
     - [Component Identification](#component-identification)
     - [texture and Lightmap Extraction](#texture-and-lightmap-extraction)
     - [Door Extraction](#door-extraction)
@@ -50,7 +50,7 @@ Kits are collections of reusable indoor map components for the Holocron Toolset.
     - [Texture and Lightmap Extraction](#texture-and-lightmap-extraction)
     - [Resource Resolution Priority](#resource-resolution-priority)
     - [BWM/WOK walkmesh Handling](#bwmwok-walkmesh-handling)
-    - [module archives Loading](#module-archives-loading)
+    - [module containers Loading](#module-containers-loading)
     - [KEY Discrepancies and Rationale](#key-discrepancies-and-rationale)
   - [Test Comparison Precision](#test-comparison-precision)
     - [Exact Matching (1:1 byte-for-byte)](#exact-matching-11-byte-for-byte)
@@ -180,8 +180,8 @@ The kit JSON file (`{kit_id}.json`) defines the kit structure:
 
 **Door fields**:
 
-- `utd_k1`: [ResRef](GFF-File-Format#gff-data-types) of K1 door [UTD](GFF-File-Format#utd-door) file (without `.utd` extension)
-- `utd_k2`: [ResRef](GFF-File-Format#gff-data-types) of K2 door [UTD](GFF-File-Format#utd-door) file (without `.utd` extension)
+- `utd_k1`: *ResRef* of K1 door [UTD](GFF-File-Format#utd-door) file (without `.utd` extension)
+- `utd_k2`: *ResRef* of K2 door [UTD](GFF-File-Format#utd-door) file (without `.utd` extension)
 - `width`: Door width in world units (default: 2.0)
 - `height`: Door height in world units (default: 3.0)
 
@@ -264,7 +264,7 @@ Kits contain all [textures](TPC-File-Format) and lightmaps referenced by their c
 
 [textures](TPC-File-Format) are extracted from multiple sources using the game engine's resource resolution priority:
 
-1. **Module RIM/[ERF](ERF-File-Format) files**: [textures](TPC-File-Format) directly in the [module archives](ERF-File-Format)
+1. **Module RIM/[ERF](ERF-File-Format) files**: [textures](TPC-File-Format) directly in the [module containers](ERF-File-Format)
 2. **Installation-wide Resolution**: [textures](TPC-File-Format) from:
    - `override/` (user mods, highest priority)
    - `modules/` (module-specific overrides, `.mod` files take precedence over `.rim` files)
@@ -429,7 +429,7 @@ Doors are defined in the kit JSON and have corresponding [UTD](GFF-File-Format#u
 
 **Door Extraction Process**:
 
-1. [UTD](GFF-File-Format#utd-door) files are extracted from module RIM/[ERF](ERF-File-Format) archives
+1. [UTD](GFF-File-Format#utd-door) files are extracted from module RIM/[ERF](ERF-File-Format) containers
 2. Door [model](MDL-MDX-File-Format) names are resolved from [UTD](GFF-File-Format#utd-door) files using `genericdoors.2da`
 3. [DWK](BWM-File-Format) [walkmeshes](BWM-File-Format) are extracted for each door model (3 states: 0=closed, 1=open1, 2=open2)
 4. Door dimensions are set to fast defaults (2.0x3.0) to avoid expensive extraction
@@ -471,7 +471,7 @@ Placeables are interactive objects (containers, terminals, etc.) that can be pla
 
 **Placeable Extraction Process**:
 
-1. [UTP](GFF-File-Format#utp-placeable) files are extracted from module RIM/[ERF](ERF-File-Format) archives
+1. [UTP](GFF-File-Format#utp-placeable) files are extracted from module RIM/[ERF](ERF-File-Format) containers
 2. Placeable [model](MDL-MDX-File-Format) names are resolved from [UTP](GFF-File-Format#utp-placeable) files using `placeables.2da`
 3. [PWK](BWM-File-Format) [walkmeshes](BWM-File-Format) are extracted for each placeable [model](MDL-MDX-File-Format)
 4. [PWK](BWM-File-Format) files are written to kit directory root
@@ -562,9 +562,9 @@ models/
 
 The kit extraction process (`extract_kit()`) extracts resources from module RIM or [ERF files](ERF-File-Format) and generates a complete kit structure.
 
-### Archive file Support
+### Container file Support
 
-The extraction process supports multiple archive formats:
+The extraction process supports multiple container formats:
 
 - **RIM files**: `.rim` (main module), `_s.rim` (supplementary data)
 - **[ERF](ERF-File-Format) files**: `.mod` (module override), `.erf` (generic [ERF](ERF-File-Format)), `.hak` (hakpak), `.sav` (savegame)
@@ -596,7 +596,7 @@ Components are identified using the following process:
 [textures](TPC-File-Format) and lightmaps are extracted using a comprehensive process:
 
 1. **[model](MDL-MDX-File-Format) Scanning**: Scan all [MDL files](MDL-MDX-File-Format) from `module.models()` using `iterate_textures()` and `iterate_lightmaps()`
-2. **Archive Scanning**: Also extract [TPC](TPC-File-Format)/TGA files directly from RIM/[ERF](ERF-File-Format) archives
+2. **Container Scanning**: Also extract [TPC](TPC-File-Format)/TGA files directly from RIM/[ERF](ERF-File-Format) containers
 3. **Module Resource Scanning**: Check `module.resources` for additional [textures](TPC-File-Format)/lightmaps
 4. **Batch Location Lookup**: Single `installation.locations()` call for all [textures](TPC-File-Format)/lightmaps with search order:
    - OVERRIDE
@@ -615,7 +615,7 @@ Components are identified using the following process:
 
 Doors are extracted from module [UTD](GFF-File-Format#utd-door) files:
 
-1. **UTD Extraction**: Extract all [UTD](GFF-File-Format#utd-door) files from module RIM/[ERF](ERF-File-Format) archives
+1. **UTD Extraction**: Extract all [UTD](GFF-File-Format#utd-door) files from module RIM/[ERF](ERF-File-Format) containers
 2. **Door [model](MDL-MDX-File-Format) Resolution**: Load `genericdoors.2da` once for all doors
 3. **[model](MDL-MDX-File-Format) Name Resolution**: Resolve door [model](MDL-MDX-File-Format) names from [UTD](GFF-File-Format#utd-door) files using `door_tools.get_model()`
 4. **[DWK](BWM-File-Format) Extraction**: Extract door walkmeshes (3 states per door) using batch lookup
@@ -983,7 +983,7 @@ The kit extraction process is based on reverse-engineered implementations from m
 - [`Libraries/PyKotor/src/pykotor/tools/kit.py:1348-1465`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1348-L1465) (Minimap generation)
 - [`Libraries/PyKotor/src/pykotor/tools/kit.py:1467-1535`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1467-L1535) (Doorhook extraction)
 
-### [module archives](ERF-File-Format) Loading
+### [module containers](ERF-File-Format) Loading
 
 **reone Implementation** (`vendor/reone/src/libs/resource/provider/`):
 
@@ -1027,16 +1027,16 @@ The kit extraction process is based on reverse-engineered implementations from m
 
 The kit generation tests (`Tools/HolocronToolset/tests/data/test_kit_generation.py`) use different comparison strategies depending on the data type:
 
-### Exact Matching (1:1 [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types))
+### Exact Matching (1:1 [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte))
 
 **Binary files** (SHA256 hash comparison):
 
-- **[MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format)**: [model](MDL-MDX-File-Format) [geometry](MDL-MDX-File-Format#geometry-header) and [animations](MDL-MDX-File-Format#animation-header) - must be [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types) identical
-- **[WOK](BWM-File-Format)/[BWM](BWM-File-Format)**: [walkmesh](BWM-File-Format) data - must be [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types) identical
-- **[DWK](BWM-File-Format)/[PWK](BWM-File-Format)**: Door and placeable [walkmeshes](BWM-File-Format) - must be [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types) identical
-- **PNG**: Minimap images - must be [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types) identical
-- **[UTD](GFF-File-Format#utd-door)**: Door blueprints - must be [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types) identical
-- **[TXI](TXI-File-Format)**: [texture](TPC-File-Format) metadata files - must be [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types) identical
+- **[MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format)**: [model](MDL-MDX-File-Format) [geometry](MDL-MDX-File-Format#geometry-header) and [animations](MDL-MDX-File-Format#animation-header) - must be [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte) identical
+- **[WOK](BWM-File-Format)/[BWM](BWM-File-Format)**: [walkmesh](BWM-File-Format) data - must be [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte) identical
+- **[DWK](BWM-File-Format)/[PWK](BWM-File-Format)**: Door and placeable [walkmeshes](BWM-File-Format) - must be [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte) identical
+- **PNG**: Minimap images - must be [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte) identical
+- **[UTD](GFF-File-Format#utd-door)**: Door blueprints - must be [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte) identical
+- **[TXI](TXI-File-Format)**: [texture](TPC-File-Format) metadata files - must be [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte) identical
 
 **Rationale**: These files contain critical game data that must match exactly for functional compatibility.
 

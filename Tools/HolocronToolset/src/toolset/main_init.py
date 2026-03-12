@@ -68,18 +68,18 @@ def on_app_crash(
 
         # Initialize tracking structures if they don't exist
         if not hasattr(on_app_crash, "_toolset_seen_exceptions"):
-            setattr(on_app_crash, "_toolset_seen_exceptions", set())
+            on_app_crash._toolset_seen_exceptions = set()
         if not hasattr(on_app_crash, "_toolset_exception_timestamps"):
-            setattr(on_app_crash, "_toolset_exception_timestamps", {})
+            on_app_crash._toolset_exception_timestamps = {}
         if not hasattr(on_app_crash, "_toolset_dialog_count"):
-            setattr(on_app_crash, "_toolset_dialog_count", 0)
+            on_app_crash._toolset_dialog_count = 0
         if not hasattr(on_app_crash, "_toolset_crash_boxes"):
-            setattr(on_app_crash, "_toolset_crash_boxes", [])
+            on_app_crash._toolset_crash_boxes = []
 
-        seen_exceptions: set[str] = getattr(on_app_crash, "_toolset_seen_exceptions")
-        exception_timestamps: dict[str, float] = getattr(on_app_crash, "_toolset_exception_timestamps")
-        dialog_count: int = getattr(on_app_crash, "_toolset_dialog_count")
-        crash_boxes: list[QMessageBox] = getattr(on_app_crash, "_toolset_crash_boxes")
+        seen_exceptions: set[str] = on_app_crash._toolset_seen_exceptions
+        exception_timestamps: dict[str, float] = on_app_crash._toolset_exception_timestamps
+        dialog_count: int = on_app_crash._toolset_dialog_count
+        crash_boxes: list[QMessageBox] = on_app_crash._toolset_crash_boxes
 
         # Check if we've seen this exact exception recently (within 5 seconds)
         current_time = time.time()
@@ -105,12 +105,12 @@ def on_app_crash(
         # Mark this exception as seen and update timestamp
         seen_exceptions.add(exc_fingerprint)
         exception_timestamps[exc_fingerprint] = current_time
-        setattr(on_app_crash, "_toolset_dialog_count", dialog_count + 1)
+        on_app_crash._toolset_dialog_count = dialog_count + 1
 
         # Clean up old timestamps (older than 60 seconds) to prevent memory leak
         cutoff_time = current_time - 60.0
         exception_timestamps = {k: v for k, v in exception_timestamps.items() if v > cutoff_time}
-        setattr(on_app_crash, "_toolset_exception_timestamps", exception_timestamps)
+        on_app_crash._toolset_exception_timestamps = exception_timestamps
 
         details = "".join(traceback.format_exception(etype, exc, tback))
 
@@ -346,7 +346,10 @@ def last_resort_cleanup():
     This function should be registered with atexit as early as possible.
     """
     from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
-    from utility.system.app_process.shutdown import gracefully_shutdown_threads, start_shutdown_process
+    from utility.system.app_process.shutdown import (
+        gracefully_shutdown_threads,
+        start_shutdown_process,
+    )
 
     RobustLogger().info("Fully shutting down Holocron Toolset...")
     gracefully_shutdown_threads()

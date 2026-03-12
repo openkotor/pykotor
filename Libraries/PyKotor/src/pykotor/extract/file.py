@@ -6,8 +6,9 @@ from dataclasses import dataclass, field
 from pathlib import PurePath
 from typing import TYPE_CHECKING, Iterator
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
-from pykotor.common.misc import ResRef
+from loggerplus import (
+    RobustLogger,  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
+)
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath
 
@@ -20,6 +21,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Literal, Self  # pyright: ignore[reportMissingModuleSource]
 
+    from pykotor.common.misc import ResRef
     from pykotor.common.stream import BinaryReader
 
 

@@ -6,7 +6,7 @@
 
   Last changed 2007-09-19
 
-<https://lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer> <mirror>[TSLPatcher Thread Complete Archive](TSLPatcher_Thread_Complete)</mirror>
+<https://lucasforumscontainer.com/thread/149285-tslpatcher-v1210b1-mod-installer> <mirror>[TSLPatcher Thread Complete Container](TSLPatcher_Thread_Complete)</mirror>
 
 ## Table of Contents
 
@@ -155,10 +155,10 @@ game folder. I.e. it could make sure that .MOD files go in the Modules folder, .
 the proper StreamVoice/StreamSounds/StreamMusic folder, other files get put in Override etc.
 
 - It allows you to modify [GFF files](GFF-File-Format) that already exist in either the override folder or an [ERF](ERF-File-Format) or
-RIM format archive file within the game folder or any of its sub-folders. You can also insert
+RIM format container file within the game folder or any of its sub-folders. You can also insert
 new [GFF files](GFF-File-Format) into any such files.
 
-- It allows you to insert recompiled [NCS files](NCS-File-Format) into an [ERF](ERF-File-Format) or RIM format archive file within
+- It allows you to insert recompiled [NCS files](NCS-File-Format) into an [ERF](ERF-File-Format) or RIM format container file within
 the game folder or any of its sub-folders, or overwrite any [NCS file](NCS-File-Format) with the same name
 already existing at the destination.
 
@@ -170,7 +170,7 @@ Among other things:
 file. Due to the complex format and vast possibility of potential changes of script files, such
 files will have to be merged manually. Please include the [NSS](NSS-File-Format) source code files with your
 mod to allow people to do this if necessary. When creating new scripts for your mod, you
-should name them in a way (using a custom prefix or suffix in the [ResRef](GFF-File-Format#gff-data-types) filename) that
+should name them in a way (using a custom prefix or suffix in the *ResRef* filename) that
 makes you reasonable certain others would not name their scripts the same way, to avoid
 this problem.
 
@@ -181,7 +181,7 @@ associated files in a subfolder within the override folder). It will only look f
 directly in the override folder.
 
 - It is currently unable to modify files inside [BIF](BIF-File-Format) format files. Only files located in the
-override folder and [ERF](ERF-File-Format) or RIM format archive files can be modified.
+override folder and [ERF](ERF-File-Format) or RIM format container files can be modified.
 
 ## 2. Setup Instructions
 
@@ -692,8 +692,8 @@ modifying existing files) or should be saved (if adding new files). There are tw
 
 2) If the Destination box is set to the relative path (within the game folder) and name of an
 
-[ERF](ERF-File-Format)/MOD/RIM archive file, the modified [GFF file](GFF-File-Format) will be modified (if already existing) or
-inserted (if not already existing or the Replace setting is set) into this archive file instead of
+[ERF](ERF-File-Format)/MOD/RIM container file, the modified [GFF file](GFF-File-Format) will be modified (if already existing) or
+inserted (if not already existing or the Replace setting is set) into this container file instead of
 being placed in the override folder.
 
 **Important:**
@@ -1009,7 +1009,7 @@ within the tslpatchdata folder, even if you use multiple Setup Groups within
 subfolders.  As of version 1.2.7b4, a modified version of nwnnsscomp, made by
 tk102, has been specifically modified for use with TSLPatcher and should be
 
-included in the TSLPatcher RAR archive. While other versions may work, the
+included in the TSLPatcher RAR container. While other versions may work, the
 Patcher was made primarily to work with this version. Unless you have a
 very compelling reason to use another I suggest you use the provided compiler.
 
@@ -1302,7 +1302,7 @@ Apparently there was an error in the RIM spec...
 
 2006-08-09
 Changed the InstallList functionality to allow installing files into [ERF](ERF-File-Format)/RIM
-archives as well, and not just folders within the game folder. This destination is
+containers as well, and not just folders within the game folder. This destination is
 set the same as you set the folder, only specify a filename at the end of the
 relative path (from the game folder) as well. (E.g. Modules\\904mal.rim)
 
@@ -1331,7 +1331,7 @@ overwriting unless the Replace setting is set.
 
 Changed processing order for the InstallList to allow placing new
 [ERF](ERF-File-Format)/MOD/RIM files in their proper location before the [GFF](GFF-File-Format)/Compile sections
-run so they can save any necessary modified files into those archive files. The
+run so they can save any necessary modified files into those container files. The
 different install phases now run in this order: [TLK](TLK-File-Format) Appending, Install List,
 [2DA](2DA-File-Format) changes, [GFF](GFF-File-Format) Changes, Script compilation, [SSF](SSF-File-Format) Editing.
 
@@ -1429,7 +1429,7 @@ also been made in ChangeEdit to make it less annoying to use.
 
  2006-02-03
 Added primitive support for adding modified [GFF files](GFF-File-Format) and recompiled [NCS](NCS-File-Format)
-files to [ERF](ERF-File-Format) archive files.
+files to [ERF](ERF-File-Format) container files.
 
 2006-02-05
 Fixed bug preventing compilation of scripts using include files.

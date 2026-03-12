@@ -15,7 +15,9 @@ from loggerplus import RobustLogger  # type: ignore[import-untyped]
 from pykotor.extract.file import FileResource  # type: ignore[import-not-found]
 from pykotor.resource.type import ResourceType  # type: ignore[import-not-found]
 from toolset.gui.common.localization import translate as tr, trf  # type: ignore[import-not-found]
-from toolset.gui.widgets.settings.installations import GlobalSettings  # type: ignore[import-not-found]
+from toolset.gui.widgets.settings.installations import (
+    GlobalSettings,  # type: ignore[import-not-found]
+)
 
 if TYPE_CHECKING:
     from qtpy.QtGui import QCloseEvent
@@ -186,7 +188,9 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
     from toolset.gui.editors.ssf import SSFEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.tlk import TLKEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.tpc import TPCEditor  # type: ignore[import-not-found] # noqa: PLC0415
-    from toolset.gui.editors.twoda import TwoDAEditor  # type: ignore[import-not-found] # noqa: PLC0415
+    from toolset.gui.editors.twoda import (
+        TwoDAEditor,  # type: ignore[import-not-found] # noqa: PLC0415
+    )
     from toolset.gui.editors.txt import TXTEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.utc import UTCEditor  # type: ignore[import-not-found] # noqa: PLC0415
     from toolset.gui.editors.utd import UTDEditor  # type: ignore[import-not-found] # noqa: PLC0415
@@ -317,13 +321,12 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
                 editor = _instantiate_editor(GFFEditor)
             else:
                 editor = _instantiate_editor(specialized_editor_class)
+        # Fallback to simple mapping or None
+        elif restype in editor_mappings:
+            editor_class, requires_installation = editor_mappings[restype]
+            editor = _instantiate_editor(editor_class, requires_installation=requires_installation)
         else:
-            # Fallback to simple mapping or None
-            if restype in editor_mappings:
-                editor_class, requires_installation = editor_mappings[restype]
-                editor = _instantiate_editor(editor_class, requires_installation=requires_installation)
-            else:
-                editor = None
+            editor = None
 
     if restype in {ResourceType.MDL, ResourceType.MDX}:
         editor = _instantiate_editor(MDLEditor)

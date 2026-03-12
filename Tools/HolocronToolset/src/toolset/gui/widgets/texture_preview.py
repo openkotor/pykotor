@@ -48,9 +48,7 @@ def normalize_mipmap_for_qt(mipmap: TPCMipmap) -> TPCMipmap:
     fmt = mm.tpc_format
     if fmt == TPCTextureFormat.DXT1:
         mm.convert(TPCTextureFormat.RGB)
-    elif fmt in (TPCTextureFormat.DXT3, TPCTextureFormat.DXT5):
-        mm.convert(TPCTextureFormat.RGBA)
-    elif fmt == TPCTextureFormat.BGRA:
+    elif fmt in (TPCTextureFormat.DXT3, TPCTextureFormat.DXT5) or fmt == TPCTextureFormat.BGRA:
         mm.convert(TPCTextureFormat.RGBA)
     elif fmt == TPCTextureFormat.BGR:
         mm.convert(TPCTextureFormat.RGB)
@@ -123,7 +121,7 @@ def load_resource_preview_mipmap(resource: FileResource, target_size: int) -> TP
     return load_image_preview_mipmap(resource.data(), target_size=target_size)
 
 
-def qimage_to_preview_mipmap(qimg: "QImage", *, target_size: int) -> TPCMipmap:
+def qimage_to_preview_mipmap(qimg: QImage, *, target_size: int) -> TPCMipmap:
     """Convert a QImage to a `TPCMipmap` suitable for thumbnails."""
     from qtpy.QtCore import Qt
     from qtpy.QtGui import QImage
@@ -148,7 +146,7 @@ def qimage_to_preview_mipmap(qimg: "QImage", *, target_size: int) -> TPCMipmap:
     return TPCMipmap(width=qimg.width(), height=qimg.height(), tpc_format=tex_fmt, data=bytearray(const_bits.asarray(data_len)))
 
 
-def _qimage_from_bytes(data: bytes) -> "QImage":
+def _qimage_from_bytes(data: bytes) -> QImage:
     """Load a QImage from bytes."""
     from qtpy.QtGui import QImage
 

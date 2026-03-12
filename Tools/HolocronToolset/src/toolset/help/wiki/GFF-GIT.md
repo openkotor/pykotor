@@ -65,7 +65,7 @@ Each instance type has common fields plus type-specific data:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | [UTC](GFF-File-Format#utc-creature) template to spawn |
+| `TemplateResRef` | *ResRef* | [UTC](GFF-File-Format#utc-creature) template to spawn |
 | `XPosition` | Float | World X coordinate |
 | `YPosition` | Float | World Y coordinate |
 | `ZPosition` | Float | World Z coordinate |
@@ -83,9 +83,9 @@ Each instance type has common fields plus type-specific data:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | [UTD](GFF-File-Format#utd-door) template |
+| `TemplateResRef` | *ResRef* | [UTD](GFF-File-Format#utd-door) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Instance tag override |
-| `LinkedToModule` | [ResRef](GFF-File-Format#gff-data-types) | Destination module |
+| `LinkedToModule` | *ResRef* | Destination module |
 | `LinkedTo` | [CExoString](GFF-File-Format#gff-data-types) | Destination waypoint tag |
 | `LinkedToFlags` | Byte | Transition flags |
 | `TransitionDestin` | [CExoLocString](GFF-File-Format#gff-data-types) | Destination label (UI) |
@@ -96,7 +96,7 @@ Each instance type has common fields plus type-specific data:
 
 **Door Linking:**
 
-- **LinkedToModule**: Target module [ResRef](GFF-File-Format#gff-data-types)
+- **LinkedToModule**: Target module *ResRef*
 - **LinkedTo**: Waypoint tag in target module
 - **TransitionDestin**: Loading screen text
 - Doors can teleport between modules
@@ -111,7 +111,7 @@ Each instance type has common fields plus type-specific data:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | [UTP](GFF-File-Format#utp-placeable) template |
+| `TemplateResRef` | *ResRef* | [UTP](GFF-File-Format#utp-placeable) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Instance tag override |
 | `X`, `Y`, `Z` | Float | position coordinates |
 | `Bearing` | Float | rotation angle |
@@ -129,10 +129,10 @@ Each instance type has common fields plus type-specific data:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | [UTT](GFF-File-Format#utt-trigger) template |
+| `TemplateResRef` | *ResRef* | [UTT](GFF-File-Format#utt-trigger) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Instance tag |
 | `TransitionDestin` | [CExoLocString](GFF-File-Format#gff-data-types) | Transition label |
-| `LinkedToModule` | [ResRef](GFF-File-Format#gff-data-types) | Destination module |
+| `LinkedToModule` | *ResRef* | Destination module |
 | `LinkedTo` | [CExoString](GFF-File-Format#gff-data-types) | Destination waypoint |
 | `LinkedToFlags` | Byte | Transition flags |
 | `X`, `Y`, `Z` | Float | Trigger position |
@@ -156,7 +156,7 @@ Each instance type has common fields plus type-specific data:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | [UTW](GFF-File-Format#utw-waypoint) template |
+| `TemplateResRef` | *ResRef* | [UTW](GFF-File-Format#utw-waypoint) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Waypoint identifier |
 | `Appearance` | DWord | Waypoint appearance type |
 | `LinkedTo` | [CExoString](GFF-File-Format#gff-data-types) | Linked waypoint tag |
@@ -177,7 +177,7 @@ Each instance type has common fields plus type-specific data:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | [UTE](GFF-File-Format#ute-encounter) template |
+| `TemplateResRef` | *ResRef* | [UTE](GFF-File-Format#ute-encounter) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Encounter identifier |
 | `X`, `Y`, `Z` | Float | Spawn position |
 | `Geometry` | List | Spawn zone boundary |
@@ -192,7 +192,7 @@ Each instance type has common fields plus type-specific data:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | [UTM](GFF-File-Format#utm-merchant) template |
+| `TemplateResRef` | *ResRef* | [UTM](GFF-File-Format#utm-merchant) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Store identifier |
 | `X`, `Y`, `Z` | Float | Position (for UI, not physical) |
 | `XOrientation`, `YOrientation` | Float | orientation |
@@ -207,7 +207,7 @@ Each instance type has common fields plus type-specific data:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | [UTS](GFF-File-Format#uts-sound) template |
+| `TemplateResRef` | *ResRef* | [UTS](GFF-File-Format#uts-sound) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Sound identifier |
 | `X`, `Y`, `Z` | Float | Emitter position |
 | `MaxDistance` | Float | Audio falloff distance |

@@ -23,8 +23,7 @@ if TYPE_CHECKING:
 
 
 class TransformInteractionState:
-    """
-    Manages the drag-and-drop transformation state and finalizing changes into QUndoStack commands
+    """Manages the drag-and-drop transformation state and finalizing changes into QUndoStack commands
     shared across different generic interface views like Module Designer and GIT Editor.
     """
 
@@ -54,8 +53,7 @@ class TransformInteractionState:
         self.is_drag_rotating_spawn = False
 
     def finalize_undo_actions(self):
-        """
-        Commits active transforms to the undo stack. To be called on mouse release.
+        """Commits active transforms to the undo stack. To be called on mouse release.
         """
         from toolset.gui.editors.git.undo import (
             MoveCommand,

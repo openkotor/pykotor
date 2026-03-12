@@ -23,7 +23,7 @@ _ = get_translation("spyder_holocron_toolset.spyder")
 
 
 class HolocronToolsetContainer(PluginMainContainer):
-    def __init__(self, name, plugin: "HolocronToolsetPlugin", parent: QObject | None = None):
+    def __init__(self, name, plugin: HolocronToolsetPlugin, parent: QObject | None = None):
         super().__init__(name, plugin, parent)
 
         # Create widgets

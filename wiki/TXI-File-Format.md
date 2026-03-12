@@ -2,18 +2,22 @@
 
 TXI ([texture](TPC-File-Format) Info) files are compact ASCII descriptors that attach metadata to [TPC](TPC-File-Format) [textures](TPC-File-Format). They control mipmap usage, filtering, [flipbook animation](#animation-and-flipbooks), environment mapping, font atlases, and platform-specific downsampling. Every TXI file is parsed at runtime to configure how a [TPC](TPC-File-Format) image is rendered. TXI files are resolved using the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
+**For mod developers:** TXI is often embedded in TPC or shipped as a sibling `.txi`; see [TPC File Format](TPC-File-Format) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** TXI accompanies [TPC](TPC-File-Format) textures; referenced by [MDL/MDX](MDL-MDX-File-Format) and [GFF-GUI](GFF-GUI).
+
 ## Table of Contents
 
 - KotOR TXI file format Documentation
   - Table of Contents
-  - [format Overview](#format-overview)
+  - [Format overview](#format-overview)
   - [Syntax](#syntax)
     - [Command Lines](#command-lines)
-    - [coordinate Blocks](#coordinate-blocks)
+    - [Coordinate blocks](#coordinate-blocks)
   - [Command Reference](#command-reference)
     - [Rendering and Filtering](#rendering-and-filtering)
-    - [material and Environment Controls](#material-and-environment-controls)
-    - [animation and Flipbooks](#animation-and-flipbooks)
+    - [Material and environment controls](#material-and-environment-controls)
+    - [Animation and flipbooks](#animation-and-flipbooks)
     - [Font Atlas Layout](#font-atlas-layout)
     - [Streaming and Platform Hints](#streaming-and-platform-hints)
   - [Relationship to TPC textures](#relationship-to-tpc-textures)
@@ -22,7 +26,7 @@ TXI ([texture](TPC-File-Format) Info) files are compact ASCII descriptors that a
 
 ---
 
-## format Overview
+## Format overview
 
 - TXI files are plain-text [KEY](KEY-File-Format)/value lists; each command modifies a field in the [TPC](TPC-File-Format) runtime metadata.  
 - Commands are case-insensitive but conventionally lowercase. values can be integers, floats, booleans (`0`/`1`), [ResRefs](GFF-File-Format#gff-data-types), or multi-line coordinate tables.  
@@ -38,7 +42,7 @@ TXI ([texture](TPC-File-Format) Info) files are compact ASCII descriptors that a
 - [`vendor/KotOR.js/src/enums/graphics/txi/`](https://github.com/th3w1zard1/KotOR.js/tree/master/src/enums/graphics/txi) - TXI command enumerations
 - [`vendor/KotOR-Unity/Assets/Scripts/Resource/TXI.cs`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/Resource/TXI.cs) - C# Unity TXI loader
 
-**See Also:**
+### See also
 
 - [TPC File Format](TPC-File-Format) - [texture](TPC-File-Format) format that TXI metadata describes
 - [MDL/MDX File Format](MDL-MDX-File-Format) - [models](MDL-MDX-File-Format) that reference [textures](TPC-File-Format) with TXI metadata  
@@ -58,7 +62,7 @@ TXI ([texture](TPC-File-Format) Info) files are compact ASCII descriptors that a
 - Multiple values (e.g., `channelscale 1.0 0.5 0.5`) are space-separated.  
 - Comments are not supported; unknown commands are skipped.  
 
-### coordinate Blocks
+### Coordinate blocks
 
 Commands such as `upperleftcoords` and `lowerrightcoords` declare the number of rows, followed by that many lines of coordinates:
 
@@ -75,7 +79,7 @@ Each line encodes a UV triplet; UV coordinates follow standard UV mapping conven
 
 ## Command Reference
 
-> The tables below summarize the commands implemented by PyKotor’s `TXICommand` enum. values map directly to the fields described in [`txi_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKyor/resource/formats/txi/txi_data.py#L700-L830).
+> The tables below summarize the commands implemented by PyKotor’s `TXICommand` enum. Values map directly to the fields described in [`txi_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py).
 
 ### Rendering and Filtering
 
@@ -89,7 +93,7 @@ Each line encodes a UV triplet; UV coordinates follow standard UV mapping conven
 | `temporary` | `0`/`1` | Marks a [texture](TPC-File-Format) as discardable after use. |
 | `ondemand` | `0`/`1` | Delays [texture](TPC-File-Format) loading until first reference. |
 
-### [material](MDL-MDX-File-Format#trimesh-header) and Environment Controls
+### [Material](MDL-MDX-File-Format#trimesh-header) and environment controls
 
 | Command | Description |
 | ------- | ----------- |
@@ -100,7 +104,7 @@ Each line encodes a UV triplet; UV coordinates follow standard UV mapping conven
 | `cube` | Marks the [texture](TPC-File-Format) as a cube map; used with 6-[face](MDL-MDX-File-Format#face-structure) TPCs. |
 | `unique` | Forces the renderer to keep a dedicated instance instead of sharing. |
 
-### [animation](MDL-MDX-File-Format#animation-header) and Flipbooks
+### [Animation](MDL-MDX-File-Format#animation-header) and flipbooks
 
 [texture](TPC-File-Format) flipbook animation relies on sprite sheets that tile frames across the atlas:
 
@@ -122,7 +126,7 @@ KotOR’s bitmap fonts use TXI commands to describe glyph boxes:
 | `baselineheight`, `fontheight`, `fontwidth`, `caretindent`, `spacingB`, `spacingR` | Control glyph metrics for UI fonts. |
 | `rows`, `cols`, `numchars`, `numcharspersheet` | Describe how many glyphs are stored per sheet. |
 | `upperleftcoords`, `lowerrightcoords` | arrays of UV coordinates for each glyph corner. |
-| `codepage`, `isdoublebyte`, `dbmapping` | Support multi-[byte](GFF-File-Format#gff-data-types) font atlases (Asian locales). |
+| `codepage`, `isdoublebyte`, `dbmapping` | Support multi-[byte](https://en.wikipedia.org/wiki/Byte) font atlases (Asian locales). |
 
 KotOR.js exposes identical structures in [`src/resource/TXI.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/TXI.ts#L16-L255), ensuring the coordinates here match the engine’s expectations.
 
@@ -182,5 +186,11 @@ Many TXI files in the game installation are **empty** (0 bytes). These empty TXI
   - [`vendor/tga2tpc`](https://github.com/th3w1zard1/tga2tpc) (original Bioware converter)  
 
 These sources all interpret commands the same way, so the tables above map directly to the behavior you will observe in-game.
+
+### See also
+
+- [TPC File Format](TPC-File-Format) - Texture format that TXI metadata describes
+- [MDL/MDX File Format](MDL-MDX-File-Format) - Models that reference textures with TXI
+- [GFF-GUI](GFF-GUI) - GUI files that reference TPC/TXI for UI elements
 
 ---

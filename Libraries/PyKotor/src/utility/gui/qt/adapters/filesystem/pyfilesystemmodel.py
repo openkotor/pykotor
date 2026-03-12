@@ -23,12 +23,11 @@ from qtpy.QtCore import (
     QMimeData,
     QModelIndex,
     QMutexLocker,
-    QTimer,
     QTimeZone,
+    QTimer,
     QUrl,
     QVariant,
-    Qt,
-    Signal,  # pyright: ignore[reportPrivateImportUsage]
+    Qt,  # pyright: ignore[reportPrivateImportUsage]
 )
 from qtpy.QtGui import QIcon  # noqa: E402
 from qtpy.QtWidgets import (
@@ -43,9 +42,13 @@ from qtpy.QtWidgets import (
 # QAbstractFileIconProvider is not exposed by qtpy, import directly
 try:
     if qtpy.API_NAME == "PyQt6":
-        from PyQt6.QtGui import QAbstractFileIconProvider  # type: ignore[import-untyped]  # noqa: E402
+        from PyQt6.QtGui import (
+            QAbstractFileIconProvider,  # type: ignore[import-untyped]  # noqa: E402
+        )
     elif qtpy.API_NAME == "PySide6":
-        from PySide6.QtGui import QAbstractFileIconProvider  # type: ignore[import-untyped]  # noqa: E402
+        from PySide6.QtGui import (
+            QAbstractFileIconProvider,  # type: ignore[import-untyped]  # noqa: E402
+        )
     else:
         # PyQt5/PySide2 - QAbstractFileIconProvider might not exist
         QAbstractFileIconProvider = QFileIconProvider  # type: ignore[assignment, misc]
@@ -83,7 +86,9 @@ if toolset_path.exists():
 from qtpy.QtCore import QDateTime  # pyright: ignore[reportPrivateImportUsage]  # noqa: E402
 
 from utility.gui.qt.adapters.filesystem.pyfileinfogatherer import PyFileInfoGatherer  # noqa: E402
-from utility.gui.qt.adapters.filesystem.pyfilesystemmodelsorter import PyFileSystemModelSorter  # noqa: E402
+from utility.gui.qt.adapters.filesystem.pyfilesystemmodelsorter import (
+    PyFileSystemModelSorter,  # noqa: E402
+)
 from utility.gui.qt.adapters.filesystem.pyfilesystemnode import PyFileSystemNode  # noqa: E402
 from utility.system.path import Path  # noqa: E402
 
@@ -92,6 +97,7 @@ if TYPE_CHECKING:
         QObject,
         QRegularExpression,
         QTimerEvent,
+        Signal,  # pyright: ignore[reportPrivateImportUsage]
     )
     from qtpy.QtWidgets import QScrollBar
     from typing_extensions import Literal

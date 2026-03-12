@@ -4,7 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pykotor.resource.formats.ncs.ncs_data import NCS, NCSByteCode, NCSInstruction, NCSInstructionType, NCSInstructionTypeValue
+from pykotor.resource.formats.ncs.ncs_data import (
+    NCS,
+    NCSByteCode,
+    NCSInstruction,
+    NCSInstructionType,
+    NCSInstructionTypeValue,
+)
 from pykotor.resource.formats.ncs.vm_validation import validate_ncs_for_vm
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 

@@ -473,7 +473,6 @@ class BlenderConnectionWidget(QFrame):
     def _on_connect_clicked(self):
         """Handle connect/disconnect button click."""
         # This will be connected to the controller by the parent window
-        pass
 
 
 class BlenderSettingsWidget(QFrame):

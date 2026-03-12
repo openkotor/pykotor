@@ -127,7 +127,7 @@ class BatchLIPProcessor(QDialog):
                     f.write(bytes_lip(lip))
 
             except Exception as e:
-                errors.append(f"{audio_file.name}: {str(e)}")
+                errors.append(f"{audio_file.name}: {e!s}")
 
         if errors:
             QMessageBox.warning(self, "Errors Occurred", "The following errors occurred:\n\n" + "\n".join(errors))

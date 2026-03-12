@@ -65,10 +65,12 @@ This works after a successful `uv sync --all-packages --all-extras`. **Python 3.
 - Edit only `.ui` files under `Tools/HolocronToolset/src/ui/`; never edit generated files under `uic/`.
 - After changing any `.ui` file, run `Tools/HolocronToolset/src/ui/convertui.py` to regenerate Python bindings.
 - Do not use `getattr(self.ui, "widgetName", None)` or similar for UI widgets; reference widgets directly (e.g. `self.ui.toolbarModuleCombo`) and compile the UI first so the uic has the widget.
+- Do not construct Qt widgets (QPushButton, QLineEdit, QButtonGroup, QWidget, etc.) in Python; define all GUI in `.ui` files and use the LTR pattern (`self.ui = Ui_Form(); self.ui.setupUi(self)`).
 
 ## Learned Workspace Facts
 
 - Holocron UI workflow is compile-first: change `.ui` → run convertui → then use `self.ui.<name>` in code; defensive getattr for UI is prohibited in `.cursorrules`.
+- CLI command names should follow existing patterns and use domain-accurate terminology (e.g. avoid "archive" where Bioware or docs use different names).
 
 ### Reverse engineering (agdec-http MCP)
 

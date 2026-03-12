@@ -8,8 +8,8 @@ from qtpy.QtCore import Slot
 from qtpy.QtWidgets import QAction
 
 from toolset.gui.widgets.settings.widgets.misc import GlobalSettings
-from utility.gui.qt.widgets.theme import ThemeManager as UtilityThemeManager
-from utility.gui.qt.widgets.theme import ThemeSources
+from utility.gui.qt.widgets.theme import ThemeManager as UtilityThemeManager, ThemeSources
+
 
 # Optional extra_themes dirs (Toolset resources); :/themes is default in ThemeSources
 def _toolset_extra_theme_dirs() -> tuple[str, ...]:
@@ -23,8 +23,7 @@ def _toolset_extra_theme_dirs() -> tuple[str, ...]:
 
 
 class ThemeManager:
-    """
-    Toolset theme manager: delegates to utility.gui ThemeManager.
+    """Toolset theme manager: delegates to utility.gui ThemeManager.
     Persistence (selectedTheme/selectedStyle) is handled by the main window; this wrapper
     only reads them for apply context. Prefer importing from utility.gui.qt.widgets.theme
     for new code.
@@ -42,6 +41,7 @@ class ThemeManager:
 
     def _on_theme_error(self, title: str, message: str) -> None:
         from qtpy.QtWidgets import QMessageBox
+
         from toolset.gui.common.localization import translate as tr
         QMessageBox.critical(None, tr(title), tr(message))
         GlobalSettings().reset_setting("selectedTheme")

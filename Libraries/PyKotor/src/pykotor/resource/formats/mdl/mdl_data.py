@@ -46,7 +46,13 @@ from typing import TYPE_CHECKING, Any
 
 from pykotor.common.misc import Color
 from pykotor.resource.formats._base import ComparableMixin
-from pykotor.resource.formats.mdl.mdl_types import MDLClassification, MDLDynamicType, MDLGeometryType, MDLNodeFlags, MDLNodeType
+from pykotor.resource.formats.mdl.mdl_types import (
+    MDLClassification,
+    MDLDynamicType,
+    MDLGeometryType,
+    MDLNodeFlags,
+    MDLNodeType,
+)
 from pykotor.resource.type import ResourceType
 from utility.common.geometry import Vector2, Vector3, Vector4
 

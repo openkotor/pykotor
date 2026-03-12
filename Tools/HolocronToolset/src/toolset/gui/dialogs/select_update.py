@@ -23,10 +23,15 @@ except ImportError:
 
 from qtpy.QtCore import QThread, Qt
 from qtpy.QtGui import QColor, QFont, QPalette
-from qtpy.QtWidgets import QApplication, QDialog, QMessageBox, QStyle, QWidget
+from qtpy.QtWidgets import QApplication, QDialog, QMessageBox, QStyle
 
 from loggerplus import RobustLogger
-from toolset.config import LOCAL_PROGRAM_INFO, is_remote_version_newer, toolset_tag_to_version, version_to_toolset_tag
+from toolset.config import (
+    LOCAL_PROGRAM_INFO,
+    is_remote_version_newer,
+    toolset_tag_to_version,
+    version_to_toolset_tag,
+)
 from toolset.gui.common.localization import translate as tr
 from toolset.gui.dialogs.asyncloader import ProgressDialog
 from utility.misc import ProcessorArchitecture
@@ -36,6 +41,7 @@ from utility.updater.update import AppUpdate
 
 if TYPE_CHECKING:
     from qtpy.QtGui import QIcon
+    from qtpy.QtWidgets import QWidget
 
     from utility.updater.github import Asset
 
@@ -104,7 +110,7 @@ class UpdateDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportAttributeAccessIssue]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowMinMaxButtonsHint & ~Qt.WindowType.WindowContextHelpButtonHint
+            | Qt.WindowType.WindowMinMaxButtonsHint & ~Qt.WindowType.WindowContextHelpButtonHint,
         )
         self.remote_info: dict[str, Any] = {}
         self.releases: list[GithubRelease] = []

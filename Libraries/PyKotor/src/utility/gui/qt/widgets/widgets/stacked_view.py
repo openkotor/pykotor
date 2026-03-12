@@ -4,7 +4,13 @@ import sys
 
 from typing import TYPE_CHECKING, Literal, Optional, TypeVar, cast
 
-from qtpy.QtCore import QAbstractItemModel, QItemSelectionModel, QModelIndex, QSize, Qt  # pyright: ignore[reportPrivateImportUsage]
+from qtpy.QtCore import (  # pyright: ignore[reportPrivateImportUsage]
+    QAbstractItemModel,
+    QItemSelectionModel,
+    QModelIndex,
+    QSize,
+    Qt,
+)
 from qtpy.QtGui import QFont, QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import (
     QAbstractItemView,

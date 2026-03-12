@@ -21,7 +21,6 @@ import bpy
 from ..constants import Classification, DummyType, ExportOptions, MeshType
 from ..io.mdl import save_mdl
 
-
 _STATE_PROP = "holocron_state_json"
 _KIND_PROP = "holocron_kind"
 _TYPE_PROP = "holocron_instance_type"
@@ -67,7 +66,7 @@ class HolocronIPCServer:
     # Lifecycle
     # ---------------------------------------------------------------------
 
-    def start(self) -> "HolocronIPCServer":
+    def start(self) -> HolocronIPCServer:
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._server_socket.bind(("127.0.0.1", self.port))
@@ -306,7 +305,7 @@ class HolocronIPCServer:
                         self._as_vector_tuple(face.get("v1")),
                         self._as_vector_tuple(face.get("v2")),
                         self._as_vector_tuple(face.get("v3")),
-                    ]
+                    ],
                 )
                 faces.append([base, base + 1, base + 2])
             obj = self._create_mesh_object(room_name, vertices, faces)

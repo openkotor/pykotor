@@ -94,7 +94,15 @@ from utility.common.geometry import SurfaceMaterial, Vector2, Vector3
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QCloseEvent, QPoint
-    from qtpy.QtGui import QFocusEvent, QImage, QKeyEvent, QMouseEvent, QPaintEvent, QUndoStack, QWheelEvent
+    from qtpy.QtGui import (
+        QFocusEvent,
+        QImage,
+        QKeyEvent,
+        QMouseEvent,
+        QPaintEvent,
+        QUndoStack,
+        QWheelEvent,
+    )
 
     from pykotor.common.indoorkit import KitComponent
     from pykotor.resource.formats.bwm import (
@@ -1443,12 +1451,12 @@ class IndoorMapRenderer(QWidget):
                             QPen(
                                 QColor(HOOK_PEN_COLOR_UNCONNECTED[0], HOOK_PEN_COLOR_UNCONNECTED[1], HOOK_PEN_COLOR_UNCONNECTED[2], HOOK_PEN_COLOR_UNCONNECTED[3]),
                                 GRID_PEN_WIDTH,
-                            )
+                            ),
                         )
                     else:
                         painter.setBrush(QColor(HOOK_COLOR_CONNECTED[0], HOOK_COLOR_CONNECTED[1], HOOK_COLOR_CONNECTED[2], HOOK_COLOR_CONNECTED[3]))
                         painter.setPen(
-                            QPen(QColor(HOOK_PEN_COLOR_CONNECTED[0], HOOK_PEN_COLOR_CONNECTED[1], HOOK_PEN_COLOR_CONNECTED[2], HOOK_PEN_COLOR_CONNECTED[3]), GRID_PEN_WIDTH)
+                            QPen(QColor(HOOK_PEN_COLOR_CONNECTED[0], HOOK_PEN_COLOR_CONNECTED[1], HOOK_PEN_COLOR_CONNECTED[2], HOOK_PEN_COLOR_CONNECTED[3]), GRID_PEN_WIDTH),
                         )
                     painter.drawEllipse(QPointF(hook_pos.x, hook_pos.y), HOOK_DISPLAY_RADIUS, HOOK_DISPLAY_RADIUS)
 
@@ -1464,7 +1472,7 @@ class IndoorMapRenderer(QWidget):
                     QPen(
                         QColor(CONNECTION_LINE_COLOR[0], CONNECTION_LINE_COLOR[1], CONNECTION_LINE_COLOR[2], CONNECTION_LINE_COLOR[3]),
                         CONNECTION_LINE_WIDTH_SCALE / self._cam_scale,
-                    )
+                    ),
                 )
                 painter.drawLine(
                     QPointF(hook_pos.x - xd, hook_pos.y - yd),
@@ -1480,13 +1488,13 @@ class IndoorMapRenderer(QWidget):
         # Draw hover highlight
         if self._under_mouse_room and self._under_mouse_room not in self._selected_rooms:
             self._draw_room_highlight(
-                painter, self._under_mouse_room, ROOM_HOVER_ALPHA, QColor(ROOM_HOVER_COLOR[0], ROOM_HOVER_COLOR[1], ROOM_HOVER_COLOR[2], ROOM_HOVER_COLOR[3])
+                painter, self._under_mouse_room, ROOM_HOVER_ALPHA, QColor(ROOM_HOVER_COLOR[0], ROOM_HOVER_COLOR[1], ROOM_HOVER_COLOR[2], ROOM_HOVER_COLOR[3]),
             )
 
         # Draw selection highlights
         for room in self._selected_rooms:
             self._draw_room_highlight(
-                painter, room, ROOM_SELECTED_ALPHA, QColor(ROOM_SELECTED_COLOR[0], ROOM_SELECTED_COLOR[1], ROOM_SELECTED_COLOR[2], ROOM_SELECTED_COLOR[3])
+                painter, room, ROOM_SELECTED_ALPHA, QColor(ROOM_SELECTED_COLOR[0], ROOM_SELECTED_COLOR[1], ROOM_SELECTED_COLOR[2], ROOM_SELECTED_COLOR[3]),
             )
 
         # Draw spawn point (warp point)

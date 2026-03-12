@@ -8,23 +8,39 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 DLG files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/dlg/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/)
+**For mod developers:** To edit dialogues in the toolset, use the DLG editor; for mod patches see [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** DLG uses [TLK](TLK-File-Format) and [StrRef](TLK-File-Format#string-references-strref) for text, [WAV](WAV-File-Format) for voice-over, [NCS](NCS-File-Format) for scripts, [GFF-JRL](GFF-JRL) for journal updates, [MDL](MDL-MDX-File-Format) for camera models.
+
+## References
+
+**PyKotor:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/generics/dlg/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/) - DLG [GFF](GFF-File-Format) parsing, links, and Twine I/O
+
+**HolocronToolset:**
+
+- Dialogue (DLG) editor
+
+**Vendor Implementations:**
+
+- reone/xoreos conversation (DLG) GFF parsers
 
 ## Conversation Properties
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `DelayEntry` | Int | Delay before conversation starts |
-| `DelayReply` | Int | Delay before player reply options appear |
-| `NumWords` | Int | Total word count (unused) |
-| `PreventSkipping` | Byte | Prevents skipping dialogue lines |
-| `Skippable` | Byte | Allows skipping dialogue |
-| `Sound` | [ResRef](GFF-File-Format#gff-data-types) | Background sound loop |
-| `AmbientTrack` | Int | Background music track ID |
-| `CameraModel` | [ResRef](GFF-File-Format#gff-data-types) | Camera [model](MDL-MDX-File-Format) for cutscenes |
-| `ComputerType` | Byte | Interface style (0=Modern, 1=Ancient) |
-| `ConversationType` | Byte | 0=Human, 1=Computer, 2=Other |
-| `OldHitCheck` | Byte | Legacy hit check flag (unused) |
+| `DelayEntry` | [int32](GFF-File-Format#gff-data-types) | Delay before conversation starts |
+| `DelayReply` | [int32](GFF-File-Format#gff-data-types) | Delay before player reply options appear |
+| `NumWords` | [int32](GFF-File-Format#gff-data-types) | Total word count (unused) |
+| `PreventSkipping` | [byte](GFF-File-Format#gff-data-types) | Prevents skipping dialogue lines |
+| `Skippable` | [byte](GFF-File-Format#gff-data-types) | Allows skipping dialogue |
+| `Sound` | *ResRef* | Background sound loop |
+| `AmbientTrack` | [int32](GFF-File-Format#gff-data-types) | Background music track ID |
+| `CameraModel` | *ResRef* | Camera [model](MDL-MDX-File-Format) for cutscenes |
+| `ComputerType` | [byte](GFF-File-Format#gff-data-types) | Interface style (0=Modern, 1=Ancient) |
+| `ConversationType` | [byte](GFF-File-Format#gff-data-types) | 0=Human, 1=Computer, 2=Other |
+| `OldHitCheck` | [byte](GFF-File-Format#gff-data-types) | Legacy hit check flag (unused) |
 
 **Conversation types:**
 
@@ -36,8 +52,8 @@ DLG files are loaded with the same [resource resolution order](KEY-File-Format#k
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `EndConversation` | [ResRef](GFF-File-Format#gff-data-types) | Fires when conversation ends normally |
-| `EndConverAbort` | [ResRef](GFF-File-Format#gff-data-types) | Fires when conversation is aborted |
+| `EndConversation` | *ResRef* | Fires when conversation ends normally |
+| `EndConverAbort` | *ResRef* | Fires when conversation is aborted |
 
 ## [node](MDL-MDX-File-Format#node-structures) Lists
 
@@ -63,17 +79,17 @@ Both Entry and Reply [nodes](MDL-MDX-File-Format#node-structures) share common f
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `Text` | [CExoLocString](GFF-File-Format#gff-data-types) | Dialogue text |
-| `VO_ResRef` | [ResRef](GFF-File-Format#gff-data-types) | Voice-over audio file |
-| `Sound` | [ResRef](GFF-File-Format#gff-data-types) | Sound effect [ResRef](GFF-File-Format#gff-data-types) |
-| `Script` | [ResRef](GFF-File-Format#gff-data-types) | Script to execute (Action) |
-| `Delay` | Int | Delay before text appears |
+| `VO_ResRef` | *ResRef* | Voice-over audio file |
+| `Sound` | *ResRef* | Sound effect *ResRef* |
+| `Script` | *ResRef* | Script to execute (Action) |
+| `Delay` | [int32](GFF-File-Format#gff-data-types) | Delay before text appears |
 | `Comment` | [CExoString](GFF-File-Format#gff-data-types) | Developer comment |
 | `Speaker` | [CExoString](GFF-File-Format#gff-data-types) | Speaker tag (Entry only) |
 | `Listener` | [CExoString](GFF-File-Format#gff-data-types) | Listener tag (unused) |
 | `Quest` | [CExoString](GFF-File-Format#gff-data-types) | Journal tag to update |
-| `QuestEntry` | Int | [journal entry](GFF-File-Format#jrl-journal) ID |
-| `PlotIndex` | Int | Plot index (legacy) |
-| `PlotXPPercentage` | Float | XP reward percentage |
+| `QuestEntry` | [int32](GFF-File-Format#gff-data-types) | [journal entry](GFF-File-Format#jrl-journal) ID |
+| `PlotIndex` | [int32](GFF-File-Format#gff-data-types) | Plot index (legacy) |
+| `PlotXPPercentage` | [float](GFF-File-Format#gff-data-types) | XP reward percentage |
 
 **Cinematic fields:**
 
@@ -96,10 +112,10 @@ Links connect [nodes](MDL-MDX-File-Format#node-structures) and define flow contr
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Index` | Int | index of target [node](MDL-MDX-File-Format#node-structures) in Entry/Reply list |
-| `Active` | [ResRef](GFF-File-Format#gff-data-types) | Conditional script (returns TRUE/FALSE) |
-| `Script` | [ResRef](GFF-File-Format#gff-data-types) | Action script (executed on transition) |
-| `IsChild` | Byte | 1 if linking to [node](MDL-MDX-File-Format#node-structures) in list, 0 if logic link |
+| `Index` | [int32](GFF-File-Format#gff-data-types) | Index of target [node](MDL-MDX-File-Format#node-structures) in Entry/Reply list |
+| `Active` | *ResRef* | Conditional script (returns TRUE/FALSE) |
+| `Script` | *ResRef* | Action script (executed on transition) |
+| `IsChild` | [byte](GFF-File-Format#gff-data-types) | 1 if linking to [node](MDL-MDX-File-Format#node-structures) in list, 0 if logic link |
 | `LinkComment` | [CExoString](GFF-File-Format#gff-data-types) | Developer comment |
 
 **Conditional Logic:**
@@ -156,3 +172,10 @@ PyKotor exposes a Twine bridge for DLGs to support authoring and visualization i
 - Import uses `Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/twine.py::_story_to_dlg` together with `FormatConverter.restore_kotor_metadata` to hydrate `DLGEntry`/`DLGReply` objects, restoring multilingual text from `custom` keys and mapping camera/sound/quest metadata back onto the [nodes](MDL-MDX-File-Format#node-structures).
 - Twine-only data (style, script, tag colors, format info, zoom, creator metadata) is stored in `[DLG](GFF-File-Format#dlg-dialogue).comment` as JSON via `FormatConverter.store_twine_metadata` and restored on export; `tag_colors` are kept as `Color` values (see `Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/twine_data.py`).
 - Start [node](MDL-MDX-File-Format#node-structures) selection mirrors engine behavior: first starter becomes `startnode` when exporting, and missing `startnode` on import falls back to the first entry passage.
+
+## See also
+
+- [GFF File Format](GFF-File-Format) - Generic format underlying DLG
+- [TLK File Format](TLK-File-Format) - String and [StrRef](TLK-File-Format#string-references-strref) storage
+- [GFF-JRL (Journal)](GFF-JRL) - Journal entries referenced by Quest/QuestEntry
+- [Bioware Aurora Conversation Format](Bioware-Aurora-Conversation) - Official conversation specification

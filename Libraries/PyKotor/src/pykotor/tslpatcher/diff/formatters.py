@@ -13,7 +13,14 @@ import traceback
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Callable
 
-from pykotor.tslpatcher.diff.objects import DiffFormat, DiffType, GFFDiffResult, ResourceDiffResult, TLKDiffResult, TwoDADiffResult
+from pykotor.tslpatcher.diff.objects import (
+    DiffFormat,
+    DiffType,
+    GFFDiffResult,
+    ResourceDiffResult,
+    TLKDiffResult,
+    TwoDADiffResult,
+)
 
 if TYPE_CHECKING:
     from pykotor.tslpatcher.diff.objects import DiffResult

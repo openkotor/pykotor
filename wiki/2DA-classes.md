@@ -30,9 +30,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `spellcaster` | Integer | Spellcasting level (0 = non-caster) |
 | `spellcastingtype` | Integer | Spellcasting type identifier |
 | `spelllevel` | Integer | Maximum spell level |
-| `spellbook` | ResRef (optional) | Spellbook [ResRef](GFF-File-Format#gff-data-types) |
-| `icon` | [ResRef](GFF-File-Format#gff-data-types) | Class icon [ResRef](GFF-File-Format#gff-data-types) |
-| `portrait` | ResRef (optional) | Class portrait [ResRef](GFF-File-Format#gff-data-types) |
+| `spellbook` | ResRef (optional) | Spellbook *ResRef* |
+| `icon` | *ResRef* | Class icon *ResRef* |
+| `portrait` | ResRef (optional) | Class portrait *ResRef* |
 | `startingfeat0` through `startingfeat9` | Integer (optional) | Starting feat IDs |
 | `startingpack` | Integer (optional) | Starting equipment pack ID |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | Class description string reference |

@@ -50,7 +50,7 @@ ROOM_NAME CHILD_COUNT
 
 | Token | Description |
 | ----- | ----------- |
-| `ROOM_NAME` | Room label (typically the [MDL](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) of the room). |
+| `ROOM_NAME` | Room label (typically the [MDL](MDL-MDX-File-Format) *ResRef* of the room). |
 | `CHILD_COUNT` | Number of child lines that follow immediately. |
 
 Example:

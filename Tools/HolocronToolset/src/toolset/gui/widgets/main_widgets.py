@@ -25,10 +25,32 @@ from qtpy.QtCore import (
     Signal,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
     Slot,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
 )
-from qtpy.QtGui import QColor, QCursor, QIcon, QImage, QPalette, QPixmap, QStandardItem, QStandardItemModel
-from qtpy.QtWidgets import QAbstractItemView, QApplication, QFileDialog, QHeaderView, QInputDialog, QListView, QMenu, QStyle, QToolTip, QWidget
+from qtpy.QtGui import (
+    QColor,
+    QCursor,
+    QIcon,
+    QImage,
+    QPalette,
+    QPixmap,
+    QStandardItem,
+    QStandardItemModel,
+)
+from qtpy.QtWidgets import (
+    QAbstractItemView,
+    QApplication,
+    QFileDialog,
+    QHeaderView,
+    QInputDialog,
+    QListView,
+    QMenu,
+    QStyle,
+    QToolTip,
+    QWidget,
+)
 
-from loggerplus import RobustLogger  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
+from loggerplus import (
+    RobustLogger,  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
+)
 from pykotor.extract.file import FileResource
 from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, read_tpc, write_tpc
 from pykotor.resource.type import ResourceType
@@ -36,7 +58,10 @@ from toolset.data.installation import HTInstallation
 from toolset.gui.dialogs.load_from_location_result import ResourceItems
 from toolset.gui.widgets.settings.installations import GlobalSettings
 from toolset.gui.widgets.texture_loader import TextureLoaderProcess, deserialize_mipmap
-from toolset.gui.widgets.texture_preview import load_resource_preview_mipmap, qimage_to_preview_mipmap
+from toolset.gui.widgets.texture_preview import (
+    load_resource_preview_mipmap,
+    qimage_to_preview_mipmap,
+)
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QModelIndex, QRect
@@ -571,7 +596,7 @@ class ResourceModel(QStandardItemModel):
             [
                 ResourceStandardItem(resource.resname(), resource=resource),
                 QStandardItem(resource.restype().extension.upper()),
-            ]
+            ],
         )
 
     def add_resources_batch(
@@ -602,7 +627,7 @@ class ResourceModel(QStandardItemModel):
                     [
                         ResourceStandardItem(resource.resname(), resource=resource),
                         QStandardItem(resource.restype().extension.upper()),
-                    ]
+                    ],
                 )
             # Batch append all rows at once (more efficient)
             for row in rows:
@@ -923,7 +948,7 @@ class TextureList(MainWindowList):
                             ResourceType.TPC.name,
                         ),
                         0,
-                    )[0]
+                    )[0],
                 )
             ]
         else:

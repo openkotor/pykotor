@@ -12,14 +12,23 @@ from qtpy.QtCore import (
     QUrl,
     Qt,
 )
-from qtpy.QtWidgets import QApplication, QFileSystemModel, QLayoutItem, QMessageBox  # pyright: ignore[reportPrivateImportUsage]
+from qtpy.QtWidgets import (  # pyright: ignore[reportPrivateImportUsage]
+    QApplication,
+    QFileSystemModel,
+    QLayoutItem,
+    QMessageBox,
+)
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
-from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as AdapterQFileDialog
+from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import (
+    QFileDialog as AdapterQFileDialog,
+)
 from utility.gui.qt.common.actions_dispatcher import ActionsDispatcher
 from utility.gui.qt.common.ribbons_widget import RibbonsWidget
 from utility.gui.qt.common.tasks.actions_executor import FileActionsExecutor
-from utility.gui.qt.filesystem.qfiledialogextended.ui_qfiledialogextended import Ui_QFileDialogExtended
+from utility.gui.qt.filesystem.qfiledialogextended.ui_qfiledialogextended import (
+    Ui_QFileDialogExtended,
+)
 from utility.gui.qt.widgets.itemviews.treeview import RobustTreeView
 from utility.gui.qt.widgets.widgets.stacked_view import DynamicStackedView
 
@@ -37,7 +46,13 @@ if TYPE_CHECKING:
         QPoint,
     )
     from qtpy.QtGui import QAbstractFileIconProvider
-    from qtpy.QtWidgets import QAbstractItemDelegate, QAbstractItemView, QListView, QTreeView, QWidget
+    from qtpy.QtWidgets import (
+        QAbstractItemDelegate,
+        QAbstractItemView,
+        QListView,
+        QTreeView,
+        QWidget,
+    )
 
 
 class ReplaceStrategy(Enum):
@@ -213,11 +228,15 @@ class QFileDialogExtended(AdapterQFileDialog):
         Windows11ItemDelegate = None
         try:
             # Preferred: absolute import (works when package is on sys.path)
-            from utility.gui.qt.widgets.itemviews.file_size_delegate import Windows11ItemDelegate  # type: ignore
+            from utility.gui.qt.widgets.itemviews.file_size_delegate import (
+                Windows11ItemDelegate,  # type: ignore
+            )
         except Exception:
             try:
                 # Fallback: relative import (works when module is part of a package)
-                from ...widgets.itemviews.file_size_delegate import Windows11ItemDelegate  # type: ignore
+                from ...widgets.itemviews.file_size_delegate import (
+                    Windows11ItemDelegate,  # type: ignore
+                )
             except Exception:
                 # Be defensive: if the import fails, do not crash the dialog.
                 try:
@@ -280,7 +299,9 @@ class QFileDialogExtended(AdapterQFileDialog):
         # degrade gracefully if unavailable.
         SearchFilterWidget = None
         try:
-            from utility.gui.qt.widgets.widgets.search_filter import SearchFilterWidget  # type: ignore
+            from utility.gui.qt.widgets.widgets.search_filter import (
+                SearchFilterWidget,  # type: ignore
+            )
         except Exception:
             try:
                 from ...widgets.widgets.search_filter import SearchFilterWidget  # type: ignore
@@ -301,10 +322,14 @@ class QFileDialogExtended(AdapterQFileDialog):
         """Set up the Windows 11-style preview pane on the right side of the splitter."""
         EnhancedPreviewPane = None
         try:
-            from utility.gui.qt.common.filesystem.enhanced_preview_pane import EnhancedPreviewPane  # type: ignore
+            from utility.gui.qt.common.filesystem.enhanced_preview_pane import (
+                EnhancedPreviewPane,  # type: ignore
+            )
         except Exception:
             try:
-                from ...common.filesystem.enhanced_preview_pane import EnhancedPreviewPane  # type: ignore
+                from ...common.filesystem.enhanced_preview_pane import (
+                    EnhancedPreviewPane,  # type: ignore
+                )
             except Exception:
                 try:
                     RobustLogger.getLogger(__name__).warning("EnhancedPreviewPane not available; preview pane disabled", exc_info=True)

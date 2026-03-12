@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 from qtpy.QtWidgets import QFileDialog, QMessageBox
 
 from loggerplus import RobustLogger
-from toolset.gui.helpers.message_box import show_warning_message
 from pykotor.common.misc import Game
 from pykotor.common.stream import BinaryWriter
 from pykotor.extract.file import ResourceIdentifier
@@ -21,6 +20,7 @@ from pykotor.resource.formats.ncs.compilers import ExternalNCSCompiler, KnownExt
 from pykotor.resource.formats.ncs.ncs_auto import bytes_ncs, compile_nss
 from pykotor.resource.type import ResourceType
 from pykotor.tools.registry import SpoofKotorRegistry
+from toolset.gui.helpers.message_box import show_warning_message
 from toolset.gui.widgets.settings.installations import GlobalSettings, NoConfigurationSetError
 
 if TYPE_CHECKING:

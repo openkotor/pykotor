@@ -9,7 +9,7 @@ This page documents how PyKotor interprets both formats and how it aligns with r
 
 ### Standard DDS (DX7+ container)
 
-- Magic: `DDS` followed by a 124-[byte](GFF-File-Format#gff-data-types) header.
+- Magic: `DDS` followed by a 124-[byte](https://en.wikipedia.org/wiki/Byte) header.
 - Important header fields:
   - `dwFlags` bit `0x00020000` signals mipmap count; otherwise one mipmap is assumed.
   - `dwHeight`, `dwWidth` validated up to 0x8000.

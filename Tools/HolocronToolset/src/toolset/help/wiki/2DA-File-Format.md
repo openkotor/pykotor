@@ -290,7 +290,7 @@ Each column name is terminated by a tab character (`0x09`). The entire header li
 | --------- | ------- | ------ | ---- | ------------------------------ |
 | Row count | [uint32](GFF-File-Format#gff-data-types)  | varies | 4    | Number of data rows in the file ([little-endian](https://en.wikipedia.org/wiki/Endianness)) |
 
-The row count is stored as a 32-bit unsigned integer in [little-endian](https://en.wikipedia.org/wiki/Endianness) [byte](GFF-File-Format#gff-data-types) order. This value determines how many row labels and data rows follow.
+The row count is stored as a 32-bit unsigned integer in [little-endian](https://en.wikipedia.org/wiki/Endianness) [byte](https://en.wikipedia.org/wiki/Byte) order. This value determines how many row labels and data rows follow.
 
 **References**:
 
@@ -569,13 +569,13 @@ This section documents all known 2DA files used in KotOR and KotOR 2, organized 
 | `modela` through `modeln` | ResRef (optional) | [model](MDL-MDX-File-Format) ResRefs for different body parts or variations ([models](MDL-MDX-File-Format) a-n) |
 | `texa` through `texn` | ResRef (optional) | [texture](TPC-File-Format) ResRefs for different body parts ([textures](TPC-File-Format) a-n) |
 | `texaevil`, `texbevil`, `texievil`, `texlevil`, `texnevil` | ResRef (optional) | Dark side variant [textures](TPC-File-Format) |
-| `race` | ResRef (optional) | Race identifier [ResRef](GFF-File-Format#gff-data-types) |
-| `racetex` | ResRef (optional) | Race-specific [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `race` | ResRef (optional) | Race identifier *ResRef* |
+| `racetex` | ResRef (optional) | Race-specific [texture](TPC-File-Format) *ResRef* |
 | `racialtype` | Integer | Numeric racial type identifier |
 | `normalhead` | Integer (optional) | Default head appearance ID |
 | `backuphead` | Integer (optional) | Fallback head appearance ID |
-| `portrait` | ResRef (optional) | Portrait image [ResRef](GFF-File-Format#gff-data-types) |
-| `skin` | ResRef (optional) | Skin [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `portrait` | ResRef (optional) | Portrait image *ResRef* |
+| `skin` | ResRef (optional) | Skin [texture](TPC-File-Format) *ResRef* |
 | `headtexe`, `headtexg`, `headtexve`, `headtexvg` | ResRef (optional) | Head [texture](TPC-File-Format) variations |
 | `headbone` | String (optional) | Bone name for head attachment |
 | `height` | [Float](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) | Character height multiplier |
@@ -599,10 +599,10 @@ This section documents all known 2DA files used in KotOR and KotOR 2, organized 
 | `haslegs` | Boolean | Whether creature has legs |
 | `groundtilt` | Boolean | Whether ground tilt is enabled |
 | `footsteptype` | Integer (optional) | Footstep sound type |
-| `footstepsound` | ResRef (optional) | Footstep sound [ResRef](GFF-File-Format#gff-data-types) |
+| `footstepsound` | ResRef (optional) | Footstep sound *ResRef* |
 | `footstepvolume` | Boolean | Whether footstep volume is enabled |
-| `armorSound` | ResRef (optional) | Armor sound effect [ResRef](GFF-File-Format#gff-data-types) |
-| `combatSound` | ResRef (optional) | Combat sound effect [ResRef](GFF-File-Format#gff-data-types) |
+| `armorSound` | ResRef (optional) | Armor sound effect *ResRef* |
+| `combatSound` | ResRef (optional) | Combat sound effect *ResRef* |
 | `soundapptype` | Integer (optional) | Sound appearance type |
 | `bloodcolr` | string | Blood color identifier |
 | `deathvfx` | Integer (optional) | Death visual effect ID |
@@ -617,7 +617,7 @@ This section documents all known 2DA files used in KotOR and KotOR 2, organized 
 | `wingTailScale` | Boolean | Whether wing/tail scaling is enabled |
 | `helmetScaleF` | String (optional) | Female helmet scale |
 | `helmetScaleM` | String (optional) | Male helmet scale |
-| `envmap` | ResRef (optional) | Environment map [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `envmap` | ResRef (optional) | Environment map [texture](TPC-File-Format) *ResRef* |
 | `bodyBag` | Integer (optional) | Body bag appearance ID |
 | `stringRef` | Integer (optional) | string reference for appearance name |
 | `driveaccl` | Integer | Vehicle drive acceleration |
@@ -655,9 +655,9 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:73`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L73) - [StrRef](TLK-File-Format#string-references-strref) column definition for appearance.2da (K1: string_ref)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:248`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L248) - [StrRef](TLK-File-Format#string-references-strref) column definition for appearance.2da (K2: string_ref)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:155`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L155) - [ResRef](GFF-File-Format#gff-data-types) column definition for appearance.2da (race)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:168`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L168) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definitions for appearance.2da (modela through modelj)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:213-214`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L213-L214) - [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definitions for appearance.2da (racetex, texa through texj, headtexve, headtexe, headtexvg, headtexg)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:155`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L155) - *ResRef* column definition for appearance.2da (race)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:168`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L168) - [model](MDL-MDX-File-Format) *ResRef* column definitions for appearance.2da (modela through modelj)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:213-214`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L213-L214) - [texture](TPC-File-Format) *ResRef* column definitions for appearance.2da (racetex, texa through texj, headtexve, headtexe, headtexvg, headtexg)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:456`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L456) - TwoDARegistry.APPEARANCES constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:524`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L524) - [GFF](GFF-File-Format) field mapping: "Appearance_Type" -> appearance.2da
 
@@ -711,12 +711,12 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 | `weaponfocustype` | Integer | Weapon focus type |
 | `weaponfocusfeat` | Integer | Weapon focus feat ID |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | string reference for item description |
-| `icon` | [ResRef](GFF-File-Format#gff-data-types) | Icon image [ResRef](GFF-File-Format#gff-data-types) |
+| `icon` | *ResRef* | Icon image *ResRef* |
 | `equipableslots` | Integer | Equipment slot flags |
 | `model1` through `model6` | ResRef (optional) | 3D [model](MDL-MDX-File-Format) ResRefs for different variations |
 | `partenvmap` | ResRef (optional) | Partial environment map [texture](TPC-File-Format) |
-| `defaultmodel` | ResRef (optional) | Default [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `defaulticon` | ResRef (optional) | Default icon [ResRef](GFF-File-Format#gff-data-types) |
+| `defaultmodel` | ResRef (optional) | Default [model](MDL-MDX-File-Format) *ResRef* |
+| `defaulticon` | ResRef (optional) | Default icon *ResRef* |
 | `container` | Boolean | Whether item is a container |
 | `weapon` | Boolean | Whether item is a weapon |
 | `armor` | Boolean | Whether item is armor |
@@ -760,10 +760,10 @@ The following columns are accessed by the reone engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:169`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L169) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for baseitems.2da (defaultmodel)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:187`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L187) - Sound [ResRef](GFF-File-Format#gff-data-types) column definitions for baseitems.2da (powerupsnd, powerdownsnd, poweredsnd)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:215`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L215) - [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for baseitems.2da (defaulticon)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:225`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L225) - Item [ResRef](GFF-File-Format#gff-data-types) column definitions for baseitems.2da (itemclass, baseitemstatref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:169`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L169) - [model](MDL-MDX-File-Format) *ResRef* column definition for baseitems.2da (defaultmodel)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:187`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L187) - Sound *ResRef* column definitions for baseitems.2da (powerupsnd, powerdownsnd, poweredsnd)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:215`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L215) - [texture](TPC-File-Format) *ResRef* column definition for baseitems.2da (defaulticon)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:225`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L225) - Item *ResRef* column definitions for baseitems.2da (itemclass, baseitemstatref)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:466`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L466) - TwoDARegistry.BASEITEMS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:537`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L537) - [GFF](GFF-File-Format) field mapping: "BaseItem" and "ModelVariation" -> baseitems.2da
 
@@ -813,9 +813,9 @@ The following columns are accessed by the reone engine:
 | `spellcaster` | Integer | Spellcasting level (0 = non-caster) |
 | `spellcastingtype` | Integer | Spellcasting type identifier |
 | `spelllevel` | Integer | Maximum spell level |
-| `spellbook` | ResRef (optional) | Spellbook [ResRef](GFF-File-Format#gff-data-types) |
-| `icon` | [ResRef](GFF-File-Format#gff-data-types) | Class icon [ResRef](GFF-File-Format#gff-data-types) |
-| `portrait` | ResRef (optional) | Class portrait [ResRef](GFF-File-Format#gff-data-types) |
+| `spellbook` | ResRef (optional) | Spellbook *ResRef* |
+| `icon` | *ResRef* | Class icon *ResRef* |
+| `portrait` | ResRef (optional) | Class portrait *ResRef* |
 | `startingfeat0` through `startingfeat9` | Integer (optional) | Starting feat IDs |
 | `startingpack` | Integer (optional) | Starting equipment pack ID |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | Class description string reference |
@@ -869,7 +869,7 @@ The following columns are accessed by the reone engine:
 | `label` | string | Feat label |
 | `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for feat name |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | string reference for feat description |
-| `icon` | [ResRef](GFF-File-Format#gff-data-types) | Feat icon [ResRef](GFF-File-Format#gff-data-types) |
+| `icon` | *ResRef* | Feat icon *ResRef* |
 | `takentext` | [StrRef](TLK-File-Format#string-references-strref) | string reference for "feat taken" message |
 | `prerequisite` | Integer (optional) | Prerequisite feat ID |
 | `minattackbonus` | Integer (optional) | Minimum attack bonus requirement |
@@ -893,7 +893,7 @@ The following columns are accessed by the reone engine:
 | `reqskillrank` | Integer (optional) | Required skill rank |
 | `constant` | Integer (optional) | Constant value for feat calculations |
 | `toolscategories` | Integer (optional) | Tool categories flags |
-| `effecticon` | ResRef (optional) | Effect icon [ResRef](GFF-File-Format#gff-data-types) |
+| `effecticon` | ResRef (optional) | Effect icon *ResRef* |
 | `effectdesc` | StrRef (optional) | Effect description string reference |
 | `effectcategory` | Integer (optional) | Effect category identifier |
 | `allclassescanuse` | Boolean | Whether all classes can use this feat |
@@ -909,7 +909,7 @@ The following columns are accessed by the reone engine:
 
 - `name`: string reference for feat name
 - `description`: string reference for feat description
-- `icon`: Icon [ResRef](GFF-File-Format#gff-data-types)
+- `icon`: Icon *ResRef*
 - `mincharlevel`: Minimum character level (hex integer)
 - `prereqfeat1`: Prerequisite feat ID 1 (hex integer)
 - `prereqfeat2`: Prerequisite feat ID 2 (hex integer)
@@ -927,7 +927,7 @@ The following columns are accessed by the reone engine:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:82`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L82) - [StrRef](TLK-File-Format#string-references-strref) column definitions for feat.2da (K1: name, description)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:260`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L260) - [StrRef](TLK-File-Format#string-references-strref) column definitions for feat.2da (K2: name, description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:227`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L227) - [ResRef](GFF-File-Format#gff-data-types) column definition for feat.2da (icon)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:227`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L227) - *ResRef* column definition for feat.2da (icon)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:464`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L464) - TwoDARegistry.FEATS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:561-562`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L561-L562) - [GFF](GFF-File-Format) field mapping: "FeatID" and "Feat" -> feat.2da
 - [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:321-323`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L321-L323) - [UTC](GFF-File-Format#utc-creature) feat list field documentation
@@ -968,7 +968,7 @@ The following columns are accessed by the reone engine:
 | `untrained` | Boolean | Whether skill can be used untrained |
 | `constant` | Integer (optional) | Constant modifier |
 | `hostileskill` | Boolean | Whether skill is hostile |
-| `icon` | ResRef (optional) | Skill icon [ResRef](GFF-File-Format#gff-data-types) |
+| `icon` | ResRef (optional) | Skill icon *ResRef* |
 
 **Column Details** (from reone implementation):
 
@@ -976,7 +976,7 @@ The following columns are accessed by the reone engine:
 
 - `name`: string reference for skill name
 - `description`: string reference for skill description
-- `icon`: Icon [ResRef](GFF-File-Format#gff-data-types)
+- `icon`: Icon *ResRef*
 - Dynamic class skill columns: For each class, there is a column named `{classname}_class` (e.g., `jedi_guardian_class`) that contains `1` if the skill is a class skill for that class
 - `droidcanuse`: Boolean - whether droids can use this skill
 - `npccanuse`: Boolean - whether NPCs can use this skill
@@ -1022,7 +1022,7 @@ The following columns are accessed by the reone engine:
 | `vs` | Integer | Versus type (self, touch, etc.) |
 | `metamagic` | Integer | Metamagic flags |
 | `targettype` | Integer | Target type flags |
-| `impactscript` | ResRef (optional) | Impact script [ResRef](GFF-File-Format#gff-data-types) |
+| `impactscript` | ResRef (optional) | Impact script *ResRef* |
 | `innate` | Integer | Innate Force power level (0 = not available) |
 | `conjtime` | Float | Casting/conjuration time |
 | `conjtimevfx` | Integer (optional) | Casting time visual effect |
@@ -1040,15 +1040,15 @@ The following columns are accessed by the reone engine:
 | `counter1` | Integer (optional) | Counter spell ID 1 |
 | `counter2` | Integer (optional) | Counter spell ID 2 |
 | `counter3` | Integer (optional) | Counter spell ID 3 |
-| `projectile` | ResRef (optional) | Projectile [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `projectilesound` | ResRef (optional) | Projectile sound [ResRef](GFF-File-Format#gff-data-types) |
+| `projectile` | ResRef (optional) | Projectile [model](MDL-MDX-File-Format) *ResRef* |
+| `projectilesound` | ResRef (optional) | Projectile sound *ResRef* |
 | `projectiletype` | Integer | Projectile type identifier |
 | `projectileorient` | Integer | Projectile orientation |
 | `projectilepath` | Integer | Projectile path type |
 | `projectilehoming` | Boolean | Whether projectile homes on target |
-| `projectilemodel` | ResRef (optional) | Projectile 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `projectilemodel` | ResRef (optional) | Projectile 3D [model](MDL-MDX-File-Format) *ResRef* |
 | `projectilemodel2` through `projectilemodel50` | ResRef (optional) | Additional projectile models (numbered 2-50) |
-| `icon` | [ResRef](GFF-File-Format#gff-data-types) | Spell icon [ResRef](GFF-File-Format#gff-data-types) |
+| `icon` | *ResRef* | Spell icon *ResRef* |
 | `icon2` through `icon50` | ResRef (optional) | Additional icons (numbered 2-50) |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | Spell description string reference |
 | `altmessage` | StrRef (optional) | Alternative message string reference |
@@ -1073,14 +1073,14 @@ The following columns are accessed by the reone engine:
 - `catchtime`: Catch time
 - `conjanim`: Conjuration [animation](MDL-MDX-File-Format#animation-header) type (e.g., "throw", "up")
 - `hostilesetting`: Hostile setting flags
-- `projectile`: Projectile [ResRef](GFF-File-Format#gff-data-types)
+- `projectile`: Projectile *ResRef*
 - `projectileHook`: Projectile hook point
 - `projectileOrigin`: Projectile origin point
 - `projectileTarget`: Projectile target point
 - `projectileCurve`: Projectile curve type
-- `projmodel`: Projectile [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
+- `projmodel`: Projectile [model](MDL-MDX-File-Format) *ResRef*
 - `range`: Spell range
-- `impactscript`: Impact script [ResRef](GFF-File-Format#gff-data-types)
+- `impactscript`: Impact script *ResRef*
 - `casthandvisual`: Cast hand visual effect
 
 **Note**: The `spells.2da` file contains many optional columns for projectile [models](MDL-MDX-File-Format), icons, and immunity types (numbered 1-50). These are used for spell variations and visual effects.
@@ -1091,8 +1091,8 @@ The following columns are accessed by the reone engine:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:149`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L149) - [StrRef](TLK-File-Format#string-references-strref) column definitions for spells.2da (K1: name, spelldesc)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:327`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L327) - [StrRef](TLK-File-Format#string-references-strref) column definitions for spells.2da (K2: name, spelldesc)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L239) - Script [ResRef](GFF-File-Format#gff-data-types) column definition for spells.2da (impactscript)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L432) - Script [ResRef](GFF-File-Format#gff-data-types) column definition for spells.2da (K2: impactscript)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L239) - Script *ResRef* column definition for spells.2da (impactscript)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L432) - Script *ResRef* column definition for spells.2da (K2: impactscript)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:465`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L465) - TwoDARegistry.POWERS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:558-560`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L558-L560) - [GFF](GFF-File-Format) field mapping: "Subtype", "SpellId", and "Spell" -> spells.2da
 - [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:9380-9381`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L9380-L9381) - GetLastForcePowerUsed function comment referencing spells.2da
@@ -1185,7 +1185,7 @@ The following columns are accessed by the reone engine:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | String (optional) | Placeable type label |
-| `modelname` | ResRef (optional) | 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `modelname` | ResRef (optional) | 3D [model](MDL-MDX-File-Format) *ResRef* |
 | `strref` | Integer | string reference for placeable name |
 | `bodybag` | Boolean | Whether placeable can contain bodies |
 | `canseeheight` | Float | Can-see height for line of sight |
@@ -1196,7 +1196,7 @@ The following columns are accessed by the reone engine:
 | `lightoffsetx` | String (optional) | Light X offset |
 | `lightoffsety` | String (optional) | Light Y offset |
 | `lightoffsetz` | String (optional) | Light Z offset |
-| `lowgore` | String (optional) | Low gore [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `lowgore` | String (optional) | Low gore [model](MDL-MDX-File-Format) *ResRef* |
 | `noncull` | Boolean | Whether to disable culling |
 | `preciseuse` | Boolean | Whether precise use is enabled |
 | `shadowsize` | Boolean | Whether shadow size is enabled |
@@ -1208,7 +1208,7 @@ The following columns are accessed by the reone engine:
 The complete column structure is defined in reone's placeables parser:
 
 - `label`: Optional label string
-- `modelname`: 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
+- `modelname`: 3D [model](MDL-MDX-File-Format) *ResRef*
 - `strref`: string reference for placeable name
 - `bodybag`: Boolean - whether placeable can contain bodies
 - `canseeheight`: Float - can-see height for line of sight
@@ -1219,7 +1219,7 @@ The complete column structure is defined in reone's placeables parser:
 - `lightoffsetx`: Optional string - light X offset
 - `lightoffsety`: Optional string - light Y offset
 - `lightoffsetz`: Optional string - light Z offset
-- `lowgore`: Optional string - low gore [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
+- `lowgore`: Optional string - low gore [model](MDL-MDX-File-Format) *ResRef*
 - `noncull`: Boolean - whether to disable culling
 - `preciseuse`: Boolean - whether precise use is enabled
 - `shadowsize`: Boolean - whether shadow size is enabled
@@ -1231,9 +1231,9 @@ The complete column structure is defined in reone's placeables parser:
 **PyKotor:**
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:141`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L141) - [StrRef](TLK-File-Format#string-references-strref) column definition for placeables.2da (K1: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:170`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L170) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for placeables.2da (K1: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:170`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L170) - [model](MDL-MDX-File-Format) *ResRef* column definition for placeables.2da (K1: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:319`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L319) - [StrRef](TLK-File-Format#string-references-strref) column definition for placeables.2da (K2: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:349`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L349) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for placeables.2da (K2: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:349`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L349) - [model](MDL-MDX-File-Format) *ResRef* column definition for placeables.2da (K2: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:467`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L467) - TwoDARegistry.PLACEABLES constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:542`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L542) - [GFF](GFF-File-Format) field mapping: "Appearance" -> placeables.2da
 
@@ -1263,14 +1263,14 @@ The complete column structure is defined in reone's placeables parser:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Door type label |
-| `modelname` | [ResRef](GFF-File-Format#gff-data-types) | 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `modelname` | *ResRef* | 3D [model](MDL-MDX-File-Format) *ResRef* |
 | `name` | String (optional) | Door type name |
 | `strref` | Integer (optional) | string reference for door name |
 | `blocksight` | Boolean | Whether door blocks line of sight |
 | `nobin` | Boolean | Whether door has no bin (container) |
 | `preciseuse` | Boolean | Whether precise use is enabled |
 | `soundapptype` | Integer (optional) | Sound appearance type |
-| `staticanim` | String (optional) | Static [animation](MDL-MDX-File-Format#animation-header) [ResRef](GFF-File-Format#gff-data-types) |
+| `staticanim` | String (optional) | Static [animation](MDL-MDX-File-Format#animation-header) *ResRef* |
 | `visiblemodel` | Boolean | Whether [model](MDL-MDX-File-Format) is visible |
 
 **Column Details**:
@@ -1278,14 +1278,14 @@ The complete column structure is defined in reone's placeables parser:
 The complete column structure is defined in reone's genericdoors parser:
 
 - `label`: Door type label
-- `modelname`: 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
+- `modelname`: 3D [model](MDL-MDX-File-Format) *ResRef*
 - `name`: Optional door type name string
 - `strref`: Optional integer - string reference for door name
 - `blocksight`: Boolean - whether door blocks line of sight
 - `nobin`: Boolean - whether door has no bin (container)
 - `preciseuse`: Boolean - whether precise use is enabled
 - `soundapptype`: Optional integer - sound appearance type
-- `staticanim`: Optional string - static [animation](MDL-MDX-File-Format#animation-header) [ResRef](GFF-File-Format#gff-data-types)
+- `staticanim`: Optional string - static [animation](MDL-MDX-File-Format#animation-header) *ResRef*
 - `visiblemodel`: Boolean - whether [model](MDL-MDX-File-Format) is visible
 
 **References**:
@@ -1294,12 +1294,12 @@ The complete column structure is defined in reone's genericdoors parser:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](TLK-File-Format#string-references-strref) column definition for [doortypes.2da](2DA-doortypes) (K1: stringrefgame)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:86`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L86) - [StrRef](TLK-File-Format#string-references-strref) column definition for genericdoors.2da (K1: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for [doortypes.2da](2DA-doortypes) (K1: [model](MDL-MDX-File-Format))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:178`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L178) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for genericdoors.2da (K1: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](2DA-doortypes) (K1: [model](MDL-MDX-File-Format))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:178`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L178) - [model](MDL-MDX-File-Format) *ResRef* column definition for genericdoors.2da (K1: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:256`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L256) - [StrRef](TLK-File-Format#string-references-strref) column definition for [doortypes.2da](2DA-doortypes) (K2: stringrefgame)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:264`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L264) - [StrRef](TLK-File-Format#string-references-strref) column definition for genericdoors.2da (K2: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:356`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L356) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for [doortypes.2da](2DA-doortypes) (K2: [model](MDL-MDX-File-Format))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:357`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L357) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for genericdoors.2da (K2: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:356`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L356) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](2DA-doortypes) (K2: [model](MDL-MDX-File-Format))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:357`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L357) - [model](MDL-MDX-File-Format) *ResRef* column definition for genericdoors.2da (K2: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:468`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L468) - TwoDARegistry.DOORS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:543`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L543) - [GFF](GFF-File-Format) field mapping: "GenericType" -> genericdoors.2da
 
@@ -1329,13 +1329,13 @@ The complete column structure is defined in reone's genericdoors parser:
 |------------|------|-------------|
 | `label` | string | Door type label |
 | `stringrefgame` | [StrRef](TLK-File-Format#string-references-strref) | string reference for door type name |
-| `model` | [ResRef](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) for the door type |
+| `model` | *ResRef* | [model](MDL-MDX-File-Format) *ResRef* for the door type |
 | Additional columns | Various | Door type properties |
 
 **References**:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](TLK-File-Format#string-references-strref) column definition for doortypes.2da
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for doortypes.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for doortypes.2da
 
 ---
 
@@ -1350,7 +1350,7 @@ The complete column structure is defined in reone's genericdoors parser:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Sound set label |
-| `resref` | [ResRef](GFF-File-Format#gff-data-types) | [sound set files](SSF-File-Format) ResRef (e.g., `c_human_m_01`) |
+| `resref` | *ResRef* | [sound set files](SSF-File-Format) ResRef (e.g., `c_human_m_01`) |
 
 **References**:
 
@@ -1390,8 +1390,8 @@ The complete column structure is defined in reone's genericdoors parser:
 |------------|------|-------------|
 | `label` | string | Visual effect label |
 | `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for effect name |
-| `model` | ResRef (optional) | Effect [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `impactmodel` | ResRef (optional) | Impact [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `model` | ResRef (optional) | Effect [model](MDL-MDX-File-Format) *ResRef* |
+| `impactmodel` | ResRef (optional) | Impact [model](MDL-MDX-File-Format) *ResRef* |
 | `impactorient` | Integer | Impact orientation |
 | `impacttype` | Integer | Impact type identifier |
 | `duration` | Float | Effect duration in seconds |
@@ -1399,7 +1399,7 @@ The complete column structure is defined in reone's genericdoors parser:
 | `loop` | Boolean | Whether effect loops |
 | `render` | Boolean | Whether effect is rendered |
 | `renderhint` | Integer | Render hint flags |
-| `sound` | ResRef (optional) | Sound effect [ResRef](GFF-File-Format#gff-data-types) |
+| `sound` | ResRef (optional) | Sound effect *ResRef* |
 | `sounddelay` | Float | Sound delay in seconds |
 | `soundvariance` | Float | Sound variance |
 | `soundloop` | Boolean | Whether sound loops |
@@ -1464,7 +1464,7 @@ The complete column structure is defined in reone's genericdoors parser:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Portrait label |
-| `baseresref` | [ResRef](GFF-File-Format#gff-data-types) | Base portrait image [ResRef](GFF-File-Format#gff-data-types) |
+| `baseresref` | *ResRef* | Base portrait image *ResRef* |
 | `appearancenumber` | Integer | Associated appearance ID |
 | `appearance_s` | Integer | Small appearance ID |
 | `appearance_l` | Integer | Large appearance ID |
@@ -1510,27 +1510,27 @@ The complete column structure is defined in reone's genericdoors parser:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `head` | ResRef (optional) | Head [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexe` | ResRef (optional) | Head [texture](TPC-File-Format) E [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexg` | ResRef (optional) | Head [texture](TPC-File-Format) G [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexve` | ResRef (optional) | Head [texture](TPC-File-Format) VE [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexvg` | ResRef (optional) | Head [texture](TPC-File-Format) VG [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexvve` | ResRef (optional) | Head [texture](TPC-File-Format) VVE [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexvvve` | ResRef (optional) | Head [texture](TPC-File-Format) VVVE [ResRef](GFF-File-Format#gff-data-types) |
-| `alttexture` | ResRef (optional) | Alternative [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `head` | ResRef (optional) | Head [model](MDL-MDX-File-Format) *ResRef* |
+| `headtexe` | ResRef (optional) | Head [texture](TPC-File-Format) E *ResRef* |
+| `headtexg` | ResRef (optional) | Head [texture](TPC-File-Format) G *ResRef* |
+| `headtexve` | ResRef (optional) | Head [texture](TPC-File-Format) VE *ResRef* |
+| `headtexvg` | ResRef (optional) | Head [texture](TPC-File-Format) VG *ResRef* |
+| `headtexvve` | ResRef (optional) | Head [texture](TPC-File-Format) VVE *ResRef* |
+| `headtexvvve` | ResRef (optional) | Head [texture](TPC-File-Format) VVVE *ResRef* |
+| `alttexture` | ResRef (optional) | Alternative [texture](TPC-File-Format) *ResRef* |
 
 **Column Details**:
 
 The complete column structure is defined in reone's heads parser:
 
-- `head`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
-- `alttexture`: Optional [ResRef](GFF-File-Format#gff-data-types) - alternative [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types)
-- `headtexe`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for evil alignment
-- `headtexg`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for good alignment
-- `headtexve`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for very evil alignment
-- `headtexvg`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for very good alignment
-- `headtexvve`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for very very evil alignment
-- `headtexvvve`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for very very very evil alignment
+- `head`: Optional *ResRef* - head [model](MDL-MDX-File-Format) *ResRef*
+- `alttexture`: Optional *ResRef* - alternative [texture](TPC-File-Format) *ResRef*
+- `headtexe`: Optional *ResRef* - head [texture](TPC-File-Format) for evil alignment
+- `headtexg`: Optional *ResRef* - head [texture](TPC-File-Format) for good alignment
+- `headtexve`: Optional *ResRef* - head [texture](TPC-File-Format) for very evil alignment
+- `headtexvg`: Optional *ResRef* - head [texture](TPC-File-Format) for very good alignment
+- `headtexvve`: Optional *ResRef* - head [texture](TPC-File-Format) for very very evil alignment
+- `headtexvvve`: Optional *ResRef* - head [texture](TPC-File-Format) for very very very evil alignment
 
 **References**:
 
@@ -1594,16 +1594,16 @@ Similar name generation files exist for other species:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Music label |
-| `music` | [ResRef](GFF-File-Format#gff-data-types) | Music file [ResRef](GFF-File-Format#gff-data-types) |
-| `resource` | [ResRef](GFF-File-Format#gff-data-types) | Music resource [ResRef](GFF-File-Format#gff-data-types) |
+| `music` | *ResRef* | Music file *ResRef* |
+| `resource` | *ResRef* | Music resource *ResRef* |
 | `stinger1`, `stinger2`, `stinger3` | ResRef (optional) | Stinger music ResRefs |
 
 **References**:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:206`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L206) - Music [ResRef](GFF-File-Format#gff-data-types) column definitions for ambientmusic.2da (K1: resource, stinger1, stinger2, stinger3)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:398`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L398) - Music [ResRef](GFF-File-Format#gff-data-types) column definitions for ambientmusic.2da (K2: resource, stinger1, stinger2, stinger3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:206`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L206) - Music *ResRef* column definitions for ambientmusic.2da (K1: resource, stinger1, stinger2, stinger3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:398`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L398) - Music *ResRef* column definitions for ambientmusic.2da (K2: resource, stinger1, stinger2, stinger3)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:545-548`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L545-L548) - [GFF](GFF-File-Format) field mapping: "MusicDay", "MusicNight", "MusicBattle", "MusicDelay" -> ambientmusic.2da
 
 ---
@@ -1619,8 +1619,8 @@ Similar name generation files exist for other species:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Sound label |
-| `sound` | [ResRef](GFF-File-Format#gff-data-types) | Sound file [ResRef](GFF-File-Format#gff-data-types) |
-| `resource` | [ResRef](GFF-File-Format#gff-data-types) | Sound resource [ResRef](GFF-File-Format#gff-data-types) |
+| `sound` | *ResRef* | Sound file *ResRef* |
+| `resource` | *ResRef* | Sound resource *ResRef* |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | Sound description string reference |
 
 **References**:
@@ -1628,9 +1628,9 @@ Similar name generation files exist for other species:
 **PyKotor:**
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:72`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L72) - [StrRef](TLK-File-Format#string-references-strref) column definition for ambientsound.2da (K1: description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:184`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L184) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for ambientsound.2da (K1: resource)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:184`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L184) - Sound *ResRef* column definition for ambientsound.2da (K1: resource)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:247`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L247) - [StrRef](TLK-File-Format#string-references-strref) column definition for ambientsound.2da (K2: description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:376`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L376) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for ambientsound.2da (K2: resource)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:376`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L376) - Sound *ResRef* column definition for ambientsound.2da (K2: resource)
 - [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:6986-6988`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6986-L6988) - AmbientSoundPlay function comment
 
 ---
@@ -1646,7 +1646,7 @@ Similar name generation files exist for other species:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Ammunition type label |
-| `model` | [ResRef](GFF-File-Format#gff-data-types) | Ammunition [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `model` | *ResRef* | Ammunition [model](MDL-MDX-File-Format) *ResRef* |
 | `shotsound0` | ResRef (optional) | Shot sound effect ResRef (variant 1) |
 | `shotsound1` | ResRef (optional) | Shot sound effect ResRef (variant 2) |
 | `impactsound0` | ResRef (optional) | Impact sound effect ResRef (variant 1) |
@@ -1722,8 +1722,8 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:188-198`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L188-L198) - Sound [ResRef](GFF-File-Format#gff-data-types) column definitions for footstepsounds.2da (K1: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:380-390`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L380-L390) - Sound [ResRef](GFF-File-Format#gff-data-types) column definitions for footstepsounds.2da (K2: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:188-198`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L188-L198) - Sound *ResRef* column definitions for footstepsounds.2da (K1: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:380-390`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L380-L390) - Sound *ResRef* column definitions for footstepsounds.2da (K2: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
 
 **Vendor Implementations:**
 
@@ -1974,7 +1974,7 @@ Similar name generation files exist for other species:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Base item label |
-| Additional columns | [ResRef](GFF-File-Format#gff-data-types) | Sound effect ResRefs for different attack types |
+| Additional columns | *ResRef* | Sound effect ResRefs for different attack types |
 
 **References**:
 
@@ -1993,7 +1993,7 @@ Similar name generation files exist for other species:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Sound appearance type label |
-| Additional columns | [ResRef](GFF-File-Format#gff-data-types) | Sound effect ResRefs for different interaction types |
+| Additional columns | *ResRef* | Sound effect ResRefs for different interaction types |
 
 **References**:
 
@@ -2052,14 +2052,14 @@ Similar name generation files exist for other species:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Sound label (e.g., "Clicked_Default", "Entered_Default") |
-| `soundresref` | [ResRef](GFF-File-Format#gff-data-types) | Sound effect [ResRef](GFF-File-Format#gff-data-types) |
+| `soundresref` | *ResRef* | Sound effect *ResRef* |
 
 **References**:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:200`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L200) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for guisounds.2da (K1: soundresref)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:392`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L392) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for guisounds.2da (K2: soundresref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:200`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L200) - Sound *ResRef* column definition for guisounds.2da (K1: soundresref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:392`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L392) - Sound *ResRef* column definition for guisounds.2da (K2: soundresref)
 
 **Vendor Implementations:**
 
@@ -2153,9 +2153,9 @@ Similar name generation files exist for other species:
 |------------|------|-------------|
 | `label` | string | Trap type label |
 | `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for trap name |
-| `model` | [ResRef](GFF-File-Format#gff-data-types) | Trap [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `explosionsound` | [ResRef](GFF-File-Format#gff-data-types) | Explosion sound effect [ResRef](GFF-File-Format#gff-data-types) |
-| `resref` | [ResRef](GFF-File-Format#gff-data-types) | Trap script [ResRef](GFF-File-Format#gff-data-types) |
+| `model` | *ResRef* | Trap [model](MDL-MDX-File-Format) *ResRef* |
+| `explosionsound` | *ResRef* | Explosion sound effect *ResRef* |
+| `resref` | *ResRef* | Trap script *ResRef* |
 
 **References**:
 
@@ -3052,8 +3052,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Loading screen label |
-| `bmpresref` | [ResRef](GFF-File-Format#gff-data-types) | Loading screen background image [ResRef](GFF-File-Format#gff-data-types) |
-| `musicresref` | [ResRef](GFF-File-Format#gff-data-types) | Music track [ResRef](GFF-File-Format#gff-data-types) to play during loading |
+| `bmpresref` | *ResRef* | Loading screen background image *ResRef* |
+| `musicresref` | *ResRef* | Music track *ResRef* to play during loading |
 | Additional columns | Various | Other loading screen properties |
 
 **References**:
@@ -3176,14 +3176,14 @@ The following 2DA files are used for item property parameter and cost calculatio
 |------------|------|-------------|
 | `label` | string | Disease label |
 | `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for disease name (KotOR 2) |
-| `end_incu_script` | [ResRef](GFF-File-Format#gff-data-types) | Script [ResRef](GFF-File-Format#gff-data-types) for end incubation period |
-| `24_hour_script` | [ResRef](GFF-File-Format#gff-data-types) | Script [ResRef](GFF-File-Format#gff-data-types) for 24-hour disease effect |
+| `end_incu_script` | *ResRef* | Script *ResRef* for end incubation period |
+| `24_hour_script` | *ResRef* | Script *ResRef* for 24-hour disease effect |
 | Additional columns | Various | Disease properties |
 
 **References**:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:255`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L255) - [StrRef](TLK-File-Format#string-references-strref) column definition for disease.2da (KotOR 2)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:238,431`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L238) - Script [ResRef](GFF-File-Format#gff-data-types) column definitions for disease.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:238,431`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L238) - Script *ResRef* column definitions for disease.2da
 
 ---
 
@@ -3198,12 +3198,12 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Droid discharge label |
-| `>>##HEADER##<<` | [ResRef](GFF-File-Format#gff-data-types) | header [resource reference](GFF-File-Format#gff-data-types) |
+| `>>##HEADER##<<` | *ResRef* | header [resource reference](GFF-File-Format#gff-data-types) |
 | Additional columns | Various | Droid discharge properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:156`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L156) - [ResRef](GFF-File-Format#gff-data-types) column definition for droiddischarge.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:156`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L156) - *ResRef* column definition for droiddischarge.2da
 
 ---
 
@@ -3218,14 +3218,14 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Upgrade crystal label |
-| `shortmdlvar` | [ResRef](GFF-File-Format#gff-data-types) | Short [model](MDL-MDX-File-Format) variation [ResRef](GFF-File-Format#gff-data-types) |
-| `longmdlvar` | [ResRef](GFF-File-Format#gff-data-types) | Long [model](MDL-MDX-File-Format) variation [ResRef](GFF-File-Format#gff-data-types) |
-| `doublemdlvar` | [ResRef](GFF-File-Format#gff-data-types) | [double](GFF-File-Format#gff-data-types)-bladed [model](MDL-MDX-File-Format) variation [ResRef](GFF-File-Format#gff-data-types) |
+| `shortmdlvar` | *ResRef* | Short [model](MDL-MDX-File-Format) variation *ResRef* |
+| `longmdlvar` | *ResRef* | Long [model](MDL-MDX-File-Format) variation *ResRef* |
+| `doublemdlvar` | *ResRef* | [double](GFF-File-Format#gff-data-types)-bladed [model](MDL-MDX-File-Format) variation *ResRef* |
 | Additional columns | Various | Crystal properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:172`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L172) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definitions for upcrystals.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:172`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L172) - [model](MDL-MDX-File-Format) *ResRef* column definitions for upcrystals.2da
 
 ---
 
@@ -3240,12 +3240,12 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Grenade sound label |
-| `sound` | [ResRef](GFF-File-Format#gff-data-types) | Sound [ResRef](GFF-File-Format#gff-data-types) for grenade |
+| `sound` | *ResRef* | Sound *ResRef* for grenade |
 | Additional columns | Various | Grenade sound properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:199`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L199) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for grenadesnd.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:199`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L199) - Sound *ResRef* column definition for grenadesnd.2da
 
 ---
 
@@ -3260,12 +3260,12 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Inventory sound label |
-| `inventorysound` | [ResRef](GFF-File-Format#gff-data-types) | Inventory sound [ResRef](GFF-File-Format#gff-data-types) |
+| `inventorysound` | *ResRef* | Inventory sound *ResRef* |
 | Additional columns | Various | Inventory sound properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:201`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L201) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for inventorysnds.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:201`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L201) - Sound *ResRef* column definition for inventorysnds.2da
 
 ---
 
@@ -3296,7 +3296,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 **KotOR.js** (TypeScript):
 
 - Reading: [`vendor/KotOR.js/src/resource/TwoDAObject.ts:69-145`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/TwoDAObject.ts#L69-L145) - Complete 2DA reading implementation
-- Manager: [`vendor/KotOR.js/src/managers/TwoDAManager.ts:21-37`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/managers/TwoDAManager.ts#L21-L37) - 2DA table loading from game archives
+- Manager: [`vendor/KotOR.js/src/managers/TwoDAManager.ts:21-37`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/managers/TwoDAManager.ts#L21-L37) - 2DA table loading from game containers
 - Usage: [`vendor/KotOR.js/src/talents/TalentFeat.ts:122-132`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/talents/TalentFeat.ts#L122-L132) - Feat loading from `feat.2da`
 
 **Kotor.NET** (C#):

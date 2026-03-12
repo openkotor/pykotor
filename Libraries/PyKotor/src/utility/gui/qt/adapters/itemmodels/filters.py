@@ -8,7 +8,16 @@ from typing import TYPE_CHECKING, Any, cast
 
 from qtpy.QtCore import QEvent, QObject, QSortFilterProxyModel, Qt
 from qtpy.QtGui import QStandardItemModel
-from qtpy.QtWidgets import QAbstractSpinBox, QApplication, QComboBox, QDoubleSpinBox, QGroupBox, QSlider, QSpinBox, QWidget
+from qtpy.QtWidgets import (
+    QAbstractSpinBox,
+    QApplication,
+    QComboBox,
+    QDoubleSpinBox,
+    QGroupBox,
+    QSlider,
+    QSpinBox,
+    QWidget,
+)
 
 from loggerplus import RobustLogger
 

@@ -255,7 +255,7 @@ class HTInstallation(Installation):
     def _modules(self) -> dict[str, list[FileResource]]:
         def _load_modules_local_function() -> dict[str, list[FileResource]]:
             return self.load_resources_dict(
-                self.module_path(), capsule_check=is_capsule_file
+                self.module_path(), capsule_check=is_capsule_file,
             )
 
         return self._get_cached_or_load("modules", _load_modules_local_function)
@@ -274,7 +274,7 @@ class HTInstallation(Installation):
         override_path: Path = self.override_path()
         result: dict[str, list[FileResource]] = {}
         for folder in [f for f in override_path.rglob("*") if f.is_dir()] + [
-            override_path
+            override_path,
         ]:
             relative_folder: str = folder.relative_to(override_path).as_posix()
             result[relative_folder] = self.load_resources_list(folder, recurse=True)
@@ -342,7 +342,7 @@ class HTInstallation(Installation):
             return self.load_resources_list(self.streamsounds_path())
 
         return self._get_cached_or_load(
-            "streamsounds", _load_streamsounds_local_function
+            "streamsounds", _load_streamsounds_local_function,
         )
 
     @_streamsounds.setter
@@ -364,7 +364,7 @@ class HTInstallation(Installation):
     def _streamwaves(self, value: list[FileResource]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
     def _load_streamwaves(self) -> list[FileResource]:
         return self.load_resources_list(
-            self._find_resource_folderpath(("streamwaves", "streamvoice")), recurse=True
+            self._find_resource_folderpath(("streamwaves", "streamvoice")), recurse=True,
         )
 
     @property
@@ -381,7 +381,7 @@ class HTInstallation(Installation):
     def _streamvoice(self, value: list[FileResource]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
     def _load_streamvoice(self) -> list[FileResource]:
         return self.load_resources_list(
-            self._find_resource_folderpath(("streamvoice", "streamwaves")), recurse=True
+            self._find_resource_folderpath(("streamvoice", "streamwaves")), recurse=True,
         )
 
     @property
@@ -401,7 +401,7 @@ class HTInstallation(Installation):
     def _texturepacks(self, value: dict[str, list[FileResource]]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
     def _load_texturepacks(self) -> dict[str, list[FileResource]]:
         return self.load_resources_dict(
-            self.texturepacks_path(), capsule_check=is_erf_file
+            self.texturepacks_path(), capsule_check=is_erf_file,
         )
 
     @classmethod
@@ -433,7 +433,7 @@ class HTInstallation(Installation):
         order: list[SearchLocation] | None = None,
         enable_reference_search: bool = False,
         reference_search_type: Literal[
-            "script", "tag", "template_resref", "conversation", "resref", "quest"
+            "script", "tag", "template_resref", "conversation", "resref", "quest",
         ]
         | None = None,
     ) -> None:
@@ -526,7 +526,7 @@ class HTInstallation(Installation):
                 checked: bool = False,
                 search_text: str = widget_text.strip(),
                 search_type: Literal[
-                    "script", "tag", "template_resref", "conversation", "resref", "quest"
+                    "script", "tag", "template_resref", "conversation", "resref", "quest",
                 ] = reference_search_type or "resref",
             ) -> None:
                 """Find references to the given search text and type."""
@@ -546,7 +546,7 @@ class HTInstallation(Installation):
         order: list[SearchLocation] | None = None,
         enable_reference_search: bool = False,
         reference_search_type: Literal[
-            "script", "tag", "template_resref", "conversation", "resref", "quest"
+            "script", "tag", "template_resref", "conversation", "resref", "quest",
         ]
         | None = None,
     ):
@@ -569,7 +569,7 @@ class HTInstallation(Installation):
                     widget.text()
                     if isinstance(widget, QLineEdit)
                     else widget.toPlainText()
-                )
+                ),
             )
             self.build_file_context_menu(
                 root_menu,
@@ -610,7 +610,7 @@ class HTInstallation(Installation):
         parent_widget: QWidget,
         search_text: str,
         search_type: Literal[
-            "script", "tag", "template_resref", "conversation", "resref", "quest"
+            "script", "tag", "template_resref", "conversation", "resref", "quest",
         ]
         | None = None,
     ) -> None:
@@ -743,7 +743,7 @@ class HTInstallation(Installation):
                     "{count} reference(s) found for '{search_text}'",
                     count=len(results_list),
                     search_text=search_text,
-                )
+                ),
             )
             add_window(results_dialog)
 
@@ -773,7 +773,7 @@ class HTInstallation(Installation):
         lower_streammusic_path = str(self.streammusic_path()).lower()
         lower_streamsounds_path = str(self.streamsounds_path()).lower()
         lower_streamwaves_path = str(
-            self._find_resource_folderpath(("streamvoice", "streamwaves"))
+            self._find_resource_folderpath(("streamvoice", "streamwaves")),
         ).lower()
         lower_texturepacks_path = str(self.texturepacks_path()).lower()
         lower_save_locations: list[str] = [
@@ -957,7 +957,7 @@ class HTInstallation(Installation):
             return
 
         resources: dict[ResourceIdentifier, ResourceResult | None] = self.resources(
-            queries, [SearchLocation.OVERRIDE, SearchLocation.CHITIN]
+            queries, [SearchLocation.OVERRIDE, SearchLocation.CHITIN],
         )
         for iden, resource in resources.items():
             if not resource:
@@ -1062,16 +1062,16 @@ class HTInstallation(Installation):
         """Get the name of the base item from its ID."""
         try:
             baseitems: TwoDA | None = self.ht_get_cache_2da(
-                HTInstallation.TwoDA_BASEITEMS
+                HTInstallation.TwoDA_BASEITEMS,
             )
             if baseitems is None:
                 RobustLogger().error(
-                    "Failed to retrieve `baseitems.2da` from your installation."
+                    "Failed to retrieve `baseitems.2da` from your installation.",
                 )
                 return "Unknown"
         except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
             RobustLogger().exception(
-                "An exception occurred while retrieving `baseitems.2da` from your installation."
+                "An exception occurred while retrieving `baseitems.2da` from your installation.",
             )
             return "Unknown"
         else:
@@ -1101,14 +1101,14 @@ class HTInstallation(Installation):
         baseitems: TwoDA | None = self.ht_get_cache_2da(HTInstallation.TwoDA_BASEITEMS)
         if baseitems is None:
             RobustLogger().warning(
-                "Failed to retrieve `baseitems.2da` from your installation."
+                "Failed to retrieve `baseitems.2da` from your installation.",
             )
             return "Unknown"
         try:
             item_class: str = baseitems.get_cell(base_item, "itemclass")
         except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
             RobustLogger().exception(
-                f"An exception occurred while getting cell '{base_item}' from `baseitems.2da`."
+                f"An exception occurred while getting cell '{base_item}' from `baseitems.2da`.",
             )
             return "Unknown"
         else:
@@ -1126,12 +1126,12 @@ class HTInstallation(Installation):
         """Get an item icon from a base item, model variation, and texture variation."""
         pixmap = QPixmap(":/images/inventory/unknown.png")
         icon_path: str = self.get_item_icon_path(
-            base_item, model_variation, texture_variation
+            base_item, model_variation, texture_variation,
         )
         print(f"Icon path: '{icon_path}'")
         try:
             texture: TPC | None = self.ht_get_cache_tpc(
-                os.path.basename(icon_path.lower())
+                os.path.basename(icon_path.lower()),
             )  # noqa: PTH119
             if texture is None:
                 return pixmap
@@ -1153,7 +1153,7 @@ class HTInstallation(Installation):
             texture.decode()
         mm: TPCMipmap = texture.get(0, mipmap)
         image = QImage(
-            bytes(mm.data), mm.width, mm.height, mm.tpc_format.to_qimage_format()
+            bytes(mm.data), mm.width, mm.height, mm.tpc_format.to_qimage_format(),
         )
         return QPixmap.fromImage(image).transformed(QTransform().scale(1, -1))
 

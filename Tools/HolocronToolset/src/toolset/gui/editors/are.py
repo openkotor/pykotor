@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from qtpy.QtCore import Qt
@@ -19,7 +18,10 @@ from pykotor.resource.formats.lyt import read_lyt
 from pykotor.resource.generics.are import ARE, ARENorthAxis, AREWindPower, dismantle_are, read_are
 from pykotor.resource.type import ResourceType
 from toolset.data.installation import HTInstallation
-from toolset.gui.common.interaction.camera import calculate_zoom_strength, handle_standard_2d_camera_movement
+from toolset.gui.common.interaction.camera import (
+    calculate_zoom_strength,
+    handle_standard_2d_camera_movement,
+)
 from toolset.gui.common.localization import translate as tr
 from toolset.gui.dialogs.edit.locstring import LocalizedStringDialog
 from toolset.gui.editor import Editor
@@ -29,6 +31,8 @@ from utility.common.geometry import SurfaceMaterial, Vector2
 
 if TYPE_CHECKING:
     import os
+
+    from pathlib import Path
 
     from qtpy.QtWidgets import QLabel, QWidget
 
@@ -238,7 +242,8 @@ class AREEditor(Editor):
 
     def _loadARE(self, are: ARE):
         """Load ARE into UI. Field defaults when missing: see construct_are.
-        K1 LoadAreaHeader @ 0x00508c50, TSL @ 0x00718a20, Legacy FUN_004e3ff0; MapZoom default 1, AlphaTest 0.2, fog 10000.0."""
+        K1 LoadAreaHeader @ 0x00508c50, TSL @ 0x00718a20, Legacy FUN_004e3ff0; MapZoom default 1, AlphaTest 0.2, fog 10000.0.
+        """
         self._rooms = are.rooms
         # Only attempt related-resource lookups when we have a real area resref.
         # Editor uses `untitled_<hex>` placeholders for new/unsaved tabs.
@@ -521,9 +526,9 @@ class AREEditor(Editor):
         world_delta: Vector2 = self.ui.minimapRenderer.to_world_delta(delta.x, delta.y)
         move_sens = ModuleDesignerSettings().moveCameraSensitivity2d / 100
         rotate_sens = ModuleDesignerSettings().rotateCameraSensitivity2d / 1000
-        
+
         handle_standard_2d_camera_movement(
-            self.ui.minimapRenderer, screen, delta, world_delta, buttons, keys, move_sens, rotate_sens
+            self.ui.minimapRenderer, screen, delta, world_delta, buttons, keys, move_sens, rotate_sens,
         )
 
     def on_minimap_mouse_scrolled(self, delta: Vector2, buttons: set[int], keys: set[int]):

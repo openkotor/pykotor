@@ -34,7 +34,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 - **1 (High)**: Important side quests
 - **2 (Medium)**: Standard side quests
 - **3 (Low)**: Minor tasks
-- **4 (Lowest)**: Completed/Archived
+- **4 (Lowest)**: Completed/Containerd
 
 ## Quest Entry (JRLEntry)
 

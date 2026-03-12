@@ -25,7 +25,12 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from utility.gui.qt.adapters.filesystem.qfiledialog.private.qfiledialog_p import QFileDialogComboBox, QFileDialogLineEdit, QFileDialogListView, QFileDialogTreeView
+from utility.gui.qt.adapters.filesystem.qfiledialog.private.qfiledialog_p import (
+    QFileDialogComboBox,
+    QFileDialogLineEdit,
+    QFileDialogListView,
+    QFileDialogTreeView,
+)
 from utility.gui.qt.adapters.filesystem.qfiledialog.private.qsidebar_p import QSidebar
 
 if TYPE_CHECKING:

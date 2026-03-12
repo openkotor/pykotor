@@ -7,7 +7,13 @@ from typing import Any, Generic, TypeVar
 from qtpy.QtCore import QSettings, Qt
 
 from loggerplus import RobustLogger
-from toolset.utils.misc import get_qsettings_organization, get_qt_button_string, get_qt_key, get_qt_key_string, get_qt_mouse_button
+from toolset.utils.misc import (
+    get_qsettings_organization,
+    get_qt_button_string,
+    get_qt_key,
+    get_qt_key_string,
+    get_qt_mouse_button,
+)
 
 
 class QtTypeWrapper:
@@ -55,12 +61,12 @@ class SettingsProperty(property, Generic[T]):
             constructed_value: T = self.deserialize_value(serialized_value)
             if constructed_value.__class__ != self.default.__class__:
                 RobustLogger().error(
-                    f"Corrupted setting '{self.name}': {constructed_value.__class__} == {self.default.__class__}, repr type({constructed_value}) != type({self.default})"
+                    f"Corrupted setting '{self.name}': {constructed_value.__class__} == {self.default.__class__}, repr type({constructed_value}) != type({self.default})",
                 )
                 return self._handle_corrupted_setting(instance)
         except Exception as e:  # noqa: BLE001
             RobustLogger().exception(
-                f"Exception in settings getter while deserializing setting '{self.name}', got {serialized_value} ({serialized_value}) of type {serialized_value.__class__.__name__}. Original error: {e.__class__.__name__}: {e}"
+                f"Exception in settings getter while deserializing setting '{self.name}', got {serialized_value} ({serialized_value}) of type {serialized_value.__class__.__name__}. Original error: {e.__class__.__name__}: {e}",
             )
             return self._handle_corrupted_setting(instance)
         else:
@@ -75,7 +81,7 @@ class SettingsProperty(property, Generic[T]):
             serialized_value: KT = self.serialize_value(value)
         except Exception as e:  # noqa: BLE001
             RobustLogger().exception(
-                f"Exception in settings setter while serializing setting '{self.name}', got {serialized_value} ({serialized_value}) of type {serialized_value.__class__.__name__}. Original error: {e.__class__.__name__}: {e}"
+                f"Exception in settings setter while serializing setting '{self.name}', got {serialized_value} ({serialized_value}) of type {serialized_value.__class__.__name__}. Original error: {e.__class__.__name__}: {e}",
             )
         else:
             try:

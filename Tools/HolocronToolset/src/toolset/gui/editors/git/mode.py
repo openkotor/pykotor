@@ -57,7 +57,9 @@ if TYPE_CHECKING:
     from toolset.gui.editors.git.git import GITEditor
     from toolset.gui.windows.module_designer import ModuleDesigner
     from toolset.uic.qtpy.editors.git import Ui_MainWindow as Ui_GITEditor_MainWindow
-    from toolset.uic.qtpy.windows.module_designer import Ui_MainWindow as Ui_ModuleDesigner_MainWindow
+    from toolset.uic.qtpy.windows.module_designer import (
+        Ui_MainWindow as Ui_ModuleDesigner_MainWindow,
+    )
     from utility.common.geometry import Vector2
 
 
@@ -408,7 +410,7 @@ class _InstanceMode(_Mode):
         ident = instance.identifier()
         text: str = name or ""
         if not name:
-            text = ident and ident.resname or ""
+            text = (ident and ident.resname) or ""
             font = item.font()
             font.setItalic(True)
             item.setFont(font)
@@ -888,7 +890,7 @@ class _SpawnMode(_Mode):
         if not self.renderer2d.spawn_selection.isEmpty():
             menu.addAction("Remove Spawn Point").triggered.connect(self.delete_selected)  # pyright: ignore[reportOptionalMemberAccess]
             menu.addAction("Duplicate Spawn Point Here").triggered.connect(  # pyright: ignore[reportOptionalMemberAccess]
-                lambda: self.duplicate_selected(Vector3(world.x, world.y, self.renderer2d.get_z_coord(world.x, world.y)))
+                lambda: self.duplicate_selected(Vector3(world.x, world.y, self.renderer2d.get_z_coord(world.x, world.y))),
             )
         else:
             menu.addAction("Insert Spawn Point").triggered.connect(self.insert_spawn_point_at_mouse)  # pyright: ignore[reportOptionalMemberAccess]

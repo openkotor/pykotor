@@ -24,7 +24,13 @@ try:
     from comtypes.client import CreateObject
 
     from utility.system.win32.com.com_helpers import S_OK
-    from utility.system.win32.com.interfaces import COMDLG_FILTERSPEC, SIGDN, IFileOpenDialog, IFileSaveDialog, IShellItem
+    from utility.system.win32.com.interfaces import (
+        COMDLG_FILTERSPEC,
+        SIGDN,
+        IFileOpenDialog,
+        IFileSaveDialog,
+        IShellItem,
+    )
     from utility.system.win32.com.windialogs import FileDialogControlEvents
 
     USE_COMTYPES = True

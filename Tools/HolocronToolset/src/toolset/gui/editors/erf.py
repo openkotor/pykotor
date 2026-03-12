@@ -395,7 +395,7 @@ class ERFEditor(Editor):
                         QMessageBox.Icon.Information,
                         tr("New resource added to parent ERF/RIM"),
                         tr(
-                            "You've added a new ERF/RIM and tried to save inside that new ERF/RIM's editor. You must save the ERFEditor you added the nested to first. Do so and try again."
+                            "You've added a new ERF/RIM and tried to save inside that new ERF/RIM's editor. You must save the ERFEditor you added the nested to first. Do so and try again.",
                         ),  # noqa: E501
                     ).exec()
                 else:
@@ -429,19 +429,19 @@ class ERFEditor(Editor):
             main_menu.addSeparator()
             if all(resource.restype.target_type().contents == "gff" for resource in sel_resources):
                 main_menu.addAction(tr("Open with GFF Editor")).triggered.connect(
-                    lambda *args, fp=self._filepath, **kwargs: self.open_in_resource_editor(fp, sel_resources, self._installation, gff_specialized=False)
+                    lambda *args, fp=self._filepath, **kwargs: self.open_in_resource_editor(fp, sel_resources, self._installation, gff_specialized=False),
                 )  # noqa: E501
                 if self._installation is not None:
                     main_menu.addAction(tr("Open with Specialized Editor")).triggered.connect(
-                        lambda *args, fp=self._filepath, **kwargs: self.open_in_resource_editor(fp, sel_resources, self._installation, gff_specialized=True)
+                        lambda *args, fp=self._filepath, **kwargs: self.open_in_resource_editor(fp, sel_resources, self._installation, gff_specialized=True),
                     )  # noqa: E501
                     main_menu.addAction(tr("Open with Default Editor")).triggered.connect(
-                        lambda *args, fp=self._filepath, **kwargs: self.open_in_resource_editor(fp, sel_resources, self._installation, gff_specialized=None)
+                        lambda *args, fp=self._filepath, **kwargs: self.open_in_resource_editor(fp, sel_resources, self._installation, gff_specialized=None),
                     )  # noqa: E501
 
             elif self._installation is not None:
                 main_menu.addAction(tr("Open with Editor")).triggered.connect(
-                    lambda *args, fp=self._filepath, **kwargs: self.open_in_resource_editor(fp, sel_resources, self._installation, gff_specialized=True)
+                    lambda *args, fp=self._filepath, **kwargs: self.open_in_resource_editor(fp, sel_resources, self._installation, gff_specialized=True),
                 )  # noqa: E501
 
         viewport: QWidget | None = self.ui.tableView.viewport()
@@ -785,7 +785,7 @@ class ERFEditorTable(RobustTableView):
                             | QMessageBox.StandardButton.YesToAll
                             | QMessageBox.StandardButton.No
                             | QMessageBox.StandardButton.NoToAll
-                            | QMessageBox.StandardButton.Abort
+                            | QMessageBox.StandardButton.Abort,
                         )
                         button_yes: QAbstractButton | None = msg_box.button(QMessageBox.StandardButton.Yes)
                         if button_yes is None:

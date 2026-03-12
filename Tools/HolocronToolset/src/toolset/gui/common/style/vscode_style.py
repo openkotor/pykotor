@@ -385,7 +385,7 @@ def get_documentation_tooltip_html(
             f"word-break: break-word; "
             f"display: block;"
             f'">{signature}</code>'
-            f"</div>"
+            f"</div>",
         )
 
     # Description (wrap + compact)

@@ -17,9 +17,9 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 | `NumWords` | Int | Total word count (unused) |
 | `PreventSkipping` | Byte | Prevents skipping dialogue lines |
 | `Skippable` | Byte | Allows skipping dialogue |
-| `Sound` | [ResRef](GFF-File-Format#gff-data-types) | Background sound loop |
+| `Sound` | *ResRef* | Background sound loop |
 | `AmbientTrack` | Int | Background music track ID |
-| `CameraModel` | [ResRef](GFF-File-Format#gff-data-types) | Camera [model](MDL-MDX-File-Format) for cutscenes |
+| `CameraModel` | *ResRef* | Camera [model](MDL-MDX-File-Format) for cutscenes |
 | `ComputerType` | Byte | Interface style (0=Modern, 1=Ancient) |
 | `ConversationType` | Byte | 0=Human, 1=Computer, 2=Other |
 | `OldHitCheck` | Byte | Legacy hit check flag (unused) |
@@ -34,8 +34,8 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `EndConversation` | [ResRef](GFF-File-Format#gff-data-types) | Fires when conversation ends normally |
-| `EndConverAbort` | [ResRef](GFF-File-Format#gff-data-types) | Fires when conversation is aborted |
+| `EndConversation` | *ResRef* | Fires when conversation ends normally |
+| `EndConverAbort` | *ResRef* | Fires when conversation is aborted |
 
 ## [node](MDL-MDX-File-Format#node-structures) Lists
 
@@ -61,9 +61,9 @@ Both Entry and Reply [nodes](MDL-MDX-File-Format#node-structures) share common f
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `Text` | [CExoLocString](GFF-File-Format#gff-data-types) | Dialogue text |
-| `VO_ResRef` | [ResRef](GFF-File-Format#gff-data-types) | Voice-over audio file |
-| `Sound` | [ResRef](GFF-File-Format#gff-data-types) | Sound effect [ResRef](GFF-File-Format#gff-data-types) |
-| `Script` | [ResRef](GFF-File-Format#gff-data-types) | Script to execute (Action) |
+| `VO_ResRef` | *ResRef* | Voice-over audio file |
+| `Sound` | *ResRef* | Sound effect *ResRef* |
+| `Script` | *ResRef* | Script to execute (Action) |
 | `Delay` | Int | Delay before text appears |
 | `Comment` | [CExoString](GFF-File-Format#gff-data-types) | Developer comment |
 | `Speaker` | [CExoString](GFF-File-Format#gff-data-types) | Speaker tag (Entry only) |
@@ -95,8 +95,8 @@ Links connect [nodes](MDL-MDX-File-Format#node-structures) and define flow contr
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `Index` | Int | index of target [node](MDL-MDX-File-Format#node-structures) in Entry/Reply list |
-| `Active` | [ResRef](GFF-File-Format#gff-data-types) | Conditional script (returns TRUE/FALSE) |
-| `Script` | [ResRef](GFF-File-Format#gff-data-types) | Action script (executed on transition) |
+| `Active` | *ResRef* | Conditional script (returns TRUE/FALSE) |
+| `Script` | *ResRef* | Action script (executed on transition) |
 | `IsChild` | Byte | 1 if linking to [node](MDL-MDX-File-Format#node-structures) in list, 0 if logic link |
 | `LinkComment` | [CExoString](GFF-File-Format#gff-data-types) | Developer comment |
 

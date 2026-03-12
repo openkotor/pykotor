@@ -63,7 +63,7 @@ donelayout
 | Token | Description |
 | ----- | ----------- |
 | `roomcount` | Declares how many rooms follow. |
-| `<room_model>` | [ResRef](GFF-File-Format#gff-data-types) of the [MDL/MDX](MDL-MDX-File-Format)/[WOK](BWM-File-Format) triple (max 16 chars, no spaces). |
+| `<room_model>` | *ResRef* of the [MDL/MDX](MDL-MDX-File-Format)/[WOK](BWM-File-Format) triple (max 16 chars, no spaces). |
 | `<x y z>` | World-space position for the room’s origin. |
 
 Rooms are case-insensitive; PyKotor lowercases entries for caching and resource lookup.
@@ -84,7 +84,7 @@ trackcount <N>
 | Token | Description |
 | ----- | ----------- |
 | `trackcount` | Declares how many track elements follow |
-| `<track_model>` | [ResRef](GFF-File-Format#gff-data-types) of the track booster model ([MDL](MDL-MDX-File-Format) file, max 16 chars) |
+| `<track_model>` | *ResRef* of the track booster model ([MDL](MDL-MDX-File-Format) file, max 16 chars) |
 | `<x y z>` | World-space position for the track element |
 
 **Usage:**
@@ -112,7 +112,7 @@ obstaclecount <N>
 | Token | Description |
 | ----- | ----------- |
 | `obstaclecount` | Declares how many obstacle elements follow |
-| `<obstacle_model>` | [ResRef](GFF-File-Format#gff-data-types) of the obstacle model ([MDL](MDL-MDX-File-Format) file, max 16 chars) |
+| `<obstacle_model>` | *ResRef* of the obstacle model ([MDL](MDL-MDX-File-Format) file, max 16 chars) |
 | `<x y z>` | World-space position for the obstacle element |
 
 **Usage:**

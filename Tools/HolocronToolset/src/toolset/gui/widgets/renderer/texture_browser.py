@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from qtpy.QtCore import QSize, Qt, Signal  # pyright: ignore[reportPrivateImportUsage]
 from qtpy.QtGui import QIcon, QPixmap
 from qtpy.QtWidgets import QFileDialog, QListWidget, QListWidgetItem, QWidget
+
 from toolset.gui.common.localization import translate as tr
 
 if TYPE_CHECKING:

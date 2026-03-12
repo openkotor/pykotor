@@ -14,7 +14,13 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, NamedTuple
 
 from qtpy import QtCore  # pyright: ignore[reportMissingImports]
-from qtpy.QtGui import QColor, QImage, QPainter, QPixmap, QTransform  # pyright: ignore[reportMissingImports]
+from qtpy.QtGui import (  # pyright: ignore[reportMissingImports]
+    QColor,
+    QImage,
+    QPainter,
+    QPixmap,
+    QTransform,
+)
 
 from pykotor.common.indoormap import (  # re-exported for Toolset imports
     DoorInsertion,
@@ -116,7 +122,7 @@ __all__ = [
     "DoorInsertion",
     "IndoorMap",
     "IndoorMapRoom",
-    "MissingRoomInfo",
     "MinimapData",
+    "MissingRoomInfo",
     "generate_mipmap",
 ]

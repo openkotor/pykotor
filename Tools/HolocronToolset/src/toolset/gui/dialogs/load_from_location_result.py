@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, cast
 
 import send2trash
 
-from qtpy.QtCore import QModelIndex, QRect, QUrl, Qt
+from qtpy.QtCore import QUrl, Qt
 from qtpy.QtGui import QDesktopServices, QKeySequence
 from qtpy.QtWidgets import (
     QAction,
@@ -84,7 +84,7 @@ from utility.system.os_helper import get_size_on_disk, win_get_system32_dir
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from qtpy.QtCore import QAbstractItemModel, QPoint
+    from qtpy.QtCore import QAbstractItemModel, QModelIndex, QPoint, QRect
     from qtpy.QtGui import QScreen
     from qtpy.QtWidgets import QTableWidgetSelectionRange
 
@@ -342,13 +342,13 @@ class FileItems(CustomItem):
             return menu_dict
         open_action: QAction = self.create_action(menu_dict, f"Open ({platform.system()})", lambda: self.do_file_action(self._open_file, "Open file(s) with system"))
         open_folder_action: QAction = self.create_action(
-            menu_dict, "Open Containing Folder", lambda: self.do_file_action(self._open_containing_folder, "Open Containing Folder")
+            menu_dict, "Open Containing Folder", lambda: self.do_file_action(self._open_containing_folder, "Open Containing Folder"),
         )
         save_selected_action: QAction = self.create_action(menu_dict, "Save selected files to...", lambda: self.do_file_action(self._save_files, "Save As..."))
         rename_action: QAction = self.create_action(menu_dict, "Rename", lambda: self.do_file_action(self._rename_file, "Rename file.", confirmation=True))
         send_to_trash: QAction = self.create_action(menu_dict, "Delete (to Recycle Bin)", lambda: self.do_file_action(self._send_to_recycle_bin, "Send to Recycle Bin"))
         delete_action: QAction = self.create_action(
-            menu_dict, "Delete (no way to undelete!)", lambda: self.do_file_action(self._delete_files_permanently, "Delete PERMANENTLY", confirmation=True)
+            menu_dict, "Delete (no way to undelete!)", lambda: self.do_file_action(self._delete_files_permanently, "Delete PERMANENTLY", confirmation=True),
         )
 
         file_paths_exist = all(Path(table_item.filepath).exists() for table_item in selected)
@@ -358,7 +358,7 @@ class FileItems(CustomItem):
         if os.name == "nt":
             properties_action: QAction = self.create_action(menu_dict, "Properties", lambda: self.do_file_action(self._show_properties, "Show File Properties"))
             open_windows_menu_action: QAction = self.create_action(
-                menu_dict, "Open Windows Explorer Context Menu", lambda: self.do_file_action(self._open_windows_explorer_context_menu, "Open Windows Explorer Context Menu")
+                menu_dict, "Open Windows Explorer Context Menu", lambda: self.do_file_action(self._open_windows_explorer_context_menu, "Open Windows Explorer Context Menu"),
             )
             properties_action.setEnabled(file_paths_exist)
             open_windows_menu_action.setEnabled(file_paths_exist)
@@ -767,7 +767,7 @@ class ResourceItems(FileItems):
                 open_with_menu.addAction("Open with GFF Editor").triggered.connect(lambda: self.open_selected_resource(resources, installation, gff_specialized=False))
                 if installation is not None:
                     open_with_menu.addAction("Open with Specialized Editor").triggered.connect(
-                        lambda: self.open_selected_resource(resources, installation, gff_specialized=True)
+                        lambda: self.open_selected_resource(resources, installation, gff_specialized=True),
                     )
                     open_with_menu.addAction("Open with Default Editor").triggered.connect(lambda: self.open_selected_resource(resources, installation, gff_specialized=None))
             elif installation is not None:
@@ -1192,7 +1192,7 @@ class FileSelectionWindow(QMainWindow):
         display_size_on_disk: str = self.human_readable_size(size_on_disk)
         display_ratio: str = f"{ratio:.2f}%"
         self.resource_table.setItem(
-            rowIndex, self.resource_table.get_column_index("Size on Disk"), self.create_table_item(display_size_on_disk, resource, sort_key=size_on_disk)
+            rowIndex, self.resource_table.get_column_index("Size on Disk"), self.create_table_item(display_size_on_disk, resource, sort_key=size_on_disk),
         )
         self.resource_table.setItem(rowIndex, self.resource_table.get_column_index("Size Ratio"), self.create_table_item(display_ratio, resource, sort_key=ratio))
 

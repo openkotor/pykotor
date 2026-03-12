@@ -18,7 +18,10 @@ for lib_path in (PYKOTOR_LIB, UTILITY_LIB):
     if lib_path.exists() and lib_str not in sys.path:
         sys.path.append(lib_str)
 
-from utility.string_util import compare_and_format, format_text  # type: ignore[attr-defined]  # noqa: E402
+from utility.string_util import (  # type: ignore[attr-defined]  # noqa: E402
+    compare_and_format,
+    format_text,
+)
 
 if TYPE_CHECKING:
     from typing_extensions import Self

@@ -133,7 +133,6 @@ class IFOEditor(Editor):
     def add_area(self):
         """Add an area to the module's area list."""
         # TODO: Implement area addition logic
-        pass
 
     def remove_area(self):
         """Remove an area from the module's area list."""

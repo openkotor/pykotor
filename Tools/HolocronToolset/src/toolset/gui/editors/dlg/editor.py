@@ -8,13 +8,31 @@ import re
 import weakref
 
 from collections import deque
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable, Optional, cast
 
 import qtpy
 
-from qtpy.QtCore import QByteArray, QDataStream, QIODevice, QItemSelectionModel, QMimeData, QModelIndex, QPropertyAnimation, QRect, QTimer, Qt
-from qtpy.QtGui import QColor, QDrag, QFont, QKeySequence, QPalette, QStandardItem, QStandardItemModel
+from qtpy.QtCore import (
+    QByteArray,
+    QDataStream,
+    QIODevice,
+    QItemSelectionModel,
+    QMimeData,
+    QModelIndex,
+    QPropertyAnimation,
+    QRect,
+    QTimer,
+    Qt,
+)
+from qtpy.QtGui import (
+    QColor,
+    QDrag,
+    QFont,
+    QKeySequence,
+    QPalette,
+    QStandardItem,
+    QStandardItemModel,
+)
 from qtpy.QtWidgets import (
     QAbstractItemView,
     QAction,  # pyright: ignore[reportPrivateImportUsage]
@@ -25,18 +43,15 @@ from qtpy.QtWidgets import (
     QDialog,
     QDockWidget,
     QDoubleSpinBox,
-    QFileDialog,
     QLabel,
     QLineEdit,
     QListWidgetItem,
     QMenu,
     QMessageBox,
     QPlainTextEdit,
-    QPushButton,
     QSizePolicy,
     QSpinBox,
     QStyle,
-    QToolBar,
     QWhatsThis,
     QWidget,
 )
@@ -44,7 +59,14 @@ from qtpy.QtWidgets import (
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.common.misc import Game, ResRef
 from pykotor.extract.installation import SearchLocation
-from pykotor.resource.generics.dlg import DLG, DLGComputerType, DLGConversationType, DLGEntry, DLGLink, DLGReply
+from pykotor.resource.generics.dlg import (
+    DLG,
+    DLGComputerType,
+    DLGConversationType,
+    DLGEntry,
+    DLGLink,
+    DLGReply,
+)
 from pykotor.resource.generics.dlg.io import read_dlg, write_dlg
 from pykotor.resource.type import ResourceType
 from toolset.data.installation import HTInstallation
@@ -52,7 +74,12 @@ from toolset.gui.dialogs.edit.dialog_animation import EditAnimationDialog
 from toolset.gui.dialogs.edit.dialog_model import CutsceneModelDialog
 from toolset.gui.dialogs.edit.locstring import LocalizedStringDialog
 from toolset.gui.editor import Editor
-from toolset.gui.editors.dlg.constants import QT_STANDARD_ITEM_FORMAT, _DLG_MIME_DATA_ROLE, _LINK_PARENT_NODE_PATH_ROLE, _MODEL_INSTANCE_ID_ROLE
+from toolset.gui.editors.dlg.constants import (
+    QT_STANDARD_ITEM_FORMAT,
+    _DLG_MIME_DATA_ROLE,
+    _LINK_PARENT_NODE_PATH_ROLE,
+    _MODEL_INSTANCE_ID_ROLE,
+)
 from toolset.gui.editors.dlg.list_widget_base import DLGListWidget, DLGListWidgetItem
 from toolset.gui.editors.dlg.model import DLGStandardItem, DLGStandardItemModel
 from toolset.gui.editors.dlg.settings import DLGSettings
@@ -72,10 +99,19 @@ else:
 if TYPE_CHECKING:
     import os
 
-    from pathlib import PureWindowsPath
+    from pathlib import Path, PureWindowsPath
 
     from qtpy.QtCore import QAbstractItemModel, QItemSelection, QModelIndex, QObject, QPoint
-    from qtpy.QtGui import QClipboard, QCloseEvent, QFocusEvent, QKeyEvent, QMouseEvent, QShowEvent, QStandardItem, _QAction
+    from qtpy.QtGui import (
+        QClipboard,
+        QCloseEvent,
+        QFocusEvent,
+        QKeyEvent,
+        QMouseEvent,
+        QShowEvent,
+        QStandardItem,
+        _QAction,
+    )
     from qtpy.QtWidgets import (
         QScrollBar,
         QStatusBar,
@@ -483,10 +519,10 @@ Should return 1 or 0, representing a boolean.
 
         self.ui.speakerEdit.textEdited.connect(self.on_node_update)
         self.ui.listenerEdit.textEdited.connect(self.on_node_update)
-        
+
         # Wire script/condition parameter change signals
         self._batch_connect_param_groups()
-        
+
         self.ui.emotionSelect.currentIndexChanged.connect(self.on_node_update)
         self.ui.expressionSelect.currentIndexChanged.connect(self.on_node_update)
         self.ui.soundCheckbox.toggled.connect(self.on_node_update)
@@ -614,7 +650,7 @@ Should return 1 or 0, representing a boolean.
     def parse_query(
         self,
         input_text: str,
-    ) -> list[tuple[str, str | None, Literal["AND", "OR", None]]]:
+    ) -> list[tuple[str, str | None, Optional[Literal["AND", "OR"]]]]:
         pattern = r'("[^"]*"|\S+)'
         tokens: list[str] = re.findall(pattern, input_text)
         normalized_tokens: list[str] = []
@@ -625,14 +661,14 @@ Should return 1 or 0, representing a boolean.
             else:
                 normalized_tokens.extend(re.split(r"\s+", token))
 
-        conditions: list[tuple[str, str | None, Literal["AND", "OR", None]]] = []
-        operator: Literal["AND", "OR", None] = None
+        conditions: list[tuple[str, str | None, Optional[Literal["AND", "OR"]]]] = []
+        operator: Optional[Literal["AND", "OR"]] = None
         i = 0
 
         while i < len(normalized_tokens):
             token = normalized_tokens[i].upper()
             if token in ("AND", "OR"):
-                operator = cast('Literal["AND", "OR", None]', token)
+                operator = cast('Optional[Literal["AND", "OR"]]', token)
                 i += 1
                 continue
 
@@ -646,10 +682,7 @@ Should return 1 or 0, representing a boolean.
                         conditions.append((key.strip().lower(), value.strip().lower() if value else None, operator))
                 finally:
                     operator = None
-            elif next_index and normalized_tokens[next_index].upper() in ("AND", "OR"):
-                conditions.append((normalized_tokens[i], "", operator))
-                operator = None
-            elif not next_index:
+            elif (next_index and normalized_tokens[next_index].upper() in ("AND", "OR")) or not next_index:
                 conditions.append((normalized_tokens[i], "", operator))
                 operator = None
 
@@ -667,7 +700,7 @@ Should return 1 or 0, representing a boolean.
         def condition_matches(  # noqa: C901
             key: str,
             value: str | None,
-            operator: Literal["AND", "OR", None],  # noqa: ARG001
+            operator: Optional[Literal["AND", "OR"]],  # noqa: ARG001
             item: DLGStandardItem,
         ) -> bool:
             if not isinstance(item, DLGStandardItem) or item.link is None:

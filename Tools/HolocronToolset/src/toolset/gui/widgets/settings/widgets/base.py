@@ -63,7 +63,7 @@ class SettingsWidget(QWidget):
     def validateBind(self, bindName: str, bind: Bind) -> Bind:
         if not isinstance(bind, tuple) or (bind[0] is not None and not isinstance(bind[0], set)) or (bind[1] is not None and not isinstance(bind[1], set)):
             RobustLogger().error(
-                f"Invalid setting bind: '{bindName}', expected a Bind type (tuple with two sets of binds) but got {bind!r} (tuple[{bind[0].__class__.__name__}, {bind[1].__class__.__name__}])"
+                f"Invalid setting bind: '{bindName}', expected a Bind type (tuple with two sets of binds) but got {bind!r} (tuple[{bind[0].__class__.__name__}, {bind[1].__class__.__name__}])",
             )
             bind = self._reset_and_get_default(bindName)
         return bind

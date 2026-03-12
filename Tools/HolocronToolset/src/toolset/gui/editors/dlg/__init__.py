@@ -24,28 +24,28 @@ from .debug_utils import (  # noqa: TID252
 )
 
 __all__ = [
-    "DLGEditor",  # noqa: F405
-    "DLGTreeView",  # noqa: F405
-    "DLGListWidget",  # noqa: F405
-    "DLGListWidgetItem",  # noqa: F405
-    "DLGStandardItem",  # noqa: F405
-    "DLGStandardItemModel",  # noqa: F405
-    "DLGSettings",  # noqa: F405
-    "ReferenceChooserDialog",  # noqa: F405
-    "DropPosition",  # noqa: F405
-    "DropTarget",  # noqa: F405
-    "DLGLinkSync",  # noqa: F405
-    "CopySyncDict",  # noqa: F405
-    "install_immediate_tooltip",  # noqa: F405
-    "custom_extra_info",  # noqa: F405
-    "debug_references",  # noqa: F405
-    "detailed_extra_info",  # noqa: F405
-    "identify_reference_path",  # noqa: F405
-    "is_interesting",  # noqa: F405
     "QT_STANDARD_ITEM_FORMAT",  # noqa: F405
     "_COPY_ROLE",  # noqa: F405
     "_DLG_MIME_DATA_ROLE",  # noqa: F405
     "_DUMMY_ITEM",  # noqa: F405
     "_LINK_PARENT_NODE_PATH_ROLE",  # noqa: F405
     "_MODEL_INSTANCE_ID_ROLE",  # noqa: F405
+    "CopySyncDict",  # noqa: F405
+    "DLGEditor",  # noqa: F405
+    "DLGLinkSync",  # noqa: F405
+    "DLGListWidget",  # noqa: F405
+    "DLGListWidgetItem",  # noqa: F405
+    "DLGSettings",  # noqa: F405
+    "DLGStandardItem",  # noqa: F405
+    "DLGStandardItemModel",  # noqa: F405
+    "DLGTreeView",  # noqa: F405
+    "DropPosition",  # noqa: F405
+    "DropTarget",  # noqa: F405
+    "ReferenceChooserDialog",  # noqa: F405
+    "custom_extra_info",  # noqa: F405
+    "debug_references",  # noqa: F405
+    "detailed_extra_info",  # noqa: F405
+    "identify_reference_path",  # noqa: F405
+    "install_immediate_tooltip",  # noqa: F405
+    "is_interesting",  # noqa: F405
 ]

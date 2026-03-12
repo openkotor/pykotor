@@ -128,7 +128,7 @@ class ModuleEditorControls(ABC):
         self,
         screen: Vector2,
         delta: Vector2,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ): ...
 
@@ -136,7 +136,7 @@ class ModuleEditorControls(ABC):
     def on_mouse_scrolled(
         self,
         delta: Vector2,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ): ...
 
@@ -144,7 +144,7 @@ class ModuleEditorControls(ABC):
     def on_mouse_pressed(
         self,
         screen: Vector2,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ): ...
 
@@ -152,21 +152,21 @@ class ModuleEditorControls(ABC):
     def on_mouse_released(
         self,
         screen: Vector2,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ): ...
 
     @abstractmethod
     def on_key_pressed(
         self,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ): ...
 
     @abstractmethod
     def on_key_released(
         self,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ): ...
 
@@ -463,7 +463,7 @@ class DynamicModuleEditorControls(ModuleEditorControls):
         self,
         screen: Vector2,
         delta: Vector2,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ):
         for event in self.mouse_move_events:
@@ -474,7 +474,7 @@ class DynamicModuleEditorControls(ModuleEditorControls):
     def on_mouse_scrolled(
         self,
         delta: Vector2,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ):
         for event in self.mouse_scroll_events:
@@ -485,7 +485,7 @@ class DynamicModuleEditorControls(ModuleEditorControls):
     def on_mouse_pressed(
         self,
         screen: Vector2,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ):
         for event in self.mouse_press_events:
@@ -496,7 +496,7 @@ class DynamicModuleEditorControls(ModuleEditorControls):
     def on_mouse_released(
         self,
         screen: Vector2,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ):
         for event in self.mouse_release_events:
@@ -506,7 +506,7 @@ class DynamicModuleEditorControls(ModuleEditorControls):
 
     def on_key_pressed(
         self,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ):
         for event in self.key_press_events:
@@ -516,7 +516,7 @@ class DynamicModuleEditorControls(ModuleEditorControls):
 
     def on_key_released(
         self,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ):
         for event in self.key_release_events:

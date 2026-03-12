@@ -12,7 +12,7 @@ UTS files define [sound object templates](GFF-File-Format#uts-sound) for ambient
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | Template identifier for this sound |
+| `TemplateResRef` | *ResRef* | Template identifier for this sound |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
 | `LocName` | [CExoLocString](GFF-File-Format#gff-data-types) | Sound name (unused) |
 | `Comment` | [CExoString](GFF-File-Format#gff-data-types) | Developer comment/notes |
@@ -69,7 +69,7 @@ UTS files define [sound object templates](GFF-File-Format#uts-sound) for ambient
 
 **Sounds Struct fields:**
 
-- `Sound` ([ResRef](GFF-File-Format#gff-data-types)): Audio file resource
+- `Sound` (*ResRef*): Audio file resource
 
 **Randomization:**
 

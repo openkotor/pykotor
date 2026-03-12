@@ -11,7 +11,20 @@ import qtpy
 from qtpy import QtCore
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QCursor, QFont, QGuiApplication
-from qtpy.QtWidgets import QApplication, QCheckBox, QDialog, QFontDialog, QHBoxLayout, QLabel, QMenu, QMessageBox, QPushButton, QSpinBox, QTableWidgetItem, QToolTip
+from qtpy.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QDialog,
+    QFontDialog,
+    QHBoxLayout,
+    QLabel,
+    QMenu,
+    QMessageBox,
+    QPushButton,
+    QSpinBox,
+    QTableWidgetItem,
+    QToolTip,
+)
 
 from toolset.data.settings import Settings
 from toolset.gui.widgets.settings.widgets.base import SettingsWidget
@@ -315,7 +328,7 @@ class ApplicationSettings(Settings):
         super().__init__("Application")
 
     app_env_variables: SettingsProperty[dict[str, str]] = Settings.addSetting(
-        "EnvironmentVariables", {"QT_MULTIMEDIA_PREFERRED_PLUGINS": (os.environ.get("QT_MULTIMEDIA_PREFERRED_PLUGINS", "windowsmediafoundation") if os.name == "nt" else "")}
+        "EnvironmentVariables", {"QT_MULTIMEDIA_PREFERRED_PLUGINS": (os.environ.get("QT_MULTIMEDIA_PREFERRED_PLUGINS", "windowsmediafoundation") if os.name == "nt" else "")},
     )
 
     MISC_SETTINGS: ClassVar[dict[str, MiscSetting]] = {

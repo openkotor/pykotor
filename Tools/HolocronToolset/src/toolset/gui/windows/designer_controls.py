@@ -13,7 +13,11 @@ from qtpy.QtCore import QPoint, Qt
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.gl.scene import Scene
-from pykotor.gl.scene.camera_controller import CameraController, CameraControllerSettings, InputState
+from pykotor.gl.scene.camera_controller import (
+    CameraController,
+    CameraControllerSettings,
+    InputState,
+)
 from pykotor.resource.generics.git import GITCamera
 from toolset.data.misc import ControlItem
 from toolset.gui.common.interaction.camera import calculate_zoom_strength
@@ -259,30 +263,29 @@ class ModuleDesignerControls3d:
         modifier_held = self._any_modifier_held(keys)
         camera_wants_input = move_xy_camera_satisfied or move_camera_plane_satisfied or zoom_camera_satisfied or (rotate_camera_satisfied and modifier_held)
 
-        # Instance manipulation - only when no camera control with modifiers claims the input
-        # The _active_tool on the editor gates which drag operations are allowed:
-        #   SELECT (0): no drag manipulation; left-drag falls through to camera controls
-        #   MOVE   (1): left-drag moves instances (default binding behaviour)
-        #   ROTATE (2): left-drag rotates instances (overrides move binding)
+        # Instance manipulation - only when no camera control with modifiers claims the input.
+        # When the user has a selection and is left-dragging (move_xy_selected), always prefer
+        # moving the instance over rotating the camera, even if the active tool is Select.
         _TOOL_SELECT = 0
         _TOOL_MOVE = 1
         _TOOL_ROTATE = 2
         active_tool: int = getattr(self.editor, "_active_tool", _TOOL_MOVE)
+        instance_drag_ok = active_tool != _TOOL_SELECT or self.move_xy_selected.satisfied(buttons, keys)
 
-        if not camera_wants_input and active_tool != _TOOL_SELECT and not self.editor.ui.lockInstancesCheck.isChecked() and self.editor.selected_instances:
+        if not camera_wants_input and instance_drag_ok and not self.editor.ui.lockInstancesCheck.isChecked() and self.editor.selected_instances:
             # Check instance manipulation bindings (most specific first)
             if self.move_z_selected.satisfied(buttons, keys):
-                if not self.editor.is_drag_moving:
-                    self.editor.initial_positions = {instance: instance.position for instance in self.editor.selected_instances}
-                    self.editor.is_drag_moving = True
+                if not self.editor.transform_state.is_drag_moving:
+                    self.editor.transform_state.initial_positions = {instance: instance.position for instance in self.editor.selected_instances}
+                    self.editor.transform_state.is_drag_moving = True
                 for instance in self.editor.selected_instances:
                     instance.position.z -= processed_dy / 40
                 return
 
             # ROTATE tool: redirect left-drag to rotation instead of XY move
             if active_tool == _TOOL_ROTATE and self.move_xy_selected.satisfied(buttons, keys):
-                if not self.editor.is_drag_rotating:
-                    self.editor.is_drag_rotating = True
+                if not self.editor.transform_state.is_drag_rotating:
+                    self.editor.transform_state.is_drag_rotating = True
                     for instance in self.editor.selected_instances:
                         if not self.editor._is_rotatable_instance(instance):  # noqa: SLF001
                             continue
@@ -291,8 +294,8 @@ class ModuleDesignerControls3d:
                 return
 
             if self.rotate_selected.satisfied(buttons, keys):
-                if not self.editor.is_drag_rotating:
-                    self.editor.is_drag_rotating = True
+                if not self.editor.transform_state.is_drag_rotating:
+                    self.editor.transform_state.is_drag_rotating = True
                     for instance in self.editor.selected_instances:
                         if not self.editor._is_rotatable_instance(instance):  # noqa: SLF001
                             continue
@@ -302,9 +305,9 @@ class ModuleDesignerControls3d:
 
             # MOVE tool (or default): left-drag moves XY
             if active_tool != _TOOL_ROTATE and self.move_xy_selected.satisfied(buttons, keys):
-                if not self.editor.is_drag_moving:
-                    self.editor.initial_positions = {instance: instance.position for instance in self.editor.selected_instances}
-                    self.editor.is_drag_moving = True
+                if not self.editor.transform_state.is_drag_moving:
+                    self.editor.transform_state.initial_positions = {instance: instance.position for instance in self.editor.selected_instances}
+                    self.editor.transform_state.is_drag_moving = True
                 for instance in self.editor.selected_instances:
                     x = float(world.x)
                     y = float(world.y)
@@ -313,7 +316,9 @@ class ModuleDesignerControls3d:
                 return
 
         # Camera controls
-        if move_xy_camera_satisfied or move_camera_plane_satisfied or rotate_camera_satisfied or zoom_camera_satisfied:
+        # Ctrl+Left drag and Middle drag both use the same plane pan (exact same behavior)
+        plane_pan_satisfied = move_camera_plane_satisfied or move_xy_camera_satisfied
+        if plane_pan_satisfied or rotate_camera_satisfied or zoom_camera_satisfied:
             self.editor.do_cursor_lock(screen, center_mouse=False, do_rotations=False)
 
             # Scale movement based on distance for consistent feel
@@ -321,13 +326,7 @@ class ModuleDesignerControls3d:
             base_move_strength = self.settings.moveCameraSensitivity3d / 1000.0
             move_strength = base_move_strength * distance_scale
 
-            if move_xy_camera_satisfied:
-                forward = -processed_dy * self.renderer.scene.camera.forward()
-                sideward = processed_dx * self.renderer.scene.camera.sideward()
-                self.renderer.scene.camera.x -= (forward.x + sideward.x) * move_strength
-                self.renderer.scene.camera.y -= (forward.y + sideward.y) * move_strength
-
-            if move_camera_plane_satisfied:
+            if plane_pan_satisfied:
                 upward = processed_dy * self.renderer.scene.camera.upward(ignore_xy=False)
                 sideward = processed_dx * self.renderer.scene.camera.sideward()
                 self.renderer.scene.camera.z -= (upward.z + sideward.z) * move_strength
@@ -361,16 +360,19 @@ class ModuleDesignerControls3d:
         assert scene is not None
         if self.duplicate_selected.satisfied(buttons, keys) and self.editor.selected_instances:
             self._duplicate_selected_instance()
-        if self.open_context_menu.satisfied(buttons, keys):
-            world = Vector3(*scene.cursor.position())
-            self.editor.on_context_menu(world, self.renderer.mapToGlobal(QPoint(int(screen.x), int(screen.y))))
 
     def on_mouse_released(
         self,
         screen: Vector2,
         buttons: set[Qt.MouseButton],
         keys: set[Qt.Key],
+        released_button: Qt.MouseButton | None = None,
     ):
+        if released_button == Qt.MouseButton.RightButton:
+            scene = self.renderer.scene
+            if scene is not None:
+                world = Vector3(*scene.cursor.position())
+                self.editor.on_context_menu(world, self.renderer.mapToGlobal(QPoint(int(screen.x), int(screen.y))))
         self.editor.handle_undo_redo_from_long_action_finished()
 
     def on_keyboard_released(self, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
@@ -590,7 +592,7 @@ class ModuleDesignerControlsFreeCam:
 
     def on_mouse_pressed(self, screen: Vector2, buttons: set[Qt.MouseButton], keys: set[Qt.Key]): ...
 
-    def on_mouse_released(self, screen: Vector2, buttons: set[Qt.MouseButton], keys: set[Qt.Key]): ...
+    def on_mouse_released(self, screen: Vector2, buttons: set[Qt.MouseButton], keys: set[Qt.Key], released_button: Qt.MouseButton | None = None): ...
 
     def on_keyboard_pressed(self, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
         current_time = time.time()
@@ -713,17 +715,17 @@ class ModuleDesignerControls2d:
                 return
 
             # handle undo/redo for move_selected.
-            if not self.editor.is_drag_moving:
+            if not self.editor.transform_state.is_drag_moving:
                 RobustLogger().debug("move_selected instance in 2d")
-                self.editor.initial_positions = {instance: instance.position for instance in self.editor.selected_instances}
-                self.editor.is_drag_moving = True
+                self.editor.transform_state.initial_positions = {instance: instance.position for instance in self.editor.selected_instances}
+                self.editor.transform_state.is_drag_moving = True
             self.editor.move_selected(adjusted_world_delta.x, adjusted_world_delta.y, no_undo_stack=True, no_z_coord=True)
 
         if self.rotate_selected.satisfied(buttons, keys) and isinstance(self._mode, _InstanceMode):
-            if not self.editor.is_drag_rotating:
-                self.editor.is_drag_rotating = True
+            if not self.editor.transform_state.is_drag_rotating:
+                self.editor.transform_state.is_drag_rotating = True
                 RobustLogger().debug("rotateSelected instance in 2d")
-                selection: list[GITObject] = self.editor.selected_instances  # noqa: SLF001
+                selection: list[GITInstance] = self.editor.selected_instances  # noqa: SLF001
                 for instance in selection:
                     if not self.editor._is_rotatable_instance(instance):  # noqa: SLF001
                         continue  # doesn't support rotations.
@@ -739,8 +741,6 @@ class ModuleDesignerControls2d:
         world: Vector3 = self.renderer.to_world_coords(screen.x, screen.y)
         if self.duplicate_selected.satisfied(buttons, keys) and self.editor.selected_instances and isinstance(self._mode, _InstanceMode):
             self._mode.duplicate_selected(world)
-        if self.open_context_menu.satisfied(buttons, keys):
-            self.editor.on_context_menu(world, self.renderer.mapToGlobal(QPoint(int(screen.x), int(screen.y))))
 
         if self.select_underneath.satisfied(buttons, keys):
             if isinstance(self._mode, _GeometryMode):
@@ -779,7 +779,11 @@ class ModuleDesignerControls2d:
         screen: Vector2,
         buttons: set[Qt.MouseButton],
         keys: set[Qt.Key],
+        released_button: Qt.MouseButton | None = None,
     ):
+        if released_button == Qt.MouseButton.RightButton:
+            world: Vector3 = self.renderer.to_world_coords(screen.x, screen.y)
+            self.editor.on_context_menu(world, self.renderer.mapToGlobal(QPoint(int(screen.x), int(screen.y))))
         self.editor.handle_undo_redo_from_long_action_finished()
 
     def on_keyboard_released(self, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):

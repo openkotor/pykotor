@@ -188,13 +188,13 @@ Each [2DA file](2DA-File-Format) requires its own section (e.g., `[appearance.2d
 | `!SourceFile` | string | Same as section name | Alternative source filename (useful for multiple setup options using different source files) |
 | `!ReplaceFile` | 0/1 | 0 | If `1`, overwrite existing file before applying modifications. If `0` (default), modify the existing file in place. |
 | `!SaveAs` | string | Same as section name | Alternative filename to save as (useful for renaming files during installation) |
-| `!OverrideType` | string | `warn` (HoloPatcher) / `ignore` (TSLPatcher) | How to handle existing files in Override when destination is an [ERF](ERF-File-Format)/RIM archive. Valid values: `ignore`, `warn`, `rename` |
+| `!OverrideType` | string | `warn` (HoloPatcher) / `ignore` (TSLPatcher) | How to handle existing files in Override when destination is an [ERF](ERF-File-Format)/RIM container. Valid values: `ignore`, `warn`, `rename` |
 
 **Destination values:**
 
 - `override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM archive (use backslashes for path separators)
-- Archive paths must be relative to the game folder root
+- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM container (use backslashes for path separators)
+- Container paths must be relative to the game folder root
 
 **Syntax Notes:**
 

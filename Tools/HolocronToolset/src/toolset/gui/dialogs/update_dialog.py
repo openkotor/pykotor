@@ -3,21 +3,24 @@
 from __future__ import annotations
 
 import platform
-from datetime import datetime
 
+from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 import markdown
 
 from qtpy import QtCore
 from qtpy.QtCore import QUrl
-from qtpy.QtGui import QColor, QPalette
+from qtpy.QtGui import QColor, QDesktopServices, QPalette
 from qtpy.QtWidgets import QApplication, QDialog, QMessageBox
-from qtpy.QtGui import QDesktopServices
 
 from loggerplus import RobustLogger
 from toolset.config import LOCAL_PROGRAM_INFO, is_remote_version_newer, toolset_tag_to_version
-from toolset.gui.dialogs.update_github import fetch_and_cache_forks, fetch_fork_releases, filter_releases
+from toolset.gui.dialogs.update_github import (
+    fetch_and_cache_forks,
+    fetch_fork_releases,
+    filter_releases,
+)
 from toolset.gui.dialogs.update_process import start_update_process
 from utility.misc import ProcessorArchitecture
 from utility.updater.github import GithubRelease
@@ -51,7 +54,7 @@ class UpdateDialog(QDialog):
             QtCore.Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | QtCore.Qt.WindowType.WindowCloseButtonHint  # pyright: ignore[reportArgumentType]
             | QtCore.Qt.WindowType.WindowMinMaxButtonsHint  # pyright: ignore[reportArgumentType]
-            & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint  # pyright: ignore[reportArgumentType]
+            & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint,  # pyright: ignore[reportArgumentType]
         )
         self.remoteInfo: dict[str, Any] = {}
         self.releases: list[GithubRelease] = []

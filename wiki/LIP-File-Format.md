@@ -2,12 +2,16 @@
 
 LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#animation-header) for voiced dialogue. Each file contains a compact series of [keyframes](MDL-MDX-File-Format#controller-structure) that map timestamps to discrete viseme (mouth shape) indices so that the engine can interpolate character LIP movement while playing the companion [WAV](WAV-File-Format) line. LIP files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
+**For mod developers:** LIP is paired with [WAV](WAV-File-Format) voice-over; see [TLK](TLK-File-Format), [DLG](GFF-DLG), and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** LIP is referenced by [TLK](TLK-File-Format) (voice-over) and [DLG](GFF-DLG); duration must match the companion [WAV](WAV-File-Format).
+
 ## Table of Contents
 
 - KotOR LIP File Format Documentation
   - Table of Contents
-  - File Structure Overview
-  - [Binary Format](#binary-format)
+  - [File structure overview](#file-structure-overview)
+  - [Binary format](#binary-format)
     - [Header](#header)
     - [Keyframe Table](#keyframe-table)
   - [Mouth Shapes (Viseme Table)](#mouth-shapes-viseme-table)
@@ -16,11 +20,11 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 
 ---
 
-## file structure Overview
+## File structure overview
 
 - LIP files are always binary (`"LIP V1.0"` signature) and contain only [animation](MDL-MDX-File-Format#animation-header) data.  
 - They are paired with [WAV](WAV-File-Format) voice-over resources of identical duration; the LIP `length` field must match the [WAV](WAV-File-Format) `data` playback time for glitch-free [animation](MDL-MDX-File-Format#animation-header).  
-- [keyframes](MDL-MDX-File-Format#controller-structure) are sorted chronologically and store a timestamp ([float](GFF-File-Format#gff-data-types) seconds) plus a 1-[byte](GFF-File-Format#gff-data-types) viseme index (0–15).  
+- [keyframes](MDL-MDX-File-Format#controller-structure) are sorted chronologically and store a timestamp ([float](GFF-File-Format#gff-data-types) seconds) plus a 1-[byte](https://en.wikipedia.org/wiki/Byte) viseme index (0–15).  
 - The layout is identical across `vendor/reone`, `vendor/xoreos`, `vendor/Kotor.NET`, `vendor/KotOR.js`, and `vendor/mdlops`, so the header/[keyframe](MDL-MDX-File-Format#controller-structure) offsets below are cross-confirmed against those implementations.  
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lip)
@@ -33,7 +37,7 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 - [`vendor/Kotor.NET/Kotor.NET/Formats/KotorLIP/LIP.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLIP/LIP.cs) - .NET LIP reader/writer
 - [`vendor/mdlops/mdlops/`](https://github.com/th3w1zard1/mdlops/tree/master/mdlops) - Legacy Python LIP generation tools
 
-**See Also:**
+### See also
 
 - [TLK File Format](TLK-File-Format) - [Talk Table](TLK-File-Format) containing voice-over references
 - [WAV File Format](WAV-File-Format) - Audio format paired with LIP files
@@ -43,7 +47,7 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 
 ## Binary format
 
-### header
+### Header
 
 | Name          | type    | offset | size | Description |
 | ------------- | ------- | ------ | ---- | ----------- |
@@ -52,7 +56,11 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 | Sound Length  | [float32](GFF-File-Format#gff-data-types) | 8 (0x08)   | 4    | Duration in seconds (must equal [WAV](WAV-File-Format) length) |
 | Entry count   | [uint32](GFF-File-Format#gff-data-types)  | 12 (0x0C)   | 4    | Number of [keyframes](MDL-MDX-File-Format#controller-structure) immediately following |
 
-**Reference:** [`vendor/reone/src/libs/graphics/format/lipreader.cpp:27-42`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/lipreader.cpp#L27-L42)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/graphics/format/lipreader.cpp:27-42`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/lipreader.cpp#L27-L42) - LIP header parsing
 
 ### [keyframe](MDL-MDX-File-Format#controller-structure) Table
 
@@ -66,18 +74,22 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 - Entries are stored sequentially and **must** be sorted ascending by timestamp.  
 - Libraries average multiple implementations to validate this layout (`vendor/reone`, `vendor/xoreos`, `vendor/KotOR.js`, `vendor/Kotor.NET`).  
 
-**Reference:** [`vendor/KotOR.js/src/resource/LIPObject.ts:93-146`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LIPObject.ts#L93-L146)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/KotOR.js/src/resource/LIPObject.ts:93-146`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LIPObject.ts#L93-L146) - Keyframe table parsing
 
 ---
 
 ## Mouth Shapes (Viseme Table)
 
-KotOR reuses the 16-shape Preston Blair [phoneme](https://en.wikipedia.org/wiki/Phoneme) set. Every implementation agrees on the [byte](GFF-File-Format#gff-data-types) value assignments; KotOR.js only renames a few labels but the indices match.
+KotOR reuses the 16-shape Preston Blair [phoneme](https://en.wikipedia.org/wiki/Phoneme) set. Every implementation agrees on the [byte](https://en.wikipedia.org/wiki/Byte) value assignments; KotOR.js only renames a few labels but the indices match.
 
 | value | Shape | Description |
 | ----- | ----- | ----------- |
 | 0 | NEUTRAL | Rest/closed mouth |
-| 1 | EE | Teeth apart, wide smile (long "ee”) |
+| 1 | EE | Teeth apart, wide smile (long "ee") |
 | 2 | EH | Relaxed mouth ("eh") |
 | 3 | AH | Mouth open ("ah/aa") |
 | 4 | OH | Rounded lips ("oh") |

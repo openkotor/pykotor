@@ -14,7 +14,15 @@ from operator import attrgetter
 from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Any, Callable, Generator, NamedTuple
 
-from qtpy.QtCore import QDir, QPoint, QRect, QSettings, QSize, QStringListModel, Qt  # pyright: ignore[reportPrivateImportUsage]
+from qtpy.QtCore import (  # pyright: ignore[reportPrivateImportUsage]
+    QDir,
+    QPoint,
+    QRect,
+    QSettings,
+    QSize,
+    QStringListModel,
+    Qt,
+)
 from qtpy.QtGui import QKeySequence, QTextCursor, QTextDocument
 from qtpy.QtWidgets import (
     QApplication,
@@ -57,21 +65,49 @@ if __name__ == "__main__":
 from pykotor.extract.file import FileResource  # pyright: ignore[reportPrivateImportUsage]
 from pykotor.resource.formats.ncs import read_ncs  # pyright: ignore[reportPrivateImportUsage]
 from pykotor.resource.type import ResourceType  # pyright: ignore[reportPrivateImportUsage]
-from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_rim_file  # pyright: ignore[reportPrivateImportUsage]
-from toolset.gui.common.debugger import Debugger, DebuggerState  # pyright: ignore[reportPrivateImportUsage]
+from pykotor.tools.misc import (  # pyright: ignore[reportPrivateImportUsage]
+    is_any_erf_type_file,
+    is_bif_file,
+    is_rim_file,
+)
+from toolset.gui.common.debugger import (  # pyright: ignore[reportPrivateImportUsage]
+    Debugger,
+    DebuggerState,
+)
 from toolset.gui.common.localization import tr, trf
 from toolset.gui.common.style.vscode_style import apply_tooltip_style_to_app
-from toolset.gui.common.widgets.breadcrumbs_widget import BreadcrumbsWidget  # pyright: ignore[reportPrivateImportUsage]
-from toolset.gui.common.widgets.command_palette import CommandPalette  # pyright: ignore[reportPrivateImportUsage]
-from toolset.gui.common.widgets.debug_callstack_widget import DebugCallStackWidget  # pyright: ignore[reportPrivateImportUsage]
-from toolset.gui.common.widgets.debug_variables_widget import DebugVariablesWidget  # pyright: ignore[reportPrivateImportUsage]
-from toolset.gui.common.widgets.debug_watch_widget import DebugWatchWidget  # pyright: ignore[reportPrivateImportUsage]
-from toolset.gui.common.widgets.find_replace_widget import FindReplaceWidget  # pyright: ignore[reportPrivateImportUsage]
-from toolset.gui.common.widgets.syntax_highlighter import SyntaxHighlighter  # pyright: ignore[reportPrivateImportUsage]
-from toolset.gui.common.widgets.test_config_widget import TestConfigDialog  # pyright: ignore[reportPrivateImportUsage]
+from toolset.gui.common.widgets.breadcrumbs_widget import (
+    BreadcrumbsWidget,  # pyright: ignore[reportPrivateImportUsage]
+)
+from toolset.gui.common.widgets.command_palette import (
+    CommandPalette,  # pyright: ignore[reportPrivateImportUsage]
+)
+from toolset.gui.common.widgets.debug_callstack_widget import (
+    DebugCallStackWidget,  # pyright: ignore[reportPrivateImportUsage]
+)
+from toolset.gui.common.widgets.debug_variables_widget import (
+    DebugVariablesWidget,  # pyright: ignore[reportPrivateImportUsage]
+)
+from toolset.gui.common.widgets.debug_watch_widget import (
+    DebugWatchWidget,  # pyright: ignore[reportPrivateImportUsage]
+)
+from toolset.gui.common.widgets.find_replace_widget import (
+    FindReplaceWidget,  # pyright: ignore[reportPrivateImportUsage]
+)
+from toolset.gui.common.widgets.syntax_highlighter import (
+    SyntaxHighlighter,  # pyright: ignore[reportPrivateImportUsage]
+)
+from toolset.gui.common.widgets.test_config_widget import (
+    TestConfigDialog,  # pyright: ignore[reportPrivateImportUsage]
+)
 from toolset.gui.editor import Editor  # pyright: ignore[reportPrivateImportUsage]
-from toolset.gui.widgets.settings.installations import GlobalSettings, NoConfigurationSetError  # pyright: ignore[reportPrivateImportUsage]
-from toolset.gui.widgets.terminal_widget import TerminalWidget  # pyright: ignore[reportPrivateImportUsage]
+from toolset.gui.widgets.settings.installations import (  # pyright: ignore[reportPrivateImportUsage]
+    GlobalSettings,
+    NoConfigurationSetError,
+)
+from toolset.gui.widgets.terminal_widget import (
+    TerminalWidget,  # pyright: ignore[reportPrivateImportUsage]
+)
 from toolset.utils.script import ht_compile_script  # pyright: ignore[reportPrivateImportUsage]
 from toolset.utils.window import open_resource_editor  # pyright: ignore[reportPrivateImportUsage]
 from utility.misc import is_debug_mode  # pyright: ignore[reportPrivateImportUsage]
@@ -95,9 +131,15 @@ if TYPE_CHECKING:
         QAbstractItemView,
     )
 
-    from pykotor.common.script import ScriptConstant, ScriptFunction, ScriptParam  # pyright: ignore[reportPrivateImportUsage]
+    from pykotor.common.script import (  # pyright: ignore[reportPrivateImportUsage]
+        ScriptConstant,
+        ScriptFunction,
+        ScriptParam,
+    )
     from pykotor.tools.reference_finder import ReferenceSearchResult
-    from toolset.data.installation import HTInstallation  # pyright: ignore[reportPrivateImportUsage]
+    from toolset.data.installation import (
+        HTInstallation,  # pyright: ignore[reportPrivateImportUsage]
+    )
     from toolset.gui.common.language_server_client import LanguageServerClient
 
 
@@ -131,7 +173,9 @@ class NSSEditor(Editor):
         supported: list[ResourceType] = [ResourceType.NSS, ResourceType.NCS]
         super().__init__(parent, "Script Editor", "script", supported, supported, installation)
 
-        from toolset.uic.qtpy.editors.nss import Ui_MainWindow  # noqa: PLC0415  # pylint: disable=C0415
+        from toolset.uic.qtpy.editors.nss import (
+            Ui_MainWindow,  # noqa: PLC0415  # pylint: disable=C0415
+        )
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -321,7 +365,7 @@ class NSSEditor(Editor):
                 {
                     "line": line_data,
                     "description": item.text(1),
-                }
+                },
             )
         settings = self._get_settings()
         settings.setValue(self._bookmark_settings_key(), json.dumps(bookmarks))
@@ -900,7 +944,12 @@ class NSSEditor(Editor):
         # Update constants and functions based on the selected game
         # Don't take these out of a type checking block. These are so large they'll lag out your language server in your IDE.
         if not TYPE_CHECKING:
-            from pykotor.common.scriptdefs import KOTOR_CONSTANTS, KOTOR_FUNCTIONS, TSL_CONSTANTS, TSL_FUNCTIONS
+            from pykotor.common.scriptdefs import (
+                KOTOR_CONSTANTS,
+                KOTOR_FUNCTIONS,
+                TSL_CONSTANTS,
+                TSL_FUNCTIONS,
+            )
             from pykotor.common.scriptlib import KOTOR_LIBRARY, TSL_LIBRARY
 
             self.constants[:] = sorted(TSL_CONSTANTS if self._is_tsl else KOTOR_CONSTANTS, key=attrgetter("name"))
@@ -1925,10 +1974,8 @@ class NSSEditor(Editor):
                 return
 
             # Clamp to valid range; cursor column can be past EOL (e.g. trailing whitespace / empty spans).
-            if character < 0:
-                character = 0
-            if character > len(current_line):
-                character = len(current_line)
+            character = max(character, 0)
+            character = min(character, len(current_line))
 
             # Find word at position
             word_start: int = character
@@ -2116,7 +2163,9 @@ class NSSEditor(Editor):
 
     def determine_script_path(self, resref: str) -> str:
         # Import lazily to avoid import errors when requests is missing
-        from toolset.gui.dialogs.github_selector import GitHubFileSelector  # pyright: ignore[reportPrivateImportUsage]
+        from toolset.gui.dialogs.github_selector import (
+            GitHubFileSelector,  # pyright: ignore[reportPrivateImportUsage]
+        )
 
         script_filename = f"{resref.lower()}.nss"
         dialog = GitHubFileSelector(self.owner, self.repo, selected_files=[script_filename], parent=self)
@@ -2822,7 +2871,7 @@ class NSSEditor(Editor):
 
         # Confirm before formatting
         reply: QMessageBox.StandardButton = QMessageBox.question(
-            self, "Format Code", "Format the entire document?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.Yes
+            self, "Format Code", "Format the entire document?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.Yes,
         )
         if reply != QMessageBox.StandardButton.Yes:
             return
@@ -2950,7 +2999,7 @@ class NSSEditor(Editor):
                                 "line": line_num,
                                 "content": line.strip()[:100],  # Limit content length
                                 "open_filepath": str(file_path),
-                            }
+                            },
                         )
             except Exception:
                 continue
@@ -3259,7 +3308,7 @@ class NSSEditor(Editor):
         """Handle replace all request."""
         # Confirm before replacing all
         reply = QMessageBox.question(
-            self, "Replace All", f"Replace all occurrences of '{find_text}'?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No
+            self, "Replace All", f"Replace all occurrences of '{find_text}'?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.Yes:
             count = self.ui.codeEdit.replace_all_occurrences(find_text, replace_text, case_sensitive, whole_words, regex)

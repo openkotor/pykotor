@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from contextlib import suppress
 from copy import copy
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from qtpy.QtCore import Qt
@@ -45,7 +44,9 @@ except ImportError:
 if TYPE_CHECKING:
     import os
 
-    from qtpy.QtCore import QPoint, Qt
+    from pathlib import Path
+
+    from qtpy.QtCore import QPoint
     from qtpy.QtGui import QColor, QKeyEvent, QKeySequence, QMouseEvent
     from qtpy.QtWidgets import (
         QAction,  # pyright: ignore[reportPrivateImportUsage]
@@ -351,7 +352,7 @@ class PTHEditor(Editor):
             action_show_room_boundaries = getattr(self.ui, "actionShowRoomBoundaries", None)
             if action_show_room_boundaries is not None:
                 action_show_room_boundaries.toggled.connect(
-                    lambda value: setattr(self.ui.renderArea, "show_room_boundaries", value)
+                    lambda value: setattr(self.ui.renderArea, "show_room_boundaries", value),
                 )
                 action_show_room_boundaries.toggled.connect(lambda _: self.ui.renderArea.update())
 
@@ -367,7 +368,7 @@ class PTHEditor(Editor):
         properties_dock.setFeatures(
             QDockWidget.DockWidgetFeature.DockWidgetMovable
             | QDockWidget.DockWidgetFeature.DockWidgetFloatable
-            | QDockWidget.DockWidgetFeature.DockWidgetClosable
+            | QDockWidget.DockWidgetFeature.DockWidgetClosable,
         )
         contents = QWidget()
         layout = QVBoxLayout(contents)
@@ -640,7 +641,7 @@ class PTHEditor(Editor):
         world = Vector2.from_vector3(self.ui.renderArea.to_world_coords(screen.x, screen.y))
         self._controls.on_mouse_pressed(screen, buttons, keys, world)
 
-    def on_mouse_released(self, screen: Vector2, buttons: set[int], keys: set[int]):
+    def on_mouse_released(self, screen: Vector2, buttons: set[int], keys: set[int], released_button: int | None = None):
         world = Vector2.from_vector3(self.ui.renderArea.to_world_coords(screen.x, screen.y))
         self._controls.on_mouse_released(screen, buttons, keys, world)
 
@@ -687,7 +688,7 @@ class PTHControlScheme:
         screenDelta: Vector2,
         world: Vector2,
         world_delta: Vector2,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ):
         if self.editor._connect_drag_source_index is not None:
@@ -711,7 +712,7 @@ class PTHControlScheme:
     def on_mouse_pressed(
         self,
         screen: Vector2,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
         world: Vector2,
     ):
@@ -746,7 +747,7 @@ class PTHControlScheme:
     def on_mouse_released(
         self,
         screen: Vector2,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
         world: Vector2,
     ):
@@ -766,7 +767,7 @@ class PTHControlScheme:
 
     def on_keyboard_pressed(
         self,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ):
         if self.delete_selected.satisfied(buttons, keys):
@@ -788,7 +789,7 @@ class PTHControlScheme:
 
     def onKeyboardReleased(
         self,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ):
         pass

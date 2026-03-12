@@ -11,7 +11,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Sound set label |
-| `resref` | [ResRef](GFF-File-Format#gff-data-types) | [sound set files](SSF-File-Format) ResRef (e.g., `c_human_m_01`) |
+| `resref` | *ResRef* | [sound set files](SSF-File-Format) ResRef (e.g., `c_human_m_01`) |
 
 **References**:
 

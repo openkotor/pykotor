@@ -16,15 +16,33 @@ HAS_PYOPENGL = has_pyopengl()
 gl_error = safe_gl_error_module()
 
 if HAS_PYOPENGL:
-    from OpenGL.GL import glGenBuffers, glGenVertexArrays, glVertexAttribPointer  # pyright: ignore[reportMissingImports]
+    from OpenGL.GL import (  # pyright: ignore[reportMissingImports]
+        glGenBuffers,
+        glGenVertexArrays,
+        glVertexAttribPointer,
+    )
     from OpenGL.GL.shaders import GL_FALSE  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.ARB.tessellation_shader import GL_TRIANGLES  # pyright: ignore[reportMissingImports]
+    from OpenGL.raw.GL.ARB.tessellation_shader import (
+        GL_TRIANGLES,  # pyright: ignore[reportMissingImports]
+    )
     from OpenGL.raw.GL.ARB.vertex_shader import GL_FLOAT  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_1_0 import GL_UNSIGNED_SHORT  # pyright: ignore[reportMissingImports]
+    from OpenGL.raw.GL.VERSION.GL_1_0 import (
+        GL_UNSIGNED_SHORT,  # pyright: ignore[reportMissingImports]
+    )
     from OpenGL.raw.GL.VERSION.GL_1_1 import glDrawElements  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_1_5 import GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, glBindBuffer, glBufferData  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_2_0 import glEnableVertexAttribArray  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_3_0 import glBindVertexArray  # pyright: ignore[reportMissingImports]
+    from OpenGL.raw.GL.VERSION.GL_1_5 import (  # pyright: ignore[reportMissingImports]
+        GL_ARRAY_BUFFER,
+        GL_ELEMENT_ARRAY_BUFFER,
+        GL_STATIC_DRAW,
+        glBindBuffer,
+        glBufferData,
+    )
+    from OpenGL.raw.GL.VERSION.GL_2_0 import (
+        glEnableVertexAttribArray,  # pyright: ignore[reportMissingImports]
+    )
+    from OpenGL.raw.GL.VERSION.GL_3_0 import (
+        glBindVertexArray,  # pyright: ignore[reportMissingImports]
+    )
 else:
     glGenBuffers = missing_gl_func("glGenBuffers")
     glGenVertexArrays = missing_gl_func("glGenVertexArrays")

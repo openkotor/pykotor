@@ -10,16 +10,16 @@ This document provides a detailed description of the SSF (sound set files) file 
 
 - KotOR SSF File Format Documentation
   - Table of Contents
-  - File Structure Overview
+  - [File structure overview](#file-structure-overview)
   - [Binary Format](#binary-format)
     - [File Header](#file-header)
     - [Sound Table](#sound-table)
-  - [Sound Event Types](#sound-event-types)
+  - [Sound event types](#sound-event-types)
   - [Implementation Details](#implementation-details)
 
 ---
 
-## file structure Overview
+## File structure overview
 
 SSF files define a set of 28 sound effects that creatures can play during various game events (battle cries, pain grunts, selection sounds, etc.). The [StrRefs](TLK-File-Format#string-references-strref) point to entries in [`dialog.tlk`](TLK-File-Format) which contain the actual [WAV file](WAV-File-Format) references. SSF files are loaded via the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
@@ -33,7 +33,7 @@ SSF files define a set of 28 sound effects that creatures can play during variou
 - [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/SSFObject.cs`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/SSFObject.cs) - C# Unity SSF loader
 - [`vendor/Kotor.NET/Kotor.NET/Formats/KotorSSF/`](https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorSSF) - .NET SSF reader/writer
 
-**See Also:**
+### See also
 
 - [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) - Modding SSF files with TSLPatcher
 - [TLK File Format](TLK-File-Format) - [Talk Table](TLK-File-Format) containing actual sound references
@@ -55,7 +55,11 @@ The file header is 12 bytes in size:
 | file Version        | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | Always `"V1.1"`                                 |
 | offset to Sound Table | [uint32](GFF-File-Format#gff-data-types) | 8 (0x08) | 4    | offset to sound table (typically 12)          |
 
-**Reference**: [`vendor/Kotor.NET/Kotor.NET/Formats/KotorSSF/SSFBinaryStructure.cs:10-91`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorSSF/SSFBinaryStructure.cs#L10-L91)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorSSF/SSFBinaryStructure.cs:10-91`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorSSF/SSFBinaryStructure.cs#L10-L91) - .NET SSF header and binary structure
 
 ### Sound Table
 
@@ -65,13 +69,17 @@ The sound table contains 28 [StrRef](TLK-File-Format#string-references-strref) e
 | ----------------- | ------ | ------ | ---- | ---------------------------------------------------------------- |
 | [StrRef](TLK-File-Format#string-references-strref) array      | [int32](GFF-File-Format#gff-data-types)[] | 0 (0x00) | 4×28 | array of 28 [StrRef](TLK-File-Format#string-references-strref) values (one per sound event type)            |
 
-Each entry is a [StrRef](TLK-File-Format#string-references-strref) (string reference) into [`dialog.tlk`](TLK-File-Format). value `-1` indicates no sound for that event type.
+Each entry is a [StrRef](TLK-File-Format#string-references-strref) (string reference) into [`dialog.tlk`](TLK-File-Format). Value `-1` indicates no sound for that event type.
 
-**Reference**: [`vendor/reone/src/libs/resource/format/ssfreader.cpp:31`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/ssfreader.cpp#L31)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/format/ssfreader.cpp:31`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/ssfreader.cpp#L31) - Sound table reading
 
 ---
 
-## Sound Event types
+## Sound event types
 
 The 28 sound event types correspond to array indices:
 

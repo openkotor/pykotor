@@ -9,8 +9,7 @@ if TYPE_CHECKING:
 
 
 def calculate_zoom_strength(delta_y: float, sens_setting: int) -> float:
-    """
-    Calculates a multiplicative zoom factor based on the scroll wheel delta
+    """Calculates a multiplicative zoom factor based on the scroll wheel delta
     and the user's camera sensitivity setting.
     
     Args:
@@ -38,8 +37,7 @@ def handle_standard_2d_camera_movement(
     *,
     is_indoor_builder: bool = False,
 ) -> bool:
-    """
-    Handles standard 2D view pan and rotate. Returns True if the camera was moved.
+    """Handles standard 2D view pan and rotate. Returns True if the camera was moved.
     
     Args:
         renderer: The renderer instance containing the camera.
@@ -58,7 +56,7 @@ def handle_standard_2d_camera_movement(
     from qtpy.QtCore import Qt
 
     did_handle = False
-    
+
     if is_indoor_builder:
         # Indoor Builder specific bindings (Middle mouse or LMB+Ctrl = Pan)
         if Qt.MouseButton.MiddleButton in buttons or (Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Control in keys):
@@ -68,17 +66,16 @@ def handle_standard_2d_camera_movement(
         elif Qt.MouseButton.RightButton in buttons and Qt.Key.Key_Control in keys:
             renderer.rotate_camera((delta.x / 50.0) * rotate_sens)
             did_handle = True
-    else:
-        # Standard WOK/ARE/GIT bindings (LMB+Ctrl = Pan, MMB+Ctrl = Rotate)
-        if Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Control in keys:
-            if hasattr(renderer, "do_cursor_lock"):
-                renderer.do_cursor_lock(screen)
-            renderer.camera.nudge_position(-world_delta.x * move_sens, -world_delta.y * move_sens)
-            did_handle = True
-        elif Qt.MouseButton.MiddleButton in buttons and Qt.Key.Key_Control in keys:
-            if hasattr(renderer, "do_cursor_lock"):
-                renderer.do_cursor_lock(screen)
-            renderer.camera.nudge_rotation((delta.x / 50.0) * rotate_sens)
-            did_handle = True
+    # Standard WOK/ARE/GIT bindings (LMB+Ctrl = Pan, MMB+Ctrl = Rotate)
+    elif Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Control in keys:
+        if hasattr(renderer, "do_cursor_lock"):
+            renderer.do_cursor_lock(screen)
+        renderer.camera.nudge_position(-world_delta.x * move_sens, -world_delta.y * move_sens)
+        did_handle = True
+    elif Qt.MouseButton.MiddleButton in buttons and Qt.Key.Key_Control in keys:
+        if hasattr(renderer, "do_cursor_lock"):
+            renderer.do_cursor_lock(screen)
+        renderer.camera.nudge_rotation((delta.x / 50.0) * rotate_sens)
+        did_handle = True
 
     return did_handle

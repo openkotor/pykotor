@@ -1,6 +1,10 @@
 # KotOR WAV file format Documentation
 
-KotOR stores both standard WAV voice-over lines and Bioware-obfuscated sound-effect files. Voice-over assets are regular RIFF containers with PCM headers, while SFX assets prepend a 470-[byte](GFF-File-Format#gff-data-types) custom block before the RIFF data. PyKotor handles both variants transparently. WAV files are resolved using the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+KotOR stores both standard WAV voice-over lines and Bioware-obfuscated sound-effect files. Voice-over assets are regular RIFF containers with PCM headers, while SFX assets prepend a 470-[byte](https://en.wikipedia.org/wiki/Byte) custom block before the RIFF data. PyKotor handles both variants transparently. WAV files are resolved using the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+
+**For mod developers:** WAV files are referenced by [TLK](TLK-File-Format) (voice-over) and [SSF](SSF-File-Format); see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** WAV is referenced by [TLK](TLK-File-Format) (StrRef → sound), [SSF](SSF-File-Format), [LIP](LIP-File-Format), and [DLG](GFF-DLG) (VO_ResRef).
 
 ## Table of Contents
 
@@ -16,12 +20,12 @@ KotOR stores both standard WAV voice-over lines and Bioware-obfuscated sound-eff
 
 ---
 
-## file types
+## File types
 
 | type | Usage | Description |
 | ---- | ----- | ----------- |
 | **VO (Voice-over)** | Dialogue lines (`*.wav` referenced by [TLK](TLK-File-Format) [StrRefs](TLK-File-Format#string-references-strref)). | Plain RIFF/WAVE PCM files readable by any media player. |
-| **SFX (Sound effects)** | Combat, UI, ambience, `.wav` files under `StreamSounds`/`SFX`. | Contains a Bioware 470-[byte](GFF-File-Format#gff-data-types) obfuscation header followed by the same RIFF data. |
+| **SFX (Sound effects)** | Combat, UI, ambience, `.wav` files under `StreamSounds`/`SFX`. | Contains a Bioware 470-[byte](https://en.wikipedia.org/wiki/Byte) obfuscation header followed by the same RIFF data. |
 
 PyKotor exposes these via the `WAVType` enum (`VO` vs. `SFX`) so tools know whether to insert/remove the proprietary header (`io_wav.py:52-121`).
 
@@ -40,7 +44,7 @@ KotOR sticks to the canonical RIFF chunk order:
 | 16 (0x10) | `<uint32>` | format chunk size (usually 0x10) |
 | … | See below | |
 
-### format Chunk
+### Format chunk
 
 | field | type | Description |
 | ----- | ---- | ----------- |
@@ -52,7 +56,7 @@ KotOR sticks to the canonical RIFF chunk order:
 | `bits_per_sample` | uint16 | 8 or 16 for PCM. |
 | `extra_bytes` | … | Present only when `fmt_size > 0x10` (e.g., ADPCM coefficients). |
 
-### data Chunk
+### Data chunk
 
 After the `fmt` chunk (and any optional `fact` chunk), the `"data"` chunk begins:
 
@@ -72,7 +76,11 @@ KotOR voice-over WAVs add a `"fact"` chunk with a 32-bit sample count, which PyK
 - After this header, the file resumes at the `"RIFF"` signature described above.  
 - When exporting SFX, PyKotor recreates the header verbatim so the game recognizes the asset (`io_wav.py:150-163`).  
 
-**Reference:** [`vendor/reone/src/libs/audio/format/wavreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/audio/format/wavreader.cpp)  
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/audio/format/wavreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/audio/format/wavreader.cpp) - WAV/SFX header and RIFF parsing
 
 ---
 
@@ -96,5 +104,12 @@ External tooling such as SithCodec and `SWKotOR-Audio-Encoder` implement the sam
   - [`vendor/SWKotOR-Audio-Encoder`](https://github.com/th3w1zard1/SWKotOR-Audio-Encoder)  
 
 With this structure, WAV assets authored in PyKotor will play identically in the base game and in the other vendor tools.
+
+### See also
+
+- [TLK File Format](TLK-File-Format) - Talk table that references WAV voice-over
+- [SSF File Format](SSF-File-Format) - Sound set files that reference WAV via StrRef
+- [LIP File Format](LIP-File-Format) - Lip-sync paired with WAV dialogue
+- [GFF-DLG](GFF-DLG) - Dialogue files that reference WAV (VO_ResRef)
 
 ---

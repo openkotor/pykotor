@@ -6,7 +6,14 @@ import qtpy
 
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QPalette, QStandardItem, QStandardItemModel
-from qtpy.QtWidgets import QHeaderView, QMenu, QPushButton, QStyleOptionViewItem, QTreeView, QVBoxLayout
+from qtpy.QtWidgets import (
+    QHeaderView,
+    QMenu,
+    QPushButton,
+    QStyleOptionViewItem,
+    QTreeView,
+    QVBoxLayout,
+)
 
 from utility.gui.qt.widgets.itemviews.abstractview import RobustAbstractItemView
 from utility.gui.qt.widgets.itemviews.html_delegate import HTMLDelegate
@@ -398,7 +405,14 @@ if __name__ == "__main__":
     import sys
 
     from qtpy.QtGui import QStandardItem, QStandardItemModel
-    from qtpy.QtWidgets import QApplication, QHBoxLayout, QMainWindow, QPushButton, QVBoxLayout, QWidget
+    from qtpy.QtWidgets import (
+        QApplication,
+        QHBoxLayout,
+        QMainWindow,
+        QPushButton,
+        QVBoxLayout,
+        QWidget,
+    )
 
     class MainWindow(QMainWindow):
         def __init__(self):

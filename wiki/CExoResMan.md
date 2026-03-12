@@ -6,7 +6,7 @@ This page documents the core resource manager used by both KotOR I and II.  All 
 The `CExoResMan` class provides a unified interface for locating and loading game resources (textures, models, scripts, etc.) from a variety of storage formats. The order in which it checks those sources matches the game's [resource resolution order](KEY-File-Format#key-file-purpose): override directory, then loaded MOD/SAV, then KEY/BIF.
 
 * **Directories** on disk (e.g. override)
-* **Encapsulated archives** (BIF/ERF)
+* **Encapsulated containers** (BIF/ERF)
 * **Image resources** (raw binary blobs)
 * **Resource files** (ERF modules)
 

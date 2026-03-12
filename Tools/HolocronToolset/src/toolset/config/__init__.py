@@ -16,11 +16,11 @@ from toolset.config.config_update import (  # noqa: E402
 
 
 __all__ = [
-    "version_to_toolset_tag",
-    "fetch_update_info",
-    "toolset_tag_to_version",
-    "is_remote_version_newer",
-    "get_remote_toolset_update_info",
-    "LOCAL_PROGRAM_INFO",
     "CURRENT_VERSION",
+    "LOCAL_PROGRAM_INFO",
+    "fetch_update_info",
+    "get_remote_toolset_update_info",
+    "is_remote_version_newer",
+    "toolset_tag_to_version",
+    "version_to_toolset_tag",
 ]

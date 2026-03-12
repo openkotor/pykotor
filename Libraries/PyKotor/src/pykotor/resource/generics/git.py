@@ -12,7 +12,15 @@ from loggerplus import RobustLogger
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Color, Game, ResRef
 from pykotor.extract.file import ResourceIdentifier
-from pykotor.resource.formats.gff import GFF, GFFContent, GFFList, GFFStruct, bytes_gff, read_gff, write_gff
+from pykotor.resource.formats.gff import (
+    GFF,
+    GFFContent,
+    GFFList,
+    GFFStruct,
+    bytes_gff,
+    read_gff,
+    write_gff,
+)
 from pykotor.resource.generics.utc import UTC, bytes_utc
 from pykotor.resource.generics.utd import UTD, bytes_utd
 from pykotor.resource.generics.ute import UTE, bytes_ute

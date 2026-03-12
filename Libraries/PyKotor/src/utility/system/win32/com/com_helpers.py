@@ -94,7 +94,9 @@ class COMCreateInstanceContext(Generic[T]):
 def HandleCOMCall(action_desc: str = "Unspecified COM function") -> Generator[Callable[..., None], Any, None]:
     print(f"Attempt to call COM func {action_desc}")
     try:
-        from comtypes import COMError  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
+        from comtypes import (
+            COMError,  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
+        )
     except ImportError:
         COMError = OSError
     future_error_msg = f"An error has occurred in win32 COM function '{action_desc}'"

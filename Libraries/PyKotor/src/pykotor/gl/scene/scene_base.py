@@ -38,7 +38,11 @@ from pykotor.gl.models.predefined_mdl import (
 )
 from pykotor.gl.models.read_mdl import gl_load_stitched_model
 from pykotor.gl.scene import Camera, RenderObject
-from pykotor.gl.scene.async_loader import AsyncResourceLoader, create_model_from_intermediate, create_texture_from_intermediate
+from pykotor.gl.scene.async_loader import (
+    AsyncResourceLoader,
+    create_model_from_intermediate,
+    create_texture_from_intermediate,
+)
 from pykotor.gl.shader import Texture
 from pykotor.resource.formats.lyt.lyt_data import LYT
 from pykotor.resource.formats.tpc.tpc_data import TPC

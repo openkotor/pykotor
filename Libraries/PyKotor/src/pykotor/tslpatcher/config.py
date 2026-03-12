@@ -90,7 +90,9 @@ class PatcherConfig:
             - Set the ConfigParser to use case-insensitive keys. Ini is inherently case-insensitive by default.
             - Call the load method on the ConfigReader, passing self to populate the configuration instance.
         """
-        from pykotor.tslpatcher.reader import ConfigReader  # noqa: PLC0415  Prevent circular imports.
+        from pykotor.tslpatcher.reader import (
+            ConfigReader,  # noqa: PLC0415  Prevent circular imports.
+        )
 
         ini = ConfigParser(
             delimiters=("="),
@@ -129,7 +131,9 @@ class PatcherConfig:
             - Sets the ini_filename, info_filename and name attributes from the config
             - Returns the populated PatcherNamespace
         """
-        from pykotor.tslpatcher.reader import ConfigReader  # noqa: PLC0415  Prevent circular imports.
+        from pykotor.tslpatcher.reader import (
+            ConfigReader,  # noqa: PLC0415  Prevent circular imports.
+        )
 
         reader: ConfigReader = ConfigReader.from_filepath(filepath)
         reader.load_settings()

@@ -6,7 +6,20 @@ import struct
 
 from typing import TYPE_CHECKING
 
-from panda3d.core import Geom, GeomNode, GeomTriangles, GeomVertexData, GeomVertexFormat, GeomVertexWriter, LMatrix4, LPoint3, LQuaternion, NodePath, Texture, TransformState
+from panda3d.core import (
+    Geom,
+    GeomNode,
+    GeomTriangles,
+    GeomVertexData,
+    GeomVertexFormat,
+    GeomVertexWriter,
+    LMatrix4,
+    LPoint3,
+    LQuaternion,
+    NodePath,
+    Texture,
+    TransformState,
+)
 
 from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.tpc import TPCTextureFormat

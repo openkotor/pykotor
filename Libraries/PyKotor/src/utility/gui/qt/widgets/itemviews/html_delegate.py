@@ -5,8 +5,31 @@ import re
 from typing import TYPE_CHECKING, Any, Callable
 
 from qtpy.QtCore import QEvent, QModelIndex, QPoint, QRect, QSize, Qt
-from qtpy.QtGui import QBrush, QColor, QFont, QIcon, QImage, QMouseEvent, QPainter, QPalette, QPen, QPixmap, QTextDocument, QTextOption
-from qtpy.QtWidgets import QApplication, QListView, QListWidget, QStyle, QStyledItemDelegate, QToolTip, QTreeView, QTreeWidget, QWidget
+from qtpy.QtGui import (
+    QBrush,
+    QColor,
+    QFont,
+    QIcon,
+    QImage,
+    QMouseEvent,
+    QPainter,
+    QPalette,
+    QPen,
+    QPixmap,
+    QTextDocument,
+    QTextOption,
+)
+from qtpy.QtWidgets import (
+    QApplication,
+    QListView,
+    QListWidget,
+    QStyle,
+    QStyledItemDelegate,
+    QToolTip,
+    QTreeView,
+    QTreeWidget,
+    QWidget,
+)
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QModelIndex, QObject

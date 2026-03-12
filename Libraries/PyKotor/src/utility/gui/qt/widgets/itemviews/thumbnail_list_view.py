@@ -374,7 +374,14 @@ class ThumbnailListView(QListView):
 if __name__ == "__main__":
     import sys
 
-    from qtpy.QtWidgets import QApplication, QHBoxLayout, QMainWindow, QPushButton, QVBoxLayout, QWidget
+    from qtpy.QtWidgets import (
+        QApplication,
+        QHBoxLayout,
+        QMainWindow,
+        QPushButton,
+        QVBoxLayout,
+        QWidget,
+    )
 
     app = QApplication(sys.argv)
 

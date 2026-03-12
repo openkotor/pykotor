@@ -9,12 +9,12 @@ import math
 from collections import deque
 from copy import copy, deepcopy
 from time import monotonic, perf_counter
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 import qtpy
 
 from qtpy import QtCore
-from qtpy.QtCore import QMetaObject, QThread, QTimer, Qt
+from qtpy.QtCore import QTimer, Qt
 from qtpy.QtGui import QColor, QPainter, QPen, QPolygonF
 from qtpy.QtWidgets import (
     QApplication,
@@ -38,20 +38,33 @@ if TYPE_CHECKING:
         QPoint,  # pyright: ignore[reportAttributeAccessIssue]
         QPointF,  # pyright: ignore[reportAttributeAccessIssue]
     )
-    from qtpy.QtGui import QFocusEvent, QKeyEvent, QMouseEvent, QOpenGLContext, QResizeEvent, QWheelEvent
+    from qtpy.QtGui import (
+        QFocusEvent,
+        QKeyEvent,
+        QMouseEvent,
+        QOpenGLContext,
+        QResizeEvent,
+        QWheelEvent,
+    )
     from qtpy.QtWidgets import QWidget
 
     from pykotor.common.module import Module, ModuleResource
     from pykotor.gl.scene import RenderObject
     from pykotor.resource.formats.bwm import BWMFace
-    from pykotor.resource.formats.lyt.lyt_data import LYT, LYTDoorHook, LYTObstacle, LYTRoom, LYTTrack
+    from pykotor.resource.formats.lyt.lyt_data import (
+        LYT,
+        LYTDoorHook,
+        LYTObstacle,
+        LYTRoom,
+        LYTTrack,
+    )
     from toolset.data.installation import HTInstallation
 
 
 class FrameStats:
     """Lightweight frame statistics tracker used to estimate FPS."""
 
-    __slots__ = ("_timestamps", "_frame_count")
+    __slots__ = ("_frame_count", "_timestamps")
 
     def __init__(self, max_samples: int = 512):
         self._timestamps: deque[float] = deque(maxlen=max_samples)
@@ -86,34 +99,34 @@ class FrameStats:
 
 
 class ModuleRenderer(QOpenGLWidget):
-    sig_renderer_initialized = QtCore.Signal()  # pyright: ignore[reportPrivateImportUsage]
+    sig_renderer_initialized: ClassVar[QtCore.Signal] = QtCore.Signal()  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when the context is being setup, the QMainWindow must be in an activated/unhidden state."""
 
-    sig_scene_initialized = QtCore.Signal()  # pyright: ignore[reportPrivateImportUsage]
+    sig_scene_initialized: ClassVar[QtCore.Signal] = QtCore.Signal()  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when scene has been initialized."""
 
-    sig_mouse_moved = QtCore.Signal(
-        object, object, object, object, object
-    )  # screen coords, screen delta, world/mouse pos, mouse, keys  # pyright: ignore[reportPrivateImportUsage]  # noqa: E501
+    sig_mouse_moved: ClassVar[QtCore.Signal] = QtCore.Signal(  # pyright: ignore[reportPrivateImportUsage]  # noqa: E501
+        object, object, object, object, object,
+    )  # screen coords, screen delta, world/mouse pos, mouse, keys
     """Signal emitted when mouse is moved over the widget."""
 
-    sig_mouse_scrolled = QtCore.Signal(object, object, object)  # screen delta, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_scrolled: ClassVar[QtCore.Signal] = QtCore.Signal(object, object, object)  # screen delta, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when mouse is scrolled over the widget."""
 
-    sig_mouse_released = QtCore.Signal(object, object, object)  # screen coords, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_released: ClassVar[QtCore.Signal] = QtCore.Signal(object, object, object, object)  # screen coords, mouse, keys, released_button  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when a mouse button is released after being pressed on the widget."""
 
-    sig_mouse_pressed = QtCore.Signal(object, object, object)  # screen coords, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_pressed: ClassVar[QtCore.Signal] = QtCore.Signal(object, object, object)  # screen coords, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when a mouse button is pressed on the widget."""
 
-    sig_keyboard_pressed = QtCore.Signal(object, object)  # mouse, keys  # pyright: ignore[reportPrivateImportUsage]
+    sig_keyboard_pressed: ClassVar[QtCore.Signal] = QtCore.Signal(object, object)  # mouse, keys  # pyright: ignore[reportPrivateImportUsage]
 
-    sig_keyboard_released = QtCore.Signal(object, object)  # mouse, keys  # pyright: ignore[reportPrivateImportUsage]
+    sig_keyboard_released: ClassVar[QtCore.Signal] = QtCore.Signal(object, object)  # mouse, keys  # pyright: ignore[reportPrivateImportUsage]
 
-    sig_object_selected = QtCore.Signal(object)  # pyright: ignore[reportPrivateImportUsage]
+    sig_object_selected: ClassVar[QtCore.Signal] = QtCore.Signal(object)  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when an object has been selected through the renderer."""
 
-    sig_lyt_updated = QtCore.Signal(object)  # pyright: ignore[reportPrivateImportUsage]
+    sig_lyt_updated: ClassVar[QtCore.Signal] = QtCore.Signal(object)  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when the LYT data has been updated."""
 
     def __init__(self, parent: QWidget):
@@ -123,12 +136,11 @@ class ModuleRenderer(QOpenGLWidget):
             ModuleDesignerSettings,  # noqa: PLC0415  # pylint: disable=C0415
         )
 
-        self._scene: Scene | None = None
+        self.scene: Scene | None = None
         self.settings: ModuleDesignerSettings = ModuleDesignerSettings()
         self._module: Module | None = None
         self._installation: HTInstallation | None = None
         self._lyt: LYT | None = None
-        self._lyt_editor = None  # Will hold the LYT editor instance
 
         self.loop_timer: QTimer = QTimer(self)
         self.loop_timer.timeout.connect(self.loop)
@@ -148,15 +160,15 @@ class ModuleRenderer(QOpenGLWidget):
         self.free_cam: bool = False  # Changes how screenDelta is calculated in mouseMoveEvent
         self.delta: float = 0.0166  # Approx 60 FPS frame time
         self._frame_stats: FrameStats = FrameStats()
-        self._initializing = False  # Flag to prevent resize events during initialization
-        self._gl_initialized = False  # Track if initializeGL has been called
+        self._initializing: bool = False  # Flag to prevent resize events during initialization
+        self._gl_initialized: bool = False  # Track if initializeGL has been called
         self._selected_walkmesh_face: tuple[BWM, int, Vector3] | None = None
         self._selected_walkmesh_edge: tuple[BWM, int, int, Vector3] | None = None
         self._selected_walkmesh_vertex: tuple[BWM, int, int, Vector3] | None = None
         self._walkmesh_vertex_drag_axis: str | None = None
         self._walkmesh_vertex_hover_axis: str | None = None
         self._selected_object_position: Vector3 | None = None
-        self._object_gizmo_mode: str = "translate"
+        self._object_gizmo_mode: str = "translate"  # noqa: FBT001
         self._object_gizmo_drag_axis: str | None = None
         self._object_gizmo_hover_axis: str | None = None
         self._drop_preview_world: Vector3 | None = None
@@ -166,8 +178,8 @@ class ModuleRenderer(QOpenGLWidget):
         self._show_vis_overlay: bool = True
 
     @property
-    def scene(self) -> Scene | None:
-        return self._scene
+    def _scene(self) -> Scene | None:
+        return self.scene
 
     def show_scene_not_ready_message(self):
         from toolset.gui.common.localization import translate as tr
@@ -228,7 +240,7 @@ class ModuleRenderer(QOpenGLWidget):
                 sleep(0.01)  # Small delay to allow Qt to initialize
 
         # Final check if a context is available
-        ctx = self.context()
+        ctx: QOpenGLContext | None = self.context()
         if ctx is None or not ctx.isValid():
             RobustLogger().error("initializeGL was not called or did not complete successfully after waiting.")
             raise RuntimeError("Failed to initialize OpenGL context. Ensure that the widget is visible and properly integrated into the application's window.")
@@ -239,7 +251,7 @@ class ModuleRenderer(QOpenGLWidget):
 
         self._installation = installation
         self._module = module
-        self._scene = Scene(
+        self.scene = Scene(
             installation=installation,
             module=module,
         )
@@ -247,15 +259,16 @@ class ModuleRenderer(QOpenGLWidget):
         # Initialize module data
         lyt: ModuleResource[LYT] | None = module.layout()
         if lyt is not None:
-            self._scene.layout = lyt.resource()
+            self.scene.layout = lyt.resource()
 
+        assert self.scene is not None, "Scene is not initialized"
         self.scene.camera.fov = self.settings.fieldOfView
         self.scene.camera.width = self.width()
         self.scene.camera.height = self.height()
         self.sig_scene_initialized.emit()
         self.resume_render_loop()
 
-    def initializeGL(self):
+    def initializeGL(self) -> None:
         RobustLogger().debug("ModuleRenderer.initializeGL called.")
         # Ensure OpenGL context is current
         self.makeCurrent()
@@ -273,7 +286,7 @@ class ModuleRenderer(QOpenGLWidget):
             return
 
         # Ensure OpenGL context is valid and current before Qt tries to resize
-        ctx = self.context()
+        ctx: QOpenGLContext | None = self.context()
         if ctx is None or not ctx.isValid():
             RobustLogger().warning("OpenGL context not valid in resizeEvent, skipping resize")
             return
@@ -290,7 +303,7 @@ class ModuleRenderer(QOpenGLWidget):
         self,
         width: int,
         height: int,
-    ):
+    ) -> None:
         RobustLogger().debug("ModuleRenderer resizeGL called.")
         # Ensure context is current before Qt tries to resize
         try:
@@ -298,27 +311,28 @@ class ModuleRenderer(QOpenGLWidget):
         except Exception:
             RobustLogger().warning("Failed to make context current in resizeGL, continuing anyway")
         super().resizeGL(width, height)
-        if not self._scene:
+        if self.scene is None:
             RobustLogger().debug("ignoring scene camera width/height updates in ModuleRenderer resizeGL - the scene is not initialized yet.")
             return
         self.scene.camera.width = width
         self.scene.camera.height = height
 
-    def resume_render_loop(self):
+    def resume_render_loop(self) -> None:
         """Resumes the rendering loop by starting the timer."""
         RobustLogger().debug("ModuleRenderer - resumeRenderLoop called.")
         if not self.loop_timer.isActive():
             self.loop_timer.start(self.loop_interval)
+        assert self.scene is not None, "Scene is not initialized"
         self.scene.camera.width = self.width()
         self.scene.camera.height = self.height()
 
-    def pause_render_loop(self):
+    def pause_render_loop(self) -> None:
         """Pauses the rendering loop by stopping the timer."""
         RobustLogger().debug("ModuleRenderer - pauseRenderLoop called.")
         if self.loop_timer.isActive():
             self.loop_timer.stop()
 
-    def shutdown_renderer(self):
+    def shutdown_renderer(self) -> None:
         """Stops the rendering loop, unloads the module and installation, and attempts to destroy the OpenGL context."""
         RobustLogger().debug("ModuleRenderer - shutdownRenderer called.")
         self.pause_render_loop()
@@ -334,13 +348,13 @@ class ModuleRenderer(QOpenGLWidget):
             self.update()  # Trigger an update which will indirectly handle context recreation when needed
 
         self.hide()
-        self._scene = None
+        self.scene = None
 
     def set_lyt(self, lyt: LYT) -> None:
         """Set the current LYT data and update the scene."""
         self._lyt = deepcopy(lyt)
-        if self._scene:
-            self._scene.layout = self._lyt
+        if self.scene is not None:
+            self.scene.layout = self._lyt
             self.update()
         self.sig_lyt_updated.emit(self._lyt)
 
@@ -352,14 +366,14 @@ class ModuleRenderer(QOpenGLWidget):
         show_cursor: bool | None = None,
     ) -> None:
         """Apply renderer overlay/display toggles to the active scene."""
-        if self._scene is None:
+        if self.scene is None:
             return
         if backface_culling is not None:
-            self._scene.backface_culling = backface_culling
+            self.scene.backface_culling = backface_culling
         if use_lightmap is not None:
-            self._scene.use_lightmap = use_lightmap
+            self.scene.use_lightmap = use_lightmap
         if show_cursor is not None:
-            self._scene.show_cursor = show_cursor
+            self.scene.show_cursor = show_cursor
         self.update()
 
     def get_lyt(self) -> LYT | None:
@@ -408,8 +422,8 @@ class ModuleRenderer(QOpenGLWidget):
 
     def update_lyt_preview(self) -> None:
         """Update the LYT preview in the scene."""
-        if self._scene and self._lyt:
-            self._scene.layout = self._lyt
+        if self.scene and self._lyt:
+            self.scene.layout = self._lyt
             self.update()
             self.sig_lyt_updated.emit(self._lyt)
 
@@ -462,6 +476,7 @@ class ModuleRenderer(QOpenGLWidget):
         # Handle object selection (only when requested)
         if self.do_select:
             self.do_select = False
+            assert self.scene is not None, "Scene is not initialized"
             obj: RenderObject | None = self.scene.pick(self._mouse_prev.x, self.height() - self._mouse_prev.y)
 
             if obj is not None and isinstance(obj.data, GITInstance):
@@ -474,12 +489,14 @@ class ModuleRenderer(QOpenGLWidget):
         # Use the previous frame's cached _mouse_world to avoid chicken-and-egg with depth read.
         # Fallback: camera focal point for first frame or when mouse is outside widget.
         if self._mouse_world_last_screen is not None:
+            assert self.scene is not None, "Scene is not initialized"
             self.scene.cursor.set_position(
                 self._mouse_world.x,
                 self._mouse_world.y,
                 self._mouse_world.z,
             )
         else:
+            assert self.scene is not None, "Scene is not initialized"
             self.scene.cursor.set_position(
                 self.scene.camera.x,
                 self.scene.camera.y,
@@ -487,6 +504,7 @@ class ModuleRenderer(QOpenGLWidget):
             )
 
         # Main render pass
+        assert self.scene is not None, "Scene is not initialized"
         self.scene.render()
         self._draw_walkmesh_selection_overlay()
         self._draw_object_gizmo_overlay()
@@ -502,6 +520,7 @@ class ModuleRenderer(QOpenGLWidget):
         y = float(self._mouse_prev.y)
         if 0.0 <= x < float(self.width()) and 0.0 <= y < float(self.height()):
             try:
+                assert self.scene is not None, "Scene is not initialized"
                 world = self.scene.screen_to_world_from_depth_buffer(int(x), int(y))
                 self._mouse_world = world
                 self._mouse_world_last_screen = Vector2(x, y)
@@ -590,13 +609,14 @@ class ModuleRenderer(QOpenGLWidget):
         )
 
     def _walkmesh_vertex_gizmo_size(self, vertex: Vector3) -> float:
-        if self._scene is None:
+        if self.scene is None:
             return 0.6
+        assert self.scene is not None, "Scene is not initialized"
         camera = self.scene.camera
         distance = math.sqrt(
             (camera.x - vertex.x) ** 2
             + (camera.y - vertex.y) ** 2
-            + (camera.z - vertex.z) ** 2
+            + (camera.z - vertex.z) ** 2,
         )
         return max(0.45, min(2.0, distance * 0.08))
 
@@ -713,7 +733,7 @@ class ModuleRenderer(QOpenGLWidget):
         return best_axis
 
     def _project_world_to_screen(self, point: Vector3) -> QPointF | None:
-        if self._scene is None:
+        if self.scene is None:
             return None
 
         view = self.scene.camera.view()
@@ -1108,7 +1128,7 @@ class ModuleRenderer(QOpenGLWidget):
         if self._module is None:
             return None
 
-        layout = self._scene.layout if self._scene is not None else None
+        layout = self.scene.layout if self.scene is not None else None
         best: tuple[BWM, BWMFace, Vector3] | None = None
         for module_resource in self._module.resources.values():
             if module_resource.restype() is not ResourceType.WOK:
@@ -1387,7 +1407,7 @@ class ModuleRenderer(QOpenGLWidget):
 
         pos: QPoint = e.pos() if qtpy.QT5 else e.position().toPoint()  # type: ignore[attr-defined] # pyright: ignore[reportAttributeAccessIssue]
         coords: Vector2 = Vector2(pos.x(), pos.y())
-        self.sig_mouse_released.emit(coords, self._mouse_down, self._keys_down)
+        self.sig_mouse_released.emit(coords, self._mouse_down, self._keys_down, button)
         # RobustLogger().debug(f"ModuleRenderer.mouseReleaseEvent: {self._mouse_down}, e.button() '{button}'")
 
     def keyPressEvent(  # pyright: ignore[reportIncompatibleMethodOverride]

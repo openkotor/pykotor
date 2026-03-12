@@ -2,6 +2,10 @@
 
 NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts run inside a stack-based virtual machine **shared across Aurora engine games** (KotOR, Neverwinter Nights, etc.). KotOR inherits the same format with minor opcode additions for game-specific systems. **This documentation focuses on KotOR-specific behavior**, though the core format is shared with Neverwinter Nights. In the Odyssey engine, script execution runs in the **server** (game world) context: triggers, dialogues, and engine calls operate on the server; the client receives state updates and handles display and input. NCS files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
+**For mod developers:** Scripts are compiled from [NSS](NSS-File-Format) source; see the NSS/NCS toolset and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** NCS is produced from [NSS](NSS-File-Format); triggered by [DLG](GFF-DLG), [GIT](GFF-File-Format#git-game-instance-template), [UTC](GFF-File-Format#utc-creature), [UTD](GFF-UTD), [UTP](GFF-UTP), and [IFO](GFF-IFO) script hooks.
+
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/)
 
 **Vendor References:**
@@ -13,7 +17,7 @@ NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts 
 - [`vendor/NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs) - C# Unity NCS parser
 - [`Vanilla KOTOR Script Source`](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source) - Decompiled vanilla scripts
 
-**See Also:**
+### See also
 
 - [NSS File Format](NSS-File-Format) - NWScript source code that compiles to NCS
 - [GFF-DLG](GFF-DLG) - [dialogue files](GFF-File-Format#dlg-dialogue) that trigger NCS scripts
@@ -22,9 +26,9 @@ NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts 
 
 - [KotOR NCS files format Documentation](#kotor-ncs-files-format-documentation)
   - Table of Contents
-  - [file structure Overview](#file-structure-overview)
+  - [File structure overview](#file-structure-overview)
     - [Stack-Based Virtual Machine](#stack-based-virtual-machine)
-  - [header](#header)
+  - [Header](#header)
   - [Instruction Encoding](#instruction-encoding)
     - [Bytecode](#bytecode)
     - [Qualifier](#qualifier)
@@ -47,7 +51,7 @@ NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts 
 
 ---
 
-## file structure Overview
+## File structure overview
 
 | offset | size | Description |
 | ------ | ---- | ----------- |
@@ -59,15 +63,21 @@ NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts 
 
 - The VM executes sequential instructions; control-flow opcodes (`JMP`, `JZ`, `JSR`) adjust the instruction pointer.  
 - KotOR introduces no custom container sections—scripts are a flat stream.  
-- All major reverse-engineered engines (`vendor/reone`, `vendor/xoreos`, `vendor/Kotor.NET`, `vendor/NorthernLights`) decode the same structure; KotOR.js uses a WebAssembly VM but identical [byte](GFF-File-Format#gff-data-types) layouts.
+- All major reverse-engineered engines (`vendor/reone`, `vendor/xoreos`, `vendor/Kotor.NET`, `vendor/NorthernLights`) decode the same structure; KotOR.js uses a WebAssembly VM but identical [byte](https://en.wikipedia.org/wiki/Byte) layouts.
 - The program size marker at offset 8 (`0x42`) is not a real instruction but a metadata field containing the total file size. Execution begins at offset 13 (0x0D) after the header.
 
-**Reference:** [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:342-350`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L342-L350), [`vendor/xoreos-tools/src/nwscript/ncsfile.cpp:116-125`](https://github.com/th3w1zard1/xoreos/blob/master/xoreos-tools/src/nwscript/ncsfile.cpp#L116-L125), [`vendor/reone/src/libs/script/format/ncsreader.cpp:28-40`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncsreader.cpp#L28-L40)  
-**Reference**: [`vendor/xoreos-docs/specs/torlack/ncs.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/ncs.html) - Tim Smith (Torlack)'s comprehensive NWScript bytecode documentation with detailed opcode tables, stack operation examples, and subroutine calling conventions
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:342-350`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L342-L350) - NCS header and program size
+- [`vendor/xoreos-tools/src/nwscript/ncsfile.cpp:116-125`](https://github.com/th3w1zard1/xoreos/blob/master/xoreos-tools/src/nwscript/ncsfile.cpp#L116-L125) - NCS decompiler header
+- [`vendor/reone/src/libs/script/format/ncsreader.cpp:28-40`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncsreader.cpp#L28-L40) - NCS reader header
+- [`vendor/xoreos-docs/specs/torlack/ncs.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/ncs.html) - Tim Smith (Torlack)'s NWScript bytecode documentation (opcode tables, stack examples, calling conventions)
 
 ### Stack-Based Virtual Machine
 
-NWScript uses a stack-based VM where all operations work on a stack rather than CPU registers. Stack grows downward with negative offsets, 4-[byte](GFF-File-Format#gff-data-types) aligned elements.
+NWScript uses a stack-based VM where all operations work on a stack rather than CPU registers. Stack grows downward with negative offsets, 4-[byte](https://en.wikipedia.org/wiki/Byte) aligned elements.
 
 **Stack Pointer (SP):** `SP = (stackPtr + 1) * -4`. Stack positions are negative multiples of 4 (e.g., `-4`, `-8`, `-12`).
 
@@ -81,8 +91,8 @@ SP → -4:  j: 1        (topmost)
 
 **position Calculations:**
 
-- [byte](GFF-File-Format#gff-data-types) offset to position: `-offset / 4` (e.g., `-12` → position 3)
-- [byte](GFF-File-Format#gff-data-types) size to elements: `size / 4` (e.g., 12 bytes → 3 elements)
+- [byte](https://en.wikipedia.org/wiki/Byte) offset to position: `-offset / 4` (e.g., `-12` → position 3)
+- [byte](https://en.wikipedia.org/wiki/Byte) size to elements: `size / 4` (e.g., 12 bytes → 3 elements)
 
 **Global Variables:** Accessed via base pointer (BP). The `#globals` routine initializes globals before `main()`, then `SAVEBP` saves current SP as BP. Functions access globals via `CPTOPBP`/`CPDOWNBP`. `RESTOREBP` restores previous BP.
 
@@ -90,7 +100,7 @@ SP → -4:  j: 1        (topmost)
 
 - **Constants**: Immutable values (`CONSTx`) reawd from instructions — int, [float](GFF-File-Format#gff-data-types), string, object
 - **Variables**: Assignable stack slots created via `RSADDx`, modified via `CPDOWNSP`/`CPDOWNBP`
-- **structures**: Composite types spanning multiple positions (vectors = 3 positions/12 bytes, custom = 4-[byte](GFF-File-Format#gff-data-types) multiples)
+- **structures**: Composite types spanning multiple positions (vectors = 3 positions/12 bytes, custom = 4-[byte](https://en.wikipedia.org/wiki/Byte) multiples)
 
 **Lifecycle:** Create (`CONSTx`, `RSADDx`, `CPTOPSP`) → Modify (`CPDOWNSP`, `INCxSP`) → Consume (operations, `MOVSP`) → Destroy (`DESTRUCT`)
 
@@ -99,7 +109,7 @@ SP → -4:  j: 1        (topmost)
 - **Reference Counting**: Track variable usage per stack instance
 - **Assignment Status**: Distinguish initialized vs uninitialized variables
 - **type Inference**: Infer types through operation chains
-- **structure Recognition**: 12-[byte](GFF-File-Format#gff-data-types) copies → vectors (z, y, x order), other multiples of 4 → custom structures
+- **structure Recognition**: 12-[byte](https://en.wikipedia.org/wiki/Byte) copies → vectors (z, y, x order), other multiples of 4 → custom structures
 - **Variable Naming**: Generate names from type + position or infer from usage patterns
 
 **Reference:** [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:105-172`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L105-L172) (SP/BP), [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:389-394`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L389-L394) (globals), [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:1039-1060`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L1039-L1060) (SAVEBP/RESTOREBP), [`vendor/reone/src/libs/script/format/ncsreader.cpp:52-97`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncsreader.cpp#L52-L97) (parsing), [`vendor/xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/xoreos-tools/src/nwscript/ncsfile.cpp) (decompilation), [`vendor/KotOR.js/src/odyssey/NWScriptInstance.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/odyssey/NWScriptInstance.ts) (JS runtime), [`vendor/NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs) (Unity)
@@ -192,12 +202,12 @@ Example: `ADDxx` with qualifier `IntInt` performs integer addition, while the sa
 
 - All primitive types (int, [float](GFF-File-Format#gff-data-types), string pointer, object ID, engine types) are 4 bytes
 - vectors are 12 bytes (3 consecutive floats)
-- structures have variable size but must be 4-[byte](GFF-File-Format#gff-data-types) aligned
-- The TT (structure) qualifier type is used for comparing ranges of elements on the stack, specifically for structures and vectors. When used with `EQUALTT` or `NEQUALTT`, it requires a 2-[byte](GFF-File-Format#gff-data-types) size field indicating how many bytes to compare (must be a multiple of 4).
+- structures have variable size but must be 4-[byte](https://en.wikipedia.org/wiki/Byte) aligned
+- The TT (structure) qualifier type is used for comparing ranges of elements on the stack, specifically for structures and vectors. When used with `EQUALTT` or `NEQUALTT`, it requires a 2-[byte](https://en.wikipedia.org/wiki/Byte) size field indicating how many bytes to compare (must be a multiple of 4).
 
 **type System Details:**
 
-The qualifier [byte](GFF-File-Format#gff-data-types) system allows the same opcode to operate on different data types. type qualifiers are organized into ranges:
+The qualifier [byte](https://en.wikipedia.org/wiki/Byte) system allows the same opcode to operate on different data types. type qualifiers are organized into ranges:
 
 - Unary types (0x03-0x1F): Single operand types
 - Binary types (0x20-0x3C): Two operand type combinations
@@ -209,7 +219,7 @@ vector types are special: they occupy 3 stack positions (12 bytes) but are treat
 
 ### Arguments
 
-Instruction arguments follow the qualifier [byte](GFF-File-Format#gff-data-types) and vary by instruction type. All multi-[byte](GFF-File-Format#gff-data-types) values are stored in [**big-endian**](https://en.wikipedia.org/wiki/Endianness) [byte](GFF-File-Format#gff-data-types) order.
+Instruction arguments follow the qualifier [byte](https://en.wikipedia.org/wiki/Byte) and vary by instruction type. All multi-[byte](https://en.wikipedia.org/wiki/Byte) values are stored in [**big-endian**](https://en.wikipedia.org/wiki/Endianness) [byte](https://en.wikipedia.org/wiki/Byte) order.
 
 **Argument format Patterns:**
 
@@ -236,10 +246,10 @@ Instruction arguments follow the qualifier [byte](GFF-File-Format#gff-data-types
 
 7. **Stack Copy Operations** (8 bytes total: opcode + qualifier + 4 bytes offset + 2 bytes size):
    - `CPDOWNSP`, `CPTOPSP`, `CPDOWNBP`, `CPTOPBP`: Signed 32-bit stack offset + unsigned 16-bit size
-   - Stack offset conversion: Negative [byte](GFF-File-Format#gff-data-types) offsets are converted to stack positions by dividing by 4 (e.g., offset -4 becomes position 1, offset -8 becomes position 2)
+   - Stack offset conversion: Negative [byte](https://en.wikipedia.org/wiki/Byte) offsets are converted to stack positions by dividing by 4 (e.g., offset -4 becomes position 1, offset -8 becomes position 2)
    - size field indicates number of bytes to copy (must be multiple of 4 for alignment)
 
-8. **Engine Function Call** (5 bytes total: opcode + qualifier + 2 bytes routine + 1 [byte](GFF-File-Format#gff-data-types) arg count):
+8. **Engine Function Call** (5 bytes total: opcode + qualifier + 2 bytes routine + 1 [byte](https://en.wikipedia.org/wiki/Byte) arg count):
    - `ACTION`: Unsigned 16-bit routine number + unsigned 8-bit argument count
    - Routine number indexes into the engine's function table (actions data)
    - Argument count specifies how many stack elements (not bytes) to pass to the function
@@ -254,8 +264,8 @@ Instruction arguments follow the qualifier [byte](GFF-File-Format#gff-data-types
 10. **Struct Comparison** (4 bytes total: opcode + qualifier + 2 bytes):
 
 - `EQUALTT`, `NEQUALTT`: format: `[0x0B/0x0C][0x24][uint16 size]`
-  - `size`: Number of bytes to compare (must be multiple of 4, as structures are 4-[byte](GFF-File-Format#gff-data-types) aligned)
-  - Compares two structures on the stack [byte](GFF-File-Format#gff-data-types)-by-[byte](GFF-File-Format#gff-data-types) for equality/inequality
+  - `size`: Number of bytes to compare (must be multiple of 4, as structures are 4-[byte](https://en.wikipedia.org/wiki/Byte) aligned)
+  - Compares two structures on the stack [byte](https://en.wikipedia.org/wiki/Byte)-by-[byte](https://en.wikipedia.org/wiki/Byte) for equality/inequality
   - Both structures must be the same size
   - Only used when qualifier is `0x24` (structure, structure)
 
@@ -264,10 +274,10 @@ Jump offsets are **relative to the start of the jump instruction itself**, not t
 
 **Byte Order:**
 
-All multi-[byte](GFF-File-Format#gff-data-types) values in NCS files are stored in **[big-endian](https://en.wikipedia.org/wiki/Endianness)** ([network byte order](https://en.wikipedia.org/wiki/Endianness#Networking)):
+All multi-[byte](https://en.wikipedia.org/wiki/Byte) values in NCS files are stored in **[big-endian](https://en.wikipedia.org/wiki/Endianness)** ([network byte order](https://en.wikipedia.org/wiki/Endianness#Networking)):
 
-- 16-bit values ([uint16](GFF-File-Format#gff-data-types), [int16](GFF-File-Format#gff-data-types)): Most significant [byte](GFF-File-Format#gff-data-types) first
-- 32-bit values ([uint32](GFF-File-Format#gff-data-types), [int32](GFF-File-Format#gff-data-types), [float32](GFF-File-Format#gff-data-types)): Most significant [byte](GFF-File-Format#gff-data-types) first
+- 16-bit values ([uint16](GFF-File-Format#gff-data-types), [int16](GFF-File-Format#gff-data-types)): Most significant [byte](https://en.wikipedia.org/wiki/Byte) first
+- 32-bit values ([uint32](GFF-File-Format#gff-data-types), [int32](GFF-File-Format#gff-data-types), [float32](GFF-File-Format#gff-data-types)): Most significant [byte](https://en.wikipedia.org/wiki/Byte) first
 - This applies to: offsets, sizes, constants, jump targets, and all numeric arguments
 
 **Instruction Parsing:**
@@ -284,7 +294,7 @@ Standard process: Read opcode + qualifier → Determine argument format via look
 - `ACTION` (0x05): 2B routine + 1B argCount
 - `EQUALTT`/`NEQUALTT` with qualifier 0x24: 2B size (multiple of 4)
 
-All multi-[byte](GFF-File-Format#gff-data-types) values: [big-endian](https://en.wikipedia.org/wiki/Endianness)
+All multi-[byte](https://en.wikipedia.org/wiki/Byte) values: [big-endian](https://en.wikipedia.org/wiki/Endianness)
 
 **Execution State:**
 
@@ -417,7 +427,7 @@ Jumps 16 bytes backward if top of stack is zero (consumes the integer from stack
 **Stack Operation Details:**
 
 - offsets: Always negative (e.g., -4, -8), positive = invalid
-- Copy ops: Signed 32-bit offset + unsigned 16-bit size (must be 4-[byte](GFF-File-Format#gff-data-types) multiple)
+- Copy ops: Signed 32-bit offset + unsigned 16-bit size (must be 4-[byte](https://en.wikipedia.org/wiki/Byte) multiple)
 - `MOVSP`: Adjust SP (positive = deallocate, negative = allocate)
 - BP ops: Identical to SP ops but use base pointer (set by `SAVEBP`, points to globals)
 - Multi-element copies (size > 4): May indicate composite types (vectors, structs)
@@ -426,7 +436,7 @@ Jumps 16 bytes backward if top of stack is zero (consumes the integer from stack
 
 **position Conversion:**
 
-- [byte](GFF-File-Format#gff-data-types) offset → position: `-offset / 4` (e.g., -8 → 2, -12 → 3)
+- [byte](https://en.wikipedia.org/wiki/Byte) offset → position: `-offset / 4` (e.g., -8 → 2, -12 → 3)
 - size → elements: `size / 4` (e.g., 12B → 3 elements)
 - position → offset: `-position * 4`
 
@@ -475,7 +485,7 @@ All arithmetic operations consume operands from the top of the stack and place t
 
 **Comparison Operations:**
 
-- `EQUALxx` (0x0B): Test for equality. format: `[0x0B][qualifier][optional: uint16 size for TT]`. Supports II, FF, SS, OO, TT, and engine types. For TT (struct) qualifier, includes 2-[byte](GFF-File-Format#gff-data-types) size field (must be multiple of 4). Pops two operands from stack, compares them, pushes 1 if equal else 0.
+- `EQUALxx` (0x0B): Test for equality. format: `[0x0B][qualifier][optional: uint16 size for TT]`. Supports II, FF, SS, OO, TT, and engine types. For TT (struct) qualifier, includes 2-[byte](https://en.wikipedia.org/wiki/Byte) size field (must be multiple of 4). Pops two operands from stack, compares them, pushes 1 if equal else 0.
 - `NEQUALxx` (0x0C): Test for inequality. format: `[0x0C][qualifier][optional: uint16 size for TT]`. Same as EQUALxx but pushes 1 if not equal else 0.
 - `GTxx` (0x0E): Greater than. format: `[0x0E][qualifier]`. Supports II, FF. Pops two operands (top is right operand), pushes 1 if left > right else 0.
 - `GEQxx` (0x0D): Greater than or equal. format: `[0x0D][qualifier]`. Supports II, FF. Pops two operands, pushes 1 if left >= right else 0.
@@ -486,9 +496,9 @@ All arithmetic operations consume operands from the top of the stack and place t
 
 - Comparison operations pop two operands from the stack and push a single integer result (1 for true, 0 for false)
 - For binary comparisons (GT, GEQ, LT, LEQ), the top of stack is the right operand, and the value below it is the left operand
-- structure comparisons (`EQUALTT`, `NEQUALTT`) perform [byte](GFF-File-Format#gff-data-types)-by-[byte](GFF-File-Format#gff-data-types) comparison of the specified number of bytes
+- structure comparisons (`EQUALTT`, `NEQUALTT`) perform [byte](https://en.wikipedia.org/wiki/Byte)-by-[byte](https://en.wikipedia.org/wiki/Byte) comparison of the specified number of bytes
 - The size field for structure comparisons must be a multiple of 4 to maintain alignment
-- string comparisons compare string pointers (4-[byte](GFF-File-Format#gff-data-types) values), not string contents directly
+- string comparisons compare string pointers (4-[byte](https://en.wikipedia.org/wiki/Byte) values), not string contents directly
 
 **Reference:** [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:712-768`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L712-L768) (comparison opcode implementation), [`vendor/reone/src/libs/script/format/ncsreader.cpp:102-105`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncsreader.cpp#L102-L105) (comparison instruction parsing), [`vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs) (comparison operation handling)
 
@@ -550,7 +560,7 @@ Engine-specific mapping: routine number → function (name, params, return type)
 
 The decompiler parses this file to build a lookup table mapping routine numbers (indices in the file) to function signatures. This allows the decompiler to generate readable function calls instead of raw `ACTION` instructions with numeric routine IDs.
 
-**See [NSS File Format](NSS-File-Format.md) for complete documentation of nwscript.nss, function definitions, and KotOR-specific functions/constants.**
+**See [NSS File Format](NSS-File-Format) for complete documentation of nwscript.nss, function definitions, and KotOR-specific functions/constants.**
 
 **Reference:** [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:643-660`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L643-L660) (ACTION opcode implementation), [`vendor/reone/src/libs/script/format/ncsreader.cpp:74-77`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncsreader.cpp#L74-L77) (ACTION instruction parsing), [`vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs) (ACTION instruction handling), [`vendor/NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs) (engine function call processing), [`vendor/xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/xoreos-tools/src/nwscript/ncsfile.cpp) (actions data parsing for decompilation)
 
@@ -559,7 +569,7 @@ The decompiler parses this file to build a lookup table mapping routine numbers 
 - `NOP` (0x2D): No-operation, used as placeholder for debugger. format: `[0x2D][qualifier]`. Does nothing, SP remains unchanged.
 - Program size marker (0x42): Always found at offset 8 in NCS file header. format: `[0x42][uint32 fileSize]`. This is not a real instruction and is never executed. It contains the total file size in bytes ([big-endian](https://en.wikipedia.org/wiki/Endianness)). All implementations validate this marker before parsing instructions.
 
-**Note:** All multi-[byte](GFF-File-Format#gff-data-types) values in NCS files are stored in **[big-endian](https://en.wikipedia.org/wiki/Endianness)** [byte](GFF-File-Format#gff-data-types) order. This includes all integers, floats, offsets, and size fields.
+**Note:** All multi-[byte](https://en.wikipedia.org/wiki/Byte) values in NCS files are stored in **[big-endian](https://en.wikipedia.org/wiki/Endianness)** [byte](https://en.wikipedia.org/wiki/Byte) order. This includes all integers, floats, offsets, and size fields.
 
 **Special Instruction Details:**
 
@@ -654,7 +664,7 @@ Core analyses: Stack tracking (variable assignments/reads via copy ops), Control
 3. **type Inference**: Operations reveal types (`ADDII` → ints, calls → engine function table)
 4. **Prototyping**: Infer subroutine signatures from usage (may need multiple passes for recursion)
 5. **Stack Tracking**: Track state per instruction (variables, types, assignment), clone/merge at control flow joins
-6. **structure Recognition**: 12-[byte](GFF-File-Format#gff-data-types) copies → vectors, other multiples of 4 → custom structs
+6. **structure Recognition**: 12-[byte](https://en.wikipedia.org/wiki/Byte) copies → vectors, other multiples of 4 → custom structs
 7. **Control Flow**: Jumps → `if`/loops (forward jumps = conditionals, backward = loops), multi-target = switch
 8. **Code Gen**: Emit source with named variables, typed declarations, high-level constructs
 9. **Cleanup**: Remove dead code, optimize names, format
@@ -670,3 +680,10 @@ Core analyses: Stack tracking (variable assignments/reads via copy ops), Control
 - **Return values**: Track separately, identified from stack state before `RETN`/after `JSR`
 
 **Reference:** [`vendor/xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/xoreos-tools/src/nwscript/ncsfile.cpp), [`vendor/xoreos-tools/src/nwscript/decompiler.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/nwscript/decompiler.cpp), [`vendor/reone/src/libs/script/format/ncsreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncsreader.cpp), [`vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs), [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp), [`vendor/kotor-savegame-editor/src/formats/ncs.ts`](https://github.com/th3w1zard1/kotor-savegame-editor/blob/master/src/formats/ncs.ts), [`vendor/NorthernLights/Assets/Scripts/ncs/NCSDecompiler.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/NCSDecompiler.cs)
+
+### See also
+
+- [NSS File Format](NSS-File-Format) - NWScript source that compiles to NCS
+- [GFF-DLG](GFF-DLG) - Dialogue files that trigger NCS scripts
+- [GFF-UTC](GFF-UTC), [GFF-UTD](GFF-UTD), [GFF-UTP](GFF-UTP) - Creature/door/placeable templates with script hooks
+- [GFF-IFO](GFF-IFO) - Module script configuration

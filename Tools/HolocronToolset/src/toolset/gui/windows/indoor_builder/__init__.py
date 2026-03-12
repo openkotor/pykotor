@@ -1,3 +1,4 @@
+from __future__ import annotations
 from toolset.gui.windows.indoor_builder.builder import (
     IndoorMapBuilder,
     SnapResult,
@@ -73,18 +74,6 @@ from toolset.gui.windows.indoor_builder.constants import (
 )
 
 __all__ = [
-    "AddRoomCommand",
-    "DeleteRoomsCommand",
-    "DuplicateRoomsCommand",
-    "FlipRoomsCommand",
-    "IndoorMapBuilder",
-    "IndoorMapRenderer",
-    "MoveRoomsCommand",
-    "MoveWarpCommand",
-    "RoomClipboardData",
-    "RotateRoomsCommand",
-    "SnapResult",
-    "KitDownloader",
     "BACKGROUND_COLOR",
     "COMPONENT_PREVIEW_SCALE",
     "CONNECTION_LINE_COLOR",
@@ -97,7 +86,6 @@ __all__ = [
     "DEFAULT_CAMERA_ZOOM",
     "DEFAULT_GRID_SIZE",
     "DEFAULT_ROTATION_SNAP",
-    "DragMode",
     "DUPLICATE_OFFSET_X",
     "DUPLICATE_OFFSET_Y",
     "DUPLICATE_OFFSET_Z",
@@ -140,4 +128,17 @@ __all__ = [
     "SNAP_INDICATOR_RADIUS",
     "ZOOM_STEP_FACTOR",
     "ZOOM_WHEEL_SENSITIVITY",
+    "AddRoomCommand",
+    "DeleteRoomsCommand",
+    "DragMode",
+    "DuplicateRoomsCommand",
+    "FlipRoomsCommand",
+    "IndoorMapBuilder",
+    "IndoorMapRenderer",
+    "KitDownloader",
+    "MoveRoomsCommand",
+    "MoveWarpCommand",
+    "RoomClipboardData",
+    "RotateRoomsCommand",
+    "SnapResult",
 ]

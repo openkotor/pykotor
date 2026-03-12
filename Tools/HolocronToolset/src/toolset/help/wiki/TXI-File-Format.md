@@ -122,7 +122,7 @@ KotOR’s bitmap fonts use TXI commands to describe glyph boxes:
 | `baselineheight`, `fontheight`, `fontwidth`, `caretindent`, `spacingB`, `spacingR` | Control glyph metrics for UI fonts. |
 | `rows`, `cols`, `numchars`, `numcharspersheet` | Describe how many glyphs are stored per sheet. |
 | `upperleftcoords`, `lowerrightcoords` | arrays of UV coordinates for each glyph corner. |
-| `codepage`, `isdoublebyte`, `dbmapping` | Support multi-[byte](GFF-File-Format#gff-data-types) font atlases (Asian locales). |
+| `codepage`, `isdoublebyte`, `dbmapping` | Support multi-[byte](https://en.wikipedia.org/wiki/Byte) font atlases (Asian locales). |
 
 KotOR.js exposes identical structures in [`src/resource/TXI.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/TXI.ts#L16-L255), ensuring the coordinates here match the engine’s expectations.
 

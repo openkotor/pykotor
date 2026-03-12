@@ -649,36 +649,36 @@ class CellFormattingDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Cell Formatting")
         self.resize(400, 300)
-        
+
         layout = QGridLayout(self)
-        
+
         # Font options
         layout.addWidget(QLabel("<b>Font Style:</b>"), 0, 0, 1, 2)
-        
+
         self.bold_check = QCheckBox("Bold")
         layout.addWidget(self.bold_check, 1, 0)
-        
+
         self.italic_check = QCheckBox("Italic")
         layout.addWidget(self.italic_check, 1, 1)
-        
+
         # Text color
         layout.addWidget(QLabel("<b>Text Color:</b>"), 2, 0)
         self.color_combo = QComboBox()
         self.color_combo.addItems(["Default", "Red", "Green", "Blue", "Orange", "Purple", "Gray"])
         layout.addWidget(self.color_combo, 2, 1)
-        
+
         # Background color
         layout.addWidget(QLabel("<b>Background:</b>"), 3, 0)
         self.bg_combo = QComboBox()
         self.bg_combo.addItems(["Default", "Light Yellow", "Light Green", "Light Blue", "Light Red", "Light Gray"])
         layout.addWidget(self.bg_combo, 3, 1)
-        
+
         # Alignment
         layout.addWidget(QLabel("<b>Alignment:</b>"), 4, 0)
         self.align_combo = QComboBox()
         self.align_combo.addItems(["Default", "Left", "Center", "Right"])
         layout.addWidget(self.align_combo, 4, 1)
-        
+
         # Buttons
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
@@ -688,11 +688,11 @@ class CellFormattingDialog(QDialog):
     def get_formatting(self) -> dict:
         """Return selected formatting options."""
         return {
-            'bold': self.bold_check.isChecked(),
-            'italic': self.italic_check.isChecked(),
-            'color': self.color_combo.currentText(),
-            'background': self.bg_combo.currentText(),
-            'alignment': self.align_combo.currentText(),
+            "bold": self.bold_check.isChecked(),
+            "italic": self.italic_check.isChecked(),
+            "color": self.color_combo.currentText(),
+            "background": self.bg_combo.currentText(),
+            "alignment": self.align_combo.currentText(),
         }
 
 
@@ -703,9 +703,9 @@ class DataValidationDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Data Validation")
         self.resize(450, 250)
-        
+
         layout = QGridLayout(self)
-        
+
         # Validation type
         layout.addWidget(QLabel("<b>Validation Type:</b>"), 0, 0)
         self.type_combo = QComboBox()
@@ -718,7 +718,7 @@ class DataValidationDialog(QDialog):
             "Date (YYYY-MM-DD)",
         ])
         layout.addWidget(self.type_combo, 0, 1)
-        
+
         # Criteria
         layout.addWidget(QLabel("<b>Criteria:</b>"), 1, 0)
         self.criteria_combo = QComboBox()
@@ -734,29 +734,29 @@ class DataValidationDialog(QDialog):
             "Less or Equal",
         ])
         layout.addWidget(self.criteria_combo, 1, 1)
-        
+
         # Min value
         layout.addWidget(QLabel("Minimum:"), 2, 0)
         self.min_edit = QLineEdit()
         layout.addWidget(self.min_edit, 2, 1)
-        
+
         # Max value
         layout.addWidget(QLabel("Maximum:"), 3, 0)
         self.max_edit = QLineEdit()
         layout.addWidget(self.max_edit, 3, 1)
-        
+
         # Custom list
         layout.addWidget(QLabel("Allowed Values:"), 4, 0)
         self.list_edit = QLineEdit()
         self.list_edit.setPlaceholderText("Comma-separated: value1, value2, value3")
         layout.addWidget(self.list_edit, 4, 1)
-        
+
         # Error message
         layout.addWidget(QLabel("Error Message:"), 5, 0)
         self.error_edit = QLineEdit()
         self.error_edit.setPlaceholderText("Invalid value")
         layout.addWidget(self.error_edit, 5, 1)
-        
+
         # Buttons
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
@@ -766,12 +766,12 @@ class DataValidationDialog(QDialog):
     def get_validation_rule(self) -> dict:
         """Return validation rule configuration."""
         return {
-            'type': self.type_combo.currentText(),
-            'criteria': self.criteria_combo.currentText(),
-            'min': self.min_edit.text(),
-            'max': self.max_edit.text(),
-            'allowed_list': [v.strip() for v in self.list_edit.text().split(',') if v.strip()],
-            'error_message': self.error_edit.text() or "Invalid value",
+            "type": self.type_combo.currentText(),
+            "criteria": self.criteria_combo.currentText(),
+            "min": self.min_edit.text(),
+            "max": self.max_edit.text(),
+            "allowed_list": [v.strip() for v in self.list_edit.text().split(",") if v.strip()],
+            "error_message": self.error_edit.text() or "Invalid value",
         }
 
 
@@ -782,60 +782,60 @@ class FindAndReplaceAdvancedDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Advanced Find & Replace")
         self.resize(500, 350)
-        
+
         layout = QGridLayout(self)
-        
+
         # Find
         layout.addWidget(QLabel("Find:"), 0, 0)
         self.find_edit = QLineEdit()
         layout.addWidget(self.find_edit, 0, 1, 1, 2)
-        
+
         # Replace
         layout.addWidget(QLabel("Replace:"), 1, 0)
         self.replace_edit = QLineEdit()
         layout.addWidget(self.replace_edit, 1, 1, 1, 2)
-        
+
         # Options
         layout.addWidget(QLabel("<b>Options:</b>"), 2, 0, 1, 3)
-        
+
         self.match_case_check = QCheckBox("Match case")
         layout.addWidget(self.match_case_check, 3, 0)
-        
+
         self.whole_cell_check = QCheckBox("Whole cell only")
         layout.addWidget(self.whole_cell_check, 3, 1)
-        
+
         self.regex_check = QCheckBox("Use regular expressions")
         layout.addWidget(self.regex_check, 4, 0)
-        
+
         self.wrap_check = QCheckBox("Wrap around")
         self.wrap_check.setChecked(True)
         layout.addWidget(self.wrap_check, 4, 1)
-        
+
         # Scope
         layout.addWidget(QLabel("Search in:"), 5, 0)
         self.scope_combo = QComboBox()
         self.scope_combo.addItems(["All Cells", "Selected Cells Only", "Current Column", "Current Row"])
         layout.addWidget(self.scope_combo, 5, 1)
-        
+
         # Direction
         layout.addWidget(QLabel("Direction:"), 6, 0)
         self.direction_combo = QComboBox()
         self.direction_combo.addItems(["Forward", "Backward"])
         layout.addWidget(self.direction_combo, 6, 1)
-        
+
         # Buttons
         self.find_next_btn = QPushButton("Find Next")
         self.find_all_btn = QPushButton("Find All")
         self.replace_btn = QPushButton("Replace")
         self.replace_all_btn = QPushButton("Replace All")
         self.close_btn = QPushButton("Close")
-        
+
         layout.addWidget(self.find_next_btn, 7, 0)
         layout.addWidget(self.find_all_btn, 7, 1)
         layout.addWidget(self.replace_btn, 8, 0)
         layout.addWidget(self.replace_all_btn, 8, 1)
         layout.addWidget(self.close_btn, 9, 0, 1, 2)
-        
+
         self.find_next_btn.clicked.connect(lambda: self.done(100))
         self.find_all_btn.clicked.connect(lambda: self.done(101))
         self.replace_btn.clicked.connect(lambda: self.done(102))
@@ -854,23 +854,23 @@ class AutoCompleteManager:
         """Update auto-complete suggestions for a column."""
         if col <= 0:
             return
-        
+
         values = set()
         for row in range(self._editor.source_model.rowCount()):
             item = self._editor.source_model.item(row, col)
             if item and item.text().strip():
                 values.add(item.text().strip())
-        
+
         self._column_values[col] = values
 
     def get_suggestions(self, col: int, prefix: str) -> list[str]:
         """Get auto-complete suggestions for a column matching prefix."""
         if col not in self._column_values:
             self.update_suggestions(col)
-        
+
         if col not in self._column_values:
             return []
-        
+
         prefix_lower = prefix.lower()
         matches = [v for v in self._column_values[col] if v.lower().startswith(prefix_lower)]
         return sorted(matches)
@@ -883,11 +883,11 @@ class BulkEditDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(f"Bulk Edit ({cell_count} cells)")
         self.resize(450, 200)
-        
+
         layout = QGridLayout(self)
-        
+
         layout.addWidget(QLabel(f"<b>Editing {cell_count} cells</b>"), 0, 0, 1, 2)
-        
+
         # Operation type
         layout.addWidget(QLabel("Operation:"), 1, 0)
         self.operation_combo = QComboBox()
@@ -906,27 +906,27 @@ class BulkEditDialog(QDialog):
             "Add to Value",
         ])
         layout.addWidget(self.operation_combo, 1, 1)
-        
+
         # Value input
         layout.addWidget(QLabel("Value:"), 2, 0)
         self.value_edit = QLineEdit()
         layout.addWidget(self.value_edit, 2, 1)
-        
+
         # Find (for find/replace)
         layout.addWidget(QLabel("Find:"), 3, 0)
         self.find_edit = QLineEdit()
         layout.addWidget(self.find_edit, 3, 1)
-        
+
         # Preview
         layout.addWidget(QLabel("Example: 'test' → "), 4, 0)
         self.preview_label = QLabel("")
         layout.addWidget(self.preview_label, 4, 1)
-        
+
         # Update preview on changes
         self.operation_combo.currentTextChanged.connect(self._update_preview)
         self.value_edit.textChanged.connect(self._update_preview)
         self.find_edit.textChanged.connect(self._update_preview)
-        
+
         # Buttons
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
@@ -939,7 +939,7 @@ class BulkEditDialog(QDialog):
         value = self.value_edit.text()
         find_text = self.find_edit.text()
         example = "test"
-        
+
         result = self._apply_operation(example, operation, value, find_text)
         self.preview_label.setText(f"'{result}'")
 
@@ -947,25 +947,25 @@ class BulkEditDialog(QDialog):
         """Apply the selected operation to text."""
         if operation == "Set Value":
             return value
-        elif operation == "Append Text":
+        if operation == "Append Text":
             return text + value
-        elif operation == "Prepend Text":
+        if operation == "Prepend Text":
             return value + text
-        elif operation == "Find and Replace":
+        if operation == "Find and Replace":
             return text.replace(find_text, value)
-        elif operation == "To Uppercase":
+        if operation == "To Uppercase":
             return text.upper()
-        elif operation == "To Lowercase":
+        if operation == "To Lowercase":
             return text.lower()
-        elif operation == "Title Case":
+        if operation == "Title Case":
             return text.title()
-        elif operation == "Trim Whitespace":
+        if operation == "Trim Whitespace":
             return text.strip()
-        elif operation == "Add Prefix":
+        if operation == "Add Prefix":
             return value + text
-        elif operation == "Add Suffix":
+        if operation == "Add Suffix":
             return text + value
-        elif operation == "Multiply by":
+        if operation == "Multiply by":
             try:
                 return str(float(text) * float(value))
             except (ValueError, TypeError):
@@ -998,34 +998,34 @@ class ColumnFilterDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(f"Filter Column: {column_name}")
         self.resize(350, 450)
-        
+
         layout = QGridLayout(self)
-        
+
         layout.addWidget(QLabel(f"<b>Show rows where '{column_name}' is:</b>"), 0, 0, 1, 2)
-        
+
         # Search box
         layout.addWidget(QLabel("Search:"), 1, 0)
         self.search_edit = QLineEdit()
         self.search_edit.setPlaceholderText("Filter values...")
         layout.addWidget(self.search_edit, 1, 1)
-        
+
         # Value list with checkboxes
-        from qtpy.QtWidgets import QListWidget, QListWidgetItem
+        from qtpy.QtWidgets import QListWidget
         self.value_list = QListWidget()
 
         self._add_checked_value_item("(Select All)")
         self._add_checked_value_item("(Blanks)")
-        
+
         # Add unique values
         for value in sorted(unique_values):
             if value.strip():
                 self._add_checked_value_item(value)
-        
+
         layout.addWidget(self.value_list, 2, 0, 1, 2)
-        
+
         # Filter search
         self.search_edit.textChanged.connect(self._filter_list)
-        
+
         # Buttons
         button_layout = QGridLayout()
         select_all_btn = QPushButton("Select All")
@@ -1035,7 +1035,7 @@ class ColumnFilterDialog(QDialog):
         button_layout.addWidget(select_all_btn, 0, 0)
         button_layout.addWidget(deselect_all_btn, 0, 1)
         layout.addLayout(button_layout, 3, 0, 1, 2)
-        
+
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
@@ -1100,15 +1100,15 @@ class ColumnStatisticsDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(f"Column Statistics: {column_name}")
         self.resize(400, 300)
-        
+
         layout = QGridLayout(self)
-        
+
         # Analyze the values
         total = len(values)
         blank = sum(1 for v in values if not v.strip())
         non_blank = total - blank
         unique = len(set(values))
-        
+
         # Try numeric analysis
         numeric_values = []
         for v in values:
@@ -1116,48 +1116,48 @@ class ColumnStatisticsDialog(QDialog):
                 numeric_values.append(float(v))
             except (ValueError, TypeError):
                 pass
-        
+
         is_numeric = len(numeric_values) > total * 0.5  # >50% numeric
-        
+
         # Display statistics
         row = 0
         layout.addWidget(QLabel("<b>Total Cells:</b>"), row, 0)
         layout.addWidget(QLabel(str(total)), row, 1)
         row += 1
-        
+
         layout.addWidget(QLabel("<b>Non-Blank:</b>"), row, 0)
         layout.addWidget(QLabel(str(non_blank)), row, 1)
         row += 1
-        
+
         layout.addWidget(QLabel("<b>Blank:</b>"), row, 0)
         layout.addWidget(QLabel(str(blank)), row, 1)
         row += 1
-        
+
         layout.addWidget(QLabel("<b>Unique:</b>"), row, 0)
         layout.addWidget(QLabel(str(unique)), row, 1)
         row += 1
-        
+
         if numeric_values:
             layout.addWidget(QLabel("<b>Numeric Values:</b>"), row, 0)
             layout.addWidget(QLabel(str(len(numeric_values))), row, 1)
             row += 1
-            
+
             layout.addWidget(QLabel("<b>Sum:</b>"), row, 0)
             layout.addWidget(QLabel(f"{sum(numeric_values):.4f}"), row, 1)
             row += 1
-            
+
             layout.addWidget(QLabel("<b>Average:</b>"), row, 0)
             layout.addWidget(QLabel(f"{sum(numeric_values) / len(numeric_values):.4f}"), row, 1)
             row += 1
-            
+
             layout.addWidget(QLabel("<b>Min:</b>"), row, 0)
             layout.addWidget(QLabel(f"{min(numeric_values):.4f}"), row, 1)
             row += 1
-            
+
             layout.addWidget(QLabel("<b>Max:</b>"), row, 0)
             layout.addWidget(QLabel(f"{max(numeric_values):.4f}"), row, 1)
             row += 1
-            
+
             # Median
             sorted_vals = sorted(numeric_values)
             n = len(sorted_vals)
@@ -1168,7 +1168,7 @@ class ColumnStatisticsDialog(QDialog):
             layout.addWidget(QLabel("<b>Median:</b>"), row, 0)
             layout.addWidget(QLabel(f"{median:.4f}"), row, 1)
             row += 1
-            
+
             # Standard deviation
             if len(numeric_values) > 1:
                 mean = sum(numeric_values) / len(numeric_values)
@@ -1177,7 +1177,7 @@ class ColumnStatisticsDialog(QDialog):
                 layout.addWidget(QLabel("<b>Std Dev:</b>"), row, 0)
                 layout.addWidget(QLabel(f"{std_dev:.4f}"), row, 1)
                 row += 1
-            
+
             # Mode (most common value)
             from collections import Counter
             counter = Counter(numeric_values)
@@ -1186,7 +1186,7 @@ class ColumnStatisticsDialog(QDialog):
                 layout.addWidget(QLabel("<b>Mode:</b>"), row, 0)
                 layout.addWidget(QLabel(f"{mode_val:.4f} (appears {mode_count}x)"), row, 1)
                 row += 1
-        
+
         # Close button
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         buttons.accepted.connect(self.accept)
@@ -1233,7 +1233,7 @@ class _SpreadsheetKeyFilter(QObject):
         current = table.currentIndex()
 
         # === ROW SELECTION SHORTCUTS ===
-        
+
         # Shift+Space: Select entire current row
         if key == Qt.Key.Key_Space and modifiers == Qt.KeyboardModifier.ShiftModifier:
             if current.isValid():
@@ -1244,14 +1244,14 @@ class _SpreadsheetKeyFilter(QObject):
         # This is handled by the existing action
 
         # === NAVIGATION SHORTCUTS ===
-        
+
         # Home: Jump to first column of current row
         if key == Qt.Key.Key_Home and modifiers == Qt.KeyboardModifier.NoModifier:
             if current.isValid():
                 first_index = self._editor.proxy_model.index(current.row(), 0)
                 table.setCurrentIndex(first_index)
                 return True
-        
+
         # End: Jump to last column of current row
         if key == Qt.Key.Key_End and modifiers == Qt.KeyboardModifier.NoModifier:
             if current.isValid():
@@ -1259,7 +1259,7 @@ class _SpreadsheetKeyFilter(QObject):
                 last_index = self._editor.proxy_model.index(current.row(), last_col)
                 table.setCurrentIndex(last_index)
                 return True
-        
+
         # Shift+Home: Select from current cell to start of row
         if key == Qt.Key.Key_Home and modifiers == Qt.KeyboardModifier.ShiftModifier:
             if current.isValid():
@@ -1268,7 +1268,7 @@ class _SpreadsheetKeyFilter(QObject):
                 selection = QItemSelection(first_index, current)
                 table.selectionModel().select(selection, table.selectionModel().SelectionFlag.ClearAndSelect)
                 return True
-        
+
         # Shift+End: Select from current cell to end of row
         if key == Qt.Key.Key_End and modifiers == Qt.KeyboardModifier.ShiftModifier:
             if current.isValid():
@@ -1278,7 +1278,7 @@ class _SpreadsheetKeyFilter(QObject):
                 selection = QItemSelection(current, last_index)
                 table.selectionModel().select(selection, table.selectionModel().SelectionFlag.ClearAndSelect)
                 return True
-        
+
         # Ctrl+Shift+Home: Select from current cell to first cell (0,0)
         if key == Qt.Key.Key_Home and modifiers == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier):
             if current.isValid():
@@ -1287,7 +1287,7 @@ class _SpreadsheetKeyFilter(QObject):
                 selection = QItemSelection(first_index, current)
                 table.selectionModel().select(selection, table.selectionModel().SelectionFlag.ClearAndSelect)
                 return True
-        
+
         # Ctrl+Shift+End: Select from current cell to last cell
         if key == Qt.Key.Key_End and modifiers == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier):
             if current.isValid():
@@ -1300,47 +1300,47 @@ class _SpreadsheetKeyFilter(QObject):
                 return True
 
         # === ROW/COLUMN MANIPULATION SHORTCUTS ===
-        
+
         # Alt+Up: Move current row up
         if key == Qt.Key.Key_Up and modifiers == Qt.KeyboardModifier.AltModifier:
             self._editor.move_row_up()
             return True
-        
+
         # Alt+Down: Move current row down
         if key == Qt.Key.Key_Down and modifiers == Qt.KeyboardModifier.AltModifier:
             self._editor.move_row_down()
             return True
-        
+
         # Alt+Left: Move current column left
         if key == Qt.Key.Key_Left and modifiers == Qt.KeyboardModifier.AltModifier:
             self._editor.move_column_left()
             return True
-        
+
         # Alt+Right: Move current column right
         if key == Qt.Key.Key_Right and modifiers == Qt.KeyboardModifier.AltModifier:
             self._editor.move_column_right()
             return True
-        
+
         # Ctrl+Minus or Ctrl+Delete: Delete selected rows
         if (key == Qt.Key.Key_Minus or key == Qt.Key.Key_Delete) and modifiers == Qt.KeyboardModifier.ControlModifier:
             if table.state() != table.State.EditingState:
                 self._editor.remove_selected_rows()
                 return True
-        
+
         # Ctrl+Plus or Ctrl+Insert: Insert row
         if (key == Qt.Key.Key_Plus or key == Qt.Key.Key_Insert) and modifiers == Qt.KeyboardModifier.ControlModifier:
             self._editor.insert_row()
             return True
 
         # === STANDARD NAVIGATION ===
-        
+
         # Tab: move right (at last cell of row, wrap to next row; at last cell of table, add row)
         if key == Qt.Key.Key_Tab and modifiers == Qt.KeyboardModifier.NoModifier:
             if not current.isValid():
                 return False
             next_col = current.column() + 1
             next_row = current.row()
-            
+
             # Check if at last column
             if next_col >= self._editor.proxy_model.columnCount():
                 next_col = 0
@@ -1350,7 +1350,7 @@ class _SpreadsheetKeyFilter(QObject):
                     # Auto-insert new row
                     self._editor.insert_row()
                     next_row = self._editor.proxy_model.rowCount() - 1
-            
+
             next_index = self._editor.proxy_model.index(next_row, next_col)
             if next_index.isValid():
                 table.setCurrentIndex(next_index)
@@ -1363,14 +1363,14 @@ class _SpreadsheetKeyFilter(QObject):
                 return False
             next_col = current.column() - 1
             next_row = current.row()
-            
+
             # Wrap to previous row if at first column
             if next_col < 0:
                 next_col = self._editor.proxy_model.columnCount() - 1
                 next_row -= 1
                 if next_row < 0:
                     return True  # Don't wrap past first cell
-            
+
             next_index = self._editor.proxy_model.index(next_row, next_col)
             if next_index.isValid():
                 table.setCurrentIndex(next_index)
@@ -1381,19 +1381,19 @@ class _SpreadsheetKeyFilter(QObject):
         if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and modifiers == Qt.KeyboardModifier.NoModifier:
             if not current.isValid():
                 return False
-            
+
             # Close any active editor first
             table.closePersistentEditor(current)
-            
+
             next_row = current.row() + 1
             next_col = current.column()
-            
+
             # Check if at last row
             if next_row >= self._editor.proxy_model.rowCount():
                 # Auto-insert new row
                 self._editor.insert_row()
                 next_row = self._editor.proxy_model.rowCount() - 1
-            
+
             next_index = self._editor.proxy_model.index(next_row, next_col)
             if next_index.isValid():
                 table.setCurrentIndex(next_index)
@@ -1404,11 +1404,11 @@ class _SpreadsheetKeyFilter(QObject):
         if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and modifiers == Qt.KeyboardModifier.ShiftModifier:
             if not current.isValid():
                 return False
-            
+
             next_row = current.row() - 1
             if next_row < 0:
                 return True  # Don't move past first row
-            
+
             next_col = current.column()
             next_index = self._editor.proxy_model.index(next_row, next_col)
             if next_index.isValid():
@@ -1514,7 +1514,7 @@ class TwoDAEditor(Editor):
         QShortcut(QKeySequence("Ctrl+="), self, self.zoom_in)
         QShortcut(QKeySequence("Ctrl+-"), self, self.zoom_out)
         QShortcut(QKeySequence("Ctrl+0"), self, self.zoom_reset)
-        
+
         # Power user shortcuts
         QShortcut(QKeySequence("Alt+Up"), self, self.move_row_up)
         QShortcut(QKeySequence("Alt+Down"), self, self.move_row_down)
@@ -1535,7 +1535,7 @@ class TwoDAEditor(Editor):
         QShortcut(QKeySequence("Ctrl+Shift+B"), self, self.show_bulk_edit_dialog)  # Bulk edit
         QShortcut(QKeySequence("Ctrl+L"), self, self.show_column_filter_dialog)  # Filter column
         QShortcut(QKeySequence("Ctrl+Shift+V"), self, self.show_data_validation_dialog)  # Validation
-        
+
         # Initialize auto-complete manager
         self._autocomplete = AutoCompleteManager(self)
 
@@ -1620,7 +1620,7 @@ class TwoDAEditor(Editor):
 
         # Setup spreadsheet-style overlay buttons
         self._setup_spreadsheet_buttons()
-        
+
         # Setup toolbar with common actions
         self._setup_toolbar()
 
@@ -1677,7 +1677,7 @@ class TwoDAEditor(Editor):
         viewport = self.ui.twodaTable.viewport()
         if viewport:
             viewport.installEventFilter(self._spreadsheet_filter)
-        
+
         # Install keyboard navigation filter
         self._key_filter = _SpreadsheetKeyFilter(self)
         self.ui.twodaTable.installEventFilter(self._key_filter)
@@ -1703,70 +1703,70 @@ class TwoDAEditor(Editor):
     def _setup_toolbar(self):
         """Setup toolbar with common spreadsheet actions for accessibility."""
         from qtpy.QtWidgets import QToolBar
-        
+
         toolbar = QToolBar("Spreadsheet Actions", self)
         toolbar.setMovable(False)
         toolbar.setFloatable(False)
         self.addToolBar(toolbar)
-        
+
         # File operations
         toolbar.addAction(self.ui.actionNew)
         toolbar.addAction(self.ui.actionOpen)
         toolbar.addAction(self.ui.actionSave)
         toolbar.addSeparator()
-        
+
         # Undo/Redo
         toolbar.addAction(self.ui.actionUndo)
         toolbar.addAction(self.ui.actionRedo)
         toolbar.addSeparator()
-        
+
         # Clipboard
         toolbar.addAction(self.ui.actionCut)
         toolbar.addAction(self.ui.actionCopy)
         toolbar.addAction(self.ui.actionPaste)
         toolbar.addSeparator()
-        
+
         # Row operations with labels
         add_row_action = QAction("➕ Row", self)
         add_row_action.setToolTip("Insert Row (Ctrl+I)")
         add_row_action.triggered.connect(self.insert_row)
         toolbar.addAction(add_row_action)
-        
+
         delete_row_action = QAction("➖ Row", self)
         delete_row_action.setToolTip("Remove Selected Rows (Ctrl+Del)")
         delete_row_action.triggered.connect(self.remove_selected_rows)
         toolbar.addAction(delete_row_action)
-        
+
         move_up_action = QAction("⬆️ Row", self)
         move_up_action.setToolTip("Move Row Up (Alt+Up)")
         move_up_action.triggered.connect(self.move_row_up)
         toolbar.addAction(move_up_action)
-        
+
         move_down_action = QAction("⬇️ Row", self)
         move_down_action.setToolTip("Move Row Down (Alt+Down)")
         move_down_action.triggered.connect(self.move_row_down)
         toolbar.addAction(move_down_action)
-        
+
         toolbar.addSeparator()
-        
+
         # Column operations
         add_col_action = QAction("➕ Col", self)
         add_col_action.setToolTip("Insert Column (Ctrl+Shift+I)")
         add_col_action.triggered.connect(self.insert_column)
         toolbar.addAction(add_col_action)
-        
+
         delete_col_action = QAction("➖ Col", self)
         delete_col_action.setToolTip("Delete Column (Ctrl+Shift+Del)")
         delete_col_action.triggered.connect(self.delete_column)
         toolbar.addAction(delete_col_action)
-        
+
         toolbar.addSeparator()
-        
+
         # Search
         toolbar.addAction(self.ui.actionFind)
         toolbar.addAction(self.ui.actionReplace)
         toolbar.addSeparator()
-        
+
         # View operations
         toolbar.addAction(self.ui.actionZoomIn)
         toolbar.addAction(self.ui.actionZoomOut)
@@ -1801,7 +1801,7 @@ class TwoDAEditor(Editor):
 
     def _reposition_add_row_button(self):
         """Reposition the add row button below the last visible row."""
-        if not hasattr(self, '_add_row_btn'):
+        if not hasattr(self, "_add_row_btn"):
             return
         table = self.ui.twodaTable
         v_header = table.verticalHeader()
@@ -1825,7 +1825,7 @@ class TwoDAEditor(Editor):
 
     def _reposition_add_col_button(self):
         """Reposition the add column button after the last visible column."""
-        if not hasattr(self, '_add_col_btn'):
+        if not hasattr(self, "_add_col_btn"):
             return
         table = self.ui.twodaTable
         h_header = table.horizontalHeader()
@@ -1948,7 +1948,7 @@ class TwoDAEditor(Editor):
             h_header.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
             h_header.customContextMenuRequested.connect(self._show_header_context_menu)
             h_header.sectionDoubleClicked.connect(self._on_column_header_double_clicked)
-        
+
         # Context menu on row headers: Row operations
         v_header = self.ui.twodaTable.verticalHeader()
         if v_header is not None:
@@ -2107,13 +2107,13 @@ class TwoDAEditor(Editor):
             self,
             "Import CSV",
             "",
-            "CSV Files (*.csv);;All Files (*.*)"
+            "CSV Files (*.csv);;All Files (*.*)",
         )
         if not filepath:
             return
 
         try:
-            with open(filepath, 'r', encoding='utf-8', newline='') as f:
+            with open(filepath, encoding="utf-8", newline="") as f:
                 # Try to detect dialect
                 sample = f.read(1024)
                 f.seek(0)
@@ -2151,12 +2151,12 @@ class TwoDAEditor(Editor):
                 font.setBold(True)
                 label_item.setFont(font)
                 label_item.setBackground(self.palette().midlight())
-                
+
                 row_items = [label_item]
                 for col_idx in range(len(headers) - 1):  # -1 for row label column
                     cell_value = row_data[col_idx] if col_idx < len(row_data) else ""
                     row_items.append(QStandardItem(cell_value))
-                
+
                 self.source_model.appendRow(row_items)
 
             # Reconnect model
@@ -2184,22 +2184,22 @@ class TwoDAEditor(Editor):
             self,
             "Export CSV",
             "",
-            "CSV Files (*.csv);;All Files (*.*)"
+            "CSV Files (*.csv);;All Files (*.*)",
         )
         if not filepath:
             return
 
         try:
-            with open(filepath, 'w', encoding='utf-8', newline='') as f:
+            with open(filepath, "w", encoding="utf-8", newline="") as f:
                 writer = csv.writer(f, dialect=csv.excel)
-                
+
                 # Write headers (skip column 0 which is row labels)
                 headers = []
                 for col in range(1, self.source_model.columnCount()):
                     h = self.source_model.horizontalHeaderItem(col)
                     headers.append(h.text() if h else f"Column{col}")
                 writer.writerow(headers)
-                
+
                 # Write data rows (skip column 0 which is row labels)
                 for row in range(self.source_model.rowCount()):
                     row_data = []
@@ -2218,12 +2218,12 @@ class TwoDAEditor(Editor):
 
         # Initialize with 2 default columns + 1 row for immediate usability
         self.source_model.clear()
-        
+
         # Set up headers: row label column (empty) + 2 data columns
         headers = ["", "Column1", "Column2"]
         self.source_model.setColumnCount(len(headers))
         self.source_model.setHorizontalHeaderLabels(headers)
-        
+
         # Add one default row with bold row label
         row_items = []
         label_item = QStandardItem("0")
@@ -2235,7 +2235,7 @@ class TwoDAEditor(Editor):
         row_items.append(QStandardItem(""))
         row_items.append(QStandardItem(""))
         self.source_model.appendRow(row_items)
-        
+
         # Default to TwoDA for new files
         self._restype = ResourceType.TwoDA
         self.proxy_model.setSourceModel(self.source_model)
@@ -2364,7 +2364,6 @@ class TwoDAEditor(Editor):
 
     def _on_auto_fit_columns_toggled(self):
         """Persist auto-fit preference; applied on next load."""
-        pass
 
     def _on_wrap_text_toggled(self):
         """Toggle word wrap in table cells (Excel-like)."""
@@ -2614,68 +2613,68 @@ class TwoDAEditor(Editor):
         if col < 0:
             col = self.source_model.columnCount()
         menu = QMenu(self)
-        
+
         insert_action = QAction(translate("Insert Column Here"), self)
         insert_action.setToolTip(translate("<b>Insert Column Here</b> adds column.<br/>New column at this position."))
         insert_action.triggered.connect(lambda: self.insert_column_at(col))
         menu.addAction(insert_action)
-        
+
         if col > 0:  # Don't allow operations on row label column
             menu.addSeparator()
-            
+
             rename_action = QAction(translate("Rename Column..."), self)
             rename_action.setToolTip(translate("<b>Rename Column</b> changes name.<br/>Opens rename dialog."))
             rename_action.triggered.connect(lambda: self._on_column_header_double_clicked(col))
             menu.addAction(rename_action)
-            
+
             duplicate_action = QAction(translate("Duplicate Column"), self)
             duplicate_action.setToolTip(translate("<b>Duplicate Column</b> copies column.<br/>Exact copy beside this one."))
             duplicate_action.triggered.connect(lambda: self._duplicate_column_at(col))
             menu.addAction(duplicate_action)
-            
+
             delete_action = QAction(translate("Delete Column"), self)
             delete_action.setToolTip(translate("<b>Delete Column</b> removes entirely.<br/>All column data is lost."))
             delete_action.triggered.connect(lambda: self._delete_column_at(col))
             menu.addAction(delete_action)
-            
+
             menu.addSeparator()
-            
+
             if col > 1:
                 left_action = QAction(translate("Move Left"), self)
                 left_action.setToolTip(translate("<b>Move Left</b> shifts column left.<br/>Swaps with left neighbor."))
                 left_action.triggered.connect(lambda: self._move_column_at(col, False))
                 menu.addAction(left_action)
-            
+
             if col < self.source_model.columnCount() - 1:
                 right_action = QAction(translate("Move Right"), self)
                 right_action.setToolTip(translate("<b>Move Right</b> shifts column right.<br/>Swaps with right neighbor."))
                 right_action.triggered.connect(lambda: self._move_column_at(col, True))
                 menu.addAction(right_action)
-            
+
             menu.addSeparator()
-            
+
             sort_asc_action = QAction(translate("Sort Ascending"), self)
             sort_asc_action.setToolTip(translate("<b>Sort Ascending</b> A–Z order.<br/>Lowest values first."))
             sort_asc_action.triggered.connect(lambda: self._sort_column_at(col, True))
             menu.addAction(sort_asc_action)
-            
+
             sort_desc_action = QAction(translate("Sort Descending"), self)
             sort_desc_action.setToolTip(translate("<b>Sort Descending</b> Z–A order.<br/>Highest values first."))
             sort_desc_action.triggered.connect(lambda: self._sort_column_at(col, False))
             menu.addAction(sort_desc_action)
-            
+
             menu.addSeparator()
-            
+
             stats_action = QAction(translate("Column Statistics..."), self)
             stats_action.setToolTip(translate("<b>Column Statistics</b> shows stats.<br/>Count, sum, min, max, etc."))
             stats_action.triggered.connect(lambda: self._show_column_stats_at(col))
             menu.addAction(stats_action)
-            
+
             hide_action = QAction(translate("Hide Column"), self)
             hide_action.setToolTip(translate("<b>Hide Column</b> hides from view.<br/>Data retained but not shown."))
             hide_action.triggered.connect(lambda: self._hide_column_at(col))
             menu.addAction(hide_action)
-        
+
         menu.exec(h.mapToGlobal(pos))
 
     def _show_row_header_context_menu(self, pos):
@@ -2688,77 +2687,77 @@ class TwoDAEditor(Editor):
         row = v.logicalIndexAt(pos)
         if row < 0:
             return
-        
+
         # Map to source row
-        proxy_idx = self._editor.proxy_model.index(row, 0) if hasattr(self, '_editor') else self.proxy_model.index(row, 0)
-        if hasattr(self, '_editor'):
+        proxy_idx = self._editor.proxy_model.index(row, 0) if hasattr(self, "_editor") else self.proxy_model.index(row, 0)
+        if hasattr(self, "_editor"):
             source_row = self._editor.proxy_model.mapToSource(proxy_idx).row()
         else:
             source_row = self.proxy_model.mapToSource(proxy_idx).row()
-        
+
         menu = QMenu(self)
-        
+
         insert_above = QAction(translate("Insert Row Above"), self)
         insert_above.setToolTip(translate("<b>Insert Row Above</b> adds row.<br/>New row above this one."))
         insert_above.triggered.connect(lambda: self._insert_row_at(source_row))
         menu.addAction(insert_above)
-        
+
         insert_below = QAction(translate("Insert Row Below"), self)
         insert_below.setToolTip(translate("<b>Insert Row Below</b> adds row.<br/>New row below this one."))
         insert_below.triggered.connect(lambda: self._insert_row_at(source_row + 1))
         menu.addAction(insert_below)
-        
+
         menu.addSeparator()
-        
+
         duplicate = QAction(translate("Duplicate Row"), self)
         duplicate.setToolTip(translate("<b>Duplicate Row</b> copies row.<br/>Creates exact duplicate below."))
         duplicate.triggered.connect(lambda: self._duplicate_row_at(source_row))
         menu.addAction(duplicate)
-        
+
         delete = QAction(translate("Delete Row(s)"), self)
         delete.setToolTip(translate("<b>Delete Row(s)</b> removes rows.<br/>All selected row data lost."))
         delete.triggered.connect(self.remove_selected_rows)
         menu.addAction(delete)
-        
+
         menu.addSeparator()
-        
+
         if source_row > 0:
             move_up = QAction(translate("Move Row Up"), self)
             move_up.setToolTip(translate("<b>Move Row Up</b> shifts row.<br/>Swaps with row above."))
             move_up.triggered.connect(lambda: self._move_row_at(source_row, False))
             menu.addAction(move_up)
-        
+
         if source_row < self.source_model.rowCount() - 1:
             move_down = QAction(translate("Move Row Down"), self)
             move_down.setToolTip(translate("<b>Move Row Down</b> shifts row.<br/>Swaps with row below."))
             move_down.triggered.connect(lambda: self._move_row_at(source_row, True))
             menu.addAction(move_down)
-        
+
         menu.addSeparator()
-        
+
         edit_label = QAction(translate("Edit Row Label..."), self)
         edit_label.setToolTip(translate("<b>Edit Row Label</b> changes label.<br/>Opens edit dialog."))
         edit_label.triggered.connect(lambda: self._on_row_header_double_clicked(row))
         menu.addAction(edit_label)
-        
+
         menu.exec(v.mapToGlobal(pos))
 
     def _on_row_header_clicked(self, logical_index: int):
         """Select entire row when row header is clicked."""
         if logical_index < 0 or logical_index >= self.proxy_model.rowCount():
             return
-        
+
         # Select the entire row
         from qtpy.QtCore import QItemSelection
         left = self.proxy_model.index(logical_index, 0)
         right = self.proxy_model.index(logical_index, self.proxy_model.columnCount() - 1)
-        
+
         if left.isValid() and right.isValid():
             selection_model = self.ui.twodaTable.selectionModel()
             if selection_model:
                 selection_model.select(
                     QItemSelection(left, right),
-                    selection_model.SelectionFlag.ClearAndSelect
+                    selection_model.SelectionFlag.ClearAndSelect,
                 )
                 self.ui.twodaTable.setCurrentIndex(left)
 
@@ -2766,25 +2765,25 @@ class TwoDAEditor(Editor):
         """Edit row label when row header is double-clicked."""
         if logical_index < 0 or logical_index >= self.proxy_model.rowCount():
             return
-        
+
         from qtpy.QtWidgets import QInputDialog
-        
+
         # Map to source row
         proxy_idx = self.proxy_model.index(logical_index, 0)
         source_row = self.proxy_model.mapToSource(proxy_idx).row()
-        
+
         item = self.source_model.item(source_row, 0)
         if item is None:
             return
-        
+
         current_label = item.text()
         new_label, ok = QInputDialog.getText(
             self,
             "Edit Row Label",
             f"Row {source_row} label:",
-            text=current_label
+            text=current_label,
         )
-        
+
         if ok and new_label is not None:
             item.setText(new_label)
 
@@ -2890,13 +2889,13 @@ class TwoDAEditor(Editor):
         col = self.proxy_model.mapToSource(cur).column()
         if col <= 0:
             return
-        
+
         changes: list[tuple[int, int, str, str]] = []
         for row in range(self.source_model.rowCount()):
             item = self.source_model.item(row, col)
             if item and item.text():
                 changes.append((row, col, item.text(), ""))
-        
+
         if changes:
             self._undo_stack.push(_BatchSetCellsCommand(self.source_model, changes, "Clear column"))
 
@@ -2906,13 +2905,13 @@ class TwoDAEditor(Editor):
         if not cur.isValid():
             return
         row = self.proxy_model.mapToSource(cur).row()
-        
+
         changes: list[tuple[int, int, str, str]] = []
         for col in range(1, self.source_model.columnCount()):  # Skip row label
             item = self.source_model.item(row, col)
             if item and item.text():
                 changes.append((row, col, item.text(), ""))
-        
+
         if changes:
             self._undo_stack.push(_BatchSetCellsCommand(self.source_model, changes, "Clear row"))
 
@@ -2922,7 +2921,7 @@ class TwoDAEditor(Editor):
         if not selected:
             QMessageBox.information(self, "Format Cells", "Please select cells to format.")
             return
-        
+
         dialog = CellFormattingDialog(self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             formatting = dialog.get_formatting()
@@ -2931,53 +2930,53 @@ class TwoDAEditor(Editor):
     def _apply_cell_formatting(self, indexes: list, formatting: dict):
         """Apply formatting to the given indexes."""
         from qtpy.QtGui import QBrush, QColor
-        
+
         for idx in indexes:
             source_idx = self.proxy_model.mapToSource(idx)
             item = self.source_model.itemFromIndex(source_idx)
             if not item:
                 continue
-            
+
             # Font style
             font = item.font()
-            if formatting['bold']:
+            if formatting["bold"]:
                 font.setBold(True)
-            if formatting['italic']:
+            if formatting["italic"]:
                 font.setItalic(True)
             item.setFont(font)
-            
+
             # Text color
             color_map = {
-                'Red': QColor(255, 0, 0),
-                'Green': QColor(0, 150, 0),
-                'Blue': QColor(0, 0, 255),
-                'Orange': QColor(255, 140, 0),
-                'Purple': QColor(128, 0, 128),
-                'Gray': QColor(128, 128, 128),
+                "Red": QColor(255, 0, 0),
+                "Green": QColor(0, 150, 0),
+                "Blue": QColor(0, 0, 255),
+                "Orange": QColor(255, 140, 0),
+                "Purple": QColor(128, 0, 128),
+                "Gray": QColor(128, 128, 128),
             }
-            if formatting['color'] in color_map:
-                item.setForeground(QBrush(color_map[formatting['color']]))
-            
+            if formatting["color"] in color_map:
+                item.setForeground(QBrush(color_map[formatting["color"]]))
+
             # Background color
             bg_map = {
-                'Light Yellow': QColor(255, 255, 200),
-                'Light Green': QColor(200, 255, 200),
-                'Light Blue': QColor(200, 220, 255),
-                'Light Red': QColor(255, 200, 200),
-                'Light Gray': QColor(240, 240, 240),
+                "Light Yellow": QColor(255, 255, 200),
+                "Light Green": QColor(200, 255, 200),
+                "Light Blue": QColor(200, 220, 255),
+                "Light Red": QColor(255, 200, 200),
+                "Light Gray": QColor(240, 240, 240),
             }
-            if formatting['background'] in bg_map:
-                item.setBackground(QBrush(bg_map[formatting['background']]))
-            
+            if formatting["background"] in bg_map:
+                item.setBackground(QBrush(bg_map[formatting["background"]]))
+
             # Alignment
             from qtpy.QtCore import Qt
             align_map = {
-                'Left': Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
-                'Center': Qt.AlignmentFlag.AlignCenter,
-                'Right': Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                "Left": Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+                "Center": Qt.AlignmentFlag.AlignCenter,
+                "Right": Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
             }
-            if formatting['alignment'] in align_map:
-                item.setTextAlignment(align_map[formatting['alignment']])
+            if formatting["alignment"] in align_map:
+                item.setTextAlignment(align_map[formatting["alignment"]])
 
     def show_bulk_edit_dialog(self):
         """Show bulk edit dialog and apply to selection."""
@@ -2985,7 +2984,7 @@ class TwoDAEditor(Editor):
         if not selected:
             QMessageBox.information(self, "Bulk Edit", "Please select cells to edit.")
             return
-        
+
         dialog = BulkEditDialog(self, len(selected))
         if dialog.exec() == QDialog.DialogCode.Accepted:
             changes = []
@@ -2997,7 +2996,7 @@ class TwoDAEditor(Editor):
                     new_text = dialog.apply_to_text(old_text)
                     if new_text != old_text:
                         changes.append((source_idx.row(), source_idx.column(), old_text, new_text))
-            
+
             if changes:
                 self._undo_stack.push(_BatchSetCellsCommand(self.source_model, changes, "Bulk edit"))
 
@@ -3007,22 +3006,22 @@ class TwoDAEditor(Editor):
         if not cur.isValid():
             QMessageBox.information(self, "Filter Column", "Please select a column to filter.")
             return
-        
+
         col = self.proxy_model.mapToSource(cur).column()
         if col <= 0:
             return
-        
+
         # Get column name
         h = self.source_model.horizontalHeaderItem(col)
         col_name = (h.text() or f"Column{col}") if h else f"Column{col}"
-        
+
         # Get unique values
         unique_values = set()
         for row in range(self.source_model.rowCount()):
             item = self.source_model.item(row, col)
             if item and item.text().strip():
                 unique_values.add(item.text())
-        
+
         dialog = ColumnFilterDialog(self, col_name, list(unique_values))
         if dialog.exec() == QDialog.DialogCode.Accepted:
             selected_values = dialog.get_selected_values()
@@ -3035,12 +3034,10 @@ class TwoDAEditor(Editor):
         for row in range(self.proxy_model.rowCount()):
             source_idx = self.proxy_model.mapToSource(self.proxy_model.index(row, col))
             item = self.source_model.itemFromIndex(source_idx)
-            
+
             if item:
                 value = item.text()
-                if not value.strip() and include_blanks:
-                    self.ui.twodaTable.setRowHidden(row, False)
-                elif value in allowed_values:
+                if (not value.strip() and include_blanks) or value in allowed_values:
                     self.ui.twodaTable.setRowHidden(row, False)
                 else:
                     self.ui.twodaTable.setRowHidden(row, True)
@@ -3051,19 +3048,19 @@ class TwoDAEditor(Editor):
         if not selected:
             QMessageBox.information(self, "Data Validation", "Please select cells to apply validation.")
             return
-        
+
         dialog = DataValidationDialog(self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             rule = dialog.get_validation_rule()
             # Store validation rules (for future validation on edit)
-            if not hasattr(self, '_validation_rules'):
+            if not hasattr(self, "_validation_rules"):
                 self._validation_rules = {}
-            
+
             for idx in selected:
                 source_idx = self.proxy_model.mapToSource(idx)
                 key = (source_idx.row(), source_idx.column())
                 self._validation_rules[key] = rule
-            
+
             QMessageBox.information(self, "Data Validation", f"Validation rules applied to {len(selected)} cells.")
 
     def clear_all_filters(self):
@@ -3176,21 +3173,21 @@ class TwoDAEditor(Editor):
 </body>
 </html>
         """
-        
+
         from qtpy.QtWidgets import QTextBrowser
         dialog = QDialog(self)
         dialog.setWindowTitle("Keyboard Shortcuts")
         dialog.resize(600, 700)
-        
+
         layout = QVBoxLayout(dialog)
         browser = QTextBrowser()
         browser.setHtml(shortcuts_text)
         layout.addWidget(browser)
-        
+
         close_btn = QPushButton("Close")
         close_btn.clicked.connect(dialog.accept)
         layout.addWidget(close_btn)
-        
+
         dialog.exec()
 
     def _update_status_bar(self):
@@ -3203,7 +3200,7 @@ class TwoDAEditor(Editor):
             return
         rows = {self.proxy_model.mapToSource(idx).row() for idx in sel}
         cols = {self.proxy_model.mapToSource(idx).column() for idx in sel}
-        
+
         # Single cell selection: show cell address
         if len(sel) == 1:
             r, c = min(rows), min(cols)
@@ -3212,7 +3209,7 @@ class TwoDAEditor(Editor):
             cell_value = self.source_model.item(r, c).text() if self.source_model.item(r, c) else ""
             self.ui.statusbar.showMessage(f"Cell R{r}:{col_name} = '{cell_value}' | Rows: {rc} | Columns: {cc}{zoom_suffix}")
             return
-        
+
         # Multiple selection: compute aggregates for numeric values
         numeric_values = []
         for idx in sel:
@@ -3224,7 +3221,7 @@ class TwoDAEditor(Editor):
                     numeric_values.append(val)
                 except (ValueError, TypeError):
                     pass
-        
+
         if numeric_values:
             count = len(sel)
             num_count = len(numeric_values)
@@ -3232,7 +3229,7 @@ class TwoDAEditor(Editor):
             avg_val = sum_val / num_count
             min_val = min(numeric_values)
             max_val = max(numeric_values)
-            
+
             agg_str = f"COUNT: {count} | NUMERIC: {num_count} | SUM: {sum_val:.2f} | AVG: {avg_val:.2f} | MIN: {min_val:.2f} | MAX: {max_val:.2f}"
             self.ui.statusbar.showMessage(f"{agg_str} | Rows: {rc} | Columns: {cc}{zoom_suffix}")
         else:
@@ -3665,21 +3662,21 @@ class TwoDAEditor(Editor):
         if not cur.isValid():
             QMessageBox.information(self, "Column Statistics", "Please select a column first.")
             return
-        
+
         col = self.proxy_model.mapToSource(cur).column()
         if col <= 0:
             QMessageBox.information(self, "Column Statistics", "Please select a data column (not the row label column).")
             return
-        
+
         h = self.source_model.horizontalHeaderItem(col)
         col_name = (h.text() or f"Column{col}") if h else f"Column{col}"
-        
+
         # Collect all values in this column
         values = []
         for row in range(self.source_model.rowCount()):
             item = self.source_model.item(row, col)
             values.append(item.text() if item else "")
-        
+
         # Show dialog
         dialog = ColumnStatisticsDialog(self, col_name, values)
         dialog.exec()
@@ -3689,7 +3686,7 @@ class TwoDAEditor(Editor):
         h_header = self.ui.twodaTable.horizontalHeader()
         if h_header is None:
             return
-        
+
         if freeze:
             # Set column 0 to fixed width
             from qtpy.QtWidgets import QHeaderView
@@ -3723,7 +3720,7 @@ class TwoDAEditor(Editor):
                         numeric_count += 1
                     except (ValueError, TypeError):
                         pass
-            
+
             # If >50% numeric, highlight non-numeric cells
             if values and numeric_count / len(values) > 0.5:
                 for row in range(self.source_model.rowCount()):
@@ -3783,7 +3780,7 @@ class TwoDAEditor(Editor):
         if not indexes or len(indexes) < 2:
             QMessageBox.information(self, "Fill Pattern", "Select at least 2 cells to detect a pattern.")
             return
-        
+
         # Group by column
         by_col: dict[int, list[tuple[int, str]]] = {}
         for idx in indexes:
@@ -3794,7 +3791,7 @@ class TwoDAEditor(Editor):
             if c not in by_col:
                 by_col[c] = []
             by_col[c].append((r, val))
-        
+
         changes: list[tuple[int, int, str, str]] = []
         for col, row_vals in by_col.items():
             if len(row_vals) < 2:
@@ -3802,7 +3799,7 @@ class TwoDAEditor(Editor):
             row_vals.sort()  # Sort by row
             rows = [r for r, _ in row_vals]
             vals = [v for _, v in row_vals]
-            
+
             # Try to detect numeric pattern
             try:
                 nums = [float(v) for v in vals if v.strip()]
@@ -3810,7 +3807,7 @@ class TwoDAEditor(Editor):
                     # Calculate increment
                     increment = (nums[-1] - nums[0]) / (len(nums) - 1)
                     next_val = nums[-1] + increment
-                    
+
                     # Fill beyond selection
                     last_row = rows[-1]
                     for r in range(last_row + 1, min(last_row + 20, self.source_model.rowCount())):
@@ -3831,7 +3828,7 @@ class TwoDAEditor(Editor):
                             old = item.text()
                             new = vals[i % pattern_len]
                             changes.append((r, col, old, new))
-        
+
         if changes:
             self._undo_stack.push(_BatchSetCellsCommand(self.source_model, changes, "Fill pattern down"))
         else:
@@ -4103,7 +4100,7 @@ class TwoDAEditor(Editor):
 
             if GlobalSettings().selectedTheme in ("Native", "Fusion (Light)"):
                 vertical_header.setStyleSheet(
-                    f"QHeaderView::section {{ color: rgba({transparent_text.red()}, {transparent_text.green()}, {transparent_text.blue()}, 0); }} QHeaderView::section:checked {{ color: {window_text.name()}; }}"
+                    f"QHeaderView::section {{ color: rgba({transparent_text.red()}, {transparent_text.green()}, {transparent_text.blue()}, 0); }} QHeaderView::section:checked {{ color: {window_text.name()}; }}",
                 )
             elif GlobalSettings().selectedTheme == "Fusion (Dark)":
                 vertical_header.setStyleSheet(f"""

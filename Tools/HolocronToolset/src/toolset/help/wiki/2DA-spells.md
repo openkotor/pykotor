@@ -17,7 +17,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `vs` | Integer | Versus type (self, touch, etc.) |
 | `metamagic` | Integer | Metamagic flags |
 | `targettype` | Integer | Target type flags |
-| `impactscript` | ResRef (optional) | Impact script [ResRef](GFF-File-Format#gff-data-types) |
+| `impactscript` | ResRef (optional) | Impact script *ResRef* |
 | `innate` | Integer | Innate Force power level (0 = not available) |
 | `conjtime` | Float | Casting/conjuration time |
 | `conjtimevfx` | Integer (optional) | Casting time visual effect |
@@ -35,15 +35,15 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `counter1` | Integer (optional) | Counter spell ID 1 |
 | `counter2` | Integer (optional) | Counter spell ID 2 |
 | `counter3` | Integer (optional) | Counter spell ID 3 |
-| `projectile` | ResRef (optional) | Projectile [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `projectilesound` | ResRef (optional) | Projectile sound [ResRef](GFF-File-Format#gff-data-types) |
+| `projectile` | ResRef (optional) | Projectile [model](MDL-MDX-File-Format) *ResRef* |
+| `projectilesound` | ResRef (optional) | Projectile sound *ResRef* |
 | `projectiletype` | Integer | Projectile type identifier |
 | `projectileorient` | Integer | Projectile orientation |
 | `projectilepath` | Integer | Projectile path type |
 | `projectilehoming` | Boolean | Whether projectile homes on target |
-| `projectilemodel` | ResRef (optional) | Projectile 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `projectilemodel` | ResRef (optional) | Projectile 3D [model](MDL-MDX-File-Format) *ResRef* |
 | `projectilemodel2` through `projectilemodel50` | ResRef (optional) | Additional projectile models (numbered 2-50) |
-| `icon` | [ResRef](GFF-File-Format#gff-data-types) | Spell icon [ResRef](GFF-File-Format#gff-data-types) |
+| `icon` | *ResRef* | Spell icon *ResRef* |
 | `icon2` through `icon50` | ResRef (optional) | Additional icons (numbered 2-50) |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | Spell description string reference |
 | `altmessage` | StrRef (optional) | Alternative message string reference |
@@ -68,14 +68,14 @@ The following columns are accessed by the reone engine:
 - `catchtime`: Catch time
 - `conjanim`: Conjuration [animation](MDL-MDX-File-Format#animation-header) type (e.g., "throw", "up")
 - `hostilesetting`: Hostile setting flags
-- `projectile`: Projectile [ResRef](GFF-File-Format#gff-data-types)
+- `projectile`: Projectile *ResRef*
 - `projectileHook`: Projectile hook point
 - `projectileOrigin`: Projectile origin point
 - `projectileTarget`: Projectile target point
 - `projectileCurve`: Projectile curve type
-- `projmodel`: Projectile [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
+- `projmodel`: Projectile [model](MDL-MDX-File-Format) *ResRef*
 - `range`: Spell range
-- `impactscript`: Impact script [ResRef](GFF-File-Format#gff-data-types)
+- `impactscript`: Impact script *ResRef*
 - `casthandvisual`: Cast hand visual effect
 
 **Note**: The `spells.2da` file contains many optional columns for projectile [models](MDL-MDX-File-Format), icons, and immunity types (numbered 1-50). These are used for spell variations and visual effects.
@@ -86,8 +86,8 @@ The following columns are accessed by the reone engine:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:149`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L149) - [StrRef](TLK-File-Format#string-references-strref) column definitions for spells.2da (K1: name, spelldesc)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:327`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L327) - [StrRef](TLK-File-Format#string-references-strref) column definitions for spells.2da (K2: name, spelldesc)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L239) - Script [ResRef](GFF-File-Format#gff-data-types) column definition for spells.2da (impactscript)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L432) - Script [ResRef](GFF-File-Format#gff-data-types) column definition for spells.2da (K2: impactscript)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L239) - Script *ResRef* column definition for spells.2da (impactscript)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L432) - Script *ResRef* column definition for spells.2da (K2: impactscript)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:465`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L465) - TwoDARegistry.POWERS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:558-560`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L558-L560) - [GFF](GFF-File-Format) field mapping: "Subtype", "SpellId", and "Spell" -> spells.2da
 - [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:9380-9381`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L9380-L9381) - GetLastForcePowerUsed function comment referencing spells.2da

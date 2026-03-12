@@ -1,4 +1,4 @@
-## DDS file Format (KotOR)
+# DDS file format (KotOR)
 
 DirectDraw Surface (DDS) [textures](TPC-File-Format) appear in two flavours across KotOR-era content:
 
@@ -7,9 +7,13 @@ DirectDraw Surface (DDS) [textures](TPC-File-Format) appear in two flavours acro
 
 This page documents how PyKotor interprets both formats and how it aligns with reference implementations in `vendor/xoreos` and `vendor/xoreos-tools`. When the engine or tools load DDS by ResRef, they use the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
+**For mod developers:** DDS is an alternative texture format; KotOR typically uses [TPC](TPC-File-Format). See [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** DDS is read/written via PyKotor's TPC pipeline; see [TPC File Format](TPC-File-Format) and [TXI File Format](TXI-File-Format).
+
 ### Standard DDS (DX7+ container)
 
-- Magic: `DDS` followed by a 124-[byte](GFF-File-Format#gff-data-types) header.
+- Magic: `DDS` followed by a 124-[byte](https://en.wikipedia.org/wiki/Byte) header.
 - Important header fields:
   - `dwFlags` bit `0x00020000` signals mipmap count; otherwise one mipmap is assumed.
   - `dwHeight`, `dwWidth` validated up to 0x8000.
@@ -81,3 +85,9 @@ Implementation reference:
 - Palette-based DDS (`DDPF_INDEXED`) is rejected.
 - Dimensions beyond 0x8000 are rejected, matching xoreos limits.
 - BioWare DDS requires power-of-two sizes; standard DDS does not enforce power-of-two beyond the existing dimension guard.
+
+### See also
+
+- [TPC File Format](TPC-File-Format) - KotOR's primary texture format; PyKotor maps DDS into TPC
+- [TXI File Format](TXI-File-Format) - Texture metadata used with TPC
+- [KEY File Format](KEY-File-Format) - Resource resolution order for DDS by ResRef

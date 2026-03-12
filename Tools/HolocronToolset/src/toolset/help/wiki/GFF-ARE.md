@@ -83,7 +83,7 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Grass_TexName` | [ResRef](GFF-File-Format#gff-data-types) | Grass [texture](TPC-File-Format) name |
+| `Grass_TexName` | *ResRef* | Grass [texture](TPC-File-Format) name |
 | `Grass_Density` | Float | Grass blade density (0.0-1.0) |
 | `Grass_QuadSize` | Float | size of grass patches |
 | `Grass_Ambient` | color | Grass ambient color RGB |
@@ -149,7 +149,7 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `DefaultEnvMap` | [ResRef](GFF-File-Format#gff-data-types) | Default environment map [texture](TPC-File-Format) |
+| `DefaultEnvMap` | *ResRef* | Default environment map [texture](TPC-File-Format) |
 | `CameraStyle` | Int | Camera behavior type |
 | `AlphaTest` | Byte | Alpha testing threshold |
 | `WindPower` | Int | Wind strength for effects |
@@ -202,10 +202,10 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `OnEnter` | [ResRef](GFF-File-Format#gff-data-types) | Fires when entering area |
-| `OnExit` | [ResRef](GFF-File-Format#gff-data-types) | Fires when leaving area |
-| `OnHeartbeat` | [ResRef](GFF-File-Format#gff-data-types) | Fires periodically |
-| `OnUserDefined` | [ResRef](GFF-File-Format#gff-data-types) | Fires on user-defined events |
+| `OnEnter` | *ResRef* | Fires when entering area |
+| `OnExit` | *ResRef* | Fires when leaving area |
+| `OnHeartbeat` | *ResRef* | Fires periodically |
+| `OnUserDefined` | *ResRef* | Fires on user-defined events |
 
 **Script Execution:**
 
@@ -362,7 +362,7 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 - `RoomName` ([CExoString](GFF-File-Format#gff-data-types)): Room identifier (referenced by [VIS files](VIS-File-Format))
 - `EnvAudio` (Int): Environment audio index for room acoustics
 - `AmbientScale` (Float): Ambient audio volume scaling factor
-- `DisableWeather` (KotOR2, [byte](GFF-File-Format#gff-data-types)): Disable weather effects in this room
+- `DisableWeather` (KotOR2, [byte](https://en.wikipedia.org/wiki/Byte)): Disable weather effects in this room
 - `ForceRating` (KotOR2, Int): Force rating modifier for this room
 
 **Room System:**

@@ -27,10 +27,12 @@ class TriggerDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinimizeButtonHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinimizeButtonHint,
         )
 
-        from toolset.uic.qtpy.dialogs.instance.trigger import Ui_Dialog  # noqa: PLC0415  # pylint: disable=C0415
+        from toolset.uic.qtpy.dialogs.instance.trigger import (
+            Ui_Dialog,  # noqa: PLC0415  # pylint: disable=C0415
+        )
 
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)

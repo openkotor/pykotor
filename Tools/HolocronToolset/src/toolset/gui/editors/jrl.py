@@ -16,7 +16,14 @@ from qtpy.QtWidgets import (
 )
 
 from pykotor.resource.formats.gff import write_gff
-from pykotor.resource.generics.jrl import JRL, JRLEntry, JRLQuest, JRLQuestPriority, dismantle_jrl, read_jrl
+from pykotor.resource.generics.jrl import (
+    JRL,
+    JRLEntry,
+    JRLQuest,
+    JRLQuestPriority,
+    dismantle_jrl,
+    read_jrl,
+)
 from pykotor.resource.type import ResourceType
 from toolset.data.installation import HTInstallation
 from toolset.gui.dialogs.edit.locstring import LocalizedStringDialog
@@ -416,8 +423,7 @@ class JRLEditor(Editor):
                     self.ui.categoryPlotSelect.setCurrentIndex(data.plot_index)
                     # Set planet ID - combobox index = planet_id + 1 (0 is [Unset])
                     planet_combo_index = data.planet_id + 1
-                    if planet_combo_index < 0:
-                        planet_combo_index = 0
+                    planet_combo_index = max(planet_combo_index, 0)
                     if planet_combo_index < self.ui.categoryPlanetSelect.count():
                         self.ui.categoryPlanetSelect.setCurrentIndex(planet_combo_index)
                     else:

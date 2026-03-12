@@ -2,22 +2,26 @@
 
 LYT (Layout) files define how area [room models](LYT-File-Format#room-definitions) are positioned inside a module. They are plain-text descriptors that list room placements, swoop-track props, obstacles, and door hook transforms. The engine combines this data with [MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format) [geometry](MDL-MDX-File-Format#geometry-header) to assemble the final area. LYT files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
+**For mod developers:** LYT is edited in the module/area layout tools; see [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** LYT references [MDL/MDX](MDL-MDX-File-Format) room models, [BWM](BWM-File-Format) (WOK) walkmeshes, [VIS](VIS-File-Format), and [GFF-ARE](GFF-ARE).
+
 ## Table of Contents
 
 - KotOR LYT files format Documentation
   - Table of Contents
-  - [format Overview](#format-overview)
+  - [Format overview](#format-overview)
   - [Syntax](#syntax)
     - [Room Definitions](#room-definitions)
     - [Track Definitions](#track-definitions)
     - [Obstacle Definitions](#obstacle-definitions)
     - [Door Hooks](#door-hooks)
-  - [coordinate System](#coordinate-system)
+  - [Coordinate system](#coordinate-system)
   - [Implementation Details](#implementation-details)
 
 ---
 
-## format Overview
+## Format overview
 
 - LYT files are [ASCII](https://en.wikipedia.org/wiki/ASCII) text with a deterministic order: `beginlayout`, optional sections, then `donelayout`.  
 - Every section declares a count and then lists entries on subsequent lines.  
@@ -33,7 +37,7 @@ LYT (Layout) files define how area [room models](LYT-File-Format#room-definition
 - [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/LYTObject.cs`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/LYTObject.cs) - C# Unity LYT loader
 - [`vendor/Kotor.NET/Kotor.NET/Formats/KotorLYT/LYT.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs) - .NET LYT reader/writer
 
-**See Also:**
+### See also
 
 - [MDL/MDX File Format](MDL-MDX-File-Format) - [room models](LYT-File-Format#room-definitions) referenced by LYT entries
 - [BWM File Format](BWM-File-Format) - Walkmeshes ([WOK](BWM-File-Format) files) loaded alongside LYT rooms
@@ -63,12 +67,16 @@ donelayout
 | Token | Description |
 | ----- | ----------- |
 | `roomcount` | Declares how many rooms follow. |
-| `<room_model>` | [ResRef](GFF-File-Format#gff-data-types) of the [MDL/MDX](MDL-MDX-File-Format)/[WOK](BWM-File-Format) triple (max 16 chars, no spaces). |
+| `<room_model>` | *ResRef* of the [MDL/MDX](MDL-MDX-File-Format)/[WOK](BWM-File-Format) triple (max 16 chars, no spaces). |
 | `<x y z>` | World-space position for the room’s origin. |
 
 Rooms are case-insensitive; PyKotor lowercases entries for caching and resource lookup.
 
-**Reference:** [`vendor/reone/src/libs/resource/format/lytreader.cpp:37-77`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/lytreader.cpp#L37-L77)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/format/lytreader.cpp:37-77`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/lytreader.cpp#L37-L77) - Room definitions parsing
 
 ### Track Definitions
 
@@ -84,7 +92,7 @@ trackcount <N>
 | Token | Description |
 | ----- | ----------- |
 | `trackcount` | Declares how many track elements follow |
-| `<track_model>` | [ResRef](GFF-File-Format#gff-data-types) of the track booster model ([MDL](MDL-MDX-File-Format) file, max 16 chars) |
+| `<track_model>` | *ResRef* of the track booster model ([MDL](MDL-MDX-File-Format) file, max 16 chars) |
 | `<x y z>` | World-space position for the track element |
 
 **Usage:**
@@ -96,7 +104,12 @@ trackcount <N>
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:286-329`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L286-L329)
 
-**Reference:** [`vendor/KotOR.js/src/resource/LYTObject.ts:73-83`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LYTObject.ts#L73-L83), [`vendor/xoreos/src/aurora/lytfile.cpp:98-107`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/lytfile.cpp#L98-L107)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/KotOR.js/src/resource/LYTObject.ts:73-83`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LYTObject.ts#L73-L83) - Track parsing
+- [`vendor/xoreos/src/aurora/lytfile.cpp:98-107`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/lytfile.cpp#L98-L107) - Track section
 
 ### Obstacle Definitions
 
@@ -112,7 +125,7 @@ obstaclecount <N>
 | Token | Description |
 | ----- | ----------- |
 | `obstaclecount` | Declares how many obstacle elements follow |
-| `<obstacle_model>` | [ResRef](GFF-File-Format#gff-data-types) of the obstacle model ([MDL](MDL-MDX-File-Format) file, max 16 chars) |
+| `<obstacle_model>` | *ResRef* of the obstacle model ([MDL](MDL-MDX-File-Format) file, max 16 chars) |
 | `<x y z>` | World-space position for the obstacle element |
 
 **Usage:**
@@ -125,7 +138,12 @@ obstaclecount <N>
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:332-375`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L332-L375)
 
-**Reference:** [`vendor/KotOR.js/src/resource/LYTObject.ts:79-83`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LYTObject.ts#L79-L83), [`vendor/xoreos/src/aurora/lytfile.cpp:109-118`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/lytfile.cpp#L109-L118)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/KotOR.js/src/resource/LYTObject.ts:79-83`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LYTObject.ts#L79-L83) - Obstacle parsing
+- [`vendor/xoreos/src/aurora/lytfile.cpp:109-118`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/lytfile.cpp#L109-L118) - Obstacle section
 
 ### Door Hooks
 
@@ -152,7 +170,7 @@ doorhookcount <N>
 - Door hooks define where doors are placed in rooms to create area transitions
 - Each door hook specifies which room it belongs to and a unique door name
 - The engine uses door hooks to position door [models](MDL-MDX-File-Format) and enable transitions between areas
-- Door hooks are separate from [BWM](BWM-File-Format) hooks (see [BWM File Format](BWM-File-Format.md#walkmesh-properties)) - [BWM](BWM-File-Format) hooks define interaction points, while LYT doorhooks define door placement
+- Door hooks are separate from [BWM](BWM-File-Format) hooks (see [BWM File Format](BWM-File-Format#walkmesh-properties)) - [BWM](BWM-File-Format) hooks define interaction points, while LYT doorhooks define door placement
 
 **Relationship to [BWM](BWM-File-Format):**
 
@@ -162,17 +180,26 @@ doorhookcount <N>
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:378-456`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L378-L456)
 
-**Reference:** [`vendor/xoreos/src/aurora/lytfile.cpp:161-200`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/lytfile.cpp#L161-L200), [`vendor/KotOR.js/src/resource/LYTObject.ts:85-91`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LYTObject.ts#L85-L91)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/xoreos/src/aurora/lytfile.cpp:161-200`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/lytfile.cpp#L161-L200) - Door hook parsing
+- [`vendor/KotOR.js/src/resource/LYTObject.ts:85-91`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LYTObject.ts#L85-L91) - Door hooks section
 
 ---
 
-## coordinate System
+## Coordinate system
 
 - Units are meters in the same left-handed coordinate system as [MDL](MDL-MDX-File-Format) [models](MDL-MDX-File-Format).  
 - PyKotor validates that room ResRefs and hook targets are lowercase and conform to resource naming restrictions.  
 - The engine expects rooms to be pre-aligned so that adjoining doors share positions/rotations; [VIS files](VIS-File-Format) then control visibility between those rooms.  
 
-**Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:150-267`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L150-L267)
+**References**
+
+**PyKotor:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:150-267`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L150-L267) - Coordinate validation and room/hook handling
 
 ---
 
@@ -187,3 +214,12 @@ doorhookcount <N>
   - [`vendor/Kotor.NET/Kotor.NET/Formats/KotorLYT/LYT.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs)  
 
 All of the projects listed above agree on the plain-text token sequence; KotOR-Unity and NorthernLights consume the same format without introducing additional metadata.
+
+### See also
+
+- [MDL/MDX File Format](MDL-MDX-File-Format) - Room models referenced by LYT entries
+- [BWM File Format](BWM-File-Format) - Walkmeshes (WOK) loaded alongside LYT rooms
+- [VIS File Format](VIS-File-Format) - Visibility graph for areas with LYT rooms
+- [GFF-ARE](GFF-ARE) - Area files that load LYT layouts
+- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) - Uses LYT for generated modules
+

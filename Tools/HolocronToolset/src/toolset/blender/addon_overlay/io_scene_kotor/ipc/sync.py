@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from .server import HolocronIPCServer
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .server import HolocronIPCServer
 
 
 def start_scene_monitor(server: HolocronIPCServer) -> None:

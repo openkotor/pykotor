@@ -15,9 +15,21 @@ from pykotor.gl.glm_compat import Vector3, Vector4, mat4, value_ptr
 HAS_PYOPENGL = has_pyopengl()
 
 if HAS_PYOPENGL:
-    from OpenGL.GL import glGetUniformLocation, glUniform1f, glUniform3fv, glUniform4fv, glUniformMatrix4fv, shaders  # pyright: ignore[reportMissingImports]
+    from OpenGL.GL import (  # pyright: ignore[reportMissingImports]
+        glGetUniformLocation,
+        glUniform1f,
+        glUniform3fv,
+        glUniform4fv,
+        glUniformMatrix4fv,
+        shaders,
+    )
     from OpenGL.GL.shaders import GL_FALSE  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_2_0 import GL_FRAGMENT_SHADER, GL_VERTEX_SHADER, glUniform1i, glUseProgram  # pyright: ignore[reportMissingImports]
+    from OpenGL.raw.GL.VERSION.GL_2_0 import (  # pyright: ignore[reportMissingImports]
+        GL_FRAGMENT_SHADER,
+        GL_VERTEX_SHADER,
+        glUniform1i,
+        glUseProgram,
+    )
 else:
     glGetUniformLocation = missing_gl_func("glGetUniformLocation")
     glUniform1f = missing_gl_func("glUniform1f")

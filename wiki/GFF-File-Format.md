@@ -12,7 +12,7 @@ This document provides a detailed description of the GFF (Generic file format) u
 
 - [KotOR GFF file format Documentation](#kotor-gff-file-format-documentation)
   - Table of Contents
-  - [file structure Overview](#file-structure-overview)
+  - [File structure overview](#file-structure-overview)
     - [GFF as a Universal Container](#gff-as-a-universal-container)
   - [Binary format](#binary-format)
     - [file header](#file-header)
@@ -54,7 +54,7 @@ This document provides a detailed description of the GFF (Generic file format) u
 
 ---
 
-## file structure Overview
+## File structure overview
 
 GFF files use a hierarchical structure with structs containing fields, which can be simple values or nested structs and lists. The format supports version V3.2 (KotOR) and later versions (V3.3, V4.0, V4.1) used in other BioWare games.
 
@@ -94,7 +94,7 @@ Every `.utc` ([UTC](GFF-File-Format#utc-creature)), `.uti` ([UTI](GFF-File-Forma
 - [`vendor/Kotor.NET/Kotor.NET/Formats/KotorGFF/GFF.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs) - .NET GFF reader/writer
 - [`vendor/xoreos-tools/src/aurora/gff3file.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/aurora/gff3file.cpp) - Command-line GFF tools implementation
 
-**See Also:**
+### See also
 
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - Modding GFF files with TSLPatcher
 - [2DA File Format](2DA-File-Format) - Configuration data referenced by GFF files
@@ -126,17 +126,25 @@ The file header is 56 bytes in size:
 | List indices offset  | [uint32](GFF-File-Format#gff-data-types)  | 48 (0x30) | 4    | offset to list indices array                  |
 | List indices count   | [uint32](GFF-File-Format#gff-data-types)  | 52 (0x34) | 4    | Number of list indices                        |
 
-**Reference**: [`vendor/reone/src/libs/resource/format/gffreader.cpp:30-44`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L30-L44)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/format/gffreader.cpp:30-44`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L30-L44) - File header parsing
 
 ### Label array
 
-Labels are 16-[byte](GFF-File-Format#gff-data-types) [null-terminated](https://en.cppreference.com/w/c/string/byte) strings used as field names:
+Labels are 16-[byte](https://en.wikipedia.org/wiki/Byte) [null-terminated](https://en.cppreference.com/w/c/string/byte) strings used as field names:
 
 | Name   | type     | size | Description                                                      |
 | ------ | -------- | ---- | ---------------------------------------------------------------- |
 | Labels | [char](GFF-File-Format#gff-data-types) | 16×N | array of field name labels (null-padded to 16 bytes)            |
 
-**Reference**: [`vendor/reone/src/libs/resource/format/gffreader.cpp:151-154`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L151-L154)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/format/gffreader.cpp:151-154`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L151-L154) - Label array reading
 
 ### Struct array
 
@@ -148,7 +156,11 @@ Each struct entry is 12 bytes:
 | data/offset| [uint32](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | field index (if 1 field) or offset to field indices (if multiple) |
 | field count| [uint32](GFF-File-Format#gff-data-types) | 8 (0x08) | 4    | Number of fields in this struct (0, 1, or >1)                   |
 
-**Reference**: [`vendor/reone/src/libs/resource/format/gffreader.cpp:40-62`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L40-L62)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/format/gffreader.cpp:40-62`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L40-L62) - Struct array parsing
 
 ### field array
 
@@ -160,7 +172,11 @@ Each field entry is 12 bytes:
 | Label index | [uint32](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | index into label array for field name                           |
 | data/offset | [uint32](GFF-File-Format#gff-data-types) | 8 (0x08) | 4    | Inline data (simple types) or offset to field data (complex types) |
 
-**Reference**: [`vendor/reone/src/libs/resource/format/gffreader.cpp:67-76`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L67-L76)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/format/gffreader.cpp:67-76`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L67-L76) - Field array parsing
 
 ### field data
 
@@ -178,7 +194,11 @@ Complex field types store their data in the field data section:
 | Vector3           | 12 bytes (3×float)                                                   |
 | Vector4           | 16 bytes (4×float)                                                   |
 
-**Reference**: [`vendor/reone/src/libs/resource/format/gffreader.cpp:78-146`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L78-L146)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/format/gffreader.cpp:78-146`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/gffreader.cpp#L78-L146) - Field data and complex type reading
 
 ### field Indices (Multiple Element Map / MultiMap)
 
@@ -186,7 +206,11 @@ When a struct has multiple fields, the struct's data field contains an offset in
 
 **Access Pattern**: When a struct has exactly one field, the struct's data field directly contains the field index. When a struct has more than one field, the data field contains a byte offset into the field indices array, which is an array of uint32 values listing the field indices.
 
-**Reference**: [`vendor/xoreos-docs/specs/torlack/itp.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/itp.html) - Entry/Entity table access patterns and MultiMap explanation
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/xoreos-docs/specs/torlack/itp.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/itp.html) - Entry/Entity table access patterns and MultiMap explanation
 
 ### List indices
 
@@ -194,7 +218,11 @@ Lists are stored as arrays of struct indices. The list field contains an offset 
 
 **Access Pattern**: For a LIST type field, the field's data/offset value specifies a byte offset into the list indices table. At that offset, the first uint32 is the count of entries, followed by that many uint32 values representing the struct indices.
 
-**Reference**: [`vendor/xoreos-docs/specs/torlack/itp.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/itp.html) - LIST type access pattern
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/xoreos-docs/specs/torlack/itp.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/itp.html) - LIST type access pattern
 
 ---
 
@@ -224,7 +252,11 @@ GFF supports the following field types:
 | 17      | vector            | 12            | 3D vector (3×float, stored in field data)                       |
 | 18      | [StrRef](TLK-File-Format#string-references-strref)            | 4             | string reference ([TLK](TLK-File-Format) [StrRef](TLK-File-Format#string-references-strref), stored inline as int32)             |
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py:73-108`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L73-L108)
+**References**
+
+**PyKotor:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py:73-108`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L73-L108) - GFF data type definitions
 
 **type Selection Guidelines:**
 
@@ -258,7 +290,11 @@ A GFF struct is a collection of named fields. Each struct has:
 - **Struct ID**: type identifier (often 0xFFFFFFFF for generic structs)
 - **fields**: Dictionary mapping field names (labels) to field values
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py:400-800`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L400-L800)
+**References**
+
+**PyKotor:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py) - GFFStruct, GFFField, GFFList implementation
 
 ### GFFField
 
@@ -388,7 +424,11 @@ The following terminology mapping may be helpful when reading older specificatio
 
 **Note**: The first entry in the struct array is always the root of the entire hierarchy. All other structs and fields can be accessed from this root entry.
 
-**Reference**: [`vendor/xoreos-docs/specs/torlack/itp.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/itp.html) - Tim Smith (Torlack)'s reverse-engineered GFF/ITP format documentation
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/xoreos-docs/specs/torlack/itp.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/itp.html) - Tim Smith (Torlack)'s reverse-engineered GFF/ITP format documentation
 
 ## field data Access Patterns
 
@@ -420,7 +460,11 @@ Complex types require accessing data from the field data section:
 - **Struct (CAPREF)**: The field's data/offset contains a struct index (not an offset). This references a struct in the struct array.
 - **List**: The field's data/offset contains a byte offset into the list indices array. At that offset, the first uint32 is the entry count, followed by that many uint32 struct indices.
 
-**Reference**: [`vendor/xoreos-docs/specs/torlack/itp.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/itp.html) - Detailed field data access patterns and code examples
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/xoreos-docs/specs/torlack/itp.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/itp.html) - Detailed field data access patterns and code examples
 
 ## Implementation Details
 

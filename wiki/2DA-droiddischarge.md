@@ -11,11 +11,11 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Droid discharge label |
-| `>>##HEADER##<<` | [ResRef](GFF-File-Format#gff-data-types) | header [resource reference](GFF-File-Format#gff-data-types) |
+| `>>##HEADER##<<` | *ResRef* | header [resource reference](GFF-File-Format#gff-data-types) |
 | Additional columns | Various | Droid discharge properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:156`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L156) - [ResRef](GFF-File-Format#gff-data-types) column definition for droiddischarge.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:156`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L156) - *ResRef* column definition for droiddischarge.2da
 
 ---

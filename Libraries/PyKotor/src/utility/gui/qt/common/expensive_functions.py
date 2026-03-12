@@ -34,7 +34,9 @@ if TYPE_CHECKING:
     from multiprocessing.managers import ValueProxy
 
     from qtpy.QtWidgets import QWidget
-    from win32com.client.dynamic import CDispatch  # pyright: ignore[reportMissingImports, reportMissingModuleSource]
+    from win32com.client.dynamic import (
+        CDispatch,  # pyright: ignore[reportMissingImports, reportMissingModuleSource]
+    )
 
 
 logger: RobustLogger = RobustLogger()
@@ -409,7 +411,9 @@ class FileOperations:
                 shortcut.save()
             except ImportError:
                 try:
-                    from comtypes.client import CreateObject  # pyright: ignore[reportMissingImports, reportMissingTypeStubs]
+                    from comtypes.client import (
+                        CreateObject,  # pyright: ignore[reportMissingImports, reportMissingTypeStubs]
+                    )
 
                     shell = CreateObject("WScript.Shell")
                     shortcut = shell.CreateShortCut(str(shortcut_path))

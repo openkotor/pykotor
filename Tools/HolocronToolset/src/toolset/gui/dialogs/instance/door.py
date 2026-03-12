@@ -30,7 +30,7 @@ class DoorDialog(QDialog):
         self.setWindowFlags(
             QtCore.Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | QtCore.Qt.WindowType.WindowCloseButtonHint
-            | QtCore.Qt.WindowType.WindowStaysOnTopHint & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint & ~QtCore.Qt.WindowType.WindowMinimizeButtonHint
+            | QtCore.Qt.WindowType.WindowStaysOnTopHint & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint & ~QtCore.Qt.WindowType.WindowMinimizeButtonHint,
         )
 
         from toolset.uic.qtpy.dialogs.instance.door import Ui_Dialog

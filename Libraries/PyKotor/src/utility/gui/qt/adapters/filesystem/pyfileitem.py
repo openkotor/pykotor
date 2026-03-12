@@ -16,9 +16,16 @@ from pykotor.tools.path import CaseAwarePath
 if not TYPE_CHECKING:
     if qtpy.QT6:
         QDesktopWidget = None
-        from qtpy.QtGui import QUndoCommand, QUndoStack  # pyright: ignore[reportPrivateImportUsage]  # noqa: F401
+        from qtpy.QtGui import (  # pyright: ignore[reportPrivateImportUsage]  # noqa: F401
+            QUndoCommand,
+            QUndoStack,
+        )
     elif qtpy.QT5:
-        from qtpy.QtWidgets import QDesktopWidget, QUndoCommand, QUndoStack  # noqa: F401  # pyright: ignore[reportPrivateImportUsage]
+        from qtpy.QtWidgets import (  # noqa: F401  # pyright: ignore[reportPrivateImportUsage]
+            QDesktopWidget,
+            QUndoCommand,
+            QUndoStack,
+        )
     else:
         raise RuntimeError(f"Unexpected qtpy version: '{qtpy.API_NAME}'")
 

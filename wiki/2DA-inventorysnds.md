@@ -11,11 +11,11 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Inventory sound label |
-| `inventorysound` | [ResRef](GFF-File-Format#gff-data-types) | Inventory sound [ResRef](GFF-File-Format#gff-data-types) |
+| `inventorysound` | *ResRef* | Inventory sound *ResRef* |
 | Additional columns | Various | Inventory sound properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:201`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L201) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for inventorysnds.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:201`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L201) - Sound *ResRef* column definition for inventorysnds.2da
 
 ---

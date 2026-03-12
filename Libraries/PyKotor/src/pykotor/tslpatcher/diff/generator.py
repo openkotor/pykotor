@@ -28,16 +28,26 @@ from pykotor.resource.formats.twoda.twoda_auto import read_2da, write_2da
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath
 from pykotor.tslpatcher.memory import PatcherMemory
-from utility.string_util import is_non_empty_string
-from utility.misc import ensure_directory_exists
-from pykotor.tslpatcher.mods.gff import AddFieldGFF, AddStructToListGFF, FieldValue, FieldValueConstant, ModifyFieldGFF
+from pykotor.tslpatcher.mods.gff import (
+    AddFieldGFF,
+    AddStructToListGFF,
+    FieldValue,
+    FieldValueConstant,
+    ModifyFieldGFF,
+)
 from pykotor.tslpatcher.mods.install import InstallFile
 from pykotor.tslpatcher.mods.ssf import ModifySSF
+from utility.misc import ensure_directory_exists
+from utility.string_util import is_non_empty_string
 
 if TYPE_CHECKING:
     from pathlib import PureWindowsPath
 
-    from pykotor.tslpatcher.mods.gff import FieldValue2DAMemory, FieldValueTLKMemory, ModificationsGFF
+    from pykotor.tslpatcher.mods.gff import (
+        FieldValue2DAMemory,
+        FieldValueTLKMemory,
+        ModificationsGFF,
+    )
     from pykotor.tslpatcher.mods.ssf import ModificationsSSF
     from pykotor.tslpatcher.mods.tlk import ModificationsTLK
     from pykotor.tslpatcher.mods.twoda import Modifications2DA

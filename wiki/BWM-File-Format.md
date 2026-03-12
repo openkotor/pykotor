@@ -1158,3 +1158,13 @@ This ensures pathfinding can traverse in both directions along shared edges.
 ---
 
 This documentation provides a comprehensive overview of the KotOR BWM file format, focusing on clear explanations of what each component does and how it works, based on the canonical implementation in the Andastra codebase.
+
+### See also
+
+- [GFF-ARE](GFF-ARE) - Area files that reference WOK/PWK/DWK walkmeshes
+- [LYT File Format](LYT-File-Format) - Layout files that position rooms (WOK per room)
+- [VIS File Format](VIS-File-Format) - Visibility graph used with area walkmeshes
+- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) - Generates and processes BWM files
+- [Game Engine BWM/AABB Implementation](Game-Engine-BWM-AABB-Implementation) - Reverse-engineered engine behavior
+- [2DA-surfacemat](2DA-surfacemat) - Material IDs and walkability
+

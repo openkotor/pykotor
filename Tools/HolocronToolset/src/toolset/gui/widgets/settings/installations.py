@@ -19,7 +19,6 @@ from qtpy.QtWidgets import QApplication, QFileDialog, QStyle, QWidget
 
 from loggerplus import RobustLogger, get_log_directory
 from pykotor.common.misc import Game
-from pykotor.extract.installation import Installation
 from pykotor.tools.path import CaseAwarePath, find_kotor_paths_from_default
 from toolset.data.settings import Settings
 
@@ -40,6 +39,20 @@ if TYPE_CHECKING:
 
     class InstallationsDict(TypedDict):
         installations: dict[str, InstallationDetailDict]
+
+
+def is_valid_installation_path(path: str) -> bool:
+    """Return True if path is a directory containing chitin.key (same as Installation/HTInstallation)."""
+    raw = (path or "").strip()
+    if not raw:
+        return False
+    try:
+        p = Path(raw)
+        if not p.is_dir():
+            return False
+        return (p / "chitin.key").is_file()
+    except (OSError, RuntimeError):
+        return False
 
 
 class InstallationsWidget(QWidget):
@@ -145,16 +158,7 @@ class InstallationsWidget(QWidget):
         return style.standardIcon(QStyle.StandardPixmap.SP_MessageBoxWarning)
 
     def _is_valid_installation_path(self, path: str) -> bool:
-        """Return True if path exists and passes determine_game() check."""
-        raw = (path or "").strip()
-        if not raw:
-            return False
-        try:
-            if not Path(raw).exists():
-                return False
-        except (OSError, RuntimeError):
-            return False
-        return Installation.determine_game(raw) is not None
+        return is_valid_installation_path(path)
 
     def _apply_installation_validation(self, item: QStandardItem) -> None:
         """Set warning icon and tooltip on item if path is missing or invalid."""
@@ -191,6 +195,27 @@ class InstallationsWidget(QWidget):
         select_model: QItemSelectionModel | None = self.ui.pathList.selectionModel()
         assert select_model is not None, "select_model cannot be None in setup_signals"
         select_model.selectionChanged.connect(self.installation_selected)
+
+    def validate_can_save(self) -> tuple[bool, str]:
+        """Return (True, '') if all entries with a non-empty path are valid; else (False, message)."""
+        from toolset.gui.common.localization import translate as tr
+
+        invalid: list[str] = []
+        for row in range(self.installations_model.rowCount()):
+            item: QStandardItem | None = self.installations_model.item(row, 0)
+            if item is None:
+                continue
+            data: dict[str, Any] = item.data() or {}
+            path: str = (data.get("path") or "").strip()
+            if path and not self._is_valid_installation_path(path):
+                invalid.append(f"{item.text()!r}: {path}")
+
+        if not invalid:
+            return True, ""
+        return False, tr(
+            "The following installation(s) do not have a valid game path (directory must contain chitin.key). "
+            "Fix or remove them before saving:\n\n",
+        ) + "\n".join(invalid)
 
     def save(self):
         installations: dict[str, dict[str, str]] = {}
@@ -280,7 +305,7 @@ class InstallationConfig:
         from toolset.utils.misc import get_qsettings_organization
 
         self._settings: QSettings = QSettings(
-            get_qsettings_organization("HolocronToolsetV4"), "Global"
+            get_qsettings_organization("HolocronToolsetV4"), "Global",
         )
         self._name: str = name
 
@@ -294,7 +319,7 @@ class InstallationConfig:
         value: str,
     ):
         installations: dict[str, dict[str, Any]] = self._settings.value(
-            "installations", {}, dict
+            "installations", {}, dict,
         )
         installation: dict[str, Any] = installations[self._name]
 
@@ -323,7 +348,7 @@ class InstallationConfig:
     ):
         try:
             installations: dict[str, dict[str, str]] = self._settings.value(
-                "installations", {}
+                "installations", {},
             )
             installations[self._name] = installations.get(self._name, {})
             installations[self._name]["path"] = value
@@ -335,7 +360,7 @@ class InstallationConfig:
     @property
     def tsl(self) -> bool:
         all_installs: dict[str, dict[str, Any]] = self._settings.value(
-            "installations", {}
+            "installations", {},
         )
         installation: dict[str, Any] = all_installs.get(self._name, {})
         return installation.get("tsl", False)
@@ -346,7 +371,7 @@ class InstallationConfig:
         value: bool,
     ):
         installations: dict[str, dict[str, Any]] = self._settings.value(
-            "installations", {}
+            "installations", {},
         )
         installations[self._name] = installations.get(self._name, {})
         installations[self._name]["tsl"] = value
@@ -374,8 +399,7 @@ class GlobalSettings(Settings):
         self,
         installations: dict[str, InstallationConfig | dict[str, Any]],
     ) -> None:
-        """
-        Sets the collection of installations in the settings.
+        """Sets the collection of installations in the settings.
 
         Args:
             installations: A mapping from installation name to InstallationConfig or dict with compatible fields.
@@ -394,7 +418,7 @@ class GlobalSettings(Settings):
                 installations_data[name] = dict(config)
             else:
                 raise ValueError(
-                    f"Invalid type for installation config value: {type(config)}"
+                    f"Invalid type for installation config value: {type(config)}",
                 )
         self.settings.setValue("installations", installations_data)
 
@@ -410,7 +434,7 @@ class GlobalSettings(Settings):
         """
         self.firstTime = False
         RobustLogger().info(
-            "First time user, attempt auto-detection of currently installed KOTOR paths."
+            "First time user, attempt auto-detection of currently installed KOTOR paths.",
         )
         self.extractPath = str(get_log_directory(f"{uuid.uuid4().hex[:7]}_extract"))
         counters: dict[Game, int] = {Game.K1: 1, Game.K2: 1}

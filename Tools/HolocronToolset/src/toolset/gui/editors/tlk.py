@@ -217,13 +217,12 @@ class TLKEditor(Editor):
     ):
         if isinstance(language, Language):
             self.change_language(language)
+        # Auto-detect: read the language from the file if available
+        elif self._revert:
+            tlk: TLK = read_tlk(self._revert)
+            self.change_language(tlk.language)
         else:
-            # Auto-detect: read the language from the file if available
-            if self._revert:
-                tlk: TLK = read_tlk(self._revert)
-                self.change_language(tlk.language)
-            else:
-                self.change_language(Language.ENGLISH)
+            self.change_language(Language.ENGLISH)
 
     def change_language(
         self,
@@ -356,7 +355,7 @@ class TLKEditor(Editor):
                             matched_value=str(stringref),
                             file_type=file_type,
                             byte_offset=byte_offset,
-                        )
+                        ),
                     )
 
             return reference_results
@@ -387,7 +386,7 @@ class TLKEditor(Editor):
             results_dialog.show()
             results_dialog.activateWindow()
             results_dialog.setWindowTitle(
-                trf("{count} results for stringref '{stringref}' in {path}", count=len(results_list), stringref=stringref, path=str(self._installation.path()))
+                trf("{count} results for stringref '{stringref}' in {path}", count=len(results_list), stringref=stringref, path=str(self._installation.path())),
             )
             add_window(results_dialog)
             results_dialog.sig_searchresults_selected.connect(self.handle_results_selection)
@@ -550,7 +549,7 @@ class LoaderDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint,
         )
 
         self._progress_bar = self.ui.progressBar

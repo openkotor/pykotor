@@ -62,7 +62,7 @@ Each [SSF file](SSF-File-Format) requires its own section (e.g., `[example.ssf]`
 **Destination values:**
 
 - `Override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM archive
+- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM container
 - Use backslashes for path separators
 
 **Replace file Behavior:**
@@ -370,9 +370,9 @@ Rejoin party=50111
 Poisoned=50120
 ```
 
-### Example 7: Modifying [SSF](SSF-File-Format) files in Archives
+### Example 7: Modifying [SSF](SSF-File-Format) files in Containers
 
-This example shows how to patch [SSF files](SSF-File-Format) that are stored in [ERF](ERF-File-Format)/MOD/RIM archive files:
+This example shows how to patch [SSF files](SSF-File-Format) that are stored in [ERF](ERF-File-Format)/MOD/RIM container files:
 
 ```ini
 [SSFList]
@@ -386,10 +386,10 @@ Attack 1=60003
 Death=60004
 ```
 
-**Important:** When patching files in archives, ensure that:
+**Important:** When patching files in containers, ensure that:
 
-1. The archive file exists in the game directory
-2. The [SSF file](SSF-File-Format) already exists in that archive (or use ReplaceN to force overwrite)
+1. The container file exists in the game directory
+2. The [SSF file](SSF-File-Format) already exists in that container (or use ReplaceN to force overwrite)
 3. Use backslashes for path separators in `!Destination`
 
 ### Example 8: Clearing Sound Entries
@@ -467,7 +467,7 @@ Battlecry 1=20001
 - The game engine interprets negative values (-1) as "no sound"
 - [SSF files](SSF-File-Format) have a fixed structure with exactly 28 sound slots
 - Empty or unset sound slots default to -1 when a new [SSF](SSF-File-Format) is created
-- PyKotor/TSLPatcher loads existing [SSF files](SSF-File-Format) from the override folder or specified archive if they exist
+- PyKotor/TSLPatcher loads existing [SSF files](SSF-File-Format) from the override folder or specified container if they exist
 
 ## Troubleshooting
 
@@ -496,11 +496,11 @@ Battlecry 1=20001
 - **Solution:** Verify `!SourceFile` matches the actual filename if different from section name
 - **Solution:** Ensure !DefaultSourceFolder is set correctly at SSFList level
 
-**Problem:** Archive insertion failing
+**Problem:** Container insertion failing
 
-- **Solution:** Verify the archive file exists in the game directory
+- **Solution:** Verify the container file exists in the game directory
 - **Solution:** Use backslashes (not forward slashes) in !Destination paths
-- **Solution:** Ensure the [SSF file](SSF-File-Format) already exists in the archive if not using ReplaceN syntax
+- **Solution:** Ensure the [SSF file](SSF-File-Format) already exists in the container if not using ReplaceN syntax
 
 ### Installation Order
 
@@ -536,8 +536,8 @@ This means that memory tokens set in TLKList and 2DAList will be available when 
 
 **Supported Operations:**
 
-- Read existing [SSF files](SSF-File-Format) from Override or archives
-- Write modified [SSF files](SSF-File-Format) to Override or archives
+- Read existing [SSF files](SSF-File-Format) from Override or containers
+- Write modified [SSF files](SSF-File-Format) to Override or containers
 - Modify any of the 28 sound entry stringrefs
 - Support for [TLK](TLK-File-Format) and [2DA](2DA-File-Format) memory token resolution
 - Replace file or modify existing file modes

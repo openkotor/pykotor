@@ -24,7 +24,6 @@ from qtpy.QtGui import QAction, QIcon, QPixmap
 from qtpy.QtWidgets import (
     QApplication,
     QFileDialog,
-    QLineEdit,
     QMainWindow,
     QMenu,
     QMessageBox,
@@ -45,10 +44,15 @@ from pykotor.resource.formats.erf import ERF, ERFType, read_erf, write_erf
 from pykotor.resource.formats.gff import GFFStruct, bytes_gff, read_gff
 from pykotor.resource.formats.rim import read_rim, write_rim
 from pykotor.resource.type import ResourceType
-from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_capsule_file, is_rim_file, is_sav_file
+from pykotor.tools.misc import (
+    is_any_erf_type_file,
+    is_bif_file,
+    is_capsule_file,
+    is_rim_file,
+    is_sav_file,
+)
 from pykotor.tools.module import rim_to_mod
 from toolset.data.installation import HTInstallation
-from toolset.gui.widgets.settings.installations import GlobalSettings
 from toolset.gui.common.localization import tr, trf
 from toolset.gui.dialogs.load_from_module import LoadFromModuleDialog
 from toolset.gui.dialogs.save.to_bif import BifSaveDialog, BifSaveOption
@@ -57,6 +61,7 @@ from toolset.gui.dialogs.save.to_rim import RimSaveDialog, RimSaveOption
 from toolset.gui.widgets.edit.locstring import LocalizedStringLineEdit
 from toolset.gui.widgets.installation_toolbar import InstallationToolbar, StandaloneWindowMixin
 from toolset.gui.widgets.media_player_widget import MediaPlayerWidget
+from toolset.gui.widgets.settings.installations import GlobalSettings
 from utility.error_handling import format_exception_with_variables
 
 if TYPE_CHECKING:
@@ -64,12 +69,16 @@ if TYPE_CHECKING:
 
     from pathlib import PurePath
 
-    from PyQt6.QtMultimedia import QMediaPlayer as PyQt6MediaPlayer  # pyright: ignore[reportMissingImports, reportAttributeAccessIssue]
-    from PySide6.QtMultimedia import QMediaPlayer as PySide6MediaPlayer  # pyright: ignore[reportMissingImports, reportAttributeAccessIssue]
+    from PyQt6.QtMultimedia import (
+        QMediaPlayer as PyQt6MediaPlayer,  # pyright: ignore[reportMissingImports, reportAttributeAccessIssue]
+    )
+    from PySide6.QtMultimedia import (
+        QMediaPlayer as PySide6MediaPlayer,  # pyright: ignore[reportMissingImports, reportAttributeAccessIssue]
+    )
     from qtpy.QtCore import QRect
     from qtpy.QtGui import QScreen, _QAction
     from qtpy.QtWidgets import (
-        QMenu,
+        QLineEdit,
         QMenuBar,
         QWidget,
     )
@@ -371,7 +380,7 @@ class Editor(QMainWindow, StandaloneWindowMixin):
             msgBox = QMessageBox(
                 QMessageBox.Icon.Critical,
                 tr("Invalid filename/extension"),
-                trf("Check the filename and try again. Could not save!{msg}", msg=f'<br><br>{msg}' if msg else ''),
+                trf("Check the filename and try again. Could not save!{msg}", msg=f"<br><br>{msg}" if msg else ""),
                 parent=None,
                 flags=Qt.WindowType.Window | Qt.WindowType.Dialog | Qt.WindowType.WindowStaysOnTopHint,
             )
@@ -567,7 +576,7 @@ class Editor(QMainWindow, StandaloneWindowMixin):
             (
                 self._filepath,
                 bioware_archive,
-            )
+            ),
         ]
         for capsule_path in reversed(nested_paths[:-1]):
             nested_erf_or_rim_data: bytes | None = bioware_archive.get(
@@ -799,7 +808,9 @@ class Editor(QMainWindow, StandaloneWindowMixin):
             self.blink_window()
             return False
         if qtpy.QT5:
-            from qtpy.QtMultimedia import QMediaContent  # pyright: ignore[reportAttributeAccessIssue]
+            from qtpy.QtMultimedia import (
+                QMediaContent,  # pyright: ignore[reportAttributeAccessIssue]
+            )
 
             self.media_player.buffer = buffer = QBuffer(self)
             buffer.setData(data)
@@ -808,7 +819,9 @@ class Editor(QMainWindow, StandaloneWindowMixin):
             QTimer.singleShot(0, self.media_player.player.play)
 
         elif qtpy.QT6:
-            from qtpy.QtMultimedia import QAudioOutput  # pyright: ignore[reportAttributeAccessIssue]
+            from qtpy.QtMultimedia import (
+                QAudioOutput,  # pyright: ignore[reportAttributeAccessIssue]
+            )
 
             # Create buffer and load data
             buffer = QBuffer(self)

@@ -22,7 +22,7 @@ This document provides a detailed description of the TLK (Talk Table) file forma
 
 ---
 
-## file structure Overview
+## File structure overview
 
 TLK files store localized strings in a binary format. The game loads `dialog.tlk` at startup and references strings throughout the game using [StrRef](TLK-File-Format#string-references-strref) numbers (array indices). String lookups use the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, then module/SAV, then KEY/BIF), so custom TLKs in override or in a MOD take precedence over the base game `dialog.tlk`.
 
@@ -37,7 +37,7 @@ TLK files store localized strings in a binary format. The game loads `dialog.tlk
 - [`vendor/Kotor.NET/Kotor.NET/Formats/KotorTLK/`](https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTLK) - .NET TLK reader/writer with builder API
 - [`vendor/xoreos-tools/src/aurora/talktable.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/aurora/talktable.cpp) - Command-line TLK extraction and editing tools
 
-**See Also:**
+### See also
 
 - [2DA File Format](2DA-File-Format) - Game tables with name/description StrRefs
 - [GFF File Format](GFF-File-Format) - Dialogue and templates that reference TLK strings
@@ -60,23 +60,31 @@ The file header is 20 bytes in size:
 | string count        | [int32](GFF-File-Format#gff-data-types)   | 12 (0x0C) | 4    | Number of string entries in the file           |
 | string Entries offset | [int32](GFF-File-Format#gff-data-types) | 16 (0x10) | 4    | offset to string entries array (typically 20)  |
 
-**Reference**: [`vendor/reone/src/libs/resource/format/tlkreader.cpp:31-84`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L31-L84)
+**References**
 
-### string data Table
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/format/tlkreader.cpp:31-84`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L31-L84) - File header parsing
+
+### String data table
 
 The string data table contains metadata for each string entry. Each entry is 40 bytes:
 
 | Name              | type      | offset | size | Description                                                      |
 | ----------------- | --------- | ------ | ---- | ---------------------------------------------------------------- |
 | flags             | [uint32](GFF-File-Format#gff-data-types)    | 0 (0x00) | 4    | bit flags: bit 0=text present, bit 1=sound present, bit 2=sound length present |
-| Sound [ResRef](GFF-File-Format#gff-data-types)      | [char](GFF-File-Format#gff-data-types)  | 4 (0x04) | 16   | Voice-over audio filename ([null-terminated](https://en.cppreference.com/w/c/string/byte), max 16 chars)        |
+| Sound *ResRef*      | [char](GFF-File-Format#gff-data-types)  | 4 (0x04) | 16   | Voice-over audio filename ([null-terminated](https://en.cppreference.com/w/c/string/byte), max 16 chars)        |
 | Volume Variance   | [uint32](GFF-File-Format#gff-data-types)    | 20 (0x14) | 4    | Unused in KotOR (always 0)                                      |
 | Pitch Variance    | [uint32](GFF-File-Format#gff-data-types)    | 24 (0x18) | 4    | Unused in KotOR (always 0)                                      |
 | offset to string  | [uint32](GFF-File-Format#gff-data-types)    | 28 (0x1C) | 4    | offset to string text (relative to string Entries offset)       |
 | string size       | [uint32](GFF-File-Format#gff-data-types)    | 32 (0x20) | 4    | Length of string text in bytes                                  |
 | Sound Length      | [float](GFF-File-Format#gff-data-types)     | 36 (0x24) | 4    | Duration of voice-over audio in seconds                         |
 
-**Reference**: [`vendor/Kotor.NET/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:57-90`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L57-L90)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:57-90`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L57-L90) - String data table structure
 
 **[flag](GFF-File-Format#gff-data-types) bits:**
 
@@ -103,9 +111,9 @@ The engine uses these flags to decide:
 
 Missing flags are treated as `false` - if Text present is not set, the string is treated as empty even if text data exists.
 
-### string Entries
+### String entries
 
-string entries follow the string data table:
+String entries follow the string data table:
 
 | Name         | type   | Description                                                      |
 | ------------ | ------ | ---------------------------------------------------------------- |
@@ -119,12 +127,16 @@ string text is stored at the offset specified in the string data table entry. Th
 
 Each TLK entry contains:
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py:293-424`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L293-L424)
+**References**
+
+**PyKotor:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py) - TLKEntry and TLK implementation
 
 | Attribute        | type   | Description                                                      |
 | ---------------- | ------ | ---------------------------------------------------------------- |
 | `text`           | str    | Localized text string                                            |
-| `voiceover`      | [ResRef](GFF-File-Format#gff-data-types) | Voice-over audio filename ([WAV file](WAV-File-Format))                            |
+| `voiceover`      | *ResRef* | Voice-over audio filename ([WAV file](WAV-File-Format))                            |
 | `text_present`   | bool   | Whether text content exists                                      |
 | `sound_present`  | bool   | Whether voice-over audio exists                                  |
 | `soundlength_present` | bool | Whether sound length is valid                                    |

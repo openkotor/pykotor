@@ -31,9 +31,13 @@ from qtpy.QtWidgets import QFileIconProvider  # noqa: E402
 # QAbstractFileIconProvider is not exposed by qtpy, import directly
 try:
     if qtpy.API_NAME == "PyQt6":
-        from PyQt6.QtGui import QAbstractFileIconProvider  # type: ignore[import-untyped]  # noqa: E402
+        from PyQt6.QtGui import (
+            QAbstractFileIconProvider,  # type: ignore[import-untyped]  # noqa: E402
+        )
     elif qtpy.API_NAME == "PySide6":
-        from PySide6.QtGui import QAbstractFileIconProvider  # type: ignore[import-untyped]  # noqa: E402
+        from PySide6.QtGui import (
+            QAbstractFileIconProvider,  # type: ignore[import-untyped]  # noqa: E402
+        )
     elif not TYPE_CHECKING:
         # PyQt5/PySide2 - QAbstractFileIconProvider might not exist
         QAbstractFileIconProvider = QFileIconProvider  # type: ignore[assignment, misc]
@@ -42,7 +46,9 @@ except ImportError:
     if not TYPE_CHECKING:
         QAbstractFileIconProvider = QFileIconProvider  # type: ignore[assignment, misc]
 
-from utility.gui.qt.adapters.filesystem.pyextendedinformation import PyQExtendedInformation  # noqa: E402
+from utility.gui.qt.adapters.filesystem.pyextendedinformation import (
+    PyQExtendedInformation,  # noqa: E402
+)
 
 
 def translateDriveName(drive: QFileInfo) -> str:

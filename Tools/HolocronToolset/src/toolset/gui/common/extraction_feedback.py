@@ -1,4 +1,5 @@
 """Shared utilities for extraction feedback dialogs."""
+from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -13,7 +14,7 @@ if TYPE_CHECKING:
 
 
 def show_extraction_results(
-    parent: "QWidget | None",
+    parent: QWidget | None,
     successful_paths: dict[object, Path],
     failed_extractions: dict[Path, Exception] | list[Exception] | None = None,
     folder_path: Path | None = None,

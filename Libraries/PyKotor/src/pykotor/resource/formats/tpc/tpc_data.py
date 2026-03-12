@@ -40,12 +40,36 @@ from pykotor.resource.formats.tpc.convert.bgra import (
     rgb_to_bgra,
     rgba_to_bgra,
 )
-from pykotor.resource.formats.tpc.convert.dxt.compress_dxt import rgb_to_dxt1, rgba_to_dxt3, rgba_to_dxt5
-from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import dxt1_to_rgb, dxt3_to_rgba, dxt5_to_rgba
-from pykotor.resource.formats.tpc.convert.rgb import grey_to_rgb, grey_to_rgba, rgb_to_grey, rgb_to_rgba, rgba_to_grey, rgba_to_rgb
+from pykotor.resource.formats.tpc.convert.dxt.compress_dxt import (
+    rgb_to_dxt1,
+    rgba_to_dxt3,
+    rgba_to_dxt5,
+)
+from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import (
+    dxt1_to_rgb,
+    dxt3_to_rgba,
+    dxt5_to_rgba,
+)
+from pykotor.resource.formats.tpc.convert.rgb import (
+    grey_to_rgb,
+    grey_to_rgba,
+    rgb_to_grey,
+    rgb_to_rgba,
+    rgba_to_grey,
+    rgba_to_rgb,
+)
 from pykotor.resource.formats.tpc.manipulate.downsample import downsample_dxt, downsample_rgb
-from pykotor.resource.formats.tpc.manipulate.dxt_manipulate import flip_horizontally_dxt, flip_vertically_dxt, rotate_dxt1, rotate_dxt5
-from pykotor.resource.formats.tpc.manipulate.rotate import flip_horizontally_rgb_rgba, flip_vertically_rgb_rgba, rotate_rgb_rgba
+from pykotor.resource.formats.tpc.manipulate.dxt_manipulate import (
+    flip_horizontally_dxt,
+    flip_vertically_dxt,
+    rotate_dxt1,
+    rotate_dxt5,
+)
+from pykotor.resource.formats.tpc.manipulate.rotate import (
+    flip_horizontally_rgb_rgba,
+    flip_vertically_rgb_rgba,
+    rotate_rgb_rgba,
+)
 from pykotor.resource.formats.txi.txi_data import TXI
 from pykotor.resource.type import ResourceType
 

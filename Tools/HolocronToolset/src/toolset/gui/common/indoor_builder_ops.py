@@ -157,7 +157,7 @@ class CheckableWidgetLike(Protocol):
 
 class NumericWidgetLike(Protocol):
     def blockSignals(self, block: bool) -> bool: ...
-    def setValue(self, value: float | int) -> None: ...
+    def setValue(self, value: float) -> None: ...
 
 
 class ToggleCheckWidgetLike(Protocol):
@@ -927,7 +927,7 @@ def build_room_clipboard_data(rooms: list[IndoorMapRoom]) -> list[RoomClipboardD
                 "flip_x": room.flip_x,
                 "flip_y": room.flip_y,
                 "walkmesh_override": bytes_bwm(room.walkmesh_override) if room.walkmesh_override is not None else None,
-            }
+            },
         )
     return clipboard
 

@@ -69,7 +69,7 @@ The string data table contains metadata for each string entry. Each entry is 40 
 | Name              | type      | offset | size | Description                                                      |
 | ----------------- | --------- | ------ | ---- | ---------------------------------------------------------------- |
 | flags             | [uint32](GFF-File-Format#gff-data-types)    | 0 (0x00) | 4    | bit flags: bit 0=text present, bit 1=sound present, bit 2=sound length present |
-| Sound [ResRef](GFF-File-Format#gff-data-types)      | [char](GFF-File-Format#gff-data-types)  | 4 (0x04) | 16   | Voice-over audio filename ([null-terminated](https://en.cppreference.com/w/c/string/byte), max 16 chars)        |
+| Sound *ResRef*      | [char](GFF-File-Format#gff-data-types)  | 4 (0x04) | 16   | Voice-over audio filename ([null-terminated](https://en.cppreference.com/w/c/string/byte), max 16 chars)        |
 | Volume Variance   | [uint32](GFF-File-Format#gff-data-types)    | 20 (0x14) | 4    | Unused in KotOR (always 0)                                      |
 | Pitch Variance    | [uint32](GFF-File-Format#gff-data-types)    | 24 (0x18) | 4    | Unused in KotOR (always 0)                                      |
 | offset to string  | [uint32](GFF-File-Format#gff-data-types)    | 28 (0x1C) | 4    | offset to string text (relative to string Entries offset)       |
@@ -124,7 +124,7 @@ Each TLK entry contains:
 | Attribute        | type   | Description                                                      |
 | ---------------- | ------ | ---------------------------------------------------------------- |
 | `text`           | str    | Localized text string                                            |
-| `voiceover`      | [ResRef](GFF-File-Format#gff-data-types) | Voice-over audio filename ([WAV file](WAV-File-Format))                            |
+| `voiceover`      | *ResRef* | Voice-over audio filename ([WAV file](WAV-File-Format))                            |
 | `text_present`   | bool   | Whether text content exists                                      |
 | `sound_present`  | bool   | Whether voice-over audio exists                                  |
 | `soundlength_present` | bool | Whether sound length is valid                                    |

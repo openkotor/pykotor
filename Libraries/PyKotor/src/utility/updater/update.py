@@ -16,12 +16,17 @@ from pathlib import Path, PurePath
 from typing import IO, TYPE_CHECKING, Any, Callable
 
 from loggerplus import RobustLogger
-from utility.misc import ProcessorArchitecture
-from utility.system.os_helper import get_app_dir, get_mac_dot_app_dir, is_frozen, remove_any, win_hide_file
+from utility.misc import ProcessorArchitecture, ensure_directory_exists, get_normalized_extension
+from utility.system.os_helper import (
+    get_app_dir,
+    get_mac_dot_app_dir,
+    is_frozen,
+    remove_any,
+    win_hide_file,
+)
 from utility.system.path import ChDir
 from utility.updater.downloader import FileDownloader, download_mega_file_url
 from utility.updater.restarter import RestartStrategy, Restarter, UpdateStrategy
-from utility.misc import get_normalized_extension, ensure_directory_exists
 
 if TYPE_CHECKING:
     from logging import Logger

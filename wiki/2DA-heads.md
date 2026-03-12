@@ -10,27 +10,27 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `head` | ResRef (optional) | Head [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexe` | ResRef (optional) | Head [texture](TPC-File-Format) E [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexg` | ResRef (optional) | Head [texture](TPC-File-Format) G [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexve` | ResRef (optional) | Head [texture](TPC-File-Format) VE [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexvg` | ResRef (optional) | Head [texture](TPC-File-Format) VG [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexvve` | ResRef (optional) | Head [texture](TPC-File-Format) VVE [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexvvve` | ResRef (optional) | Head [texture](TPC-File-Format) VVVE [ResRef](GFF-File-Format#gff-data-types) |
-| `alttexture` | ResRef (optional) | Alternative [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `head` | ResRef (optional) | Head [model](MDL-MDX-File-Format) *ResRef* |
+| `headtexe` | ResRef (optional) | Head [texture](TPC-File-Format) E *ResRef* |
+| `headtexg` | ResRef (optional) | Head [texture](TPC-File-Format) G *ResRef* |
+| `headtexve` | ResRef (optional) | Head [texture](TPC-File-Format) VE *ResRef* |
+| `headtexvg` | ResRef (optional) | Head [texture](TPC-File-Format) VG *ResRef* |
+| `headtexvve` | ResRef (optional) | Head [texture](TPC-File-Format) VVE *ResRef* |
+| `headtexvvve` | ResRef (optional) | Head [texture](TPC-File-Format) VVVE *ResRef* |
+| `alttexture` | ResRef (optional) | Alternative [texture](TPC-File-Format) *ResRef* |
 
 **Column Details**:
 
 The complete column structure is defined in reone's heads parser:
 
-- `head`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
-- `alttexture`: Optional [ResRef](GFF-File-Format#gff-data-types) - alternative [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types)
-- `headtexe`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for evil alignment
-- `headtexg`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for good alignment
-- `headtexve`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for very evil alignment
-- `headtexvg`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for very good alignment
-- `headtexvve`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for very very evil alignment
-- `headtexvvve`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for very very very evil alignment
+- `head`: Optional *ResRef* - head [model](MDL-MDX-File-Format) *ResRef*
+- `alttexture`: Optional *ResRef* - alternative [texture](TPC-File-Format) *ResRef*
+- `headtexe`: Optional *ResRef* - head [texture](TPC-File-Format) for evil alignment
+- `headtexg`: Optional *ResRef* - head [texture](TPC-File-Format) for good alignment
+- `headtexve`: Optional *ResRef* - head [texture](TPC-File-Format) for very evil alignment
+- `headtexvg`: Optional *ResRef* - head [texture](TPC-File-Format) for very good alignment
+- `headtexvve`: Optional *ResRef* - head [texture](TPC-File-Format) for very very evil alignment
+- `headtexvvve`: Optional *ResRef* - head [texture](TPC-File-Format) for very very very evil alignment
 
 **References**:
 

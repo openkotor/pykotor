@@ -13,7 +13,9 @@ from loggerplus import RobustLogger
 if qtpy.QT5:
     from qtpy.QtCore import QRegExp  # pyright: ignore[reportAttributeAccessIssue]
 else:
-    from qtpy.QtCore import QRegularExpression as QRegExp  # pyright: ignore[reportAttributeAccessIssue]
+    from qtpy.QtCore import (
+        QRegularExpression as QRegExp,  # pyright: ignore[reportAttributeAccessIssue]
+    )
 
 if TYPE_CHECKING:
     from qtpy.QtGui import QTextDocument

@@ -1228,11 +1228,10 @@ class UTCEditor(Editor):
                                 source = self._get_source_location_type(filepath)
                                 if source:
                                     new_lines.append(f"    └─ Source: {source}")
+                        elif restype:
+                            new_lines.append(f"  {tex_name} ({restype}): ✓ Loaded")
                         else:
-                            if restype:
-                                new_lines.append(f"  {tex_name} ({restype}): ✓ Loaded")
-                            else:
-                                new_lines.append(f"  {tex_name}: ✓ Loaded")
+                            new_lines.append(f"  {tex_name}: ✓ Loaded")
                     else:
                         search_order = lookup_info.get("search_order", [])
                         search_str = self._format_search_order(search_order) if search_order else "Unknown"

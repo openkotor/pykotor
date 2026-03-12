@@ -59,10 +59,10 @@ class CloneModuleDialog(QDialog):
         self.setWindowFlags(
             QtCore.Qt.WindowFlags(
                 QtCore.Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
-                | QtCore.Qt.WindowType.WindowCloseButtonHint
+                | QtCore.Qt.WindowType.WindowCloseButtonHint,
             )
             & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint
-            & ~QtCore.Qt.WindowType.WindowMinMaxButtonsHint
+            & ~QtCore.Qt.WindowType.WindowMinMaxButtonsHint,
         )
 
         from toolset.uic.qtpy.dialogs.clone_module import Ui_Dialog

@@ -5,7 +5,15 @@ from typing import TYPE_CHECKING
 import qtpy
 
 from qtpy.QtCore import QAbstractTableModel, QModelIndex, Qt
-from qtpy.QtWidgets import QApplication, QHeaderView, QMenu, QPushButton, QTableView, QVBoxLayout, QWidget
+from qtpy.QtWidgets import (
+    QApplication,
+    QHeaderView,
+    QMenu,
+    QPushButton,
+    QTableView,
+    QVBoxLayout,
+    QWidget,
+)
 
 from utility.gui.qt.widgets.itemviews.abstractview import RobustAbstractItemView
 

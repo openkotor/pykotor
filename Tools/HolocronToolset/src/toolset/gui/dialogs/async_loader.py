@@ -13,7 +13,9 @@ from qtpy.QtCore import (
 from qtpy.QtGui import QColor, QPalette
 from qtpy.QtWidgets import QApplication, QDialog, QMessageBox, QSizePolicy, QVBoxLayout
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]  # pyright: ignore[reportMissingTypeStubs]
+from loggerplus import (
+    RobustLogger,  # pyright: ignore[reportMissingTypeStubs]  # pyright: ignore[reportMissingTypeStubs]
+)
 from toolset.gui.common.widgets.progressbar import AnimatedProgressBar
 from utility.error_handling import format_exception_with_variables
 
@@ -22,7 +24,9 @@ if TYPE_CHECKING:
 
     from qtpy.QtGui import QCloseEvent
     from qtpy.QtWidgets import QLabel, QWidget
-    from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]  # pyright: ignore[reportMissingModuleSource]
+    from typing_extensions import (
+        Literal,  # pyright: ignore[reportMissingModuleSource]  # pyright: ignore[reportMissingModuleSource]
+    )
 
 T = TypeVar("T")
 
@@ -48,7 +52,7 @@ class ProgressDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportGeneralTypeIssues]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint,
         )
 
         from toolset.uic.qtpy.dialogs.progress_dialog import Ui_Dialog
@@ -175,7 +179,7 @@ class AsyncLoader(QDialog, Generic[T]):
             | Qt.WindowType.WindowCloseButtonHint
             | Qt.WindowType.WindowStaysOnTopHint
             | Qt.WindowType.WindowMinMaxButtonsHint  # Enable minimize/maximize buttons
-            & ~Qt.WindowType.WindowContextHelpButtonHint
+            & ~Qt.WindowType.WindowContextHelpButtonHint,
         )
         # Load UI from .ui file
         from toolset.uic.qtpy.dialogs.async_loader import Ui_Dialog

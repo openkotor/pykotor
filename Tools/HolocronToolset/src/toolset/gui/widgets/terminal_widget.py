@@ -64,7 +64,6 @@ class TerminalWidget(QWidget):
     def _apply_terminal_theme(self):
         """Apply a theme that respects the current application palette."""
         # Styling is already applied in the .ui file, but we can override if needed
-        pass
 
     def _setup_process(self):
         """Set up the process for shell execution."""

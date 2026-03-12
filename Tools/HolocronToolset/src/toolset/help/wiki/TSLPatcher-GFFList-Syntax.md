@@ -142,20 +142,20 @@ Each [GFF file](GFF-File-Format) requires its own section (e.g., `[example.dlg]`
 | `!SourceFile` | string | Same as section name | Alternative source filename (useful for multiple setup options using different source files) |
 | `!ReplaceFile` | 0/1 | 0 | If `1`, overwrite existing file before applying modifications. If `0` (default), modify the existing file in place. |
 | `!SaveAs` | string | Same as section name | Alternative filename to save as (useful for renaming files during installation) |
-| `!OverrideType` | string | `ignore` | How to handle existing files in Override when destination is an [ERF](ERF-File-Format)/RIM archive. Valid values: `ignore` (default), `warn` (log warning), `rename` (prefix with `old_`) |
+| `!OverrideType` | string | `ignore` | How to handle existing files in Override when destination is an [ERF](ERF-File-Format)/RIM container. Valid values: `ignore` (default), `warn` (log warning), `rename` (prefix with `old_`) |
 
 **Destination values:**
 
 - `override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM archive (use backslashes for path separators)
-- Archive paths must be relative to the game folder root
+- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM container (use backslashes for path separators)
+- Container paths must be relative to the game folder root
 
 **Source file Resolution:**
 
 The patcher resolves source files in this order:
 
 1. If `!ReplaceFile=1` or file doesn't exist at destination: Load from `mod_path / !SourceFolder / !SourceFile` (or section name if `!SourceFile` not set)
-2. Otherwise: Load existing file from destination location (override or archive)
+2. Otherwise: Load existing file from destination location (override or container)
 3. Apply all modifications from the section
 4. Save to `!Destination` with name `!SaveAs` (or section name if `!SaveAs` not set)
 
@@ -216,7 +216,7 @@ Value=123
 
 | [KEY](KEY-File-Format) | type | Required | Description |
 |-----|------|----------|-------------|
-| `FieldType` | string | Yes | One of: [byte](GFF-File-Format#gff-data-types), [char](GFF-File-Format#gff-data-types), Word, Short, DWORD, Int, Int64, [double](GFF-File-Format#gff-data-types), [float](GFF-File-Format#gff-data-types), ExoString, [ResRef](GFF-File-Format#gff-data-types), ExoLocString, Binary, Struct, List, orientation, position |
+| `FieldType` | string | Yes | One of: [byte](https://en.wikipedia.org/wiki/Byte), [char](GFF-File-Format#gff-data-types), Word, Short, DWORD, Int, Int64, [double](GFF-File-Format#gff-data-types), [float](GFF-File-Format#gff-data-types), ExoString, *ResRef*, ExoLocString, Binary, Struct, List, orientation, position |
 | `Label` | string | Yes* | field name (max 16 alphanumeric characters, no spaces). Must be unique within the same STRUCT parent. |
 | `Path` | string | No | field location in [GFF](GFF-File-Format) hierarchy. Empty string (`Path=`) means root level. For nested AddField sections, if `Path` is empty or not specified, it inherits the path from the parent AddField. Use backslashes to separate hierarchy levels. |
 | `Value` | varies | Conditional | field value (see field types below). Not used for Struct, List, or ExoLocString types. |
@@ -485,7 +485,7 @@ Value=2
 | field type | Description | Example |
 |------------|-------------|---------|
 | ExoString | [null-terminated string](https://en.cppreference.com/w/c/string/byte) | `Value=Hello World` |
-| [ResRef](GFF-File-Format#gff-data-types) | Resource reference (max 16 chars) | `Value=myscript` |
+| *ResRef* | Resource reference (max 16 chars) | `Value=myscript` |
 | Binary | Binary data (hex/base64) | `Value=0xFF00FF00` or `Value=base64data` (HoloPatcher only) |
 
 ### Complex types
@@ -1017,7 +1017,7 @@ Understanding execution order is crucial when your edits depend on earlier token
 **Standard Execution Order:**
 
 1. **TLKList**: Appends entries to [dialog.tlk](TLK-File-Format), creates `[StrRef](TLK-File-Format#string-references-strref)#` tokens
-2. **InstallList**: Copies files to destination ([ERF](ERF-File-Format)/RIM archives may be created here)
+2. **InstallList**: Copies files to destination ([ERF](ERF-File-Format)/RIM containers may be created here)
 3. **2DAList**: Modifies [2DA files](2DA-File-Format), creates `2DAMEMORY#` tokens
 4. **GFFList**: Modifies [GFF](GFF-File-Format) files (can use `[StrRef](TLK-File-Format#string-references-strref)#` and `2DAMEMORY#` tokens)
 5. **CompileList**: Preprocesses [NSS](NSS-File-Format) scripts (replaces `#[StrRef](TLK-File-Format#string-references-strref)#` and `#2DAMEMORY#` tokens), then compiles
@@ -1036,13 +1036,13 @@ Modifications within a single [GFF file](GFF-File-Format) are processed in order
 
 - **Add before modify**: Use AddField to create structures, store their paths with `2DAMEMORY#=!FieldPath`, then modify them using those tokens
 - **Token dependencies**: Ensure tokens are set before use. `2DAMEMORY#` tokens from 2DAList are available to GFFList
-- **Archive handling**: If patching files into [ERF](ERF-File-Format)/RIM archives, the archive must exist (created by InstallList) or be built automatically by the patcher
+- **Container handling**: If patching files into [ERF](ERF-File-Format)/RIM containers, the container must exist (created by InstallList) or be built automatically by the patcher
 
 **Important Notes:**
 
 - Script token preprocessing (in CompileList) runs **before** GFFList to avoid interfering with `!FieldPath` assignments
 - If multiple [GFF files](GFF-File-Format) reference the same tokens, they can share `StrRef#` and `2DAMEMORY#` values across files
-- The `!OverrideType` setting controls behavior when a file exists in Override but you're patching into an archive
+- The `!OverrideType` setting controls behavior when a file exists in Override but you're patching into an container
 
 ## Complete Examples
 

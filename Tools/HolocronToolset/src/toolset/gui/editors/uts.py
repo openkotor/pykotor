@@ -307,7 +307,7 @@ class UTSEditor(Editor):
         cur_item: QListWidgetItem | None = self.ui.soundList.currentItem()
         cur_item_text: str | None = cur_item.text() if cur_item else None
         if not cur_item or not cur_item_text:
-            return
+            return None
 
         resname: str = cur_item_text
         assert self._installation is not None
@@ -316,8 +316,7 @@ class UTSEditor(Editor):
         if data:
             self.play_byte_source_media(data)
             return True
-        else:
-            QMessageBox(QMessageBox.Icon.Critical, "Could not find audio file", f"Could not find audio resource '{resname}'.")
+        QMessageBox(QMessageBox.Icon.Critical, "Could not find audio file", f"Could not find audio resource '{resname}'.")
 
     def add_sound(self):
         item = QListWidgetItem("new sound")

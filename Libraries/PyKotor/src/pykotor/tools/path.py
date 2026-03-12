@@ -14,7 +14,9 @@ import warnings
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
+from loggerplus import (
+    RobustLogger,  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

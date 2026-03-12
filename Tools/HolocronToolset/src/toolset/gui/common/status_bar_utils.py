@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Callable
 
 from qtpy.QtCore import Qt
@@ -6,7 +8,7 @@ from qtpy.QtGui import QKeySequence
 from toolset.utils.misc import get_qt_button_string, get_qt_key_string
 
 __all__ = [
-    "format_status_bar_keys_and_buttons"
+    "format_status_bar_keys_and_buttons",
 ]
 
 KeyOrButton = int | Qt.Key | Qt.MouseButton
@@ -65,9 +67,7 @@ def sort_with_modifiers(
 ) -> list[KeyOrButton]:
     if items is None:
         items_union: set[KeyOrButton] = set()
-    elif isinstance(items, set):
-        items_union = {item for item in items if isinstance(item, (int, Qt.Key, Qt.MouseButton))}
-    elif hasattr(items, "__iter__"):
+    elif isinstance(items, set) or hasattr(items, "__iter__"):
         items_union = {item for item in items if isinstance(item, (int, Qt.Key, Qt.MouseButton))}
     else:
         items_union = set()

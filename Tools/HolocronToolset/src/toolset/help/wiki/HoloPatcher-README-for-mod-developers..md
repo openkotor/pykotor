@@ -48,7 +48,7 @@ Don't use the 'ignore' syntax or the 'range' syntax, these won't be documented o
 
 ### HACKList (Editing [NCS](NCS-File-Format) directly)
 
-This is a TSLPatcher feature that was [not documented in the TSLPatcher readme.](https://github.com/OldRepublicDevs/PyKotor/wiki/TSLPatcher's-Official-Readme). We can only guess why this is. The only known uses we know about are [Stoffe's HLFP mod](https://deadlystream.com/files/file/832-high-level-force-powers/) and some starwarsknights/lucasforums archives on waybackmachine pointing to files that are unavailable.
+This is a TSLPatcher feature that was [not documented in the TSLPatcher readme.](https://github.com/OldRepublicDevs/PyKotor/wiki/TSLPatcher's-Official-Readme). We can only guess why this is. The only known uses we know about are [Stoffe's HLFP mod](https://deadlystream.com/files/file/832-high-level-force-powers/) and some starwarsknights/lucasforums containers on waybackmachine pointing to files that are unavailable.
 
 Due to this feature being highly undocumented and only one known usage, our implementation might not match exactly. If you happen to find an old TSLPatcher mod that produces different HACKList results than HoloPatcher, [please report them here](https://github.com/OldRepublicDevs/PyKotor/issues/24)
 

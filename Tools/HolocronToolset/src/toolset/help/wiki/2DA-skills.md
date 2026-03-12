@@ -21,7 +21,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `untrained` | Boolean | Whether skill can be used untrained |
 | `constant` | Integer (optional) | Constant modifier |
 | `hostileskill` | Boolean | Whether skill is hostile |
-| `icon` | ResRef (optional) | Skill icon [ResRef](GFF-File-Format#gff-data-types) |
+| `icon` | ResRef (optional) | Skill icon *ResRef* |
 
 **Column Details** (from reone implementation):
 
@@ -29,7 +29,7 @@ The following columns are accessed by the reone engine:
 
 - `name`: string reference for skill name
 - `description`: string reference for skill description
-- `icon`: Icon [ResRef](GFF-File-Format#gff-data-types)
+- `icon`: Icon *ResRef*
 - Dynamic class skill columns: For each class, there is a column named `{classname}_class` (e.g., `jedi_guardian_class`) that contains `1` if the skill is a class skill for that class
 - `droidcanuse`: Boolean - whether droids can use this skill
 - `npccanuse`: Boolean - whether NPCs can use this skill

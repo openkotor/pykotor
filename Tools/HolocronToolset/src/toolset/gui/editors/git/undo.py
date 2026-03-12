@@ -9,7 +9,7 @@ from qtpy.QtWidgets import QUndoCommand  # pyright: ignore[reportPrivateImportUs
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.resource.generics.git import (
     GITCamera,
-    GITObject,
+    GITInstance,
 )
 from toolset.gui.editors.git.git import GITEditor
 from utility.common.geometry import Vector4
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
         GIT,
         GITEncounter,
         GITEncounterSpawnPoint,
-        GITInstance,
+        GITObject,
     )
     from toolset.gui.editors.git.mode import _Mode
     from toolset.gui.windows.module_designer import ModuleDesigner

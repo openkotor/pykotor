@@ -45,12 +45,12 @@ class _PendingSpinEdit:
 class _SpinFocusBatcher(QObject):
     """Coalesce multiple spinbox edits into a single undo command per focus session."""
 
-    def __init__(self, editor: "SSFEditor"):
+    def __init__(self, editor: SSFEditor):
         super().__init__(editor)
         self._editor = editor
 
     def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # noqa: N802
-        if isinstance(obj, type(getattr(self._editor.ui, "battlecry1StrrefSpin"))):  # QSpinBox
+        if isinstance(obj, type(self._editor.ui.battlecry1StrrefSpin)):  # QSpinBox
             if event.type() == QEvent.Type.FocusIn:
                 self._editor._on_spin_focus_in(obj)  # noqa: SLF001
             elif event.type() == QEvent.Type.FocusOut:
@@ -71,7 +71,7 @@ class _SSFRow:
 class _SpinValueCommand(QUndoCommand):
     def __init__(
         self,
-        editor: "SSFEditor",
+        editor: SSFEditor,
         *,
         row_label: str,
         spin: QSpinBox,
@@ -574,7 +574,7 @@ class SSFEditor(Editor):
                     spin=spin,
                     old_value=pending.start_value,
                     new_value=end_value,
-                )
+                ),
             )
         self._recompute_window_modified()
 

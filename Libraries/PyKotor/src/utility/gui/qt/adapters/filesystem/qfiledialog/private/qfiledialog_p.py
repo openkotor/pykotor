@@ -21,7 +21,6 @@ from qtpy.QtCore import (
     QPersistentModelIndex,
     QSettings,
     QSize,
-    Signal,
     QUrl,
     Qt,
 )
@@ -60,7 +59,9 @@ from qtpy.QtWidgets import (
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from utility.gui.qt.adapters.filesystem.qfiledialog.private.qsidebar_p import QUrlModel
-from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper import QPlatformFileDialogHelper
+from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper import (
+    QPlatformFileDialogHelper,
+)
 from utility.gui.qt.tools.unifiers import sip_enum_to_int
 
 if TYPE_CHECKING:
@@ -70,6 +71,7 @@ if TYPE_CHECKING:
         QObject,
         QPoint,
         QRect,
+        Signal,
     )
     from qtpy.QtGui import (
         QKeyEvent,
@@ -2961,7 +2963,9 @@ class QFileDialogComboBox(QComboBox):
                 idx = model.index(model.rowCount() - 1, 0)
                 # Match C++: // ### TODO maybe add a horizontal line before this
                 # Match C++: model()->setData(idx, QFileDialog::tr("Recent Places"));
-                from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as PublicQFileDialog
+                from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import (
+                    QFileDialog as PublicQFileDialog,
+                )
 
                 model.setData(idx, PublicQFileDialog.tr("Recent Places", "QFileDialog"))
                 # Match C++: QStandardItemModel *m = qobject_cast<QStandardItemModel*>(model());
@@ -3184,7 +3188,9 @@ class QFileDialogListView(QListView):
 
 
 if __name__ == "__main__":
-    from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as CustomQFileDialog
+    from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import (
+        QFileDialog as CustomQFileDialog,
+    )
 
     app = QApplication(sys.argv)
     dialog = CustomQFileDialog()

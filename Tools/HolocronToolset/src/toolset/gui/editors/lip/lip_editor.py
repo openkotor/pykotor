@@ -582,7 +582,9 @@ class LIPEditor(Editor):
 
             # Set up media player
             if qtpy.QT5:
-                from qtpy.QtMultimedia import QMediaContent  # pyright: ignore[reportAttributeAccessIssue]
+                from qtpy.QtMultimedia import (
+                    QMediaContent,  # pyright: ignore[reportAttributeAccessIssue]
+                )
 
                 self.player.setMedia(QMediaContent(QUrl.fromLocalFile(file_path)))  # pyright: ignore[reportAttributeAccessIssue]
             elif qtpy.QT6:
@@ -779,29 +781,29 @@ class LIPEditor(Editor):
             self.add_keyframe()
             event.accept()
             return
-        elif key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
+        if key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
             self.update_keyframe()
             event.accept()
             return
-        elif key == Qt.Key.Key_Delete:
+        if key == Qt.Key.Key_Delete:
             self.delete_keyframe()
             event.accept()
             return
         # Handle playback controls
-        elif key == Qt.Key.Key_Space:
+        if key == Qt.Key.Key_Space:
             self.play_preview()
             event.accept()
             return
-        elif key == Qt.Key.Key_Escape:
+        if key == Qt.Key.Key_Escape:
             self.stop_preview()
             event.accept()
             return
         # Handle undo/redo
-        elif key == Qt.Key.Key_Z and modifiers == Qt.KeyboardModifier.ControlModifier:
+        if key == Qt.Key.Key_Z and modifiers == Qt.KeyboardModifier.ControlModifier:
             self.undo()
             event.accept()
             return
-        elif key == Qt.Key.Key_Y and modifiers == Qt.KeyboardModifier.ControlModifier:
+        if key == Qt.Key.Key_Y and modifiers == Qt.KeyboardModifier.ControlModifier:
             self.redo()
             event.accept()
             return

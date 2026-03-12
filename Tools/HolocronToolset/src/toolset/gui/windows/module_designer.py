@@ -72,7 +72,12 @@ from pykotor.resource.generics.utw import read_utw
 from pykotor.resource.type import ResourceType
 from pykotor.tools import indoorkit as indoorkit_tools, module
 from pykotor.tools.misc import is_mod_file
-from toolset.blender import BlenderEditorMode, ConnectionState, check_blender_and_ask, get_blender_settings
+from toolset.blender import (
+    BlenderEditorMode,
+    ConnectionState,
+    check_blender_and_ask,
+    get_blender_settings,
+)
 from toolset.blender.integration import BlenderEditorMixin
 from toolset.blender.serializers import deserialize_git_instance, serialize_module_data
 from toolset.data.indoorkit.qt_preview import ensure_component_image
@@ -137,12 +142,24 @@ from toolset.gui.common.walkmesh_materials import (
 from toolset.gui.dialogs.insert_instance import InsertInstanceDialog
 from toolset.gui.dialogs.select_module import SelectModuleDialog
 from toolset.gui.editor import Editor
-from toolset.gui.editors.git import DeleteCommand, MoveCommand, RotateCommand, _GeometryMode, _InstanceMode, _SpawnMode, open_instance_dialog
+from toolset.gui.editors.git import (
+    DeleteCommand,
+    MoveCommand,
+    RotateCommand,
+    _GeometryMode,
+    _InstanceMode,
+    _SpawnMode,
+    open_instance_dialog,
+)
 from toolset.gui.widgets.installation_toolbar import StandaloneWindowMixin
 from toolset.gui.widgets.renderer.lyt_renderer import LYTRenderer
 from toolset.gui.widgets.renderer.module import ModuleRenderer
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
-from toolset.gui.windows.designer_controls import ModuleDesignerControls2d, ModuleDesignerControls3d, ModuleDesignerControlsFreeCam
+from toolset.gui.windows.designer_controls import (
+    ModuleDesignerControls2d,
+    ModuleDesignerControls3d,
+    ModuleDesignerControlsFreeCam,
+)
 from toolset.gui.windows.help import HelpWindow
 from toolset.gui.windows.indoor_builder.constants import (
     DUPLICATE_OFFSET_X,
@@ -175,9 +192,11 @@ if TYPE_CHECKING:
     )
     from pykotor.resource.generics.ifo import IFO
     from toolset.gui.common.indoor_builder_ops import RoomClipboardData
-    from toolset.gui.widgets.renderer.lyt_renderer import LYTRenderer
     from toolset.gui.widgets.renderer.walkmesh import WalkmeshRenderer
-    from toolset.gui.windows.indoor_builder.constants import ZOOM_STEP_FACTOR, DragMode  # noqa: F401  # Phase 2
+    from toolset.gui.windows.indoor_builder.constants import (  # noqa: F401  # Phase 2
+        ZOOM_STEP_FACTOR,
+        DragMode,
+    )
     from toolset.gui.windows.indoor_builder.renderer import IndoorMapRenderer
 
 if qtpy.QT5:
@@ -254,7 +273,7 @@ class _BlenderPropertyCommand(QUndoCommand):
 
 
 class _BlenderInsertCommand(QUndoCommand):
-    def __init__(self, git: GIT, instance: GITInstance, editor: "ModuleDesigner"):
+    def __init__(self, git: GIT, instance: GITInstance, editor: ModuleDesigner):
         super().__init__("Blender add instance")
         self._git = git
         self._instance = instance
@@ -272,7 +291,7 @@ class _BlenderInsertCommand(QUndoCommand):
 
 
 class _BlenderDeleteCommand(QUndoCommand):
-    def __init__(self, git: GIT, instance: GITInstance, editor: "ModuleDesigner"):
+    def __init__(self, git: GIT, instance: GITInstance, editor: ModuleDesigner):
         super().__init__("Blender delete instance")
         self._git = git
         self._instance = instance
@@ -695,6 +714,8 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.actionAddObstacle.triggered.connect(self.on_add_obstacle)
         self.ui.actionImportTexture.triggered.connect(self.on_import_texture)
         self.ui.actionGenerateWalkmesh.triggered.connect(self.on_generate_walkmesh)
+        # Layout toolbar has no icons (predefined_mdl is 3D model data, not icons); show text so labels are visible
+        self.ui.lytToolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
 
         # Connect LYT editor signals to update UI
         self.ui.mainRenderer.sig_lyt_updated.connect(self.on_lyt_updated)
@@ -998,7 +1019,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             "  font-size: 10px;"
             "  padding: 4px 8px;"
             "  border-bottom-right-radius: 4px;"
-            "}"
+            "}",
         )
         self._camera_hud.move(0, 0)
         self._camera_hud.setText("Camera: --")
@@ -1016,7 +1037,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         if scene is None or not hasattr(scene, "camera"):
             return
         cam = scene.camera
-        self._camera_hud.setText(f"X: {cam.x:8.2f}  Y: {cam.y:8.2f}  Z: {cam.z:8.2f}\n" f"Pitch: {cam.pitch:6.1f}  Yaw: {cam.yaw:6.1f}  Dist: {cam.distance:6.1f}")
+        self._camera_hud.setText(f"X: {cam.x:8.2f}  Y: {cam.y:8.2f}  Z: {cam.z:8.2f}\nPitch: {cam.pitch:6.1f}  Yaw: {cam.yaw:6.1f}  Dist: {cam.distance:6.1f}")
         self._camera_hud.adjustSize()
 
     # =========================================================================
@@ -1470,7 +1491,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             self.ui.visOverlayLegendLabel.setObjectName("visOverlayLegendLabel")
             self.ui.visOverlayLegendLabel.setWordWrap(True)
             self.ui.visOverlayLegendLabel.setToolTip(
-                "VIS overlay semantics:\n" "• Solid cyan line: both rooms see each other\n" "• Dashed amber line with arrow: one-way visibility"
+                "VIS overlay semantics:\n• Solid cyan line: both rooms see each other\n• Dashed amber line with arrow: one-way visibility",
             )
             self.ui.visButtonsLayout.insertWidget(1, self.ui.visOverlayLegendLabel)
 
@@ -1854,7 +1875,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 old_position,
                 new_position,
                 self._on_walkmesh_face_data_changed,
-            )
+            ),
         )
         self._show_status_message(
             f"Walkmesh vertex moved to ({new_position.x:.3f}, {new_position.y:.3f}, {new_position.z:.3f})",
@@ -2015,7 +2036,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 old_material,
                 material,
                 self._on_walkmesh_face_data_changed,
-            )
+            ),
         )
         self._show_status_message(f"Walkmesh face {face_index} material set to {material.name}")
 
@@ -2452,7 +2473,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.mouse_pos_label.setText(
             f"<b><span style='{self._emoji_style}'>🖱</span>&nbsp;Coords:</b> "
             f"<span style='color:{colors['accent1']}'>{world.x:.2f}</span>, "
-            f"<span style='color:{colors['accent2']}'>{world.y:.2f}</span>"
+            f"<span style='color:{colors['accent2']}'>{world.y:.2f}</span>",
         )
 
         # Selection / hover info
@@ -2481,7 +2502,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.view_camera_label.setText(
             f"<b><span style='{self._emoji_style}'>🎥</span>&nbsp;Mode:</b> "
             f"<span style='color:{colors['info']}'>Layout</span> | "
-            f"Rooms: <span style='color:{colors['accent1']}'>{len(self._indoor_map.rooms)}</span>"
+            f"Rooms: <span style='color:{colors['accent1']}'>{len(self._indoor_map.rooms)}</span>",
         )
 
     # --- Indoor Renderer Event Stubs ---
@@ -2873,7 +2894,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             "<b>Blender mode is active.</b><br>"
             "The Holocron Toolset will defer all 3D rendering and editing to Blender. "
             "Use the Blender window to move the camera, manipulate instances, and "
-            "open object context menus. This panel streams Blender's console output for diagnostics."
+            "open object context menus. This panel streams Blender's console output for diagnostics.",
         )
         headline.setWordWrap(True)
         layout.addWidget(headline)
@@ -3281,7 +3302,6 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         renderer: WalkmeshRenderer | ModuleRenderer,
     ):
         """Update the status bar, using rich text formatting for improved clarity."""
-
         if isinstance(mouse_pos, QPoint):
             assert not isinstance(mouse_pos, Vector2)
             norm_mouse_pos = Vector2(float(mouse_pos.x()), float(mouse_pos.y()))
@@ -3296,10 +3316,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             # Check if scene is initialized before accessing it
             if renderer._scene is None:
                 self.mouse_pos_label.setText(
-                    f"<b><span style='{self._emoji_style}'>🖱</span>&nbsp;Coords:</b> <span style='font-style:italic; color:{colors['muted']}'>— not available —</span>"
+                    f"<b><span style='{self._emoji_style}'>🖱</span>&nbsp;Coords:</b> <span style='font-style:italic; color:{colors['muted']}'>— not available —</span>",
                 )
                 self.view_camera_label.setText(
-                    f"<b><span style='{self._emoji_style}'>🎥</span>&nbsp;View:</b> <span style='font-style:italic; color:{colors['muted']}'>— not available —</span>"
+                    f"<b><span style='{self._emoji_style}'>🎥</span>&nbsp;View:</b> <span style='font-style:italic; color:{colors['muted']}'>— not available —</span>",
                 )
             else:
                 pos = renderer.scene.cursor.position()
@@ -3308,7 +3328,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 self.mouse_pos_label.setText(
                     f"<b><span style='{self._emoji_style}'>🖱</span>&nbsp;Coords:</b> "
                     f"<span style='color:{colors['accent1']}'>{world_pos_3d.y:.2f}</span>, "
-                    f"<span style='color:{colors['accent2']}'>{world_pos_3d.z:.2f}</span>"
+                    f"<span style='color:{colors['accent2']}'>{world_pos_3d.z:.2f}</span>",
                 )
 
                 camera = renderer.scene.camera
@@ -3329,7 +3349,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             world_pos = renderer.to_world_coords(norm_mouse_pos.x, norm_mouse_pos.y)
             self.mouse_pos_label.setText(f"<b><span style='{self._emoji_style}'>🖱</span>&nbsp;Coords:</b> <span style='color:{colors['accent1']}'>{world_pos.y:.2f}</span>")
             self.view_camera_label.setText(
-                f"<b><span style='{self._emoji_style}'>🎥</span>&nbsp;View:</b> <span style='font-style:italic; color:{colors['muted']}'>— not available —</span>"
+                f"<b><span style='{self._emoji_style}'>🎥</span>&nbsp;View:</b> <span style='font-style:italic; color:{colors['muted']}'>— not available —</span>",
             )
 
         # Format keys and buttons using shared utility
@@ -3345,7 +3365,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             self.selected_instance_label.setText(f"<b><span style='{self._emoji_style}'>🟦</span>&nbsp;Selected Instance:</b> {instance_name}")
         else:
             self.selected_instance_label.setText(
-                f"<b><span style='{self._emoji_style}'>🟦</span>&nbsp;Selected Instance:</b> <span style='color:{colors['muted']}'><i>None</i></span>"
+                f"<b><span style='{self._emoji_style}'>🟦</span>&nbsp;Selected Instance:</b> <span style='color:{colors['muted']}'><i>None</i></span>",
             )
 
     def _refresh_window_title(self):
@@ -3570,8 +3590,12 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 self._use_blender_mode = False
                 self.log.warning("Blender mode failed, using built-in renderer")
 
+        # Always update the 2D flat renderer with GIT and walkmeshes so instances render in the bottom view
+        self.ui.flatRenderer.set_git(git)
+        self.ui.flatRenderer.set_walkmeshes(walkmeshes)
+        self.ui.flatRenderer.center_camera()
+
         if not self._use_blender_mode:
-            self.ui.flatRenderer.set_git(git)
             try:
                 self.ui.mainRenderer.initialize_renderer(self._installation, new_module)
             except RuntimeError as exc:
@@ -3581,8 +3605,6 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 )
             if self.ui.mainRenderer._scene:
                 self.ui.mainRenderer._scene.show_cursor = self.ui.cursorCheck.isChecked()
-            self.ui.flatRenderer.set_walkmeshes(walkmeshes)
-            self.ui.flatRenderer.center_camera()
             self.setWindowTitle(f"Module Designer - {mod_root}")
         else:
             self._show_blender_workspace()
@@ -4524,7 +4546,6 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
     def _apply_instance_visibility_toggles(self, scene: Any, hidden_by_instance_type: dict[str, bool]) -> None:
         """Apply instance-type visibility flags across editor, 3D scene, and 2D renderer."""
-
         self.hide_creatures = scene.hide_creatures = self.ui.flatRenderer.hide_creatures = hidden_by_instance_type["creature"]
         self.hide_placeables = scene.hide_placeables = self.ui.flatRenderer.hide_placeables = hidden_by_instance_type["placeable"]
         self.hide_doors = scene.hide_doors = self.ui.flatRenderer.hide_doors = hidden_by_instance_type["door"]
@@ -4977,11 +4998,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             new_y = self._snap_to_grid(instance.position.y + y)
             if no_z_coord:
                 new_z = instance.position.z
+            elif walkmesh_renderer is not None:
+                new_z = instance.position.z + (z or walkmesh_renderer.walkmesh_point(instance.position.x, instance.position.y).z)
             else:
-                if walkmesh_renderer is not None:
-                    new_z = instance.position.z + (z or walkmesh_renderer.walkmesh_point(instance.position.x, instance.position.y).z)
-                else:
-                    new_z = instance.position.z + (z or 0.0)
+                new_z = instance.position.z + (z or 0.0)
             old_position: Vector3 = instance.position
             new_position: Vector3 = Vector3(new_x, new_y, new_z)
             if not no_undo_stack:
@@ -5262,7 +5282,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 clamp = True
             renderer.rotate_camera(yaw_delta * strength, -pitch_delta * strength, clamp_rotations=clamp)
 
-    def on_3d_mouse_released(self, screen: Vector2, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
+    def on_3d_mouse_released(self, screen: Vector2, buttons: set[Qt.MouseButton], keys: set[Qt.Key], released_button: Qt.MouseButton | None = None):
         self.update_status_bar(screen, buttons, keys, self.ui.mainRenderer)
         if self._object_rotate_gizmo_drag_active:
             self._end_object_rotate_gizmo_drag()
@@ -5270,7 +5290,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             self._end_object_gizmo_drag()
         if self._walkmesh_vertex_drag_active:
             self._end_walkmesh_vertex_drag()
-        self._controls3d.on_mouse_released(screen, buttons, keys)
+        self._controls3d.on_mouse_released(screen, buttons, keys, released_button)
 
     def on_3d_keyboard_released(self, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
         self.update_status_bar(QCursor.pos(), buttons, keys, self.ui.mainRenderer)
@@ -5417,9 +5437,9 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self._controls2d.on_mouse_moved(screen, delta, Vector2.from_vector3(world), world_delta, buttons, keys)
         self.update_status_bar(QCursor.pos(), buttons, keys, self.ui.flatRenderer)
 
-    def on_2d_mouse_released(self, screen: Vector2, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
+    def on_2d_mouse_released(self, screen: Vector2, buttons: set[Qt.MouseButton], keys: set[Qt.Key], released_button: Qt.MouseButton | None = None):
         # self.log.debug("on2dMouseReleased, screen: %s, buttons: %s, keys: %s", screen, buttons, keys)
-        self._controls2d.on_mouse_released(screen, buttons, keys)
+        self._controls2d.on_mouse_released(screen, buttons, keys, released_button)
         self.update_status_bar(QCursor.pos(), buttons, keys, self.ui.flatRenderer)
 
     def on_2d_keyboard_pressed(self, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
@@ -5955,7 +5975,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         element_name = lyt_element_name(element)
 
         reply = QMessageBox.question(
-            self, "Confirm Delete", f"Delete {element_type} '{element_name}'?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No
+            self, "Confirm Delete", f"Delete {element_type} '{element_name}'?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No,
         )
 
         if reply != QMessageBox.StandardButton.Yes:
@@ -6059,10 +6079,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             self._set_active_tool(EditorTool.ROTATE)
             return True
 
-        # F — focus camera on selected instances (Unity-style)
-        if key == Qt.Key.Key_F and has_no_mods:
-            self.focus_selected_instances()
-            return True
+        # F is reserved for toggle free cam (see toggleFreeCam3dBind); use "Move camera to selected" (default Z) to focus on selection.
 
         # G — toggle grid snap
         if key == Qt.Key.Key_G and has_no_mods:
@@ -6120,7 +6137,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             if has_ctrl:
                 self._save_camera_bookmark(slot)
                 return True
-            elif has_no_mods:
+            if has_no_mods:
                 self._recall_camera_bookmark(slot)
                 return True
 

@@ -4,7 +4,23 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 GUI files define the layout and behavior of the user interface. They are [GFF files](GFF-File-Format) describing hierarchies of panels, buttons, labels, and other controls. GUI files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/gui.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py)
+**For mod developers:** To edit GUI layout in the toolset, use the GUI editor; for mod patches see [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** GUI references [TPC](TPC-File-Format)/TGA textures, [TLK](TLK-File-Format) for text; used by the engine for menus and HUD.
+
+## References
+
+**PyKotor:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/generics/gui.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py) - GUI [GFF](GFF-File-Format) parsing and control tree
+
+**HolocronToolset:**
+
+- GUI editor
+
+**Vendor Implementations:**
+
+- reone/xoreos GFF parsers (GUI/UI structs)
 
 ## Core Identity fields
 
@@ -20,9 +36,9 @@ GUI files define the layout and behavior of the user interface. They are [GFF fi
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Controls` | List | List of child controls |
-| `Type` | Int | Control type identifier |
-| `ID` | Int | Unique Control ID |
+| `Controls` | [List](GFF-File-Format#gff-data-types) | List of child controls |
+| `Type` | [int32](GFF-File-Format#gff-data-types) | Control type identifier |
+| `ID` | [int32](GFF-File-Format#gff-data-types) | Unique control ID |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Control tag |
 
 **Control types:**
@@ -47,13 +63,13 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CONTROLTYPE` | Int | Control type identifier (see Control types) |
-| `ID` | Int | Unique control ID for script references |
+| `CONTROLTYPE` | [int32](GFF-File-Format#gff-data-types) | Control type identifier (see Control types) |
+| `ID` | [int32](GFF-File-Format#gff-data-types) | Unique control ID for script references |
 | `TAG` | [CExoString](GFF-File-Format#gff-data-types) | Control tag identifier |
-| `Obj_Locked` | Byte | Lock state (0=unlocked, 1=locked) |
+| `Obj_Locked` | [byte](GFF-File-Format#gff-data-types) | Lock state (0=unlocked, 1=locked) |
 | `Obj_Parent` | [CExoString](GFF-File-Format#gff-data-types) | Parent control tag (for hierarchy) |
-| `Obj_ParentID` | Int | Parent control ID (for hierarchy) |
-| `ALPHA` | Float | Opacity/transparency (0.0=transparent, 1.0=opaque) |
+| `Obj_ParentID` | [int32](GFF-File-Format#gff-data-types) | Parent control ID (for hierarchy) |
+| `ALPHA` | [float](GFF-File-Format#gff-data-types) | Opacity/transparency (0.0=transparent, 1.0=opaque) |
 | `COLOR` | vector | Control color modulation (RGB, 0.0-1.0) |
 | `EXTENT` | Struct | position and size rectangle |
 | `BORDER` | Struct | Border rendering properties |
@@ -65,10 +81,10 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `LEFT` | Int | X position relative to parent (pixels) |
-| `TOP` | Int | Y position relative to parent (pixels) |
-| `WIDTH` | Int | Control width (pixels) |
-| `HEIGHT` | Int | Control height (pixels) |
+| `LEFT` | [int32](GFF-File-Format#gff-data-types) | X position relative to parent (pixels) |
+| `TOP` | [int32](GFF-File-Format#gff-data-types) | Y position relative to parent (pixels) |
+| `WIDTH` | [int32](GFF-File-Format#gff-data-types) | Control width (pixels) |
+| `HEIGHT` | [int32](GFF-File-Format#gff-data-types) | Control height (pixels) |
 
 **Positioning System:**
 
@@ -81,15 +97,15 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | [ResRef](GFF-File-Format#gff-data-types) | Corner texture ([TPC](TPC-File-Format)/TGA) |
-| `EDGE` | [ResRef](GFF-File-Format#gff-data-types) | [edge](BWM-File-Format#edges) texture ([TPC](TPC-File-Format)/TGA) |
-| `FILL` | [ResRef](GFF-File-Format#gff-data-types) | Fill/background texture ([TPC](TPC-File-Format)/TGA) |
-| `FILLSTYLE` | Int | Fill rendering style (-1=None, 0=Empty, 1=Solid, 2=[texture](TPC-File-Format)) |
-| `DIMENSION` | Int | Border thickness in pixels |
-| `INNEROFFSET` | Int | Inner padding X-axis (pixels) |
-| `INNEROFFSETY` | Int | Inner padding Y-axis (pixels, optional) |
+| `CORNER` | *ResRef* | Corner texture ([TPC](TPC-File-Format)/TGA) |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) texture ([TPC](TPC-File-Format)/TGA) |
+| `FILL` | *ResRef* | Fill/background texture ([TPC](TPC-File-Format)/TGA) |
+| `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill rendering style (-1=None, 0=Empty, 1=Solid, 2=[texture](TPC-File-Format)) |
+| `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness in pixels |
+| `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis (pixels) |
+| `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (pixels, optional) |
 | `COLOR` | vector | Border color modulation (RGB, 0.0-1.0) |
-| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag (0=off, 1=on) |
+| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag (0=off, 1=on) |
 
 **Border Rendering:**
 
@@ -106,10 +122,10 @@ All controls share these base properties:
 | ----- | ---- | ----------- |
 | `TEXT` | [CExoString](GFF-File-Format#gff-data-types) | Direct text content (overrides [StrRef](TLK-File-Format#string-references-strref) if set) |
 | `STRREF` | DWord | [TLK](TLK-File-Format) string reference (0xFFFFFFFF = unused) |
-| `FONT` | [ResRef](GFF-File-Format#gff-data-types) | Font [texture](TPC-File-Format) resource ([TPC](TPC-File-Format)/TGA) |
-| `ALIGNMENT` | Int | Text alignment flags (bitfield) |
+| `FONT` | *ResRef* | Font [texture](TPC-File-Format) resource ([TPC](TPC-File-Format)/TGA) |
+| `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Text alignment flags (bitfield) |
 | `COLOR` | vector | Text color (RGB, 0.0-1.0) |
-| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag (0=off, 1=on) |
+| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag (0=off, 1=on) |
 
 **Text Alignment values:**
 
@@ -133,10 +149,10 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `UP` | Int | Control ID to navigate to when pressing Up |
-| `DOWN` | Int | Control ID to navigate to when pressing Down |
-| `LEFT` | Int | Control ID to navigate to when pressing Left |
-| `RIGHT` | Int | Control ID to navigate to when pressing Right |
+| `UP` | [int32](GFF-File-Format#gff-data-types) | Control ID to navigate to when pressing Up |
+| `DOWN` | [int32](GFF-File-Format#gff-data-types) | Control ID to navigate to when pressing Down |
+| `LEFT` | [int32](GFF-File-Format#gff-data-types) | Control ID to navigate to when pressing Left |
+| `RIGHT` | [int32](GFF-File-Format#gff-data-types) | Control ID to navigate to when pressing Right |
 
 **Navigation System:**
 
@@ -149,15 +165,15 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | [ResRef](GFF-File-Format#gff-data-types) | Corner [texture](TPC-File-Format) for highlight state |
-| `EDGE` | [ResRef](GFF-File-Format#gff-data-types) | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for highlight state |
-| `FILL` | [ResRef](GFF-File-Format#gff-data-types) | Fill [texture](TPC-File-Format) for highlight state |
-| `FILLSTYLE` | Int | Fill style for highlight |
-| `DIMENSION` | Int | Border thickness |
-| `INNEROFFSET` | Int | Inner padding X-axis |
-| `INNEROFFSETY` | Int | Inner padding Y-axis (optional) |
+| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for highlight state |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for highlight state |
+| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for highlight state |
+| `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill style for highlight |
+| `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
+| `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
+| `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Highlight color modulation |
-| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
+| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
 
 **Highlight Behavior:**
 
@@ -170,29 +186,29 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | [ResRef](GFF-File-Format#gff-data-types) | Corner [texture](TPC-File-Format) for selected state |
-| `EDGE` | [ResRef](GFF-File-Format#gff-data-types) | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for selected state |
-| `FILL` | [ResRef](GFF-File-Format#gff-data-types) | Fill [texture](TPC-File-Format) for selected state |
-| `FILLSTYLE` | Int | Fill style for selected state |
-| `DIMENSION` | Int | Border thickness |
-| `INNEROFFSET` | Int | Inner padding X-axis |
-| `INNEROFFSETY` | Int | Inner padding Y-axis (optional) |
+| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for selected state |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for selected state |
+| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for selected state |
+| `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill style for selected state |
+| `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
+| `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
+| `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Selected state color modulation |
-| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
+| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
 
 **HILIGHTSELECTED Struct:**
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | [ResRef](GFF-File-Format#gff-data-types) | Corner [texture](TPC-File-Format) for highlight+selected state |
-| `EDGE` | [ResRef](GFF-File-Format#gff-data-types) | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for highlight+selected state |
-| `FILL` | [ResRef](GFF-File-Format#gff-data-types) | Fill [texture](TPC-File-Format) for highlight+selected state |
-| `FILLSTYLE` | Int | Fill style |
-| `DIMENSION` | Int | Border thickness |
-| `INNEROFFSET` | Int | Inner padding X-axis |
-| `INNEROFFSETY` | Int | Inner padding Y-axis (optional) |
+| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for highlight+selected state |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for highlight+selected state |
+| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for highlight+selected state |
+| `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill style |
+| `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
+| `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
+| `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Combined state color modulation |
-| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
+| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
 
 **State Priority:**
 
@@ -209,11 +225,11 @@ All controls share these base properties:
 | ----- | ---- | ----------- |
 | `PROTOITEM` | Struct | Template for list item appearance |
 | `SCROLLBAR` | Struct | Embedded scrollbar control |
-| `PADDING` | Int | Spacing between items (pixels) |
-| `MAXVALUE` | Int | Maximum scroll value (total items - visible items) |
-| `CURVALUE` | Int | Current scroll position |
-| `LOOPING` | Byte | Loop scrolling (0=no, 1=yes) |
-| `LEFTSCROLLBAR` | Byte | Scrollbar on left side (0=right, 1=left) |
+| `PADDING` | [int32](GFF-File-Format#gff-data-types) | Spacing between items (pixels) |
+| `MAXVALUE` | [int32](GFF-File-Format#gff-data-types) | Maximum scroll value (total items - visible items) |
+| `CURVALUE` | [int32](GFF-File-Format#gff-data-types) | Current scroll position |
+| `LOOPING` | [byte](GFF-File-Format#gff-data-types) | Loop scrolling (0=no, 1=yes) |
+| `LEFTSCROLLBAR` | [byte](GFF-File-Format#gff-data-types) | Scrollbar on left side (0=right, 1=left) |
 
 **ListBox Behavior:**
 
@@ -228,14 +244,14 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CONTROLTYPE` | Int | Always 4 (ProtoItem) |
+| `CONTROLTYPE` | [int32](GFF-File-Format#gff-data-types) | Always 4 (ProtoItem) |
 | `EXTENT` | Struct | Item size and position |
 | `BORDER` | Struct | Item border appearance |
 | `HILIGHT` | Struct | Item highlight on hover |
 | `HILIGHTSELECTED` | Struct | Item highlight when selected |
 | `SELECTED` | Struct | Item appearance when selected |
 | `TEXT` | Struct | Item text properties |
-| `ISSELECTED` | Byte | Default selected state |
+| `ISSELECTED` | [byte](GFF-File-Format#gff-data-types) | Default selected state |
 
 **ScrollBar (type 9):**
 
@@ -243,10 +259,10 @@ All controls share these base properties:
 | ----- | ---- | ----------- |
 | `DIR` | Struct | Direction arrow buttons appearance |
 | `THUMB` | Struct | Draggable thumb appearance |
-| `MAXVALUE` | Int | Maximum scroll value |
-| `VISIBLEVALUE` | Int | Number of visible items in viewport |
-| `CURVALUE` | Int | Current scroll position |
-| `DRAWMODE` | Byte | Drawing mode (0=normal, other values unused) |
+| `MAXVALUE` | [int32](GFF-File-Format#gff-data-types) | Maximum scroll value |
+| `VISIBLEVALUE` | [int32](GFF-File-Format#gff-data-types) | Number of visible items in viewport |
+| `CURVALUE` | [int32](GFF-File-Format#gff-data-types) | Current scroll position |
+| `DRAWMODE` | [byte](GFF-File-Format#gff-data-types) | Drawing mode (0=normal, other values unused) |
 
 **ScrollBar Behavior:**
 
@@ -259,30 +275,30 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `IMAGE` | [ResRef](GFF-File-Format#gff-data-types) | Arrow button [texture](TPC-File-Format) |
-| `ALIGNMENT` | Int | Image alignment (typically 18=center) |
-| `DRAWSTYLE` | Int | Drawing style (unused) |
-| `FLIPSTYLE` | Int | Flip/rotation style (unused) |
-| `ROTATE` | Float | rotation angle (unused) |
+| `IMAGE` | *ResRef* | Arrow button [texture](TPC-File-Format) |
+| `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment (typically 18=center) |
+| `DRAWSTYLE` | [int32](GFF-File-Format#gff-data-types) | Drawing style (unused) |
+| `FLIPSTYLE` | [int32](GFF-File-Format#gff-data-types) | Flip/rotation style (unused) |
+| `ROTATE` | [float](GFF-File-Format#gff-data-types) | rotation angle (unused) |
 
 **THUMB Struct (ScrollBar Thumb):**
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `IMAGE` | [ResRef](GFF-File-Format#gff-data-types) | Thumb [texture](TPC-File-Format) |
-| `ALIGNMENT` | Int | Image alignment (typically 18=center) |
-| `DRAWSTYLE` | Int | Drawing style (unused) |
-| `FLIPSTYLE` | Int | Flip/rotation style (unused) |
-| `ROTATE` | Float | rotation angle (unused) |
+| `IMAGE` | *ResRef* | Thumb [texture](TPC-File-Format) |
+| `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment (typically 18=center) |
+| `DRAWSTYLE` | [int32](GFF-File-Format#gff-data-types) | Drawing style (unused) |
+| `FLIPSTYLE` | [int32](GFF-File-Format#gff-data-types) | Flip/rotation style (unused) |
+| `ROTATE` | [float](GFF-File-Format#gff-data-types) | rotation angle (unused) |
 
 **ProgressBar (type 10):**
 
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `PROGRESS` | Struct | Progress fill appearance |
-| `CURVALUE` | Int | Current progress value (0-100) |
-| `MAXVALUE` | Int | Maximum value (typically 100) |
-| `STARTFROMLEFT` | Byte | Fill direction (0=right, 1=left) |
+| `CURVALUE` | [int32](GFF-File-Format#gff-data-types) | Current progress value (0-100) |
+| `MAXVALUE` | [int32](GFF-File-Format#gff-data-types) | Maximum value (typically 100) |
+| `STARTFROMLEFT` | [byte](GFF-File-Format#gff-data-types) | Fill direction (0=right, 1=left) |
 
 **ProgressBar Behavior:**
 
@@ -294,15 +310,15 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | [ResRef](GFF-File-Format#gff-data-types) | Corner [texture](TPC-File-Format) for progress fill |
-| `EDGE` | [ResRef](GFF-File-Format#gff-data-types) | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for progress fill |
-| `FILL` | [ResRef](GFF-File-Format#gff-data-types) | Fill [texture](TPC-File-Format) for progress bar |
-| `FILLSTYLE` | Int | Fill rendering style |
-| `DIMENSION` | Int | Border thickness |
-| `INNEROFFSET` | Int | Inner padding X-axis |
-| `INNEROFFSETY` | Int | Inner padding Y-axis (optional) |
+| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for progress fill |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for progress fill |
+| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for progress bar |
+| `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill rendering style |
+| `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
+| `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
+| `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Progress fill color modulation |
-| `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
+| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) [flag](GFF-File-Format#gff-data-types) |
 
 **CheckBox (type 7):**
 
@@ -310,7 +326,7 @@ All controls share these base properties:
 | ----- | ---- | ----------- |
 | `SELECTED` | Struct | Appearance when checked |
 | `HILIGHTSELECTED` | Struct | Appearance when checked and hovered |
-| `ISSELECTED` | Byte | Default checked state (0=unchecked, 1=checked) |
+| `ISSELECTED` | [byte](GFF-File-Format#gff-data-types) | Default checked state (0=unchecked, 1=checked) |
 
 **CheckBox Behavior:**
 
@@ -324,9 +340,9 @@ All controls share these base properties:
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `THUMB` | Struct | Slider thumb appearance |
-| `CURVALUE` | Int | Current slider value |
-| `MAXVALUE` | Int | Maximum slider value |
-| `DIRECTION` | Int | Orientation (0=horizontal, 1=vertical) |
+| `CURVALUE` | [int32](GFF-File-Format#gff-data-types) | Current slider value |
+| `MAXVALUE` | [int32](GFF-File-Format#gff-data-types) | Maximum slider value |
+| `DIRECTION` | [int32](GFF-File-Format#gff-data-types) | Orientation (0=horizontal, 1=vertical) |
 
 **Slider Behavior:**
 
@@ -339,11 +355,11 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `IMAGE` | [ResRef](GFF-File-Format#gff-data-types) | Thumb [texture](TPC-File-Format) |
-| `ALIGNMENT` | Int | Image alignment |
-| `DRAWSTYLE` | Int | Drawing style (unused) |
-| `FLIPSTYLE` | Int | Flip/rotation style (unused) |
-| `ROTATE` | Float | rotation angle (unused) |
+| `IMAGE` | *ResRef* | Thumb [texture](TPC-File-Format) |
+| `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment |
+| `DRAWSTYLE` | [int32](GFF-File-Format#gff-data-types) | Drawing style (unused) |
+| `FLIPSTYLE` | [int32](GFF-File-Format#gff-data-types) | Flip/rotation style (unused) |
+| `ROTATE` | [float](GFF-File-Format#gff-data-types) | rotation angle (unused) |
 
 **Button (type 6):**
 
@@ -376,10 +392,10 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CONTROLS` | List | Child controls list |
+| `CONTROLS` | [List](GFF-File-Format#gff-data-types) | Child controls list |
 | `BORDER` | Struct | Panel border (optional background) |
 | `COLOR` | vector | Panel color modulation |
-| `ALPHA` | Float | Panel transparency |
+| `ALPHA` | [float](GFF-File-Format#gff-data-types) | Panel transparency |
 
 **Panel Behavior:**
 
@@ -397,7 +413,7 @@ All controls share these base properties:
 | `HILIGHT` | Struct | Item highlight on hover |
 | `HILIGHTSELECTED` | Struct | Item highlight when selected |
 | `SELECTED` | Struct | Item appearance when selected |
-| `ISSELECTED` | Byte | Default selected state |
+| `ISSELECTED` | [byte](GFF-File-Format#gff-data-types) | Default selected state |
 
 **ProtoItem Behavior:**
 
@@ -527,3 +543,10 @@ All controls share these base properties:
 - Some controls have hardcoded behaviors (e.g., inventory slots)
 - Scripts can access controls by TAG or ID
 - [GUI](GFF-File-Format#gui-graphical-user-interface) state can be modified at runtime via scripts
+
+## See also
+
+- [GFF File Format](GFF-File-Format) - Generic format underlying GUI
+- [TPC File Format](TPC-File-Format), [TXI File Format](TXI-File-Format) - Textures used by GUI controls
+- [TLK File Format](TLK-File-Format) - String references for GUI text
+- [NCS File Format](NCS-File-Format) - Scripts that drive GUI behavior

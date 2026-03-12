@@ -98,7 +98,7 @@ The PLT file header is 24 bytes:
 
 ### Pixel data
 
-Following the header, pixel data is stored as an array of 2-[byte](GFF-File-Format#gff-data-types) structures. There are `width × height` pixel entries.
+Following the header, pixel data is stored as an array of 2-[byte](https://en.wikipedia.org/wiki/Byte) structures. There are `width × height` pixel entries.
 
 Each pixel entry is 2 bytes:
 

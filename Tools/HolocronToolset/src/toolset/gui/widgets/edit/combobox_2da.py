@@ -254,7 +254,10 @@ class ComboBox2DA(QComboBox):
 
         from qtpy.QtWidgets import QDialog
 
-        from pykotor.tools.reference_finder import ReferenceSearchResult, find_field_value_references
+        from pykotor.tools.reference_finder import (
+            ReferenceSearchResult,
+            find_field_value_references,
+        )
         from toolset.gui.dialogs.asyncloader import AsyncLoader
         from toolset.gui.dialogs.reference_search_options import ReferenceSearchOptions
         from toolset.gui.dialogs.search import FileResults
@@ -328,7 +331,13 @@ class ComboBox2DA(QComboBox):
 
         def _search_stringrefs():
             """Search for stringref references."""
-            from pykotor.tools.reference_cache import GFFRefLocation, NCSRefLocation, SSFRefLocation, TwoDARefLocation, find_strref_references
+            from pykotor.tools.reference_cache import (
+                GFFRefLocation,
+                NCSRefLocation,
+                SSFRefLocation,
+                TwoDARefLocation,
+                find_strref_references,
+            )
 
             assert self._installation is not None, "Installation is not set"
             assert isinstance(self._installation, HTInstallation), "Installation is not an HTInstallation"
@@ -365,7 +374,7 @@ class ComboBox2DA(QComboBox):
                                     matched_value=str(strref),
                                     file_type=file_type,
                                     byte_offset=byte_offset,
-                                )
+                                ),
                             )
                 return all_strref_results
 
@@ -414,7 +423,7 @@ class ComboBox2DA(QComboBox):
                     count=len(all_results),
                     row_index=row_index,
                     resname=self._resname,
-                )
+                ),
             )
             add_window(results_dialog)
 

@@ -1,6 +1,6 @@
 # KotOR BIF file format Documentation
 
-This document provides a detailed description of the BIF (BioWare index file) file format used in Knights of the Old Republic (KotOR) games. BIF files are [archive containers](ERF-File-Format) that store the bulk of game resources.
+This document provides a detailed description of the BIF (BioWare index file) file format used in Knights of the Old Republic (KotOR) games. BIF files are [container containers](ERF-File-Format) that store the bulk of game resources.
 
 ## Table of Contents
 
@@ -21,14 +21,14 @@ This document provides a detailed description of the BIF (BioWare index file) fi
 
 ## file structure Overview
 
-BIF files work in tandem with [KEY files](KEY-File-Format) which provide the filename-to-resource mappings. BIF files contain only resource IDs, types, and data - the actual filenames ([ResRefs](GFF-File-Format#gff-data-types)) are stored in the [KEY file](KEY-File-Format). BIF files are [archive containers](ERF-File-Format) that store the bulk of game resources.
+BIF files work in tandem with [KEY files](KEY-File-Format) which provide the filename-to-resource mappings. BIF files contain only resource IDs, types, and data - the actual filenames ([ResRefs](GFF-File-Format#gff-data-types)) are stored in the [KEY file](KEY-File-Format). BIF files are [container containers](ERF-File-Format) that store the bulk of game resources.
 
 ### BIF Usage in KotOR
 
-BIF archives are the primary storage mechanism for game assets. The game organizes resources into multiple BIF files by category:
+BIF containers are the primary storage mechanism for game assets. The game organizes resources into multiple BIF files by category:
 
 - `data/models.bif`: 3D [model](MDL-MDX-File-Format) files ([MDL/MDX](MDL-MDX-File-Format))
-- `data/textures_*.bif`: [texture](TPC-File-Format) data ([TPC](TPC-File-Format)/[TXI](TXI-File-Format) files) - split across multiple archives
+- `data/textures_*.bif`: [texture](TPC-File-Format) data ([TPC](TPC-File-Format)/[TXI](TXI-File-Format) files) - split across multiple containers
 - `data/sounds.bif`: Audio files ([WAV](WAV-File-Format))
 - `data/2da.bif`: Game data tables ([2DA files](2DA-File-Format))
 - `data/scripts.bif`: Compiled scripts ([NCS](NCS-File-Format))
@@ -50,8 +50,8 @@ The [modular structure](https://en.wikipedia.org/wiki/Modular_programming) allow
 
 **See Also:**
 
-- [KEY File Format](KEY-File-Format) - index file that references BIF archives
-- [ERF File Format](ERF-File-Format) - Alternative [self-contained archives](ERF-File-Format) format
+- [KEY File Format](KEY-File-Format) - index file that references BIF containers
+- [ERF File Format](ERF-File-Format) - Alternative [self-contained containers](ERF-File-Format) format
 - [Bioware Aurora KeyBIF Format](Bioware-Aurora-KeyBIF) - Official BioWare specification
 
 ---
@@ -101,7 +101,7 @@ Resource data is stored at the offsets specified in the resource table:
 
 | Name         | type   | Description                                                      |
 | ------------ | ------ | ---------------------------------------------------------------- |
-| Resource data | [byte](GFF-File-Format#gff-data-types)[] | Raw binary data for each resource                               |
+| Resource data | [byte](https://en.wikipedia.org/wiki/Byte)[] | Raw binary data for each resource                               |
 
 **Resource Storage Details:**
 
@@ -155,7 +155,7 @@ The BZF format wraps a complete BIF file in LZMA compression:
 
 **compression Details:**
 
-- The entire BIF file (after the 8-[byte](GFF-File-Format#gff-data-types) header) is compressed using LZMA (Lempel-Ziv-Markov chain Algorithm)
+- The entire BIF file (after the 8-[byte](https://en.wikipedia.org/wiki/Byte) header) is compressed using LZMA (Lempel-Ziv-Markov chain Algorithm)
 - LZMA provides high compression ratios with good decompression speed
 - The compressed stream follows immediately after the BZF header
 - Decompression yields a standard BIF file that can be read normally
@@ -187,7 +187,7 @@ The BZF wrapper is completely transparent to the game engine - once decompressed
 BIF files require a [KEY file](KEY-File-Format) to map resource IDs to filenames (ResRefs). The [KEY file](KEY-File-Format) contains:
 
 - BIF file entries (filename, size, location)
-- [KEY](KEY-File-Format) entries mapping [ResRef](GFF-File-Format#gff-data-types) + ResourceType to Resource ID
+- [KEY](KEY-File-Format) entries mapping *ResRef* + ResourceType to Resource ID
 
 The Resource ID in the BIF file matches the Resource ID in the [KEY file](KEY-File-Format)'s [KEY](KEY-File-Format) entries.
 

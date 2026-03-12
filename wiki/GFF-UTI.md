@@ -6,13 +6,30 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Item format specification, see [Bioware Aurora Item Format](Bioware-Aurora-Item).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/uti.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py)
+**For mod developers:** To modify GFF/UTI files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** UTI fields reference [2DA files](2DA-File-Format) ([baseitems.2da](2DA-File-Format#baseitems2da), [itempropdef.2da](2DA-File-Format#itempropdef2da)), [TLK](TLK-File-Format) for localized names, and [MDL](MDL-MDX-File-Format)/[TPC](TPC-File-Format) for [model](MDL-MDX-File-Format) and [texture](TPC-File-Format) variants.
+
+## References
+
+**PyKotor:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/generics/uti.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py) - UTI [GFF](GFF-File-Format) parsing and field definitions
+
+**HolocronToolset:**
+
+- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py) - Item (UTI) editor
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/gff.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/gff.cpp) - C++ GFF reader (UTI uses generic GFF structure)
+- [`vendor/KotOR.js/src/resource/GFFObject.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/GFFObject.ts) - TypeScript GFF parser
 
 ## Core Identity fields
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | Template identifier for this item |
+| `TemplateResRef` | *ResRef* | Template identifier for this item |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
 | `LocalizedName` | [CExoLocString](GFF-File-Format#gff-data-types) | Item name (localized) |
 | `Description` | [CExoLocString](GFF-File-Format#gff-data-types) | Generic description |
@@ -23,15 +40,15 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `BaseItem` | Int | index into [`baseitems.2da`](2DA-baseitems) (defines item type) |
-| `Cost` | DWord | Base value in credits |
-| `AddCost` | DWord | Additional cost from properties |
-| `Plot` | Byte | Plot-critical item (cannot be sold/destroyed) |
-| `Charges` | Byte | Number of uses remaining |
-| `StackSize` | Word | Current stack quantity |
-| `ModelVariation` | Byte | [model](MDL-MDX-File-Format) variation index (1-99) |
-| `BodyVariation` | Byte | Body variation for armor (1-9) |
-| `TextureVar` | Byte | [texture](TPC-File-Format) variation for armor (1-9) |
+| `BaseItem` | [int32](GFF-File-Format#gff-data-types) | Index into [`baseitems.2da`](2DA-File-Format#baseitems2da) (defines item type) |
+| `Cost` | [uint32](GFF-File-Format#gff-data-types) | Base value in credits |
+| `AddCost` | [uint32](GFF-File-Format#gff-data-types) | Additional cost from properties |
+| `Plot` | [byte](GFF-File-Format#gff-data-types) | Plot-critical item (cannot be sold/destroyed) |
+| `Charges` | [byte](GFF-File-Format#gff-data-types) | Number of uses remaining |
+| `StackSize` | [word](GFF-File-Format#gff-data-types) | Current stack quantity |
+| `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) variation index (1-99) |
+| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body variation for armor (1-9) |
+| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](TPC-File-Format) variation for armor (1-9) |
 
 **BaseItem types** (from [`baseitems.2da`](2DA-baseitems)):
 
@@ -46,21 +63,21 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `PropertiesList` | List | Item properties and enchantments |
-| `Upgradable` | Byte | Can accept upgrades (KotOR1 only) |
-| `UpgradeLevel` | Byte | Current upgrade tier (KotOR2 only) |
+| `PropertiesList` | [List](GFF-File-Format#gff-data-types) | Item properties and enchantments |
+| `Upgradable` | [byte](GFF-File-Format#gff-data-types) | Can accept upgrades (KotOR1 only) |
+| `UpgradeLevel` | [byte](GFF-File-Format#gff-data-types) | Current upgrade tier (KotOR2 only) |
 
 **PropertiesList Struct fields:**
 
-- `PropertyName` (Word): index into [`itempropdef.2da`](2DA-itempropdef)
-- `Subtype` (Word): Property subtype/category
-- `CostTable` (Byte): Cost table index
-- `CostValue` (Word): Cost value
-- `Param1` (Byte): First parameter
-- `Param1Value` (Byte): First parameter value
-- `ChanceAppear` (Byte): Percentage chance to appear (random loot)
-- `UsesPerDay` (Byte): Daily usage limit (0 = unlimited)
-- `UsesLeft` (Byte): Remaining uses for today
+- `PropertyName` ([word](GFF-File-Format#gff-data-types)): Index into [`itempropdef.2da`](2DA-File-Format#itempropdef2da)
+- `Subtype` ([word](GFF-File-Format#gff-data-types)): Property subtype/category
+- `CostTable` ([byte](GFF-File-Format#gff-data-types)): Cost table index
+- `CostValue` ([word](GFF-File-Format#gff-data-types)): Cost value
+- `Param1` ([byte](GFF-File-Format#gff-data-types)): First parameter
+- `Param1Value` ([byte](GFF-File-Format#gff-data-types)): First parameter value
+- `ChanceAppear` ([byte](GFF-File-Format#gff-data-types)): Percentage chance to appear (random loot)
+- `UsesPerDay` ([byte](GFF-File-Format#gff-data-types)): Daily usage limit (0 = unlimited)
+- `UsesLeft` ([byte](GFF-File-Format#gff-data-types)): Remaining uses for today
 
 **Common Item Properties:**
 
@@ -92,9 +109,9 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `BodyVariation` | Byte | Body [model](MDL-MDX-File-Format) variation (1-9) |
-| `TextureVar` | Byte | [texture](TPC-File-Format) variation (1-9) |
-| `ModelVariation` | Byte | [model](MDL-MDX-File-Format) type (typically 1-3) |
+| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) variation (1-9) |
+| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](TPC-File-Format) variation (1-9) |
+| `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) type (typically 1-3) |
 | `ArmorRulesType` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Armor class category |
 
 **Armor [model](MDL-MDX-File-Format) Variations:**
@@ -107,10 +124,10 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Plot` | Byte | Cannot be sold or destroyed |
-| `Stolen` | Byte | Marked as stolen |
-| `Cursed` | Byte | Cannot be unequipped |
-| `Identified` | Byte | Player has identified the item |
+| `Plot` | [byte](GFF-File-Format#gff-data-types) | Cannot be sold or destroyed |
+| `Stolen` | [byte](GFF-File-Format#gff-data-types) | Marked as stolen |
+| `Cursed` | [byte](GFF-File-Format#gff-data-types) | Cannot be unequipped |
+| `Identified` | [byte](GFF-File-Format#gff-data-types) | Player has identified the item |
 
 **Plot Item Behavior:**
 
@@ -122,7 +139,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Upgradable` | Byte | Item accepts upgrade items |
+| `Upgradable` | [byte](GFF-File-Format#gff-data-types) | Item accepts upgrade items |
 
 **Upgrade Mechanism:**
 
@@ -135,10 +152,10 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `UpgradeLevel` | Byte | Current upgrade tier (0-2) |
-| `WeaponColor` | Byte | Lightsaber blade color |
-| `WeaponWhoosh` | Byte | Swing sound type |
-| `ArmorRulesType` | Byte | Armor restriction category |
+| `UpgradeLevel` | [byte](GFF-File-Format#gff-data-types) | Current upgrade tier (0-2) |
+| `WeaponColor` | [byte](GFF-File-Format#gff-data-types) | Lightsaber blade color |
+| `WeaponWhoosh` | [byte](GFF-File-Format#gff-data-types) | Swing sound type |
+| `ArmorRulesType` | [byte](GFF-File-Format#gff-data-types) | Armor restriction category |
 
 **KotOR2 Upgrade Slots:**
 
@@ -151,9 +168,9 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `ModelVariation` | Byte | Base [model](MDL-MDX-File-Format) index |
-| `BodyVariation` | Byte | Body [model](MDL-MDX-File-Format) for armor |
-| `TextureVar` | Byte | [texture](TPC-File-Format) variant |
+| `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | Base [model](MDL-MDX-File-Format) index |
+| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) for armor |
+| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](TPC-File-Format) variant |
 
 **[model](MDL-MDX-File-Format) Resolution:**
 
@@ -166,7 +183,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `PaletteID` | Byte | Toolset palette category |
+| `PaletteID` | [byte](GFF-File-Format#gff-data-types) | Toolset palette category |
 | `Comment` | [CExoString](GFF-File-Format#gff-data-types) | Designer notes/documentation |
 
 **Toolset Integration:**
@@ -237,3 +254,11 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 - Special items for droid party members
 - Sensors, shields, weapons
 - Different slot types than organic characters
+
+## See also
+
+- [GFF File Format](GFF-File-Format) - Binary layout and data types
+- [baseitems.2da](2DA-File-Format#baseitems2da) - Item type definitions
+- [itempropdef.2da](2DA-File-Format#itempropdef2da) - Item property definitions
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - Modding GFF/UTI with TSLPatcher
+- [Bioware Aurora Item Format](Bioware-Aurora-Item) - Official BioWare specification

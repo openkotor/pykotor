@@ -12,7 +12,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | Template identifier for this placeable |
+| `TemplateResRef` | *ResRef* | Template identifier for this placeable |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
 | `LocName` | [CExoLocString](GFF-File-Format#gff-data-types) | Placeable name (localized) |
 | `Description` | [CExoLocString](GFF-File-Format#gff-data-types) | Placeable description |
@@ -42,7 +42,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **ItemList Struct fields:**
 
-- `InventoryRes` ([ResRef](GFF-File-Format#gff-data-types)): [UTI](GFF-File-Format#uti-item) template [ResRef](GFF-File-Format#gff-data-types)
+- `InventoryRes` (*ResRef*): [UTI](GFF-File-Format#uti-item) template *ResRef*
 - `Repos_PosX` (Word): Grid X position (optional)
 - `Repos_Posy` (Word): Grid Y position (optional)
 - `Dropable` (Byte): Can drop item
@@ -64,7 +64,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 | `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](KEY-File-Format) [item](GFF-File-Format#uti-item) |
 | `AutoRemoveKey` | Byte | [KEY](KEY-File-Format) consumed on use |
 | `OpenLockDC` | Byte | Security skill DC to pick lock |
-| `CloseLockDC` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Security DC to lock |
+| `CloseLockDC` (KotOR2) | [byte](https://en.wikipedia.org/wiki/Byte) | Security DC to lock |
 | `OpenLockDiff` (KotOR2) | Int | Additional difficulty modifier |
 | `OpenLockDiffMod` (KotOR2) | Int | Modifier to difficulty |
 
@@ -81,7 +81,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 | `HP` | Short | Maximum hit points |
 | `CurrentHP` | Short | Current hit points |
 | `Hardness` | Byte | Damage reduction |
-| `Min1HP` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Cannot drop below 1 HP |
+| `Min1HP` (KotOR2) | [byte](https://en.wikipedia.org/wiki/Byte) | Cannot drop below 1 HP |
 | `Fort` | Byte | Fortitude save (usually 0) |
 | `Ref` | Byte | Reflex save (usually 0) |
 | `Will` | Byte | Will save (usually 0) |
@@ -99,10 +99,10 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 | `Plot` | Byte | Plot-critical (cannot be destroyed) |
 | `Static` | Byte | Static geometry (no interaction) |
 | `Useable` | Byte | Can be clicked/used |
-| `Conversation` | [ResRef](GFF-File-Format#gff-data-types) | [Dialog](GFF-DLG) file when used |
+| `Conversation` | *ResRef* | [Dialog](GFF-DLG) file when used |
 | `Faction` | Word | Faction identifier |
 | `PartyInteract` | Byte | Requires party member selection |
-| `NotBlastable` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Immune to area damage |
+| `NotBlastable` (KotOR2) | [byte](https://en.wikipedia.org/wiki/Byte) | Immune to area damage |
 
 **Usage Patterns:**
 
@@ -115,21 +115,21 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `OnClosed` | [ResRef](GFF-File-Format#gff-data-types) | Fires when container closes |
-| `OnDamaged` | [ResRef](GFF-File-Format#gff-data-types) | Fires when placeable takes damage |
-| `OnDeath` | [ResRef](GFF-File-Format#gff-data-types) | Fires when placeable is destroyed |
-| `OnDisarm` | [ResRef](GFF-File-Format#gff-data-types) | Fires when trap is disarmed |
-| `OnEndDialogue` | [ResRef](GFF-File-Format#gff-data-types) | Fires when conversation ends |
-| `OnHeartbeat` | [ResRef](GFF-File-Format#gff-data-types) | Fires periodically |
-| `OnInvDisturbed` | [ResRef](GFF-File-Format#gff-data-types) | Fires when inventory changed |
-| `OnLock` | [ResRef](GFF-File-Format#gff-data-types) | Fires when locked |
-| `OnMeleeAttacked` | [ResRef](GFF-File-Format#gff-data-types) | Fires when attacked in melee |
-| `OnOpen` | [ResRef](GFF-File-Format#gff-data-types) | Fires when opened |
-| `OnSpellCastAt` | [ResRef](GFF-File-Format#gff-data-types) | Fires when spell cast at placeable |
-| `OnUnlock` | [ResRef](GFF-File-Format#gff-data-types) | Fires when unlocked |
-| `OnUsed` | [ResRef](GFF-File-Format#gff-data-types) | Fires when used/clicked |
-| `OnUserDefined` | [ResRef](GFF-File-Format#gff-data-types) | Fires on user-defined events |
-| `OnFailToOpen` (KotOR2) | [ResRef](GFF-File-Format#gff-data-types) | Fires when opening fails |
+| `OnClosed` | *ResRef* | Fires when container closes |
+| `OnDamaged` | *ResRef* | Fires when placeable takes damage |
+| `OnDeath` | *ResRef* | Fires when placeable is destroyed |
+| `OnDisarm` | *ResRef* | Fires when trap is disarmed |
+| `OnEndDialogue` | *ResRef* | Fires when conversation ends |
+| `OnHeartbeat` | *ResRef* | Fires periodically |
+| `OnInvDisturbed` | *ResRef* | Fires when inventory changed |
+| `OnLock` | *ResRef* | Fires when locked |
+| `OnMeleeAttacked` | *ResRef* | Fires when attacked in melee |
+| `OnOpen` | *ResRef* | Fires when opened |
+| `OnSpellCastAt` | *ResRef* | Fires when spell cast at placeable |
+| `OnUnlock` | *ResRef* | Fires when unlocked |
+| `OnUsed` | *ResRef* | Fires when used/clicked |
+| `OnUserDefined` | *ResRef* | Fires on user-defined events |
+| `OnFailToOpen` (KotOR2) | *ResRef* | Fires when opening fails |
 
 ## Trap System
 

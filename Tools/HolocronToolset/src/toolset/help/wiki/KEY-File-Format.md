@@ -20,15 +20,15 @@ This document provides a detailed description of the KEY (KEY Table) file format
 
 ## file structure Overview
 
-KEY files map resource names ([ResRefs](GFF-File-Format#gff-data-types)) and types to specific locations within [BIF archives](BIF-File-Format). KotOR uses `chitin.key` as the main KEY file which references all game [BIF files](BIF-File-Format).
+KEY files map resource names ([ResRefs](GFF-File-Format#gff-data-types)) and types to specific locations within [BIF containers](BIF-File-Format). KotOR uses `chitin.key` as the main KEY file which references all game [BIF files](BIF-File-Format).
 
 ### KEY file Purpose
 
 The KEY file serves as the master index for the game's resource system:
 
-1. **Resource Lookup**: Maps [ResRef](GFF-File-Format#gff-data-types) + ResourceType → [BIF](BIF-File-Format) location
+1. **Resource Lookup**: Maps *ResRef* + ResourceType → [BIF](BIF-File-Format) location
 2. **[BIF](BIF-File-Format) Registration**: Tracks all [BIF files](BIF-File-Format) and their install paths
-3. **Resource Naming**: Provides the filename ([ResRef](GFF-File-Format#gff-data-types)) missing from [BIF files](BIF-File-Format)
+3. **Resource Naming**: Provides the filename (*ResRef*) missing from [BIF files](BIF-File-Format)
 4. **Drive Mapping**: Historical feature indicating which media (CD/HD) contained each [BIF](BIF-File-Format)
 
 **Resource Resolution Order:**
@@ -55,7 +55,7 @@ The KEY file only manages [BIF](BIF-File-Format) resources (step 4). Higher-prio
 
 **See Also:**
 
-- [BIF File Format](BIF-File-Format) - Archive format indexed by KEY files
+- [BIF File Format](BIF-File-Format) - Container format indexed by KEY files
 - [ERF File Format](ERF-File-Format) - Self-contained alternative to KEY+[BIF](BIF-File-Format)
 - [Bioware Aurora KeyBIF Format](Bioware-Aurora-KeyBIF) - Official BioWare specification
 
@@ -77,7 +77,7 @@ The file header is 64 bytes in size:
 | offset to KEY Table | [uint32](GFF-File-Format#gff-data-types) | 20 (0x14) | 4    | offset to resource entries array               |
 | Build Year          | [uint32](GFF-File-Format#gff-data-types)  | 24 (0x18) | 4    | Build year (years since 1900)                  |
 | Build Day           | [uint32](GFF-File-Format#gff-data-types)  | 28 (0x1C) | 4    | Build day (days since Jan 1)                   |
-| Reserved            | [byte](GFF-File-Format#gff-data-types) | 32 (0x20) | 32   | Padding (usually zeros)                        |
+| Reserved            | [byte](https://en.wikipedia.org/wiki/Byte) | 32 (0x20) | 32   | Padding (usually zeros)                        |
 
 **Note on header Variations**: [`vendor/xoreos-docs/specs/torlack/key.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/key.html) (Tim Smith/Torlack's reverse-engineered documentation) shows the header ending at offset 0x0040 with unknown values at offset 0x0018. The structure shown here (with Build Year/Day and Reserved fields) matches the actual KotOR KEY file format.
 
@@ -138,15 +138,15 @@ Each KEY entry is 22 bytes:
 
 | Name        | type     | offset | size | Description                                                      |
 | ----------- | -------- | ------ | ---- | ---------------------------------------------------------------- |
-| [ResRef](GFF-File-Format#gff-data-types)      | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 16   | Resource filename (null-padded, max 16 chars)                   |
+| *ResRef*      | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 16   | Resource filename (null-padded, max 16 chars)                   |
 | Resource type | [uint16](GFF-File-Format#gff-data-types) | 16 (0x10) | 2    | Resource type identifier                                         |
 | Resource ID | [uint32](GFF-File-Format#gff-data-types)   | 18 (0x12) | 4    | Encoded resource location (see [Resource ID Encoding](#resource-id-encoding)) |
 
 **Critical structure Packing Note:**
 
-The KEY entry structure must use **[byte](GFF-File-Format#gff-data-types) or word alignment** (1-[byte](GFF-File-Format#gff-data-types) or 2-[byte](GFF-File-Format#gff-data-types) packing). If the structure is packed with 4-[byte](GFF-File-Format#gff-data-types) or 8-[byte](GFF-File-Format#gff-data-types) alignment, the `uint32` at offset 0x0012 (18) will be incorrectly placed at offset 0x0014 (20), causing incorrect resource ID decoding.
+The KEY entry structure must use **[byte](https://en.wikipedia.org/wiki/Byte) or word alignment** (1-[byte](https://en.wikipedia.org/wiki/Byte) or 2-[byte](https://en.wikipedia.org/wiki/Byte) packing). If the structure is packed with 4-[byte](https://en.wikipedia.org/wiki/Byte) or 8-[byte](https://en.wikipedia.org/wiki/Byte) alignment, the `uint32` at offset 0x0012 (18) will be incorrectly placed at offset 0x0014 (20), causing incorrect resource ID decoding.
 
-On non-Intel platforms, this alignment requirement may cause alignment faults unless the compiler provides an "unaligned" type or special care is taken when accessing the `uint32` field. The structure should be explicitly packed to ensure the `uint32` starts at offset 18 rather than being aligned to a 4-[byte](GFF-File-Format#gff-data-types) boundary.
+On non-Intel platforms, this alignment requirement may cause alignment faults unless the compiler provides an "unaligned" type or special care is taken when accessing the `uint32` field. The structure should be explicitly packed to ensure the `uint32` starts at offset 18 rather than being aligned to a 4-[byte](https://en.wikipedia.org/wiki/Byte) boundary.
 
 **Reference**: [`vendor/reone/src/libs/resource/format/keyreader.cpp:72-100`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/keyreader.cpp#L72-L100)
 

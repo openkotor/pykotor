@@ -1,6 +1,8 @@
 """Built-in theme catalog. From Toolset theme_manager._build_builtin_theme_configs."""
 from __future__ import annotations
+
 from typing import Any
+
 from qtpy.QtGui import QColor
 
 

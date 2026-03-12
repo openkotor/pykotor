@@ -27,11 +27,12 @@ from __future__ import annotations
 
 import logging
 
-from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
     from pykotor.common.misc import Game
 
 log = logging.getLogger(__name__)

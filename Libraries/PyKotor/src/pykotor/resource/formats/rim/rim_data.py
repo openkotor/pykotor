@@ -133,7 +133,9 @@ class RIM(BiowareArchive):
 
     def to_erf(self):
         """Return an ERF archive with the same resource payload."""
-        from pykotor.resource.formats.erf.erf_data import ERF  # Prevent circular imports  # noqa: PLC0415
+        from pykotor.resource.formats.erf.erf_data import (
+            ERF,  # Prevent circular imports  # noqa: PLC0415
+        )
 
         erf = ERF()
         for resource in self._resources:
@@ -158,7 +160,9 @@ class RIM(BiowareArchive):
         raise ValueError(msg)
 
     def __eq__(self, other: object):
-        from pykotor.resource.formats.erf.erf_data import ERF  # Prevent circular imports  # noqa: PLC0415
+        from pykotor.resource.formats.erf.erf_data import (
+            ERF,  # Prevent circular imports  # noqa: PLC0415
+        )
 
         if not isinstance(other, (RIM, ERF)):
             return NotImplemented  # type: ignore[no-any-return]

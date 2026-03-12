@@ -35,7 +35,7 @@ class About(QDialog):
         self.setWindowFlags(
             QtCore.Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | QtCore.Qt.WindowType.WindowCloseButtonHint
-            | QtCore.Qt.WindowType.WindowStaysOnTopHint & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint & ~QtCore.Qt.WindowType.WindowMinMaxButtonsHint
+            | QtCore.Qt.WindowType.WindowStaysOnTopHint & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint & ~QtCore.Qt.WindowType.WindowMinMaxButtonsHint,
         )
 
         from toolset.uic.qtpy.dialogs.about import Ui_Dialog

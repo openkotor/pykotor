@@ -79,7 +79,9 @@ class MediaPlayerWidget(QWidget):
 
         # Only set up if not already configured (allows external setup)
         if self._audio_output is None:
-            from qtpy.QtMultimedia import QAudioOutput  # pyright: ignore[reportAttributeAccessIssue]
+            from qtpy.QtMultimedia import (
+                QAudioOutput,  # pyright: ignore[reportAttributeAccessIssue]
+            )
 
             self._audio_output = QAudioOutput(self)  # type: ignore[call-overload]
             self._audio_output.setVolume(self._previous_volume)
@@ -383,14 +385,13 @@ class MediaPlayerWidget(QWidget):
         """Get current volume (0.0-1.0)."""
         if qtpy.QT5:
             return self.player.volume() / 100.0  # type: ignore[attr-defined]
-        else:
-            # Get audio output from player (may have been set externally)
-            audio_output = self.player.audioOutput()  # type: ignore[attr-defined]
-            if audio_output is None:
-                return self._previous_volume
-            current_vol = audio_output.volume()  # type: ignore[attr-defined]
-            self._previous_volume = current_vol
-            return current_vol
+        # Get audio output from player (may have been set externally)
+        audio_output = self.player.audioOutput()  # type: ignore[attr-defined]
+        if audio_output is None:
+            return self._previous_volume
+        current_vol = audio_output.volume()  # type: ignore[attr-defined]
+        self._previous_volume = current_vol
+        return current_vol
 
     def set_volume(self, volume: float) -> None:
         """Set volume (0.0-1.0)."""
@@ -506,7 +507,7 @@ class MediaPlayerWidget(QWidget):
 
     def _on_duration_changed(self, duration: int) -> None:
         """Handle duration updates."""
-        self.time_slider.setRange(0, duration if duration > 0 else 0)
+        self.time_slider.setRange(0, max(0, duration))
         total_time = self.format_time(duration)
         current_time = self.format_time(self.time_slider.value())
         self.time_label.setText(f"{current_time} / {total_time}")
@@ -526,8 +527,7 @@ class MediaPlayerWidget(QWidget):
 
     def format_time(self, msecs: int) -> str:
         """Format milliseconds as MM:SS or HH:MM:SS."""
-        if msecs < 0:
-            msecs = 0
+        msecs = max(msecs, 0)
         total_seconds = msecs // 1000
         hours = total_seconds // 3600
         minutes = (total_seconds % 3600) // 60

@@ -18,9 +18,7 @@ if TYPE_CHECKING:
     from qtpy.QtGui import QKeyEvent
     from qtpy.QtWidgets import QCheckBox, QLineEdit, QPushButton
 
-if qtpy.QT5:
-    pass  # pyright: ignore[reportAttributeAccessIssue]
-elif qtpy.QT6:
+if qtpy.QT5 or qtpy.QT6:
     pass  # pyright: ignore[reportAttributeAccessIssue]
 
 

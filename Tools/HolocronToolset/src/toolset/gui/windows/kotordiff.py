@@ -202,7 +202,7 @@ class KotorDiffWindow(QMainWindow):
         text = edit.text().strip()
         return text if text else None
 
-    def _browse_path(self, line_edit: "QLineEdit"):
+    def _browse_path(self, line_edit: QLineEdit):
         """Browse for a file or directory."""
         path = QFileDialog.getExistingDirectory(self, "Select Directory")
         if not path:
@@ -210,7 +210,7 @@ class KotorDiffWindow(QMainWindow):
         if path:
             line_edit.setText(path)
 
-    def _browse_directory(self, line_edit: "QLineEdit | None" = None):
+    def _browse_directory(self, line_edit: QLineEdit | None = None):
         """Browse for a directory."""
         if line_edit is None:
             line_edit = self.ui.tslpatchdataEdit

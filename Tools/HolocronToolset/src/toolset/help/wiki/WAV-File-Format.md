@@ -1,6 +1,6 @@
 # KotOR WAV file format Documentation
 
-KotOR stores both standard WAV voice-over lines and Bioware-obfuscated sound-effect files. Voice-over assets are regular RIFF containers with PCM headers, while SFX assets prepend a 470-[byte](GFF-File-Format#gff-data-types) custom block before the RIFF data. PyKotor handles both variants transparently.
+KotOR stores both standard WAV voice-over lines and Bioware-obfuscated sound-effect files. Voice-over assets are regular RIFF containers with PCM headers, while SFX assets prepend a 470-[byte](https://en.wikipedia.org/wiki/Byte) custom block before the RIFF data. PyKotor handles both variants transparently.
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ KotOR stores both standard WAV voice-over lines and Bioware-obfuscated sound-eff
 | type | Usage | Description |
 | ---- | ----- | ----------- |
 | **VO (Voice-over)** | Dialogue lines (`*.wav` referenced by [TLK](TLK-File-Format) [StrRefs](TLK-File-Format#string-references-strref)). | Plain RIFF/WAVE PCM files readable by any media player. |
-| **SFX (Sound effects)** | Combat, UI, ambience, `.wav` files under `StreamSounds`/`SFX`. | Contains a Bioware 470-[byte](GFF-File-Format#gff-data-types) obfuscation header followed by the same RIFF data. |
+| **SFX (Sound effects)** | Combat, UI, ambience, `.wav` files under `StreamSounds`/`SFX`. | Contains a Bioware 470-[byte](https://en.wikipedia.org/wiki/Byte) obfuscation header followed by the same RIFF data. |
 
 PyKotor exposes these via the `WAVType` enum (`VO` vs. `SFX`) so tools know whether to insert/remove the proprietary header (`io_wav.py:52-121`).
 

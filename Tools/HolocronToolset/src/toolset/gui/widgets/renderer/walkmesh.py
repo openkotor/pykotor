@@ -18,7 +18,17 @@ from qtpy.QtCore import (
     Qt,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
-from qtpy.QtGui import QColor, QCursor, QImage, QPainter, QPainterPath, QPalette, QPen, QPixmap, QTransform
+from qtpy.QtGui import (
+    QColor,
+    QCursor,
+    QImage,
+    QPainter,
+    QPainterPath,
+    QPalette,
+    QPen,
+    QPixmap,
+    QTransform,
+)
 from qtpy.QtWidgets import QApplication, QWidget
 
 from pykotor.resource.formats.bwm import BWM
@@ -150,7 +160,7 @@ class WalkmeshRenderer(QWidget):
     sig_mouse_scrolled: ClassVar[Signal] = Signal(object, object, object)  # screen delta, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when mouse is scrolled over the widget."""
 
-    sig_mouse_released: ClassVar[Signal] = Signal(object, object, object)  # screen coords, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
+    sig_mouse_released: ClassVar[Signal] = Signal(object, object, object, object)  # screen coords, mouse, keys, released_button  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when a mouse button is released after being pressed on the widget."""
 
     sig_mouse_pressed: ClassVar[Signal] = Signal(object, object, object)  # screen coords, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
@@ -1410,7 +1420,7 @@ class WalkmeshRenderer(QWidget):
         if self._marquee_active and button == Qt.MouseButton.LeftButton:
             additive = Qt.Key.Key_Shift in self._keys_down
             self._end_marquee_and_emit(additive=additive)
-        self.sig_mouse_released.emit(coords, self._mouse_down, self._keys_down)
+        self.sig_mouse_released.emit(coords, self._mouse_down, self._keys_down, button)
 
     def keyPressEvent(self, e: QKeyEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
         super().keyPressEvent(e)

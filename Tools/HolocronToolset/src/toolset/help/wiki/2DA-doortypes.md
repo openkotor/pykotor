@@ -12,12 +12,12 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 |------------|------|-------------|
 | `label` | string | Door type label |
 | `stringrefgame` | [StrRef](TLK-File-Format#string-references-strref) | string reference for door type name |
-| `model` | [ResRef](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) for the door type |
+| `model` | *ResRef* | [model](MDL-MDX-File-Format) *ResRef* for the door type |
 | Additional columns | Various | Door type properties |
 
 **References**:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](TLK-File-Format#string-references-strref) column definition for doortypes.2da
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for doortypes.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for doortypes.2da
 
 ---

@@ -349,7 +349,7 @@ class LYTRenderer(QWidget):
 
         # Draw as circle
         painter.drawEllipse(
-            int(doorhook.position.x - self.DOORHOOK_SIZE / 2), int(doorhook.position.y - self.DOORHOOK_SIZE / 2), int(self.DOORHOOK_SIZE), int(self.DOORHOOK_SIZE)
+            int(doorhook.position.x - self.DOORHOOK_SIZE / 2), int(doorhook.position.y - self.DOORHOOK_SIZE / 2), int(self.DOORHOOK_SIZE), int(self.DOORHOOK_SIZE),
         )
 
         # Draw orientation indicator

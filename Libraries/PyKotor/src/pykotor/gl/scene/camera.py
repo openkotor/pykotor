@@ -6,7 +6,16 @@ import math
 
 from typing import TYPE_CHECKING, Literal, Union
 
-from pykotor.gl.glm_compat import cross, inverse, mat4, normalize, perspective, rotate, translate, vec3
+from pykotor.gl.glm_compat import (
+    cross,
+    inverse,
+    mat4,
+    normalize,
+    perspective,
+    rotate,
+    translate,
+    vec3,
+)
 
 if TYPE_CHECKING:
     from utility.common.geometry import Vector3

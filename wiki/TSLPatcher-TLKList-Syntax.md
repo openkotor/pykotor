@@ -413,7 +413,7 @@ TSLPatcher Execution Order (v1.2.8+):
 6. [SSFList]         - Modify soundset files
 ```
 
-**Note**: In TSLPatcher v1.2.8b0 (2006-08-06), the processing order was changed so that [TLK](TLK-File-Format) Appending happens before Install List. According to the official change log, this allows [ERF](ERF-File-Format)/MOD/RIM files to be placed in their proper locations before [GFF](GFF-File-Format) and script compilation sections run, so modified files can be saved into those archive files.
+**Note**: In TSLPatcher v1.2.8b0 (2006-08-06), the processing order was changed so that [TLK](TLK-File-Format) Appending happens before Install List. According to the official change log, this allows [ERF](ERF-File-Format)/MOD/RIM files to be placed in their proper locations before [GFF](GFF-File-Format) and script compilation sections run, so modified files can be saved into those container files.
 
 **Older TSLPatcher versions** (before 1.2.8) processed InstallList before TLKList.
 
@@ -944,10 +944,10 @@ StrRef2=2
 
 ## Related Documentation
 
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme.md) - General TSLPatcher information and ChangeEdit usage
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax.md) - How to modify [2DA](2DA-File-Format) files (can use [StrRef](TLK-File-Format#string-references-strref) tokens)
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax.md) - How to modify [GFF](GFF-File-Format) files (can use [StrRef](TLK-File-Format#string-references-strref) tokens)
-- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax.md) - How to modify soundset files (can use [StrRef](TLK-File-Format#string-references-strref) tokens)
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) - General TSLPatcher information and ChangeEdit usage
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) - How to modify [2DA](2DA-File-Format) files (can use [StrRef](TLK-File-Format#string-references-strref) tokens)
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - How to modify [GFF](GFF-File-Format) files (can use [StrRef](TLK-File-Format#string-references-strref) tokens)
+- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) - How to modify soundset files (can use [StrRef](TLK-File-Format#string-references-strref) tokens)
 - [TSLPatcher InstallList Syntax](TSLPatcher-InstallList-Syntax) - How to install files (includes script compilation)
-- [Mod Creation Best Practices](Mod-Creation-Best-Practices.md) - Best practices for modding
+- [Mod Creation Best Practices](Mod-Creation-Best-Practices) - Best practices for modding
 - [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.) - PyKotor implementation details

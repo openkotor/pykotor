@@ -20,7 +20,19 @@ from toolset.gui.windows.main import ToolWindow
 from .container import HolocronToolsetContainer
 
 if TYPE_CHECKING:
-    from qtpy.QtWidgets import QCheckBox, QFrame, QGroupBox, QHBoxLayout, QMenu, QMenuBar, QPushButton, QSplitter, QStatusBar, QTabWidget, QWidget
+    from qtpy.QtWidgets import (
+        QCheckBox,
+        QFrame,
+        QGroupBox,
+        QHBoxLayout,
+        QMenu,
+        QMenuBar,
+        QPushButton,
+        QSplitter,
+        QStatusBar,
+        QTabWidget,
+        QWidget,
+    )
     from typing_extensions import Self
 
     from toolset.gui.widgets.main_widgets import ResourceList, TextureList
@@ -390,7 +402,7 @@ class HolocronToolset(SpyderPluginV2):
     def save_installations(self):
         conf_file = get_conf_path(self.CONF_FILE)
         data: dict[str, list[dict[str, Any]]] = {
-            "installations": [{"name": name, "path": inst.path(), "tsl": inst.tsl} for name, inst in self.tool_window.installations.items()]
+            "installations": [{"name": name, "path": inst.path(), "tsl": inst.tsl} for name, inst in self.tool_window.installations.items()],
         }
         with open(conf_file, "w") as f:
             json.dump(data, f)

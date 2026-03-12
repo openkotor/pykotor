@@ -117,7 +117,7 @@ class EditorHelpDialog(QDialog):
             error_body = f"""
             <h1>Error Loading Help File</h1>
             <p>Could not load help file: <code>{wiki_filename}</code></p>
-            <p>Error: {e.__class__.__name__}: {str(e)}</p>
+            <p>Error: {e.__class__.__name__}: {e!s}</p>
             """
             error_html = wrap_html_with_palette_styles(error_body, self)
             self.ui.textBrowser.setHtml(error_html)

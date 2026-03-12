@@ -15,7 +15,10 @@ from utility.system.app_process.scheduler import PrioritizedTask, TaskPriority, 
 from utility.system.app_process.task_consumer import P, R, TaskConsumer
 
 if TYPE_CHECKING:
-    from multiprocessing.synchronize import Event as multiprocessing_Event, Lock as multiprocessing_Lock
+    from multiprocessing.synchronize import (
+        Event as multiprocessing_Event,
+        Lock as multiprocessing_Lock,
+    )
 
 
 T = TypeVar("T")

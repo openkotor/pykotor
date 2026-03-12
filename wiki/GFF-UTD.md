@@ -6,13 +6,29 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Door/Placeable format specification, see [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-DoorPlaceableGFF).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/utd.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py)
+**For mod developers:** To modify door templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** UTD references [genericdoors.2da](2DA-File-Format), [traps.2da](2DA-traps), [GFF-UTP](GFF-UTP), [KEY](KEY-File-Format), [NCS](NCS-File-Format), [DLG](GFF-DLG), and [MDL](MDL-MDX-File-Format).
+
+## References
+
+**PyKotor:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utd.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py) - UTD [GFF](GFF-File-Format) parsing and field definitions
+
+**HolocronToolset:**
+
+- Door editor (instance placement and UTD editing in module)
+
+**Vendor Implementations:**
+
+- reone/xoreos GFF parsers (door/placeable shared struct)
 
 ## Core Identity fields
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | Template identifier for this door |
+| `TemplateResRef` | *ResRef* | Template identifier for this door |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
 | `LocName` | [CExoLocString](GFF-File-Format#gff-data-types) | Door name (localized) |
 | `Description` | [CExoLocString](GFF-File-Format#gff-data-types) | Door description |
@@ -22,9 +38,9 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Appearance` | DWord | index into `genericdoors.2da` |
-| `GenericType` | DWord | Generic door type category |
-| `AnimationState` | Byte | Current [animation](MDL-MDX-File-Format#animation-header) state (always 0 in templates) |
+| `Appearance` | [uint32](GFF-File-Format#gff-data-types) | Index into `genericdoors.2da` |
+| `GenericType` | [uint32](GFF-File-Format#gff-data-types) | Generic door type category |
+| `AnimationState` | [byte](GFF-File-Format#gff-data-types) | Current [animation](MDL-MDX-File-Format#animation-header) state (always 0 in templates) |
 
 **Appearance System:**
 
@@ -36,12 +52,12 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Locked` | Byte | Door is currently locked |
-| `Lockable` | Byte | Door can be locked/unlocked |
-| `KeyRequired` | Byte | Requires specific [KEY](KEY-File-Format) item |
+| `Locked` | [byte](GFF-File-Format#gff-data-types) | Door is currently locked |
+| `Lockable` | [byte](GFF-File-Format#gff-data-types) | Door can be locked/unlocked |
+| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Requires specific [KEY](KEY-File-Format) item |
 | `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](KEY-File-Format) item |
-| `AutoRemoveKey` | Byte | [KEY](KEY-File-Format) consumed on use |
-| `OpenLockDC` | Byte | Security skill DC to pick lock |
+| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | [KEY](KEY-File-Format) consumed on use |
+| `OpenLockDC` | [byte](GFF-File-Format#gff-data-types) | Security skill DC to pick lock |
 | `CloseLockDC` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Security skill DC to lock door |
 
 **Lock Mechanics:**
@@ -55,13 +71,13 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `HP` | Short | Maximum hit points |
-| `CurrentHP` | Short | Current hit points |
-| `Hardness` | Byte | Damage reduction |
+| `HP` | [int16](GFF-File-Format#gff-data-types) | Maximum hit points |
+| `CurrentHP` | [int16](GFF-File-Format#gff-data-types) | Current hit points |
+| `Hardness` | [byte](GFF-File-Format#gff-data-types) | Damage reduction |
 | `Min1HP` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Cannot drop below 1 HP |
-| `Fort` | Byte | Fortitude save (always 0) |
-| `Ref` | Byte | Reflex save (always 0) |
-| `Will` | Byte | Will save (always 0) |
+| `Fort` | [byte](GFF-File-Format#gff-data-types) | Fortitude save (always 0) |
+| `Ref` | [byte](GFF-File-Format#gff-data-types) | Reflex save (always 0) |
+| `Will` | [byte](GFF-File-Format#gff-data-types) | Will save (always 0) |
 
 **Destructible Doors:**
 
@@ -74,12 +90,12 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Plot` | Byte | Plot-critical (cannot be destroyed) |
-| `Static` | Byte | Door is static geometry (no interaction) |
-| `Interruptable` | Byte | Opening can be interrupted |
-| `Conversation` | [ResRef](GFF-File-Format#gff-data-types) | Dialog file when used |
-| `Faction` | Word | Faction identifier |
-| `AnimationState` | Byte | Starting animation (0=closed, other values unused) |
+| `Plot` | [byte](GFF-File-Format#gff-data-types) | Plot-critical (cannot be destroyed) |
+| `Static` | [byte](GFF-File-Format#gff-data-types) | Door is static geometry (no interaction) |
+| `Interruptable` | [byte](GFF-File-Format#gff-data-types) | Opening can be interrupted |
+| `Conversation` | *ResRef* | Dialog file when used |
+| `Faction` | [word](GFF-File-Format#gff-data-types) | Faction identifier |
+| `AnimationState` | [byte](GFF-File-Format#gff-data-types) | Starting animation (0=closed, other values unused) |
 
 **Conversation Doors:**
 
@@ -91,32 +107,32 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `OnOpen` | [ResRef](GFF-File-Format#gff-data-types) | Fires when door opens |
-| `OnClose` | [ResRef](GFF-File-Format#gff-data-types) | Fires when door closes |
-| `OnClosed` | [ResRef](GFF-File-Format#gff-data-types) | Fires after door finishes closing |
-| `OnDamaged` | [ResRef](GFF-File-Format#gff-data-types) | Fires when door takes damage |
-| `OnDeath` | [ResRef](GFF-File-Format#gff-data-types) | Fires when door is destroyed |
-| `OnDisarm` | [ResRef](GFF-File-Format#gff-data-types) | Fires when trap is disarmed |
-| `OnHeartbeat` | [ResRef](GFF-File-Format#gff-data-types) | Fires periodically |
-| `OnLock` | [ResRef](GFF-File-Format#gff-data-types) | Fires when door is locked |
-| `OnMeleeAttacked` | [ResRef](GFF-File-Format#gff-data-types) | Fires when attacked in melee |
-| `OnSpellCastAt` | [ResRef](GFF-File-Format#gff-data-types) | Fires when spell cast at door |
-| `OnUnlock` | [ResRef](GFF-File-Format#gff-data-types) | Fires when door is unlocked |
-| `OnUserDefined` | [ResRef](GFF-File-Format#gff-data-types) | Fires on user-defined events |
-| `OnClick` | [ResRef](GFF-File-Format#gff-data-types) | Fires when clicked |
-| `OnFailToOpen` (KotOR2) | [ResRef](GFF-File-Format#gff-data-types) | Fires when opening fails |
+| `OnOpen` | *ResRef* | Fires when door opens |
+| `OnClose` | *ResRef* | Fires when door closes |
+| `OnClosed` | *ResRef* | Fires after door finishes closing |
+| `OnDamaged` | *ResRef* | Fires when door takes damage |
+| `OnDeath` | *ResRef* | Fires when door is destroyed |
+| `OnDisarm` | *ResRef* | Fires when trap is disarmed |
+| `OnHeartbeat` | *ResRef* | Fires periodically |
+| `OnLock` | *ResRef* | Fires when door is locked |
+| `OnMeleeAttacked` | *ResRef* | Fires when attacked in melee |
+| `OnSpellCastAt` | *ResRef* | Fires when spell cast at door |
+| `OnUnlock` | *ResRef* | Fires when door is unlocked |
+| `OnUserDefined` | *ResRef* | Fires on user-defined events |
+| `OnClick` | *ResRef* | Fires when clicked |
+| `OnFailToOpen` (KotOR2) | *ResRef* | Fires when opening fails |
 
 ## Trap System
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TrapDetectable` | Byte | Trap can be detected |
-| `TrapDetectDC` | Byte | Awareness DC to detect trap |
-| `TrapDisarmable` | Byte | Trap can be disarmed |
-| `DisarmDC` | Byte | Security DC to disarm trap |
-| `TrapFlag` | Byte | Trap is active |
-| `TrapOneShot` | Byte | Trap triggers only once |
-| `TrapType` | Byte | index into `traps.2da` |
+| `TrapDetectable` | [byte](GFF-File-Format#gff-data-types) | Trap can be detected |
+| `TrapDetectDC` | [byte](GFF-File-Format#gff-data-types) | Awareness DC to detect trap |
+| `TrapDisarmable` | [byte](GFF-File-Format#gff-data-types) | Trap can be disarmed |
+| `DisarmDC` | [byte](GFF-File-Format#gff-data-types) | Security DC to disarm trap |
+| `TrapFlag` | [byte](GFF-File-Format#gff-data-types) | Trap is active |
+| `TrapOneShot` | [byte](GFF-File-Format#gff-data-types) | Trap triggers only once |
+| `TrapType` | [byte](GFF-File-Format#gff-data-types) | Index into `traps.2da` |
 
 **Trap Mechanics:**
 
@@ -131,8 +147,8 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 | ----- | ---- | ----------- |
 | `LoadScreenID` (KotOR2) | Word | Loading screen to show |
 | `LinkedTo` (KotOR2) | [CExoString](GFF-File-Format#gff-data-types) | Destination module tag |
-| `LinkedToFlags` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Transition behavior flags |
-| `LinkedToModule` (KotOR2) | [ResRef](GFF-File-Format#gff-data-types) | Destination module [ResRef](GFF-File-Format#gff-data-types) |
+| `LinkedToFlags` (KotOR2) | [byte](https://en.wikipedia.org/wiki/Byte) | Transition behavior flags |
+| `LinkedToModule` (KotOR2) | *ResRef* | Destination module *ResRef* |
 | `TransitionDestin` (KotOR2) | [CExoLocString](GFF-File-Format#gff-data-types) | Destination label |
 
 **Transition System:**
@@ -145,8 +161,8 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `PortraitId` | Word | Portrait icon identifier |
-| `PaletteID` | Byte | Toolset palette category |
+| `PortraitId` | [word](GFF-File-Format#gff-data-types) | Portrait icon identifier |
+| `PaletteID` | [byte](GFF-File-Format#gff-data-types) | Toolset palette category |
 
 **Visual Representation:**
 
@@ -221,3 +237,10 @@ Doors maintain runtime state:
 - Trigger dialog on click
 - May open after conversation
 - Used for password entry, riddles
+
+## See also
+
+- [GFF File Format](GFF-File-Format) - Generic format underlying UTD
+- [GFF-UTP (Placeable)](GFF-UTP) - Placeable templates (shared lock/trap behavior)
+- [2DA traps](2DA-traps) - Trap definitions; genericdoors.2da for door appearance
+- [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-DoorPlaceableGFF) - Official specification

@@ -11,7 +11,13 @@ from pathlib import Path
 from typing import IO, Any
 
 from pykotor.common.language import LocalizedString
-from utility.common.stream import ArrayHead as _ArrayHead, RawBinaryReader, RawBinaryWriter, RawBinaryWriterBytearray, RawBinaryWriterFile
+from utility.common.stream import (
+    ArrayHead as _ArrayHead,
+    RawBinaryReader,
+    RawBinaryWriter,
+    RawBinaryWriterBytearray,
+    RawBinaryWriterFile,
+)
 
 ArrayHead = _ArrayHead  # backwards compatibility
 

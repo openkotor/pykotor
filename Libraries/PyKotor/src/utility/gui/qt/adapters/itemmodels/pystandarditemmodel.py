@@ -4,9 +4,29 @@ import sys
 
 from typing import TYPE_CHECKING, Any, Dict, Iterable, cast, overload
 
-from qtpy.QtCore import QAbstractItemModel, QByteArray, QDataStream, QIODevice, QMimeData, QModelIndex, QVariant, Qt
+from qtpy.QtCore import (
+    QAbstractItemModel,
+    QByteArray,
+    QDataStream,
+    QIODevice,
+    QMimeData,
+    QModelIndex,
+    QVariant,
+    Qt,
+)
 from qtpy.QtGui import QIcon
-from qtpy.QtWidgets import QAction, QApplication, QHBoxLayout, QInputDialog, QMainWindow, QMenu, QPushButton, QTreeView, QVBoxLayout, QWidget
+from qtpy.QtWidgets import (
+    QAction,
+    QApplication,
+    QHBoxLayout,
+    QInputDialog,
+    QMainWindow,
+    QMenu,
+    QPushButton,
+    QTreeView,
+    QVBoxLayout,
+    QWidget,
+)
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QObject, QSize

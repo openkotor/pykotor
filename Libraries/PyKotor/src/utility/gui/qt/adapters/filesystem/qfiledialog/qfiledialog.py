@@ -39,8 +39,15 @@ from qtpy.QtWidgets import (
 )
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
-from utility.gui.qt.adapters.filesystem.qfiledialog.private.qfiledialog_p import HistoryItem, QFileDialogOptionsPrivate, QFileDialogPrivate, qt_make_filter_list
-from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper import QPlatformFileDialogHelper
+from utility.gui.qt.adapters.filesystem.qfiledialog.private.qfiledialog_p import (
+    HistoryItem,
+    QFileDialogOptionsPrivate,
+    QFileDialogPrivate,
+    qt_make_filter_list,
+)
+from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper import (
+    QPlatformFileDialogHelper,
+)
 from utility.gui.qt.common.qt_event_utils import process_events_if_safe
 from utility.gui.qt.tools.unifiers import sip_enum_to_int
 
@@ -1889,7 +1896,9 @@ class QFileDialog(RealQFileDialog if TYPE_CHECKING else QDialog):  # pyright: ig
         if sys.platform == "emscripten":
             # WebAssembly implementation
             from qtpy.QtCore import QObject  # pyright: ignore[reportAttributeAccessIssue]
-            from qtpy.QtWebEngine import QWebEngineView  # pyright: ignore[reportAttributeAccessIssue]
+            from qtpy.QtWebEngine import (
+                QWebEngineView,  # pyright: ignore[reportAttributeAccessIssue]
+            )
 
             class FileOpener(QObject):
                 fileSelected = Signal(str, bytes)
@@ -1985,7 +1994,9 @@ class QFileDialog(RealQFileDialog if TYPE_CHECKING else QDialog):  # pyright: ig
 
                 if find_spec("qtpy.QtWebEngineWidgets") is None:
                     raise ImportError("qtpy.QtWebEngineWidgets is required for WebAssembly support.")  # noqa: TRY301
-                from qtpy.QtWebEngineWidgets import QWebEngineView  # pyright: ignore[reportAttributeAccessIssue]
+                from qtpy.QtWebEngineWidgets import (
+                    QWebEngineView,  # pyright: ignore[reportAttributeAccessIssue]
+                )
             except ImportError as e:
                 raise ImportError("qtpy.QtWebEngineWidgets is required for WebAssembly support.") from e
 

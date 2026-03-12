@@ -285,7 +285,7 @@ class BetterMessageBox(QtWidgets.QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint,
         )
         self.detailed_text: str | None = None
         self.icon_type: QtWidgets.QStyle.StandardPixmap = ICON_MAP.get(icon, icon)
@@ -501,7 +501,7 @@ if __name__ == "__main__":
     some_window = QtWidgets.QMainWindow()
     comm = QtUserCommunication(some_window)
     comm.print(
-        "This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. "
+        "This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. ",
     )
     bmb = BetterMessageBox(
         "Test input dialog",

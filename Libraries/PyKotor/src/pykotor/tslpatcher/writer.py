@@ -33,7 +33,15 @@ from pykotor.common.misc import ResRef
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import FileResource
 from pykotor.extract.installation import Installation
-from pykotor.resource.formats.gff import GFFContent, GFFFieldType, GFFList, GFFStruct, detect_gff, read_gff, write_gff
+from pykotor.resource.formats.gff import (
+    GFFContent,
+    GFFFieldType,
+    GFFList,
+    GFFStruct,
+    detect_gff,
+    read_gff,
+    write_gff,
+)
 from pykotor.resource.formats.lip import read_lip, write_lip
 from pykotor.resource.formats.ssf import SSFSound, read_ssf, write_ssf
 from pykotor.resource.formats.tlk import (
@@ -57,7 +65,9 @@ from pykotor.tslpatcher.mods.gff import (  # noqa: PLC0415
     ModificationsGFF,
     ModifyFieldGFF,
 )
-from pykotor.tslpatcher.mods.ncs import ModificationsNCS  # ModifyNCS, NCSTokenType temporarily unused - NCS disabled  # noqa: PLC0415
+from pykotor.tslpatcher.mods.ncs import (
+    ModificationsNCS,  # ModifyNCS, NCSTokenType temporarily unused - NCS disabled  # noqa: PLC0415
+)
 from pykotor.tslpatcher.mods.ssf import ModificationsSSF, ModifySSF
 from pykotor.tslpatcher.mods.tlk import ModificationsTLK  # noqa: PLC0415
 from pykotor.tslpatcher.mods.twoda import (  # noqa: PLC0415
@@ -78,12 +88,20 @@ from pykotor.tslpatcher.mods.twoda import (  # noqa: PLC0415
 )
 from utility.common.geometry import Vector3, Vector4
 from utility.common.more_collections import CaseInsensitiveDict
-from utility.misc import ensure_directory_exists, format_exception_message, is_installation_path
-from utility.misc import get_normalized_extension
+from utility.misc import (
+    ensure_directory_exists,
+    format_exception_message,
+    get_normalized_extension,
+    is_installation_path,
+)
 
 if TYPE_CHECKING:
     from pykotor.extract.file import FileResource
-    from pykotor.tools.reference_cache import StrRefReferenceCache, StrRefSearchResult, TwoDAMemoryReferenceCache
+    from pykotor.tools.reference_cache import (
+        StrRefReferenceCache,
+        StrRefSearchResult,
+        TwoDAMemoryReferenceCache,
+    )
     from pykotor.tslpatcher.memory import TokenUsage
     from pykotor.tslpatcher.mods.install import InstallFile
     from pykotor.tslpatcher.mods.nss import ModificationsNSS
@@ -1699,7 +1717,12 @@ class IncrementalTSLPatchDataWriter:
         Returns:
             (change_row_targets, add_row_targets) - Two lists of link targets for different caches
         """
-        from pykotor.tslpatcher.mods.twoda import AddRow2DA, ChangeRow2DA, RowValueRowIndex, TargetType
+        from pykotor.tslpatcher.mods.twoda import (
+            AddRow2DA,
+            ChangeRow2DA,
+            RowValueRowIndex,
+            TargetType,
+        )
 
         change_row_targets: list[TwoDALinkTarget] = []
         add_row_targets: list[TwoDALinkTarget] = []
@@ -1797,7 +1820,11 @@ class IncrementalTSLPatchDataWriter:
             AddColumn: I1=42, 2DAMEMORY0=I1 (store_2da[0] = "I1")
             GFF:       CustomStat=2DAMEMORY0 (FieldValue2DAMemory(0))
         """
-        from pykotor.tslpatcher.mods.gff import FieldValue2DAMemory, FieldValueConstant, ModifyFieldGFF
+        from pykotor.tslpatcher.mods.gff import (
+            FieldValue2DAMemory,
+            FieldValueConstant,
+            ModifyFieldGFF,
+        )
         from pykotor.tslpatcher.mods.twoda import AddColumn2DA, RowValueConstant
 
         # Build a map of cell values -> list of (AddColumn, row_index) that have that value
@@ -3712,7 +3739,12 @@ class IncrementalTSLPatchDataWriter:
             field_path: The GFF field path (e.g., "FirstName", "ItemList[0].LocalizedName")
             modification: Optional modification object to add to (if provided, use this instead of searching)
         """
-        from pykotor.tslpatcher.mods.gff import FieldValueTLKMemory, LocalizedStringDelta, ModificationsGFF, ModifyFieldGFF
+        from pykotor.tslpatcher.mods.gff import (
+            FieldValueTLKMemory,
+            LocalizedStringDelta,
+            ModificationsGFF,
+            ModifyFieldGFF,
+        )
 
         # Use the provided modification if it matches, otherwise find or create one
         if modification is not None and isinstance(modification, ModificationsGFF) and modification.sourcefile.lower() == filename.lower():

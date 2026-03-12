@@ -81,17 +81,17 @@ The `ExecuteCode` function is a massive switch statement with the following inst
 - `CResHelper<T>`: Template for type-specific resource handlers
 
 **CExoResMan (Resource Manager) Architecture:**
-The engine uses `CExoResMan` as the central resource management system supporting multiple archive types:
+The engine uses `CExoResMan` as the central resource management system supporting multiple container types:
 
 - `FIXED` (0x00000000): KEY/BIF files (chitin.key + data/*.bif)
 - `DIRECTORY` (0x80000000): Loose files in directories
-- `ERF` (0x40000000): ERF/RIM archives (modules/*.rim, modules/*.erf)
-- `RIM` (0x20000000): RIM archives (specifically for texture packs)
+- `ERF` (0x40000000): ERF/RIM containers (modules/*.rim, modules/*.erf)
+- `RIM` (0x20000000): RIM containers (specifically for texture packs)
 
 **Key Functions:**
 
-- `CExoResMan::AddKeyTable()`: Loads archive tables with type flags
-- `CExoResMan::ReadResource()`: Loads resources from archives
+- `CExoResMan::AddKeyTable()`: Loads container tables with type flags
+- `CExoResMan::ReadResource()`: Loads resources from containers
 - `AddResourceImageFile()` calls `AddKeyTable(..., RIM, 0)` for texture packs
 
 **GFF Structure (from CResGFF analysis):**
@@ -206,7 +206,7 @@ void SetupOpenGL() {
 
 **Resource System Documentation:**
 
-- Documented CExoResMan archive type system (FIXED, DIRECTORY, ERF, RIM)
+- Documented CExoResMan container type system (FIXED, DIRECTORY, ERF, RIM)
 - Added reverse engineering notes to Chitin class about resource loading architecture
 - Confirmed KEY/BIF loading mechanism matches PyKotor implementation
 

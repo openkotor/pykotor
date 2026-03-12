@@ -303,7 +303,7 @@ class WalkmeshEditor(QWidget):
                     Vector3(*vertices[i]),
                     Vector3(*vertices[j]),
                     Vector3(*center),
-                ]
+                ],
             )
 
     def update_zoom(

@@ -11,7 +11,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | String (optional) | Placeable type label |
-| `modelname` | ResRef (optional) | 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `modelname` | ResRef (optional) | 3D [model](MDL-MDX-File-Format) *ResRef* |
 | `strref` | Integer | string reference for placeable name |
 | `bodybag` | Boolean | Whether placeable can contain bodies |
 | `canseeheight` | Float | Can-see height for line of sight |
@@ -22,7 +22,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `lightoffsetx` | String (optional) | Light X offset |
 | `lightoffsety` | String (optional) | Light Y offset |
 | `lightoffsetz` | String (optional) | Light Z offset |
-| `lowgore` | String (optional) | Low gore [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `lowgore` | String (optional) | Low gore [model](MDL-MDX-File-Format) *ResRef* |
 | `noncull` | Boolean | Whether to disable culling |
 | `preciseuse` | Boolean | Whether precise use is enabled |
 | `shadowsize` | Boolean | Whether shadow size is enabled |
@@ -34,7 +34,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 The complete column structure is defined in reone's placeables parser:
 
 - `label`: Optional label string
-- `modelname`: 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
+- `modelname`: 3D [model](MDL-MDX-File-Format) *ResRef*
 - `strref`: string reference for placeable name
 - `bodybag`: Boolean - whether placeable can contain bodies
 - `canseeheight`: Float - can-see height for line of sight
@@ -45,7 +45,7 @@ The complete column structure is defined in reone's placeables parser:
 - `lightoffsetx`: Optional string - light X offset
 - `lightoffsety`: Optional string - light Y offset
 - `lightoffsetz`: Optional string - light Z offset
-- `lowgore`: Optional string - low gore [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
+- `lowgore`: Optional string - low gore [model](MDL-MDX-File-Format) *ResRef*
 - `noncull`: Boolean - whether to disable culling
 - `preciseuse`: Boolean - whether precise use is enabled
 - `shadowsize`: Boolean - whether shadow size is enabled
@@ -57,9 +57,9 @@ The complete column structure is defined in reone's placeables parser:
 **PyKotor:**
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:141`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L141) - [StrRef](TLK-File-Format#string-references-strref) column definition for placeables.2da (K1: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:170`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L170) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for placeables.2da (K1: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:170`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L170) - [model](MDL-MDX-File-Format) *ResRef* column definition for placeables.2da (K1: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:319`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L319) - [StrRef](TLK-File-Format#string-references-strref) column definition for placeables.2da (K2: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:349`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L349) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for placeables.2da (K2: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:349`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L349) - [model](MDL-MDX-File-Format) *ResRef* column definition for placeables.2da (K2: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:467`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L467) - TwoDARegistry.PLACEABLES constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:542`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L542) - [GFF](GFF-File-Format) field mapping: "Appearance" -> placeables.2da
 

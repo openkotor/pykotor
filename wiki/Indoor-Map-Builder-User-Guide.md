@@ -310,6 +310,6 @@ The build process creates:
 
 ## Related Documentation
 
-- [Indoor Map Builder - Implementation Guide](Indoor-Map-Builder-Implementation-Guide.md) - Technical details for developers
-- [LYT File Format](LYT-File-Format.md) - [layout files](LYT-File-Format) structure
-- [BWM File Format](BWM-File-Format.md) - [walkmesh](BWM-File-Format) file structure
+- [Indoor Map Builder - Implementation Guide](Indoor-Map-Builder-Implementation-Guide) - Technical details for developers
+- [LYT File Format](LYT-File-Format) - [layout files](LYT-File-Format) structure
+- [BWM File Format](BWM-File-Format) - [walkmesh](BWM-File-Format) file structure

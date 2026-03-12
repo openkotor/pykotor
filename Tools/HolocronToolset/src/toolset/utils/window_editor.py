@@ -13,7 +13,6 @@ if TYPE_CHECKING:
 
     from pykotor.resource.type import ResourceType
 
-    pass
 
 
 def _iter_editor_windows() -> list[Editor]:

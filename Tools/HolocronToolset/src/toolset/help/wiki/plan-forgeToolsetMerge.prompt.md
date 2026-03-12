@@ -142,11 +142,11 @@ Forge has a 3D model viewer with animation timeline and scene graph. Toolset has
 
 ---
 
-## 8. ERF/RIM Archive Editor
+## 8. ERF/RIM Container Editor
 
 | # | Forge File | What It Does | Toolset File | Merge Opportunity |
 |---|-----------|-------------|-------------|-------------------|
-| 62 | `components/tabs/tab-erf-editor/TabERFEditor.tsx` | ERF/MOD/SAV/RIM archive browser with resource list and context-menu actions | `gui/editors/erf.py` | Port resource list improvements, export actions |
+| 62 | `components/tabs/tab-erf-editor/TabERFEditor.tsx` | ERF/MOD/SAV/RIM container browser with resource list and context-menu actions | `gui/editors/erf.py` | Port resource list improvements, export actions |
 
 ---
 
@@ -217,7 +217,7 @@ Forge has a 3D model viewer with animation timeline and scene graph. Toolset has
 | 81 | `components/tabs/tab-project-explorer/TabProjectExplorer.tsx` | Project file hierarchy tree-view | No direct equivalent | Port project browser concept |
 | 82 | `components/treeview/ForgeTreeView.tsx` | Base tree-view styling component | `gui/widgets/main_widgets.py` | Reference for tree-view styling |
 | 83 | `components/treeview/ResourceListNode.tsx` | Resource list tree node | `gui/widgets/main_widgets.py` | Reference for resource node rendering |
-| 84 | `components/treeview/ERFListNode.tsx` | ERF archive tree node | `gui/widgets/main_widgets.py` | Reference for archive node rendering |
+| 84 | `components/treeview/ERFListNode.tsx` | ERF container tree node | `gui/widgets/main_widgets.py` | Reference for container node rendering |
 | 85 | `components/treeview/ListItemNode.tsx` | Generic list item tree node | `gui/widgets/main_widgets.py` | Reference for node rendering |
 
 ---

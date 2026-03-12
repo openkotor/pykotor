@@ -9,7 +9,11 @@ from loggerplus import RobustLogger
 if TYPE_CHECKING:
     import os
 
-    from tkinter import Misc, StringVar, Tk  # Do not import tkinter-related outside type-checking blocks, in case not installed.
+    from tkinter import (  # Do not import tkinter-related outside type-checking blocks, in case not installed.
+        Misc,
+        StringVar,
+        Tk,
+    )
     from typing import IO, Any, Iterable
 
     from typing_extensions import Literal

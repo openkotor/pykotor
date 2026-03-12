@@ -48,7 +48,14 @@ from qtpy.QtWidgets import (
 
 from loggerplus import RobustLogger
 from toolset.gui.common.localization import translate as tr, trf  # type: ignore[import-not-found]
-from utility.updater.github import CompleteRepoData, TreeInfoData, extract_owner_repo, get_api_url, get_forks_url, get_main_url
+from utility.updater.github import (
+    CompleteRepoData,
+    TreeInfoData,
+    extract_owner_repo,
+    get_api_url,
+    get_forks_url,
+    get_main_url,
+)
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QPoint
@@ -96,7 +103,7 @@ class GitHubFileSelector(QDialog):
         super().__init__(parent)
         self.setWindowFlags(
             QtCore.Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
-            | QtCore.Qt.WindowType.WindowCloseButtonHint & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint & ~QtCore.Qt.WindowType.WindowMinMaxButtonsHint
+            | QtCore.Qt.WindowType.WindowCloseButtonHint & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint & ~QtCore.Qt.WindowType.WindowMinMaxButtonsHint,
         )
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
@@ -618,7 +625,7 @@ class GitHubFileSelector(QDialog):
                     with open(filename, "wb") as file:  # noqa: PTH123
                         file.write(content)
                     QMessageBox.information(
-                        self, tr("Download Successful"), trf("Downloaded {filename} to {path}", filename=filename, path=os.path.join(os.path.curdir, filename))
+                        self, tr("Download Successful"), trf("Downloaded {filename} to {path}", filename=filename, path=os.path.join(os.path.curdir, filename)),
                     )  # noqa: PTH118
                 else:
                     QMessageBox.critical(self, tr("Download Failed"), tr("Failed to download the file content."))

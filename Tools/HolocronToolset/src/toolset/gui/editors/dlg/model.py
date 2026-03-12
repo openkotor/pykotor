@@ -7,7 +7,19 @@ import uuid
 import weakref
 
 from collections import deque
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Generator, Iterable, List, Literal, Mapping, Sequence, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Generator,
+    Iterable,
+    List,
+    Literal,
+    Mapping,
+    Sequence,
+    cast,
+)
 
 from qtpy.QtCore import (
     QByteArray,
@@ -24,9 +36,18 @@ from qtpy.QtCore import (
 from qtpy.QtGui import QBrush, QColor, QPalette, QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import QApplication, QStyle
 
-from loggerplus import RobustLogger  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
-from pykotor.extract.installation import SearchLocation  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
-from pykotor.resource.generics.dlg import DLGEntry, DLGLink, DLGNode, DLGReply  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
+from loggerplus import (
+    RobustLogger,  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
+)
+from pykotor.extract.installation import (
+    SearchLocation,  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
+)
+from pykotor.resource.generics.dlg import (  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
+    DLGEntry,
+    DLGLink,
+    DLGNode,
+    DLGReply,
+)
 from toolset.gui.editors.dlg.constants import (  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
     QT_STANDARD_ITEM_FORMAT,
     _COPY_ROLE,
@@ -35,8 +56,12 @@ from toolset.gui.editors.dlg.constants import (  # type: ignore[import-untyped] 
     _LINK_PARENT_NODE_PATH_ROLE,
     _MODEL_INSTANCE_ID_ROLE,
 )
-from toolset.gui.editors.dlg.list_widget_base import DLGListWidgetItem  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
-from utility.gui.qt.widgets.itemviews.html_delegate import ICONS_DATA_ROLE  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
+from toolset.gui.editors.dlg.list_widget_base import (
+    DLGListWidgetItem,  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
+)
+from utility.gui.qt.widgets.itemviews.html_delegate import (
+    ICONS_DATA_ROLE,  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
+)
 
 if TYPE_CHECKING:
     from typing import Callable, Literal
@@ -47,8 +72,12 @@ if TYPE_CHECKING:
     from typing_extensions import Self  # pyright: ignore[reportMissingModuleSource]
 
     from pykotor.resource.generics.dlg import DLGNode
-    from toolset.gui.editors.dlg.editor import DLGEditor  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
-    from toolset.gui.editors.dlg.tree_view import DLGTreeView  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
+    from toolset.gui.editors.dlg.editor import (
+        DLGEditor,  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
+    )
+    from toolset.gui.editors.dlg.tree_view import (
+        DLGTreeView,  # type: ignore[import-untyped]  # pyright: ignore[reportMissingModuleSource]
+    )
 
 
 class DLGStandardItem(QStandardItem):
@@ -364,7 +393,7 @@ class DLGStandardItemModel(QStandardItemModel):
             return result
         parent_item = None if parent is None else self.itemFromIndex(parent)
         for link in links:
-            if link is None or parent_item is not None and not isinstance(parent_item, DLGStandardItem):
+            if link is None or (parent_item is not None and not isinstance(parent_item, DLGStandardItem)):
                 continue
             self._remove_link_from_parent(parent_item, link)
         return result
@@ -584,7 +613,7 @@ class DLGStandardItemModel(QStandardItemModel):
         immediate_check: bool = False,
     ):
         """Add a deleted node to the QListWidget in the left_dock_widget, if the passed link is the only reference."""
-        if not shallow_link_copy.node or shallow_link_copy.list_index == -1 and shallow_link_copy.node.list_index == -1:
+        if not shallow_link_copy.node or (shallow_link_copy.list_index == -1 and shallow_link_copy.node.list_index == -1):
             return
         if not immediate_check:
 
@@ -785,7 +814,7 @@ class DLGStandardItemModel(QStandardItemModel):
                     f"Parent item data: {parent_item.data(_COPY_ROLE)!r}\n"
                     f"Parent item link: {parent_item.link!r}\n"
                     f"Item to load link: {item_to_load.link!r}\n"
-                    f"Already listed items for this link: {self.link_to_items.get(item_to_load.link, [])!r}"
+                    f"Already listed items for this link: {self.link_to_items.get(item_to_load.link, [])!r}",
                 )
                 raise AssertionError("Buggy code detected - see error log for details")
             item_to_load.setData(False, _COPY_ROLE)
@@ -1201,7 +1230,7 @@ class DLGStandardItemModel(QStandardItemModel):
                     and item.link is not None
                     and self.editor.play_sound(str(item.link.node.sound), [SearchLocation.SOUND, SearchLocation.VOICE]),
                     "Item has Sound (click to play)",
-                )
+                ),
             )
         if has_voice:
             voice_icon_path = ":/images/common/voice-icon.png"
@@ -1212,7 +1241,7 @@ class DLGStandardItemModel(QStandardItemModel):
                     and item.link is not None
                     and self.editor.play_sound(str(item.link.node.vo_resref), [SearchLocation.SOUND, SearchLocation.VOICE]),
                     "Item has VO (click to play)",
-                )
+                ),
             )
 
         def get_text_callable(*args) -> str:
@@ -1396,7 +1425,7 @@ class DLGStandardItemModel(QStandardItemModel):
             if not item.is_loaded():
                 continue
             assert item.link is not None
-            link_to_cur_item: dict[DLGLink, DLGStandardItem | None] = {link: None for link in item.link.node.links}
+            link_to_cur_item: dict[DLGLink, DLGStandardItem | None] = dict.fromkeys(item.link.node.links)
 
             self.ignoring_updates = True
             while item.rowCount() > 0:

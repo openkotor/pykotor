@@ -19,10 +19,14 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from pykotor.common.misc import Game  # pyright: ignore[reportMissingImports]
-from pykotor.resource.formats.ncs.ncs_data import NCSInstructionType  # pyright: ignore[reportMissingImports]
+from pykotor.resource.formats.ncs.ncs_data import (
+    NCSInstructionType,  # pyright: ignore[reportMissingImports]
+)
 
 try:
-    from utility.error_handling import format_exception_with_variables  # pyright: ignore[reportMissingImports]
+    from utility.error_handling import (
+        format_exception_with_variables,  # pyright: ignore[reportMissingImports]
+    )
 except ImportError:
     # Fallback if utility module not available
     def format_exception_with_variables(exc: BaseException, *args, **kwargs) -> str:
@@ -33,8 +37,14 @@ except ImportError:
 
 if TYPE_CHECKING:
     from pykotor.common.misc import Game  # pyright: ignore[reportMissingImports]
-    from pykotor.common.script import ScriptConstant, ScriptFunction  # pyright: ignore[reportMissingImports]
-    from pykotor.resource.formats.ncs.ncs_data import NCS, NCSInstruction  # pyright: ignore[reportMissingImports]
+    from pykotor.common.script import (  # pyright: ignore[reportMissingImports]
+        ScriptConstant,
+        ScriptFunction,
+    )
+    from pykotor.resource.formats.ncs.ncs_data import (  # pyright: ignore[reportMissingImports]
+        NCS,
+        NCSInstruction,
+    )
 
     KOTOR_CONSTANTS: list[ScriptConstant] = []
     KOTOR_FUNCTIONS: list[ScriptFunction] = []
@@ -262,7 +272,9 @@ class NCSDecompiler:
             import io  # noqa: PLC0415
 
             from pykotor.resource.formats.ncs.dencs.actions_data import ActionsData  # noqa: PLC0415
-            from pykotor.resource.formats.ncs.dencs.decompile_ncs import decompile_ncs  # noqa: PLC0415
+            from pykotor.resource.formats.ncs.dencs.decompile_ncs import (
+                decompile_ncs,  # noqa: PLC0415
+            )
 
             # Convert NCS to bytes for Decoder
             from pykotor.resource.formats.ncs.io_ncs import NCSBinaryWriter

@@ -2,9 +2,9 @@
 
 FAC files are GFF-based format files that store faction definitions and reputation relationships between factions in KotOR modules. The file is typically named `repute.fac` in modules. FAC files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
-**Official BioWare Documentation:** For the authoritative BioWare Aurora Engine Faction Format specification, see [Bioware Aurora Faction Format](Bioware-Aurora-Faction.md).
+**Official BioWare Documentation:** For the authoritative BioWare Aurora Engine Faction Format specification, see [Bioware Aurora Faction Format](Bioware-Aurora-Faction).
 
-**Source:** This documentation is based on the official BioWare Aurora Engine Faction Format PDF, archived in [`vendor/xoreos-docs/specs/bioware/Faction_Format.pdf`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/bioware/Faction_Format.pdf).
+**Source:** This documentation is based on the official BioWare Aurora Engine Faction Format PDF, containerd in [`vendor/xoreos-docs/specs/bioware/Faction_Format.pdf`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/bioware/Faction_Format.pdf).
 
 ---
 
@@ -199,4 +199,11 @@ write_fac(fac, "output/repute.fac")
 - Standard factions use `0xFFFFFFFF` as their parent ID
 - Reputation values outside the 0-100 range may cause undefined behavior
 - Global factions propagate reputation changes across all members when one member's reputation changes
+
+### See also
+
+- [GFF File Format](GFF-File-Format) - Parent GFF format
+- [2DA-repute](2DA-repute) - Default faction standings table
+- [2DA File Format](2DA-File-Format) - repadjust.2da and repute.2da structure
+- [Bioware Aurora Faction](Bioware-Aurora-Faction) - Official faction specification
 

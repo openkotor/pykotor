@@ -63,7 +63,15 @@ class FACEditor(Editor):
         except ImportError:
             # UI file doesn't exist yet - create minimal UI programmatically
             # This allows the editor to function even without a .ui file
-            from qtpy.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QPushButton, QSpinBox, QVBoxLayout, QWidget
+            from qtpy.QtWidgets import (
+                QHBoxLayout,
+                QLabel,
+                QLineEdit,
+                QPushButton,
+                QSpinBox,
+                QVBoxLayout,
+                QWidget,
+            )
 
             central_widget = QWidget()
             self.setCentralWidget(central_widget)

@@ -48,7 +48,14 @@ from pykotor.resource.formats.rim import RIM, read_rim, write_rim
 from pykotor.resource.formats.tpc import read_tpc, write_tpc
 from pykotor.resource.type import ResourceType
 from pykotor.tools import module
-from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_capsule_file, is_erf_file, is_mod_file, is_rim_file
+from pykotor.tools.misc import (
+    is_any_erf_type_file,
+    is_bif_file,
+    is_capsule_file,
+    is_erf_file,
+    is_mod_file,
+    is_rim_file,
+)
 from pykotor.tools.model import iterate_lightmaps, iterate_textures
 from pykotor.tools.path import CaseAwarePath
 from toolset.config import get_remote_toolset_update_info
@@ -58,8 +65,8 @@ from toolset.gui.common.localization import (
     translate as tr,
     trf,
 )
-from toolset.gui.common.tooltip_utils import install_tooltip_label_filter
 from toolset.gui.common.style.theme_manager import ThemeManager
+from toolset.gui.common.tooltip_utils import install_tooltip_label_filter
 from toolset.gui.dialogs.about import About
 from toolset.gui.dialogs.asyncloader import AsyncLoader
 from toolset.gui.dialogs.clone_module import CloneModuleDialog
@@ -87,7 +94,7 @@ from toolset.gui.editors.utt import UTTEditor
 from toolset.gui.editors.utw import UTWEditor
 from toolset.gui.widgets.main_widgets import ResourceList, ResourceStandardItem
 from toolset.gui.widgets.settings.widgets.misc import GlobalSettings
-from toolset.gui.windows.help import HelpWindow, get_help_path
+from toolset.gui.windows.help import HelpWindow
 from toolset.gui.windows.indoor_builder import IndoorMapBuilder
 from toolset.gui.windows.kotordiff import KotorDiffWindow
 from toolset.gui.windows.module_designer import ModuleDesigner
@@ -104,7 +111,14 @@ if TYPE_CHECKING:
         QModelIndex,  # pyright: ignore[reportPrivateImportUsage]
         QPoint,
     )
-    from qtpy.QtGui import QCloseEvent, QKeyEvent, QMouseEvent, QPalette, QShowEvent, QStandardItemModel
+    from qtpy.QtGui import (
+        QCloseEvent,
+        QKeyEvent,
+        QMouseEvent,
+        QPalette,
+        QShowEvent,
+        QStandardItemModel,
+    )
     from qtpy.QtWidgets import QComboBox, QStyle, QWidget
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
 
@@ -422,7 +436,7 @@ class ToolWindow(QMainWindow):
         msg_box = QMessageBox(self)
         msg_box.setWindowTitle(local_tr("File Changes Detected"))
         msg_box.setText(
-            local_tr("Changes were detected in the following directories:") + "\n" + changes_desc_text + "\n\n" + local_tr("Would you like to refresh the file lists?")
+            local_tr("Changes were detected in the following directories:") + "\n" + changes_desc_text + "\n\n" + local_tr("Would you like to refresh the file lists?"),
         )
         msg_box.setDetailedText(changed_files_text)
         msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
@@ -666,7 +680,7 @@ class ToolWindow(QMainWindow):
 
         self.ui.openAction.triggered.connect(self.open_from_file)
         self.ui.actionSettings.triggered.connect(self.open_settings_dialog)
-        self.ui.actionExit.triggered.connect(lambda *args: self.close() and None or None)
+        self.ui.actionExit.triggered.connect(lambda *args: (self.close() and None) or None)
 
         self._connect_new_resource_actions()
         self.ui.actionCloneModule.triggered.connect(lambda: add_window(CloneModuleDialog(self, self.active, self.installations)))  # type: ignore[arg-type]
@@ -897,7 +911,7 @@ class ToolWindow(QMainWindow):
                 ("menuNew", "New"),
                 ("menuRecentFiles", "Recent Files"),
                 ("menuDiscord", "Discord"),
-            )
+            ),
         )
 
         self._set_action_texts(
@@ -916,7 +930,7 @@ class ToolWindow(QMainWindow):
                 ("actionTSLPatchDataEditor", "TSLPatchData Editor"),
                 ("actionFileSearch", "File Search"),
                 ("actionCloneModule", "Clone Module"),
-            )
+            ),
         )
         # self.ui.actionLegacyLayout.setText(tr("Legacy Layout"))
         self._set_action_texts(
@@ -940,7 +954,7 @@ class ToolWindow(QMainWindow):
                 ("actionNewERF", "ERF"),
                 ("actionNewTXT", "TXT"),
                 ("actionNewSSF", "SSF"),
-            )
+            ),
         )
 
         self._set_tab_texts(
@@ -950,7 +964,7 @@ class ToolWindow(QMainWindow):
                 (2, "Modules"),
                 (3, "Override"),
                 (4, "Textures"),
-            )
+            ),
         )
 
         self.ui.openButton.setText(tr("Open Selected"))
@@ -1112,7 +1126,7 @@ class ToolWindow(QMainWindow):
                         [
                             ResourceStandardItem(resource.resname(), resource=resource),
                             QStandardItem(resource.restype().extension.upper()),
-                        ]
+                        ],
                     )
 
     def on_save_reload(
@@ -1233,7 +1247,7 @@ class ToolWindow(QMainWindow):
                 tr("Error Opening Save Editor"),
                 trf("Failed to open save editor:\n{error}", error=str(e)),
             )
-            RobustLogger().exception(f"Failed to open save editor for '{save_path}'") 
+            RobustLogger().exception(f"Failed to open save editor for '{save_path}'")
 
     def on_override_file_updated(
         self,
@@ -1656,7 +1670,7 @@ class ToolWindow(QMainWindow):
                 e.ignore()
             else:
                 if editor_filepath is not None:
-                    RobustLogger().debug(f"Dropped file '{str(editor_filepath)}' processed successfully.")
+                    RobustLogger().debug(f"Dropped file '{editor_filepath!s}' processed successfully.")
                     e.accept()
                     return
                 if editor is None:
@@ -2570,7 +2584,7 @@ class ToolWindow(QMainWindow):
                 except Exception as e:  # noqa: BLE001  # pylint: disable=broad-exception-caught
                     RobustLogger().exception(f"Failed to save {tex_type} '{resident}' ({texture}) for model '{resource.identifier()}'")
                     loader.errors.append(
-                        ValueError(f"Failed to save {tex_type} '{resident}' ({texture}) for model '{resource.identifier()}':<br>    {e.__class__.__name__}: {e}")
+                        ValueError(f"Failed to save {tex_type} '{resident}' ({texture}) for model '{resource.identifier()}':<br>    {e.__class__.__name__}: {e}"),
                     )
 
         return bool(location_results)

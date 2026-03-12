@@ -502,7 +502,7 @@ def detect_blender(
 
     if info is None:
         return BlenderInfo(
-            executable=Path(""),
+            executable=Path(),
             is_valid=False,
             error="No valid Blender installation found. Please install Blender 3.6 or later.",
         )
@@ -609,7 +609,6 @@ def _get_kotorblender_source_path() -> Path | None:
 
 def _download_kotorblender_source() -> Path | None:
     """Download upstream kotorblender source into a local cache if needed."""
-
     cache_root = Path(tempfile.gettempdir()) / "HolocronToolset" / "kotorblender_cache"
     cached_source = cache_root / "kotorblender-master" / "io_scene_kotor"
     if cached_source.is_dir() and (cached_source / "__init__.py").is_file():
@@ -679,14 +678,12 @@ def _test_ipc_connection(timeout: float = 5.0, max_attempts: int = 3) -> tuple[b
 
                     client.disconnect()
                     return True, f"IPC connection verified{version_msg}"
-                else:
-                    client.disconnect()
-                    return False, "IPC server connected but ping failed"
-            else:
-                if attempt < max_attempts:
-                    import time
+                client.disconnect()
+                return False, "IPC server connected but ping failed"
+            if attempt < max_attempts:
+                import time
 
-                    time.sleep(0.5)  # Brief delay before retry
+                time.sleep(0.5)  # Brief delay before retry
 
         return False, "IPC server not responding (Blender may not be running or addon not enabled)"
 
@@ -766,20 +763,18 @@ def install_kotorblender(
             if ipc_success:
                 # Both file check and IPC verification passed - fully successful
                 return True, (f"kotorblender{version_msg} installed successfully to:\n{kotorblender_dest}\n\n{ipc_message}")
-            else:
-                # Files installed but IPC verification failed
-                # This could mean Blender isn't running, or addon isn't enabled
-                # We still consider this a success (files are installed), but warn the user
-                return True, (
-                    f"kotorblender{version_msg} files installed to:\n{kotorblender_dest}\n\n"
-                    f"Note: IPC connection verification failed:\n{ipc_message}\n\n"
-                    "If Blender is running, please restart it to load the addon.\n"
-                    "If Blender is not running, start it and enable the addon to verify the installation."
-                )
-        else:
-            # Only file verification, no IPC test
-            version_msg = f" (v{info.kotorblender_version})" if info.kotorblender_version else ""
-            return True, f"kotorblender{version_msg} installed successfully to:\n{kotorblender_dest}"
+            # Files installed but IPC verification failed
+            # This could mean Blender isn't running, or addon isn't enabled
+            # We still consider this a success (files are installed), but warn the user
+            return True, (
+                f"kotorblender{version_msg} files installed to:\n{kotorblender_dest}\n\n"
+                f"Note: IPC connection verification failed:\n{ipc_message}\n\n"
+                "If Blender is running, please restart it to load the addon.\n"
+                "If Blender is not running, start it and enable the addon to verify the installation."
+            )
+        # Only file verification, no IPC test
+        version_msg = f" (v{info.kotorblender_version})" if info.kotorblender_version else ""
+        return True, f"kotorblender{version_msg} installed successfully to:\n{kotorblender_dest}"
 
     except PermissionError as e:
         return False, f"Permission denied: {e}\n\nTry running as administrator."

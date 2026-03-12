@@ -27,7 +27,6 @@ from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.formats.erf import read_erf
 from pykotor.resource.formats.lyt import read_lyt
 from pykotor.resource.type import ResourceType
-from pykotor.resource.generics.git import GIT
 from pykotor.tools.indoorkit import load_kits
 from pykotor.tools.path import CaseAwarePath
 from utility.common.geometry import Vector3
@@ -41,6 +40,7 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT, LYTRoom
     from pykotor.resource.generics.are import ARE
+    from pykotor.resource.generics.git import GIT
     from pykotor.resource.generics.ifo import IFO
 
 

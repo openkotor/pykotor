@@ -156,7 +156,7 @@ class BlenderIPCClient:
             self._logger.info(f"Connected to Blender IPC server at {self._host}:{self._port}")
             return True
 
-        except (socket.error, OSError) as e:
+        except OSError as e:
             self._logger.warning(f"Failed to connect to Blender IPC: {e}")
             self._set_state(ConnectionState.ERROR)
             self._cleanup_socket()
@@ -225,10 +225,9 @@ class BlenderIPCClient:
                 if response:
                     return response
                 return IPCResponse(success=False, error="No response received")
-            else:
-                return IPCResponse(success=False, error=f"Request timed out after {timeout}s")
+            return IPCResponse(success=False, error=f"Request timed out after {timeout}s")
 
-        except (socket.error, OSError) as e:
+        except OSError as e:
             self._logger.error(f"Error sending command: {e}")
             self._handle_disconnection()
             return IPCResponse(success=False, error=str(e))
@@ -267,7 +266,7 @@ class BlenderIPCClient:
             data = json.dumps(notification) + "\n"
             self._socket.sendall(data.encode("utf-8"))
             return True
-        except (socket.error, OSError) as e:
+        except OSError as e:
             self._logger.error(f"Error sending notification: {e}")
             self._handle_disconnection()
             return False
@@ -336,7 +335,7 @@ class BlenderIPCClient:
 
             except socket.timeout:
                 continue
-            except (socket.error, OSError) as e:
+            except OSError as e:
                 if self._running:
                     self._logger.error(f"Receive error: {e}")
                     self._handle_disconnection()

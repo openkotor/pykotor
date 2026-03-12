@@ -13,7 +13,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `label` | string | Feat label |
 | `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for feat name |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | string reference for feat description |
-| `icon` | [ResRef](GFF-File-Format#gff-data-types) | Feat icon [ResRef](GFF-File-Format#gff-data-types) |
+| `icon` | *ResRef* | Feat icon *ResRef* |
 | `takentext` | [StrRef](TLK-File-Format#string-references-strref) | string reference for "feat taken" message |
 | `prerequisite` | Integer (optional) | Prerequisite feat ID |
 | `minattackbonus` | Integer (optional) | Minimum attack bonus requirement |
@@ -37,7 +37,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `reqskillrank` | Integer (optional) | Required skill rank |
 | `constant` | Integer (optional) | Constant value for feat calculations |
 | `toolscategories` | Integer (optional) | Tool categories flags |
-| `effecticon` | ResRef (optional) | Effect icon [ResRef](GFF-File-Format#gff-data-types) |
+| `effecticon` | ResRef (optional) | Effect icon *ResRef* |
 | `effectdesc` | StrRef (optional) | Effect description string reference |
 | `effectcategory` | Integer (optional) | Effect category identifier |
 | `allclassescanuse` | Boolean | Whether all classes can use this feat |
@@ -53,7 +53,7 @@ The following columns are accessed by the reone engine:
 
 - `name`: string reference for feat name
 - `description`: string reference for feat description
-- `icon`: Icon [ResRef](GFF-File-Format#gff-data-types)
+- `icon`: Icon *ResRef*
 - `mincharlevel`: Minimum character level (hex integer)
 - `prereqfeat1`: Prerequisite feat ID 1 (hex integer)
 - `prereqfeat2`: Prerequisite feat ID 2 (hex integer)
@@ -71,7 +71,7 @@ The following columns are accessed by the reone engine:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:82`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L82) - [StrRef](TLK-File-Format#string-references-strref) column definitions for feat.2da (K1: name, description)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:260`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L260) - [StrRef](TLK-File-Format#string-references-strref) column definitions for feat.2da (K2: name, description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:227`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L227) - [ResRef](GFF-File-Format#gff-data-types) column definition for feat.2da (icon)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:227`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L227) - *ResRef* column definition for feat.2da (icon)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:464`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L464) - TwoDARegistry.FEATS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:561-562`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L561-L562) - [GFF](GFF-File-Format) field mapping: "FeatID" and "Feat" -> feat.2da
 - [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:321-323`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L321-L323) - [UTC](GFF-File-Format#utc-creature) feat list field documentation

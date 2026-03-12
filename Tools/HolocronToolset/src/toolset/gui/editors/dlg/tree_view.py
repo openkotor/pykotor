@@ -10,21 +10,71 @@ from typing import TYPE_CHECKING, Any, List, cast
 
 import qtpy
 
-from qtpy.QtCore import QDataStream, QIODevice, QItemSelectionModel, QMimeData, QModelIndex, QPoint, QPointF, QRect, QTimer, Qt
-from qtpy.QtGui import QBrush, QColor, QCursor, QDrag, QFont, QPainter, QPalette, QPen, QPixmap, QRadialGradient, QStandardItemModel, QTextDocument
-from qtpy.QtWidgets import QAbstractItemDelegate, QAbstractItemView, QApplication, QStyledItemDelegate, QToolTip, QWidget
+from qtpy.QtCore import (
+    QDataStream,
+    QIODevice,
+    QItemSelectionModel,
+    QMimeData,
+    QModelIndex,
+    QPoint,
+    QPointF,
+    QRect,
+    QTimer,
+    Qt,
+)
+from qtpy.QtGui import (
+    QBrush,
+    QColor,
+    QCursor,
+    QDrag,
+    QFont,
+    QPainter,
+    QPalette,
+    QPen,
+    QPixmap,
+    QRadialGradient,
+    QStandardItemModel,
+    QTextDocument,
+)
+from qtpy.QtWidgets import (
+    QAbstractItemDelegate,
+    QAbstractItemView,
+    QApplication,
+    QStyledItemDelegate,
+    QToolTip,
+    QWidget,
+)
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.resource.generics.dlg import DLGEntry, DLGLink, DLGNode, DLGReply
-from toolset.gui.editors.dlg.constants import QT_STANDARD_ITEM_FORMAT, _DLG_MIME_DATA_ROLE, _LINK_PARENT_NODE_PATH_ROLE, _MODEL_INSTANCE_ID_ROLE
+from toolset.gui.editors.dlg.constants import (
+    QT_STANDARD_ITEM_FORMAT,
+    _DLG_MIME_DATA_ROLE,
+    _LINK_PARENT_NODE_PATH_ROLE,
+    _MODEL_INSTANCE_ID_ROLE,
+)
 from toolset.gui.editors.dlg.model import DLGStandardItem, DLGStandardItemModel
 from utility.gui.qt.widgets.itemviews.html_delegate import HTMLDelegate
 from utility.gui.qt.widgets.itemviews.treeview import RobustTreeView
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QByteArray, QMimeData
-    from qtpy.QtGui import QDragEnterEvent, QDragLeaveEvent, QDragMoveEvent, QDropEvent, QHoverEvent, QKeyEvent, QMouseEvent, QPaintEvent
-    from qtpy.QtWidgets import QAbstractItemDelegate, QStyleOptionViewItem, QStyledItemDelegate, QWidget
+    from qtpy.QtGui import (
+        QDragEnterEvent,
+        QDragLeaveEvent,
+        QDragMoveEvent,
+        QDropEvent,
+        QHoverEvent,
+        QKeyEvent,
+        QMouseEvent,
+        QPaintEvent,
+    )
+    from qtpy.QtWidgets import (
+        QAbstractItemDelegate,
+        QStyleOptionViewItem,
+        QStyledItemDelegate,
+        QWidget,
+    )
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
 
     from pykotor.resource.generics.dlg import DLGNode
@@ -681,9 +731,7 @@ class DLGTreeView(RobustTreeView):
             roles: dict[int, Any] = {}
             for _ in range(stream.readInt32()):
                 role: int = stream.readInt32()
-                if role == Qt.ItemDataRole.DisplayRole:  # sourcery skip: merge-duplicate-blocks, remove-redundant-if
-                    roles[role] = stream.readQString()
-                elif role == _DLG_MIME_DATA_ROLE:
+                if role == Qt.ItemDataRole.DisplayRole or role == _DLG_MIME_DATA_ROLE:  # sourcery skip: merge-duplicate-blocks, remove-redundant-if
                     roles[role] = stream.readQString()
                 elif role == _MODEL_INSTANCE_ID_ROLE:
                     roles[role] = stream.readInt64()
@@ -735,7 +783,7 @@ class DLGTreeView(RobustTreeView):
     ):
         event.accept()
         event.setDropAction(
-            Qt.DropAction.MoveAction if self.is_item_from_current_model(event) else Qt.DropAction.CopyAction
+            Qt.DropAction.MoveAction if self.is_item_from_current_model(event) else Qt.DropAction.CopyAction,
         )  # DropAction's are unused currently: the view is handling the drop.
         self.setCursor(Qt.CursorShape.ArrowCursor)
 

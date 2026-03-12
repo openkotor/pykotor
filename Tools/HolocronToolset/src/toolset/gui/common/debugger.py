@@ -355,14 +355,14 @@ class Debugger:
                         return {"type": "INT" if isinstance(result, int) else "FLOAT", "value": result}
                     return str(result)
                 except Exception as e:
-                    return f"Evaluation error: {str(e)}"
+                    return f"Evaluation error: {e!s}"
 
             # Try to look up as variable name (simplified - would need symbol table)
             # For now, return a message
             return f"Variable '{expression}' lookup not yet fully implemented"
 
         except Exception as e:
-            return f"Evaluation error: {str(e)}"
+            return f"Evaluation error: {e!s}"
 
     def _run_execution(self):
         """Run execution in a separate thread with breakpoint/step support."""
@@ -399,17 +399,7 @@ class Debugger:
                 self._execute_one_instruction()
 
                 # Handle step mode
-                if self._step_mode == "over":
-                    self._state = DebuggerState.PAUSED
-                    self._step_mode = None
-                    if self.on_step:
-                        self.on_step(self._interpreter._cursor_index)
-                    # Wait until resumed
-                    while self._state == DebuggerState.PAUSED and not self._stop_requested:
-                        threading.Event().wait(0.1)
-                    if self._stop_requested:
-                        break
-                elif self._step_mode == "into":
+                if self._step_mode == "over" or self._step_mode == "into":
                     self._state = DebuggerState.PAUSED
                     self._step_mode = None
                     if self.on_step:

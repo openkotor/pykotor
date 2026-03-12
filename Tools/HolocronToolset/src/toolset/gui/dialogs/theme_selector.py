@@ -12,8 +12,7 @@ if TYPE_CHECKING:
 
 
 class ThemeSelectorDialog(UtilityThemeSelectorDialog):
-    """
-    Toolset theme selector: utility dialog with Toolset localization and optional theme manager.
+    """Toolset theme selector: utility dialog with Toolset localization and optional theme manager.
     Prefer importing from utility.gui.qt.widgets.theme for new code.
     """
 

@@ -248,10 +248,10 @@ ENV_VARS: list[EnvVar] = sorted(
             group="Styling",
         ),  # noqa: E501
         EnvVar(
-            name="QT_NO_FONT_FALLBACK", description="Disables font fallback.", default="0", possible_values="0, 1", doc_link="https://doc.qt.io/qt-5/qfont.html", group="Fonts"
+            name="QT_NO_FONT_FALLBACK", description="Disables font fallback.", default="0", possible_values="0, 1", doc_link="https://doc.qt.io/qt-5/qfont.html", group="Fonts",
         ),  # noqa: E501
         EnvVar(
-            name="QT_NO_LINKING", description="Disables linking checks.", default="0", possible_values="0, 1", doc_link="https://doc.qt.io/qt-5/qtglobal.html", group="General"
+            name="QT_NO_LINKING", description="Disables linking checks.", default="0", possible_values="0, 1", doc_link="https://doc.qt.io/qt-5/qtglobal.html", group="General",
         ),  # noqa: E501
         EnvVar(
             name="QT_NO_SHORTCUT_OVERRIDE",
@@ -414,10 +414,10 @@ ENV_VARS: list[EnvVar] = sorted(
             group="QPA",
         ),  # noqa: E501
         EnvVar(
-            name="QT_QPA_NO_SYSTEM_TRAY", description="Disables the system tray.", default="0", possible_values="0, 1", doc_link="https://doc.qt.io/qt-5/qpa.html", group="QPA"
+            name="QT_QPA_NO_SYSTEM_TRAY", description="Disables the system tray.", default="0", possible_values="0, 1", doc_link="https://doc.qt.io/qt-5/qpa.html", group="QPA",
         ),  # noqa: E501
         EnvVar(
-            name="QT_QPA_OFFSCREEN", description="Enables offscreen rendering.", default="0", possible_values="0, 1", doc_link="https://doc.qt.io/qt-5/qpa.html", group="QPA"
+            name="QT_QPA_OFFSCREEN", description="Enables offscreen rendering.", default="0", possible_values="0, 1", doc_link="https://doc.qt.io/qt-5/qpa.html", group="QPA",
         ),  # noqa: E501
         EnvVar(
             name="QT_QPA_PLATFORM",
@@ -492,7 +492,7 @@ ENV_VARS: list[EnvVar] = sorted(
             group="QPA",
         ),  # noqa: E501
         EnvVar(
-            name="QT_QPA_XCB_NO_MITSHM", description="Disables MIT-SHM on X11.", default="0", possible_values="0, 1", doc_link="https://doc.qt.io/qt-5/qpa.html", group="QPA"
+            name="QT_QPA_XCB_NO_MITSHM", description="Disables MIT-SHM on X11.", default="0", possible_values="0, 1", doc_link="https://doc.qt.io/qt-5/qpa.html", group="QPA",
         ),  # noqa: E501
         EnvVar(
             name="QT_QPA_XCB_RENDERER",
@@ -703,7 +703,7 @@ ENV_VARS: list[EnvVar] = sorted(
             group="XCB",
         ),  # noqa: E501
         EnvVar(
-            name="QT_X11_NO_MITSHM", description="Disables MIT-SHM on X11.", default="0", possible_values="0, 1", doc_link="https://doc.qt.io/qt-5/x11extras.html", group="X11"
+            name="QT_X11_NO_MITSHM", description="Disables MIT-SHM on X11.", default="0", possible_values="0, 1", doc_link="https://doc.qt.io/qt-5/x11extras.html", group="X11",
         ),  # noqa: E501
         EnvVar(
             name="QTWEBENGINE_CHROMIUM_FLAGS",

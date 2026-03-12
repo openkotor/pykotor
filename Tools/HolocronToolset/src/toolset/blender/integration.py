@@ -26,7 +26,7 @@ from pykotor.resource.generics.git import (
     GITWaypoint,
 )
 from toolset.blender.commands import get_blender_controller
-from toolset.blender.detection import BlenderInfo, get_blender_settings, launch_blender_with_ipc
+from toolset.blender.detection import get_blender_settings, launch_blender_with_ipc
 from toolset.gui.helpers.message_box import ask_question, show_error_message, show_warning_message
 
 if TYPE_CHECKING:
@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.lyt import LYT
     from pykotor.resource.generics.git import GIT, GITObject
     from toolset.blender.commands import BlenderEditorController, BlenderEditorMode
+    from toolset.blender.detection import BlenderInfo
     from toolset.blender.ipc_client import ConnectionState
 
 
@@ -381,7 +382,6 @@ class BlenderEditorMixin:
 
         Override this to update the toolset selection.
         """
-        pass
 
     def _on_blender_transform_changed(
         self,
@@ -393,21 +393,18 @@ class BlenderEditorMixin:
 
         Override this to update instance transforms in the toolset.
         """
-        pass
 
     def _on_blender_module_loaded(self):
         """Called when module is loaded in Blender.
 
         Override this to perform post-load actions.
         """
-        pass
 
     def _on_blender_mode_stopped(self):
         """Called when Blender mode is stopped.
 
         Override this to perform cleanup.
         """
-        pass
 
     def _on_blender_context_menu_requested(self, instance_ids: list[int]):
         """Handle context menu requests from Blender selections."""
@@ -423,7 +420,6 @@ class BlenderEditorMixin:
 
     def _on_blender_connection_failed(self):
         """Hook invoked when IPC connection retries are exhausted."""
-        pass
 
     def _on_blender_material_changed(self, payload: dict):
         """Handle material/texture changes from Blender.
@@ -441,7 +437,6 @@ class BlenderEditorMixin:
 
     def _start_blender_output_listener(self):
         """Start background thread that relays Blender stdout/stderr."""
-
         process = self._blender_process
         if process is None or process.stdout is None:
             return

@@ -7,6 +7,7 @@ import os
 import platform
 import sys
 
+from collections.abc import Sequence
 from copy import copy
 from dataclasses import dataclass
 from enum import Enum, IntEnum
@@ -19,7 +20,13 @@ from pykotor.common.language import Gender, Language, LocalizedString
 from pykotor.common.misc import Game, ResRef
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.chitin import Chitin
-from pykotor.extract.file import FileResource, LocationResult, ResourceIdentifier, ResourceQuery, ResourceResult
+from pykotor.extract.file import (
+    FileResource,
+    LocationResult,
+    ResourceIdentifier,
+    ResourceQuery,
+    ResourceResult,
+)
 from pykotor.extract.savedata import SaveFolderEntry
 from pykotor.extract.talktable import TalkTable
 from pykotor.resource.formats.gff import GFFFieldType, read_gff
@@ -34,7 +41,7 @@ from utility.string_util import is_non_empty_string
 if TYPE_CHECKING:
     import io
 
-    from collections.abc import Generator, Iterable, Sequence
+    from collections.abc import Generator, Iterable
     from logging import Logger
 
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]

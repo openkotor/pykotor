@@ -657,7 +657,12 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
     Returns:
         True if identical, False if different, None if errors occurred
     """
-    from pykotor.tslpatcher.diff.engine import DiffContext, Path as EnginePath, _add_to_install_folder, diff_data  # noqa: PLC0415
+    from pykotor.tslpatcher.diff.engine import (  # noqa: PLC0415
+        DiffContext,
+        Path as EnginePath,
+        _add_to_install_folder,
+        diff_data,
+    )
 
     # Build list of all installations (base, target, and any additional)
     all_installations: list[Installation] = [install1, install2]
@@ -917,7 +922,10 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
             # Add to InstallList with correct destination based on resolution order
             # Also create patch modifications
             if modifications_by_type is not None:
-                from pykotor.tslpatcher.diff.engine import DiffContext, _add_to_install_folder  # noqa: PLC0415
+                from pykotor.tslpatcher.diff.engine import (  # noqa: PLC0415
+                    DiffContext,
+                    _add_to_install_folder,
+                )
 
                 # Determine destination based on where it was found in target installation
                 destination = determine_tslpatcher_destination(
@@ -971,7 +979,10 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
 
             # Add to InstallList and create patch modifications
             if modifications_by_type is not None:
-                from pykotor.tslpatcher.diff.engine import DiffContext, _add_to_install_folder  # noqa: PLC0415
+                from pykotor.tslpatcher.diff.engine import (  # noqa: PLC0415
+                    DiffContext,
+                    _add_to_install_folder,
+                )
 
                 # Determine destination based on where it was found
                 destination = determine_tslpatcher_destination(
@@ -1171,7 +1182,9 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
                         resolved2.filepath,
                     )
                     filename_for_install = f"{identifier.resname}.{identifier.restype.extension}"
-                    from pykotor.tslpatcher.diff.engine import _add_to_install_folder  # noqa: PLC0415
+                    from pykotor.tslpatcher.diff.engine import (
+                        _add_to_install_folder,  # noqa: PLC0415
+                    )
 
                     _add_to_install_folder(
                         modifications_by_type,

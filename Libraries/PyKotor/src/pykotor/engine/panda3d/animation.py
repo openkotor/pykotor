@@ -29,7 +29,12 @@ from pykotor.engine.animation.base import (
 if TYPE_CHECKING:
     from panda3d.core import NodePath
 
-    from pykotor.resource.formats.mdl.mdl_data import MDL, MDLAnimation, MDLController, MDLControllerRow
+    from pykotor.resource.formats.mdl.mdl_data import (
+        MDL,
+        MDLAnimation,
+        MDLController,
+        MDLControllerRow,
+    )
 
 
 class Panda3DAnimationController(IAnimationController):

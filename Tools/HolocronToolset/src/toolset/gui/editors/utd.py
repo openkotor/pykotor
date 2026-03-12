@@ -326,7 +326,7 @@ class UTDEditor(Editor):
         for field in self._script_fields():
             field.populate_combo_box(self.relevant_script_resnames)
         self.ui.conversationEdit.populate_combo_box(
-            sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.DLG, self._filepath)}))
+            sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.DLG, self._filepath)})),
         )  # noqa: E501
 
         # Comments

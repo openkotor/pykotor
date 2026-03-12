@@ -104,7 +104,7 @@ Complete guide to all PyKotor documentation, organized by topic and audience.
 |----------|-------------|--------|
 | [KOTOR_ENTRY_POINT_ANALYSIS.md](docs/KOTOR_ENTRY_POINT_ANALYSIS.md) | Entry point analysis | WIP |
 | [wiki/](wiki/) | File format specs | Reference |
-| [vendor/](vendor/) | External research | Archive |
+| [vendor/](vendor/) | External research | Container |
 
 ---
 

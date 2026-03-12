@@ -6,13 +6,29 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Creature format specification, see [Bioware Aurora Creature Format](Bioware-Aurora-Creature).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py)
+**For mod developers:** To modify creature templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** UTC references [2DA](2DA-File-Format) (appearance, portraits, classes, feats, racialtypes, creaturespeed), [SSF](SSF-File-Format), [TLK](TLK-File-Format), [MDL](MDL-MDX-File-Format), [TPC](TPC-File-Format), and [GFF-UTI](GFF-UTI) for inventory items.
+
+## References
+
+**PyKotor:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py) - UTC [GFF](GFF-File-Format) parsing and field definitions
+
+**HolocronToolset:**
+
+- Creature/UTC editor (instance placement and UTC editing in module)
+
+**Vendor Implementations:**
+
+- reone/xoreos creature (GFF) parsers
 
 ## Core Identity fields
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | Template identifier for this creature (max 16 characters; should match UTC filename without extension) |
+| `TemplateResRef` | *ResRef* | Template identifier for this creature (max 16 characters; should match UTC filename without extension) |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script/conversation references |
 | `FirstName` | [CExoLocString](GFF-File-Format#gff-data-types) | Creature's first name (localized) |
 | `LastName` | [CExoLocString](GFF-File-Format#gff-data-types) | Creature's last name (localized) |
@@ -22,125 +38,125 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Appearance_Type` | DWord | index into [`appearance.2da`](2DA-appearance) |
-| `PortraitId` | Word | index into [`portraits.2da`](2DA-portraits); 65535 (0xFFFF) = use Portrait ResRef instead |
-| `Gender` | Byte | 0=Male, 1=Female, 2=Both, 3=Other, 4=None (engine clamps values > 4 to 4) |
-| `Race` | Byte | Index into [`racialtypes.2da`](2DA-racialtypes). If value is greater than or equal to the number of rows in race.2da, the creature fails to load. |
-| `SubraceIndex` | Byte | Index into subrace.2da; refines race (e.g. subspecies). |
-| `BodyVariation` | Byte | Body [model](MDL-MDX-File-Format) variation (0-9) |
-| `TextureVar` | Byte | [texture](TPC-File-Format) variation (1-9) |
-| `SoundSetFile` | Word | index into [sound set table](SSF-File-Format) |
+| `Appearance_Type` | [uint32](GFF-File-Format#gff-data-types) | Index into [`appearance.2da`](2DA-appearance) |
+| `PortraitId` | [word](GFF-File-Format#gff-data-types) | Index into [`portraits.2da`](2DA-portraits); 65535 (0xFFFF) = use Portrait ResRef instead |
+| `Gender` | [byte](GFF-File-Format#gff-data-types) | 0=Male, 1=Female, 2=Both, 3=Other, 4=None (engine clamps values > 4 to 4) |
+| `Race` | [byte](GFF-File-Format#gff-data-types) | Index into [`racialtypes.2da`](2DA-racialtypes). If value is greater than or equal to the number of rows in race.2da, the creature fails to load. |
+| `SubraceIndex` | [byte](GFF-File-Format#gff-data-types) | Index into subrace.2da; refines race (e.g. subspecies). |
+| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) variation (0-9) |
+| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](TPC-File-Format) variation (1-9) |
+| `SoundSetFile` | [word](GFF-File-Format#gff-data-types) | Index into [sound set table](SSF-File-Format) |
 
 ## Core Stats & Attributes
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Str` | Byte | Strength score (3-255) |
-| `Dex` | Byte | Dexterity score (3-255) |
-| `Con` | Byte | Constitution score (3-255) |
-| `Int` | Byte | Intelligence score (3-255) |
-| `Wis` | Byte | Wisdom score (3-255) |
-| `Cha` | Byte | Charisma score (3-255) |
-| `HitPoints` | Short | Current hit points |
-| `CurrentHitPoints` | Short | Alias for hit points |
-| `MaxHitPoints` | Short | Maximum hit points |
-| `ForcePoints` | Short | Current Force points (KotOR specific) |
-| `CurrentForce` | Short | Alias for Force points |
-| `MaxForcePoints` | Short | Maximum Force points |
+| `Str` | [byte](GFF-File-Format#gff-data-types) | Strength score (3-255) |
+| `Dex` | [byte](GFF-File-Format#gff-data-types) | Dexterity score (3-255) |
+| `Con` | [byte](GFF-File-Format#gff-data-types) | Constitution score (3-255) |
+| `Int` | [byte](GFF-File-Format#gff-data-types) | Intelligence score (3-255) |
+| `Wis` | [byte](GFF-File-Format#gff-data-types) | Wisdom score (3-255) |
+| `Cha` | [byte](GFF-File-Format#gff-data-types) | Charisma score (3-255) |
+| `HitPoints` | [int16](GFF-File-Format#gff-data-types) | Current hit points |
+| `CurrentHitPoints` | [int16](GFF-File-Format#gff-data-types) | Alias for hit points |
+| `MaxHitPoints` | [int16](GFF-File-Format#gff-data-types) | Maximum hit points |
+| `ForcePoints` | [int16](GFF-File-Format#gff-data-types) | Current Force points (KotOR specific) |
+| `CurrentForce` | [int16](GFF-File-Format#gff-data-types) | Alias for Force points |
+| `MaxForcePoints` | [int16](GFF-File-Format#gff-data-types) | Maximum Force points |
 
 ## Character Progression
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `ClassList` | List | List of character classes with levels |
-| `Experience` | DWord | Total experience points |
-| `LevelUpStack` | List | Pending level-up choices |
-| `SkillList` | List | Skill ranks (index + rank) |
-| `FeatList` | List | Acquired feats |
-| `SpecialAbilityList` | List | Special abilities/powers |
+| `ClassList` | [List](GFF-File-Format#gff-data-types) | List of character classes with levels |
+| `Experience` | [uint32](GFF-File-Format#gff-data-types) | Total experience points |
+| `LevelUpStack` | [List](GFF-File-Format#gff-data-types) | Pending level-up choices |
+| `SkillList` | [List](GFF-File-Format#gff-data-types) | Skill ranks (index + rank) |
+| `FeatList` | [List](GFF-File-Format#gff-data-types) | Acquired feats |
+| `SpecialAbilityList` | [List](GFF-File-Format#gff-data-types) | Special abilities/powers |
 
 **ClassList Struct fields:**
 
-- `Class` (Int): index into [`classes.2da`](2DA-classes) ([class definitions](2DA-classes))
-- `ClassLevel` (Short): Levels in this class
+- `Class` ([int32](GFF-File-Format#gff-data-types)): Index into [`classes.2da`](2DA-classes) ([class definitions](2DA-classes))
+- `ClassLevel` ([int16](GFF-File-Format#gff-data-types)): Levels in this class
 
 **SkillList Struct fields:**
 
-- `Rank` (Byte): Skill rank value
+- `Rank` ([byte](GFF-File-Format#gff-data-types)): Skill rank value
 
 **FeatList Struct fields:**
 
-- `Feat` (Word): index into [`feat.2da`](2DA-feat) ([feat definitions](2DA-feat))
+- `Feat` ([word](GFF-File-Format#gff-data-types)): Index into [`feat.2da`](2DA-feat) ([feat definitions](2DA-feat))
 
 ## Combat & Behavior
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `FactionID` | Word | Faction identifier (determines hostility) |
-| `NaturalAC` | Byte | Natural armor class bonus |
-| `ChallengeRating` | Float | CR for encounter calculations |
-| `PerceptionRange` | Byte | Perception distance category |
-| `WalkRate` | Int | Row index into creaturespeed.2da; sets walk/run movement speed used for pathfinding and animation. |
-| `Interruptable` | Byte | Can be interrupted during actions |
-| `NoPermDeath` | Byte | Cannot permanently die |
-| `IsPC` | Byte | Is player character |
-| `Plot` | Byte | Plot-critical (cannot die) |
-| `MinOneHP` | Byte | Cannot drop below 1 HP |
-| `PartyInteract` | Byte | Shows party selection interface |
-| `Hologram` | Byte | Rendered as hologram |
+| `FactionID` | [word](GFF-File-Format#gff-data-types) | Faction identifier (determines hostility) |
+| `NaturalAC` | [byte](GFF-File-Format#gff-data-types) | Natural armor class bonus |
+| `ChallengeRating` | [float](GFF-File-Format#gff-data-types) | CR for encounter calculations |
+| `PerceptionRange` | [byte](GFF-File-Format#gff-data-types) | Perception distance category |
+| `WalkRate` | [int32](GFF-File-Format#gff-data-types) | Row index into creaturespeed.2da; sets walk/run movement speed used for pathfinding and animation. |
+| `Interruptable` | [byte](GFF-File-Format#gff-data-types) | Can be interrupted during actions |
+| `NoPermDeath` | [byte](GFF-File-Format#gff-data-types) | Cannot permanently die |
+| `IsPC` | [byte](GFF-File-Format#gff-data-types) | Is player character |
+| `Plot` | [byte](GFF-File-Format#gff-data-types) | Plot-critical (cannot die) |
+| `MinOneHP` | [byte](GFF-File-Format#gff-data-types) | Cannot drop below 1 HP |
+| `PartyInteract` | [byte](GFF-File-Format#gff-data-types) | Shows party selection interface |
+| `Hologram` | [byte](GFF-File-Format#gff-data-types) | Rendered as hologram |
 
 ## Equipment & Inventory
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `ItemList` | List | Inventory items |
-| `Equip_ItemList` | List | Equipped items with slots |
-| `EquippedRes` | [ResRef](GFF-File-Format#gff-data-types) | Deprecated equipment field |
+| `ItemList` | [List](GFF-File-Format#gff-data-types) | Inventory items |
+| `Equip_ItemList` | [List](GFF-File-Format#gff-data-types) | Equipped items with slots |
+| `EquippedRes` | *ResRef* | Deprecated equipment field |
 
 **ItemList Struct fields:**
 
-- `InventoryRes` ([ResRef](GFF-File-Format#gff-data-types)): [UTI](GFF-File-Format#uti-item) template [ResRef](GFF-File-Format#gff-data-types)
-- `Repos_PosX` (Word): Inventory grid X position
-- `Repos_Posy` (Word): Inventory grid Y position
-- `Dropable` (Byte): Can be dropped/removed
+- `InventoryRes` (*ResRef*): [UTI](GFF-File-Format#uti-item) template *ResRef*
+- `Repos_PosX` ([word](GFF-File-Format#gff-data-types)): Inventory grid X position
+- `Repos_Posy` ([word](GFF-File-Format#gff-data-types)): Inventory grid Y position
+- `Dropable` ([byte](GFF-File-Format#gff-data-types)): Can be dropped/removed
 
 **Equip_ItemList Struct fields:**
 
-- `EquippedRes` ([ResRef](GFF-File-Format#gff-data-types)): [UTI](GFF-File-Format#uti-item) template [ResRef](GFF-File-Format#gff-data-types)
+- `EquippedRes` (*ResRef*): [UTI](GFF-File-Format#uti-item) template *ResRef*
 - Equipment slots reference `equipmentslots.2da`
 
 ## Script Hooks
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `ScriptAttacked` | [ResRef](GFF-File-Format#gff-data-types) | Fires when attacked |
-| `ScriptDamaged` | [ResRef](GFF-File-Format#gff-data-types) | Fires when damaged |
-| `ScriptDeath` | [ResRef](GFF-File-Format#gff-data-types) | Fires on death |
-| `ScriptDialogue` | [ResRef](GFF-File-Format#gff-data-types) | Fires when conversation starts |
-| `ScriptDisturbed` | [ResRef](GFF-File-Format#gff-data-types) | Fires when inventory disturbed |
-| `ScriptEndRound` | [ResRef](GFF-File-Format#gff-data-types) | Fires at combat round end |
-| `ScriptEndDialogue` | [ResRef](GFF-File-Format#gff-data-types) | Fires when conversation ends |
-| `ScriptHeartbeat` | [ResRef](GFF-File-Format#gff-data-types) | Fires periodically |
-| `ScriptOnBlocked` | [ResRef](GFF-File-Format#gff-data-types) | Fires when movement blocked |
-| `ScriptOnNotice` | [ResRef](GFF-File-Format#gff-data-types) | Fires when notices something |
-| `ScriptRested` | [ResRef](GFF-File-Format#gff-data-types) | Fires after rest |
-| `ScriptSpawn` | [ResRef](GFF-File-Format#gff-data-types) | Fires on spawn |
-| `ScriptSpellAt` | [ResRef](GFF-File-Format#gff-data-types) | Fires when spell cast at creature |
-| `ScriptUserDefine` | [ResRef](GFF-File-Format#gff-data-types) | Fires on user-defined events |
+| `ScriptAttacked` | *ResRef* | Fires when attacked |
+| `ScriptDamaged` | *ResRef* | Fires when damaged |
+| `ScriptDeath` | *ResRef* | Fires on death |
+| `ScriptDialogue` | *ResRef* | Fires when conversation starts |
+| `ScriptDisturbed` | *ResRef* | Fires when inventory disturbed |
+| `ScriptEndRound` | *ResRef* | Fires at combat round end |
+| `ScriptEndDialogue` | *ResRef* | Fires when conversation ends |
+| `ScriptHeartbeat` | *ResRef* | Fires periodically |
+| `ScriptOnBlocked` | *ResRef* | Fires when movement blocked |
+| `ScriptOnNotice` | *ResRef* | Fires when notices something |
+| `ScriptRested` | *ResRef* | Fires after rest |
+| `ScriptSpawn` | *ResRef* | Fires on spawn |
+| `ScriptSpellAt` | *ResRef* | Fires when spell cast at creature |
+| `ScriptUserDefine` | *ResRef* | Fires on user-defined events |
 
 ## KotOR-Specific Features
 
 **Alignment:**
 
-- `GoodEvil` (Byte): 0-100 scale (0=Dark, 100=Light)
-- `LawfulChaotic` (Byte): Unused in KotOR
+- `GoodEvil` ([byte](GFF-File-Format#gff-data-types)): 0-100 scale (0=Dark, 100=Light)
+- `LawfulChaotic` ([byte](GFF-File-Format#gff-data-types)): Unused in KotOR
 
 **Multiplayer (Unused in KotOR):**
 
 - `Deity` ([CExoString](GFF-File-Format#gff-data-types))
 - `Subrace` ([CExoString](GFF-File-Format#gff-data-types))
-- `Morale` (Byte)
-- `MorealBreak` (Byte)
+- `Morale` ([byte](GFF-File-Format#gff-data-types))
+- `MorealBreak` ([byte](GFF-File-Format#gff-data-types))
 
 **Special Abilities:**
 
@@ -187,3 +203,10 @@ All script hooks store a ResRef to an NCS file; leave blank for no script. The t
 - **Generic Enemies**: Minimal data, shared appearance, basic AI scripts
 - **Vendors**: Specialized with store inventory, merchant scripts
 - **Placeables As Creatures**: Invisible creatures for complex scripting
+
+## See also
+
+- [GFF File Format](GFF-File-Format) - Generic format underlying UTC
+- [GFF-UTI (Item)](GFF-UTI) - Item templates in creature inventory
+- [2DA appearance](2DA-appearance), [classes](2DA-classes), [feat](2DA-feat), [racialtypes](2DA-racialtypes) - Lookup tables
+- [Bioware Aurora Creature Format](Bioware-Aurora-Creature) - Official creature specification

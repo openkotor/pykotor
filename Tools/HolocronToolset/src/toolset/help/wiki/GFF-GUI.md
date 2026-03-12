@@ -81,9 +81,9 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | [ResRef](GFF-File-Format#gff-data-types) | Corner texture ([TPC](TPC-File-Format)/TGA) |
-| `EDGE` | [ResRef](GFF-File-Format#gff-data-types) | [edge](BWM-File-Format#edges) texture ([TPC](TPC-File-Format)/TGA) |
-| `FILL` | [ResRef](GFF-File-Format#gff-data-types) | Fill/background texture ([TPC](TPC-File-Format)/TGA) |
+| `CORNER` | *ResRef* | Corner texture ([TPC](TPC-File-Format)/TGA) |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) texture ([TPC](TPC-File-Format)/TGA) |
+| `FILL` | *ResRef* | Fill/background texture ([TPC](TPC-File-Format)/TGA) |
 | `FILLSTYLE` | Int | Fill rendering style (-1=None, 0=Empty, 1=Solid, 2=[texture](TPC-File-Format)) |
 | `DIMENSION` | Int | Border thickness in pixels |
 | `INNEROFFSET` | Int | Inner padding X-axis (pixels) |
@@ -106,7 +106,7 @@ All controls share these base properties:
 | ----- | ---- | ----------- |
 | `TEXT` | [CExoString](GFF-File-Format#gff-data-types) | Direct text content (overrides [StrRef](TLK-File-Format#string-references-strref) if set) |
 | `STRREF` | DWord | [TLK](TLK-File-Format) string reference (0xFFFFFFFF = unused) |
-| `FONT` | [ResRef](GFF-File-Format#gff-data-types) | Font [texture](TPC-File-Format) resource ([TPC](TPC-File-Format)/TGA) |
+| `FONT` | *ResRef* | Font [texture](TPC-File-Format) resource ([TPC](TPC-File-Format)/TGA) |
 | `ALIGNMENT` | Int | Text alignment flags (bitfield) |
 | `COLOR` | vector | Text color (RGB, 0.0-1.0) |
 | `PULSING` | Byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag (0=off, 1=on) |
@@ -149,9 +149,9 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | [ResRef](GFF-File-Format#gff-data-types) | Corner [texture](TPC-File-Format) for highlight state |
-| `EDGE` | [ResRef](GFF-File-Format#gff-data-types) | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for highlight state |
-| `FILL` | [ResRef](GFF-File-Format#gff-data-types) | Fill [texture](TPC-File-Format) for highlight state |
+| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for highlight state |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for highlight state |
+| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for highlight state |
 | `FILLSTYLE` | Int | Fill style for highlight |
 | `DIMENSION` | Int | Border thickness |
 | `INNEROFFSET` | Int | Inner padding X-axis |
@@ -170,9 +170,9 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | [ResRef](GFF-File-Format#gff-data-types) | Corner [texture](TPC-File-Format) for selected state |
-| `EDGE` | [ResRef](GFF-File-Format#gff-data-types) | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for selected state |
-| `FILL` | [ResRef](GFF-File-Format#gff-data-types) | Fill [texture](TPC-File-Format) for selected state |
+| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for selected state |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for selected state |
+| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for selected state |
 | `FILLSTYLE` | Int | Fill style for selected state |
 | `DIMENSION` | Int | Border thickness |
 | `INNEROFFSET` | Int | Inner padding X-axis |
@@ -184,9 +184,9 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | [ResRef](GFF-File-Format#gff-data-types) | Corner [texture](TPC-File-Format) for highlight+selected state |
-| `EDGE` | [ResRef](GFF-File-Format#gff-data-types) | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for highlight+selected state |
-| `FILL` | [ResRef](GFF-File-Format#gff-data-types) | Fill [texture](TPC-File-Format) for highlight+selected state |
+| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for highlight+selected state |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for highlight+selected state |
+| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for highlight+selected state |
 | `FILLSTYLE` | Int | Fill style |
 | `DIMENSION` | Int | Border thickness |
 | `INNEROFFSET` | Int | Inner padding X-axis |
@@ -259,7 +259,7 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `IMAGE` | [ResRef](GFF-File-Format#gff-data-types) | Arrow button [texture](TPC-File-Format) |
+| `IMAGE` | *ResRef* | Arrow button [texture](TPC-File-Format) |
 | `ALIGNMENT` | Int | Image alignment (typically 18=center) |
 | `DRAWSTYLE` | Int | Drawing style (unused) |
 | `FLIPSTYLE` | Int | Flip/rotation style (unused) |
@@ -269,7 +269,7 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `IMAGE` | [ResRef](GFF-File-Format#gff-data-types) | Thumb [texture](TPC-File-Format) |
+| `IMAGE` | *ResRef* | Thumb [texture](TPC-File-Format) |
 | `ALIGNMENT` | Int | Image alignment (typically 18=center) |
 | `DRAWSTYLE` | Int | Drawing style (unused) |
 | `FLIPSTYLE` | Int | Flip/rotation style (unused) |
@@ -294,9 +294,9 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | [ResRef](GFF-File-Format#gff-data-types) | Corner [texture](TPC-File-Format) for progress fill |
-| `EDGE` | [ResRef](GFF-File-Format#gff-data-types) | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for progress fill |
-| `FILL` | [ResRef](GFF-File-Format#gff-data-types) | Fill [texture](TPC-File-Format) for progress bar |
+| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for progress fill |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for progress fill |
+| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for progress bar |
 | `FILLSTYLE` | Int | Fill rendering style |
 | `DIMENSION` | Int | Border thickness |
 | `INNEROFFSET` | Int | Inner padding X-axis |
@@ -339,7 +339,7 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `IMAGE` | [ResRef](GFF-File-Format#gff-data-types) | Thumb [texture](TPC-File-Format) |
+| `IMAGE` | *ResRef* | Thumb [texture](TPC-File-Format) |
 | `ALIGNMENT` | Int | Image alignment |
 | `DRAWSTYLE` | Int | Drawing style (unused) |
 | `FLIPSTYLE` | Int | Flip/rotation style (unused) |

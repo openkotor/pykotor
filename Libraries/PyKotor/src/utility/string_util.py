@@ -8,7 +8,11 @@ from typing import TYPE_CHECKING, Any, TypeVar
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from typing_extensions import LiteralString, Self, SupportsIndex  # pyright: ignore[reportMissingModuleSource]
+    from typing_extensions import (  # pyright: ignore[reportMissingModuleSource]
+        LiteralString,
+        Self,
+        SupportsIndex,
+    )
 
 
 def insert_newlines(

@@ -3,13 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
 
 from qtpy.QtCore import QObject, Signal  # pyright: ignore[reportPrivateImportUsage]
-
-if TYPE_CHECKING:
-    pass
-
 
 # Log level to CSS/text color name for use in rich text (theme-friendly)
 LEVEL_COLORS: dict[int, str] = {

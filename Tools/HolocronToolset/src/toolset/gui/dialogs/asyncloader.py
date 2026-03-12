@@ -46,7 +46,7 @@ class ProgressDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportGeneralTypeIssues]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint,
         )
 
         from toolset.uic.qtpy.dialogs.progress_dialog import Ui_Dialog
@@ -150,7 +150,7 @@ class AsyncLoader(QDialog, Generic[T]):
             | Qt.WindowType.WindowCloseButtonHint
             | Qt.WindowType.WindowStaysOnTopHint
             | Qt.WindowType.WindowMinMaxButtonsHint  # Enable minimize/maximize buttons
-            & ~Qt.WindowType.WindowContextHelpButtonHint
+            & ~Qt.WindowType.WindowContextHelpButtonHint,
         )
 
         # Load UI from .ui file

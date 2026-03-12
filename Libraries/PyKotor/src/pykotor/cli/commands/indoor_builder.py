@@ -18,8 +18,6 @@ from pykotor.common.indoormap import IndoorMap
 from pykotor.common.modulekit import ModuleKitManager
 from pykotor.extract.installation import Installation
 from pykotor.tools.indoorkit import load_kits
-from utility.misc import ensure_directory_exists
-from utility.string_util import normalize_string
 from pykotor.tools.indoormap import (
     build_mod_from_indoor_file_modulekit,
     extract_indoor_from_module_as_modulekit,
@@ -27,6 +25,8 @@ from pykotor.tools.indoormap import (
     extract_indoor_from_module_name,
 )
 from pykotor.tools.path import CaseAwarePath
+from utility.misc import ensure_directory_exists
+from utility.string_util import normalize_string
 
 if TYPE_CHECKING:
     from argparse import Namespace

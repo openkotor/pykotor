@@ -7,10 +7,19 @@ from typing import TYPE_CHECKING
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QListWidgetItem, QShortcut  # pyright: ignore[reportPrivateImportUsage]
 
-from pykotor.resource.formats.bwm import read_bwm, write_bwm  # pyright: ignore[reportMissingImports]
+from pykotor.resource.formats.bwm import (  # pyright: ignore[reportMissingImports]
+    read_bwm,
+    write_bwm,
+)
 from pykotor.resource.type import ResourceType  # pyright: ignore[reportMissingImports]
-from toolset.gui.common.interaction.camera import calculate_zoom_strength, handle_standard_2d_camera_movement
-from toolset.gui.common.walkmesh_materials import get_walkmesh_material_colors, populate_material_list_widget
+from toolset.gui.common.interaction.camera import (
+    calculate_zoom_strength,
+    handle_standard_2d_camera_movement,
+)
+from toolset.gui.common.walkmesh_materials import (
+    get_walkmesh_material_colors,
+    populate_material_list_widget,
+)
 from toolset.gui.editor import Editor
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
 
@@ -171,7 +180,7 @@ class BWMEditor(Editor):
         face: BWMFace | None = self._bwm.faceAt(world.x, world.y)
 
         handled_cam = handle_standard_2d_camera_movement(
-            self.ui.renderArea, screen, delta, world_data, buttons, keys
+            self.ui.renderArea, screen, delta, world_data, buttons, keys,
         )
 
         # Paint with left-drag unless camera movement consumed the input.

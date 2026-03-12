@@ -98,7 +98,7 @@ class BlenderSession:
     instance_to_object: dict[int, str] = None  # type: ignore[assignment]
     object_to_instance: dict[str, int] = None  # type: ignore[assignment]
     runtime_to_object: dict[int, str] = None  # type: ignore[assignment]
-    runtime_to_instance: dict[int, "GITObject"] = None  # type: ignore[assignment]
+    runtime_to_instance: dict[int, GITObject] = None  # type: ignore[assignment]
 
     def __post_init__(self):
         if self.instance_to_object is None:
@@ -268,7 +268,6 @@ class BlenderEditorController:
         stable fallback before explicit name bindings have been learned from
         instance-added events.
         """
-
         data = instance.serialize()
         instance_type = data.get("type", instance.__class__.__name__)
         primary_identifier = data.get("resref") or data.get("tag") or "instance"

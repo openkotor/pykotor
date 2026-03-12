@@ -6,9 +6,28 @@ from typing import TYPE_CHECKING, Any, Callable, Sequence, cast
 
 import qtpy
 
-from qtpy.QtCore import QModelIndex, QRect, QSize, QSortFilterProxyModel, QStringListModel, QTimer, Qt
+from qtpy.QtCore import (
+    QModelIndex,
+    QRect,
+    QSize,
+    QSortFilterProxyModel,
+    QStringListModel,
+    QTimer,
+    Qt,
+)
 from qtpy.QtGui import QFontMetrics, QStandardItem, QStandardItemModel
-from qtpy.QtWidgets import QApplication, QComboBox, QLineEdit, QListView, QMainWindow, QSizePolicy, QStyleOptionViewItem, QStyledItemDelegate, QVBoxLayout, QWidget
+from qtpy.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QLineEdit,
+    QListView,
+    QMainWindow,
+    QSizePolicy,
+    QStyleOptionViewItem,
+    QStyledItemDelegate,
+    QVBoxLayout,
+    QWidget,
+)
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QMargins, QModelIndex, QObject, QPoint

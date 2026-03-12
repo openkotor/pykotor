@@ -2,23 +2,27 @@
 
 LTR (Letter) resources store third-order Markov chain probability tables that the game uses to procedurally generate NPC names. The data encodes likelihoods for characters appearing at the start, middle, and end of names given zero, one, or two-character context. LTR files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
+**For mod developers:** LTR is used by the engine for random name generation; see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** LTR is a standalone binary; no GFF or 2DA dependencies.
+
 ## Table of Contents
 
 - KotOR LTR files format Documentation
   - Table of Contents
-  - [file structure Overview](#file-structure-overview)
+  - [File structure overview](#file-structure-overview)
   - [Binary format](#binary-format)
-    - [header](#header)
+    - [Header](#header)
     - [Single-Letter Block](#single-letter-block)
-    - [double-Letter Blocks](#double-letter-blocks)
-    - [Triple-Letter Blocks](#triple-letter-blocks)
+    - [Double-letter blocks](#double-letter-blocks)
+    - [Triple-letter blocks](#triple-letter-blocks)
   - [Probability Blocks](#probability-blocks)
   - [Name Generation Process](#name-generation-process)
   - [Implementation Details](#implementation-details)
 
 ---
 
-## file structure Overview
+## File structure overview
 
 - KotOR always uses the **28-character alphabet** (`a–z` plus `'` and `-`). **Neverwinter Nights (NWN) used 26 characters**; the header explicitly stores the count. This is a **KotOR-specific difference** from NWN.  
 - LTR files are binary and consist of a short header followed by three probability tables (singles, doubles, triples) stored as contiguous [float](GFF-File-Format#gff-data-types) arrays.  
@@ -30,7 +34,7 @@ LTR (Letter) resources store third-order Markov chain probability tables that th
 
 ## Binary format
 
-### header
+### Header
 
 | Name         | type    | offset | size | Description |
 | ------------ | ------- | ------ | ---- | ----------- |
@@ -38,7 +42,11 @@ LTR (Letter) resources store third-order Markov chain probability tables that th
 | file Version | [char](GFF-File-Format#gff-data-types) | 4 (0x04)   | 4    | Always `"V1.0"` |
 | Letter count | [uint8](GFF-File-Format#gff-data-types)   | 8 (0x08)   | 1    | Must be 26 or 28 (KotOR uses 28) |
 
-**Reference:** [`vendor/reone/src/libs/resource/format/ltrreader.cpp:27-38`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/ltrreader.cpp#L27-L38)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/format/ltrreader.cpp:27-38`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/ltrreader.cpp#L27-L38) - LTR header parsing
 
 ### Single-Letter Block
 
@@ -50,19 +58,23 @@ Immediately after the header, the **single-letter** probabilities are stored as 
 | Middle  | 28 floats | Probability of each letter appearing mid-name |
 | End     | 28 floats | Probability of each letter ending a name |
 
-### [double](GFF-File-Format#gff-data-types)-Letter Blocks
+### Double-letter blocks
 
 For each character in the alphabet there is a **[double](GFF-File-Format#gff-data-types)-letter** block (context length 1). Each block repeats the same start/middle/end layout (28 floats each).
 
 Total size (KotOR): `28 (letters) × 3 (position arrays) × 28 (values) × 4 bytes = 9,408 bytes`.
 
-### Triple-Letter Blocks
+### Triple-letter blocks
 
 The **triple-letter** section encodes 2-character context. There are `letter_count × letter_count` blocks (28 × 28 = 784 for KotOR), each with start/middle/end arrays of 28 floats.
 
 Total size (KotOR): `28 × 28 × 3 × 28 × 4 = 73,472 bytes`.
 
-**Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py:18-44`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L18-L44)
+**References**
+
+**PyKotor:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py:18-44`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L18-L44) - Block layout and sizes
 
 ---
 
@@ -74,8 +86,12 @@ Each block is represented by the `LTRBlock` class in PyKotor, mirroring the `Let
 - **Doubles (`_doubles`)**: Indexed by the previous character; used for the second character.  
 - **Triples (`_triples`)**: Two-dimensional array indexed by the previous two characters; used for every character after the second.  
 
-**Reference:** [`vendor/reone/include/reone/resource/ltr.h:24-48`](https://github.com/th3w1zard1/reone/blob/master/include/reone/resource/ltr.h#L24-L48)  
-**Reference:** [`vendor/xoreos/src/aurora/ltrfile.h:57-76`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/ltrfile.h#L57-L76)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/include/reone/resource/ltr.h:24-48`](https://github.com/th3w1zard1/reone/blob/master/include/reone/resource/ltr.h#L24-L48) - LTR block struct
+- [`vendor/xoreos/src/aurora/ltrfile.h:57-76`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/ltrfile.h#L57-L76) - Probability block layout
 
 ---
 
@@ -105,3 +121,8 @@ The runtime algorithm (implemented in PyKotor, Reone, Xoreos, KotOR.js, and Koto
   - [`vendor/Kotor.NET/Kotor.NET/Formats/KotorLTR/LTR.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLTR/LTR.cs)  
 
 Because PyKotor uses the structure described in the cited implementations, LTR resources can be exchanged with those toolchains without conversion steps.
+
+### See also
+
+- [KEY File Format](KEY-File-Format) - Resource resolution order for LTR by ResRef
+- [Home](Home) - Odyssey Engine basics and resource types

@@ -5,7 +5,16 @@ import json
 import os
 import random
 
-from ctypes import POINTER, WINFUNCTYPE, byref, c_ulong, c_void_p, c_wchar_p, cast as cast_with_ctypes, windll
+from ctypes import (
+    POINTER,
+    WINFUNCTYPE,
+    byref,
+    c_ulong,
+    c_void_p,
+    c_wchar_p,
+    cast as cast_with_ctypes,
+    windll,
+)
 from ctypes.wintypes import HMODULE, HWND, LPCWSTR
 from pathlib import WindowsPath
 from typing import TYPE_CHECKING, Sequence

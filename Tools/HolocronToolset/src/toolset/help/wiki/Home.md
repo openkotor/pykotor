@@ -11,7 +11,7 @@
 - [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.)
 - [Blender Integration](Blender-Integration)
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
-- [TSLPatcher Thread Complete Archive](TSLPatcher_Thread_Complete)
+- [TSLPatcher Thread Complete Container](TSLPatcher_Thread_Complete)
 - [HoloPatcher Feature Coverage Overview](Explanations-on-HoloPatcher-Internal-Logic)
 - **[TSLPatcher InstallList Syntax Guide](TSLPatcher-InstallList-Syntax)** ← Complete reference for file installation
 - **[TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax)** ← Complete reference for TLK ([TalkTable](TLK-File-Format)) modifications
@@ -54,7 +54,7 @@ The following information describes the resource system used by **KotOR and TSL*
 
 #### KEY Files
 
-- **[`chitin.key`](KEY-File-Format)**: Master index file that maps resource names to [BIF archives](BIF-File-Format) locations. Given a resource name, [chitin.key](KEY-File-Format) can be used to locate the master data file ([BIF](BIF-File-Format)) containing the resource.
+- **[`chitin.key`](KEY-File-Format)**: Master index file that maps resource names to [BIF containers](BIF-File-Format) locations. Given a resource name, [chitin.key](KEY-File-Format) can be used to locate the master data file ([BIF](BIF-File-Format)) containing the resource.
 - **[`dialog.tlk`](TLK-File-Format)**: Text resource file containing localized strings referenced by [StrRef](TLK-File-Format#string-references-strref) IDs. This centralizes strings for easy localization and allows changing text without modifying or recompiling scripts. Different language versions of [dialog.tlk](TLK-File-Format) can be installed for localization support.
 - **`kotor.ini`**: Configuration file with `[Alias]` section mapping logical directory names to physical paths. This allows the game to locate data files regardless of installation directory structure. **Note**: `nwn.ini` is the Neverwinter Nights equivalent and is not used in KotOR.
 
@@ -92,7 +92,7 @@ KotOR uses hexadecimal resource type identifiers derived from the Aurora engine 
 | SLT           | 0x07D8  | Unknown  Not used in KotOR                               |
 | [NSS](NSS-File-Format)           | 0x07D9  | NWScript source code (see [NSS File Format](NSS-File-Format))                            |
 | [NCS](NCS-File-Format)           | 0x07DA  | Compiled NWScript bytecode (see [NCS File Format](NCS-File-Format))                     |
-| [MOD](ERF-File-Format)           | 0x07DB  | Module archive ([ERF](ERF-File-Format) variant, see [ERF File Format](ERF-File-Format))                          |
+| [MOD](ERF-File-Format)           | 0x07DB  | Module container ([ERF](ERF-File-Format) variant, see [ERF File Format](ERF-File-Format))                          |
 | [ARE](GFF-File-Format#are-area)           | 0x07DC  | Area definition (see [GFF-ARE](GFF-ARE))                                 |
 | SET           | 0x07DD  | Unknown  Not used in KotOR                               |
 | [IFO](GFF-File-Format#ifo-module-info)           | 0x07DE  | Module information (see [GFF-IFO](GFF-IFO))                              |
@@ -133,17 +133,17 @@ KotOR uses hexadecimal resource type identifiers derived from the Aurora engine 
 | BTG           | 0x0806  | Blueprint trigger  Not used in KotOR       |
 | UTG           | 0x0807  | Unknown            Not used in KotOR   |
 | [JRL](GFF-File-Format#jrl-journal)           | 0x0808  | Journal/quest log (see [GFF-JRL](GFF-JRL))                               |
-| SAV           | 0x0809  | [Save game archives](ERF-File-Format) (see [ERF File Format](ERF-File-Format))                               |
+| SAV           | 0x0809  | [Save game containers](ERF-File-Format) (see [ERF File Format](ERF-File-Format))                               |
 | [UTW](GFF-File-Format#utw-waypoint)           | 0x080A  | [Waypoint Template](GFF-File-Format#utw-waypoint)                               |
 | 4PC           | 0x080B  | Unknown  Not used in KotOR          |
 | [SSF](SSF-File-Format)           | 0x080C  | [Sound Set Files](SSF-File-Format) (see [SSF File Format](SSF-File-Format))                                  |
-| HAK           | 0x080D  | Hak pak archive. Not used in KotOR                                |
+| HAK           | 0x080D  | Hak pak container. Not used in KotOR                                |
 | NWM           | 0x080E  | Neverwinter Nights module ([ERF](ERF-File-Format) variant, not used in KotOR)                                 |
 | BIK           | 0x080F  | Bink video format                                |
 | PTM           | 0x0811  | Unknown       Not used in KotOR         |
 | PTT           | 0x0812  | Unknown       Not used in KotOR         |
 | [ERF](ERF-File-Format)           | 0x270D  | Encapsulated Resource File (see [ERF File Format](ERF-File-Format))                      |
-| [BIF](BIF-File-Format)           | 0x270E  | Bioware Index File (archive, see [BIF File Format](BIF-File-Format))                    |
+| [BIF](BIF-File-Format)           | 0x270E  | Bioware Index File (container, see [BIF File Format](BIF-File-Format))                    |
 | [KEY](KEY-File-Format)           | 0x270F  | [KEY](KEY-File-Format) table ([BIF](BIF-File-Format) index, see [KEY File Format](KEY-File-Format))                          |
 
 #### Language IDs
@@ -379,7 +379,7 @@ Guides, patches, and community-maintained resources:
 - **[KOTOR-utils](https://github.com/JCarter426/KOTOR-utils)** - JCarter426's utility scripts and tools ([Mirror: th3w1zard1/KOTOR-utils](https://github.com/th3w1zard1/KOTOR-utils))
 - **[KotOR-Bioware-Libs](https://github.com/Fair-Strides/KotOR-Bioware-Libs)** - BioWare library references ([Mirror: th3w1zard1/KotOR-Bioware-Libs](https://github.com/th3w1zard1/KotOR-Bioware-Libs))
 - **[kotor_combat_faq](https://github.com/statsjedi/kotor_combat_faq)** - Combat mechanics documentation ([Mirror: th3w1zard1/kotor_combat_faq](https://github.com/th3w1zard1/kotor_combat_faq))
-- **[ds-kotor-modding-wiki](https://github.com/DeadlyStream/ds-kotor-modding-wiki)** - DeadlyStream modding wiki archive ([Mirror: th3w1zard1/ds-kotor-modding-wiki](https://github.com/th3w1zard1/ds-kotor-modding-wiki))
+- **[ds-kotor-modding-wiki](https://github.com/DeadlyStream/ds-kotor-modding-wiki)** - DeadlyStream modding wiki container ([Mirror: th3w1zard1/ds-kotor-modding-wiki](https://github.com/th3w1zard1/ds-kotor-modding-wiki))
 
 ### External Documentation
 

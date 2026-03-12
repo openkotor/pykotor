@@ -1,6 +1,20 @@
 from __future__ import annotations
 
-from ctypes import POINTER, POINTER as C_POINTER, Structure, byref, c_bool, c_char_p, c_int, c_uint, c_ulong, c_ulonglong, c_void_p, c_wchar_p, windll
+from ctypes import (
+    POINTER,
+    POINTER as C_POINTER,
+    Structure,
+    byref,
+    c_bool,
+    c_char_p,
+    c_int,
+    c_uint,
+    c_ulong,
+    c_ulonglong,
+    c_void_p,
+    c_wchar_p,
+    windll,
+)
 from ctypes.wintypes import BOOL, DWORD, HWND, LPCWSTR, LPWSTR, ULONG
 from enum import IntFlag
 from typing import TYPE_CHECKING, Callable, ClassVar, Sequence

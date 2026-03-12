@@ -38,8 +38,8 @@ from pykotor.resource.generics.ifo import IFO, bytes_ifo
 from pykotor.resource.generics.utd import UTD, bytes_utd
 from pykotor.resource.type import ResourceType
 from pykotor.tools import model
-from utility.misc import get_normalized_extension
 from utility.common.geometry import Vector2, Vector3
+from utility.misc import get_normalized_extension
 
 if TYPE_CHECKING:
     import os

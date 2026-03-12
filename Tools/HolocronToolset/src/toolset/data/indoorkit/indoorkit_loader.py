@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from pykotor.common.indoorkit import Kit
 
 
-def load_kits(path: "os.PathLike | str") -> tuple[list[Kit], list[tuple[str, Path, str]]]:
+def load_kits(path: os.PathLike | str) -> tuple[list[Kit], list[tuple[str, Path, str]]]:
     """Toolset compatibility wrapper for loading kits.
 
     Core parsing + missing-file reporting is implemented in `pykotor.tools.indoorkit`.

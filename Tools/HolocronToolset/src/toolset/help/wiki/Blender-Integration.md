@@ -110,7 +110,7 @@ When generating a layout walkmesh:
 2. if a template exists, it deep-copies that walkmesh and **re-anchors** it at the requested room position
 3. if no template exists, the Toolset falls back to the older placeholder floor quad
 
-This means the “procedural” path now preserves:
+This means the "procedural" path now preserves:
 
 - real face materials
 - real room extents
@@ -153,7 +153,7 @@ QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib \
 ## Current limitations
 
 - The bridge is focused on the **Toolset editing session**, not on replacing every Blender-native workflow.
-- External asset import is supported, but end-to-end “import arbitrary asset → automatically ship as final KotOR resource” is still a guided pipeline rather than a one-click conversion path.
+- External asset import is supported, but end-to-end "import arbitrary asset → automatically ship as final KotOR resource" is still a guided pipeline rather than a one-click conversion path.
 - Engine-level documentation updates that require direct K1 + TSL binary analysis were **not** added here, because those binaries were not available in the current environment during this work.
 
 ## Related pages

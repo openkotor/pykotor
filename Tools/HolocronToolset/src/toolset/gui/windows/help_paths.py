@@ -39,7 +39,7 @@ def get_help_file_path(relative_path: str) -> Path | None:
                 exe_path / "help",
                 exe_path / "wiki",
                 exe_path / "vendor" / "xoreos-docs",
-            ]
+            ],
         )
 
     # Development mode: check multiple locations
@@ -70,7 +70,7 @@ def get_help_file_path(relative_path: str) -> Path | None:
             Path("./help"),
             Path("./wiki"),
             Path("./vendor/xoreos-docs"),
-        ]
+        ],
     )
 
     # Try each search path
@@ -111,7 +111,7 @@ def get_help_base_paths() -> list[Path]:
                 exe_path / "help",
                 exe_path / "wiki",  # Wiki bundled by PyInstaller via --include-wiki-if-present
                 exe_path / "vendor" / "xoreos-docs",
-            ]
+            ],
         )
 
     # Development mode
@@ -127,7 +127,7 @@ def get_help_base_paths() -> list[Path]:
             Path("./help"),
             Path("./wiki"),
             Path("./vendor/xoreos-docs"),
-        ]
+        ],
     )
 
     # Return only existing paths

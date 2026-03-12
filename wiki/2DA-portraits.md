@@ -11,7 +11,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Portrait label |
-| `baseresref` | [ResRef](GFF-File-Format#gff-data-types) | Base portrait image [ResRef](GFF-File-Format#gff-data-types) |
+| `baseresref` | *ResRef* | Base portrait image *ResRef* |
 | `appearancenumber` | Integer | Associated appearance ID |
 | `appearance_s` | Integer | Small appearance ID |
 | `appearance_l` | Integer | Large appearance ID |

@@ -10,8 +10,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 from loggerplus import RobustLogger
-from utility.system.os_helper import is_frozen, requires_admin
 from utility.misc import ensure_directory_exists
+from utility.system.os_helper import is_frozen, requires_admin
 
 if TYPE_CHECKING:
     from logging import Logger

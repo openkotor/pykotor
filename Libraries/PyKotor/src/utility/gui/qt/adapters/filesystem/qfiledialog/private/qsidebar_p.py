@@ -595,7 +595,9 @@ class QSidebar(QListView):
         if self.indexAt(position).isValid():
             # Match C++: QAction *action = new QAction(QFileDialog::tr("Remove"), this);
             # Import QFileDialog to use its tr() method, matching C++ QFileDialog::tr()
-            from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as PythonQFileDialog
+            from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import (
+                QFileDialog as PythonQFileDialog,
+            )
 
             action = QAction(PythonQFileDialog.tr("Remove"), self)
             # Match C++: if (indexAt(position).data(QUrlModel::UrlRole).toUrl().path().isEmpty()) action->setEnabled(false);

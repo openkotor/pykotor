@@ -4,7 +4,7 @@ This guide explains how to modify [NCS files](NCS-File-Format) directly using TS
 
 ## Overview
 
-The `[HACKList]` section in TSLPatcher's changes.ini file enables you to modify compiled [NCS files](NCS-File-Format) (NWScript bytecode, historically called "Neverwinter Compiled Script" but used identically in **KotOR**) directly at the binary level. This advanced feature allows precise [byte](GFF-File-Format#gff-data-types)-level modifications to script files without recompiling from [NSS](NSS-File-Format) source code, making it ideal for:
+The `[HACKList]` section in TSLPatcher's changes.ini file enables you to modify compiled [NCS files](NCS-File-Format) (NWScript bytecode, historically called "Neverwinter Compiled Script" but used identically in **KotOR**) directly at the binary level. This advanced feature allows precise [byte](https://en.wikipedia.org/wiki/Byte)-level modifications to script files without recompiling from [NSS](NSS-File-Format) source code, making it ideal for:
 
 - Patching numerical values in existing compiled scripts
 - Injecting dynamically-generated string references (StrRefs) and [2DA](2DA-File-Format) memory values
@@ -74,7 +74,7 @@ Each [NCS file](NCS-File-Format) requires its own section (e.g., `[myscript.ncs]
 **Destination values:**
 
 - `override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM archive
+- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM container
 - Use backslashes for path separators
 
 **Important:** The `ReplaceFile` [KEY](KEY-File-Format) in HACKList does NOT use an exclamation point prefix. This is unique to HACKList compared to other patch lists.
@@ -99,7 +99,7 @@ offset=type:value
 | value format | type | size | Description |
 |--------------|------|------|-------------|
 | Numeric (no prefix) | u16 | 2 bytes | 16-bit unsigned integer (default) |
-| `u8:123` | u8 | 1 [byte](GFF-File-Format#gff-data-types) | 8-bit unsigned integer (0-255) |
+| `u8:123` | u8 | 1 [byte](https://en.wikipedia.org/wiki/Byte) | 8-bit unsigned integer (0-255) |
 | `u16:12345` | u16 | 2 bytes | 16-bit unsigned integer (0-65535) |
 | `u32:123456` | u32 | 4 bytes | 32-bit unsigned integer |
 | `StrRef0` | [StrRef](TLK-File-Format#string-references-strref) | Varies* | Reference to [TLK](TLK-File-Format) string from memory |
@@ -111,7 +111,7 @@ offset=type:value
 
 ### Endianness
 
-All multi-[byte](GFF-File-Format#gff-data-types) values are written in **[big-endian](https://en.wikipedia.org/wiki/Endianness)** (network [byte](GFF-File-Format#gff-data-types) order), which is standard for KOTOR's binary formats.
+All multi-[byte](https://en.wikipedia.org/wiki/Byte) values are written in **[big-endian](https://en.wikipedia.org/wiki/Endianness)** (network [byte](https://en.wikipedia.org/wiki/Byte) order), which is standard for KOTOR's binary formats.
 
 ### type Compatibility Notes
 
@@ -178,7 +178,7 @@ File0=myscript.ncs
 
 ## offset Calculation
 
-Determining the correct [byte](GFF-File-Format#gff-data-types) offset is the most critical aspect of HACKList usage.
+Determining the correct [byte](https://en.wikipedia.org/wiki/Byte) offset is the most critical aspect of HACKList usage.
 
 ### [NCS files](NCS-File-Format) structure
 
@@ -192,19 +192,19 @@ Byte Offset  Description
 0x0D+        Compiled bytecode instructions
 ```
 
-The header is 13 bytes (0x0D), so the first instruction [byte](GFF-File-Format#gff-data-types) is at offset 0x0D.
+The header is 13 bytes (0x0D), so the first instruction [byte](https://en.wikipedia.org/wiki/Byte) is at offset 0x0D.
 
 ### Finding offsets with DeNCS
 
-**DeNCS** (Decompiler for [NCS](NCS-File-Format)) is a Java-based disassembler that can help you locate exact [byte](GFF-File-Format#gff-data-types) offsets in [NCS files](NCS-File-Format).
+**DeNCS** (Decompiler for [NCS](NCS-File-Format)) is a Java-based disassembler that can help you locate exact [byte](https://en.wikipedia.org/wiki/Byte) offsets in [NCS files](NCS-File-Format).
 
 #### Using DeNCS
 
 1. Load your [NCS file](NCS-File-Format) in DeNCS
 2. Disassemble to view instruction-level operations
-3. Identify the target instruction and note its [byte](GFF-File-Format#gff-data-types) offset
+3. Identify the target instruction and note its [byte](https://en.wikipedia.org/wiki/Byte) offset
 4. If modifying an instruction's operand, add to the instruction's offset:
-   - For CONSTI operands: offset + 1 (skip the opcode [byte](GFF-File-Format#gff-data-types))
+   - For CONSTI operands: offset + 1 (skip the opcode [byte](https://en.wikipedia.org/wiki/Byte))
    - For other operands: depends on instruction type
 
 #### Example Disassembly
@@ -241,7 +241,7 @@ Both formats are supported:
 - **Hexadecimal**: `0x20`, `0x100`, `0xFF`
 - **Decimal**: `32`, `256`, `255`
 
-Use hexadecimal for convenience when working with [byte](GFF-File-Format#gff-data-types)-aligned operations.
+Use hexadecimal for convenience when working with [byte](https://en.wikipedia.org/wiki/Byte)-aligned operations.
 
 ## Examples
 
@@ -340,9 +340,9 @@ ReplaceFile=1
 0x60=u32:0xDEADBEEF
 ```
 
-### Example 6: Saving to Archive
+### Example 6: Saving to Container
 
-Save modified scripts to a [module archives](ERF-File-Format):
+Save modified scripts to a [module containers](ERF-File-Format):
 
 ```ini
 [HACKList]
@@ -360,12 +360,12 @@ ReplaceFile=1
 
 ## DeNCS Reference
 
-DeNCS provides comprehensive [NCS](NCS-File-Format) disassembly capabilities for locating exact [byte](GFF-File-Format#gff-data-types) offsets. Understanding its output is essential for HACKList usage.
+DeNCS provides comprehensive [NCS](NCS-File-Format) disassembly capabilities for locating exact [byte](https://en.wikipedia.org/wiki/Byte) offsets. Understanding its output is essential for HACKList usage.
 
 ### [KEY](KEY-File-Format) DeNCS Features
 
 - **Instruction-level disassembly**: See each bytecode instruction
-- **offset mapping**: Exact [byte](GFF-File-Format#gff-data-types) positions for each instruction
+- **offset mapping**: Exact [byte](https://en.wikipedia.org/wiki/Byte) positions for each instruction
 - **Operand extraction**: View data embedded in instructions
 - **Jump resolution**: Understand control flow
 
@@ -389,7 +389,7 @@ After NOP: []
 ...
 ```
 
-To modify the CONSTI at 0x0E, you'd patch bytes 0x0F-0x12 (the 4-[byte](GFF-File-Format#gff-data-types) operand).
+To modify the CONSTI at 0x0E, you'd patch bytes 0x0F-0x12 (the 4-[byte](https://en.wikipedia.org/wiki/Byte) operand).
 
 ### Common Instruction Patterns
 
@@ -402,7 +402,7 @@ CONSTI <value>
 CPDOWNSP -4
 ```
 
-This pushes a 4-[byte](GFF-File-Format#gff-data-types) integer onto the stack. The value is at offset +1.
+This pushes a 4-[byte](https://en.wikipedia.org/wiki/Byte) integer onto the stack. The value is at offset +1.
 
 **Calling a function:**
 
@@ -410,7 +410,7 @@ This pushes a 4-[byte](GFF-File-Format#gff-data-types) integer onto the stack. T
 ACTION <function_pointer>
 ```
 
-The function pointer is a 4-[byte](GFF-File-Format#gff-data-types) address at offset +1.
+The function pointer is a 4-[byte](https://en.wikipedia.org/wiki/Byte) address at offset +1.
 
 **Conditional jumps:**
 
@@ -418,7 +418,7 @@ The function pointer is a 4-[byte](GFF-File-Format#gff-data-types) address at of
 JZ <offset>
 ```
 
-The jump offset is a 4-[byte](GFF-File-Format#gff-data-types) signed integer at offset +1.
+The jump offset is a 4-[byte](https://en.wikipedia.org/wiki/Byte) signed integer at offset +1.
 
 ## Common Use Cases
 
@@ -517,7 +517,7 @@ File0=buggy_script.ncs
 1. Verify the offset using DeNCS
 2. Check if you're modifying the correct bytes (instruction vs operand)
 3. Ensure you're not overwriting opcodes accidentally
-4. Verify big-endian [byte](GFF-File-Format#gff-data-types) order for multi-[byte](GFF-File-Format#gff-data-types) values
+4. Verify big-endian [byte](https://en.wikipedia.org/wiki/Byte) order for multi-[byte](https://en.wikipedia.org/wiki/Byte) values
 
 ### Memory Token Not Defined
 
@@ -555,12 +555,12 @@ File0=buggy_script.ncs
 
 ### Archival Insertion Issues
 
-**Problem:** Modified script not appearing in [ERF](ERF-File-Format)/MOD/RIM archive
+**Problem:** Modified script not appearing in [ERF](ERF-File-Format)/MOD/RIM container
 
 **Solutions:**
 
 1. Verify `!Destination` path uses backslashes
-2. Check archive exists before insertion
+2. Check container exists before insertion
 3. Ensure destination folder structure is correct
 4. Verify `ReplaceFile` setting (0 = skip if exists, 1 = overwrite)
 
@@ -584,7 +584,7 @@ All memory tokens from TLKList and 2DAList are available during HACKList process
 
 ### Byte-Level Writing
 
-All multi-[byte](GFF-File-Format#gff-data-types) values are written in **[big-endian](https://en.wikipedia.org/wiki/Endianness)** format:
+All multi-[byte](https://en.wikipedia.org/wiki/Byte) values are written in **[big-endian](https://en.wikipedia.org/wiki/Endianness)** format:
 
 - `u16:0x1234` writes `12 34`
 - `u32:0x12345678` writes `12 34 56 78`
@@ -610,7 +610,7 @@ I have no idea why this is the exclusive instance of Stoffe's variables that doe
 
 - PyKotor's HACKList implementation is compatible with TSLPatcher v1.2.10b+
 - All [NCS](NCS-File-Format) versions V1.0 are supported
-- Archive insertion works for [ERF](ERF-File-Format), MOD, and RIM formats
+- Container insertion works for [ERF](ERF-File-Format), MOD, and RIM formats
 - Memory tokens from TLKList and 2DAList are fully supported
 - `!FieldPath` is **not** supported (only numeric values)
 
@@ -627,9 +627,9 @@ I have no idea why this is the exclusive instance of Stoffe's variables that doe
 
 When working with [NCS](NCS-File-Format) bytecode, be aware of alignment requirements:
 
-- Instructions start on any [byte](GFF-File-Format#gff-data-types) boundary (no alignment enforced)
+- Instructions start on any [byte](https://en.wikipedia.org/wiki/Byte) boundary (no alignment enforced)
 - Operands follow immediately after opcodes
-- Multi-[byte](GFF-File-Format#gff-data-types) values are written as-is without padding
+- Multi-[byte](https://en.wikipedia.org/wiki/Byte) values are written as-is without padding
 
 ### Inserting vs Modifying
 
@@ -663,8 +663,8 @@ HACKList myscript.ncs: writing unsigned WORD (16-bit) 12345 at offset 0x20
 HACKList modifications are very fast since they're simple binary writes. However:
 
 - Large files with many patches may take slightly longer
-- Archive insertion requires archive rewriting
-- Always test thoroughly as [byte](GFF-File-Format#gff-data-types)-level modifications can break scripts
+- Container insertion requires container rewriting
+- Always test thoroughly as [byte](https://en.wikipedia.org/wiki/Byte)-level modifications can break scripts
 
 ### Security Warnings
 
@@ -679,6 +679,6 @@ Always validate offsets and values before distribution.
 
 ## Conclusion
 
-HACKList provides powerful [byte](GFF-File-Format#gff-data-types)-level control over compiled [NCS](NCS-File-Format) scripts, enabling surgical modifications without source code access. While it requires understanding [NCS](NCS-File-Format) bytecode structure and careful offset calculation, it's essential for advanced modding scenarios involving dynamic value injection and hardcoded constant patching.
+HACKList provides powerful [byte](https://en.wikipedia.org/wiki/Byte)-level control over compiled [NCS](NCS-File-Format) scripts, enabling surgical modifications without source code access. While it requires understanding [NCS](NCS-File-Format) bytecode structure and careful offset calculation, it's essential for advanced modding scenarios involving dynamic value injection and hardcoded constant patching.
 
-For most modding needs, CompileList ([NSS](NSS-File-Format) source compilation) is preferred. HACKList should be reserved for cases where source code is unavailable or where [byte](GFF-File-Format#gff-data-types)-level precision is required.
+For most modding needs, CompileList ([NSS](NSS-File-Format) source compilation) is preferred. HACKList should be reserved for cases where source code is unavailable or where [byte](https://en.wikipedia.org/wiki/Byte)-level precision is required.

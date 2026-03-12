@@ -12,9 +12,9 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 |------------|------|-------------|
 | `label` | string | Trap type label |
 | `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for trap name |
-| `model` | [ResRef](GFF-File-Format#gff-data-types) | Trap [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `explosionsound` | [ResRef](GFF-File-Format#gff-data-types) | Explosion sound effect [ResRef](GFF-File-Format#gff-data-types) |
-| `resref` | [ResRef](GFF-File-Format#gff-data-types) | Trap script [ResRef](GFF-File-Format#gff-data-types) |
+| `model` | *ResRef* | Trap [model](MDL-MDX-File-Format) *ResRef* |
+| `explosionsound` | *ResRef* | Explosion sound effect *ResRef* |
+| `resref` | *ResRef* | Trap script *ResRef* |
 
 **References**:
 

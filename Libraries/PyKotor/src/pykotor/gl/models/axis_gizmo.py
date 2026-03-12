@@ -45,9 +45,18 @@ if HAS_PYOPENGL:
         glEnable,
     )
     from OpenGL.raw.GL.VERSION.GL_1_1 import glDrawArrays  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_1_5 import GL_ARRAY_BUFFER, GL_STATIC_DRAW, glBindBuffer, glBufferData  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_2_0 import glEnableVertexAttribArray  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_3_0 import glBindVertexArray  # pyright: ignore[reportMissingImports]
+    from OpenGL.raw.GL.VERSION.GL_1_5 import (  # pyright: ignore[reportMissingImports]
+        GL_ARRAY_BUFFER,
+        GL_STATIC_DRAW,
+        glBindBuffer,
+        glBufferData,
+    )
+    from OpenGL.raw.GL.VERSION.GL_2_0 import (
+        glEnableVertexAttribArray,  # pyright: ignore[reportMissingImports]
+    )
+    from OpenGL.raw.GL.VERSION.GL_3_0 import (
+        glBindVertexArray,  # pyright: ignore[reportMissingImports]
+    )
 else:
     glGenBuffers = missing_gl_func("glGenBuffers")
     glGenVertexArrays = missing_gl_func("glGenVertexArrays")

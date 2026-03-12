@@ -15,13 +15,13 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `modela` through `modeln` | ResRef (optional) | [model](MDL-MDX-File-Format) ResRefs for different body parts or variations ([models](MDL-MDX-File-Format) a-n) |
 | `texa` through `texn` | ResRef (optional) | [texture](TPC-File-Format) ResRefs for different body parts ([textures](TPC-File-Format) a-n) |
 | `texaevil`, `texbevil`, `texievil`, `texlevil`, `texnevil` | ResRef (optional) | Dark side variant [textures](TPC-File-Format) |
-| `race` | ResRef (optional) | Race identifier [ResRef](GFF-File-Format#gff-data-types) |
-| `racetex` | ResRef (optional) | Race-specific [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `race` | ResRef (optional) | Race identifier *ResRef* |
+| `racetex` | ResRef (optional) | Race-specific [texture](TPC-File-Format) *ResRef* |
 | `racialtype` | Integer | Numeric racial type identifier |
 | `normalhead` | Integer (optional) | Default head appearance ID |
 | `backuphead` | Integer (optional) | Fallback head appearance ID |
-| `portrait` | ResRef (optional) | Portrait image [ResRef](GFF-File-Format#gff-data-types) |
-| `skin` | ResRef (optional) | Skin [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `portrait` | ResRef (optional) | Portrait image *ResRef* |
+| `skin` | ResRef (optional) | Skin [texture](TPC-File-Format) *ResRef* |
 | `headtexe`, `headtexg`, `headtexve`, `headtexvg` | ResRef (optional) | Head [texture](TPC-File-Format) variations |
 | `headbone` | String (optional) | Bone name for head attachment |
 | `height` | [Float](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) | Character height multiplier |
@@ -45,10 +45,10 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `haslegs` | Boolean | Whether creature has legs |
 | `groundtilt` | Boolean | Whether ground tilt is enabled |
 | `footsteptype` | Integer (optional) | Footstep sound type |
-| `footstepsound` | ResRef (optional) | Footstep sound [ResRef](GFF-File-Format#gff-data-types) |
+| `footstepsound` | ResRef (optional) | Footstep sound *ResRef* |
 | `footstepvolume` | Boolean | Whether footstep volume is enabled |
-| `armorSound` | ResRef (optional) | Armor sound effect [ResRef](GFF-File-Format#gff-data-types) |
-| `combatSound` | ResRef (optional) | Combat sound effect [ResRef](GFF-File-Format#gff-data-types) |
+| `armorSound` | ResRef (optional) | Armor sound effect *ResRef* |
+| `combatSound` | ResRef (optional) | Combat sound effect *ResRef* |
 | `soundapptype` | Integer (optional) | Sound appearance type |
 | `bloodcolr` | string | Blood color identifier |
 | `deathvfx` | Integer (optional) | Death visual effect ID |
@@ -63,7 +63,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `wingTailScale` | Boolean | Whether wing/tail scaling is enabled |
 | `helmetScaleF` | String (optional) | Female helmet scale |
 | `helmetScaleM` | String (optional) | Male helmet scale |
-| `envmap` | ResRef (optional) | Environment map [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `envmap` | ResRef (optional) | Environment map [texture](TPC-File-Format) *ResRef* |
 | `bodyBag` | Integer (optional) | Body bag appearance ID |
 | `stringRef` | Integer (optional) | string reference for appearance name |
 | `driveaccl` | Integer | Vehicle drive acceleration |
@@ -101,9 +101,9 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:73`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L73) - [StrRef](TLK-File-Format#string-references-strref) column definition for appearance.2da (K1: string_ref)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:248`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L248) - [StrRef](TLK-File-Format#string-references-strref) column definition for appearance.2da (K2: string_ref)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:155`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L155) - [ResRef](GFF-File-Format#gff-data-types) column definition for appearance.2da (race)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:168`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L168) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definitions for appearance.2da (modela through modelj)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:213-214`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L213-L214) - [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definitions for appearance.2da (racetex, texa through texj, headtexve, headtexe, headtexvg, headtexg)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:155`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L155) - *ResRef* column definition for appearance.2da (race)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:168`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L168) - [model](MDL-MDX-File-Format) *ResRef* column definitions for appearance.2da (modela through modelj)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:213-214`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L213-L214) - [texture](TPC-File-Format) *ResRef* column definitions for appearance.2da (racetex, texa through texj, headtexve, headtexe, headtexvg, headtexg)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:456`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L456) - TwoDARegistry.APPEARANCES constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:524`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L524) - [GFF](GFF-File-Format) field mapping: "Appearance_Type" -> appearance.2da
 

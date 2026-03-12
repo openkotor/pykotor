@@ -12,7 +12,9 @@ from qtpy.QtCore import QObject, QUrl, Qt, Signal  # pyright: ignore[reportPriva
 from qtpy.QtGui import QColor, QFont
 from qtpy.QtWidgets import QFileDialog, QMessageBox
 
-from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qfiledialogoptions import QFileDialogOptions
+from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qfiledialogoptions import (
+    QFileDialogOptions,
+)
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -248,15 +250,21 @@ class QPlatformDialogHelper(QObject):
         new_cls = cls
         if cls is QPlatformDialogHelper:
             if sys.platform in ("win32", "cygwin"):
-                from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qwindowsdialoghelpers import QWindowsDialogHelper
+                from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qwindowsdialoghelpers import (
+                    QWindowsDialogHelper,
+                )
 
                 new_cls = QWindowsDialogHelper
             elif sys.platform == "linux":
-                from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qlinuxdialoghelpers import LinuxFileDialogHelper
+                from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qlinuxdialoghelpers import (
+                    LinuxFileDialogHelper,
+                )
 
                 new_cls = LinuxFileDialogHelper
             elif sys.platform == "darwin":
-                from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qmacdialoghelpers import QMacDialogHelper
+                from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qmacdialoghelpers import (
+                    QMacDialogHelper,
+                )
 
                 new_cls = QMacDialogHelper
             else:

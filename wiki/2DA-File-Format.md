@@ -8,7 +8,9 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 **Related formats:** 2DA files are often referenced by [GFF files](GFF-File-Format) (such as [UTC (Creature)](GFF-File-Format#utc-creature), [UTI (Item)](GFF-File-Format#uti-item), [UTP (Placeable)](GFF-File-Format#utp-placeable) templates) and may contain references to [TLK files](TLK-File-Format) for text strings.
 
-**Important**: While the 2DA file format structure is shared across BioWare's Aurora engine games (including Neverwinter Nights, Dragon Age, and Jade Empire), this documentation focuses exclusively on KotOR and KotOR 2. All 2DA file examples, column structures, and engine usage descriptions are specific to these games. References to vendor implementations are marked as either KotOR-specific or generic Aurora engine code (shared format).
+**Important**: While the 2DA file format structure is shared across BioWare's Aurora, Odyssey, and probably even Eclipse's engines (including Neverwinter Nights, Dragon Age, and Jade Empire), this documentation focuses exclusively on KotOR and KotOR 2. All 2DA file examples, column structures, and engine usage descriptions are specific to these games. References to vendor implementations are marked as either *KotOR*-specific or generic *Aurora* engine code (shared format).
+
+**Document Structure:** All individual 2DA table documentation (e.g. [appearance.2da](2DA-File-Format#appearance2da), [baseitems.2da](2DA-File-Format#baseitems2da)) is inlined into this document with anchor links below. Separate wiki pages (e.g. [2DA-appearance](2DA-File-Format#appearance2da), [2DA-baseitems](2DA-File-Format#baseitems2da)) exist as stubs that link to the corresponding sections in this document; they do not duplicate the full content.
 
 ## Table of Contents
 
@@ -18,47 +20,47 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
   - [Format](#format)
     - [File Header](#file-header)
     - [Column headers](#column-headers)
-    - [Row count](#row-count)
+    - [Row Count](#row-count)
     - [Row Labels](#row-labels)
-    - [Cell data offsets](#cell-data-offsets)
-    - [Cell data string Table](#cell-data-string-table)
+    - [Cell Data Offsets](#cell-data-offsets)
+    - [Cell Data String Table](#cell-data-string-table)
   - [data structure](#data-structure)
     - [TwoDA Class](#twoda-class)
     - [TwoDARow Class](#twodarow-class)
-  - [Cell value types](#cell-value-types)
+  - [Cell Value Types](#cell-value-types)
   - [Confirmed Engine Usage](#confirmed-engine-usage)
-  - [Known 2DA files](#known-2da-files)
-  - [Character \& Combat 2DA files](#character--combat-2da-files)
+  - [Known 2DA Files](#known-2da-files)
+  - [Character \& Combat 2DA Files](#character--combat-2da-files)
     - [appearance.2da](#appearance2da)
     - [baseitems.2da](#baseitems2da)
     - [classes.2da](#classes2da)
     - [feat.2da](#feat2da)
     - [skills.2da](#skills2da)
     - [spells.2da](#spells2da)
-  - [Items \& Properties 2DA files](#items--properties-2da-files)
+  - [Items \& Properties 2DA Files](#items--properties-2da-files)
     - [itemprops.2da](#itemprops2da)
     - [iprp\_feats.2da](#iprp_feats2da)
     - [iprp\_spells.2da](#iprp_spells2da)
     - [iprp\_ammocost.2da](#iprp_ammocost2da)
     - [iprp\_damagecost.2da](#iprp_damagecost2da)
-  - [Objects \& Area 2DA files](#objects--area-2da-files)
+  - [Objects \& Area 2DA Files](#objects--area-2da-files)
     - [placeables.2da](#placeables2da)
     - [genericdoors.2da](#genericdoors2da)
     - [doortypes.2da](#doortypes2da)
     - [soundset.2da](#soundset2da)
-  - [Visual Effects \& animations 2DA files](#visual-effects--animations-2da-files)
+  - [Visual Effects \& Animations 2DA Files](#visual-effects--animations-2da-files)
     - [visualeffects.2da](#visualeffects2da)
     - [portraits.2da](#portraits2da)
     - [heads.2da](#heads2da)
-  - [Progression Tables 2DA files](#progression-tables-2da-files)
+  - [Progression Tables 2DA Files](#progression-tables-2da-files)
     - [classpowergain.2da](#classpowergain2da)
     - [cls\_atk\_\*.2da](#cls_atk_2da)
     - [cls\_savthr\_\*.2da](#cls_savthr_2da)
-  - [Name Generation 2DA files](#name-generation-2da-files)
+  - [Name Generation 2DA Files](#name-generation-2da-files)
     - [humanfirst.2da](#humanfirst2da)
     - [humanlast.2da](#humanlast2da)
-    - [Other Name Generation files](#other-name-generation-files)
-  - [Additional 2DA files](#additional-2da-files)
+    - [Other Name Generation Files](#other-name-generation-files)
+  - [Additional 2DA Files](#additional-2da-files)
     - [ambientmusic.2da](#ambientmusic2da)
     - [ambientsound.2da](#ambientsound2da)
     - [ammunitiontypes.2da](#ammunitiontypes2da)
@@ -97,7 +99,7 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
     - [videoeffects.2da](#videoeffects2da)
     - [planetary.2da](#planetary2da)
     - [cursors.2da](#cursors2da)
-  - [Item Property Parameter \& Cost Tables 2DA files](#item-property-parameter--cost-tables-2da-files)
+  - [Item Property Parameter \& Cost Tables 2DA Files](#item-property-parameter--cost-tables-2da-files)
     - [iprp\_paramtable.2da](#iprp_paramtable2da)
     - [iprp\_costtable.2da](#iprp_costtable2da)
     - [iprp\_abilities.2da](#iprp_abilities2da)
@@ -223,7 +225,7 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 ## file structure Overview
 
-2DA files store tabular game data in a compact format used by the KotOR game engine. files use version "V2.b" and have the `.2da` extension. The engine loads 2DA files using the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+2DA files store tabular game data in a compact format used by the KotOR game engine. files use version "V2.b" and have the `.2da` extension. The engine loads 2DA files using the same *[Resource Resolution Order](KEY-File-Format#key-file-purpose)* as other resources (override, MOD/SAV, KEY/BIF).
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/)
 
@@ -236,67 +238,67 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 - [`vendor/KotOR.js/src/resource/TwoDAObject.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/TwoDAObject.ts) - TypeScript 2DA parser with memory-efficient caching
 - [`vendor/Kotor.NET/Kotor.NET/Formats/Kotor2DA/Kotor2DA.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/Kotor2DA.cs) - .NET 2DA reader/writer
 
-**See Also:**
+### See Also
 
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) - Modding 2DA files with TSLPatcher
-- [GFF File Format](GFF-File-Format) - Related format that often references 2DA data
-- [TLK File Format](TLK-File-Format) - Text strings referenced by 2DA entries
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) - Modding 2DA files with *TSLPatcher*
+- [GFF File Format](GFF-File-Format) - Related format that often references *2DA* data
+- [TLK File Format](TLK-File-Format) - Text strings referenced by *2DA* entries
 
 ---
 
 ## format
 
-The 2DA file format (version "V2.b") is the representation used by the game engine.
+The *2DA* file format (version "V2.b") is the representation used by the game engine.
 
-### File header
+### File Header
 
-The file header is 9 bytes in size:
+The file header is `9` bytes in size:
 
 | Name         | type    | offset | size | Description                                    |
 | ------------ | ------- | ------ | ---- | ---------------------------------------------- |
-| file type    | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | Always `"2DA "` (space-padded) or `"2DA\t"` (tab-padded) |
-| file Version | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | Always `"V2.b"`              |
-| Line Break   | [uint8](GFF-File-Format#gff-data-types)   | 8 (0x08) | 1    | Newline character (`\n`, value `0x0A`)        |
+| file type    | [char](GFF-File-Format#gff-data-types) | `0` (0x00) | `4`    | Always `"2DA "` (space-padded) or `"2DA\t"` (tab-padded) |
+| file Version | [char](GFF-File-Format#gff-data-types) | `4` (0x04) | `4`    | Always `"V2.b"`              |
+| Line Break   | [uint8](GFF-File-Format#gff-data-types)   | `8` (0x08) | `1`    | Newline character (`\n`, value `0x0A`)        |
 
-The file type can be either `"2DA "` (space-padded) or `"2DA\t"` (tab-padded). Both are valid and accepted by the game engine.
+The file type can be either `"2DA "` (space-padded) or `"2DA\t"` (tab-padded). Both are valid and accepted by the KotOR game engine.
 
 **References**:
 
-- [`vendor/reone/src/libs/resource/format/2dareader.cpp:29-32`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp#L29-L32) - KotOR-specific header validation
-- [`vendor/xoreos/src/aurora/2dafile.cpp:48-51`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L48-L51) - Generic Aurora engine header constants (format shared across KotOR and other Aurora games)
-- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/2DAObject.cs:25-32`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L25-L32) - KotOR-specific header reading
+- [`vendor/reone/src/libs/resource/format/2dareader.cpp:29-32`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp#L29-L32) - *KotOR*-specific header validation
+- [`vendor/xoreos/src/aurora/2dafile.cpp:48-51`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L48-L51) - Generic *Aurora* engine header constants (format shared across *KotOR* and other *Aurora* games)
+- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/2DAObject.cs:25-32`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L25-L32) - *KotOR*-specific header reading
 
-### Column headers
+### Column Headers
 
 Column headers immediately follow the header, terminated by a [null byte](https://en.cppreference.com/w/c/string/byte):
 
 | Name            | type    | Description                                                      |
 | --------------- | ------- | ---------------------------------------------------------------- |
-| Column headers  | [char](GFF-File-Format#gff-data-types)[]  | [Tab-separated](https://en.wikipedia.org/wiki/Tab-separated_values) column names (e.g., `"label\tname\tdescription"`) |
-| [null terminator](https://en.cppreference.com/w/c/string/byte) | [uint8](GFF-File-Format#gff-data-types)   | Single [null byte](https://en.cppreference.com/w/c/string/byte) (`\0`) marking end of headers                   |
+  | Column Headers  | [char](GFF-File-Format#gff-data-types)[]  | [Tab-separated](https://en.wikipedia.org/wiki/Tab-separated_values) column names (e.g., `"label\tname\tdescription"`) |
+| [Null Terminator](https://en.cppreference.com/w/c/string/byte) | [uint8](GFF-File-Format#gff-data-types)   | Single [null byte](https://en.cppreference.com/w/c/string/byte) (`\0`) marking end of headers                   |
 
-Each column name is terminated by a tab character (`0x09`). The entire header list is terminated by a [null byte](https://en.cppreference.com/w/c/string/byte) (`0x00`). Column names are case-sensitive and typically lowercase in KotOR files.
+Each column name is terminated by a tab character (`0x09`). The entire header list is terminated by a [null byte](https://en.cppreference.com/w/c/string/byte) (`0x00`). Column names are case-sensitive and typically lowercase in *KotOR* files.
 
 **References**:
 
-- [`vendor/reone/src/libs/resource/format/2dareader.cpp:72-89`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp#L72-L89) - KotOR-specific token reading with tab separator
-- [`vendor/xoreos/src/aurora/2dafile.cpp:260-275`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L260-L275) - Generic Aurora engine header reading (format shared across KotOR and other Aurora games)
-- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/2DAObject.cs:36-48`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L36-L48) - KotOR-specific column header parsing
-- [`vendor/kotor/docs/2da.md:32-37`](https://github.com/th3w1zard1/kotor/blob/master/docs/2da.md#L32-L37) - KotOR-specific column structure
+- [`vendor/reone/src/libs/resource/format/2dareader.cpp:72-89`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp#L72-L89) - *KotOR*-specific token reading with tab separator
+- [`vendor/xoreos/src/aurora/2dafile.cpp:260-275`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L260-L275) - Generic *Aurora* engine header reading (format shared across *KotOR* and other *Aurora* games)
+- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/2DAObject.cs:36-48`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L36-L48) - *KotOR*-specific column header parsing
+- [`vendor/kotor/docs/2da.md:32-37`](https://github.com/th3w1zard1/kotor/blob/master/docs/2da.md#L32-L37) - *KotOR*-specific column structure
 
-### Row count
+### Row Count
 
 | Name      | type    | offset | size | Description                    |
 | --------- | ------- | ------ | ---- | ------------------------------ |
-| Row count | [uint32](GFF-File-Format#gff-data-types)  | varies | 4    | Number of data rows in the file ([little-endian](https://en.wikipedia.org/wiki/Endianness)) |
+| Row Count | [uint32](GFF-File-Format#gff-data-types)  | varies | 4    | Number of data rows in the file ([little-endian](https://en.wikipedia.org/wiki/Endianness)) |
 
-The row count is stored as a 32-bit unsigned integer in [little-endian](https://en.wikipedia.org/wiki/Endianness) [byte](GFF-File-Format#gff-data-types) order. This value determines how many row labels and data rows follow.
+The row count is stored as a 32-bit unsigned integer in [little-endian](https://en.wikipedia.org/wiki/Endianness) [byte](https://en.wikipedia.org/wiki/Byte)-[endian](https://en.wikipedia.org/wiki/Endianness) order. This value determines how many row labels and data rows follow.
 
 **References**:
 
-- [`vendor/reone/src/libs/resource/format/2dareader.cpp:34`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp#L34) - KotOR-specific row count reading
-- [`vendor/xoreos/src/aurora/2dafile.cpp:284`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L284) - Generic Aurora engine row count reading (format shared across KotOR and other Aurora games)
-- [`vendor/kotor/docs/2da.md:39-44`](https://github.com/th3w1zard1/kotor/blob/master/docs/2da.md#L39-L44) - KotOR-specific row indices structure
+- [`vendor/reone/src/libs/resource/format/2dareader.cpp:34`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp#L34) - *KotOR*-specific row count reading
+- [`vendor/xoreos/src/aurora/2dafile.cpp:284`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L284) - Generic *Aurora* engine row count reading (format shared across *KotOR* and other *Aurora*-derived games)
+- [`vendor/kotor/docs/2da.md:39-44`](https://github.com/th3w1zard1/kotor/blob/master/docs/2da.md#L39-L44) - *KotOR*-specific row indices structure
 
 ### Row Labels
 
@@ -306,69 +308,69 @@ Row labels immediately follow the row count:
 | ---------- | ------- | ---------------------------------------------------------------- |
 | Row Labels | [char](GFF-File-Format#gff-data-types)[]  | [Tab-separated](https://en.wikipedia.org/wiki/Tab-separated_values) row labels (one per row, typically numeric)       |
 
-Each row label is read as a [tab-terminated](2DA-File-Format#column-headers) string (tab character `0x09`). Row labels are usually numeric ("0", "1", "2"...) but can be arbitrary strings.
+Each row label is read as a [tab-terminated](2DA-File-Format#column-headers) string (tab character `0x09`). Row labels are usually numeric (`"0"`, `"1"`, `"2"`...) but can be arbitrary strings.
 
-**Important**: The row label list is **not** terminated by a [null byte](https://en.cppreference.com/w/c/string/byte) (`0x00`). The reader must consume exactly `row_count` labels based on the count field. This differs from the column headers which do have a [null terminator](https://en.cppreference.com/w/c/string/byte). The row labels are primarily for human readability and editing tools - the actual row indexing in the game engine is based on position, not label value.
+**Important**: The row label list is **not** terminated by a [null byte](https://en.cppreference.com/w/c/string/byte) (`0x00`). The reader must consume exactly `row_count` labels based on the count field. This differs from the column headers which do have a [null terminator](https://en.cppreference.com/w/c/string/byte). The row labels are primarily for human readability and editing tools - the actual row indexing in the KotOR game engine is based on position, not label value.
 
 **References**:
 
-- [`vendor/reone/src/libs/resource/format/2dareader.cpp:35`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp#L35) - KotOR-specific row label reading (skipped in reone)
-- [`vendor/xoreos/src/aurora/2dafile.cpp:277-294`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L277-L294) - Generic Aurora engine row label skipping implementation (format shared across KotOR and other Aurora games)
-- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/2DAObject.cs:56-70`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L56-L70) - KotOR-specific row label parsing
-- [`vendor/kotor/docs/2da.md:39-46`](https://github.com/th3w1zard1/kotor/blob/master/docs/2da.md#L39-L46) - KotOR-specific row indices structure and termination note
+- [`vendor/reone/src/libs/resource/format/2dareader.cpp:35`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp#L35) - *KotOR*-specific row label reading (skipped in *reone*)
+- [`vendor/xoreos/src/aurora/2dafile.cpp:277-294`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L277-L294) - Generic *Aurora* engine row label skipping implementation (format shared across *KotOR* and other *Aurora*-derived games)
+- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/2DAObject.cs:56-70`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L56-L70) - *KotOR*-specific row label parsing
+- [`vendor/kotor/docs/2da.md:39-46`](https://github.com/th3w1zard1/kotor/blob/master/docs/2da.md#L39-L46) - *KotOR*-specific row indices structure and termination note
 
-### Cell data offsets
+### Cell Data Offsets
 
 After row labels, cell data offsets are stored:
 
 | Name            | type     | size | Description                                                      |
 | --------------- | -------- | ---- | ---------------------------------------------------------------- |
-| Cell offsets    | [uint16](GFF-File-Format#gff-data-types)[] | 2×N  | [Array](https://en.wikipedia.org/wiki/Array_data_structure) of offsets into cell data string table (N = [row_count](2DA-File-Format#row-labels) × [column_count](2DA-File-Format#column-headers), [little-endian](https://en.wikipedia.org/wiki/Endianness)) |
-| Cell data size  | [uint16](GFF-File-Format#gff-data-types)   | 2    | Total size of cell data string table in bytes ([little-endian](https://en.wikipedia.org/wiki/Endianness))   |
+| Cell Offsets    | [uint16](GFF-File-Format#gff-data-types)[] | `2`×`N`  | [Array](https://en.wikipedia.org/wiki/Array_data_structure) of offsets into cell data string table (N = [row_count](2DA-File-Format#row-labels) × [column_count](2DA-File-Format#column-headers), [little-endian](https://en.wikipedia.org/wiki/Endianness)) |
+| Cell Data Size  | [uint16](GFF-File-Format#gff-data-types)   | `2`    | Total size of cell data string table in bytes ([little-endian](https://en.wikipedia.org/wiki/Endianness))   |
 
-Each cell has a 16-bit unsigned integer offset ([little-endian](https://en.wikipedia.org/wiki/Endianness)) pointing to its string value in the cell data string table. Offsets are stored in [row-major order](https://en.wikipedia.org/wiki/Row-_and_column-major_order) (all cells of row 0, then all cells of row 1, etc.). The cell data size field immediately follows the offset array and precedes the actual cell data.
+Each cell has a 16-bit unsigned integer offset ([little-endian](https://en.wikipedia.org/wiki/Endianness)) pointing to its string value in the cell data string table. Offsets are stored in [row-major order](https://en.wikipedia.org/wiki/Row-_and_column-major_order) (all cells of row `0`, then all cells of row `1`, etc.). The cell data size field immediately follows the offset array and precedes the actual cell data.
 
-**Important**: The offsets are relative to the start of the cell data string table (which begins immediately after the `cell_data_size` field). Multiple cells can share the same offset value if they contain identical strings, enabling data [deduplication](https://en.wikipedia.org/wiki/Data_deduplication).
+**Important**: The offsets are relative to the start of the cell data string table (which begins immediately after the `cell_data_size` field). Multiple cells can share the same offset value if they contain identical strings, enabling data *[deduplication](https://en.wikipedia.org/wiki/Data_deduplication)*.
 
 **References**:
 
-- [`vendor/reone/src/libs/resource/format/2dareader.cpp:47-52`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp#L47-L52) - KotOR-specific offset array reading
-- [`vendor/xoreos/src/aurora/2dafile.cpp:314-317`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L314-L317) - Generic Aurora engine offset reading (format shared across KotOR and other Aurora games)
-- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/2DAObject.cs:72-83`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L72-L83) - KotOR-specific offset array parsing
-- [`vendor/reone/src/libs/resource/format/2dawriter.cpp:63-89`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dawriter.cpp#L63-L89) - KotOR-specific offset [deduplication](https://en.wikipedia.org/wiki/Data_deduplication) during writing
-- [`vendor/kotor/docs/2da.md:48-54`](https://github.com/th3w1zard1/kotor/blob/master/docs/2da.md#L48-L54) - KotOR-specific cell offsets structure
+- [`vendor/reone/src/libs/resource/format/2dareader.cpp:47-52`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp#L47-L52) - *KotOR*-specific offset array reading
+- [`vendor/xoreos/src/aurora/2dafile.cpp:314-317`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L314-L317) - Generic *Aurora* engine offset reading (format shared across *KotOR* and other *Aurora*-derived games)
+- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/2DAObject.cs:72-83`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L72-L83) - *KotOR*-specific offset array parsing
+- [`vendor/reone/src/libs/resource/format/2dawriter.cpp:63-89`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dawriter.cpp#L63-L89) - *KotOR*-specific offset *[deduplication](https://en.wikipedia.org/wiki/Data_deduplication)* during writing
+- [`vendor/kotor/docs/2da.md:48-54`](https://github.com/th3w1zard1/kotor/blob/master/docs/2da.md#L48-L54) - *KotOR*-specific cell offsets structure
 
-### Cell data string Table
+### Cell Data String Table
 
-The cell data string table contains all cell values as [null-terminated](https://en.cppreference.com/w/c/string/byte) strings:
+The cell data string table contains all cell values as *[null-terminated](https://en.cppreference.com/w/c/string/byte)* strings:
 
 | Name         | type   | Description                                                      |
 | ------------ | ------ | ---------------------------------------------------------------- |
-| Cell strings | [char](GFF-File-Format#gff-data-types)[] | [Null-terminated](https://en.cppreference.com/w/c/string/byte) strings, [deduplicated](https://en.wikipedia.org/wiki/Data_deduplication) (same value shares offset) |
+| Cell strings | [char](GFF-File-Format#gff-data-types)[] | *[Null-terminated](https://en.cppreference.com/w/c/string/byte)* strings, *[deduplicated](https://en.wikipedia.org/wiki/Data_deduplication)* (same value shares offset) |
 
-The cell data string table begins immediately after the `cell_data_size` field. Each string is [null-terminated](https://en.cppreference.com/w/c/string/byte) (`0x00`). Blank or empty cells are typically stored as empty strings (immediately [null-terminated](https://en.cppreference.com/w/c/string/byte)) or the string `"****"`. The string table is [deduplicated](https://en.wikipedia.org/wiki/Data_deduplication) - multiple cells with the same value share the same offset, reducing file size.
+The cell data string table begins immediately after the `cell_data_size` field. Each string is *[null-terminated](https://en.cppreference.com/w/c/string/byte)* (`0x00`). Blank or empty cells are typically stored as empty strings (immediately *[null-terminated](https://en.cppreference.com/w/c/string/byte)*) or the string `"****"`. The string table is *[deduplicated](https://en.wikipedia.org/wiki/Data_deduplication)* - multiple cells with the same value share the same offset, reducing file size.
 
 **Reading Process**: For each cell, the reader:
 
-1. Retrieves the 16-bit offset from the offset array (indexed by `row_index × column_count + column_index`)
+1. Retrieves the 16-bit offset from the offset array (indexed by `row_index × column_count + column_index`).
 2. Seeks to `cell_data_start_position + offset`
-3. Reads a [null-terminated](https://en.cppreference.com/w/c/string/byte) string from that position
+3. Reads a *[null-terminated](https://en.cppreference.com/w/c/string/byte)* string from that position
 
 **References**:
 
-- [`vendor/reone/src/libs/resource/format/2dareader.cpp:54-65`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp#L54-L65) - KotOR-specific cell data reading with offset calculation
-- [`vendor/xoreos/src/aurora/2dafile.cpp:319-335`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L319-L335) - Generic Aurora engine cell data reading (format shared across KotOR and other Aurora games, with KotOR-specific comment at line 545)
-- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/2DAObject.cs:85-100`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L85-L100) - KotOR-specific cell data reading loop
-- [`vendor/xoreos/src/aurora/2dafile.cpp:63-64`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L63-L64) - Generic Aurora engine empty cell representation (`"****"`, shared across KotOR and other Aurora games)
-- [`vendor/kotor/docs/2da.md:57-64`](https://github.com/th3w1zard1/kotor/blob/master/docs/2da.md#L57-L64) - KotOR-specific cell data structure
+- [`vendor/reone/src/libs/resource/format/2dareader.cpp:54-65`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp#L54-L65) - *KotOR*-specific cell data reading with offset calculation
+- [`vendor/xoreos/src/aurora/2dafile.cpp:319-335`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L319-L335) - Generic *Aurora* engine cell data reading (format shared across *KotOR* and other *Aurora*-derived games, with *KotOR*-specific comment at line 545)
+- [`vendor/KotOR-Unity/Assets/Scripts/FileObjects/2DAObject.cs:85-100`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L85-L100) - *KotOR*-specific cell data reading loop
+- [`vendor/xoreos/src/aurora/2dafile.cpp:63-64`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/2dafile.cpp#L63-L64) - Generic *Aurora* engine empty cell representation (`"****"`, shared across *KotOR* and other *Aurora*-derived games)
+- [`vendor/kotor/docs/2da.md:57-64`](https://github.com/th3w1zard1/kotor/blob/master/docs/2da.md#L57-L64) - *KotOR*-specific cell data structure
 
 ---
 
-## data structure
+## Data Structure
 
-### TwoDA Class
+### TwoDA Object
 
-The `TwoDA` class represents a complete 2DA file in memory:
+The `TwoDA` object represents a complete *2DA* file in memory:
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py:77-119`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L77-L119)
 
@@ -376,7 +378,7 @@ The `TwoDA` class represents a complete 2DA file in memory:
 
 - `_rows`: List of dictionaries, each mapping column headers to cell values
 - `_headers`: List of column header names (case-sensitive, typically lowercase)
-- `_labels`: List of row labels (usually numeric strings like "0", "1", "2"...)
+- `_labels`: List of row labels (usually numeric strings like `"0"`, `"1"`, `"2"`...)
 
 **Methods:**
 
@@ -386,27 +388,27 @@ The `TwoDA` class represents a complete 2DA file in memory:
 - `add_row(label)`: Add a new row
 - `add_column(header)`: Add a new column
 
-### TwoDARow Class
+### TwoDARow Object
 
-The `TwoDARow` class provides a convenient interface for accessing row data:
+The `TwoDARow` object provides a convenient interface for accessing row data:
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py:850-950`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L850-L950)
 
 **Attributes:**
 
-- `label`: Row label string
+- `label`: Row label string (usually numeric strings like `"0"`, `"1"`, `"2"`...)
 - `cells`: Dictionary mapping column headers to cell values
 
 ---
 
 ## Cell value types
 
-All cell values are stored as strings in the 2DA file, but are interpreted as different types by the game engine:
+All cell values are stored as strings in the *2DA* file, but are interpreted as different types by the KotOR game engine:
 
-- **Integers**: Numeric strings parsed as [`int32`](https://en.wikipedia.org/wiki/Integer_(computer_science)) - used for numeric identifiers, counts, and enumerated values
-- **Floats**: Decimal strings parsed as [`float`](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) - used for calculations like damage multipliers, timers, and percentages
-- **ResRefs**: [Resource references](GFF-File-Format#gff-data-types) (max 16 characters, no extension) - point to other game resources like [models](MDL-MDX-File-Format), [textures](TPC-File-Format), or scripts
-- **StrRefs**: [String references](TLK-File-Format#string-references-strref) into [`dialog.tlk`](TLK-File-Format) (typically negative values like `-1` indicate no reference) - used for localized text display
+- **Integers**: Numeric strings parsed as [`int32`](https://en.wikipedia.org/wiki/Integer_(computer_science)) - used for numeric identifiers, counts, and enumerated values.
+- **Floats**: Decimal strings parsed as [`float`](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) - used for calculations like damage multipliers, timers, and percentages.
+- **ResRefs**: [Resource references](GFF-File-Format#gff-data-types) (max 16 characters, no extension) - point to other game resources like [models](MDL-MDX-File-Format), [textures](TPC-File-Format), or scripts.
+- **StrRefs**: [String references](TLK-File-Format#string-references-strref) into [`dialog.tlk`](TLK-File-Format) (typically negative values like `-1` indicate no reference) - used for localized text display.
 - **Boolean**: `"0"` or `"1"` (sometimes `"TRUE"`/`"FALSE"`) - control feature flags and settings
 - **Empty Cells**: Represented as `"****"` - treated as null/undefined by the engine
 
@@ -416,219 +418,218 @@ The game engine parses cell values based on context and expected data type for e
 
 ## Confirmed Engine Usage
 
-The following 2DA files have been confirmed to be actively loaded and used by the KotOR game engine through comprehensive reverse engineering analysis of `swkotor.exe` and `swkotor2.exe` using Ghidra (via Reva MCP server). This analysis examined the actual game executables to identify all 2DA files loaded via `Load2DArrays()`, `CResRef__CResRef()` calls, and related loading functions.
+The following *2DA* files have been confirmed to be actively loaded and used by the KotOR game engine through comprehensive reverse engineering analysis of `swkotor.exe` and `swkotor2.exe` using Ghidra (via [AgentDecompile](https://github.com/bolabaden/AgentDecompile)). This analysis examined the actual game executables to identify all *2DA* files loaded via `Load2DArrays()`, `CResRef__CResRef()` calls, and related loading functions.
 
 ### Analysis Methodology
 
 The game engine analysis was performed by:
 
-1. Decompiling `swkotor.exe` (KotOR 1) and `swkotor2.exe` (KotOR 2/TSL) using Ghidra
+1. Decompiling `swkotor.exe` (*KotOR* 1) and `swkotor2.exe` (*KotOR* 2/TSL) using Ghidra
 2. Identifying all `Load2DArrays_*()` functions and their `CResRef()` calls
 3. Tracing `C2DA::Load2DArray()` calls throughout the codebase
-4. Verifying string references to 2DA file names in the executable binaries
-5. Cross-referencing findings with vendor source code (`vendor/swkotor.c`, `vendor/swkotor.h`)
+4. Verifying string references to *2DA* file names in the executable binaries
 
-### KotOR 1 (swkotor.exe) - Confirmed 2DA Files
+### KotOR 1 (`swkotor.exe`) - Confirmed *2DA* Files
 
 **Core Game Systems:**
 
-- `classes.2da` - LoadClassInfo() → CResRef("Classes")
-- `feat.2da` - LoadFeatInfo() → CResRef("Feat")
-- `featgain.2da` - CSWClass::LoadFeatGain() → CResRef("featgain")
-- `skills.2da` - LoadSkillInfo() → CResRef("Skills")
-- `spells.2da` - Load2DArrays_Spells() → CResRef("Spells")
-- `exptable.2da` - CSWRules::CSWRules() → CResRef("EXPTABLE")
-- `xptable.2da` - Load2DArrays_XpBase() → CResRef("XPTable")
+- `classes.2da` - `LoadClassInfo()` → `CResRef("Classes")`
+- `feat.2da` - `LoadFeatInfo()` → `CResRef("Feat")`
+- `featgain.2da` - `CSWClass::LoadFeatGain()` → `CResRef("featgain")`
+- `skills.2da` - `LoadSkillInfo()` → `CResRef("Skills")`
+- `spells.2da` - `Load2DArrays_Spells()` → `CResRef("Spells")`
+- `exptable.2da` - `CSWRules::CSWRules()` → `CResRef("EXPTABLE")`
+- `xptable.2da` - `Load2DArrays_XpBase()` → `CResRef("XPTable")`
 
 **Character & Appearance:**
 
-- `appearance.2da` - Load2DArrays_Appearance() → CResRef("Appearance")
-- `racialtypes.2da` - LoadRaceInfo() → CResRef("RacialTypes")
-- `gender.2da` - Load2DArrays_Gender() → CResRef("GENDER")
-- `portraits.2da` - Load2DArrays_Portrait() → CResRef("Portraits")
-- `heads.2da` - Load2DArrays_Heads() → CResRef("Heads")
-- `creaturespeed.2da` - Load2DArrays_CreatureSpeed() → CResRef("CreatureSpeed")
-- `ranges.2da` - CSWRules::CSWRules() → CResRef("Ranges")
+- `appearance.2da` - `Load2DArrays_Appearance()` → `CResRef("Appearance")`
+- `racialtypes.2da` - `LoadRaceInfo()` → `CResRef("RacialTypes")`
+- `gender.2da` - `Load2DArrays_Gender()` → `CResRef("GENDER")`
+- `portraits.2da` - `Load2DArrays_Portrait()` → `CResRef("Portraits")`
+- `heads.2da` - `Load2DArrays_Heads()` → `CResRef("Heads")`
+- `creaturespeed.2da` - `Load2DArrays_CreatureSpeed()` → `CResRef("CreatureSpeed")`
+- `ranges.2da` - `CSWRules::CSWRules()` → `CResRef("Ranges")`
 
 **Items & Equipment:**
 
-- `baseitems.2da` - CSWBaseItemArray::Load() → CResRef("BASEITEMS")
-- `itempropdef.2da` - Load2DArrays_ItemPropDef() → CResRef("ItemPropDef")
-- `itemprops.2da` - HandleServerToPlayerDebugInfo_Item() → CResRef("ITEMPROPS")
-- `upgrade.2da` - CSWGuiUpgrade() → CResRef("upgrade")
+- `baseitems.2da` - `CSWBaseItemArray::Load()` → `CResRef("BASEITEMS")`
+- `itempropdef.2da` - `Load2DArrays_ItemPropDef()` → `CResRef("ItemPropDef")`
+- `itemprops.2da` - `HandleServerToPlayerDebugInfo_Item()` → `CResRef("ITEMPROPS")`
+- `upgrade.2da` - `CSWGuiUpgrade()` → `CResRef("upgrade")`
 
 **Objects & Areas:**
 
-- `placeables.2da` - Load2DArrays_Placeables() → CResRef("Placeables")
-- `genericdoors.2da` - Load2DArrays_GenericDoors() → CResRef("GenericDoors")
-- `doortypes.2da` - Load2DArrays_DoorTypes() → CResRef("DoorTypes")
-- `traps.2da` - Load2DArrays_Traps() → CResRef("Traps")
-- `encdifficulty.2da` - Load2DArrays_EncDifficulty() → CResRef("EncDifficulty")
-- `loadscreens.2da` - Load2DArrays_AreaTransition() → CResRef("Loadscreens")
-- `modulesave.2da` - StartNewModule() → CResRef("modulesave")
+- `placeables.2da` - `Load2DArrays_Placeables()` → `CResRef("Placeables")`
+- `genericdoors.2da` - `Load2DArrays_GenericDoors()` → `CResRef("GenericDoors")`
+- `doortypes.2da` - `Load2DArrays_DoorTypes()` → `CResRef("DoorTypes")`
+- `traps.2da` - `Load2DArrays_Traps()` → `CResRef("Traps")`
+- `encdifficulty.2da` - `Load2DArrays_EncDifficulty()` → `CResRef("EncDifficulty")`
+- `loadscreens.2da` - `Load2DArrays_AreaTransition()` → `CResRef("Loadscreens")`
+- `modulesave.2da` - `StartNewModule()` → `CResRef("modulesave")`
 
 **Audio & Visual:**
 
-- `ambientmusic.2da` - Load2DArrays_AmbientMusic() → CResRef("AmbientMusic")
-- `ambientsound.2da` - Load2DArrays_AmbientSound() → CResRef("AmbientSound")
-- `footstepsounds.2da` - Load2DArrays_FootstepSounds() → CResRef("FootstepSounds")
-- `appearancesndset.2da` - Load2DArrays_AppearanceSounds() → CResRef("AppearanceSounds")
-- `weaponsounds.2da` - Load2DArrays_WeaponSounds() → CResRef("WeaponSounds")
-- `placeablesounds.2da` - Load2DArrays_PlaceableSounds() → CResRef("PlaceableSounds")
-- `camerastyle.2da` - Load2DArrays_CameraStyle() → CResRef("CameraStyle")
-- `surfacemat.2da` - Load2DArrays_SurfaceMaterial() → CResRef("SurfaceMaterial")
-- `visualeffects.2da` - Load2DArrays_VisualEffect() → CResRef("VisualEffect")
-- `videoeffects.2da` - Load2DArrays_VideoEffects() → CResRef("VideoEffects")
-- `dialoganimations.2da` - Load2DArrays_DialogAnimations() → CResRef("DialogAnimations")
-- `cursors.2da` - Load2DArrays_Cursor() → CResRef("cursors")
+- `ambientmusic.2da` - `Load2DArrays_AmbientMusic()` → `CResRef("AmbientMusic")`
+- `ambientsound.2da` - `Load2DArrays_AmbientSound()` → `CResRef("AmbientSound")`
+- `footstepsounds.2da` - `Load2DArrays_FootstepSounds()` → `CResRef("FootstepSounds")`
+- `appearancesndset.2da` - `Load2DArrays_AppearanceSounds()` → `CResRef("AppearanceSounds")`
+- `weaponsounds.2da` - `Load2DArrays_WeaponSounds()` → `CResRef("WeaponSounds")`
+- `placeablesounds.2da` - `Load2DArrays_PlaceableSounds()` → `CResRef("PlaceableSounds")`
+- `camerastyle.2da` - `Load2DArrays_CameraStyle()` → `CResRef("CameraStyle")`
+- `surfacemat.2da` - `Load2DArrays_SurfaceMaterial()` → `CResRef("SurfaceMaterial")`
+- `visualeffects.2da` - `Load2DArrays_VisualEffect()` → `CResRef("VisualEffect")`
+- `videoeffects.2da` - `Load2DArrays_VideoEffects()` → `CResRef("VideoEffects")`
+- `dialoganimations.2da` - `Load2DArrays_DialogAnimations()` → `CResRef("DialogAnimations")`
+- `cursors.2da` - `Load2DArrays_Cursor()` → `CResRef("cursors")`
 
 **Item Properties (IPRP):**
 
-- `iprp_abilities.2da` - Load2DArrays_IPRPAbilities() → CResRef("IPRP_ABILITIES")
-- `iprp_acmodtype.2da` - LoadIPRPCostTables() → CResRef("IPRP_ACMODTYPE")
-- `iprp_aligngrp.2da` - LoadIPRPCostTables() → CResRef("IPRP_ALIGNGRP")
-- `iprp_ammotype.2da` - LoadIPRPCostTables() → CResRef("IPRP_AMMOTYPE")
-- `iprp_combatdam.2da` - LoadIPRPCostTables() → CResRef("IPRP_COMBATDAM")
-- `iprp_costtable.2da` - LoadIPRPCostTables() → CResRef("IPRP_COSTTABLE")
-- `iprp_damagecost.2da` - Load2DArrays_IPRPDamage() → CResRef("IPRP_DAMAGECOST")
-- `iprp_damagetype.2da` - LoadIPRPCostTables() → CResRef("IPRP_DAMAGETYPE")
-- `iprp_immunity.2da` - LoadIPRPCostTables() → CResRef("IPRP_IMMUNITY")
-- `iprp_lightcol.2da` - Load2DArrays_LightColor() → CResRef("LightColor")
-- `iprp_meleecost.2da` - Load2DArrays_IPRPMelee() → CResRef("IPRP_MeleeCost")
-- `iprp_mosterhit.2da` - LoadIPRPCostTables() → CResRef("IPRP_MONSTERHIT")
-- `iprp_onhit.2da` - Load2DArrays_OnHit() → CResRef("IPRP_ONHIT")
-- `iprp_paramtable.2da` - LoadIPRPParamTables() → CResRef("IPRP_PARAMTABLE")
-- `iprp_protection.2da` - LoadIPRPCostTables() → CResRef("IPRP_PROTECTION")
-- `iprp_saveelement.2da` - LoadIPRPCostTables() → CResRef("IPRP_SAVEELEMENT")
-- `iprp_savingthrow.2da` - LoadIPRPCostTables() → CResRef("IPRP_SAVINGTHROW")
-- `iprp_walk.2da` - LoadIPRPCostTables() → CResRef("IPRP_WALK")
+- `iprp_abilities.2da` - `Load2DArrays_IPRPAbilities()` → `CResRef("IPRP_ABILITIES")`
+- `iprp_acmodtype.2da` - `LoadIPRPCostTables()` → `CResRef("IPRP_ACMODTYPE")`
+- `iprp_aligngrp.2da` - `LoadIPRPCostTables()` → `CResRef("IPRP_ALIGNGRP")`
+- `iprp_ammotype.2da` - `LoadIPRPCostTables()` → `CResRef("IPRP_AMMOTYPE")`
+- `iprp_combatdam.2da` - `LoadIPRPCostTables()` → `CResRef("IPRP_COMBATDAM")`
+- `iprp_costtable.2da` - `LoadIPRPCostTables()` → `CResRef("IPRP_COSTTABLE")`
+- `iprp_damagecost.2da` - `Load2DArrays_IPRPDamage()` → `CResRef("IPRP_DAMAGECOST")`
+- `iprp_damagetype.2da` - `LoadIPRPCostTables()` → `CResRef("IPRP_DAMAGETYPE")`
+- `iprp_immunity.2da` - `LoadIPRPCostTables()` → `CResRef("IPRP_IMMUNITY")`
+- `iprp_lightcol.2da` - `Load2DArrays_LightColor()` → `CResRef("LightColor")`
+- `iprp_meleecost.2da` - `Load2DArrays_IPRPMelee()` → `CResRef("IPRP_MeleeCost")`
+- `iprp_mosterhit.2da` - `LoadIPRPCostTables()` → `CResRef("IPRP_MONSTERHIT")`
+- `iprp_onhit.2da` - `Load2DArrays_OnHit()` → `CResRef("IPRP_ONHIT")`
+- `iprp_paramtable.2da` - `LoadIPRPParamTables()` → `CResRef("IPRP_PARAMTABLE")`
+- `iprp_protection.2da` - `LoadIPRPCostTables()` → `CResRef("IPRP_PROTECTION")`
+- `iprp_saveelement.2da` - `LoadIPRPCostTables()` → `CResRef("IPRP_SAVEELEMENT")`
+- `iprp_savingthrow.2da` - `LoadIPRPCostTables()` → `CResRef("IPRP_SAVINGTHROW")`
+- `iprp_walk.2da` - `LoadIPRPCostTables()` → `CResRef("IPRP_WALK")`
 
 **Factions & Reputation:**
 
-- `repute.2da` - Load2DArrays_Repute() → CResRef("Repute")
+- `repute.2da` - `Load2DArrays_Repute()` → `CResRef("Repute")`
 
 **Game Systems:**
 
-- `plot.2da` - Load2DArrays_PlotXP() → CResRef("Plot")
-- `planetary.2da` - Load2DArrays_Planetary() → CResRef("Planetary")
-- `loadscreenhints.2da` - CClientExoAppInternal::GetNextLoadScreenHintSTRREF() → CResRef("loadscreenhints")
-- `movies.2da` - Load2DArrays_Movies() → CResRef("Movies")
-- `globalcat.2da` - CSWGlobalVariableTable::ReadCatalogue() → CResRef("globalcat")
-- `tutorial.2da` - Load2DArrays_Tutorial() → CResRef("Tutorial")
-- `difficultyopt.2da` - Load2DArrays_DifficultyOptions() → CResRef("DifficultyOptions")
-- `gamma.2da` - Load2DArrays_Gamma() → CResRef("Gamma")
-- `statescripts.2da` - Load2DArrays_StateScripts() → CResRef("StateScripts")
-- `poison.2da` - Load2DArrays_Poison() → CResRef("Poison")
-- `disease.2da` - Load2DArrays_Disease() → CResRef("Disease")
-- `repaadjustments.2da` - Load2DArrays_RepAdjustments() → CResRef("RepAdjustments")
-- `fractionalcr.2da` - Load2DArrays_FractionalCR() → CResRef("FractionalCR")
-- `regeneration.2da` - Load2DArrays_Regeneration() → CResRef("Regeneration")
-- `ammunitiontypes.2da` - Load2DArrays_AmmunitionTypes() → CResRef("AmmunitionTypes")
-- `keymap.2da` - Load2DArrays_Keymap() → CResRef("Keymap")
-- `bindablekeys.2da` - Load2DArrays_BindableKey() → CResRef("BindableKey")
+- `plot.2da` - `Load2DArrays_PlotXP()` → `CResRef("Plot")`
+- `planetary.2da` - `Load2DArrays_Planetary()` → `CResRef("Planetary")`
+- `loadscreenhints.2da` - `CClientExoAppInternal::GetNextLoadScreenHintSTRREF()` → `CResRef("loadscreenhints")`
+- `movies.2da` - `Load2DArrays_Movies()` → `CResRef("Movies")`
+- `globalcat.2da` - `CSWGlobalVariableTable::ReadCatalogue()` → `CResRef("globalcat")`
+- `tutorial.2da` - `Load2DArrays_Tutorial()` → `CResRef("Tutorial")`
+- `difficultyopt.2da` - `Load2DArrays_DifficultyOptions()` → `CResRef("DifficultyOptions")`
+- `gamma.2da` - `Load2DArrays_Gamma()` → `CResRef("Gamma")`
+- `statescripts.2da` - `Load2DArrays_StateScripts()` → `CResRef("StateScripts")`
+- `poison.2da` - `Load2DArrays_Poison()` → `CResRef("Poison")`
+- `disease.2da` - `Load2DArrays_Disease()` → `CResRef("Disease")`
+- `repaadjustments.2da` - `Load2DArrays_RepAdjustments()` → `CResRef("RepAdjustments")`
+- `fractionalcr.2da` - `Load2DArrays_FractionalCR()` → `CResRef("FractionalCR")`
+- `regeneration.2da` - `Load2DArrays_Regeneration()` → `CResRef("Regeneration")`
+- `ammunitiontypes.2da` - `Load2DArrays_AmmunitionTypes()` → `CResRef("AmmunitionTypes")`
+- `keymap.2da` - `Load2DArrays_Keymap()` → `CResRef("Keymap")`
+- `bindablekeys.2da` - `Load2DArrays_BindableKey()` → `CResRef("BindableKey")`
 
 ### KotOR 2/TSL (swkotor2.exe) - Additional 2DA Files
 
 The following 2DA files are loaded in KotOR 2 but not in KotOR 1:
 
-- `emotion.2da` - FUN_00612fb0() → CResRef("Emotion")
-- `facialanim.2da` - FUN_005e6ac0() → CResRef("FacialAnim")
-- `subrace.2da` - FUN_00612ab0() → CResRef("Subrace")
-- `soundset.2da` - FUN_006ce0c0() → CResRef("SoundSet")
-- `pazaakdecks.2da` - FUN_00754f60() → CResRef("PazaakDecks")
-- `upcrystals.2da` - FUN_00730970() → CResRef("upcrystals")
-- `iprp_monstcost.2da` - FUN_00611120() → CResRef("IPRP_MONSTCOST")
-- `iprp_bonuscost.2da` - FUN_006111c0() → CResRef("IPRP_BONUSCOST")
-- `iprp_srcost.2da` - FUN_00611260() → CResRef("IPRP_SRCOST")
-- `iprp_neg5cost.2da` - FUN_00611300() → CResRef("IPRP_NEG5COST")
-- `iprp_onhitdur.2da` - FUN_006114e0() → CResRef("IPRP_ONHITDUR")
-- `iprp_pc.2da` - FUN_00612b50() → CResRef("IPRP_PC")
+- `emotion.2da` - `FUN_00612fb0()` → `CResRef("Emotion")`
+- `facialanim.2da` - `FUN_005e6ac0()` → `CResRef("FacialAnim")`
+- `subrace.2da` - `FUN_00612ab0()` → `CResRef("Subrace")`
+- `soundset.2da` - `FUN_006ce0c0()` → `CResRef("SoundSet")`
+- `pazaakdecks.2da` - `FUN_00754f60()` → `CResRef("PazaakDecks")`
+- `upcrystals.2da` - `FUN_00730970()` → `CResRef("upcrystals")`
+- `iprp_monstcost.2da` - `FUN_00611120()` → `CResRef("IPRP_MONSTCOST")`
+- `iprp_bonuscost.2da` - `FUN_006111c0()` → `CResRef("IPRP_BONUSCOST")`
+- `iprp_srcost.2da` - `FUN_00611260()` → `CResRef("IPRP_SRCOST")`
+- `iprp_neg5cost.2da` - `FUN_00611300()` → `CResRef("IPRP_NEG5COST")`
+- `iprp_onhitdur.2da` - `FUN_006114e0()` → `CResRef("IPRP_ONHITDUR")`
+- `iprp_pc.2da` - `FUN_00612b50()` → `CResRef("IPRP_PC")`
 
 **Note:** All files listed above have been verified through decompilation analysis of the game executables. Function names in `swkotor2.exe` are obfuscated (shown as `FUN_*` addresses), but the 2DA file loading calls have been confirmed. Files documented below that are not listed here may be remnants from Neverwinter Nights (NWN), unused by the game engine, or used in ways not yet identified.
 
-## Known 2DA files
+## Known 2DA Files
 
-This section documents all known 2DA files used in KotOR and KotOR 2, organized by category. Each entry includes engine usage, column definitions, and data structure details.
+This section documents all known *2DA* files used in *KotOR* 1 and *KotOR* 2/TSL, organized by category. Each entry includes engine usage, column definitions, and data structure details.
 
 ---
 
-## Character & Combat 2DA files
+## Character & Combat *2DA* files
 
-### appearance.2da
+### `appearance.2da`
 
-**Engine Usage**: The `appearance.2da` file is one of the most critical [2DA files](2DA-File-Format) in KotOR. It maps appearance IDs (used in [creature templates](GFF-File-Format#utc-creature) and character creation) to 3D [model](MDL-MDX-File-Format) ResRefs, [texture](TPC-File-Format) assignments, race associations, and physical properties. The engine uses this file when loading creatures, determining which [model](MDL-MDX-File-Format) and [textures](TPC-File-Format) to display, calculating hit detection, and managing character [animations](MDL-MDX-File-Format#animation-header).
+**Engine Usage**: The `appearance.2da` file is one of the most critical *2DA* files in the games. It maps appearance IDs (used in [creature templates](GFF-File-Format#utc-creature) and character creation) to 3D [model](MDL-MDX-File-Format) *ResRefs*, [texture](TPC-File-Format) assignments, race associations, and physical properties. The engine uses this file when loading creatures, determining which [model](MDL-MDX-File-Format) and [textures](TPC-File-Format) to display, calculating hit detection, and managing character [animations](MDL-MDX-File-Format#animation-header).
 
-**Row index**: Appearance ID (integer, typically 0-based)
+**Row index**: Appearance ID (*integer*, typically `0`-based)
 
 **Column structure**:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | String (optional) | Human-readable label for the appearance |
-| `modeltype` | string | [model](MDL-MDX-File-Format) type identifier (e.g., "F", "B", "P") |
-| `modela` through `modeln` | ResRef (optional) | [model](MDL-MDX-File-Format) ResRefs for different body parts or variations ([models](MDL-MDX-File-Format) a-n) |
-| `texa` through `texn` | ResRef (optional) | [texture](TPC-File-Format) ResRefs for different body parts ([textures](TPC-File-Format) a-n) |
-| `texaevil`, `texbevil`, `texievil`, `texlevil`, `texnevil` | ResRef (optional) | Dark side variant [textures](TPC-File-Format) |
-| `race` | ResRef (optional) | Race identifier [ResRef](GFF-File-Format#gff-data-types) |
-| `racetex` | ResRef (optional) | Race-specific [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `racialtype` | Integer | Numeric racial type identifier |
-| `normalhead` | Integer (optional) | Default head appearance ID |
-| `backuphead` | Integer (optional) | Fallback head appearance ID |
-| `portrait` | ResRef (optional) | Portrait image [ResRef](GFF-File-Format#gff-data-types) |
-| `skin` | ResRef (optional) | Skin [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexe`, `headtexg`, `headtexve`, `headtexvg` | ResRef (optional) | Head [texture](TPC-File-Format) variations |
-| `headbone` | String (optional) | Bone name for head attachment |
+| `label` | *String* (optional) | Human-readable label for the appearance |
+| `modeltype` | *String* | [model](MDL-MDX-File-Format) type identifier (e.g., "F", "B", "P") |
+| `modela` through `modeln` | *ResRef* (optional) | [model](MDL-MDX-File-Format) *ResRefs* for different body parts or variations ([models](MDL-MDX-File-Format) a-n) |
+| `texa` through `texn` | *ResRef* (optional) | [texture](TPC-File-Format) *ResRefs* for different body parts ([textures](TPC-File-Format) a-n) |
+| `texaevil`, `texbevil`, `texievil`, `texlevil`, `texnevil` | *ResRef* (optional) | Dark side variant [textures](TPC-File-Format) *ResRefs* |
+| `race` | *ResRef* (optional) | Race identifier *ResRef* |
+| `racetex` | *ResRef* (optional) | Race-specific [texture](TPC-File-Format) *ResRef* |
+| `racialtype` | *Integer* | Numeric racial type identifier |
+| `normalhead` | *Integer* (optional) | Default head appearance ID |
+| `backuphead` | *Integer* (optional) | Fallback head appearance ID |
+| `portrait` | *ResRef* (optional) | Portrait image *ResRef* |
+| `skin` | *ResRef* (optional) | Skin [texture](TPC-File-Format) *ResRef* |
+| `headtexe`, `headtexg`, `headtexve`, `headtexvg` | *ResRef* (optional) | Head [texture](TPC-File-Format) *ResRefs* variations |
+| `headbone` | *String* (optional) | Bone name for head attachment |
 | `height` | [Float](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) | Character height multiplier |
 | `hitdist` | [Float](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) | Hit detection distance |
 | `hitradius` | [Float](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) | Hit detection radius |
-| `sizecategory` | Integer | size category (affects combat calculations) |
-| `moverate` | string | Movement rate identifier |
-| `walkdist` | Float | Walking distance threshold |
-| `rundist` | Float | Running distance threshold |
-| `prefatckdist` | Float | Preferred attack distance |
-| `creperspace` | Float | Creature personal space radius |
-| `perspace` | Float | Personal space radius |
-| `cameraspace` | Float (optional) | Camera space offset |
-| `cameraheightoffset` | String (optional) | Camera height offset |
-| `targetheight` | string | Target height for combat |
-| `perceptiondist` | Integer | Perception distance |
-| `headArcH` | Integer | Head horizontal arc angle |
-| `headArcV` | Integer | Head vertical arc angle |
-| `headtrack` | Boolean | Whether head tracking is enabled |
-| `hasarms` | Boolean | Whether creature has arms |
-| `haslegs` | Boolean | Whether creature has legs |
-| `groundtilt` | Boolean | Whether ground tilt is enabled |
-| `footsteptype` | Integer (optional) | Footstep sound type |
-| `footstepsound` | ResRef (optional) | Footstep sound [ResRef](GFF-File-Format#gff-data-types) |
-| `footstepvolume` | Boolean | Whether footstep volume is enabled |
-| `armorSound` | ResRef (optional) | Armor sound effect [ResRef](GFF-File-Format#gff-data-types) |
-| `combatSound` | ResRef (optional) | Combat sound effect [ResRef](GFF-File-Format#gff-data-types) |
-| `soundapptype` | Integer (optional) | Sound appearance type |
-| `bloodcolr` | string | Blood color identifier |
-| `deathvfx` | Integer (optional) | Death visual effect ID |
-| `deathvfxnode` | String (optional) | Death VFX attachment [node](MDL-MDX-File-Format#node-structures) |
-| `fadedelayondeath` | Boolean (optional) | Whether to fade on death |
-| `destroyobjectdelay` | Boolean (optional) | Whether to delay object destruction |
-| `disableinjuredanim` | Boolean (optional) | Whether to disable injured [animations](MDL-MDX-File-Format#animation-header) |
-| `abortonparry` | Boolean | Whether to abort on parry |
-| `freelookeffect` | Integer (optional) | Free look effect ID |
-| `equipslotslocked` | Integer (optional) | Locked equipment slot flags |
-| `weaponscale` | String (optional) | Weapon scale multiplier |
-| `wingTailScale` | Boolean | Whether wing/tail scaling is enabled |
-| `helmetScaleF` | String (optional) | Female helmet scale |
-| `helmetScaleM` | String (optional) | Male helmet scale |
-| `envmap` | ResRef (optional) | Environment map [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `bodyBag` | Integer (optional) | Body bag appearance ID |
-| `stringRef` | Integer (optional) | string reference for appearance name |
-| `driveaccl` | Integer | Vehicle drive acceleration |
-| `drivemaxspeed` | Float | Vehicle maximum speed |
-| `driveanimwalk` | Float | Vehicle walk [animation](MDL-MDX-File-Format#animation-header) speed |
-| `driveanimrunPc` | Float | PC vehicle run [animation](MDL-MDX-File-Format#animation-header) speed |
-| `driveanimrunXbox` | Float | Xbox vehicle run [animation](MDL-MDX-File-Format#animation-header) speed |
+| `sizecategory` | *Integer* | size category (affects combat calculations) |
+| `moverate` | *String* | Movement rate identifier |
+| `walkdist` | *Float* | Walking distance threshold |
+| `rundist` | *Float* | Running distance threshold |
+| `prefatckdist` | *Float* | Preferred attack distance |
+| `creperspace` | *Float* | Creature personal space radius |
+| `perspace` | *Float* | Personal space radius |
+| `cameraspace` | *Float* (optional) | Camera space offset |
+| `cameraheightoffset` | *String* (optional) | Camera height offset |
+| `targetheight` | *String* | Target height for combat |
+| `perceptiondist` | *Integer* | Perception distance |
+| `headArcH` | *Integer* | Head horizontal arc angle |
+| `headArcV` | *Integer* | Head vertical arc angle |
+| `headtrack` | *Boolean* | Whether head tracking is enabled |
+| `hasarms` | *Boolean* | Whether creature has arms |
+| `haslegs` | *Boolean* | Whether creature has legs |
+| `groundtilt` | *Boolean* | Whether ground tilt is enabled |
+| `footsteptype` | *Integer* (optional) | Footstep sound type |
+| `footstepsound` | *ResRef* (optional) | Footstep sound *ResRef* |
+| `footstepvolume` | *Boolean* | Whether footstep volume is enabled |
+| `armorSound` | *ResRef* (optional) | Armor sound effect *ResRef* |
+| `combatSound` | *ResRef* (optional) | Combat sound effect *ResRef* |
+| `soundapptype` | *Integer* (optional) | Sound appearance type |
+| `bloodcolr` | *String* | Blood color identifier |
+| `deathvfx` | *Integer* (optional) | Death visual effect ID |
+| `deathvfxnode` | *String* (optional) | Death VFX attachment [node](MDL-MDX-File-Format#node-structures) |
+| `fadedelayondeath` | *Boolean* (optional) | Whether to fade on death |
+| `destroyobjectdelay` | *Boolean* (optional) | Whether to delay object destruction |
+| `disableinjuredanim` | *Boolean* (optional) | Whether to disable injured [animations](MDL-MDX-File-Format#animation-header) |
+| `abortonparry` | *Boolean* | Whether to abort on parry |
+| `freelookeffect` | *Integer* (optional) | Free look effect ID |
+| `equipslotslocked` | *Integer* (optional) | Locked equipment slot flags |
+| `weaponscale` | *String* (optional) | Weapon scale multiplier |
+| `wingTailScale` | *Boolean* | Whether wing/tail scaling is enabled |
+| `helmetScaleF` | *String* (optional) | Female helmet scale |
+| `helmetScaleM` | *String* (optional) | Male helmet scale |
+| `envmap` | *ResRef* (optional) | Environment map [texture](TPC-File-Format) *ResRef* |
+| `bodyBag` | *Integer* (optional) | Body bag appearance ID |
+| `stringRef` | *Integer* (optional) | *String* reference for appearance name |
+| `driveaccl` | *Integer* | Vehicle drive acceleration |
+| `drivemaxspeed` | *Float* | Vehicle maximum speed |
+| `driveanimwalk` | *Float* | Vehicle walk [animation](MDL-MDX-File-Format#animation-header) speed |
+| `driveanimrunPc` | *Float* | PC vehicle run [animation](MDL-MDX-File-Format#animation-header) speed |
+| `driveanimrunXbox` | *Float* | Xbox vehicle run [animation](MDL-MDX-File-Format#animation-header) speed |
 
 **Column Details**:
 
-The `appearance.2da` file contains a comprehensive set of columns for character appearance configuration. The complete column list is parsed by reone's appearance parser:
+The `appearance.2da` file contains a comprehensive set of columns for character appearance configuration. The complete column list is parsed by the game engine:
 
 - [model](MDL-MDX-File-Format) columns: `modela` through `modeln` (14 [model](MDL-MDX-File-Format) variations)
 - [texture](TPC-File-Format) columns: `texa` through `texn` (14 [texture](TPC-File-Format) variations)
@@ -653,13 +654,13 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:73`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L73) - [StrRef](TLK-File-Format#string-references-strref) column definition for appearance.2da (K1: string_ref)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:248`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L248) - [StrRef](TLK-File-Format#string-references-strref) column definition for appearance.2da (K2: string_ref)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:155`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L155) - [ResRef](GFF-File-Format#gff-data-types) column definition for appearance.2da (race)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:168`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L168) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definitions for appearance.2da (modela through modelj)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:213-214`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L213-L214) - [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definitions for appearance.2da (racetex, texa through texj, headtexve, headtexe, headtexvg, headtexg)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:73`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L73) - [StrRef](TLK-File-Format#string-references-strref) column definition for appearance.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:248`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L248) - [StrRef](TLK-File-Format#string-references-strref) column definition for appearance.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:155`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L155) - *ResRef* column definition for appearance.2da (race)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:168`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L168) - [model](MDL-MDX-File-Format) *ResRef* column definitions for appearance.2da (`modela` through `modelj`)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:213-214`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L213-L214) - [texture](TPC-File-Format) *ResRef* column definitions for appearance.2da (`racetex`, `texa` through `texj`, `headtexve`, `headtexe`, `headtexvg`, `headtexg`)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:456`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L456) - TwoDARegistry.APPEARANCES constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:524`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L524) - [GFF](GFF-File-Format) field mapping: "Appearance_Type" -> appearance.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:524`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L524) - [GFF](GFF-File-Format) field mapping: `"Appearance_Type" -> appearance.2da`
 
 **HolocronToolset:**
 
@@ -677,82 +678,82 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 
 ### [baseitems.2da](2DA-baseitems)
 
-**Engine Usage**: Defines base item types that form the foundation for all items in the game. Each row represents a base item type (weapon, armor, shield, etc.) with properties like damage dice, weapon categories, equipment slots, and item flags. The engine uses this file to determine item behavior, combat statistics, and equipment compatibility.
+**Engine Usage**: Defines base item types that form the foundation for all items in the game. Each row represents a base item type (*weapon*, *armor*, *shield*, etc.) with properties like damage dice, weapon categories, equipment slots, and item flags. The engine uses this file to determine item behavior, combat statistics, and equipment compatibility.
 
-**Row index**: Base item ID (integer)
+**Row index**: Base item ID (*integer*)
 
 **Column structure** (columns accessed by reone):
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Item type label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for item type name |
-| `basecost` | Integer | Base gold cost |
-| `stacking` | Integer | Stack size limit |
-| `invslotwidth` | Integer | Inventory slot width |
-| `invslotheight` | Integer | Inventory slot height |
-| `canrotateicon` | Boolean | Whether icon can be rotated in inventory |
-| `itemclass` | Integer | Item class identifier |
-| `weapontype` | Integer | Weapon type (if weapon) |
-| `weaponsize` | Integer | Weapon size category |
-| `weaponwield` | Integer | Wield type (one-handed, two-handed, etc.) |
-| `damagedice` | Integer | Damage dice count |
-| `damagedie` | Integer | Damage die size |
-| `damagebonus` | Integer | Base damage bonus |
-| `damagetype` | Integer | Damage type flags |
-| `weaponmattype` | Integer | Weapon [material](MDL-MDX-File-Format#trimesh-header) type |
-| `weaponsound` | Integer | Weapon sound type |
-| `ammunitiontype` | Integer | Ammunition type required |
-| `rangedweapon` | Boolean | Whether item is a ranged weapon |
-| `maxattackrange` | Integer | Maximum attack range |
-| `preferredattackrange` | Integer | Preferred attack range |
-| `attackmod` | Integer | Attack modifier |
-| `damagebonusfeat` | Integer | Feat ID for damage bonus |
-| `weaponfocustype` | Integer | Weapon focus type |
-| `weaponfocusfeat` | Integer | Weapon focus feat ID |
-| `description` | [StrRef](TLK-File-Format#string-references-strref) | string reference for item description |
-| `icon` | [ResRef](GFF-File-Format#gff-data-types) | Icon image [ResRef](GFF-File-Format#gff-data-types) |
-| `equipableslots` | Integer | Equipment slot flags |
-| `model1` through `model6` | ResRef (optional) | 3D [model](MDL-MDX-File-Format) ResRefs for different variations |
-| `partenvmap` | ResRef (optional) | Partial environment map [texture](TPC-File-Format) |
-| `defaultmodel` | ResRef (optional) | Default [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `defaulticon` | ResRef (optional) | Default icon [ResRef](GFF-File-Format#gff-data-types) |
-| `container` | Boolean | Whether item is a container |
-| `weapon` | Boolean | Whether item is a weapon |
-| `armor` | Boolean | Whether item is armor |
-| `chargesstarting` | Integer | Starting charges (for usable items) |
-| `costpercharge` | Integer | Cost per charge to recharge |
-| `addcost` | Integer | Additional cost modifier |
-| `stolen` | Boolean | Whether item is marked as stolen |
-| `minlevel` | Integer | Minimum level requirement |
-| `stacking` | Integer | Maximum stack size |
-| `reqfeat0` through `reqfeat3` | Integer (optional) | Required feat IDs |
-| `reqfeatcount0` through `reqfeatcount3` | Integer (optional) | Required feat counts |
-| `reqclass` | Integer (optional) | Required class ID |
-| `reqrace` | Integer (optional) | Required race ID |
-| `reqalign` | Integer (optional) | Required alignment |
-| `reqdeity` | Integer (optional) | Required deity ID |
-| `reqstr` | Integer (optional) | Required strength |
-| `reqdex` | Integer (optional) | Required dexterity |
-| `reqint` | Integer (optional) | Required intelligence |
-| `reqwis` | Integer (optional) | Required wisdom |
-| `reqcon` | Integer (optional) | Required constitution |
-| `reqcha` | Integer (optional) | Required charisma |
+| `label` | *String* | Item type label |
+| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for item type name |
+| `basecost` | *Integer* | Base gold cost |
+| `stacking` | *Integer* | Stack size limit |
+| `invslotwidth` | *Integer* | Inventory slot width |
+| `invslotheight` | *Integer* | Inventory slot height |
+| `canrotateicon` | *Boolean* (optional) | Whether icon can be rotated in inventory |
+| `itemclass` | *Integer* | Item class identifier |
+| `weapontype` | *Integer* | Weapon type (if weapon) |
+| `weaponsize` | *Integer* | Weapon size category |
+| `weaponwield` | *Integer* | Wield type (one-handed, two-handed, etc.) |
+| `damagedice` | *Integer* | Damage dice count |
+| `damagedie` | *Integer* | Damage die size |
+| `damagebonus` | *Integer* | Base damage bonus |
+| `damagetype` | *Integer* | Damage type flags |
+| `weaponmattype` | *Integer* | Weapon [material](MDL-MDX-File-Format#trimesh-header) type |
+| `weaponsound` | *Integer* | Weapon sound type |
+| `ammunitiontype` | *Integer* | Ammunition type required |
+| `rangedweapon` | *Boolean* | Whether item is a ranged weapon |
+| `maxattackrange` | *Integer* | Maximum attack range |
+| `preferredattackrange` | *Integer* | Preferred attack range |
+| `attackmod` | *Integer* | Attack modifier |
+| `damagebonusfeat` | *Integer* | Feat ID for damage bonus |
+| `weaponfocustype` | *Integer* | Weapon focus type |
+| `weaponfocusfeat` | *Integer* | Weapon focus feat ID |
+| `description` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for item description |
+| `icon` | *ResRef* | Icon image *ResRef* |
+| `equipableslots` | *Integer* | Equipment slot flags |
+| `model1` through `model6` | *ResRef* (optional) | 3D [model](MDL-MDX-File-Format) *ResRefs* for different variations |
+| `partenvmap` | *ResRef* (optional) | Partial environment map [texture](TPC-File-Format) |
+| `defaultmodel` | *ResRef* (optional) | Default [model](MDL-MDX-File-Format) *ResRef* |
+| `defaulticon` | *ResRef* (optional) | Default icon *ResRef* |
+| `container` | *Boolean* | Whether item is a container |
+| `weapon` | *Boolean* | Whether item is a weapon |
+| `armor` | *Boolean* | Whether item is armor |
+| `chargesstarting` | *Integer* | Starting charges (for usable items) |
+| `costpercharge` | *Integer* | Cost per charge to recharge |
+| `addcost` | *Integer* | Additional cost modifier |
+| `stolen` | *Boolean* | Whether item is marked as stolen |
+| `minlevel` | *Integer* | Minimum level requirement |
+| `stacking` | *Integer* | Maximum stack size |
+| `reqfeat0` through `reqfeat3` | *Integer* (optional) | Required feat IDs |
+| `reqfeatcount0` through `reqfeatcount3` | *Integer* (optional) | Required feat counts |
+| `reqclass` | *Integer* (optional) | Required class ID |
+| `reqrace` | *Integer* (optional) | Required race ID |
+| `reqalign` | *Integer* (optional) | Required alignment |
+| `reqdeity` | *Integer* (optional) | Required deity ID |
+| `reqstr` | *Integer* (optional) | Required strength |
+| `reqdex` | *Integer* (optional) | Required dexterity |
+| `reqint` | *Integer* (optional) | Required intelligence |
+| `reqwis` | *Integer* (optional) | Required wisdom |
+| `reqcon` | *Integer* (optional) | Required constitution |
+| `reqcha` | *Integer* (optional) | Required charisma |
 
 **Column Details** (from reone implementation):
 
-The following columns are accessed by the reone engine:
+The following columns are accessed by the game engine:
 
 - `maxattackrange`: Maximum attack range for ranged weapons
 - `crithitmult`: Critical hit multiplier
 - `critthreat`: Critical threat range
 - `damageflags`: Damage type flags
 - `dietoroll`: Damage die size
-- `equipableslots`: Equipment slot flags (hex integer)
-- `itemclass`: Item class identifier (string)
+- `equipableslots`: Equipment slot flags (*hex integer*)
+- `itemclass`: Item class identifier (*string*)
 - `numdice`: Number of damage dice
 - `weapontype`: Weapon type identifier
-- `weaponwield`: Weapon wield type (one-handed, two-handed, etc.)
+- `weaponwield`: Weapon wield type (*one-handed*, *two-handed*, etc.)
 - `bodyvar`: Body variation for armor
 - `ammunitiontype`: Ammunition type ID (used to look up `ammunitiontypes.2da`)
 
@@ -760,26 +761,26 @@ The following columns are accessed by the reone engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:169`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L169) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for baseitems.2da (defaultmodel)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:187`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L187) - Sound [ResRef](GFF-File-Format#gff-data-types) column definitions for baseitems.2da (powerupsnd, powerdownsnd, poweredsnd)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:215`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L215) - [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for baseitems.2da (defaulticon)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:225`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L225) - Item [ResRef](GFF-File-Format#gff-data-types) column definitions for baseitems.2da (itemclass, baseitemstatref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:169`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L169) - [model](MDL-MDX-File-Format) *ResRef* column definition for `baseitems.2da` (defaultmodel)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:187`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L187) - Sound *ResRef* column definitions for `baseitems.2da` (powerupsnd, powerdownsnd, poweredsnd)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:215`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L215) - [texture](TPC-File-Format) *ResRef* column definition for `baseitems.2da` (defaulticon)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:225`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L225) - Item *ResRef* column definitions for `baseitems.2da` (itemclass, baseitemstatref)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:466`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L466) - TwoDARegistry.BASEITEMS constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:537`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L537) - [GFF](GFF-File-Format) field mapping: "BaseItem" and "ModelVariation" -> baseitems.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:537`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L537) - [GFF](GFF-File-Format) field mapping: "BaseItem" and "ModelVariation" -> `baseitems.2da`
 
 **HolocronToolset:**
 
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:65`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L65) - HTInstallation.TwoDA_BASEITEMS constant
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:594-607`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L594-L607) - get_item_icon_from_uti method using baseitems.2da for item class lookup
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:609-620`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L609-L620) - get_item_base_name method using baseitems.2da
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:630-643`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L630-L643) - get_item_icon_path method using baseitems.2da for item class and icon path
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:107-117`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L107-L117) - baseitems.2da loading and usage in UTI (item) editor for base item selection
-- [`Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py:668-704`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py#L668-L704) - baseitems.2da usage for equipment slot and droid/human [flag](GFF-File-Format#gff-data-types) lookup
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:594-607`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L594-L607) - get_item_icon_from_uti method using `baseitems.2da` for item class lookup
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:609-620`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L609-L620) - get_item_base_name method using `baseitems.2da`
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:630-643`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L630-L643) - get_item_icon_path method using `baseitems.2da` for item class and icon path
+- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:107-117`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L107-L117) - `baseitems.2da` loading and usage in [UTI](GFF-UTI) (item) editor for base item selection
+- [`Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py:668-704`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py#L668-L704) - `baseitems.2da` usage for equipment slot and droid/human [flag](GFF-File-Format#gff-data-types) lookup
 
 **Vendor Implementations:**
 
 - [`vendor/reone/src/libs/game/object/item.cpp:126-136`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/item.cpp#L126-L136) - Base item column access
-- [`vendor/reone/src/libs/game/object/item.cpp:160-171`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/item.cpp#L160-L171) - Ammunition type lookup from baseitems.2da
+- [`vendor/reone/src/libs/game/object/item.cpp:160-171`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/item.cpp#L160-L171) - Ammunition type lookup from `baseitems.2da`
 
 ---
 
@@ -793,39 +794,39 @@ The following columns are accessed by the reone engine:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Class label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for class name |
-| `description` | [StrRef](TLK-File-Format#string-references-strref) | string reference for class description |
-| `hitdie` | Integer | Hit dice size (d6, d8, d10, etc.) |
-| `skillpointbase` | Integer | Base skill points per level |
-| `skillpointbonus` | Integer | Intelligence bonus skill points |
-| `attackbonus` | string | Attack bonus progression table reference |
-| `savingthrow` | string | Saving throw progression table reference |
-| `savingthrowtable` | string | Saving throw table filename |
-| `spellgaintable` | string | Spell/Force power gain table reference |
-| `spellknowntable` | string | Spell/Force power known table reference |
-| `primaryability` | Integer | Primary ability score for class |
-| `preferredalignment` | Integer | Preferred alignment |
-| `alignrestrict` | Integer | Alignment restrictions |
-| `classfeat` | Integer | Class-specific feat ID |
-| `classskill` | Integer | Class skill flags |
-| `skillpointmaxlevel` | Integer | Maximum level for skill point calculation |
-| `spellcaster` | Integer | Spellcasting level (0 = non-caster) |
-| `spellcastingtype` | Integer | Spellcasting type identifier |
-| `spelllevel` | Integer | Maximum spell level |
-| `spellbook` | ResRef (optional) | Spellbook [ResRef](GFF-File-Format#gff-data-types) |
-| `icon` | [ResRef](GFF-File-Format#gff-data-types) | Class icon [ResRef](GFF-File-Format#gff-data-types) |
-| `portrait` | ResRef (optional) | Class portrait [ResRef](GFF-File-Format#gff-data-types) |
-| `startingfeat0` through `startingfeat9` | Integer (optional) | Starting feat IDs |
-| `startingpack` | Integer (optional) | Starting equipment pack ID |
+| `label` | *String* | Class label |
+| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for class name |
+| `description` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for class description |
+| `hitdie` | *Integer* | Hit dice size (d6, d8, d10, etc.) |
+| `skillpointbase` | *Integer* | Base skill points per level |
+| `skillpointbonus` | *Integer* | Intelligence bonus skill points |
+| `attackbonus` | *String* | Attack bonus progression table reference |
+| `savingthrow` | *String* | Saving throw progression table reference |
+| `savingthrowtable` | *String* | Saving throw table filename |
+| `spellgaintable` | *String* | Spell/Force power gain table reference |
+| `spellknowntable` | *String* | Spell/Force power known table reference |
+| `primaryability` | *Integer* | Primary ability score for class |
+| `preferredalignment` | *Integer* | Preferred alignment |
+| `alignrestrict` | *Integer* | Alignment restrictions |
+| `classfeat` | *Integer* | Class-specific feat ID |
+| `classskill` | *Integer* | Class skill flags |
+| `skillpointmaxlevel` | *Integer* | Maximum level for skill point calculation |
+| `spellcaster` | *Integer* | Spellcasting level (0 = non-caster) |
+| `spellcastingtype` | *Integer* | Spellcasting type identifier |
+| `spelllevel` | *Integer* | Maximum spell level |
+| `spellbook` | *ResRef* (optional) | Spellbook *ResRef* |
+| `icon` | *ResRef* | Class icon *ResRef* |
+| `portrait` | *ResRef* (optional) | Class portrait *ResRef* |
+| `startingfeat0` through `startingfeat9` | *Integer* (optional) | Starting feat IDs |
+| `startingpack` | *Integer* (optional) | Starting equipment pack ID |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | Class description string reference |
 
 **Column Details** (from reone implementation):
 
-The following columns are accessed by the reone engine:
+The following columns are accessed by the game engine:
 
-- `name`: string reference for class name
-- `description`: string reference for class description
+- `name`: *String* reference for class name
+- `description`: *String* reference for class description
 - `hitdie`: Hit dice size
 - `skillpointbase`: Base skill points per level
 - `str`, `dex`, `con`, `int`, `wis`, `cha`: Default ability scores
@@ -866,50 +867,50 @@ The following columns are accessed by the reone engine:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Feat label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for feat name |
-| `description` | [StrRef](TLK-File-Format#string-references-strref) | string reference for feat description |
-| `icon` | [ResRef](GFF-File-Format#gff-data-types) | Feat icon [ResRef](GFF-File-Format#gff-data-types) |
-| `takentext` | [StrRef](TLK-File-Format#string-references-strref) | string reference for "feat taken" message |
-| `prerequisite` | Integer (optional) | Prerequisite feat ID |
-| `minattackbonus` | Integer (optional) | Minimum attack bonus requirement |
-| `minstr` | Integer (optional) | Minimum strength requirement |
-| `mindex` | Integer (optional) | Minimum dexterity requirement |
-| `minint` | Integer (optional) | Minimum intelligence requirement |
-| `minwis` | Integer (optional) | Minimum wisdom requirement |
-| `mincon` | Integer (optional) | Minimum constitution requirement |
-| `mincha` | Integer (optional) | Minimum charisma requirement |
-| `minlevel` | Integer (optional) | Minimum character level |
-| `minclasslevel` | Integer (optional) | Minimum class level |
-| `minspelllevel` | Integer (optional) | Minimum spell level |
-| `spellid` | Integer (optional) | Required spell ID |
-| `successor` | Integer (optional) | Successor feat ID (for feat chains) |
-| `maxrank` | Integer (optional) | Maximum rank for stackable feats |
-| `minrank` | Integer (optional) | Minimum rank requirement |
-| `masterfeat` | Integer (optional) | Master feat ID |
-| `targetself` | Boolean | Whether feat targets self |
-| `orreqfeat0` through `orreqfeat4` | Integer (optional) | Alternative prerequisite feat IDs |
-| `reqskill` | Integer (optional) | Required skill ID |
-| `reqskillrank` | Integer (optional) | Required skill rank |
-| `constant` | Integer (optional) | Constant value for feat calculations |
-| `toolscategories` | Integer (optional) | Tool categories flags |
-| `effecticon` | ResRef (optional) | Effect icon [ResRef](GFF-File-Format#gff-data-types) |
-| `effectdesc` | StrRef (optional) | Effect description string reference |
-| `effectcategory` | Integer (optional) | Effect category identifier |
-| `allclassescanuse` | Boolean | Whether all classes can use this feat |
-| `category` | Integer | Feat category identifier |
-| `maxcr` | Integer (optional) | Maximum challenge rating |
-| `spellid` | Integer (optional) | Associated spell ID |
-| `usesperday` | Integer (optional) | Uses per day limit |
-| `masterfeat` | Integer (optional) | Master feat ID for feat trees |
+| `label` | *String* | Feat label |
+| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for feat name |
+| `description` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for feat description |
+| `icon` | *ResRef* | Feat icon *ResRef* |
+| `takentext` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for "feat taken" message |
+| `prerequisite` | *Integer* (optional) | Prerequisite feat ID |
+| `minattackbonus` | *Integer* (optional) | Minimum attack bonus requirement |
+| `minstr` | *Integer* (optional) | Minimum strength requirement |
+| `mindex` | *Integer* (optional) | Minimum dexterity requirement |
+| `minint` | *Integer* (optional) | Minimum intelligence requirement |
+| `minwis` | *Integer* (optional) | Minimum wisdom requirement |
+| `mincon` | *Integer* (optional) | Minimum constitution requirement |
+| `mincha` | *Integer* (optional) | Minimum charisma requirement |
+| `minlevel` | *Integer* (optional) | Minimum character level |
+| `minclasslevel` | *Integer* (optional) | Minimum class level |
+| `minspelllevel` | *Integer* (optional) | Minimum spell level |
+| `spellid` | *Integer* (optional) | Required spell ID |
+| `successor` | *Integer* (optional) | Successor feat ID (for feat chains) |
+| `maxrank` | *Integer* (optional) | Maximum rank for stackable feats |
+| `minrank` | *Integer* (optional) | Minimum rank requirement |
+| `masterfeat` | *Integer* (optional) | Master feat ID |
+| `targetself` | *Boolean* | Whether feat targets self |
+| `orreqfeat0` through `orreqfeat4` | *Integer* (optional) | Alternative prerequisite feat IDs |
+| `reqskill` | *Integer* (optional) | Required skill ID |
+| `reqskillrank` | *Integer* (optional) | Required skill rank |
+| `constant` | *Integer* (optional) | Constant value for feat calculations |
+| `toolscategories` | *Integer* (optional) | Tool categories flags |
+| `effecticon` | *ResRef* (optional) | Effect icon *ResRef* |
+| `effectdesc` | [StrRef](TLK-File-Format#string-references-strref) (optional) | Effect description string reference |
+| `effectcategory` | *Integer* (optional) | Effect category identifier |
+| `allclassescanuse` | *Boolean* | Whether all classes can use this feat |
+| `category` | *Integer* | Feat category identifier |
+| `maxcr` | *Integer* (optional) | Maximum challenge rating |
+| `spellid` | *Integer* (optional) | Associated spell ID |
+| `usesperday` | *Integer* (optional) | Uses per day limit |
+| `masterfeat` | *Integer* (optional) | Master feat ID for feat trees |
 
 **Column Details** (from reone implementation):
 
 The following columns are accessed by the reone engine:
 
-- `name`: string reference for feat name
-- `description`: string reference for feat description
-- `icon`: Icon [ResRef](GFF-File-Format#gff-data-types)
+- `name`: *String* reference for feat name
+- `description`: *String* reference for feat description
+- `icon`: Icon *ResRef*
 - `mincharlevel`: Minimum character level (hex integer)
 - `prereqfeat1`: Prerequisite feat ID 1 (hex integer)
 - `prereqfeat2`: Prerequisite feat ID 2 (hex integer)
@@ -927,7 +928,7 @@ The following columns are accessed by the reone engine:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:82`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L82) - [StrRef](TLK-File-Format#string-references-strref) column definitions for feat.2da (K1: name, description)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:260`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L260) - [StrRef](TLK-File-Format#string-references-strref) column definitions for feat.2da (K2: name, description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:227`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L227) - [ResRef](GFF-File-Format#gff-data-types) column definition for feat.2da (icon)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:227`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L227) - *ResRef* column definition for feat.2da (icon)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:464`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L464) - TwoDARegistry.FEATS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:561-562`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L561-L562) - [GFF](GFF-File-Format) field mapping: "FeatID" and "Feat" -> feat.2da
 - [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:321-323`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L321-L323) - [UTC](GFF-File-Format#utc-creature) feat list field documentation
@@ -957,26 +958,26 @@ The following columns are accessed by the reone engine:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Skill label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for skill name |
-| `description` | [StrRef](TLK-File-Format#string-references-strref) | string reference for skill description |
-| `keyability` | Integer | [KEY](KEY-File-Format) ability score (STR, DEX, INT, etc.) |
-| `armorcheckpenalty` | Boolean | Whether armor check penalty applies |
-| `allclassescanuse` | Boolean | Whether all classes can use this skill |
-| `category` | Integer | Skill category identifier |
-| `maxrank` | Integer | Maximum skill rank |
-| `untrained` | Boolean | Whether skill can be used untrained |
-| `constant` | Integer (optional) | Constant modifier |
-| `hostileskill` | Boolean | Whether skill is hostile |
-| `icon` | ResRef (optional) | Skill icon [ResRef](GFF-File-Format#gff-data-types) |
+| `label` | *String* | Skill label |
+| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for skill name |
+| `description` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for skill description |
+| `keyability` | *Integer* | [KEY](KEY-File-Format) ability score (STR, DEX, INT, etc.) |
+| `armorcheckpenalty` | *Boolean* | Whether armor check penalty applies |
+| `allclassescanuse` | *Boolean* | Whether all classes can use this skill |
+| `category` | *Integer* | Skill category identifier |
+| `maxrank` | *Integer* | Maximum skill rank |
+| `untrained` | *Boolean* | Whether skill can be used untrained |
+| `constant` | *Integer* (optional) | Constant modifier |
+| `hostileskill` | *Boolean* | Whether skill is hostile |
+| `icon` | *ResRef* (optional) | Skill icon *ResRef* |
 
 **Column Details** (from reone implementation):
 
 The following columns are accessed by the reone engine:
 
-- `name`: string reference for skill name
-- `description`: string reference for skill description
-- `icon`: Icon [ResRef](GFF-File-Format#gff-data-types)
+- `name`: *String* reference for skill name
+- `description`: *String* reference for skill description
+- `icon`: Icon *ResRef*
 - Dynamic class skill columns: For each class, there is a column named `{classname}_class` (e.g., `jedi_guardian_class`) that contains `1` if the skill is a class skill for that class
 - `droidcanuse`: Boolean - whether droids can use this skill
 - `npccanuse`: Boolean - whether NPCs can use this skill
@@ -1015,57 +1016,57 @@ The following columns are accessed by the reone engine:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Spell label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for spell name |
-| `school` | Integer | Spell school identifier |
-| `range` | Integer | Spell range type |
-| `vs` | Integer | Versus type (self, touch, etc.) |
-| `metamagic` | Integer | Metamagic flags |
-| `targettype` | Integer | Target type flags |
-| `impactscript` | ResRef (optional) | Impact script [ResRef](GFF-File-Format#gff-data-types) |
-| `innate` | Integer | Innate Force power level (0 = not available) |
-| `conjtime` | Float | Casting/conjuration time |
-| `conjtimevfx` | Integer (optional) | Casting time visual effect |
-| `conjheadvfx` | Integer (optional) | Casting head visual effect |
-| `conjhandvfx` | Integer (optional) | Casting hand visual effect |
-| `conjgrndvfx` | Integer (optional) | Casting ground visual effect |
-| `conjcastvfx` | Integer (optional) | Casting visual effect |
-| `conjimpactscript` | ResRef (optional) | Conjuration impact script |
-| `conjduration` | Float | Conjuration duration |
-| `conjrange` | Integer | Conjuration range |
-| `conjca` | Integer | Conjuration casting [animation](MDL-MDX-File-Format#animation-header) |
-| `conjca2` through `conjca50` | Integer (optional) | Additional casting animations (numbered 2-50) |
-| `hostilesetting` | Integer | Hostile setting flags |
-| `featid` | Integer (optional) | Associated feat ID |
-| `counter1` | Integer (optional) | Counter spell ID 1 |
-| `counter2` | Integer (optional) | Counter spell ID 2 |
-| `counter3` | Integer (optional) | Counter spell ID 3 |
-| `projectile` | ResRef (optional) | Projectile [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `projectilesound` | ResRef (optional) | Projectile sound [ResRef](GFF-File-Format#gff-data-types) |
-| `projectiletype` | Integer | Projectile type identifier |
-| `projectileorient` | Integer | Projectile orientation |
-| `projectilepath` | Integer | Projectile path type |
-| `projectilehoming` | Boolean | Whether projectile homes on target |
-| `projectilemodel` | ResRef (optional) | Projectile 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `projectilemodel2` through `projectilemodel50` | ResRef (optional) | Additional projectile models (numbered 2-50) |
-| `icon` | [ResRef](GFF-File-Format#gff-data-types) | Spell icon [ResRef](GFF-File-Format#gff-data-types) |
-| `icon2` through `icon50` | ResRef (optional) | Additional icons (numbered 2-50) |
+| `label` | *String* | Spell label |
+| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for spell name |
+| `school` | *Integer* | Spell school identifier |
+| `range` | *Integer* | Spell range type |
+| `vs` | *Integer* | Versus type (self, touch, etc.) |
+| `metamagic` | *Integer* | Metamagic flags |
+| `targettype` | *Integer* | Target type flags |
+| `impactscript` | *ResRef* (optional) | Impact script *ResRef* |
+| `innate` | *Integer* | Innate Force power level (0 = not available) |
+| `conjtime` | *Float* | Casting/conjuration time |
+| `conjtimevfx` | *Integer* (optional) | Casting time visual effect |
+| `conjheadvfx` | *Integer* (optional) | Casting head visual effect |
+| `conjhandvfx` | *Integer* (optional) | Casting hand visual effect |
+| `conjgrndvfx` | *Integer* (optional) | Casting ground visual effect |
+| `conjcastvfx` | *Integer* (optional) | Casting visual effect |
+| `conjimpactscript` | *ResRef* (optional) | Conjuration impact script |
+| `conjduration` | *Float* | Conjuration duration |
+| `conjrange` | *Integer* | Conjuration range |
+| `conjca` | *Integer* | Conjuration casting [animation](MDL-MDX-File-Format#animation-header) |
+| `conjca2` through `conjca50` | *Integer* (optional) | Additional casting animations (numbered 2-50) |
+| `hostilesetting` | *Integer* | Hostile setting flags |
+| `featid` | *Integer* (optional) | Associated feat ID |
+| `counter1` | *Integer* (optional) | Counter spell ID 1 |
+| `counter2` | *Integer* (optional) | Counter spell ID 2 |
+| `counter3` | *Integer* (optional) | Counter spell ID 3 |
+| `projectile` | *ResRef* (optional) | Projectile [model](MDL-MDX-File-Format) *ResRef* |
+| `projectilesound` | *ResRef* (optional) | Projectile sound *ResRef* |
+| `projectiletype` | *Integer* | Projectile type identifier |
+| `projectileorient` | *Integer* | Projectile orientation |
+| `projectilepath` | *Integer* | Projectile path type |
+| `projectilehoming` | *Boolean* | Whether projectile homes on target |
+| `projectilemodel` | *ResRef* (optional) | Projectile 3D [model](MDL-MDX-File-Format) *ResRef* |
+| `projectilemodel2` through `projectilemodel50` | *ResRef* (optional) | Additional projectile models (numbered 2-50) |
+| `icon` | *ResRef* | Spell icon *ResRef* |
+| `icon2` through `icon50` | *ResRef* (optional) | Additional icons (numbered 2-50) |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | Spell description string reference |
-| `altmessage` | StrRef (optional) | Alternative message string reference |
-| `usewhencast` | Integer | Use when cast flags |
-| `blood` | Boolean | Whether spell causes blood effects |
-| `concentration` | Integer | Concentration check DC |
-| `immunitytype` | Integer | Immunity type identifier |
-| `immunitytype2` through `immunitytype50` | Integer (optional) | Additional immunity types (numbered 2-50) |
-| `immunityitem` | Integer | Immunity item type |
-| `immunityitem2` through `immunityitem50` | Integer (optional) | Additional immunity items (numbered 2-50) |
+| `altmessage` | [StrRef](TLK-File-Format#string-references-strref) (optional) | Alternative message string reference |
+| `usewhencast` | *Integer* | Use when cast flags |
+| `blood` | *Boolean* | Whether spell causes blood effects |
+| `concentration` | *Integer* | Concentration check DC |
+| `immunitytype` | *Integer* | Immunity type identifier |
+| `immunitytype2` through `immunitytype50` | *Integer* (optional) | Additional immunity types (numbered 2-50) |
+| `immunityitem` | *Integer* | Immunity item type |
+| `immunityitem2` through `immunityitem50` | *Integer* (optional) | Additional immunity items (numbered 2-50) |
 
 **Column Details** (from reone implementation):
 
 The following columns are accessed by the reone engine:
 
-- `name`: string reference for spell name
-- `spelldesc`: string reference for spell description (note: column name is `spelldesc`, not `description`)
+- `name`: *String* reference for spell name
+- `spelldesc`: *String* reference for spell description (note: column name is `spelldesc`, not `description`)
 - `iconresref`: Icon ResRef (note: column name is `iconresref`, not `icon`)
 - `pips`: Spell pips/ranks (hex integer)
 - `conjtime`: Conjuration/casting time
@@ -1073,14 +1074,14 @@ The following columns are accessed by the reone engine:
 - `catchtime`: Catch time
 - `conjanim`: Conjuration [animation](MDL-MDX-File-Format#animation-header) type (e.g., "throw", "up")
 - `hostilesetting`: Hostile setting flags
-- `projectile`: Projectile [ResRef](GFF-File-Format#gff-data-types)
+- `projectile`: Projectile *ResRef*
 - `projectileHook`: Projectile hook point
 - `projectileOrigin`: Projectile origin point
 - `projectileTarget`: Projectile target point
 - `projectileCurve`: Projectile curve type
-- `projmodel`: Projectile [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
+- `projmodel`: Projectile [model](MDL-MDX-File-Format) *ResRef*
 - `range`: Spell range
-- `impactscript`: Impact script [ResRef](GFF-File-Format#gff-data-types)
+- `impactscript`: Impact script *ResRef*
 - `casthandvisual`: Cast hand visual effect
 
 **Note**: The `spells.2da` file contains many optional columns for projectile [models](MDL-MDX-File-Format), icons, and immunity types (numbered 1-50). These are used for spell variations and visual effects.
@@ -1091,8 +1092,8 @@ The following columns are accessed by the reone engine:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:149`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L149) - [StrRef](TLK-File-Format#string-references-strref) column definitions for spells.2da (K1: name, spelldesc)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:327`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L327) - [StrRef](TLK-File-Format#string-references-strref) column definitions for spells.2da (K2: name, spelldesc)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L239) - Script [ResRef](GFF-File-Format#gff-data-types) column definition for spells.2da (impactscript)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L432) - Script [ResRef](GFF-File-Format#gff-data-types) column definition for spells.2da (K2: impactscript)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L239) - Script *ResRef* column definition for spells.2da (impactscript)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L432) - Script *ResRef* column definition for spells.2da (K2: impactscript)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:465`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L465) - TwoDARegistry.POWERS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:558-560`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L558-L560) - [GFF](GFF-File-Format) field mapping: "Subtype", "SpellId", and "Spell" -> spells.2da
 - [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:9380-9381`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L9380-L9381) - GetLastForcePowerUsed function comment referencing spells.2da
@@ -1122,15 +1123,15 @@ The following columns are accessed by the reone engine:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for property name |
-| `costtable` | string | Cost calculation table reference |
-| `param1` | string | Parameter 1 label |
-| `param2` | string | Parameter 2 label |
-| `subtype` | Integer | Property subtype identifier |
-| `costvalue` | Integer | Base cost value |
-| `param1value` | Integer | Parameter 1 default value |
-| `param2value` | Integer | Parameter 2 default value |
+| `label` | *String* | Property label |
+| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for property name |
+| `costtable` | *String* | Cost calculation table reference |
+| `param1` | *String* | Parameter 1 label |
+| `param2` | *String* | Parameter 2 label |
+| `subtype` | *Integer* | Property subtype identifier |
+| `costvalue` | *Integer* | Base cost value |
+| `param1value` | *Integer* | Parameter 1 default value |
+| `param2value` | *Integer* | Parameter 2 default value |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | Property description string reference |
 
 **References**:
@@ -1160,8 +1161,8 @@ The following columns are accessed by the reone engine:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Damage bonus label |
-| `cost` | Integer | Cost for this damage bonus value |
+| `label` | *String* | Damage bonus label |
+| `cost` | *Integer* | Cost for this damage bonus value |
 
 **References**:
 
@@ -1185,31 +1186,31 @@ The following columns are accessed by the reone engine:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | String (optional) | Placeable type label |
-| `modelname` | ResRef (optional) | 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `strref` | Integer | string reference for placeable name |
-| `bodybag` | Boolean | Whether placeable can contain bodies |
-| `canseeheight` | Float | Can-see height for line of sight |
-| `hitcheck` | Boolean | Whether hit detection is enabled |
-| `hostile` | Boolean | Whether placeable is hostile |
-| `ignorestatichitcheck` | Boolean | Whether to ignore static hit checks |
+| `modelname` | *ResRef* (optional) | 3D [model](MDL-MDX-File-Format) *ResRef* |
+| `strref` | *Integer* | *String* reference for placeable name |
+| `bodybag` | *Boolean* | Whether placeable can contain bodies |
+| `canseeheight` | *Float* | Can-see height for line of sight |
+| `hitcheck` | *Boolean* | Whether hit detection is enabled |
+| `hostile` | *Boolean* | Whether placeable is hostile |
+| `ignorestatichitcheck` | *Boolean* | Whether to ignore static hit checks |
 | `lightcolor` | String (optional) | Light color RGB values |
 | `lightoffsetx` | String (optional) | Light X offset |
 | `lightoffsety` | String (optional) | Light Y offset |
 | `lightoffsetz` | String (optional) | Light Z offset |
-| `lowgore` | String (optional) | Low gore [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `noncull` | Boolean | Whether to disable culling |
-| `preciseuse` | Boolean | Whether precise use is enabled |
-| `shadowsize` | Boolean | Whether shadow size is enabled |
-| `soundapptype` | Integer (optional) | Sound appearance type |
-| `usesearch` | Boolean | Whether placeable can be searched |
+| `lowgore` | String (optional) | Low gore [model](MDL-MDX-File-Format) *ResRef* |
+| `noncull` | *Boolean* | Whether to disable culling |
+| `preciseuse` | *Boolean* | Whether precise use is enabled |
+| `shadowsize` | *Boolean* | Whether shadow size is enabled |
+| `soundapptype` | *Integer* (optional) | Sound appearance type |
+| `usesearch` | *Boolean* | Whether placeable can be searched |
 
 **Column Details**:
 
 The complete column structure is defined in reone's placeables parser:
 
 - `label`: Optional label string
-- `modelname`: 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
-- `strref`: string reference for placeable name
+- `modelname`: 3D [model](MDL-MDX-File-Format) *ResRef*
+- `strref`: *String* reference for placeable name
 - `bodybag`: Boolean - whether placeable can contain bodies
 - `canseeheight`: Float - can-see height for line of sight
 - `hitcheck`: Boolean - whether hit detection is enabled
@@ -1219,7 +1220,7 @@ The complete column structure is defined in reone's placeables parser:
 - `lightoffsetx`: Optional string - light X offset
 - `lightoffsety`: Optional string - light Y offset
 - `lightoffsetz`: Optional string - light Z offset
-- `lowgore`: Optional string - low gore [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
+- `lowgore`: Optional string - low gore [model](MDL-MDX-File-Format) *ResRef*
 - `noncull`: Boolean - whether to disable culling
 - `preciseuse`: Boolean - whether precise use is enabled
 - `shadowsize`: Boolean - whether shadow size is enabled
@@ -1231,9 +1232,9 @@ The complete column structure is defined in reone's placeables parser:
 **PyKotor:**
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:141`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L141) - [StrRef](TLK-File-Format#string-references-strref) column definition for placeables.2da (K1: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:170`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L170) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for placeables.2da (K1: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:170`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L170) - [model](MDL-MDX-File-Format) *ResRef* column definition for placeables.2da (K1: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:319`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L319) - [StrRef](TLK-File-Format#string-references-strref) column definition for placeables.2da (K2: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:349`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L349) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for placeables.2da (K2: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:349`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L349) - [model](MDL-MDX-File-Format) *ResRef* column definition for placeables.2da (K2: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:467`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L467) - TwoDARegistry.PLACEABLES constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:542`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L542) - [GFF](GFF-File-Format) field mapping: "Appearance" -> placeables.2da
 
@@ -1262,30 +1263,30 @@ The complete column structure is defined in reone's placeables parser:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Door type label |
-| `modelname` | [ResRef](GFF-File-Format#gff-data-types) | 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `label` | *String* | Door type label |
+| `modelname` | *ResRef* | 3D [model](MDL-MDX-File-Format) *ResRef* |
 | `name` | String (optional) | Door type name |
-| `strref` | Integer (optional) | string reference for door name |
-| `blocksight` | Boolean | Whether door blocks line of sight |
-| `nobin` | Boolean | Whether door has no bin (container) |
-| `preciseuse` | Boolean | Whether precise use is enabled |
-| `soundapptype` | Integer (optional) | Sound appearance type |
-| `staticanim` | String (optional) | Static [animation](MDL-MDX-File-Format#animation-header) [ResRef](GFF-File-Format#gff-data-types) |
-| `visiblemodel` | Boolean | Whether [model](MDL-MDX-File-Format) is visible |
+| `strref` | *Integer* (optional) | *String* reference for door name |
+| `blocksight` | *Boolean* | Whether door blocks line of sight |
+| `nobin` | *Boolean* | Whether door has no bin (container) |
+| `preciseuse` | *Boolean* | Whether precise use is enabled |
+| `soundapptype` | *Integer* (optional) | Sound appearance type |
+| `staticanim` | String (optional) | Static [animation](MDL-MDX-File-Format#animation-header) *ResRef* |
+| `visiblemodel` | *Boolean* | Whether [model](MDL-MDX-File-Format) is visible |
 
 **Column Details**:
 
 The complete column structure is defined in reone's genericdoors parser:
 
 - `label`: Door type label
-- `modelname`: 3D [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
+- `modelname`: 3D [model](MDL-MDX-File-Format) *ResRef*
 - `name`: Optional door type name string
-- `strref`: Optional integer - string reference for door name
+- `strref`: Optional integer - *String* reference for door name
 - `blocksight`: Boolean - whether door blocks line of sight
 - `nobin`: Boolean - whether door has no bin (container)
 - `preciseuse`: Boolean - whether precise use is enabled
 - `soundapptype`: Optional integer - sound appearance type
-- `staticanim`: Optional string - static [animation](MDL-MDX-File-Format#animation-header) [ResRef](GFF-File-Format#gff-data-types)
+- `staticanim`: Optional string - static [animation](MDL-MDX-File-Format#animation-header) *ResRef*
 - `visiblemodel`: Boolean - whether [model](MDL-MDX-File-Format) is visible
 
 **References**:
@@ -1294,12 +1295,12 @@ The complete column structure is defined in reone's genericdoors parser:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](TLK-File-Format#string-references-strref) column definition for [doortypes.2da](2DA-doortypes) (K1: stringrefgame)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:86`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L86) - [StrRef](TLK-File-Format#string-references-strref) column definition for genericdoors.2da (K1: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for [doortypes.2da](2DA-doortypes) (K1: [model](MDL-MDX-File-Format))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:178`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L178) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for genericdoors.2da (K1: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](2DA-doortypes) (K1: [model](MDL-MDX-File-Format))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:178`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L178) - [model](MDL-MDX-File-Format) *ResRef* column definition for genericdoors.2da (K1: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:256`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L256) - [StrRef](TLK-File-Format#string-references-strref) column definition for [doortypes.2da](2DA-doortypes) (K2: stringrefgame)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:264`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L264) - [StrRef](TLK-File-Format#string-references-strref) column definition for genericdoors.2da (K2: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:356`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L356) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for [doortypes.2da](2DA-doortypes) (K2: [model](MDL-MDX-File-Format))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:357`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L357) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for genericdoors.2da (K2: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:356`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L356) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](2DA-doortypes) (K2: [model](MDL-MDX-File-Format))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:357`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L357) - [model](MDL-MDX-File-Format) *ResRef* column definition for genericdoors.2da (K2: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:468`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L468) - TwoDARegistry.DOORS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:543`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L543) - [GFF](GFF-File-Format) field mapping: "GenericType" -> genericdoors.2da
 
@@ -1327,15 +1328,17 @@ The complete column structure is defined in reone's genericdoors parser:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Door type label |
-| `stringrefgame` | [StrRef](TLK-File-Format#string-references-strref) | string reference for door type name |
-| `model` | [ResRef](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) for the door type |
+| `label` | *String* | Door type label |
+| `stringrefgame` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for door type name |
+| `model` | *ResRef* | [model](MDL-MDX-File-Format) *ResRef* for the door type |
 | Additional columns | Various | Door type properties |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](TLK-File-Format#string-references-strref) column definition for doortypes.2da
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for doortypes.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for doortypes.2da
 
 ---
 
@@ -1349,8 +1352,8 @@ The complete column structure is defined in reone's genericdoors parser:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Sound set label |
-| `resref` | [ResRef](GFF-File-Format#gff-data-types) | [sound set files](SSF-File-Format) ResRef (e.g., `c_human_m_01`) |
+| `label` | *String* | Sound set label |
+| `resref` | *ResRef* | [sound set files](SSF-File-Format) ResRef (e.g., `c_human_m_01`) |
 
 **References**:
 
@@ -1388,60 +1391,60 @@ The complete column structure is defined in reone's genericdoors parser:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Visual effect label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for effect name |
-| `model` | ResRef (optional) | Effect [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `impactmodel` | ResRef (optional) | Impact [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `impactorient` | Integer | Impact orientation |
-| `impacttype` | Integer | Impact type identifier |
-| `duration` | Float | Effect duration in seconds |
-| `durationvariance` | Float | Duration variance |
-| `loop` | Boolean | Whether effect loops |
-| `render` | Boolean | Whether effect is rendered |
-| `renderhint` | Integer | Render hint flags |
-| `sound` | ResRef (optional) | Sound effect [ResRef](GFF-File-Format#gff-data-types) |
-| `sounddelay` | Float | Sound delay in seconds |
-| `soundvariance` | Float | Sound variance |
-| `soundloop` | Boolean | Whether sound loops |
-| `soundvolume` | Float | Sound volume (0.0-1.0) |
-| `light` | Boolean | Whether effect emits light |
-| `lightcolor` | string | Light color RGB values |
-| `lightintensity` | Float | Light intensity |
-| `lightradius` | Float | Light radius |
-| `lightpulse` | Boolean | Whether light pulses |
-| `lightpulselength` | Float | Light pulse length |
-| `lightfade` | Boolean | Whether light fades |
-| `lightfadelength` | Float | Light fade length |
-| `lightfadestart` | Float | Light fade start time |
-| `lightfadeend` | Float | Light fade end time |
-| `lightshadow` | Boolean | Whether light casts shadows |
-| `lightshadowradius` | Float | Light shadow radius |
-| `lightshadowintensity` | Float | Light shadow intensity |
-| `lightshadowcolor` | string | Light shadow color RGB values |
-| `lightshadowfade` | Boolean | Whether light shadow fades |
-| `lightshadowfadelength` | Float | Light shadow fade length |
-| `lightshadowfadestart` | Float | Light shadow fade start time |
-| `lightshadowfadeend` | Float | Light shadow fade end time |
-| `lightshadowpulse` | Boolean | Whether light shadow pulses |
-| `lightshadowpulselength` | Float | Light shadow pulse length |
-| `lightshadowpulseintensity` | Float | Light shadow pulse intensity |
-| `lightshadowpulsecolor` | string | Light shadow pulse color RGB values |
-| `lightshadowpulsefade` | Boolean | Whether light shadow pulse fades |
-| `lightshadowpulsefadelength` | Float | Light shadow pulse fade length |
-| `lightshadowpulsefadestart` | Float | Light shadow pulse fade start time |
-| `lightshadowpulsefadeend` | Float | Light shadow pulse fade end time |
-| `lightshadowpulsefadeintensity` | Float | Light shadow pulse fade intensity |
-| `lightshadowpulsefadecolor` | string | Light shadow pulse fade color RGB values |
-| `lightshadowpulsefadepulse` | Boolean | Whether light shadow pulse fade pulses |
-| `lightshadowpulsefadepulselength` | Float | Light shadow pulse fade pulse length |
-| `lightshadowpulsefadepulseintensity` | Float | Light shadow pulse fade pulse intensity |
-| `lightshadowpulsefadepulsecolor` | string | Light shadow pulse fade pulse color RGB values |
-| `lightshadowpulsefadepulsefade` | Boolean | Whether light shadow pulse fade pulse fades |
-| `lightshadowpulsefadepulsefadelength` | Float | Light shadow pulse fade pulse fade length |
-| `lightshadowpulsefadepulsefadestart` | Float | Light shadow pulse fade pulse fade start time |
-| `lightshadowpulsefadepulsefadeend` | Float | Light shadow pulse fade pulse fade end time |
-| `lightshadowpulsefadepulsefadeintensity` | Float | Light shadow pulse fade pulse fade intensity |
-| `lightshadowpulsefadepulsefadecolor` | string | Light shadow pulse fade pulse fade color RGB values |
+| `label` | *String* | Visual effect label |
+| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for effect name |
+| `model` | *ResRef* (optional) | Effect [model](MDL-MDX-File-Format) *ResRef* |
+| `impactmodel` | *ResRef* (optional) | Impact [model](MDL-MDX-File-Format) *ResRef* |
+| `impactorient` | *Integer* | Impact orientation |
+| `impacttype` | *Integer* | Impact type identifier |
+| `duration` | *Float* | Effect duration in seconds |
+| `durationvariance` | *Float* | Duration variance |
+| `loop` | *Boolean* | Whether effect loops |
+| `render` | *Boolean* | Whether effect is rendered |
+| `renderhint` | *Integer* | Render hint flags |
+| `sound` | *ResRef* (optional) | Sound effect *ResRef* |
+| `sounddelay` | *Float* | Sound delay in seconds |
+| `soundvariance` | *Float* | Sound variance |
+| `soundloop` | *Boolean* | Whether sound loops |
+| `soundvolume` | *Float* | Sound volume (0.0-1.0) |
+| `light` | *Boolean* | Whether effect emits light |
+| `lightcolor` | *String* | Light color RGB values |
+| `lightintensity` | *Float* | Light intensity |
+| `lightradius` | *Float* | Light radius |
+| `lightpulse` | *Boolean* | Whether light pulses |
+| `lightpulselength` | *Float* | Light pulse length |
+| `lightfade` | *Boolean* | Whether light fades |
+| `lightfadelength` | *Float* | Light fade length |
+| `lightfadestart` | *Float* | Light fade start time |
+| `lightfadeend` | *Float* | Light fade end time |
+| `lightshadow` | *Boolean* | Whether light casts shadows |
+| `lightshadowradius` | *Float* | Light shadow radius |
+| `lightshadowintensity` | *Float* | Light shadow intensity |
+| `lightshadowcolor` | *String* | Light shadow color RGB values |
+| `lightshadowfade` | *Boolean* | Whether light shadow fades |
+| `lightshadowfadelength` | *Float* | Light shadow fade length |
+| `lightshadowfadestart` | *Float* | Light shadow fade start time |
+| `lightshadowfadeend` | *Float* | Light shadow fade end time |
+| `lightshadowpulse` | *Boolean* | Whether light shadow pulses |
+| `lightshadowpulselength` | *Float* | Light shadow pulse length |
+| `lightshadowpulseintensity` | *Float* | Light shadow pulse intensity |
+| `lightshadowpulsecolor` | *String* | Light shadow pulse color RGB values |
+| `lightshadowpulsefade` | *Boolean* | Whether light shadow pulse fades |
+| `lightshadowpulsefadelength` | *Float* | Light shadow pulse fade length |
+| `lightshadowpulsefadestart` | *Float* | Light shadow pulse fade start time |
+| `lightshadowpulsefadeend` | *Float* | Light shadow pulse fade end time |
+| `lightshadowpulsefadeintensity` | *Float* | Light shadow pulse fade intensity |
+| `lightshadowpulsefadecolor` | *String* | Light shadow pulse fade color RGB values |
+| `lightshadowpulsefadepulse` | *Boolean* | Whether light shadow pulse fade pulses |
+| `lightshadowpulsefadepulselength` | *Float* | Light shadow pulse fade pulse length |
+| `lightshadowpulsefadepulseintensity` | *Float* | Light shadow pulse fade pulse intensity |
+| `lightshadowpulsefadepulsecolor` | *String* | Light shadow pulse fade pulse color RGB values |
+| `lightshadowpulsefadepulsefade` | *Boolean* | Whether light shadow pulse fade pulse fades |
+| `lightshadowpulsefadepulsefadelength` | *Float* | Light shadow pulse fade pulse fade length |
+| `lightshadowpulsefadepulsefadestart` | *Float* | Light shadow pulse fade pulse fade start time |
+| `lightshadowpulsefadepulsefadeend` | *Float* | Light shadow pulse fade pulse fade end time |
+| `lightshadowpulsefadepulsefadeintensity` | *Float* | Light shadow pulse fade pulse fade intensity |
+| `lightshadowpulsefadepulsefadecolor` | *String* | Light shadow pulse fade pulse fade color RGB values |
 
 **Note**: The `visualeffects.2da` file may contain many optional columns for advanced lighting and shadow effects.
 
@@ -1463,13 +1466,13 @@ The complete column structure is defined in reone's genericdoors parser:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Portrait label |
-| `baseresref` | [ResRef](GFF-File-Format#gff-data-types) | Base portrait image [ResRef](GFF-File-Format#gff-data-types) |
-| `appearancenumber` | Integer | Associated appearance ID |
-| `appearance_s` | Integer | Small appearance ID |
-| `appearance_l` | Integer | Large appearance ID |
-| `forpc` | Boolean | Whether portrait is for player character |
-| `sex` | Integer | Gender (0=male, 1=female) |
+| `label` | *String* | Portrait label |
+| `baseresref` | *ResRef* | Base portrait image *ResRef* |
+| `appearancenumber` | *Integer* | Associated appearance ID |
+| `appearance_s` | *Integer* | Small appearance ID |
+| `appearance_l` | *Integer* | Large appearance ID |
+| `forpc` | *Boolean* | Whether portrait is for player character |
+| `sex` | *Integer* | Gender (0=male, 1=female) |
 
 **References**:
 
@@ -1510,36 +1513,38 @@ The complete column structure is defined in reone's genericdoors parser:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `head` | ResRef (optional) | Head [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexe` | ResRef (optional) | Head [texture](TPC-File-Format) E [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexg` | ResRef (optional) | Head [texture](TPC-File-Format) G [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexve` | ResRef (optional) | Head [texture](TPC-File-Format) VE [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexvg` | ResRef (optional) | Head [texture](TPC-File-Format) VG [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexvve` | ResRef (optional) | Head [texture](TPC-File-Format) VVE [ResRef](GFF-File-Format#gff-data-types) |
-| `headtexvvve` | ResRef (optional) | Head [texture](TPC-File-Format) VVVE [ResRef](GFF-File-Format#gff-data-types) |
-| `alttexture` | ResRef (optional) | Alternative [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
+| `head` | *ResRef* (optional) | Head [model](MDL-MDX-File-Format) *ResRef* |
+| `headtexe` | *ResRef* (optional) | Head [texture](TPC-File-Format) E *ResRef* |
+| `headtexg` | *ResRef* (optional) | Head [texture](TPC-File-Format) G *ResRef* |
+| `headtexve` | *ResRef* (optional) | Head [texture](TPC-File-Format) VE *ResRef* |
+| `headtexvg` | *ResRef* (optional) | Head [texture](TPC-File-Format) VG *ResRef* |
+| `headtexvve` | *ResRef* (optional) | Head [texture](TPC-File-Format) VVE *ResRef* |
+| `headtexvvve` | *ResRef* (optional) | Head [texture](TPC-File-Format) VVVE *ResRef* |
+| `alttexture` | *ResRef* (optional) | Alternative [texture](TPC-File-Format) *ResRef* |
 
 **Column Details**:
 
 The complete column structure is defined in reone's heads parser:
 
-- `head`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types)
-- `alttexture`: Optional [ResRef](GFF-File-Format#gff-data-types) - alternative [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types)
-- `headtexe`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for evil alignment
-- `headtexg`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for good alignment
-- `headtexve`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for very evil alignment
-- `headtexvg`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for very good alignment
-- `headtexvve`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for very very evil alignment
-- `headtexvvve`: Optional [ResRef](GFF-File-Format#gff-data-types) - head [texture](TPC-File-Format) for very very very evil alignment
+- `head`: Optional *ResRef* - head [model](MDL-MDX-File-Format) *ResRef*
+- `alttexture`: Optional *ResRef* - alternative [texture](TPC-File-Format) *ResRef*
+- `headtexe`: Optional *ResRef* - head [texture](TPC-File-Format) for evil alignment
+- `headtexg`: Optional *ResRef* - head [texture](TPC-File-Format) for good alignment
+- `headtexve`: Optional *ResRef* - head [texture](TPC-File-Format) for very evil alignment
+- `headtexvg`: Optional *ResRef* - head [texture](TPC-File-Format) for very good alignment
+- `headtexvve`: Optional *ResRef* - head [texture](TPC-File-Format) for very very evil alignment
+- `headtexvvve`: Optional *ResRef* - head [texture](TPC-File-Format) for very very very evil alignment
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/reone/src/libs/resource/parser/2da/heads.cpp:29-39`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/parser/2da/heads.cpp#L29-L39) - Complete column parsing implementation with all column names
 - [`vendor/reone/src/libs/game/object/creature.cpp:1223-1228`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L1223-L1228) - Head loading from [2DA](2DA-File-Format)
 
 ---
 
-## Progression Tables 2DA files
+## Progression Tables 2DA Files
 
 ### classpowergain.2da
 
@@ -1551,20 +1556,20 @@ The complete column structure is defined in reone's heads parser:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `level` | Integer | Character level |
-| `jedi_guardian` | Integer | Jedi Guardian power gain |
-| `jedi_consular` | Integer | Jedi Consular power gain |
-| `jedi_sentinel` | Integer | Jedi Sentinel power gain |
-| `soldier` | Integer | Soldier power gain |
-| `scout` | Integer | Scout power gain |
-| `scoundrel` | Integer | Scoundrel power gain |
-| `jedi_guardian_prestige` | Integer (optional) | Jedi Guardian prestige power gain |
-| `jedi_consular_prestige` | Integer (optional) | Jedi Consular prestige power gain |
-| `jedi_sentinel_prestige` | Integer (optional) | Jedi Sentinel prestige power gain |
+| `level` | *Integer* | Character level |
+| `jedi_guardian` | *Integer* | Jedi Guardian power gain |
+| `jedi_consular` | *Integer* | Jedi Consular power gain |
+| `jedi_sentinel` | *Integer* | Jedi Sentinel power gain |
+| `soldier` | *Integer* | Soldier power gain |
+| `scout` | *Integer* | Scout power gain |
+| `scoundrel` | *Integer* | Scoundrel power gain |
+| `jedi_guardian_prestige` | *Integer* (optional) | Jedi Guardian prestige power gain |
+| `jedi_consular_prestige` | *Integer* (optional) | Jedi Consular prestige power gain |
+| `jedi_sentinel_prestige` | *Integer* (optional) | Jedi Sentinel prestige power gain |
 
 ---
 
-## Name Generation 2DA files
+## Name Generation 2DA Files
 
 ### Other Name Generation files
 
@@ -1581,7 +1586,7 @@ Similar name generation files exist for other species:
 
 ---
 
-## Additional 2DA files
+## Additional 2DA Files
 
 ### ambientmusic.2da
 
@@ -1593,17 +1598,17 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Music label |
-| `music` | [ResRef](GFF-File-Format#gff-data-types) | Music file [ResRef](GFF-File-Format#gff-data-types) |
-| `resource` | [ResRef](GFF-File-Format#gff-data-types) | Music resource [ResRef](GFF-File-Format#gff-data-types) |
-| `stinger1`, `stinger2`, `stinger3` | ResRef (optional) | Stinger music ResRefs |
+| `label` | *String* | Music label |
+| `music` | *ResRef* | Music file *ResRef* |
+| `resource` | *ResRef* | Music resource *ResRef* |
+| `stinger1`, `stinger2`, `stinger3` | *ResRef* (optional) | Stinger music ResRefs |
 
 **References**:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:206`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L206) - Music [ResRef](GFF-File-Format#gff-data-types) column definitions for ambientmusic.2da (K1: resource, stinger1, stinger2, stinger3)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:398`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L398) - Music [ResRef](GFF-File-Format#gff-data-types) column definitions for ambientmusic.2da (K2: resource, stinger1, stinger2, stinger3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:206`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L206) - Music *ResRef* column definitions for ambientmusic.2da (K1: resource, stinger1, stinger2, stinger3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:398`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L398) - Music *ResRef* column definitions for ambientmusic.2da (K2: resource, stinger1, stinger2, stinger3)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:545-548`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L545-L548) - [GFF](GFF-File-Format) field mapping: "MusicDay", "MusicNight", "MusicBattle", "MusicDelay" -> ambientmusic.2da
 
 ---
@@ -1618,9 +1623,9 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Sound label |
-| `sound` | [ResRef](GFF-File-Format#gff-data-types) | Sound file [ResRef](GFF-File-Format#gff-data-types) |
-| `resource` | [ResRef](GFF-File-Format#gff-data-types) | Sound resource [ResRef](GFF-File-Format#gff-data-types) |
+| `label` | *String* | Sound label |
+| `sound` | *ResRef* | Sound file *ResRef* |
+| `resource` | *ResRef* | Sound resource *ResRef* |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | Sound description string reference |
 
 **References**:
@@ -1628,9 +1633,9 @@ Similar name generation files exist for other species:
 **PyKotor:**
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:72`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L72) - [StrRef](TLK-File-Format#string-references-strref) column definition for ambientsound.2da (K1: description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:184`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L184) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for ambientsound.2da (K1: resource)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:184`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L184) - Sound *ResRef* column definition for ambientsound.2da (K1: resource)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:247`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L247) - [StrRef](TLK-File-Format#string-references-strref) column definition for ambientsound.2da (K2: description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:376`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L376) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for ambientsound.2da (K2: resource)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:376`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L376) - Sound *ResRef* column definition for ambientsound.2da (K2: resource)
 - [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:6986-6988`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6986-L6988) - AmbientSoundPlay function comment
 
 ---
@@ -1645,14 +1650,16 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Ammunition type label |
-| `model` | [ResRef](GFF-File-Format#gff-data-types) | Ammunition [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `shotsound0` | ResRef (optional) | Shot sound effect ResRef (variant 1) |
-| `shotsound1` | ResRef (optional) | Shot sound effect ResRef (variant 2) |
-| `impactsound0` | ResRef (optional) | Impact sound effect ResRef (variant 1) |
-| `impactsound1` | ResRef (optional) | Impact sound effect ResRef (variant 2) |
+| `label` | *String* | Ammunition type label |
+| `model` | *ResRef* | Ammunition [model](MDL-MDX-File-Format) *ResRef* |
+| `shotsound0` | *ResRef* (optional) | Shot sound effect ResRef (variant 1) |
+| `shotsound1` | *ResRef* (optional) | Shot sound effect ResRef (variant 2) |
+| `impactsound0` | *ResRef* (optional) | Impact sound effect ResRef (variant 1) |
+| `impactsound1` | *ResRef* (optional) | Impact sound effect ResRef (variant 2) |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/reone/src/libs/game/object/item.cpp:164-171`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/item.cpp#L164-L171) - Ammunition type loading from [2DA](2DA-File-Format)
 
@@ -1668,12 +1675,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Camera style label |
-| `name` | string | Camera style name |
-| `distance` | Float | Camera distance from target |
-| `pitch` | Float | Camera pitch angle |
-| `viewangle` | Float | Camera view angle |
-| `height` | Float | Camera height offset |
+| `label` | *String* | Camera style label |
+| `name` | *String* | Camera style name |
+| `distance` | *Float* | Camera distance from target |
+| `pitch` | *Float* | Camera pitch angle |
+| `viewangle` | *Float* | Camera view angle |
+| `height` | *Float* | Camera height offset |
 
 **References**:
 
@@ -1708,22 +1715,22 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Footstep type label |
-| `dirt0`, `dirt1`, `dirt2` | ResRef (optional) | Dirt surface footstep sounds |
-| `grass0`, `grass1`, `grass2` | ResRef (optional) | Grass surface footstep sounds |
-| `stone0`, `stone1`, `stone2` | ResRef (optional) | Stone surface footstep sounds |
-| `wood0`, `wood1`, `wood2` | ResRef (optional) | Wood surface footstep sounds |
-| `water0`, `water1`, `water2` | ResRef (optional) | Water surface footstep sounds |
-| `carpet0`, `carpet1`, `carpet2` | ResRef (optional) | Carpet surface footstep sounds |
-| `metal0`, `metal1`, `metal2` | ResRef (optional) | Metal surface footstep sounds |
-| `leaves0`, `leaves1`, `leaves2` | ResRef (optional) | Leaves surface footstep sounds |
+| `label` | *String* | Footstep type label |
+| `dirt0`, `dirt1`, `dirt2` | *ResRef* (optional) | Dirt surface footstep sounds |
+| `grass0`, `grass1`, `grass2` | *ResRef* (optional) | Grass surface footstep sounds |
+| `stone0`, `stone1`, `stone2` | *ResRef* (optional) | Stone surface footstep sounds |
+| `wood0`, `wood1`, `wood2` | *ResRef* (optional) | Wood surface footstep sounds |
+| `water0`, `water1`, `water2` | *ResRef* (optional) | Water surface footstep sounds |
+| `carpet0`, `carpet1`, `carpet2` | *ResRef* (optional) | Carpet surface footstep sounds |
+| `metal0`, `metal1`, `metal2` | *ResRef* (optional) | Metal surface footstep sounds |
+| `leaves0`, `leaves1`, `leaves2` | *ResRef* (optional) | Leaves surface footstep sounds |
 
 **References**:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:188-198`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L188-L198) - Sound [ResRef](GFF-File-Format#gff-data-types) column definitions for footstepsounds.2da (K1: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:380-390`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L380-L390) - Sound [ResRef](GFF-File-Format#gff-data-types) column definitions for footstepsounds.2da (K2: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:188-198`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L188-L198) - Sound *ResRef* column definitions for footstepsounds.2da (K1: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:380-390`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L380-L390) - Sound *ResRef* column definitions for footstepsounds.2da (K2: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
 
 **Vendor Implementations:**
 
@@ -1742,10 +1749,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Priority group label |
-| `priority` | Integer | Priority value (higher = more important) |
+| `label` | *String* | Priority group label |
+| `priority` | *Integer* | Priority value (higher = more important) |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/reone/src/libs/game/object/sound.cpp:92-96`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/sound.cpp#L92-L96) - Priority group loading from [2DA](2DA-File-Format)
 
@@ -1761,8 +1770,8 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Faction label |
-| Additional columns | Integer | Reputation values for each faction (column names match faction labels) |
+| `label` | *String* | Faction label |
+| Additional columns | *Integer* | Reputation values for each faction (column names match faction labels) |
 
 **Note**: The `repute.2da` file is a square [matrix](BWM-File-Format#walkable-adjacencies) where each row represents a faction, and each column (after `label`) represents the reputation value toward another faction. Reputation values typically range from 0-100, where values below 50 are enemies, above 50 are friends, and 50 is neutral.
 
@@ -1806,12 +1815,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Surface [material](MDL-MDX-File-Format#trimesh-header) label |
-| `walk` | Boolean | Whether surface is walkable |
-| `walkcheck` | Boolean | Whether walk check applies |
-| `lineofsight` | Boolean | Whether surface blocks line of sight |
-| `grass` | Boolean | Whether surface has grass rendering |
-| `sound` | string | Sound type identifier for footstep sounds |
+| `label` | *String* | Surface [material](MDL-MDX-File-Format#trimesh-header) label |
+| `walk` | *Boolean* | Whether surface is walkable |
+| `walkcheck` | *Boolean* | Whether walk check applies |
+| `lineofsight` | *Boolean* | Whether surface blocks line of sight |
+| `grass` | *Boolean* | Whether surface has grass rendering |
+| `sound` | *String* | Sound type identifier for footstep sounds |
 
 **References**:
 
@@ -1841,10 +1850,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Hint label |
-| `strref` | [StrRef](TLK-File-Format#string-references-strref) | string reference for hint text |
+| `label` | *String* | Hint label |
+| `strref` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for hint text |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/xoreos/src/engines/kotor/gui/loadscreen/loadscreen.cpp:45`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotor/gui/loadscreen/loadscreen.cpp#L45) - Loading screen hints TODO comment (KotOR-specific)
 
@@ -1860,10 +1871,10 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Body bag label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for body bag name |
-| `appearance` | Integer | Appearance ID for the body bag [model](MDL-MDX-File-Format) |
-| `corpse` | Boolean | Whether the body bag represents a corpse |
+| `label` | *String* | Body bag label |
+| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for body bag name |
+| `appearance` | *Integer* | Appearance ID for the body bag [model](MDL-MDX-File-Format) |
+| `corpse` | *Boolean* | Whether the body bag represents a corpse |
 
 **References**:
 
@@ -1895,11 +1906,13 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Range label |
-| `primaryrange` | Float | Primary perception range (sight range) |
-| `secondaryrange` | Float | Secondary perception range (hearing range) |
+| `label` | *String* | Range label |
+| `primaryrange` | *Float* | Primary perception range (sight range) |
+| `secondaryrange` | *Float* | Secondary perception range (hearing range) |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/reone/src/libs/game/object/creature.cpp:1398-1406`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L1398-L1406) - Perception range loading from [2DA](2DA-File-Format)
 - [`vendor/KotOR.js/src/module/ModuleCreature.ts:3178-3187`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleCreature.ts#L3178-L3187) - Perception range access from [2DA](2DA-File-Format)
@@ -1916,10 +1929,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Regeneration state label |
+| `label` | *String* | Regeneration state label |
 | Additional columns | [float](GFF-File-Format#gff-data-types) | Regeneration rates for different resource types |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/KotOR.js/src/module/ModuleCreature.ts:759`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleCreature.ts#L759) - Regeneration rate loading from [2DA](2DA-File-Format)
 
@@ -1935,10 +1950,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | [animation](MDL-MDX-File-Format#animation-header) label |
-| `name` | string | [animation](MDL-MDX-File-Format#animation-header) name (used to look up [animation](MDL-MDX-File-Format#animation-header) in [model](MDL-MDX-File-Format)) |
+| `label` | *String* | [animation](MDL-MDX-File-Format#animation-header) label |
+| `name` | *String* | [animation](MDL-MDX-File-Format#animation-header) name (used to look up [animation](MDL-MDX-File-Format#animation-header) in [model](MDL-MDX-File-Format)) |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/KotOR.js/src/module/ModuleCreature.ts:1474-1482`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleCreature.ts#L1474-L1482) - [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
 - [`vendor/KotOR.js/src/module/ModulePlaceable.ts:1063-1103`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L1063-L1103) - Placeable [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
@@ -1954,10 +1971,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Combat [animation](MDL-MDX-File-Format#animation-header) label |
+| `label` | *String* | Combat [animation](MDL-MDX-File-Format#animation-header) label |
 | Additional columns | Various | Combat [animation](MDL-MDX-File-Format#animation-header) properties |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/KotOR.js/src/module/ModuleCreature.ts:1482`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleCreature.ts#L1482) - Combat [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
 
@@ -1973,10 +1992,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Base item label |
-| Additional columns | [ResRef](GFF-File-Format#gff-data-types) | Sound effect ResRefs for different attack types |
+| `label` | *String* | Base item label |
+| Additional columns | *ResRef* | Sound effect ResRefs for different attack types |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/KotOR.js/src/module/ModuleCreature.ts:1819-1822`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleCreature.ts#L1819-L1822) - Weapon sound lookup from [2DA](2DA-File-Format)
 
@@ -1992,10 +2013,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Sound appearance type label |
-| Additional columns | [ResRef](GFF-File-Format#gff-data-types) | Sound effect ResRefs for different interaction types |
+| `label` | *String* | Sound appearance type label |
+| Additional columns | *ResRef* | Sound effect ResRefs for different interaction types |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/KotOR.js/src/module/ModulePlaceable.ts:387-389`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L387-L389) - Placeable sound lookup from [2DA](2DA-File-Format)
 - [`vendor/KotOR.js/src/module/ModuleDoor.ts:239-241`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleDoor.ts#L239-L241) - Door sound lookup from [2DA](2DA-File-Format)
@@ -2012,11 +2035,13 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Walk rate label |
-| `walkrate` | Float | Walking speed rate |
-| `runrate` | Float | Running speed rate |
+| `label` | *String* | Walk rate label |
+| `walkrate` | *Float* | Walking speed rate |
+| `runrate` | *Float* | Running speed rate |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/KotOR.js/src/module/ModuleCreature.ts:2875-2887`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleCreature.ts#L2875-L2887) - Creature speed lookup from [2DA](2DA-File-Format)
 
@@ -2032,10 +2057,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Level label |
-| Additional columns | Integer | Experience point requirements for leveling up |
+| `label` | *String* | Level label |
+| Additional columns | *Integer* | Experience point requirements for leveling up |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/KotOR.js/src/module/ModuleCreature.ts:2926-2941`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleCreature.ts#L2926-L2941) - Experience table lookup from [2DA](2DA-File-Format)
 
@@ -2051,15 +2078,15 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Sound label (e.g., "Clicked_Default", "Entered_Default") |
-| `soundresref` | [ResRef](GFF-File-Format#gff-data-types) | Sound effect [ResRef](GFF-File-Format#gff-data-types) |
+| `label` | *String* | Sound label (e.g., "Clicked_Default", "Entered_Default") |
+| `soundresref` | *ResRef* | Sound effect *ResRef* |
 
 **References**:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:200`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L200) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for guisounds.2da (K1: soundresref)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:392`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L392) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for guisounds.2da (K2: soundresref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:200`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L200) - Sound *ResRef* column definition for guisounds.2da (K1: soundresref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:392`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L392) - Sound *ResRef* column definition for guisounds.2da (K2: soundresref)
 
 **Vendor Implementations:**
 
@@ -2077,10 +2104,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | [animation](MDL-MDX-File-Format#animation-header) label |
-| `name` | string | [animation](MDL-MDX-File-Format#animation-header) name (used to look up [animation](MDL-MDX-File-Format#animation-header) in [model](MDL-MDX-File-Format)) |
+| `label` | *String* | [animation](MDL-MDX-File-Format#animation-header) label |
+| `name` | *String* | [animation](MDL-MDX-File-Format#animation-header) name (used to look up [animation](MDL-MDX-File-Format#animation-header) in [model](MDL-MDX-File-Format)) |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/reone/src/libs/game/gui/dialog.cpp:302-315`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/gui/dialog.cpp#L302-L315) - Dialog [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
 
@@ -2097,10 +2126,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Force shield label |
+| `label` | *String* | Force shield label |
 | Additional columns | Various | Force shield visual effect properties |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/KotOR.js/src/nwscript/NWScriptDefK1.ts:5552`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L5552) - Force shield lookup from [2DA](2DA-File-Format)
 
@@ -2116,9 +2147,9 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Plot/quest label (used as quest identifier) |
-| `xp` | Integer | Experience points awarded for quest completion |
-
+| `label` | *String* | Plot/quest label (used as quest identifier) |
+| `xp` | *Integer* | Experience points awarded for quest completion |
+,
 **References**:
 
 **PyKotor:**
@@ -2151,11 +2182,11 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Trap type label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for trap name |
-| `model` | [ResRef](GFF-File-Format#gff-data-types) | Trap [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `explosionsound` | [ResRef](GFF-File-Format#gff-data-types) | Explosion sound effect [ResRef](GFF-File-Format#gff-data-types) |
-| `resref` | [ResRef](GFF-File-Format#gff-data-types) | Trap script [ResRef](GFF-File-Format#gff-data-types) |
+| `label` | *String* | Trap type label |
+| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for trap name |
+| `model` | *ResRef* | Trap [model](MDL-MDX-File-Format) *ResRef* |
+| `explosionsound` | *ResRef* | Explosion sound effect *ResRef* |
+| `resref` | *ResRef* | Trap script *ResRef* |
 
 **References**:
 
@@ -2195,11 +2226,13 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Module label |
-| `modulename` | string | Module filename (e.g., "001ebo") |
-| `includeInSave` | Boolean | Whether module state should be saved (0 = false, 1 = true) |
+| `label` | *String* | Module label |
+| `modulename` | *String* | Module filename (e.g., "001ebo") |
+| `includeInSave` | *Boolean* | Whether module state should be saved (0 = false, 1 = true) |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/KotOR.js/src/module/Module.ts:663-669`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/Module.ts#L663-L669) - Module save inclusion check from [2DA](2DA-File-Format)
 
@@ -2215,10 +2248,12 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Tutorial label |
+| `label` | *String* | Tutorial label |
 | Additional columns | Various | Tutorial window properties |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/KotOR.js/src/managers/PartyManager.ts:180-187`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/managers/PartyManager.ts#L180-L187) - Tutorial window tracker initialization from [2DA](2DA-File-Format)
 - [`vendor/KotOR.js/src/managers/PartyManager.ts:438`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/managers/PartyManager.ts#L438) - Tutorial table access
@@ -2235,11 +2270,13 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Global variable label |
-| `name` | string | Global variable name |
-| `type` | string | Variable type ("Number", "Boolean", "string", etc.) |
+| `label` | *String* | Global variable label |
+| `name` | *String* | Global variable name |
+| `type` | *String* | Variable type ("Number", "Boolean", "string", etc.) |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/NorthernLights/Assets/Scripts/Systems/StateSystem.cs:282-294`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/Systems/StateSystem.cs#L282-L294) - Global variable initialization from [2DA](2DA-File-Format)
 
@@ -2255,12 +2292,17 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Subrace label |
+| `label` | *String* | Subrace label |
 | Additional columns | Various | Subrace properties |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:457`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L457) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:56`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L56) - HTInstallation constant
 
 ---
@@ -2275,12 +2317,17 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Gender label |
+| `label` | *String* | Gender label |
 | Additional columns | Various | Gender properties |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:461`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L461) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:60`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L60) - HTInstallation constant
 
 ---
@@ -2295,12 +2342,17 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Race label |
+| `label` | *String* | Race label |
 | Additional columns | Various | Race properties and bonuses |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:471`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L471) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:70`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L70) - HTInstallation constant
 
 ---
@@ -2315,12 +2367,17 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Upgrade type label |
+| `label` | *String* | Upgrade type label |
 | Additional columns | Various | Upgrade properties and effects |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:473`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L473) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:72`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L72) - HTInstallation constant
 - [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:632-639`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L632-L639) - Upgrade selection in item editor
 
@@ -2336,12 +2393,17 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Difficulty label |
+| `label` | *String* | Difficulty label |
 | Additional columns | Various | Difficulty modifiers and properties |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:474`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L474) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:73`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L73) - HTInstallation constant
 - [`Tools/HolocronToolset/src/toolset/gui/editors/ute.py:101-104`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/ute.py#L101-L104) - Encounter difficulty selection
 
@@ -2357,14 +2419,19 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property label |
+| `label` | *String* | Property label |
 | Additional columns | Various | Property definitions, costs, and parameters |
 
 **Note**: This file may be the same as or related to `itemprops.2da` documented earlier. The exact relationship between these files may vary between KotOR 1 and 2.
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:475`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L475) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:74`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L74) - HTInstallation constant
 - [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:107-111`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L107-L111) - Item property loading in item editor
 
@@ -2380,12 +2447,17 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Emotion label |
+| `label` | *String* | Emotion label |
 | Additional columns | Various | Emotion [animation](MDL-MDX-File-Format#animation-header) properties |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:491`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L491) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:90`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L90) - HTInstallation constant
 - [`Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py:1267-1319`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py#L1267-L1319) - Emotion loading in dialog editor (KotOR 2 only)
 
@@ -2401,12 +2473,17 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Expression label |
+| `label` | *String* | Expression label |
 | Additional columns | Various | Facial [animation](MDL-MDX-File-Format#animation-header) properties |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:492`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L492) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:91`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L91) - HTInstallation constant
 - [`Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py:1267-1325`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py#L1267-L1325) - Expression loading in dialog editor (KotOR 2 only)
 
@@ -2422,12 +2499,17 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Video effect label |
+| `label` | *String* | Video effect label |
 | Additional columns | Various | Video effect properties |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:493`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L493) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:92`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L92) - HTInstallation constant
 - [`Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py:1263-1298`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py#L1263-L1298) - Video effect loading in dialog editor
 
@@ -2443,12 +2525,17 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Planet label |
+| `label` | *String* | Planet label |
 | Additional columns | Various | Planet properties and travel information |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:495`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L495) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:94`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L94) - HTInstallation constant
 
 ---
@@ -2463,18 +2550,23 @@ Similar name generation files exist for other species:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Cursor label |
+| `label` | *String* | Cursor label |
 | Additional columns | Various | Cursor properties and ResRefs |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:469`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L469) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:68`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L68) - HTInstallation constant
 - [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:71-76`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L71-L76) - Cursor selection in trigger editor
 
 ---
 
-## Item Property Parameter & Cost Tables 2DA files
+## Item Property Parameter & Cost Tables 2DA Files
 
 The following 2DA files are used for item property parameter and cost calculations:
 
@@ -2488,12 +2580,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Parameter table label |
+| `label` | *String* | Parameter table label |
 | Additional columns | Various | Parameter table ResRefs and properties |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:476`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L476) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:75`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L75) - HTInstallation constant
 - [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:517-558`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L517-L558) - Parameter table lookup in item editor
 
@@ -2509,12 +2606,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Cost table label |
+| `label` | *String* | Cost table label |
 | Additional columns | Various | Cost table ResRefs and properties |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:477`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L477) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:76`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L76) - HTInstallation constant
 - [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:486-496`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L486-L496) - Cost table lookup in item editor
 
@@ -2530,12 +2632,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Ability score mappings |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:478`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L478) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:77`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L77) - HTInstallation constant
 
 ---
@@ -2550,12 +2657,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Alignment group mappings |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:479`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L479) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L78) - HTInstallation constant
 
 ---
@@ -2570,12 +2682,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Combat damage mappings |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:480`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L480) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:79`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L79) - HTInstallation constant
 
 ---
@@ -2590,12 +2707,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Damage type mappings |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:481`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L481) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:80`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L80) - HTInstallation constant
 
 ---
@@ -2610,12 +2732,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Protection type mappings |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:482`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L482) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:81`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L81) - HTInstallation constant
 
 ---
@@ -2630,12 +2757,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | AC modifier type mappings |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:483`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L483) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:82`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L82) - HTInstallation constant
 
 ---
@@ -2650,12 +2782,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Immunity type mappings |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:484`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L484) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:83`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L83) - HTInstallation constant
 
 ---
@@ -2670,12 +2807,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Saving throw element mappings |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:485`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L485) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:84`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L84) - HTInstallation constant
 
 ---
@@ -2690,12 +2832,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Saving throw type mappings |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:486`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L486) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:85`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L85) - HTInstallation constant
 
 ---
@@ -2710,12 +2857,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | On-hit effect mappings |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:487`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L487) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:86`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L86) - HTInstallation constant
 
 ---
@@ -2730,12 +2882,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Ammunition type mappings |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:488`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L488) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:87`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L87) - HTInstallation constant
 
 ---
@@ -2750,14 +2907,19 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Monster hit effect mappings |
 
 **Note**: The filename contains a typo ("mosterhit" instead of "monsterhit") which is preserved in the game files.
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:489`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L489) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:88`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L88) - HTInstallation constant
 
 ---
@@ -2772,12 +2934,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Movement speed mappings |
 
 **References**:
 
+**PyKotor:**
+
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:490`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L490) - TwoDARegistry definition
+
+**HolocronToolset:**
+
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:89`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L89) - HTInstallation constant
 
 ---
@@ -2792,7 +2959,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Light color mappings |
 
 **References**:
@@ -2811,7 +2978,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Property value label |
+| `label` | *String* | Property value label |
 | Additional columns | Various | Monster damage mappings |
 
 **References**:
@@ -2830,8 +2997,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Difficulty option label |
-| `desc` | string | Difficulty description (e.g., "Default") |
+| `label` | *String* | Difficulty option label |
+| `desc` | *String* | Difficulty description (e.g., "Default") |
 | Additional columns | Various | Difficulty modifiers and properties |
 
 **References**:
@@ -2850,7 +3017,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | XP table entry label |
+| `label` | *String* | XP table entry label |
 | Additional columns | Various | XP calculation parameters |
 
 **Note**: This is different from `exptable.2da` which defines XP requirements for leveling up. `xptable.2da` defines XP rewards for defeating enemies.
@@ -2871,7 +3038,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Feat gain entry label |
+| `label` | *String* | Feat gain entry label |
 | Additional columns | Various | Feat gain progression by class and level |
 
 **References**:
@@ -2890,7 +3057,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Effect icon label |
+| `label` | *String* | Effect icon label |
 | Additional columns | Various | Effect icon properties and ResRefs |
 
 **References**:
@@ -2911,10 +3078,12 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Deck label |
+| `label` | *String* | Deck label |
 | Additional columns | Various | Deck card definitions and properties |
 
 **References**:
+
+**Vendor Implementations:**
 
 - [`vendor/KotOR.js/src/engine/rules/SWRuleSet.ts:178-185`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L178-L185) - Pazaak decks initialization from [2DA](2DA-File-Format)
 - [`vendor/KotOR.js/src/nwscript/NWScriptDefK1.ts:4438`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4438) - StartPazaakGame function comment
@@ -2932,7 +3101,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | AC bonus entry label |
+| `label` | *String* | AC bonus entry label |
 | Additional columns | Various | AC bonus calculation parameters |
 
 **References**:
@@ -2952,7 +3121,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Keymap entry label |
+| `label` | *String* | Keymap entry label |
 | Additional columns | Various | [KEY](KEY-File-Format) mappings for different contexts (ingame, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, freelook, movie) |
 
 **References**:
@@ -2971,7 +3140,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Poison type label |
+| `label` | *String* | Poison type label |
 | Additional columns | Various | Poison effect properties, damage, and duration |
 
 **References**:
@@ -2991,7 +3160,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Feedback text label |
+| `label` | *String* | Feedback text label |
 | Additional columns | Various | Feedback text strings and properties |
 
 **References**:
@@ -3011,7 +3180,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Sound appearance type label |
+| `label` | *String* | Sound appearance type label |
 | Additional columns | Various | Sound appearance type properties |
 
 **References**:
@@ -3030,8 +3199,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | [texture](TPC-File-Format) pack label |
-| `strrefname` | [StrRef](TLK-File-Format#string-references-strref) | string reference for [texture](TPC-File-Format) pack name |
+| `label` | *String* | [texture](TPC-File-Format) pack label |
+| `strrefname` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for [texture](TPC-File-Format) pack name |
 | Additional columns | Various | [texture](TPC-File-Format) pack properties and settings |
 
 **References**:
@@ -3051,9 +3220,9 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Loading screen label |
-| `bmpresref` | [ResRef](GFF-File-Format#gff-data-types) | Loading screen background image [ResRef](GFF-File-Format#gff-data-types) |
-| `musicresref` | [ResRef](GFF-File-Format#gff-data-types) | Music track [ResRef](GFF-File-Format#gff-data-types) to play during loading |
+| `label` | *String* | Loading screen label |
+| `bmpresref` | *ResRef* | Loading screen background image *ResRef* |
+| `musicresref` | *ResRef* | Music track *ResRef* to play during loading |
 | Additional columns | Various | Other loading screen properties |
 
 **References**:
@@ -3073,8 +3242,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Fractional CR label |
-| `displaystrref` | [StrRef](TLK-File-Format#string-references-strref) | string reference for fractional CR display text |
+| `label` | *String* | Fractional CR label |
+| `displaystrref` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for fractional CR display text |
 | Additional columns | Various | Fractional CR properties |
 
 **References**:
@@ -3093,8 +3262,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Bindable [KEY](KEY-File-Format) label |
-| `keynamestrref` | [StrRef](TLK-File-Format#string-references-strref) | string reference for [KEY](KEY-File-Format) name |
+| `label` | *String* | Bindable [KEY](KEY-File-Format) label |
+| `keynamestrref` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for [KEY](KEY-File-Format) name |
 | Additional columns | Various | [KEY](KEY-File-Format) binding properties |
 
 **References**:
@@ -3113,8 +3282,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Master feat label |
-| `strref` | [StrRef](TLK-File-Format#string-references-strref) | string reference for master feat name |
+| `label` | *String* | Master feat label |
+| `strref` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for master feat name |
 | Additional columns | Various | Master feat properties |
 
 **References**:
@@ -3133,9 +3302,9 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Movie label |
-| `strrefname` | [StrRef](TLK-File-Format#string-references-strref) | string reference for movie name |
-| `strrefdesc` | [StrRef](TLK-File-Format#string-references-strref) | string reference for movie description |
+| `label` | *String* | Movie label |
+| `strrefname` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for movie name |
+| `strrefdesc` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for movie description |
 | Additional columns | Various | Movie properties |
 
 **References**:
@@ -3154,7 +3323,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | string token label |
+| `label` | *String* | string token label |
 | `strref1` through `strref4` | [StrRef](TLK-File-Format#string-references-strref) | string references for token values |
 | Additional columns | Various | string token properties |
 
@@ -3174,16 +3343,16 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Disease label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for disease name (KotOR 2) |
-| `end_incu_script` | [ResRef](GFF-File-Format#gff-data-types) | Script [ResRef](GFF-File-Format#gff-data-types) for end incubation period |
-| `24_hour_script` | [ResRef](GFF-File-Format#gff-data-types) | Script [ResRef](GFF-File-Format#gff-data-types) for 24-hour disease effect |
+| `label` | *String* | Disease label |
+| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for disease name (KotOR 2) |
+| `end_incu_script` | *ResRef* | Script *ResRef* for end incubation period |
+| `24_hour_script` | *ResRef* | Script *ResRef* for 24-hour disease effect |
 | Additional columns | Various | Disease properties |
 
 **References**:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:255`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L255) - [StrRef](TLK-File-Format#string-references-strref) column definition for disease.2da (KotOR 2)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:238,431`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L238) - Script [ResRef](GFF-File-Format#gff-data-types) column definitions for disease.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:238,431`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L238) - Script *ResRef* column definitions for disease.2da
 
 ---
 
@@ -3197,13 +3366,13 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Droid discharge label |
-| `>>##HEADER##<<` | [ResRef](GFF-File-Format#gff-data-types) | header [resource reference](GFF-File-Format#gff-data-types) |
+| `label` | *String* | Droid discharge label |
+| `>>##HEADER##<<` | *ResRef* | header [resource reference](GFF-File-Format#gff-data-types) |
 | Additional columns | Various | Droid discharge properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:156`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L156) - [ResRef](GFF-File-Format#gff-data-types) column definition for droiddischarge.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:156`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L156) - *ResRef* column definition for droiddischarge.2da
 
 ---
 
@@ -3217,15 +3386,15 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Upgrade crystal label |
-| `shortmdlvar` | [ResRef](GFF-File-Format#gff-data-types) | Short [model](MDL-MDX-File-Format) variation [ResRef](GFF-File-Format#gff-data-types) |
-| `longmdlvar` | [ResRef](GFF-File-Format#gff-data-types) | Long [model](MDL-MDX-File-Format) variation [ResRef](GFF-File-Format#gff-data-types) |
-| `doublemdlvar` | [ResRef](GFF-File-Format#gff-data-types) | [double](GFF-File-Format#gff-data-types)-bladed [model](MDL-MDX-File-Format) variation [ResRef](GFF-File-Format#gff-data-types) |
+| `label` | *String* | Upgrade crystal label |
+| `shortmdlvar` | *ResRef* | Short [model](MDL-MDX-File-Format) variation *ResRef* |
+| `longmdlvar` | *ResRef* | Long [model](MDL-MDX-File-Format) variation *ResRef* |
+| `doublemdlvar` | *ResRef* | [double](GFF-File-Format#gff-data-types)-bladed [model](MDL-MDX-File-Format) variation *ResRef* |
 | Additional columns | Various | Crystal properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:172`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L172) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definitions for upcrystals.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:172`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L172) - [model](MDL-MDX-File-Format) *ResRef* column definitions for upcrystals.2da
 
 ---
 
@@ -3239,13 +3408,13 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Grenade sound label |
-| `sound` | [ResRef](GFF-File-Format#gff-data-types) | Sound [ResRef](GFF-File-Format#gff-data-types) for grenade |
+| `label` | *String* | Grenade sound label |
+| `sound` | *ResRef* | Sound *ResRef* for grenade |
 | Additional columns | Various | Grenade sound properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:199`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L199) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for grenadesnd.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:199`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L199) - Sound *ResRef* column definition for grenadesnd.2da
 
 ---
 
@@ -3259,13 +3428,13 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | string | Inventory sound label |
-| `inventorysound` | [ResRef](GFF-File-Format#gff-data-types) | Inventory sound [ResRef](GFF-File-Format#gff-data-types) |
+| `label` | *String* | Inventory sound label |
+ `inventorysound` | *ResRef* | Inventory sound *ResRef* |
 | Additional columns | Various | Inventory sound properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:201`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L201) - Sound [ResRef](GFF-File-Format#gff-data-types) column definition for inventorysnds.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:201`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L201) - Sound *ResRef* column definition for inventorysnds.2da
 
 ---
 
@@ -3283,7 +3452,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 - Reading: [`vendor/reone/src/libs/resource/format/2dareader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dareader.cpp)
 - Writing: [`vendor/reone/src/libs/resource/format/2dawriter.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/2dawriter.cpp)
-- data structure: [`vendor/reone/src/libs/resource/2da.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/2da.cpp)
+- Data structure: [`vendor/reone/src/libs/resource/2da.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/2da.cpp)
 
 **xoreos** (C++):
 
@@ -3296,12 +3465,20 @@ The following 2DA files are used for item property parameter and cost calculatio
 **KotOR.js** (TypeScript):
 
 - Reading: [`vendor/KotOR.js/src/resource/TwoDAObject.ts:69-145`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/TwoDAObject.ts#L69-L145) - Complete 2DA reading implementation
-- Manager: [`vendor/KotOR.js/src/managers/TwoDAManager.ts:21-37`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/managers/TwoDAManager.ts#L21-L37) - 2DA table loading from game archives
+- Manager: [`vendor/KotOR.js/src/managers/TwoDAManager.ts:21-37`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/managers/TwoDAManager.ts#L21-L37) - 2DA table loading from game containers
 - Usage: [`vendor/KotOR.js/src/talents/TalentFeat.ts:122-132`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/talents/TalentFeat.ts#L122-L132) - Feat loading from `feat.2da`
 
 **Kotor.NET** (C#):
 
-- structure: [`vendor/Kotor.NET/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs)
+- Structure: [`vendor/Kotor.NET/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs)
+
+### See also
+
+- [TLK File Format](TLK-File-Format) - String references (StrRef) used in 2DA columns
+- [GFF File Format](GFF-File-Format) - ResRef and data types; many GFF types reference 2DA tables
+- [KEY File Format](KEY-File-Format) - Resource resolution order for 2DA by ResRef
+- [2DA-appearance](2DA-appearance), [2DA-baseitems](2DA-baseitems), [2DA-classes](2DA-classes) - Example table docs
+- [Bioware Aurora 2DA](Bioware-Aurora-2DA) - Official BioWare 2DA specification
 
 ---
 

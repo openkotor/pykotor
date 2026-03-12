@@ -12,7 +12,7 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | Template identifier for this encounter |
+| `TemplateResRef` | *ResRef* | Template identifier for this encounter |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
 | `LocalizedName` | [CExoLocString](GFF-File-Format#gff-data-types) | Encounter name (unused in game) |
 | `Comment` | [CExoString](GFF-File-Format#gff-data-types) | Developer comment/notes |
@@ -58,7 +58,7 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 
 **CreatureList Struct fields:**
 
-- `[ResRef](GFF-File-Format#gff-data-types)` ([ResRef](GFF-File-Format#gff-data-types)): [UTC](GFF-File-Format#utc-creature) template to spawn
+- `*ResRef*` (*ResRef*): [UTC](GFF-File-Format#utc-creature) template to spawn
 - `Appearance` (Int): Appearance type (optional override)
 - `CR` (Float): Challenge Rating
 - `SingleSpawn` (Byte): Unique spawn [flag](GFF-File-Format#gff-data-types)
@@ -73,14 +73,22 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `PlayerOnly` | Byte | Only triggers for player (not NPCs) |
-| `OnEntered` | [ResRef](GFF-File-Format#gff-data-types) | Script fires when trigger entered |
-| `OnExit` | [ResRef](GFF-File-Format#gff-data-types) | Script fires when trigger exited |
-| `OnExhausted` | [ResRef](GFF-File-Format#gff-data-types) | Script fires when spawns depleted |
-| `OnHeartbeat` | [ResRef](GFF-File-Format#gff-data-types) | Script fires periodically |
-| `OnUserDefined` | [ResRef](GFF-File-Format#gff-data-types) | Script fires on user events |
+| `OnEntered` | *ResRef* | Script fires when trigger entered |
+| `OnExit` | *ResRef* | Script fires when trigger exited |
+| `OnExhausted` | *ResRef* | Script fires when spawns depleted |
+| `OnHeartbeat` | *ResRef* | Script fires periodically |
+| `OnUserDefined` | *ResRef* | Script fires on user events |
 
 **Implementation Notes:**
 
 - Encounters are volumes ([geometry](MDL-MDX-File-Format#geometry-header) defined in [GIT](GFF-File-Format#git-game-instance-template))
 - Spawning happens when volume is entered
 - Creatures spawn at specific spawn points ([UTW](GFF-File-Format#utw-waypoint)) or random locations
+
+### See also
+
+- [GFF File Format](GFF-File-Format) - Parent format and [UTE encounter](GFF-File-Format#ute-encounter) definition
+- [GFF-GIT](GFF-GIT) - Game instance template (encounter placement)
+- [GFF-UTW](GFF-UTW) - Waypoints used as spawn points
+- [GFF-UTC](GFF-UTC) - Creature templates spawned by encounters
+- [Bioware Aurora Encounter](Bioware-Aurora-Encounter) - Official encounter specification

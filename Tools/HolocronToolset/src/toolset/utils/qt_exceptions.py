@@ -87,7 +87,6 @@ def install_qt_signal_slot_safety_net() -> None:  # noqa: C901
     - Some bindings will print+swallow, others can terminate the process depending on context.
     - Wrapping at connect-time is the closest thing to a "global" fix for a large codebase.
     """
-
     # id(signal_instance) -> { stable_slot_key(original_slot) -> wrapped_slot }
     _slot_map: dict[int, dict[Any, object]] = {}
 
@@ -148,8 +147,8 @@ def install_qt_signal_slot_safety_net() -> None:  # noqa: C901
                 _forward_exception_to_excepthook()
                 return None
 
-        setattr(wrapped, "__toolset_qt_safe_slot__", True)
-        setattr(wrapped, "__toolset_qt_original_slot__", slot)
+        wrapped.__toolset_qt_safe_slot__ = True
+        wrapped.__toolset_qt_original_slot__ = slot
         return wrapped
 
     # --- PyQt ---

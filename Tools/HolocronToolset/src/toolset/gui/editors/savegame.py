@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from datetime import timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from qtpy.QtCore import QPoint, Qt  # pyright: ignore[reportAttributeAccessIssue]
+from qtpy.QtCore import Qt  # pyright: ignore[reportAttributeAccessIssue]
 from qtpy.QtGui import QImage, QPixmap, QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import (
     QCheckBox,
@@ -34,6 +34,7 @@ from utility.common.geometry import Vector4
 if TYPE_CHECKING:
     import os
 
+    from qtpy.QtCore import QPoint
     from qtpy.QtWidgets import QWidget
 
     from pykotor.common.language import LocalizedString
@@ -330,7 +331,7 @@ class SaveGameEditor(Editor):
     def build(self) -> tuple[bytes, bytes]:
         """Build save data from UI.
 
-        Returns
+        Returns:
         -------
             Tuple of (data, extra_data) - for saves, we return empty as saves are folder-based
         """
@@ -520,7 +521,6 @@ class SaveGameEditor(Editor):
     def on_save_info_changed(self):
         """Handle Save Info changes."""
         # Auto-update is handled in save()
-        pass
 
     # ==================== Party Table Methods ====================
 
@@ -672,29 +672,28 @@ class SaveGameEditor(Editor):
                             return name
 
             return "Player Character"
-        else:
-            # Companion - index 0-11 maps to AVAILNPC{index}.utc
-            if self._nested_capsule:
-                from pykotor.extract.file import ResourceIdentifier
-                from pykotor.resource.type import ResourceType
+        # Companion - index 0-11 maps to AVAILNPC{index}.utc
+        if self._nested_capsule:
+            from pykotor.extract.file import ResourceIdentifier
+            from pykotor.resource.type import ResourceType
 
-                # Try to find AVAILNPC{index}.utc in cached characters
-                # Use cached_character_indices if available (more efficient)
-                if member.index in self._nested_capsule.cached_character_indices:
-                    npc_ident = self._nested_capsule.cached_character_indices[member.index]
-                    if npc_ident in self._nested_capsule.cached_characters:
-                        char = self._nested_capsule.cached_characters[npc_ident]
-                        return self._format_character_name(char, member.index)
-
-                # Fallback: try direct lookup
-                npc_resref = f"availnpc{member.index}"
-                npc_ident = ResourceIdentifier(resname=npc_resref, restype=ResourceType.UTC)
-
+            # Try to find AVAILNPC{index}.utc in cached characters
+            # Use cached_character_indices if available (more efficient)
+            if member.index in self._nested_capsule.cached_character_indices:
+                npc_ident = self._nested_capsule.cached_character_indices[member.index]
                 if npc_ident in self._nested_capsule.cached_characters:
                     char = self._nested_capsule.cached_characters[npc_ident]
                     return self._format_character_name(char, member.index)
 
-            return f"Companion {member.index}"
+            # Fallback: try direct lookup
+            npc_resref = f"availnpc{member.index}"
+            npc_ident = ResourceIdentifier(resname=npc_resref, restype=ResourceType.UTC)
+
+            if npc_ident in self._nested_capsule.cached_characters:
+                char = self._nested_capsule.cached_characters[npc_ident]
+                return self._format_character_name(char, member.index)
+
+        return f"Companion {member.index}"
 
     def _format_character_name(self, char: UTC, index: int | None = None) -> str:
         """Format character name for display.
@@ -787,23 +786,22 @@ class SaveGameEditor(Editor):
                 # If still not found, try first character
                 if char is None and self._nested_capsule.cached_characters:
                     char = next(iter(self._nested_capsule.cached_characters.values()))
-        else:
-            # Companion - get from cached characters
-            if self._nested_capsule:
-                from pykotor.extract.file import ResourceIdentifier
-                from pykotor.resource.type import ResourceType
+        # Companion - get from cached characters
+        elif self._nested_capsule:
+            from pykotor.extract.file import ResourceIdentifier
+            from pykotor.resource.type import ResourceType
 
-                # Use cached_character_indices if available
-                if member.index in self._nested_capsule.cached_character_indices:
-                    npc_ident = self._nested_capsule.cached_character_indices[member.index]
-                    if npc_ident in self._nested_capsule.cached_characters:
-                        char = self._nested_capsule.cached_characters[npc_ident]
-                else:
-                    # Fallback: direct lookup
-                    npc_resref = f"availnpc{member.index}"
-                    npc_ident = ResourceIdentifier(resname=npc_resref, restype=ResourceType.UTC)
-                    if npc_ident in self._nested_capsule.cached_characters:
-                        char = self._nested_capsule.cached_characters[npc_ident]
+            # Use cached_character_indices if available
+            if member.index in self._nested_capsule.cached_character_indices:
+                npc_ident = self._nested_capsule.cached_character_indices[member.index]
+                if npc_ident in self._nested_capsule.cached_characters:
+                    char = self._nested_capsule.cached_characters[npc_ident]
+            else:
+                # Fallback: direct lookup
+                npc_resref = f"availnpc{member.index}"
+                npc_ident = ResourceIdentifier(resname=npc_resref, restype=ResourceType.UTC)
+                if npc_ident in self._nested_capsule.cached_characters:
+                    char = self._nested_capsule.cached_characters[npc_ident]
 
         # Character Details Section
         if char:
@@ -937,15 +935,14 @@ class SaveGameEditor(Editor):
             if flags:
                 lines.append("<hr>")
                 lines.append("<b>Flags:</b> " + ", ".join(flags) + "<br>")
+        # No character data available
+        elif member.index == -1:
+            if self._save_info and self._save_info.pc_name:
+                lines.append(f"<b>PC Name:</b> {self._save_info.pc_name}<br>")
+            lines.append("<i>Character data not available in cached files</i><br>")
         else:
-            # No character data available
-            if member.index == -1:
-                if self._save_info and self._save_info.pc_name:
-                    lines.append(f"<b>PC Name:</b> {self._save_info.pc_name}<br>")
-                lines.append("<i>Character data not available in cached files</i><br>")
-            else:
-                lines.append(f"<b>NPC Resource:</b> AVAILNPC{member.index}.utc<br>")
-                lines.append("<i>Character data not found in cached files</i><br>")
+            lines.append(f"<b>NPC Resource:</b> AVAILNPC{member.index}.utc<br>")
+            lines.append("<i>Character data not found in cached files</i><br>")
 
         return "".join(lines)
 
@@ -1188,7 +1185,6 @@ class SaveGameEditor(Editor):
     def on_party_table_changed(self):
         """Handle Party Table changes."""
         # Auto-update is handled in save()
-        pass
 
     # ==================== Global Variables Methods ====================
 
@@ -1371,7 +1367,6 @@ class SaveGameEditor(Editor):
     def on_global_var_changed(self):
         """Handle Global Variable changes."""
         # Auto-update is handled in save()
-        pass
 
     # ==================== Character Methods ====================
 
@@ -1552,7 +1547,7 @@ class SaveGameEditor(Editor):
             f"<b>Character:</b> {char_name}<br>"
             f"<b>Type:</b> {'Player Character' if is_pc else 'Companion/NPC'}<br>"
             f"<b>Tag:</b> {char.tag or 'N/A'}<br>"
-            f"<b>ResRef:</b> {char.resref or 'N/A'}"
+            f"<b>ResRef:</b> {char.resref or 'N/A'}",
         )
 
         for row, skill_name in enumerate(SKILL_NAMES):
@@ -1606,7 +1601,7 @@ class SaveGameEditor(Editor):
                 f"<b>Slot:</b> {slot_name}<br>"
                 f"<b>Item:</b> {item_name}<br>"
                 f"<b>ResRef:</b> {item.resref}<br>"
-                f"<br><i>Double-click to edit, right-click for menu</i>"
+                f"<br><i>Double-click to edit, right-click for menu</i>",
             )
             self.ui.listWidgetEquipment.addItem(list_item)
 
@@ -1776,7 +1771,6 @@ class SaveGameEditor(Editor):
     def on_character_data_changed(self):
         """Handle character data changes."""
         # Auto-update is handled in save()
-        pass
 
     def on_equipment_item_double_clicked(self, item: QListWidgetItem):
         """Handle double-click on equipment item to edit it.
@@ -1878,7 +1872,7 @@ class SaveGameEditor(Editor):
             self.populate_character_details(self._current_character)
 
             QMessageBox.information(
-                self, tr("Equipment Removed"), trf("Equipment removed from {slot_name}.", slot_name=slot.name if hasattr(slot, "name") else f"Slot {slot.value}")
+                self, tr("Equipment Removed"), trf("Equipment removed from {slot_name}.", slot_name=slot.name if hasattr(slot, "name") else f"Slot {slot.value}"),
             )
 
     # ==================== Inventory Methods ====================
@@ -2100,9 +2094,8 @@ class SaveGameEditor(Editor):
                             item.charges = int(charges.strip())
                         if hasattr(item, "max_charges"):
                             item.max_charges = int(max_charges.strip())
-                    else:
-                        if hasattr(item, "charges"):
-                            item.charges = int(charges_text.strip())
+                    elif hasattr(item, "charges"):
+                        item.charges = int(charges_text.strip())
                 except ValueError:
                     pass
 
@@ -2137,7 +2130,6 @@ class SaveGameEditor(Editor):
     def update_reputation_from_ui(self):
         """Update reputation from UI."""
         # TODO: Implement reputation editing when REPUTE.fac structure is fully understood
-        pass
 
     def update_advanced_fields_from_ui(self):
         """Flush embedded GFF editor (SaveInfo or PartyTable) back to model so save() persists edits."""
@@ -2324,7 +2316,7 @@ class SaveGameEditor(Editor):
             RobustLogger().warning(f"Failed to load screenshot (validation error): {e}")
             self._screenshot_original_pixmap = None
             self._screenshot_original_size = None
-            self.ui.labelScreenshotPreview.setText(f"Invalid screenshot data:\n{str(e)}")
+            self.ui.labelScreenshotPreview.setText(f"Invalid screenshot data:\n{e!s}")
             self.ui.labelScreenshotPreview.setPixmap(QPixmap())
             self.ui.labelScreenshotPreview.setToolTip("")
         except Exception as e:
@@ -2610,7 +2602,7 @@ class SaveGameEditor(Editor):
             module_id, res_id = data
             # TODO: Extract resource from nested module ERF
             QMessageBox.information(
-                self, tr("Nested Resource"), trf("Opening nested resource {resname} from module {module}", resname=str(res_id.resname), module=str(module_id.resname))
+                self, tr("Nested Resource"), trf("Opening nested resource {resname} from module {module}", resname=str(res_id.resname), module=str(module_id.resname)),
             )
             return
 

@@ -1004,7 +1004,12 @@ class NSSLanguageServer:
         # Load default functions/constants if not provided
         if functions is None or constants is None or library is None:
             # Import here to avoid circular imports and speed up initial import
-            from pykotor.common.scriptdefs import KOTOR_CONSTANTS, KOTOR_FUNCTIONS, TSL_CONSTANTS, TSL_FUNCTIONS
+            from pykotor.common.scriptdefs import (
+                KOTOR_CONSTANTS,
+                KOTOR_FUNCTIONS,
+                TSL_CONSTANTS,
+                TSL_FUNCTIONS,
+            )
             from pykotor.common.scriptlib import KOTOR_LIBRARY, TSL_LIBRARY
 
             if is_tsl:

@@ -6,7 +6,23 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine [IFO](GFF-File-Format#ifo-module-info) format specification, see [Bioware Aurora IFO Format](Bioware-Aurora-IFO).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/ifo.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py)
+**For mod developers:** To modify module metadata in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+
+**Related formats:** IFO references [ARE](GFF-ARE), [GIT](GFF-File-Format#git-game-instance-template), [NCS](NCS-File-Format), [KEY](KEY-File-Format), and [BIF](BIF-File-Format).
+
+## References
+
+**PyKotor:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/generics/ifo.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py) - IFO [GFF](GFF-File-Format) parsing and field definitions
+
+**HolocronToolset:**
+
+- Module/IFO editing (entry point, area list, script hooks)
+
+**Vendor Implementations:**
+
+- reone/xoreos IFO (module info) GFF parsers
 
 ## Core Module Identity
 
@@ -15,8 +31,8 @@ IFO files define module-level metadata including entry configuration, expansion 
 | `Mod_ID` | Void (16 bytes) | Unique module identifier (GUID) |
 | `Mod_Tag` | [CExoString](GFF-File-Format#gff-data-types) | Module tag identifier |
 | `Mod_Name` | [CExoLocString](GFF-File-Format#gff-data-types) | Module name (localized) |
-| `Mod_Creator_ID` | DWord | Toolset creator ID |
-| `Mod_Version` | DWord | Module version number |
+| `Mod_Creator_ID` | [uint32](GFF-File-Format#gff-data-types) | Toolset creator ID |
+| `Mod_Version` | [uint32](GFF-File-Format#gff-data-types) | Module version number |
 | `Mod_VO_ID` | [CExoString](GFF-File-Format#gff-data-types) | Voice-over folder name |
 
 **Module Identification:**
@@ -30,7 +46,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Mod_Entry_Area` | [ResRef](GFF-File-Format#gff-data-types) | Starting [area](GFF-File-Format#are-area) [ResRef](GFF-File-Format#gff-data-types) |
+| `Mod_Entry_Area` | *ResRef* | Starting [area](GFF-File-Format#are-area) *ResRef* |
 | `Mod_Entry_X` | Float | Entry X coordinate |
 | `Mod_Entry_Y` | Float | Entry Y coordinate |
 | `Mod_Entry_Z` | Float | Entry Z coordinate |
@@ -56,11 +72,11 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Mod_Area_list` | List | Areas in this module |
+| `Mod_Area_list` | [List](GFF-File-Format#gff-data-types) | Areas in this module |
 
 **Mod_Area_list Struct fields:**
 
-- `Area_Name` ([ResRef](GFF-File-Format#gff-data-types)): [Area](GFF-File-Format#are-area) [ResRef](GFF-File-Format#gff-data-types) (are file)
+- `Area_Name` (*ResRef*): [Area](GFF-File-Format#are-area) *ResRef* (are file)
 
 **Area Management:**
 
@@ -73,7 +89,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Expansion_Pack` | Word | Required expansion bitfield |
+| `Expansion_Pack` | [word](GFF-File-Format#gff-data-types) | Required expansion bitfield |
 | `Mod_MinGameVer` | [CExoString](GFF-File-Format#gff-data-types) | Minimum game version |
 
 **Expansion Flags (Bitfield):**
@@ -92,7 +108,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Mod_StartMovie` | [ResRef](GFF-File-Format#gff-data-types) | Starting movie file |
+| `Mod_StartMovie` | *ResRef* | Starting movie file |
 | `Mod_Hak` | [CExoString](GFF-File-Format#gff-data-types) | Required HAK file list |
 
 **Module Initialization:**
@@ -111,9 +127,9 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Mod_IsSaveGame` | Byte | Module is from save file |
-| `Mod_CacheNSSData` | Byte | Cache compiled scripts |
-| `Mod_XPScale` | Byte | Experience point multiplier (0-200%) |
+| `Mod_IsSaveGame` | [byte](GFF-File-Format#gff-data-types) | Module is from save file |
+| `Mod_CacheNSSData` | [byte](GFF-File-Format#gff-data-types) | Cache compiled scripts |
+| `Mod_XPScale` | [byte](GFF-File-Format#gff-data-types) | Experience point multiplier (0-200%) |
 
 **Module flags:**
 
@@ -125,9 +141,9 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Mod_DawnHour` | Byte | Dawn start hour (unused) |
-| `Mod_DuskHour` | Byte | Dusk start hour (unused) |
-| `Mod_MinPerHour` | DWord | Minutes per hour (unused) |
+| `Mod_DawnHour` | [byte](GFF-File-Format#gff-data-types) | Dawn start hour (unused) |
+| `Mod_DuskHour` | [byte](GFF-File-Format#gff-data-types) | Dusk start hour (unused) |
+| `Mod_MinPerHour` | [uint32](GFF-File-Format#gff-data-types) | Minutes per hour (unused) |
 
 **Day/Night Cycle:**
 
@@ -139,23 +155,23 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Mod_OnAcquirItem` | [ResRef](GFF-File-Format#gff-data-types) | Fires when item acquired |
-| `Mod_OnActvtItem` | [ResRef](GFF-File-Format#gff-data-types) | Fires when item activated/used |
-| `Mod_OnClientEntr` | [ResRef](GFF-File-Format#gff-data-types) | Fires on player enter (multiplayer) |
-| `Mod_OnClientLeav` | [ResRef](GFF-File-Format#gff-data-types) | Fires on player leave (multiplayer) |
-| `Mod_OnCutsnAbort` | [ResRef](GFF-File-Format#gff-data-types) | Fires when cutscene aborted |
-| `Mod_OnHeartbeat` | [ResRef](GFF-File-Format#gff-data-types) | Fires periodically (~6 seconds) |
-| `Mod_OnModLoad` | [ResRef](GFF-File-Format#gff-data-types) | Fires when module finishes loading |
-| `Mod_OnModStart` | [ResRef](GFF-File-Format#gff-data-types) | Fires after player spawned |
-| `Mod_OnPlrDeath` | [ResRef](GFF-File-Format#gff-data-types) | Fires when player dies |
-| `Mod_OnPlrDying` | [ResRef](GFF-File-Format#gff-data-types) | Fires when player HP reaches 0 |
-| `Mod_OnPlrEqItm` | [ResRef](GFF-File-Format#gff-data-types) | Fires when equipment changed |
-| `Mod_OnPlrLvlUp` | [ResRef](GFF-File-Format#gff-data-types) | Fires on level up |
-| `Mod_OnPlrRest` | [ResRef](GFF-File-Format#gff-data-types) | Fires when player rests |
-| `Mod_OnPlrUnEqItm` | [ResRef](GFF-File-Format#gff-data-types) | Fires when equipment removed |
-| `Mod_OnSpawnBtnDn` | [ResRef](GFF-File-Format#gff-data-types) | Fires on spawn button (multiplayer) |
-| `Mod_OnUnAqreItem` | [ResRef](GFF-File-Format#gff-data-types) | Fires when item lost/sold |
-| `Mod_OnUsrDefined` | [ResRef](GFF-File-Format#gff-data-types) | Fires on user-defined events |
+| `Mod_OnAcquirItem` | *ResRef* | Fires when item acquired |
+| `Mod_OnActvtItem` | *ResRef* | Fires when item activated/used |
+| `Mod_OnClientEntr` | *ResRef* | Fires on player enter (multiplayer) |
+| `Mod_OnClientLeav` | *ResRef* | Fires on player leave (multiplayer) |
+| `Mod_OnCutsnAbort` | *ResRef* | Fires when cutscene aborted |
+| `Mod_OnHeartbeat` | *ResRef* | Fires periodically (~6 seconds) |
+| `Mod_OnModLoad` | *ResRef* | Fires when module finishes loading |
+| `Mod_OnModStart` | *ResRef* | Fires after player spawned |
+| `Mod_OnPlrDeath` | *ResRef* | Fires when player dies |
+| `Mod_OnPlrDying` | *ResRef* | Fires when player HP reaches 0 |
+| `Mod_OnPlrEqItm` | *ResRef* | Fires when equipment changed |
+| `Mod_OnPlrLvlUp` | *ResRef* | Fires on level up |
+| `Mod_OnPlrRest` | *ResRef* | Fires when player rests |
+| `Mod_OnPlrUnEqItm` | *ResRef* | Fires when equipment removed |
+| `Mod_OnSpawnBtnDn` | *ResRef* | Fires on spawn button (multiplayer) |
+| `Mod_OnUnAqreItem` | *ResRef* | Fires when item lost/sold |
+| `Mod_OnUsrDefined` | *ResRef* | Fires on user-defined events |
 
 **Script Execution:**
 
@@ -273,3 +289,10 @@ IFO files define module-level metadata including entry configuration, expansion 
 - OnModStart tutorial dialogue
 - Reduced XPScale
 - Special script hooks for teaching mechanics
+
+## See also
+
+- [GFF File Format](GFF-File-Format) - Generic format underlying IFO
+- [GFF-ARE (Area)](GFF-ARE) - Area properties; Mod_Entry_Area and Mod_Area_list
+- [GIT (Game Instance Template)](GFF-File-Format#git-game-instance-template) - Dynamic area contents
+- [Bioware Aurora IFO Format](Bioware-Aurora-IFO) - Official module info specification

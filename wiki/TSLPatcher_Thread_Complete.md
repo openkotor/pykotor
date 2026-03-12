@@ -1,10 +1,10 @@
-# TSLPatcher v1.2.10b1 (mod installer) - Complete Thread Archive
+# TSLPatcher v1.2.10b1 (mod installer) - Complete Thread Container
 
-**Source:** LucasForums Archive - <https://lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer>
+**Source:** LucasForums Container - <https://lucasforumscontainer.com/thread/149285-tslpatcher-v1210b1-mod-installer>
 
-**Note: LucasForums Archive Project**
+**Note: LucasForums Container Project**
 
-The content here was reconstructed by scraping the Wayback Machine in an effort to restore some of what was lost when LF went down. The LucasForums Archive Project claims no ownership over the content or assets that were archived on archive.org.
+The content here was reconstructed by scraping the Wayback Machine in an effort to restore some of what was lost when LF went down. The LucasForums Container Project claims no ownership over the content or assets that were containerd on container.org.
 
 This project is meant for research purposes only.
 
@@ -12,7 +12,7 @@ This project is meant for research purposes only.
 
 ## Page 1 of 6
 
-**[stoffe](https://lucasforumsarchive.com/user/121047 "stoffe's profile")** - 05-25-2005, 6:13 AM - **#1**
+**[stoffe](https://lucasforumscontainer.com/user/121047 "stoffe's profile")** - 05-25-2005, 6:13 AM - **#1**
 
 Latest version: TSLPatcher 1.2.10b1, ChangeEdit 1.0.5b1 (<http://www.starwarsknights.com/tools.php#mctl>)
 
@@ -31,7 +31,7 @@ It can, in general terms:
 
 - Modify and add new lines and columns to [2DA files](2DA-File-Format) that might already exist in the user's override folder, allowing different mods to modify the same [2DA file](2DA-File-Format) with less risk of causing incompatibility.
 
-- Modify values in fields and add new fields to [GFF](GFF-File-Format) format files (UT\*, [DLG](GFF-File-Format#dlg-dialogue), [JRL](GFF-File-Format#jrl-journal), [GIT](GFF-File-Format#git-game-instance-template), are, [IFO](GFF-File-Format#ifo-module-info) etc...) that might already exist in the user's override folder or inside [ERF](ERF-File-Format)/RIM archives. Again to reduce incompatibility when different mods need to do things to the same file.
+- Modify values in fields and add new fields to [GFF](GFF-File-Format) format files (UT\*, [DLG](GFF-File-Format#dlg-dialogue), [JRL](GFF-File-Format#jrl-journal), [GIT](GFF-File-Format#git-game-instance-template), are, [IFO](GFF-File-Format#ifo-module-info) etc...) that might already exist in the user's override folder or inside [ERF](ERF-File-Format)/RIM containers. Again to reduce incompatibility when different mods need to do things to the same file.
 
 - Dynamically assign StrRefs from your new [dialog.tlk](TLK-File-Format) entries to [2DA](2DA-File-Format), [GFF](GFF-File-Format), [NSS](NSS-File-Format) and [SSF](SSF-File-Format) format files, allowing you to use your new [TLK](TLK-File-Format) entries regardless of which [StrRef](TLK-File-Format#string-references-strref) indexes they were added as, through the use of token references. (E.g. add the correct [StrRef](TLK-File-Format#string-references-strref) values to the "name" and "desc" column in [spells.2da](2DA-spells) if you add a new force power.)
 
@@ -41,7 +41,7 @@ It can, in general terms:
 
 - Dynamically modify SSF (Soundset) files to point to new entries you have added to [dialog.tlk](TLK-File-Format).
 
-- Automatically put other files that does not need to be modified into the correct folder within your game folder (e.g. "Override", "Modules", "StreamMusic" etc...), or inside [ERF](ERF-File-Format) or RIM format archive files existing in any of those folders.
+- Automatically put other files that does not need to be modified into the correct folder within your game folder (e.g. "Override", "Modules", "StreamMusic" etc...), or inside [ERF](ERF-File-Format) or RIM format container files existing in any of those folders.
 
 - Insert modified [GFF files](GFF-File-Format) into a RIM or [ERF](ERF-File-Format) format file ([ERF](ERF-File-Format), MOD, SAV etc), found in the game folder or any of its sub-folders, or modify existing files already found in that destination file. Recompiled [NCS](NCS-File-Format) script files can also be inserted into RIM and [ERF](ERF-File-Format) format files (but only overwrite, not modify existing scripts with the same name).
 
@@ -67,7 +67,7 @@ A few quick "how to" examples:
 Troubleshooting:
 Q: I get a RichEdit line insertion error when trying to install mods. What's wrong?
 
-A: It seems a few people have odd versions of the RichEdit DLL files installed in their system that doesn't play nice with the colored text box component TSLPatcher uses. To work around this you could try to replace the RichEd DLL files with versions that should work. Extract the two DLL files from this archive (<http://www.starwarsknights.com/forumdl/richedlibraries.rar>) and put them in your Windows\\Windows32 folder. Move existing files with those names to a safe location first so you can restore them if this causes other problems! Do not overwrite them!
+A: It seems a few people have odd versions of the RichEdit DLL files installed in their system that doesn't play nice with the colored text box component TSLPatcher uses. To work around this you could try to replace the RichEd DLL files with versions that should work. Extract the two DLL files from this container (<http://www.starwarsknights.com/forumdl/richedlibraries.rar>) and put them in your Windows\\Windows32 folder. Move existing files with those names to a safe location first so you can restore them if this causes other problems! Do not overwrite them!
 
 Alternatively, if you don't want to mess with your DLL files, you could force TSLPatcher to use a plain text box for status messages rather than the colored/formatted one. To do this, use Notepad to open the changes.ini file found inside the tslpatchdata folder that came with the mod you wish to install. Under the \[Settings\] section, change the value of the [KEY](KEY-File-Format) PlaintextLog from 0 to 1.
 
@@ -104,7 +104,7 @@ EDIT(2006-08-28) TSLPatcher v1.2.8b3 uploaded, this hopefully fixes the occasion
 
 EDIT(2006-08-09) TSLPatcher v1.2.8b2 uploaded. This version fixes a bug with the RIM handling class which caused the game to have trouble loading RIMs modified by the Patcher, caused by an error in the RIM specifications I had at my disposal. The game should now properly load modified RIM files without problems.
 
-EDIT(2006-08-09) TSLPatcher v1.2.8b1 and ChangeEdit v1.0.4b8 uploaded. This version allows the "Install" function to place files into [ERF](ERF-File-Format)/RIM archives, allows options for renaming files during installation, and adds a "config summary" button to the main TSLPatcher window.
+EDIT(2006-08-09) TSLPatcher v1.2.8b1 and ChangeEdit v1.0.4b8 uploaded. This version allows the "Install" function to place files into [ERF](ERF-File-Format)/RIM containers, allows options for renaming files during installation, and adds a "config summary" button to the main TSLPatcher window.
 
 EDIT(2006-08-06) TSLPatcher v1.2.8b0 and ChangeEdit v1.0.4b7 uploaded. This version changes how the [ERF](ERF-File-Format) handling functionality works to make it more useful. See this post (<http://www.lucasforums.com/showpost.php?p=2144898&postcount=181>) for more info.
 
@@ -128,13 +128,13 @@ EDIT(2006-02-03) I've uploaded a new test version, TSLPatcher v.1.2.5a, which ha
 
 EDIT(2006-01-16): I've uploaded a test version of TSLPatcher v1.2 and ChangeEdit v1.0 which has some new features added. See this post (<http://64.20.36.211/showpost.php?p=1988487&postcount=132>) for details.
 
-**[T7nowhere](https://lucasforumsarchive.com/user/105329 "T7nowhere's profile")** - 05-25-2005, 7:46 AM - **#2**
+**[T7nowhere](https://lucasforumscontainer.com/user/105329 "T7nowhere's profile")** - 05-25-2005, 7:46 AM - **#2**
 
 Great work man.
 
 Thanks
 
-**[General Kenobi](https://lucasforumsarchive.com/user/120665 "General Kenobi's profile")** - 05-25-2005, 11:43 AM - **#3**
+**[General Kenobi](https://lucasforumscontainer.com/user/120665 "General Kenobi's profile")** - 05-25-2005, 11:43 AM - **#3**
 
 Excellent work my friend :thumbsup: My lil' achin' [2DA](2DA-File-Format) brain thanks you :D
 
@@ -148,27 +148,27 @@ Again thanks man :D
 
 DM
 
-**[Darkkender](https://lucasforumsarchive.com/user/112932 "Darkkender's profile")** - 05-25-2005, 12:32 PM - **#4**
+**[Darkkender](https://lucasforumscontainer.com/user/112932 "Darkkender's profile")** - 05-25-2005, 12:32 PM - **#4**
 
 Good to see this in final release now.
 
-**[Jeff](https://lucasforumsarchive.com/user/119803 "Jeff's profile")** - 05-25-2005, 6:41 PM - **#5**
+**[Jeff](https://lucasforumscontainer.com/user/119803 "Jeff's profile")** - 05-25-2005, 6:41 PM - **#5**
 
 Great job stoffe. This is great :)
 
-**[Jackel](https://lucasforumsarchive.com/user/88180 "Jackel's profile")** - 05-25-2005, 6:43 PM - **#6**
+**[Jackel](https://lucasforumscontainer.com/user/88180 "Jackel's profile")** - 05-25-2005, 6:43 PM - **#6**
 
 Nice work stoffe! I will be experimenting with this in the next few days for sure.
 
-**[Keiko](https://lucasforumsarchive.com/user/119830 "Keiko's profile")** - 05-25-2005, 6:49 PM - **#7**
+**[Keiko](https://lucasforumscontainer.com/user/119830 "Keiko's profile")** - 05-25-2005, 6:49 PM - **#7**
 
 Nice Job!:)
 
-**[Mav](https://lucasforumsarchive.com/user/109045 "Mav's profile")** - 05-25-2005, 10:10 PM - **#8**
+**[Mav](https://lucasforumscontainer.com/user/109045 "Mav's profile")** - 05-25-2005, 10:10 PM - **#8**
 
 This sounds like an exceptional tool, I'll be looking into this more in depth in the next few days.
 
-**[ChAiNz.2da](https://lucasforumsarchive.com/user/116647 "ChAiNz.2da's profile")** - 05-26-2005, 10:54 AM - **#9**
+**[ChAiNz.2da](https://lucasforumscontainer.com/user/116647 "ChAiNz.2da's profile")** - 05-26-2005, 10:54 AM - **#9**
 
 Great stuff man!
 
@@ -178,7 +178,7 @@ When I first started testing, It took me a few read throughs of the readme to ge
 
 :thumbsup:
 
-**[stoffe](https://lucasforumsarchive.com/user/121047 "stoffe's profile")** - 06-03-2005, 2:22 PM - **#10**
+**[stoffe](https://lucasforumscontainer.com/user/121047 "stoffe's profile")** - 06-03-2005, 2:22 PM - **#10**
 
 I have uploaded a new version of the Patcher and its support applications. If anyone is interested you can download it on this page. (<http://www.starwarsknights.com/tools.php>)
 
@@ -220,7 +220,7 @@ ChangeEdit v0.9.3b
 
 (Check the Force Powers mod I recently uploaded to PCGameMods if you wish to see a working example of this version of the Patcher in action.)
 
-**[Darth333](https://lucasforumsarchive.com/user/106715 "Darth333's profile")** - 06-03-2005, 2:49 PM - **#11**
+**[Darth333](https://lucasforumscontainer.com/user/106715 "Darth333's profile")** - 06-03-2005, 2:49 PM - **#11**
 
 Good work as always stoffe :) It's getting better and better!
 
@@ -228,4 +228,4 @@ As discussed, I uploaded the file at swk.com: (<http://www.starwarsknights.com/t
 
 ---
 
-_Note: The complete thread archive continues with 260+ posts across all 6 pages. This file has been created with the extracted content from all pages. For the full detailed archive with all posts from pages 2-6, please refer to the complete extraction which contains extensive discussions, tutorials, bug reports, feature requests, and Q&A sessions spanning from May 2005 to November 2007._
+_Note: The complete thread container continues with 260+ posts across all 6 pages. This file has been created with the extracted content from all pages. For the full detailed container with all posts from pages 2-6, please refer to the complete extraction which contains extensive discussions, tutorials, bug reports, feature requests, and Q&A sessions spanning from May 2005 to November 2007._

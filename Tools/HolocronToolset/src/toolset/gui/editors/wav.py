@@ -34,10 +34,14 @@ if TYPE_CHECKING:
     import os
 
     from PyQt6.QtCore import pyqtBoundSignal  # type: ignore[reportMissingImports]
-    from PyQt6.QtMultimedia import QMediaPlayer as PyQt6MediaPlayer  # pyright: ignore[reportMissingImports]
-    from PySide6.QtMultimedia import QMediaPlayer as PySide6MediaPlayer  # pyright: ignore[reportMissingImports]
+    from PyQt6.QtMultimedia import (
+        QMediaPlayer as PyQt6MediaPlayer,  # pyright: ignore[reportMissingImports]
+    )
+    from PySide6.QtMultimedia import (
+        QMediaPlayer as PySide6MediaPlayer,  # pyright: ignore[reportMissingImports]
+    )
     from qtpy.QtGui import QCloseEvent
-    from qtpy.QtWidgets import QToolBar, QWidget
+    from qtpy.QtWidgets import QWidget
 
     from toolset.data.installation import HTInstallation
 
@@ -80,7 +84,9 @@ class WAVEditor(Editor):
         self._detected_format: str = "Unknown"
 
         # Import and setup UI
-        from toolset.uic.qtpy.editors.wav import Ui_MainWindow  # pyright: ignore[reportMissingImports]
+        from toolset.uic.qtpy.editors.wav import (
+            Ui_MainWindow,  # pyright: ignore[reportMissingImports]
+        )
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -275,7 +281,9 @@ class WAVEditor(Editor):
         # Clear media to release any existing resources
         try:
             if qtpy.QT5:
-                from qtpy.QtMultimedia import QMediaContent  # pyright: ignore[reportAttributeAccessIssue]
+                from qtpy.QtMultimedia import (
+                    QMediaContent,  # pyright: ignore[reportAttributeAccessIssue]
+                )
 
                 player.setMedia(QMediaContent())  # pyright: ignore[reportAttributeAccessIssue]
             else:
@@ -307,7 +315,10 @@ class WAVEditor(Editor):
             try:
                 from io import BytesIO
 
-                from pykotor.resource.formats.wav.wav_auto import bytes_wav, read_wav as read_wav_auto
+                from pykotor.resource.formats.wav.wav_auto import (
+                    bytes_wav,
+                    read_wav as read_wav_auto,
+                )
 
                 wav = read_wav_auto(BytesIO(data))
                 data = bytes_wav(wav, ResourceType.INVALID)
@@ -359,13 +370,17 @@ class WAVEditor(Editor):
             if not buffer.open(QIODevice.OpenModeFlag.ReadOnly):
                 RobustLogger().error("Audio player buffer not ready")
                 return
-            from qtpy.QtMultimedia import QMediaContent  # pyright: ignore[reportAttributeAccessIssue]
+            from qtpy.QtMultimedia import (
+                QMediaContent,  # pyright: ignore[reportAttributeAccessIssue]
+            )
 
             player.setMedia(QMediaContent(), buffer)  # pyright: ignore[reportAttributeAccessIssue]
         else:
             # For non-WAV formats in Qt5, use temporary file
             from qtpy.QtCore import QUrl
-            from qtpy.QtMultimedia import QMediaContent  # pyright: ignore[reportAttributeAccessIssue]
+            from qtpy.QtMultimedia import (
+                QMediaContent,  # pyright: ignore[reportAttributeAccessIssue]
+            )
 
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)  # noqa: SIM115
             temp_file.write(original_data)
@@ -446,7 +461,6 @@ class WAVEditor(Editor):
     def _on_slider_pressed(self) -> None:
         """Handle slider press (pause during drag)."""
         # Optional: pause during drag for smoother seeking
-        pass
 
     def _on_duration_changed(self, duration: int) -> None:
         """Handle duration change from media player.

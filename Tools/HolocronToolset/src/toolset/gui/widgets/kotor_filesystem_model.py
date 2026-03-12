@@ -30,7 +30,17 @@ elif qtpy.QT5:
     )
 else:
     raise RuntimeError(f"Unexpected qtpy version: '{qtpy.API_NAME}'")
-from qtpy.QtWidgets import QAbstractItemView, QApplication, QFileIconProvider, QHeaderView, QMainWindow, QMenu, QStyle, QVBoxLayout, QWidget
+from qtpy.QtWidgets import (
+    QAbstractItemView,
+    QApplication,
+    QFileIconProvider,
+    QHeaderView,
+    QMainWindow,
+    QMenu,
+    QStyle,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 def update_sys_path(path: pathlib.Path):
@@ -61,7 +71,14 @@ if toolset_path.exists():
 
 from pathlib import Path  # noqa: E402
 
-from qtpy.QtCore import QAbstractItemModel, QDir, QModelIndex, QObject, Qt, Signal  # noqa: E402, F401
+from qtpy.QtCore import (  # noqa: E402, F401
+    QAbstractItemModel,
+    QDir,
+    QModelIndex,
+    QObject,
+    Qt,
+    Signal,
+)
 from qtpy.QtGui import QDrag, QIcon, QImage, QPalette, QPixmap  # noqa: E402
 from qtpy.QtWidgets import (  # noqa: E402
     QFileSystemModel,  # pyright: ignore[reportPrivateImportUsage]
@@ -73,7 +90,10 @@ from toolset.gui.dialogs.load_from_location_result import ResourceItems  # noqa:
 from toolset.gui.widgets.settings.installations import GlobalSettings  # noqa: E402
 from toolset.main_init import main_init  # noqa: E402
 from toolset.utils.window import open_resource_editor_from_path  # noqa: E402
-from utility.gui.qt.widgets.itemviews.html_delegate import ICONS_DATA_ROLE, HTMLDelegate  # noqa: E402
+from utility.gui.qt.widgets.itemviews.html_delegate import (  # noqa: E402
+    ICONS_DATA_ROLE,
+    HTMLDelegate,
+)
 from utility.gui.qt.widgets.itemviews.treeview import RobustTreeView  # noqa: E402
 from utility.system.os_helper import get_size_on_disk  # noqa: E402
 
@@ -106,7 +126,7 @@ class TreeItem:
             return -1
         if not hasattr(self.parent, "children"):
             raise RuntimeError(f"INVALID parent item! Parent items must expose a children list, but parent was: '{self.parent.__class__.__name__}'")
-        parent_children = getattr(self.parent, "children")
+        parent_children = self.parent.children
         if self not in parent_children:
             parent_path = getattr(self.parent, "path", "<virtual>")
             RobustLogger().warning(f"parent '{parent_path}' has orphaned the item '{self.path}' without warning!")
@@ -219,7 +239,6 @@ class InstallationItem(DirItem):
 
     def loadChildren(self, model: KotorFileSystemModel | ResourceFileSystemModel) -> list[TreeItem]:
         """Load category nodes (Core, Modules, Override, Textures, Saves) as children."""
-
         idx: QModelIndex = model.indexFromItem(self)
         if self.childCount() > 0:
             model.beginRemoveRows(idx, 0, self.childCount() - 1)
@@ -764,12 +783,12 @@ class ResourceFileSystemWidget(QWidget):
         print("<SDM> [fileSystemModelContextMenu scope] m: ", m)
 
         m.addAction("Open").triggered.connect(
-            lambda: [open_resource_editor_from_path(r.filepath(), installation=active_installation, gff_specialized=GlobalSettings().gffSpecializedEditors) for r in resources]
+            lambda: [open_resource_editor_from_path(r.filepath(), installation=active_installation, gff_specialized=GlobalSettings().gffSpecializedEditors) for r in resources],
         )  # pyright: ignore[reportOptionalMemberAccess]
 
         if all(r.restype().contents == "gff" for r in resources):
             m.addAction("Open with GFF Editor").triggered.connect(
-                lambda: [open_resource_editor_from_path(r.filepath(), installation=active_installation, open_as_generic_gff=True) for r in resources]
+                lambda: [open_resource_editor_from_path(r.filepath(), installation=active_installation, open_as_generic_gff=True) for r in resources],
             )  # pyright: ignore[reportOptionalMemberAccess]
 
         m.addSeparator()

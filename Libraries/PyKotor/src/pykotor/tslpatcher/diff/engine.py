@@ -2605,7 +2605,9 @@ def diff_installs_with_objects(
         True if identical, False if different, None if errors occurred
     """
     log_func("Using resource resolution order (game priority) for comparison...")
-    from pykotor.tslpatcher.diff.resolution import diff_installations_with_resolution  # noqa: PLC0415
+    from pykotor.tslpatcher.diff.resolution import (
+        diff_installations_with_resolution,  # noqa: PLC0415
+    )
 
     return diff_installations_with_resolution(
         [installation1, installation2],
@@ -3404,7 +3406,9 @@ def run_differ_from_args_impl(
 
         if len(all_installations) >= 2:  # noqa: PLR2004
             log_func("Detected multiple installations - using resolution-aware comparison...")
-            from pykotor.tslpatcher.diff.resolution import diff_installations_with_resolution  # noqa: PLC0415
+            from pykotor.tslpatcher.diff.resolution import (
+                diff_installations_with_resolution,  # noqa: PLC0415
+            )
 
             return diff_installations_with_resolution(
                 files_and_folders_and_installations,

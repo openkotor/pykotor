@@ -14,7 +14,13 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from pykotor.common.indoormap import IndoorMap, IndoorMapRoom
     from pykotor.resource.formats.bwm import BWM  # pyright: ignore[reportMissingImports]
-    from pykotor.resource.formats.lyt import LYT, LYTDoorHook, LYTObstacle, LYTRoom, LYTTrack  # pyright: ignore[reportMissingImports]
+    from pykotor.resource.formats.lyt import (  # pyright: ignore[reportMissingImports]
+        LYT,
+        LYTDoorHook,
+        LYTObstacle,
+        LYTRoom,
+        LYTTrack,
+    )
     from pykotor.resource.generics.git import (  # pyright: ignore[reportMissingImports]
         GIT,
         GITObject,
@@ -95,14 +101,14 @@ def deserialize_git_instance(data: dict[str, Any]) -> dict[str, Any]:
                 "height": data.get("height", 0.0),
                 "mic_range": data.get("mic_range", 0.0),
                 "pitch": data.get("pitch", 0.0),
-            }
+            },
         )
     elif instance_type in ("GITCreature", "GITPlaceable", "GITStore"):
         result.update(
             {
                 "resref": data.get("resref", ""),
                 "bearing": data.get("bearing", 0.0),
-            }
+            },
         )
         if instance_type == "GITPlaceable":
             result["tweak_color"] = data.get("tweak_color")
@@ -116,7 +122,7 @@ def deserialize_git_instance(data: dict[str, Any]) -> dict[str, Any]:
                 "linked_to": data.get("linked_to", ""),
                 "linked_to_flags": data.get("linked_to_flags", 0),
                 "transition_destination_stringref": data.get("transition_destination_stringref", -1),
-            }
+            },
         )
     elif instance_type == "GITSound":
         result["resref"] = data.get("resref", "")
@@ -125,7 +131,7 @@ def deserialize_git_instance(data: dict[str, Any]) -> dict[str, Any]:
             {
                 "resref": data.get("resref", ""),
                 "geometry": [deserialize_vector3(g) for g in data.get("geometry", [])],
-            }
+            },
         )
         if instance_type == "GITTrigger":
             result.update(
@@ -135,7 +141,7 @@ def deserialize_git_instance(data: dict[str, Any]) -> dict[str, Any]:
                     "linked_to": data.get("linked_to", ""),
                     "linked_to_flags": data.get("linked_to_flags", 0),
                     "transition_destination_stringref": data.get("transition_destination_stringref", -1),
-                }
+                },
             )
         else:
             result["spawn_points"] = data.get("spawn_points", [])
@@ -148,7 +154,7 @@ def deserialize_git_instance(data: dict[str, Any]) -> dict[str, Any]:
                 "name_stringref": data.get("name_stringref", -1),
                 "map_note_enabled": data.get("map_note_enabled", False),
                 "has_map_note": data.get("has_map_note", False),
-            }
+            },
         )
 
     return result

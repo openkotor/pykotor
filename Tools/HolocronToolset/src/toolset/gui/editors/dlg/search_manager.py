@@ -47,7 +47,7 @@ class SearchManager:
 
     def __init__(self):
         self.recent_searches: list[str] = []
-        self.search_filters: dict[SearchCategory, bool] = {cat: True for cat in SearchCategory}
+        self.search_filters: dict[SearchCategory, bool] = dict.fromkeys(SearchCategory, True)
         self.custom_filters: dict[str, Callable[[DLGNode], bool]] = {}
         self.indexed_nodes: set[DLGNode] = set()
         self.max_recent_searches: int = 10

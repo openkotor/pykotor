@@ -20,7 +20,7 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 
 - LIP files are always binary (`"LIP V1.0"` signature) and contain only [animation](MDL-MDX-File-Format#animation-header) data.  
 - They are paired with [WAV](WAV-File-Format) voice-over resources of identical duration; the LIP `length` field must match the [WAV](WAV-File-Format) `data` playback time for glitch-free [animation](MDL-MDX-File-Format#animation-header).  
-- [keyframes](MDL-MDX-File-Format#controller-structure) are sorted chronologically and store a timestamp ([float](GFF-File-Format#gff-data-types) seconds) plus a 1-[byte](GFF-File-Format#gff-data-types) viseme index (0–15).  
+- [keyframes](MDL-MDX-File-Format#controller-structure) are sorted chronologically and store a timestamp ([float](GFF-File-Format#gff-data-types) seconds) plus a 1-[byte](https://en.wikipedia.org/wiki/Byte) viseme index (0–15).  
 - The layout is identical across `vendor/reone`, `vendor/xoreos`, `vendor/Kotor.NET`, `vendor/KotOR.js`, and `vendor/mdlops`, so the header/[keyframe](MDL-MDX-File-Format#controller-structure) offsets below are cross-confirmed against those implementations.  
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lip)
@@ -72,12 +72,12 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 
 ## Mouth Shapes (Viseme Table)
 
-KotOR reuses the 16-shape Preston Blair [phoneme](https://en.wikipedia.org/wiki/Phoneme) set. Every implementation agrees on the [byte](GFF-File-Format#gff-data-types) value assignments; KotOR.js only renames a few labels but the indices match.
+KotOR reuses the 16-shape Preston Blair [phoneme](https://en.wikipedia.org/wiki/Phoneme) set. Every implementation agrees on the [byte](https://en.wikipedia.org/wiki/Byte) value assignments; KotOR.js only renames a few labels but the indices match.
 
 | value | Shape | Description |
 | ----- | ----- | ----------- |
 | 0 | NEUTRAL | Rest/closed mouth |
-| 1 | EE | Teeth apart, wide smile (long "ee”) |
+| 1 | EE | Teeth apart, wide smile (long "ee") |
 | 2 | EH | Relaxed mouth ("eh") |
 | 3 | AH | Mouth open ("ah/aa") |
 | 4 | OH | Rounded lips ("oh") |

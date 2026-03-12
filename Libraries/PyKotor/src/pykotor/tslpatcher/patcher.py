@@ -26,8 +26,8 @@ from pykotor.tslpatcher.memory import PatcherMemory
 from pykotor.tslpatcher.mods.install import InstallFile, create_backup
 from pykotor.tslpatcher.mods.nss import ModificationsNSS, MutableString
 from pykotor.tslpatcher.mods.template import OverrideType
-from utility.string_util import normalize_string
 from utility.misc import ensure_directory_exists, get_normalized_extension
+from utility.string_util import normalize_string
 
 if TYPE_CHECKING:
     from threading import Event

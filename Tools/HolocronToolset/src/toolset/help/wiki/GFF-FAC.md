@@ -4,7 +4,7 @@ FAC files are GFF-based format files that store faction definitions and reputati
 
 **Official BioWare Documentation:** For the authoritative BioWare Aurora Engine Faction Format specification, see [Bioware Aurora Faction Format](Bioware-Aurora-Faction.md).
 
-**Source:** This documentation is based on the official BioWare Aurora Engine Faction Format PDF, archived in [`vendor/xoreos-docs/specs/bioware/Faction_Format.pdf`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/bioware/Faction_Format.pdf).
+**Source:** This documentation is based on the official BioWare Aurora Engine Faction Format PDF, containerd in [`vendor/xoreos-docs/specs/bioware/Faction_Format.pdf`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/bioware/Faction_Format.pdf).
 
 ---
 

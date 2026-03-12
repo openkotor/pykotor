@@ -79,7 +79,10 @@ if HAS_PYOPENGL:
         glDisable,
         glEnable,
     )
-    from OpenGL.raw.GL.VERSION.GL_1_2 import GL_BGRA, GL_UNSIGNED_INT_8_8_8_8  # pyright: ignore[reportMissingImports]
+    from OpenGL.raw.GL.VERSION.GL_1_2 import (  # pyright: ignore[reportMissingImports]
+        GL_BGRA,
+        GL_UNSIGNED_INT_8_8_8_8,
+    )
 else:
     glReadPixels = missing_gl_func("glReadPixels")
     glClear = missing_gl_func("glClear")

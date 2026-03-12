@@ -22,7 +22,6 @@ from pykotor.gl.models.read_mdl import gl_load_mdl
 from pykotor.gl.scene import RenderObject, Scene
 from pykotor.resource.formats.twoda import read_2da
 from pykotor.resource.generics.git import GIT
-from pykotor.resource.generics.uti import UTI
 from pykotor.resource.type import ResourceType
 from toolset.data.misc import ControlItem
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
@@ -33,11 +32,20 @@ if TYPE_CHECKING:
     from qtpy.QtCore import (
         Qt,  # pyright: ignore[reportPrivateImportUsage]
     )
-    from qtpy.QtGui import QCloseEvent, QFocusEvent, QKeyEvent, QKeySequence, QMouseEvent, QResizeEvent, QWheelEvent
+    from qtpy.QtGui import (
+        QCloseEvent,
+        QFocusEvent,
+        QKeyEvent,
+        QKeySequence,
+        QMouseEvent,
+        QResizeEvent,
+        QWheelEvent,
+    )
     from qtpy.QtWidgets import QWidget
 
     from pykotor.extract.installation import Installation
     from pykotor.resource.generics.utc import UTC
+    from pykotor.resource.generics.uti import UTI
 
 
 class ModelRenderer(QOpenGLWidget):
@@ -169,7 +177,7 @@ class ModelRenderer(QOpenGLWidget):
             self._last_pending_texture_count = current_pending_count
             self._last_requested_texture_count = current_requested_count
             RobustLogger().debug(
-                f"Textures FINISHED loading: lookup_info={current_texture_count}, pending={current_pending_count}, requested={current_requested_count} (names: {sorted(requested_texture_names)})"
+                f"Textures FINISHED loading: lookup_info={current_texture_count}, pending={current_pending_count}, requested={current_requested_count} (names: {sorted(requested_texture_names)})",
             )
             self.resourcesLoaded.emit()
         else:

@@ -9,7 +9,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from qtpy.QtWidgets import QWidget
+from qtpy.QtWidgets import (  # noqa: F401 - used for type hints
+    QWidget,
+)
 
 from toolset.gui.common.localization import translate as tr
 
@@ -20,7 +22,6 @@ if TYPE_CHECKING:
         QLabel,
         QLayout,
         QLayoutItem,
-        QWidget,
     )
 
 

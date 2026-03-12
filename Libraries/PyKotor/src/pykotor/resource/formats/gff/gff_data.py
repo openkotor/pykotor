@@ -58,7 +58,9 @@ from enum import Enum, IntEnum
 from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
-from loggerplus import RobustLogger  # type: ignore[import-untyped]  # pyright: ignore[reportMissingTypeStubs]
+from loggerplus import (
+    RobustLogger,  # type: ignore[import-untyped]  # pyright: ignore[reportMissingTypeStubs]
+)
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import ResRef
 from pykotor.resource.formats._base import ComparableMixin

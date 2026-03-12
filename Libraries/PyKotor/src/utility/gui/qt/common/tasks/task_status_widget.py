@@ -3,7 +3,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 
 from qtpy.QtCore import QTimer, Qt, Signal
-from qtpy.QtWidgets import QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QProgressBar, QPushButton, QVBoxLayout, QWidget
+from qtpy.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QProgressBar,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from utility.gui.qt.common.tasks.actions_executor import TaskStatus
 

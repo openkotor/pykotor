@@ -17,9 +17,7 @@ def _coerce_parent(parent: object | None) -> QWidget | None:
     not actual widgets. Falling back to ``None`` keeps the helpers safe in those
     cases while still using the provided widget parent in normal UI flows.
     """
-
     return parent if isinstance(parent, QWidget) else None
-from qtpy.QtWidgets import QMessageBox, QWidget
 
 
 def show_info_message(

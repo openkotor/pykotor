@@ -87,7 +87,7 @@ class InventoryEditor(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinimizeButtonHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinimizeButtonHint,
         )
         from toolset.uic.qtpy.dialogs.inventory import Ui_Dialog
 
@@ -656,7 +656,7 @@ class ItemBuilderDialog(QDialog):
                 | Qt.WindowType.WindowCloseButtonHint
             )
             & ~Qt.WindowType.WindowContextHelpButtonHint
-            & ~Qt.WindowType.WindowMinMaxButtonsHint
+            & ~Qt.WindowType.WindowMinMaxButtonsHint,
         )
 
         self._progress_bar = self.ui.progressBar

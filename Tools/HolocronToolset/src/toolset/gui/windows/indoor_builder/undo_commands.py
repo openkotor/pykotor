@@ -10,19 +10,21 @@ import qtpy
 if qtpy.QT5:
     from qtpy.QtWidgets import QUndoCommand  # type: ignore[reportPrivateImportUsage]
 elif qtpy.QT6:
-    from qtpy.QtGui import QUndoCommand  # type: ignore[assignment]  # pyright: ignore[reportPrivateImportUsage]
+    from qtpy.QtGui import (
+        QUndoCommand,  # type: ignore[assignment]  # pyright: ignore[reportPrivateImportUsage]
+    )
 else:
     raise ValueError(f"Invalid QT_API: '{qtpy.API_NAME}'")
 
 from pykotor.common.indoorkit import KitComponent, KitComponentHook
-from pykotor.common.indoormap import IndoorMap, IndoorMapRoom
+from pykotor.common.indoormap import IndoorMapRoom
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Color
 from pykotor.resource.formats.bwm import BWM  # type: ignore[reportPrivateImportUsage]
 from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
-    from pykotor.common.indoormap import EmbeddedKit
+    from pykotor.common.indoormap import EmbeddedKit, IndoorMap
     from utility.common.geometry import SurfaceMaterial
 
 # Map settings snapshot: (name, lighting, module_id, skybox, target_game_type)

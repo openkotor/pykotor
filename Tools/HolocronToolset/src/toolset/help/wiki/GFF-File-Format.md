@@ -130,7 +130,7 @@ The file header is 56 bytes in size:
 
 ### Label array
 
-Labels are 16-[byte](GFF-File-Format#gff-data-types) [null-terminated](https://en.cppreference.com/w/c/string/byte) strings used as field names:
+Labels are 16-[byte](https://en.wikipedia.org/wiki/Byte) [null-terminated](https://en.cppreference.com/w/c/string/byte) strings used as field names:
 
 | Name   | type     | size | Description                                                      |
 | ------ | -------- | ---- | ---------------------------------------------------------------- |

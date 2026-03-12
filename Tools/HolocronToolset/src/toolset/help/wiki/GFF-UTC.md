@@ -12,7 +12,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | Template identifier for this creature (max 16 characters; should match UTC filename without extension) |
+| `TemplateResRef` | *ResRef* | Template identifier for this creature (max 16 characters; should match UTC filename without extension) |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script/conversation references |
 | `FirstName` | [CExoLocString](GFF-File-Format#gff-data-types) | Creature's first name (localized) |
 | `LastName` | [CExoLocString](GFF-File-Format#gff-data-types) | Creature's last name (localized) |
@@ -95,38 +95,38 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 | ----- | ---- | ----------- |
 | `ItemList` | List | Inventory items |
 | `Equip_ItemList` | List | Equipped items with slots |
-| `EquippedRes` | [ResRef](GFF-File-Format#gff-data-types) | Deprecated equipment field |
+| `EquippedRes` | *ResRef* | Deprecated equipment field |
 
 **ItemList Struct fields:**
 
-- `InventoryRes` ([ResRef](GFF-File-Format#gff-data-types)): [UTI](GFF-File-Format#uti-item) template [ResRef](GFF-File-Format#gff-data-types)
+- `InventoryRes` (*ResRef*): [UTI](GFF-File-Format#uti-item) template *ResRef*
 - `Repos_PosX` (Word): Inventory grid X position
 - `Repos_Posy` (Word): Inventory grid Y position
 - `Dropable` (Byte): Can be dropped/removed
 
 **Equip_ItemList Struct fields:**
 
-- `EquippedRes` ([ResRef](GFF-File-Format#gff-data-types)): [UTI](GFF-File-Format#uti-item) template [ResRef](GFF-File-Format#gff-data-types)
+- `EquippedRes` (*ResRef*): [UTI](GFF-File-Format#uti-item) template *ResRef*
 - Equipment slots reference `equipmentslots.2da`
 
 ## Script Hooks
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `ScriptAttacked` | [ResRef](GFF-File-Format#gff-data-types) | Fires when attacked |
-| `ScriptDamaged` | [ResRef](GFF-File-Format#gff-data-types) | Fires when damaged |
-| `ScriptDeath` | [ResRef](GFF-File-Format#gff-data-types) | Fires on death |
-| `ScriptDialogue` | [ResRef](GFF-File-Format#gff-data-types) | Fires when conversation starts |
-| `ScriptDisturbed` | [ResRef](GFF-File-Format#gff-data-types) | Fires when inventory disturbed |
-| `ScriptEndRound` | [ResRef](GFF-File-Format#gff-data-types) | Fires at combat round end |
-| `ScriptEndDialogue` | [ResRef](GFF-File-Format#gff-data-types) | Fires when conversation ends |
-| `ScriptHeartbeat` | [ResRef](GFF-File-Format#gff-data-types) | Fires periodically |
-| `ScriptOnBlocked` | [ResRef](GFF-File-Format#gff-data-types) | Fires when movement blocked |
-| `ScriptOnNotice` | [ResRef](GFF-File-Format#gff-data-types) | Fires when notices something |
-| `ScriptRested` | [ResRef](GFF-File-Format#gff-data-types) | Fires after rest |
-| `ScriptSpawn` | [ResRef](GFF-File-Format#gff-data-types) | Fires on spawn |
-| `ScriptSpellAt` | [ResRef](GFF-File-Format#gff-data-types) | Fires when spell cast at creature |
-| `ScriptUserDefine` | [ResRef](GFF-File-Format#gff-data-types) | Fires on user-defined events |
+| `ScriptAttacked` | *ResRef* | Fires when attacked |
+| `ScriptDamaged` | *ResRef* | Fires when damaged |
+| `ScriptDeath` | *ResRef* | Fires on death |
+| `ScriptDialogue` | *ResRef* | Fires when conversation starts |
+| `ScriptDisturbed` | *ResRef* | Fires when inventory disturbed |
+| `ScriptEndRound` | *ResRef* | Fires at combat round end |
+| `ScriptEndDialogue` | *ResRef* | Fires when conversation ends |
+| `ScriptHeartbeat` | *ResRef* | Fires periodically |
+| `ScriptOnBlocked` | *ResRef* | Fires when movement blocked |
+| `ScriptOnNotice` | *ResRef* | Fires when notices something |
+| `ScriptRested` | *ResRef* | Fires after rest |
+| `ScriptSpawn` | *ResRef* | Fires on spawn |
+| `ScriptSpellAt` | *ResRef* | Fires when spell cast at creature |
+| `ScriptUserDefine` | *ResRef* | Fires on user-defined events |
 
 ## KotOR-Specific Features
 

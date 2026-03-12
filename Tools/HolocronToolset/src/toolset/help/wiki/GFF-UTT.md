@@ -12,7 +12,7 @@ UTT files define [trigger templates](GFF-File-Format#utt-trigger) for invisible 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | Template identifier for this trigger |
+| `TemplateResRef` | *ResRef* | Template identifier for this trigger |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
 | `LocName` | [CExoLocString](GFF-File-Format#gff-data-types) | Trigger name (localized) |
 | `Comment` | [CExoString](GFF-File-Format#gff-data-types) | Developer comment/notes |
@@ -37,7 +37,7 @@ UTT files define [trigger templates](GFF-File-Format#utt-trigger) for invisible 
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `LinkedTo` | [CExoString](GFF-File-Format#gff-data-types) | Destination waypoint tag |
-| `LinkedToModule` | [ResRef](GFF-File-Format#gff-data-types) | Destination module [ResRef](GFF-File-Format#gff-data-types) |
+| `LinkedToModule` | *ResRef* | Destination module *ResRef* |
 | `LinkedToFlags` | Byte | Transition behavior flags |
 | `LoadScreenID` | Word | Loading screen ID |
 | `PortraitId` | Word | Portrait ID (unused) |
@@ -72,13 +72,13 @@ UTT files define [trigger templates](GFF-File-Format#utt-trigger) for invisible 
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `OnClick` | [ResRef](GFF-File-Format#gff-data-types) | Fires when clicked |
-| `OnDisarm` | [ResRef](GFF-File-Format#gff-data-types) | Fires when disarmed |
-| `OnHeartbeat` | [ResRef](GFF-File-Format#gff-data-types) | Fires periodically |
-| `OnScriptEnter` | [ResRef](GFF-File-Format#gff-data-types) | Fires when object enters |
-| `OnScriptExit` | [ResRef](GFF-File-Format#gff-data-types) | Fires when object exits |
-| `OnTrapTriggered` | [ResRef](GFF-File-Format#gff-data-types) | Fires when trap activates |
-| `OnUserDefined` | [ResRef](GFF-File-Format#gff-data-types) | Fires on user event |
+| `OnClick` | *ResRef* | Fires when clicked |
+| `OnDisarm` | *ResRef* | Fires when disarmed |
+| `OnHeartbeat` | *ResRef* | Fires periodically |
+| `OnScriptEnter` | *ResRef* | Fires when object enters |
+| `OnScriptExit` | *ResRef* | Fires when object exits |
+| `OnTrapTriggered` | *ResRef* | Fires when trap activates |
+| `OnUserDefined` | *ResRef* | Fires on user event |
 
 **Scripting:**
 

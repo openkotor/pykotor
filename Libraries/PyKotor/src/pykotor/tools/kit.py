@@ -38,7 +38,6 @@ from pykotor.extract.installation import SearchLocation
 from pykotor.resource.formats.bwm import bytes_bwm, read_bwm
 from pykotor.resource.formats.erf import read_erf
 from pykotor.resource.formats.rim import read_rim
-from utility.misc import is_valid_path
 from pykotor.resource.formats.tpc import read_tpc, write_tpc
 from pykotor.resource.generics.utd import read_utd
 from pykotor.resource.type import ResourceType
@@ -46,6 +45,7 @@ from pykotor.tools import door as door_tools
 from pykotor.tools.model import iterate_lightmaps, iterate_textures
 from pykotor.tools.module import get_resource_priority
 from utility.common.geometry import Vector2, Vector3
+from utility.misc import is_valid_path
 
 # Qt imports for minimap generation
 # Set offscreen mode by default to avoid display issues in headless environments

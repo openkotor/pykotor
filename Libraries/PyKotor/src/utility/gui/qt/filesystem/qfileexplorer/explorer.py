@@ -53,14 +53,23 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from qtpy.QtCore import QAbstractItemModel, QModelIndex, QPoint
-    from qtpy.QtGui import QClipboard, QDragEnterEvent, QDragMoveEvent, QDropEvent, QResizeEvent, _QAction
+    from qtpy.QtGui import (
+        QClipboard,
+        QDragEnterEvent,
+        QDragMoveEvent,
+        QDropEvent,
+        QResizeEvent,
+        _QAction,
+    )
     from qtpy.QtWidgets import (
         QStatusBar,
         QWidget,
         _QMenu,
     )
     from qtpy.sip import voidptr
-    from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource, reportAttributeAccessIssue]
+    from typing_extensions import (
+        Literal,  # pyright: ignore[reportMissingModuleSource, reportAttributeAccessIssue]
+    )
 
 
 class FileSystemExplorerWidget(QMainWindow):

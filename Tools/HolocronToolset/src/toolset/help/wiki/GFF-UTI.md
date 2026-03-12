@@ -12,7 +12,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | Template identifier for this item |
+| `TemplateResRef` | *ResRef* | Template identifier for this item |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
 | `LocalizedName` | [CExoLocString](GFF-File-Format#gff-data-types) | Item name (localized) |
 | `Description` | [CExoLocString](GFF-File-Format#gff-data-types) | Generic description |
@@ -79,8 +79,8 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `WeaponColor` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Blade color for lightsabers |
-| `WeaponWhoosh` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Whoosh sound type |
+| `WeaponColor` (KotOR2) | [byte](https://en.wikipedia.org/wiki/Byte) | Blade color for lightsabers |
+| `WeaponWhoosh` (KotOR2) | [byte](https://en.wikipedia.org/wiki/Byte) | Whoosh sound type |
 
 **Lightsaber colors** (KotOR2 `WeaponColor`):
 
@@ -95,7 +95,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 | `BodyVariation` | Byte | Body [model](MDL-MDX-File-Format) variation (1-9) |
 | `TextureVar` | Byte | [texture](TPC-File-Format) variation (1-9) |
 | `ModelVariation` | Byte | [model](MDL-MDX-File-Format) type (typically 1-3) |
-| `ArmorRulesType` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Armor class category |
+| `ArmorRulesType` (KotOR2) | [byte](https://en.wikipedia.org/wiki/Byte) | Armor class category |
 
 **Armor [model](MDL-MDX-File-Format) Variations:**
 

@@ -211,7 +211,7 @@ class FileSaveHandler(Generic[T]):
             trf(
                 "The following {count} files and folders already exist in the selected folder.<br><br>How would you like to handle this?",
                 count=len(existing_files_and_folders),
-            )
+            ),
         )
         msg_box.setDetailedText("\n".join(existing_files_and_folders))
         msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Abort)  # pyright: ignore[reportArgumentType]

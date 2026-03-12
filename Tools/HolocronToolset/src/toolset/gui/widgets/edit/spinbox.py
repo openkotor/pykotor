@@ -38,9 +38,7 @@ class GFFFieldSpinBox(QSpinBox):
     def stepBy(self, steps: int):
         self.last_operation = "stepBy"
         current_value: int = self.value()
-        if steps > 0:
-            self.cached_value = self._next_value(current_value, steps)
-        elif steps < 0:
+        if steps > 0 or steps < 0:
             self.cached_value = self._next_value(current_value, steps)
         self.sig_final_value_applied.emit(self.cached_value)
 

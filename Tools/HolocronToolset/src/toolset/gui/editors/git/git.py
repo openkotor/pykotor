@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import sys
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import qtpy
@@ -37,6 +36,8 @@ from utility.common.geometry import Vector2
 if TYPE_CHECKING:
     import os
 
+    from pathlib import Path
+
     from qtpy.QtCore import (
         QPoint,
         Qt,  # pyright: ignore[reportPrivateImportUsage]
@@ -56,9 +57,7 @@ if TYPE_CHECKING:
     from toolset.gui.editors.git.mode import _Mode
     from utility.common.geometry import SurfaceMaterial, Vector3
 
-if qtpy.QT5:
-    pass
-elif qtpy.QT6:
+if qtpy.QT5 or qtpy.QT6:
     pass
 
 
@@ -544,8 +543,8 @@ class GITEditor(Editor, BlenderEditorMixin):
     def on_mouse_pressed(self, screen: Vector2, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
         self._controls.on_mouse_pressed(screen, buttons, keys)
 
-    def on_mouse_released(self, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
-        self._controls.on_mouse_released(Vector2(0, 0), buttons, keys)
+    def on_mouse_released(self, screen: Vector2, buttons: set[Qt.MouseButton], keys: set[Qt.Key], released_button: Qt.MouseButton | None = None):
+        self._controls.on_mouse_released(screen, buttons, keys)
 
     def on_marquee_select(self, world_rect: tuple[float, float, float, float], additive: bool):
         """Select instances inside the marquee world rect. Called from WalkmeshRenderer.sig_marquee_select."""

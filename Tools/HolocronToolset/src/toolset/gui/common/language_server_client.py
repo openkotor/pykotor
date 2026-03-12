@@ -335,7 +335,7 @@ class LanguageServerClient:
                         "diagnostics": self._last_analysis_result.diagnostics,
                         "symbols": self._last_analysis_result.symbols,
                         "parse_successful": self._last_analysis_result.parse_successful,
-                    }
+                    },
                 )
             return self._last_analysis_result.request_id
 

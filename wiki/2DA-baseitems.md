@@ -36,12 +36,12 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `weaponfocustype` | Integer | Weapon focus type |
 | `weaponfocusfeat` | Integer | Weapon focus feat ID |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | string reference for item description |
-| `icon` | [ResRef](GFF-File-Format#gff-data-types) | Icon image [ResRef](GFF-File-Format#gff-data-types) |
+| `icon` | *ResRef* | Icon image *ResRef* |
 | `equipableslots` | Integer | Equipment slot flags |
 | `model1` through `model6` | ResRef (optional) | 3D [model](MDL-MDX-File-Format) ResRefs for different variations |
 | `partenvmap` | ResRef (optional) | Partial environment map [texture](TPC-File-Format) |
-| `defaultmodel` | ResRef (optional) | Default [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) |
-| `defaulticon` | ResRef (optional) | Default icon [ResRef](GFF-File-Format#gff-data-types) |
+| `defaultmodel` | ResRef (optional) | Default [model](MDL-MDX-File-Format) *ResRef* |
+| `defaulticon` | ResRef (optional) | Default icon *ResRef* |
 | `container` | Boolean | Whether item is a container |
 | `weapon` | Boolean | Whether item is a weapon |
 | `armor` | Boolean | Whether item is armor |
@@ -85,10 +85,10 @@ The following columns are accessed by the reone engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:169`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L169) - [model](MDL-MDX-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for baseitems.2da (defaultmodel)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:187`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L187) - Sound [ResRef](GFF-File-Format#gff-data-types) column definitions for baseitems.2da (powerupsnd, powerdownsnd, poweredsnd)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:215`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L215) - [texture](TPC-File-Format) [ResRef](GFF-File-Format#gff-data-types) column definition for baseitems.2da (defaulticon)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:225`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L225) - Item [ResRef](GFF-File-Format#gff-data-types) column definitions for baseitems.2da (itemclass, baseitemstatref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:169`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L169) - [model](MDL-MDX-File-Format) *ResRef* column definition for baseitems.2da (defaultmodel)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:187`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L187) - Sound *ResRef* column definitions for baseitems.2da (powerupsnd, powerdownsnd, poweredsnd)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:215`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L215) - [texture](TPC-File-Format) *ResRef* column definition for baseitems.2da (defaulticon)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:225`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L225) - Item *ResRef* column definitions for baseitems.2da (itemclass, baseitemstatref)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:466`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L466) - TwoDARegistry.BASEITEMS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:537`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L537) - [GFF](GFF-File-Format) field mapping: "BaseItem" and "ModelVariation" -> baseitems.2da
 

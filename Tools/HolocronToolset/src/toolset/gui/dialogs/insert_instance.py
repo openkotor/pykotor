@@ -49,7 +49,7 @@ class InsertInstanceDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint,
         )
 
         self._installation: HTInstallation = installation
@@ -244,7 +244,7 @@ class InsertInstanceDialog(QDialog):
                         self.global_settings.showPreviewUTC,
                         self.global_settings.showPreviewUTD,
                         self.global_settings.showPreviewUTP,
-                    )
+                    ),
                 ):
                     data = resource.data()
                     if resource.restype() == ResourceType.MDL:
@@ -277,9 +277,9 @@ class InsertInstanceDialog(QDialog):
                             mdl_data = resource.filepath().with_suffix(".mdl").read_bytes()
 
                     if mdl_data is not None and mdx_data is not None:
-                        self.ui.previewRenderer.setModel(mdl_data, mdx_data)
+                        self.ui.previewRenderer.set_model(mdl_data, mdx_data)
                     else:
-                        self.ui.previewRenderer.clearModel()
+                        self.ui.previewRenderer.clear_model()
 
     def set_render_model(
         self,
@@ -288,9 +288,9 @@ class InsertInstanceDialog(QDialog):
         mdl: ResourceResult | None = self._installation.resource(modelname, ResourceType.MDL)
         mdx: ResourceResult | None = self._installation.resource(modelname, ResourceType.MDX)
         if mdl is not None and mdx is not None:
-            self.ui.previewRenderer.setModel(mdl.data, mdx.data)
+            self.ui.previewRenderer.set_model(mdl.data, mdx.data)
         else:
-            self.ui.previewRenderer.clearModel()
+            self.ui.previewRenderer.clear_model()
 
     def generate_resource_summary(
         self,

@@ -5,12 +5,14 @@ from __future__ import annotations
 import importlib
 import json
 import os
+
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
 
 import qtpy
+
 from qtpy.QtCore import QDir, QDirIterator, QFile, QTextStream, Qt
-from qtpy.QtGui import QColor, QPalette
+from qtpy.QtGui import QColor, QFont, QPalette
 from qtpy.QtWidgets import QApplication, QStyle, QStyleFactory
 
 from utility.gui.qt.widgets.theme.theme_apply import (
@@ -23,7 +25,7 @@ from utility.gui.qt.widgets.theme.theme_types import ThemeSources
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QObject, QPoint
-    from qtpy.QtGui import QFont, QMouseEvent
+    from qtpy.QtGui import QMouseEvent
     from qtpy.QtWidgets import QLayout, QWidget
 
 

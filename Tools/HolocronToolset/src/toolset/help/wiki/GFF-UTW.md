@@ -16,7 +16,7 @@ UTW files define [waypoint templates](GFF-File-Format#utw-waypoint). Waypoints a
 
 | field | type | Engine default | Description |
 |:------|:-----|:---------------|:------------|
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | blank | Template identifier; max 16 chars. Engine loads the matching .utw. |
+| `TemplateResRef` | *ResRef* | blank | Template identifier; max 16 chars. Engine loads the matching .utw. |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | "" | Unique tag for GetObjectByTag/GetWaypointByTag and door/trigger links. Keep unique per area. |
 | `LocalizedName` | [CExoLocString](GFF-File-Format#gff-data-types) | empty | Waypoint name on map and in travel menu. |
 | `Description` | [CExoLocString](GFF-File-Format#gff-data-types) | empty | Not read by engine; toolset/legacy only. |

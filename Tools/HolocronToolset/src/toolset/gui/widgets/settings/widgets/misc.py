@@ -5,7 +5,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from qtpy import QtCore
-from qtpy.QtWidgets import QAbstractSpinBox, QComboBox, QDoubleSpinBox, QGroupBox, QSlider, QSpinBox, QWidget
+from qtpy.QtWidgets import (
+    QAbstractSpinBox,
+    QComboBox,
+    QDoubleSpinBox,
+    QGroupBox,
+    QSlider,
+    QSpinBox,
+    QWidget,
+)
 
 from toolset.gui.common.filters import NoScrollEventFilter
 from toolset.gui.widgets.settings.installations import GlobalSettings

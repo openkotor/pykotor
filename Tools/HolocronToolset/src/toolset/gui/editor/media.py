@@ -16,8 +16,12 @@ from utility.system.os_helper import remove_any
 if TYPE_CHECKING:
     import os
 
-    from PyQt6.QtMultimedia import QMediaPlayer as PyQt6MediaPlayer  # pyright: ignore[reportMissingImports, reportAttributeAccessIssue]
-    from PySide6.QtMultimedia import QMediaPlayer as PySide6MediaPlayer  # pyright: ignore[reportMissingImports, reportAttributeAccessIssue]
+    from PyQt6.QtMultimedia import (
+        QMediaPlayer as PyQt6MediaPlayer,  # pyright: ignore[reportMissingImports, reportAttributeAccessIssue]
+    )
+    from PySide6.QtMultimedia import (
+        QMediaPlayer as PySide6MediaPlayer,  # pyright: ignore[reportMissingImports, reportAttributeAccessIssue]
+    )
 
     from toolset.gui.editor.base import Editor
 
@@ -67,7 +71,9 @@ class EditorMedia:
             self.editor.blink_window()
             return False
         if qtpy.QT5:
-            from qtpy.QtMultimedia import QMediaContent  # pyright: ignore[reportAttributeAccessIssue]
+            from qtpy.QtMultimedia import (
+                QMediaContent,  # pyright: ignore[reportAttributeAccessIssue]
+            )
 
             self.editor.media_player.buffer = buffer = QBuffer(self.editor)
             buffer.setData(data)

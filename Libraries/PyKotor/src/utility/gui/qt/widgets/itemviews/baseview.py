@@ -8,7 +8,16 @@ from typing import TYPE_CHECKING, Any, Callable, Literal
 import qtpy
 
 from qtpy.QtCore import QLocale, QMargins, QMetaType, QRect, QRegularExpression, QSize, Qt
-from qtpy.QtGui import QColor, QCursor, QFont, QIcon, QPalette, QRegion, QSyntaxHighlighter, QTextCharFormat
+from qtpy.QtGui import (
+    QColor,
+    QCursor,
+    QFont,
+    QIcon,
+    QPalette,
+    QRegion,
+    QSyntaxHighlighter,
+    QTextCharFormat,
+)
 from qtpy.QtWidgets import (
     QAction,  # pyright: ignore[reportPrivateImportUsage]
     QActionGroup,  # pyright: ignore[reportPrivateImportUsage]
@@ -43,7 +52,12 @@ from loggerplus import RobustLogger
 from utility.gui.qt.tools.qt_meta import get_qt_meta_type
 
 if TYPE_CHECKING:
-    from qtpy.QtCore import QObject, QRegularExpressionMatch, QRegularExpressionMatchIterator, QSettings
+    from qtpy.QtCore import (
+        QObject,
+        QRegularExpressionMatch,
+        QRegularExpressionMatchIterator,
+        QSettings,
+    )
     from qtpy.QtGui import QTextCursor, QTextDocument
 
 

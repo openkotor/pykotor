@@ -27,7 +27,11 @@ from pykotor.tslpatcher.diff.generator import (
     TSLPatchDataGenerator,
     determine_install_folders,
 )
-from pykotor.tslpatcher.writer import IncrementalTSLPatchDataWriter, ModificationsByType, TSLPatcherINISerializer
+from pykotor.tslpatcher.writer import (
+    IncrementalTSLPatchDataWriter,
+    ModificationsByType,
+    TSLPatcherINISerializer,
+)
 
 if TYPE_CHECKING:
     from typing_extensions import Literal

@@ -25,7 +25,17 @@ from qtpy.QtCore import (
     Qt,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
-from qtpy.QtGui import QAction, QBrush, QColor, QLinearGradient, QPainter, QPalette, QPen, QRadialGradient, QTransform
+from qtpy.QtGui import (
+    QAction,
+    QBrush,
+    QColor,
+    QLinearGradient,
+    QPainter,
+    QPalette,
+    QPen,
+    QRadialGradient,
+    QTransform,
+)
 from qtpy.QtWidgets import (
     QApplication,
     QGraphicsItem,
@@ -751,7 +761,7 @@ class LYTEditor(QWidget):
                     door=uuid4().hex[:15],
                     position=Vector3(door_x, door_y, 0),
                     orientation=Vector4(0, 0, 1, 0),
-                )
+                ),
             )  # FIXME: arguments missing for door, room, orientation
 
         return doorhooks
@@ -773,24 +783,14 @@ class LYTEditor(QWidget):
         tolerance = 0.001  # Small tolerance for floating-point comparisons
 
         # Check for vertical adjacency
-        if abs(r1_right - r2_left) < tolerance:
-            top: float = max(r1_top, r2_top)
-            bottom: float = min(r1_bottom, r2_bottom)
-            if bottom > top:
-                return "vertical", top, bottom
-        elif abs(r1_left - r2_right) < tolerance:
+        if abs(r1_right - r2_left) < tolerance or abs(r1_left - r2_right) < tolerance:
             top: float = max(r1_top, r2_top)
             bottom: float = min(r1_bottom, r2_bottom)
             if bottom > top:
                 return "vertical", top, bottom
 
         # Check for horizontal adjacency
-        if abs(r1_bottom - r2_top) < tolerance:
-            left: float = max(r1_left, r2_left)
-            right: float = min(r1_right, r2_right)
-            if right > left:
-                return "horizontal", left, right
-        elif abs(r1_top - r2_bottom) < tolerance:
+        if abs(r1_bottom - r2_top) < tolerance or abs(r1_top - r2_bottom) < tolerance:
             left: float = max(r1_left, r2_left)
             right: float = min(r1_right, r2_right)
             if right > left:
@@ -1617,16 +1617,16 @@ class LYTEditor(QWidget):
         # Get module and area data
         module = self.parent().scene._module
         if not module:
-            return
+            return None
 
         area = module.get_area()
         if not area:
-            return
+            return None
 
         # Load model to get dimensions
         mdl_res = module.get_resource(model, "mdl")
         if not mdl_res:
-            return
+            return None
 
         mdl = mdl_res.resource()
 

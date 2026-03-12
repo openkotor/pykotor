@@ -16,7 +16,7 @@ UTW files define [waypoint templates](GFF-File-Format#utw-waypoint). Waypoints a
 
 | field | type | Engine default | Description |
 |:------|:-----|:---------------|:------------|
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | blank | Template identifier; max 16 chars. Engine loads the matching .utw. |
+| `TemplateResRef` | *ResRef* | blank | Template identifier; max 16 chars. Engine loads the matching .utw. |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | "" | Unique tag for GetObjectByTag/GetWaypointByTag and door/trigger links. Keep unique per area. |
 | `LocalizedName` | [CExoLocString](GFF-File-Format#gff-data-types) | empty | Waypoint name on map and in travel menu. |
 | `Description` | [CExoLocString](GFF-File-Format#gff-data-types) | empty | Not read by engine; toolset/legacy only. |
@@ -56,3 +56,11 @@ UTW files define [waypoint templates](GFF-File-Format#utw-waypoint). Waypoints a
 - **Patrols**: AI walks between waypoints
 - **Teleport**: `JumpToLocation` targets waypoints
 - **Transitions**: Doors/Triggers link to waypoint tags
+
+### See also
+
+- [GFF File Format](GFF-File-Format) - Parent format and [UTW waypoint](GFF-File-Format#utw-waypoint) definition
+- [GFF-GIT](GFF-GIT) - Game instance template (waypoint placement)
+- [GFF-UTE](GFF-UTE) - Encounters use waypoints as spawn points
+- [GFF-UTD](GFF-UTD) - Doors can link to waypoint tags
+- [Bioware Aurora Waypoint](Bioware-Aurora-Waypoint) - Official waypoint specification

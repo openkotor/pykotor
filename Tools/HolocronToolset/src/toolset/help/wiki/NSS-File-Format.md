@@ -6475,12 +6475,12 @@ void SetOrientOnClick( object oCreature = OBJECT_SELF, ... )
 
 ### Forum Discussions and Community Knowledge
 
-Modding communities actively reference these commented sections, especially on **Deadly Stream** (primary KOTOR hub), **LucasForums archives**, **Holowan Laboratories** (via MixNMojo/Mixmojo forums), and Reddit.
+Modding communities actively reference these commented sections, especially on **Deadly Stream** (primary KOTOR hub), **LucasForums containers**, **Holowan Laboratories** (via MixNMojo/Mixmojo forums), and Reddit.
 
 | Forum | [KEY](KEY-File-Format) Threads | Topics Covered |
 |-------|-------------|----------------|
 | Deadly Stream | [Script Shack](https://deadlystream.com/topic/4808-fair-strides-script-shack/page/7/), [nwscript.nss Request](https://deadlystream.com/topic/6892-nwscriptnss/) | [animations](MDL-MDX-File-Format), overrides |
-| LucasForums Archive | [Syntax Error](https://www.lucasforumsarchive.com/thread/142901-syntax-error-in-kotor2-nwscriptnss), [Don't Mess with It](https://www.lucasforumsarchive.com/thread/168643-im-trying-to-change-classes2da) | Fixes, warnings |
+| LucasForums Container | [Syntax Error](https://www.lucasforumscontainer.com/thread/142901-syntax-error-in-kotor2-nwscriptnss), [Don't Mess with It](https://www.lucasforumscontainer.com/thread/168643-im-trying-to-change-classes2da) | Fixes, warnings |
 | Reddit r/kotor | [Movement Speed](https://www.reddit.com/r/kotor/comments/9dr8iy/modding_question_movement_speed_increase_in_k2/) | Effect caps |
 | Czerka R&D Wiki | [nwscript.nss](https://czerka-rd.fandom.com/wiki/Nwscript.nss) | General documentation |
 
@@ -6490,7 +6490,7 @@ Modding communities actively reference these commented sections, especially on *
 
 - **Reddit r/kotor** (2018): Thread on speed boosts quotes the commented description for `EffectMovementSpeedIncrease` (line ~165). Users test values >200% (no effect due to cap), note "turbo" cheat bypasses it partially.
 
-- **LucasForums Archive** (2004-2007 threads): Multiple posts warn against editing `nwscript.nss` ("very bad idea... loads of trouble"). Syntax fix for K2 widely shared; `// disabled` snippets appear in context of `SetOrientOnClick`.
+- **LucasForums Container** (2004-2007 threads): Multiple posts warn against editing `nwscript.nss` ("very bad idea... loads of trouble"). Syntax fix for K2 widely shared; `// disabled` snippets appear in context of `SetOrientOnClick`.
 
 ### Attempts to Uncomment or Modify
 
@@ -6506,10 +6506,10 @@ In summary, while no one has publicly shared a "uncomment everything" patch (lik
 
 - [Deadly Stream: Fair Strides' Script Shack](https://deadlystream.com/topic/4808-fair-strides-script-shack/page/7/)
 - [Czerka Wiki: nwscript.nss](https://czerka-rd.fandom.com/wiki/Nwscript.nss)
-- [LucasForums: Syntax Error in K2 nwscript.nss](https://www.lucasforumsarchive.com/thread/142901-syntax-error-in-kotor2-nwscriptnss)
+- [LucasForums: Syntax Error in K2 nwscript.nss](https://www.lucasforumscontainer.com/thread/142901-syntax-error-in-kotor2-nwscriptnss)
 - [Reddit: Movement Speed Modding](https://www.reddit.com/r/kotor/comments/9dr8iy/modding_question_movement_speed_increase_in_k2/)
 - [Deadly Stream: nwscript.nss Thread](https://deadlystream.com/topic/6892-nwscriptnss/)
-- [LucasForums: Warning on Editing nwscript.nss](https://www.lucasforumsarchive.com/thread/168643-im-trying-to-change-classes2da)
+- [LucasForums: Warning on Editing nwscript.nss](https://www.lucasforumscontainer.com/thread/168643-im-trying-to-change-classes2da)
 
 ---
 

@@ -22,8 +22,16 @@ import resources_rc  # noqa: PLC0415, F401  # pylint: disable=ungrouped-imports,
 from loggerplus import RobustLogger
 from toolset.config import CURRENT_VERSION
 from toolset.gui.windows.main import ToolWindow
-from toolset.main_settings import setup_post_init_settings, setup_pre_init_settings, setup_toolset_default_env
-from toolset.utils.qt_exceptions import install_asyncio_exception_handler, install_qt_signal_slot_safety_net, install_sys_unraisablehook
+from toolset.main_settings import (
+    setup_post_init_settings,
+    setup_pre_init_settings,
+    setup_toolset_default_env,
+)
+from toolset.utils.qt_exceptions import (
+    install_asyncio_exception_handler,
+    install_qt_signal_slot_safety_net,
+    install_sys_unraisablehook,
+)
 from toolset.utils.window import TOOLSET_WINDOWS
 from utility.system.app_process.shutdown import terminate_child_processes
 
@@ -305,7 +313,9 @@ def main():
     qasync_installed = False
     with suppress(ImportError):
         RobustLogger().debug("TRACE: Importing qasync")
-        from qasync import QEventLoop  # type: ignore[import-not-found, import-untyped, note]  # pyright: ignore[reportMissingImports, reportMissingTypeStubs]
+        from qasync import (
+            QEventLoop,  # type: ignore[import-not-found, import-untyped, note]  # pyright: ignore[reportMissingImports, reportMissingTypeStubs]
+        )
 
         RobustLogger().debug("TRACE: qasync imported, creating QEventLoop")
         asyncio.set_event_loop(QEventLoop(app))

@@ -257,7 +257,7 @@ def _import_editor_class(editor_name: str) -> type[Editor]:
     if editor_name not in EDITOR_REGISTRY:
         raise KeyError(
             f"Unknown editor: '{editor_name}'. "
-            f"Available editors: {', '.join(sorted(EDITOR_REGISTRY.keys()))}"
+            f"Available editors: {', '.join(sorted(EDITOR_REGISTRY.keys()))}",
         )
 
     module_path, class_name, _, _ = EDITOR_REGISTRY[editor_name]
@@ -299,7 +299,7 @@ def create_app(
     if app_name not in APP_REGISTRY:
         raise KeyError(
             f"Unknown app: '{app_name}'. "
-            f"Available apps: {', '.join(sorted(APP_REGISTRY.keys()))}"
+            f"Available apps: {', '.join(sorted(APP_REGISTRY.keys()))}",
         )
 
     module_path, class_name, _, _ = APP_REGISTRY[app_name]
@@ -312,7 +312,7 @@ def create_app(
         if hasattr(window, "enable_standalone_mode"):
             window.enable_standalone_mode()
         if installation is not None and hasattr(window, "_installation_toolbar") and getattr(window, "_installation_toolbar", None) is not None:
-            toolbar = getattr(window, "_installation_toolbar")
+            toolbar = window._installation_toolbar
             if hasattr(toolbar, "set_override_installation"):
                 toolbar.set_override_installation(installation)
         return window
@@ -548,7 +548,7 @@ def build_parser() -> argparse.ArgumentParser:
         epilog=(
             "Examples:\n"
             "  kotor-editor --editor twoda myfile.2da\n"
-            "  kotor-editor myfile.utc --game-path \"C:/Games/KOTOR\"\n"
+            '  kotor-editor myfile.utc --game-path "C:/Games/KOTOR"\n'
             "  kotor-editor --list\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,

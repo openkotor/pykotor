@@ -413,7 +413,7 @@ TSLPatcher Execution Order (v1.2.8+):
 6. [SSFList]         - Modify soundset files
 ```
 
-**Note**: In TSLPatcher v1.2.8b0 (2006-08-06), the processing order was changed so that [TLK](TLK-File-Format) Appending happens before Install List. According to the official change log, this allows [ERF](ERF-File-Format)/MOD/RIM files to be placed in their proper locations before [GFF](GFF-File-Format) and script compilation sections run, so modified files can be saved into those archive files.
+**Note**: In TSLPatcher v1.2.8b0 (2006-08-06), the processing order was changed so that [TLK](TLK-File-Format) Appending happens before Install List. According to the official change log, this allows [ERF](ERF-File-Format)/MOD/RIM files to be placed in their proper locations before [GFF](GFF-File-Format) and script compilation sections run, so modified files can be saved into those container files.
 
 **Older TSLPatcher versions** (before 1.2.8) processed InstallList before TLKList.
 

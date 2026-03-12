@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import html as html_module
 import logging
+
 from collections import deque
 from copy import deepcopy
 from dataclasses import dataclass
@@ -37,7 +38,9 @@ if qtpy.QT5:
     from qtpy.QtGui import QCloseEvent
     from qtpy.QtWidgets import QUndoStack  # type: ignore[reportPrivateImportUsage]
 elif qtpy.QT6:
-    from qtpy.QtGui import QUndoStack  # type: ignore[assignment]  # pyright: ignore[reportPrivateImportUsage]
+    from qtpy.QtGui import (
+        QUndoStack,  # type: ignore[assignment]  # pyright: ignore[reportPrivateImportUsage]
+    )
 
     try:
         from qtpy.QtGui import QCloseEvent
@@ -63,7 +66,6 @@ from toolset.gui.common.editor_pipelines import (
     update_preview_image_size,
 )
 from toolset.gui.common.filters import NoScrollEventFilter
-from toolset.gui.common.log_bridge import LEVEL_COLORS, LogRecordEmitter, QtLogHandler
 from toolset.gui.common.indoor_builder_ops import (
     add_connected_indoor_rooms_to_selection,
     apply_flip_selected_rooms,
@@ -97,13 +99,17 @@ from toolset.gui.common.indoor_builder_ops import (
     sync_indoor_options_ui_from_renderer,
     toggle_check_widget,
 )
-from toolset.gui.common.interaction.camera import calculate_zoom_strength, handle_standard_2d_camera_movement
+from toolset.gui.common.interaction.camera import (
+    calculate_zoom_strength,
+    handle_standard_2d_camera_movement,
+)
 from toolset.gui.common.localization import translate as tr, translate_format as trf
+from toolset.gui.common.log_bridge import LEVEL_COLORS, LogRecordEmitter, QtLogHandler
 from toolset.gui.common.status_bar_utils import format_status_bar_keys_and_buttons
 from toolset.gui.common.walkmesh_materials import get_walkmesh_material_colors
+from toolset.gui.dialogs.asyncloader import AsyncLoader
 from toolset.gui.widgets.installation_toolbar import InstallationToolbar, StandaloneWindowMixin
 from toolset.gui.widgets.settings.installations import GlobalSettings
-from toolset.gui.dialogs.asyncloader import AsyncLoader
 from toolset.gui.windows.help import HelpWindow
 from toolset.gui.windows.indoor_builder.constants import (
     DEFAULT_CAMERA_POSITION_X,
@@ -960,7 +966,9 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 self.ui.moduleComponentList.addItem(item)  # pyright: ignore[reportArgumentType, reportCallIssue]
 
         except Exception:  # noqa: BLE001
-            from loggerplus import RobustLogger  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
+            from loggerplus import (
+                RobustLogger,  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
+            )
 
             RobustLogger().exception(f"Failed to load module '{module_root}'")
 
@@ -1044,7 +1052,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             "<b>Blender mode is active.</b><br>"
             "The Holocron Toolset will defer all 3D rendering and editing to Blender. "
             "Use the Blender window to move rooms, edit textures/models, and "
-            "manipulate the indoor map. This panel streams Blender's console output for diagnostics."
+            "manipulate the indoor map. This panel streams Blender's console output for diagnostics.",
         )
         headline.setWordWrap(True)
         layout.addWidget(headline)
@@ -1295,16 +1303,16 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     def _refresh_status_bar(
         self,
         screen: QPoint | Vector2 | None = None,
-        buttons: set[int | Qt.MouseButton] | set[Qt.MouseButton] | set[int | Qt.MouseButton] | set[Qt.MouseButton | int] | None = None,
-        keys: set[int | Qt.Key] | set[Qt.Key] | set[int | Qt.Key] | set[Qt.Key | int] | set[QKeySequence] | None = None,
+        buttons: set[int | Qt.MouseButton] | set[Qt.MouseButton] | set[Qt.MouseButton | int] | None = None,
+        keys: set[int | Qt.Key] | set[Qt.Key] | set[Qt.Key | int] | set[QKeySequence] | None = None,
     ):
         self._update_status_bar(screen, buttons, keys)
 
     def _update_status_bar(
         self,
         screen: QPoint | Vector2 | None = None,
-        buttons: set[int | Qt.MouseButton] | set[Qt.MouseButton] | set[int | Qt.MouseButton] | set[Qt.MouseButton | int] | None = None,
-        keys: set[int | Qt.Key] | set[Qt.Key] | set[int | Qt.Key] | set[Qt.Key | int] | set[QKeySequence] | None = None,
+        buttons: set[int | Qt.MouseButton] | set[Qt.MouseButton] | set[Qt.MouseButton | int] | None = None,
+        keys: set[int | Qt.Key] | set[Qt.Key] | set[Qt.Key | int] | set[QKeySequence] | None = None,
     ):
         """Rich status bar mirroring Module Designer style."""
         renderer = self.ui.mapRenderer
@@ -1356,7 +1364,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self._mouse_label.setText(
             f'<b><span style="{self._emoji_style}">🖱</span>&nbsp;Coords:</b> '
             f"<span style='color:{colors['accent1']}'>{world.x:.2f}</span>, "
-            f"<span style='color:{colors['accent2']}'>{world.y:.2f}</span>"
+            f"<span style='color:{colors['accent2']}'>{world.y:.2f}</span>",
         )
 
         # Selection
@@ -1392,7 +1400,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             '<b><span style="{style}">ℹ</span>&nbsp;Status:</b> {body}'.format(
                 style=self._emoji_style,
                 body=" | ".join(mode_parts) if mode_parts else f"<span style='color:{colors['muted']}'><i>Idle</i></span>",
-            )
+            ),
         )
 
     def show_help_window(self):
@@ -1438,7 +1446,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             path = path.with_suffix(".mod") if path.suffix.lower() != ".mod" else path
             if not isinstance(self._installation, HTInstallation):
                 QMessageBox.warning(
-                    self, tr("No Installation"), tr("Please select an installation first.")
+                    self, tr("No Installation"), tr("Please select an installation first."),
                 )
                 return
 
@@ -1541,7 +1549,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 self,
                 tr("Cannot Open Module"),
                 tr(
-                    "This .mod is not inside any configured installation's Modules folder.\n\nTip: add the installation in Settings or copy the .mod into an installation's Modules folder."
+                    "This .mod is not inside any configured installation's Modules folder.\n\nTip: add the installation in Settings or copy the .mod into an installation's Modules folder.",
                 ),
             )
             return
@@ -1662,7 +1670,9 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             bool: True if the module was successfully loaded, False otherwise
         """
         if not isinstance(self._installation, HTInstallation):
-            from loggerplus import RobustLogger  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
+            from loggerplus import (
+                RobustLogger,  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
+            )
 
             RobustLogger().error("No installation available to load module from")
             return False
@@ -1683,7 +1693,9 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 return False
 
         try:
-            from loggerplus import RobustLogger  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
+            from loggerplus import (
+                RobustLogger,  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
+            )
 
             # Remove .rim or .mod extension if present
             module_root = module_name
@@ -1743,7 +1755,9 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             return True
 
         except Exception as e:  # noqa: BLE001
-            from loggerplus import RobustLogger  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
+            from loggerplus import (
+                RobustLogger,  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
+            )
             from toolset.gui.common.localization import translate as tr, translate_format as trf
 
             RobustLogger().exception(f"Failed to load module '{module_name}'")
@@ -1913,8 +1927,8 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self,
         screen: Vector2,
         delta: Vector2,
-        buttons: set[int | Qt.MouseButton] | set[Qt.MouseButton] | set[int | Qt.MouseButton] | set[Qt.MouseButton | int],
-        keys: set[int | Qt.Key] | set[Qt.Key] | set[int | Qt.Key] | set[Qt.Key | int],
+        buttons: set[int | Qt.MouseButton] | set[Qt.MouseButton] | set[Qt.MouseButton | int],
+        keys: set[int | Qt.Key] | set[Qt.Key] | set[Qt.Key | int],
     ):
         self._refresh_status_bar(screen=screen, buttons=buttons, keys=keys)
         world_delta: Vector2 = self.ui.mapRenderer.to_world_delta(delta.x, delta.y)
@@ -2157,7 +2171,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     def onMouseDoubleClicked(
         self,
         delta: Vector2,
-        buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
+        buttons: set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ):
         handle_indoor_double_click_select_connected(

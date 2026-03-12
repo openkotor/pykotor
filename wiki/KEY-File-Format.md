@@ -6,7 +6,7 @@ This document provides a detailed description of the KEY (KEY Table) file format
 
 - KotOR KEY File format Documentation
   - Table of Contents
-  - [File structure Overview](#file-structure-overview)
+  - [File structure overview](#file-structure-overview)
     - [KEY File Purpose](#key-file-purpose)
   - [Binary Format](#binary-format)
     - [File Header](#file-header)
@@ -18,199 +18,221 @@ This document provides a detailed description of the KEY (KEY Table) file format
 
 ---
 
-## File Structure Overview
+## File structure overview
 
-KEY files map resource names ([ResRefs](GFF-File-Format#gff-data-types)) and types to specific locations within [BIF archives](BIF-File-Format). KotOR uses `chitin.key` as the main KEY file which references all game [BIF files](BIF-File-Format).
+KEY files map resource names ([ResRefs](GFF-File-Format#gff-data-types)) and types to specific locations within [BIF containers](BIF-File-Format). KotOR uses `chitin.key` as the main KEY file which references all game [BIF files](BIF-File-Format).
 
 ### KEY File Purpose
 
-The KEY file serves as the master index for the game's resource system:
+The *KEY* file, specifically `chitin.key` in KotOR, serves as the master index for the game's resource system:
 
-1. **Resource Lookup**: Maps [ResRef](GFF-File-Format#gff-data-types) + ResourceType → [BIF](BIF-File-Format) location
+1. **Resource Lookup**: Maps *ResRef* + *Resource Type* → [BIF](BIF-File-Format) location
 2. **[BIF](BIF-File-Format) Registration**: Tracks all [BIF files](BIF-File-Format) and their install paths
-3. **Resource Naming**: Provides the filename ([ResRef](GFF-File-Format#gff-data-types)) missing from [BIF files](BIF-File-Format)
-4. **Drive Mapping**: Historical feature indicating which media (CD/HD) contained each [BIF](BIF-File-Format)
+3. **Resource Naming**: Provides the filename (*ResRef*) missing from [BIF files](BIF-File-Format)
+4. **Drive Mapping**: Historical feature indicating which media ([CD](https://en.wikipedia.org/wiki/Compact_disc)/[HD](https://en.wikipedia.org/wiki/Hard_disk_drive)) contained each [BIF](BIF-File-Format)
 
 **Resource Resolution Order:**
 
-When the game needs a resource, it searches in this order:
+When the game needs a resource, it searches in the following order:
 
 1. Override folder (`override/`)
 2. Currently loaded [MOD/ERF](ERF-File-Format) files
-3. Currently loaded SAV file (if in-game)
-4. [BIF files](BIF-File-Format) via KEY lookup
+3. Currently loaded `.sav` Save Entry (usually a folder; situational, dependent on the game)
+4. [BIF files](BIF-File-Format) via [KEY](KEY-File-Format) lookup
 5. Hardcoded defaults (if no resource found)
 
-The KEY file only manages [BIF](BIF-File-Format) resources (step 4). Higher-priority locations can override KEY-indexed resources without modifying the KEY file.
+The *KEY* file only manages [BIF](BIF-File-Format) resources (step 4). Higher-priority locations can override *KEY*-indexed resources without modifying the *KEY* file. However, this is not recommended as it can lead to inconsistencies and is not a supported feature.
 
-**How a resource request is satisfied:** The engine’s resource manager resolves a “demand” by first checking whether the resource is already loaded or cached. If not, it routes the request to one of several back ends depending on where the resource lives: directory (override or filesystem), encapsulated archive ([MOD/ERF](ERF-File-Format)), resource file, or image ([BIF](BIF-File-Format)). Each back end is responsible for opening the correct file or archive and returning the data; the KEY is used only when the source is the BIF image set. So override and [MOD/ERF](ERF-File-Format) are tried before any KEY/[BIF](BIF-File-Format) lookup.
+**How a resource request is satisfied:** The engine’s resource manager resolves a "demand" by first checking whether the resource is already loaded or cached. If not, it routes the request to one of several back ends depending on where the resource lives: directory (override or filesystem), encapsulated container ([MOD/ERF](ERF-File-Format)), resource file, or image ([BIF](BIF-File-Format)). Each back end is responsible for opening the correct file or container and returning the data; the *KEY* is used only when the source is the [BIF](BIF-File-Format) image set. So override and [MOD/ERF](ERF-File-Format) are tried before any *KEY*/[BIF](BIF-File-Format) lookup.
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/key/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/key/)
 
 **Vendor References:**
 
-- [`vendor/reone/src/libs/resource/format/keyreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/keyreader.cpp) - Complete C++ KEY reader implementation
-- [`vendor/xoreos/src/aurora/keyfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/keyfile.cpp) - Generic Aurora KEY implementation (shared format across KotOR, NWN, and other Aurora games)
+- [`vendor/reone/src/libs/resource/format/keyreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/keyreader.cpp) - Complete C++ *KEY* reader implementation
+- [`vendor/xoreos/src/aurora/keyfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/keyfile.cpp) - Generic Aurora *KEY* implementation (shared format across KotOR, NWN, and other Aurora games)
 - [`vendor/KotOR.js/src/resource/KEYObject.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/KEYObject.ts) - TypeScript KEY parser
-- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorKEY/`](https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY) - .NET KEY reader/writer
-- [`vendor/xoreos-tools/src/aurora/keyfile.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/aurora/keyfile.cpp) - Command-line KEY tools
+- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorKEY/`](https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY) - .NET *KEY* reader/writer
+- [`vendor/xoreos-tools/src/aurora/keyfile.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/aurora/keyfile.cpp) - Command-line *KEY* tools
 
-**See Also:**
+### See Also
 
-- [Home](Home#resource-resolution-order) - Application lifecycle and resource resolution overview
-- [BIF File Format](BIF-File-Format) - Archive format indexed by KEY files
-- [ERF File Format](ERF-File-Format) - Self-contained alternative to KEY+[BIF](BIF-File-Format)
-- [Bioware Aurora KeyBIF Format](Bioware-Aurora-KeyBIF) - Official BioWare specification
+- [Home](Home#resource-resolution-order) - Application Lifecycle and Resource Resolution Overview
+- [BIF File Format](BIF-File-Format) - Container Format Indexed by *KEY* Files
+- [ERF File Format](ERF-File-Format) - Self-contained Alternative to *KEY*+[BIF](BIF-File-Format) Files
+- [Bioware Aurora KeyBIF Format](Bioware-Aurora-KeyBIF) - Official BioWare Specification
 
 ---
 
 ## [Binary Format](https://en.wikipedia.org/wiki/Binary_file)
 
-### File Header
-
 The file header is 64 bytes in size:
 
 | Name                | type    | offset | size | Description                                    |
 | ------------------- | ------- | ------ | ---- | ---------------------------------------------- |
-| file type           | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | Always `"KEY "` (space-padded)                 |
-| file Version        | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | `"V1  "` or `"V1.1"`                           |
-| [BIF](BIF-File-Format) count           | [uint32](GFF-File-Format#gff-data-types)  | 8 (0x08) | 4    | Number of [BIF files](BIF-File-Format) referenced                 |
-| KEY count           | [uint32](GFF-File-Format#gff-data-types)  | 12 (0x0C) | 4    | Number of resource entries                     |
-| offset to file Table | [uint32](GFF-File-Format#gff-data-types) | 16 (0x10) | 4    | offset to [BIF file](BIF-File-Format) entries array               |
-| offset to KEY Table | [uint32](GFF-File-Format#gff-data-types) | 20 (0x14) | 4    | offset to resource entries array               |
-| Build Year          | [uint32](GFF-File-Format#gff-data-types)  | 24 (0x18) | 4    | Build year (years since 1900)                  |
-| Build Day           | [uint32](GFF-File-Format#gff-data-types)  | 28 (0x1C) | 4    | Build day (days since Jan 1)                   |
-| Reserved            | [byte](GFF-File-Format#gff-data-types) | 32 (0x20) | 32   | Padding (usually zeros)                        |
+| File Type           | [Char](https://en.wikipedia.org/wiki/Character_(computer_science)) | `0` (`0x00`) | `4`    | Always `"KEY "` (space-padded)                 |
+| File Version        | [Char](https://en.wikipedia.org/wiki/Character_(computer_science)) | `4` (`0x04`) | `4`    | `"V1  "` or `"V1.1"`                           |
+| [BIF](BIF-File-Format) count           | [UInt32](GFF-File-Format#gff-data-types)  | `8` (`0x08`) | `4`    | Number of [BIF files](BIF-File-Format) referenced                 |
+| KEY count           | [UInt32](GFF-File-Format#gff-data-types)  | `12` (`0x0C`) | `4`    | Number of *Resource Entries*                     |
+| Offset to File Table | [UInt32](GFF-File-Format#gff-data-types) | `16` (`0x10`) | `4`    | Offset to [BIF File](BIF-File-Format) Entries* Array               |
+| Offset to KEY Table | [UInt32](GFF-File-Format#gff-data-types) | `20` (`0x14`) | `4`    | Offset to *Resource Entries* Array               |
+| Build Year          | [UInt32](GFF-File-Format#gff-data-types)  | `24` (`0x18`) | `4`    | Build Year (years since 1900)                 
+| Build Day           | [UInt32](GFF-File-Format#gff-data-types)  | `28` (`0x1C`) | `4`    | Build Day (days since Jan 1)                   |
+| Reserved            | [Byte](https://en.wikipedia.org/wiki/Byte) | `32` (`0x20`) | `32`   | Padding (usually zeros)                        |
 
-**Note on header Variations**: [`vendor/xoreos-docs/specs/torlack/key.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/key.html) (Tim Smith/Torlack's reverse-engineered documentation) shows the header ending at offset 0x0040 with unknown values at offset 0x0018. The structure shown here (with Build Year/Day and Reserved fields) matches the actual KotOR KEY file format.
+**Note on Header Variations**: [`vendor/xoreos-docs/specs/torlack/key.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/key.html) (Tim Smith/Torlack's reverse-engineered documentation) shows the header ending at offset `0x0040` with unknown values at offset `0x0018`. The structure shown here (with *Build Year*/*Build Day* and *Reserved* fields) matches the actual *KotOR KEY* File Format.
 
-**Reference**: [`vendor/Kotor.NET/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:13-114`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs#L13-L114)  
-**Reference**: [`vendor/xoreos-docs/specs/torlack/key.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/key.html) - Tim Smith (Torlack)'s reverse-engineered KEY format documentation (may show variant header structure)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:13-114`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs#L13-L114) - .NET *KEY* Binary Structure
+- [`vendor/xoreos-docs/specs/torlack/key.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/key.html) - Tim Smith (Torlack)'s reverse-engineered *KEY* Format Documentation (may show variant header structure)
 
 ### File Table
 
 Each file entry is 12 bytes:
 
-| Name            | type   | offset | size | Description                                                      |
+| Name            | Type   | Offset | Size | Description                                                      |
 | --------------- | ------ | ------ | ---- | ---------------------------------------------------------------- |
-| File Size       | [uint32](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | Size of [BIF](BIF-File-Format) file on disk                                         |
-| Filename Offset | [uint32](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | Offset into filename table                                       |
-| Filename Length | [uint16](GFF-File-Format#gff-data-types) | 8 (0x08) | 2    | Length of filename in bytes                                      |
-| Drives          | [uint16](GFF-File-Format#gff-data-types) | 10 (0x0A) | 2    | Drive flags (0x0001=HD0, 0x0002=CD1, etc.)                      |
+| File Size       | [UInt32](GFF-File-Format#gff-data-types) | `0` (0x00) | `4`    | Size of [BIF](BIF-File-Format) file on disk                                         |
+| Filename Offset | [UInt32](GFF-File-Format#gff-data-types) | `4` (0x04) | `4`    | Offset into filename table                                       |
+| Filename Length | [UInt16](GFF-File-Format#gff-data-types) | `8` (0x08) | `2`    | Length of filename in bytes                                      |
+| Drives          | [UInt16](GFF-File-Format#gff-data-types) | `10` (0x0A) | `2`    | Drive flags (`0x0001=HD0`, `0x0002=CD1`, etc.)                      |
 
 **Drive Flags Explained:**
 
-Drive flags are a legacy feature from the multi-CD distribution era:
+*Drive Flags* are a legacy feature from the multi-[CD](https://en.wikipedia.org/wiki/Compact_disc) distribution era:
 
-| [flag](GFF-File-Format#gff-data-types) value | Meaning | Description |
+| Flag Value | Meaning | Description |
 | ---------- | ------- | ----------- |
-| `0x0001` | HD (Hard Drive) | [BIF](BIF-File-Format) is installed on the hard drive |
-| `0x0002` | CD1 | [BIF](BIF-File-Format) is on the first game disc |
-| `0x0004` | CD2 | [BIF](BIF-File-Format) is on the second game disc |
-| `0x0008` | CD3 | [BIF](BIF-File-Format) is on the third game disc |
-| `0x0010` | CD4 | [BIF](BIF-File-Format) is on the fourth game disc |
+| `0x0001` | `HD` ([Hard Drive](https://en.wikipedia.org/wiki/Hard_disk_drive)) | [BIF](BIF-File-Format) is installed on the hard drive |
+| `0x0002` | `CD1` ([CD](https://en.wikipedia.org/wiki/Compact_disc) 1) | [BIF](BIF-File-Format) is on the first game disc |
+| `0x0004` | `CD2` ([CD](https://en.wikipedia.org/wiki/Compact_disc) 2) | [BIF](BIF-File-Format) is on the second game disc |
+| `0x0008` | `CD3` ([CD](https://en.wikipedia.org/wiki/Compact_disc) 3) | [BIF](BIF-File-Format) is on the third game disc |
+| `0x0010` | `CD4` ([CD](https://en.wikipedia.org/wiki/Compact_disc) 4) | [BIF](BIF-File-Format) is on the fourth game disc |
 
 **Modern Usage:**
 
-In contemporary distributions ([Steam](https://store.steampowered.com/), [GOG](https://www.gog.com/), digital):
+In contemporary distributions ([Steam](https://store.steampowered.com/), [GOG](https://www.gog.com/), [digital](https://en.wikipedia.org/wiki/Digital_distribution)):
 
-- All [BIF files](BIF-File-Format) use `0x0001` (HD Flag) since everything is installed locally
+- All [BIF files](BIF-File-Format) use `0x0001` (`HD` Flag) since everything is installed locally
 - The engine doesn't prompt for disc swapping
-- Multiple flags can be combined (bitwise OR) if a [BIF](BIF-File-Format) could be on multiple sources (e.g. `0x0001 | 0x0002` for a [BIF](BIF-File-Format) that is on both the hard drive and the first game disc)
-- Mod tools typically set this to `0x0001` for all files
+- Multiple flags can be combined (bitwise OR) if a [BIF](BIF-File-Format) could be on multiple sources (e.g. `0x0001 | 0x0002` ([HD](https://en.wikipedia.org/wiki/Hard_disk_drive) Flag | [CD1](https://en.wikipedia.org/wiki/Compact_disc) Flag) for a [BIF](BIF-File-Format) that is on both the hard drive and the first game disc)
+- Mod tools typically set this to `0x0001` (`HD` Flag) for all files
 
 The drive system was originally designed so the engine could:
 
-- Prompt users to insert specific CDs when needed resources weren't on the hard drive
+- Prompt users to insert specific [CD](https://en.wikipedia.org/wiki/Compact_disc)s when needed resources weren't on the hard drive
 - Optimize installation by allowing users to choose what to install vs. run from [CD](https://en.wikipedia.org/wiki/Compact_disc)
 - Support partial installs to save disk space (common in the early 2000s)
 
-**Reference**: [`vendor/reone/src/libs/resource/format/keyreader.cpp:55-70`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/keyreader.cpp#L55-L70)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/format/keyreader.cpp:55-70`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/keyreader.cpp#L55-L70) - File Table Parsing
 
 ### Filename Table
 
-The filename table contains [null-terminated](https://en.cppreference.com/w/c/string/byte) strings:
+The *Filename Table* contains [null-terminated](https://en.cppreference.com/w/c/string/byte) strings:
 
 | Name      | Type   | Description                                                      |
 | --------- | ------ | ---------------------------------------------------------------- |
-| Filenames | [char](GFF-File-Format#gff-data-types)[] | [null-terminated](https://en.cppreference.com/w/c/string/byte) [BIF](BIF-File-Format) filenames (e.g., "data/[models](MDL-MDX-File-Format).bif")         |
+| Filenames | [char](GFF-File-Format#gff-data-types)[] | [null-terminated](https://en.cppreference.com/w/c/string/byte) [BIF](BIF-File-Format) Filenames (e.g., `data/[models](MDL-MDX-File-Format).bif`)         |
 
-### KEY Table
+### *KEY* Table
 
-Each KEY entry is 22 (0x16) bytes in size:
+Each *KEY* entry is `22` (`0x16`) bytes in size:
 
 | Name        | Type     | Offset | Size | Description                                                      |
 | ----------- | -------- | ------ | ---- | ---------------------------------------------------------------- |
-| [ResRef](GFF-File-Format#gff-data-types)      | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 16   | Resource filename (null-padded, max 16 characters)                   |
-| Resource Type | [uint16](GFF-File-Format#gff-data-types) | 16 (0x10) | 2    | Resource type identifier (e.g. `0x3F` for [TPC](TPC-File-Format))                                         |
-| Resource ID | [uint32](GFF-File-Format#gff-data-types)   | 18 (0x12) | 4    | Encoded resource location (see [Resource ID Encoding](#resource-id-encoding)) (e.g. `0x00000005` for the 5th resource in the 1st [BIF](BIF-File-Format)) |
+| *ResRef*      | [char](GFF-File-Format#gff-data-types) | `0` (`0x00`) | `16`   | Resource Filename (null-padded, max 16 characters)                   |
+| Resource Type | [UInt16](GFF-File-Format#gff-data-types) | `16` (`0x10`) | `2`    | Resource Type Identifier (e.g. `0x3F` for [TPC](TPC-File-Format))                                         |
+| Resource ID | [UInt32](GFF-File-Format#gff-data-types)   | `18` (`0x12`) | `4`    | Encoded Resource Location (see [Resource ID Encoding](#resource-id-encoding)) (e.g. `0x00000005` for the 5th Resource in the 1st [BIF](BIF-File-Format)) |
 
-**Critical structure Packing Note:**
+**Critical Structure Packing Note:**
 
-The KEY entry structure must use **[byte](GFF-File-Format#gff-data-types) or [word](https://en.wikipedia.org/wiki/Word_(computer_architecture)) alignment** (1-[byte](GFF-File-Format#gff-data-types) or 2-[byte](GFF-File-Format#gff-data-types) packing). If the structure is packed with 4-[byte](GFF-File-Format#gff-data-types) or 8-[byte](GFF-File-Format#gff-data-types) alignment, the `uint32` at offset 0x0012 (18) will be incorrectly placed at offset 0x0014 (20), causing incorrect resource ID decoding.
+  The *KEY* entry structure must use **[byte](https://en.wikipedia.org/wiki/Byte) or [word](https://en.wikipedia.org/wiki/Word_(computer_architecture)) alignment** (1-[byte](https://en.wikipedia.org/wiki/Byte) or 2-[byte](https://en.wikipedia.org/wiki/Byte) packing). If the structure is packed with `4-[byte](https://en.wikipedia.org/wiki/Byte)` or `8-[byte](https://en.wikipedia.org/wiki/Byte)` alignment, the `UInt32` at offset `0x0012` (`18`) will be incorrectly placed at offset `0x0014` (`20`), causing incorrect *Resource ID* decoding.
 
-On non-Intel platforms, this alignment requirement may cause alignment faults unless the compiler provides an "unaligned" type or special care is taken when accessing the `uint32` field. The structure should be explicitly packed to ensure the `uint32` starts at offset 18 rather than being aligned to a 4-[byte](GFF-File-Format#gff-data-types) or 8-[byte](GFF-File-Format#gff-data-types) boundary.
+On non-Intel platforms, this alignment requirement may cause alignment faults unless the compiler provides an "unaligned" type or special care is taken when accessing the `UInt32` field. The structure should be explicitly packed to ensure the `UInt32` starts at offset `18` (`0x12`) rather than being aligned to a `4-[byte](https://en.wikipedia.org/wiki/Byte)` or `8-[byte](https://en.wikipedia.org/wiki/Byte)` boundary.
 
-**Reference**: [`vendor/reone/src/libs/resource/format/keyreader.cpp:72-100`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/keyreader.cpp#L72-L100)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/format/keyreader.cpp:72-100`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/keyreader.cpp#L72-L100) - *KEY* Entry Structure Parsing
 
 ---
 
 ## Resource ID Encoding
 
-The Resource ID field encodes both the [BIF](BIF-File-Format) index and resource index within that [BIF](BIF-File-Format):
+The *Resource ID* field encodes both the [BIF](BIF-File-Format) index and resource index within that [BIF](BIF-File-Format):
 
-- **bits 31-20**: [BIF](BIF-File-Format) Index (top 12 bits) - index into file table
-- **bits 19-0**: Resource Index (bottom 20 bits) - index within the [BIF](BIF-File-Format) file
+- **bits `31-20`**: [BIF](BIF-File-Format) Index (top 12 bits) - index into file table
+- **bits `19-0`**: Resource Index (bottom 20 bits) - index within the [BIF](BIF-File-Format) file
 
 **Decoding:**
 
 ```python
-bif_index = (resource_id >> 20) & 0xFFF  # Extract top 12 bits
-resource_index = resource_id & 0xFFFFF   # Extract bottom 20 bits
+bif_index = (resource_id >> `20`) & `0xFFF`  # Extract Top 12 Bits
+resource_index = resource_id & `0xFFFFF`   # Extract Bottom 20 Bits
 ```
 
 **Encoding:**
 
 ```python
-resource_id = (bif_index << 20) | resource_index
+resource_id = (bif_index << `20`) | resource_index # Encode Resource ID
 ```
 
 **Practical Limits:**
 
-- Maximum [BIF](BIF-File-Format) files: 4,096 (12-bit [BIF](BIF-File-Format) index)
-- Maximum resources per [BIF](BIF-File-Format) file: 1,048,576 (20-bit resource index)
+- Maximum [BIF](BIF-File-Format) Files: `4,096` (12-bit [BIF](BIF-File-Format) index)
+- Maximum Resources per [BIF](BIF-File-Format) File: `1,048,576` (20-bit resource index)
 
 These limits are more than sufficient for KotOR, which typically has:
 
-- ~50-100 [BIF](BIF-File-Format) files in a full installation
-- ~100-10,000 resources per [BIF](BIF-File-Format) file (largest [BIF](BIF-File-Format) files are [texture](TPC-File-Format) packs)
+- `~50-100` [BIF](BIF-File-Format) Files in a full installation
+- `~100-10,000` Resources per [BIF](BIF-File-Format) File (largest [BIF](BIF-File-Format) Files are [texture](TPC-File-Format) packs)
 
 **Example:**
 
-Given Resource ID `0x00123456`:
+Given *Resource ID* `0x00123456`:
 
 ```plaintext
 Binary: 0000 0000 0001 0010 0011 0100 0101 0110
         |---- 12 bits -----|------ 20 bits ------|
-BIF Index:     0x001 ([BIF](BIF-File-Format) #1)
-Resource Index: 0x23456 (Resource #144,470 within that [BIF](BIF-File-Format) file)
+BIF Index:     0x001 (BIF Index: `1`)
+Resource Index: 0x23456 (Resource Index: `144,470` within that [BIF](BIF-File-Format) file)
 ```
 
 The encoding allows a single 32-bit integer to precisely locate any resource in the entire [BIF](BIF-File-Format) system (e.g. `0x00123456` for the 5th resource in the 1st [BIF](BIF-File-Format) file).
 
-**Reference**: [`vendor/reone/src/libs/resource/format/keyreader.cpp:95-100`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/keyreader.cpp#L95-L100)  
-**Reference**: [`vendor/xoreos-docs/specs/torlack/key.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/key.html) - [BIF](BIF-File-Format) ID encoding explanation with example (0x00400029 → [BIF](BIF-File-Format) #4, Resource #41 within that [BIF](BIF-File-Format) file)
+**References**
+
+**Vendor Implementations:**
+
+- [`vendor/reone/src/libs/resource/format/keyreader.cpp:95-100`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/keyreader.cpp#L95-L100) - Resource ID Decoding
+- [`vendor/xoreos-docs/specs/torlack/key.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/key.html) - [BIF](BIF-File-Format) ID encoding explanation with example (`0x00400029` → [BIF](BIF-File-Format) `#4`, Resource `#41` within that [BIF](BIF-File-Format) file)
 
 ---
 
 ## Implementation Details
 
-**Binary Reading**: [`Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py)
+**Binary Reading**: [`Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py) - *KEY* File Binary Reading
 
-**Binary Writing**: [`Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py)
+**Binary Writing**: [`Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py) - *KEY* File Binary Writing
 
-**KEY Class**: [`Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py:100-462`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L100-L462)
+**KEY Class**: [`Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py:100-462`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L100-L462) - *KEY* File High-level Organization Class
+
+### See also
+
+- [BIF File Format](BIF-File-Format) - Container format indexed by KEY
+- [ERF File Format](ERF-File-Format) - Self-contained containers (MOD/SAV/HAK) and resolution order
+- [GFF File Format](GFF-File-Format) - Common content type resolved via KEY/BIF
+- [Bioware Aurora KeyBIF](Bioware-Aurora-KeyBIF) - Official BioWare KEY/BIF specification
+- [Home](Home) - Resource resolution order and override folder
 
 ---
 
-This documentation aims to provide a comprehensive overview of the KotOR KEY file format, focusing on the detailed file structure and data formats used within the games.
+This documentation aims to provide a comprehensive overview of the *KotOR KEY* File Format, focusing on the detailed file structure and data formats used within the games.

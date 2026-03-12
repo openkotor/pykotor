@@ -40,12 +40,18 @@ from panda3d.core import (  # type: ignore[import-not-found, note]  # pyright: i
     NodePath,
 )
 
-from pykotor.common.geometry_utils import compute_per_vertex_tangent_space  # pyright: ignore[reportMissingImports]
-from pykotor.gl.models.mdl_converter import get_node_converter_type  # pyright: ignore[reportMissingImports]
+from pykotor.common.geometry_utils import (
+    compute_per_vertex_tangent_space,  # pyright: ignore[reportMissingImports]
+)
+from pykotor.gl.models.mdl_converter import (
+    get_node_converter_type,  # pyright: ignore[reportMissingImports]
+)
 from pykotor.resource.formats.mdl import read_mdl  # pyright: ignore[reportMissingImports]
 
 if TYPE_CHECKING:
-    from pykotor.engine.materials.base import IMaterialManager  # pyright: ignore[reportMissingImports]
+    from pykotor.engine.materials.base import (
+        IMaterialManager,  # pyright: ignore[reportMissingImports]
+    )
     from pykotor.resource.formats.mdl.mdl_data import (  # pyright: ignore[reportMissingImports]
         MDL,
         MDLMesh,
@@ -695,7 +701,9 @@ class MDLLoader:
 
         # Resolve MDL and MDX resources from installation
         # Reference: Libraries/PyKotor/src/pykotor/engine/panda3d/module_loader.py:231-256
-        from pykotor.extract.installation import SearchLocation  # pyright: ignore[reportMissingImports]
+        from pykotor.extract.installation import (
+            SearchLocation,  # pyright: ignore[reportMissingImports]
+        )
         from pykotor.resource.type import ResourceType  # pyright: ignore[reportMissingImports]
 
         SEARCH_ORDER = [SearchLocation.OVERRIDE, SearchLocation.CHITIN]

@@ -23,7 +23,15 @@ from qtpy.QtWidgets import (
 from pykotor.common.language import Gender, Language, LocalizedString
 from pykotor.common.misc import ResRef
 from pykotor.extract.talktable import TalkTable
-from pykotor.resource.formats.gff import GFF, GFFContent, GFFFieldType, GFFList, GFFStruct, read_gff, write_gff
+from pykotor.resource.formats.gff import (
+    GFF,
+    GFFContent,
+    GFFFieldType,
+    GFFList,
+    GFFStruct,
+    read_gff,
+    write_gff,
+)
 from pykotor.resource.type import ResourceType
 from toolset.gui.common.localization import translate as tr
 from toolset.gui.editor import Editor
@@ -32,7 +40,13 @@ from utility.common.geometry import Vector3, Vector4
 if TYPE_CHECKING:
     import os
 
-    from qtpy.QtCore import QAbstractItemModel, QItemSelectionModel, QItemSelectionRange, QModelIndex, QPoint
+    from qtpy.QtCore import (
+        QAbstractItemModel,
+        QItemSelectionModel,
+        QItemSelectionRange,
+        QModelIndex,
+        QPoint,
+    )
     from qtpy.QtGui import QClipboard, QPalette
     from qtpy.QtWidgets import QLayout, QLayoutItem, QWidget, _QMenu
 
@@ -685,7 +699,7 @@ class GFFEditor(Editor):
         ]
         for action_label, node_label, field_type, default_value in field_actions:
             menu.addAction(action_label).triggered.connect(
-                lambda _=False, n=node_label, t=field_type, v=default_value: self.insert_node(item, n, t, v)
+                lambda _=False, n=node_label, t=field_type, v=default_value: self.insert_node(item, n, t, v),
             )
         menu.addSeparator()
         menu.addAction("Add Struct").triggered.connect(lambda: self.insert_node(item, "New Struct", GFFFieldType.Struct, GFFStruct()))
