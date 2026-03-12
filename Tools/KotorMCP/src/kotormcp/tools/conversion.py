@@ -35,7 +35,7 @@ def _gff_struct_to_dict(
         key = label or "__unnamed__"
         if value is None:
             out[key] = None
-        el        if isinstance(value, GFFList):
+        elif isinstance(value, GFFList):
             if max_depth is not None and depth + 1 > max_depth:
                 out[key] = f"<list[{len(value)} items, max_depth reached>"
             else:
@@ -66,46 +66,46 @@ def get_tools() -> list[types.Tool]:
     return [
         types.Tool(
             name="kotor_read_gff",
-            description="Read a GFF resource as full structured JSON. Use when you need the complete GFF tree. Specify field_paths or max_depth/max_fields to stay under response limits. Read-only.",
+            description="Use when you need the full GFF tree as JSON (DLG, UTC, ARE, etc.). Use field_paths or max_depth/max_fields to stay under response limits. Read-only.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "game": {"type": "string"},
-                    "resref": {"type": "string"},
-                    "restype": {"type": "string"},
+                    "game": {"type": "string", "description": "Game alias: k1 or k2"},
+                    "resref": {"type": "string", "description": "Resource reference name"},
+                    "restype": {"type": "string", "description": "Resource type (e.g. DLG, UTC)"},
                     "field_paths": {"type": "array", "items": {"type": "string"}, "description": "Optional field paths to include"},
-                    "max_depth": {"type": "integer", "minimum": 1, "maximum": 20},
-                    "max_fields": {"type": "integer", "minimum": 1, "maximum": 1000},
+                    "max_depth": {"type": "integer", "minimum": 1, "maximum": 20, "description": "Max nesting depth"},
+                    "max_fields": {"type": "integer", "minimum": 1, "maximum": 1000, "description": "Max fields to return"},
                 },
                 "required": ["game", "resref", "restype"],
             },
         ),
         types.Tool(
             name="kotor_read_2da",
-            description="Read a 2DA table with optional row range and column filter. Read-only.",
+            description="Use when you need a 2DA table as JSON with optional row range and column filter. Read-only.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "game": {"type": "string"},
-                    "resref": {"type": "string"},
-                    "row_start": {"type": "integer", "minimum": 0},
-                    "row_end": {"type": "integer", "minimum": 0},
-                    "columns": {"type": "array", "items": {"type": "string"}},
+                    "game": {"type": "string", "description": "Game alias: k1 or k2"},
+                    "resref": {"type": "string", "description": "2DA table resref (e.g. appearance)"},
+                    "row_start": {"type": "integer", "minimum": 0, "description": "First row index"},
+                    "row_end": {"type": "integer", "minimum": 0, "description": "Last row index (inclusive)"},
+                    "columns": {"type": "array", "items": {"type": "string"}, "description": "Column names to include"},
                 },
                 "required": ["game", "resref"],
             },
         ),
         types.Tool(
             name="kotor_read_tlk",
-            description="Read TLK (dialog.tlk) entries by strref range or text search. Read-only.",
+            description="Use when you need TLK (dialog.tlk) entries by strref range or text search. Read-only.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "game": {"type": "string"},
-                    "strref_start": {"type": "integer", "minimum": 0},
-                    "strref_end": {"type": "integer", "minimum": 0},
-                    "text_search": {"type": "string"},
-                    "limit": {"type": "integer", "minimum": 1, "maximum": 500, "default": 100},
+                    "game": {"type": "string", "description": "Game alias: k1 or k2"},
+                    "strref_start": {"type": "integer", "minimum": 0, "description": "Start strref"},
+                    "strref_end": {"type": "integer", "minimum": 0, "description": "End strref"},
+                    "text_search": {"type": "string", "description": "Substring search in text"},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 500, "default": 100, "description": "Max entries"},
                 },
                 "required": ["game"],
             },

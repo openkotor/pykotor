@@ -6,7 +6,7 @@ from typing import Any
 
 from mcp import types
 
-from kotormcp.tools import archives, conversion, discovery, gamedata, installation, modules, scripts, writing
+from kotormcp.tools import archives, conversion, discovery, gamedata, installation, modules, refs, scripts, writing
 
 
 def get_all_tools() -> list[types.Tool]:
@@ -18,6 +18,7 @@ def get_all_tools() -> list[types.Tool]:
         + archives.get_tools()
         + conversion.get_tools()
         + modules.get_tools()
+        + refs.get_tools()
         + scripts.get_tools()
         + writing.get_tools()
     )
@@ -29,6 +30,8 @@ async def handle_tool(name: str, arguments: dict[str, Any]) -> types.CallToolRes
         return await installation.handle_detect_installations(arguments)
     if name == "loadInstallation":
         return await installation.handle_load_installation(arguments)
+    if name == "kotor_installation_info":
+        return await installation.handle_installation_info(arguments)
     if name == "listResources":
         return await discovery.handle_list_resources(arguments)
     if name == "describeResource":
@@ -59,5 +62,17 @@ async def handle_tool(name: str, arguments: dict[str, Any]) -> types.CallToolRes
         return await gamedata.handle_lookup_2da(arguments)
     if name == "kotor_lookup_tlk":
         return await gamedata.handle_lookup_tlk(arguments)
+    if name == "kotor_list_references":
+        return await refs.handle_list_references(arguments)
+    if name == "kotor_find_referrers":
+        return await refs.handle_find_referrers(arguments)
+    if name == "kotor_find_strref_referrers":
+        return await refs.handle_find_strref_referrers(arguments)
+    if name == "kotor_describe_dlg":
+        return await refs.handle_describe_dlg(arguments)
+    if name == "kotor_describe_jrl":
+        return await refs.handle_describe_jrl(arguments)
+    if name == "kotor_describe_resource_refs":
+        return await refs.handle_describe_resource_refs(arguments)
     msg = f"Unknown tool '{name}'"
     raise ValueError(msg)

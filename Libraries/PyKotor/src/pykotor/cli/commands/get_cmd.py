@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import Installation, SearchLocation
 from pykotor.tools.finder import canonical_search_order
+from pykotor.tools.path_safety import resolve_and_validate_under_base
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -58,14 +59,24 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
         logger.error("Could not determine resource type from '%s'. Include extension (e.g. 203tell.wok).", resref_str)
         return 1
 
-    order = _parse_order_arg(getattr(args, "order", None))
-    if order is None:
-        order = canonical_search_order()
+    source = getattr(args, "source", None)
+    if source and str(source).strip():
+        name_to_loc = {e.name: e for e in SearchLocation}
+        loc = name_to_loc.get(str(source).strip().upper())
+        if loc is not None:
+            order = [loc]
+        else:
+            logger.warning("Unknown --source '%s'; using default order. Valid: %s", source, ", ".join(name_to_loc))
+            order = canonical_search_order()
+    else:
+        order = _parse_order_arg(getattr(args, "order", None))
+        if order is None:
+            order = canonical_search_order()
 
     result = installation.resource(resname, restype, order=order)
     if result is None:
         logger.warning(
-            "Resource '%s.%s' not found. Searched in order: %s. Try: pykotor find %s --path %s",
+            "Resource '%s.%s' not found. Searched in order: %s. Try: pykotor find %s --path %s (or use a glob, e.g. *.dlg)",
             resname,
             restype.extension,
             ", ".join(s.name for s in order),
@@ -80,6 +91,12 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
         output_path = output_path / f"{resname}.{restype.extension}"
     elif output_path.suffix.lower() != f".{restype.extension}":
         output_path = output_path.parent / f"{output_path.stem}.{restype.extension}"
+
+    try:
+        output_path = resolve_and_validate_under_base(output_path, pathlib.Path.cwd(), allow_nonexistent=True)
+    except ValueError as e:
+        logger.error("Output path rejected: %s", e)
+        return 1
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_bytes(result.data)

@@ -22,20 +22,20 @@ def get_tools() -> list[types.Tool]:
     return [
         types.Tool(
             name="kotor_list_modules",
-            description="List all modules with human-readable area names (from ARE + TalkTable). Read-only.",
+            description="Use when you need all modules with human-readable area names (from ARE + TalkTable). Read-only.",
             inputSchema={
                 "type": "object",
-                "properties": {"game": {"type": "string", "description": "k1 or k2"}},
+                "properties": {"game": {"type": "string", "description": "Game alias: k1 or k2"}},
                 "required": ["game"],
             },
         ),
         types.Tool(
             name="kotor_describe_module",
-            description="Full module analysis: ARE properties, room list from LYT, WOK list, resource counts, script list. Read-only.",
+            description="Use when you need full module analysis: ARE, LYT rooms, WOK list, resource counts, scripts. Read-only.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "game": {"type": "string"},
+                    "game": {"type": "string", "description": "Game alias: k1 or k2"},
                     "module_root": {"type": "string", "description": "Module root name (e.g. 003ebo, danm13)"},
                 },
                 "required": ["game", "module_root"],
@@ -43,14 +43,14 @@ def get_tools() -> list[types.Tool]:
         ),
         types.Tool(
             name="kotor_module_resources",
-            description="Paginated list of all resources in a module composite (.rim + _s.rim + _dlg.erf). Read-only.",
+            description="Use when you need a paginated list of all resources in a module (.rim + _s.rim + _dlg.erf). Read-only.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "game": {"type": "string"},
-                    "module_root": {"type": "string"},
-                    "limit": {"type": "integer", "minimum": 1, "maximum": 500, "default": 50},
-                    "offset": {"type": "integer", "minimum": 0, "default": 0},
+                    "game": {"type": "string", "description": "Game alias: k1 or k2"},
+                    "module_root": {"type": "string", "description": "Module root name"},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 500, "default": 50, "description": "Max results per page"},
+                    "offset": {"type": "integer", "minimum": 0, "default": 0, "description": "Skip first N results"},
                 },
                 "required": ["game", "module_root"],
             },

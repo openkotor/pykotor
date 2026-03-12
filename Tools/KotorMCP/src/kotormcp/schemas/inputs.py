@@ -121,6 +121,10 @@ class ExtractResourceInput(BaseModel):
     resref: str = Field(..., description="Resource reference name")
     restype: str = Field(..., description="Resource type (extension or name)")
     output_path: str = Field(..., description="Output file or directory path")
+    source: Optional[str] = Field(
+        None,
+        description="Extract only from this location (e.g. OVERRIDE, CHITIN, MODULES). Omit for first match in canonical order",
+    )
 
 
 class ReadGffInput(BaseModel):
@@ -152,3 +156,63 @@ class ReadTlkInput(BaseModel):
     strref_end: Optional[int] = Field(None, ge=0, description="Last strref (exclusive)")
     text_search: Optional[str] = Field(None, description="Substring search in text; returns matching entries")
     limit: int = Field(default=100, ge=1, le=500)
+
+
+class ListReferencesInput(BaseModel):
+    """Input for kotor_list_references tool."""
+
+    game: str = Field(..., description="Game alias: k1 or k2")
+    resref: str = Field(..., description="Resource reference name (e.g. my_dlg)")
+    restype: str = Field(..., description="Resource type (e.g. DLG, UTC, GFF)")
+    path: Optional[str] = Field(None, description="Optional installation path override")
+
+
+class FindReferrersInput(BaseModel):
+    """Input for kotor_find_referrers tool."""
+
+    game: str = Field(..., description="Game alias: k1 or k2")
+    value: str = Field(..., description="Script resref, tag, conversation resref, or generic resref to find")
+    reference_kind: str = Field(
+        default="resref",
+        description="script | tag | conversation | resref",
+    )
+    path: Optional[str] = Field(None, description="Optional installation path override")
+    module_root: Optional[str] = Field(None, description="Limit to resources from this module (e.g. danm13)")
+    partial_match: bool = Field(default=False, description="Allow partial matches")
+    limit: int = Field(default=100, ge=1, le=500)
+    offset: int = Field(default=0, ge=0)
+
+
+class FindStrrefReferrersInput(BaseModel):
+    """Input for kotor_find_strref_referrers tool."""
+
+    game: str = Field(..., description="Game alias: k1 or k2")
+    strref: int = Field(..., ge=0, description="TLK string reference ID to find")
+    path: Optional[str] = Field(None, description="Optional installation path override")
+    limit: int = Field(default=100, ge=1, le=500)
+    offset: int = Field(default=0, ge=0)
+
+
+class DescribeDlgInput(BaseModel):
+    """Input for kotor_describe_dlg tool."""
+
+    game: str = Field(..., description="Game alias: k1 or k2")
+    resref: str = Field(..., description="DLG resource name")
+    path: Optional[str] = Field(None, description="Optional installation path override")
+
+
+class DescribeJrlInput(BaseModel):
+    """Input for kotor_describe_jrl tool."""
+
+    game: str = Field(..., description="Game alias: k1 or k2")
+    resref: str = Field(..., description="JRL (journal) resource name")
+    path: Optional[str] = Field(None, description="Optional installation path override")
+
+
+class DescribeResourceRefsInput(BaseModel):
+    """Input for kotor_describe_resource_refs tool."""
+
+    game: str = Field(..., description="Game alias: k1 or k2")
+    resref: str = Field(..., description="Resource reference name")
+    restype: str = Field(..., description="Resource type (e.g. DLG, UTC, GFF)")
+    path: Optional[str] = Field(None, description="Optional installation path override")
