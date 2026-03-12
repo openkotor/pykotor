@@ -2,7 +2,7 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTC files define [creature templates](GFF-File-Format#utc-creature) including NPCs, party members, enemies, and the player character. They are comprehensive [GFF files](GFF-File-Format) containing all data needed to spawn and control a creature in the game world.
+UTC files define [creature templates](GFF-File-Format#utc-creature) including NPCs, party members, enemies, and the player character. They are comprehensive [GFF files](GFF-File-Format) containing all data needed to spawn and control a creature in the game world. UTC files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Creature format specification, see [Bioware Aurora Creature Format](Bioware-Aurora-Creature).
 
