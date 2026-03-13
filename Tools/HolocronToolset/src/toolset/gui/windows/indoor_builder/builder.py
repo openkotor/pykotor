@@ -1330,7 +1330,8 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         # Resolve screen coords
         if screen is None:
-            cursor_pos: QPoint = self.cursor().pos() if qtpy.QT5 else self.cursor().position().toPoint()  # type: ignore[attr-defined]
+            _cursor = self.cursor()
+            cursor_pos = _cursor.position().toPoint() if hasattr(_cursor, "position") else _cursor.pos()  # pyright: ignore[reportAttributeAccessIssue]
             screen_qp = renderer.mapFromGlobal(cursor_pos)
             screen_vec = Vector2(screen_qp.x(), screen_qp.y())
         else:
