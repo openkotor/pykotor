@@ -9,6 +9,10 @@ import pytest
 
 def pytest_configure(config: pytest.Config) -> None:
     """Patch test_indoor_builder_roundtrip.py in this directory if it has OLD WOK face count logic."""
+    config.addinivalue_line(
+        "markers",
+        "parametrize_modules_from_installation: parametrize module_name from modules present in K1 installation (dynamic).",
+    )
     _patch_wok_face_count_if_needed()
 
 
@@ -20,9 +24,9 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
     for item in items:
         if "test_roundtrip_k1_wok_face_count" not in item.nodeid or "TestIndoorBuilderRoundtrip" not in item.nodeid:
             continue
-        if not hasattr(item, "module") or item.module is None:
+        if not hasattr(item, "module") or item.module is None:  # pyright: ignore[reportAttributeAccessIssue]
             continue
-        tmod = item.module
+        tmod = item.module  # pyright: ignore[reportAttributeAccessIssue]
 
         def _fixed_wok_face_count(
             self,
@@ -47,32 +51,32 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
                 )
 
         # Pytest calls item.obj when running the test; replacing the class method is not enough.
-        item.obj = _fixed_wok_face_count
+        item.obj = _fixed_wok_face_count  # pyright: ignore[reportAttributeAccessIssue]
         break
 
 
 def _patch_wok_face_count_if_needed() -> None:
     """If test_indoor_builder_roundtrip in THIS dir has OLD WOK face count (original_resources/original_woks), patch it."""
-    test_file = Path(__file__).resolve().parent / "test_indoor_builder_roundtrip.py"
+    test_file: Path = Path(__file__).resolve().parent / "test_indoor_builder_roundtrip.py"
     if not test_file.is_file():
         return
     try:
         text = test_file.read_text(encoding="utf-8")
     except Exception:
         return
-    start_marker = "def test_roundtrip_k1_wok_face_count("
-    idx = text.find(start_marker)
+    start_marker: str = "def test_roundtrip_k1_wok_face_count("
+    idx: int = text.find(start_marker)
     if idx == -1:
         return
-    after_def = text[idx:]
-    end_search = after_def.find("\n    def test_", 1)
+    after_def: str = text[idx:]
+    end_search: int = after_def.find("\n    def test_", 1)
     if end_search == -1:
         return
-    method_block = after_def[:end_search]
-    sig_end = method_block.find("):\n") + 3
+    method_block: str = after_def[:end_search]
+    sig_end: int = method_block.find("):\n") + 3
     if sig_end < 3:
         return
-    body = method_block[sig_end:]
+    body: str = method_block[sig_end:]
     if "original_resources" not in body or "original_woks" not in body:
         return
     new_body = '''        """Test K1: WOK face count preserved through roundtrip.
@@ -97,8 +101,8 @@ def _patch_wok_face_count_if_needed() -> None:
             assert rebuilt_total_faces == original_total_faces, (
                 f"{module_root}: Total WOK face count mismatch - original={original_total_faces}, rebuilt={rebuilt_total_faces}"
             )'''
-    new_method = method_block[:sig_end] + "\n" + new_body + "\n\n"
-    new_text = text[:idx] + new_method + after_def[end_search:]
+    new_method: str = method_block[:sig_end] + "\n" + new_body + "\n\n"
+    new_text: str = text[:idx] + new_method + after_def[end_search:]
     try:
         test_file.write_text(new_text, encoding="utf-8")
     except Exception:

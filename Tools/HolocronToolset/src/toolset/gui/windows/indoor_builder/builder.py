@@ -541,7 +541,6 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         )
 
         # Ensure renderer can receive keyboard focus for accessibility
-        self.ui.mapRenderer.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         connect_indoor_option_signals(
             snap_to_grid_check=self.ui.snapToGridCheck,

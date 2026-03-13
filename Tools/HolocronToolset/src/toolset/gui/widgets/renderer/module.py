@@ -135,6 +135,9 @@ class ModuleRenderer(QOpenGLWidget):
         from toolset.gui.windows.module_designer import (
             ModuleDesignerSettings,  # noqa: PLC0415  # pylint: disable=C0415
         )
+        from toolset.gui.widgets.settings.widgets.module_designer import (
+            get_renderer_loop_interval_ms,  # noqa: PLC0415  # pylint: disable=C0415
+        )
 
         self.scene: Scene | None = None
         self.settings: ModuleDesignerSettings = ModuleDesignerSettings()
@@ -144,7 +147,7 @@ class ModuleRenderer(QOpenGLWidget):
 
         self.loop_timer: QTimer = QTimer(self)
         self.loop_timer.timeout.connect(self.loop)
-        self.loop_interval: int = 16  # ms, approx 60 FPS (improved from 30)
+        self.loop_interval: int = get_renderer_loop_interval_ms()  # from settings (default: auto = monitor Hz)
 
         self._render_time: int = 0
         self._keys_down: set[Qt.Key] = set()
@@ -211,28 +214,19 @@ class ModuleRenderer(QOpenGLWidget):
             RobustLogger().error("Widget or its window is not visible; OpenGL context may not be initialized.")
             raise RuntimeError("The OpenGL context is not available because the widget or its parent window is not visible.")
 
-        # Wait for OpenGL context to be created and initialized
-        # Qt calls initializeGL() when the widget is first shown, but this may happen asynchronously
-        # In headless/offscreen mode, we need to wait a bit longer and process events
+        # Wait for OpenGL context to be created and initialized.
+        # Qt calls initializeGL() when the widget is first shown (requires a real display).
         max_attempts = 50
         for attempt in range(max_attempts):
             ctx = self.context()
             if ctx is not None and ctx.isValid():
-                # Try to make the context current to ensure initializeGL was called
                 try:
                     self.makeCurrent()
-                    # Force initializeGL call if it hasn't been called yet (headless mode workaround)
-                    # Qt should call it automatically, but in headless mode we may need to ensure it
-                    if hasattr(self, "_gl_initialized") and not self._gl_initialized:
-                        self.initializeGL()
-                        self._gl_initialized = True
-                    break  # Context is ready
+                    break
                 except Exception:
-                    pass  # Context exists but not ready yet
+                    pass
 
-            # Process events to allow Qt to call initializeGL
             QApplication.processEvents()
-            QApplication.processEvents()  # Process twice to ensure events are handled
 
             if attempt < max_attempts - 1:
                 from time import sleep
@@ -320,8 +314,15 @@ class ModuleRenderer(QOpenGLWidget):
     def resume_render_loop(self) -> None:
         """Resumes the rendering loop by starting the timer."""
         RobustLogger().debug("ModuleRenderer - resumeRenderLoop called.")
+        from toolset.gui.widgets.settings.widgets.module_designer import (
+            get_renderer_loop_interval_ms,  # noqa: PLC0415  # pylint: disable=C0415
+        )
+
+        self.loop_interval = get_renderer_loop_interval_ms()
         if not self.loop_timer.isActive():
             self.loop_timer.start(self.loop_interval)
+        else:
+            self.loop_timer.setInterval(self.loop_interval)
         assert self.scene is not None, "Scene is not initialized"
         self.scene.camera.width = self.width()
         self.scene.camera.height = self.height()

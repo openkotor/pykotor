@@ -21,10 +21,10 @@
        <bool>true</bool>
       </property>
       <property name="focusPolicy">
-       <number>3</number>
+       <enum>Qt::StrongFocus</enum>
       </property>
       <property name="contextMenuPolicy">
-       <number>4</number>
+       <enum>Qt::CustomContextMenu</enum>
       </property>
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -41,7 +41,7 @@
     <string>Components</string>
    </property>
    <property name="allowedAreas">
-    <number>3</number>
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -102,7 +102,7 @@
         <bool>true</bool>
        </property>
        <property name="horizontalScrollBarPolicy">
-        <number>1</number>
+        <enum>Qt::ScrollBarAlwaysOff</enum>
        </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -267,7 +267,7 @@
     <string>Tools</string>
    </property>
    <property name="allowedAreas">
-    <number>3</number>
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -302,7 +302,7 @@
         <bool>true</bool>
        </property>
        <property name="horizontalScrollBarPolicy">
-        <number>1</number>
+        <enum>Qt::ScrollBarAlwaysOff</enum>
        </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -611,7 +611,7 @@
     <string>Toolbar</string>
    </property>
    <attribute name="toolBarArea">
-    <number>4</number>
+    <enum>TopToolBarArea</enum>
    </attribute>
    <widget class="QWidget" name="settingsToolbarWidget">
     <property name="sizePolicy">
@@ -804,7 +804,7 @@
     <string>Log</string>
    </property>
    <property name="allowedAreas">
-    <number>15</number>
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea|Qt::TopDockWidgetArea|Qt::BottomDockWidgetArea</set>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>

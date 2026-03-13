@@ -196,12 +196,52 @@ class GIT:
         instance: GITObject,
     ):
         """Remove an instance from its respective list.
-        
+
+        If the exact object reference is not in the list (e.g. caller holds a
+        different reference to the same logical instance), finds and removes
+        the matching instance by identity (identifier or camera_id).
+
         Args:
         ----
             instance: The instance to remove.
         """
-        self._get_instance_list(instance).remove(instance)
+        instance_list = self._get_instance_list(instance)
+        try:
+            instance_list.remove(instance)
+            return
+        except ValueError:
+            pass
+        # Same logical instance but different reference: find by identity and remove
+        if isinstance(instance, GITCamera):
+            for i, other in enumerate(instance_list):
+                if isinstance(other, GITCamera) and other.camera_id == instance.camera_id:
+                    del instance_list[i]
+                    return
+        else:
+            ident: ResourceIdentifier | None = instance.identifier()
+            for i, other in enumerate(instance_list):
+                if isinstance(other, GITCamera):
+                    continue
+                other_ident: ResourceIdentifier | None = other.identifier()
+                if other_ident is not None and other_ident == ident:
+                    del instance_list[i]
+                    return
+            # Fallback: match by position + resref (in case identifier() differed)
+            resref_str: str = str(getattr(instance, "resref", ""))
+            px, py, pz = instance.position.x, instance.position.y, instance.position.z
+            for i, other in enumerate(instance_list):
+                if isinstance(other, GITCamera):
+                    continue
+                if (
+                    getattr(other, "position", None) is not None
+                    and other.position.x == px
+                    and other.position.y == py
+                    and other.position.z == pz
+                    and str(getattr(other, "resref", "")) == resref_str
+                ):
+                    del instance_list[i]
+                    return
+        raise ValueError(f"list.remove(x): x not in list; instance {instance!r} not found in GIT")
 
     def index(
         self,

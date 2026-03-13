@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+import time
 from typing import TYPE_CHECKING, TypeVar, cast
 
 from pykotor.extract.installation import SearchLocation
@@ -136,6 +138,9 @@ class Scene(SceneBase):
         self._cached_view: mat4 | None = None
         self._cached_projection: mat4 | None = None
 
+        # Per-frame profile timings (TOOLSET_MODULE_DESIGNER_PROFILE): (cache_ms, draw_ms) per frame
+        self._profile_frame_times: list[tuple[float, float]] = []
+
     def _invalidate_object_cache(self):
         """Mark object caches as dirty. Call when objects are added/removed."""
         self._objects_dirty = True
@@ -201,6 +206,9 @@ class Scene(SceneBase):
         if self.is_shutdown:
             return
 
+        _profile = os.environ.get("TOOLSET_MODULE_DESIGNER_PROFILE", "").strip().lower() in ("1", "true", "yes", "on")
+        _t0 = time.perf_counter() if _profile else None
+
         try:
             # Poll for completed async resources (non-blocking) - MAIN PROCESS ONLY
             self.poll_async_resources()
@@ -211,6 +219,10 @@ class Scene(SceneBase):
             # 1. Objects not moving when dragged
             # 2. Camera snapping not working until rotation
             SceneCache.build_cache(self)
+
+            if _profile and _t0 is not None:
+                _t1 = time.perf_counter()
+                _cache_ms = (_t1 - _t0) * 1000
 
             # Rebuild object lists if objects changed (cheap check)
             if self._objects_dirty or len(self.objects) != self._last_objects_count:
@@ -296,6 +308,21 @@ class Scene(SceneBase):
                     GlmVector3(focus_point.x, focus_point.y, focus_point.z),
                     self.camera.distance,
                 )
+
+            if _profile and _t0 is not None:
+                _t2 = time.perf_counter()
+                _draw_ms = (_t2 - _t1) * 1000  # noqa: F821
+                self._profile_frame_times.append((_cache_ms, _draw_ms))  # noqa: F821
+                if len(self._profile_frame_times) >= 200:
+                    n = len(self._profile_frame_times)
+                    mean_cache = sum(p[0] for p in self._profile_frame_times) / n
+                    mean_draw = sum(p[1] for p in self._profile_frame_times) / n
+                    from loggerplus import RobustLogger
+                    RobustLogger().info(
+                        "[MODULE_DESIGNER_PROFILE] per-frame (n=%d): mean cache=%.2f ms, mean draw=%.2f ms, mean total=%.2f ms",
+                        n, mean_cache, mean_draw, mean_cache + mean_draw,
+                    )
+                    self._profile_frame_times.clear()
 
             # End frame statistics
             if self.enable_frustum_culling:

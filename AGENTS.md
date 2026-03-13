@@ -31,7 +31,7 @@ QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and 
 - **`--import-mode=importlib` is required on Linux**: Without it, pytest fails with `ModuleNotFoundError: No module named 'resource.formats'` because the test directory `Libraries/PyKotor/tests/resource/` collides with Python's stdlib `resource` module.
 - `test_mdl_ascii.py` must be `--ignore`d: it tries to open KotOR game files from a hardcoded Windows path at *collection* time and will fail with `FileNotFoundError` if `K1_PATH`/`K2_PATH` env vars are not set to valid game directories.
 - `test_registry_strict_typing.py` must be `--ignore`d on Linux: it imports the Windows-only `winreg` module unconditionally.
-- Set `QT_QPA_PLATFORM=offscreen` for headless Qt test execution; `xvfb` is available but `offscreen` is simpler.
+- Set `QT_QPA_PLATFORM=offscreen` for headless Qt test execution; `xvfb` is available but `offscreen` is simpler. **Do not** use offscreen when running Module Designer tests (`test_module_designer.py`): they require a real display and OpenGL; HolocronToolset conftest forces real display when that file is in the test run.
 - The pytest process may crash (exit 134 / SIGABRT) during teardown due to PyQt6 thread cleanup. This is a known upstream issue and does not affect test results. Check the output for pass/fail counts before the crash.
 - Many test failures are expected without KotOR game files installed (the `K1_PATH` and `K2_PATH` environment variables point to Windows paths by default in `.env`).
 
@@ -66,11 +66,13 @@ This works after a successful `uv sync --all-packages --all-extras`. **Python 3.
 - After changing any `.ui` file, run `Tools/HolocronToolset/src/ui/convertui.py` to regenerate Python bindings.
 - Do not use `getattr(self.ui, "widgetName", None)` or similar for UI widgets; reference widgets directly (e.g. `self.ui.toolbarModuleCombo`) and compile the UI first so the uic has the widget.
 - Do not construct Qt widgets (QPushButton, QLineEdit, QButtonGroup, QWidget, etc.) in Python; define all GUI in `.ui` files and use the LTR pattern (`self.ui = Ui_Form(); self.ui.setupUi(self)`).
+- For Qt enum/flag properties in `.ui` (focusPolicy, contextMenuPolicy, allowedAreas, scrollBarPolicy, toolBarArea), use `<enum>Qt::...</enum>` or `<set>Qt::...|...</set>` in the `.ui` file so generated code works with PyQt6; do not set these in Python instead of in the `.ui`.
 
 ## Learned Workspace Facts
 
 - Holocron UI workflow is compile-first: change `.ui` → run convertui → then use `self.ui.<name>` in code; defensive getattr for UI is prohibited in `.cursorrules`.
 - CLI command names should follow existing patterns and use domain-accurate terminology (e.g. avoid "archive" where Bioware or docs use different names).
+- Instance dialogs (e.g. DoorDialog) import `Ui_*` from `toolset.uic.qtpy.dialogs.instance.<name>`; ensure the `instance` package and the corresponding UI module (e.g. `door.py` from `.ui` + convertui or programmatic) exist.
 
 ### Reverse engineering (agdec-http MCP)
 

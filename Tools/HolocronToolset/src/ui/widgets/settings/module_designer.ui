@@ -62,6 +62,23 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="rendererRefreshRateLabel">
+           <property name="text">
+            <string>Renderer refresh rate:</string>
+           </property>
+           <property name="toolTip">
+            <string>Target FPS for the 3D viewport. Auto-Detect uses your monitor's refresh rate.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="rendererRefreshRateCombo">
+           <property name="toolTip">
+            <string>Target FPS for the 3D viewport. Auto-Detect uses your monitor's refresh rate.</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>

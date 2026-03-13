@@ -94,10 +94,10 @@
       <item>
        <widget class="QPushButton" name="toolSelectBtn">
         <property name="text">
-         <string>Select (Q)</string>
+         <string>Select (F1)</string>
         </property>
         <property name="toolTip">
-         <string>Select tool — click to select instances [Q]</string>
+         <string>Select tool — click to select instances [F1]</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -116,10 +116,10 @@
       <item>
        <widget class="QPushButton" name="toolMoveBtn">
         <property name="text">
-         <string>Move (W)</string>
+         <string>Move (F2)</string>
         </property>
         <property name="toolTip">
-         <string>Move tool — drag to translate selected instances [W]</string>
+         <string>Move tool — drag to translate selected instances [F2]</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -135,10 +135,10 @@
       <item>
        <widget class="QPushButton" name="toolRotateBtn">
         <property name="text">
-         <string>Rotate (E)</string>
+         <string>Rotate (F3)</string>
         </property>
         <property name="toolTip">
-         <string>Rotate tool — drag to rotate selected instances [E]</string>
+         <string>Rotate tool — drag to rotate selected instances [F3]</string>
         </property>
         <property name="checkable">
          <bool>true</bool>

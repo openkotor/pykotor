@@ -6,13 +6,28 @@ from typing import TYPE_CHECKING
 
 from qtpy import QtCore
 from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QApplication
 
 from pykotor.common.misc import Color
 from toolset.data.settings import Settings, SettingsProperty
 from toolset.gui.widgets.settings.widgets.base import SettingsWidget
 
+def get_renderer_loop_interval_ms() -> int:
+    """Return the render loop interval in ms from settings (0 = auto = primary screen Hz)."""
+    settings = ModuleDesignerSettings()
+    hz = settings.rendererRefreshRateHz
+    if hz <= 0:
+        screen = QApplication.primaryScreen()
+        if screen and screen.refreshRate() > 0:
+            hz = screen.refreshRate()
+        else:
+            hz = 60.0
+    return max(1, round(1000 / hz))
+
+
 if TYPE_CHECKING:
     from qtpy.QtWidgets import QWidget
+    from qtpy.QtGui import QScreen
 
     from toolset.data.misc import Bind
     from toolset.gui.widgets.edit.color import ColorEdit
@@ -83,26 +98,26 @@ class ModuleDesignerWidget(SettingsWidget):
             self.ui.formLayout.setWidget(row, self.ui.formLayout.ItemRole.LabelRole, z_label)
             self.ui.formLayout.setWidget(row, self.ui.formLayout.ItemRole.FieldRole, self.ui.walkmeshVertexDragZAxis3dBindEdit)
 
-        self.ui.undefinedMaterialColourEdit.allowAlpha = True
-        self.ui.dirtMaterialColourEdit.allowAlpha = True
-        self.ui.obscuringMaterialColourEdit.allowAlpha = True
-        self.ui.grassMaterialColourEdit.allowAlpha = True
-        self.ui.stoneMaterialColourEdit.allowAlpha = True
-        self.ui.woodMaterialColourEdit.allowAlpha = True
-        self.ui.waterMaterialColourEdit.allowAlpha = True
-        self.ui.nonWalkMaterialColourEdit.allowAlpha = True
-        self.ui.transparentMaterialColourEdit.allowAlpha = True
-        self.ui.carpetMaterialColourEdit.allowAlpha = True
-        self.ui.metalMaterialColourEdit.allowAlpha = True
-        self.ui.puddlesMaterialColourEdit.allowAlpha = True
-        self.ui.swampMaterialColourEdit.allowAlpha = True
-        self.ui.mudMaterialColourEdit.allowAlpha = True
-        self.ui.leavesMaterialColourEdit.allowAlpha = True
-        self.ui.lavaMaterialColourEdit.allowAlpha = True
-        self.ui.bottomlessPitMaterialColourEdit.allowAlpha = True
-        self.ui.deepWaterMaterialColourEdit.allowAlpha = True
-        self.ui.doorMaterialColourEdit.allowAlpha = True
-        self.ui.nonWalkGrassMaterialColourEdit.allowAlpha = True
+        self.ui.undefinedMaterialColourEdit.allow_alpha = True
+        self.ui.dirtMaterialColourEdit.allow_alpha = True
+        self.ui.obscuringMaterialColourEdit.allow_alpha = True
+        self.ui.grassMaterialColourEdit.allow_alpha = True
+        self.ui.stoneMaterialColourEdit.allow_alpha = True
+        self.ui.woodMaterialColourEdit.allow_alpha = True
+        self.ui.waterMaterialColourEdit.allow_alpha = True
+        self.ui.nonWalkMaterialColourEdit.allow_alpha = True
+        self.ui.transparentMaterialColourEdit.allow_alpha = True
+        self.ui.carpetMaterialColourEdit.allow_alpha = True
+        self.ui.metalMaterialColourEdit.allow_alpha = True
+        self.ui.puddlesMaterialColourEdit.allow_alpha = True
+        self.ui.swampMaterialColourEdit.allow_alpha = True
+        self.ui.mudMaterialColourEdit.allow_alpha = True
+        self.ui.leavesMaterialColourEdit.allow_alpha = True
+        self.ui.lavaMaterialColourEdit.allow_alpha = True
+        self.ui.bottomlessPitMaterialColourEdit.allow_alpha = True
+        self.ui.deepWaterMaterialColourEdit.allow_alpha = True
+        self.ui.doorMaterialColourEdit.allow_alpha = True
+        self.ui.nonWalkGrassMaterialColourEdit.allow_alpha = True
 
         self.ui.controls3dResetButton.clicked.connect(self.resetControls3d)
         self.ui.controlsFcResetButton.clicked.connect(self.resetControlsFc)
@@ -148,9 +163,24 @@ class ModuleDesignerWidget(SettingsWidget):
             colorWidget: ColorEdit = getattr(self.ui, colorEdit)
             self._registerColour(colorWidget, colorEdit[:-4])
 
+    def _populate_renderer_refresh_rate_combo(self) -> None:
+        screen: QScreen | None = QApplication.primaryScreen()
+        detected_hz: int = round(screen.refreshRate()) if screen and screen.refreshRate() > 0 else 60
+        self.ui.rendererRefreshRateCombo.clear()
+        self.ui.rendererRefreshRateCombo.addItem(
+            f"Auto-Detect -- Match Refresh Rate ({detected_hz} Hz)",
+            0,
+        )
+        for hz in (30, 60, 120, 144, 240):
+            self.ui.rendererRefreshRateCombo.addItem(f"{hz} Hz", hz)
+        saved = self.settings.rendererRefreshRateHz
+        idx = self.ui.rendererRefreshRateCombo.findData(saved)
+        self.ui.rendererRefreshRateCombo.setCurrentIndex(max(0, idx))
+
     def setup_values(self):
         self.ui.useBlenderCheckbox.setChecked(self.settings.useBlender)
         self.ui.fovSpin.setValue(self.settings.fieldOfView)
+        self._populate_renderer_refresh_rate_combo()
         self._load3dBindValues()
         self._loadFcBindValues()
         self._load2dBindValues()
@@ -160,6 +190,8 @@ class ModuleDesignerWidget(SettingsWidget):
         super().save()
         self.settings.useBlender = self.ui.useBlenderCheckbox.isChecked()
         self.settings.fieldOfView = self.ui.fovSpin.value()
+        data = self.ui.rendererRefreshRateCombo.currentData()
+        self.settings.rendererRefreshRateHz = data if data is not None else 0
         self.settings.flyCameraSpeedFC = self.ui.flySpeedFcEdit.value()
         self.settings.boostedFlyCameraSpeedFC = self.ui.boostedFlyCameraSpeedFCEdit.value()
 
@@ -603,6 +635,11 @@ class ModuleDesignerSettings(Settings):
     fieldOfView = Settings.addSetting(
         "fieldOfView",
         70,
+    )
+    # 0 = auto-detect (match primary monitor Hz); otherwise target Hz (e.g. 60, 120)
+    rendererRefreshRateHz: SettingsProperty[int] = Settings.addSetting(
+        "rendererRefreshRateHz",
+        0,
     )
     # endregion
 

@@ -17,44 +17,49 @@ from __future__ import annotations
 
 import pytest
 
-import math
-import os
-import time
 import importlib
+import math
+import pytest
+import time
 from pathlib import Path
 from types import SimpleNamespace
+from typing import TYPE_CHECKING, Any, Callable, Generator, cast
 
-import pytest
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QApplication, QMessageBox, QTreeWidget
+from qtpy.QtWidgets import QApplication, QMenu, QMessageBox, QTreeWidget, QTreeWidgetItem
+
+if TYPE_CHECKING:
+    from pytestqt.qtbot import QtBot
+    from toolset.gui.widgets.renderer.module import ModuleRenderer
 
 mesh_mod = importlib.import_module("pykotor.gl.models.mesh")
 if not hasattr(mesh_mod, "Mesh"):
     class _TestMeshShim:  # pragma: no cover - import compatibility shim
         pass
 
-    mesh_mod.Mesh = _TestMeshShim
+    mesh_mod.Mesh = _TestMeshShim  # pyright: ignore[reportAttributeAccessIssue]
 
-# NOTE: This file's tests will have QT_QPA_PLATFORM unset by conftest.py's pytest_runtest_setup hook
-# The hook detects module designer tests and allows real display for them
-# No need to check here - the conftest handles it
+# NOTE: conftest.py forces real display (QT_QPA_PLATFORM="") when this file is in the test run.
+# OpenGL tests must never run headless.
 
 from pykotor.resource.generics.git import (
+    GIT,
     GITCamera,
     GITCreature,
     GITDoor,
     GITInstance,
+    GITObject,
     GITPlaceable,
     GITStore,
     GITTrigger,
     GITWaypoint,
 )
 from pykotor.tools import module as module_tools
+from toolset.blender.serializers import serialize_git_instance
 from toolset.data.installation import HTInstallation
 from toolset.gui.windows.module_designer import ModuleDesigner
-from toolset.blender.serializers import serialize_git_instance
-import toolset.gui.windows.module_designer as module_designer_mod
 from utility.common.geometry import Vector3
+import toolset.gui.windows.module_designer as module_designer_mod
 
 # Class sets for type checking (matching module_designer.py)
 _BEARING_CLASSES = (GITCreature, GITDoor, GITPlaceable, GITStore, GITWaypoint)
@@ -72,32 +77,42 @@ PREFERRED_MODULES = [
     "m15aa",  # Manaan
 ]
 
-MIN_EXPECTED_FPS = 30.0
+# Performance target: ≥120 FPS (frame budget ~8.33 ms). May xfail on some hardware until per-frame optimizations.
+MIN_EXPECTED_FPS: float = 120.0
 
 
 class _DummyIndoorRenderer:
-    def __init__(self):
+    def __init__(self) -> None:
         self.last_vis_matrix: dict[int, set[int]] = {}
 
-    def set_vis_matrix(self, vis_matrix: dict[int, set[int]]):
+    def set_vis_matrix(self, vis_matrix: dict[int, set[int]]) -> None:
         self.last_vis_matrix = {room_id: set(targets) for room_id, targets in vis_matrix.items()}
 
 
 def _stub_room(name: str) -> SimpleNamespace:
-    return SimpleNamespace(component=SimpleNamespace(name=name))
+    return SimpleNamespace(
+        component=SimpleNamespace(name=name),
+        position=SimpleNamespace(x=0.0, y=0.0, z=0.0),
+    )
+
+
+class _DummyMainRenderer:
+    def set_vis_overlay_data(self, room_positions: dict[int, Vector3], vis_matrix: dict[int, set[int]]) -> None:
+        pass
 
 
 def _build_vis_test_designer() -> ModuleDesigner:
-    designer = ModuleDesigner.__new__(ModuleDesigner)
-    vis_matrix = QTreeWidget()
+    designer: ModuleDesigner = ModuleDesigner.__new__(ModuleDesigner)
+    vis_matrix: QTreeWidget = QTreeWidget()
     vis_matrix.setColumnCount(1)
     vis_matrix.setHeaderLabels(["From \\ To"])
 
     designer.ui = SimpleNamespace(
         visMatrix=vis_matrix,
         indoorRenderer=_DummyIndoorRenderer(),
-    )
-    designer._indoor_map = SimpleNamespace(rooms=[])
+        mainRenderer=_DummyMainRenderer(),
+    )  # type: ignore[reportAttributeAccessIssue]
+    designer._indoor_map = SimpleNamespace(rooms=[])  # type: ignore[reportAttributeAccessIssue]
     designer._indoor_vis_matrix = {}
     designer._indoor_vis_hover_row = -1
     designer._indoor_vis_hover_col = -1
@@ -106,9 +121,9 @@ def _build_vis_test_designer() -> ModuleDesigner:
 
 def test_vis_matrix_is_directional_without_reverse_mirroring(qtbot):
     designer = _build_vis_test_designer()
-    room_a = _stub_room("RoomA")
-    room_b = _stub_room("RoomB")
-    designer._indoor_map.rooms = [room_a, room_b]
+    room_a: SimpleNamespace = _stub_room("RoomA")
+    room_b: SimpleNamespace = _stub_room("RoomB")
+    designer._indoor_map.rooms = [room_a, room_b]  # type: ignore[reportAttributeAccessIssue]
     designer._indoor_vis_matrix = {
         id(room_a): set(),
         id(room_b): set(),
@@ -131,10 +146,10 @@ def test_vis_matrix_is_directional_without_reverse_mirroring(qtbot):
 
 
 def test_vis_matrix_headers_and_tooltips_are_directional(qtbot):
-    designer = _build_vis_test_designer()
-    room_a = _stub_room("RoomA")
-    room_b = _stub_room("RoomB")
-    designer._indoor_map.rooms = [room_a, room_b]
+    designer: ModuleDesigner = _build_vis_test_designer()
+    room_a: SimpleNamespace = _stub_room("RoomA")
+    room_b: SimpleNamespace = _stub_room("RoomB")
+    designer._indoor_map.rooms = [room_a, room_b]  # type: ignore[reportAttributeAccessIssue]
     designer._indoor_vis_matrix = {
         id(room_a): {id(room_b)},
         id(room_b): set(),
@@ -143,9 +158,11 @@ def test_vis_matrix_headers_and_tooltips_are_directional(qtbot):
     ModuleDesigner._refresh_indoor_vis_matrix(designer)
     matrix = designer.ui.visMatrix
 
-    assert matrix.headerItem().text(0) == "From \\ To"
-    assert matrix.headerItem().text(1).startswith("0: RoomA")
-    assert matrix.headerItem().text(2).startswith("1: RoomB")
+    header_item = matrix.headerItem()
+    assert header_item is not None, "header_item is None"
+    assert header_item.text(0) == "From \\ To"
+    assert header_item.text(1).startswith("0: RoomA")
+    assert header_item.text(2).startswith("1: RoomB")
 
     row_a = matrix.topLevelItem(0)
     assert row_a is not None
@@ -162,7 +179,7 @@ def test_vis_matrix_hover_highlights_row_and_column(qtbot):
     room_a = _stub_room("RoomA")
     room_b = _stub_room("RoomB")
     room_c = _stub_room("RoomC")
-    designer._indoor_map.rooms = [room_a, room_b, room_c]
+    designer._indoor_map.rooms = [room_a, room_b, room_c]  # pyright: ignore[reportAttributeAccessIssue]
     designer._indoor_vis_matrix = {
         id(room_a): set(),
         id(room_b): set(),
@@ -171,10 +188,16 @@ def test_vis_matrix_hover_highlights_row_and_column(qtbot):
 
     ModuleDesigner._refresh_indoor_vis_matrix(designer)
     matrix = designer.ui.visMatrix
+    # Use a base color dark enough that lighter(112/118/128) is visibly different (offscreen often gives #fff)
+    from PyQt6.QtGui import QColor
+    base = QColor(0xE0, 0xE0, 0xE0)
+    pal = matrix.palette()
+    pal.setColor(pal.ColorRole.Base, base)
+    matrix.setPalette(pal)
     base_color = matrix.palette().base().color().name()
 
     row_a = matrix.topLevelItem(0)
-    assert row_a is not None
+    assert row_a is not None, "row_a is None"
     ModuleDesigner._on_indoor_vis_item_hovered(designer, row_a, 3)  # hover A -> C
 
     hovered_row = designer._indoor_vis_hover_row
@@ -182,19 +205,22 @@ def test_vis_matrix_hover_highlights_row_and_column(qtbot):
     assert hovered_row == 0
     assert hovered_col == 2
 
-    row0_col1 = matrix.topLevelItem(0).background(1).color().name()
-    row1_col3 = matrix.topLevelItem(1).background(3).color().name()
-    row0_col3 = matrix.topLevelItem(0).background(3).color().name()
-
-    assert row0_col1 != base_color
-    assert row1_col3 != base_color
-    assert row0_col3 != base_color
+    top_level_item_0 = matrix.topLevelItem(0)
+    assert top_level_item_0 is not None, "top_level_item_0 is None"
+    row0_col1 = top_level_item_0.background(1).color().name()
+    assert row0_col1 is not None, "row0_col1 is None"
+    top_level_item_1 = matrix.topLevelItem(1)
+    assert top_level_item_1 is not None, "top_level_item_1 is None"
+    row1_col3 = top_level_item_1.background(3).color().name()
+    assert row1_col3 is not None, "row1_col3 is None"
+    assert row0_col1 != base_color, f"row0_col1 is not different from base_color: {row0_col1} != {base_color}"
+    assert row1_col3 != base_color, f"row1_col3 is not different from base_color: {row1_col3} != {base_color}"
 
 
 @pytest.mark.slow
 @pytest.mark.parametrize("module_name", ["tar_m02af"], indirect=True)
 def test_module_designer_free_cam_forward_movement(
-    qtbot,
+    qtbot: QtBot,
     module_designer: ModuleDesigner,
     module_name: str,
     renderer_type: str,
@@ -262,6 +288,47 @@ def test_module_designer_free_cam_forward_movement(
 
 MODULE_PARAM = pytest.mark.parametrize("module_name", PREFERRED_MODULES, indirect=True)
 
+
+def _get_available_module_names_at_collection() -> list[str]:
+    """Resolve K1 path and return available module names for dynamic parametrization."""
+    import importlib.util
+
+    conftest_path = Path(__file__).resolve().parent.parent.parent / "conftest.py"
+    if not conftest_path.is_file():
+        return list(PREFERRED_MODULES)
+    spec = importlib.util.spec_from_file_location("_tests_conftest", conftest_path)
+    if spec is None or spec.loader is None:
+        return list(PREFERRED_MODULES)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    k1_path = getattr(mod, "_resolve_or_create_game_path", lambda _: "")("k1")
+    if not k1_path:
+        return list(PREFERRED_MODULES)
+    modules_dir = Path(k1_path) / "modules"
+    if not modules_dir.exists():
+        return list(PREFERRED_MODULES)
+    names = [p.stem for p in modules_dir.glob("*.rim") if not p.stem.endswith("_s")]
+    if not names:
+        return list(PREFERRED_MODULES)
+    preferred = [m for m in PREFERRED_MODULES if m in names]
+    other = [m for m in names if m not in PREFERRED_MODULES]
+    result = preferred[:5]
+    if len(result) < 5:
+        result.extend(other[: 5 - len(result)])
+    return result
+
+
+def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
+    """Parametrize module_name from installation modules for tests marked with parametrize_modules_from_installation."""
+    if "module_name" not in metafunc.fixturenames or "module_designer" not in metafunc.fixturenames:
+        return
+    markers = getattr(metafunc.function, "pytestmark", [])
+    if not any(getattr(m, "name", None) == "parametrize_modules_from_installation" for m in markers):
+        return
+    available = _get_available_module_names_at_collection()
+    metafunc.parametrize("module_name", available, indirect=True)
+
+
 _MODULE_MOD_CACHE: dict[str, Path] = {}
 _MODULE_MOD_CACHE_DIR: Path | None = None
 
@@ -322,24 +389,24 @@ def _find_available_modules(installation: HTInstallation) -> list[str]:
     Returns a list of module names that have corresponding .rim files.
     Prioritizes modules from PREFERRED_MODULES list.
     """
-    modules_dir = Path(installation.module_path())
+    modules_dir: Path = Path(installation.module_path())
     if not modules_dir.exists():
         return []
 
     # Find all .rim files
     available_modules: list[str] = []
     for rim_file in modules_dir.glob("*.rim"):
-        module_name = rim_file.stem
+        module_name: str = rim_file.stem
         # Skip _s.rim files (data RIMs)
         if not module_name.endswith("_s"):
             available_modules.append(module_name)
 
     # Prioritize preferred modules
-    preferred_available = [m for m in PREFERRED_MODULES if m in available_modules]
-    other_available = [m for m in available_modules if m not in PREFERRED_MODULES]
+    preferred_available: list[str] = [m for m in PREFERRED_MODULES if m in available_modules]
+    other_available: list[str] = [m for m in available_modules if m not in PREFERRED_MODULES]
 
     # Return preferred modules first, then others, up to 5 total
-    result = preferred_available[:5]
+    result: list[str] = preferred_available[:5]
     if len(result) < 5:
         result.extend(other_available[: 5 - len(result)])
 
@@ -349,19 +416,19 @@ def _find_available_modules(installation: HTInstallation) -> list[str]:
 @pytest.fixture(scope="session")
 def available_module_names(installation: HTInstallation) -> list[str]:
     """Discover available modules in the installation."""
-    modules = _find_available_modules(installation)
+    modules: list[str] = _find_available_modules(installation)
     if not modules:
         pytest.skip("No modules found in installation")
     return modules
 
 
 @pytest.fixture
-def module_name(request, available_module_names: list[str]) -> str:
+def module_name(request: pytest.FixtureRequest, available_module_names: list[str]) -> str:
     """Parametrize tests with available module names.
 
     This fixture receives the module name from request.param when parametrized.
     """
-    name = getattr(request, "param", None)
+    name: str | None = getattr(request, "param", None)
     if name is None:
         return available_module_names[0]
     if name not in available_module_names:
@@ -370,7 +437,7 @@ def module_name(request, available_module_names: list[str]) -> str:
 
 
 @pytest.fixture
-def module_mod_path(tmp_path_factory, installation: HTInstallation, module_name: str) -> Path:
+def module_mod_path(tmp_path_factory: pytest.TempPathFactory, installation: HTInstallation, module_name: str) -> Path:
     """Create (or reuse) a .mod file for the specified module."""
     global _MODULE_MOD_CACHE_DIR
 
@@ -400,12 +467,12 @@ def module_mod_path(tmp_path_factory, installation: HTInstallation, module_name:
 
 @pytest.fixture
 def module_designer(
-    qtbot,
+    qtbot: QtBot,
     installation: HTInstallation,
     module_mod_path: Path,
     module_name: str,
     renderer_type: str,
-    _suppress_modal_dialogs: pytest.Fixture,
+    _suppress_modal_dialogs: pytest.Fixture,  # pyright: ignore[reportGeneralTypeIssues]
 ) -> Generator[ModuleDesigner, None, None]:
     """Launch the Module Designer pointed at the prepared module with the specified renderer."""
 
@@ -479,7 +546,7 @@ def _position_camera_to_view_scene(designer: ModuleDesigner) -> None:
     """
     from pykotor.gl.scene import Scene
 
-    scene: Scene = designer.ui.mainRenderer._scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
+    scene: Scene = designer.ui.mainRenderer.scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
     if scene is None:
         return
 
@@ -520,7 +587,7 @@ def _position_camera_to_view_scene(designer: ModuleDesigner) -> None:
     print(f"[Test] Camera orientation: yaw={camera.yaw:.2f}, pitch={camera.pitch:.2f} rad, fov={camera.fov:.0f}")
 
 
-def _rotate_camera_360(designer: ModuleDesigner, qtbot, num_steps: int = 16) -> None:
+def _rotate_camera_360(designer: ModuleDesigner, qtbot: QtBot, num_steps: int = 16) -> None:
     """Rotate the camera 360 degrees horizontally to ensure all directions are rendered.
 
     This forces the renderer to load textures/models in all directions.
@@ -528,7 +595,7 @@ def _rotate_camera_360(designer: ModuleDesigner, qtbot, num_steps: int = 16) -> 
     """
     from pykotor.gl.scene import Scene
 
-    scene: Scene = designer.ui.mainRenderer._scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
+    scene: Scene = designer.ui.mainRenderer.scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
     if scene is None:
         return
 
@@ -564,7 +631,7 @@ def _rotate_camera_360(designer: ModuleDesigner, qtbot, num_steps: int = 16) -> 
     print("[Test] Camera rotation complete")
 
 
-def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120000) -> None:
+def _wait_for_designer_ready(qtbot: QtBot, designer: ModuleDesigner, timeout: int = 120000) -> None:
     """Wait until the scene is fully initialized with all async resources loaded.
 
     This function waits for:
@@ -583,15 +650,15 @@ def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120
     """
     from pykotor.gl.scene import Scene  # Local import to avoid circular imports
 
-    start_time = time.time()
-    timeout_seconds = timeout / 1000
+    start_time: float = time.time()
+    timeout_seconds: float = timeout / 1000
 
     # Phase 1: Wait for basic scene initialization
     print("[Test] Phase 1: Waiting for scene initialization...")
 
     def _scene_exists() -> bool:
-        renderer = designer.ui.mainRenderer
-        scene = renderer._scene  # noqa: SLF001
+        renderer: ModuleRenderer = designer.ui.mainRenderer
+        scene: Scene = renderer.scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
         return designer._module is not None and scene is not None
 
     qtbot.waitUntil(_scene_exists, timeout=30000)
@@ -599,7 +666,7 @@ def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120
 
     # Phase 2: Wait for GIT and Layout to be loaded
     print("[Test] Phase 2: Waiting for GIT and Layout...")
-    scene: Scene = designer.ui.mainRenderer._scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
+    scene: Scene = designer.ui.mainRenderer.scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
     assert scene is not None, "Scene should exist after Phase 1"
 
     def _git_and_layout_loaded() -> bool:
@@ -615,8 +682,8 @@ def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120
     # Now scene.git and scene.layout should be loaded
     assert scene.git is not None, "GIT should be loaded after Phase 2"
     assert scene.layout is not None, "Layout should be loaded after Phase 2"
-    git_instances = len(list(scene.git.instances()))
-    layout_rooms = len(scene.layout.rooms)
+    git_instances: int = len(list(scene.git.instances()))
+    layout_rooms: int = len(scene.layout.rooms)
     print(f"[Test] Phase 2 complete: GIT has {git_instances} instances, Layout has {layout_rooms} rooms after {time.time() - start_time:.1f}s")
 
     # Phase 2.5: Position camera to view the scene
@@ -632,7 +699,7 @@ def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120
 
     # Phase 3: Wait for all async resources to finish loading
     print("[Test] Phase 3: Waiting for async resource loading to complete...")
-    last_status_time = time.time()
+    last_status_time: float = time.time()
 
     def _async_loading_complete() -> bool:
         nonlocal last_status_time
@@ -643,13 +710,13 @@ def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120
             designer.ui.mainRenderer.update()
             QApplication.processEvents()
 
-        pending_textures = len(scene._pending_texture_futures)
-        pending_models = len(scene._pending_model_futures)
-        loaded_textures = len(scene.textures)
-        loaded_models = len(scene.models)
+        pending_textures: int = len(scene._pending_texture_futures)  # pyright: ignore[reportAttributeAccessIssue]
+        pending_models: int = len(scene._pending_model_futures)  # pyright: ignore[reportAttributeAccessIssue]
+        loaded_textures: int = len(scene.textures)
+        loaded_models: int = len(scene.models)
 
         # Log status periodically (every 2 seconds)
-        current_time = time.time()
+        current_time: float = time.time()
         if current_time - last_status_time >= 2.0:
             print(f"[Test]   Textures: {loaded_textures} loaded, {pending_textures} pending | Models: {loaded_models} loaded, {pending_models} pending")
             last_status_time = current_time
@@ -667,13 +734,13 @@ def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120
         pass  # We'll check the status below
 
     # Final status check
-    pending_textures = len(scene._pending_texture_futures)
-    pending_models = len(scene._pending_model_futures)
-    loaded_textures = len(scene.textures)
-    loaded_models = len(scene.models)
-    scene_objects = len(scene.objects)
+    pending_textures: int = len(scene._pending_texture_futures)  # pyright: ignore[reportAttributeAccessIssue]
+    pending_models: int = len(scene._pending_model_futures)  # pyright: ignore[reportAttributeAccessIssue]
+    loaded_textures: int = len(scene.textures)
+    loaded_models: int = len(scene.models)
+    scene_objects: int = len(scene.objects)
 
-    elapsed = time.time() - start_time
+    elapsed: float = time.time() - start_time
     print(f"[Test] Phase 3 complete after {elapsed:.1f}s:")
     print(f"[Test]   Final textures: {loaded_textures} loaded, {pending_textures} pending")
     print(f"[Test]   Final models: {loaded_models} loaded, {pending_models} pending")
@@ -697,24 +764,24 @@ def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120
     assert len(scene.objects) > 0, "No scene objects were created (expected rooms + instances)"
 
     # Log final loaded resource counts
-    final_textures = len(scene.textures)
-    final_models = len(scene.models)
-    final_objects = len(scene.objects)
-    total_time = time.time() - start_time
+    final_textures: int = len(scene.textures)
+    final_models: int = len(scene.models)
+    final_objects: int = len(scene.objects)
+    total_time: float = time.time() - start_time
     print(f"[Test] Module designer ready after {total_time:.1f}s: {final_textures} textures, {final_models} models, {final_objects} objects")
 
 
 def _first_movable_instance(designer: ModuleDesigner) -> GITInstance | None:
-    git_resource = designer.git()
+    git_resource: GIT = designer.git()
     for instance in git_resource.instances():
         if not isinstance(instance, GITCamera):
-            return instance
+            return cast(GITInstance, instance)
     return None
 
 
 @pytest.mark.slow
-@MODULE_PARAM
-def test_module_designer_baseline_fps(qtbot, module_designer: ModuleDesigner, module_name: str, renderer_type: str):
+@pytest.mark.parametrize_modules_from_installation
+def test_module_designer_baseline_fps(qtbot: QtBot, module_designer: ModuleDesigner, module_name: str, renderer_type: str):
     """Ensure the renderer sustains the expected baseline FPS.
 
     This test:
@@ -725,8 +792,8 @@ def test_module_designer_baseline_fps(qtbot, module_designer: ModuleDesigner, mo
     """
     from pykotor.gl.scene import Scene  # Local import to avoid circular imports
 
-    renderer = module_designer.ui.mainRenderer
-    scene: Scene = renderer._scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
+    renderer: ModuleRenderer = module_designer.ui.mainRenderer
+    scene: Scene = renderer.scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
     assert scene is not None, "Scene should be initialized by fixture"
     assert renderer.renderer_type == renderer_type, f"Renderer type mismatch: expected {renderer_type}, got {renderer.renderer_type}"
 
@@ -737,8 +804,8 @@ def test_module_designer_baseline_fps(qtbot, module_designer: ModuleDesigner, mo
 
     # Warm-up period: render frames until async loading is mostly complete
     print("[FPS Test] Warm-up phase: processing remaining async resources...")
-    warmup_start = time.time()
-    warmup_frames = 0
+    warmup_start: float = time.time()
+    warmup_frames: int = 0
 
     while True:
         QApplication.processEvents()  # ~60 FPS timing
@@ -747,8 +814,8 @@ def test_module_designer_baseline_fps(qtbot, module_designer: ModuleDesigner, mo
         QApplication.processEvents()
         warmup_frames += 1
 
-        pending = len(scene._pending_texture_futures) + len(scene._pending_model_futures)
-        elapsed = time.time() - warmup_start
+        pending: int = len(scene._pending_texture_futures) + len(scene._pending_model_futures)  # pyright: ignore[reportAttributeAccessIssue]
+        elapsed: float = time.time() - warmup_start
 
         # Exit warm-up when no pending resources or after 30 seconds
         if pending == 0 or elapsed > 30:
@@ -788,19 +855,19 @@ def test_module_designer_baseline_fps(qtbot, module_designer: ModuleDesigner, mo
     assert fps >= MIN_EXPECTED_FPS, f"[{renderer_type}] FPS {fps:.2f} below minimum {MIN_EXPECTED_FPS:.0f}"
 
 
-@MODULE_PARAM
-def test_module_designer_move_and_undo(qtbot, module_designer: ModuleDesigner, module_name: str, renderer_type: str):
+@pytest.mark.parametrize_modules_from_installation
+def test_module_designer_move_and_undo(qtbot: QtBot, module_designer: ModuleDesigner, module_name: str, renderer_type: str):
     """Moving instances should push undo/redo commands reliably for both renderers."""
 
-    renderer = module_designer.ui.mainRenderer
+    renderer: ModuleRenderer = module_designer.ui.mainRenderer
     assert renderer.renderer_type == renderer_type
 
-    instance = _first_movable_instance(module_designer)
+    instance: GITInstance | None = _first_movable_instance(module_designer)
     if instance is None:
         pytest.skip("No movable instances present in test module")
 
     module_designer.set_selection([instance])
-    original = (instance.position.x, instance.position.y, instance.position.z)
+    original: tuple[float, float, float] = (instance.position.x, instance.position.y, instance.position.z)
 
     module_designer.move_selected(1.0, 0.5, no_z_coord=True)
     assert instance.position.x != original[0] or instance.position.y != original[1]
@@ -813,14 +880,14 @@ def test_module_designer_move_and_undo(qtbot, module_designer: ModuleDesigner, m
     assert instance.position.x != pytest.approx(original[0]) or instance.position.y != pytest.approx(original[1])
 
 
-@MODULE_PARAM
-def test_module_designer_delete_and_restore(qtbot, module_designer: ModuleDesigner, module_name: str, renderer_type: str):
+@pytest.mark.parametrize_modules_from_installation
+def test_module_designer_delete_and_restore(qtbot: QtBot, module_designer: ModuleDesigner, module_name: str, renderer_type: str):
     """Deleting an instance should remove it from the scene until undo restores it for both renderers."""
 
-    renderer = module_designer.ui.mainRenderer
+    renderer: ModuleRenderer = module_designer.ui.mainRenderer
     assert renderer.renderer_type == renderer_type
 
-    instance = _first_movable_instance(module_designer)
+    instance: GITInstance | None = _first_movable_instance(module_designer)
     if instance is None:
         pytest.skip("No movable instances present in test module")
 
@@ -835,32 +902,32 @@ def test_module_designer_delete_and_restore(qtbot, module_designer: ModuleDesign
     assert len(git_resource.instances()) == original_count
 
 
-@MODULE_PARAM
-def test_module_designer_instance_list_sync(qtbot, module_designer: ModuleDesigner, module_name: str, renderer_type: str):
+@pytest.mark.parametrize_modules_from_installation
+def test_module_designer_instance_list_sync(qtbot: QtBot, module_designer: ModuleDesigner, module_name: str, renderer_type: str):
     """Resource tree and instance list should remain synchronised with selections for both renderers."""
 
-    renderer = module_designer.ui.mainRenderer
+    renderer: ModuleRenderer = module_designer.ui.mainRenderer
     assert renderer.renderer_type == renderer_type
 
     module_designer.rebuild_instance_list()
-    assert module_designer.ui.instanceList.count() > 0
+    assert module_designer.ui.instanceTree.topLevelItemCount() > 0
 
-    module_designer.ui.instanceList.setCurrentRow(0)
-    current_item = module_designer.ui.instanceList.currentItem()
+    module_designer.ui.instanceTree.setCurrentItem(module_designer.ui.instanceTree.topLevelItem(0))
+    current_item: QTreeWidgetItem | None = module_designer.ui.instanceTree.currentItem()
     assert current_item is not None
 
-    instance = current_item.data(Qt.ItemDataRole.UserRole)
+    instance: GITInstance | None = current_item.data(Qt.ItemDataRole.UserRole)  # pyright: ignore[reportCallIssue]
     assert isinstance(instance, GITInstance)
 
     module_designer.set_selection([instance])
     assert module_designer.selected_instances and module_designer.selected_instances[0] is instance
 
 
-@MODULE_PARAM
-def test_module_designer_resource_tree_selection(qtbot, module_designer: ModuleDesigner, module_name: str, renderer_type: str):
+@pytest.mark.parametrize_modules_from_installation
+def test_module_designer_resource_tree_selection(qtbot: QtBot, module_designer: ModuleDesigner, module_name: str, renderer_type: str):
     """Selecting in the resource tree should highlight the item in the instance list for both renderers."""
 
-    renderer = module_designer.ui.mainRenderer
+    renderer: ModuleRenderer = module_designer.ui.mainRenderer
     assert renderer.renderer_type == renderer_type
 
     module_designer.rebuild_resource_tree()
@@ -876,8 +943,8 @@ def test_module_designer_resource_tree_selection(qtbot, module_designer: ModuleD
     module_designer.on_resource_tree_single_clicked(None)  # type: ignore[arg-type]
 
     # Check that the instance list has a selected item (not the 3D selection)
-    instance_list = module_designer.ui.instanceList
-    selected_items = instance_list.selectedItems()
+    instance_list: QTreeWidget = module_designer.ui.instanceTree
+    selected_items: list[QTreeWidgetItem] = instance_list.selectedItems()
     # NOTE: This may not always select an item if the resource doesn't have a corresponding instance
     # The test verifies the mechanism works, not that every resource has an instance
     assert tree.currentItem() is first_item, "Resource tree selection should be maintained"
@@ -888,8 +955,8 @@ def test_module_designer_resource_tree_selection(qtbot, module_designer: ModuleD
 # ============================================================================
 
 
-def test_blender_transform_remote_move_is_undoable(qtbot, module_designer: ModuleDesigner):
-    instance = _first_movable_instance(module_designer)
+def test_blender_transform_remote_move_is_undoable(qtbot: QtBot, module_designer: ModuleDesigner):
+    instance: GITInstance | None = _first_movable_instance(module_designer)
     if instance is None:
         pytest.skip("No movable instances present in test module")
 
@@ -897,7 +964,7 @@ def test_blender_transform_remote_move_is_undoable(qtbot, module_designer: Modul
     module_designer._refresh_instance_id_lookup()  # noqa: SLF001
     assert id(instance) in module_designer._instance_id_lookup  # noqa: SLF001
 
-    original_position = Vector3(instance.position.x, instance.position.y, instance.position.z)
+    original_position: Vector3 = Vector3(instance.position.x, instance.position.y, instance.position.z)
     original_bearing = getattr(instance, "bearing", 0.0)
 
     module_designer._on_blender_transform_changed(  # noqa: SLF001
@@ -907,7 +974,7 @@ def test_blender_transform_remote_move_is_undoable(qtbot, module_designer: Modul
     )
 
     # Wait for the position to change (the deferred function should execute and push the command)
-    expected_x = original_position.x + 2.5
+    expected_x: float = original_position.x + 2.5
 
     def _position_changed() -> bool:
         QApplication.processEvents()
@@ -937,8 +1004,8 @@ def test_blender_transform_remote_move_is_undoable(qtbot, module_designer: Modul
     assert instance.position.x == pytest.approx(original_position.x + 2.5)
 
 
-def test_blender_property_resref_update(qtbot, module_designer: ModuleDesigner):
-    instance = _first_movable_instance(module_designer)
+def test_blender_property_resref_update(qtbot: QtBot, module_designer: ModuleDesigner):
+    instance: GITInstance | None = _first_movable_instance(module_designer)
     if instance is None:
         pytest.skip("No movable instances present in test module")
 
@@ -996,7 +1063,10 @@ def test_blender_add_and_remove_instance(qtbot, module_designer: ModuleDesigner)
     qtbot.waitUntil(_instance_added, timeout=5000)
     assert len(module_designer.git().instances()) == original_count + 1
 
-    new_instance = next(inst for inst in module_designer.git().instances() if inst is not template and str(inst.resref) == serialized["resref"])
+    new_instance: GITInstance | None = cast("GITInstance | None", next(inst for inst in module_designer.git().instances() if inst is not template and str(cast("GITInstance", inst).resref) == serialized["resref"]))
+    if new_instance is None:
+        pytest.skip("No new instance present in test module")
+
     module_designer._handle_blender_instance_removed({"id": id(new_instance)})  # noqa: SLF001
 
     # Wait for the instance to be removed
@@ -1008,11 +1078,11 @@ def test_blender_add_and_remove_instance(qtbot, module_designer: ModuleDesigner)
     assert len(module_designer.git().instances()) == original_count
 
 
-def test_blender_fallback_session_written(tmp_path, monkeypatch, module_designer: ModuleDesigner):
-    sessions_root = tmp_path / "ipc_sessions"
+def test_blender_fallback_session_written(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, module_designer: ModuleDesigner):
+    sessions_root: Path = tmp_path / "ipc_sessions"
     monkeypatch.setattr(module_designer_mod.tempfile, "gettempdir", lambda: str(sessions_root))
 
-    info_calls: list[tuple] = []
+    info_calls: list[tuple[Any, ...]] = []
 
     def _fake_information(*args, **kwargs):
         info_calls.append(args)
@@ -1031,19 +1101,19 @@ def test_blender_fallback_session_written(tmp_path, monkeypatch, module_designer
 # ============================================================================
 
 
-def test_blender_transform_position_only(qtbot, module_designer: ModuleDesigner):
+def test_blender_transform_position_only(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test transform change with position only (no rotation)."""
-    instance = _first_movable_instance(module_designer)
+    instance: GITInstance | None = _first_movable_instance(module_designer)
     if instance is None:
         pytest.skip("No movable instances present in test module")
 
     module_designer._refresh_instance_id_lookup()  # noqa: SLF001
     assert id(instance) in module_designer._instance_id_lookup  # noqa: SLF001
 
-    original_position = Vector3(instance.position.x, instance.position.y, instance.position.z)
-    new_x = original_position.x + 3.0
-    new_y = original_position.y - 2.0
-    new_z = original_position.z + 1.5
+    original_position: Vector3 = Vector3(instance.position.x, instance.position.y, instance.position.z)
+    new_x: float = original_position.x + 3.0
+    new_y: float = original_position.y - 2.0
+    new_z: float = original_position.z + 1.5
 
     module_designer._on_blender_transform_changed(  # noqa: SLF001
         id(instance),
@@ -1068,17 +1138,17 @@ def test_blender_transform_position_only(qtbot, module_designer: ModuleDesigner)
     assert instance.position.z == pytest.approx(original_position.z)
 
 
-def test_blender_transform_rotation_euler_only(qtbot, module_designer: ModuleDesigner):
+def test_blender_transform_rotation_euler_only(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test transform change with rotation (euler) only (no position)."""
-    instance = _first_movable_instance(module_designer)
+    instance: GITInstance | None = _first_movable_instance(module_designer)
     if instance is None or not isinstance(instance, _BEARING_CLASSES):
         pytest.skip("No bearing-capable instances present in test module")
 
     module_designer._refresh_instance_id_lookup()  # noqa: SLF001
     assert id(instance) in module_designer._instance_id_lookup  # noqa: SLF001
 
-    original_bearing = getattr(instance, "bearing", 0.0)
-    new_bearing = original_bearing + 1.5
+    original_bearing: float = getattr(instance, "bearing", 0.0)
+    new_bearing: float = original_bearing + 1.5
 
     module_designer._on_blender_transform_changed(  # noqa: SLF001
         id(instance),
@@ -1099,10 +1169,10 @@ def test_blender_transform_rotation_euler_only(qtbot, module_designer: ModuleDes
     assert instance.bearing == pytest.approx(original_bearing)
 
 
-def test_blender_transform_camera_quaternion(qtbot, module_designer: ModuleDesigner):
+def test_blender_transform_camera_quaternion(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test transform change with camera quaternion rotation."""
-    git_resource = module_designer.git()
-    camera = next((inst for inst in git_resource.instances() if isinstance(inst, GITCamera)), None)
+    git_resource: GIT = module_designer.git()
+    camera: GITCamera | None = next((inst for inst in git_resource.instances() if isinstance(inst, GITCamera)), None)
     if camera is None:
         pytest.skip("No camera instances present in test module")
 
@@ -1111,14 +1181,14 @@ def test_blender_transform_camera_quaternion(qtbot, module_designer: ModuleDesig
 
     from utility.common.geometry import Vector4
 
-    original_orientation = Vector4(
+    original_orientation: Vector4 = Vector4(
         camera.orientation.x,
         camera.orientation.y,
         camera.orientation.z,
         camera.orientation.w,
     )
     # Create a rotated quaternion (90 degrees around Z)
-    new_orientation = Vector4(0.0, 0.0, 0.707, 0.707)  # Approximate 90° rotation
+    new_orientation: Vector4 = Vector4(0.0, 0.0, 0.707, 0.707)  # Approximate 90° rotation
 
     module_designer._on_blender_transform_changed(  # noqa: SLF001
         id(camera),
@@ -1146,10 +1216,10 @@ def test_blender_transform_camera_quaternion(qtbot, module_designer: ModuleDesig
     assert camera.orientation.w == pytest.approx(original_orientation.w, abs=0.001)
 
 
-def test_blender_property_tag_update(qtbot, module_designer: ModuleDesigner):
+def test_blender_property_tag_update(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test property update for tag (doors, triggers, waypoints, placeables)."""
-    git_resource = module_designer.git()
-    tag_instance = next(
+    git_resource: GIT = module_designer.git()
+    tag_instance: GITDoor | GITTrigger | GITWaypoint | GITPlaceable | None = next(
         (inst for inst in git_resource.instances() if isinstance(inst, _TAG_CLASSES)),
         None,
     )
@@ -1159,8 +1229,8 @@ def test_blender_property_tag_update(qtbot, module_designer: ModuleDesigner):
     module_designer._refresh_instance_id_lookup()  # noqa: SLF001
     assert id(tag_instance) in module_designer._instance_id_lookup  # noqa: SLF001
 
-    original_tag = tag_instance.tag
-    new_tag = "zz_test_tag_remote"
+    original_tag: str = tag_instance.tag
+    new_tag: str = "zz_test_tag_remote"
 
     module_designer._on_blender_instance_updated(  # noqa: SLF001
         id(tag_instance),
@@ -1180,10 +1250,10 @@ def test_blender_property_tag_update(qtbot, module_designer: ModuleDesigner):
     assert tag_instance.tag == original_tag
 
 
-def test_blender_property_tweak_color_update(qtbot, module_designer: ModuleDesigner):
+def test_blender_property_tweak_color_update(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test property update for tweak_color (placeables only)."""
-    git_resource = module_designer.git()
-    placeable = next(
+    git_resource: GIT = module_designer.git()
+    placeable: GITPlaceable | None = next(
         (inst for inst in git_resource.instances() if isinstance(inst, GITPlaceable)),
         None,
     )
@@ -1195,8 +1265,8 @@ def test_blender_property_tweak_color_update(qtbot, module_designer: ModuleDesig
 
     from pykotor.common.misc import Color
 
-    original_color = placeable.tweak_color.bgr_integer() if placeable.tweak_color else None
-    new_color_bgr = 0xFF00FF  # Magenta
+    original_color: int | None = placeable.tweak_color.bgr_integer() if placeable.tweak_color else None
+    new_color_bgr: int = 0xFF00FF  # Magenta
 
     module_designer._on_blender_instance_updated(  # noqa: SLF001
         id(placeable),
@@ -1205,7 +1275,7 @@ def test_blender_property_tweak_color_update(qtbot, module_designer: ModuleDesig
 
     def _color_changed() -> bool:
         QApplication.processEvents()
-        current = placeable.tweak_color.bgr_integer() if placeable.tweak_color else None
+        current: int | None = placeable.tweak_color.bgr_integer() if placeable.tweak_color else None
         return current == new_color_bgr
 
     qtbot.waitUntil(_color_changed, timeout=5000)
@@ -1222,9 +1292,9 @@ def test_blender_property_tweak_color_update(qtbot, module_designer: ModuleDesig
         assert placeable.tweak_color.bgr_integer() == original_color
 
 
-def test_blender_selection_changed_single(qtbot, module_designer: ModuleDesigner):
+def test_blender_selection_changed_single(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test selection change event with single instance."""
-    instance = _first_movable_instance(module_designer)
+    instance: GITInstance | None = _first_movable_instance(module_designer)
     if instance is None:
         pytest.skip("No movable instances present in test module")
 
@@ -1248,10 +1318,10 @@ def test_blender_selection_changed_single(qtbot, module_designer: ModuleDesigner
     assert module_designer.selected_instances[0] is instance
 
 
-def test_blender_selection_changed_multiple(qtbot, module_designer: ModuleDesigner):
+def test_blender_selection_changed_multiple(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test selection change event with multiple instances."""
-    git_resource = module_designer.git()
-    instances = [inst for inst in git_resource.instances() if not isinstance(inst, GITCamera)][:3]
+    git_resource: GIT = module_designer.git()
+    instances: list[GITInstance] = cast("list[GITInstance]", [inst for inst in git_resource.instances() if not isinstance(inst, GITCamera)][:3])
     if len(instances) < 2:
         pytest.skip("Not enough instances for multiple selection test")
 
@@ -1264,7 +1334,7 @@ def test_blender_selection_changed_multiple(qtbot, module_designer: ModuleDesign
     QApplication.processEvents()
 
     # Simulate Blender selection change with multiple instances
-    instance_ids = [id(inst) for inst in instances]
+    instance_ids: list[int] = [id(inst) for inst in instances]
     module_designer._on_blender_selection_changed(instance_ids)  # noqa: SLF001
 
     def _selection_changed() -> bool:
@@ -1276,9 +1346,9 @@ def test_blender_selection_changed_multiple(qtbot, module_designer: ModuleDesign
     assert all(inst in module_designer.selected_instances for inst in instances)
 
 
-def test_blender_selection_changed_deselect(qtbot, module_designer: ModuleDesigner):
+def test_blender_selection_changed_deselect(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test selection change event with deselection (empty list)."""
-    instance = _first_movable_instance(module_designer)
+    instance: GITInstance | None = _first_movable_instance(module_designer)
     if instance is None:
         pytest.skip("No movable instances present in test module")
 
@@ -1298,9 +1368,9 @@ def test_blender_selection_changed_deselect(qtbot, module_designer: ModuleDesign
     assert len(module_designer.selected_instances) == 0
 
 
-def test_blender_context_menu_requested(qtbot, module_designer: ModuleDesigner):
+def test_blender_context_menu_requested(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test context menu request from Blender."""
-    instance = _first_movable_instance(module_designer)
+    instance: GITInstance | None = _first_movable_instance(module_designer)
     if instance is None:
         pytest.skip("No movable instances present in test module")
 
@@ -1308,15 +1378,15 @@ def test_blender_context_menu_requested(qtbot, module_designer: ModuleDesigner):
     assert id(instance) in module_designer._instance_id_lookup  # noqa: SLF001
 
     # Track if context menu was triggered
-    context_menu_called = False
-    original_show_context_menu = module_designer.show_context_menu
+    context_menu_called: bool = False
+    original_show_context_menu: Callable[[list[GITInstance]], QMenu | None] = module_designer.show_context_menu  # pyright: ignore[reportAttributeAccessIssue]
 
     def _tracked_show_context_menu(instances):
         nonlocal context_menu_called
         context_menu_called = True
         return original_show_context_menu(instances)
 
-    module_designer.show_context_menu = _tracked_show_context_menu
+    module_designer.show_context_menu = module_designer._show_final_context_menu = _tracked_show_context_menu  # pyright: ignore[reportAttributeAccessIssue]
 
     # Simulate context menu request from Blender
     module_designer._on_blender_context_menu_requested([id(instance)])  # noqa: SLF001
@@ -1332,10 +1402,10 @@ def test_blender_context_menu_requested(qtbot, module_designer: ModuleDesigner):
     module_designer.show_context_menu = original_show_context_menu
 
 
-def test_blender_property_multiple_updates(qtbot, module_designer: ModuleDesigner):
+def test_blender_property_multiple_updates(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test multiple property updates in a single event."""
-    git_resource = module_designer.git()
-    instance = next(
+    git_resource: GIT = module_designer.git()
+    instance: GITInstance | None = next(
         (inst for inst in git_resource.instances() if isinstance(inst, _RESREF_CLASSES) and isinstance(inst, _TAG_CLASSES)),
         None,
     )
@@ -1345,10 +1415,10 @@ def test_blender_property_multiple_updates(qtbot, module_designer: ModuleDesigne
     module_designer._refresh_instance_id_lookup()  # noqa: SLF001
     assert id(instance) in module_designer._instance_id_lookup  # noqa: SLF001
 
-    original_resref = str(instance.resref)
-    original_tag = instance.tag
-    new_resref = "zz_multi_test"
-    new_tag = "zz_multi_tag"
+    original_resref: str = str(instance.resref)
+    original_tag: str = instance.tag
+    new_resref: str = "zz_multi_test"
+    new_tag: str = "zz_multi_tag"
 
     # Update both properties at once
     module_designer._on_blender_instance_updated(  # noqa: SLF001
@@ -1374,9 +1444,9 @@ def test_blender_property_multiple_updates(qtbot, module_designer: ModuleDesigne
     assert instance.tag == original_tag
 
 
-def test_blender_instance_added_with_all_properties(qtbot, module_designer: ModuleDesigner):
+def test_blender_instance_added_with_all_properties(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test adding instance with all properties set."""
-    template = _first_movable_instance(module_designer)
+    template: GITInstance | None = _first_movable_instance(module_designer)
     if template is None:
         pytest.skip("No movable instances present in test module")
 
@@ -1405,15 +1475,15 @@ def test_blender_instance_added_with_all_properties(qtbot, module_designer: Modu
     qtbot.waitUntil(_instance_added, timeout=5000)
     assert len(module_designer.git().instances()) == original_count + 1
 
-    new_instance = next(inst for inst in module_designer.git().instances() if inst is not template and str(inst.resref) == serialized["resref"])
+    new_instance = next(inst for inst in module_designer.git().instances() if inst is not template and str(getattr(inst, "resref", "")) == serialized["resref"])
     assert new_instance.position.x == pytest.approx(serialized["position"]["x"])
     assert new_instance.position.y == pytest.approx(serialized["position"]["y"])
-    assert str(new_instance.resref) == serialized["resref"]
+    assert str(getattr(new_instance, "resref", "")) == serialized["resref"]
 
 
-def test_blender_transform_ignores_unchanged_position(qtbot, module_designer: ModuleDesigner):
+def test_blender_transform_ignores_unchanged_position(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test that transform change with same position doesn't create undo command."""
-    instance = _first_movable_instance(module_designer)
+    instance: GITInstance | None = _first_movable_instance(module_designer)
     if instance is None:
         pytest.skip("No movable instances present in test module")
 
@@ -1439,15 +1509,15 @@ def test_blender_transform_ignores_unchanged_position(qtbot, module_designer: Mo
     assert module_designer.undo_stack.count() == original_stack_count
 
 
-def test_blender_property_ignores_unchanged_value(qtbot, module_designer: ModuleDesigner):
+def test_blender_property_ignores_unchanged_value(qtbot: QtBot, module_designer: ModuleDesigner):
     """Test that property update with same value doesn't create undo command."""
-    instance = _first_movable_instance(module_designer)
+    instance: GITInstance | None = _first_movable_instance(module_designer)
     if instance is None or not isinstance(instance, _RESREF_CLASSES):
         pytest.skip("No resref-capable instances present in test module")
 
     module_designer._refresh_instance_id_lookup()  # noqa: SLF001
-    original_stack_count = module_designer.undo_stack.count()
-    current_resref = str(instance.resref)
+    original_stack_count: int = module_designer.undo_stack.count()
+    current_resref: str = str(instance.resref)
 
     # Send property update with same value
     module_designer._on_blender_instance_updated(  # noqa: SLF001

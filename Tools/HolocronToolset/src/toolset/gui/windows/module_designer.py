@@ -8,6 +8,11 @@ import os
 import tempfile
 import time
 
+
+def _module_designer_profile_enabled() -> bool:
+    """Return True when TOOLSET_MODULE_DESIGNER_PROFILE is set (for phase timings)."""
+    return os.environ.get("TOOLSET_MODULE_DESIGNER_PROFILE", "").strip().lower() in ("1", "true", "yes", "on")
+
 from collections import deque
 from copy import deepcopy
 from pathlib import Path, PurePath
@@ -198,6 +203,7 @@ if TYPE_CHECKING:
         DragMode,
     )
     from toolset.gui.windows.indoor_builder.renderer import IndoorMapRenderer
+    from typing_extensions import TypeGuard
 
 if qtpy.QT5:
     from qtpy.QtWidgets import QUndoCommand, QUndoStack  # pyright: ignore[reportPrivateImportUsage]
@@ -494,6 +500,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         self._installation: HTInstallation | None = installation
         self._module: Module | None = None
+        self._git_cache: GIT | None = None  # Same GIT reference for selection/delete consistency
         self._orig_filepath: Path | None = mod_filepath
 
         self.undo_stack: QUndoStack = QUndoStack(self)
@@ -826,6 +833,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self._status_selection_label = QLabel("Selected: 0")
 
         bar = self.statusBar()
+        assert bar is not None, "Status bar is None"
         bar.addPermanentWidget(self._status_mode_label)
         bar.addPermanentWidget(self._status_tool_label)
         bar.addPermanentWidget(self._status_selection_label)
@@ -1282,7 +1290,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             self.ui.viewStoreCheck,
         )
 
-    def _hidden_instance_class_mapping(self) -> dict[type[GITInstance], bool]:
+    def _hidden_instance_class_mapping(self) -> dict[type[GITObject], bool]:
         """Map GIT instance classes to whether they are currently hidden in UI."""
         return {
             GITCreature: self.hide_creatures,
@@ -1326,9 +1334,11 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         # resourceTab and lytTab are shared (always visible).
         # walkmeshTab is visible in Walkmesh mode (and partially in Layout for painting).
         # visTab is visible in Layout + Object modes.
-        left = self.ui.leftPanel
+        left: QTabWidget = self.ui.leftPanel
         for i in range(left.count()):
-            tab_name = left.widget(i).objectName() if left.widget(i) else ""
+            widget = left.widget(i)
+            assert widget is not None, f"Left panel widget {i} is None"
+            tab_name = widget.objectName()
             if tab_name == "walkmeshTab":
                 left.setTabVisible(i, is_walkmesh or is_layout)
             elif tab_name == "visTab":
@@ -1478,22 +1488,22 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     def _setup_indoor_vis_matrix(self):
         """Connect and initialize the VIS matrix editor tab."""
         if not hasattr(self.ui, "visOverlayCheck"):
-            self.ui.visOverlayCheck = QCheckBox("Show Overlay", self.ui.visTab)
-            self.ui.visOverlayCheck.setObjectName("visOverlayCheck")
-            self.ui.visOverlayCheck.setChecked(True)
-            self.ui.visButtonsLayout.insertWidget(0, self.ui.visOverlayCheck)
+            self.ui.visOverlayCheck = QCheckBox("Show Overlay", self.ui.visTab)  # pyright: ignore[reportAttributeAccessIssue]
+            self.ui.visOverlayCheck.setObjectName("visOverlayCheck")  # pyright: ignore[reportAttributeAccessIssue]
+            self.ui.visOverlayCheck.setChecked(True)  # pyright: ignore[reportAttributeAccessIssue]
+            self.ui.visButtonsLayout.insertWidget(0, self.ui.visOverlayCheck)  # pyright: ignore[reportAttributeAccessIssue]
 
         if not hasattr(self.ui, "visOverlayLegendLabel"):
-            self.ui.visOverlayLegendLabel = QLabel(
+            self.ui.visOverlayLegendLabel = QLabel(  # pyright: ignore[reportAttributeAccessIssue]
                 "Legend: solid cyan = bidirectional, dashed amber + arrow = one-way",
                 self.ui.visTab,
             )
-            self.ui.visOverlayLegendLabel.setObjectName("visOverlayLegendLabel")
-            self.ui.visOverlayLegendLabel.setWordWrap(True)
-            self.ui.visOverlayLegendLabel.setToolTip(
+            self.ui.visOverlayLegendLabel.setObjectName("visOverlayLegendLabel")  # pyright: ignore[reportAttributeAccessIssue]
+            self.ui.visOverlayLegendLabel.setWordWrap(True)  # pyright: ignore[reportAttributeAccessIssue]
+            self.ui.visOverlayLegendLabel.setToolTip(  # pyright: ignore[reportAttributeAccessIssue]
                 "VIS overlay semantics:\n• Solid cyan line: both rooms see each other\n• Dashed amber line with arrow: one-way visibility",
             )
-            self.ui.visButtonsLayout.insertWidget(1, self.ui.visOverlayLegendLabel)
+            self.ui.visButtonsLayout.insertWidget(1, self.ui.visOverlayLegendLabel)  # pyright: ignore[reportAttributeAccessIssue]
 
         self.ui.visMatrix.itemChanged.connect(self._on_indoor_vis_item_changed)
         self.ui.visMatrix.itemEntered.connect(self._on_indoor_vis_item_hovered)
@@ -1502,9 +1512,9 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.visMatrix.setToolTip("Directional VIS matrix: rows are source rooms, columns are destination rooms.")
         self.ui.visSetAllButton.clicked.connect(self._set_all_indoor_vis_visible)
         self.ui.visClearAllButton.clicked.connect(self._clear_all_indoor_vis)
-        self.ui.visOverlayCheck.toggled.connect(self._on_indoor_vis_overlay_toggled)
-        self.ui.indoorRenderer.set_show_vis_overlay(self.ui.visOverlayCheck.isChecked())
-        self.ui.mainRenderer.set_show_vis_overlay(self.ui.visOverlayCheck.isChecked())
+        self.ui.visOverlayCheck.toggled.connect(self._on_indoor_vis_overlay_toggled)  # pyright: ignore[reportAttributeAccessIssue]
+        self.ui.indoorRenderer.set_show_vis_overlay(self.ui.visOverlayCheck.isChecked())  # pyright: ignore[reportAttributeAccessIssue]
+        self.ui.mainRenderer.set_show_vis_overlay(self.ui.visOverlayCheck.isChecked())  # pyright: ignore[reportAttributeAccessIssue]
         self._refresh_indoor_vis_matrix()
 
     def _on_indoor_vis_overlay_toggled(self, enabled: bool):
@@ -1512,7 +1522,9 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.mainRenderer.set_show_vis_overlay(enabled)
 
     def _sync_main_renderer_vis_overlay(self) -> None:
-        room_positions: dict[int, Vector3] = {id(room): Vector3(room.position.x, room.position.y, room.position.z) for room in self._indoor_map.rooms}
+        room_positions: dict[int, Vector3] = {
+            id(room): Vector3(room.position.x, room.position.y, room.position.z) for room in self._indoor_map.rooms
+        }
         self.ui.mainRenderer.set_vis_overlay_data(room_positions, self._indoor_vis_matrix)
 
     def _sync_indoor_vis_matrix(self):
@@ -1999,8 +2011,8 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             self.ui.faceWalkCheckCheck.setChecked(walkable)
             self.ui.faceLosCheck.setChecked(line_of_sight)
 
-            material_row = next(
-                (row for row in range(self.ui.materialList.count()) if self.ui.materialList.item(row).data(Qt.ItemDataRole.UserRole) == material),
+            material_row: int = next(
+                (row for row in range(self.ui.materialList.count()) if self.ui.materialList.item(row).data(Qt.ItemDataRole.UserRole) == material),  # pyright: ignore[reportOptionalMemberAccess]
                 -1,
             )
             if material_row >= 0:
@@ -2097,9 +2109,9 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             message: The status message to display
             duration_ms: Duration in milliseconds (default 2000)
         """
-        self.statusBar().showMessage(message, duration_ms)
+        self.statusBar().showMessage(message, duration_ms)  # pyright: ignore[reportOptionalMemberAccess]
 
-    def _is_rotatable_instance(self, instance: GITObject) -> bool:
+    def _is_rotatable_instance(self, instance: GITObject) -> TypeGuard[GITCamera | GITCreature | GITDoor | GITPlaceable | GITStore | GITWaypoint]:
         return isinstance(instance, (GITCamera, GITCreature, GITDoor, GITPlaceable, GITStore, GITWaypoint))
 
     def _capture_initial_rotation_for_transform(self, instance: GITObject) -> None:
@@ -2115,7 +2127,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
     # --- Indoor Kit/Module Selection Handlers ---
 
-    def _clear_list_selection(self, list_widget) -> None:
+    def _clear_list_selection(self, list_widget: QListWidget) -> None:
         """Clear selection from a QListWidget while temporarily blocking signals.
 
         This is a common pattern: temporarily disable signals,  clear selection and
@@ -2133,7 +2145,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.componentList.clear()
         if index < 0 or index >= len(self._indoor_kits):
             return
-        kit = self._indoor_kits[index]
+        kit: Kit = self._indoor_kits[index]
         for comp in kit.components:
             item = QListWidgetItem(comp.name)
             item.setData(Qt.ItemDataRole.UserRole, comp)
@@ -2147,7 +2159,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 pass
             self.ui.componentList.addItem(item)
 
-    def _on_indoor_component_selected(self, current, previous):
+    def _on_indoor_component_selected(self, current: QListWidgetItem | None, previous: QListWidgetItem | None):
         """Handle component selection — update preview and set cursor component for placement.
 
         Toggle behavior: clicking the same component again deselects it (cancels placement).
@@ -2656,14 +2668,14 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     # Indoor Renderer Signal Handlers
     # =========================================================================
 
-    def _on_indoor_mouse_moved(self, coords: QPoint, coords_delta: QPoint, mouse_down: set[Qt.MouseButton], keys_down: set[Qt.Key]):
+    def _on_indoor_mouse_moved(self, coords: QPoint, coords_delta: QPoint, mouse_down: set[Qt.MouseButton], keys_down: set[Qt.Key],):
         """Handle mouse move in the indoor renderer — paint stroke + status bar update."""
         renderer = self.ui.indoorRenderer
-        world_delta: Vector2 = renderer.to_world_delta(coords_delta.x, coords_delta.y)
-        handled_cam = handle_standard_2d_camera_movement(
+        world_delta: Vector2 = renderer.to_world_delta(coords_delta.x, coords_delta.y)  # pyright: ignore[reportArgumentType]
+        handled_cam: bool = handle_standard_2d_camera_movement(
             renderer,
-            coords,
-            coords_delta,
+            coords,  # pyright: ignore[reportArgumentType]
+            coords_delta,  # pyright: ignore[reportArgumentType]
             world_delta,
             mouse_down,
             keys_down,
@@ -2671,7 +2683,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         )
 
         if not handled_cam and self._indoor_paint_stroke_active and Qt.MouseButton.LeftButton in mouse_down:
-            self._apply_indoor_paint_at_screen(Vector2(coords.x, coords.y))
+            self._apply_indoor_paint_at_screen(Vector2(coords.x, coords.y))  # pyright: ignore[reportArgumentType]
         self._update_indoor_status_bar(coords)
 
     def _on_indoor_mouse_pressed(self, coords: QPoint, mouse_down: set[Qt.MouseButton], keys_down: set[Qt.Key]):
@@ -2684,7 +2696,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         # Walkmesh painting
         if self._indoor_painting_walkmesh or Qt.Key.Key_Shift in keys_down:
-            self._begin_indoor_paint_stroke(Vector2(coords.x, coords.y))
+            self._begin_indoor_paint_stroke(Vector2(coords.x, coords.y))  # pyright: ignore[reportArgumentType]
             return
 
         world = renderer.to_world_coords(coords.x, coords.y)
@@ -3541,6 +3553,9 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                         # Blender not available, use built-in
                         self._use_blender_mode = False
 
+        _profile_startup = time.perf_counter() if _module_designer_profile_enabled() else None
+        _profile_init_renderer_duration: float | None = None
+
         mod_root: str = self._installation.get_module_root(mod_filepath)
         mod_filepath = self._ensure_mod_file(mod_filepath, mod_root)
 
@@ -3562,6 +3577,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         result: tuple[Module, GIT, list[BWM]] = (combined_module, git, walkmeshes)
         new_module, git, walkmeshes = result
         self._module = new_module
+        self._git_cache = git
         if self._lyt_renderer is not None:
             self._lyt_renderer.set_module(new_module)
 
@@ -3596,6 +3612,8 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.flatRenderer.center_camera()
 
         if not self._use_blender_mode:
+            if _profile_startup is not None:
+                _t0_renderer = time.perf_counter()
             try:
                 self.ui.mainRenderer.initialize_renderer(self._installation, new_module)
             except RuntimeError as exc:
@@ -3603,6 +3621,8 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                     "ModuleRenderer OpenGL initialization failed; continuing with limited non-3D functionality: %s",
                     exc,
                 )
+            if _profile_startup is not None:
+                _profile_init_renderer_duration = time.perf_counter() - _t0_renderer
             if self.ui.mainRenderer._scene:
                 self.ui.mainRenderer._scene.show_cursor = self.ui.cursorCheck.isChecked()
             self.setWindowTitle(f"Module Designer - {mod_root}")
@@ -3625,6 +3645,11 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         # Mark initial state as clean (no unsaved changes)
         self._mark_clean_state()
+
+        if _profile_startup is not None:
+            startup_ms = (time.perf_counter() - _profile_startup) * 1000
+            init_renderer_ms = _profile_init_renderer_duration * 1000 if _profile_init_renderer_duration is not None else 0.0
+            self.log.info("[MODULE_DESIGNER_PROFILE] open_module total=%.2f ms, initialize_renderer=%.2f ms", startup_ms, init_renderer_ms)
 
     def _ensure_mod_file(self, mod_filepath: Path, mod_root: str) -> Path:
         mod_file = mod_filepath.with_name(f"{mod_root}.mod")
@@ -3673,6 +3698,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
     def unload_module(self):
         self._module = None
+        self._git_cache = None
         self.ui.mainRenderer.shutdown_renderer()
 
     def show_help_window(self):
@@ -3694,11 +3720,14 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         dialog.exec()
 
     def git(self) -> GIT:
+        if self._git_cache is not None:
+            return self._git_cache
         assert self._module is not None
         git = self._module.git()
         assert git is not None
         git_resource = git.resource()
         assert git_resource is not None
+        self._git_cache = git_resource
         return git_resource
 
     def are(self) -> ARE:
@@ -4922,16 +4951,15 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         no_undo_stack: bool = False,
     ):
         assert self._module is not None
-        instances_to_delete = self.selected_instances.copy()
+        instances_to_delete: list[GITObject] = self.selected_instances.copy()
+        git_resource: GIT = self.git()
+        assert git_resource is not None
         if not no_undo_stack:
-            self.undo_stack.push(DeleteCommand(self.git(), instances_to_delete, self))  # noqa: SLF001
-        git_module = self._module.git()
-        assert git_module is not None
-        git_resource = git_module.resource()
-        if git_resource is not None:
+            self.undo_stack.push(DeleteCommand(git_resource, instances_to_delete, self))  # noqa: SLF001
+            # Command's redo() already removed instances; skip removal here
+        else:
             for instance in instances_to_delete:
                 git_resource.remove(instance)
-                # Sync deletion to Blender
                 if self._is_blender_mode_enabled() and self._blender_controller is not None:
                     self._blender_controller.remove_instance(instance)
         self.selected_instances.clear()
@@ -5424,10 +5452,29 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     def _deferred_initialization(self):
         """Complete initialization after window is shown."""
         self.log.debug("Building resource tree and instance list...")
+        _profile = _module_designer_profile_enabled()
+        _t0 = time.perf_counter() if _profile else None
+        _t_resource, _t_instance, _t_layout = None, None, None
+        if _profile:
+            _t = time.perf_counter()
         self.rebuild_resource_tree()
+        if _profile:
+            _t_resource = (time.perf_counter() - _t) * 1000
+            _t = time.perf_counter()
         self.rebuild_instance_list()
+        if _profile:
+            _t_instance = (time.perf_counter() - _t) * 1000
+            _t = time.perf_counter()
         self.rebuild_layout_tree()
+        if _profile:
+            _t_layout = (time.perf_counter() - _t) * 1000
         self.enter_instance_mode()
+        if _profile and _t0 is not None:
+            deferred_total_ms = (time.perf_counter() - _t0) * 1000
+            self.log.info(
+                "[MODULE_DESIGNER_PROFILE] _deferred_initialization total=%.2f ms (rebuild_resource_tree=%.2f, rebuild_instance_list=%.2f, rebuild_layout_tree=%.2f)",
+                deferred_total_ms, _t_resource or 0.0, _t_instance or 0.0, _t_layout or 0.0,
+            )
         self.log.info("Module designer ready")
 
     def on_2d_mouse_moved(self, screen: Vector2, delta: Vector2, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
@@ -6068,14 +6115,14 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         has_no_mods = not bool(modifiers)
         has_only_keypad = modifiers == Qt.KeyboardModifier.KeypadModifier
 
-        # Q / W / E — switch active tool (Blender/Unity-style)
-        if key == Qt.Key.Key_Q and has_no_mods:
+        # F1 / F2 / F3 — switch active tool (avoids Q/W/E conflict with fly cam)
+        if key == Qt.Key.Key_F1 and has_no_mods:
             self._set_active_tool(EditorTool.SELECT)
             return True
-        if key == Qt.Key.Key_W and has_no_mods:
+        if key == Qt.Key.Key_F2 and has_no_mods:
             self._set_active_tool(EditorTool.MOVE)
             return True
-        if key == Qt.Key.Key_E and has_no_mods:
+        if key == Qt.Key.Key_F3 and has_no_mods:
             self._set_active_tool(EditorTool.ROTATE)
             return True
 

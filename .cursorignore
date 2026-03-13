@@ -53,3 +53,4 @@ Tree-*.toc
 tslpatchdata/
 typings/*
 vendor/KotOR_IO
+vendor/KotOR.js/vendor/PyKotor/

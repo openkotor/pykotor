@@ -182,6 +182,7 @@ class ModuleDesignerControls3d:
                 enable_acceleration=True,
                 speed_boost_multiplier=self.settings.boostedMoveCameraSensitivity3d / self.settings.moveCameraSensitivity3d,
             )
+            assert self.renderer.scene is not None, "self.renderer.scene is None"
             self._camera_controller = CameraController(
                 self.renderer.scene.camera,
                 settings,
@@ -216,14 +217,16 @@ class ModuleDesignerControls3d:
             # Wheel zoom MUST be constant per tick (independent of current distance).
             # QWheelEvent.angleDelta().y() is typically ±120 per notch; we intentionally
             # apply a fixed delta per notch rather than scaling by camera distance.
-            strength: float = self.settings.zoomCameraSensitivity3d / 30000.0
+            strength: float = float(self.settings.zoomCameraSensitivity3d) / 30000.0
+            assert self.renderer.scene is not None, "self.renderer.scene is None"
             camera = self.renderer.scene.camera
             camera.distance += -delta.y * strength
             camera.distance = max(0.5, min(500.0, camera.distance))
 
         elif self.move_z_camera.satisfied(buttons, keys):
             # Ctrl+wheel (default) vertical camera move was far too sensitive; reduce by 5x.
-            strength: float = self.settings.moveCameraSensitivity3d / 50000
+            strength = float(self.settings.moveCameraSensitivity3d) / 50000
+            assert self.renderer.scene is not None, "self.renderer.scene is None"
             self.renderer.scene.camera.z -= -delta.y * strength
 
     def _any_modifier_held(self, keys: set[Qt.Key]) -> bool:
@@ -322,6 +325,7 @@ class ModuleDesignerControls3d:
             self.editor.do_cursor_lock(screen, center_mouse=False, do_rotations=False)
 
             # Scale movement based on distance for consistent feel
+            assert self.renderer.scene is not None, "self.renderer.scene is None"
             distance_scale = max(0.5, self.renderer.scene.camera.distance * 0.05)
             base_move_strength = self.settings.moveCameraSensitivity3d / 1000.0
             move_strength = base_move_strength * distance_scale
@@ -329,9 +333,9 @@ class ModuleDesignerControls3d:
             if plane_pan_satisfied:
                 upward = processed_dy * self.renderer.scene.camera.upward(ignore_xy=False)
                 sideward = processed_dx * self.renderer.scene.camera.sideward()
-                self.renderer.scene.camera.z -= (upward.z + sideward.z) * move_strength
-                self.renderer.scene.camera.y -= (upward.y + sideward.y) * move_strength
-                self.renderer.scene.camera.x -= (upward.x + sideward.x) * move_strength
+                self.renderer.scene.camera.z -= (upward.z + sideward.z) * move_strength  # pyright: ignore[reportAttributeAccessIssue]
+                self.renderer.scene.camera.y -= (upward.y + sideward.y) * move_strength  # pyright: ignore[reportAttributeAccessIssue]
+                self.renderer.scene.camera.x -= (upward.x + sideward.x) * move_strength  # pyright: ignore[reportAttributeAccessIssue]
 
             if rotate_camera_satisfied:
                 rotate_strength = self.settings.rotateCameraSensitivity3d / 5000.0
@@ -356,8 +360,6 @@ class ModuleDesignerControls3d:
         if self.select_underneath.satisfied(buttons, keys):
             self.renderer.do_select = True  # auto-selects the instance under the mouse in the paint loop, and implicitly sets this back to False
 
-        scene = self.renderer.scene
-        assert scene is not None
         if self.duplicate_selected.satisfied(buttons, keys) and self.editor.selected_instances:
             self._duplicate_selected_instance()
 
@@ -386,6 +388,7 @@ class ModuleDesignerControls3d:
         RobustLogger().info(f"Duplicating {instance!r}")
         if self.editor._module is not None:
             self.editor.undo_stack.push(DuplicateCommand(self.editor._module.git().resource(), [instance], self.editor))  # noqa: SLF001  # pyright: ignore[reportArgumentType, reportOptionalMemberAccess]
+        assert self.renderer.scene is not None, "self.renderer.scene is None"
         vect3 = self.renderer.scene.cursor.position()
         instance.position = Vector3(vect3.x, vect3.y, vect3.z)
         # self.editor.git().add(instance)  # Handled by the undoStack above.
@@ -397,9 +400,6 @@ class ModuleDesignerControls3d:
         buttons: set[Qt.MouseButton],
         keys: set[Qt.Key],
     ):
-        scene: Scene = self.renderer.scene
-        assert scene is not None
-
         if self.toggle_free_cam.satisfied(buttons, keys):
             current_time = time.time()
             if current_time - self.editor.last_free_cam_time > 0.5:  # 0.5 seconds delay, prevents spamming  # noqa: PLR2004
@@ -421,7 +421,8 @@ class ModuleDesignerControls3d:
                     # Also sync 2D camera to the selected instance position
                     self.editor.ui.flatRenderer.snap_camera_to_point(instance.position)
             elif move_camera_keys["cursor"]:
-                scene.camera.set_position(scene.cursor.position())
+                assert self.renderer.scene is not None, "self.renderer.scene is None"
+                self.renderer.scene.camera.set_position(self.renderer.scene.cursor.position())
             elif move_camera_keys["entry"]:
                 self.editor.snap_camera_to_entry_location()
             return
@@ -580,6 +581,7 @@ class ModuleDesignerControlsFreeCam:
         # - The render loop emits continuous keyboard events while keys are held
         # - Mouse movement uses the correct free-cam deltas
         self.renderer.free_cam = True
+        assert self.renderer.scene is not None, "self.renderer.scene is None"
         self.controls3d_distance = self.renderer.scene.camera.distance
         self.renderer.scene.camera.distance = 0
         self.renderer.setCursor(QtCore.Qt.CursorShape.BlankCursor)
@@ -743,13 +745,15 @@ class ModuleDesignerControls2d:
             self._mode.duplicate_selected(world)
 
         if self.select_underneath.satisfied(buttons, keys):
-            if isinstance(self._mode, _GeometryMode):
+            if hasattr(self, "_mode") and isinstance(self._mode, _GeometryMode):
                 RobustLogger().debug("select_underneath_geometry?")
                 self._mode.select_underneath()
             elif self.renderer.instances_under_mouse():
                 RobustLogger().debug("on_mouse_pressed, select_underneath found one or more instances under mouse.")
                 self.editor.set_selection([self.renderer.instances_under_mouse()[-1]])
             else:
+                # Click on empty space: deselect and start marquee (drag will multi-select)
+                self.editor.set_selection([])
                 self.renderer.start_marquee(screen)
 
     def on_keyboard_pressed(

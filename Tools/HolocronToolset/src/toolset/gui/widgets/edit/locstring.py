@@ -93,6 +93,10 @@ class LocalizedStringLineEdit(QWidget):
     def locstring(self) -> LocalizedString:
         return self._locstring
 
+    # Aliases for dialog code that uses camelCase
+    setInstallation = set_installation
+    setLocstring = set_locstring
+
 
 if __name__ == "__main__":
     import os

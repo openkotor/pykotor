@@ -2,13 +2,27 @@
 
 from __future__ import annotations
 
+
 import atexit
 import os
+import pytest
 import runpy
 import shutil
 import sys
 import tempfile
+
 from pathlib import Path
+from typing import TYPE_CHECKING, cast
+
+
+from pykotor.common.misc import Game
+from pykotor.tools.create_installation import create_minimal_installation
+from pykotor.tools.heuristics import determine_game
+
+if TYPE_CHECKING:
+    from pykotor.extract.installation import Installation
+    from typing_extensions import Literal
+    from pytestqt.qtbot import QtBot
 
 
 # CRITICAL FIX (pytest-qt / Tavily research): Prevent QApplication.quit() from terminating the event loop.
@@ -29,10 +43,10 @@ def _patch_qapp_quit():
 # --- Module-level: path setup (needed for imports) ---
 def _load_dotenv_if_available() -> None:
     try:
-        from dotenv import load_dotenv  # type: ignore
+        from dotenv import load_dotenv  # pyright: ignore[reportMissingImports]
 
-        repo_root = Path(__file__).resolve().parents[3]
-        env_path = repo_root / ".env"
+        repo_root: Path = Path(__file__).resolve().parents[3]
+        env_path: Path = repo_root / ".env"
         if env_path.exists():
             load_dotenv(dotenv_path=env_path, override=False)
     except ImportError:
@@ -63,22 +77,20 @@ for p in (TOOLSET_SRC, KOTORDIFF_SRC, PYKOTOR_PATH, UTILITY_PATH, PYKOTORGL_PATH
         sys.path.insert(0, str(p))
 
 
-def _should_force_qt_offscreen() -> bool:
-    """Return True if we should force Qt to use the offscreen platform plugin.
+def _tests_require_opengl() -> bool:
+    """True if the current test run includes any test file that requires OpenGL (real display).
 
-    Most Toolset tests should run headless, but the Module Designer integration/perf
-    tests explicitly require a real display + hardware accelerated OpenGL.
-
-    We detect those runs early (before any Qt import) by checking the pytest CLI args.
+    OpenGL/Module Designer tests MUST NOT run with QT_QPA_PLATFORM=offscreen.
+    We check pytest argv before any Qt import.
     """
-    argv = " ".join(sys.argv).lower()
-    if "test_module_designer.py" in argv:
-        return False
-    return True
+    argv_str = " ".join(getattr(sys, "argv", [])).lower().replace("\\", "/")
+    return "test_module_designer" in argv_str
 
 
-# Qt headless (default). Do NOT force offscreen for Module Designer integration tests.
-if "QT_QPA_PLATFORM" not in os.environ and _should_force_qt_offscreen():
+# OpenGL tests: force real display (never headless). All other Qt tests: use offscreen.
+if _tests_require_opengl():
+    os.environ["QT_QPA_PLATFORM"] = ""  # Force native display; OpenGL cannot run offscreen
+elif "QT_QPA_PLATFORM" not in os.environ:
     os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 os.environ.setdefault("PYOPENGL_ERROR_CHECKING", "0")
@@ -101,18 +113,16 @@ def _get_qt_api() -> str:
 
 
 _qt_api = _get_qt_api()
-_api_name = {"pyqt6": "PyQt6", "pyqt5": "PyQt5", "pyside6": "PySide6", "pyside2": "PySide2"}.get(_qt_api, "PyQt6")
+_api_name: Literal["PyQt6", "PyQt5", "PySide6", "PySide2"] = cast('Literal["PyQt6", "PyQt5", "PySide6", "PySide2"]', {"pyqt6": "PyQt6", "pyqt5": "PyQt5", "pyside6": "PySide6", "pyside2": "PySide2"}.get(_qt_api, "PyQt6"))
 os.environ["QT_API"] = _api_name
-
-import pytest
-from pykotor.common.misc import Game
-from pykotor.tools.create_installation import create_minimal_installation
-from pykotor.tools.heuristics import determine_game
 from toolset.data.installation import HTInstallation
 from toolset.main_settings import setup_pre_init_settings
 
 
 _SESSION_TEMP_DIR: Path | None = None
+
+# Treat skips as failures: collect skipped test nodeids so sessionfinish can set exitstatus=1.
+_skipped_nodeids: list[str] = []
 
 
 def _get_or_create_session_temp_dir() -> Path:
@@ -162,16 +172,16 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
     for item in items:
         if "test_roundtrip_k1_wok_face_count" not in item.nodeid or "TestIndoorBuilderRoundtrip" not in item.nodeid:
             continue
-        if not hasattr(item, "module") or item.module is None:
+        if not hasattr(item, "module") or item.module is None:  # pyright: ignore[reportAttributeAccessIssue]
             continue
-        tmod = item.module
+        tmod = item.module  # pyright: ignore[reportAttributeAccessIssue]
 
         def _fixed_wok_face_count(
             self,
-            qtbot,
-            k1_installation,
-            k1_pykotor_installation,
-            k1_module_roots,
+            qtbot: QtBot,
+            k1_installation: HTInstallation,
+            k1_pykotor_installation: Installation,
+            k1_module_roots: list[Path],
             tmp_path,
         ):
             """Fixed: use indoor_map room walkmeshes for original (danm13 has 0 WOKs in .mod)."""
@@ -190,6 +200,21 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
 
         item.obj = _fixed_wok_face_count
         break
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
+    """Record skipped tests so we can treat skips as failures in sessionfinish."""
+    outcome = yield
+    report = outcome.get_result()
+    if report.outcome == "skipped" and item.nodeid not in _skipped_nodeids:
+        _skipped_nodeids.append(item.nodeid)
+
+
+def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
+    """Treat any skipped test as a failure: force non-zero exit if there were skips."""
+    if _skipped_nodeids and exitstatus == 0:
+        session.exitstatus = 1
 
 
 def _run_wok_face_count_patch_script() -> None:
@@ -221,11 +246,11 @@ def _ensure_wok_face_count_test_fixed() -> None:
     end_search = after_def.find("\n    def test_", 1)
     if end_search == -1:
         return
-    method_block = after_def[:end_search]
-    sig_end = method_block.find("):\n") + 3
+    method_block: str = after_def[:end_search]
+    sig_end: int = method_block.find("):\n") + 3
     if sig_end < 3:
         return
-    body = method_block[sig_end:]
+    body: str = method_block[sig_end:]
     # Only patch if this method uses OLD logic (archive-based -> 0 WOKs for danm13)
     if "original_resources" not in body or "original_woks" not in body:
         return
@@ -251,8 +276,8 @@ def _ensure_wok_face_count_test_fixed() -> None:
             assert rebuilt_total_faces == original_total_faces, (
                 f"{module_root}: Total WOK face count mismatch - original={original_total_faces}, rebuilt={rebuilt_total_faces}"
             )'''
-    new_method = method_block[:sig_end] + "\n" + new_body + "\n\n"
-    new_text = text[:idx] + new_method + after_def[end_search:]
+    new_method: str = method_block[:sig_end] + "\n" + new_body + "\n\n"
+    new_text: str = text[:idx] + new_method + after_def[end_search:]
     try:
         test_file.write_text(new_text, encoding="utf-8")
     except Exception:
@@ -275,14 +300,14 @@ def k2_path():
 
 
 @pytest.fixture(scope="session")
-def installation(k1_path):
+def installation(k1_path: str) -> HTInstallation:
     if not Path(k1_path).joinpath("chitin.key").exists():
         pytest.skip("K1 installation incomplete (no chitin.key)")
     return HTInstallation(k1_path, "Test Installation", tsl=False)
 
 
 @pytest.fixture(scope="session")
-def tsl_installation(k2_path):
+def tsl_installation(k2_path: str) -> HTInstallation:
     if not Path(k2_path).joinpath("chitin.key").exists():
         pytest.skip("K2/TSL installation incomplete (no chitin.key)")
     return HTInstallation(k2_path, "Test TSL Installation", tsl=True)
@@ -295,5 +320,5 @@ def qt_api() -> str:
 
 
 @pytest.fixture
-def test_files_dir():
+def test_files_dir() -> Path:
     return Path(__file__).parent / "test_files"
