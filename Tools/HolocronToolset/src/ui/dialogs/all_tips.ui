@@ -62,7 +62,7 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources />
  <connections>
   <connection>
    <sender>closeButton</sender>

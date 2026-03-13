@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import PurePath
-from typing import TYPE_CHECKING, Iterator
+from typing import TYPE_CHECKING, Any, Callable, Iterator
 
 from loggerplus import (
     RobustLogger,  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
@@ -311,7 +311,7 @@ class FileResource:
         self.inside_capsule: bool = filepath_str.endswith(_CAPSULE_EXTENSIONS)
         self.inside_bif: bool = filepath_str.endswith(".bif")
 
-        self._path_ident_obj: Path = self._filepath / str(self._identifier) if self.inside_capsule or self.inside_bif else self._filepath
+        self._path_ident_obj: CaseAwarePath = CaseAwarePath(self._filepath / str(self._identifier) if self.inside_capsule or self.inside_bif else self._filepath)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(resname='{self._resname}', restype={self._restype!r}, size={self._size}, offset={self._offset}, filepath={self._filepath!r})"
@@ -627,7 +627,7 @@ class ResourceResult:
     def identifier(self) -> ResourceIdentifier:
         return ResourceIdentifier(self.resname, self.restype)
 
-    def decode(self, as_type: ResourceType | None = None) -> Any:
+    def decode(self, as_type: ResourceType | None = None) -> str:
         """Decode raw bytes to the domain object using the central decoder registry.
 
         Args:
@@ -636,15 +636,15 @@ class ResourceResult:
 
         Returns:
         -------
-            Decoded domain object (e.g. UTC, GFF, LYT), or None if no decoder is registered.
+            Decoded domain object (e.g. UTC, GFF, LYT), or str if no decoder is registered.
         """
         from pykotor.resource.decoders import get_decoder
 
         restype = as_type if as_type is not None else self.restype
-        decoder = get_decoder(restype)
+        decoder: Callable[[bytes], Any] | None = get_decoder(restype)
         if decoder is None:
-            return None
-        return decoder(self.data)
+            return self.data.decode()
+        return str(decoder(self.data))
 
 
 @dataclass(frozen=True)

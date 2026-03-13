@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
     from collections.abc import Iterator
 
-    from typing_extensions import Self
+    from typing_extensions import Self  # pyright: ignore[reportMissingModuleSource]
 
 
 class LazyCapsule(FileResource):

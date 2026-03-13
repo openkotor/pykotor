@@ -82,10 +82,10 @@
     </layout>
    </item>
    <item>
-    <widget class="QStackedWidget" name="stack"/>
+    <widget class="QStackedWidget" name="stack" />
    </item>
   </layout>
  </widget>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

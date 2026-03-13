@@ -9,11 +9,11 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from pykotor.resource.formats.bwm.bwm_auto import read_bwm
+from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.formats.lyt.lyt_auto import read_lyt
-from pykotor.resource.formats.tpc.tpc_auto import read_tpc
-from pykotor.resource.formats.vis.vis_auto import read_vis
+from pykotor.resource.formats.lyt import read_lyt
+from pykotor.resource.formats.tpc import read_tpc
+from pykotor.resource.formats.vis import read_vis
 from pykotor.resource.generics.are import read_are
 from pykotor.resource.generics.dlg import read_dlg
 from pykotor.resource.generics.git import read_git

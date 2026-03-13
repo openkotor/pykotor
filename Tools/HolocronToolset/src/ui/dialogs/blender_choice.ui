@@ -72,7 +72,7 @@
        </property>
        <property name="text">
         <string>Open in Blender
-(Recommended)</string>
+         (Recommended)</string>
        </property>
       </widget>
      </item>
@@ -89,7 +89,7 @@
        </property>
        <property name="toolTip">
         <string>Use the built-in PyKotorGL renderer.
-Integrated experience, no external application needed.</string>
+         Integrated experience, no external application needed.</string>
        </property>
       </widget>
      </item>
@@ -99,13 +99,17 @@ Integrated experience, no external application needed.</string>
     <widget class="QLabel" name="comparisonLabel">
      <property name="text">
       <string>&lt;table cellspacing='8'&gt;
-&lt;tr&gt;&lt;th align='left'&gt;&lt;/th&gt;&lt;th&gt;Blender&lt;/th&gt;&lt;th&gt;Built-in&lt;/th&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Performance&lt;/td&gt;&lt;td&gt;⭐⭐⭐&lt;/td&gt;&lt;td&gt;⭐&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;3D Navigation&lt;/td&gt;&lt;td&gt;⭐⭐⭐&lt;/td&gt;&lt;td&gt;⭐⭐&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Model Editing&lt;/td&gt;&lt;td&gt;⭐⭐⭐&lt;/td&gt;&lt;td&gt;❌&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Lightmap Baking&lt;/td&gt;&lt;td&gt;⭐⭐⭐&lt;/td&gt;&lt;td&gt;❌&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Integration&lt;/td&gt;&lt;td&gt;⭐⭐&lt;/td&gt;&lt;td&gt;⭐⭐⭐&lt;/td&gt;&lt;/tr&gt;
-&lt;/table&gt;</string>
+       &lt;tr&gt;&lt;th
+       align='left'&gt;&lt;/th&gt;&lt;th&gt;Blender&lt;/th&gt;&lt;th&gt;Built-in&lt;/th&gt;&lt;/tr&gt;
+       &lt;tr&gt;&lt;td&gt;Performance&lt;/td&gt;&lt;td&gt;⭐⭐⭐&lt;/td&gt;&lt;td&gt;⭐&lt;/td&gt;&lt;/tr&gt;
+       &lt;tr&gt;&lt;td&gt;3D
+       Navigation&lt;/td&gt;&lt;td&gt;⭐⭐⭐&lt;/td&gt;&lt;td&gt;⭐⭐&lt;/td&gt;&lt;/tr&gt;
+       &lt;tr&gt;&lt;td&gt;Model
+       Editing&lt;/td&gt;&lt;td&gt;⭐⭐⭐&lt;/td&gt;&lt;td&gt;❌&lt;/td&gt;&lt;/tr&gt;
+       &lt;tr&gt;&lt;td&gt;Lightmap
+       Baking&lt;/td&gt;&lt;td&gt;⭐⭐⭐&lt;/td&gt;&lt;td&gt;❌&lt;/td&gt;&lt;/tr&gt;
+       &lt;tr&gt;&lt;td&gt;Integration&lt;/td&gt;&lt;td&gt;⭐⭐&lt;/td&gt;&lt;td&gt;⭐⭐⭐&lt;/td&gt;&lt;/tr&gt;
+       &lt;/table&gt;</string>
      </property>
      <property name="styleSheet">
       <string>color: #666; font-size: 11px;</string>
@@ -147,6 +151,6 @@ Integrated experience, no external application needed.</string>
    </item>
   </layout>
  </widget>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

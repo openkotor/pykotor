@@ -40,16 +40,16 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSave_As"/>
-    <addaction name="actionRevert"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
+    <addaction name="actionOpen" />
+    <addaction name="actionSave" />
+    <addaction name="actionSave_As" />
+    <addaction name="actionRevert" />
+    <addaction name="separator" />
+    <addaction name="actionExit" />
    </widget>
-   <addaction name="menuFile"/>
+   <addaction name="menuFile" />
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar" />
   <action name="actionNew">
    <property name="text">
     <string>New</string>
@@ -88,6 +88,6 @@
    <header location="global">toolset.gui.widgets.renderer.model</header>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

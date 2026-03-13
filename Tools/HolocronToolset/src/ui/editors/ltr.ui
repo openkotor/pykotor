@@ -35,7 +35,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBoxSingleChar"/>
+           <widget class="QComboBox" name="comboBoxSingleChar" />
           </item>
           <item>
            <widget class="QLabel" name="labelSingleStart">
@@ -161,7 +161,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBoxDoublePrevChar"/>
+           <widget class="QComboBox" name="comboBoxDoublePrevChar" />
           </item>
           <item>
            <widget class="QLabel" name="labelDoubleChar">
@@ -171,7 +171,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBoxDoubleChar"/>
+           <widget class="QComboBox" name="comboBoxDoubleChar" />
           </item>
           <item>
            <widget class="QLabel" name="labelDoubleStart">
@@ -302,7 +302,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBoxTriplePrev2Char"/>
+           <widget class="QComboBox" name="comboBoxTriplePrev2Char" />
           </item>
           <item>
            <widget class="QLabel" name="labelTriplePrev1Char">
@@ -312,7 +312,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBoxTriplePrev1Char"/>
+           <widget class="QComboBox" name="comboBoxTriplePrev1Char" />
           </item>
           <item>
            <widget class="QLabel" name="labelTripleChar">
@@ -322,7 +322,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBoxTripleChar"/>
+           <widget class="QComboBox" name="comboBoxTripleChar" />
           </item>
           <item>
            <widget class="QLabel" name="labelTripleStart">
@@ -474,22 +474,22 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSave_As"/>
-    <addaction name="separator"/>
-    <addaction name="actionRevert"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
+    <addaction name="actionNew" />
+    <addaction name="actionOpen" />
+    <addaction name="actionSave" />
+    <addaction name="actionSave_As" />
+    <addaction name="separator" />
+    <addaction name="actionRevert" />
+    <addaction name="separator" />
+    <addaction name="actionExit" />
    </widget>
    <widget class="QMenu" name="menuFormat">
     <property name="title">
      <string>View</string>
     </property>
    </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuFormat"/>
+   <addaction name="menuFile" />
+   <addaction name="menuFormat" />
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -522,6 +522,6 @@
    </property>
   </action>
  </widget>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

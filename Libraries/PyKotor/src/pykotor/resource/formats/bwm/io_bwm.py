@@ -28,7 +28,8 @@ from __future__ import annotations
 
 import struct
 
-from typing import TYPE_CHECKING, Any
+from logging import Logger
+from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.bwm.bwm_data import (  # noqa: E402
     BWM,
@@ -138,21 +139,21 @@ class BWMBinaryReader(ResourceReader):
         face_count = self._reader.read_uint32()
         indices_offset = self._reader.read_uint32()
         materials_offset = self._reader.read_uint32()
-        normals_offset = self._reader.read_uint32()
-        planar_distances_offset = self._reader.read_uint32()
+        _normals_offset = self._reader.read_uint32()
+        _planar_distances_offset = self._reader.read_uint32()
 
-        aabb_count = self._reader.read_uint32()
-        aabb_offset = self._reader.read_uint32()
-        aabb_root = self._reader.read_uint32()
-        adjacencies_count = self._reader.read_uint32()
-        adjacencies_offset = self._reader.read_uint32()
+        _aabb_count = self._reader.read_uint32()
+        _aabb_offset = self._reader.read_uint32()
+        _aabb_root = self._reader.read_uint32()
+        _adjacencies_count = self._reader.read_uint32()
+        _adjacencies_offset = self._reader.read_uint32()
         edges_count = self._reader.read_uint32()
         edges_offset = self._reader.read_uint32()
-        perimeters_count = self._reader.read_uint32()
-        perimeters_offset = self._reader.read_uint32()
+        _perimeters_count = self._reader.read_uint32()
+        _perimeters_offset = self._reader.read_uint32()
 
         self._reader.seek(vertices_offset)
-        vertices = [self._reader.read_vector3() for _ in range(vertices_count)]
+        vertices: list[Vector3] = [self._reader.read_vector3() for _ in range(vertices_count)]
         faces: list[BWMFace] = []
         self._reader.seek(indices_offset)
         for _ in range(face_count):
@@ -164,10 +165,10 @@ class BWMBinaryReader(ResourceReader):
             v1, v2, v3 = vertices[i1], vertices[i2], vertices[i3]
             faces.append(BWMFace(v1, v2, v3))
 
-        walkable_count = 0
+        walkable_count: int = 0
         self._reader.seek(materials_offset)
         for face in faces:
-            material_id = self._reader.read_uint32()
+            material_id: int = self._reader.read_uint32()
             face.material = SurfaceMaterial(material_id)
             if face.material.walkable():
                 walkable_count += 1
@@ -177,13 +178,13 @@ class BWMBinaryReader(ResourceReader):
         self._reader.seek(edges_offset)
         edges_table: list[tuple[int, int]] = []
         for _ in range(edges_count):
-            edge_index = self._reader.read_uint32()
-            transition = self._reader.read_uint32()
+            edge_index: int = self._reader.read_uint32()
+            transition: int = self._reader.read_uint32()
             edges_table.append((edge_index, transition))
 
             if transition != 0xFFFFFFFF:
-                face_index = edge_index // 3
-                trans_index = edge_index % 3
+                face_index: int = edge_index // 3
+                trans_index: int = edge_index % 3
                 if trans_index == 0:
                     faces[face_index].trans1 = transition
                 elif trans_index == 1:
@@ -208,12 +209,12 @@ class BWMBinaryWriter(ResourceWriter):
         target: TARGET_TYPES,
         *,
         regenerate_derived: bool = True,
-        logger: Any | None = None,
+        logger: Logger | None = None,
     ):
         super().__init__(target)
         self._wok: BWM = wok
         self._regenerate_derived: bool = regenerate_derived
-        self._logger: Any | None = logger
+        self._logger: Logger | None = logger
 
     @autoclose
     def write(self, *, auto_close: bool = True):  # noqa: FBT001, FBT002, ARG002  # pyright: ignore[reportUnusedParameters]
@@ -230,9 +231,10 @@ class BWMBinaryWriter(ResourceWriter):
             2. Packs sections and computes offsets
             3. Writes header, counts and offsets, followed by section data
         """
+
         def _log(msg: str) -> None:
             if self._logger is not None:
-                self._logger.info(msg)  # noqa: G004
+                self._logger.debug(msg)  # noqa: G004
 
         # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:834-1019 (toExportBuffer)
         if self._regenerate_derived:
@@ -260,14 +262,14 @@ class BWMBinaryWriter(ResourceWriter):
 
         vertex_offset = 136
         _log("write: packing vertex data")
-        vertex_data = bytearray()
+        vertex_data: bytearray = bytearray()
         for vertex in vertices:
             vertex_data += struct.pack("fff", vertex.x, vertex.y, vertex.z)
 
         _log(f"write: vertex_data size={len(vertex_data)} bytes")
-        indices_offset = vertex_offset + len(vertex_data)
+        indices_offset: int = vertex_offset + len(vertex_data)
         _log("write: packing face indices")
-        indices_data = bytearray()
+        indices_data: bytearray = bytearray()
         for face in faces:
             # Find vertex indices by object identity
             i1 = next(i for i, v in enumerate(vertices) if v is face.v1)
@@ -276,9 +278,9 @@ class BWMBinaryWriter(ResourceWriter):
             indices_data += struct.pack("III", i1, i2, i3)
 
         _log(f"write: indices_data size={len(indices_data)} bytes")
-        material_offset = indices_offset + len(indices_data)
+        material_offset: int = indices_offset + len(indices_data)
         _log("write: packing materials")
-        material_data = bytearray()
+        material_data: bytearray = bytearray()
         for face in faces:
             material_data += struct.pack("I", face.material.value)
 

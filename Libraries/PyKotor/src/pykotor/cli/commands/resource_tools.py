@@ -222,14 +222,17 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
             try:
                 from pykotor.tools.walkmesh_render import render_bwm_to_pngs
             except ImportError:
-                logger.info("matplotlib not installed; writing qualitative ASCII validation diagrams instead of PNGs.")
+                logger.info(
+                    "matplotlib not in this environment; writing validation diagram. "
+                    "For PNGs: uv sync --extra render then re-run, or use the .diagram file.",
+                )
                 from pykotor.resource.formats.bwm.bwm_auto import write_bwm_validation_diagram
-                from pykotor.tools.walkmesh_render_ascii import render_bwm_to_ascii_diagrams
+                from pykotor.tools.walkmesh_render_diagram import render_bwm_validation_diagram_lines
 
                 diagram_path = output_path.parent / f"{output_path.stem}.diagram"
                 write_bwm_validation_diagram(bwm, diagram_path)
                 logger.info(f"Wrote validation diagram: {diagram_path}")  # noqa: G004
-                for line in render_bwm_to_ascii_diagrams(bwm):
+                for line in render_bwm_validation_diagram_lines(bwm):
                     logger.info(line)
             else:
                 output_stem: pathlib.Path = output_path.parent / output_path.stem
@@ -242,16 +245,16 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
                     )
                 except (ValueError, TypeError) as e:
                     logger.warning(
-                        "PNG render failed (%s); writing ASCII validation diagram instead.",
+                        "PNG render failed (matplotlib 3D backend issue: %s); wrote validation diagram instead.",
                         e,
                     )
                     from pykotor.resource.formats.bwm.bwm_auto import write_bwm_validation_diagram
-                    from pykotor.tools.walkmesh_render_ascii import render_bwm_to_ascii_diagrams
+                    from pykotor.tools.walkmesh_render_diagram import render_bwm_validation_diagram_lines
 
                     diagram_path = output_path.parent / f"{output_path.stem}.diagram"
                     write_bwm_validation_diagram(bwm, diagram_path)
                     logger.info(f"Wrote validation diagram: {diagram_path}")  # noqa: G004
-                    for line in render_bwm_to_ascii_diagrams(bwm):
+                    for line in render_bwm_validation_diagram_lines(bwm):
                         logger.info(line)
 
         # ---- Write ----
@@ -270,9 +273,6 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
         logger.error(f"Transition invariant failed (perimeter-only transitions): {e}")  # noqa: G004
         return 1
     except Exception:
-        import traceback
-
-        traceback.print_exc()
         logger.exception(f"Failed to rebuild walkmesh {input_path}")  # noqa: G004
         return 1
     return 0

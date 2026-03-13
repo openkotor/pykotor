@@ -47,7 +47,10 @@
       <item>
        <widget class="QGroupBox" name="modelInfoGroupBox">
         <property name="toolTip">
-         <string>Model information panel. Expand to see details about the placeable model (mesh count, animations, etc.) derived from the Appearance and placeable.2da. Read-only; does not change the UTP file. Useful to verify the correct model loads for the chosen Appearance.</string>
+         <string>Model information panel. Expand to see details about the placeable model (mesh
+          count, animations, etc.) derived from the Appearance and placeable.2da. Read-only; does
+          not change the UTP file. Useful to verify the correct model loads for the chosen
+          Appearance.</string>
         </property>
         <property name="title">
          <string>Model Info</string>
@@ -68,7 +71,9 @@
          <item>
           <widget class="QLabel" name="modelInfoSummaryLabel">
            <property name="toolTip">
-            <string>Short summary of the placeable model (e.g. mesh and animation count). Click the Model Info group to expand and see full details. Derived from the current Appearance; not a GFF field.</string>
+            <string>Short summary of the placeable model (e.g. mesh and animation count). Click the
+             Model Info group to expand and see full details. Derived from the current Appearance;
+             not a GFF field.</string>
            </property>
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -90,7 +95,9 @@
          <item>
           <widget class="QLabel" name="modelInfoLabel">
            <property name="toolTip">
-            <string>Detailed model information (meshes, animations, bounds) for the placeable. Shown when Model Info is expanded. Helps modders confirm the placeable appearance matches expectations. Not stored in the UTP GFF.</string>
+            <string>Detailed model information (meshes, animations, bounds) for the placeable. Shown
+             when Model Info is expanded. Helps modders confirm the placeable appearance matches
+             expectations. Not stored in the UTP GFF.</string>
            </property>
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -151,7 +158,11 @@
            <item>
             <widget class="QCheckBox" name="hasInventoryCheckbox">
              <property name="toolTip">
-              <string>Has Inventory (GFF: HasInventory). BYTE 0/1. Engine reads via ReadFieldBYTE in LoadPlaceable. When set (1), the placeable has a container inventory; the game loads ItemList when the player opens it. When unset (0), the placeable has no inventory and ItemList is ignored. Modders: enable for chests, crates, corpses; use Edit Inventory to add items (UTI ResRefs). Empty list is valid.</string>
+              <string>Has Inventory (GFF: HasInventory). BYTE 0/1. Engine reads via ReadFieldBYTE in
+               LoadPlaceable. When set (1), the placeable has a container inventory; the game loads
+               ItemList when the player opens it. When unset (0), the placeable has no inventory and
+               ItemList is ignored. Modders: enable for chests, crates, corpses; use Edit Inventory
+               to add items (UTI ResRefs). Empty list is valid.</string>
              </property>
              <property name="text">
               <string>Has Inventory</string>
@@ -221,7 +232,11 @@
                <item>
                 <widget class="LocalizedStringLineEdit" name="nameEdit" native="true">
                  <property name="toolTip">
-                  <string>Name (GFF: LocName). CExoLocString. Localized name shown when the player examines or uses the placeable; the engine reads it in LoadPlaceable. Used in tooltips and dialogue. Empty is valid. Modders: set a short, clear name (e.g. "Crate", "Computer"); use the language selector to add translations. Does not affect scripts—use Tag for that.</string>
+                  <string>Name (GFF: LocName). CExoLocString. Localized name shown when the player
+                   examines or uses the placeable; the engine reads it in LoadPlaceable. Used in
+                   tooltips and dialogue. Empty is valid. Modders: set a short, clear name (e.g.
+                   "Crate", "Computer"); use the language selector to add translations. Does not
+                   affect scripts—use Tag for that.</string>
                  </property>
                  <property name="minimumSize">
                   <size>
@@ -259,7 +274,12 @@
                <item>
                 <widget class="QLineEdit" name="tagEdit">
                  <property name="toolTip">
-                  <string>Tag (GFF: Tag). CExoString. Unique identifier for this placeable. The engine reads it via ReadFieldCExoString in LoadPlaceable. Scripts and dialogues use GetObjectByTag to find this placeable (e.g. to open it, lock it, or run scripts). Modders: keep unique per area; duplicate tags can cause the wrong object to be targeted. Empty is valid but the placeable cannot be found by tag. Match this to any script or dialogue references.</string>
+                  <string>Tag (GFF: Tag). CExoString. Unique identifier for this placeable. The
+                   engine reads it via ReadFieldCExoString in LoadPlaceable. Scripts and dialogues
+                   use GetObjectByTag to find this placeable (e.g. to open it, lock it, or run
+                   scripts). Modders: keep unique per area; duplicate tags can cause the wrong
+                   object to be targeted. Empty is valid but the placeable cannot be found by tag.
+                   Match this to any script or dialogue references.</string>
                  </property>
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -336,7 +356,11 @@
                <item>
                 <widget class="ComboBox2DA" name="appearanceSelect">
                  <property name="toolTip">
-                  <string>Appearance (GFF: Appearance). DWORD. Engine reads via ReadFieldDWORD in LoadPlaceable. Row index into placeable.2da; picks the 3D model and behavior. The game uses this when the placeable is placed in an area. Modders: choose a row that exists in placeable.2da for your game; invalid indices may show a wrong model or fail to display. Preview updates when you change this.</string>
+                  <string>Appearance (GFF: Appearance). DWORD. Engine reads via ReadFieldDWORD in
+                   LoadPlaceable. Row index into placeable.2da; picks the 3D model and behavior. The
+                   game uses this when the placeable is placed in an area. Modders: choose a row
+                   that exists in placeable.2da for your game; invalid indices may show a wrong
+                   model or fail to display. Preview updates when you change this.</string>
                  </property>
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -526,7 +550,11 @@
            <item row="0" column="1">
             <widget class="ComboBox2DA" name="factionSelect">
              <property name="toolTip">
-              <string>Faction (GFF: Faction). DWORD. Engine reads via ReadFieldDWORD in LoadPlaceable. Faction identifier; determines who the placeable is hostile or friendly to (repute.2da). Modders: set to match your module's factions; 0 is often neutral. Wrong values can cause the placeable to be targeted by allies or ignored by enemies. Used for AI and combat targeting.</string>
+              <string>Faction (GFF: Faction). DWORD. Engine reads via ReadFieldDWORD in
+               LoadPlaceable. Faction identifier; determines who the placeable is hostile or
+               friendly to (repute.2da). Modders: set to match your module's factions; 0 is often
+               neutral. Wrong values can cause the placeable to be targeted by allies or ignored by
+               enemies. Used for AI and combat targeting.</string>
              </property>
             </widget>
            </item>
@@ -579,7 +607,11 @@
            <item row="0" column="1">
             <widget class="QSpinBox" name="currentHpSpin">
              <property name="toolTip">
-                <string>Current HP (GFF: CurrentHP). SHORT. Placeable's current hit points when loaded; when it reaches 0 the placeable is destroyed and OnDeath runs. Engine reads via ReadFieldSHORT in LoadPlaceable. Modders: valid range 0–32767; set equal to Max HP for full strength. Plot or Min1HP can prevent destruction; Static placeables may ignore damage. Clamped to Max HP when loading from GIT in some cases.</string>
+              <string>Current HP (GFF: CurrentHP). SHORT. Placeable's current hit points when
+               loaded; when it reaches 0 the placeable is destroyed and OnDeath runs. Engine reads
+               via ReadFieldSHORT in LoadPlaceable. Modders: valid range 0–32767; set equal to Max
+               HP for full strength. Plot or Min1HP can prevent destruction; Static placeables may
+               ignore damage. Clamped to Max HP when loading from GIT in some cases.</string>
              </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
@@ -611,7 +643,11 @@
            <item row="1" column="1">
             <widget class="QSpinBox" name="maxHpSpin">
              <property name="toolTip">
-              <string>Max HP (GFF: HP). SHORT. Maximum hit points; the placeable is destroyed when Current HP reaches 0 (unless Plot or Min1HP). Engine reads via ReadFieldSHORT in LoadPlaceable. Modders: valid range 0–32767; typical 10–50 for breakable placeables. Use 0 or 1 for indestructible if combined with Plot. Healing and damage update Current HP at runtime.</string>
+              <string>Max HP (GFF: HP). SHORT. Maximum hit points; the placeable is destroyed when
+               Current HP reaches 0 (unless Plot or Min1HP). Engine reads via ReadFieldSHORT in
+               LoadPlaceable. Modders: valid range 0–32767; typical 10–50 for breakable placeables.
+               Use 0 or 1 for indestructible if combined with Plot. Healing and damage update
+               Current HP at runtime.</string>
              </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
@@ -643,7 +679,11 @@
            <item row="2" column="1">
             <widget class="QSpinBox" name="hardnessSpin">
              <property name="toolTip">
-              <string>Hardness (GFF: Hardness). BYTE 0–255. Engine reads via ReadFieldBYTE in LoadPlaceable. Damage reduction applied when the placeable is hit; each attack's damage is reduced by this amount. Does not prevent destruction when HP reaches 0. Modders: typical 0–10; high values make the placeable very resistant to damage until HP is depleted.</string>
+              <string>Hardness (GFF: Hardness). BYTE 0–255. Engine reads via ReadFieldBYTE in
+               LoadPlaceable. Damage reduction applied when the placeable is hit; each attack's
+               damage is reduced by this amount. Does not prevent destruction when HP reaches 0.
+               Modders: typical 0–10; high values make the placeable very resistant to damage until
+               HP is depleted.</string>
              </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
@@ -675,7 +715,10 @@
            <item row="3" column="1">
             <widget class="QSpinBox" name="fortitudeSpin">
              <property name="toolTip">
-              <string>Fortitude (GFF: Fort). BYTE 0–255. Engine reads via ReadFieldBYTE in LoadPlaceable. Fortitude save value used in some save checks (e.g. spells, effects). Modders: often 0 in vanilla files; increase for placeables that must resist certain effects. Used with Reflex and Will for full save calculations.</string>
+              <string>Fortitude (GFF: Fort). BYTE 0–255. Engine reads via ReadFieldBYTE in
+               LoadPlaceable. Fortitude save value used in some save checks (e.g. spells, effects).
+               Modders: often 0 in vanilla files; increase for placeables that must resist certain
+               effects. Used with Reflex and Will for full save calculations.</string>
              </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
@@ -707,7 +750,10 @@
            <item row="4" column="1">
             <widget class="QSpinBox" name="reflexSpin">
              <property name="toolTip">
-              <string>Reflex (GFF: Ref). BYTE 0–255. Engine reads via ReadFieldBYTE in LoadPlaceable. Reflex save value for the placeable; used in some save checks. Modders: often 0 in vanilla; set higher for placeables that should resist reflex-based effects (e.g. area spells).</string>
+              <string>Reflex (GFF: Ref). BYTE 0–255. Engine reads via ReadFieldBYTE in
+               LoadPlaceable. Reflex save value for the placeable; used in some save checks.
+               Modders: often 0 in vanilla; set higher for placeables that should resist
+               reflex-based effects (e.g. area spells).</string>
              </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
@@ -739,7 +785,10 @@
            <item row="5" column="1">
             <widget class="QSpinBox" name="willSpin">
              <property name="toolTip">
-              <string>Will (GFF: Will). BYTE 0–255. Engine reads via ReadFieldBYTE in LoadPlaceable. Will save value; used in some save checks (e.g. mind-affecting or will-based effects). Modders: often 0 in vanilla; increase for placeables that should resist will-based effects.</string>
+              <string>Will (GFF: Will). BYTE 0–255. Engine reads via ReadFieldBYTE in LoadPlaceable.
+               Will save value; used in some save checks (e.g. mind-affecting or will-based
+               effects). Modders: often 0 in vanilla; increase for placeables that should resist
+               will-based effects.</string>
              </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
@@ -825,7 +874,11 @@
              <item>
               <widget class="QLineEdit" name="keyEdit">
                <property name="toolTip">
-                <string>Key Tag (GFF: KeyName). CExoString. Engine reads via ReadFieldCExoString in LoadPlaceable. Tag of the key item required to unlock when Key Required is set. The player must have an item in inventory whose Tag matches this string. Leave blank if no key is required. Modders: use the same Tag as the key UTI's Tag field. Case-sensitive in some engines.</string>
+                <string>Key Tag (GFF: KeyName). CExoString. Engine reads via ReadFieldCExoString in
+                 LoadPlaceable. Tag of the key item required to unlock when Key Required is set. The
+                 player must have an item in inventory whose Tag matches this string. Leave blank if
+                 no key is required. Modders: use the same Tag as the key UTI's Tag field.
+                 Case-sensitive in some engines.</string>
                </property>
               </widget>
              </item>
@@ -882,7 +935,10 @@
              <item row="0" column="1">
               <widget class="QSpinBox" name="openLockSpin">
                <property name="toolTip">
-                <string>Open Lock DC (GFF: OpenLockDC). BYTE 0–255. Engine reads via ReadFieldBYTE in LoadPlaceable. Difficulty class for the Security check to pick the lock. Modders: typical 10–25; 0 = trivial/unlocked. Key Required overrides this when the player uses the matching key. Lockable must be set for the lock to apply.</string>
+                <string>Open Lock DC (GFF: OpenLockDC). BYTE 0–255. Engine reads via ReadFieldBYTE
+                 in LoadPlaceable. Difficulty class for the Security check to pick the lock.
+                 Modders: typical 10–25; 0 = trivial/unlocked. Key Required overrides this when the
+                 player uses the matching key. Lockable must be set for the lock to apply.</string>
                </property>
                <property name="minimum">
                 <number>0</number>
@@ -911,7 +967,10 @@
              <item row="2" column="1">
               <widget class="QSpinBox" name="difficultyModSpin">
                <property name="toolTip">
-                <string>Difficulty Mod (GFF: OpenLockDiffMod). KotOR 2 only. Stored as signed byte (-128 to 127). Modifier added to the effective Open Lock DC; positive = harder, negative = easier. Modders: use 0 for default; leave 0 if targeting K1. Edge case: combined DC can go below 0 (treated as 0) or above 255 (engine may clamp).</string>
+                <string>Difficulty Mod (GFF: OpenLockDiffMod). KotOR 2 only. Stored as signed byte
+                 (-128 to 127). Modifier added to the effective Open Lock DC; positive = harder,
+                 negative = easier. Modders: use 0 for default; leave 0 if targeting K1. Edge case:
+                 combined DC can go below 0 (treated as 0) or above 255 (engine may clamp).</string>
                </property>
                <property name="minimum">
                 <number>-128</number>
@@ -1166,7 +1225,10 @@
         <item row="0" column="0">
          <widget class="QPlainTextEdit" name="commentsEdit">
           <property name="toolTip">
-           <string>Comments (GFF: Comment). CExoString. Developer notes only—the game engine never reads or displays this. Use to document the placeable (purpose, author, change log). Modders: no length limit in GFF; keep readable for your team. Not included in game data at runtime.</string>
+           <string>Comments (GFF: Comment). CExoString. Developer notes only—the game engine never
+            reads or displays this. Use to document the placeable (purpose, author, change log).
+            Modders: no length limit in GFF; keep readable for your team. Not included in game data
+            at runtime.</string>
           </property>
          </widget>
         </item>

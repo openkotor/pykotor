@@ -6,7 +6,7 @@ from typing import Any
 
 from mcp import types
 
-from kotormcp.tools import archives, conversion, discovery, gamedata, installation, modules, refs, scripts, writing
+from kotormcp.tools import archives, conversion, discovery, gamedata, installation, modules, refs, scripts, walkmesh, writing
 
 
 def get_all_tools() -> list[types.Tool]:
@@ -20,6 +20,7 @@ def get_all_tools() -> list[types.Tool]:
         + modules.get_tools()
         + refs.get_tools()
         + scripts.get_tools()
+        + walkmesh.get_tools()
         + writing.get_tools()
     )
 
@@ -74,5 +75,7 @@ async def handle_tool(name: str, arguments: dict[str, Any]) -> types.CallToolRes
         return await refs.handle_describe_jrl(arguments)
     if name == "kotor_describe_resource_refs":
         return await refs.handle_describe_resource_refs(arguments)
+    if name == "kotor_walkmesh_validation_diagram":
+        return await walkmesh.handle_walkmesh_validation_diagram(arguments)
     msg = f"Unknown tool '{name}'"
     raise ValueError(msg)

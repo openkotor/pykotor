@@ -12,10 +12,15 @@ from pykotor.resource.formats.bwm import bytes_bwm, read_bwm
 from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
-    from qtpy.QtWidgets import QCheckBox, QDoubleSpinBox, QSpinBox
+    from qtpy.QtWidgets import QCheckBox, QDoubleSpinBox, QListWidget, QSpinBox, QPushButton
+    from qtpy.QtGui import QUndoStack
+    from qtpy.QtWidgets import QMenu
 
     from pykotor.common.indoorkit import Kit, KitComponent
     from pykotor.common.indoormap import EmbeddedKit, IndoorMap
+
+    from toolset.gui.windows.indoor_builder.builder import IndoorMapBuilder
+    from toolset.gui.windows.indoor_builder.renderer import IndoorMapRenderer
 
 
 class RoomClipboardData(TypedDict):
@@ -195,7 +200,7 @@ class IndoorRendererSignalsLike(Protocol):
 
 
 def cancel_indoor_operations_core(
-    renderer: IndoorCancelableRendererLike,
+    renderer: IndoorCancelableRendererLike | IndoorMapRenderer,
     *,
     clear_paint_stroke: Callable[[], None],
     clear_placement_mode: Callable[[], None],
@@ -356,7 +361,7 @@ def handle_indoor_key_press_shortcuts(
 
 
 def handle_indoor_primary_press(
-    renderer: IndoorPrimaryPressRendererLike,
+    renderer: IndoorPrimaryPressRendererLike | IndoorMapRenderer,
     world: Vector3,
     *,
     shift_pressed: bool,
@@ -512,7 +517,7 @@ def connect_indoor_option_signals(
 
 
 def connect_indoor_renderer_signals(
-    renderer: IndoorRendererSignalsLike,
+    renderer: IndoorRendererSignalsLike | IndoorMapRenderer,
     *,
     on_context_menu: Callable[..., None],
     on_mouse_moved: Callable[..., None],
@@ -526,23 +531,23 @@ def connect_indoor_renderer_signals(
     on_marquee_select: Callable[..., None] | None = None,
 ) -> None:
     renderer.customContextMenuRequested.connect(on_context_menu)
-    renderer.sig_mouse_moved.connect(on_mouse_moved)
-    renderer.sig_mouse_pressed.connect(on_mouse_pressed)
-    renderer.sig_mouse_released.connect(on_mouse_released)
-    renderer.sig_mouse_scrolled.connect(on_mouse_scrolled)
-    renderer.sig_mouse_double_clicked.connect(on_mouse_double_clicked)
-    renderer.sig_rooms_moved.connect(on_rooms_moved)
-    renderer.sig_rooms_rotated.connect(on_rooms_rotated)
-    renderer.sig_warp_moved.connect(on_warp_moved)
+    renderer.sig_mouse_moved.connect(on_mouse_moved)  # pyright: ignore[reportAttributeAccessIssue]
+    renderer.sig_mouse_pressed.connect(on_mouse_pressed)  # pyright: ignore[reportAttributeAccessIssue]
+    renderer.sig_mouse_released.connect(on_mouse_released)  # pyright: ignore[reportAttributeAccessIssue]
+    renderer.sig_mouse_scrolled.connect(on_mouse_scrolled)  # pyright: ignore[reportAttributeAccessIssue]
+    renderer.sig_mouse_double_clicked.connect(on_mouse_double_clicked)  # pyright: ignore[reportAttributeAccessIssue]
+    renderer.sig_rooms_moved.connect(on_rooms_moved)  # pyright: ignore[reportAttributeAccessIssue]
+    renderer.sig_rooms_rotated.connect(on_rooms_rotated)  # pyright: ignore[reportAttributeAccessIssue]
+    renderer.sig_warp_moved.connect(on_warp_moved)  # pyright: ignore[reportAttributeAccessIssue]
     if on_marquee_select is not None:
-        renderer.sig_marquee_select.connect(on_marquee_select)
+        renderer.sig_marquee_select.connect(on_marquee_select)  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def connect_indoor_paint_control_signals(
     *,
-    enable_paint_check: ToggleSignalWidgetLike,
-    colorize_check: ToggleSignalWidgetLike,
-    reset_button: ClickSignalWidgetLike,
+    enable_paint_check: ToggleSignalWidgetLike | QCheckBox,
+    colorize_check: ToggleSignalWidgetLike | QCheckBox,
+    reset_button: ClickSignalWidgetLike | QPushButton,
     on_toggle_paint: Callable[..., None],
     on_toggle_colorize: Callable[..., None],
     on_reset_paint: Callable[..., None],
@@ -553,7 +558,7 @@ def connect_indoor_paint_control_signals(
 
 
 def select_all_indoor_rooms(
-    renderer: IndoorSelectionRendererLike,
+    renderer: IndoorSelectionRendererLike | IndoorMapRenderer,
     rooms: Sequence[IndoorMapRoom],
     *,
     refresh: bool = False,
@@ -566,7 +571,7 @@ def select_all_indoor_rooms(
 
 
 def reset_indoor_camera_view(
-    renderer: IndoorCameraRendererLike,
+    renderer: IndoorCameraRendererLike | IndoorMapRenderer,
     *,
     default_camera_x: float,
     default_camera_y: float,
@@ -578,7 +583,7 @@ def reset_indoor_camera_view(
     renderer.set_camera_zoom(default_camera_zoom)
 
 
-def center_indoor_camera_on_selected_rooms(renderer: IndoorCameraRendererLike) -> bool:
+def center_indoor_camera_on_selected_rooms(renderer: IndoorCameraRendererLike | IndoorMapRenderer) -> bool:
     rooms = renderer.selected_rooms()
     if not rooms:
         return False
@@ -590,7 +595,7 @@ def center_indoor_camera_on_selected_rooms(renderer: IndoorCameraRendererLike) -
 
 
 def add_connected_indoor_rooms_to_selection(
-    renderer: IndoorSelectionRendererLike,
+    renderer: IndoorSelectionRendererLike | IndoorMapRenderer,
     room: IndoorMapRoom,
 ) -> None:
     renderer.select_room(room, clear_existing=False)
@@ -601,7 +606,7 @@ def add_connected_indoor_rooms_to_selection(
         add_connected_indoor_rooms_to_selection(renderer, connected)
 
 
-def ensure_context_room_selection(renderer: IndoorSelectionRendererLike, room: IndoorMapRoom | None) -> int:
+def ensure_context_room_selection(renderer: IndoorSelectionRendererLike | IndoorMapRenderer, room: IndoorMapRoom | None) -> int:
     if room is None:
         return 0
     if room not in renderer.selected_rooms():
@@ -610,7 +615,7 @@ def ensure_context_room_selection(renderer: IndoorSelectionRendererLike, room: I
 
 
 def add_room_context_actions(
-    menu: ContextMenuLike,
+    menu: ContextMenuLike | QMenu,
     *,
     selected_count: int,
     on_duplicate: Callable[[], None],
@@ -659,7 +664,7 @@ def add_room_context_actions(
 
 
 def add_hook_context_actions(
-    menu: ContextMenuLike,
+    menu: ContextMenuLike | QMenu,
     *,
     hook_hit: tuple[IndoorMapRoom, int] | None,
     on_select_hook: Callable[[IndoorMapRoom, int], None],
@@ -686,7 +691,7 @@ def add_hook_context_actions(
 
 
 def add_center_view_context_action(
-    menu: ContextMenuLike,
+    menu: ContextMenuLike | QMenu,
     renderer: IndoorCameraRendererLike,
     world: Vector3,
 ) -> None:
@@ -696,7 +701,7 @@ def add_center_view_context_action(
 
 
 def add_add_hook_context_action(
-    menu: ContextMenuLike,
+    menu: ContextMenuLike | QMenu,
     *,
     on_add_hook: Callable[[], None],
 ) -> None:
@@ -706,7 +711,7 @@ def add_add_hook_context_action(
 
 
 def get_indoor_context_hits(
-    renderer: IndoorContextMenuRendererLike,
+    renderer: IndoorContextMenuRendererLike | IndoorMapRenderer,
     *,
     screen_x: float,
     screen_y: float,
@@ -719,9 +724,9 @@ def get_indoor_context_hits(
 
 
 def populate_indoor_context_menu(
-    menu: ContextMenuLike,
+    menu: ContextMenuLike | QMenu,
     *,
-    renderer: IndoorContextMenuRendererLike,
+    renderer: IndoorContextMenuRendererLike | IndoorMapRenderer,
     room: IndoorMapRoom | None,
     hook_hit: tuple[IndoorMapRoom, int] | None,
     world: Vector3,
@@ -763,14 +768,14 @@ def populate_indoor_context_menu(
 
 
 def sync_indoor_options_ui_from_renderer(
-    renderer: IndoorOptionsRendererLike,
+    renderer: IndoorOptionsRendererLike | IndoorMapRenderer,
     *,
-    snap_to_grid_check: CheckableWidgetLike,
-    snap_to_hooks_check: CheckableWidgetLike,
-    show_grid_check: CheckableWidgetLike,
-    show_hooks_check: CheckableWidgetLike,
-    grid_size_spin: NumericWidgetLike,
-    rotation_snap_spin: NumericWidgetLike,
+    snap_to_grid_check: CheckableWidgetLike | QCheckBox,
+    snap_to_hooks_check: CheckableWidgetLike | QCheckBox,
+    show_grid_check: CheckableWidgetLike | QCheckBox,
+    show_hooks_check: CheckableWidgetLike | QCheckBox,
+    grid_size_spin: NumericWidgetLike | QDoubleSpinBox,
+    rotation_snap_spin: NumericWidgetLike | QSpinBox,
 ) -> None:
     snap_to_grid_check.blockSignals(True)
     snap_to_hooks_check.blockSignals(True)
@@ -795,9 +800,9 @@ def sync_indoor_options_ui_from_renderer(
 
 
 def clear_indoor_placement_mode(
-    renderer: IndoorPlacementRendererLike,
-    component_list: SelectionListWidgetLike,
-    module_component_list: SelectionListWidgetLike,
+    renderer: IndoorPlacementRendererLike | IndoorMapRenderer,
+    component_list: SelectionListWidgetLike | QListWidget,
+    module_component_list: SelectionListWidgetLike | QListWidget,
     *,
     on_cleared: Callable[[], None] | None = None,
 ) -> None:
@@ -823,7 +828,7 @@ def push_rooms_moved_undo(
     rooms: list[IndoorMapRoom],
     old_positions: list[Vector3],
     new_positions: list[Vector3],
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
     *,
     position_change_epsilon: float,
@@ -844,7 +849,7 @@ def push_rooms_rotated_undo(
     rooms: list[IndoorMapRoom],
     old_rotations: list[float],
     new_rotations: list[float],
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
     *,
     rotation_change_epsilon: float,
@@ -864,7 +869,7 @@ def push_warp_moved_undo(
     indoor_map: IndoorMap,
     old_position: Vector3,
     new_position: Vector3,
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     *,
     position_change_epsilon: float | None = None,
 ) -> bool:
@@ -877,7 +882,7 @@ def push_warp_moved_undo(
     return True
 
 
-def copy_selected_rooms_to_clipboard(renderer: IndoorSelectionRendererLike) -> list[RoomClipboardData]:
+def copy_selected_rooms_to_clipboard(renderer: IndoorSelectionRendererLike | IndoorMapRenderer) -> list[RoomClipboardData]:
     rooms: list[IndoorMapRoom] = renderer.selected_rooms()
     if not rooms:
         return []
@@ -885,9 +890,9 @@ def copy_selected_rooms_to_clipboard(renderer: IndoorSelectionRendererLike) -> l
 
 
 def paste_rooms_from_clipboard(
-    renderer: IndoorClipboardRendererLike,
+    renderer: IndoorClipboardRendererLike | IndoorMapRenderer,
     indoor_map: IndoorMap,
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
     clipboard: list[RoomClipboardData],
     kits: list[Kit],
@@ -905,9 +910,9 @@ def paste_rooms_from_clipboard(
 
 
 def apply_paste_rooms_from_clipboard(
-    renderer: IndoorClipboardRendererLike,
+    renderer: IndoorClipboardRendererLike | IndoorMapRenderer,
     indoor_map: IndoorMap,
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
     clipboard: list[RoomClipboardData],
     kits: list[Kit],
@@ -982,66 +987,66 @@ def instantiate_rooms_from_clipboard(
 
 
 def delete_selected_rooms_or_hook(
-    renderer: IndoorSelectionRendererLike,
+    renderer: IndoorSelectionRendererLike | IndoorMapRenderer,
     indoor_map: IndoorMap,
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
 ) -> bool:
     from toolset.gui.windows.indoor_builder.undo_commands import DeleteRoomsCommand
 
-    hook_sel: tuple[IndoorMapRoom, int] | None = renderer.selected_hook()
+    hook_sel: tuple[IndoorMapRoom, int] | None = renderer.selected_hook()  # pyright: ignore[reportAttributeAccessIssue]
     if hook_sel is not None:
         room, hook_index = hook_sel
-        renderer.delete_hook(room, hook_index)
+        renderer.delete_hook(room, hook_index)  # pyright: ignore[reportAttributeAccessIssue]
         return True
 
-    rooms: list[IndoorMapRoom] = renderer.selected_rooms()
+    rooms: list[IndoorMapRoom] = renderer.selected_rooms()  # pyright: ignore[reportAttributeAccessIssue]
     if not rooms:
         return False
 
     cmd = DeleteRoomsCommand(indoor_map, rooms, invalidate_rooms)
     undo_stack.push(cmd)
-    selected_hook = renderer._selected_hook
+    selected_hook = renderer._selected_hook  # pyright: ignore[reportAttributeAccessIssue]
     if selected_hook is not None:
         hook_room, _ = selected_hook
         if hook_room in rooms:
-            renderer.clear_selected_hook()
-    renderer.clear_selected_rooms()
+            renderer.clear_selected_hook()  # pyright: ignore[reportAttributeAccessIssue]  
+    renderer.clear_selected_rooms()  # pyright: ignore[reportAttributeAccessIssue]  
     return True
 
 
 def duplicate_selected_rooms_or_hook(
-    renderer: IndoorSelectionRendererLike,
+    renderer: IndoorSelectionRendererLike | IndoorMapRenderer,
     indoor_map: IndoorMap,
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
     offset: Vector3,
 ) -> bool:
     from toolset.gui.windows.indoor_builder.undo_commands import DuplicateRoomsCommand
 
-    hook_sel: tuple[IndoorMapRoom, int] | None = renderer.selected_hook()
+    hook_sel: tuple[IndoorMapRoom, int] | None = renderer.selected_hook()  # pyright: ignore[reportAttributeAccessIssue]
     if hook_sel is not None:
         room, hook_index = hook_sel
-        renderer.duplicate_hook(room, hook_index)
+        renderer.duplicate_hook(room, hook_index)  # pyright: ignore[reportAttributeAccessIssue]
         return True
 
-    rooms: list[IndoorMapRoom] = renderer.selected_rooms()
+    rooms: list[IndoorMapRoom] = renderer.selected_rooms()  # pyright: ignore[reportAttributeAccessIssue]
     if not rooms:
         return False
 
     cmd = DuplicateRoomsCommand(indoor_map, rooms, offset, invalidate_rooms)
     undo_stack.push(cmd)
-    renderer.clear_selected_rooms()
+    renderer.clear_selected_rooms()  # pyright: ignore[reportAttributeAccessIssue]
     for room in cmd.duplicates:
-        renderer.select_room(room, clear_existing=False)
+        renderer.select_room(room, clear_existing=False)  # pyright: ignore[reportAttributeAccessIssue]
     renderer.update()
     return True
 
 
 def add_rooms_with_undo_and_select(
-    renderer: IndoorSelectionRendererLike,
+    renderer: IndoorSelectionRendererLike | IndoorMapRenderer,
     indoor_map: IndoorMap,
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
     rooms: list[IndoorMapRoom],
 ) -> bool:
@@ -1053,21 +1058,21 @@ def add_rooms_with_undo_and_select(
     for room in rooms:
         undo_stack.push(AddRoomCommand(indoor_map, room, invalidate_rooms))
 
-    renderer.clear_selected_rooms()
+    renderer.clear_selected_rooms()  # pyright: ignore[reportAttributeAccessIssue]
     for room in rooms:
-        renderer.select_room(room, clear_existing=False)
+        renderer.select_room(room, clear_existing=False)  # pyright: ignore[reportAttributeAccessIssue]
     renderer.update()
     return True
 
 
 def merge_selected_rooms(
-    renderer: IndoorSelectionRendererLike,
+    renderer: IndoorSelectionRendererLike | IndoorMapRenderer,
     indoor_map: IndoorMap,
     embedded_kit: EmbeddedKit,
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
 ) -> bool:
-    rooms = renderer.selected_rooms()
+    rooms: list[IndoorMapRoom] = renderer.selected_rooms()  # pyright: ignore[reportAttributeAccessIssue]
     if len(rooms) < 2:
         return False
 
@@ -1075,18 +1080,18 @@ def merge_selected_rooms(
 
     cmd = MergeRoomsCommand(indoor_map, rooms, embedded_kit, invalidate_rooms)
     undo_stack.push(cmd)
-    renderer.clear_selected_rooms()
-    renderer.clear_selected_hook()
-    renderer.select_room(cmd.merged_room, clear_existing=True)
+    renderer.clear_selected_rooms()  # pyright: ignore[reportAttributeAccessIssue]
+    renderer.clear_selected_hook()  # pyright: ignore[reportAttributeAccessIssue]
+    renderer.select_room(cmd.merged_room, clear_existing=True)  # pyright: ignore[reportAttributeAccessIssue]
     renderer.update()
     return True
 
 
 def apply_merge_selected_rooms(
-    renderer: IndoorSelectionRendererLike,
+    renderer: IndoorSelectionRendererLike | IndoorMapRenderer,
     indoor_map: IndoorMap,
     embedded_kit: EmbeddedKit,
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
     *,
     on_changed: Callable[[], None] | None = None,
@@ -1098,13 +1103,13 @@ def apply_merge_selected_rooms(
 
 
 def rotate_selected_rooms(
-    renderer: IndoorSelectionRendererLike,
+    renderer: IndoorSelectionRendererLike | IndoorMapRenderer,
     indoor_map: IndoorMap,
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
     angle: float,
 ) -> bool:
-    rooms = renderer.selected_rooms()
+    rooms: list[IndoorMapRoom] = renderer.selected_rooms()  # pyright: ignore[reportAttributeAccessIssue]
     if not rooms:
         return False
 
@@ -1113,34 +1118,34 @@ def rotate_selected_rooms(
     old_rotations = [room.rotation for room in rooms]
     new_rotations = [(room.rotation + angle) % 360 for room in rooms]
     undo_stack.push(RotateRoomsCommand(indoor_map, rooms, old_rotations, new_rotations, invalidate_rooms))
-    renderer.update()
+    renderer.update()  # pyright: ignore[reportAttributeAccessIssue]
     return True
 
 
 def apply_rotate_selected_rooms(
-    renderer: IndoorSelectionRendererLike,
+    renderer: IndoorSelectionRendererLike | IndoorMapRenderer,
     indoor_map: IndoorMap,
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
     angle: float,
     *,
     on_changed: Callable[[], None] | None = None,
 ) -> bool:
-    changed = rotate_selected_rooms(renderer, indoor_map, undo_stack, invalidate_rooms, angle)
+    changed: bool = rotate_selected_rooms(renderer, indoor_map, undo_stack, invalidate_rooms, angle)
     if changed and on_changed is not None:
         on_changed()
     return changed
 
 
 def flip_selected_rooms(
-    renderer: IndoorSelectionRendererLike,
+    renderer: IndoorSelectionRendererLike | IndoorMapRenderer,
     indoor_map: IndoorMap,
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
     flip_x: bool,
     flip_y: bool,
 ) -> bool:
-    rooms = renderer.selected_rooms()
+    rooms: list[IndoorMapRoom] = renderer.selected_rooms()  # pyright: ignore[reportAttributeAccessIssue]
     if not rooms:
         return False
 
@@ -1152,16 +1157,16 @@ def flip_selected_rooms(
 
 
 def apply_flip_selected_rooms(
-    renderer: IndoorSelectionRendererLike,
+    renderer: IndoorSelectionRendererLike | IndoorMapRenderer,
     indoor_map: IndoorMap,
-    undo_stack: UndoStackLike,
+    undo_stack: UndoStackLike | QUndoStack,
     invalidate_rooms: Callable[[list[IndoorMapRoom]], None],
     flip_x: bool,
     flip_y: bool,
     *,
     on_changed: Callable[[], None] | None = None,
 ) -> bool:
-    changed = flip_selected_rooms(renderer, indoor_map, undo_stack, invalidate_rooms, flip_x, flip_y)
+    changed: bool = flip_selected_rooms(renderer, indoor_map, undo_stack, invalidate_rooms, flip_x, flip_y)
     if changed and on_changed is not None:
         on_changed()
     return changed

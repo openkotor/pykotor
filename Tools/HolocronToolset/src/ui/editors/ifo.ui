@@ -150,7 +150,8 @@
            <item row="4" column="1">
             <widget class="QSpinBox" name="creatorIdSpin">
              <property name="toolTip">
-              <string>Creator ID (GFF: Mod_Creator_ID). INT32. Toolset creator identifier. Deprecated; unused at runtime. Modders: leave 0.</string>
+              <string>Creator ID (GFF: Mod_Creator_ID). INT32. Toolset creator identifier.
+               Deprecated; unused at runtime. Modders: leave 0.</string>
              </property>
              <property name="minimum">
               <number>-2147483648</number>
@@ -173,7 +174,8 @@
            <item row="5" column="1">
             <widget class="QSpinBox" name="versionSpin">
              <property name="toolTip">
-              <string>Version (GFF: Mod_Version). DWORD. Module version number. Deprecated; unused at runtime. Modders: leave 0.</string>
+              <string>Version (GFF: Mod_Version). DWORD. Module version number. Deprecated; unused
+               at runtime. Modders: leave 0.</string>
              </property>
              <property name="minimum">
               <number>0</number>
@@ -212,14 +214,16 @@
               <string>HAK Files:</string>
              </property>
              <property name="toolTip">
-              <string>Semicolon-separated list of required HAK file names. HAKs override base game resources and are loaded before module resources.</string>
+              <string>Semicolon-separated list of required HAK file names. HAKs override base game
+               resources and are loaded before module resources.</string>
              </property>
             </widget>
            </item>
            <item row="7" column="1">
             <widget class="QLineEdit" name="hakEdit">
              <property name="toolTip">
-              <string>Semicolon-separated list of required HAK file names. HAKs override base game resources and are loaded before module resources.</string>
+              <string>Semicolon-separated list of required HAK file names. HAKs override base game
+               resources and are loaded before module resources.</string>
              </property>
             </widget>
            </item>
@@ -336,7 +340,8 @@
               <string>Entry Direction:</string>
              </property>
              <property name="toolTip">
-              <string>Player's initial facing angle in degrees (0-360). Direction is computed from Mod_Entry_Dir_X and Mod_Entry_Dir_Y as atan2(Dir_Y, Dir_X).</string>
+              <string>Player's initial facing angle in degrees (0-360). Direction is computed from
+               Mod_Entry_Dir_X and Mod_Entry_Dir_Y as atan2(Dir_Y, Dir_X).</string>
              </property>
             </widget>
            </item>
@@ -355,7 +360,8 @@
               <string>°</string>
              </property>
              <property name="toolTip">
-              <string>Player's initial facing angle in degrees (0-360). Direction is computed from Mod_Entry_Dir_X and Mod_Entry_Dir_Y as atan2(Dir_Y, Dir_X).</string>
+              <string>Player's initial facing angle in degrees (0-360). Direction is computed from
+               Mod_Entry_Dir_X and Mod_Entry_Dir_Y as atan2(Dir_Y, Dir_X).</string>
              </property>
             </widget>
            </item>
@@ -378,7 +384,8 @@
               <bool>true</bool>
              </property>
              <property name="toolTip">
-              <string>First area name from Mod_Area_list (KotOR modules typically have one area). Read-only, derived from area list.</string>
+              <string>First area name from Mod_Area_list (KotOR modules typically have one area).
+               Read-only, derived from area list.</string>
              </property>
             </widget>
            </item>
@@ -404,14 +411,16 @@
               <string>On Heartbeat:</string>
              </property>
              <property name="toolTip">
-              <string>Fires periodically (~6 seconds). Used for timers, global condition checks, and ambient system updates.</string>
+              <string>Fires periodically (~6 seconds). Used for timers, global condition checks, and
+               ambient system updates.</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
             <widget class="FilterComboBox" name="onHeartbeatEdit">
              <property name="toolTip">
-              <string>Fires periodically (~6 seconds). Used for timers, global condition checks, and ambient system updates.</string>
+              <string>Fires periodically (~6 seconds). Used for timers, global condition checks, and
+               ambient system updates.</string>
              </property>
             </widget>
            </item>
@@ -421,14 +430,16 @@
               <string>On Load:</string>
              </property>
              <property name="toolTip">
-              <string>Fires when module finishes loading. Used to initialize global variables, setup persistent data structures, and load saved state.</string>
+              <string>Fires when module finishes loading. Used to initialize global variables, setup
+               persistent data structures, and load saved state.</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
             <widget class="FilterComboBox" name="onLoadEdit">
              <property name="toolTip">
-              <string>Fires when module finishes loading. Used to initialize global variables, setup persistent data structures, and load saved state.</string>
+              <string>Fires when module finishes loading. Used to initialize global variables, setup
+               persistent data structures, and load saved state.</string>
              </property>
             </widget>
            </item>
@@ -438,14 +449,16 @@
               <string>On Start:</string>
              </property>
              <property name="toolTip">
-              <string>Fires after player spawned. Used to start cinematics, give starting equipment, and setup initial conversations.</string>
+              <string>Fires after player spawned. Used to start cinematics, give starting equipment,
+               and setup initial conversations.</string>
              </property>
             </widget>
            </item>
            <item row="2" column="1">
             <widget class="FilterComboBox" name="onStartEdit">
              <property name="toolTip">
-              <string>Fires after player spawned. Used to start cinematics, give starting equipment, and setup initial conversations.</string>
+              <string>Fires after player spawned. Used to start cinematics, give starting equipment,
+               and setup initial conversations.</string>
              </property>
             </widget>
            </item>
@@ -455,14 +468,16 @@
               <string>On Enter:</string>
              </property>
              <property name="toolTip">
-              <string>Fires on player enter (multiplayer). Used for player-specific initialization when entering module.</string>
+              <string>Fires on player enter (multiplayer). Used for player-specific initialization
+               when entering module.</string>
              </property>
             </widget>
            </item>
            <item row="3" column="1">
             <widget class="FilterComboBox" name="onEnterEdit">
              <property name="toolTip">
-              <string>Fires on player enter (multiplayer). Used for player-specific initialization when entering module.</string>
+              <string>Fires on player enter (multiplayer). Used for player-specific initialization
+               when entering module.</string>
              </property>
             </widget>
            </item>
@@ -472,14 +487,16 @@
               <string>On Leave:</string>
              </property>
              <property name="toolTip">
-              <string>Fires on player leave (multiplayer). Used for cleanup and state saving when leaving module.</string>
+              <string>Fires on player leave (multiplayer). Used for cleanup and state saving when
+               leaving module.</string>
              </property>
             </widget>
            </item>
            <item row="4" column="1">
             <widget class="FilterComboBox" name="onLeaveEdit">
              <property name="toolTip">
-              <string>Fires on player leave (multiplayer). Used for cleanup and state saving when leaving module.</string>
+              <string>Fires on player leave (multiplayer). Used for cleanup and state saving when
+               leaving module.</string>
              </property>
             </widget>
            </item>
@@ -506,14 +523,16 @@
               <string>On Acquire Item:</string>
              </property>
              <property name="toolTip">
-              <string>Fires when item acquired. Used for quest tracking, item validation, and special acquisition effects.</string>
+              <string>Fires when item acquired. Used for quest tracking, item validation, and
+               special acquisition effects.</string>
              </property>
             </widget>
            </item>
            <item row="6" column="1">
             <widget class="FilterComboBox" name="onAcquireItemEdit">
              <property name="toolTip">
-              <string>Fires when item acquired. Used for quest tracking, item validation, and special acquisition effects.</string>
+              <string>Fires when item acquired. Used for quest tracking, item validation, and
+               special acquisition effects.</string>
              </property>
             </widget>
            </item>
@@ -523,14 +542,16 @@
               <string>On Unacquire Item:</string>
              </property>
              <property name="toolTip">
-              <string>Fires when item lost/sold. Used for cleanup and validation when items are removed from inventory.</string>
+              <string>Fires when item lost/sold. Used for cleanup and validation when items are
+               removed from inventory.</string>
              </property>
             </widget>
            </item>
            <item row="7" column="1">
             <widget class="FilterComboBox" name="onUnacquireItemEdit">
              <property name="toolTip">
-              <string>Fires when item lost/sold. Used for cleanup and validation when items are removed from inventory.</string>
+              <string>Fires when item lost/sold. Used for cleanup and validation when items are
+               removed from inventory.</string>
              </property>
             </widget>
            </item>
@@ -540,14 +561,16 @@
               <string>On Player Death:</string>
              </property>
              <property name="toolTip">
-              <string>Fires when player dies. Used for game over sequence, respawn handling, and loading last save.</string>
+              <string>Fires when player dies. Used for game over sequence, respawn handling, and
+               loading last save.</string>
              </property>
             </widget>
            </item>
            <item row="8" column="1">
             <widget class="FilterComboBox" name="onPlayerDeathEdit">
              <property name="toolTip">
-              <string>Fires when player dies. Used for game over sequence, respawn handling, and loading last save.</string>
+              <string>Fires when player dies. Used for game over sequence, respawn handling, and
+               loading last save.</string>
              </property>
             </widget>
            </item>
@@ -557,14 +580,16 @@
               <string>On Player Dying:</string>
              </property>
              <property name="toolTip">
-              <string>Fires when player HP reaches 0. Used for death animations, last words, and pre-death effects.</string>
+              <string>Fires when player HP reaches 0. Used for death animations, last words, and
+               pre-death effects.</string>
              </property>
             </widget>
            </item>
            <item row="9" column="1">
             <widget class="FilterComboBox" name="onPlayerDyingEdit">
              <property name="toolTip">
-              <string>Fires when player HP reaches 0. Used for death animations, last words, and pre-death effects.</string>
+              <string>Fires when player HP reaches 0. Used for death animations, last words, and
+               pre-death effects.</string>
              </property>
             </widget>
            </item>
@@ -574,14 +599,16 @@
               <string>On Player Level Up:</string>
              </property>
              <property name="toolTip">
-              <string>Fires on level up. Used for level-up bonuses, notifications, and progression tracking.</string>
+              <string>Fires on level up. Used for level-up bonuses, notifications, and progression
+               tracking.</string>
              </property>
             </widget>
            </item>
            <item row="10" column="1">
             <widget class="FilterComboBox" name="onPlayerLevelupEdit">
              <property name="toolTip">
-              <string>Fires on level up. Used for level-up bonuses, notifications, and progression tracking.</string>
+              <string>Fires on level up. Used for level-up bonuses, notifications, and progression
+               tracking.</string>
              </property>
             </widget>
            </item>
@@ -591,14 +618,16 @@
               <string>On Player Respawn:</string>
              </property>
              <property name="toolTip">
-              <string>Fires on spawn button (multiplayer). Used for respawn logic and player reinitialization.</string>
+              <string>Fires on spawn button (multiplayer). Used for respawn logic and player
+               reinitialization.</string>
              </property>
             </widget>
            </item>
            <item row="11" column="1">
             <widget class="FilterComboBox" name="onPlayerRespawnEdit">
              <property name="toolTip">
-              <string>Fires on spawn button (multiplayer). Used for respawn logic and player reinitialization.</string>
+              <string>Fires on spawn button (multiplayer). Used for respawn logic and player
+               reinitialization.</string>
              </property>
             </widget>
            </item>
@@ -608,14 +637,16 @@
               <string>On User Defined:</string>
              </property>
              <property name="toolTip">
-              <string>Fires on user-defined events. Used for custom event handling and module-specific logic.</string>
+              <string>Fires on user-defined events. Used for custom event handling and
+               module-specific logic.</string>
              </property>
             </widget>
            </item>
            <item row="12" column="1">
             <widget class="FilterComboBox" name="onUserDefinedEdit">
              <property name="toolTip">
-              <string>Fires on user-defined events. Used for custom event handling and module-specific logic.</string>
+              <string>Fires on user-defined events. Used for custom event handling and
+               module-specific logic.</string>
              </property>
             </widget>
            </item>
@@ -625,14 +656,16 @@
               <string>On Player Rest:</string>
              </property>
              <property name="toolTip">
-              <string>Fires when player rests (deprecated, unused in KotOR). Used for rest-related events in NWN.</string>
+              <string>Fires when player rests (deprecated, unused in KotOR). Used for rest-related
+               events in NWN.</string>
              </property>
             </widget>
            </item>
            <item row="13" column="1">
             <widget class="FilterComboBox" name="onPlayerRestEdit">
              <property name="toolTip">
-              <string>Fires when player rests (deprecated, unused in KotOR). Used for rest-related events in NWN.</string>
+              <string>Fires when player rests (deprecated, unused in KotOR). Used for rest-related
+               events in NWN.</string>
              </property>
             </widget>
            </item>
@@ -658,14 +691,16 @@
               <string>Expansion Pack:</string>
              </property>
              <property name="toolTip">
-              <string>Required expansion bitfield. 0x01 = Expansion Pack 1, 0x02 = Expansion Pack 2, etc.</string>
+              <string>Required expansion bitfield. 0x01 = Expansion Pack 1, 0x02 = Expansion Pack 2,
+               etc.</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
             <widget class="QSpinBox" name="expansionPackSpin">
              <property name="toolTip">
-              <string>Expansion Pack (GFF: Mod_Expansion_Pack). WORD. Bitfield: 0x01=Pack1, 0x02=Pack2. 0=no expansion required. Modders: 0 for standard modules.</string>
+              <string>Expansion Pack (GFF: Mod_Expansion_Pack). WORD. Bitfield: 0x01=Pack1,
+               0x02=Pack2. 0=no expansion required. Modders: 0 for standard modules.</string>
              </property>
              <property name="minimum">
               <number>0</number>
@@ -681,14 +716,16 @@
               <string>Minimum Game Version:</string>
              </property>
              <property name="toolTip">
-              <string>Minimum executable version required (e.g., "1.0", "1.03", "2.0"). Prevents loading in older game versions.</string>
+              <string>Minimum executable version required (e.g., "1.0", "1.03", "2.0"). Prevents
+               loading in older game versions.</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
             <widget class="QLineEdit" name="minGameVerEdit">
              <property name="toolTip">
-              <string>Minimum executable version required (e.g., "1.0", "1.03", "2.0"). Prevents loading in older game versions.</string>
+              <string>Minimum executable version required (e.g., "1.0", "1.03", "2.0"). Prevents
+               loading in older game versions.</string>
              </property>
             </widget>
            </item>
@@ -707,7 +744,8 @@
               <string>Start Movie:</string>
              </property>
              <property name="toolTip">
-              <string>BIK movie file played before module loads. Used for intro cinematics and loading screens.</string>
+              <string>BIK movie file played before module loads. Used for intro cinematics and
+               loading screens.</string>
              </property>
             </widget>
            </item>
@@ -717,7 +755,8 @@
               <number>16</number>
              </property>
              <property name="toolTip">
-              <string>BIK movie file played before module loads. Used for intro cinematics and loading screens.</string>
+              <string>BIK movie file played before module loads. Used for intro cinematics and
+               loading screens.</string>
              </property>
             </widget>
            </item>
@@ -736,7 +775,8 @@
               <string>Is Save Game:</string>
              </property>
              <property name="toolTip">
-              <string>Internal flag indicating module is from save file (always 0 in files, set at runtime)</string>
+              <string>Internal flag indicating module is from save file (always 0 in files, set at
+               runtime)</string>
              </property>
             </widget>
            </item>
@@ -746,7 +786,8 @@
               <bool>false</bool>
              </property>
              <property name="toolTip">
-              <string>Internal flag indicating module is from save file (always 0 in files, set at runtime). Read-only.</string>
+              <string>Internal flag indicating module is from save file (always 0 in files, set at
+               runtime). Read-only.</string>
              </property>
             </widget>
            </item>
@@ -773,14 +814,16 @@
               <string>XP Scale:</string>
              </property>
              <property name="toolTip">
-              <string>Experience point multiplier (0-200%). 100 = normal XP, 200 = double XP, 50 = half XP</string>
+              <string>Experience point multiplier (0-200%). 100 = normal XP, 200 = double XP, 50 =
+               half XP</string>
              </property>
             </widget>
            </item>
            <item row="2" column="1">
             <widget class="QSpinBox" name="xpScaleSpin">
              <property name="toolTip">
-              <string>XP Scale (GFF: Mod_XP_Scale). INT32 0–200. Experience multiplier: 100=normal, 200=double XP, 50=half. Modders: adjust difficulty or reward pacing.</string>
+              <string>XP Scale (GFF: Mod_XP_Scale). INT32 0–200. Experience multiplier: 100=normal,
+               200=double XP, 50=half. Modders: adjust difficulty or reward pacing.</string>
              </property>
              <property name="minimum">
               <number>0</number>
@@ -815,14 +858,16 @@
               <string>Dawn Hour:</string>
              </property>
              <property name="toolTip">
-              <string>Dawn start hour (deprecated, unused in KotOR). Intended for day/night cycle which is not implemented.</string>
+              <string>Dawn start hour (deprecated, unused in KotOR). Intended for day/night cycle
+               which is not implemented.</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
             <widget class="QSpinBox" name="dawnHourSpin">
              <property name="toolTip">
-              <string>Dawn Hour (GFF: Mod_DawnHour). INT32 0–23. Deprecated; day/night cycle not implemented in KotOR. Modders: leave 0.</string>
+              <string>Dawn Hour (GFF: Mod_DawnHour). INT32 0–23. Deprecated; day/night cycle not
+               implemented in KotOR. Modders: leave 0.</string>
              </property>
              <property name="minimum">
               <number>0</number>
@@ -838,14 +883,16 @@
               <string>Dusk Hour:</string>
              </property>
              <property name="toolTip">
-              <string>Dusk start hour (deprecated, unused in KotOR). Intended for day/night cycle which is not implemented.</string>
+              <string>Dusk start hour (deprecated, unused in KotOR). Intended for day/night cycle
+               which is not implemented.</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
             <widget class="QSpinBox" name="duskHourSpin">
              <property name="toolTip">
-              <string>Dusk Hour (GFF: Mod_DuskHour). INT32 0–23. Deprecated; day/night cycle not implemented. Modders: leave 0.</string>
+              <string>Dusk Hour (GFF: Mod_DuskHour). INT32 0–23. Deprecated; day/night cycle not
+               implemented. Modders: leave 0.</string>
              </property>
              <property name="minimum">
               <number>0</number>
@@ -861,14 +908,16 @@
               <string>Time Scale (Min/Hour):</string>
              </property>
              <property name="toolTip">
-              <string>Minutes per hour (deprecated, unused in KotOR). Intended for time-based events which are not implemented.</string>
+              <string>Minutes per hour (deprecated, unused in KotOR). Intended for time-based events
+               which are not implemented.</string>
              </property>
             </widget>
            </item>
            <item row="2" column="1">
             <widget class="QSpinBox" name="timeScaleSpin">
              <property name="toolTip">
-              <string>Time Scale (GFF: Mod_TimeScale). INT32. Minutes per in-game hour. Deprecated; unused in KotOR. Modders: leave 0.</string>
+              <string>Time Scale (GFF: Mod_TimeScale). INT32. Minutes per in-game hour. Deprecated;
+               unused in KotOR. Modders: leave 0.</string>
              </property>
              <property name="minimum">
               <number>0</number>
@@ -996,7 +1045,8 @@
         <item>
          <widget class="QLabel" name="labelAreaListInfo">
           <property name="text">
-           <string>Areas in this module. KotOR modules typically have one area per module. KotOR2 can have multiple areas per module. Areas are loaded on-demand as player transitions.</string>
+           <string>Areas in this module. KotOR modules typically have one area per module. KotOR2
+            can have multiple areas per module. Areas are loaded on-demand as player transitions.</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
@@ -1071,16 +1121,16 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSaveAs"/>
-    <addaction name="separator"/>
-    <addaction name="actionRevert"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
+    <addaction name="actionNew" />
+    <addaction name="actionOpen" />
+    <addaction name="actionSave" />
+    <addaction name="actionSaveAs" />
+    <addaction name="separator" />
+    <addaction name="actionRevert" />
+    <addaction name="separator" />
+    <addaction name="actionExit" />
    </widget>
-   <addaction name="menuFile"/>
+   <addaction name="menuFile" />
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="sizeGripEnabled">
@@ -1170,6 +1220,6 @@
    <header location="global">utility.gui.qt.widgets.widgets.combobox</header>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

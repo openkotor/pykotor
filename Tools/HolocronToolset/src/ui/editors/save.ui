@@ -30,24 +30,24 @@
           <property name="columnCount">
            <number>2</number>
           </property>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
-          <column/>
-          <column/>
+          <row />
+          <row />
+          <row />
+          <row />
+          <row />
+          <row />
+          <row />
+          <row />
+          <row />
+          <row />
+          <row />
+          <row />
+          <row />
+          <row />
+          <row />
+          <row />
+          <column />
+          <column />
          </widget>
         </item>
        </layout>
@@ -58,7 +58,7 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayoutCachedModules">
         <item>
-         <widget class="QTreeView" name="treeViewCachedModules"/>
+         <widget class="QTreeView" name="treeViewCachedModules" />
         </item>
        </layout>
       </widget>
@@ -66,7 +66,7 @@
        <attribute name="title">
         <string>General Resources</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayoutGeneralResources"/>
+       <layout class="QVBoxLayout" name="verticalLayoutGeneralResources" />
       </widget>
      </widget>
     </item>
@@ -85,7 +85,7 @@
         </rect>
        </property>
        <attribute name="label">
-        <string/>
+        <string />
        </attribute>
       </widget>
       <widget class="QWidget" name="page2">
@@ -98,7 +98,7 @@
         </rect>
        </property>
        <attribute name="label">
-        <string/>
+        <string />
        </attribute>
       </widget>
       <widget class="QWidget" name="page3">
@@ -111,7 +111,7 @@
         </rect>
        </property>
        <attribute name="label">
-        <string/>
+        <string />
        </attribute>
       </widget>
       <widget class="QWidget" name="page4">
@@ -124,7 +124,7 @@
         </rect>
        </property>
        <attribute name="label">
-        <string/>
+        <string />
        </attribute>
       </widget>
       <widget class="QWidget" name="page5">
@@ -137,7 +137,7 @@
         </rect>
        </property>
        <attribute name="label">
-        <string/>
+        <string />
        </attribute>
       </widget>
       <widget class="QWidget" name="page6">
@@ -150,7 +150,7 @@
         </rect>
        </property>
        <attribute name="label">
-        <string/>
+        <string />
        </attribute>
       </widget>
       <widget class="QWidget" name="page7">
@@ -163,7 +163,7 @@
         </rect>
        </property>
        <attribute name="label">
-        <string/>
+        <string />
        </attribute>
       </widget>
      </widget>
@@ -183,12 +183,12 @@
     <property name="title">
      <string>&amp;Tools</string>
     </property>
-    <addaction name="actionRebuildCachedModules"/>
-    <addaction name="actionFlushEventQueue"/>
+    <addaction name="actionRebuildCachedModules" />
+    <addaction name="actionFlushEventQueue" />
    </widget>
-   <addaction name="menuTools"/>
+   <addaction name="menuTools" />
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QStatusBar" name="statusBar" />
   <action name="actionRebuildCachedModules">
    <property name="text">
     <string>Rebuild cached modules</string>
@@ -200,6 +200,6 @@
    </property>
   </action>
  </widget>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

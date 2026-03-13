@@ -33,7 +33,9 @@
         <item row="0" column="0">
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Sound&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>
+            &lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot;
+            font-weight:600;&quot;&gt;Sound&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
@@ -54,7 +56,9 @@
              </size>
             </property>
             <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;TLK StringRef&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span
+              style=&quot; font-weight:600;&quot;&gt;TLK
+              StringRef&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
           </item>
@@ -73,14 +77,18 @@
              </size>
             </property>
             <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Sound ResRef&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span
+              style=&quot; font-weight:600;&quot;&gt;Sound
+              ResRef&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_5">
             <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;String Text&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span
+              style=&quot; font-weight:600;&quot;&gt;String
+              Text&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
           </item>
@@ -145,7 +153,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -155,7 +163,7 @@
           <item>
            <widget class="QToolButton" name="battlecry1PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -233,7 +241,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -243,7 +251,7 @@
           <item>
            <widget class="QToolButton" name="battlecry2PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -321,7 +329,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -331,7 +339,7 @@
           <item>
            <widget class="QToolButton" name="battlecry3PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -409,7 +417,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -419,7 +427,7 @@
           <item>
            <widget class="QToolButton" name="battlecry4PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -497,7 +505,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -507,7 +515,7 @@
           <item>
            <widget class="QToolButton" name="battlecry5PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -585,7 +593,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -595,7 +603,7 @@
           <item>
            <widget class="QToolButton" name="battlecry6PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -680,7 +688,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -690,7 +698,7 @@
           <item>
            <widget class="QToolButton" name="select1PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -768,7 +776,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -778,7 +786,7 @@
           <item>
            <widget class="QToolButton" name="select2PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -856,7 +864,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -866,7 +874,7 @@
           <item>
            <widget class="QToolButton" name="select3PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -951,7 +959,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -961,7 +969,7 @@
           <item>
            <widget class="QToolButton" name="attack1PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -1039,7 +1047,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -1049,7 +1057,7 @@
           <item>
            <widget class="QToolButton" name="attack2PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -1127,7 +1135,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -1137,7 +1145,7 @@
           <item>
            <widget class="QToolButton" name="attack3PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -1222,7 +1230,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -1232,7 +1240,7 @@
           <item>
            <widget class="QToolButton" name="pain1PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -1310,7 +1318,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -1320,7 +1328,7 @@
           <item>
            <widget class="QToolButton" name="pain2PlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -1398,7 +1406,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -1408,7 +1416,7 @@
           <item>
            <widget class="QToolButton" name="lowHpPlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -1486,7 +1494,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -1496,7 +1504,7 @@
           <item>
            <widget class="QToolButton" name="deadPlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -1574,7 +1582,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -1584,7 +1592,7 @@
           <item>
            <widget class="QToolButton" name="criticalPlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -1662,7 +1670,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -1672,7 +1680,7 @@
           <item>
            <widget class="QToolButton" name="immunePlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -1757,7 +1765,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -1767,7 +1775,7 @@
           <item>
            <widget class="QToolButton" name="layMinePlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -1845,7 +1853,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -1855,7 +1863,7 @@
           <item>
            <widget class="QToolButton" name="disarmMinePlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -1933,7 +1941,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -1943,7 +1951,7 @@
           <item>
            <widget class="QToolButton" name="beginStealthPlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -2021,7 +2029,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -2031,7 +2039,7 @@
           <item>
            <widget class="QToolButton" name="beginSearchPlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -2109,7 +2117,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -2119,7 +2127,7 @@
           <item>
            <widget class="QToolButton" name="beginUnlockPlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -2197,7 +2205,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -2207,7 +2215,7 @@
           <item>
            <widget class="QToolButton" name="unlockFailedPlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -2285,7 +2293,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -2295,7 +2303,7 @@
           <item>
            <widget class="QToolButton" name="unlockSuccessPlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -2373,7 +2381,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -2383,7 +2391,7 @@
           <item>
            <widget class="QToolButton" name="partySeparatedPlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -2461,7 +2469,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -2471,7 +2479,7 @@
           <item>
            <widget class="QToolButton" name="rejoinPartyPlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -2549,7 +2557,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="readOnly">
              <bool>true</bool>
@@ -2559,7 +2567,7 @@
           <item>
            <widget class="QToolButton" name="poisonedPlayButton">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -2625,23 +2633,23 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSave_As"/>
-    <addaction name="separator"/>
-    <addaction name="actionRevert"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
+    <addaction name="actionNew" />
+    <addaction name="actionOpen" />
+    <addaction name="actionSave" />
+    <addaction name="actionSave_As" />
+    <addaction name="separator" />
+    <addaction name="actionRevert" />
+    <addaction name="separator" />
+    <addaction name="actionExit" />
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
      <string>Tools</string>
     </property>
-    <addaction name="actionSetTLK"/>
+    <addaction name="actionSetTLK" />
    </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuTools"/>
+   <addaction name="menuFile" />
+   <addaction name="menuTools" />
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -2679,6 +2687,6 @@
    </property>
   </action>
  </widget>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

@@ -10,9 +10,9 @@ from typing import TYPE_CHECKING, Any, cast
 from pykotor.resource.formats.bwm.io_bwm import BWMBinaryReader, BWMBinaryWriter
 from pykotor.resource.formats.bwm.io_bwm_ascii import BWMAsciiReader, BWMAsciiWriter
 from pykotor.resource.type import ResourceType
-from pykotor.tools.walkmesh_render_ascii import (
+from pykotor.tools.walkmesh_render_diagram import (
     BWM_VALIDATION_DIAGRAM_MAGIC,  # noqa: F401  # pyright: ignore[reportUnusedImport]
-    render_bwm_to_ascii_diagrams,
+    render_bwm_validation_diagram_lines,
 )
 
 if TYPE_CHECKING:
@@ -193,12 +193,14 @@ def write_bwm_validation_diagram(
     max_physical_width: int = 200,
     max_physical_height: int = 120,
     use_color: bool = True,
+    error_positions: list[tuple[float, float]] | None = None,
 ) -> None:
-    """Writes the BWM validation diagram (structured ASCII) to the target.
+    """Writes the BWM text validation diagram to the target.
 
-    Format: first line is BWM_VALIDATION_DIAGRAM_MAGIC; then Summary, Legend,
-    Top-down map (5x5 blocks per cell, transition IDs and arrows, ANSI colors),
-    and Transitions sections. Use .diagram or .txt extension when writing to a path.
+    Format: first line is BWM_VALIDATION_DIAGRAM_MAGIC; then Summary (including
+    outer perimeter vertex/edge counts), Legend, Top-down map with optional
+    "X" at error_positions, and Transitions sections. Use .diagram or .txt when writing to a path.
+    Distinct from the BWM ASCII file format (.wok.ascii).
 
     Args:
     ----
@@ -207,6 +209,7 @@ def write_bwm_validation_diagram(
         max_physical_width: Maximum character width of the map (logical cols = this/5).
         max_physical_height: Maximum character height of the map (logical rows = this/5).
         use_color: If True, embed ANSI color codes (walkable=blue, etc.).
+        error_positions: Optional (x, y) world positions to mark with "X" on the map (e.g. validation failures).
 
     Raises:
     ------
@@ -215,11 +218,12 @@ def write_bwm_validation_diagram(
     """
     from pykotor.common.stream import BinaryWriter
 
-    lines: list[str] = render_bwm_to_ascii_diagrams(
+    lines: list[str] = render_bwm_validation_diagram_lines(
         bwm,
         width=max_physical_width,
         height=max_physical_height,
         use_color=use_color,
+        error_positions=error_positions,
     )
     data: bytes = ("\n".join(lines) + "\n").encode("utf-8")
     if isinstance(target, (os.PathLike, str)):

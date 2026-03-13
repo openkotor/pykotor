@@ -1207,7 +1207,8 @@
         <item>
          <widget class="QComboBox" name="comboAdvancedGffSource">
           <property name="toolTip">
-           <string>Select which GFF to edit. SaveInfo and PartyTable open in the full GFF editor (expandable tree).</string>
+           <string>Select which GFF to edit. SaveInfo and PartyTable open in the full GFF editor
+            (expandable tree).</string>
           </property>
           <item>
            <property name="text">

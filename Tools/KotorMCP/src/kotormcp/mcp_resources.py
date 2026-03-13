@@ -9,6 +9,8 @@ URIs:
   kotor://k2/tlk/{strref}
   kotor://k1/override/                 - Override directory listing (template)
   kotor://k2/override/
+  kotor://k1/walkmesh-diagram/{resref}.wok  - Text validation diagram for walkmesh (perimeter, transitions)
+  kotor://k2/walkmesh-diagram/{resref}.wok
 """
 
 from __future__ import annotations
@@ -56,6 +58,8 @@ async def list_resources() -> list[dict[str, Any]]:
         {"uri": "kotor://k2/2da/{table_name}", "name": "K2 2DA Table", "description": "2DA table as JSON", "mimeType": "application/json"},
         {"uri": "kotor://k1/tlk/{strref}", "name": "K1 TLK String", "description": "TLK string by strref", "mimeType": "text/plain"},
         {"uri": "kotor://k2/tlk/{strref}", "name": "K2 TLK String", "description": "TLK string by strref", "mimeType": "text/plain"},
+        {"uri": "kotor://k1/walkmesh-diagram/{resref}.wok", "name": "K1 Walkmesh validation diagram", "description": "Text validation diagram (perimeter, transitions) for area walkmesh", "mimeType": "text/plain"},
+        {"uri": "kotor://k2/walkmesh-diagram/{resref}.wok", "name": "K2 Walkmesh validation diagram", "description": "Text validation diagram (perimeter, transitions) for area walkmesh", "mimeType": "text/plain"},
         {"uri": "kotor://docs/capabilities", "name": "KotorMCP capabilities", "description": "Resolution order, tool index, and when to use each tool (agent onboarding)", "mimeType": "text/markdown"},
     ]
     return templates
@@ -98,6 +102,7 @@ Use optional `source` on `kotor_extract_resource` (or `--source` on `pykotor get
 | kotor_describe_dlg | DLG structure and entry/reply links |
 | kotor_describe_jrl | Journal structure |
 | kotor_describe_resource_refs | Reference summary for any resource |
+| kotor_walkmesh_validation_diagram | Text validation diagram for walkmesh (perimeter, transitions; quality context for agents) |
 
 Tools that write to disk: kotor_extract_resource. Paths are validated (allowlist, no traversal).
 """
@@ -152,4 +157,18 @@ async def read_resource(uri: str) -> dict[str, Any]:
         strref = int(path.strip()) if path.strip().isdigit() else -1
         text = installation.talktable().string(strref)
         return {"uri": uri, "mimeType": "text/plain", "text": text}
+    if resource_type == "walkmesh-diagram":
+        from io import BytesIO
+        from pykotor.extract.installation import SearchLocation
+        from pykotor.resource.formats.bwm import read_bwm
+        from pykotor.tools.walkmesh_render_diagram import render_bwm_validation_diagram_lines
+
+        resref = path.strip().lower().removesuffix(".wok") or path.strip()
+        order = [SearchLocation.OVERRIDE, SearchLocation.CUSTOM_FOLDERS, SearchLocation.MODULES, SearchLocation.CHITIN]
+        result = installation.resource(resref, ResourceType.WOK, order=order)
+        if result is None:
+            raise ValueError(f"Walkmesh {resref}.wok not found")
+        bwm = read_bwm(BytesIO(result.data))
+        lines = render_bwm_validation_diagram_lines(bwm, use_color=False)
+        return {"uri": uri, "mimeType": "text/plain", "text": "\n".join(lines)}
     raise ValueError(f"Unsupported resource type in URI: {resource_type}")

@@ -20,13 +20,13 @@
    <item>
     <widget class="QLabel" name="iconLabel">
      <property name="text">
-      <string/>
+      <string />
      </property>
      <property name="alignment">
       <set>Qt::AlignTop|Qt::AlignLeft</set>
      </property>
      <property name="pixmap">
-      <pixmap/>
+      <pixmap />
      </property>
      <property name="scaledContents">
       <bool>false</bool>
@@ -128,6 +128,6 @@
    </item>
   </layout>
  </widget>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

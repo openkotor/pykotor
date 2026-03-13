@@ -137,7 +137,8 @@
              <widget class="QLineEdit" name="tagEdit">
               <property name="toolTip">
                <string>Tag (GFF: Tag). CExoString. Unique identifier for this item when placed in
-                the module. Engine reads via ReadFieldCExoString in LoadDataFromGff. Scripts use GetItemByTag to target this item. Modders: leave blank for
+                the module. Engine reads via ReadFieldCExoString in LoadDataFromGff. Scripts use
+                GetItemByTag to target this item. Modders: leave blank for
                 stackable/generic items; set a tag for scripted references. Duplicate tags in the
                 same area can cause wrong item to be targeted.</string>
               </property>
@@ -520,8 +521,10 @@
             <property name="toolTip">
              <string>Available properties from itemprops.2da (and related 2DAs). Add properties to
               define enchantments, damage bonuses, and special effects. The engine reads assigned
-              properties from GFF PropertiesList; each entry has PropertyName (WORD), Subtype (WORD),
-              CostTable (BYTE), CostValue (WORD), Param1, Param1Value, ChanceAppear (BYTE), Useable (BYTE).
+              properties from GFF PropertiesList; each entry has PropertyName (WORD), Subtype
+              (WORD),
+              CostTable (BYTE), CostValue (WORD), Param1, Param1Value, ChanceAppear (BYTE), Useable
+              (BYTE).
               Use the arrow buttons to assign.</string>
             </property>
            </widget>

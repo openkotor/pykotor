@@ -12,7 +12,10 @@ import pathlib
 
 import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  # registers 3D projection
+from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
+from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Poly3DCollection
 
 from pykotor.resource.formats.bwm.bwm_data import BWM
@@ -53,11 +56,17 @@ def render_bwm_to_pngs(
     unwalkable = bwm.unwalkable_faces()
     faces = walkable + unwalkable
     bbmin, bbmax = bwm.box()
-    diag = math.sqrt(
-        (bbmax.x - bbmin.x) ** 2
-        + (bbmax.y - bbmin.y) ** 2
-        + (bbmax.z - bbmin.z) ** 2,
-    )
+    edges = list(bwm.edges())
+    n_perim = len(edges)
+    trans_edges = [(i, e) for i, e in enumerate(edges) if e.transition >= 0]
+    n_trans = len(trans_edges)
+    n_verts = len(verts_list)
+    n_walk = len(walkable)
+    n_unwalk = len(unwalkable)
+    extent_x = bbmax.x - bbmin.x
+    extent_y = bbmax.y - bbmin.y
+    extent_z = bbmax.z - bbmin.z
+    diag = math.sqrt(extent_x**2 + extent_y**2 + extent_z**2)
     arrow_scale = max(0.25, 0.07 * diag)
     gizmo_scale = 0.05 * diag
     normal_scale = 0.08 * diag
@@ -81,11 +90,10 @@ def render_bwm_to_pngs(
             WALKABLE_COLOR if face.material.walkable() else UNWALKABLE_COLOR,
         )
 
-    # Arrows: perimeter edges with transition >= 0
+    # Arrows and transition labels: perimeter edges with transition >= 0
     arrow_segments: list[tuple[tuple[float, float, float], tuple[float, float, float]]] = []
-    for edge in bwm.edges():
-        if edge.transition < 0:
-            continue
+    transition_labels: list[tuple[float, float, float, int]] = []  # (x, y, z, trans_id)
+    for trans_num, (_, edge) in enumerate(trans_edges, start=1):
         mid, direction = BWM.edge_inward_direction_xy(edge.face, edge.index)
         end = (
             mid.x + arrow_scale * direction.x,
@@ -93,6 +101,7 @@ def render_bwm_to_pngs(
             mid.z,
         )
         arrow_segments.append(((mid.x, mid.y, mid.z), end))
+        transition_labels.append((mid.x, mid.y, mid.z, trans_num))
 
     # Grid at Z = bbmin.z, XY
     gx = np.linspace(bbmin.x, bbmax.x, max(2, int((bbmax.x - bbmin.x) / 1.0) + 1))
@@ -136,11 +145,23 @@ def render_bwm_to_pngs(
         ("view4", 35, 30, False, True), # wireframe emphasis (edges only over solid)
     ]
 
+    title_parts = [
+        f"V:{n_verts}  F:{n_walk}w/{n_unwalk}u  Perimeter:{n_perim}  Transitions:{n_trans}",
+        f"Bbox: X[{bbmin.x:.1f},{bbmax.x:.1f}] Y[{bbmin.y:.1f},{bbmax.y:.1f}] Z[{bbmin.z:.1f},{bbmax.z:.1f}]  Extent: {extent_x:.1f} x {extent_y:.1f} x {extent_z:.1f}",
+    ]
+    suptitle: str = "  |  ".join(title_parts)
+
     written: list[pathlib.Path] = []
     for view_name, elev, azim, draw_faces, draw_edges in views:
-        fig = plt.figure(figsize=size_inches)
+        fig: Figure = plt.figure(figsize=size_inches)
+        fig.suptitle(suptitle, fontsize=8, wrap=True)
         ax = fig.add_subplot(111, projection="3d")
-        ax.set_box_aspect(aspect)
+        # set_box_aspect can raise "not enough values to unpack (expected 5, got 0)" on some
+        # matplotlib 3D backends when axis bounds are uninitialized; skip it so the plot still renders.
+        try:
+            ax.set_box_aspect(aspect)
+        except (ValueError, TypeError):
+            pass
         ax.view_init(elev=elev, azim=azim)
 
         if draw_faces:
@@ -181,13 +202,22 @@ def render_bwm_to_pngs(
         if normal_segments:
             nc = Line3DCollection(normal_segments, colors=NORMAL_COLOR, linewidths=0.5)
             ax.add_collection3d(nc)
+        for x, y, z, tid in transition_labels:
+            ax.text(x, y, z, f" {tid} ", fontsize=7, color=ARROW_COLOR[:3], ha="center")
 
         ax.set_xlim(bbmin.x, bbmax.x)
         ax.set_ylim(bbmin.y, bbmax.y)
         ax.set_zlim(bbmin.z, bbmax.z)
-        ax.set_xlabel("X")
-        ax.set_ylabel("Y")
-        ax.set_zlabel("Z")
+        ax.set_xlabel("X (world)")
+        ax.set_ylabel("Y (world)")
+        ax.set_zlabel("Z (world)")
+        # In-figure legend: walkable, unwalkable, perimeter arrows (ID = transition/door index)
+        legend_elements = [
+            Patch(facecolor=WALKABLE_COLOR, edgecolor="none", label="Walkable"),
+            Patch(facecolor=UNWALKABLE_COLOR, edgecolor="none", label="Unwalkable"),
+            Line2D([0], [0], color=ARROW_COLOR, linewidth=2, label="Transition (door) arrow"),
+        ]
+        ax.legend(handles=legend_elements, loc="upper left", fontsize=6)
 
         path = output_stem.parent / f"{output_stem.name}_{view_name}.png"
         fig.savefig(path, dpi=dpi, bbox_inches="tight")

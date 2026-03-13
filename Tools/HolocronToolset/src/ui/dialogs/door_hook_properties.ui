@@ -41,7 +41,7 @@
      <item>
       <widget class="QLineEdit" name="roomInput">
        <property name="text">
-        <string/>
+        <string />
        </property>
       </widget>
      </item>
@@ -59,7 +59,7 @@
      <item>
       <widget class="QLineEdit" name="doorInput">
        <property name="text">
-        <string/>
+        <string />
        </property>
       </widget>
      </item>
@@ -172,7 +172,7 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources />
  <connections>
   <connection>
    <sender>okButton</sender>

@@ -43,7 +43,7 @@
          <widget class="QWidget" name="threeDPage">
           <layout class="QVBoxLayout" name="verticalLayout_8">
            <item>
-            <widget class="QWidget" name="openGLWidget"/>
+            <widget class="QWidget" name="openGLWidget" />
            </item>
           </layout>
          </widget>
@@ -77,7 +77,7 @@
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <widget class="QListWidget" name="roomsList"/>
+            <widget class="QListWidget" name="roomsList" />
            </item>
            <item>
             <widget class="QPushButton" name="addRoomButton">
@@ -94,7 +94,7 @@
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
-            <widget class="QListWidget" name="tracksList"/>
+            <widget class="QListWidget" name="tracksList" />
            </item>
            <item>
             <widget class="QPushButton" name="addTrackButton">
@@ -111,7 +111,7 @@
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_5">
            <item>
-            <widget class="QListWidget" name="obstaclesList"/>
+            <widget class="QListWidget" name="obstaclesList" />
            </item>
            <item>
             <widget class="QPushButton" name="addObstacleButton">
@@ -128,7 +128,7 @@
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
-            <widget class="QListWidget" name="doorhooksList"/>
+            <widget class="QListWidget" name="doorhooksList" />
            </item>
            <item>
             <widget class="QPushButton" name="addDoorHookButton">
@@ -148,14 +148,14 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_9">
           <item>
-            <widget class="QListWidget" name="textureBrowser"/>
+           <widget class="QListWidget" name="textureBrowser" />
           </item>
           <item>
-            <widget class="QPushButton" name="importTextureButton">
-             <property name="text">
-              <string>Import Texture</string>
-             </property>
-            </widget>
+           <widget class="QPushButton" name="importTextureButton">
+            <property name="text">
+             <string>Import Texture</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -167,7 +167,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_10">
           <item>
-            <widget class="QListWidget" name="roomTemplateList"/>
+           <widget class="QListWidget" name="roomTemplateList" />
           </item>
          </layout>
         </widget>
@@ -192,6 +192,6 @@
    </item>
   </layout>
  </widget>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

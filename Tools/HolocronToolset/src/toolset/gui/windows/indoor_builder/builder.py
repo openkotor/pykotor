@@ -18,6 +18,7 @@ from qtpy.QtGui import QColor, QIcon, QImage, QPixmap, QShortcut, QTextCursor
 from qtpy.QtWidgets import (
     QAction,  # pyright: ignore[reportPrivateImportUsage]
     QApplication,
+    QComboBox,
     QFileDialog,
     QHBoxLayout,
     QLabel,
@@ -28,6 +29,7 @@ from qtpy.QtWidgets import (
     QPlainTextEdit,
     QStackedWidget,
     QStatusBar,
+    QTreeWidgetItem,
     QVBoxLayout,
     QWidget,
 )
@@ -135,7 +137,7 @@ from utility.system.os_helper import is_frozen
 if TYPE_CHECKING:
     import os
 
-    from qtpy.QtCore import QCloseEvent, QObject
+    from qtpy.QtCore import QCloseEvent, QObject  # pyright: ignore[reportAttributeAccessIssue]
     from qtpy.QtGui import QKeyEvent, QKeySequence
     from qtpy.QtWidgets import (
         QDockWidget,
@@ -148,6 +150,7 @@ if TYPE_CHECKING:
     from pykotor.common.modulekit import ModuleKit
     from toolset.blender import ConnectionState
     from toolset.gui.common.indoor_builder_ops import RoomClipboardData
+    from toolset.gui.windows.indoor_builder.renderer import IndoorMapRenderer
 
 
 def get_kits_path() -> Path:
@@ -211,10 +214,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         # Module kit management (lazy loading)
         # ModuleKitManager handles converting game modules to kit-like components
-        if installation is not None:
-            self._module_kit_manager: ModuleKitManager = ModuleKitManager(installation)
-        else:
-            self._module_kit_manager = None  # type: ignore[assignment]
+        self._module_kit_manager: ModuleKitManager | None = None if installation is None else ModuleKitManager(installation)
         self._current_module_kit: ModuleKit | None = None
 
         # Undo/Redo stack
@@ -226,7 +226,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         from toolset.uic.qtpy.windows.indoor_builder import Ui_MainWindow
 
-        self.ui = Ui_MainWindow()
+        self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
 
         # Add a missing "Open .mod" action at runtime (UI code is generated; do not edit it).
@@ -289,12 +289,12 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             QTimer.singleShot(100, self._check_blender_on_load)
 
         # Setup NoScrollEventFilter
-        self._no_scroll_filter = NoScrollEventFilter(self)
+        self._no_scroll_filter: NoScrollEventFilter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
     def _on_installation_changed(self, installation: HTInstallation | None) -> None:
         self._installation = installation
-        self._module_kit_manager = ModuleKitManager(installation) if installation is not None else None
+        self._module_kit_manager = None if installation is None else ModuleKitManager(installation)
         try:
             self._setup_settings_toolbar()
             self._setup_modules()
@@ -305,14 +305,16 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 self._pending_module_after_installation = None
                 QTimer.singleShot(0, lambda: self.load_module_from_name(mod))
         except Exception:
-            self.log.exception("Failed to refresh after installation switch")
+            from loggerplus import RobustLogger
+
+            RobustLogger().exception("Failed to refresh after installation switch")
 
     def enable_standalone_mode(self) -> None:
         """Override: place installation toolbar in left dock above Modules instead of above the map."""
         if self._installation_toolbar is not None:
             return
-        container = self.ui.installationToolbarContainer
-        self._standalone_folder_paths = {}
+        container: QWidget = self.ui.installationToolbarContainer
+        self._standalone_folder_paths: dict[str, str] = {}
         self._installation_toolbar = InstallationToolbar(
             container,
             folder_path_specs=list(self.STANDALONE_FOLDER_PATHS),
@@ -320,17 +322,19 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         )
         self._installation_toolbar.installation_changed.connect(self._handle_installation_changed)
         self._installation_toolbar.folder_paths_changed.connect(self._handle_folder_paths_changed)
-        layout = container.layout()
+        layout: QLayout | None = container.layout()
         if layout is not None:
             layout.addWidget(self._installation_toolbar)
         QTimer.singleShot(0, self._sync_toolbar_installation_from_left)
 
     def _sync_module_combo_to_current_map(self) -> None:
         """Select the current map's module_id in the left and toolbar module combos if present."""
-        module_id = getattr(self._map, "module_id", None) or ""
+        module_id: str = getattr(self._map, "module_id", None) or ""
         if not module_id:
             return
         for combo in (self.ui.moduleSelect, self.ui.toolbarModuleCombo):
+            if not isinstance(combo, QComboBox):
+                continue
             idx = combo.findData(module_id)
             if idx >= 0:
                 combo.setCurrentIndex(idx)
@@ -338,13 +342,13 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     def _resolve_installation_and_module_from_path(self, file_path: Path) -> tuple[str | None, str | None]:
         """If file_path is a .mod under a configured installation's Modules dir, return (installation_name, module_root); else (None, None)."""
         try:
-            resolved = file_path.resolve()
+            resolved: Path = file_path.resolve()
             if resolved.suffix.lower() != ".mod":
                 return (None, None)
-            modules_dir = resolved.parent
-            settings = GlobalSettings()
+            modules_dir: Path = resolved.parent
+            settings: GlobalSettings = GlobalSettings()
             for name, config in settings.installations().items():
-                inst_path = Path(config.path).resolve()
+                inst_path: Path = Path(config.path).resolve()
                 expected_modules = inst_path / "Modules"
                 try:
                     if modules_dir == expected_modules.resolve():
@@ -359,16 +363,18 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         """Copy installation list and selection from left panel to toolbar combo (no signal loops)."""
         if self._toolbar_installation_syncing:
             return
-        toolbar_combo = self.ui.toolbarInstallationCombo
+        toolbar_combo: QComboBox = self.ui.toolbarInstallationCombo
         if self._installation_toolbar is None:
             return
-        left = self._installation_toolbar.installation_combo
+        left: QComboBox = self._installation_toolbar.installation_combo
         self._toolbar_installation_syncing = True
         try:
             toolbar_combo.clear()
             for i in range(left.count()):
+                if not isinstance(left, QComboBox):
+                    continue
                 toolbar_combo.addItem(left.itemText(i), left.itemData(i))
-            idx = left.currentIndex()
+            idx: int = left.currentIndex()
             if 0 <= idx < toolbar_combo.count():
                 toolbar_combo.setCurrentIndex(idx)
         finally:
@@ -378,10 +384,12 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         """User changed installation in toolbar; sync to left panel so it loads."""
         if self._toolbar_installation_syncing or self._installation_toolbar is None:
             return
-        toolbar_combo = self.ui.toolbarInstallationCombo
-        left = self._installation_toolbar.installation_combo
+        toolbar_combo: QComboBox = self.ui.toolbarInstallationCombo
+        left: QComboBox = self._installation_toolbar.installation_combo
         data = toolbar_combo.currentData()
         for i in range(left.count()):
+            if not isinstance(left, QComboBox):
+                continue
             if left.itemData(i) == data:
                 self._installation_toolbar._in_update = True
                 try:
@@ -392,7 +400,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
     def _on_toolbar_open_module_clicked(self) -> None:
         """Load selected module from toolbar module combo into the builder."""
-        module_root = self.ui.toolbarModuleCombo.currentData()
+        module_root: str | None = self.ui.toolbarModuleCombo.currentData()
         if isinstance(module_root, str):
             self.load_module_from_name(module_root)
 
@@ -405,7 +413,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         # Default to Module Designer (keybind) page
         dialog.ui.settingsStack.setCurrentWidget(dialog.page_dict["Module Designer"])
         dialog.previous_page = "Module Designer"
-        items = dialog.ui.settingsTree.findItems("Module Designer", Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive, 0)
+        items: list[QTreeWidgetItem] = dialog.ui.settingsTree.findItems("Module Designer", Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive, 0,)
         if items:
             dialog.ui.settingsTree.setCurrentItem(items[0])
         dialog.exec()
@@ -571,6 +579,10 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     def _setup_settings_toolbar(self):
         """Add settings widget to toolbar and populate skybox/game type. Set installation on nameEdit."""
         self.ui.toolBar.addWidget(self.ui.settingsToolbarWidget)
+        # Push Installation/Module group to the right (stretch at index 10, after map settings)
+        layout: QLayout | None = self.ui.settingsToolbarWidget.layout()
+        if isinstance(layout, (QHBoxLayout, QVBoxLayout)) and layout.count() == 16:
+            layout.insertStretch(10, 1)
         if isinstance(self._installation, HTInstallation):
             self.ui.nameEdit.set_installation(self._installation)
         self.ui.skyboxSelect.clear()
@@ -906,7 +918,9 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         log_widget = self.ui.logPlainTextEdit
         # Use QTextEdit document max block count to avoid UI stalls from unbounded growth
         try:
-            log_widget.document().setMaximumBlockCount(5000)
+            doc = log_widget.document()
+            assert doc is not None, "log_widget.document() is None"
+            doc.setMaximumBlockCount(5000)
         except Exception:  # noqa: BLE001
             pass
         self._log_emitter = LogRecordEmitter(self)
@@ -945,6 +959,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         try:
             # Use the ModuleKitManager to get a ModuleKit for this module
+            assert self._module_kit_manager is not None, "ModuleKitManager is not initialized"
             module_kit = self._module_kit_manager.get_module_kit(module_root)
 
             # Ensure the kit is loaded (lazy loading)
@@ -963,9 +978,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 self.ui.moduleComponentList.addItem(item)  # pyright: ignore[reportArgumentType, reportCallIssue]
 
         except Exception:  # noqa: BLE001
-            from loggerplus import (
-                RobustLogger,  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
-            )
+            from loggerplus import RobustLogger
 
             RobustLogger().exception(f"Failed to load module '{module_root}'")
 
@@ -1312,17 +1325,19 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         keys: set[int | Qt.Key] | set[Qt.Key] | set[Qt.Key | int] | set[QKeySequence] | None = None,
     ):
         """Rich status bar mirroring Module Designer style."""
-        renderer = self.ui.mapRenderer
+        renderer: IndoorMapRenderer = self.ui.mapRenderer
 
         # Resolve screen coords
         if screen is None:
-            cursor_pos = self.cursor().pos()
+            cursor_pos: QPoint = self.cursor().pos() if qtpy.QT5 else self.cursor().position().toPoint()  # type: ignore[attr-defined]
             screen_qp = renderer.mapFromGlobal(cursor_pos)
             screen_vec = Vector2(screen_qp.x(), screen_qp.y())
-        elif isinstance(screen, QPoint):
-            screen_vec = Vector2(screen.x(), screen.y())
         else:
-            screen_vec = screen
+            x, y = screen.x, screen.y
+            screen_vec = Vector2(
+                x if isinstance(x, float) else x(),  # pyright: ignore[reportCallIssue]
+                y if isinstance(y, float) else y(),  # pyright: ignore[reportCallIssue]
+            )
 
         # Resolve buttons/keys - ensure they are sets
         if buttons is None:
@@ -1344,12 +1359,12 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         world: Vector3 = renderer.to_world_coords(screen_vec.x, screen_vec.y)
         hover_room: IndoorMapRoom | None = renderer.room_under_mouse()
-        sel_rooms = renderer.selected_rooms()
-        sel_hook = renderer.selected_hook()
+        sel_rooms: list[IndoorMapRoom] = renderer.selected_rooms()
+        sel_hook: tuple[IndoorMapRoom, int] | None = renderer.selected_hook()
 
         # Mouse/hover
         # Get semantic colors from palette
-        colors = self._get_semantic_colors()
+        colors: dict[str, str] = self._get_semantic_colors()
 
         hover_text = (
             f"<b><span style=\"{self._emoji_style}\">🧩</span>&nbsp;Hover:</b> <span style='color:{colors['accent1']}'>{hover_room.component.name}</span>"
@@ -1379,7 +1394,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         # Keys/buttons (sorted with modifiers first)
         colors = self._get_semantic_colors()
-        self._keys_label.setText(format_status_bar_keys_and_buttons(keys, buttons, self._emoji_style, colors["accent3"], colors["accent2"]))
+        self._keys_label.setText(format_status_bar_keys_and_buttons(keys, buttons, self._emoji_style, colors["accent3"], colors["accent2"]))  # pyright: ignore[reportArgumentType]
 
         # Mode/status line (reuse colors from above)
         mode_parts: list[str] = []
@@ -1435,7 +1450,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         if not filepath or not str(filepath).strip():
             return
         path = Path(filepath)
-        saving_as_mod = (
+        saving_as_mod: bool = (
             (selected_filter and (".mod" in selected_filter))
             or path.suffix.lower() == ".mod"
         )
@@ -1723,7 +1738,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             if not loader.exec():
                 return False
 
-            extracted_map = loader.result()
+            extracted_map: IndoorMap | None = loader.result()
             if extracted_map is None:
                 return False
 
@@ -2338,6 +2353,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         # Detach log handler from root logger to avoid duplicate handlers and leaks
         if getattr(self, "_log_handler", None) is not None:
             try:
+                assert self._log_handler is not None, "self._log_handler is None"
                 logging.getLogger().removeHandler(self._log_handler)
             except Exception:
                 pass

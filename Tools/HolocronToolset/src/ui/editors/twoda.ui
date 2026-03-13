@@ -34,7 +34,7 @@
     <item>
      <widget class="RobustTableView" name="twodaTable">
       <property name="styleSheet">
-       <string notr="true"/>
+       <string notr="true" />
       </property>
       <property name="alternatingRowColors">
        <bool>true</bool>
@@ -55,7 +55,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar" />
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -69,113 +69,113 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSaveAs"/>
-    <addaction name="actionRevert"/>
-    <addaction name="separator"/>
-    <addaction name="actionImportCSV"/>
-    <addaction name="actionExportCSV"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
+    <addaction name="actionNew" />
+    <addaction name="actionOpen" />
+    <addaction name="actionSave" />
+    <addaction name="actionSaveAs" />
+    <addaction name="actionRevert" />
+    <addaction name="separator" />
+    <addaction name="actionImportCSV" />
+    <addaction name="actionExportCSV" />
+    <addaction name="separator" />
+    <addaction name="actionExit" />
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>&amp;Edit</string>
     </property>
-    <addaction name="actionUndo"/>
-    <addaction name="actionRedo"/>
-    <addaction name="separator"/>
-    <addaction name="actionCut"/>
-    <addaction name="actionCopy"/>
-    <addaction name="actionPaste"/>
-    <addaction name="actionPasteTranspose"/>
-    <addaction name="separator"/>
-    <addaction name="actionFind"/>
-    <addaction name="actionReplace"/>
-    <addaction name="actionGoToRow"/>
-    <addaction name="actionGoToColumn"/>
-    <addaction name="separator"/>
-    <addaction name="actionSelectAll"/>
-    <addaction name="actionSelectBlankCells"/>
-    <addaction name="actionSelectCellsWithContent"/>
-    <addaction name="actionSelectRow"/>
-    <addaction name="actionSelectColumn"/>
-    <addaction name="actionSelectVisibleOnly"/>
-    <addaction name="actionClearContents"/>
+    <addaction name="actionUndo" />
+    <addaction name="actionRedo" />
+    <addaction name="separator" />
+    <addaction name="actionCut" />
+    <addaction name="actionCopy" />
+    <addaction name="actionPaste" />
+    <addaction name="actionPasteTranspose" />
+    <addaction name="separator" />
+    <addaction name="actionFind" />
+    <addaction name="actionReplace" />
+    <addaction name="actionGoToRow" />
+    <addaction name="actionGoToColumn" />
+    <addaction name="separator" />
+    <addaction name="actionSelectAll" />
+    <addaction name="actionSelectBlankCells" />
+    <addaction name="actionSelectCellsWithContent" />
+    <addaction name="actionSelectRow" />
+    <addaction name="actionSelectColumn" />
+    <addaction name="actionSelectVisibleOnly" />
+    <addaction name="actionClearContents" />
    </widget>
    <widget class="QMenu" name="menuData">
     <property name="title">
      <string>&amp;Data</string>
     </property>
-    <addaction name="actionInsertRow"/>
-    <addaction name="actionInsertRowAbove"/>
-    <addaction name="actionInsertRowBelow"/>
-    <addaction name="actionDuplicateRow"/>
-    <addaction name="actionRemoveRows"/>
-    <addaction name="separator"/>
-    <addaction name="actionInsertColumn"/>
-    <addaction name="actionRenameColumn"/>
-    <addaction name="actionDuplicateColumn"/>
-    <addaction name="actionDeleteColumn"/>
-    <addaction name="separator"/>
-    <addaction name="actionMoveColumnLeft"/>
-    <addaction name="actionMoveColumnRight"/>
-    <addaction name="separator"/>
-    <addaction name="actionMoveRowUp"/>
-    <addaction name="actionMoveRowDown"/>
-    <addaction name="separator"/>
-    <addaction name="actionRemoveDuplicateRows"/>
-    <addaction name="separator"/>
-    <addaction name="actionSort"/>
-    <addaction name="actionSortAscending"/>
-    <addaction name="actionSortDescending"/>
-    <addaction name="separator"/>
-    <addaction name="actionFillDown"/>
-    <addaction name="actionFillRight"/>
-    <addaction name="actionFillDownPattern"/>
-    <addaction name="separator"/>
-    <addaction name="actionTransposeTable"/>
-    <addaction name="separator"/>
-    <addaction name="actionRedoRowLabels"/>
+    <addaction name="actionInsertRow" />
+    <addaction name="actionInsertRowAbove" />
+    <addaction name="actionInsertRowBelow" />
+    <addaction name="actionDuplicateRow" />
+    <addaction name="actionRemoveRows" />
+    <addaction name="separator" />
+    <addaction name="actionInsertColumn" />
+    <addaction name="actionRenameColumn" />
+    <addaction name="actionDuplicateColumn" />
+    <addaction name="actionDeleteColumn" />
+    <addaction name="separator" />
+    <addaction name="actionMoveColumnLeft" />
+    <addaction name="actionMoveColumnRight" />
+    <addaction name="separator" />
+    <addaction name="actionMoveRowUp" />
+    <addaction name="actionMoveRowDown" />
+    <addaction name="separator" />
+    <addaction name="actionRemoveDuplicateRows" />
+    <addaction name="separator" />
+    <addaction name="actionSort" />
+    <addaction name="actionSortAscending" />
+    <addaction name="actionSortDescending" />
+    <addaction name="separator" />
+    <addaction name="actionFillDown" />
+    <addaction name="actionFillRight" />
+    <addaction name="actionFillDownPattern" />
+    <addaction name="separator" />
+    <addaction name="actionTransposeTable" />
+    <addaction name="separator" />
+    <addaction name="actionRedoRowLabels" />
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>&amp;View</string>
     </property>
-    <addaction name="actionResizeColumnsToContents"/>
-    <addaction name="actionResizeRowsToContents"/>
-    <addaction name="actionAutoFitColumnsOnLoad"/>
-    <addaction name="separator"/>
-    <addaction name="actionWrapTextInCells"/>
-    <addaction name="actionAlternatingRowColors"/>
-    <addaction name="separator"/>
-    <addaction name="actionZoomIn"/>
-    <addaction name="actionZoomOut"/>
-    <addaction name="actionZoomReset"/>
-    <addaction name="separator"/>
-    <addaction name="actionHideColumn"/>
-    <addaction name="actionShowAllColumns"/>
-    <addaction name="separator"/>
-    <addaction name="actionColumnStatistics"/>
-    <addaction name="actionHighlightNonNumeric"/>
-    <addaction name="actionFreezeRowLabels"/>
-    <addaction name="separator"/>
+    <addaction name="actionResizeColumnsToContents" />
+    <addaction name="actionResizeRowsToContents" />
+    <addaction name="actionAutoFitColumnsOnLoad" />
+    <addaction name="separator" />
+    <addaction name="actionWrapTextInCells" />
+    <addaction name="actionAlternatingRowColors" />
+    <addaction name="separator" />
+    <addaction name="actionZoomIn" />
+    <addaction name="actionZoomOut" />
+    <addaction name="actionZoomReset" />
+    <addaction name="separator" />
+    <addaction name="actionHideColumn" />
+    <addaction name="actionShowAllColumns" />
+    <addaction name="separator" />
+    <addaction name="actionColumnStatistics" />
+    <addaction name="actionHighlightNonNumeric" />
+    <addaction name="actionFreezeRowLabels" />
+    <addaction name="separator" />
     <widget class="QMenu" name="menuSetRowHeader">
      <property name="title">
       <string>Set Row Header</string>
      </property>
-     <addaction name="actionplaceholder"/>
+     <addaction name="actionplaceholder" />
     </widget>
-    <addaction name="menuSetRowHeader"/>
-    <addaction name="separator"/>
-    <addaction name="actionToggleFilter"/>
+    <addaction name="menuSetRowHeader" />
+    <addaction name="separator" />
+    <addaction name="actionToggleFilter" />
    </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuEdit"/>
-   <addaction name="menuData"/>
-   <addaction name="menuView"/>
+   <addaction name="menuFile" />
+   <addaction name="menuEdit" />
+   <addaction name="menuData" />
+   <addaction name="menuView" />
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -594,6 +594,6 @@
    <header location="global">utility.gui.qt.widgets.itemviews.tableview</header>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

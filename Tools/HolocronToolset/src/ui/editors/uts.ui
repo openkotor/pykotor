@@ -619,10 +619,13 @@
            <item row="0" column="1">
             <widget class="QDoubleSpinBox" name="cutoffSpin">
              <property name="toolTip">
-              <string>Cutoff Distance (GFF: MinDistance). FLOAT meters. Engine reads via ReadFieldFLOAT in
+              <string>Cutoff Distance (GFF: MinDistance). FLOAT meters. Engine reads via
+               ReadFieldFLOAT in
                CSWSSoundObject::Load. Distance beyond which the sound is no longer
-               audible (for positional sounds). Used when "Plays from a specific position" is selected.
-               Modders: 0 = no cutoff; typical 5–50. Beyond MaxVolumeDistance volume falls off; beyond
+               audible (for positional sounds). Used when "Plays from a specific position" is
+               selected.
+               Modders: 0 = no cutoff; typical 5–50. Beyond MaxVolumeDistance volume falls off;
+               beyond
                MinDistance sound is silent. Set MaxDistance &lt; MinDistance for normal falloff.</string>
              </property>
              <property name="minimum">
@@ -643,7 +646,8 @@
            <item row="1" column="1">
             <widget class="QDoubleSpinBox" name="maxVolumeDistanceSpin">
              <property name="toolTip">
-              <string>Max Volume Distance (GFF: MaxDistance). FLOAT meters. Engine reads via ReadFieldFLOAT
+              <string>Max Volume Distance (GFF: MaxDistance). FLOAT meters. Engine reads via
+               ReadFieldFLOAT
                in CSWSSoundObject::Load. Distance within which sound plays at full
                volume (positional sounds). Beyond this, volume falls off until MinDistance (cutoff).
                Modders: set MaxDistance &lt; MinDistance (e.g. full volume to 10 m, cutoff at 30 m).
@@ -678,7 +682,8 @@
              <item row="0" column="1">
               <widget class="QDoubleSpinBox" name="heightSpin">
                <property name="toolTip">
-                <string>Height (GFF: Elevation). FLOAT meters. Vertical offset. K1 CSWSSoundObject::Load
+                <string>Height (GFF: Elevation). FLOAT meters. Vertical offset. K1
+                 CSWSSoundObject::Load
                  does NOT read Elevation—only XPosition, YPosition, ZPosition and
                  RandomRangeX/Y. Height in-game comes from the placed instance position (GIT). This
                  field is stored for toolset/TSL; may be unused. Modders: set for documentation.</string>
@@ -710,8 +715,10 @@
              <item row="0" column="1">
               <widget class="QDoubleSpinBox" name="northRandomSpin">
                <property name="toolTip">
-                <string>North/South Random Range (GFF: RandomRangeY). FLOAT meters. When "Plays from a
-                 random position" is selected, sound spawns within ±this distance on the Y axis. Engine
+                <string>North/South Random Range (GFF: RandomRangeY). FLOAT meters. When "Plays from
+                 a
+                 random position" is selected, sound spawns within ±this distance on the Y axis.
+                 Engine
                  reads via ReadFieldFLOAT in CSWSSoundObject::Load. Modders: 0 = no
                  north/south variation; typical 5–50.</string>
                </property>
@@ -734,7 +741,8 @@
               <widget class="QDoubleSpinBox" name="eastRandomSpin">
                <property name="toolTip">
                 <string>East/West Random Range (GFF: RandomRangeX). FLOAT meters. When "Plays from a
-                 random position" is selected, sound spawns within ±this distance on the X axis. Engine
+                 random position" is selected, sound spawns within ±this distance on the X axis.
+                 Engine
                  reads via ReadFieldFLOAT in CSWSSoundObject::Load. Modders: 0 = no
                  east/west variation; typical 5–50.</string>
                </property>

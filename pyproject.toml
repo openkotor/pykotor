@@ -24,6 +24,8 @@ maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
 dependencies = [
   "pykotor[render]>=2.3.2",
   "holocrontoolset",
+  "numpy>=1.24.4",
+  "matplotlib>=3.7.5",
 ]
 description = "PyKotor workspace - meta-package for PyKotor ecosystem"
 keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", "toolset", "tslpatcher"]
