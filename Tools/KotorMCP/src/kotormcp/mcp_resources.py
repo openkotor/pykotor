@@ -108,11 +108,12 @@ Tools that write to disk: kotor_extract_resource. Paths are validated (allowlist
 """
 
 
-async def read_resource(uri: str) -> dict[str, Any]:
+async def read_resource(uri: str) -> dict[str, Any]:  # noqa: PLR0915
     """Read kotor:// resource and return content (text or base64 blob)."""
     parsed = parse_kotor_uri(uri)
     if not parsed:
-        raise ValueError(f"Invalid kotor:// URI: {uri}")
+        msg = f"Invalid kotor:// URI: {uri}"
+        raise ValueError(msg)
     authority = parsed.get("authority", "")
     resource_type = parsed["type"]
     path = parsed["path"]
@@ -120,32 +121,37 @@ async def read_resource(uri: str) -> dict[str, Any]:
         return {"uri": uri, "mimeType": "text/markdown", "text": _get_capabilities_doc()}
     game = parsed["game"]
     if game is None:
-        raise ValueError(f"Invalid kotor:// URI: {uri}")
+        msg = f"Invalid kotor:// URI: {uri}"
+        raise ValueError(msg)
     installation = load_installation(game)
     if resource_type == "resource":
         # path = resref.ext
-        from pykotor.extract.file import ResourceIdentifier
-        from pykotor.extract.installation import SearchLocation
-        from pykotor.tools.finder import canonical_search_order
+        from pykotor.extract.file import ResourceIdentifier  # noqa: PLC0415
+        from pykotor.extract.installation import SearchLocation  # noqa: PLC0415
+        from pykotor.tools.finder import canonical_search_order  # noqa: PLC0415
 
         ident = ResourceIdentifier.from_path(path)
         if ident.restype == ResourceType.INVALID:
-            raise ValueError(f"Unknown resource type in URI path: {path}")
+            msg = f"Unknown resource type in URI path: {path}"
+            raise ValueError(msg)
         order = canonical_search_order()
         result = installation.resource(ident.resname, ident.restype, order=order)
         if result is None:
-            raise ValueError(f"Resource not found: {path}")
+            msg = f"Resource not found: {path}"
+            raise ValueError(msg)
         return {"uri": uri, "mimeType": "application/octet-stream", "blob": base64.b64encode(result.data).decode("ascii")}
     if resource_type == "2da":
-        from io import BytesIO
-        from pykotor.extract.installation import SearchLocation
-        from pykotor.resource.formats.twoda.twoda_auto import read_2da
+        from io import BytesIO  # noqa: PLC0415
+
+        from pykotor.extract.installation import SearchLocation  # noqa: PLC0415
+        from pykotor.resource.formats.twoda.twoda_auto import read_2da  # noqa: PLC0415
 
         table_name = path.strip() or "appearance"
         order = [SearchLocation.OVERRIDE, SearchLocation.MODULES, SearchLocation.CHITIN]
         result = installation.resource(table_name, ResourceType.TwoDA, order=order)
         if result is None:
-            raise ValueError(f"2DA table not found: {table_name}")
+            msg = f"2DA table not found: {table_name}"
+            raise ValueError(msg)
         table = read_2da(BytesIO(result.data))
         headers = table.get_headers()
         rows = []
@@ -158,17 +164,20 @@ async def read_resource(uri: str) -> dict[str, Any]:
         text = installation.talktable().string(strref)
         return {"uri": uri, "mimeType": "text/plain", "text": text}
     if resource_type == "walkmesh-diagram":
-        from io import BytesIO
-        from pykotor.extract.installation import SearchLocation
-        from pykotor.resource.formats.bwm import read_bwm
-        from pykotor.tools.walkmesh_render_diagram import render_bwm_validation_diagram_lines
+        from io import BytesIO  # noqa: PLC0415
+
+        from pykotor.extract.installation import SearchLocation  # noqa: PLC0415
+        from pykotor.resource.formats.bwm import read_bwm  # noqa: PLC0415
+        from pykotor.tools.walkmesh_render_diagram import render_bwm_validation_diagram_lines  # noqa: PLC0415
 
         resref = path.strip().lower().removesuffix(".wok") or path.strip()
         order = [SearchLocation.OVERRIDE, SearchLocation.CUSTOM_FOLDERS, SearchLocation.MODULES, SearchLocation.CHITIN]
         result = installation.resource(resref, ResourceType.WOK, order=order)
         if result is None:
-            raise ValueError(f"Walkmesh {resref}.wok not found")
+            msg = f"Walkmesh {resref}.wok not found"
+            raise ValueError(msg)
         bwm = read_bwm(BytesIO(result.data))
         lines = render_bwm_validation_diagram_lines(bwm, use_color=False)
         return {"uri": uri, "mimeType": "text/plain", "text": "\n".join(lines)}
-    raise ValueError(f"Unsupported resource type in URI: {resource_type}")
+    msg = f"Unsupported resource type in URI: {resource_type}"
+    raise ValueError(msg)
