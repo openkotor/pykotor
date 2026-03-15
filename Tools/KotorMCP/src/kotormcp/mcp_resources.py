@@ -125,7 +125,7 @@ async def read_resource(uri: str) -> dict[str, Any]:  # noqa: PLR0915
         raise ValueError(msg)
     installation = load_installation(game)
     if resource_type == "resource":
-        # path = resref.ext
+        # path = resref.ext  # noqa: ERA001
         from pykotor.extract.file import ResourceIdentifier  # noqa: PLC0415
         from pykotor.extract.installation import SearchLocation  # noqa: PLC0415
         from pykotor.tools.finder import canonical_search_order  # noqa: PLC0415
