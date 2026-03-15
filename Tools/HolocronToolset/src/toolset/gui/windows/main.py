@@ -94,7 +94,7 @@ from toolset.gui.editors.utt import UTTEditor
 from toolset.gui.editors.utw import UTWEditor
 from toolset.gui.widgets.main_widgets import ResourceList, ResourceStandardItem
 from toolset.gui.widgets.settings.widgets.misc import GlobalSettings
-from toolset.gui.windows.help import HelpWindow
+from toolset.gui.windows.help import HelpWindow, get_help_path
 from toolset.gui.windows.indoor_builder import IndoorMapBuilder
 from toolset.gui.windows.kotordiff import KotorDiffWindow
 from toolset.gui.windows.module_designer import ModuleDesigner
@@ -1914,6 +1914,24 @@ class ToolWindow(QMainWindow):
             checked: Whether the action was checked (from triggered signal, ignored).
         """
         window = HelpWindow(None)
+        window.setWindowIcon(self.windowIcon())
+        window.show()
+        window.activateWindow()
+        add_window(window)
+
+    @Slot(bool)
+    def open_new_features_guide(
+        self,
+        checked: bool = False,  # pyright: ignore[reportUnusedParameter]
+    ):
+        """Opens the new features guide page in the help window.
+
+        Args:
+        ----
+            checked: Whether the action was checked (from triggered signal, ignored).
+        """
+        guide_path = get_help_path() / "wiki" / "New-Features-Guide.md"
+        window = HelpWindow(None, startingPage=str(guide_path))
         window.setWindowIcon(self.windowIcon())
         window.show()
         window.activateWindow()
