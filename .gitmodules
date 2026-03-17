@@ -24,3 +24,6 @@
 [submodule "Tools/HoloPatcher"]
 	path = Tools/HoloPatcher
 	url = https://github.com/OldRepublicDevs/HoloPatcher.git
+[submodule "Tools/HoloPazaak"]
+	path = Tools/HoloPazaak
+	url = https://github.com/OldRepublicDevs/HoloPazaak.git
