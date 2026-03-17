@@ -1553,7 +1553,7 @@ wheels = [
 
 [[package]]
 name = "holocrontoolset"
-version = "4.0.0b21"
+version = "4.0.0b23"
 source = { editable = "Tools/HolocronToolset" }
 dependencies = [
     { name = "certifi" },
@@ -3655,7 +3655,7 @@ wheels = [
 
 [[package]]
 name = "pykotor"
-version = "2.3.2"
+version = "2.3.3"
 source = { editable = "Libraries/PyKotor" }
 dependencies = [
     { name = "defusedxml" },
@@ -3841,7 +3841,7 @@ provides-extras = ["all", "dev", "encodings", "exp", "extra", "font", "gl", "gl-
 
 [[package]]
 name = "pykotor-workspace"
-version = "2.3.2"
+version = "2.3.3"
 source = { editable = "." }
 dependencies = [
     { name = "holocrontoolset" },

@@ -110,11 +110,11 @@ if (-not (Test-Path (Join-Path $repoRoot ".git"))) {
 if ($Tool) {
     $category = "Tools"
     $name = $Tool
-    $localPath = Join-Path $repoRoot "Tools" $Tool
+    $localPath = Join-Path (Join-Path $repoRoot "Tools") $Tool
 } else {
     $category = "Libraries"
     $name = $Library
-    $localPath = Join-Path $repoRoot "Libraries" $Library
+    $localPath = Join-Path (Join-Path $repoRoot "Libraries") $Library
 }
 
 # Validate the local path exists
