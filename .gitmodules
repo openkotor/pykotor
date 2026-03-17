@@ -18,8 +18,8 @@
 [submodule "Tools/HolocronAI"]
 	path = Tools/HolocronAI
 	url = https://github.com/OldRepublicDevs/HolocronAI.git
-[submodule "Tools/HolocronToolset"]
-	path = Tools/HolocronToolset
+[submodule "Tools/HolocronToolset_old"]
+	path = Tools/HolocronToolset_old
 	url = https://github.com/OldRepublicDevs/HolocronToolset.git
 [submodule "Tools/HoloPatcher"]
 	path = Tools/HoloPatcher
@@ -36,6 +36,9 @@
 [submodule "Tools/KotorMCP"]
 	path = Tools/KotorMCP
 	url = https://github.com/OldRepublicDevs/KotorMCP.git
+[submodule "Tools/HolocronToolset"]
+	path = Tools/HolocronToolset
+	url = https://github.com/CrispyW0nton/GhostScripter-K1-K2
 [submodule "Tools/GhostScripter-K1-K2"]
 	path = Tools/GhostScripter-K1-K2
 	url = https://github.com/CrispyW0nton/GhostScripter-K1-K2
