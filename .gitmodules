@@ -33,3 +33,6 @@
 [submodule "Tools/KotorDiff"]
 	path = Tools/KotorDiff
 	url = https://github.com/OldRepublicDevs/KotorDiff.git
+[submodule "Tools/KotorMCP"]
+	path = Tools/KotorMCP
+	url = https://github.com/OldRepublicDevs/KotorMCP.git
