@@ -15,3 +15,6 @@
 [submodule "Tools/BatchPatcher"]
 	path = Tools/BatchPatcher
 	url = https://github.com/OldRepublicDevs/BatchPatcher.git
+[submodule "Tools/HolocronAI"]
+	path = Tools/HolocronAI
+	url = https://github.com/OldRepublicDevs/HolocronAI.git
