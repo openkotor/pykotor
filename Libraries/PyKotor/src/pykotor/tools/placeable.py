@@ -10,7 +10,6 @@ from pykotor.extract.installation import SearchLocation
 from pykotor.resource.formats.twoda import TwoDA, read_2da
 from pykotor.resource.generics.utp import read_utp
 from pykotor.resource.type import ResourceType
-from pykotor.tools.path import CaseAwarePath
 from pykotor.tools.resource_lookup import load_2da_with_fallback, read_location_data
 
 if TYPE_CHECKING:
