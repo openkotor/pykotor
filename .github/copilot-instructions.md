@@ -105,6 +105,15 @@ Edit only `Tools/HolocronToolset/src/ui/`. Never edit `uic/`. Run `convertui.py`
 - Reference paths via env vars (`$Env:K1_PATH`, etc. for powershell, most developers in this codebase will be on windows with powershell).
 - Execute from repo root.
 
+### dotnet test (KPatcher / .NET sibling checkouts)
+
+When running **`dotnet test`** (for example the vendored **KPatcher** tree under `vendor/` or a sibling clone), **do not** call `dotnet test` directly in agent workflows. Use KPatcher’s timeout wrappers so the test host is **killed** after a wall-clock limit:
+
+- **Windows (from KPatcher root):** `.\scripts\DotnetTest.ps1 KPatcher.sln -c Debug`
+- **Unix:** `./scripts/dotnet-test.sh KPatcher.sln -c Debug` (requires GNU `timeout` or `gtimeout`)
+
+Set **`DOTNET_TEST_TIMEOUT_SECONDS`** to override the default (**7200**). Exit code **124** indicates timeout termination.
+
 
 **Useful Commands (Examples)**
 ```powershell
