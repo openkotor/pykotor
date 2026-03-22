@@ -112,7 +112,7 @@ When running **`dotnet test`** (for example the vendored **KPatcher** tree under
 - **Windows (from KPatcher root):** `.\scripts\DotnetTest.ps1 KPatcher.sln -c Debug`
 - **Unix:** `./scripts/dotnet-test.sh KPatcher.sln -c Debug` (requires GNU `timeout` or `gtimeout`)
 
-Set **`DOTNET_TEST_TIMEOUT_SECONDS`** to override the default (**7200**). Exit code **124** indicates timeout termination.
+Wrapper wall clock is **capped at 300 seconds (5 minutes)**; optional **`DOTNET_TEST_TIMEOUT_SECONDS`** is clamped to that max. Exit code **124** means timeout — optimize bottlenecks rather than disabling tests.
 
 
 **Useful Commands (Examples)**
