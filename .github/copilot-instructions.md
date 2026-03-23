@@ -100,7 +100,7 @@ Edit only `Tools/HolocronToolset/src/ui/`. Never edit `uic/`. Run `convertui.py`
 
 ## 6. Testing and Environment
 
-- Enforce timeouts (120s/test, 300s/suite).
+- For KPatcher / .NET test runs: **never exceed 10 minutes total** wall clock per `dotnet test` invocation (see KPatcher wrappers below); target finishing **well under** that; on timeout, **find the bottleneck** (do not disable tests to hide slowness).
 - Use `uv run` over direct `python`. e.g.: `uv run Libraries/PyKotor/src/pykotor/cli/__main__.py <command>`
 - Reference paths via env vars (`$Env:K1_PATH`, etc. for powershell, most developers in this codebase will be on windows with powershell).
 - Execute from repo root.
@@ -112,7 +112,7 @@ When running **`dotnet test`** (for example the vendored **KPatcher** tree under
 - **Windows (from KPatcher root):** `.\scripts\DotnetTest.ps1 KPatcher.sln -c Debug`
 - **Unix:** `./scripts/dotnet-test.sh KPatcher.sln -c Debug` (requires GNU `timeout` or `gtimeout`)
 
-Wrapper wall clock is **capped at 300 seconds (5 minutes)**; optional **`DOTNET_TEST_TIMEOUT_SECONDS`** is clamped to that max. Exit code **124** means timeout — optimize bottlenecks rather than disabling tests.
+**Never exceed 10 minutes total** for `dotnet test`: wrapper wall clock is **capped at 600 seconds**; **`DOTNET_TEST_TIMEOUT_SECONDS`** cannot raise that ceiling. Exit **124** = timeout — **mandatory bottleneck analysis** (profile, trace, speed up); do not disable or skip tests as the primary fix.
 
 
 **Useful Commands (Examples)**
