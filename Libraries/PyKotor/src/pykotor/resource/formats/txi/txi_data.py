@@ -88,10 +88,10 @@ from enum import Enum
 from typing import ClassVar
 
 from loggerplus import RobustLogger
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 
 
-class TXI:
+class TXI(BiowareResource):
     def __init__(self, txi: str | None = None):
         self.features: TXIFeatures = TXIFeatures()
         self._empty: bool = True
@@ -402,7 +402,7 @@ class TXI:
         return "\n".join(lines)
 
 
-class TXIFeatures:
+class TXIFeatures(BiowareResource):
     """Stores texture features parsed from TXI file.
 
     TXIFeatures contains all properties that can be specified in a TXI file, including

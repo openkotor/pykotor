@@ -26,7 +26,7 @@ from enum import IntEnum, auto
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.formats.tpc.convert.bgra import (
     bgr_to_bgra,
     bgr_to_grey,
@@ -222,7 +222,7 @@ class TPCTextureFormat(IntEnum):
 
 
 @dataclass
-class TPCMipmap:
+class TPCMipmap(BiowareResource):
     """A single mipmap level in a TPC texture."""
 
     width: int
@@ -409,7 +409,7 @@ class TPCMipmap:
 
 
 @dataclass
-class TPCLayer:
+class TPCLayer(BiowareResource):
     """A layer in a TPC texture, containing mipmaps."""
 
     mipmaps: list[TPCMipmap] = field(default_factory=list)

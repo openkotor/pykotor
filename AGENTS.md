@@ -75,6 +75,9 @@ This works after a successful `uv sync --all-packages --all-extras`. **Python 3.
 ## Learned Workspace Facts
 
 - Holocron UI workflow is compile-first: change `.ui` → run convertui → then use `self.ui.<name>` in code; defensive getattr for UI is prohibited in `.cursorrules`.
+- Holocron `Editor` subclasses can receive `InstallationToolbar.installation_changed` during `super().__init__` before `setupUi`; init any state handlers touch (e.g. `GITEditor._git`) before `super().__init__`, skip handlers until `ui` exists, and use `self._installation` for the first mode when the toolbar may have set it during construction.
+- GFF auto-read treats binary GFF only when a known four-character type is immediately followed by `V3.2`; a non-zero start offset is applied only if every byte before that header is UTF-8 BOM, ASCII whitespace, or NUL, so arbitrary junk prefixes are not parsed as GFF.
+- The generic GFF editor resolves `GFFContent` for save as loaded content, then `from_res` (special `.res` names only), then `from_resource_type` when unambiguous, else `GFFContent.GFF`; clear stored content on `new()`.
 - CLI command names should follow existing patterns and use domain-accurate terminology (e.g. avoid "archive" where Bioware or docs use different names).
 - Instance dialogs (e.g. DoorDialog) import `Ui_*` from `toolset.uic.qtpy.dialogs.instance.<name>`; ensure the `instance` package and the corresponding UI module (e.g. `door.py` from `.ui` + convertui or programmatic) exist.
 

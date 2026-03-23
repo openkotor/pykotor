@@ -5,6 +5,7 @@ including basic types, compound types, and struct types with proper size calcula
 """
 
 from __future__ import annotations
+from pykotor.resource.formats._base import BiowareResource
 
 from enum import IntEnum
 from typing import TYPE_CHECKING
@@ -56,7 +57,7 @@ class NCSTypeCode(IntEnum):
     INVALID = 0xFF  # -1 in signed byte
 
 
-class NCSType:
+class NCSType(BiowareResource):
     """Represents a type in the NCS type system.
 
     Provides type information, size calculations, and type conversion utilities.

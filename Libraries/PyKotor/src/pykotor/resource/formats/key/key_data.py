@@ -55,6 +55,7 @@ Binary Format:
 """
 
 from __future__ import annotations
+from pykotor.resource.formats._base import BiowareResource
 
 from typing import ClassVar
 
@@ -62,7 +63,7 @@ from pykotor.common.misc import ResRef
 from pykotor.resource.type import ResourceType
 
 
-class BifEntry:
+class BifEntry(BiowareResource):
     """Represents a BIF file entry in the KEY file's file table.
 
     Each BIF entry contains the filename and metadata for a single BIF archive. The KEY file
@@ -150,7 +151,7 @@ class BifEntry:
         return f"{self.filename}({self.filesize} bytes)"
 
 
-class KeyEntry:
+class KeyEntry(BiowareResource):
     """Represents a resource entry in the KEY file's key table.
 
     Each key entry maps a resource name (ResRef) and type to a specific location within a BIF file.
@@ -287,7 +288,7 @@ class KeyEntry:
         return f"{self.resref}:{self.restype.name}@{self.bif_index}:{self.res_index}"
 
 
-class KEY:
+class KEY(BiowareResource):
     """Represents a KEY (Key Table) file in the Aurora engine.
 
     The KEY file is the master index for all game resources. It contains a list of BIF files

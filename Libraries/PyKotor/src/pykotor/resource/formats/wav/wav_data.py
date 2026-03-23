@@ -30,6 +30,7 @@ References:
 """
 
 from __future__ import annotations
+from pykotor.resource.formats._base import BiowareResource
 
 from enum import IntEnum
 
@@ -71,7 +72,7 @@ class WAVType(IntEnum):
     SFX = 2  # Sound effects WAV (streammusic/sounds with 470-byte header)
 
 
-class WAV:
+class WAV(BiowareResource):
     """Represents a WAV file.
 
     Attributes:

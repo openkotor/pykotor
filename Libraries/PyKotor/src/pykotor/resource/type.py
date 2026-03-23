@@ -43,6 +43,7 @@ from typing import TYPE_CHECKING, NamedTuple, TypeVar, Union
 from xml.etree.ElementTree import ParseError
 
 from pykotor.common.stream import BinaryReader, BinaryWriter
+from pykotor.resource.formats._base import BiowareResource  # type: ignore[import-untyped]
 from utility.common.misc_string.mutable_str import WrappedStr
 
 if TYPE_CHECKING:
@@ -103,7 +104,7 @@ def autoclose(func: Callable[..., R]) -> Callable[..., R]:
     return _autoclose
 
 
-class ResourceReader:
+class ResourceReader(BiowareResource):
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -142,7 +143,7 @@ class ResourceReader:
         self._reader.close()
 
 
-class ResourceWriter:
+class ResourceWriter(BiowareResource):
     def __init__(
         self,
         target: TARGET_TYPES,

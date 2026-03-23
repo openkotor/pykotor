@@ -259,11 +259,12 @@ class SpoofKotorRegistry:
         self.spoofed_path: Path = Path(installation_path).resolve()
 
         if game is not None:
-            determined_game: Game = game
+            determined_game: Game | None = game
         else:
             determined_game = Installation.determine_game(installation_path)
-            if determined_game is None:
-                raise ValueError(f"Could not auto-determine the game k1 or k2 from '{installation_path}'. Try sending 'game' enum to prevent auto-detections like this.")
+
+        if determined_game is None:
+            raise ValueError(f"Could not auto-determine the game k1 or k2 from '{installation_path}'. Try sending 'game' enum to prevent auto-detections like this.")
 
         # Path to the key.
         self.registry_path: str = get_retail_key(determined_game)

@@ -43,6 +43,7 @@ References:
 """
 
 from __future__ import annotations
+from pykotor.resource.formats._base import BiowareResource
 
 import re
 import traceback
@@ -82,7 +83,7 @@ class DiagnosticSeverity(IntEnum):
 
 
 @dataclass
-class Position:
+class Position(BiowareResource):
     """A position in a text document (0-indexed)."""
 
     line: int
@@ -90,7 +91,7 @@ class Position:
 
 
 @dataclass
-class Range:
+class Range(BiowareResource):
     """A range in a text document."""
 
     start: Position
@@ -98,7 +99,7 @@ class Range:
 
 
 @dataclass
-class Diagnostic:
+class Diagnostic(BiowareResource):
     """A diagnostic (error, warning, etc.) in a document."""
 
     range: Range
@@ -110,7 +111,7 @@ class Diagnostic:
 
 
 @dataclass
-class DocumentSymbol:
+class DocumentSymbol(BiowareResource):
     """A symbol in a document (function, struct, variable, etc.)."""
 
     name: str
@@ -122,7 +123,7 @@ class DocumentSymbol:
 
 
 @dataclass
-class CompletionItem:
+class CompletionItem(BiowareResource):
     """An auto-completion suggestion."""
 
     label: str
@@ -134,7 +135,7 @@ class CompletionItem:
 
 
 @dataclass
-class HoverInfo:
+class HoverInfo(BiowareResource):
     """Hover information for a symbol."""
 
     contents: str  # Markdown-formatted content
@@ -142,7 +143,7 @@ class HoverInfo:
 
 
 @dataclass
-class AnalysisResult:
+class AnalysisResult(BiowareResource):
     """Complete analysis result for a document."""
 
     diagnostics: list[Diagnostic] = field(default_factory=list)
@@ -151,7 +152,7 @@ class AnalysisResult:
     ast: CodeRoot | None = None
 
 
-class NSSLanguageServer:
+class NSSLanguageServer(BiowareResource):
     """Language server for NSS scripts.
 
     Provides diagnostics, completions, hover, and document symbols.

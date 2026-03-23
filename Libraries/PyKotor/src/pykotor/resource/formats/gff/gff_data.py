@@ -63,7 +63,7 @@ from loggerplus import (
 )
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import ResRef
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.type import ResourceType
 from utility.common.geometry import Vector3, Vector4
 from utility.common.misc_string.util import format_text
@@ -221,6 +221,30 @@ class GFFContent(Enum):
             gff_content = GFFContent.INV
         return gff_content
 
+    @classmethod
+    def from_resource_type(cls, restype: ResourceType) -> GFFContent | None:
+        """Map a ResourceType to GFFContent when unambiguous (e.g. .utc -> UTC).
+
+        Multiple GFF payloads share ``.res`` (partytable, savenfo, …); those are not inferred here—use
+        :meth:`from_res` or default to :attr:`GFFContent.GFF`.
+        """
+        if restype.is_invalid:
+            return None
+        target = restype.target_type()
+        res_contents: set[GFFContent] = {cls.PTH, cls.NFO, cls.PT, cls.GVT, cls.INV}
+        matches: list[GFFContent] = []
+        for content_enum in cls:
+            if content_enum in res_contents:
+                mapped = ResourceType.RES
+            else:
+                ext = normalize_string(content_enum.value)
+                mapped = ResourceType.from_extension(ext).target_type()
+            if mapped == target:
+                matches.append(content_enum)
+        if len(matches) == 1:
+            return matches[0]
+        return None
+
 
 def _normalize_string_for_compare(value: object) -> str:
     """Normalize string for comparison to avoid false positives from whitespace/line endings.
@@ -236,7 +260,7 @@ def _normalize_string_for_compare(value: object) -> str:
 
 
 @dataclass
-class GFFListSemanticConfig:
+class GFFListSemanticConfig(BiowareResource):
     """Configuration for semantic identity matching of GFF list elements.
 
     Used to correctly detect modified entries (same logical item, different fields)
@@ -390,7 +414,7 @@ class GFFFieldType(IntEnum):
 
 
 @dataclass(frozen=True)
-class GFFFieldView:
+class GFFFieldView(BiowareResource):
     """Lightweight view over a GFF field (label, type, value).
 
     Returns immutable tuples instead of exposing internal storage directly.
@@ -401,7 +425,7 @@ class GFFFieldView:
     value: Any
 
 
-class Difference:
+class Difference(BiowareResource):
     def __init__(
         self,
         path: PureWindowsPath | str,
@@ -424,7 +448,7 @@ class Difference:
         return f"Difference(path={self.path}, old_value={self.old_value}, new_value={self.new_value})"
 
 
-class GFFComparisonResult:
+class GFFComparisonResult(BiowareResource):
     """Class to store comprehensive results of a GFF comparison."""
 
     def __init__(self):

@@ -64,7 +64,7 @@ from abc import ABC, abstractmethod
 from enum import Enum, IntEnum
 from typing import TYPE_CHECKING, Any, NamedTuple
 
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 
 if TYPE_CHECKING:
     import os
@@ -898,7 +898,7 @@ class NCSInstruction(ComparableMixin):
         return 0
 
 
-class NCSOptimizer(ABC):
+class NCSOptimizer(BiowareResource, ABC):
     def __init__(self):
         self.instructions_cleared: int = 0
 
@@ -910,7 +910,7 @@ class NCSOptimizer(ABC):
         self.instructions_cleared = 0
 
 
-class NCSCompiler(ABC):
+class NCSCompiler(BiowareResource, ABC):
     @abstractmethod
     def compile_script(
         self, source_file: os.PathLike | str, output_file: os.PathLike | str, game: Game | int, timeout: int = 5, *, debug: bool = False

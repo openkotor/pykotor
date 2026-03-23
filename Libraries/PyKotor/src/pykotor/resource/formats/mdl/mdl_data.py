@@ -45,7 +45,7 @@ from enum import IntFlag
 from typing import TYPE_CHECKING, Any
 
 from pykotor.common.misc import Color
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.formats.mdl.mdl_types import (
     MDLClassification,
     MDLDynamicType,
@@ -3026,7 +3026,7 @@ class MDLDangly(MDLMesh):
 
 
 @dataclass
-class MDLAABBNode:
+class MDLAABBNode(BiowareResource):
     """A single node in the AABB tree structure.
 
     Each AABB node represents a bounding volume in the collision detection tree.

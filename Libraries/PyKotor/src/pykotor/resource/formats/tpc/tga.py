@@ -11,6 +11,7 @@ References:
 """
 
 from __future__ import annotations
+from pykotor.resource.formats._base import BiowareResource
 
 import io
 import struct
@@ -24,7 +25,7 @@ TGA_TYPE_RLE_TRUE_COLOR = 10
 
 
 @dataclass
-class TGAImage:
+class TGAImage(BiowareResource):
     width: int
     height: int
     data: bytes  # RGBA8888, row-major, origin = top-left

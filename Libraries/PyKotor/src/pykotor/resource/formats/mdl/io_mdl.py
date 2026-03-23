@@ -627,6 +627,7 @@ References:
 """
 
 from __future__ import annotations
+from pykotor.resource.formats._base import BiowareResource
 
 import math
 import os
@@ -2808,7 +2809,7 @@ def _calculate_tangent_space(
     return tangent, binormal
 
 
-class MDLBinaryReader:
+class MDLBinaryReader(BiowareResource):
     """Binary MDL/MDX file reader.
 
     This class provides loading of MDL (model) and MDX (model extension) files.
@@ -3634,7 +3635,7 @@ class MDLBinaryReader:
         return controller
 
 
-class MDLBinaryWriter:
+class MDLBinaryWriter(BiowareResource):
     """Binary MDL/MDX file writer.
 
     Writes MDL (model) and MDX (model extension) files from MDL data structures.

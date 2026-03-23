@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, TypeVar, cast
 
 from pykotor.common.misc import ResRef  # type: ignore[import-untyped]
 from pykotor.extract.file import ResourceIdentifier  # type: ignore[import-untyped]
-from pykotor.resource.formats._base import ComparableMixin  # type: ignore[import-untyped]
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin  # type: ignore[import-untyped]
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -33,7 +33,7 @@ class HashAlgo(Enum):
     JENKINS = 4
 
 
-class ArchiveResource:
+class ArchiveResource(BiowareResource):
     """Represents a resource stored within a BioWare archive (ERF, RIM, BIF).
 
     Contains resource reference, type, and data. Used as the base resource type
