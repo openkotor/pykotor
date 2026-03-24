@@ -231,7 +231,7 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)** (upstream [seedhartha/reone](https://github.com/seedhartha/reone)): [`src/libs/resource/format/2dareader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp)
+- **[reone](https://github.com/modawan/reone)** (upstream [seedhartha/reone](https://github.com/modawan/reone)): [`src/libs/resource/format/2dareader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/resource/TwoDAObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts)
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Formats/Kotor2DA/Kotor2DA.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/Kotor2DA.cs)
 - **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp)
@@ -297,9 +297,9 @@ The row count is stored as a 32-bit unsigned integer in [little-endian](https://
 
 **References**:
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/2dareader.cpp:34`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp#L34) - *KotOR*-specific row count reading
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/2dafile.cpp:284`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L284) - Generic *Aurora* engine row count reading (format shared across *KotOR* and other *Aurora*-derived games)
-- **[kotor](https://github.com/reubenduncan/kotor)** ([Mirror: th3w1zard1/kotor](https://github.com/th3w1zard1/kotor)): [`docs/2da.md:39-44`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L39-L44) - *KotOR*-specific row indices structure
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp:34`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp#L34) - *KotOR*-specific row count reading
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:284`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L284) - Generic *Aurora* engine row count reading (format shared across *KotOR* and other *Aurora*-derived games)
+- **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md:39-44`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L39-L44) - *KotOR*-specific row indices structure
 
 ### Row Labels
 
@@ -315,10 +315,10 @@ Each row label is read as a [tab-terminated](2DA-File-Format#column-headers) str
 
 **References**:
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/2dareader.cpp:35`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp#L35) - *KotOR*-specific row label reading (skipped in *reone*)
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/2dafile.cpp:277-294`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L277-L294) - Generic *Aurora* engine row label skipping implementation (format shared across *KotOR* and other *Aurora*-derived games)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Assets/Scripts/FileObjects/2DAObject.cs:56-70`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L56-L70) - *KotOR*-specific row label parsing
-- **[kotor](https://github.com/reubenduncan/kotor)** ([Mirror: th3w1zard1/kotor](https://github.com/th3w1zard1/kotor)): [`docs/2da.md:39-46`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L39-L46) - *KotOR*-specific row indices structure and termination note
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp:35`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp#L35) - *KotOR*-specific row label reading (skipped in *reone*)
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:277-294`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L277-L294) - Generic *Aurora* engine row label skipping implementation (format shared across *KotOR* and other *Aurora*-derived games)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs:56-70`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L56-L70) - *KotOR*-specific row label parsing
+- **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md:39-46`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L39-L46) - *KotOR*-specific row indices structure and termination note
 
 ### Cell Data Offsets
 
@@ -335,11 +335,11 @@ Each cell has a 16-bit unsigned integer offset ([little-endian](https://en.wikip
 
 **References**:
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/2dareader.cpp:47-52`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp#L47-L52) - *KotOR*-specific offset array reading
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/2dafile.cpp:314-317`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L314-L317) - Generic *Aurora* engine offset reading (format shared across *KotOR* and other *Aurora*-derived games)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Assets/Scripts/FileObjects/2DAObject.cs:72-83`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L72-L83) - *KotOR*-specific offset array parsing
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/2dawriter.cpp:63-89`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dawriter.cpp#L63-L89) - *KotOR*-specific offset *[deduplication](https://en.wikipedia.org/wiki/Data_deduplication)* during writing
-- **[kotor](https://github.com/reubenduncan/kotor)** ([Mirror: th3w1zard1/kotor](https://github.com/th3w1zard1/kotor)): [`docs/2da.md:48-54`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L48-L54) - *KotOR*-specific cell offsets structure
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp:47-52`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp#L47-L52) - *KotOR*-specific offset array reading
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:314-317`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L314-L317) - Generic *Aurora* engine offset reading (format shared across *KotOR* and other *Aurora*-derived games)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs:72-83`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L72-L83) - *KotOR*-specific offset array parsing
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dawriter.cpp:63-89`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dawriter.cpp#L63-L89) - *KotOR*-specific offset *[deduplication](https://en.wikipedia.org/wiki/Data_deduplication)* during writing
+- **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md:48-54`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L48-L54) - *KotOR*-specific cell offsets structure
 
 ### Cell Data String Table
 
@@ -359,11 +359,11 @@ The cell data string table begins immediately after the `cell_data_size` field. 
 
 **References**:
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/2dareader.cpp:54-65`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp#L54-L65) - *KotOR*-specific cell data reading with offset calculation
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/2dafile.cpp:319-335`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L319-L335) - Generic *Aurora* engine cell data reading (format shared across *KotOR* and other *Aurora*-derived games, with *KotOR*-specific comment at line 545)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Assets/Scripts/FileObjects/2DAObject.cs:85-100`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L85-L100) - *KotOR*-specific cell data reading loop
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/2dafile.cpp:63-64`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L63-L64) - Generic *Aurora* engine empty cell representation (`"****"`, shared across *KotOR* and other *Aurora*-derived games)
-- **[kotor](https://github.com/reubenduncan/kotor)** ([Mirror: th3w1zard1/kotor](https://github.com/th3w1zard1/kotor)): [`docs/2da.md:57-64`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L57-L64) - *KotOR*-specific cell data structure
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp:54-65`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp#L54-L65) - *KotOR*-specific cell data reading with offset calculation
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:319-335`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L319-L335) - Generic *Aurora* engine cell data reading (format shared across *KotOR* and other *Aurora*-derived games, with *KotOR*-specific comment at line 545)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs:85-100`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L85-L100) - *KotOR*-specific cell data reading loop
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:63-64`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L63-L64) - Generic *Aurora* engine empty cell representation (`"****"`, shared across *KotOR* and other *Aurora*-derived games)
+- **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md:57-64`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L57-L64) - *KotOR*-specific cell data structure
 
 ---
 
@@ -673,9 +673,9 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/parser/2da/appearance.cpp:28-125`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/appearance.cpp#L28-L125) - Complete column parsing implementation with all column names
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/creature.cpp:98-107`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L98-L107) - Appearance loading and column usage
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/creature.cpp:1156-1228`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L1156-L1228) - [model](MDL-MDX-File-Format) and [texture](TPC-File-Format) column access
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/appearance.cpp:28-125`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/appearance.cpp#L28-L125) - Complete column parsing implementation with all column names
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:98-107`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L98-L107) - Appearance loading and column usage
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1156-1228`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1156-L1228) - [model](MDL-MDX-File-Format) and [texture](TPC-File-Format) column access
 
 ### [baseitems.2da](2DA-baseitems)
 
@@ -780,8 +780,8 @@ The following columns are accessed by the game engine:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/item.cpp:126-136`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/item.cpp#L126-L136) - Base item column access
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/item.cpp:160-171`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/item.cpp#L160-L171) - Ammunition type lookup from `baseitems.2da`
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/item.cpp:126-136`](https://github.com/modawan/reone/blob/master/src/libs/game/object/item.cpp#L126-L136) - Base item column access
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/item.cpp:160-171`](https://github.com/modawan/reone/blob/master/src/libs/game/object/item.cpp#L160-L171) - Ammunition type lookup from `baseitems.2da`
 
 ---
 
@@ -853,8 +853,8 @@ The following columns are accessed by the game engine:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/d20/class.cpp:34-56`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/class.cpp#L34-L56) - Class loading from [2DA](2DA-File-Format) with column access
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/d20/class.cpp:58-86`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/class.cpp#L58-L86) - Class skills, saving throws, and attack bonuses loading
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/class.cpp:34-56`](https://github.com/modawan/reone/blob/master/src/libs/game/d20/class.cpp#L34-L56) - Class loading from [2DA](2DA-File-Format) with column access
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/class.cpp:58-86`](https://github.com/modawan/reone/blob/master/src/libs/game/d20/class.cpp#L58-L86) - Class skills, saving throws, and attack bonuses loading
 
 ---
 
@@ -943,9 +943,9 @@ The following columns are accessed by the reone engine:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/d20/feats.cpp:32-58`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/feats.cpp#L32-L58) - Feat loading from [2DA](2DA-File-Format) with column access
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/talents/TalentFeat.ts:36-53`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentFeat.ts#L36-L53) - Feat structure with additional columns
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/talents/TalentFeat.ts:122-132`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentFeat.ts#L122-L132) - Feat loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/feats.cpp:32-58`](https://github.com/modawan/reone/blob/master/src/libs/game/d20/feats.cpp#L32-L58) - Feat loading from [2DA](2DA-File-Format) with column access
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentFeat.ts:36-53`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentFeat.ts#L36-L53) - Feat structure with additional columns
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentFeat.ts:122-132`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentFeat.ts#L122-L132) - Feat loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1001,9 +1001,9 @@ The following columns are accessed by the reone engine:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/d20/skills.cpp:32-48`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/skills.cpp#L32-L48) - Skill loading from [2DA](2DA-File-Format)
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/d20/class.cpp:58-65`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/class.cpp#L58-L65) - Class skill checking using dynamic column names
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/talents/TalentSkill.ts:38-49`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSkill.ts#L38-L49) - Skill loading from [2DA](2DA-File-Format) with droidcanuse and npccanuse columns
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/skills.cpp:32-48`](https://github.com/modawan/reone/blob/master/src/libs/game/d20/skills.cpp#L32-L48) - Skill loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/class.cpp:58-65`](https://github.com/modawan/reone/blob/master/src/libs/game/d20/class.cpp#L58-L65) - Class skill checking using dynamic column names
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentSkill.ts:38-49`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSkill.ts#L38-L49) - Skill loading from [2DA](2DA-File-Format) with droidcanuse and npccanuse columns
 
 ---
 
@@ -1106,9 +1106,9 @@ The following columns are accessed by the reone engine:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/d20/spells.cpp:32-48`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/spells.cpp#L32-L48) - Spell loading from [2DA](2DA-File-Format) with column access
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/talents/TalentSpell.ts:16-44`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSpell.ts#L16-L44) - Spell structure with additional columns
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/talents/TalentSpell.ts:42-53`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSpell.ts#L42-L53) - Spell loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/spells.cpp:32-48`](https://github.com/modawan/reone/blob/master/src/libs/game/d20/spells.cpp#L32-L48) - Spell loading from [2DA](2DA-File-Format) with column access
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentSpell.ts:16-44`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSpell.ts#L16-L44) - Spell structure with additional columns
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentSpell.ts:42-53`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSpell.ts#L42-L53) - Spell loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1249,8 +1249,8 @@ The complete column structure is defined in reone's placeables parser:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/parser/2da/placeables.cpp:29-49`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/placeables.cpp#L29-L49) - Complete column parsing implementation with all column names
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/placeable.cpp:59-60`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/placeable.cpp#L59-L60) - Placeable loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/placeables.cpp:29-49`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/placeables.cpp#L29-L49) - Complete column parsing implementation with all column names
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/placeable.cpp:59-60`](https://github.com/modawan/reone/blob/master/src/libs/game/object/placeable.cpp#L59-L60) - Placeable loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1314,8 +1314,8 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/parser/2da/genericdoors.cpp:29-41`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/genericdoors.cpp#L29-L41) - Complete column parsing implementation with all column names
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/door.cpp:66-67`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/door.cpp#L66-L67) - Door loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/genericdoors.cpp:29-41`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/genericdoors.cpp#L29-L41) - Complete column parsing implementation with all column names
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/door.cpp:66-67`](https://github.com/modawan/reone/blob/master/src/libs/game/object/door.cpp#L66-L67) - Door loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1376,7 +1376,7 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/creature.cpp:1347-1354`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L1347-L1354) - Sound set loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1347-1354`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1347-L1354) - Sound set loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1500,7 +1500,7 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/portraits.cpp:33-51`](https://github.com/seedhartha/reone/blob/master/src/libs/game/portraits.cpp#L33-L51) - Portrait loading from [2DA](2DA-File-Format) with all column access
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/portraits.cpp:33-51`](https://github.com/modawan/reone/blob/master/src/libs/game/portraits.cpp#L33-L51) - Portrait loading from [2DA](2DA-File-Format) with all column access
 
 ---
 
@@ -1540,8 +1540,8 @@ The complete column structure is defined in reone's heads parser:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/parser/2da/heads.cpp:29-39`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/heads.cpp#L29-L39) - Complete column parsing implementation with all column names
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/creature.cpp:1223-1228`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L1223-L1228) - Head loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/heads.cpp:29-39`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/heads.cpp#L29-L39) - Complete column parsing implementation with all column names
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1223-1228`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1223-L1228) - Head loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1662,7 +1662,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/item.cpp:164-171`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/item.cpp#L164-L171) - Ammunition type loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/item.cpp:164-171`](https://github.com/modawan/reone/blob/master/src/libs/game/object/item.cpp#L164-L171) - Ammunition type loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1701,8 +1701,8 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/camerastyles.cpp:29-42`](https://github.com/seedhartha/reone/blob/master/src/libs/game/camerastyles.cpp#L29-L42) - Camera style loading from [2DA](2DA-File-Format)
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/area.cpp:140-148`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/area.cpp#L140-L148) - Camera style usage in areas
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/camerastyles.cpp:29-42`](https://github.com/modawan/reone/blob/master/src/libs/game/camerastyles.cpp#L29-L42) - Camera style loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/area.cpp:140-148`](https://github.com/modawan/reone/blob/master/src/libs/game/object/area.cpp#L140-L148) - Camera style usage in areas
 
 ---
 
@@ -1735,8 +1735,8 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/footstepsounds.cpp:31-57`](https://github.com/seedhartha/reone/blob/master/src/libs/game/footstepsounds.cpp#L31-L57) - Footstep sounds loading from [2DA](2DA-File-Format)
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/creature.cpp:106`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L106) - Footstep type usage from [appearance.2da](2DA-appearance)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/footstepsounds.cpp:31-57`](https://github.com/modawan/reone/blob/master/src/libs/game/footstepsounds.cpp#L31-L57) - Footstep sounds loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:106`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L106) - Footstep type usage from [appearance.2da](2DA-appearance)
 
 ---
 
@@ -1757,7 +1757,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/sound.cpp:92-96`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/sound.cpp#L92-L96) - Priority group loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/sound.cpp:92-96`](https://github.com/modawan/reone/blob/master/src/libs/game/object/sound.cpp#L92-L96) - Priority group loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1802,7 +1802,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/reputes.cpp:36-62`](https://github.com/seedhartha/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](BWM-File-Format#adjacencies-wok-only) loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/reputes.cpp:36-62`](https://github.com/modawan/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](BWM-File-Format#adjacencies-wok-only) loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1837,7 +1837,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/surfaces.cpp:29-44`](https://github.com/seedhartha/reone/blob/master/src/libs/game/surfaces.cpp#L29-L44) - surface material loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/surfaces.cpp:29-44`](https://github.com/modawan/reone/blob/master/src/libs/game/surfaces.cpp#L29-L44) - surface material loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1858,7 +1858,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/engines/kotor/gui/loadscreen/loadscreen.cpp:45`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotor/gui/loadscreen/loadscreen.cpp#L45) - Loading screen hints TODO comment (KotOR-specific)
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/engines/kotor/gui/loadscreen/loadscreen.cpp:45`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotor/gui/loadscreen/loadscreen.cpp#L45) - Loading screen hints TODO comment (KotOR-specific)
 
 ---
 
@@ -1893,7 +1893,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/creature.cpp:1357-1366`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L1357-L1366) - Body bag loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1357-1366`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1357-L1366) - Body bag loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1915,8 +1915,8 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/creature.cpp:1398-1406`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L1398-L1406) - Perception range loading from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleCreature.ts:3178-3187`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L3178-L3187) - Perception range access from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1398-1406`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1398-L1406) - Perception range loading from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:3178-3187`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L3178-L3187) - Perception range access from [2DA](2DA-File-Format)
 
 ---
 
@@ -1937,7 +1937,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleCreature.ts:759`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L759) - Regeneration rate loading from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:759`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L759) - Regeneration rate loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1958,9 +1958,9 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleCreature.ts:1474-1482`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L1474-L1482) - [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModulePlaceable.ts:1063-1103`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L1063-L1103) - Placeable [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleDoor.ts:1343-1365`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L1343-L1365) - Door [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:1474-1482`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L1474-L1482) - [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModulePlaceable.ts:1063-1103`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L1063-L1103) - Placeable [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleDoor.ts:1343-1365`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L1343-L1365) - Door [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
 
 ### combatanimations.2da
 
@@ -1979,7 +1979,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleCreature.ts:1482`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L1482) - Combat [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:1482`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L1482) - Combat [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2000,7 +2000,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleCreature.ts:1819-1822`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L1819-L1822) - Weapon sound lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:1819-1822`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L1819-L1822) - Weapon sound lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2021,8 +2021,8 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModulePlaceable.ts:387-389`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L387-L389) - Placeable sound lookup from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleDoor.ts:239-241`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L239-L241) - Door sound lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModulePlaceable.ts:387-389`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L387-L389) - Placeable sound lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleDoor.ts:239-241`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L239-L241) - Door sound lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2044,7 +2044,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleCreature.ts:2875-2887`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L2875-L2887) - Creature speed lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:2875-2887`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L2875-L2887) - Creature speed lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2065,7 +2065,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleCreature.ts:2926-2941`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L2926-L2941) - Experience table lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:2926-2941`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L2926-L2941) - Experience table lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2091,7 +2091,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/gui/sounds.cpp:31-45`](https://github.com/seedhartha/reone/blob/master/src/libs/game/gui/sounds.cpp#L31-L45) - [GUI](GFF-File-Format#gui-graphical-user-interface) sound loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/sounds.cpp:31-45`](https://github.com/modawan/reone/blob/master/src/libs/game/gui/sounds.cpp#L31-L45) - [GUI](GFF-File-Format#gui-graphical-user-interface) sound loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -2112,7 +2112,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/gui/dialog.cpp:302-315`](https://github.com/seedhartha/reone/blob/master/src/libs/game/gui/dialog.cpp#L302-L315) - Dialog [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/dialog.cpp:302-315`](https://github.com/modawan/reone/blob/master/src/libs/game/gui/dialog.cpp#L302-L315) - Dialog [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2134,7 +2134,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/nwscript/NWScriptDefK1.ts:5552`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L5552) - Force shield lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:5552`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L5552) - Force shield lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2167,9 +2167,9 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/managers/JournalManager.ts:58-64`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/JournalManager.ts#L58-L64) - Plot/quest experience lookup from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/managers/JournalManager.ts:101-104`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/JournalManager.ts#L101-L104) - Plot existence check from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/nwscript/NWScriptDefK1.ts:7845-7848`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L7845-L7848) - Plot table access for quest experience
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/managers/JournalManager.ts:58-64`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/JournalManager.ts#L58-L64) - Plot/quest experience lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/managers/JournalManager.ts:101-104`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/JournalManager.ts#L101-L104) - Plot existence check from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:7845-7848`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L7845-L7848) - Plot table access for quest experience
 
 ---
 
@@ -2211,9 +2211,9 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/trigger.cpp:75-78`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/trigger.cpp#L75-L78) - Trap type loading from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleTrigger.ts:605-611`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleTrigger.ts#L605-L611) - Trap loading from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleObject.ts:1822`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleObject.ts#L1822) - Trap lookup from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/trigger.cpp:75-78`](https://github.com/modawan/reone/blob/master/src/libs/game/object/trigger.cpp#L75-L78) - Trap type loading from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleTrigger.ts:605-611`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleTrigger.ts#L605-L611) - Trap loading from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleObject.ts:1822`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleObject.ts#L1822) - Trap lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2235,7 +2235,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/Module.ts:663-669`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/Module.ts#L663-L669) - Module save inclusion check from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/Module.ts:663-669`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/Module.ts#L663-L669) - Module save inclusion check from [2DA](2DA-File-Format)
 
 ---
 
@@ -2256,8 +2256,8 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/managers/PartyManager.ts:180-187`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/PartyManager.ts#L180-L187) - Tutorial window tracker initialization from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/managers/PartyManager.ts:438`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/PartyManager.ts#L438) - Tutorial table access
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/managers/PartyManager.ts:180-187`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/PartyManager.ts#L180-L187) - Tutorial window tracker initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/managers/PartyManager.ts:438`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/PartyManager.ts#L438) - Tutorial table access
 
 ---
 
@@ -3004,7 +3004,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/engine/rules/SWRuleSet.ts:66-74`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L66-L74) - Difficulty options initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:66-74`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L66-L74) - Difficulty options initialization from [2DA](2DA-File-Format)
 
 ---
 
@@ -3025,7 +3025,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/engine/rules/SWRuleSet.ts:89-95`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L89-L95) - XP table initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:89-95`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L89-L95) - XP table initialization from [2DA](2DA-File-Format)
 
 ---
 
@@ -3044,7 +3044,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/engine/rules/SWRuleSet.ts:101-105`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L101-L105) - Feat gain initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:101-105`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L101-L105) - Feat gain initialization from [2DA](2DA-File-Format)
 
 ---
 
@@ -3063,8 +3063,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/engine/rules/SWRuleSet.ts:143-150`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L143-L150) - Effect icon initialization from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/nwscript/NWScriptDefK1.ts:6441-6446`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L6441-L6446) - SetEffectIcon function
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:143-150`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L143-L150) - Effect icon initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:6441-6446`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L6441-L6446) - SetEffectIcon function
 - [`vendor/NorthernLights/nwscript.nss:4678`](https://github.com/th3w1zard1/NorthernLights/blob/master/nwscript.nss#L4678) - Comment referencing effecticon.2da
 
 ---
@@ -3086,8 +3086,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/engine/rules/SWRuleSet.ts:178-185`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L178-L185) - Pazaak decks initialization from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/nwscript/NWScriptDefK1.ts:4438`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4438) - StartPazaakGame function comment
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:178-185`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L178-L185) - Pazaak decks initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:4438`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4438) - StartPazaakGame function comment
 - [`vendor/NorthernLights/nwscript.nss:3847`](https://github.com/th3w1zard1/NorthernLights/blob/master/nwscript.nss#L3847) - Comment referencing PazaakDecks.2da
 
 ---
@@ -3107,7 +3107,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/combat/CreatureClass.ts:302-304`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/combat/CreatureClass.ts#L302-L304) - AC bonus loading from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/combat/CreatureClass.ts:302-304`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/combat/CreatureClass.ts#L302-L304) - AC bonus loading from [2DA](2DA-File-Format)
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:63`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L63) - HTInstallation.ACBONUS constant
 
 ---
@@ -3127,7 +3127,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/controls/KeyMapper.ts:293-299`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/controls/KeyMapper.ts#L293-L299) - Keymap initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/controls/KeyMapper.ts:293-299`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/controls/KeyMapper.ts#L293-L299) - Keymap initialization from [2DA](2DA-File-Format)
 
 ---
 
@@ -3147,7 +3147,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 **References**:
 
 - [`vendor/NorthernLights/nwscript.nss:949`](https://github.com/th3w1zard1/NorthernLights/blob/master/nwscript.nss#L949) - Comment referencing poison.2da constants
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/nwscript/NWScriptDefK1.ts:3194-3199`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L3194-L3199) - EffectPoison function
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:3194-3199`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L3194-L3199) - EffectPoison function
 
 ---
 
@@ -3167,7 +3167,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 **References**:
 
 - [`vendor/NorthernLights/nwscript.nss:3858`](https://github.com/th3w1zard1/NorthernLights/blob/master/nwscript.nss#L3858) - Comment referencing FeedBackText.2da
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/nwscript/NWScriptDefK1.ts:4464-4465`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4464-L4465) - DisplayFeedBackText function
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:4464-4465`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4464-L4465) - DisplayFeedBackText function
 
 ---
 
@@ -3186,7 +3186,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Kotor.NET/Tables/Appearance.cs:58-60`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Tables/Appearance.cs#L58-L60) - Comment referencing appearancesndset.2da for SoundAppTypeID
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Kotor.NET/Tables/Appearance.cs:58-60`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Tables/Appearance.cs#L58-L60) - Comment referencing appearancesndset.2da for SoundAppTypeID
 
 ---
 
@@ -3206,8 +3206,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/game/tsl/menu/MenuGraphicsAdvanced.ts:51-122`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/game/tsl/menu/MenuGraphicsAdvanced.ts#L51-L122) - [texture](TPC-File-Format) pack loading from [2DA](2DA-File-Format) for graphics menu (KotOR 2 only)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/game/kotor/menu/MenuGraphicsAdvanced.ts:63-121`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/game/kotor/menu/MenuGraphicsAdvanced.ts#L63-L121) - [texture](TPC-File-Format) pack usage in KotOR 1 graphics menu
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/game/tsl/menu/MenuGraphicsAdvanced.ts:51-122`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/game/tsl/menu/MenuGraphicsAdvanced.ts#L51-L122) - [texture](TPC-File-Format) pack loading from [2DA](2DA-File-Format) for graphics menu (KotOR 2 only)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/game/kotor/menu/MenuGraphicsAdvanced.ts:63-121`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/game/kotor/menu/MenuGraphicsAdvanced.ts#L63-L121) - [texture](TPC-File-Format) pack usage in KotOR 1 graphics menu
 
 ---
 
@@ -3228,7 +3228,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleArea.ts:210`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleArea.ts#L210) - Comment referencing loadscreens.2da for area loading screen index
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleArea.ts:210`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleArea.ts#L210) - Comment referencing loadscreens.2da for area loading screen index
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:549`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L549) - [GFF](GFF-File-Format) field mapping: "LoadScreenID" -> loadscreens.2da
 
 ---
@@ -3443,35 +3443,20 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 ### PyKotor Implementation
 
-**Reading**: [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py:12-106`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L12-L106)
+| Artifact | Location |
+| -------- | -------- |
+| Binary read | [`TwoDABinaryReader.load` L146+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L146) in [`io_twoda.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py) |
+| Binary write | [`TwoDABinaryWriter.write` L183+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L183) |
+| Data model | [`TwoDA` L87+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L87), [`TwoDARow` L915+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L915) in [`twoda_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py) |
+| CSV/JSON | `io_twoda_csv.py`, `io_twoda_json.py` |
 
-**Writing**: [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py:109-174`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L109-L174)
+### Other implementations
 
-### Vendor Implementations
-
-**reone** (C++):
-
-- Reading: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/2dareader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp)
-- Writing: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/2dawriter.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dawriter.cpp)
-- Data structure: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/2da.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/2da.cpp)
-
-**xoreos** (C++):
-
-- Reading: **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp) - Generic Aurora engine 2DA format parser (shared across KotOR, Neverwinter Nights, and other Aurora engine games). The format structure is the same, but specific 2DA files and their columns are KotOR-specific.
-
-**KotOR-Unity** (C#):
-
-- Reading: **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Assets/Scripts/FileObjects/2DAObject.cs:23-105`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L23-L105) - Complete 2DA reading implementation with column parsing, row indices, and cell data reading
-
-**KotOR.js** (TypeScript):
-
-- Reading: **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/TwoDAObject.ts:69-145`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts#L69-L145) - Complete 2DA reading implementation
-- Manager: **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/managers/TwoDAManager.ts:21-37`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/TwoDAManager.ts#L21-L37) - 2DA table loading from game containers
-- Usage: **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/talents/TalentFeat.ts:122-132`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentFeat.ts#L122-L132) - Feat loading from `feat.2da`
-
-**Kotor.NET** (C#):
-
-- Structure: **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs)
+- **reone**: [`2dareader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp), [`2dawriter.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dawriter.cpp), [`2da.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/2da.cpp)
+- **KotOR.js**: [`TwoDAObject.ts` L69–L145](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts#L69-L145), [`TwoDAManager.ts` L21–L37](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/TwoDAManager.ts#L21-L37)
+- **Kotor.NET**: [`TwoDABinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs), [`Kotor2DA.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/Kotor2DA.cs)
+- **xoreos**: [`2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp)
+- **KotOR-Unity**: [`2DAObject.cs` L23–L105](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L23-L105)
 
 ### See also
 
