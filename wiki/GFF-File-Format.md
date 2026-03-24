@@ -4,9 +4,9 @@ This document describes the GFF (Generic File Format) used in Knights of the Old
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine GFF format specification, see [Bioware Aurora GFF Format](Bioware-Aurora-GFF) and [Bioware Aurora Common GFF Structs](Bioware-Aurora-CommonGFFStructs).
 
-**For mod developers:** To modify GFF files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** To modify GFF files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
-**Related formats:** GFF files often reference other formats such as [2DA files](2DA-File-Format) for configuration data, [TLK files](TLK-File-Format) for text strings, [MDL/MDX files](MDL-MDX-File-Format) for 3D [models](MDL-MDX-File-Format), and [NCS files](NCS-File-Format) for scripts. Loading any GFF (ARE, DLG, UTC, UTI, etc.) uses the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources: override, then loaded MOD/SAV, then KEY/BIF. **Modder note:** Tools like KotOR Tool, K-GFF, and Holocron Toolset edit GFF; TSLPatcher/HoloPatcher [GFFList](TSLPatcher-GFFList-Syntax) can add or modify fields but not remove structs—see [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#removing-gff-structs-when-patchers-cannot) for script-based removal. [Concepts](Concepts) defines GFF and related terms.
+**Related formats:** GFF files often reference other formats such as [2DA files](2DA-File-Format) for configuration data, [TLK files](TLK-File-Format) for text strings, [MDL/MDX files](MDL-MDX-File-Format) for 3D [models](MDL-MDX-File-Format), and [NCS files](NCS-File-Format) for scripts. Loading any GFF (ARE, DLG, UTC, UTI, etc.) uses the same [resource resolution order](Concepts#resource-resolution-order) as other resources: override, then loaded MOD/SAV, then KEY/BIF. **Modder note:** Tools like KotOR Tool, K-GFF, and Holocron Toolset edit GFF; TSLPatcher/HoloPatcher [GFFList](TSLPatcher-GFFList-Syntax) can add or modify fields but not remove structs—see [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#removing-gff-structs-when-patchers-cannot) for script-based removal. [Concepts](Concepts) defines GFF and related terms.
 
 ## Table of Contents
 
@@ -191,7 +191,7 @@ Complex field types store their data in the field data section:
 | double            | 8 bytes (double)                                                    |
 | string            | 4 bytes length + N bytes string data                                |
 | ResRef            | 1 byte length + N bytes ResRef data (max 16 chars)                  |
-| LocalizedString   | 4 bytes count + N×8 bytes (Language ID + [StrRef](TLK-File-Format#string-references-strref) pairs)              |
+| LocalizedString   | 4 bytes count + N×8 bytes ([Language ID](Concepts#language-ids-kotor) + [StrRef](TLK-File-Format#string-references-strref) pairs)              |
 | Binary            | 4 bytes length + N bytes binary data                                 |
 | Vector3           | 12 bytes (3×float)                                                   |
 | Vector4           | 16 bytes (4×float)                                                   |
@@ -450,7 +450,7 @@ Complex types require accessing data from the field data section:
   - int32: [StrRef](TLK-File-Format#string-references-strref) ID ([dialog.tlk](TLK-File-Format) reference, -1 if none)
   - uint32: Number of language-specific strings
   - For each language string (if count > 0):
-    - uint32: Language ID
+    - uint32: Language ID ([Concepts](Concepts#language-ids-kotor))
     - uint32: string length in bytes
     - char[]: string data
 - **Void (Binary)**: The offset points to a uint32 length followed by the binary data bytes.
@@ -482,6 +482,7 @@ Complex types require accessing data from the field data section:
 
 - [GFF-ARE](GFF-ARE), [GFF-DLG](GFF-DLG), [GFF-IFO](GFF-IFO), [GFF-UTI](GFF-UTI), [GFF-UTC](GFF-UTC), [GIT](GFF-File-Format#git-game-instance-template) -- GFF-based game resources
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Patching GFF via HoloPatcher/TSLPatcher
+- [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) -- Hex resource type IDs (ResRef + type in archives)
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
 - [Bioware-Aurora-GFF](Bioware-Aurora-GFF) -- Aurora GFF specification
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for GFF structure and modding

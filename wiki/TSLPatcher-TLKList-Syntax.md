@@ -1,6 +1,6 @@
 # TSLPatcher TLKList Syntax Documentation
 
-This guide explains how to modify [TLK files](TLK-File-Format) using TSLPatcher syntax. For the complete [TLK file](TLK-File-Format) format specification, see [TLK File Format](TLK-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+This guide explains how to modify [TLK files](TLK-File-Format) using TSLPatcher syntax. For the complete [TLK file](TLK-File-Format) format specification, see [TLK File Format](TLK-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 ## Overview
 
@@ -413,7 +413,7 @@ TSLPatcher Execution Order (v1.2.8+):
 6. [SSFList]         - Modify soundset files
 ```
 
-**Note**: In TSLPatcher v1.2.8b0 (2006-08-06), the processing order was changed so that [TLK](TLK-File-Format) Appending happens before Install List. According to the official change log, this allows [ERF](ERF-File-Format)/MOD/RIM files to be placed in their proper locations before [GFF](GFF-File-Format) and script compilation sections run, so modified files can be saved into those container files.
+**Note**: In TSLPatcher v1.2.8b0 (2006-08-06), the processing order was changed so that [TLK](TLK-File-Format) Appending happens before Install List. According to the official change log, this allows [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) files to be placed in their proper locations before [GFF](GFF-File-Format) and script compilation sections run, so modified files can be saved into those container files.
 
 **Older TSLPatcher versions** (before 1.2.8) processed InstallList before TLKList.
 
@@ -438,7 +438,7 @@ HoloPatcher Execution Order:
 
 **TSLPatcher's reasoning** (TLKList --> InstallList):
 
-- Allows [ERF](ERF-File-Format)/MOD/RIM files to be placed before [GFF](GFF-File-Format)/Compile sections that save into them
+- Allows [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) files to be placed before [GFF](GFF-File-Format)/Compile sections that save into them
 
 **HoloPatcher's reasoning** (InstallList --> TLKList):
 
@@ -936,7 +936,7 @@ StrRef2=2
 **TSLPatcher v1.2.8b0 (2006-08-06)**:
 
 - Changed processing order: [TLK](TLK-File-Format) Appending now happens before Install List
-- This allows [ERF](ERF-File-Format)/MOD/RIM files to be placed before [GFF](GFF-File-Format) and script compilation sections run
+- This allows [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) files to be placed before [GFF](GFF-File-Format) and script compilation sections run
 
 **TSLPatcher v1.2.8b8 (2006-12-02)**:
 

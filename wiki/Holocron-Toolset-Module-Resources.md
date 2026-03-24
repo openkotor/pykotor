@@ -4,7 +4,7 @@
 
 ## Module resources
 
-Module resources refer to the resources stored in the game's module files. These can be found in the `/modules/` directory of your game directory and behave like zip files (in the sense of storing multiple files into a single file), carrying the extensions ERF, MOD or RIM. Module resources can only be accessed by the specific module they are stored in.
+Module resources refer to the resources stored in the game's module files. These can be found in the `/modules/` directory of your game directory and behave like zip files (in the sense of storing multiple files into a single file), carrying the extensions ERF, MOD, or [RIM](RIM-File-Format). Module resources can only be accessed by the specific module they are stored in.
 
 Resources contained in the module files can be directly edited and saved through the toolset without having to extract them. However, this is an irreversible operation so if you are editing files shipped directly with the game be sure to make backups otherwise you will need to reinstall the whole game.
 
@@ -21,6 +21,7 @@ The "Module" tab allows you to navigate through the various module files through
 
 ### See also
 
-- [ERF-File-Format](ERF-File-Format) -- MOD/RIM container format
-- [Concepts](Concepts#mod--erf) -- MOD/ERF and resource resolution
+- [ERF-File-Format](ERF-File-Format) -- MOD / generic ERF container format
+- [RIM-File-Format](RIM-File-Format) -- Stock `.rim` / `_s.rim` module archives ([vs. ERF](ERF-File-Format#rim-versus-erf))
+- [Concepts](Concepts#mod-erf-rim) -- MOD, ERF, RIM, and resource resolution
 - [Holocron Toolset Getting Started](Holocron-Toolset-Getting-Started)

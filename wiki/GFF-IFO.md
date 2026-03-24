@@ -2,11 +2,11 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-IFO files define module-level metadata including entry configuration, expansion requirements, area lists, and module-wide script hooks. [IFO](GFF-File-Format#ifo-module-info) files are the "main" descriptor for game modules, specifying where the player spawns and what scripts run at module scope. IFO files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+IFO files define module-level metadata including entry configuration, expansion requirements, area lists, and module-wide script hooks. [IFO](GFF-File-Format#ifo-module-info) files are the "main" descriptor for game modules, specifying where the player spawns and what scripts run at module scope. IFO files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine [IFO](GFF-File-Format#ifo-module-info) format specification, see [Bioware Aurora IFO Format](Bioware-Aurora-IFO).
 
-**For mod developers:** To modify module metadata in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** To modify module metadata in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** IFO references [ARE](GFF-ARE), [GIT](GFF-File-Format#git-game-instance-template), [NCS](NCS-File-Format), [KEY](KEY-File-Format), and [BIF](BIF-File-Format).
 
@@ -135,7 +135,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 - **Mod_IsSaveGame**: Internal flag (always 0 in files)
 - **Mod_CacheNSSData**: Performance optimization
-- **Mod_XPScale**: 100 = normal, 200 = [double](GFF-File-Format#gff-data-types) XP
+- **Mod_XPScale**: 100 = normal, 200 = double XP
 
 ## DawnStar Property (Unused)
 

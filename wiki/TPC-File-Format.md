@@ -1,6 +1,6 @@
 # KotOR TPC file format Documentation
 
-TPC (texture Pack Container) is KotOR's native texture format. It supports paletteless RGB/RGBA, greyscale, and block-compressed DXT1/DXT3/DXT5 data, optional mipmaps, cube maps, and [flipbook animations](TXI-File-Format#animation-and-flipbooks) controlled by companion [TXI files](TXI-File-Format). TPC files are resolved using the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+TPC (texture Pack Container) is KotOR's native texture format. It supports paletteless RGB/RGBA, greyscale, and block-compressed DXT1/DXT3/DXT5 data, optional mipmaps, cube maps, and [flipbook animations](TXI-File-Format#animation-and-flipbooks) controlled by companion [TXI files](TXI-File-Format). TPC files are resolved using the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ TPC (texture Pack Container) is KotOR's native texture format. It supports palet
 | offset | size | Description |
 | ------ | ---- | ----------- |
 | 0 (0x00)   | 4    | data size (0 for uncompressed RGB; compressed textures store total bytes) |
-| 4 (0x04)   | 4    | Alpha test/threshold [float](GFF-File-Format#gff-data-types) |
+| 4 (0x04)   | 4    | Alpha test/threshold float |
 | 8 (0x08)   | 2    | Width ([uint16](GFF-File-Format#gff-data-types)) |
 | 10 (0x0A)   | 2    | Height ([uint16](GFF-File-Format#gff-data-types)) |
 | 12 (0x0C)   | 1    | Pixel encoding flag |
@@ -51,6 +51,7 @@ Repositories (original first, mirror second): **[reone](https://github.com/seedh
 - [TXI File Format](TXI-File-Format) - Metadata companion for TPC textures
 - [MDL/MDX File Format](MDL-MDX-File-Format) - [models](MDL-MDX-File-Format) that reference TPC textures
 - [GFF-GUI](GFF-GUI) - [GUI](GFF-File-Format#gui-graphical-user-interface) files that reference TPC textures for UI elements
+- [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) - `TPC` / texture type IDs in archives
 
 ---
 
@@ -153,3 +154,4 @@ All of the engines listed above treat the header and mipmap data identically. Th
 - [MDL/MDX File Format](MDL-MDX-File-Format) - Models that reference TPC textures
 - [GFF-GUI](GFF-GUI) - GUI files that reference TPC textures for UI elements
 - [DDS File Format](DDS-File-Format) - Alternative texture format (standard/BioWare variant)
+- [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) - Resource type IDs

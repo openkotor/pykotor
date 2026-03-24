@@ -6,9 +6,9 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Conversation format specification, see [Bioware Aurora Conversation Format](Bioware-Aurora-Conversation).
 
-DLG files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+DLG files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** To edit dialogues in the toolset, use the DLG editor; for mod patches see [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** To edit dialogues in the toolset, use the DLG editor; for mod patches see [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** DLG uses [TLK](TLK-File-Format) and [StrRef](TLK-File-Format#string-references-strref) for text, [WAV](WAV-File-Format) for voice-over, [NCS](NCS-File-Format) for scripts, [GFF-JRL](GFF-JRL) for journal updates, [MDL](MDL-MDX-File-Format) for camera models.
 
@@ -89,7 +89,7 @@ Both Entry and Reply [nodes](MDL-MDX-File-Format#node-structures) share common f
 | `Quest` | [CExoString](GFF-File-Format#gff-data-types) | Journal tag to update |
 | `QuestEntry` | [int32](GFF-File-Format#gff-data-types) | [journal entry](GFF-File-Format#jrl-journal) ID |
 | `PlotIndex` | [int32](GFF-File-Format#gff-data-types) | Plot index (legacy) |
-| `PlotXPPercentage` | [float](GFF-File-Format#gff-data-types) | XP reward percentage |
+| `PlotXPPercentage` | float | XP reward percentage |
 
 **Cinematic fields:**
 

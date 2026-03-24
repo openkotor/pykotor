@@ -1,8 +1,8 @@
 # KotOR TXI file format Documentation
 
-TXI ([texture](TPC-File-Format) Info) files are compact ASCII descriptors that attach metadata to [TPC](TPC-File-Format) [textures](TPC-File-Format). They control mipmap usage, filtering, [flipbook animation](#animation-and-flipbooks), environment mapping, font atlases, and platform-specific downsampling. Every TXI file is parsed at runtime to configure how a [TPC](TPC-File-Format) image is rendered. TXI files are resolved using the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+TXI ([texture](TPC-File-Format) Info) files are compact ASCII descriptors that attach metadata to [TPC](TPC-File-Format) [textures](TPC-File-Format). They control mipmap usage, filtering, [flipbook animation](#animation-and-flipbooks), environment mapping, font atlases, and platform-specific downsampling. Every TXI file is parsed at runtime to configure how a [TPC](TPC-File-Format) image is rendered. TXI files are resolved using the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** TXI is often embedded in TPC or shipped as a sibling `.txi`; see [TPC File Format](TPC-File-Format) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** TXI is often embedded in TPC or shipped as a sibling `.txi`; see [TPC File Format](TPC-File-Format) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** TXI accompanies [TPC](TPC-File-Format) textures; referenced by [MDL/MDX](MDL-MDX-File-Format) and [GFF-GUI](GFF-GUI).
 
@@ -172,7 +172,7 @@ Many TXI files in the game installation are **empty** (0 bytes). These empty TXI
 - `lda_ehawk01a.txi` - Contains `envmaptexture CM_jedcom`
 - `lda_flr07.txi` - Contains `bumpyshinytexture CM_dantii` and `bumpmaptexture LDA_flr01B`
 
-**Kit Generation Note:** When generating kits from module RIM files, empty TXI files should still be created as placeholders even if they don't exist in the installation. This ensures kit completeness and matches the expected kit structure where many [textures](TPC-File-Format) have corresponding (empty) TXI files.  
+**Kit Generation Note:** When generating kits from module [RIM](RIM-File-Format) archives, empty TXI files should still be created as placeholders even if they don't exist in the installation. This ensures kit completeness and matches the expected kit structure where many [textures](TPC-File-Format) have corresponding (empty) TXI files.  
 
 ---
 

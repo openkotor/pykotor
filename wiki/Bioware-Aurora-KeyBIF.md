@@ -78,6 +78,9 @@ All Resources have a Resource Type (ResType) that corresponds to their file type
 stored in BIFs and ERFs without their file extensions, but with their ResTypes instead.
 The table below lists ResTypes for resources that may be stored in a BIF or ERF. All ResTypes
 from 0 to 2999, 9000 to 9999, and 0xFFFF are reserved.
+
+**PyKotor wiki (KotOR/TSL):** merged hex / label reference with *RIM*, *TPC*, and related types — [Resource Type Identifiers](Resource-Formats-and-Resolution#resource-type-identifiers).
+
 Table 1.3.1: Resource Types
 ResType
 File
@@ -599,4 +602,5 @@ Fixed Resource Parts (as defined in the fixed resource table).
 
 - [KEY-File-Format](KEY-File-Format) -- KotOR KEY implementation and resolution order
 - [BIF-File-Format](BIF-File-Format) -- KotOR BIF implementation
-- [ERF-File-Format](ERF-File-Format) -- MOD/RIM containers; [GFF-File-Format](GFF-File-Format) -- GFF resources
+- [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) -- KotOR wiki hex / label resource type table
+- [ERF-File-Format](ERF-File-Format) -- MOD / generic ERF containers; [RIM-File-Format](RIM-File-Format) -- module RIM archives; [GFF-File-Format](GFF-File-Format) -- GFF resources

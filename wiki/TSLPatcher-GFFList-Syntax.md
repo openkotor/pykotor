@@ -1,6 +1,6 @@
 # TSLPatcher GFFList Syntax Documentation
 
-This guide explains how to modify [GFF files](GFF-File-Format) using TSLPatcher syntax. For the complete [GFF file](GFF-File-Format) format specification, see [GFF File Format](GFF-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+This guide explains how to modify [GFF files](GFF-File-Format) using TSLPatcher syntax. For the complete [GFF file](GFF-File-Format) format specification, see [GFF File Format](GFF-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 ## Overview
 
@@ -142,12 +142,12 @@ Each [GFF file](GFF-File-Format) requires its own section (e.g., `[example.dlg]`
 | `!SourceFile` | string | Same as section name | Alternative source filename (useful for multiple setup options using different source files) |
 | `!ReplaceFile` | 0/1 | 0 | If `1`, overwrite existing file before applying modifications. If `0` (default), modify the existing file in place. |
 | `!SaveAs` | string | Same as section name | Alternative filename to save as (useful for renaming files during installation) |
-| `!OverrideType` | string | `ignore` | How to handle existing files in Override when destination is an [ERF](ERF-File-Format)/RIM container. Valid values: `ignore` (default), `warn` (log warning), `rename` (prefix with `old_`) |
+| `!OverrideType` | string | `ignore` | How to handle existing files in Override when destination is an [ERF](ERF-File-Format)/[RIM](RIM-File-Format) container. Valid values: `ignore` (default), `warn` (log warning), `rename` (prefix with `old_`) |
 
 **Destination values:**
 
 - `override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM container (use backslashes for path separators)
+- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container (use backslashes for path separators)
 - Container paths must be relative to the game folder root
 
 **Source file Resolution:**
@@ -216,7 +216,7 @@ Value=123
 
 | [KEY](KEY-File-Format) | type | Required | Description |
 |-----|------|----------|-------------|
-| `FieldType` | string | Yes | One of: [byte](https://en.wikipedia.org/wiki/Byte), [char](GFF-File-Format#gff-data-types), Word, Short, DWORD, Int, Int64, [double](GFF-File-Format#gff-data-types), [float](GFF-File-Format#gff-data-types), ExoString, *ResRef*, ExoLocString, Binary, Struct, List, orientation, position |
+| `FieldType` | string | Yes | One of: [byte](https://en.wikipedia.org/wiki/Byte), [char](GFF-File-Format#gff-data-types), Word, Short, DWORD, Int, Int64, double, float, ExoString, *ResRef*, ExoLocString, Binary, Struct, List, orientation, position |
 | `Label` | string | Yes* | field name (max 16 alphanumeric characters, no spaces). Must be unique within the same STRUCT parent. |
 | `Path` | string | No | field location in [GFF](GFF-File-Format) hierarchy. Empty string (`Path=`) means root level. For nested AddField sections, if `Path` is empty or not specified, it inherits the path from the parent AddField. Use backslashes to separate hierarchy levels. |
 | `Value` | varies | Conditional | field value (see field types below). Not used for Struct, List, or ExoLocString types. |
@@ -1017,7 +1017,7 @@ Understanding execution order is crucial when your edits depend on earlier token
 **Standard Execution Order:**
 
 1. **TLKList**: Appends entries to [dialog.tlk](TLK-File-Format), creates `[StrRef](TLK-File-Format#string-references-strref)#` tokens
-2. **InstallList**: Copies files to destination ([ERF](ERF-File-Format)/RIM containers may be created here)
+2. **InstallList**: Copies files to destination ([ERF](ERF-File-Format)/[RIM](RIM-File-Format) containers may be created here)
 3. **2DAList**: Modifies [2DA files](2DA-File-Format), creates `2DAMEMORY#` tokens
 4. **GFFList**: Modifies [GFF](GFF-File-Format) files (can use `[StrRef](TLK-File-Format#string-references-strref)#` and `2DAMEMORY#` tokens)
 5. **CompileList**: Preprocesses [NSS](NSS-File-Format) scripts (replaces `#[StrRef](TLK-File-Format#string-references-strref)#` and `#2DAMEMORY#` tokens), then compiles
@@ -1036,7 +1036,7 @@ Modifications within a single [GFF file](GFF-File-Format) are processed in order
 
 - **Add before modify**: Use AddField to create structures, store their paths with `2DAMEMORY#=!FieldPath`, then modify them using those tokens
 - **Token dependencies**: Ensure tokens are set before use. `2DAMEMORY#` tokens from 2DAList are available to GFFList
-- **Container handling**: If patching files into [ERF](ERF-File-Format)/RIM containers, the container must exist (created by InstallList) or be built automatically by the patcher
+- **Container handling**: If patching files into [ERF](ERF-File-Format)/[RIM](RIM-File-Format) containers, the container must exist (created by InstallList) or be built automatically by the patcher
 
 **Important Notes:**
 
@@ -1420,7 +1420,7 @@ field type compatibility:
 ### Documentation
 
 - [TSLPatcher Official Readme](TSLPatcher's-Official-Readme) - Original TSLPatcher documentation
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.) - HoloPatcher-specific features and improvements
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) - HoloPatcher-specific features and improvements
 
 ### Source Code References
 
@@ -1457,7 +1457,7 @@ Common [GFF](GFF-File-Format)-based file types you can modify:
 - **[1.2.10b](TSLPatcher's-Official-Readme#change-log-for-version-1210b1-rel)** (2007-09-19): Fixed ExoLocString substring linefeed handling (use `<#LF#>` for newlines)
 - **[1.2.9b](TSLPatcher's-Official-Readme#change-log-for-version-129b-rel)** (2007-08-13): Changed behavior when adding duplicate fields--now modifies existing field instead of skipping
 - **[1.2.8b10](TSLPatcher's-Official-Readme#change-log-for-version-128b10-rel)** (2006-12-10): Bug fixes for required file checks
-- **[1.2.8b6](TSLPatcher's-Official-Readme#change-log-for-version-128b6-rel)** (2006-10-03): Added `!OverrideType` support for [ERF](ERF-File-Format)/RIM destinations
+- **[1.2.8b6](TSLPatcher's-Official-Readme#change-log-for-version-128b6-rel)** (2006-10-03): Added `!OverrideType` support for [ERF](ERF-File-Format)/[RIM](RIM-File-Format) destinations
 - **[1.2.7b9](TSLPatcher's-Official-Readme#change-log-for-version-127b9-rel)** (2006-07-23): **Dynamic field paths** - Added `!FieldPath` support for storing and using field paths via `2DAMEMORY#` tokens
 - **[1.2.7b4](TSLPatcher's-Official-Readme#change-log-for-version-127b4-rel)** (2006-05-11): Multiple setups support improvements
 - **[1.2.6b3](TSLPatcher's-Official-Readme#change-log-for-version-126b3-rel)** (2006-03-09): [SSF](SSF-File-Format) soundset file modification support added

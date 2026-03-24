@@ -1,9 +1,3 @@
-# Module and Area Functions
+# Module and Area Functions (redirect)
 
-Part of the [NSS File Format Documentation](NSS-File-Format).
-
-**Category:** Shared Functions (K1 & TSL)
-
-
-See Module and Area Functions for detailed documentation.
-
+The canonical page for module and area NWScript routines is **[NSS-Shared-Functions-Module-and-Area](NSS-Shared-Functions-Module-and-Area)**. This filename is kept so older links and bookmarks keep resolving.

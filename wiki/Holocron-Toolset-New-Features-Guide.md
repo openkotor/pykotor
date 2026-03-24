@@ -13,6 +13,7 @@
 **What it does:** Jump directly to any bookmarked resource with one click.
 
 **How to use:**
+
 1. Bookmark resources (Ctrl+B or right-click → Add to Favorites)
 2. Open Favorites (Ctrl+Shift+B)
 3. Select a favorite → Click "Go To"
@@ -27,6 +28,7 @@
 **What it does:** Rename resources with automatic validation and safety checks.
 
 **How to use:**
+
 1. Right-click any resource in Override folder
 2. Select "Rename..."
 3. Enter new name (extension preserved automatically)
@@ -34,6 +36,7 @@
 5. Resource renamed and refreshed in browser
 
 **Safety features:**
+
 - Only works in Override folder (protects core game files)
 - Automatically preserves file extensions
 - Detects name collisions before renaming
@@ -48,6 +51,7 @@
 **What it does:** Move resources between folders using familiar Cut/Paste.
 
 **How to use:**
+
 1. Select resource(s) in Override
 2. Cut (Ctrl+X or right-click → Cut)
 3. Navigate to destination folder
@@ -63,6 +67,7 @@
 **What it does:** Process dozens or hundreds of files at once with progress tracking.
 
 **How to use:**
+
 1. Select multiple resources (Shift+Click or Ctrl+Click)
 2. Right-click → "Batch Operations..." (or Ctrl+Shift+O)
 3. Choose operation:
@@ -82,6 +87,7 @@
 **What it does:** Rename multiple files using wildcard patterns.
 
 **How to use:**
+
 1. Select files to rename
 2. Batch Operations → "Rename with Pattern"
 3. Enter find pattern: `old_*.tpc` (use * for any text)
@@ -91,6 +97,7 @@
 7. All matching files renamed instantly
 
 **Examples:**
+
 - `texture_*` → `char_*` renames `texture_001.tpc` to `char_001.tpc`
 - `temp_*` → `*` removes "temp_" prefix from all files
 - `*_old` → `*` removes "_old" suffix
@@ -102,6 +109,7 @@
 **What it does:** Choose which editor to open a resource in.
 
 **How to use:**
+
 1. Right-click any resource
 2. Select "Open With..."
 3. See list of available editors (Generic GFF Editor, Specialized Editor, Dialog Editor, etc.)
@@ -119,6 +127,7 @@
 **What it does:** Create new resources from templates with one dialog.
 
 **How to use:**
+
 1. Right-click on any folder OR File → New
 2. Select "New Resource..."
 3. Choose resource type (2DA Table, Script Source, Creatures, Placeables, Items, Triggers, Dialogs, Journals, etc.)
@@ -128,6 +137,7 @@
 7. Optional: Open immediately in appropriate editor
 
 **What gets created:**
+
 - **2DA files:** Minimal valid 2DA header
 - **Script files (NSS):** Empty text file ready for coding
 - **GFF files (UTC, DLG, etc.):** Minimal valid GFF structure with TemplateResRef
@@ -140,6 +150,7 @@
 **What it does:** Save editor changes back to your installation.
 
 **How to use:**
+
 - **Single editor open:** Ctrl+S → editor saves immediately
 - **Multiple editors open:** Ctrl+S → dialog shows all open editors; choose Save selected, Save All, or Cancel
 
@@ -160,6 +171,7 @@ Saves go to the Override folder (or current location); file browser refreshes; "
 **What it does:** Quick access to all features via keyboard.
 
 **How to use:**
+
 1. Press Ctrl+Shift+P (Command Palette)
 2. Type to filter: "save", "new", "batch", "open", etc.
 3. Select command

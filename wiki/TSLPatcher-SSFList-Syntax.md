@@ -1,6 +1,6 @@
 # TSLPatcher SSFList Syntax Documentation
 
-This guide explains how to modify [SSF files](SSF-File-Format) using TSLPatcher syntax. For the complete [SSF file](SSF-File-Format) format specification, see [SSF File Format](SSF-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+This guide explains how to modify [SSF files](SSF-File-Format) using TSLPatcher syntax. For the complete [SSF file](SSF-File-Format) format specification, see [SSF File Format](SSF-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 ## Overview
 
@@ -62,7 +62,7 @@ Each [SSF file](SSF-File-Format) requires its own section (e.g., `[example.ssf]`
 **Destination values:**
 
 - `Override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM container
+- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container
 - Use backslashes for path separators
 
 **Replace file Behavior:**
@@ -372,7 +372,7 @@ Poisoned=50120
 
 ### Example 7: Modifying [SSF](SSF-File-Format) files in Containers
 
-This example shows how to patch [SSF files](SSF-File-Format) that are stored in [ERF](ERF-File-Format)/MOD/RIM container files:
+This example shows how to patch [SSF files](SSF-File-Format) that are stored in [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container files:
 
 ```ini
 [SSFList]

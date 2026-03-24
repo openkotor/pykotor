@@ -1,14 +1,14 @@
-# Holocron Toolset: Core resources
+# Holocron Toolset: Core Resources
 
 *This page is merged from the toolset in-app help (Tools/HolocronToolset/src/toolset/help/).*
 
-The **Core** tab shows resources loaded from the game's [KEY](KEY-File-Format) and [BIF](BIF-File-Format) files—the read-only base game data. These are the same resources the engine loads when no override or module file provides a replacement.
+The **Core** tab shows resources loaded from the game's [KEY](KEY-File-Format) and [BIF](BIF-File-Format) files—the read-only base game data. These are the same resources the engine loads when no `Override/` or Module file provides a replacement.
 
 - Use the **Core** tab to browse and open base game resources (items, creatures, scripts, textures, 2DAs, etc.).
 - Use the textbox to search or filter by ResRef.
-- Editing and saving will typically write to the **override** folder (or you can save elsewhere); the original BIF data is not modified.
+- Editing and saving will typically write to the **override** folder (or you can save elsewhere); the original [BIF](BIF-File-Format) data is not modified.
 
-For module-specific and override content, see [Holocron Toolset: Module resources](Holocron-Toolset-Module-Resources) and [Holocron Toolset: Override resources](Holocron-Toolset-Override-Resources).
+For module-specific and `Override/` folder content, see [Holocron Toolset: Module Resources](Holocron-Toolset-Module-Resources) and [Holocron Toolset: Override Resources](Holocron-Toolset-Override-Resources).
 
 ### See also
 

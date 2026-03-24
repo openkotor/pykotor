@@ -1,6 +1,6 @@
 # Using HoloPatcher: Installation and Reversion
 
-_This page explains how to install mods with HoloPatcher. If you are a mod developer, you may be looking for [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.)_
+_This page explains how to install mods with HoloPatcher. If you are a mod developer, you may be looking for [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)_
 
 HoloPatcher aims to offer a user experience identical to TSLPatcher. Follow these steps for a smooth mod installation:
 

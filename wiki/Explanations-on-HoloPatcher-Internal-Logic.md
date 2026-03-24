@@ -1,16 +1,20 @@
 _This page describes the internal logic and some nuances of the patcher. If you're just getting started with HoloPatcher, please visit [Installing Mods with HoloPatcher](https://github.com/OldRepublicDevs/PyKotor/wiki/Installing-Mods-with-HoloPatcher)_
 
-Generally speaking, HoloPatcher is composed of three main parts: the UI/Interface, the [ConfigReader](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/reader.py#L129), and the Patcher.
+Generally speaking, HoloPatcher is composed of three main parts:
+
+- the [UI/Interface](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Tools/HoloPatcher/src/holopatcher/__main__.py)
+- the [ConfigReader](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/reader.py#L129)
+- the [Patcher](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py) (see [The Patch Routine](#the-patch-routine))
 
 # UI/Interface
 
 source code @ [Tools/HoloPatcher/src](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Tools/HoloPatcher/src/holopatcher/__main__.py)
 
-This is a simple [GUI](GFF-File-Format#gui-graphical-user-interface) interface to HoloPatcher. What you'll find here:
+This is a simple **GUI interface** to _HoloPatcher_. What you'll find here:
 
-- Tools such as [fix iOS case sensitivity](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Tools/HoloPatcher/src/holopatcher/app.py#L970) and [fix permissions](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Tools/HoloPatcher/src/holopatcher/app.py#L970)
-- top menu options (discord links, about, help, etc)
-- loading mod path/game paths into comboboxes
+- Tools such as [_fix iOS case sensitivity_](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Tools/HoloPatcher/src/holopatcher/app.py#L970) and [_fix permissions_](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Tools/HoloPatcher/src/holopatcher/app.py#L970)
+- Top Menu options (discord links, about, help, etc)
+- Loading Mod Path/Game paths into comboboxes
 - [CLI parsing](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Tools/HoloPatcher/src/holopatcher/__main__.py#L73)
 - other UI stuff
 
@@ -76,14 +80,14 @@ The priority order has been changed for various reasons, mostly relating to usea
 
 We doubt these priority order changes will affect the output of any mods. If you discover one, please report an issue.
 
-### Final validations Before Modifications
+### Final Validations Before Modifications
 
 - Patcher will once again check if [changes.ini](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/config.py#L113) is found on disk
 - Patcher will determine if the kotor directory is valid. Uses various heuristics of what's known about the files to safely determine if it's TSL or k1.
 
 - **Prepare the [CompileList]:** Before the patch loop runs, the patcher will first copy all the files in the namespace tslpatchdata folder matching '.nss' extension to a temporary directory. If there is a 'nwscript.nss', it will automatically append a patch to [InstallList] the nwscript.nss to the Override folder. This is done because some versions of nwnnsscomp.exe will rely on nwscript.nss being in Override rather than tslpatchdata. Specifically the KOTOR Tool version of nwnnsscomp.exe
 
-### The Patch Loop
+### **_The Patch Loop_**
 
 source code @ [pykotor.tslpatcher.patcher](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L356)
 
@@ -93,13 +97,13 @@ HoloPatcher is _finally_ ready to start applying the patches and modifying the i
 
 - If the resource exists, back it up to a timestamped directory in the `backup` folder.
 - If the resource does not exist, write the patch's intended filepath into the `remove these files.txt` file.
-- If the patch intends to install into a capsule (.mod/.erf/.rim/.sav) and the capsule DOES NOT exist, throw a FileNotFoundError (matches tslpatcher behavior)
+- If the patch intends to install into a capsule (`.mod` / `.erf` / [`.rim`](RIM-File-Format) / `.sav`) and the capsule DOES NOT exist, throw a FileNotFoundError (matches tslpatcher behavior)
 
 **Step 2: [Log the operation](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L265)**, such as `patching existing file in the 'path' folder'.
 
 - Note: [Replacements are handled differently (src code `skip_if_not_replace=True`)](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/mods/template.py#L41) for both [CompileList] and [InstallList]
 
-**Step 3: Lookup the resource to patch**: Determine [where to find the source file](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L191) that should be patched.
+**Step 3: Lookup the Resource to Patch**: Determine [where to find the source file](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L191) that should be patched.
 
 - Check if file should be replaced or doesn't exist at output. If either condition passes, load from the mod path
 - Otherwise, load the file to be patched from the destination if it exists.
@@ -122,15 +126,17 @@ class OverrideType:
     RENAME = "rename"  # Rename the file in the Override folder with the 'old_' prefix. Also logs a warning.
 ```
 
+Capsule formats: [ERF / MOD](ERF-File-Format) and [RIM](RIM-File-Format) ([comparison](ERF-File-Format#rim-versus-erf)).
+
 source code @ [tslpatcher.mods.template](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/mods/template.py#L25)
 
-**Step 6: Save the resource**: Save the resource to the KOTOR path on disk. !DefaultDestination and !Destination and !Filename/!SaveAs configure this.
+**Step 6: Save the resource**: Save the resource to the KOTOR path on disk. `!DefaultDestination` and `!Destination` and `!Filename`/`!SaveAs` configure this.
 
-**Step 7:** Repeat from step 1 for the next patch, until all patches have been completed.
+**Step 7:** Repeat from **Step 1** for the next patch, until all patches have been completed.
 
 ### All patches complete, cleanup
 
-**Step 8: Cleanup post-processed scripts**: If [`SaveProcessedScripts=0`](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L395) or not available in the [changes.ini](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/config.py#L113), cleanup the temp folder created in the Final Validations.
+**Step 8: Cleanup post-processed scripts**: If [`SaveProcessedScripts=0`](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L395) or not available in the [changes.ini](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/config.py#L113), cleanup the temp folder created in the **Final Validations**.
 
 **Step 8:** Calculate the total patches completed.
 

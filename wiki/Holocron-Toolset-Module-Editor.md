@@ -2,7 +2,7 @@
 
 *This page is merged from the toolset in-app help (Tools/HolocronToolset/src/toolset/help/tools/).*
 
-The Module Editor (Module Designer) is designed to make editing modules easier through the use of both a 3D and 2D viewport. Open it from the Main Window via **Tools** → **Module Designer**.
+The Module Editor (Module Designer) is designed to make editing Modules easier through the use of both a 3D and 2D viewport. Open it from the Main Window via **Tools** → **Module Designer**.
 
 ## Controls
 

@@ -1,8 +1,8 @@
 # KotOR LIP file format Documentation
 
-LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#animation-header) for voiced dialogue. Each file contains a compact series of [keyframes](MDL-MDX-File-Format#controller-structure) that map timestamps to discrete viseme (mouth shape) indices so that the engine can interpolate character LIP movement while playing the companion [WAV](WAV-File-Format) line. LIP files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#animation-header) for voiced dialogue. Each file contains a compact series of [keyframes](MDL-MDX-File-Format#controller-structure) that map timestamps to discrete viseme (mouth shape) indices so that the engine can interpolate character LIP movement while playing the companion [WAV](WAV-File-Format) line. LIP files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** LIP is paired with [WAV](WAV-File-Format) voice-over; see [TLK](TLK-File-Format), [DLG](GFF-DLG), and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** LIP is paired with [WAV](WAV-File-Format) voice-over; see [TLK](TLK-File-Format), [DLG](GFF-DLG), and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** LIP is referenced by [TLK](TLK-File-Format) (voice-over) and [DLG](GFF-DLG); duration must match the companion [WAV](WAV-File-Format).
 
@@ -20,11 +20,12 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 
 ---
 
+
 ## File structure overview
 
 - LIP files are always binary (`"LIP V1.0"` signature) and contain only [animation](MDL-MDX-File-Format#animation-header) data.  
 - They are paired with [WAV](WAV-File-Format) voice-over resources of identical duration; the LIP `length` field must match the [WAV](WAV-File-Format) `data` playback time for glitch-free [animation](MDL-MDX-File-Format#animation-header).  
-- [keyframes](MDL-MDX-File-Format#controller-structure) are sorted chronologically and store a timestamp ([float](GFF-File-Format#gff-data-types) seconds) plus a 1-[byte](https://en.wikipedia.org/wiki/Byte) viseme index (0–15).  
+- [keyframes](MDL-MDX-File-Format#controller-structure) are sorted chronologically and store a timestamp (float seconds) plus a 1-[byte](https://en.wikipedia.org/wiki/Byte) viseme index (0–15).  
 - The layout is identical across **[reone](https://github.com/seedhartha/reone)**, **[xoreos](https://github.com/xoreos/xoreos)**, **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**, **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**, and **mdlops**, so the header/[keyframe](MDL-MDX-File-Format#controller-structure) offsets below are cross-confirmed against those implementations.  
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lip)

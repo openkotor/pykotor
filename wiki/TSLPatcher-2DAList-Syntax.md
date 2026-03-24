@@ -1,6 +1,6 @@
 # TSLPatcher 2DAList Syntax - Complete Guide
 
-This guide explains how to modify [2DA files](2DA-File-Format) using TSLPatcher syntax. For the complete [2DA file](2DA-File-Format) format specification, see [2DA File Format](2DA-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+This guide explains how to modify [2DA files](2DA-File-Format) using TSLPatcher syntax. For the complete [2DA file](2DA-File-Format) format specification, see [2DA File Format](2DA-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 ## Overview
 
@@ -188,12 +188,12 @@ Each [2DA file](2DA-File-Format) requires its own section (e.g., `[appearance.2d
 | `!SourceFile` | string | Same as section name | Alternative source filename (useful for multiple setup options using different source files) |
 | `!ReplaceFile` | 0/1 | 0 | If `1`, overwrite existing file before applying modifications. If `0` (default), modify the existing file in place. |
 | `!SaveAs` | string | Same as section name | Alternative filename to save as (useful for renaming files during installation) |
-| `!OverrideType` | string | `warn` (HoloPatcher) / `ignore` (TSLPatcher) | How to handle existing files in Override when destination is an [ERF](ERF-File-Format)/RIM container. Valid values: `ignore`, `warn`, `rename` |
+| `!OverrideType` | string | `warn` (HoloPatcher) / `ignore` (TSLPatcher) | How to handle existing files in Override when destination is an [ERF](ERF-File-Format)/[RIM](RIM-File-Format) container. Valid values: `ignore`, `warn`, `rename` |
 
 **Destination values:**
 
 - `override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM container (use backslashes for path separators)
+- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container (use backslashes for path separators)
 - Container paths must be relative to the game folder root
 
 **Syntax Notes:**

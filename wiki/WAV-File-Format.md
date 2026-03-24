@@ -1,8 +1,8 @@
 # KotOR WAV file format Documentation
 
-KotOR stores both standard WAV voice-over lines and Bioware-obfuscated sound-effect files. Voice-over assets are regular RIFF containers with PCM headers, while SFX assets prepend a 470-[byte](https://en.wikipedia.org/wiki/Byte) custom block before the RIFF data. PyKotor handles both variants transparently. WAV files are resolved using the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+KotOR stores both standard WAV voice-over lines and Bioware-obfuscated sound-effect files. Voice-over assets are regular RIFF containers with PCM headers, while SFX assets prepend a 470-[byte](https://en.wikipedia.org/wiki/Byte) custom block before the RIFF data. PyKotor handles both variants transparently. WAV files are resolved using the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** WAV files are referenced by [TLK](TLK-File-Format) (voice-over) and [SSF](SSF-File-Format); see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** WAV files are referenced by [TLK](TLK-File-Format) (voice-over) and [SSF](SSF-File-Format); see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** WAV is referenced by [TLK](TLK-File-Format) (StrRef --> sound), [SSF](SSF-File-Format), [LIP](LIP-File-Format), and [DLG](GFF-DLG) (VO_ResRef).
 

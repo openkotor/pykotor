@@ -1,6 +1,6 @@
 # TSLPatcher InstallList Syntax Documentation
 
-This guide explains how to install files using TSLPatcher syntax. For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+This guide explains how to install files using TSLPatcher syntax. For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/tslpatcher/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/tslpatcher/)
 
@@ -17,11 +17,11 @@ This guide explains how to install files using TSLPatcher syntax. For general TS
 - [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) - Patching [TLK files](TLK-File-Format)
 - [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) - Patching [SSF files](SSF-File-Format)
 - [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) - Binary patching [NCS files](NCS-File-Format)
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.) - HoloPatcher extensions
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) - HoloPatcher extensions
 
 ## Overview
 
-The `[InstallList]` section in TSLPatcher's changes.ini file enables you to copy files from your mod's `tslpatchdata` folder to their proper location in the game installation. This includes installing files to folders (such as `Override`, `Modules`, `StreamVoice`, etc.) or directly into [ERF](ERF-File-Format)/RIM/MOD container files. Unlike other patch lists, InstallList is designed for copying files that haven't been modified by other sections.
+The `[InstallList]` section in TSLPatcher's changes.ini file enables you to copy files from your mod's `tslpatchdata` folder to their proper location in the game installation. This includes installing files to folders (such as `Override`, `Modules`, `StreamVoice`, etc.) or directly into [ERF](ERF-File-Format)/[RIM](RIM-File-Format)/MOD container files. Unlike other patch lists, InstallList is designed for copying files that haven't been modified by other sections.
 
 **Important:** Do **not** add any files that have been modified by any of the other sections ([GFFList](TSLPatcher-GFFList-Syntax), CompileList, [2DAList](TSLPatcher-2DAList-Syntax), etc.) to the InstallList, or the modified files might be overwritten! The other sections already handle saving files to their proper locations. The only exception to this is [ERF files](ERF-File-Format) which have had files added to them by those sections. They must still be added to the InstallList to be put in their proper places.
 
@@ -282,7 +282,7 @@ File0=file2.mod
 
 ## Installing to Containers
 
-InstallList supports installing files directly into [ERF](ERF-File-Format)/MOD/RIM container files. This is done by specifying the container file path (relative to the game folder) as the destination.
+InstallList supports installing files directly into [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container files. This is done by specifying the container file path (relative to the game folder) as the destination.
 
 ### Container file Syntax
 
@@ -315,7 +315,7 @@ File0=another_resource.2da
 - **Container types Supported:**
   - `.mod` (MOD/[ERF](ERF-File-Format) format)
   - `.erf` ([ERF](ERF-File-Format) format)
-  - `.rim` (RIM format)
+  - `.rim` ([RIM](RIM-File-Format) format)
   - `.sav` (Save game [ERF](ERF-File-Format) format)
 
 ### Installing Modified Containers
@@ -413,7 +413,7 @@ In this example:
 
 ## Override type Handling
 
-When installing files to containers ([ERF](ERF-File-Format)/MOD/RIM), there's a potential conflict: a file might already exist in the Override folder with the same name. The `!OverrideType` setting controls how this conflict is handled:
+When installing files to containers ([ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format)), there's a potential conflict: a file might already exist in the Override folder with the same name. The `!OverrideType` setting controls how this conflict is handled:
 
 | value | Behavior | Description |
 |-------|----------|-------------|
@@ -435,7 +435,7 @@ The game's resource loading system checks folders in this order:
 
 1. Override folder (highest priority)
 2. Module containers (.mod files)
-3. RIM files
+3. [RIM](RIM-File-Format) files (`.rim` / `_s.rim`)
 4. Other containers
 
 If a file exists in both Override and an container, the Override version takes precedence. The `!OverrideType` setting helps manage this shadowing behavior.
@@ -557,7 +557,7 @@ File0=line1.wav
 File1=line2.wav
 ```
 
-## Special Cases and [edge](BWM-File-Format#edges) Cases
+## Special Cases and [edge](BWM-File-Format#edges-wok-only) Cases
 
 ### Empty InstallList
 

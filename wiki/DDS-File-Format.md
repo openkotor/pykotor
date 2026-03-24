@@ -1,11 +1,11 @@
-# DDS file format (KotOR)
+# DDS File Format
 
-DirectDraw Surface (DDS) [textures](TPC-File-Format) appear in two flavours across KotOR-era content:
+*DirectDraw Surface* (DDS) [textures](TPC-File-Format) appear in two flavours across Odyssey engine content:
 
 - **Standard DirectX DDS** (header magic `0x44445320`, 124-byte header) used by downstream tools/ports.
-- **BioWare DDS variant** (no magic; width/height/bpp/dataSize leading integers) used in **KotOR and Neverwinter Nights** game assets (shared Aurora engine format).
+- **BioWare DDS variant** (no magic; width/height/bpp/dataSize leading integers) used in *KotOR* and *Neverwinter Nights* game assets (shared Aurora engine format).
 
-This page documents how PyKotor interprets both formats and how it aligns with reference implementations in [xoreos](https://github.com/xoreos/xoreos) and [xoreos-tools](https://github.com/xoreos/xoreos-tools). When the engine or tools load DDS by ResRef, they use the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+This page documents how PyKotor interprets both formats and how it aligns with reference implementations in [xoreos](https://github.com/xoreos/xoreos) and [xoreos-tools](https://github.com/xoreos/xoreos-tools). When the engine or tools load DDS by ResRef, they use the same [resource resolution order](Concepts#resource-resolution-order) as other resources (`Override/`, [ERF/MOD/SAV](ERF-File-Format), [KEY/BIF](KEY-File-Format)).
 
 **Implementation**
 
@@ -13,14 +13,16 @@ This page documents how PyKotor interprets both formats and how it aligns with r
 
 **Vendor References:**
 
-Repositories (original first, mirror second): **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)), **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)).
+Repositories (original first, mirror second):
 
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) - Engine DDS loading (standard and BioWare variant).
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)): [`src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) - Command-line DDS conversion tools.
+- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos))
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools))
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) - Engine DDS loading (standard and BioWare variant). ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos/blob/master/src/graphics/images/dds.cpp))
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) - Command-line DDS conversion tools. ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/images/dds.cpp))
 
-**For mod developers:** DDS is an alternative texture format; KotOR typically uses [TPC](TPC-File-Format). See [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** DDS is an alternative texture format; *KotOR* typically uses [TPC](TPC-File-Format). See [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
-**Related formats:** DDS is read/written via PyKotor's TPC pipeline; see [TPC File Format](TPC-File-Format) and [TXI File Format](TXI-File-Format).
+**Related formats:** DDS is read/written via PyKotor's [TPC](TPC-File-Format) pipeline; see [TPC File Format](TPC-File-Format) and [TXI File Format](TXI-File-Format).
 
 ### Standard DDS (DX7+ container)
 
@@ -48,15 +50,23 @@ Implementation reference:
 
 ### BioWare DDS variant
 
-- No magic; header is four [little-endian](https://en.wikipedia.org/wiki/Endianness) UInt32 values:
-  - `width`, `height` (must be powers of two, < 0x8000)
-  - `bytesPerPixel` (`3` --> DXT1, `4` --> DXT5)
-  - `dataSize` (must match `(width*height)/2` for DXT1 or `width*height` for DXT5)
-- Followed by an unused [float](GFF-File-Format#gff-data-types), then the compressed payload and inferred mip levels until data is exhausted.
-- Mipmap count is inferred by walking expected block sizes until data would underflow.
-- Always treated as compressed; no palette or other layouts.
+| Field           | Type                | Description                                                                                   |
+|-----------------|---------------------|-----------------------------------------------------------------------------------------------|
+| width           | UInt32 (LE)         | Image width, must be a power of two and less than 0x8000                                      |
+| height          | UInt32 (LE)         | Image height, must be a power of two and less than 0x8000                                     |
+| bytesPerPixel   | UInt32 (LE)         | Pixel format: `3` = DXT1, `4` = DXT5                                                          |
+| dataSize        | UInt32 (LE)         | Size in bytes; must be `(width*height)/2` for DXT1, or `width*height` for DXT5                |
+| unused float    | Float32 (LE)        | Ignored (unused float value follows header)                                                   |
+| payload         | Byte array          | Compressed texture data, may include multiple mipmaps until all data consumed                 |
+| mipmap count    | Inferred            | Determined by computing expected mip sizes until reading all data                             |
+| palette/layout  | n/a                 | Always compressed; no palettes or alternative pixel layouts supported                         |
 
-Implementation reference:
+**Notes:**
+
+- No file magic is present in this format.
+- Payload is always compressed data (DXT1 or DXT5); there is no support for palettes or uncompressed formats.
+
+**Implementation Reference:**
 
 - `Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py` (BioWare header path)
 - **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) (BioWare branch for comparison).
@@ -64,15 +74,15 @@ Implementation reference:
 ### Writer Behaviour (PyKotor)
 
 - `TPCDDSWriter` emits only standard DDS headers:
-  - Supports `DXT1`, `DXT3`, `DXT5`, and uncompressed `BGR/BGRA`.
-  - Non-DDS-friendly formats are converted (`RGB`-->`BGR`, `RGBA`-->`BGRA`).
-  - Mipmap counts validated per layer; cubemaps set caps (`DDSCAPS2_CUBEMAP|ALLFACES`).
-- Payloads are written in the already-compressed/uncompressed form stored in the `TPC` instance; no re-compression occurs.
+  - Supports *DXT1*, *DXT3*, *DXT5*, and uncompressed *BGR/BGRA*.
+  - Non-DDS-friendly formats are converted (*RGB*→*BGR*, *RGBA*→*BGRA*).
+  - Mipmap counts validated per layer; cubemaps set caps (*DDSCAPS2_CUBEMAP*|*ALLFACES*).
+- Payloads are written in the already-compressed/uncompressed form stored in the [*TPC*](TPC-File-Format) instance; no re-compression occurs.
 
-### Detection and routing
+### Detection and Routing
 
 - `detect_tpc()` now returns `ResourceType.DDS` when:
-  - file extension is `.dds`, or
+  - File extension is `.dds`, or
   - Magic `DDS` is present, or
   - BioWare header heuristics match width/height/bpp/dataSize.
 - `read_tpc()` dispatches to `TPCDDSReader` when `ResourceType.DDS` is detected.
@@ -80,25 +90,25 @@ Implementation reference:
 
 ### Testing coverage
 
-- `Libraries/PyKotor/tests/resource/formats/test_dds.py`
-  - Standard DDS DXT1 load/write roundtrip
-  - BioWare DDS multi-mip parsing
-  - Uncompressed BGRA header parsing
-  - Writer roundtrip for DXT1 payloads
+- [`Libraries/PyKotor/tests/resource/formats/test_dds.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/tests/resource/formats/test_dds.py)
+  - Standard DDS *DXT1* load/write roundtrip
+  - *BioWare* DDS multi-mip parsing
+  - Uncompressed *BGRA* header parsing
+  - Writer roundtrip for *DXT1* payloads
 
 ### Practical differences vs. TGA/TPC
 
-- **TGA**: uncompressed/RLE raster data; no block compression; single [face](MDL-MDX-File-Format#face-structure) only; origin/alpha flags live in the header. DDS can be block-compressed (DXT1/3/5) and include cubemap [faces](MDL-MDX-File-Format#face-structure)/mip hierarchies in one container.
-- **TPC**: KotOR-specific container with [TXI](TXI-File-Format) embedded and different header layout; PyKotor maps DDS surfaces into `TPC` objects for unified downstream handling (conversion, [TXI](TXI-File-Format) logic, cubemap normalization).
+- **TGA**: uncompressed/RLE raster data; no block compression; single [face](MDL-MDX-File-Format#face-structure) only; origin/alpha flags live in the header. DDS can be block-compressed (*DXT1/DXT5*) and include cubemap [faces](MDL-MDX-File-Format#face-structure)/mip hierarchies in one container.
+- **TPC**: *KotOR*-specific container with [TXI](TXI-File-Format) embedded and different header layout; PyKotor maps DDS surfaces into [*TPC*](TPC-File-Format) objects for unified downstream handling (conversion, [TXI](TXI-File-Format) logic, cubemap normalization).
 
 ### Notes and limits
 
-- Palette-based DDS (`DDPF_INDEXED`) is rejected.
+- Palette-based DDS (*DDPF_INDEXED*) is rejected.
 - Dimensions beyond 0x8000 are rejected, matching xoreos limits.
-- BioWare DDS requires power-of-two sizes; standard DDS does not enforce power-of-two beyond the existing dimension guard.
+- *BioWare* DDS may require **power-of-two** sizes; standard DDS does not enforce power-of-two beyond the existing dimension guard.
 
 ### See also
 
-- [TPC File Format](TPC-File-Format) - KotOR's primary texture format; PyKotor maps DDS into TPC
-- [TXI File Format](TXI-File-Format) - Texture metadata used with TPC
-- [KEY File Format](KEY-File-Format) - Resource resolution order for DDS by ResRef
+- [TPC File Format](TPC-File-Format) - *KotOR*'s primary texture format; PyKotor maps DDS into [*TPC*](TPC-File-Format).
+- [TXI File Format](TXI-File-Format) - Texture metadata used with [*TPC*](TPC-File-Format).
+- [KEY File Format](KEY-File-Format) - Resource resolution order for DDS by [ResRef](Concepts#resref-resource-reference).

@@ -1,12 +1,12 @@
 # Mod Creation Best Practices
 
-This page provides common workaround strategies and community-backed guidance for KotOR/TSL mod creation. For tool syntax and installation, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.) and [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). The practices below are drawn from long-standing community consensus on [DeadlyStream](https://deadlystream.com), [LucasForums archives](https://lucasforumsarchive.com), and tool documentation.
+This page provides common workaround strategies and community-backed guidance for KotOR/TSL mod creation. For tool syntax and installation, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) and [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). The practices below are drawn from long-standing community consensus on [DeadlyStream](https://deadlystream.com), [LucasForums archives](https://lucasforumsarchive.com), and tool documentation.
 
 ## File priority and where to put your files
 
 The game resolves resources in a fixed order. Understanding this order is essential for knowing where to place your mod's files and how conflicts arise.
 
-**Resolution order (summary):** The engine checks (1) the **override folder** (`override/`), (2) currently loaded **MOD/ERF** files (e.g. modules in the Modules folder), (3) the current **save game** when in-game, then (4) **KEY/BIF** (vanilla game data). So override and MOD content take precedence over vanilla BIFs. See [KEY-File-Format](KEY-File-Format#key-file-purpose) and [Home](Home) (Resource Resolution Order) for the full sequence.
+**Resolution order (summary):** The engine checks (1) the **override folder** (`override/`), (2) currently loaded **MOD/ERF** files (e.g. modules in the Modules folder), (3) the current **save game** when in-game, then (4) **KEY/BIF** (vanilla game data). So override and MOD content take precedence over vanilla BIFs. See [Concepts](Concepts#resource-resolution-order) for the full sequence and how the resource manager satisfies requests; [KEY-File-Format](KEY-File-Format) documents the KEY binary layout.
 
 **Where to put files:**
 
@@ -141,5 +141,5 @@ label=YavinHgrDoor1
 - [NSS File Format](NSS-File-Format) -- Scripting; [NCS](NCS-File-Format) bytecode
 - [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- End-user mod installation
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums archives for tutorials and community knowledge
-- [KEY-File-Format](KEY-File-Format#key-file-purpose) -- Resource resolution order
+- [Concepts](Concepts#resource-resolution-order) -- Resource resolution order; [KEY-File-Format](KEY-File-Format) -- KEY/BIF index format
 - [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax), [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax), [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Merging and patching

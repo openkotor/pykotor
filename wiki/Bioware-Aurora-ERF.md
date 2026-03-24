@@ -237,10 +237,11 @@ The data for one file is packed right up against the data for the next file. The
 Resource List specify where one file ends and another begins.
 Resource Types
 In an ERF Key, the ResType field specifies the file type of the associated file. See Section 1.3 of the Key
-and BIF File Format document for a table containing ResType values and their meanings.
+and BIF File Format document for a table containing ResType values and their meanings. For *KotOR*/*TSL* with four-character labels and hex IDs aligned to PyKotor tooling, use the wiki **[Resource Type Identifiers](Resource-Formats-and-Resolution#resource-type-identifiers)** table; the Aurora PDF and [Bioware-Aurora-KeyBIF](Bioware-Aurora-KeyBIF) remain authoritative for the original numbering narrative.
 
 ### See also
 
-- [ERF-File-Format](ERF-File-Format) -- KotOR ERF/MOD/RIM implementation
+- [ERF-File-Format](ERF-File-Format) -- KotOR ERF/MOD implementation; [RIM-File-Format](RIM-File-Format) -- resource image (module RIM archives)
 - [KEY-File-Format](KEY-File-Format), [BIF-File-Format](BIF-File-Format) -- Resource resolution and BIF layout
+- [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) -- ResType / hex resource type ID table
 - [GFF-File-Format](GFF-File-Format) -- GFF resources inside ERF modules

@@ -78,6 +78,7 @@ forward them into the active Blender session.
 The current Toolset integration handles **import into *Blender***. Converting the edited result into *KotOR* runtime resources still relies on the normal `kotorblender` export flow (for example `kb.mdlexport`) plus *PyKotor* packaging/conversion steps for textures and module resources.
 
 In other words:
+
 - **Drag/Drop into Blender:** supported
 - **Edit in Blender with Toolset session active:** supported
 - **Export imported meshes back out as *KotOR* MDL/MDX:** supported through the live bridge for minimal trimesh-style exports

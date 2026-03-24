@@ -2,7 +2,7 @@
 
 ## Documentation
 
-**Start here:** New to modding? [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) → [Mod Creation Best Practices](Mod-Creation-Best-Practices) → [File formats and specifications](#file-formats-and-specifications) or [TSLPatcher guides](TSLPatcher's-Official-Readme) as needed. Core terms: [Concepts](Concepts). Binary and engine-level detail: [Low-level structures and implementations](#low-level-structures-and-implementations). [Community sources and archives](#community-sources-and-archives). Contributing: [Wiki Conventions](Wiki-Conventions).
+**Start here:** New to modding? [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) → [Mod Creation Best Practices](Mod-Creation-Best-Practices) → [File formats and specifications](#file-formats-and-specifications) or [TSLPatcher guides](TSLPatcher's-Official-Readme) as needed. Core terms: [Concepts](Concepts); format index and type IDs: [Resource formats and resolution](Resource-Formats-and-Resolution). Binary and engine-level detail: [Low-level structures and implementations](#low-level-structures-and-implementations). [Community sources and archives](#community-sources-and-archives). Contributing: [Wiki Conventions](Wiki-Conventions).
 
 ### For End Users
 
@@ -13,7 +13,7 @@
 Installation, tool use, and step-by-step guides:
 
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices)
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.)
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
 - [HoloPatcher Feature Coverage Overview](Explanations-on-HoloPatcher-Internal-Logic)
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
 - [TSLPatcher Thread Complete Container](TSLPatcher_Thread_Complete)
@@ -48,8 +48,8 @@ Installation, tool use, and step-by-step guides:
 
 **Scripting (NWScript):** Function and constant reference for writing scripts. Full index and all routine/constant pages: [NSS File Format](NSS-File-Format). Quick links to major categories:
 
-- [NSS Shared Functions: Actions](NSS-Shared-Functions-Actions) · [Combat](NSS-Shared-Functions-Combat-Functions) · [Dialog and conversation](NSS-Shared-Functions-Dialog-and-Conversation-Functions) · [Effects](NSS-Shared-Functions-Effects-System) · [Item management](NSS-Shared-Functions-Item-Management) · [Module and area](NSS-Shared-Functions-Module-and-Area-Functions) · [Party](NSS-Shared-Functions-Party-Management) · [Skills and feats](NSS-Shared-Functions-Skills-and-Feats)
-- [NSS Shared Constants: Ability](NSS-Shared-Constants-Ability-Constants) · [Object type](NSS-Shared-Constants-Object-Type-Constants) · [Class type](NSS-Shared-Constants-Class-Type-Constants) · [Visual effects](NSS-Shared-Constants-Visual-Effects-(VFX))
+- [NSS Shared Functions: Actions](NSS-Shared-Functions-Actions) · [Combat](NSS-Shared-Functions-Combat-Functions) · [Dialog and conversation](NSS-Shared-Functions-Dialog-and-Conversation-Functions) · [Effects](NSS-Shared-Functions-Effects-System) · [Item management](NSS-Shared-Functions-Item-Management) · [Module and area](NSS-Shared-Functions-Module-and-Area) · [Party](NSS-Shared-Functions-Party-Management) · [Skills and feats](NSS-Shared-Functions-Skills-and-Feats)
+- [NSS Shared Constants: Ability](NSS-Shared-Constants-Ability-Constants) · [Object type](NSS-Shared-Constants-Object-Type-Constants) · [Class type](NSS-Shared-Constants-Class-Type-Constants) · [Visual effects](NSS-Shared-Constants-Visual-Effects-%28VFX%29)
 - [NSS K1-Only constants and functions](NSS-K1-Only-Constants-NPC-Constants) (see [NSS File Format](NSS-File-Format) for full K1 index)
 - [NSS TSL-Only constants and functions](NSS-TSL-Only-Functions-Combat-Functions) (see [NSS File Format](NSS-File-Format) for full TSL index)
 
@@ -90,9 +90,9 @@ The following information describes the resource system used by **KotOR and TSL*
 
 #### Application lifecycle (KotOR and TSL)
 
-Both games use the same high-level flow: the executable initializes an application manager, creates a server (game world) and client (rendering, input, UI), then runs a main loop that pumps window messages, updates the render window, and drives the Aurora/Odyssey subsystems. Resource loading follows the resolution order below; the resource manager services requests from override, then module/ERF, then KEY/BIF. Reinitializing the Aurora engine (e.g. after resolution or display changes) reloads or refreshes core subsystems while preserving the same client/server split. Scripts (NCS) and dialogues (DLG) run in the server context; the client handles display, camera, and input and receives updates from the server.
+Both games use the same high-level flow: the executable initializes an application manager, creates a server (game world) and client (rendering, input, UI), then runs a main loop that pumps window messages, updates the render window, and drives the Aurora/Odyssey subsystems. Resource loading follows the [resource resolution order](Concepts#resource-resolution-order); the resource manager services requests from override, then module [RIM](RIM-File-Format)/[ERF](ERF-File-Format) capsules, then KEY/BIF. Reinitializing the Aurora engine (e.g. after resolution or display changes) reloads or refreshes core subsystems while preserving the same client/server split. Scripts (NCS) and dialogues (DLG) run in the server context; the client handles display, camera, and input and receives updates from the server.
 
-**Client and server:** The Odyssey engine (like Aurora) separates a **server** (game world, rules, scripts, resources) from a **client** (rendering, input, UI). The server owns area state, creatures, items, and script execution; the client displays the world and sends input. This split is important for modding and for understanding [NCS execution](NCS-File-Format) and [resource resolution](KEY-File-Format).
+**Client and server:** The Odyssey engine (like Aurora) separates a **server** (game world, rules, scripts, resources) from a **client** (rendering, input, UI). The server owns area state, creatures, items, and script execution; the client displays the world and sends input. This split is important for modding and for understanding [NCS execution](NCS-File-Format) and [resource resolution](Concepts#resource-resolution-order).
 
 #### Important Files
 
@@ -102,256 +102,25 @@ Both games use the same high-level flow: the executable initializes an applicati
 
 **Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/basics.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/basics.html) - Tim Smith (Torlack)'s Aurora engine basics documentation (NWN-focused)
 
-#### Resource Resolution Order
+#### Resource system (see Concepts)
 
-The engine satisfies every resource request (by *ResRef* and type) in this order. See [KEY File Format](KEY-File-Format#key-file-purpose) for how demand flows through the resource manager.
+- **Lookup order and how demands are satisfied:** [Concepts — Resource resolution order](Concepts#resource-resolution-order)
+- **Hex resource type IDs:** [Resource formats and resolution — Resource Type Identifiers](Resource-Formats-and-Resolution#resource-type-identifiers)
+- **Language IDs** (`dialog.tlk`, localization): [Concepts — Language IDs](Concepts#language-ids-kotor)
+- **KEY file role and binary format:** [KEY-File-Format](KEY-File-Format)
+- **Format page index (all extensions, ResRef, resolution order):** [Resource formats and resolution](Resource-Formats-and-Resolution)
 
-1. Override folder (`override/`)
-2. Currently loaded MOD/[ERF files](ERF-File-Format)
-3. Currently loaded SAV file (if in-game)
-4. [BIF files](BIF-File-Format) via [KEY](KEY-File-Format) lookup
-5. Hardcoded defaults
+### File format index
 
-#### Resource Types
-
-KotOR uses hexadecimal resource type identifiers derived from the Aurora engine and further expanded upon for its Odyssey engine. The following table lists resource types valid in the four BioWare engines. Due to this, some of these are obviously not supported in KotOR.
-
-| Resource Name | type ID | Description                                    |
-| ------------- | ------- | ---------------------------------------------- |
-| RES           | 0x0000  | Used for .res within the saves                     |
-| BMP           | 0x0001  | Bitmap image                         |
-| MVE           | 0x0002  | Movie/video file       Not used in KotOR                   |
-| TGA           | 0x0003  | TarGA image format                          |
-| [WAV](WAV-File-Format)           | 0x0004  | Wave audio file (see [WAV File Format](WAV-File-Format)) |
-| INI           | 0x0007  | Configuration file (e.g., `swkotor.ini`, `swkotor2.ini`)                          |
-| BMU           | 0x0008  | Unknown  Not used in KotOR                                |
-| MPG           | 0x0009  | MPEG video  Not used in KotOR                            |
-| TXT           | 0x000A  | Text file  Not used in KotOR                                  |
-| PLH           | 0x07D0  | Placeable header  Not used in KotOR                      |
-| TEX           | 0x07D1  | Texture                      |
-| [MDL](MDL-MDX-File-Format)           | 0x07D2  | 3D [model](MDL-MDX-File-Format) file (see [MDL/MDX File Format](MDL-MDX-File-Format))                                   |
-| THG           | 0x07D3  | Unknown  Not used in KotOR                                |
-| FNT           | 0x07D5  | Font file  Not used in KotOR                                  |
-| Lua           | 0x07D7  | Lua script  Not used in KotOR                             |
-| SLT           | 0x07D8  | Unknown  Not used in KotOR                               |
-| [NSS](NSS-File-Format)           | 0x07D9  | NWScript source code (see [NSS File Format](NSS-File-Format))                            |
-| [NCS](NCS-File-Format)           | 0x07DA  | Compiled NWScript bytecode (see [NCS File Format](NCS-File-Format))                     |
-| [MOD](ERF-File-Format)           | 0x07DB  | Module container ([ERF](ERF-File-Format) variant, see [ERF File Format](ERF-File-Format))                          |
-| [ARE](GFF-File-Format#are-area)           | 0x07DC  | Area definition (see [GFF-ARE](GFF-ARE))                                 |
-| SET           | 0x07DD  | Unknown  Not used in KotOR                               |
-| [IFO](GFF-File-Format#ifo-module-info)           | 0x07DE  | Module information (see [GFF-IFO](GFF-IFO))                              |
-| BIC           | 0x07DF  | Character template   Not used in KotOR                  |
-| [WOK](BWM-File-Format)           | 0x07E0  | Walkmesh (see [BWM File Format](BWM-File-Format))                                |
-| [2DA](2DA-File-Format)           | 0x07E1  | Two-dimensional array data (see [2DA File Format](2DA-File-Format))                      |
-| [TLK](TLK-File-Format)           | 0x07E2  | Talk table (localized strings, see [TLK File Format](TLK-File-Format))                 |
-| [TXI](TXI-File-Format)           | 0x07E6  | [texture](TPC-File-Format) information (see [TXI File Format](TXI-File-Format))                             |
-| [GIT](GFF-File-Format#git-game-instance-template)           | 0x07E7  | [game instance template](GFF-File-Format#git-game-instance-template) (see [GFF-GIT](GFF-GIT))                          |
-| BTI           | 0x07E8  | Blueprint trigger    Not used in KotOR                 |
-| [UTI](GFF-File-Format#uti-item)           | 0x07E9  | [item templates](GFF-File-Format#uti-item) (see [GFF-UTI](GFF-UTI))                                   |
-| BTC           | 0x07EA  | Blueprint creature    Not used in KotOR                |
-| [UTC](GFF-File-Format#utc-creature)           | 0x07EB  | [creature templates](GFF-File-Format#utc-creature) (see [GFF-UTC](GFF-UTC))                               |
-| [DLG](GFF-File-Format#dlg-dialogue)           | 0x07ED  | Dialogue/conversation (see [GFF-DLG](GFF-DLG))                           |
-| ITP           | 0x07EE  | ITP format (legacy name for [GFF](GFF-File-Format))  Not used in KotOR                         |
-| BTT           | 0x07EF  | Blueprint trigger    Not used in KotOR                 |
-| [UTT](GFF-File-Format#utt-trigger)           | 0x07F0  | Trigger template (see [GFF-UTT](GFF-UTT))                                |
-| DDS           | 0x07F1  | DirectDraw Surface texture (see [DDS File Format](DDS-File-Format))                                |
-| [UTS](GFF-File-Format#uts-sound)           | 0x07F3  | Sound template (see [GFF-UTS](GFF-UTS))                                |
-| LTR           | 0x07F4  | Letter format (see [LTR File Format](LTR-File-Format))                                |
-| [GFF](GFF-File-Format)           | 0x07F5  | Generic file format (container, see [GFF File Format](GFF-File-Format))                 |
-| [FAC](GFF-File-Format#fac-faction)           | 0x07F6  | Faction                               |
-| BTE           | 0x07F7  | Blueprint encounter                   |
-| [UTE](GFF-File-Format#ute-encounter)           | 0x07F8  | [encounter template](GFF-File-Format#ute-encounter) (see [GFF-UTE](GFF-UTE))                              |
-| BTD           | 0x07F9  | Blueprint door    Not used in KotOR     |
-| [UTD](GFF-File-Format#utd-door)           | 0x07FA  | [door templates](GFF-File-Format#utd-door) (see [GFF-UTD](GFF-UTD))                                   |
-| BTP           | 0x07FB  | Blueprint placeable   Not used in KotOR  |
-| [UTP](GFF-File-Format#utp-placeable)           | 0x07FC  | [placeable templates](GFF-File-Format#utp-placeable) (see [GFF-UTP](GFF-UTP))                              |
-| DTF           | 0x07FD  | Unknown  Not used in KotOR                                |
-| GIC           | 0x07FE  | Unknown  Not used in KotOR                                |
-| [GUI](GFF-File-Format#gui-graphical-user-interface)           | 0x07FF  | User interface definition (see [GFF-GUI](GFF-GUI))                       |
-| CSS           | 0x0800  | Unknown  Not used in KotOR                                |
-| CCS           | 0x0801  | Unknown  Not used in KotOR                                |
-| BTM           | 0x0802  | Blueprint merchant    Not used in KotOR                |
-| [UTM](GFF-File-Format#utm-merchant)           | 0x0803  | Merchant/store template (see [GFF-UTM](GFF-UTM))                         |
-| [DWK](BWM-File-Format)           | 0x0804  | Door walkmesh (see [BWM File Format](BWM-File-Format))                                |
-| [PWK](BWM-File-Format)           | 0x0805  | Placeable walkmesh (see [BWM File Format](BWM-File-Format))                                |
-| BTG           | 0x0806  | Blueprint trigger  Not used in KotOR       |
-| UTG           | 0x0807  | Unknown            Not used in KotOR   |
-| [JRL](GFF-File-Format#jrl-journal)           | 0x0808  | Journal/quest log (see [GFF-JRL](GFF-JRL))                               |
-| SAV           | 0x0809  | [Save game containers](ERF-File-Format) (see [ERF File Format](ERF-File-Format))                               |
-| [UTW](GFF-File-Format#utw-waypoint)           | 0x080A  | [Waypoint Template](GFF-File-Format#utw-waypoint)                               |
-| 4PC           | 0x080B  | Unknown  Not used in KotOR          |
-| [SSF](SSF-File-Format)           | 0x080C  | [Sound Set Files](SSF-File-Format) (see [SSF File Format](SSF-File-Format))                                  |
-| HAK           | 0x080D  | Hak pak container. Not used in KotOR                                |
-| NWM           | 0x080E  | Neverwinter Nights module ([ERF](ERF-File-Format) variant, not used in KotOR)                                 |
-| BIK           | 0x080F  | Bink video format                                |
-| PTM           | 0x0811  | Unknown       Not used in KotOR         |
-| PTT           | 0x0812  | Unknown       Not used in KotOR         |
-| [ERF](ERF-File-Format)           | 0x270D  | Encapsulated Resource File (see [ERF File Format](ERF-File-Format))                      |
-| [BIF](BIF-File-Format)           | 0x270E  | Bioware Index File (container, see [BIF File Format](BIF-File-Format))                    |
-| [KEY](KEY-File-Format)           | 0x270F  | [KEY](KEY-File-Format) table ([BIF](BIF-File-Format) index, see [KEY File Format](KEY-File-Format))                          |
-
-#### Language IDs
-
-This language ID usually is represented as an enum. It is equivalent within all engines and all games, with some newer games specifying more formats but always staying backwards compatible with the others.
-
-**KotOR** (odyssey) specifically can only support
-
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/basics.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/basics.html) - Language ID definitions (NWN-focused but applicable to KotOR)
-
-| Language        | ID | Notes                                |
-| --------------- | -- |                                      |
-| English         | 0  |                                      |
-| French          | 1  |                                      |
-| German          | 2  |                                      |
-| Italian         | 3  |                                      |
-| Spanish         | 4  |                                      |
-| Polish          | 5  |  cp-1250, only released for KotOR 1  |
-
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/basics.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/basics.html) - Tim Smith (Torlack)'s NWN data file Basics documentation (Aurora engine fundamentals)
-
-### File Formats
-
-- **[MDL/MDX File Format](MDL-MDX-File-Format)** ← Complete reference for 3D [model](MDL-MDX-File-Format) files
-  - **[2DA File Format](2DA-File-Format)** ← Complete reference for Two-Dimensional array format (see also [Official Bioware 2DA Documentation](Bioware-Aurora-2DA)). All individual 2DA file documentation has been inlined into this document.
-  - [acbonus.2da](2DA-File-Format#acbonus2da)
-  - [ambientmusic.2da](2DA-File-Format#ambientmusic2da)
-  - [ambientsound.2da](2DA-File-Format#ambientsound2da)
-  - [ammunitiontypes.2da](2DA-File-Format#ammunitiontypes2da)
-  - [animations.2da](2DA-File-Format#animations2da)
-  - [appearance.2da](2DA-File-Format#appearance2da)
-  - [appearancesndset.2da](2DA-File-Format#appearancesndset2da)
-  - [baseitems.2da](2DA-File-Format#baseitems2da)
-  - [bindablekeys.2da](2DA-File-Format#bindablekeys2da)
-  - [bodybag.2da](2DA-File-Format#bodybag2da)
-  - [camerastyle.2da](2DA-File-Format#camerastyle2da)
-  - [classes.2da](2DA-File-Format#classes2da)
-  - [classpowergain.2da](2DA-File-Format#classpowergain2da)
-  - [combatanimations.2da](2DA-File-Format#combatanimations2da)
-  - [creaturespeed.2da](2DA-File-Format#creaturespeed2da)
-  - [cursors.2da](2DA-File-Format#cursors2da)
-  - [dialoganimations.2da](2DA-File-Format#dialoganimations2da)
-  - [difficultyopt.2da](2DA-File-Format#difficultyopt2da)
-  - [disease.2da](2DA-File-Format#disease2da)
-  - [doortypes.2da](2DA-File-Format#doortypes2da)
-  - [droiddischarge.2da](2DA-File-Format#droiddischarge2da)
-  - [effecticon.2da](2DA-File-Format#effecticon2da)
-  - [emotion.2da](2DA-File-Format#emotion2da)
-  - [encdifficulty.2da](2DA-File-Format#encdifficulty2da)
-  - [exptable.2da](2DA-File-Format#exptable2da)
-  - [facialanim.2da](2DA-File-Format#facialanim2da)
-  - [feat.2da](2DA-File-Format#feat2da)
-  - [featgain.2da](2DA-File-Format#featgain2da)
-  - [feedbacktext.2da](2DA-File-Format#feedbacktext2da)
-  - [footstepsounds.2da](2DA-File-Format#footstepsounds2da)
-  - [forceshields.2da](2DA-File-Format#forceshields2da)
-  - [fractionalcr.2da](2DA-File-Format#fractionalcr2da)
-  - [gender.2da](2DA-File-Format#gender2da)
-  - [genericdoors.2da](2DA-File-Format#genericdoors2da)
-  - [globalcat.2da](2DA-File-Format#globalcat2da)
-  - [grenadesnd.2da](2DA-File-Format#grenadesnd2da)
-  - [guisounds.2da](2DA-File-Format#guisounds2da)
-  - [heads.2da](2DA-File-Format#heads2da)
-  - [inventorysnds.2da](2DA-File-Format#inventorysnds2da)
-  - [iprp_abilities.2da](2DA-File-Format#iprp_abilities2da)
-  - [iprp_acmodtype.2da](2DA-File-Format#iprp_acmodtype2da)
-  - [iprp_aligngrp.2da](2DA-File-Format#iprp_aligngrp2da)
-  - [iprp_ammotype.2da](2DA-File-Format#iprp_ammotype2da)
-  - [iprp_combatdam.2da](2DA-File-Format#iprp_combatdam2da)
-  - [iprp_costtable.2da](2DA-File-Format#iprp_costtable2da)
-  - [iprp_damagecost.2da](2DA-File-Format#iprp_damagecost2da)
-  - [iprp_damagetype.2da](2DA-File-Format#iprp_damagetype2da)
-  - [iprp_immunity.2da](2DA-File-Format#iprp_immunity2da)
-  - [iprp_lightcol.2da](2DA-File-Format#iprp_lightcol2da)
-  - [iprp_monstdam.2da](2DA-File-Format#iprp_monstdam2da)
-  - [iprp_mosterhit.2da](2DA-File-Format#iprp_mosterhit2da)
-  - [iprp_onhit.2da](2DA-File-Format#iprp_onhit2da)
-  - [iprp_paramtable.2da](2DA-File-Format#iprp_paramtable2da)
-  - [iprp_protection.2da](2DA-File-Format#iprp_protection2da)
-  - [iprp_saveelement.2da](2DA-File-Format#iprp_saveelement2da)
-  - [iprp_savingthrow.2da](2DA-File-Format#iprp_savingthrow2da)
-  - [iprp_walk.2da](2DA-File-Format#iprp_walk2da)
-  - [itempropdef.2da](2DA-File-Format#itempropdef2da)
-  - [itemprops.2da](2DA-File-Format#itemprops2da)
-  - [keymap.2da](2DA-File-Format#keymap2da)
-  - [loadscreenhints.2da](2DA-File-Format#loadscreenhints2da)
-  - [loadscreens.2da](2DA-File-Format#loadscreens2da)
-  - [masterfeats.2da](2DA-File-Format#masterfeats2da)
-  - [modulesave.2da](2DA-File-Format#modulesave2da)
-  - [movies.2da](2DA-File-Format#movies2da)
-  - [pazaakdecks.2da](2DA-File-Format#pazaakdecks2da)
-  - [placeableobjsnds.2da](2DA-File-Format#placeableobjsnds2da)
-  - [placeables.2da](2DA-File-Format#placeables2da)
-  - [planetary.2da](2DA-File-Format#planetary2da)
-  - [plot.2da](2DA-File-Format#plot2da)
-  - [poison.2da](2DA-File-Format#poison2da)
-  - [portraits.2da](2DA-File-Format#portraits2da)
-  - [prioritygroups.2da](2DA-File-Format#prioritygroups2da)
-  - [racialtypes.2da](2DA-File-Format#racialtypes2da)
-  - [ranges.2da](2DA-File-Format#ranges2da)
-  - [regeneration.2da](2DA-File-Format#regeneration2da)
-  - [repute.2da](2DA-File-Format#repute2da)
-  - [skills.2da](2DA-File-Format#skills2da)
-  - [soundset.2da](2DA-File-Format#soundset2da)
-  - [spells.2da](2DA-File-Format#spells2da)
-  - [stringtokens.2da](2DA-File-Format#stringtokens2da)
-  - [subrace.2da](2DA-File-Format#subrace2da)
-  - [surfacemat.2da](2DA-File-Format#surfacemat2da)
-  - [texpacks.2da](2DA-File-Format#texpacks2da)
-  - [traps.2da](2DA-File-Format#traps2da)
-  - [tutorial.2da](2DA-File-Format#tutorial2da)
-  - [upcrystals.2da](2DA-File-Format#upcrystals2da)
-  - [upgrade.2da](2DA-File-Format#upgrade2da)
-  - [videoeffects.2da](2DA-File-Format#videoeffects2da)
-  - [visualeffects.2da](2DA-File-Format#visualeffects2da)
-  - [weaponsounds.2da](2DA-File-Format#weaponsounds2da)
-  - [xptable.2da](2DA-File-Format#xptable2da)
-- **[TLK File Format](TLK-File-Format)** ← Complete reference for [Talk Table](TLK-File-Format) format
-- [BIF File Format](BIF-File-Format) ← BioWare Infinity format
-- [KEY File Format](KEY-File-Format) ← [KEY](KEY-File-Format) file format
-- **[BWM File Format](BWM-File-Format)** ← Complete reference for Binary [walkmesh](BWM-File-Format) format
-- **[GUI File Format](GFF-GUI)** ← Complete reference for Graphical User Interface format
-- [ERF File Format](ERF-File-Format) ← Encapsulated Resource format
-- **[Kit Structure Documentation](Kit-Structure-Documentation)** ← Complete reference for indoor kit structure and generation
-- [GFF File Format](GFF-File-Format) ← Generic file Format (see also [Official Bioware GFF Documentation](Bioware-Aurora-GFF))
-  - [ARE (Area)](GFF-ARE)
-  - [DLG (Dialogue)](GFF-DLG)
-  - [GIT (Game Instance Template)](GFF-GIT)
-  - [GUI (Graphical User Interface)](GFF-GUI)
-  - [IFO (Module Info)](GFF-IFO)
-  - [JRL (Journal)](GFF-JRL)
-  - [PTH (Path)](GFF-PTH)
-  - [UTC (Creature)](GFF-UTC)
-  - [UTD (Door)](GFF-UTD)
-  - [UTE (Encounter)](GFF-UTE)
-  - [UTI (Item)](GFF-UTI)
-  - [UTM (Merchant)](GFF-UTM)
-  - [UTP (Placeable)](GFF-UTP)
-  - [UTS (Sound)](GFF-UTS)
-  - [UTT (Trigger)](GFF-UTT)
-  - [UTW (Waypoint)](GFF-UTW)
-- [DDS File Format](DDS-File-Format) ← DirectDraw Surface texture format
-- [LIP File Format](LIP-File-Format) ← [LIP](LIP-File-Format) sync format
-- [LTR File Format](LTR-File-Format) ← Letter format
-- [LYT File Format](LYT-File-Format) ← Layout format
-- [NCS File Format](NCS-File-Format) ← NwScript Compiled Script format
-- [NSS File Format](NSS-File-Format) ← NwScript Source format (nwscript.nss, function/constant definitions)
-- [RIM File Format](ERF-File-Format) ← Resource Image format
-- [SSF File Format](SSF-File-Format) ← [sound set files](SSF-File-Format) format
-- [TLK File Format](TLK-File-Format) ← [Talk Table](TLK-File-Format) format
-- [TPC File Format](TPC-File-Format) ← [texture](TPC-File-Format) Pack Container format
-- [TXI File Format](TXI-File-Format) ← [texture](TPC-File-Format) Info format
-- [VIS File Format](VIS-File-Format) ← Visibility format
-- [WAV File Format](WAV-File-Format) ← Wave audio format
+The linked table of contents for format pages (2DA anchors, GFF variants, archives, media) lives on **[Resource formats and resolution](Resource-Formats-and-Resolution)** together with [ResRef / resource type](Resource-Formats-and-Resolution#resref-and-resource-type) and the [hex resource type ID table](Resource-Formats-and-Resolution#resource-type-identifiers). Narrative resolution order: [Concepts](Concepts#resource-resolution-order).
 
 ### Low-level structures and implementations
 
-Binary layout, engine behaviour, and implementation details for developers and reverse engineering:
+Binary layout, engine behaviour, and implementation details for developers and reverse engineering. These pages are **conceptual summaries** for the wiki (no raw tool dumps); see [Wiki Conventions](Wiki-Conventions) and [AGENTS.md](https://github.com/OldRepublicDevs/PyKotor/blob/main/AGENTS.md) for project policy.
 
-- [Reverse Engineering Findings](reverse_engineering_findings)
-- [CExoResMan](CExoResMan)
-- [Game Engine BWM AABB Implementation](Game-Engine-BWM-AABB-Implementation)
+- [Reverse Engineering Findings](reverse_engineering_findings) (includes `CExoResMan` / resource manager notes and BWM / AABB / walkmesh engine analysis)
 - [Qt ItemView selection and RobustTableView](Qt-ItemView-Selection-and-RobustTableView)
-- [UTC Editor field types (Reva)](UTC-Editor-Field-Types-Reva)
+- [UTC Editor field types (AgentDecompile)](UTC-Editor-Field-Types-AgentDecompile)
 - [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Technical details (distinct from the [user guide](Indoor-Map-Builder-User-Guide) in Guides and tutorials)
 - [HoloPatcher internal logic](Explanations-on-HoloPatcher-Internal-Logic)
 
@@ -365,7 +134,7 @@ Complete game engine rewrites that can load and play KotOR:
 
 - **[xoreos](https://github.com/xoreos/xoreos)** - C++ reimplementation of BioWare's Aurora/Odyssey/Eclipse engine, supports multiple BioWare games including KotOR. ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos))
 - **[reone](https://github.com/seedhartha/reone)** - Modern C++ KotOR engine with OpenGL rendering. Focus on performance and clean architecture. ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone))
-  - **NOTE**: This project seems to be abandoned by seedhartha, but was picked up by the community here: https://github.com/modawan/reone though I can't speak to its authority)
+  - **NOTE**: This project seems to be abandoned by seedhartha, but was picked up by the community here: <https://github.com/modawan/reone> though I can't speak to its authority)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** - TypeScript/JavaScript engine running in browsers via WebGL. Enables playing KotOR directly in web browsers. ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js))
 - **[NorthernLights](https://github.com/lachjames/NorthernLights)** - .NET/C# engine implementation with Unity integration capabilities (based on KotOR-Unity project with further improvements) ([Mirror: th3w1zard1/NorthernLights](https://github.com/th3w1zard1/NorthernLights))
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** - Unity-based KotOR engine rewrite. Leverages Unity's rendering and physics. ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity))

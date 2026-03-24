@@ -4,7 +4,7 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine 2DA format specification, see [Bioware Aurora 2DA Format](Bioware-Aurora-2DA).
 
-**For mod developers:** To modify 2DA files in your mods, see the [TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** To modify 2DA files in your mods, see the [TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** 2DA files are often referenced by [GFF files](GFF-File-Format) (such as [UTC (Creature)](GFF-File-Format#utc-creature), [UTI (Item)](GFF-File-Format#uti-item), [UTP (Placeable)](GFF-File-Format#utp-placeable) templates) and may contain references to [TLK files](TLK-File-Format) for text strings.
 
@@ -25,8 +25,8 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
     - [Cell Data Offsets](#cell-data-offsets)
     - [Cell Data String Table](#cell-data-string-table)
   - [data structure](#data-structure)
-    - [TwoDA Class](#twoda-class)
-    - [TwoDARow Class](#twodarow-class)
+    - [TwoDA Object](#twoda-object)
+    - [TwoDARow Object](#twodarow-object)
   - [Cell Value Types](#cell-value-types)
   - [Confirmed Engine Usage](#confirmed-engine-usage)
   - [Known 2DA Files](#known-2da-files)
@@ -225,7 +225,9 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 ## file structure Overview
 
-2DA files store tabular game data in a compact format used by the KotOR game engine. files use version "V2.b" and have the `.2da` extension. The engine loads 2DA files using the same *[Resource Resolution Order](KEY-File-Format#key-file-purpose)* as other resources (override, MOD/SAV, KEY/BIF).
+2DA files are tabular game data; role in modding and merge workflows: see the **2DA** section on [Concepts](Concepts). On disk in game archives they use binary version **`V2.b`** and the `.2da` extension. The engine loads them with the same *[resource resolution order](Concepts#resource-resolution-order)* as other resources (override, module [RIM](RIM-File-Format)/[MOD](ERF-File-Format), save, [KEY](KEY-File-Format)/[BIF](BIF-File-Format)).
+
+**PyKotor:** [`resource/formats/twoda/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/) — [`io_twoda.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py) reads/writes **binary `V2.b`** (what ships in BIF/MOD/RIM). Text **`V2.0`** / CSV / JSON interchange use `io_twoda_csv.py`, `io_twoda_json.py`, and [`twoda_auto.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py) dispatch, not the binary reader.
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/)
 
@@ -248,7 +250,7 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 ## format
 
-The *2DA* file format (version "V2.b") is the representation used by the game engine.
+The sections below document the **binary `V2.b`** layout used by the KotOR engine in packed resources (see overview above for PyKotor module split).
 
 ### File Header
 
@@ -1773,7 +1775,7 @@ Similar name generation files exist for other species:
 | `label` | *String* | Faction label |
 | Additional columns | *Integer* | Reputation values for each faction (column names match faction labels) |
 
-**Note**: The `repute.2da` file is a square [matrix](BWM-File-Format#walkable-adjacencies) where each row represents a faction, and each column (after `label`) represents the reputation value toward another faction. Reputation values typically range from 0-100, where values below 50 are enemies, above 50 are friends, and 50 is neutral.
+**Note**: The `repute.2da` file is a square [matrix](BWM-File-Format#adjacencies-wok-only) where each row represents a faction, and each column (after `label`) represents the reputation value toward another faction. Reputation values typically range from 0-100, where values below 50 are enemies, above 50 are friends, and 50 is neutral.
 
 **References**:
 
@@ -1801,7 +1803,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/reputes.cpp:36-62`](https://github.com/seedhartha/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](BWM-File-Format#walkable-adjacencies) loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/reputes.cpp:36-62`](https://github.com/seedhartha/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](BWM-File-Format#adjacencies-wok-only) loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1930,7 +1932,7 @@ Similar name generation files exist for other species:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Regeneration state label |
-| Additional columns | [float](GFF-File-Format#gff-data-types) | Regeneration rates for different resource types |
+| Additional columns | float | Regeneration rates for different resource types |
 
 **References**:
 
@@ -2149,7 +2151,7 @@ Similar name generation files exist for other species:
 |------------|------|-------------|
 | `label` | *String* | Plot/quest label (used as quest identifier) |
 | `xp` | *Integer* | Experience points awarded for quest completion |
-,
+
 **References**:
 
 **PyKotor:**
@@ -3389,7 +3391,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 | `label` | *String* | Upgrade crystal label |
 | `shortmdlvar` | *ResRef* | Short [model](MDL-MDX-File-Format) variation *ResRef* |
 | `longmdlvar` | *ResRef* | Long [model](MDL-MDX-File-Format) variation *ResRef* |
-| `doublemdlvar` | *ResRef* | [double](GFF-File-Format#gff-data-types)-bladed [model](MDL-MDX-File-Format) variation *ResRef* |
+| `doublemdlvar` | *ResRef* | double-bladed [model](MDL-MDX-File-Format) variation *ResRef* |
 | Additional columns | Various | Crystal properties |
 
 **References**:
@@ -3429,7 +3431,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Inventory sound label |
- `inventorysound` | *ResRef* | Inventory sound *ResRef* |
+| `inventorysound` | *ResRef* | Inventory sound *ResRef* |
 | Additional columns | Various | Inventory sound properties |
 
 **References**:

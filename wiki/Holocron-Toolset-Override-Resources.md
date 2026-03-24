@@ -21,4 +21,4 @@ The "Override" tab allows you to navigate through the override files. In TSL you
 
 - [Concepts](Concepts#override-folder) -- Override folder and resource resolution
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files) -- When to use override vs MOD
-- [KEY-File-Format](KEY-File-Format#key-file-purpose) -- Resolution order
+- [Concepts](Concepts#resource-resolution-order) -- Resolution order

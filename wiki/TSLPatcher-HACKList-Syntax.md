@@ -1,6 +1,6 @@
 # TSLPatcher HACKList Syntax Documentation
 
-This guide explains how to modify [NCS files](NCS-File-Format) directly using TSLPatcher syntax. For the complete [NCS file](NCS-File-Format) format specification, see [NCS File Format](NCS-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.#hacklist-editing-ncs-directly).
+This guide explains how to modify [NCS files](NCS-File-Format) directly using TSLPatcher syntax. For the complete [NCS file](NCS-File-Format) format specification, see [NCS File Format](NCS-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers#hacklist-editing-ncs-directly).
 
 ## Overview
 
@@ -74,7 +74,7 @@ Each [NCS file](NCS-File-Format) requires its own section (e.g., `[myscript.ncs]
 **Destination values:**
 
 - `override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM container
+- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container
 - Use backslashes for path separators
 
 **Important:** The `ReplaceFile` [KEY](KEY-File-Format) in HACKList does NOT use an exclamation point prefix. This is unique to HACKList compared to other patch lists.
@@ -555,7 +555,7 @@ File0=buggy_script.ncs
 
 ### Archival Insertion Issues
 
-**Problem:** Modified script not appearing in [ERF](ERF-File-Format)/MOD/RIM container
+**Problem:** Modified script not appearing in [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container
 
 **Solutions:**
 
@@ -610,7 +610,7 @@ I have no idea why this is the exclusive instance of Stoffe's variables that doe
 
 - PyKotor's HACKList implementation is compatible with TSLPatcher v1.2.10b+
 - All [NCS](NCS-File-Format) versions V1.0 are supported
-- Container insertion works for [ERF](ERF-File-Format), MOD, and RIM formats
+- Container insertion works for [ERF](ERF-File-Format), MOD, and [RIM](RIM-File-Format) formats
 - Memory tokens from TLKList and 2DAList are fully supported
 - `!FieldPath` is **not** supported (only numeric values)
 

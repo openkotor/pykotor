@@ -13,7 +13,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `label` | string | Upgrade crystal label |
 | `shortmdlvar` | *ResRef* | Short [model](MDL-MDX-File-Format) variation *ResRef* |
 | `longmdlvar` | *ResRef* | Long [model](MDL-MDX-File-Format) variation *ResRef* |
-| `doublemdlvar` | *ResRef* | [double](GFF-File-Format#gff-data-types)-bladed [model](MDL-MDX-File-Format) variation *ResRef* |
+| `doublemdlvar` | *ResRef* | double-bladed [model](MDL-MDX-File-Format) variation *ResRef* |
 | Additional columns | Various | Crystal properties |
 
 **References**:

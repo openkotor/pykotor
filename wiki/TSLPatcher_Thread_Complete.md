@@ -31,7 +31,7 @@ It can, in general terms:
 
 - Modify and add new lines and columns to [2DA files](2DA-File-Format) that might already exist in the user's override folder, allowing different mods to modify the same [2DA file](2DA-File-Format) with less risk of causing incompatibility.
 
-- Modify values in fields and add new fields to [GFF](GFF-File-Format) format files (UT\*, [DLG](GFF-File-Format#dlg-dialogue), [JRL](GFF-File-Format#jrl-journal), [GIT](GFF-File-Format#git-game-instance-template), are, [IFO](GFF-File-Format#ifo-module-info) etc...) that might already exist in the user's override folder or inside [ERF](ERF-File-Format)/RIM containers. Again to reduce incompatibility when different mods need to do things to the same file.
+- Modify values in fields and add new fields to [GFF](GFF-File-Format) format files (UT\*, [DLG](GFF-File-Format#dlg-dialogue), [JRL](GFF-File-Format#jrl-journal), [GIT](GFF-File-Format#git-game-instance-template), are, [IFO](GFF-File-Format#ifo-module-info) etc...) that might already exist in the user's override folder or inside [ERF](ERF-File-Format)/[RIM](RIM-File-Format) containers. Again to reduce incompatibility when different mods need to do things to the same file.
 
 - Dynamically assign StrRefs from your new [dialog.tlk](TLK-File-Format) entries to [2DA](2DA-File-Format), [GFF](GFF-File-Format), [NSS](NSS-File-Format) and [SSF](SSF-File-Format) format files, allowing you to use your new [TLK](TLK-File-Format) entries regardless of which [StrRef](TLK-File-Format#string-references-strref) indexes they were added as, through the use of token references. (E.g. add the correct [StrRef](TLK-File-Format#string-references-strref) values to the "name" and "desc" column in [spells.2da](2DA-spells) if you add a new force power.)
 
@@ -41,9 +41,9 @@ It can, in general terms:
 
 - Dynamically modify SSF (Soundset) files to point to new entries you have added to [dialog.tlk](TLK-File-Format).
 
-- Automatically put other files that does not need to be modified into the correct folder within your game folder (e.g. "Override", "Modules", "StreamMusic" etc...), or inside [ERF](ERF-File-Format) or RIM format container files existing in any of those folders.
+- Automatically put other files that does not need to be modified into the correct folder within your game folder (e.g. "Override", "Modules", "StreamMusic" etc...), or inside [ERF](ERF-File-Format) or [RIM](RIM-File-Format) format container files existing in any of those folders.
 
-- Insert modified [GFF files](GFF-File-Format) into a RIM or [ERF](ERF-File-Format) format file ([ERF](ERF-File-Format), MOD, SAV etc), found in the game folder or any of its sub-folders, or modify existing files already found in that destination file. Recompiled [NCS](NCS-File-Format) script files can also be inserted into RIM and [ERF](ERF-File-Format) format files (but only overwrite, not modify existing scripts with the same name).
+- Insert modified [GFF files](GFF-File-Format) into a [RIM](RIM-File-Format) or [ERF](ERF-File-Format) format file ([ERF](ERF-File-Format), MOD, SAV etc), found in the game folder or any of its sub-folders, or modify existing files already found in that destination file. Recompiled [NCS](NCS-File-Format) script files can also be inserted into [RIM](RIM-File-Format) and [ERF](ERF-File-Format) format files (but only overwrite, not modify existing scripts with the same name).
 
 - Make unaltered backup copies of any files it modifies or overwrites, making it a little easier to uninstall a mod again.
 
@@ -104,7 +104,7 @@ EDIT(2006-08-28) TSLPatcher v1.2.8b3 uploaded, this hopefully fixes the occasion
 
 EDIT(2006-08-09) TSLPatcher v1.2.8b2 uploaded. This version fixes a bug with the RIM handling class which caused the game to have trouble loading RIMs modified by the Patcher, caused by an error in the RIM specifications I had at my disposal. The game should now properly load modified RIM files without problems.
 
-EDIT(2006-08-09) TSLPatcher v1.2.8b1 and ChangeEdit v1.0.4b8 uploaded. This version allows the "Install" function to place files into [ERF](ERF-File-Format)/RIM containers, allows options for renaming files during installation, and adds a "config summary" button to the main TSLPatcher window.
+EDIT(2006-08-09) TSLPatcher v1.2.8b1 and ChangeEdit v1.0.4b8 uploaded. This version allows the "Install" function to place files into [ERF](ERF-File-Format)/[RIM](RIM-File-Format) containers, allows options for renaming files during installation, and adds a "config summary" button to the main TSLPatcher window.
 
 EDIT(2006-08-06) TSLPatcher v1.2.8b0 and ChangeEdit v1.0.4b7 uploaded. This version changes how the [ERF](ERF-File-Format) handling functionality works to make it more useful. See this post (<http://www.lucasforums.com/showpost.php?p=2144898&postcount=181>) for more info.
 

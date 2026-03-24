@@ -1,12 +1,13 @@
 # KotOR ERF file format Documentation
 
-This document provides a detailed description of the ERF (Encapsulated Resource file) file format used in Knights of the Old Republic (KotOR) games. ERF files are self-contained containers used for modules, save games, [texture](TPC-File-Format) packs, and hak paks.
+This document provides a detailed description of the ERF (Encapsulated Resource file) file format used in Knights of the Old Republic (KotOR) games. ERF files are self-contained containers used for modules, save games, [texture](TPC-File-Format) packs, and hak paks. Shipped modules also use **[RIM](RIM-File-Format)** (resource image) archives; RIM is a **different** binary layout—see [RIM versus ERF](#rim-versus-erf) and the dedicated [RIM File Format](RIM-File-Format) page.
 
 ## Table of Contents
 
 - KotOR ERF file format Documentation
   - Table of Contents
   - [File Structure Overview](#file-structure-overview)
+  - [RIM versus ERF](#rim-versus-erf)
   - [Binary Format](#binary-format)
     - [File Header](#file-header)
     - [Localized String List](#localized-string-list)
@@ -18,6 +19,7 @@ This document provides a detailed description of the ERF (Encapsulated Resource 
     - [MOD Files (module containers)](#mod-files-module-containers)
     - [SAV Files (save game containers)](#sav-files-save-game-containers)
     - [HAK Files (Override Paks)](#hak-files-override-paks)
+    - [RIM files (resource image)](#rim-files-resource-image)
     - [ERF Files (Generic Containers)](#erf-files-generic-containers)
   - [Implementation Details](#implementation-details)
 
@@ -25,11 +27,11 @@ This document provides a detailed description of the ERF (Encapsulated Resource 
 
 ## File Structure Overview
 
-ERF files are self-contained containers that store both resource names ([ResRefs](GFF-File-Format#gff-data-types)) and data in the same file. Unlike [BIF files](BIF-File-Format) which require a [KEY file](KEY-File-Format) for filename lookups, ERF files include *ResRef* information directly in the container. When the engine resolves a resource request, it can service from encapsulated containers (MOD/ERF) before falling back to KEY/BIF; see [resource resolution order](KEY-File-Format#key-file-purpose).
+*ERF* files are self-contained containers that store both resource names ([ResRefs](GFF-File-Format#gff-data-types)) and data in the same file. Unlike [BIF files](BIF-File-Format) which require a [KEY file](KEY-File-Format) for filename lookups, *ERF* files include *ResRef* information directly in the container. When the engine resolves a resource request, it can service from encapsulated containers (*MOD/ERF* and stock [RIM](RIM-File-Format) module archives) before falling back to *KEY/BIF*; see [resource resolution order](Concepts#resource-resolution-order).
 
-**For mod developers:** MOD and HAK files are built with Holocron Toolset or other packers; see [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** *MOD* and *HAK* files are built with Holocron Toolset or other packers; see [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers). Vanilla modules ship as `.rim` / `_s.rim` ([RIM](RIM-File-Format)); a `.mod` in `modules/` overrides the same module’s RIM set when present.
 
-**Related formats:** ERF containers hold [GFF](GFF-File-Format), [2DA](2DA-File-Format), [TPC](TPC-File-Format), [NCS](NCS-File-Format), and other resource types; see [KEY](KEY-File-Format) and [BIF](BIF-File-Format) for alternative storage. **Modder note:** Use MODs for module-specific content (area GFFs, module 2DAs); use [override](Concepts#override-folder) for global replacements. See [Concepts](Concepts#mod--erf) and [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files).
+**Related formats:** *ERF* containers hold [GFF](GFF-File-Format), [2DA](2DA-File-Format), [TPC](TPC-File-Format), [NCS](NCS-File-Format), and other resource types; see [KEY](KEY-File-Format) and [BIF](BIF-File-Format) for alternative storage. **Modder note:** Use *MOD*s for module-specific content (area GFFs, module 2DAs); use [override](Concepts#override-folder) for global replacements. See [Concepts](Concepts#mod-erf-rim) and [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files).
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/erf/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/)
 
@@ -47,7 +49,27 @@ Repositories (original first, mirror second): **[reone](https://github.com/seedh
 
 ---
 
+## RIM versus ERF
+
+[RIM](RIM-File-Format) (**resource image**) files are the **stock** module archives under `modules/`. They are **encapsulated** containers like ERF/MOD (ResRef + type + bytes in one file) but **not** the same on-disk structure as this document’s 160-byte **ERF** header. Tools that only parse ERF must convert or use a RIM-aware reader.
+
+| Feature | RIM ([RIM File Format](RIM-File-Format)) | ERF / MOD / SAV / HAK (this page) |
+| ------- | ---------------------------------------- | ---------------------------------- |
+| Signature | `RIM` + `V1.0` | `ERF` / `MOD` / `SAV` / `HAK` + `V1.0` |
+| Header size | **120** bytes | **160** bytes |
+| Localized strings, build date, description StrRef | Absent | Present (strings optional) |
+| Index layout | One **32-byte** record per resource (includes **UInt32** type, offset, size) | **24-byte** [KEY](KEY-File-Format)-style list + separate **8-byte** offset/size list |
+| MOD-only gap | N/A | Optional **8-byte × entry_count** zero block between key list and resource list ([quirk](#modnwm-file-format-quirk-blank-data-block)) |
+
+**Engine and tooling:** Both families are loaded as module-side capsules ahead of [KEY](KEY-File-Format)/[BIF](BIF-File-Format) for resources they contain; see [resource resolution order](Concepts#resource-resolution-order). PyKotor can turn a loaded RIM into an in-memory ERF via `RIM.to_erf()` for writing MOD/ERF output.
+
+**Normative RIM layout:** Field sizes, implicit offset `0` → table at byte 120, and padding behavior are specified on [RIM File Format](RIM-File-Format).
+
+---
+
 ## [Binary Format](https://en.wikipedia.org/wiki/Binary_file)
+
+Everything in this section applies to **ERF**, **MOD**, **SAV**, and **HAK** signatures only. **[RIM](RIM-File-Format)** uses a shorter header and a different index record layout; do not treat these tables as the RIM specification.
 
 ### File Header
 
@@ -112,7 +134,7 @@ Localized strings provide descriptions in multiple languages:
 
 | Name         | type    | size | Description                                                      |
 | ------------ | ------- | ---- | ---------------------------------------------------------------- |
-| Language ID  | UInt32  | 4    | Language identifier (see Language enum)                          |
+| Language ID  | UInt32  | 4    | Language identifier ([Concepts](Concepts#language-ids-kotor))                          |
 | string size  | UInt32  | 4    | Length of string in bytes                                       |
 | string data  | [char](GFF-File-Format#gff-data-types)[]  | N    | `windows-1252` encoded text                     |
 
@@ -120,14 +142,7 @@ Localized strings provide descriptions in multiple languages:
 
 ERF localized strings provide multi-language descriptions for the container itself. These are primarily used in MOD files to display module names and descriptions in the game's module selection screen.
 
-**Language IDs:**
-
-- `0` = English
-- `1` = French  
-- `2` = German
-- `3` = Italian
-- `4` = Spanish
-- `5` = Polish
+**Language IDs:** Use the shared Aurora numeric enum and encodings on [Concepts](Concepts#language-ids-kotor) (same values as TLK and GFF localized strings).
 
 **Important Notes:**
 
@@ -151,7 +166,7 @@ Each [KEY](KEY-File-Format) entry is 24 bytes and maps ResRefs to resource indic
 | ----------- | -------- | ------ | ---- | ---------------------------------------------------------------- |
 | *ResRef*      | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 16   | Resource filename (null-padded, max 16 chars)                    |
 | Resource ID | UInt32   | 16 (0x10) | 4    | index into resource list                                         |
-| Resource type | [uint16](GFF-File-Format#gff-data-types) | 20 (0x14) | 2    | Resource type identifier                                         |
+| Resource type | [uint16](GFF-File-Format#gff-data-types) | 20 (0x14) | 2    | Resource type ID ([table](Resource-Formats-and-Resolution#resource-type-identifiers))                                         |
 | Unused      | [uint16](GFF-File-Format#gff-data-types)   | 22 (0x16) | 2    | Padding                                                           |
 
 ***ResRef* Padding Notes:**
@@ -242,6 +257,14 @@ SAV files store complete game state:
 
 Save files preserve the state of all modified resources. When a placeable is looted or a door opened, the updated `.git` resource is stored in the SAV file.
 
+### HAK Files (Override Paks)
+
+`HAK` uses the same ERF binary layout as other variants; the file type signature is `"HAK "`. Historically used in Neverwinter Nights for hak paks; KotOR lists the type in the resource table but does not use HAK the same way as NWN. Treat as a generic ERF container when encountered.
+
+### RIM files (resource image)
+
+`.rim` files are **not** ERF binaries: they use a **120-byte** header and **32-byte** resource records (see [RIM File Format](RIM-File-Format) and [RIM versus ERF](#rim-versus-erf)). They are the usual shipped module capsules under `modules/`; [MOD](ERF-File-Format#mod-files-module-containers) overrides the same module when both exist.
+
 ### ERF Files (Generic Containers)
 
 Generic ERF files serve miscellaneous purposes:
@@ -301,10 +324,11 @@ Contrary to popular belief, the engine does **not** identify Save Games based on
 
 ### See also
 
+- [Concepts](Concepts#language-ids-kotor) - Language ID enum and encodings (ERF localized strings, TLK, GFF)
 - [BIF File Format](BIF-File-Format) - Container format used with [KEY](KEY-File-Format) files
 - [KEY File Format](KEY-File-Format) - Index for [BIF containers](BIF-File-Format) and resource resolution
 - [GFF File Format](GFF-File-Format) - Common content type stored in ERF containers
-- [RIM-File-Format](RIM-File-Format) - RIM (Resource Image) container format; similar structure to ERF for area resources
+- [RIM File Format](RIM-File-Format) — Resource image containers (distinct binary layout; [comparison](ERF-File-Format#rim-versus-erf))
 
 ---
 

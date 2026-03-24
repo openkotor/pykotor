@@ -13,7 +13,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `label` | string | Faction label |
 | Additional columns | Integer | Reputation values for each faction (column names match faction labels) |
 
-**Note**: The `repute.2da` file is a square [matrix](BWM-File-Format#walkable-adjacencies) where each row represents a faction, and each column (after `label`) represents the reputation value toward another faction. Reputation values typically range from 0-100, where values below 50 are enemies, above 50 are friends, and 50 is neutral.
+**Note**: The `repute.2da` file is a square [matrix](BWM-File-Format#adjacencies-wok-only) where each row represents a faction, and each column (after `label`) represents the reputation value toward another faction. Reputation values typically range from 0-100, where values below 50 are enemies, above 50 are friends, and 50 is neutral.
 
 **References**:
 
@@ -41,7 +41,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/reputes.cpp:36-62`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](BWM-File-Format#walkable-adjacencies) loading from [2DA](2DA-File-Format)
+- [`vendor/reone/src/libs/game/reputes.cpp:36-62`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](BWM-File-Format#adjacencies-wok-only) loading from [2DA](2DA-File-Format)
 
 ### See also
 

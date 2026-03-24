@@ -17,7 +17,7 @@ pykotorcli diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --filte
 # Generate incremental TSLPatcher output while diffing
 pykotorcli diff "C:\Games\KOTOR" "C:\Games\KOTOR_Modded" --tslpatchdata .\tslpatchdata --ini changes.ini --incremental
 
-# Compare specific container m13ab.rim with the composite rim module m13ab.
+# Compare specific .rim module capsule m13ab.rim with the composite module folder m13ab (see RIM File Format).
 pykotorcli diff "D:\workspace\Ajunta_Paul\m13ab.rim" "C:\Program Files (x86)\Steam\steamapps\common\swkotor\Modules\m13ab"
 
 # Compare composite module danm13 with an entire installation
@@ -26,6 +26,8 @@ pykotorcli diff "D:\workspace\Dantooine_Modifications\danm13" "C:\Program Files 
 # Compare installation with basic folder (compares folder including subfolders, with the installation respecting its resolution order)
 pykotorcli diff "C:\Program Files (x86)\Steam\steamapps\common\swkotor" "D:\workspace\folder_with_various_gffs_2das_etc\"
 ```
+
+Module capsules may be `.rim` ([RIM File Format](RIM-File-Format)), `.mod`/`.erf` ([ERF File Format](ERF-File-Format)), or composite module folders.
 
 [KEY](KEY-File-Format) flags:
 
@@ -44,5 +46,5 @@ pykotorcli diff "C:\Program Files (x86)\Steam\steamapps\common\swkotor" "D:\work
 ### See also
 
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher overview; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Patching workflow
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution; [ERF-File-Format](ERF-File-Format), [GFF-File-Format](GFF-File-Format) -- Diffed resources
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution; [ERF-File-Format](ERF-File-Format), [RIM-File-Format](RIM-File-Format), [GFF-File-Format](GFF-File-Format) -- Diffed resources and module capsules
 - [TLK-File-Format](TLK-File-Format) -- StrRef handling in incremental output

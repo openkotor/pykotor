@@ -75,7 +75,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 ### See also
 
-- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [NSS-Shared-Constants-Visual-Effects-(VFX)](NSS-Shared-Constants-Visual-Effects-(VFX)) -- VFX constants
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure; [NSS-Shared-Constants-Visual-Effects-(VFX)](NSS-Shared-Constants-Visual-Effects-%28VFX%29) -- VFX constants
 - [MDL-MDX-File-Format](MDL-MDX-File-Format) -- Effect models; [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
 
 ---

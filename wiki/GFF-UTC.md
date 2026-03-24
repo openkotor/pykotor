@@ -2,11 +2,11 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTC files define [creature templates](GFF-File-Format#utc-creature) including NPCs, party members, enemies, and the player character. They are comprehensive [GFF files](GFF-File-Format) containing all data needed to spawn and control a creature in the game world. UTC files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+UTC files define [creature templates](GFF-File-Format#utc-creature) including NPCs, party members, enemies, and the player character. They are comprehensive [GFF files](GFF-File-Format) containing all data needed to spawn and control a creature in the game world. UTC files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Creature format specification, see [Bioware Aurora Creature Format](Bioware-Aurora-Creature).
 
-**For mod developers:** To modify creature templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** To modify creature templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** UTC references [2DA](2DA-File-Format) (appearance, portraits, classes, feats, racialtypes, creaturespeed), [SSF](SSF-File-Format), [TLK](TLK-File-Format), [MDL](MDL-MDX-File-Format), [TPC](TPC-File-Format), and [GFF-UTI](GFF-UTI) for inventory items.
 
@@ -94,7 +94,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 | ----- | ---- | ----------- |
 | `FactionID` | [word](GFF-File-Format#gff-data-types) | Faction identifier (determines hostility) |
 | `NaturalAC` | [byte](GFF-File-Format#gff-data-types) | Natural armor class bonus |
-| `ChallengeRating` | [float](GFF-File-Format#gff-data-types) | CR for encounter calculations |
+| `ChallengeRating` | float | CR for encounter calculations |
 | `PerceptionRange` | [byte](GFF-File-Format#gff-data-types) | Perception distance category |
 | `WalkRate` | [int32](GFF-File-Format#gff-data-types) | Row index into creaturespeed.2da; sets walk/run movement speed used for pathfinding and animation. |
 | `Interruptable` | [byte](GFF-File-Format#gff-data-types) | Can be interrupted during actions |

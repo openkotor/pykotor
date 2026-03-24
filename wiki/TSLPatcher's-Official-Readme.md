@@ -156,11 +156,10 @@ function call point to the correct line number of a row TSLPatcher has added to
 game folder. I.e. it could make sure that .MOD files go in the Modules folder, .WAVs go in
 the proper StreamVoice/StreamSounds/StreamMusic folder, other files get put in Override etc.
 
-- It allows you to modify [GFF files](GFF-File-Format) that already exist in either the override folder or an [ERF](ERF-File-Format) or
-RIM format container file within the game folder or any of its sub-folders. You can also insert
+- It allows you to modify [GFF files](GFF-File-Format) that already exist in either the override folder or an [ERF](ERF-File-Format) or [RIM](RIM-File-Format) format container file within the game folder or any of its sub-folders. You can also insert
 new [GFF files](GFF-File-Format) into any such files.
 
-- It allows you to insert recompiled [NCS files](NCS-File-Format) into an [ERF](ERF-File-Format) or RIM format container file within
+- It allows you to insert recompiled [NCS files](NCS-File-Format) into an [ERF](ERF-File-Format) or [RIM](RIM-File-Format) format container file within
 the game folder or any of its sub-folders, or overwrite any [NCS file](NCS-File-Format) with the same name
 already existing at the destination.
 
@@ -183,7 +182,7 @@ associated files in a subfolder within the override folder). It will only look f
 directly in the override folder.
 
 - It is currently unable to modify files inside [BIF](BIF-File-Format) format files. Only files located in the
-override folder and [ERF](ERF-File-Format) or RIM format container files can be modified.
+override folder and [ERF](ERF-File-Format) or [RIM](RIM-File-Format) format container files can be modified.
 
 ## 2. Setup Instructions
 
@@ -410,7 +409,7 @@ to modify the [appearance.2da](2DA-appearance) file, type in [appearance.2da](2D
 select the newly added file in the tree view.
 
 The right panel will now show an empty Modifier list (since you haven't added any yet). When
-the list contains entries, you can [double](GFF-File-Format#gff-data-types)-click one of them to edit that Modifier.
+the list contains entries, you can double-click one of them to edit that Modifier.
 
 There are now two possible ways to proceed:
 
@@ -435,7 +434,7 @@ section 3.2 above), and you will have to assign the high() token to the
 forcefriendly or forcehostile column.
 
 At any rate, you should look through the modifiers that have been created for you and check
-that everything appears to be in order. To view or edit a Modifier, [double](GFF-File-Format#gff-data-types)-click it in the list. See
+that everything appears to be in order. To view or edit a Modifier, double-click it in the list. See
 section 3.3.2 below for more information on how the [2DA](2DA-File-Format) Modifier editor windows work.
 
 #### 3.3.2. Way 2: Specify the changes to be made by hand
@@ -694,13 +693,13 @@ modifying existing files) or should be saved (if adding new files). There are tw
 
 2) If the Destination box is set to the relative path (within the game folder) and name of an
 
-[ERF](ERF-File-Format)/MOD/RIM container file, the modified [GFF file](GFF-File-Format) will be modified (if already existing) or
+[ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container file, the modified [GFF file](GFF-File-Format) will be modified (if already existing) or
 inserted (if not already existing or the Replace setting is set) into this container file instead of
 being placed in the override folder.
 
 **Important:**
-If you set an [ERF](ERF-File-Format)/RIM file to save your modified files in you must specify the
-relative path from the game folder to where the [ERF](ERF-File-Format)/RIM file is located. If, for
+If you set an [ERF](ERF-File-Format)/[RIM](RIM-File-Format) file to save your modified files in you must specify the
+relative path from the game folder to where the [ERF](ERF-File-Format)/[RIM](RIM-File-Format) file is located. If, for
 example, you want to modify a [GFF file](GFF-File-Format) within the file myarea.mod located in
 the Modules folder, you would set the Destination to Modules\\myarea.mod.
 
@@ -871,7 +870,7 @@ with the exception that the Path field will always be dimmed down. Never set a P
 fields, they will get their path from your parent field.
 
 Press the right-arrow icon to add your new field to the list to the right. To view or modify a field
-listed here, either select the field and press the left arrow icon, or [double](GFF-File-Format#gff-data-types)-click in the list.
+listed here, either select the field and press the left arrow icon, or double-click in the list.
 
 #### 3.4.3. Compare two [GFF files](GFF-File-Format) for differences to create modifiers
 
@@ -949,7 +948,7 @@ SHIFT when you click on files in the list. All selected files will be added to t
 you click the Open button.
 
 To modify a file already added to the file list, either select it in the list and click the down arrow
-icon, or [double](GFF-File-Format#gff-data-types)-click the file in the list. It will then be loaded into the lower box to allow you to
+icon, or double-click the file in the list. It will then be loaded into the lower box to allow you to
 edit it.
 
 ### 3.6. Script Source
@@ -967,16 +966,16 @@ question doesn't already have what your mod needs.
 
 If you want the resulting [NCS file](NCS-File-Format) to be installed in the user's override folder, leave the
 Destination box blank or set it to "override" (without the quotation marks). If you want the [NCS](NCS-File-Format)
-file to be  saved inside an [ERF](ERF-File-Format)/MOD/RIM file instead, put the relative path (from the game
+file to be  saved inside an [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) file instead, put the relative path (from the game
 folder) and name of that [ERF](ERF-File-Format) format file in this box.
 
 **Important:**
 You must specify the relative path from the main game folder to where the
-[ERF](ERF-File-Format)/RIM file you want to save your recompile script in exists. If you for
+[ERF](ERF-File-Format)/[RIM](RIM-File-Format) file you want to save your recompile script in exists. If you for
 example want to save your script inside the myarea.mod file located in the
 Modules folder you would set the Destination box to Modules\\myarea.mod.
 
-Only override or the path\\name of an [ERF](ERF-File-Format)/RIM file is a valid value in the Destination box. This
+Only override or the path\\name of an [ERF](ERF-File-Format)/[RIM](RIM-File-Format) file is a valid value in the Destination box. This
 can currently not be used to put the file in another folder than the override within the game
 folder. If someone needs that functionality, please let me know.
 
@@ -1038,7 +1037,7 @@ any [StrRef](TLK-File-Format#string-references-strref)# and 2DAMEMORY# tokens th
 can choose from to save some typing.
 
 To save your modifier, click the red up-arrow icon and it will be added to the grid. To edit an
-existing modifier, either [double](GFF-File-Format#gff-data-types) click it in the grid, or select it in the grid and press the red
+existing modifier, either double click it in the grid, or select it in the grid and press the red
 down-arrow icon. To delete a modifier, select it in the grid and click the trashcan icon above the
 grid.
 
@@ -1246,9 +1245,9 @@ name of source file if different from the destination file name (configured with
 the new !SourceFile and !SaveAs keys).
 
 Added an optional !OverrideType [KEY](KEY-File-Format) to the [filename] sections of files
-to be saved into [ERF](ERF-File-Format) or RIM files. If set it can determine how TSLPatcher
+to be saved into [ERF](ERF-File-Format) or [RIM](RIM-File-Format) files. If set it can determine how TSLPatcher
 should react if a file with the same name already exists in the override folder
-(and thus would make the game not use the one in the [ERF](ERF-File-Format)/RIM). This [KEY](KEY-File-Format) can
+(and thus would make the game not use the one in the [ERF](ERF-File-Format)/[RIM](RIM-File-Format)). This [KEY](KEY-File-Format) can
 hold one of three values: ignore (default behavior), warn (post a warning in the
 progress log) or rename (add a old_ prefix to the name of the file in the
 override folder to deactivate it).
@@ -1257,14 +1256,14 @@ Added an optional !DefaultDestination [KEY](KEY-File-Format) to the [CompileList
 which will determine where the [NCS files](NCS-File-Format) should be put if no specific
 destination has been set. Default value if the [KEY](KEY-File-Format) is left out is the override
 folder as before. In addition to override it can be set the the relative path (from
-the game folder) and name of an [ERF](ERF-File-Format) or RIM file to insert the scripts into. This
+the game folder) and name of an [ERF](ERF-File-Format) or [RIM](RIM-File-Format) file to insert the scripts into. This
 value can then be overridden with the !Destination [KEY](KEY-File-Format) for individual files as
 before.
 
 Optimized speed and efficiency of storing many recompiled [NCS files](NCS-File-Format) into an
-[ERF](ERF-File-Format) or RIM file. Before the [ERF](ERF-File-Format)/RIM was saved, closed and reopened between
+[ERF](ERF-File-Format) or [RIM](RIM-File-Format) file. Before the [ERF](ERF-File-Format)/[RIM](RIM-File-Format) was saved, closed and reopened between
 each file that was inserted, now it's kept open until another destination is
-encountered. Thus if you insert scripts into multiple [ERF](ERF-File-Format)/RIM files it's a good
+encountered. Thus if you insert scripts into multiple [ERF](ERF-File-Format)/[RIM](RIM-File-Format) files it's a good
 idea to keep them grouped by destination in the [CompileList] modifier list.
 
 Added optional !SourceFile and !SourceFileF keys to the [TLKList]
@@ -1303,7 +1302,7 @@ Apparently there was an error in the RIM spec...
 ### Change Log for Version 1.2.8b1 (REL)
 
 2006-08-09
-Changed the InstallList functionality to allow installing files into [ERF](ERF-File-Format)/RIM
+Changed the InstallList functionality to allow installing files into [ERF](ERF-File-Format)/[RIM](RIM-File-Format)
 containers as well, and not just folders within the game folder. This destination is
 set the same as you set the folder, only specify a filename at the end of the
 relative path (from the game folder) as well. (E.g. Modules\\904mal.rim)
@@ -1326,18 +1325,18 @@ rather substantial changed made in version 1.2.8b0.
 ### Change Log for Version 1.2.8b0 (REL)
 
 2006-08-06
-Changed how the [ERF](ERF-File-Format)/RIM insertion of [GFF](GFF-File-Format) and [NCS files](NCS-File-Format) work to make it a
+Changed how the [ERF](ERF-File-Format)/[RIM](RIM-File-Format) insertion of [GFF](GFF-File-Format) and [NCS files](NCS-File-Format) work to make it a
 bit more useful. It'll now work directly with such files located in the game
 folder or any subfolders, and it will modify existing [GFF files](GFF-File-Format) instead of
 overwriting unless the Replace setting is set.
 
 Changed processing order for the InstallList to allow placing new
-[ERF](ERF-File-Format)/MOD/RIM files in their proper location before the [GFF](GFF-File-Format)/Compile sections
+[ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) files in their proper location before the [GFF](GFF-File-Format)/Compile sections
 run so they can save any necessary modified files into those container files. The
 different install phases now run in this order: [TLK](TLK-File-Format) Appending, Install List,
 [2DA](2DA-File-Format) changes, [GFF](GFF-File-Format) Changes, Script compilation, [SSF](SSF-File-Format) Editing.
 
-Extended the [ERF](ERF-File-Format) insertion functionality to support RIM format files as well.
+Extended the [ERF](ERF-File-Format) insertion functionality to support [RIM](RIM-File-Format) format files as well.
 
 ### Change Log for Version 1.2.7b9 (REL)
 

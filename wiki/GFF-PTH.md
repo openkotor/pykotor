@@ -2,7 +2,7 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-PTH files define pathfinding data for modules, distinct from the navigation mesh ([walkmesh](BWM-File-Format)). They store a network of waypoints and connections used for high-level AI navigation planning. PTH files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+PTH files define pathfinding data for modules, distinct from the navigation mesh ([walkmesh](BWM-File-Format)). They store a network of waypoints and connections used for high-level AI navigation planning. PTH files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/pth.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/pth.py)
 
@@ -22,7 +22,7 @@ PTH files define pathfinding data for modules, distinct from the navigation mesh
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Path_Connections` | List | List of [edges](BWM-File-Format#edges) between [nodes](MDL-MDX-File-Format#node-structures) |
+| `Path_Connections` | List | List of [edges](BWM-File-Format#edges-wok-only) between [nodes](MDL-MDX-File-Format#node-structures) |
 
 **Path_Connections Struct fields:**
 

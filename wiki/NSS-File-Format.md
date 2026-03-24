@@ -1,8 +1,8 @@
 # KotOR NSS files format Documentation
 
-NSS (NWScript Source) files contain human-readable NWScript source code that compiles to [NCS bytecode](NCS-File-Format). The `nwscript.nss` file defines all engine-exposed functions and constants available to scripts. KotOR 1 and KotOR 2 each have their own `nwscript.nss` with game-specific functions and constants. When the game or tools load NSS by ResRef, they use the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+NSS (NWScript Source) files contain human-readable NWScript source code that compiles to [NCS bytecode](NCS-File-Format). The `nwscript.nss` file defines all engine-exposed functions and constants available to scripts. KotOR 1 and KotOR 2 each have their own `nwscript.nss` with game-specific functions and constants. When the game or tools load NSS by ResRef, they use the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** NSS compiles to [NCS](NCS-File-Format); use the toolset compiler or HoloLSP; see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** NSS compiles to [NCS](NCS-File-Format); use the toolset compiler or HoloLSP; see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** NSS compiles to [NCS](NCS-File-Format); scripts are triggered by [DLG](GFF-DLG), [UTC](GFF-File-Format#utc-creature), [UTD](GFF-UTD), [UTP](GFF-UTP), [IFO](GFF-IFO), and reference [2DA](2DA-File-Format) data.
 
@@ -205,7 +205,7 @@ NSS (NWScript Source) files contain human-readable NWScript source code that com
       - [`EffectWhirlWind()` - Routine 703](NSS-Shared-Functions-Effects-System)
       - [`EnableVideoEffect(nEffectType)` - Routine 508](NSS-Shared-Functions-Effects-System)
       - [`ExtraordinaryEffect(eEffect)` - Routine 114](NSS-Shared-Functions-Effects-System)
-      - [`GetAreaOfEffectCreator(oAreaOfEffectObject)` - Routine 264](NSS-Shared-Functions-Module-and-Area-Functions)
+      - [`GetAreaOfEffectCreator(oAreaOfEffectObject)` - Routine 264](NSS-Shared-Functions-Module-and-Area)
       - [`GetEffectCreator(eEffect)` - Routine 91](NSS-Shared-Functions-Effects-System)
       - [`GetEffectDurationType(eEffect)` - Routine 89](NSS-Shared-Functions-Effects-System)
       - [`GetEffectSpellId(eSpellEffect)` - Routine 305](NSS-Shared-Functions-Effects-System)
@@ -254,10 +254,10 @@ NSS (NWScript Source) files contain human-readable NWScript source code that com
       - [`GetItemPossessor(oItem)` - Routine 29](NSS-Shared-Functions-Item-Management)
       - [`GetItemStackSize(oItem)` - Routine 138](NSS-Shared-Functions-Item-Management)
       - [`GetLastItemEquipped()` - Routine 52](NSS-Shared-Functions-Item-Management)
-      - [`GetModuleItemAcquired()` - Routine 282](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetModuleItemAcquiredFrom()` - Routine 283](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetModuleItemLost()` - Routine 292](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetModuleItemLostBy()` - Routine 293](NSS-Shared-Functions-Module-and-Area-Functions)
+      - [`GetModuleItemAcquired()` - Routine 282](NSS-Shared-Functions-Module-and-Area)
+      - [`GetModuleItemAcquiredFrom()` - Routine 283](NSS-Shared-Functions-Module-and-Area)
+      - [`GetModuleItemLost()` - Routine 292](NSS-Shared-Functions-Module-and-Area)
+      - [`GetModuleItemLostBy()` - Routine 293](NSS-Shared-Functions-Module-and-Area)
       - [`GetNextItemInInventory(oTarget)` - Routine 340](NSS-Shared-Functions-Item-Management)
       - [`GetNumStackedItems(oItem)` - Routine 475](NSS-Shared-Functions-Item-Management)
       - [`GetSpellCastItem()` - Routine 438](NSS-Shared-Functions-Item-Management)
@@ -271,12 +271,12 @@ NSS (NWScript Source) files contain human-readable NWScript source code that com
       - [`SetLocalBoolean(oObject, nIndex, nValue)` - Routine 680](NSS-Shared-Functions-Other-Functions)
       - [`SetLocalNumber(oObject, nIndex, nValue)` - Routine 682](NSS-Shared-Functions-Other-Functions)
     - [Module and Area Functions](#module-and-area-functions)
-      - [`GetArea(oTarget)` - Routine 24](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetAreaUnescapable()` - Routine 15](NSS-Shared-Functions-Module-and-Area-Functions)
+      - [`GetArea(oTarget)` - Routine 24](NSS-Shared-Functions-Module-and-Area)
+      - [`GetAreaUnescapable()` - Routine 15](NSS-Shared-Functions-Module-and-Area)
       - [`GetFirstObjectInArea(oArea, nObjectFilter)` - Routine 93](NSS-Shared-Functions-Other-Functions)
-      - [`GetModule()` - Routine 242](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetModuleFileName()` - Routine 210](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetModuleName()` - Routine 561](NSS-Shared-Functions-Module-and-Area-Functions)
+      - [`GetModule()` - Routine 242](NSS-Shared-Functions-Module-and-Area)
+      - [`GetModuleFileName()` - Routine 210](NSS-Shared-Functions-Module-and-Area)
+      - [`GetModuleName()` - Routine 561](NSS-Shared-Functions-Module-and-Area)
       - [`GetNextObjectInArea(oArea, nObjectFilter)` - Routine 94](NSS-Shared-Functions-Other-Functions)
       - [`SetAreaFogColor(oArea, fRed, fGreen, fBlue)` - Routine 746](NSS-Shared-Functions-Other-Functions)
       - [`SetAreaTransitionBMP(nPredefinedAreaTransition, sCustomAreaTransitionBMP)` - Routine 203](NSS-Shared-Functions-Other-Functions)
@@ -3090,7 +3090,7 @@ See [Local Variables](NSS-Shared-Functions-Local-Variables) for detailed documen
 
 ### Module and Area Functions
 
-See [Module and Area Functions](NSS-Shared-Functions-Module-and-Area-Functions) for detailed documentation.
+See [Module and Area Functions](NSS-Shared-Functions-Module-and-Area) for detailed documentation.
 
 ### Object Query and Manipulation
 
@@ -6411,7 +6411,7 @@ if (nPlanet == PLANET_TARIS) { ... }
 // Generates: CONSTI 1 (pushes integer 1 onto stack)
 ```
 
-**Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py:126-205`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py), [NCS-File-Format#engine-function-calls](NCS-File-Format#engine-function-calls)
+**Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py:126-205`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py), [NCS-File-Format#example-5-engine-function-call](NCS-File-Format#example-5-engine-function-call)
 
 ---
 

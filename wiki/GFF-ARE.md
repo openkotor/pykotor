@@ -2,13 +2,13 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-ARE files define static [area properties](GFF-File-Format#are-area) including lighting, weather, ambient audio, grass rendering, fog settings, script hooks, and minimap data. ARE files contain environmental and atmospheric data for game areas, while dynamic object placement is handled by [GIT](GFF-File-Format#git-game-instance-template) files. When the engine loads an area it reads the ARE for metadata and lighting, then loads the area [walkmesh (WOK)](BWM-File-Format) and other resources (e.g. [GIT](GFF-GIT), [LYT](LYT-File-Format), [VIS](VIS-File-Format)) referenced by or associated with the area, using the usual [resource resolution order](KEY-File-Format#key-file-purpose).
+ARE files define static [area properties](GFF-File-Format#are-area) including lighting, weather, ambient audio, grass rendering, fog settings, script hooks, and minimap data. ARE files contain environmental and atmospheric data for game areas, while dynamic object placement is handled by [GIT](GFF-File-Format#git-game-instance-template) files. When the engine loads an area it reads the ARE for metadata and lighting, then loads the area [walkmesh (WOK)](BWM-File-Format) and other resources (e.g. [GIT](GFF-GIT), [LYT](LYT-File-Format), [VIS](VIS-File-Format)) referenced by or associated with the area, using the usual [resource resolution order](Concepts#resource-resolution-order).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine ARE format specification, see [Bioware Aurora Area File Format](Bioware-Aurora-AreaFile).
 
-**For mod developers:** To modify GFF/ARE files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** To modify GFF/ARE files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
-**Related formats:** ARE references [GIT](GFF-File-Format#git-game-instance-template), [BWM](BWM-File-Format), [LYT](LYT-File-Format), [VIS](VIS-File-Format), [2DA](2DA-File-Format) (e.g. camerastyle, ambientmusic), and [TLK](TLK-File-Format). Loading uses the same [resource resolution order](KEY-File-Format#key-file-purpose).
+**Related formats:** ARE references [GIT](GFF-File-Format#git-game-instance-template), [BWM](BWM-File-Format), [LYT](LYT-File-Format), [VIS](VIS-File-Format), [2DA](2DA-File-Format) (e.g. camerastyle, ambientmusic), and [TLK](TLK-File-Format). Loading uses the same [resource resolution order](Concepts#resource-resolution-order).
 
 ## References
 
@@ -61,8 +61,8 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `SunFogOn` | [byte](GFF-File-Format#gff-data-types) | Enable fog rendering |
-| `SunFogNear` | [float](GFF-File-Format#gff-data-types) | Fog start distance |
-| `SunFogFar` | [float](GFF-File-Format#gff-data-types) | Fog end distance |
+| `SunFogNear` | float | Fog start distance |
+| `SunFogFar` | float | Fog end distance |
 | `SunFogColor` | color | Fog color RGB |
 
 **Fog Rendering:**
@@ -85,8 +85,8 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 | `MoonAmbientColor` | color | Moon ambient light (unused) |
 | `MoonDiffuseColor` | color | Moon diffuse light (unused) |
 | `MoonFogOn` | [byte](GFF-File-Format#gff-data-types) | Moon fog toggle (unused) |
-| `MoonFogNear` | [float](GFF-File-Format#gff-data-types) | Moon fog start (unused) |
-| `MoonFogFar` | [float](GFF-File-Format#gff-data-types) | Moon fog end (unused) |
+| `MoonFogNear` | float | Moon fog start (unused) |
+| `MoonFogFar` | float | Moon fog end (unused) |
 | `MoonFogColor` | color | Moon fog color (unused) |
 | `MoonShadows` | [byte](GFF-File-Format#gff-data-types) | Moon shadows (unused) |
 | `IsNight` | [byte](GFF-File-Format#gff-data-types) | Night time flag (unused) |
@@ -102,15 +102,15 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `Grass_TexName` | *ResRef* | Grass [texture](TPC-File-Format) name |
-| `Grass_Density` | [float](GFF-File-Format#gff-data-types) | Grass blade density (0.0-1.0) |
-| `Grass_QuadSize` | [float](GFF-File-Format#gff-data-types) | Size of grass patches |
+| `Grass_Density` | float | Grass blade density (0.0-1.0) |
+| `Grass_QuadSize` | float | Size of grass patches |
 | `Grass_Ambient` | color | Grass ambient color RGB |
 | `Grass_Diffuse` | color | Grass diffuse color RGB |
 | `Grass_Emissive` (KotOR2) | color | Grass emissive color RGB |
-| `Grass_Prob_LL` | [float](GFF-File-Format#gff-data-types) | Spawn probability lower-left |
-| `Grass_Prob_LR` | [float](GFF-File-Format#gff-data-types) | Spawn probability lower-right |
-| `Grass_Prob_UL` | [float](GFF-File-Format#gff-data-types) | Spawn probability upper-left |
-| `Grass_Prob_UR` | [float](GFF-File-Format#gff-data-types) | Spawn probability upper-right |
+| `Grass_Prob_LL` | float | Spawn probability lower-left |
+| `Grass_Prob_LR` | float | Spawn probability lower-right |
+| `Grass_Prob_UL` | float | Spawn probability upper-left |
+| `Grass_Prob_UR` | float | Spawn probability upper-right |
 
 **Grass System:**
 
@@ -145,15 +145,15 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `DirtyARGBOne` (KotOR2) | UInt32 | First dust color ARGB |
-| `DirtySizeOne` (KotOR2) | [float](GFF-File-Format#gff-data-types) | First dust particle size |
+| `DirtySizeOne` (KotOR2) | float | First dust particle size |
 | `DirtyFormulaOne` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | First dust formula type |
 | `DirtyFuncOne` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | First dust function |
 | `DirtyARGBTwo` (KotOR2) | UInt32 | Second dust color ARGB |
-| `DirtySizeTwo` (KotOR2) | [float](GFF-File-Format#gff-data-types) | Second dust particle size |
+| `DirtySizeTwo` (KotOR2) | float | Second dust particle size |
 | `DirtyFormulaTwo` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Second dust formula type |
 | `DirtyFuncTwo` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Second dust function |
 | `DirtyARGBThree` (KotOR2) | UInt32 | Third dust color ARGB |
-| `DirtySizeThree` (KotOR2) | [float](GFF-File-Format#gff-data-types) | Third dust particle size |
+| `DirtySizeThree` (KotOR2) | float | Third dust particle size |
 | `DirtyFormulaThre` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Third dust formula type |
 | `DirtyFuncThree` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Third dust function |
 
@@ -240,14 +240,14 @@ The ARE file contains a `Map` struct that defines how the minimap texture (`lbl_
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `MapPt1X` | [float](GFF-File-Format#gff-data-types) | First map point X coordinate (normalized 0.0-1.0) |
-| `MapPt1Y` | [float](GFF-File-Format#gff-data-types) | First map point Y coordinate (normalized 0.0-1.0) |
-| `MapPt2X` | [float](GFF-File-Format#gff-data-types) | Second map point X coordinate (normalized 0.0-1.0) |
-| `MapPt2Y` | [float](GFF-File-Format#gff-data-types) | Second map point Y coordinate (normalized 0.0-1.0) |
-| `WorldPt1X` | [float](GFF-File-Format#gff-data-types) | First world point X coordinate (world units) |
-| `WorldPt1Y` | [float](GFF-File-Format#gff-data-types) | First world point Y coordinate (world units) |
-| `WorldPt2X` | [float](GFF-File-Format#gff-data-types) | Second world point X coordinate (world units) |
-| `WorldPt2Y` | [float](GFF-File-Format#gff-data-types) | Second world point Y coordinate (world units) |
+| `MapPt1X` | float | First map point X coordinate (normalized 0.0-1.0) |
+| `MapPt1Y` | float | First map point Y coordinate (normalized 0.0-1.0) |
+| `MapPt2X` | float | Second map point X coordinate (normalized 0.0-1.0) |
+| `MapPt2Y` | float | Second map point Y coordinate (normalized 0.0-1.0) |
+| `WorldPt1X` | float | First world point X coordinate (world units) |
+| `WorldPt1Y` | float | First world point Y coordinate (world units) |
+| `WorldPt2X` | float | Second world point X coordinate (world units) |
+| `WorldPt2Y` | float | Second world point Y coordinate (world units) |
 | `NorthAxis` | [int32](GFF-File-Format#gff-data-types) | North direction orientation (0-3) |
 | `MapZoom` | [int32](GFF-File-Format#gff-data-types) | Map zoom level |
 | `MapResX` | [int32](GFF-File-Format#gff-data-types) | Map [texture](TPC-File-Format) resolution X dimension |
@@ -258,9 +258,9 @@ The ARE file contains a `Map` struct that defines how the minimap texture (`lbl_
 - **World Points** (`WorldPt1X/Y`, `WorldPt2X/Y`): World space coordinates (in game units) that correspond to the same locations in the 3D [walkmesh](BWM-File-Format)
 - **NorthAxis**: Determines which axis is "north" and affects coordinate mapping (see below)
 
-### coordinate [transformation](BWM-File-Format#walkable-adjacencies)
+### coordinate [transformation](BWM-File-Format#adjacencies-wok-only)
 
-The game engine uses a linear [transformation](BWM-File-Format#walkable-adjacencies) to convert between world coordinates and map [texture](TPC-File-Format) coordinates. This allows:
+The game engine uses a linear [transformation](BWM-File-Format#adjacencies-wok-only) to convert between world coordinates and map [texture](TPC-File-Format) coordinates. This allows:
 
 1. **Rendering the minimap [texture](TPC-File-Format)** in world space (overlaying it on the [walkmesh](BWM-File-Format))
 2. **Converting player position** to minimap coordinates for the minimap UI
@@ -349,7 +349,7 @@ The minimap [texture](TPC-File-Format) is loaded from [texture](TPC-File-Format)
 
 **Common Issues:**
 
-1. **Misaligned Minimap**: Caused by incorrect coordinate [transformation](BWM-File-Format#walkable-adjacencies) or NorthAxis handling
+1. **Misaligned Minimap**: Caused by incorrect coordinate [transformation](BWM-File-Format#adjacencies-wok-only) or NorthAxis handling
 2. **Inverted Mapping**: Negative scales indicate inverted mapping ([texture](TPC-File-Format) needs mirroring)
 3. **Precision Loss**: Using insufficient decimal precision in UI spinboxes causes drift
 
@@ -379,7 +379,7 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 
 - `RoomName` ([CExoString](GFF-File-Format#gff-data-types)): Room identifier (referenced by [VIS files](VIS-File-Format))
 - `EnvAudio` ([int32](GFF-File-Format#gff-data-types)): Environment audio index for room acoustics
-- `AmbientScale` ([float](GFF-File-Format#gff-data-types)): Ambient audio volume scaling factor
+- `AmbientScale` (float): Ambient audio volume scaling factor
 - `DisableWeather` (KotOR2, [byte](GFF-File-Format#gff-data-types)): Disable weather effects in this room
 - `ForceRating` (KotOR2, [int32](GFF-File-Format#gff-data-types)): Force rating modifier for this room
 
@@ -415,9 +415,9 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 
 **Common Pitfalls:**
 
-1. **Incorrect rotation**: Do NOT rotate map points around (0.5, 0.5) - use direct linear [transformation](BWM-File-Format#walkable-adjacencies)
+1. **Incorrect rotation**: Do NOT rotate map points around (0.5, 0.5) - use direct linear [transformation](BWM-File-Format#adjacencies-wok-only)
 2. **Precision Loss**: Always use high-precision spinboxes (6+ decimals) for map coordinate editing
-3. **NorthAxis Handling**: Remember that cases 2,3 swap X/Y coordinates in the [transformation](BWM-File-Format#walkable-adjacencies)
+3. **NorthAxis Handling**: Remember that cases 2,3 swap X/Y coordinates in the [transformation](BWM-File-Format#adjacencies-wok-only)
 4. **Negative Scales**: Negative scale values indicate inverted mapping - mirror the [texture](TPC-File-Format) accordingly
 
 **Validation:**
@@ -518,7 +518,7 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 
 **Mathematical Derivation:**
 
-The inverse [transformation](BWM-File-Format#walkable-adjacencies) is derived from reone's forward [transformation](BWM-File-Format#walkable-adjacencies):
+The inverse [transformation](BWM-File-Format#adjacencies-wok-only) is derived from reone's forward [transformation](BWM-File-Format#adjacencies-wok-only):
 
 Forward (World --> Map): `mapPos.x = (world.x - WorldPt1X) * scaleX + MapPt1X`
 
@@ -548,7 +548,7 @@ world.x = WorldPt1X - MapPt1X * worldScaleX
 1. **rotation Around Center Bug:**
    - **Symptom**: Walkable area appears rotated/flipped ~180° relative to minimap [texture](TPC-File-Format)
    - **Cause**: Incorrectly rotating map points around (0.5, 0.5) before calculating [texture](TPC-File-Format) position
-   - **Fix**: Use direct linear [transformation](BWM-File-Format#walkable-adjacencies) without any rotation of map points
+   - **Fix**: Use direct linear [transformation](BWM-File-Format#adjacencies-wok-only) without any rotation of map points
    - **Pattern**: `map_point = rotate(map_point - 0.5, angle) + 0.5` ❌ (WRONG)
 
 2. **Precision Loss Bug:**
@@ -589,16 +589,16 @@ The blue walkable area rendered in editors comes from the walkmesh ([BWM file](B
    - Check alignment for all NorthAxis values (0, 1, 2, 3)
    - Verify [texture](TPC-File-Format) isn't flipped or rotated incorrectly
 
-3. **coordinate [transformation](BWM-File-Format#walkable-adjacencies) Test:**
+3. **coordinate [transformation](BWM-File-Format#adjacencies-wok-only) Test:**
    - Pick known world coordinates from [walkmesh](BWM-File-Format)
-   - Convert to map coordinates using forward [transformation](BWM-File-Format#walkable-adjacencies)
+   - Convert to map coordinates using forward [transformation](BWM-File-Format#adjacencies-wok-only)
    - Verify map coordinates are within valid range (0.0-1.0)
-   - Convert back to world coordinates using inverse [transformation](BWM-File-Format#walkable-adjacencies)
+   - Convert back to world coordinates using inverse [transformation](BWM-File-Format#adjacencies-wok-only)
    - Verify roundtrip accuracy (tolerance: 0.01 world units)
 
 **Reference Code Locations:**
 
-- **Reone Forward [transformation](BWM-File-Format#walkable-adjacencies)**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/gui/map.cpp:174-199`](https://github.com/seedhartha/reone/blob/master/src/libs/game/gui/map.cpp#L174-L199) - `getMapPosition()`
+- **Reone Forward [transformation](BWM-File-Format#adjacencies-wok-only)**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/gui/map.cpp:174-199`](https://github.com/seedhartha/reone/blob/master/src/libs/game/gui/map.cpp#L174-L199) - `getMapPosition()`
 - **Reone are Parsing**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/parser/gff/are.cpp:284-297`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/are.cpp#L284-L297) - Map struct parsing
 - **PyKotor are Class**: `Libraries/PyKotor/src/pykotor/resource/generics/are.py:250-260` - Map coordinate storage
 - **PyKotor Minimap Rendering**: `Tools/HolocronToolset/src/toolset/gui/widgets/renderer/[walkmesh](BWM-File-Format).py:555-603` - [texture](TPC-File-Format) rendering implementation

@@ -2,9 +2,9 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-GUI files define the layout and behavior of the user interface. They are [GFF files](GFF-File-Format) describing hierarchies of panels, buttons, labels, and other controls. GUI files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+GUI files define the layout and behavior of the user interface. They are [GFF files](GFF-File-Format) describing hierarchies of panels, buttons, labels, and other controls. GUI files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** To edit GUI layout in the toolset, use the GUI editor; for mod patches see [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** To edit GUI layout in the toolset, use the GUI editor; for mod patches see [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** GUI references [TPC](TPC-File-Format)/TGA textures, [TLK](TLK-File-Format) for text; used by the engine for menus and HUD.
 
@@ -69,7 +69,7 @@ All controls share these base properties:
 | `Obj_Locked` | [byte](GFF-File-Format#gff-data-types) | Lock state (0=unlocked, 1=locked) |
 | `Obj_Parent` | [CExoString](GFF-File-Format#gff-data-types) | Parent control tag (for hierarchy) |
 | `Obj_ParentID` | [int32](GFF-File-Format#gff-data-types) | Parent control ID (for hierarchy) |
-| `ALPHA` | [float](GFF-File-Format#gff-data-types) | Opacity/transparency (0.0=transparent, 1.0=opaque) |
+| `ALPHA` | float | Opacity/transparency (0.0=transparent, 1.0=opaque) |
 | `COLOR` | vector | Control color modulation (RGB, 0.0-1.0) |
 | `EXTENT` | Struct | position and size rectangle |
 | `BORDER` | Struct | Border rendering properties |
@@ -98,7 +98,7 @@ All controls share these base properties:
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `CORNER` | *ResRef* | Corner texture ([TPC](TPC-File-Format)/TGA) |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) texture ([TPC](TPC-File-Format)/TGA) |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges-wok-only) texture ([TPC](TPC-File-Format)/TGA) |
 | `FILL` | *ResRef* | Fill/background texture ([TPC](TPC-File-Format)/TGA) |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill rendering style (-1=None, 0=Empty, 1=Solid, 2=[texture](TPC-File-Format)) |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness in pixels |
@@ -110,11 +110,11 @@ All controls share these base properties:
 **Border Rendering:**
 
 - **CORNER**: 4 corner pieces (top-left, top-right, bottom-left, bottom-right)
-- **[edge](BWM-File-Format#edges)**: 4 [edge](BWM-File-Format#edges) pieces (top, right, bottom, left)
+- **[edge](BWM-File-Format#edges-wok-only)**: 4 [edge](BWM-File-Format#edges-wok-only) pieces (top, right, bottom, left)
 - **FILL**: Center fill area (scaled to fit)
-- **DIMENSION**: Thickness of border [edges](BWM-File-Format#edges)
+- **DIMENSION**: Thickness of border [edges](BWM-File-Format#edges-wok-only)
 - **FILLSTYLE**: Controls how fill [texture](TPC-File-Format) is rendered (tiled, stretched, solid color)
-- Border pieces are tiled/repeated along [edges](BWM-File-Format#edges)
+- Border pieces are tiled/repeated along [edges](BWM-File-Format#edges-wok-only)
 
 **TEXT Struct:**
 
@@ -166,7 +166,7 @@ All controls share these base properties:
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for highlight state |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for highlight state |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges-wok-only) [texture](TPC-File-Format) for highlight state |
 | `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for highlight state |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill style for highlight |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
@@ -187,7 +187,7 @@ All controls share these base properties:
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for selected state |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for selected state |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges-wok-only) [texture](TPC-File-Format) for selected state |
 | `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for selected state |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill style for selected state |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
@@ -201,7 +201,7 @@ All controls share these base properties:
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for highlight+selected state |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for highlight+selected state |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges-wok-only) [texture](TPC-File-Format) for highlight+selected state |
 | `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for highlight+selected state |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill style |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
@@ -279,7 +279,7 @@ All controls share these base properties:
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment (typically 18=center) |
 | `DRAWSTYLE` | [int32](GFF-File-Format#gff-data-types) | Drawing style (unused) |
 | `FLIPSTYLE` | [int32](GFF-File-Format#gff-data-types) | Flip/rotation style (unused) |
-| `ROTATE` | [float](GFF-File-Format#gff-data-types) | rotation angle (unused) |
+| `ROTATE` | float | rotation angle (unused) |
 
 **THUMB Struct (ScrollBar Thumb):**
 
@@ -289,7 +289,7 @@ All controls share these base properties:
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment (typically 18=center) |
 | `DRAWSTYLE` | [int32](GFF-File-Format#gff-data-types) | Drawing style (unused) |
 | `FLIPSTYLE` | [int32](GFF-File-Format#gff-data-types) | Flip/rotation style (unused) |
-| `ROTATE` | [float](GFF-File-Format#gff-data-types) | rotation angle (unused) |
+| `ROTATE` | float | rotation angle (unused) |
 
 **ProgressBar (type 10):**
 
@@ -311,7 +311,7 @@ All controls share these base properties:
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for progress fill |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for progress fill |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges-wok-only) [texture](TPC-File-Format) for progress fill |
 | `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for progress bar |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill rendering style |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
@@ -359,7 +359,7 @@ All controls share these base properties:
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment |
 | `DRAWSTYLE` | [int32](GFF-File-Format#gff-data-types) | Drawing style (unused) |
 | `FLIPSTYLE` | [int32](GFF-File-Format#gff-data-types) | Flip/rotation style (unused) |
-| `ROTATE` | [float](GFF-File-Format#gff-data-types) | rotation angle (unused) |
+| `ROTATE` | float | rotation angle (unused) |
 
 **Button (type 6):**
 
@@ -395,7 +395,7 @@ All controls share these base properties:
 | `CONTROLS` | [List](GFF-File-Format#gff-data-types) | Child controls list |
 | `BORDER` | Struct | Panel border (optional background) |
 | `COLOR` | vector | Panel color modulation |
-| `ALPHA` | [float](GFF-File-Format#gff-data-types) | Panel transparency |
+| `ALPHA` | float | Panel transparency |
 
 **Panel Behavior:**
 
@@ -447,7 +447,7 @@ All controls share these base properties:
 **color System:**
 
 - **color** (Vector3): RGB color modulation (0.0-1.0 range)
-- **ALPHA** ([float](GFF-File-Format#gff-data-types)): Transparency (0.0=transparent, 1.0=opaque)
+- **ALPHA** (float): Transparency (0.0=transparent, 1.0=opaque)
 - colors multiply with textures (white=full color, black=no color)
 - KotOR 1 default text color: RGB(0.0, 0.659, 0.980) - cyan
 - KotOR 2 default text color: RGB(0.102, 0.698, 0.549) - teal (exact values from engine)
@@ -457,11 +457,11 @@ All controls share these base properties:
 
 **Border Rendering:**
 
-- Border consists of 9 pieces: 4 corners, 4 [edges](BWM-File-Format#edges), 1 fill
+- Border consists of 9 pieces: 4 corners, 4 [edges](BWM-File-Format#edges-wok-only), 1 fill
 - CORNER [textures](TPC-File-Format): Top-left, top-right, bottom-left, bottom-right
-- [edge](BWM-File-Format#edges) [textures](TPC-File-Format): Top, right, bottom, left (tiled along length)
+- [edge](BWM-File-Format#edges-wok-only) [textures](TPC-File-Format): Top, right, bottom, left (tiled along length)
 - FILL [texture](TPC-File-Format): Center area (scaled or tiled based on FILLSTYLE)
-- DIMENSION: Thickness of border [edges](BWM-File-Format#edges) in pixels
+- DIMENSION: Thickness of border [edges](BWM-File-Format#edges-wok-only) in pixels
 - INNEROFFSET: Padding between border and content
 
 **Text Rendering:**

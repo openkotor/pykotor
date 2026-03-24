@@ -9,12 +9,12 @@ The Indoor Map Builder is a visual editor for creating indoor modules (areas) fo
 ### Opening the Editor
 
 1. Launch Holocron Toolset
-2. Navigate to **Tools** --> **Indoor Map Builder**
+2. Navigate to **Tools** → **Indoor Map Builder**
 3. Select your game installation when prompted
 
 ### Creating a New Map
 
-1. Click **file** --> **New** (or press `Ctrl+N`)
+1. Click **file** → **New** (or press `Ctrl+N`)
 2. Configure your module settings:
    - **Module ID**: The warp code used in-game (e.g., `test01`)
    - **Name**: Display name for the module
@@ -24,7 +24,7 @@ The Indoor Map Builder is a visual editor for creating indoor modules (areas) fo
 
 ### Opening an Existing Map
 
-1. Click **file** --> **Open** (or press `Ctrl+O`)
+1. Click **file** → **Open** (or press `Ctrl+O`)
 2. Select a `.indoor` file
 3. The map will load with all rooms and connections
 
@@ -77,12 +77,12 @@ The central area where you place and arrange rooms. Use mouse and keyboard contr
 ### Rotating Rooms
 
 - **Scroll wheel** (without Ctrl) to rotate the selected component
-- **Right-click** --> **Rotate** --> Choose angle (90°, 180°, 270°)
+- **Right-click** → **Rotate** → Choose angle (90°, 180°, 270°)
 - **R [KEY](KEY-File-Format)** to rotate selected rooms by the rotation snap amount
 
 ### Flipping Rooms
 
-- **Right-click** --> **Flip** --> **Flip Horizontal** or **Flip Vertical**
+- **Right-click** → **Flip** → **Flip Horizontal** or **Flip Vertical**
 - **F [KEY](KEY-File-Format)** to quickly flip selected rooms horizontally
 
 ### Connecting Rooms
@@ -101,24 +101,24 @@ Hooks snap together when you move rooms near each other (if **Snap to Hooks** is
 - **Shift + Click** to add to selection
 - **Ctrl + A** to select all rooms
 - **Escape** to deselect all
-- **[double](GFF-File-Format#gff-data-types)-click** a room to select all connected rooms
+- **double-click** a room to select all connected rooms
 
 ### Deleting Rooms
 
 - Select room(s) and press **Delete**
-- Or right-click --> **Delete**
+- Or right-click → **Delete**
 
 ### Duplicating Rooms
 
 - Select room(s) and press **Ctrl+D**
-- Or right-click --> **Duplicate**
+- Or right-click → **Duplicate**
 
 ### Merging Rooms
 
 You can combine 2 or more rooms into a single merged room:
 
 1. **Select multiple rooms** (Shift+Click or Ctrl+A)
-2. **Right-click** on the selection --> **Merge Rooms**
+2. **Right-click** on the selection → **Merge Rooms**
 3. The selected rooms will be replaced with a single new room at their average position
 
 **What happens when you merge:**
@@ -136,10 +136,6 @@ You can combine 2 or more rooms into a single merged room:
 - Create custom room shapes not available in existing kits
 
 **Technical note**: Merged rooms are stored as "embedded components" in the `.indoor` file, which means they persist correctly when you save and reload your map.
-
-### Room crossing and walkmesh
-
-Crossing between rooms depends on layout position, walkmesh seam alignment, and **roomlinks (transitions)** on both sides. The Indoor Map Builder remaps transitions from kit indices to layout room indices when building. If you cannot walk between rooms, verify both rooms' walkmesh edges and transitions. For more information, see [BWM File Format](BWM-File-Format) (transitions, perimeters) and [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions).
 
 ## Camera Controls
 
@@ -166,7 +162,7 @@ Crossing between rooms depends on layout position, walkmesh seam alignment, and 
 
 ### rotation Snap
 
-- Set in **Options** --> **rotation Snap**
+- Set in **Options** → **rotation Snap**
 - Default: 15°
 - Scroll wheel rotation uses this increment
 
@@ -203,7 +199,7 @@ The [walkmesh](BWM-File-Format) painter allows you to change surface materials (
 
 The green crosshair indicates where players spawn when entering the module.
 
-- **Right-click** --> **Set Warp Point Here**
+- **Right-click** → **Set Warp Point Here**
 - **Click and drag** the warp point to move it
 - Grid snap applies if enabled
 
@@ -211,10 +207,10 @@ The green crosshair indicates where players spawn when entering the module.
 
 Hooks are connection points between rooms. You can edit them:
 
-- **Right-click on hook** --> **Select Hook** to select it
-- **Right-click on hook** --> **Delete Hook** to remove it
-- **Right-click on hook** --> **Duplicate Hook** to copy it
-- **Right-click on empty space** --> **Add Hook Here** to create a new hook
+- **Right-click on hook** → **Select Hook** to select it
+- **Right-click on hook** → **Delete Hook** to remove it
+- **Right-click on hook** → **Duplicate Hook** to copy it
+- **Right-click on empty space** → **Add Hook Here** to create a new hook
 - **Click and drag** a selected hook to move it
 - **Delete / Ctrl+D** act on the selected hook if one is selected; otherwise they act on selected rooms
 
@@ -254,7 +250,7 @@ Hooks are connection points between rooms. You can edit them:
 
 Once your map is complete:
 
-1. Click **file** --> **Build Module** (or press `Ctrl+B`)
+1. Click **file** → **Build Module** (or press `Ctrl+B`)
 2. Wait for the build process to complete
 3. The module will be saved to your installation's modules folder
 4. You can warp to it in-game using: `warp <module_id>`
@@ -294,6 +290,10 @@ The build process creates:
 - Check that **Snap to Hooks** is enabled
 - Verify both rooms have compatible door types
 
+### Room crossing and walkmesh
+
+If the player cannot move between rooms, the issue is usually **roomlinks / transition IDs** on walkmesh edges, **LYT room order**, or **VIS**, not the 3D hook placement alone. See [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions), [BWM File Format — Transitions and Door Placement](BWM-File-Format#transitions-and-door-placement), and [LYT File Format](LYT-File-Format).
+
 ### Missing Components
 
 - If a module component is missing, the module may be corrupted or incomplete
@@ -312,10 +312,8 @@ The build process creates:
 - Disable [material](MDL-MDX-File-Format#trimesh-header) colorization for better performance
 - Close other applications to free up memory
 
-### See also
+## Related Documentation
 
-- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Technical details for developers
-- [Kit-Structure-Documentation](Kit-Structure-Documentation) -- Kit layout and components
-- [LYT-File-Format](LYT-File-Format) -- Room layout structure; [BWM-File-Format](BWM-File-Format) -- Walkmesh
-- [Blender-Integration](Blender-Integration) -- 3D editing workflow
-- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for module and layout workflows
+- [Indoor Map Builder - Implementation Guide](Indoor-Map-Builder-Implementation-Guide) - Technical details for developers
+- [LYT File Format](LYT-File-Format) - [layout files](LYT-File-Format) structure
+- [BWM File Format](BWM-File-Format) - [walkmesh](BWM-File-Format) file structure

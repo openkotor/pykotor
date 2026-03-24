@@ -34,7 +34,7 @@ Step-by-step workflows for room layout and roomlink editing live in the communit
 - **KOTORMax** (Deadly Stream file by bead-v) -- Plugin for 3ds Max and GMax; LYT/VIS import and export; Roomlink Editor; ASCII model workflow with [MDLEdit](https://deadlystream.com/forum/files/file/1150-mdledit/) or MDLOps. [KOTORmax file](https://deadlystream.com/files/file/1151-kotormax/), [KOTORmax topic](https://deadlystream.com/topic/5731-kotormax/).
 - **Adding existing rooms to a module** (Deadly Stream) -- Explains roomlinks, reassigning in KOTORMax, and what must agree. [Topic 8517](https://deadlystream.com/topic/8517-adding-existing-rooms-to-a-module/).
 - **[K1] Creating a new room in an existing module** (Deadly Stream) -- Workflow for new rooms and using KOTORMax for layout, visibility, and walkmesh edges. [Topic 11729](https://deadlystream.com/topic/11729-k1-creating-a-new-room-in-an-existing-module/).
-- **KOTORBlender** -- Room transition/roomlink support is incomplete; fine for geometry, not reliable for finalizing room-to-room crossing. See [Blender Integration](Blender-Integration#limitations) and [Indoor Map Builder](Indoor-Map-Builder-User-Guide) for alternatives.
+- **KOTORBlender** -- Room transition/roomlink support is incomplete; fine for geometry, not reliable for finalizing room-to-room crossing. See [Blender Integration](Blender-Integration#current-limitations) and [Indoor Map Builder](Indoor-Map-Builder-User-Guide) for alternatives.
 
 ## Related format pages
 

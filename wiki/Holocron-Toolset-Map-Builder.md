@@ -4,7 +4,7 @@
 
 The Map Builder (Indoor Map Builder) creates new areas with unique layouts from existing room models. Open it from the Main Window via **Tools** → **Indoor Map Builder**.
 
-You select models and insert them into the map; models can be attached to each other (shown by a green line between connections). When the layout is ready, **File** → **Build** outputs a module file to the game's module folder, ready to warp into.
+You select models and insert them into the map; models can be attached to each other (shown by a green line between connections). When the layout is ready, **File** → **Build** outputs a module file to the game's `Modules/` folder, ready to warp into.
 
 ## Kits
 

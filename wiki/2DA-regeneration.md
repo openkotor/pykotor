@@ -11,7 +11,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Regeneration state label |
-| Additional columns | [float](GFF-File-Format#gff-data-types) | Regeneration rates for different resource types |
+| Additional columns | float | Regeneration rates for different resource types |
 
 **References**:
 

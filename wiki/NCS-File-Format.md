@@ -1,8 +1,8 @@
 # KotOR NCS files format Documentation
 
-NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts run inside a stack-based virtual machine **shared across Aurora engine games** (KotOR, Neverwinter Nights, etc.). KotOR inherits the same format with minor opcode additions for game-specific systems. **This documentation focuses on KotOR-specific behavior**, though the core format is shared with Neverwinter Nights. In the Odyssey engine, script execution runs in the **server** (game world) context: triggers, dialogues, and engine calls operate on the server; the client receives state updates and handles display and input. NCS files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts run inside a stack-based virtual machine **shared across Aurora engine games** (KotOR, Neverwinter Nights, etc.). KotOR inherits the same format with minor opcode additions for game-specific systems. **This documentation focuses on KotOR-specific behavior**, though the core format is shared with Neverwinter Nights. In the Odyssey engine, script execution runs in the **server** (game world) context: triggers, dialogues, and engine calls operate on the server; the client receives state updates and handles display and input. NCS files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** Scripts are compiled from [NSS](NSS-File-Format) source; see the NSS/NCS toolset and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** Scripts are compiled from [NSS](NSS-File-Format) source; see the NSS/NCS toolset and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** NCS is produced from [NSS](NSS-File-Format); triggered by [DLG](GFF-DLG), [GIT](GFF-File-Format#git-game-instance-template), [UTC](GFF-File-Format#utc-creature), [UTD](GFF-UTD), [UTP](GFF-UTP), and [IFO](GFF-IFO) script hooks.
 
@@ -84,7 +84,9 @@ graph TD
     S1 --> S2["-8: i: 12"]
     S2 --> S3["-12: (previous frame)"]
 ```
-/* 
+
+/*
+
 - `SP` points to the topmost value on the stack.
 - Stack grows downward (from higher to lower negatives).
 - Each node shows the stack offset, variable name, and value.
@@ -201,7 +203,7 @@ Example: `ADDxx` with `Qualifier` `IntInt` performs integer addition, while the 
 
 **type size Information:**
 
-- All primitive types (int, [float](GFF-File-Format#gff-data-types), string pointer, object ID, engine types) are 4 bytes
+- All primitive types (int, float, string pointer, object ID, engine types) are 4 bytes
 - *Vectors* are 12 bytes (3 consecutive floats)
 - *Structures* have variable size but must be 4-[*byte*](https://en.wikipedia.org/wiki/Byte) aligned
 - The *TT* (structure) qualifier type is used for comparing ranges of elements on the stack, specifically for structures and vectors. When used with `EQUALTT` or `NEQUALTT`, it requires a 2-[*byte*](https://en.wikipedia.org/wiki/Byte) size field indicating how many bytes to compare (must be a multiple of 4).
@@ -239,7 +241,7 @@ Instruction arguments follow the qualifier [*byte*](https://en.wikipedia.org/wik
 4. **Signed 32-bit Integer Pair** (10 bytes total: opcode + qualifier + 4 bytes + 4 bytes):
    - `STORE_STATE`: Two signed 32-bit size fields (total 10 bytes: opcode + qualifier + [*int32*](GFF-File-Format#gff-data-types) size + [*int32*](GFF-File-Format#gff-data-types) sizeLocals). The first field (`size`) indicates the total number of bytes of stack state to store, and the second field (`sizeLocals`) indicates the number of bytes of local variables to preserve.
 
-5. **32-bit [float](GFF-File-Format#gff-data-types)** (6 bytes total):
+5. **32-bit float** (6 bytes total):
    - `CONSTF`: *Float* constant ([IEEE 754](https://en.wikipedia.org/wiki/IEEE_754) [big-endian](https://en.wikipedia.org/wiki/Endianness))
 
 6. **string** (variable length: 2 bytes length + string data):
@@ -306,7 +308,7 @@ All multi-[*byte*](https://en.wikipedia.org/wiki/Byte) values: [big-endian](http
 
 **Execution Loop:** Parse *instruction* --> Execute (manipulate stack/IP/BP, call functions) --> Advance IP --> Repeat until termination
 
-**Instruction Sizes:** 2B base + arguments: None (2B), Int/[float](GFF-File-Format#gff-data-types)/Object (6B), String (2+N B), Jump (6B), *Stack copy* (8B), ACTION (5B), DESTRUCT (8B), STORE_STATE (10B), Struct compare (4B)
+**Instruction Sizes:** 2B base + arguments: None (2B), Int/float/Object (6B), String (2+N B), Jump (6B), *Stack copy* (8B), ACTION (5B), DESTRUCT (8B), STORE_STATE (10B), Struct compare (4B)
 
 Static sizing enables: *instruction* list building, jump target resolution, code coverage, static analysis
 
@@ -364,7 +366,7 @@ Bytes: [0x05][0x00][0x00][0x01][0x02]
 
 *Calls* engine routine #1 with 2 arguments (which must be on *stack* in reverse order).
 
-#### Example 6: [float](GFF-File-Format#gff-data-types) Constant
+#### Example 6: float Constant
 
 ```text
 Bytes: [0x04][0x04][0x40][0x49][0x0F][0xDB]
@@ -660,7 +662,7 @@ Core analyses: Stack tracking (variable assignments/reads via copy ops), Control
 
 **Analysis Passes:**
 
-1. **Parse**: Bytecode --> instructions + control flow graph (jumps as [edges](BWM-File-Format#edges))
+1. **Parse**: Bytecode --> instructions + control flow graph (jumps as [edges](BWM-File-Format#edges-wok-only))
 2. **Subroutines**: Identify boundaries via `JSR`/`RETN`, analyze separately
 3. **type Inference**: Operations reveal types (`ADDII` --> ints, calls --> engine function table)
 4. **Prototyping**: Infer subroutine signatures from usage (may need multiple passes for recursion)

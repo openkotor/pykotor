@@ -4,7 +4,7 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 
 ## Wiki contents and entry points
 
-- **Entry points:** [Home](Home) lists formats and tools and is the main index; [Concepts](Concepts) defines resource resolution, ResRef, override folder, and core format concepts. Use these to discover what the wiki contains and to navigate to format, tool, or how-to pages.
+- **Entry points:** [Home](Home) lists formats and tools and is the main index; [Concepts](Concepts) defines resource resolution, ResRef, override folder, and core format concepts; [Resource formats and resolution](Resource-Formats-and-Resolution) is the format TOC plus the hex **resource type ID** table. Use these to discover what the wiki contains and to navigate to format, tool, or how-to pages.
 - **Page types:** The wiki contains format reference pages (one format per page), how-to/guide pages (steps and prerequisites), and tool-syntax or tool-readme pages. Match new pages to the appropriate template (Reference or How-to / guide).
 
 ## Naming
@@ -21,7 +21,7 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 
 ## Links
 
-- **Internal links:** Use extension-less links: `[Label](Page-Name)` or `[Label](Page-Name#section)`. Do not include `.md` in the target (e.g. use `](KEY-File-Format)`, not `](KEY-File-Format.md)`).
+- **Internal links:** Use extension-less targets (no `.md` suffix), e.g. `[Concepts overview](Concepts)`, `[resource resolution](Concepts#resource-resolution-order)`, or `[KEY File Purpose](KEY-File-Format#key-file-purpose)`. Wrong: `](KEY-File-Format.md)`.
 - **External links:** Use HTTPS when possible. For GitHub repos that have a mirror at th3w1zard1, use the format: **original repo link first**, then `([Mirror: th3w1zard1/reponame](https://github.com/th3w1zard1/reponame))`. Apply this in all **Vendor References**, **Vendor Implementations**, and tool lists (see [Home](Home) lines 383–407 and [NSS-File-Format](NSS-File-Format), [KEY-File-Format](KEY-File-Format), [NCS-File-Format](NCS-File-Format) for examples). If the project is original under th3w1zard1 (no upstream), link once without a mirror parenthetical. Validate external permalinks (e.g. GitHub line links) before adding; broken links reduce trust and tooling reliability.
 - **Link text:** Use the page or section title or a short descriptive phrase, not "click here" or "this document".
 
@@ -36,20 +36,37 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 - **One page per format or tool:** Keep each page focused on one format, one tool feature, or one task.
 - **Link to official specs:** For formats with an official BioWare (or other) specification, link to it and document only extensions, quirks, or tool-specific behavior.
 - **Single source of truth (SSOT):** Do not duplicate long specs or repeated concepts. Link to the canonical page instead:
-  - **Concepts (single overview):** [Concepts](Concepts) -- definitions for resource resolution order, ResRef, override folder, BIF/KEY, MOD/ERF, GFF, 2DA.
-  - **Resource resolution order:** [KEY-File-Format](KEY-File-Format#key-file-purpose) (and [Home](Home) Odyssey Engine Basics).
-  - **ResRef:** [GFF-File-Format](GFF-File-Format#gff-data-types) (GFF data types).
-  - **Override folder:** [Concepts](Concepts#override-folder) or [resource resolution order](KEY-File-Format#key-file-purpose).
+  - **Concepts (single overview):** [Concepts](Concepts) -- definitions for resource resolution order, ResRef, language IDs (and encodings: [Concepts#language-ids-kotor](Concepts#language-ids-kotor)), override folder, BIF/KEY, MOD/ERF/[RIM](RIM-File-Format), GFF, 2DA.
+  - **Resource type IDs (hex table, SSOT):** [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers).
+  - **Format index (long TOC of format pages):** [Resource formats and resolution](Resource-Formats-and-Resolution#file-format-index).
+  - **Resource resolution order:** [Concepts](Concepts#resource-resolution-order) (SSOT); quick ref also under [Resource formats and resolution](Resource-Formats-and-Resolution#resource-resolution-order); [KEY-File-Format](KEY-File-Format#key-file-purpose) for KEY binary layout.
+  - **ResRef:** [Concepts](Concepts#resref-resource-reference); [GFF-File-Format](GFF-File-Format#gff-data-types) for field storage types.
+  - **Override folder:** [Concepts](Concepts#override-folder) or [resource resolution order](Concepts#resource-resolution-order).
 - **Section order (long format pages):** Use a consistent order: Overview → Structure / fields → Examples (optional) → See also. Add a short on-page table of contents at the top where it helps navigation.
 - **Format reference pages:** Include a clear **Structure / fields** (or equivalent) section. Where the format has a fixed or deterministic layout, state total length, offset base (e.g. "offsets from file start"), or byte ranges so that parsers and validators can use the page reliably.
-- **Implementation and references:** On format and tool pages, add **Implementation** (PyKotor paths) and **Reference** (vendor, specs) sections where missing. Use PyKotor link form: `[path](https://github.com/OldRepublicDevs/PyKotor/blob/master/path#Lx-Ly)`. For vendor links: original repo first, then `(Mirror: th3w1zard1/repo)(url)` when a mirror exists; if the project is th3w1zard1-original with no upstream, one link only.
-- **Cross-links:** Formats loaded by ResRef should link to [KEY-File-Format](KEY-File-Format) for resource resolution and to [GFF-File-Format](GFF-File-Format#gff-data-types) for ResRef where relevant.
+- **Implementation and references:** On format and tool pages, add **Implementation** (PyKotor paths) and **Reference** (vendor, specs) sections where missing. Use PyKotor link form: `[path](https://github.com/OldRepublicDevs/PyKotor/blob/master/path#Lx-Ly)`. For vendor links: original repo first, then `(Mirror: th3w1zard1/repo)(url)` when a mirror exists; if the project is th3w1zard1-original with no upstream, one link only. **BWM exception:** On BWM-related pages, optional **Implementation (PyKotor)** must be labeled **non-normative**; normative spec stays RE + pipelines per [authoritative BWM policy](https://github.com/OldRepublicDevs/PyKotor/blob/main/docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md).
+- **Cross-links:** Formats loaded by ResRef should link to [Concepts](Concepts#resource-resolution-order) for resolution order and to [KEY-File-Format](KEY-File-Format) for the KEY/BIF index format; link to [GFF-File-Format](GFF-File-Format#gff-data-types) for ResRef where relevant.
+- **Semantic claims:** Prefer an evidence-backed voice for engine or layout facts (RE, vendor tools, labeled **K1**/**TSL**/**both**, stable community links). When evidence is missing, use **inferred** or **unknown** rather than stating as fact. PyKotor code documents **library** behavior; do not use it alone to assert engine truth unless policy explicitly allows (see BWM exception above).
 - **Community and historical context:** When adding or refining format or tool pages, link to [Community sources and archives](Home#community-sources-and-archives) (DeadlyStream, LucasForums Container, Mixmojo) where relevant for consensus, tutorials, or historical discussion.
 
 ## Verification
 
 - After changing internal links to extension-less form, confirm in the wiki UI that links resolve correctly. If the wiki renderer requires `.md`, document that here and do not remove extensions.
 - **Link targets:** Internal link targets (e.g. `Page-Name` in `](Page-Name)`) must match the exact wiki page name (case and hyphenation). Agents and scripts can verify by resolving links against existing page filenames (e.g. `*.md` in the wiki directory) or by running a link checker.
+
+## Embedded Images (`raw.githubusercontent.com`)
+
+Tutorials sometimes embed PNGs from `raw.githubusercontent.com/.../refs/heads/master/...`. **Prefer** URLs pinned to a **commit SHA** or **tag** so renders do not break when the default branch moves. Using `master`/`main` is allowed when maintainers accept drift. Remember Holocron packages `wiki/**/*.md` into in-app help—broken image URLs degrade the shipped help bundle.
+
+## Repository Automation Scripts
+
+From the **PyKotor repo root** with the `wiki` submodule initialized (`git submodule update --init wiki`), a typical validation order is:
+
+1. `python helper_scripts/wiki_scripts/validate_markdown_links.py` — internal wiki targets and anchors
+2. `python helper_scripts/wiki_scripts/verify_anchors.py` — heading anchors (when editing TOC-heavy pages)
+3. `python helper_scripts/wiki_scripts/verify_toc.py` — table-of-contents consistency (when applicable)
+
+Run `markdownlint-cli2` on touched files per CI config in the main repo. Contributor workflow (submodule + dual push) is documented in [CONTRIBUTING.md](https://github.com/OldRepublicDevs/PyKotor/blob/main/CONTRIBUTING.md).
 
 ---
 
@@ -84,8 +101,8 @@ Brief overview (what the format is, where it is used).
 
 ### See also
 
-- [Related format or tool](Page-Name)
-- [Parent concept](Other-Page)
+- [Related format](2DA-File-Format)
+- [Parent concept](Concepts)
 ```
 
 ### How-to / guide
@@ -106,12 +123,13 @@ Goal: one sentence describing what the reader will achieve.
 
 ### See also
 
-- [Related guide](Page-Name)
+- [Related guide](Installing-Mods-with-HoloPatcher)
 ```
 
 ### See also
 
 - [Home](Home) -- Wiki overview and format index
-- [Concepts](Concepts) -- Resource resolution, ResRef, override, BIF/KEY, MOD/ERF, GFF, 2DA
+- [Concepts](Concepts) -- Resource resolution, ResRef, override, BIF/KEY, MOD/ERF, GFF, 2DA, language IDs
+- [Resource formats and resolution](Resource-Formats-and-Resolution) -- Format index, type ID table, resolution hub
 - [KEY-File-Format](KEY-File-Format), [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) -- Canonical format pages
 - [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme), [HoloPatcher-README-for-mod-developers](HoloPatcher-README-for-mod-developers) -- Tool docs

@@ -1,8 +1,8 @@
 # KotOR LYT files format Documentation
 
-LYT (Layout) files define how area [room models](LYT-File-Format#room-definitions) are positioned inside a module. They are plain-text descriptors that list room placements, swoop-track props, obstacles, and door hook transforms. The engine combines this data with [MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format) [geometry](MDL-MDX-File-Format#geometry-header) to assemble the final area. LYT files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+LYT (Layout) files define how area [room models](LYT-File-Format#room-definitions) are positioned inside a module. They are plain-text descriptors that list room placements, swoop-track props, obstacles, and door hook transforms. The engine combines this data with [MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format) [geometry](MDL-MDX-File-Format#geometry-header) to assemble the final area. LYT files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** LYT is edited in the module/area layout tools; see [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** LYT is edited in the module/area layout tools; see [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** LYT references [MDL/MDX](MDL-MDX-File-Format) room models, [BWM](BWM-File-Format) (WOK) walkmeshes, [VIS](VIS-File-Format), and [GFF-ARE](GFF-ARE).
 
@@ -174,12 +174,12 @@ doorhookcount <N>
 - Door hooks define where doors are placed in rooms to create area transitions
 - Each door hook specifies which room it belongs to and a unique door name
 - The engine uses door hooks to position door [models](MDL-MDX-File-Format) and enable transitions between areas
-- Door hooks are separate from [BWM](BWM-File-Format) hooks (see [BWM File Format](BWM-File-Format#walkmesh-properties)) - [BWM](BWM-File-Format) hooks define interaction points, while LYT doorhooks define door placement
+- Door hooks are separate from [BWM](BWM-File-Format) hooks (see [BWM File Format](BWM-File-Format#wok-vs-pwk-vs-dwk-summary)) - [BWM](BWM-File-Format) hooks define interaction points, while LYT doorhooks define door placement
 
 **Relationship to [BWM](BWM-File-Format):**
 
 - Door hooks in LYT files define where doors are placed in the layout
-- [BWM](BWM-File-Format) [walkmeshes](BWM-File-Format) may have [edge](BWM-File-Format#edges) transitions that reference these door hooks
+- [BWM](BWM-File-Format) [walkmeshes](BWM-File-Format) may have [edge](BWM-File-Format#edges-wok-only) transitions that reference these door hooks
 - The engine combines LYT doorhook positions with [BWM](BWM-File-Format) transition data to create functional doorways
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:378-456`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L378-L456)

@@ -36,7 +36,7 @@ BIF containers are the primary storage mechanism for game assets. The game organ
 - `data/lips.bif`: [LIP](LIP-File-Format)-sync [animation](MDL-MDX-File-Format#animation-header) data ([LIP](LIP-File-Format))
 - Additional platform-specific BIFs (e.g., `dataxbox/`, `data_mac/`)
 
-The [modular structure](https://en.wikipedia.org/wiki/Modular_programming) allows for efficient loading and potential platform-specific optimizations. Resources in BIF files are read-only at runtime; mods override them via the `override/` directory or custom [ERF](ERF-File-Format)/MOD files. The engine loads from BIF only when the resource is not found in [override](KEY-File-Format#key-file-purpose), loaded MOD, or save; the [KEY file](KEY-File-Format) supplies the mapping from ResRef to the correct BIF and offset.
+The [modular structure](https://en.wikipedia.org/wiki/Modular_programming) allows for efficient loading and potential platform-specific optimizations. Resources in BIF files are read-only at runtime; mods override them via the `override/` directory or custom [ERF](ERF-File-Format)/MOD files. The engine loads from BIF only when the resource is not found in [override](Concepts#override-folder), loaded MOD, or save (see [resource resolution order](Concepts#resource-resolution-order)); the [KEY file](KEY-File-Format) supplies the mapping from ResRef to the correct BIF and offset.
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/bif/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/)
 
@@ -88,7 +88,7 @@ Each variable resource entry is 16 bytes:
 | Resource ID | `UInt32` | 0 (0x00) | 4    | Resource ID (matches [KEY file](KEY-File-Format) entry, encodes BIF index and resource index) |
 | Offset      | `UInt32` | 4 (0x04) | 4    | Offset to resource data in file (absolute file offset)                    |
 | File Size   | `UInt32` | 8 (0x08) | 4    | Uncompressed size of resource data (bytes)                                 |
-| Resource type | `UInt32` | 12 (0x0C) | 4    | Resource type identifier (see ResourceType enum)                          |
+| Resource type | `UInt32` | 12 (0x0C) | 4    | Resource type identifier (hex IDs and labels: [Resource Type Identifiers](Resource-Formats-and-Resolution#resource-type-identifiers); PyKotor: `ResourceType` enum)                          |
 
 **Entry Reading Order:**
 
@@ -214,7 +214,7 @@ The *BZF* wrapper is completely transparent to the game engine - once decompress
 *BIF* files require a [KEY file](KEY-File-Format) to map resource IDs to filenames (ResRefs). The [KEY file](KEY-File-Format) contains:
 
 - *BIF* file entries (filename, size, location)
-- [KEY](KEY-File-Format) entries mapping *ResRef* + *ResourceType* to *Resource ID*
+- [KEY](KEY-File-Format) entries mapping *ResRef* + *ResourceType* (see [Resource Type Identifiers](Resource-Formats-and-Resolution#resource-type-identifiers)) to *Resource ID*
 
 The *Resource ID* in the *BIF* file matches the *Resource ID* in the [KEY File](KEY-File-Format)'s [KEY](KEY-File-Format) entries.
 
@@ -234,9 +234,10 @@ The *Resource ID* in the *BIF* file matches the *Resource ID* in the [KEY File](
 
 ### See also
 
+- [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) -- Hex resource type IDs
 - [KEY-File-Format](KEY-File-Format) -- *BIF* indexing and resource resolution
 - [ERF-File-Format](ERF-File-Format) -- *ERF/MOD* containers; [GFF-File-Format](GFF-File-Format) -- *GFF* resources in *BIF*
-- [RIM-File-Format](RIM-File-Format) -- RIM (Resource Image) containers
+- [RIM File Format](RIM-File-Format) — Resource image module archives ([contrast with ERF](ERF-File-Format#rim-versus-erf))
 - [Bioware-Aurora-KeyBIF](Bioware-Aurora-KeyBIF) -- *Aurora* *KEY/BIF* specification
 
 ---

@@ -24,7 +24,7 @@ Kits are collections of reusable indoor map components for the Holocron Toolset.
   - [Doorway Padding](#doorway-padding)
   - [models Directory](#models-directory)
   - [Resource Extraction](#resource-extraction)
-    - [Container file Support](#container-file-support)
+    - [Archive file Support](#archive-file-support)
     - [Component Identification](#component-identification)
     - [texture and Lightmap Extraction](#texture-and-lightmap-extraction)
     - [Door Extraction](#door-extraction)
@@ -50,7 +50,7 @@ Kits are collections of reusable indoor map components for the Holocron Toolset.
     - [Texture and Lightmap Extraction](#texture-and-lightmap-extraction)
     - [Resource Resolution Priority](#resource-resolution-priority)
     - [BWM/WOK walkmesh Handling](#bwmwok-walkmesh-handling)
-    - [module containers Loading](#module-containers-loading)
+    - [module archives Loading](#module-archives-loading)
     - [KEY Discrepancies and Rationale](#key-discrepancies-and-rationale)
   - [Test Comparison Precision](#test-comparison-precision)
     - [Exact Matching (1:1 byte-for-byte)](#exact-matching-11-byte-for-byte)
@@ -169,19 +169,19 @@ The kit JSON file (`{kit_id}.json`) defines the kit structure:
 - `name`: Display name for the component
 - `id`: Unique component identifier (matches [MDL](MDL-MDX-File-Format)/[WOK](BWM-File-Format) filename without extension)
 - `native`: Always 1 (legacy field, indicates native format)
-- `doorhooks`: List of door hook points extracted from [BWM](BWM-File-Format) [edges](BWM-File-Format#edges) with transitions
+- `doorhooks`: List of door hook points extracted from [BWM](BWM-File-Format) [edges](BWM-File-Format#edges-wok-only) with transitions
 
 **Door Hook fields**:
 
-- `x`, `y`, `z`: World-space position of the hook point (midpoint of [BWM](BWM-File-Format) [edge](BWM-File-Format#edges) with transition)
-- `rotation`: rotation angle in degrees (0-360), calculated from [edge](BWM-File-Format#edges) direction in XY plane
-- `door`: index into the kit's `doors` array (mapped from [BWM](BWM-File-Format) [edge](BWM-File-Format#edges) transition index)
-- `edge`: Global [edge](BWM-File-Format#edges) index in the BWM (face_index * 3 + local_edge_index)
+- `x`, `y`, `z`: World-space position of the hook point (midpoint of [BWM](BWM-File-Format) [edge](BWM-File-Format#edges-wok-only) with transition)
+- `rotation`: rotation angle in degrees (0-360), calculated from [edge](BWM-File-Format#edges-wok-only) direction in XY plane
+- `door`: index into the kit's `doors` array (mapped from [BWM](BWM-File-Format) [edge](BWM-File-Format#edges-wok-only) transition index)
+- `edge`: Global [edge](BWM-File-Format#edges-wok-only) index in the BWM (face_index * 3 + local_edge_index)
 
 **Door fields**:
 
-- `utd_k1`: *ResRef* of K1 door [UTD](GFF-File-Format#utd-door) file (without `.utd` extension)
-- `utd_k2`: *ResRef* of K2 door [UTD](GFF-File-Format#utd-door) file (without `.utd` extension)
+- `utd_k1`: [ResRef](GFF-File-Format#gff-data-types) of K1 door [UTD](GFF-File-Format#utd-door) file (without `.utd` extension)
+- `utd_k2`: [ResRef](GFF-File-Format#gff-data-types) of K2 door [UTD](GFF-File-Format#utd-door) file (without `.utd` extension)
 - `width`: Door width in world units (default: 2.0)
 - `height`: Door height in world units (default: 3.0)
 
@@ -235,18 +235,18 @@ Components are reusable [room models](LYT-File-Format#room-definitions) that can
 
 - The Indoor Map Builder draws preview images centered at `room.position`
 - The [walkmesh](BWM-File-Format) is translated BY `room.position` from its original coordinates
-- For alignment, the [BWM](BWM-File-Format) must be centered around (0, 0) so both image and [walkmesh](BWM-File-Format) are at the same position after [transformation](BWM-File-Format#walkable-adjacencies)
+- For alignment, the [BWM](BWM-File-Format) must be centered around (0, 0) so both image and [walkmesh](BWM-File-Format) are at the same position after [transformation](BWM-File-Format#adjacencies-wok-only)
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1538-1588`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1538-L1588)
 
 **Door Hooks**:
 
-- `x`, `y`, `z`: World-space position of the hook point (midpoint of [BWM](BWM-File-Format) [edge](BWM-File-Format#edges) with transition)
-- `rotation`: rotation angle in degrees (0-360), calculated from [edge](BWM-File-Format#edges) direction using `atan2(dy, dx)`
-- `door`: index into the kit's `doors` array (mapped from [BWM](BWM-File-Format) [edge](BWM-File-Format#edges) transition index, clamped to valid range)
-- `edge`: Global [edge](BWM-File-Format#edges) index in the BWM (used for door placement during map generation)
+- `x`, `y`, `z`: World-space position of the hook point (midpoint of [BWM](BWM-File-Format) [edge](BWM-File-Format#edges-wok-only) with transition)
+- `rotation`: rotation angle in degrees (0-360), calculated from [edge](BWM-File-Format#edges-wok-only) direction using `atan2(dy, dx)`
+- `door`: index into the kit's `doors` array (mapped from [BWM](BWM-File-Format) [edge](BWM-File-Format#edges-wok-only) transition index, clamped to valid range)
+- `edge`: Global [edge](BWM-File-Format#edges-wok-only) index in the BWM (used for door placement during map generation)
 
-**Hook Extraction**: Door hooks are extracted from [BWM](BWM-File-Format) [edges](BWM-File-Format#edges) that have valid transitions (`edge.transition >= 0`). The transition index maps to the door index in the kit's doors array.
+**Hook Extraction**: Door hooks are extracted from [BWM](BWM-File-Format) [edges](BWM-File-Format#edges-wok-only) that have valid transitions (`edge.transition >= 0`). The transition index maps to the door index in the kit's doors array.
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1467-1535`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1467-L1535)
 
@@ -264,7 +264,7 @@ Kits contain all [textures](TPC-File-Format) and lightmaps referenced by their c
 
 [textures](TPC-File-Format) are extracted from multiple sources using the game engine's resource resolution priority:
 
-1. **Module RIM/[ERF](ERF-File-Format) files**: [textures](TPC-File-Format) directly in the [module containers](ERF-File-Format)
+1. **Module RIM/[ERF](ERF-File-Format) files**: [textures](TPC-File-Format) directly in the [module archives](ERF-File-Format)
 2. **Installation-wide Resolution**: [textures](TPC-File-Format) from:
    - `override/` (user mods, highest priority)
    - `modules/` (module-specific overrides, `.mod` files take precedence over `.rim` files)
@@ -429,7 +429,7 @@ Doors are defined in the kit JSON and have corresponding [UTD](GFF-File-Format#u
 
 **Door Extraction Process**:
 
-1. [UTD](GFF-File-Format#utd-door) files are extracted from module RIM/[ERF](ERF-File-Format) containers
+1. [UTD](GFF-File-Format#utd-door) files are extracted from module RIM/[ERF](ERF-File-Format) archives
 2. Door [model](MDL-MDX-File-Format) names are resolved from [UTD](GFF-File-Format#utd-door) files using `genericdoors.2da`
 3. [DWK](BWM-File-Format) [walkmeshes](BWM-File-Format) are extracted for each door model (3 states: 0=closed, 1=open1, 2=open2)
 4. Door dimensions are set to fast defaults (2.0x3.0) to avoid expensive extraction
@@ -438,7 +438,7 @@ Doors are defined in the kit JSON and have corresponding [UTD](GFF-File-Format#u
 
 Doors are placed at component hook points and connect adjacent rooms. The [door templates](GFF-File-Format#utd-door) define appearance, locking, scripts, and other properties.
 
-**Reference**: [GFF-File-Format#utd-door](GFF-File-Format#utd-door)
+**Reference**: [`wiki/GFF-File-Format.md#utd-door`](GFF-File-Format#utd-door)
 
 ### Door Walkmeshes ([DWK](BWM-File-Format))
 
@@ -457,7 +457,7 @@ Doors have 3 [walkmesh](BWM-File-Format) states that define pathfinding behavior
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1090-1174`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1090-L1174)
 
-**Game Engine Reference**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/door.cpp:80-94`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/door.cpp#L80-L94)
+**Game Engine Reference**: [`vendor/reone/src/libs/game/object/door.cpp:80-94`](https://github.com/OldRepublicDevs/PyKotor/blob/master/vendor/reone/src/libs/game/object/door.cpp#L80-L94)
 
 ---
 
@@ -471,7 +471,7 @@ Placeables are interactive objects (containers, terminals, etc.) that can be pla
 
 **Placeable Extraction Process**:
 
-1. [UTP](GFF-File-Format#utp-placeable) files are extracted from module RIM/[ERF](ERF-File-Format) containers
+1. [UTP](GFF-File-Format#utp-placeable) files are extracted from module RIM/[ERF](ERF-File-Format) archives
 2. Placeable [model](MDL-MDX-File-Format) names are resolved from [UTP](GFF-File-Format#utp-placeable) files using `placeables.2da`
 3. [PWK](BWM-File-Format) [walkmeshes](BWM-File-Format) are extracted for each placeable [model](MDL-MDX-File-Format)
 4. [PWK](BWM-File-Format) files are written to kit directory root
@@ -491,7 +491,7 @@ Placeables have [walkmeshes](BWM-File-Format) that define their collision bounda
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1176-1251`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1176-L1251)
 
-**Game Engine Reference**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/placeable.cpp:73`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/placeable.cpp#L73)
+**Game Engine Reference**: [`vendor/reone/src/libs/game/object/placeable.cpp:73`](https://github.com/OldRepublicDevs/PyKotor/blob/master/vendor/reone/src/libs/game/object/placeable.cpp#L73)
 
 ---
 
@@ -562,9 +562,9 @@ models/
 
 The kit extraction process (`extract_kit()`) extracts resources from module RIM or [ERF files](ERF-File-Format) and generates a complete kit structure.
 
-### Container file Support
+### Archive file Support
 
-The extraction process supports multiple container formats:
+The extraction process supports multiple archive formats:
 
 - **RIM files**: `.rim` (main module), `_s.rim` (supplementary data)
 - **[ERF](ERF-File-Format) files**: `.mod` (module override), `.erf` (generic [ERF](ERF-File-Format)), `.hak` (hakpak), `.sav` (savegame)
@@ -587,7 +587,7 @@ Components are identified using the following process:
    - It's listed as a [room model](LYT-File-Format#room-definitions) in the [LYT file](LYT-File-Format)
    - It has both [MDL](MDL-MDX-File-Format) and [WOK files](BWM-File-Format)
    - It's not a skybox (skyboxes have [MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format) but no [WOK](BWM-File-Format))
-4. **Component Name Mapping**: Component IDs are mapped from [model](MDL-MDX-File-Format) names using `_get_component_name_mapping()` to create friendly names (e.g., `danm13_room01` --> `room_01`)
+4. **Component Name Mapping**: Component IDs are mapped from [model](MDL-MDX-File-Format) names using `_get_component_name_mapping()` to create friendly names (e.g., `danm13_room01` → `room_01`)
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/src/pykotor/tools/kit.py:600-767`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L600-L767)
 
@@ -596,7 +596,7 @@ Components are identified using the following process:
 [textures](TPC-File-Format) and lightmaps are extracted using a comprehensive process:
 
 1. **[model](MDL-MDX-File-Format) Scanning**: Scan all [MDL files](MDL-MDX-File-Format) from `module.models()` using `iterate_textures()` and `iterate_lightmaps()`
-2. **Container Scanning**: Also extract [TPC](TPC-File-Format)/TGA files directly from RIM/[ERF](ERF-File-Format) containers
+2. **Archive Scanning**: Also extract [TPC](TPC-File-Format)/TGA files directly from RIM/[ERF](ERF-File-Format) archives
 3. **Module Resource Scanning**: Check `module.resources` for additional [textures](TPC-File-Format)/lightmaps
 4. **Batch Location Lookup**: Single `installation.locations()` call for all [textures](TPC-File-Format)/lightmaps with search order:
    - OVERRIDE
@@ -615,7 +615,7 @@ Components are identified using the following process:
 
 Doors are extracted from module [UTD](GFF-File-Format#utd-door) files:
 
-1. **UTD Extraction**: Extract all [UTD](GFF-File-Format#utd-door) files from module RIM/[ERF](ERF-File-Format) containers
+1. **UTD Extraction**: Extract all [UTD](GFF-File-Format#utd-door) files from module RIM/[ERF](ERF-File-Format) archives
 2. **Door [model](MDL-MDX-File-Format) Resolution**: Load `genericdoors.2da` once for all doors
 3. **[model](MDL-MDX-File-Format) Name Resolution**: Resolve door [model](MDL-MDX-File-Format) names from [UTD](GFF-File-Format#utd-door) files using `door_tools.get_model()`
 4. **[DWK](BWM-File-Format) Extraction**: Extract door walkmeshes (3 states per door) using batch lookup
@@ -667,7 +667,7 @@ Component minimap images are generated from re-centered [BWM](BWM-File-Format) [
 
 1. **Bounding Box Calculation**: Calculate [bounding box](MDL-MDX-File-Format#model-header) from [BWM](BWM-File-Format) [vertices](MDL-MDX-File-Format#vertex-structure)
 2. **Image Dimensions**: scale to 10 pixels per world unit, minimum 256x256
-3. **coordinate [transformation](BWM-File-Format#walkable-adjacencies)**: Transform world coordinates to image coordinates (flip Y-axis)
+3. **coordinate [transformation](BWM-File-Format#adjacencies-wok-only)**: Transform world coordinates to image coordinates (flip Y-axis)
 4. **[face](MDL-MDX-File-Format#face-structure) Rendering**: Draw [walkable faces](BWM-File-Format#faces) in white, non-walkable in gray
 5. **Image format**: PNG format, saved as `{component_id}.png`
 
@@ -677,16 +677,16 @@ Component minimap images are generated from re-centered [BWM](BWM-File-Format) [
 
 ### Doorhook Extraction
 
-Door hooks are extracted from [BWM](BWM-File-Format) [edges](BWM-File-Format#edges) that have valid transitions:
+Door hooks are extracted from [BWM](BWM-File-Format) [edges](BWM-File-Format#edges-wok-only) that have valid transitions:
 
-1. **[edge](BWM-File-Format#edges) Processing**: Iterate through all [BWM](BWM-File-Format) [edges](BWM-File-Format#edges)
-2. **Transition Check**: Skip [edges](BWM-File-Format#edges) without transitions (`edge.transition < 0`)
-3. **Midpoint Calculation**: Calculate midpoint of [edge](BWM-File-Format#edges) from [vertices](MDL-MDX-File-Format#vertex-structure)
-4. **rotation Calculation**: Calculate rotation angle from [edge](BWM-File-Format#edges) direction using `atan2(dy, dx)`
+1. **[edge](BWM-File-Format#edges-wok-only) Processing**: Iterate through all [BWM](BWM-File-Format) [edges](BWM-File-Format#edges-wok-only)
+2. **Transition Check**: Skip [edges](BWM-File-Format#edges-wok-only) without transitions (`edge.transition < 0`)
+3. **Midpoint Calculation**: Calculate midpoint of [edge](BWM-File-Format#edges-wok-only) from [vertices](MDL-MDX-File-Format#vertex-structure)
+4. **rotation Calculation**: Calculate rotation angle from [edge](BWM-File-Format#edges-wok-only) direction using `atan2(dy, dx)`
 5. **Door index Mapping**: Map transition index to door index (clamped to valid range)
-6. **Hook Generation**: Create doorhook entry with position, rotation, door index, and [edge](BWM-File-Format#edges) index
+6. **Hook Generation**: Create doorhook entry with position, rotation, door index, and [edge](BWM-File-Format#edges-wok-only) index
 
-**[edge](BWM-File-Format#edges) index Calculation**: Global [edge](BWM-File-Format#edges) index = `face_index * 3 + local_edge_index`
+**[edge](BWM-File-Format#edges-wok-only) index Calculation**: Global [edge](BWM-File-Format#edges-wok-only) index = `face_index * 3 + local_edge_index`
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1467-1535`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1467-L1535)
 
@@ -761,7 +761,7 @@ When generating an indoor map from kits:
 
 1. **Component Placement**: Components are placed at specified positions with rotations/flips
 2. **Hook Connection**: Hook points are matched to connect adjacent rooms
-3. **[model](MDL-MDX-File-Format) [transformation](BWM-File-Format#walkable-adjacencies)**: [models](MDL-MDX-File-Format) are flipped, rotated, and transformed based on room properties
+3. **[model](MDL-MDX-File-Format) [transformation](BWM-File-Format#adjacencies-wok-only)**: [models](MDL-MDX-File-Format) are flipped, rotated, and transformed based on room properties
 4. **[texture](TPC-File-Format)/Lightmap Renaming**: [textures](TPC-File-Format) and lightmaps are renamed to module-specific names
 5. **[walkmesh](BWM-File-Format) Merging**: Room [walkmeshes](BWM-File-Format) are combined into a single area [walkmesh](BWM-File-Format)
 6. **Door Insertion**: Doors are inserted at hook points with appropriate padding
@@ -844,18 +844,16 @@ Kits are designed to be compatible with the KOTOR game engine's resource resolut
 
 The kit extraction process is based on reverse-engineered implementations from multiple game engine reimplementations. This section documents how vendor implementations handle the same operations and any discrepancies.
 
-Vendor repositories (original first, mirror second): **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)), **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)).
-
 ### Door Walkmesh ([DWK](BWM-File-Format)) Extraction
 
-**reone Implementation** ([**reone**](https://github.com/seedhartha/reone) ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): `src/libs/game/object/door.cpp:80-98`):
+**reone Implementation** (`vendor/reone/src/libs/game/object/door.cpp:80-98`):
 
 - Doors load 3 [walkmesh](BWM-File-Format) states: `{modelName}0.dwk` (closed), `{modelName}1.dwk` (open1), `{modelName}2.dwk` (open2)
 - [walkmeshes](BWM-File-Format) are loaded via `_services.resource.walkmeshes.get(modelName + "0", ResType::Dwk)`
 - Each [walkmesh](BWM-File-Format) state is stored as a separate `WalkmeshSceneNode` with enabled/disabled state based on door state
 - **PyKotor Implementation**: Matches reone exactly - extracts all 3 [DWK](BWM-File-Format) states using the same naming convention
 
-**KotOR.js Implementation** ([**KotOR.js**](https://github.com/KobaltBlu/KotOR.js) ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): `src/module/ModuleDoor.ts:990-1003`):
+**KotOR.js Implementation** (`vendor/KotOR.js/src/module/ModuleDoor.ts:990-1003`):
 
 - Only loads the closed state [walkmesh](BWM-File-Format): `ResourceLoader.loadResource(ResourceTypes['dwk'], resRef+'0')`
 - Open states are handled dynamically through collision state updates, not separate [walkmesh](BWM-File-Format) files
@@ -866,13 +864,13 @@ Vendor repositories (original first, mirror second): **[reone](https://github.co
 
 ### Placeable Walkmesh ([PWK](BWM-File-Format)) Extraction
 
-**reone Implementation** ([**reone**](https://github.com/seedhartha/reone) ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): `src/libs/game/object/placeable.cpp:73-76`):
+**reone Implementation** (`vendor/reone/src/libs/game/object/placeable.cpp:73-76`):
 
 - Placeables load a single [walkmesh](BWM-File-Format): `_services.resource.walkmeshes.get(modelName, ResType::Pwk)`
 - [walkmesh](BWM-File-Format) is stored as a `WalkmeshSceneNode` attached to the placeable's scene [node](MDL-MDX-File-Format#node-structures)
 - **PyKotor Implementation**: Matches reone exactly - extracts [PWK](BWM-File-Format) using [model](MDL-MDX-File-Format) name directly
 
-**KotOR.js Implementation** ([**KotOR.js**](https://github.com/KobaltBlu/KotOR.js) ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): `src/module/ModulePlaceable.ts:682-698`):
+**KotOR.js Implementation** (`vendor/KotOR.js/src/module/ModulePlaceable.ts:682-698`):
 
 - Loads [walkmesh](BWM-File-Format): `ResourceLoader.loadResource(ResourceTypes['pwk'], resRef)`
 - Creates `OdysseyWalkMesh` from binary data and attaches to [model](MDL-MDX-File-Format)
@@ -881,9 +879,9 @@ Vendor repositories (original first, mirror second): **[reone](https://github.co
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1176-1251`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1176-L1251)
 
-### [Room Model](LYT-File-Format#room-definitions) and Component Identification
+### [room model](LYT-File-Format#room-definitions) and Component Identification
 
-**reone Implementation** ([**reone**](https://github.com/seedhartha/reone) ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): `src/libs/game/object/area.cpp:305-376`):
+**reone Implementation** (`vendor/reone/src/libs/game/object/area.cpp:305-376`):
 
 - Loads [LYT file](LYT-File-Format) via `_services.resource.layouts.get(_name)`
 - Iterates through `layout->rooms` to get [room model](LYT-File-Format#room-definitions) names
@@ -892,7 +890,7 @@ Vendor repositories (original first, mirror second): **[reone](https://github.co
 - Rooms are identified as [MDL](MDL-MDX-File-Format) [models](MDL-MDX-File-Format) with corresponding [WOK files](BWM-File-Format) from [LYT](LYT-File-Format)
 - **PyKotor Implementation**: Matches reone exactly - uses [LYT](LYT-File-Format) to identify [room models](LYT-File-Format#room-definitions), then resolves [MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format)/[WOK](BWM-File-Format)
 
-**KotOR.js Implementation** ([**KotOR.js**](https://github.com/KobaltBlu/KotOR.js) ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): `src/module/ModuleRoom.ts:331-342`):
+**KotOR.js Implementation** (`vendor/KotOR.js/src/module/ModuleRoom.ts:331-342`):
 
 - Loads [walkmesh](BWM-File-Format): `ResourceLoader.loadResource(ResourceTypes['wok'], resRef)`
 - Creates `OdysseyWalkMesh` from binary data and attaches to [room model](LYT-File-Format#room-definitions)
@@ -903,14 +901,14 @@ Vendor repositories (original first, mirror second): **[reone](https://github.co
 
 ### Door [model](MDL-MDX-File-Format) Resolution
 
-**reone Implementation** ([**reone**](https://github.com/seedhartha/reone) ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): `src/libs/game/object/door.cpp`):
+**reone Implementation** (`vendor/reone/src/libs/game/object/door.cpp`):
 
 - Door [models](MDL-MDX-File-Format) are resolved from [UTD](GFF-File-Format#utd-door) files using `genericdoors.2da`
 - The `appearance_id` field in [UTD](GFF-File-Format#utd-door) maps to a row in `genericdoors.2da`
 - The `modelname` column in that row provides the door [model](MDL-MDX-File-Format) name
 - **PyKotor Implementation**: Matches reone exactly - uses `door_tools.get_model()` which reads `genericdoors.2da`
 
-**KotOR.js Implementation** ([**KotOR.js**](https://github.com/KobaltBlu/KotOR.js) ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): `src/module/ModuleDoor.ts`):
+**KotOR.js Implementation** (`vendor/KotOR.js/src/module/ModuleDoor.ts`):
 
 - Door [models](MDL-MDX-File-Format) are resolved similarly using `[genericdoors.2da](2DA-genericdoors)`
 - The appearance ID from [UTD](GFF-File-Format#utd-door) is used to lookup [model](MDL-MDX-File-Format) name
@@ -920,14 +918,14 @@ Vendor repositories (original first, mirror second): **[reone](https://github.co
 
 ### Placeable [model](MDL-MDX-File-Format) Resolution
 
-**reone Implementation** ([**reone**](https://github.com/seedhartha/reone) ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): `src/libs/game/object/placeable.cpp`):
+**reone Implementation** (`vendor/reone/src/libs/game/object/placeable.cpp`):
 
 - Placeable [models](MDL-MDX-File-Format) are resolved from [UTP](GFF-File-Format#utp-placeable) files using `placeables.2da`
 - The `appearance_id` field in [UTP](GFF-File-Format#utp-placeable) maps to a row in `placeables.2da`
 - The `modelname` column in that row provides the placeable [model](MDL-MDX-File-Format) name
 - **PyKotor Implementation**: Matches reone exactly - uses `placeable_tools.get_model()` which reads `placeables.2da`
 
-**KotOR.js Implementation** ([**KotOR.js**](https://github.com/KobaltBlu/KotOR.js) ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): `src/module/ModulePlaceable.ts`):
+**KotOR.js Implementation** (`vendor/KotOR.js/src/module/ModulePlaceable.ts`):
 
 - Placeable [models](MDL-MDX-File-Format) are resolved similarly using `placeables.2da`
 - The appearance ID from [UTP](GFF-File-Format#utp-placeable) is used to lookup [model](MDL-MDX-File-Format) name
@@ -950,13 +948,13 @@ Vendor repositories (original first, mirror second): **[reone](https://github.co
 
 ### Resource Resolution Priority
 
-**reone Implementation** ([**reone**](https://github.com/seedhartha/reone) ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): `src/libs/resource/provider/`):
+**reone Implementation** (`vendor/reone/src/libs/resource/provider/`):
 
-- Resource resolution follows KOTOR priority: Override --> Modules --> Chitin
+- Resource resolution follows KOTOR priority: Override → Modules → Chitin
 - `.mod` files take precedence over `.rim` files in Modules directory
 - **PyKotor Implementation**: Matches reone exactly - uses same priority order via `_get_resource_priority()`
 
-**KotOR.js Implementation** ([**KotOR.js**](https://github.com/KobaltBlu/KotOR.js) ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): `src/loaders/ResourceLoader.ts`):
+**KotOR.js Implementation** (`vendor/KotOR.js/src/loaders/ResourceLoader.ts`):
 
 - Resource resolution follows similar priority order
 - Override folder checked first, then modules, then chitin
@@ -966,34 +964,34 @@ Vendor repositories (original first, mirror second): **[reone](https://github.co
 
 ### [BWM](BWM-File-Format)/[WOK](BWM-File-Format) [walkmesh](BWM-File-Format) Handling
 
-**reone Implementation** ([**reone**](https://github.com/seedhartha/reone) ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): `src/libs/graphics/walkmesh.cpp`):
+**reone Implementation** (`vendor/reone/src/libs/graphics/walkmesh.cpp`):
 
 - [walkmeshes](BWM-File-Format) are loaded from [WOK](BWM-File-Format)/[BWM files](BWM-File-Format)
 - [face](MDL-MDX-File-Format#face-structure) [materials](MDL-MDX-File-Format#trimesh-header) determine walkability ([materials](MDL-MDX-File-Format#trimesh-header) 1, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 16, 18, 20, 21, 22 are walkable)
-- [edge](BWM-File-Format#edges) transitions indicate door connections
+- [edge](BWM-File-Format#edges-wok-only) transitions indicate door connections
 - **PyKotor Implementation**: Matches reone - uses same walkable [material](MDL-MDX-File-Format#trimesh-header) values for minimap generation
 
-**KotOR.js Implementation** ([**KotOR.js**](https://github.com/KobaltBlu/KotOR.js) ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): `src/odyssey/OdysseyWalkMesh.ts`):
+**KotOR.js Implementation** (`vendor/KotOR.js/src/odyssey/OdysseyWalkMesh.ts`):
 
 - [walkmeshes](BWM-File-Format) are loaded from [WOK](BWM-File-Format) binary data
 - [face](MDL-MDX-File-Format#face-structure) [materials](MDL-MDX-File-Format#trimesh-header) and walk types determine walkability
-- [edge](BWM-File-Format#edges) transitions are stored in [walkmesh](BWM-File-Format) structure
-- **PyKotor Implementation**: Matches KotOR.js - extracts doorhooks from [BWM](BWM-File-Format) [edges](BWM-File-Format#edges) with transitions
+- [edge](BWM-File-Format#edges-wok-only) transitions are stored in [walkmesh](BWM-File-Format) structure
+- **PyKotor Implementation**: Matches KotOR.js - extracts doorhooks from [BWM](BWM-File-Format) [edges](BWM-File-Format#edges-wok-only) with transitions
 
 **Reference**:
 
 - [`Libraries/PyKotor/src/pykotor/tools/kit.py:1348-1465`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1348-L1465) (Minimap generation)
 - [`Libraries/PyKotor/src/pykotor/tools/kit.py:1467-1535`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1467-L1535) (Doorhook extraction)
 
-### [module containers](ERF-File-Format) Loading
+### [module archives](ERF-File-Format) Loading
 
-**reone Implementation** ([**reone**](https://github.com/seedhartha/reone) ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): `src/libs/resource/provider/`):
+**reone Implementation** (`vendor/reone/src/libs/resource/provider/`):
 
 - Supports RIM and [ERF file](ERF-File-Format) formats
 - `.mod` files ([ERF](ERF-File-Format) format) take precedence over `.rim` files
 - **PyKotor Implementation**: Matches reone exactly - prioritizes `.mod` files over `.rim` files
 
-**KotOR.js Implementation** ([**KotOR.js**](https://github.com/KobaltBlu/KotOR.js) ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): `src/loaders/ResourceLoader.ts`):
+**KotOR.js Implementation** (`vendor/KotOR.js/src/loaders/ResourceLoader.ts`):
 
 - Supports RIM and [ERF file](ERF-File-Format) formats
 - Module loading follows same priority order
@@ -1029,16 +1027,16 @@ Vendor repositories (original first, mirror second): **[reone](https://github.co
 
 The kit generation tests (`Tools/HolocronToolset/tests/data/test_kit_generation.py`) use different comparison strategies depending on the data type:
 
-### Exact Matching (1:1 [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte))
+### Exact Matching (1:1 [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types))
 
 **Binary files** (SHA256 hash comparison):
 
-- **[MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format)**: [model](MDL-MDX-File-Format) [geometry](MDL-MDX-File-Format#geometry-header) and [animations](MDL-MDX-File-Format#animation-header) - must be [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte) identical
-- **[WOK](BWM-File-Format)/[BWM](BWM-File-Format)**: [walkmesh](BWM-File-Format) data - must be [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte) identical
-- **[DWK](BWM-File-Format)/[PWK](BWM-File-Format)**: Door and placeable [walkmeshes](BWM-File-Format) - must be [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte) identical
-- **PNG**: Minimap images - must be [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte) identical
-- **[UTD](GFF-File-Format#utd-door)**: Door blueprints - must be [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte) identical
-- **[TXI](TXI-File-Format)**: [texture](TPC-File-Format) metadata files - must be [byte](https://en.wikipedia.org/wiki/Byte)-for-[byte](https://en.wikipedia.org/wiki/Byte) identical
+- **[MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format)**: [model](MDL-MDX-File-Format) [geometry](MDL-MDX-File-Format#geometry-header) and [animations](MDL-MDX-File-Format#animation-header) - must be [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types) identical
+- **[WOK](BWM-File-Format)/[BWM](BWM-File-Format)**: [walkmesh](BWM-File-Format) data - must be [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types) identical
+- **[DWK](BWM-File-Format)/[PWK](BWM-File-Format)**: Door and placeable [walkmeshes](BWM-File-Format) - must be [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types) identical
+- **PNG**: Minimap images - must be [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types) identical
+- **[UTD](GFF-File-Format#utd-door)**: Door blueprints - must be [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types) identical
+- **[TXI](TXI-File-Format)**: [texture](TPC-File-Format) metadata files - must be [byte](GFF-File-Format#gff-data-types)-for-[byte](GFF-File-Format#gff-data-types) identical
 
 **Rationale**: These files contain critical game data that must match exactly for functional compatibility.
 
@@ -1067,7 +1065,7 @@ The kit generation tests (`Tools/HolocronToolset/tests/data/test_kit_generation.
 - **Doorhook count**: Verifies count matches exactly
 - **Component count**: Verifies count matches exactly
 - **Door count**: Verifies count matches exactly
-- **field Presence**: Verifies required fields exist (name, id, door, [edge](BWM-File-Format#edges))
+- **field Presence**: Verifies required fields exist (name, id, door, [edge](BWM-File-Format#edges-wok-only))
 
 **Current Test Behavior**:
 
@@ -1129,7 +1127,7 @@ To achieve high granularity coordinate matching, the tests should be enhanced to
    ```
 
 3. **Tolerance Levels**:
-   - **Coordinates (x, y, z)**: 6 decimal places (0.000001 units) - matches Python [float](GFF-File-Format#gff-data-types) precision
+   - **Coordinates (x, y, z)**: 6 decimal places (0.000001 units) - matches Python float precision
    - **rotation**: 2 decimal places (0.01 degrees) - sufficient for door placement
    - **Dimensions (width, height)**: 2 decimal places (0.01 units) - sufficient for door sizing
 
@@ -1143,7 +1141,7 @@ To achieve high granularity coordinate matching, the tests should be enhanced to
 2. **[texture](TPC-File-Format) Organization**: Group related [textures](TPC-File-Format) logically
 3. **Always Folder**: Use sparingly for truly shared resources
 4. **Door Definitions**: Ensure door [UTD](GFF-File-Format#utd-door) files match JSON definitions
-5. **Hook Placement**: Place hooks at logical connection points (extracted from [BWM](BWM-File-Format) [edges](BWM-File-Format#edges) with transitions)
+5. **Hook Placement**: Place hooks at logical connection points (extracted from [BWM](BWM-File-Format) [edges](BWM-File-Format#edges-wok-only) with transitions)
 6. **Minimap Images**: Generate accurate top-down views for component selection
 7. **[BWM](BWM-File-Format) Re-centering**: Always re-center BWMs to origin for proper alignment
 8. **Resource Resolution**: Respect game engine resource resolution priority
@@ -1152,15 +1150,6 @@ To achieve high granularity coordinate matching, the tests should be enhanced to
 11. **Vendor Compatibility**: Follow reone/KotOR.js patterns for [walkmesh](BWM-File-Format) and [model](MDL-MDX-File-Format) handling
 12. **Comprehensive Extraction**: Extract all [DWK](BWM-File-Format) states and all referenced [textures](TPC-File-Format) for complete kits
 13. **Test Precision**: Consider enhancing tests to verify coordinate values, not just structure
-
-### See also
-
-- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- User workflow
-- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Implementation
-- [LYT-File-Format](LYT-File-Format) -- Room layout; [BWM-File-Format](BWM-File-Format) -- Walkmesh
-- [TPC-File-Format](TPC-File-Format), [TXI-File-Format](TXI-File-Format) -- Textures
-- [KEY-File-Format](KEY-File-Format), [ERF-File-Format](ERF-File-Format) -- Resource resolution and modules
-- [Blender-Integration](Blender-Integration) -- 3D editing workflow
 
 ---
 

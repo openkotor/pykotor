@@ -130,6 +130,10 @@ Data tables are stored in this order (offsets in header must match):
 8. Edges  
 9. Perimeters  
 
+## Transitions and door placement
+
+Door and room transitions are expressed in [LYT-File-Format](LYT-File-Format), [GFF-ARE](GFF-ARE), and related area data. In the BWM file, each **edge** record carries only a **transition ID** integer; interpreting that ID is engine and layout specific, not defined further by the BWM binary layout alone. See the next section for the on-disk field.
+
 ## Transition ID (format only)
 
 The edge record contains a **transition ID** (int32). In the file it is only an integer; its meaning (e.g. which room or door) is defined by the engine and by LYT/area data, not by the BWM format. See [LYT-File-Format](LYT-File-Format) and area/module docs for semantics.
@@ -144,6 +148,12 @@ The edge record contains a **transition ID** (int32). In the file it is only an 
 | Adjacencies | Yes | No | No |
 | Edges / perimeters | Yes | No | No |
 
+### Implementation (PyKotor) — non-normative
+
+Library read/write code for tooling alignment only; **normative** layout and engine semantics remain RE + pipelines on this page and in [reverse_engineering_findings — BWM / AABB](reverse_engineering_findings#bwm-walkmesh-aabb-engine-implementation-analysis).
+
+- [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm) — BWM binary and ASCII I/O
+
 ## Edge cases and validation
 
 - **Empty mesh**: face_count 0; vertex_count 0; no AABB/adjacency/edge/perimeter data for WOK.
@@ -152,7 +162,7 @@ The edge record contains a **transition ID** (int32). In the file it is only an 
 
 ## See also
 
-- [Game-Engine-BWM-AABB-Implementation](Game-Engine-BWM-AABB-Implementation) — Engine behavior, coordinate handling, AABB traversal.
+- [Reverse Engineering Findings — BWM / walkmesh / AABB](reverse_engineering_findings#bwm-walkmesh-aabb-engine-implementation-analysis) — Engine behavior, coordinate handling, AABB traversal.
 - [2DA-surfacemat](2DA-surfacemat) — Material IDs and walkability.
 - [GFF-ARE](GFF-ARE) — Area files that reference WOK/PWK/DWK.
 - [LYT-File-Format](LYT-File-Format) — Room layout; transition ID semantics.

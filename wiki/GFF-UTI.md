@@ -2,11 +2,11 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTI files define [item templates](GFF-File-Format#uti-item) for all objects in creature inventories, containers, and stores. Items range from weapons and armor to quest items, upgrades, and consumables. UTI files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+UTI files define [item templates](GFF-File-Format#uti-item) for all objects in creature inventories, containers, and stores. Items range from weapons and armor to quest items, upgrades, and consumables. UTI files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Item format specification, see [Bioware Aurora Item Format](Bioware-Aurora-Item).
 
-**For mod developers:** To modify GFF/UTI files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** To modify GFF/UTI files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** UTI fields reference [2DA files](2DA-File-Format) ([baseitems.2da](2DA-File-Format#baseitems2da), [itempropdef.2da](2DA-File-Format#itempropdef2da)), [TLK](TLK-File-Format) for localized names, and [MDL](MDL-MDX-File-Format)/[TPC](TPC-File-Format) for [model](MDL-MDX-File-Format) and [texture](TPC-File-Format) variants.
 

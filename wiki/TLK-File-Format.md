@@ -2,7 +2,7 @@
 
 This document provides a detailed description of the TLK (Talk Table) file format used in Knights of the Old Republic (KotOR) games. TLK files contain all text strings used in the game, both written and spoken, enabling easy localization by providing a lookup table from string reference numbers ([StrRef](TLK-File-Format#string-references-strref)) to localized text and associated voice-over audio files.
 
-**For mod developers:** To modify TLK files in your mods, see the [TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+**For mod developers:** To modify TLK files in your mods, see the [TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Related formats:** TLK files are referenced by [GFF files](GFF-File-Format) (especially [DLG](GFF-File-Format#dlg-dialogue) [dialogue files](GFF-File-Format#dlg-dialogue)), [2DA files](2DA-File-Format) for item names and descriptions, and [SSF files](SSF-File-Format) for character sound sets.
 
@@ -24,7 +24,7 @@ This document provides a detailed description of the TLK (Talk Table) file forma
 
 ## File structure overview
 
-TLK files store localized strings in a binary format. The game loads `dialog.tlk` at startup and references strings throughout the game using [StrRef](TLK-File-Format#string-references-strref) numbers (array indices). String lookups use the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, then module/SAV, then KEY/BIF), so custom TLKs in override or in a MOD take precedence over the base game `dialog.tlk`.
+TLK files store localized strings in a binary format. The game loads `dialog.tlk` at startup and references strings throughout the game using [StrRef](TLK-File-Format#string-references-strref) numbers (array indices). String lookups use the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, then module/SAV, then KEY/BIF), so custom TLKs in override or in a MOD take precedence over the base game `dialog.tlk`.
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/)
 
@@ -58,7 +58,7 @@ The file header is 20 bytes in size:
 | ------------------- | ------- | ------ | ---- | ---------------------------------------------- |
 | file type           | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | Always `"TLK "` (space-padded)                  |
 | file Version        | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | `"V3.0"` for KotOR, `"V4.0"` for Jade Empire  |
-| Language ID         | [int32](GFF-File-Format#gff-data-types)   | 8 (0x08) | 4    | Language identifier (see [Localization](#localization)) |
+| Language ID         | [int32](GFF-File-Format#gff-data-types)   | 8 (0x08) | 4    | Language identifier (see [Concepts](Concepts#language-ids-kotor); [TLK-specific notes](#localization)) |
 | string count        | [int32](GFF-File-Format#gff-data-types)   | 12 (0x0C) | 4    | Number of string entries in the file           |
 | string Entries offset | [int32](GFF-File-Format#gff-data-types) | 16 (0x10) | 4    | offset to string entries array (typically 20)  |
 
@@ -80,7 +80,7 @@ The string data table contains metadata for each string entry. Each entry is 40 
 | Pitch Variance    | UInt32    | 24 (0x18) | 4    | Unused in KotOR (always 0)                                      |
 | offset to string  | UInt32    | 28 (0x1C) | 4    | offset to string text (relative to string Entries offset)       |
 | string size       | UInt32    | 32 (0x20) | 4    | Length of string text in bytes                                  |
-| Sound Length      | [float](GFF-File-Format#gff-data-types)     | 36 (0x24) | 4    | Duration of voice-over audio in seconds                         |
+| Sound Length      | float     | 36 (0x24) | 4    | Duration of voice-over audio in seconds                         |
 
 **References**
 
@@ -121,7 +121,7 @@ String entries follow the string data table:
 | ------------ | ------ | ---------------------------------------------------------------- |
 | string Text  | [char](GFF-File-Format#gff-data-types)[] | [null-terminated string](https://en.cppreference.com/w/c/string/byte) data (UTF-8 or Windows-1252 encoded)     |
 
-string text is stored at the offset specified in the string data table entry. The encoding depends on the language ID (see [Localization](#localization)).
+string text is stored at the offset specified in the string data table entry. The encoding depends on the language ID (see [Concepts](Concepts#language-ids-kotor) and [Localization](#localization) below).
 
 ---
 
@@ -195,23 +195,13 @@ Priority: Custom TLKs --> dialogf.tlk --> `dialog.tlk`
 
 ## Localization
 
-TLK files support multiple languages through the Language ID field:
+Numeric **language IDs** and typical encodings (0–8) are defined on [Concepts](Concepts#language-ids-kotor). This section covers **TLK-specific** behavior only.
 
-| Language ID | Language | Encoding      |
-| ----------- | -------- | ------------- |
-| 0           | English  | Windows-1252  |
-| 1           | French   | Windows-1252  |
-| 2           | German   | Windows-1252  |
-| 3           | Italian  | Windows-1252  |
-| 4           | Spanish  | Windows-1252  |
-| 5           | Polish   | Windows-1250  |
-| 6           | Korean   | UTF-8         |
-| 7           | Chinese  | UTF-8         |
-| 8           | Japanese | UTF-8         |
+**KotOR:** Retail builds usually install one `dialog.tlk` per language; the file header’s Language ID is often ignored at runtime and is mainly useful for tools tagging which language a TLK was built for.
 
-**Note**: KotOR games typically ignore the Language ID field and always use `dialog.tlk`. The field is primarily used by modding tools to identify language.
+**Encoding:** Western languages (IDs 0–4) normally use Windows-1252 in legacy tooling; Polish (5) uses Windows-1250. IDs 6–8 use UTF-8 in the wider Aurora spec. String payloads may still be UTF-8 or Windows-1252 depending on the tool and target game—see the string entry description above.
 
-**Note**: Windows-1252 is a single byte encoding, meaning only 256 characters are supported. This occasionally is known as "ISO-8859-1" or *cp1252*.
+Windows-1252 is a single-byte encoding (256 code points) and is often loosely called "ISO-8859-1" or *cp1252*.
 
 ---
 
@@ -229,10 +219,11 @@ TLK files support multiple languages through the Language ID field:
 
 ### See also
 
+- [Concepts](Concepts#language-ids-kotor) -- Language IDs and encodings
 - [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- Modifying TLK via HoloPatcher/TSLPatcher
 - [2DA-File-Format](2DA-File-Format), [GFF-File-Format](GFF-File-Format) -- StrRef consumers; [NSS-File-Format](NSS-File-Format) -- Script strings
 - [Bioware-Aurora-TalkTable](Bioware-Aurora-TalkTable) -- Aurora talk table spec
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [Concepts](Concepts#resource-resolution-order) -- Resource resolution; [KEY-File-Format](KEY-File-Format) -- KEY/BIF index
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for TLK/StrRef modding
 
 ---

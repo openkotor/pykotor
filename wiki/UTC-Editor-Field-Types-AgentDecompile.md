@@ -1,6 +1,6 @@
 # UTC Editor: Field Types and Ranges
 
-This document records [*GFF*](GFF-File-Format) field types and valid ranges for the [*Creature (UTC)*](UTC-File-Format) format as verified against the game executables. Use these ranges when setting spinbox min/max in the Holocron Toolset *UTC* editor and when validating mod files.
+This document records [*GFF*](GFF-File-Format) field types and valid ranges for the [*Creature (UTC)*](GFF-UTC) format as verified against the game executables. Use these ranges when setting spinbox min/max in the Holocron Toolset *UTC* editor and when validating mod files.
 
 **Verification:** The reader function `CSWSCreatureStats::ReadStatsFromGff` in KotOR and TSL was analyzed in reva (Ghidra) to confirm which [*GFF*](GFF-File-Format) field names are read and with which type (BYTE, SHORT, WORD, INT, FLOAT, etc.). (/K1/K1_win_gog_swkotor.exe: ReadStatsFromGff @ 0x005afce0 (LoadCreatureData @ 0x00560e60 calls it). /TSL/k2_win_gog_aspyr_swkotor2.exe: ReadStatsFromGff @ 0x006ec350).
 
