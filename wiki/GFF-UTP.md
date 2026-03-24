@@ -8,7 +8,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **For mod developers:** To modify placeable templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
 
-**Related formats:** UTP references [2DA placeables](2DA-placeables), [2DA traps](2DA-traps), [GFF-UTI](GFF-UTI), [GFF-UTD](GFF-UTD), [KEY](KEY-File-Format), [NCS](NCS-File-Format), [DLG](GFF-DLG), and [MDL](MDL-MDX-File-Format).
+**Related formats:** UTP references [2DA placeables](2DA-placeables), [2DA traps](2DA-traps), [GFF-UTI](GFF-UTI), [GFF-UTD](GFF-UTD), key, [NCS](NCS-File-Format), [DLG](GFF-DLG), and [MDL](MDL-MDX-File-Format).
 
 ## References
 
@@ -76,9 +76,9 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 | ----- | ---- | ----------- |
 | `Locked` | [byte](GFF-File-Format#gff-data-types) | Placeable is currently locked |
 | `Lockable` | [byte](GFF-File-Format#gff-data-types) | Can be locked/unlocked |
-| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Requires specific [KEY](KEY-File-Format) item |
-| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](KEY-File-Format) [item](GFF-File-Format#uti-item) |
-| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | [KEY](KEY-File-Format) consumed on use |
+| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Requires specific key item |
+| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required key [item](GFF-File-Format#uti-item) |
+| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | key consumed on use |
 | `OpenLockDC` | [byte](GFF-File-Format#gff-data-types) | Security skill DC to pick lock |
 | `CloseLockDC` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Security DC to lock |
 | `OpenLockDiff` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Additional difficulty modifier |
@@ -88,7 +88,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 - Identical to [UTD](GFF-File-Format#utd-door) door locking system
 - Prevents access to inventory
-- Can be picked or opened with [KEY](KEY-File-Format)
+- Can be picked or opened with key
 
 ## Hit Points & Durability
 

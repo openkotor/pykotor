@@ -4,28 +4,39 @@ This guide explains how to modify [NCS files](NCS-File-Format) directly using TS
 
 ## Overview
 
-The `[HACKList]` section in TSLPatcher's changes.ini file enables you to modify compiled [NCS files](NCS-File-Format) (NWScript bytecode, historically called "Neverwinter Compiled Script" but used identically in **KotOR**) directly at the binary level. This advanced feature allows precise [byte](https://en.wikipedia.org/wiki/Byte)-level modifications to script files without recompiling from [NSS](NSS-File-Format) source code, making it ideal for:
+The `[HACKList]` section in TSLPatcher's `changes.ini` file enables you to modify compiled [NCS files](NCS-File-Format) (NWScript bytecode, historically called "Neverwinter Compiled Script" but used identically in **KotOR**) directly at the binary level. This advanced feature allows precise [byte](https://en.wikipedia.org/wiki/Byte)-level modifications to script files without recompiling from [NSS](NSS-File-Format) source code, making it ideal for:
 
 - Patching numerical values in existing compiled scripts
-- Injecting dynamically-generated string references (StrRefs) and [2DA](2DA-File-Format) memory values
+- Injecting dynamically-generated string references ([StrRef](TLK-File-Format#string-references-strref)) and [2DA](2DA-File-Format) memory values ([2DAMEMORY](2DA-File-Format#2damemory-memory-tokens))
 - Performing surgical modifications to hardcoded constants
-- Updating scripts to reference new [TLK entries](TSLPatcher-TLKList-Syntax) or [2DA row numbers](TSLPatcher-2DAList-Syntax)
+- Updating scripts to reference new [TLK](TLK-File-Format) entries or [2DA](2DA-File-Format) row numbers/indexes
 
-**Important:** HACKList is executed **after** `[CompileList]` during patcher execution, allowing compiled scripts to be modified after compilation if needed.
+**Important:** HACKList is executed **after** [`[CompileList]`](TSLPatcher-CompileList-Syntax) during patcher execution, allowing compiled scripts to be modified after compilation if needed.
 
 ## Table of Contents
 
-- Basic Structure
-- [File-Level Configuration](#file-level-configuration)
-- [Token Types and Data Sizes](#token-types-and-data-sizes)
-- [Memory Token Integration](#memory-token-integration)
-- [Offset Calculation](#offset-calculation)
-- [Examples](#examples)
-- [DeNCS Reference](#dencs-reference)
-- [Common Use Cases](#common-use-cases)
+- [Overview](#overview)
+- [Basic Structure](#basic-structure)
+- [file-Level Configuration](#file-level-configuration)
+  - [Top-Level Keys in `[HACKList]`](#top-level-keys-in-hacklist)
+  - [File Section Configuration](#file-section-configuration)
+- [Supported Value Syntaxes](#supported-value-syntaxes)
+  - [Supported Numeric Types and Formats](#supported-numeric-types-and-formats)
+  - [StrRef and 2DA Memory Reference Formats](#strref-and-2da-memory-reference-formats)
+  - [Pointer/Offset Calculations](#pointeroffset-calculations)
+- [Modifying Byte Sequences](#modifying-byte-sequences)
+  - [Single Value Replacement](#single-value-replacement)
+  - [Multi-Byte and Sequence Replacements](#multi-byte-and-sequence-replacements)
+  - [Special Handling](#special-handling)
+- [File and Offset Resolving](#file-and-offset-resolving)
+  - [Source File Paths](#source-file-paths)
+  - [Destination Overrides](#destination-overrides)
+- [Usage Examples](#usage-examples)
+- [Best Practices & Cautions](#best-practices--cautions)
 - [Troubleshooting](#troubleshooting)
+- [See Also](#see-also)
 
-## Basic structure
+## Basic Structure
 
 ```ini
 [HACKList]
@@ -54,7 +65,7 @@ The `[HACKList]` section declares [NCS files](NCS-File-Format) to modify. Each e
 
 ### Top-Level Keys in [HACKList]
 
-| [KEY](KEY-File-Format) | type | Default | Description |
+| key | type | Default | Description |
 |-----|------|---------|-------------|
 | `!DefaultDestination` | string | `override` | Default destination for all [NCS files](NCS-File-Format) in this section |
 | `!DefaultSourceFolder` | string | `.` | Default source folder for [NCS files](NCS-File-Format). This is a relative path from `mod_path`, which is typically the `tslpatchdata` folder (the parent directory of the `changes.ini` file). The default value `.` refers to the `tslpatchdata` folder itself. Path resolution: `mod_path / !DefaultSourceFolder / filename` |
@@ -77,9 +88,9 @@ Each [NCS file](NCS-File-Format) requires its own section (e.g., `[myscript.ncs]
 - `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM container
 - Use backslashes for path separators
 
-**Important:** The `ReplaceFile` [KEY](KEY-File-Format) in HACKList does NOT use an exclamation point prefix. This is unique to HACKList compared to other patch lists.
+**Important:** The `ReplaceFile` key in HACKList does NOT use an exclamation point prefix. This is unique to HACKList compared to other patch lists.
 
-## Token types and data Sizes
+## Token Types and Data Sizes Syntax
 
 Each modification requires specifying an offset and a value. values can include type specifiers to control data size.
 
@@ -122,13 +133,13 @@ All multi-[byte](https://en.wikipedia.org/wiki/Byte) values are written in **[bi
 
 If you need legacy 16-bit compatibility, use explicit type specifiers like `u16:StrRef5`, though this is not typically necessary.
 
-## Memory Token Integration
+## Memory Token Integration Syntax
 
-HACKList integrates seamlessly with TSLPatcher's memory token system, allowing dynamic value injection from other patch sections.
+`[HACKList]` section integrates seamlessly with TSLPatcher's memory token system, allowing dynamic value injection from other patch sections.
 
-### [StrRef](TLK-File-Format#string-references-strref) Tokens
+### *StrRef* Tokens
 
-Reference values stored in TLKList memory:
+Reference values stored in [`[TLKList]`](TSLPatcher-TLKList-Syntax) section memory:
 
 ```ini
 ; In TLKList section, this would define StrRef5
@@ -149,9 +160,9 @@ File0=myscript.ncs
 - Patching scripts to reference custom text entries
 - Updating hardcoded string IDs to mod-added entries
 
-### [2DA](2DA-File-Format) Memory Tokens
+### [2DA](2DA-File-Format) Memory Tokens ([`2DAMEMORY#`](TSLPatcher-2DAList-Syntax#2damemory-tokens))
 
-Reference values stored in 2DAList memory:
+Reference values stored in [`[2DAList]`](TSLPatcher-2DAList-Syntax) section memory tokens:
 
 ```ini
 ; In 2DAList section, this would store a row number
@@ -174,13 +185,15 @@ File0=myscript.ncs
 - Patching appearance/spell IDs to reference new rows
 - Updating hardcoded IDs to mod-added entries
 
-**Important Limitation:** `!FieldPath` values are NOT supported in HACKList. Only numeric memory values can be used.
+**Important Limitation:** [`!FieldPath`](TSLPatcher-GFFList-Syntax#fieldpath-syntax) values are NOT supported in HACKList. Only numeric memory values can be used.
 
-## offset Calculation
+## Offset Calculation Syntax
 
-Determining the correct [byte](https://en.wikipedia.org/wiki/Byte) offset is the most critical aspect of HACKList usage.
+Determining the correct [byte](https://en.wikipedia.org/wiki/Byte) offset is the most critical aspect of `[HACKList]` section usage.
 
-### [NCS files](NCS-File-Format) structure
+### [NCS files](NCS-File-Format) structure ([`NCS` file](NCS-File-Format))
+
+The structure of a [NCS](NCS-File-Format) file is as follows:
 
 ```ncs
 Byte Offset  Description
@@ -192,24 +205,24 @@ Byte Offset  Description
 0x0D+        Compiled bytecode instructions
 ```
 
-The header is 13 bytes (0x0D), so the first instruction [byte](https://en.wikipedia.org/wiki/Byte) is at offset 0x0D.
+The header is 13 bytes (0x0D), so the first instruction [byte](https://en.wikipedia.org/wiki/Byte) is at offset `0x0D`.
 
-### Finding offsets with DeNCS
+### Finding offsets with *DeNCS*
 
-**DeNCS** (Decompiler for [NCS](NCS-File-Format)) is a Java-based disassembler that can help you locate exact [byte](https://en.wikipedia.org/wiki/Byte) offsets in [NCS files](NCS-File-Format).
+***DeNCS*** (Decompiler for [NCS](NCS-File-Format)) is a Java-based disassembler that can help you locate exact [byte](https://en.wikipedia.org/wiki/Byte) offsets in [NCS files](NCS-File-Format).
 
-#### Using DeNCS
+#### Using *DeNCS*
 
-1. Load your [NCS file](NCS-File-Format) in DeNCS
+1. Load your [NCS](NCS-File-Format) file in *DeNCS*
 2. Disassemble to view instruction-level operations
 3. Identify the target instruction and note its [byte](https://en.wikipedia.org/wiki/Byte) offset
 4. If modifying an instruction's operand, add to the instruction's offset:
-   - For CONSTI operands: offset + 1 (skip the opcode [byte](https://en.wikipedia.org/wiki/Byte))
+   - For CONSTI operands: **offset + 1** (skip the opcode [byte](https://en.wikipedia.org/wiki/Byte))
    - For other operands: depends on instruction type
 
 #### Example Disassembly
 
-```ncs
+```plaintext
 Offset  Inst                Args
 ------  ----                ----
 0x0D    NOP
@@ -220,11 +233,11 @@ Offset  Inst                Args
         (opcode at 0x15, string offset at 0x16-0x19)
 ```
 
-To modify the CONSTI value at 0x0E, you'd patch bytes 0x0F-0x12.
+To modify the *CONSTI* value at `0x0E`, you'd patch bytes `0x0F-0x12`.
 
-### Common Instruction Layouts
+### Common Instruction Opcode Layouts
 
-| Instruction | Opcode size | Operand size | Example offset to Patch |
+| Instruction | Opcode Size | Operand Size | Example Offset to Patch |
 |-------------|-------------|--------------|-------------------------|
 | `CONSTI` | 1 byte | 4 bytes | offset + 1 |
 | `CONSTF` | 1 byte | 4 bytes | offset + 1 |
@@ -234,20 +247,20 @@ To modify the CONSTI value at 0x0E, you'd patch bytes 0x0F-0x12.
 | `JMP` | 1 byte | 4 bytes | offset + 1 |
 | `JZ` | 1 byte | 4 bytes | offset + 1 |
 
-### Hex vs Decimal offsets
+### Hex vs Decimal Offsets
 
 Both formats are supported:
 
 - **Hexadecimal**: `0x20`, `0x100`, `0xFF`
 - **Decimal**: `32`, `256`, `255`
 
-Use hexadecimal for convenience when working with [byte](https://en.wikipedia.org/wiki/Byte)-aligned operations.
+Use hexadecimal for convenience when working with [byte](https://en.wikipedia.org/wiki/Byte)-aligned operations (e.g. `0x50` is `80` in decimal).
 
-## Examples
+## Examples Syntax
 
 ### Example 1: Modifying a Hardcoded Integer
 
-Replace a hardcoded constant in a compiled script:
+Replace a hardcoded constant in a [NCS](NCS-File-Format) compiled script:
 
 ```ini
 [HACKList]
@@ -260,7 +273,7 @@ File0=combat_script.ncs
 
 ### Example 2: Injecting Dynamic [TLK](TLK-File-Format) Reference
 
-Inject a dynamically-added string reference:
+Inject a dynamically-added [StrRef](TLK-File-Format#string-references-strref) value:
 
 ```ini
 [TLKList]
@@ -274,7 +287,7 @@ File0=dialog_script.ncs
 0x100=StrRef1
 ```
 
-### Example 3: Patching Multiple values
+### Example 3: Patching Multiple Values
 
 Modify several offsets in the same file:
 
@@ -293,9 +306,9 @@ File0=spell_script.ncs
 0x70=u16:60
 ```
 
-### Example 4: Using [2DA](2DA-File-Format) Memory values
+### Example 4: Using [2DA](2DA-File-Format) Memory Values
 
-Inject a dynamically-added [2DA](2DA-File-Format) row number:
+Inject a dynamically-added [2DA](2DA-File-Format) row index:
 
 ```ini
 [2DAList]
@@ -312,9 +325,9 @@ File0=spell_handler.ncs
 0x88=2DAMEMORY5
 ```
 
-### Example 5: Advanced Multi-type Patching
+### Example 5: Advanced Multi-Type Patching
 
-Combine different data sizes and token types:
+Combine different data sizes and token/value types:
 
 ```ini
 [HACKList]
@@ -340,9 +353,9 @@ ReplaceFile=1
 0x60=u32:0xDEADBEEF
 ```
 
-### Example 6: Saving to Container
+### Example 6: Saving to Container ([`!DefaultDestination`](TSLPatcher-InstallList-Syntax#defaultdestination-syntax))
 
-Save modified scripts to a [module container](ERF-File-Format):
+Save modified scripts to a [module container](ERF-File-Format) (e.g. `Modules\mymod.mod`):
 
 ```ini
 [HACKList]
@@ -358,39 +371,6 @@ ReplaceFile=1
 0x60=StrRef5
 ```
 
-## DeNCS Reference
-
-*DeNCS* provides comprehensive [NCS](NCS-File-Format) disassembly capabilities for locating exact [byte](https://en.wikipedia.org/wiki/Byte) offsets. Understanding its output is essential for `[HACKList]` usage.
-
-### [KEY](KEY-File-Format) DeNCS Features
-
-- **Instruction-level disassembly**: See each bytecode instruction
-- **offset mapping**: Exact [byte](https://en.wikipedia.org/wiki/Byte) positions for each instruction
-- **Operand extraction**: View data embedded in instructions
-- **Jump resolution**: Understand control flow
-
-### Reading DeNCS Output
-
-```ncs
-Offset  Instruction    Args
-------  -------------  ----
-0x0D    NOP
-0x0E    CONSTI         0x00002710 (10000)
-0x13    CPDOWNSP       -4
-0x15    CONSTI         0x00000064 (100)
-0x1A    CPDOWNSP       -4
-0x1B    ACTION         0x00401048 (AddObjectToInventory)
-0x20    MOVSP          -4
-0x22    RETN
-
-Stack:
-Before NOP: []
-After NOP: []
-...
-```
-
-To modify the `CONSTI` at `0x0E`, you'd patch bytes `0x0F-0x12` (the 4-[byte](https://en.wikipedia.org/wiki/Byte) operand).
-
 ### Common Instruction Patterns
 
 Many scripts follow predictable patterns you can target:
@@ -404,7 +384,7 @@ CPDOWNSP -4
 
 This pushes a 4-[byte](https://en.wikipedia.org/wiki/Byte) integer onto the stack. The value is at **offset +1**.
 
-**Calling a function:**
+**Calling a Function:**
 
 ```ncs
 ACTION <function_pointer>
@@ -422,9 +402,9 @@ The jump offset is a 4-[byte](https://en.wikipedia.org/wiki/Byte) signed integer
 
 ## Common Use Cases
 
-### 1. Updating Hardcoded string References
+### 1. Updating Hardcoded *StrRef* References
 
-Many vanilla scripts have hardcoded [StrRef](TLK-File-Format#string-references-strref) values. HACKList lets you redirect them to mod-added entries:
+Many vanilla scripts have hardcoded [StrRef](TLK-File-Format#string-references-strref) values. `[HACKList]` lets you redirect them to mod-added entries:
 
 ```ini
 [TLKList]
@@ -439,9 +419,9 @@ File0=old_dialog.ncs
 0x100=StrRef99
 ```
 
-### 2. Patching Spell/Item IDs
+### 2. Patching Spell/Item Row IDs/Indexes
 
-When adding new spells or items, existing scripts may need to reference them:
+When adding new spells or items, existing scripts may need to reference them by row index or label:
 
 ```ini
 [2DAList]
@@ -458,9 +438,9 @@ File0=spell_handler.ncs
 0x88=2DAMEMORY7
 ```
 
-### 3. Adjusting Combat values
+### 3. Adjusting Combat Values
 
-Modify damage, duration, or other gameplay values without recompiling (e.g. `0x30=u16:50` is the damage value, `0x50=u16:60` is the duration value, `0x70=u16:10` is the cooldown value):
+Modify damage, duration, or other gameplay values without recompiling (e.g. `0x30=u16:50` is the damage value, `0x50=u16:60` is the duration value, `0x70=u16:10` is the cooldown value) in a [NCS](NCS-File-Format) compiled script:
 
 ```ini
 [HACKList]
@@ -477,9 +457,9 @@ File0=combat_init.ncs
 0x70=u16:10
 ```
 
-### 4. Enabling Debug Features
+### 4. Enabling Debug Flags
 
-Some scripts have debug flags that can be enabled:
+Some scripts have debug flags that can be enabled (e.g. `0x20=u8:1` is the debug flag):
 
 ```ini
 [HACKList]
@@ -506,7 +486,7 @@ File0=buggy_script.ncs
 0x70=u32:1000
 ```
 
-## Troubleshooting
+## Troubleshooting Syntax
 
 ### Offset Calculation Errors
 
@@ -519,50 +499,50 @@ File0=buggy_script.ncs
 3. Ensure you're not overwriting opcodes accidentally (e.g. `CONSTI` is an opcode, not a value, so `0x0E=u16:100` is incorrect, it should be `0x0E=u16:100`)
 4. Verify big-endian [byte](https://en.wikipedia.org/wiki/Byte) order for multi-[byte](https://en.wikipedia.org/wiki/Byte) values (e.g. `u16:0x1234` is `0x12 0x34`, not `0x34 0x12`)
 
-### Memory Token Not Defined
+### Memory Token Not Defined ([`StrRefN`](TSLPatcher-TLKList-Syntax#strrefn-syntax)/[`2DAMEMORYN`](TSLPatcher-2DAList-Syntax#2damemoryn-syntax))
 
-**Problem:** `StrRefN was not defined before use`
+**Problem:** `StrRefN`/`2DAMEMORYN` was not defined before use
 
 **Solutions:**
 
-1. Ensure the token is defined in `[TLKList]`/`[2DAList]` **before** `[HACKList]` execution
+1. Ensure the token is defined in [`[TLKList]`](TSLPatcher-TLKList-Syntax)/[`[2DAList]`](TSLPatcher-2DAList-Syntax) **before** `[HACKList]` execution
 2. Check the token number for typos (e.g. `StrRef1` instead of `StrRef10`)
 3. Verify token definition syntax in the appropriate section
 
-**Important:** `[HACKList]` executes **after** `[CompileList]` and **after** `[TLKList]` and `[2DAList]` in HoloPatcher, so memory tokens should be available.
+**Important:** `[HACKList]` executes **after** [`[CompileList]`](TSLPatcher-CompileList-Syntax) and **after** [`[TLKList]`](TSLPatcher-TLKList-Syntax) and [`[2DAList]`](TSLPatcher-2DAList-Syntax) in HoloPatcher, so memory tokens should be available.
 
-### Wrong data size
+### Wrong Data Size
 
 **Problem:** Script crashes or behaves unexpectedly after patching
 
 **Solutions:**
 
-1. Verify you're using the correct data size (`u8`/`u16`/`u32`)
+1. Verify you're using the correct data size (`u8`/`u16`/`u32`/`StrRefN`/`2DAMEMORYN`)
 2. Check *DeNCS* output to confirm the operand size
 3. Ensure you're not truncating large values with `u8`/`u16`
 4. Verify signed vs unsigned behavior for large values (e.g. `u32:0x80000000` is a negative number)
 
-### File Not Found
+### File Not Found ([`!SourceFile`](TSLPatcher-InstallList-Syntax#sourcefile-syntax))
 
 **Problem:** `File not found` error during patching
 
 **Solutions:**
 
-1. Verify `!SourceFile` points to the correct filename (e.g. `source.ncs`)
-2. Check `!DefaultSourceFolder` and `!SourceFolder` paths (e.g. `tslpatchdata\source.ncs`)
+1. Verify [`!SourceFile`](TSLPatcher-InstallList-Syntax#sourcefile-syntax) points to the correct filename (e.g. `source.ncs`)
+2. Check [`!DefaultSourceFolder`](TSLPatcher-InstallList-Syntax#defaultsourcefolder-syntax) and [`!SourceFolder`](TSLPatcher-InstallList-Syntax#sourcefolder-syntax) paths (e.g. `tslpatchdata\source.ncs`)
 3. Ensure the source file exists in the tslpatchdata folder (e.g. `tslpatchdata\source.ncs`)
 4. Verify the file extension is `.ncs`
 
-### Archival Insertion Issues
+### Archival Insertion Issues ([`!Destination`](TSLPatcher-InstallList-Syntax#destination-syntax))
 
-**Problem:** Modified script not appearing in [ERF](ERF-File-Format)/MOD/RIM container
+**Problem:** Modified script not appearing in [ERF/MOD](ERF-File-Format)/[RIM](RIM-File-Format) container
 
 **Solutions:**
 
-1. Verify `!Destination` path uses backslashes
+1. Verify [`!Destination`](TSLPatcher-InstallList-Syntax#destination-syntax) path uses backslashes
 2. Check the bioware container exists before insertion (e.g. `Modules\mymod.mod`)
 3. Ensure the destination folder structure is correct
-4. Verify the `ReplaceFile` setting (0 = skip if exists, 1 = overwrite) (0 = skip if the file exists, 1 = overwrite the existing file)
+4. Verify the [`ReplaceFile`](TSLPatcher-InstallList-Syntax#replacefile-syntax) setting (`0` = skip if exists, `1` = overwrite) (`0` = skip if the file exists, `1` = overwrite the existing file)
 
 ## Technical Details
 
@@ -570,17 +550,17 @@ File0=buggy_script.ncs
 
 **HoloPatcher** processes patch lists in this order:
 
-1. `[InstallList]` (install files)
-2. `[TLKList]` (add dialog entries)
-3. `[2DAList]` (modify [2DA files](2DA-File-Format))
-4. `[GFFList]` (modify [GFF](GFF-File-Format) files)
-5. `[CompileList]` (compile [NSS](NSS-File-Format) to [NCS](NCS-File-Format))
-6. `[HACKList]` (modify [NCS](NCS-File-Format) bytecode) ← **You are here**
-7. `[SSFList]` (modify soundset files)
+1. [`[InstallList]`](TSLPatcher-InstallList-Syntax) (install files)
+2. [`[TLKList]`](TSLPatcher-TLKList-Syntax) (add [TLK](TLK-File-Format) text or sound entries or create [StrRef](TLK-File-Format#string-references-strref) memory tokens)
+3. [`[2DAList]`](TSLPatcher-2DAList-Syntax) (modify [2DA](2DA-File-Format) files or create [2DAMEMORY](2DA-File-Format#2damemory-memory-tokens) memory tokens)
+4. [`[GFFList]`](TSLPatcher-GFFList-Syntax) (modify [GFF](GFF-File-Format) files or create [2DAMEMORY](2DA-File-Format#2damemory-memory-tokens) memory tokens from [`!FieldPath`](TSLPatcher-GFFList-Syntax#fieldpath-syntax))
+5. [`[CompileList]`](TSLPatcher-CompileList-Syntax) (compile [NSS](NSS-File-Format) to [NCS](NCS-File-Format))
+6. [`[HACKList]`](TSLPatcher-HACKList-Syntax) (modify [NCS](NCS-File-Format) bytecode) ← **You are here**
+7. [`[SSFList]`](TSLPatcher-SSFList-Syntax) (modify soundset files)
 
-**Important:** This differs from TSLPatcher's original order, where `[HACKList]` executes before `[CompileList]`. HoloPatcher runs `[CompileList]` first to allow scripts to be compiled and then potentially edited. This order change is intentional and should not affect mod compatibility in practice.
+**Important:** This differs from TSLPatcher's original order, where [`[HACKList]`](TSLPatcher-HACKList-Syntax) executes before [`[CompileList]`](TSLPatcher-CompileList-Syntax). HoloPatcher runs [`[CompileList]`](TSLPatcher-CompileList-Syntax) first to allow scripts to be compiled and then potentially edited. This order change is intentional and should not affect mod compatibility in practice.
 
-All memory tokens from `[TLKList]` and `[2DAList]` are available during `[HACKList]` processing.
+All memory tokens from [`[TLKList]`](TSLPatcher-TLKList-Syntax) and [`[2DAList]`](TSLPatcher-2DAList-Syntax) are available during [`[HACKList]`](TSLPatcher-HACKList-Syntax) processing.
 
 ### Byte-Level Writing
 
@@ -592,7 +572,7 @@ All multi-[byte](https://en.wikipedia.org/wiki/Byte) values are written in **[bi
 
 ### `ReplaceFile` Key Behavior
 
-Unlike other patch lists, `[HACKList]`'s `ReplaceFile` key does **not** use an exclamation point:
+Unlike other patch lists, `[HACKList]`'s [`ReplaceFile`](TSLPatcher-InstallList-Syntax#replacefile-syntax) key does **not** use an exclamation point:
 
 ```ini
 ; CORRECT (`[HACKList]` syntax)
@@ -604,29 +584,29 @@ ReplaceFile=1
 
 `ReplaceFile=0` means **"skip if file exists"**, while `ReplaceFile=1` means ***"overwrite existing file"***.
 
-I have no idea why this is the exclusive instance of Stoffe's variables that doesn't use exclamation-point syntax but whatever.
+This probably came about because HACKList was created well before TSLPatcher as we know it, and the syntax was not standardized. IIRC this is only used in High Level Force Powers mod.
 
 ### Compatibility Notes
 
-- PyKotor's HACKList implementation is compatible with TSLPatcher v1.2.10b+
+- PyKotor's [`[HACKList]`](TSLPatcher-HACKList-Syntax) implementation is compatible with TSLPatcher v1.2.10b+
 - All [NCS](NCS-File-Format) versions V1.0 are supported
-- Container insertion works for [ERF](ERF-File-Format), MOD, and RIM formats
-- Memory tokens from TLKList and 2DAList are fully supported
-- `!FieldPath` is **not** supported (only numeric values)
+- Container insertion works for [ERF/MOD](ERF-File-Format)/[RIM](RIM-File-Format) formats
+- Memory tokens from [`[TLKList]`](TSLPatcher-TLKList-Syntax) and [`[2DAList]`](TSLPatcher-2DAList-Syntax) are fully supported
+- [`!FieldPath`](TSLPatcher-GFFList-Syntax#fieldpath-syntax) is **not** supported (only numeric values)
 
 ### See also
 
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - [GFF file](GFF-File-Format) modifications
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - [GFF](GFF-File-Format) modifications
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) - General TSLPatcher documentation
 - [DeNCS Documentation](http://nwvault.ign.com/View.php?view=Other.Detail&id=416) - [NCS](NCS-File-Format) disassembler
 - [NCS Instruction Reference](https://nwn.wiki/compiler/instructions) - Detailed bytecode documentation
-- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for HACKList/binary patching
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for [`[HACKList]`](TSLPatcher-HACKList-Syntax)/binary patching
 
 ## Advanced Topics
 
 ### Offset Alignment
 
-When working with [NCS](NCS-File-Format) bytecode, be aware of alignment requirements:
+When working with [NCS](NCS-File-Format) [bytecode](https://en.wikipedia.org/wiki/Bytecode), be aware of alignment requirements:
 
 - Instructions start on any [byte](https://en.wikipedia.org/wiki/Byte) boundary (no alignment enforced)
 - Operands follow immediately after opcodes
@@ -642,7 +622,7 @@ When working with [NCS](NCS-File-Format) bytecode, be aware of alignment require
 
 It can *only* overwrite existing bytes.
 
-For structural changes, use `[CompileList]` to recompile from [NSS](NSS-File-Format) source.
+For structural changes, use [`[CompileList]`](TSLPatcher-CompileList-Syntax) to recompile from [NSS](NSS-File-Format) source.
 
 ### Debugging Tips
 
@@ -665,4 +645,4 @@ Loading `[HACKList]` patches from ini...
 
 `[HACKList]` provides powerful [byte](https://en.wikipedia.org/wiki/Byte)-level control over compiled [NCS](NCS-File-Format) scripts, enabling surgical modifications without source code access. While it requires understanding [NCS](NCS-File-Format) bytecode structure and careful offset calculation, it's essential for advanced modding scenarios involving dynamic value injection and hardcoded constant patching.
 
-For most modding needs, `[CompileList]` ([NSS](NSS-File-Format) source compilation) is preferred. `[HACKList]` should be reserved for cases where source code is unavailable or where [byte](https://en.wikipedia.org/wiki/Byte)-level precision is required.
+For most modding needs, [`[CompileList]`](TSLPatcher-CompileList-Syntax) ([NSS](NSS-File-Format) source compilation) is preferred. `[HACKList]` should be reserved for cases where source code is unavailable or where [byte](https://en.wikipedia.org/wiki/Byte)-level precision is required.

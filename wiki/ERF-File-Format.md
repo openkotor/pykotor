@@ -29,7 +29,7 @@ ERF files are self-contained containers that store both resource names ([ResRefs
 
 **For mod developers:** MOD and HAK files are built with Holocron Toolset or other packers; see [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
 
-**Related formats:** ERF containers hold [GFF](GFF-File-Format), [2DA](2DA-File-Format), [TPC](TPC-File-Format), [NCS](NCS-File-Format), and other resource types; see [KEY](KEY-File-Format) and [BIF](BIF-File-Format) for alternative storage. **Modder note:** Use MODs for module-specific content (area GFFs, module 2DAs); use [override](Concepts#override-folder) for global replacements. See [Concepts](Concepts#mod--erf) and [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files).
+**Related formats:** ERF containers hold [GFF](GFF-File-Format), [2DA](2DA-File-Format), [TPC](TPC-File-Format), [NCS](NCS-File-Format), and other resource types; see key and [BIF](BIF-File-Format) for alternative storage. **Modder note:** Use MODs for module-specific content (area GFFs, module 2DAs); use [override](Concepts#override-folder) for global replacements. See [Concepts](Concepts#mod--erf) and [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files).
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/erf/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/)
 
@@ -61,7 +61,7 @@ The file header is 160 bytes in size:
 | Localized string size     | UInt32  | 12 (0x0C) | 4    | Total size of localized string data in bytes   |
 | Entry count               | UInt32  | 16 (0x10) | 4    | Number of resources in the container              |
 | offset to Localized string List | UInt32 | 20 (0x14) | 4 | offset to localized string entries             |
-| offset to [KEY](KEY-File-Format) List        | UInt32  | 24 (0x18) | 4    | offset to [KEY](KEY-File-Format) entries array                    |
+| offset to key List        | UInt32  | 24 (0x18) | 4    | offset to key entries array                    |
 | offset to Resource List   | UInt32  | 28 (0x1C) | 4    | offset to resource entries array                |
 | Build Year                | UInt32  | 32 (0x20) | 4    | Build year (years since 1900)                   |
 | Build Day                 | UInt32  | 36 (0x24) | 4    | Build day (days since Jan 1)                   |
@@ -143,9 +143,9 @@ ERF localized strings provide multi-language descriptions for the container itse
 
 - [`vendor/reone/src/libs/resource/format/erfreader.cpp:47-65`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/erfreader.cpp#L47-L65) - Localized string list parsing
 
-### [KEY](KEY-File-Format) List
+### key List
 
-Each [KEY](KEY-File-Format) entry is 24 bytes and maps ResRefs to resource indices:
+Each key entry is 24 bytes and maps ResRefs to resource indices:
 
 | Name        | type     | offset | size | Description                                                      |
 | ----------- | -------- | ------ | ---- | ---------------------------------------------------------------- |
@@ -190,7 +190,7 @@ Resource data is stored at the offsets specified in the resource list:
 
 ### MOD/NWM file format Quirk: Blank data Block
 
-**Note**: For MOD and NWM files only, there exists an unusual block of data between the resource structures ([KEY](KEY-File-Format) List) and the position structures (Resource List). This block is 8 bytes per resource and appears to be all NULL bytes in practice. This data block is not referenced by any offset in the ERF file header, which is uncharacteristic of BioWare's file format design.
+**Note**: For MOD and NWM files only, there exists an unusual block of data between the resource structures (key List) and the position structures (Resource List). This block is 8 bytes per resource and appears to be all NULL bytes in practice. This data block is not referenced by any offset in the ERF file header, which is uncharacteristic of BioWare's file format design.
 
 **References**
 
@@ -269,7 +269,7 @@ The engine's resource manager is surprisingly strict, reading the 160-byte heade
 
 - **file type** and **Version** (Verified against expected values)
 - **Entry Count** (Used to allocate memory for the key table)
-- **offset to [KEY](KEY-File-Format) List** (Used to seek to the key data)
+- **offset to key List** (Used to seek to the key data)
 
 The following fields are **parsed but ignored** by the resource manager (though they may be used by the UI/Menus):
 
@@ -301,7 +301,7 @@ Contrary to popular belief, the engine does **not** identify Save Games based on
 
 ### See also
 
-- [BIF File Format](BIF-File-Format) - Container format used with [KEY](KEY-File-Format) files
+- [BIF File Format](BIF-File-Format) - Container format used with key files
 - [KEY File Format](KEY-File-Format) - Index for [BIF containers](BIF-File-Format) and resource resolution
 - [GFF File Format](GFF-File-Format) - Common content type stored in ERF containers
 - [RIM-File-Format](RIM-File-Format) - RIM (Resource Image) container format; similar structure to ERF for area resources

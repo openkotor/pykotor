@@ -792,7 +792,7 @@ input fields may be dimmed down or enabled.
 
 ##### 3.4.2.2. Label
 
-type in the label of your new field here. A label is an identifier [KEY](KEY-File-Format) used to retrieve the value
+type in the label of your new field here. A label is an identifier key used to retrieve the value
 from the [GFF file](GFF-File-Format). A label can be at most 16 characters long, may only contain alphanumerical
 characters and no spaces. Labels must be unique on each level of the [GFF](GFF-File-Format) tree (i.e. within the
 same STRUCT), but may be named identically in separate parts of the field tree. All fields must
@@ -1190,7 +1190,7 @@ format would get messed up and only the text before the first LF/CR would be
 added to the [GFF files](GFF-File-Format). Now all the text should be properly added. Updated
 both TSLPatcher and ChangeEdit to fix this. INI config files already broken
 by this bug can be fixed manually by making sure all the text in following a
-lang# [KEY](KEY-File-Format) is on the same line in the INI file, and then insert <#LF#> where a new
+lang# key is on the same line in the INI file, and then insert <#LF#> where a new
 line should be. E.g...
 lang0=The quick brown fox<#LF#><#LF#>jumps over the lazy dog!
 ...would end up like this in the [GFF](GFF-File-Format) substring after patching:
@@ -1245,20 +1245,20 @@ Added the HackList modifiers to the Configuration Summary display. Added
 name of source file if different from the destination file name (configured with
 the new !SourceFile and !SaveAs keys).
 
-Added an optional !OverrideType [KEY](KEY-File-Format) to the [filename] sections of files
+Added an optional !OverrideType key to the [filename] sections of files
 to be saved into [ERF](ERF-File-Format) or RIM files. If set it can determine how TSLPatcher
 should react if a file with the same name already exists in the override folder
-(and thus would make the game not use the one in the [ERF](ERF-File-Format)/RIM). This [KEY](KEY-File-Format) can
+(and thus would make the game not use the one in the [ERF](ERF-File-Format)/RIM). This key can
 hold one of three values: ignore (default behavior), warn (post a warning in the
 progress log) or rename (add a old_ prefix to the name of the file in the
 override folder to deactivate it).
 
-Added an optional !DefaultDestination [KEY](KEY-File-Format) to the [CompileList] section
+Added an optional !DefaultDestination key to the [CompileList] section
 which will determine where the [NCS files](NCS-File-Format) should be put if no specific
-destination has been set. Default value if the [KEY](KEY-File-Format) is left out is the override
+destination has been set. Default value if the key is left out is the override
 folder as before. In addition to override it can be set the the relative path (from
 the game folder) and name of an [ERF](ERF-File-Format) or RIM file to insert the scripts into. This
-value can then be overridden with the !Destination [KEY](KEY-File-Format) for individual files as
+value can then be overridden with the !Destination key for individual files as
 before.
 
 Optimized speed and efficiency of storing many recompiled [NCS files](NCS-File-Format) into an
@@ -1288,7 +1288,7 @@ Hopefully made workaround for bug that caused the main window panel to be
 resized larger than the window itself, pushing the Exit/Start buttons and the
 info file scrollbars outside the window borders in some rare cases.
 
-Fixed version of nwnnsscomp (0.03) that should not crash when compiling
+Fixed version of `nwnnsscomp.exe` (0.03) that should not crash when compiling
 scripts with include files under some circumstances. Huge thanks to tk102 for
 taking time to do this fix.
 
@@ -1303,14 +1303,14 @@ Apparently there was an error in the RIM spec...
 ### Change Log for Version 1.2.8b1 (REL)
 
 2006-08-09
-Changed the InstallList functionality to allow installing files into [ERF](ERF-File-Format)/RIM
+Changed the [`[InstallList]`](TSLPatcher-InstallList-Syntax) functionality to allow installing files into [ERF/MOD](ERF-File-Format)/[RIM](RIM-File-Format)
 containers as well, and not just folders within the game folder. This destination is
 set the same as you set the folder, only specify a filename at the end of the
-relative path (from the game folder) as well. (E.g. Modules\\904mal.rim)
+relative path (from the game folder) as well. (E.g. `Modules\904mal.rim`)
 
-Changed the InstallList, GFFList and CompileList to allow renaming files from
-the source to install using the keys !SaveAs (to change the name the file is
-installed as) and !SourceFile (to specify another name than is listed for the file
+Changed the [`[InstallList]`](TSLPatcher-InstallList-Syntax), [`[GFFList]`](TSLPatcher-GFFList-Syntax) and `[CompileList]` to allow renaming files from
+the source to install using the keys `!SaveAs` (to change the name the file is
+installed as) and `!SourceFile` (to specify another name than is listed for the file
 to copy.) These keys are added to the sections for the file they should affect.
 This is not yet added to ChangeEdit but must be added by hand in the INI file
 for now.
@@ -1326,29 +1326,25 @@ rather substantial changed made in version 1.2.8b0.
 ### Change Log for Version 1.2.8b0 (REL)
 
 2006-08-06
-Changed how the [ERF](ERF-File-Format)/RIM insertion of [GFF](GFF-File-Format) and [NCS files](NCS-File-Format) work to make it a
-bit more useful. It'll now work directly with such files located in the game
-folder or any subfolders, and it will modify existing [GFF files](GFF-File-Format) instead of
-overwriting unless the Replace setting is set.
+Changed how the [ERF/MOD](ERF-File-Format)/[RIM](RIM-File-Format) insertion of [GFF](GFF-File-Format) and [NCS files](NCS-File-Format) work to make it a bit more useful. It'll now work directly with such files located in the game folder or any subfolders, and it will modify existing [GFF files](GFF-File-Format) instead of
+overwriting unless the `Replace` setting is set.
 
 Changed processing order for the InstallList to allow placing new
-[ERF](ERF-File-Format)/MOD/RIM files in their proper location before the [GFF](GFF-File-Format)/Compile sections
-run so they can save any necessary modified files into those container files. The
-different install phases now run in this order: [TLK](TLK-File-Format) Appending, Install List,
-[2DA](2DA-File-Format) changes, [GFF](GFF-File-Format) Changes, Script compilation, [SSF](SSF-File-Format) Editing.
+[ERF/MOD](ERF-File-Format)/[RIM](RIM-File-Format) files in their proper location before the [`[GFFList]`](TSLPatcher-GFFList-Syntax) and `[CompileList]` sections run so they can save any necessary modified files into those container files. The
+different install phases now run in this order: [`[TLKList]`](TSLPatcher-TLKList-Syntax) Appending, [`[InstallList]`](TSLPatcher-InstallList-Syntax), [`[2DAList]`](TSLPatcher-2DAList-Syntax) changes, [`[GFFList]`](TSLPatcher-GFFList-Syntax) Changes, Script compilation, [`[SSFList]`](TSLPatcher-SSFList-Syntax) Editing.
 
-Extended the [ERF](ERF-File-Format) insertion functionality to support RIM format files as well.
+Extended the [ERF](ERF-File-Format) insertion functionality to support [RIM](RIM-File-Format) format files as well.
 
 ### Change Log for Version 1.2.7b9 (REL)
 
 2006-07-23
-Added new value keyword to the "Add [GFF](GFF-File-Format) field" sections. If "!FieldPath" is
-assigned to a 2DAMEMORY# token there, the full path+name of that field will be
+Added new value keyword to the "Add [GFF](GFF-File-Format) field" sections. If `!FieldPath` is
+assigned to a `2DAMEMORY#` token there, the full path+name of that field will be
 stored in the token.
 
-Modified the "Modify [GFF](GFF-File-Format) field" section to allow using 2DAMEMORY#
+Modified the "[Modify GFF field](TSLPatcher-GFFList-Syntax#modifying-existing-fields)" section to allow using `2DAMEMORY#`
 tokens as field keys. Unlike other sections, values cannot be assigned to a
-2DAMEMORY token here. Assigning a value to a 2DAMEMORY# token here
+`2DAMEMORY` token here. Assigning a value to a `2DAMEMORY#` token here
 will not store the value in the token, but rather insert it into the field whose
 path+name is stored in the token. This and the above change should allow
 inserting new branches into [DLG](GFF-File-Format#dlg-dialogue) files.
@@ -1365,7 +1361,7 @@ as keys must always come below the Add field section in which they are set).
 The main TSLPatcher window now shows the installation path both when
 reading it from the registry and when then user has selected it.
 
-Added a "!SourceFile" special [KEY](KEY-File-Format) to all sections except [TLK](TLK-File-Format) and [2DA](2DA-File-Format), which
+Added a "!SourceFile" special key to all sections except [TLK](TLK-File-Format) and [2DA](2DA-File-Format), which
 allows specifying the name of the file that should be used as a blueprint if it
 needs to be copied to the installation destination. The file will be renamed to
 the section name when being installed, this is just to allow different install
@@ -1380,12 +1376,12 @@ manually.
 
 2006-07-08
 Some improvements to the user interface of ChangeEdit. The
-"ExclusiveColumn" [KEY](KEY-File-Format) now has a text box of its own and is not added to the
+"ExclusiveColumn" key now has a text box of its own and is not added to the
 column list. Column labels are now loaded into the dropdown boxed in the
 Add/Copy [2DA](2DA-File-Format) line editors automatically if the [2DA](2DA-File-Format) file exists in the same folder
 as the changes.ini file (usually tslpatchdata). Fixed TSLPatcher to display the
 folder installation will be made to in the statusbar if the "Let user select" option
-is not set. Modified TSLPatcher to allow the "ExclusiveColumn" [KEY](KEY-File-Format) to occur
+is not set. Modified TSLPatcher to allow the "ExclusiveColumn" key to occur
 anywhere in a [2DA](2DA-File-Format) modifier section, not just at the top, to eliminate a potential
 source for errors.
 
@@ -1395,7 +1391,7 @@ source for errors.
 Added option for the Patcher to look up the game folder locations in the
 Registry instead of asking the user for the location. Two new keys under the
 [Settings] section determine if this is active. If LookupGameFolder is set to 1 the
-game paths will be looked up in the registry. If the LookupGameNumber [KEY](KEY-File-Format) is set
+game paths will be looked up in the registry. If the LookupGameNumber key is set
 to 1 the path to KotOR1 will be looked up, if set to 2 KotOR2:TSL will be used.
 
 ### Change Log for Version 1.2.7b4 (REL)
@@ -1454,7 +1450,7 @@ Added functionality for the Patcher process [NSS files](NSS-File-Format) for tok
 compile them with NWNNSSComp.exe.
 
  2006-01-14
-Added "ScriptCompilerFlags" [KEY](KEY-File-Format) to "Settings" section of INI that allows
+Added "ScriptCompilerFlags" key to "Settings" section of INI that allows
 
 setting of extra commandline parameters to nwnnsscomp.exe.
 
@@ -1470,7 +1466,7 @@ Changed InstallList behavior to create the specified folder path if it
 does not already exist, instead of skipping that folder.
 
 2006-01-26
-Added an optional "!ReplaceFile" [KEY](KEY-File-Format) for [GFF](GFF-File-Format) Modifier lists which will
+Added an optional "!ReplaceFile" key for [GFF](GFF-File-Format) Modifier lists which will
 make the file be overwritten rather than modified in place if it already
 exists in the override folder.
 
@@ -1486,13 +1482,13 @@ Added support for high() token when assigning a RowLabel to
 a new line, not just a copied line like before.
 
  2005-08-23
-Added a "Required" [KEY](KEY-File-Format) to the "Settings" section. When set to a
+Added a "Required" key to the "Settings" section. When set to a
 
 filename that file must exist in the override folder in order for
 
  the installer to proceed. If it does not exist, it will log an error
 
-message found in the "RequiredMsg" [KEY](KEY-File-Format).
+message found in the "RequiredMsg" key.
 
 ### Change Log for Version 1.1.6 (REL)
 
@@ -1501,12 +1497,12 @@ Added fallback plaintext logging since it seems calling RTF a
 
 "standard" would be a mistake... Version incompatibilities++ :/
 
-Add a "PlaintextLog" [KEY](KEY-File-Format) under "Settings" in the INI to use it.
+Add a "PlaintextLog" key under "Settings" in the INI to use it.
 
 ### Change Log for Version 1.1.2 (REL)
 
  2005-06-07
-Added "ExclusiveColumn" [KEY](KEY-File-Format) to Add2daLine() and Copy2daLine()
+Added "ExclusiveColumn" key to Add2daLine() and Copy2daLine()
 
 which allows skipping adding lines if a line with the same
 
@@ -1531,10 +1527,10 @@ Progress log now saved to installlog.rtf when completed.
 Added support for overwriting HACK and INSTALL files.
 
  2005-06-09
-Added "ReplaceFile" [KEY](KEY-File-Format) to HACK file modifier list.
+Added "ReplaceFile" key to HACK file modifier list.
 
  2005-06-09
-Added "Replace#" [KEY](KEY-File-Format) to InstallList file list.
+Added "Replace#" key to InstallList file list.
 
  2005-06-09
 Fixed user-selected files in InstallMode, now copied to Override

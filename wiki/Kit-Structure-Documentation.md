@@ -1001,7 +1001,7 @@ Vendor repositories (original first, mirror second): **[reone](https://github.co
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:291-550`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L291-L550)
 
-### [KEY](KEY-File-Format) Discrepancies and Rationale
+### key Discrepancies and Rationale
 
 1. **[DWK](BWM-File-Format) Extraction**:
    - **KotOR.js**: Only extracts closed state (`{modelName}0.dwk`)

@@ -2,7 +2,7 @@
 
 Part of the [2DA File Format Documentation](2DA-File-Format).
 
-**Engine Usage**: Defines all skills available in the game, including which classes can use them, their [KEY](KEY-File-Format) ability scores, and skill descriptions. The engine uses this file to determine skill availability, skill point costs, and skill checks.
+**Engine Usage**: Defines all skills available in the game, including which classes can use them, their key ability scores, and skill descriptions. The engine uses this file to determine skill availability, skill point costs, and skill checks.
 
 **Row index**: Skill ID (integer)
 
@@ -13,7 +13,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | `label` | string | Skill label |
 | `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for skill name |
 | `description` | [StrRef](TLK-File-Format#string-references-strref) | string reference for skill description |
-| `keyability` | Integer | [KEY](KEY-File-Format) ability score (STR, DEX, INT, etc.) |
+| `keyability` | Integer | key ability score (STR, DEX, INT, etc.) |
 | `armorcheckpenalty` | Boolean | Whether armor check penalty applies |
 | `allclassescanuse` | Boolean | Whether all classes can use this skill |
 | `category` | Integer | Skill category identifier |

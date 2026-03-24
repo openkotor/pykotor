@@ -38,7 +38,7 @@ When the game needs a resource, it searches in the following order:
 1. Override folder (`override/`)
 2. Currently loaded [MOD/ERF](ERF-File-Format) files
 3. Currently loaded `.sav` Save Entry (usually a folder; situational, dependent on the game)
-4. [BIF files](BIF-File-Format) via [KEY](KEY-File-Format) lookup
+4. [BIF files](BIF-File-Format) via key lookup
 5. Hardcoded defaults (if no resource found)
 
 The *KEY* file only manages [BIF](BIF-File-Format) resources (step 4). Higher-priority locations can override *KEY*-indexed resources without modifying the *KEY* file. However, this is not recommended as it can lead to inconsistencies and is not a supported feature.

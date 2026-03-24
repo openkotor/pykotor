@@ -1,22 +1,22 @@
 # KotOR TLK file format Documentation
 
-This document provides a detailed description of the TLK (Talk Table) file format used in Knights of the Old Republic (KotOR) games. TLK files contain all text strings used in the game, both written and spoken, enabling easy localization by providing a lookup table from string reference numbers ([StrRef](TLK-File-Format#string-references-strref)) to localized text and associated voice-over audio files.
+This document provides a detailed description of the *TLK* (Talk Table) file format used in Knights of the Old Republic (KotOR) games. *TLK* files contain all text strings used in the game, both written and spoken, enabling easy localization by providing a lookup table from string reference numbers ([StrRef](TLK-File-Format#string-references-strref)) to localized text and associated voice-over audio files.
 
 **For mod developers:** To modify TLK files in your mods, see the [TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
 
-**Related formats:** TLK files are referenced by [GFF files](GFF-File-Format) (especially [DLG](GFF-File-Format#dlg-dialogue) [dialogue files](GFF-File-Format#dlg-dialogue)), [2DA files](2DA-File-Format) for item names and descriptions, and [SSF files](SSF-File-Format) for character sound sets.
+**Related formats:** *TLK* files are referenced by [GFF files](GFF-File-Format) (especially [DLG](GFF-File-Format#dlg-dialogue) [dialogue files](GFF-File-Format#dlg-dialogue)), [2DA files](2DA-File-Format) for item names and descriptions, and [SSF files](SSF-File-Format) for character sound sets.
 
 ## Table of Contents
 
-- KotOR TLK File Format Documentation
+- KotOR *TLK* File Format Documentation
   - [File Structure Overview](#file-structure-overview)
   - [Binary Format](#binary-format)
     - [File Header](#file-header)
     - [String Data Table](#string-data-table)
     - [String Entries](#string-entries)
-  - [TLKEntry Structure](#tlkentry-structure)
-  - [String References (StrRef)](#string-references-strref)
-    - [Custom TLK Files](#custom-tlk-files)
+  - [*TLK* Entry Structure](#tlkentry-structure)
+  - [String References (*StrRef*)](#string-references-strref)
+    - [Custom *TLK* Files](#custom-tlk-files)
   - [Localization](#localization)
   - [Implementation Details](#implementation-details)
 
@@ -24,27 +24,23 @@ This document provides a detailed description of the TLK (Talk Table) file forma
 
 ## File structure overview
 
-TLK files store localized strings in a binary format. The game loads `dialog.tlk` at startup and references strings throughout the game using [StrRef](TLK-File-Format#string-references-strref) numbers (array indices). String lookups use the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, then module/SAV, then KEY/BIF), so custom TLKs in override or in a MOD take precedence over the base game `dialog.tlk`.
+*TLK* files store localized strings in a binary format. The game loads `dialog.tlk` at startup and references strings throughout the game using [StrRef](TLK-File-Format#string-references-strref) numbers (array indices). String lookups use the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, then module/SAV, then KEY/BIF), so custom *TLK*s in override or in a MOD take precedence over the base game `dialog.tlk`.
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/)
-
-**Vendor References:**
-
-Repositories (original first, mirror second): **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)), **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)), **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)), **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)), **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)), **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)).
-
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/tlkreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/tlkreader.cpp) - Complete C++ TLK reader implementation
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/talktable.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/talktable.cpp) - Generic Aurora Talk Table implementation (shared format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/TLKObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts) - TypeScript TLK parser with localization support
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Scripts/FileObjects/TLKObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/TLKObject.cs) - C# Unity TLK loader
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorTLK/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTLK) - .NET TLK reader/writer with builder API
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)): [`src/aurora/talktable.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/talktable.cpp) - Command-line TLK extraction and editing tools
+**Implementations:**
+- [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/)
+- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone))
+- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos))
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js))
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity))
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET))
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools))
 
 ### See also
 
-- [2DA File Format](2DA-File-Format) - Game tables with name/description StrRefs
-- [GFF File Format](GFF-File-Format) - Dialogue and templates that reference TLK strings
-- [SSF File Format](SSF-File-Format) - Sound sets that reference TLK entries
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) - Modding TLK files with TSLPatcher
+- [2DA File Format](2DA-File-Format) - Game tables with name/description *StrRef*s.
+- [GFF File Format](GFF-File-Format) - Dialogue and templates that reference *TLK* strings.
+- [SSF File Format](SSF-File-Format) - Sound sets that reference *TLK* entries.
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) - Modding *TLK* files with *TSLPatcher*.
 
 ---
 
@@ -52,7 +48,7 @@ Repositories (original first, mirror second): **[reone](https://github.com/seedh
 
 ### File Header
 
-The file header is 20 bytes in size:
+The file header is `20` (0x14) bytes in size:
 
 | Name                | type    | offset | size | Description                                    |
 | ------------------- | ------- | ------ | ---- | ---------------------------------------------- |
@@ -60,85 +56,78 @@ The file header is 20 bytes in size:
 | file Version        | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | `"V3.0"` for KotOR, `"V4.0"` for Jade Empire  |
 | Language ID         | [int32](GFF-File-Format#gff-data-types)   | 8 (0x08) | 4    | Language identifier (see [Localization](#localization)) |
 | string count        | [int32](GFF-File-Format#gff-data-types)   | 12 (0x0C) | 4    | Number of string entries in the file           |
-| string Entries offset | [int32](GFF-File-Format#gff-data-types) | 16 (0x10) | 4    | offset to string entries array (typically 20)  |
+| string Entries offset | [int32](GFF-File-Format#gff-data-types) | 16 (0x10) | 4    | Offset to string entries array (typically `20` (0x14))  |
 
-**References**
-
-**Vendor Implementations:**
+**Implementations:**
 
 - **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/tlkreader.cpp:31-84`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L31-L84) - File header parsing
 
-### String data table
+### String Data Table
 
-The string data table contains metadata for each string entry. Each entry is 40 bytes:
+The string data table contains metadata for each string entry. Each entry is `40` (0x28) bytes in size:
 
-| Name              | type      | offset | size | Description                                                      |
+| Name              | Type      | Offset | Size | Description                                                      |
 | ----------------- | --------- | ------ | ---- | ---------------------------------------------------------------- |
-| flags             | UInt32    | 0 (0x00) | 4    | bit flags: bit 0=text present, bit 1=sound present, bit 2=sound length present |
-| Sound *ResRef*      | [char](GFF-File-Format#gff-data-types)  | 4 (0x04) | 16   | Voice-over audio filename ([null-terminated](https://en.cppreference.com/w/c/string/byte), max 16 chars)        |
-| Volume Variance   | UInt32    | 20 (0x14) | 4    | Unused in KotOR (always 0)                                      |
-| Pitch Variance    | UInt32    | 24 (0x18) | 4    | Unused in KotOR (always 0)                                      |
-| offset to string  | UInt32    | 28 (0x1C) | 4    | offset to string text (relative to string Entries offset)       |
+| flags             | UInt32    | 0 (0x00) | 4    | Bit flags: bit 0=text present, bit 1=sound present, bit 2=sound length present |
+| Sound *ResRef*      | [char](GFF-File-Format#gff-data-types)  | 4 (0x04) | 16   | Voice-over audio filename ([null-terminated](https://en.cppreference.com/w/c/string/byte), max `16` chars)        |
+| Volume Variance   | UInt32    | 20 (0x14) | 4    | Unused in KotOR (always `0`)                                      |
+| Pitch Variance    | UInt32    | 24 (0x18) | 4    | Unused in KotOR (always `0`)                                      |
+| offset to string  | UInt32    | 28 (0x1C) | 4    | Offset to string text (relative to string Entries offset)       |
 | string size       | UInt32    | 32 (0x20) | 4    | Length of string text in bytes                                  |
 | Sound Length      | [float](GFF-File-Format#gff-data-types)     | 36 (0x24) | 4    | Duration of voice-over audio in seconds                         |
 
 **References**
 
-**Vendor Implementations:**
-
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:57-90`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L57-L90) - String data table structure
 
-**flag bits:**
+**Flag Bits:**
 
 - **bit 0 (0x0001)**: Text present - string has text content
 - **bit 1 (0x0002)**: Sound present - string has associated voice-over audio
 - **bit 2 (0x0004)**: Sound length present - sound length field is valid
 
-**flag Combinations:**
+**Flag Combinations:**
 
-Common flag patterns in KotOR TLK files:
+Common flag patterns in KotOR *TLK* files:
 
-| flags | Hex | Description | Usage |
+| Flags | Hex | Description | Usage |
 | ----- | --- | ----------- | ----- |
 | `0x0001` | `0x01` | Text only | Menu options, item descriptions, non-voiced dialog |
 | `0x0003` | `0x03` | Text + Sound | Voiced dialog lines (most common for party/NPC speech) |
 | `0x0007` | `0x07` | Text + Sound + Length | Fully voiced with duration data (cutscenes, important dialog) |
 | `0x0000` | `0x00` | Empty entry | Unused [StrRef](TLK-File-Format#string-references-strref) slots |
 
-The engine uses these flags to decide:
+The engine uses these flags to determine:
 
-- Whether to display subtitles (Text present flag)
-- Whether to play voice-over audio (Sound present flag)
-- How long to wait before auto-advancing dialog (Sound length present flag)
+- Whether to display subtitles (*Text present* flag)
+- Whether to play voice-over audio (*Sound present* flag)
+- How long to wait before auto-advancing dialog (*Sound length present* flag)
 
-Missing flags are treated as `false` - if Text present is not set, the string is treated as empty even if text data exists.
+Missing flags are treated as `false` - if *Text present* is not set, the string is treated as empty even if text data exists.
 
-### String entries
+### String Entries
 
-String entries follow the string data table:
+String entries follow the *String Data Table*:
 
-| Name         | type   | Description                                                      |
+| Name         | Type   | Description                                                      |
 | ------------ | ------ | ---------------------------------------------------------------- |
-| string Text  | [char](GFF-File-Format#gff-data-types)[] | [null-terminated string](https://en.cppreference.com/w/c/string/byte) data (UTF-8 or Windows-1252 encoded)     |
+| Text String  | [char](GFF-File-Format#gff-data-types)[] | [Null-terminated string](https://en.cppreference.com/w/c/string/byte) data (UTF-8 or Windows-1252 encoded)     |
 
-string text is stored at the offset specified in the string data table entry. The encoding depends on the language ID (see [Localization](#localization)).
+Text string is stored at the offset specified in the *String Data Table* entry. The encoding depends on the language ID (see [Localization](#localization)).
 
 ---
 
-## TLKEntry structure
+## *TLK* Entry Structure
 
-Each TLK entry contains:
+Each *TLK* entry contains:
 
 **References**
-
-**PyKotor:**
-
 - [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py) - TLKEntry and TLK implementation
 
 | Attribute        | type   | Description                                                      |
 | ---------------- | ------ | ---------------------------------------------------------------- |
 | `text`           | str    | Localized text string                                            |
-| `voiceover`      | *ResRef* | Voice-over audio filename ([WAV file](WAV-File-Format))                            |
+| `voiceover`      | [ResRef](GFF-File-Format#gff-data-types) | Voice-over audio resref (max 16 characters) ([WAV file](WAV-File-Format))                            |
 | `text_present`   | bool   | Whether text content exists                                      |
 | `sound_present`  | bool   | Whether voice-over audio exists                                  |
 | `soundlength_present` | bool | Whether sound length is valid                                    |
@@ -146,56 +135,19 @@ Each TLK entry contains:
 
 ---
 
-## string References (StrRef)
+## String References (StrRef)
 
-string references (StrRef) are integer indices into the TLK file's entry array:
+String references (*StrRef*) are integer indices into the TLK file's entry array:
 
 - **StrRef 0**: First entry in the TLK file
 - **StrRef -1**: No string reference (used to indicate missing/empty strings)
 - **StrRef N**: Nth entry (0-based indexing)
 
-The game uses StrRef values throughout [GFF files](GFF-File-Format), scripts, and other resources to reference localized text. When displaying text, the game looks up the StrRef in `dialog.tlk` and displays the corresponding text.
-
-### Custom TLK files
-
-Mods can add custom TLK files to extend available strings:
-
-**dialog.tlk structure:**
-
-- Base game: `dialog.tlk` (read-only, ~50,000-100,000 entries)
-- Custom content: `dialogf.tlk` or custom TLK files placed in override
-
-**[StrRef](TLK-File-Format#string-references-strref) Ranges:**
-
-- `0` to `~50,000`: Base game strings (varies by language)
-- `16,777,216` (`0x01000000`) and above: Custom TLK range (TSLPatcher convention)
-- Negative values: Invalid/missing references
-
-**Mod Tools Approach:**
-
-TSLPatcher and similar tools use high [StrRef](TLK-File-Format#string-references-strref) ranges for custom strings:
-
-```plaintext
-Base [StrRef](TLK-File-Format#string-references-strref):   0 - 50,000 (dialog.tlk)
-Custom Range:  16777216+ (custom TLK files)
-```
-
-This avoids conflicts with base game strings and allows mods to add thousands of custom text entries without overwriting existing content.
-
-**Multiple TLK files:**
-
-The game can load multiple TLK files:
-
-1. `dialog.tlk` - Primary game text
-2. `dialogf.tlk` - Female-specific variants (polish K1 only)
-
-Priority: Custom TLKs --> dialogf.tlk --> `dialog.tlk`
-
----
+The game uses *StrRef* values throughout the game's files such as [CExoLocString](Bioware-Aurora-GFF#cexolocstring) fields in [GFF](GFF-File-Format) files, [NSS](NSS-File-Format) scripts, and other resources to reference localized text. When displaying text, the game looks up the *StrRef* in `dialog.tlk` and displays the corresponding text.
 
 ## Localization
 
-TLK files support multiple languages through the Language ID field:
+*TLK* files support multiple languages through the Language ID field:
 
 | Language ID | Language | Encoding      |
 | ----------- | -------- | ------------- |
@@ -205,13 +157,19 @@ TLK files support multiple languages through the Language ID field:
 | 3           | Italian  | Windows-1252  |
 | 4           | Spanish  | Windows-1252  |
 | 5           | Polish   | Windows-1250  |
-| 6           | Korean   | UTF-8         |
-| 7           | Chinese  | UTF-8         |
-| 8           | Japanese | UTF-8         |
 
-**Note**: KotOR games typically ignore the Language ID field and always use `dialog.tlk`. The field is primarily used by modding tools to identify language.
+**Note**: KotOR games typically ignore the Language ID field in the `dialog.tlk`. The field is primarily used by modding tools to identify the language.
 
-**Note**: Windows-1252 is a single byte encoding, meaning only 256 characters are supported. This occasionally is known as "ISO-8859-1" or *cp1252*.
+**Note**: *Windows-1252* is a single byte encoding, meaning only ***256*** characters are supported. This occasionally is known as "ISO-8859-1" or *cp1252*.
+
+### Bi-Lingual Implementation
+
+The Polish localization version of the first KotOR game supports bi-lingual localization using two *TLK* files:
+
+1. `dialog.tlk` - Primary game text
+2. `dialogf.tlk` - Female-specific variants (KotOR1 Polish only)
+
+---
 
 ---
 
@@ -223,18 +181,13 @@ TLK files support multiple languages through the Language ID field:
 
 **TLK Class**: [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py:56-291`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L56-L291)
 
-**Kotor.NET** (C#):
-
-- structure: **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs)
-
 ### See also
 
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- Modifying TLK via HoloPatcher/TSLPatcher
-- [2DA-File-Format](2DA-File-Format), [GFF-File-Format](GFF-File-Format) -- StrRef consumers; [NSS-File-Format](NSS-File-Format) -- Script strings
-- [Bioware-Aurora-TalkTable](Bioware-Aurora-TalkTable) -- Aurora talk table spec
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
-- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for TLK/StrRef modding
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- Patching *TLK* files.
+- [2DA-File-Format](2DA-File-Format), [GFF-File-Format](GFF-File-Format) -- *StrRef* consumers; [NSS-File-Format](NSS-File-Format) -- Script strings.
+- [Official BioWare Aurora TalkTable Specification](Bioware-Aurora-TalkTable) -- Official BioWare Aurora TalkTable specification.
+- [Community Sources and Archives](Home#community-sources-and-archives) -- DeadlyStream, forums for *TLK*/*StrRef* modding and string references.
 
 ---
 
-This documentation aims to provide a comprehensive overview of the KotOR TLK file format, focusing on the detailed file structure and data formats used within the games.
+This documentation aims to provide a comprehensive overview of the KotOR *TLK* file format, focusing on the detailed file structure and data formats used within the games.

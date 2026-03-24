@@ -43,7 +43,7 @@ The `[SSFList]` section declares [SSF files](SSF-File-Format) to patch. Each ent
 
 ### Top-Level Keys in [SSFList]
 
-| [KEY](KEY-File-Format) | type | Default | Description |
+| key | type | Default | Description |
 |-----|------|---------|-------------|
 | `!DefaultDestination` | string | `Override` | Default destination for all [SSF files](SSF-File-Format) in this section |
 | `!DefaultSourceFolder` | string | `.` | Default source folder for [SSF files](SSF-File-Format). This is a relative path from `mod_path`, which is typically the `tslpatchdata` folder (the parent directory of the `changes.ini` file). The default value `.` refers to the `tslpatchdata` folder itself. Path resolution: `mod_path / !DefaultSourceFolder / filename` |

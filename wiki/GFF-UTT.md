@@ -59,8 +59,8 @@ UTT files define [trigger templates](GFF-File-Format#utt-trigger) for invisible 
 | `TrapDisarmable` | Byte | Can be disarmed |
 | `DisarmDC` | Byte | Security DC to disarm |
 | `TrapOneShot` | Byte | Fires once then disables |
-| `AutoRemoveKey` | Byte | [KEY](KEY-File-Format) removed on use |
-| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | [KEY](KEY-File-Format) tag required to disarm/bypass |
+| `AutoRemoveKey` | Byte | key removed on use |
+| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | key tag required to disarm/bypass |
 
 **Trap Mechanics:**
 

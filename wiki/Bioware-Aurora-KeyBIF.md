@@ -1,602 +1,302 @@
-# KeyBIF
+# KEY and BIF file formats — BioWare Aurora Engine
 
-*Official Bioware Aurora Documentation*
-
-> **Note**: This official BioWare documentation was originally written for **Neverwinter Nights**, but the KEY and BIF formats are **identical in KotOR**. All structures, fields, and behaviors described here apply to KotOR as well. The examples may reference NWN-specific features, but the core format is the same.
-
-**Source:** This documentation is extracted from the official BioWare Aurora Engine KeyBIF Format PDF, archived in [`vendor/xoreos-docs/specs/bioware/KeyBIF_Format.pdf`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/bioware/KeyBIF_Format.pdf). The original documentation was published on the now-defunct *nwn.bioware.com* developer site.
+*Official BioWare Aurora documentation (archived extract).*
 
 ---
 
-## Page 1
-
-BioWare Corp.
-<http://www.bioware.com>
-BioWare Aurora Engine
-Key and BIF File Formats
-
-1. Introduction
-BioWare's games and tools make use of a very large number of files that are packed into a group of files
-having the .bif extension. The contents of the .bif files are described by one or more files having the
-.key extension.
-1.1. Conventions
-This document describes file formats. In all file formats discussed herein, file byte ordering is little
-endian, which is the format used by Intel processors. If a value is more than 1 byte long, then the
-least significant byte is the first one, and the most significant byte is the last one.
-For example, the number 258 (0x0102 in hex) expressed as a 4-byte integer would be stored as the
-following sequence of bytes within the file: 0x02, 0x01, 0x00, 0x00.
-The following terms are used in this document to refer to integer types:
-•
-WORD: 16-bit (2-byte) unsigned integer
-•
-DWORD: 32-bit (4-byte) unsigned integer
-1.2. Resource Management
-The game and toolset both use the same resource management system for requesting game
-resources (ie., files).
-Any resource can be obtained simply by specifying a ResRef (filename restricted to 16 characters
-or less) and ResType (file type). The resource manager handles all the details of getting that
-resource from whereever it is physically located, which may be in a folder, packed inside a BIF or
-HAK file, etc. If there is more than one copy of a given file, then one of them overrides all the
-others, as determined by rules outlined later in this section.
-The resource manager has 3 types of source from which it builds its list of resources:
-•
-keytable: a .key file, typically located in the same directory as the application itself. A keyfile
-provides information regarding the contents of a set of .bif files, and each bif file contains
-files that are used as game resources. (Examples of keytable files: chitin.key, xp1.key,
-patch.key. Examples of .bif files: any of the .bif files in the data folder). The key and bif
-formats will be discussed in much greater detail later in this document.
-•
-directories: an ordinary directory containing game resource files. (Examples of resource
-directories: override, modules\temp0)
-•
-encapsulated file: an encapsulated resource file (ERF), which contains other files used as
-game resources. (Examples of encapsulated files: hak paks located in hak folder, erf files
-located in texturepacks folder). See the ERF Format document for details on the encapsulated
-resouce file format.
-
-## Page 2
-
-BioWare Corp.
-<http://www.bioware.com>
-There can be any number of resource sources of each type. If there is more than one resource with
-the same name and type located in more than one resource source, then the following rules
-determine which copy of that resource takes priority:
-The last resource source of a given type overrides the first source of that type.
-Example: the toolset adds the override directory to the resource manager on startup, but the
-module temp directory is created and added to the resource manager only after creating a module.
-Thus, files the temp directory take precedence over those in the override directory.
-Encapsulated files have the highest priority, then directories, then keytables, regardless of the
-order they were added to the resource manager.
-Example: suppose that the following were added to the resource manager one after another:
-chitin.key, patch.key, override folder, textures_tpa.erf, modules\temp0 folder, customcontent.hak.
-The resource manager will place them, in order of lowest to highest priority, as: chitin.key,
-patch.key, override folder, modules\temp0 folder, textures_tpa.erf, customcontent.hak. If both
-your module and the customcontent.hak file both contained a script called ns_test00, then the one
-in the hak file would be used.
-1.3. Resource Types
-All Resources have a Resource Type (ResType) that corresponds to their file type. Resources are
-stored in BIFs and ERFs without their file extensions, but with their ResTypes instead.
-The table below lists ResTypes for resources that may be stored in a BIF or ERF. All ResTypes
-from 0 to 2999, 9000 to 9999, and 0xFFFF are reserved.
-Table 1.3.1: Resource Types
-ResType
-File
-Extension
-Content
-Type
-Description
-0xFFFF
-N/A
-N/A
-Invalid resource type
-1
-bmp
-binary
-Windows BMP file
-3
-tga
-binary
-TGA image format
-4
-wav
-binary
-WAV sound file
-6
-plt
-binary
-Bioware Packed Layered Texture, used for player
-character skins, allows for multiple color layers
-7
-ini
-text (ini)
-Windows INI file format
-10
-txt
-text
-Text file
-2002
-mdl
-mdl
-Aurora model
-2009
-nss
-text
-NWScript Source
-2010
-ncs
-binary
-NWScript Compiled Script
-2012
-are
-gff
-BioWare Aurora Engine Area file. Contains
-information on what tiles are located in an area, as well
-as other static area properties that cannot change via
-scripting.
-For each .are file in a .mod, there must also be a
-corresponding .git and .gic file having the same
-ResRef.
-2013
-set
-text (ini)
-BioWare Aurora Engine Tileset
-2014
-ifo
-gff
-Module Info File. See the IFO Format document.
-2015
-bic
-gff
-Character/Creature
-2016
-wok
-mdl
-Walkmesh
-2017
-2da
-text
-2-D Array
-2022
-txi
-text
-Extra Texture Info
-
-## Page 3
-
-BioWare Corp.
-<http://www.bioware.com>
-2023
-git
-gff
-Game Instance File. Contains information for all object
-instances in an area, and all area properties that can
-change via scripting.
-2025
-uti
-gff
-Item Blueprint
-2027
-utc
-gff
-Creature Blueprint
-2029
-dlg
-gff
-Conversation File
-2030
-itp
-gff
-Tile/Blueprint Palette File
-2032
-utt
-gff
-Trigger Blueprint
-2033
-dds
-binary
-Compressed texture file
-2035
-uts
-gff
-Sound Blueprint
-2036
-ltr
-binary
-Letter-combo probability info for name generation
-2037
-gff
-gff
-Generic File Format. Used when undesirable to create a
-new file extension for a resource, but the resource is a
-GFF. (Examples of GFFs include itp, utc, uti, ifo, are,
-git)
-2038
-fac
-gff
-Faction File
-2040
-ute
-gff
-Encounter Blueprint
-2042
-utd
-gff
-Door Blueprint
-2044
-utp
-gff
-Placeable Object Blueprint
-2045
-dft
-text (ini)
-Default Values file. Used by area properties dialog
-2046
-gic
-gff
-Game Instance Comments. Comments on instances are
-not used by the game, only the toolset, so they are
-stored in a gic instead of in the git with the other
-instance properties.
-2047
-gui
-gff
-Graphical User Interface layout used by game
-2051
-utm
-gff
-Store/Merchant Blueprint
-2052
-dwk
-mdl
-Door walkmesh
-2053
-pwk
-mdl
-Placeable Object walkmesh
-2056
-jrl
-gff
-Journal File
-2058
-utw
-gff
-Waypoint Blueprint. See Waypoint GFF document.
-2060
-ssf
-binary
-Sound Set File. See Sound Set File Format document
-2064
-ndb
-binary
-Script Debugger File
-2065
-ptm
-gff
-Plot Manager file/Plot Instance
-2066
-ptt
-gff
-Plot Wizard Blueprint
-
-Table 1.3.2: Resource Content Types
-Content Type
-Description
-binary
-Binary file format. Details vary widely as to implementation
-text
-Plain text file.
-For some text resources, it doesn't matter whether lines are terminated by
-CR+LF or just CR characters, but for other text resources, it might matter.
-To avoid complications, always use CR+LF line terminators because that at
-least will work in all cases..
-text (ini)
-Windows INI file format. Special case of a text file.
-gff
-BioWare Generic File Format. See the Generic File Format document.
-mdl
-BioWare Aurora model file format. Can be plain text or binary.
-
-## Page 4
-
-BioWare Corp.
-<http://www.bioware.com>
-2. Key File Format (KEY)
-A Key file is an index of all the resources contained within a set of BIF files. The key file contains
-information as to which BIFs it indexes for and what resources are contained in those BIFs.
-2.1. Key File Structure
-Figure 2.1: Key File Structure
-Header
-File Table
-Filename Table
-Key Entries Table
-OffsetToFileTable
-OffsetToKeyTable
-Start of File
-
-2.2. Header
-Table 2.2: Keyfile Header
-Value
-Type
-Description
-FileType
-4 char
-
-### "KEY "
-
-FileVersion
-4 char
-
-### "V1  "
-
-BIFCount
-
-### DWORD
-
-Number of BIF files that this KEY file controls
-KeyCount
-
-### DWORD
-
-Number of Resources in all BIF files linked to this keyfile
-OffsetToFileTable
-
-### DWORD
-
-Byte offset of File Table from beginning of this file
-OffsetToKeyTable
-
-### DWORD
-
-Byte offset of Key Entry Table from beginning of this file
-Build Year
-
-### DWORD
-
-Number of years since 1900
-Build Day
-
-### DWORD
-
-Number of days since January 1
-Reserved
-32 bytes
-Reserved for future use
-2.3. File Table
-The File Table is a list of all the BIF files that are associated with the key file.
-The number of elements in the File Table is equal to the BIFCount specified in the Header.
-Each element in the File Table is a File Entry, and describes a single BIF file.
-Table 2.3: File Entry
-Value
-Type
-Description
-FileSize
-
-### DWORD
-
-File size of the BIF.
-FilenameOffset
-
-### DWORD
-
-Byte position of the BIF file's filename in this file. Points
-to a location in the FileName Table.
-FilenameSize
-
-### WORD
-
-Number of characters in the BIF's filename.
-Drives
-
-### WORD
-
-A number that represents which drives the BIF file is
-located in.  Currently each bit represents a drive letter.
-e.g., bit 0 = HD0, which is the directory where the
-
-## Page 5
-
-BioWare Corp.
-<http://www.bioware.com>
-application was installed.
-2.4. Filename Table
-The Filename Table lists the filenames of all the BIF files associated with the key file.
-Each File Entry in the File Table has a FilenameOffset that indexes into a Filename Entry in the
-Filename Table.
-Table 2.4: Filename Entry
-Value
-Type
-Description
-Filename
-variable
-Filename of the BIF as a non-terminated character
-string.
-This filename is relative to the the "drive" where the BIF
-is located (as specified in the Drives portion of the BIF
-File Entry).
-Each Filename must be unique.
-e.g., "data\2da.bif"
-2.5. Key Table
-The Key Table is a list of all the resources in all the BIFs associated with this key file.
-The number of elements in the Key Table is equal to the KeyCount specified in the Header.
-Each element in the Key Table is a Key Entry, and describes a single resource. A resource may be
-a Variable Resource, or it may be a Fixed Resource (at this time, all resources are Variable).
-Table 2.5: Key Entry
-Value
-Type
-Description
-ResRef
-16 char
-The filename of the resource item without it’s extension.
-The game uses this name to access the resource.
-Each ResRef must be unique.
-ResourceType
-
-### WORD
-
-Resource Type of the Resource.
-ResID
-
-### DWORD
-
-A unique ID number.  It is generated as follows:
-
-Variable:      ID = (x << 20) + y
-Fixed:           ID = (x << 20) + (y << 14)
-
-x = [Index into File Table to specify a BIF]
-y = [Index into Variable or Fixed Resource Table in BIF]
-(<< means bit shift left)
-3. BIF File Format (BIF)
-A BIF contains mutliple resources (files). It does not contain information about each resource's name,
-and therefore requires its KEY file.
-
-## Page 6
-
-BioWare Corp.
-<http://www.bioware.com>
-3.1. BIF Structure
-Figure 3.1: BIF File Structure
-Header
-Variable Resource Table
-Fixed Resource Table
-Variable Resource Data
-Variable TableOffset
-Start of File
-Fixed Resource Data
-
-3.2 Header
-Table 3.2: Header Format
-Value
-Type
-Description
-FileType
-4 char
-
-### "BIFF"
-
-Version
-4 char
-
-### "V1  "
-
-Variable Resource Count
-
-### DWORD
-
-Number of variable resources in this file.
-Fixed Resource Count
-
-### DWORD
-
-Number of fixed resources in this file.
-Variable Table Offset
-
-### DWORD
-
-Byte position of the Variable Resource Table from the
-beginning of this file. Currently, this value is 20.
-3.3. Variable Resource Table
-The Variable Resource Table has a number of entries equal to the Variable Resource Count
-specified in the Header.
-
-## Page 7
-
-BioWare Corp.
-<http://www.bioware.com>
-Table 3.3: Variable Resource Entry
-Value
-Type
-Description
-ID
-
-### DWORD
-
-A unique ID number.  It is generated as follows:
-
-Variable ID = (x << 20) + y
-
-(<< means bit shift left)
-
-y = [Index of this Resource Entry in the BIF]
-
-In the BIFs included with the game CDs, x = y.
-In the patch BIFs, x = 0.
-
-This discrepancy in x values does not matter to the
-game or toolset because their resource manager
-system doesn't care about the value of x in a BIF.
-Offset
-
-### DWORD
-
-The location of the variable resource data. This is a byte
-offset from the beginning of the BIF file into the
-Variable Resource Data block.
-File Size
-
-### DWORD
-
-File size of this resource. Specifies the number of bytes
-in the Variable Resource Data block that belong to this
-resource.
-Resource Type
-
-### DWORD
-
-Resource type of this resource
-3.4. Fixed Resource Table
-NOTE: This block is actually not implemented.  Support for Fixed Resources is available, as the
-offset is left in the BIF header, but there is currently nothing implemented.  As a result, there is no
-existing data type for this.  Below is what would conceptually become the Fixed resource table.
-The Fixed Resource Table has a number of entries equal to the Fixed Resource Count specified in
-the Header. If it has one or more elements, it is located immediately after the end of the Variable
-Resource Table. If there are no fixed resources, then this block is not present at all and the
-Variable Resource Data block immediately follows the Variable Resource Table.
-Table 3.4 Fixed Resource Entry
-Value
-Type
-Description
-ID
-
-### DWORD
-
-A unique ID number.  It is generated as follows:
-
-Fixed ID = (x << 20) + (y << 14)
-
-x = [Index of this BIF in its Key file's File Table]
-y = [Index of this Resource Entry]
-(<< means bit shift left)
-Offset
-
-### DWORD
-
-The location of the fixed resource data. This is a byte
-offset from the beginning of the BIF file into the Fixed
-Resource Data block.
-PartCount
-
-### DWORD
-
-Number of parts
-File Size
-
-### DWORD
-
-File size of this resource
-Resource Type
-
-### DWORD
-
-Resource type of this resource
-3.5. Variable Resource Data
-The Variable Resource Data block contains raw bytes of data pointed to by the Offset values in the
-Variable Resource Entries.
-3.6. Fixed Resource Data
-Fixed Resource Parts (as defined in the fixed resource table).
-
-### See also
-
-- [KEY-File-Format](KEY-File-Format) -- KotOR KEY implementation and resolution order
-- [BIF-File-Format](BIF-File-Format) -- KotOR BIF implementation
-- [ERF-File-Format](ERF-File-Format) -- MOD/RIM containers; [GFF-File-Format](GFF-File-Format) -- GFF resources
+## Table of contents
+
+- [About this document](#about-this-document)
+- [1. Introduction](#1-introduction)
+  - [1.1 Conventions](#11-conventions)
+  - [1.2 Resource management](#12-resource-management)
+  - [1.3 Resource types](#13-resource-types)
+    - [Table 1.3.1: Resource types](#table-131-resource-types)
+    - [Table 1.3.2: Resource content types](#table-132-resource-content-types)
+- [2. KEY file format](#2-key-file-format)
+  - [2.1 KEY file structure](#21-key-file-structure)
+  - [2.2 Header (Table 2.2)](#22-header-table-22)
+  - [2.3 File table (Table 2.3)](#23-file-table-table-23)
+  - [2.4 Filename table (Table 2.4)](#24-filename-table-table-24)
+  - [2.5 Key table (Table 2.5)](#25-key-table-table-25)
+- [3. BIF file format](#3-bif-file-format)
+  - [3.1 BIF structure](#31-bif-structure)
+  - [3.2 Header (Table 3.2)](#32-header-table-32)
+  - [3.3 Variable resource table (Table 3.3)](#33-variable-resource-table-table-33)
+  - [3.4 Fixed resource table (Table 3.4)](#34-fixed-resource-table-table-34)
+  - [3.5 Variable resource data](#35-variable-resource-data)
+  - [3.6 Fixed resource data](#36-fixed-resource-data)
+- [See also](#see-also)
+
+---
+
+## About this document
+
+**Source:** Official BioWare Aurora Engine Key/BIF Format PDF, archived in [`vendor/xoreos-docs/specs/bioware/KeyBIF_Format.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/KeyBIF_Format.pdf) (mirror: [`th3w1zard1/xoreos-docs/.../KeyBIF_Format.pdf`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/bioware/KeyBIF_Format.pdf)). Originally published on `nwn.bioware.com`.
+
+> **Note:** Written for **Neverwinter Nights**; **KEY and BIF are identical in KotOR**. NWN-centric examples (e.g. `chitin.key`, HAK) still illustrate the same binary layout.
+
+*BioWare Corp. · [bioware.com](http://www.bioware.com) · BioWare Aurora Engine — Key and BIF*
+
+---
+
+## 1. Introduction
+
+BioWare games pack many resources into **`.bif`** archives. **`.key`** files describe what those BIFs contain and how to look resources up.
+
+### 1.1 Conventions
+
+All formats in this document are **little-endian** (Intel byte order): for multi-byte integers, the **least significant byte is first**.
+
+**Example:** **258** (`0x0102`) as a 32-bit value is stored as:
+
+`0x02`, `0x01`, `0x00`, `0x00`
+
+**Integer terms**
+
+| Term | Meaning |
+|------|---------|
+| **WORD** | 16-bit unsigned |
+| **DWORD** | 32-bit unsigned |
+
+### 1.2 Resource management
+
+The game and toolset resolve a resource by **ResRef** (filename, ≤ **16** characters) and **ResType** (type id). The resource manager loads from **override folders**, **BIF**/**HAK**/folders, etc. If multiple copies exist, **precedence rules** pick one.
+
+**Source kinds** (any number of each):
+
+1. **Key table** — a **`.key`** file (e.g. `chitin.key`, `xp1.key`, `patch.key`) indexing **`.bif`** files (e.g. under `data\`).
+2. **Directories** — plain folders of loose files (e.g. `override`, `modules\temp0`).
+3. **Encapsulated files** — **[ERF](Bioware-Aurora-ERF)**-family archives (HAK, ERF in `texturepacks`, etc.).
+
+**Precedence**
+
+- Among sources of the **same** kind, **later** registration **wins** over **earlier** (e.g. temp module folder after override).
+- Across kinds: **encapsulated** **>** **directories** **>** **key tables**, regardless of add order.
+
+**Example:** Added in order: `chitin.key`, `patch.key`, `override`, `textures_tpa.erf`, `modules\temp0`, `customcontent.hak`. Lowest → highest priority:
+
+`chitin.key` → `patch.key` → `override` → `modules\temp0` → `textures_tpa.erf` → `customcontent.hak`
+
+So a script `ns_test00` in both the module and `customcontent.hak` uses the **HAK** copy.
+
+### 1.3 Resource types
+
+Resources have a **ResType** id. Inside BIF/ERF they are stored **without** the file extension; type is implied by **ResType**.
+
+Reserved ranges: **0–2999**, **9000–9999**, and **`0xFFFF`** (per BioWare spec). Other values are available for defined types.
+
+#### Table 1.3.1: Resource types
+
+| ResType | Ext. | Content type | Description |
+|---------|------|--------------|-------------|
+| `0xFFFF` | — | — | Invalid |
+| 1 | bmp | binary | Windows BMP |
+| 3 | tga | binary | TGA image |
+| 4 | wav | binary | WAV audio |
+| 6 | plt | binary | BioWare PLT (layered textures, e.g. PC skins) |
+| 7 | ini | text (ini) | Windows INI |
+| 10 | txt | text | Plain text |
+| 2002 | mdl | mdl | Aurora model |
+| 2009 | nss | text | NWScript source |
+| 2010 | ncs | binary | NWScript compiled |
+| 2012 | are | gff | Area (`.are`); paired **GIT** + **GIC** same ResRef in a module |
+| 2013 | set | text (ini) | Tileset |
+| 2014 | ifo | gff | Module info — [IFO](Bioware-Aurora-IFO) |
+| 2015 | bic | gff | Character / creature |
+| 2016 | wok | mdl | Walkmesh |
+| 2017 | 2da | text | Two-dimensional array |
+| 2022 | txi | text | Extra texture info |
+| 2023 | git | gff | Game instance (instances + scriptable area state) |
+| 2025 | uti | gff | Item blueprint |
+| 2027 | utc | gff | Creature blueprint |
+| 2029 | dlg | gff | Conversation |
+| 2030 | itp | gff | Tile/blueprint palette |
+| 2032 | utt | gff | Trigger blueprint |
+| 2033 | dds | binary | Compressed texture |
+| 2035 | uts | gff | Sound blueprint |
+| 2036 | ltr | binary | Letter-combo probabilities (name generation) |
+| 2037 | gff | gff | Generic GFF when no dedicated extension (ITP, UTC, UTI, IFO, ARE, GIT, …) |
+| 2038 | fac | gff | Faction |
+| 2040 | ute | gff | Encounter blueprint |
+| 2042 | utd | gff | Door blueprint |
+| 2044 | utp | gff | Placeable blueprint |
+| 2045 | dft | text (ini) | Default values (area properties UI) |
+| 2046 | gic | gff | Instance comments (toolset; not used by game) |
+| 2047 | gui | gff | GUI layout |
+| 2051 | utm | gff | Store / merchant blueprint |
+| 2052 | dwk | mdl | Door walkmesh |
+| 2053 | pwk | mdl | Placeable walkmesh |
+| 2056 | jrl | gff | Journal — [Journal](Bioware-Aurora-Journal) |
+| 2058 | utw | gff | Waypoint blueprint |
+| 2060 | ssf | binary | Sound set — see SSF format doc |
+| 2064 | ndb | binary | Script debugger |
+| 2065 | ptm | gff | Plot manager / plot instance |
+| 2066 | ptt | gff | Plot wizard blueprint |
+
+#### Table 1.3.2: Resource content types
+
+| Content type | Description |
+|--------------|-------------|
+| **binary** | Opaque binary; format varies. |
+| **text** | Plain text. Prefer **CR+LF** line endings for broadest compatibility. |
+| **text (ini)** | Windows INI (text subset). |
+| **gff** | [Generic File Format (GFF)](Bioware-Aurora-GFF). |
+| **mdl** | Aurora model (ASCII or binary). |
+
+---
+
+## 2. KEY file format
+
+A **KEY** indexes resources stored across one or more **BIF** files: which BIFs exist, their paths, and **ResRef + ResType → location**.
+
+### 2.1 KEY file structure
+
+**Figure 2.1: KEY layout**
+
+```text
+Start of file
+├── Header
+├── File Table        @ OffsetToFileTable
+├── Filename Table    (paths referenced by File Table)
+└── Key Entries Table @ OffsetToKeyTable
+```
+
+### 2.2 Header (Table 2.2)
+
+| Value | Type | Description |
+|-------|------|-------------|
+| `FileType` | 4 `char` | **`"KEY "`** |
+| `FileVersion` | 4 `char` | **`"V1  "`** |
+| `BIFCount` | DWORD | Number of BIF files indexed |
+| `KeyCount` | DWORD | Total resource entries across those BIFs |
+| `OffsetToFileTable` | DWORD | Byte offset to **File Table** from file start |
+| `OffsetToKeyTable` | DWORD | Byte offset to **Key Entry Table** from file start |
+| `Build Year` | DWORD | Years since **1900** |
+| `Build Day` | DWORD | Days since **January 1** |
+| `Reserved` | 32 bytes | Reserved |
+
+### 2.3 File table (Table 2.3)
+
+**`BIFCount`** entries; each **File Entry** describes one BIF.
+
+| Value | Type | Description |
+|-------|------|-------------|
+| `FileSize` | DWORD | Size of the BIF file |
+| `FilenameOffset` | DWORD | Byte offset into **Filename Table** (start of path string) |
+| `FilenameSize` | WORD | Length of filename in **characters** |
+| `Drives` | WORD | Drive bitmask (e.g. bit **0** = install / “HD0” volume for relative paths) |
+
+### 2.4 Filename table (Table 2.4)
+
+Concatenated **non-null-terminated** path strings. Each **File Entry**’s `FilenameOffset` / `FilenameSize` selects one path. Paths are **relative** to the drive/volume implied by **`Drives`**. Each filename must be **unique** (e.g. `data\2da.bif`).
+
+| Value | Type | Description |
+|-------|------|-------------|
+| `Filename` | variable | Characters only (no `NUL` terminator in KEY) |
+
+### 2.5 Key table (Table 2.5)
+
+**`KeyCount`** entries; each row is one resource in some BIF.
+
+| Value | Type | Description |
+|-------|------|-------------|
+| `ResRef` | 16 × `char` | Resource name **without** extension; must be **unique** per KEY’s namespace |
+| `ResourceType` | WORD | [ResType](#table-131-resource-types) |
+| `ResID` | DWORD | Packed location id (see below) |
+
+**`ResID` encoding** (`<<` = left shift):
+
+- **Variable resource** (normal case today):
+
+```text
+ResID = (x << 20) + y
+```
+
+  - **`x`** = index of BIF in **File Table**
+  - **`y`** = index in that BIF’s **Variable Resource Table**
+
+- **Fixed resource** (format supports; rarely used in shipped data):
+
+```text
+ResID = (x << 20) + (y << 14)
+```
+
+  - **`y`** = index in BIF **Fixed** resource table
+
+---
+
+## 3. BIF file format
+
+A **BIF** holds **raw resource bytes**. It does **not** store ResRefs; the **KEY** maps names to BIF entries.
+
+### 3.1 BIF structure
+
+**Figure 3.1: BIF layout**
+
+```text
+Start of file
+├── Header
+├── Variable Resource Table     @ Variable Table Offset (typically 20)
+├── [Fixed Resource Table]      (if Fixed Resource Count > 0; see §3.4)
+├── Variable Resource Data
+└── [Fixed Resource Data]
+```
+
+### 3.2 Header (Table 3.2)
+
+| Value | Type | Description |
+|-------|------|-------------|
+| `FileType` | 4 `char` | **`"BIFF"`** (standard BIF). KotOR also uses compressed archives with **`"BZF "`** — see [BIF-File-Format](BIF-File-Format). |
+| `Version` | 4 `char` | **`"V1  "`** for BIF; **`"V1.0"`** for BZF in KotOR. |
+| `Variable Resource Count` | DWORD | Entries in variable table |
+| `Fixed Resource Count` | DWORD | Entries in fixed table (often **0**) |
+| `Variable Table Offset` | DWORD | Byte offset to **Variable Resource Table** (commonly **20**) |
+
+### 3.3 Variable resource table (Table 3.3)
+
+One entry per variable resource.
+
+| Value | Type | Description |
+|-------|------|-------------|
+| `ID` | DWORD | Packed id: **`(x << 20) + y`** where **`y`** = index of **this** entry in the BIF. On retail CDs often **`x = y`**; in patch BIFs often **`x = 0`**. Loaders generally key off lookup via KEY, not **`x`** inside the BIF. |
+| `Offset` | DWORD | Byte offset from **start of BIF** into **Variable Resource Data** |
+| `File Size` | DWORD | Length of this resource in bytes |
+| `Resource Type` | DWORD | [ResType](#table-131-resource-types) |
+
+### 3.4 Fixed resource table (Table 3.4)
+
+> **Note:** Fixed resources are **not implemented** in shipped tooling/data: header fields exist, but there is **no** standard fixed table payload in practice. If **`Fixed Resource Count` = 0**, **Variable Resource Data** follows the variable table immediately.
+
+*Conceptual* fixed entry (for completeness):
+
+| Value | Type | Description |
+|-------|------|-------------|
+| `ID` | DWORD | **`(x << 20) + (y << 14)`** — **`x`** = BIF index in KEY File Table, **`y`** = fixed entry index |
+| `Offset` | DWORD | Offset into **Fixed Resource Data** |
+| `PartCount` | DWORD | Part count |
+| `File Size` | DWORD | Total size |
+| `Resource Type` | DWORD | ResType |
+
+### 3.5 Variable resource data
+
+Raw bytes for each variable resource, addressed by **`Offset`** / **`File Size`** in [Table 3.3](#33-variable-resource-table-table-33).
+
+### 3.6 Fixed resource data
+
+Would store fixed-resource parts if fixed resources were used ([§3.4](#34-fixed-resource-table-table-34)).
+
+---
+
+## See also
+
+| Resource | Notes |
+|----------|--------|
+| [KEY-File-Format](KEY-File-Format) | KotOR KEY layout and resolution order |
+| [BIF-File-Format](BIF-File-Format) | KotOR BIF notes |
+| [ERF-File-Format](ERF-File-Format) | MOD / RIM / HAK |
+| [GFF-File-Format](GFF-File-Format) | GFF-based resource types |
+
+---
+
+*Edition notes: Per-page BioWare headers removed. Typos from the extract corrected (**whereever** → wherever, **resouce** → resource, **mutliple** → multiple, **it’s** → **its** where possessive, **relative to the the** → **relative to the**). **BIF** signature **`BIFF`** / **`V1  `** matches the BioWare PDF; KotOR **BZF** compression is noted per [BIF-File-Format](BIF-File-Format). Table **1.3.1** ends at the rows in this PDF extract (through **2066**).*

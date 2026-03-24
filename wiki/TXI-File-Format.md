@@ -28,7 +28,7 @@ TXI ([texture](TPC-File-Format) Info) files are compact ASCII descriptors that a
 
 ## Format overview
 
-- TXI files are plain-text [KEY](KEY-File-Format)/value lists; each command modifies a field in the [TPC](TPC-File-Format) runtime metadata.  
+- TXI files are plain-text key/value lists; each command modifies a field in the [TPC](TPC-File-Format) runtime metadata.  
 - Commands are case-insensitive but conventionally lowercase. values can be integers, floats, booleans (`0`/`1`), [ResRefs](GFF-File-Format#gff-data-types), or multi-line coordinate tables.  
 - A single TXI can be appended to the end of a `.tpc` file (as Bioware does) or shipped as a sibling `.txi` file; the parser treats both identically.  
 

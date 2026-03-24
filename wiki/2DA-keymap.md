@@ -2,7 +2,7 @@
 
 Part of the [2DA File Format Documentation](2DA-File-Format).
 
-**Engine Usage**: Defines keyboard and [controller](MDL-MDX-File-Format#controllers) [KEY](KEY-File-Format) mappings for different game contexts (in-game, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, etc.). The engine uses this file to determine which keys trigger which actions in different contexts.
+**Engine Usage**: Defines keyboard and [controller](MDL-MDX-File-Format#controllers) key mappings for different game contexts (in-game, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, etc.). The engine uses this file to determine which keys trigger which actions in different contexts.
 
 **Row index**: Keymap Entry ID (integer)
 
@@ -11,7 +11,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Keymap entry label |
-| Additional columns | Various | [KEY](KEY-File-Format) mappings for different contexts (ingame, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, freelook, movie) |
+| Additional columns | Various | key mappings for different contexts (ingame, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, freelook, movie) |
 
 **References**:
 

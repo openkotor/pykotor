@@ -77,7 +77,7 @@ The following documents are official Bioware Aurora Engine file format specifica
 - **[Conversation Format](Bioware-Aurora-Conversation)** - Official DLG (Dialogue) format
 - **[IFO Format](Bioware-Aurora-IFO)** - Official [module info](GFF-File-Format#ifo-module-info) format
 - **[ERF Format](Bioware-Aurora-ERF)** - Official Encapsulated Resource format
-- **[Key/BIF Format](Bioware-Aurora-KeyBIF)** - Official [KEY](KEY-File-Format) and [BIF file](BIF-File-Format) formats
+- **[Key/BIF Format](Bioware-Aurora-KeyBIF)** - Official key and [BIF file](BIF-File-Format) formats
 - **[TalkTable Format](Bioware-Aurora-TalkTable)** - Official TLK ([Talk Table](TLK-File-Format)) format
 - **[SSF Format](Bioware-Aurora-SSF)** - Official [sound set files](SSF-File-Format) format
 - **[Localized Strings Format](Bioware-Aurora-LocalizedStrings)** - Official localized strings format
@@ -109,7 +109,7 @@ The engine satisfies every resource request (by *ResRef* and type) in this order
 1. Override folder (`override/`)
 2. Currently loaded MOD/[ERF files](ERF-File-Format)
 3. Currently loaded SAV file (if in-game)
-4. [BIF files](BIF-File-Format) via [KEY](KEY-File-Format) lookup
+4. [BIF files](BIF-File-Format) via key lookup
 5. Hardcoded defaults
 
 #### Resource Types
@@ -188,7 +188,7 @@ KotOR uses hexadecimal resource type identifiers derived from the Aurora engine 
 | PTT           | 0x0812  | Unknown       Not used in KotOR         |
 | [ERF](ERF-File-Format)           | 0x270D  | Encapsulated Resource File (see [ERF File Format](ERF-File-Format))                      |
 | [BIF](BIF-File-Format)           | 0x270E  | Bioware Index File (container, see [BIF File Format](BIF-File-Format))                    |
-| [KEY](KEY-File-Format)           | 0x270F  | [KEY](KEY-File-Format) table ([BIF](BIF-File-Format) index, see [KEY File Format](KEY-File-Format))                          |
+| key           | 0x270F  | key table ([BIF](BIF-File-Format) index, see [KEY File Format](KEY-File-Format))                          |
 
 #### Language IDs
 
@@ -307,7 +307,7 @@ This language ID usually is represented as an enum. It is equivalent within all 
   - [xptable.2da](2DA-File-Format#xptable2da)
 - **[TLK File Format](TLK-File-Format)** ← Complete reference for [Talk Table](TLK-File-Format) format
 - [BIF File Format](BIF-File-Format) ← BioWare Infinity format
-- [KEY File Format](KEY-File-Format) ← [KEY](KEY-File-Format) file format
+- [KEY File Format](KEY-File-Format) ← `KEY` file format
 - **[BWM File Format](BWM-File-Format)** ← Complete reference for Binary [walkmesh](BWM-File-Format) format
 - **[GUI File Format](GFF-GUI)** ← Complete reference for Graphical User Interface format
 - [ERF File Format](ERF-File-Format) ← Encapsulated Resource format
@@ -435,7 +435,7 @@ Guides, patches, and community-maintained resources:
 - **[kotor_combat_faq](https://github.com/statsjedi/kotor_combat_faq)** - Combat mechanics documentation ([Mirror: th3w1zard1/kotor_combat_faq](https://github.com/th3w1zard1/kotor_combat_faq))
 - **[ds-kotor-modding-wiki](https://github.com/DeadlyStream/ds-kotor-modding-wiki)** - DeadlyStream modding wiki container ([Mirror: th3w1zard1/ds-kotor-modding-wiki](https://github.com/th3w1zard1/ds-kotor-modding-wiki))
 
-### Community sources and archives
+### Community Sources and Archives
 
 For **complete, comprehensive, and accurate** wiki coverage, the following community sites and archives hold historical and ongoing KotOR/TSL modding knowledge. Use them to cross-check format behavior, tool usage, and engine quirks.
 
@@ -444,25 +444,25 @@ For **complete, comprehensive, and accurate** wiki coverage, the following commu
 | **[DeadlyStream](https://deadlystream.com)** | Primary KotOR modding hub: mod releases, tutorials, Script Shack, tool discussions. | File format questions, TSLPatcher/HoloPatcher usage, nwscript.nss and animation references, override practices. |
 | **[LucasForums Container](https://lucasforumscontainer.com)** | Archive of original LucasForums (StarWarsKnights.com) threads, reconstructed from the Wayback Machine. | TSLPatcher history and changelogs, Stoffe’s posts, format and tool discussions (2004–2007). |
 | **[LucasForums Archive](https://lucasforumsarchive.com)** | Alternative archive project (Editing/Modding, Holowan Laboratories, tutorials). | TSLPatcher thread, KotOR tool docs, mod-finding threads. |
-| **Holowan Laboratories / Mixmojo** | Historical KotOR modding forums (MixNMojo/Mixmojo). | Early format and tool discussions; some content may be in archives or mirrors. |
-| **Reddit** (e.g. r/kotor) | General KotOR community. | Mod installation, troubleshooting, links to DeadlyStream and wiki. |
+| **Reddit** (e.g. [r/kotor](https://www.reddit.com/r/kotor/)) | General KotOR community. | Mod installation, troubleshooting, links to DeadlyStream and wiki. |
+| **PCGamingWiki** (i.e. [KotOR](https://www.pcgamingwiki.com/wiki/KotOR), [TSL](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic_II_-_The_Sith_Lords)) | KotOR wiki. | General KotOR information. |
+| [**Czerka R&D Wiki**](https://czerka-rd.fandom.com/wiki/Czerka_Corp._R%26D_Wiki) | Czerka R&D Wiki. | General KotOR information. |
 
-**Further reading (community):**
+**Further Reading (Community):**
 
-- [DeadlyStream: Help setting up TSLPatcher](https://deadlystream.com/topic/5785-help-setting-up-the-tslpatcher-for-mods/) -- TSLPatcher setup
-- [DeadlyStream: TSL Patcher, TLKEd, and accessories](https://deadlystream.com/files/file/1039-tsl-patcher-tlked-and-accessories/) -- Modding tools
-- [DeadlyStream: Modding tools category](https://deadlystream.com/files/category/17-modding-tools/) -- Tool releases
+- [DeadlyStream: Help Setting up TSLPatcher](https://deadlystream.com/topic/5785-help-setting-up-the-tslpatcher-for-mods/) -- TSLPatcher setup
+- [DeadlyStream: TSL Patcher, TLKEd, and Accessories](https://deadlystream.com/files/file/1039-tsl-patcher-tlked-and-accessories/) -- Modding tools
+- [DeadlyStream: Modding Tools Category](https://deadlystream.com/files/category/17-modding-tools/) -- Tool releases
 - [LucasForums Archive: TSLPatcher v1.2.10b1](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer/) -- Original TSLPatcher thread (see also [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) in this wiki)
 - [LucasForums Archive: Editing / Modding](https://lucasforumsarchive.com/forum/521) -- Holowan Laboratories and tutorials
 
-**How to use these sources:**
+**How to Use These Sources:**
 
-- **DeadlyStream:** Search the forums for specific topics (e.g. "override folder", "TSLPatcher 2DA merge", "GFF struct", "nwscript"). The Script Shack and modding tools sections contain tutorials and tool releases. When the wiki documents a format or tool, DeadlyStream threads often provide real-world modder reports (e.g. which 2DA columns are safe to add, TSLPatcher setup gotchas). Cite threads in "See also" or "Further reading" when they are the best source for a given detail.
-- **LucasForums Container / LucasForums Archive:** Use for historical and authoritative context. The original TSLPatcher thread (Stoffe, etc.), KotOR Tool discussions, and early GFF/2DA explanations live in these archives. Search by keyword (e.g. "2da", "GFF", "TSLPatcher") in the Editing/Modding or Holowan Laboratories sections. Content may be fragmented across Wayback reconstructions; when a thread is cited, prefer stable archive URLs.
-- **Holowan / Mixmojo:** Early KotOR modding community; some content is preserved in archives or linked from LucasForums. Use for very old format or tool history when other sources do not cover it.
-- **Reddit (r/kotor):** Useful for installation help, troubleshooting, and links to DeadlyStream or this wiki. For format or engine-level accuracy, prefer this wiki and the format pages; for "how do I install X" or "why does my mod conflict with Y", community posts can complement the docs.
+- **DeadlyStream:** Search the forums for specific topics (e.g. "Override Folder", "TSLPatcher 2DA Merge", "GFF Struct", "NWScript"). The *Script Shack* and *Modding Tools* sections contain tutorials and tool releases. When the wiki documents a format or tool, DeadlyStream threads often provide real-world modder reports (e.g. which [2DA columns are safe to add](2DA-File-Format), TSLPatcher setup gotchas). Cite threads in "See also" or "Further reading" when they are the best source for a given detail.
+- **LucasForums Container / LucasForums Archive:** Use for historical and authoritative context. The original TSLPatcher thread (Stoffe, etc.), KotOR Tool discussions, and early [GFF](GFF-File-Format)/[2DA](2DA-File-Format) explanations live in these archives. Search by keyword (e.g. "*2da*", "*GFF*", "*TSLPatcher*") in the *Editing/Modding* or *Holowan Laboratories* sections. Content may be fragmented across Wayback reconstructions; when a thread is cited, prefer stable archive URLs.
+- **Reddit (r/kotor):** Useful for installation help, troubleshooting, and links to DeadlyStream or this wiki. For format or engine-level accuracy, prefer this wiki and the format pages; for "*how do I install X*" or "*why does my mod conflict with Y*", community posts can complement the docs.
 
-This wiki aims to consolidate and cite that knowledge where relevant. When adding or refining format or tool pages, prefer linking to authoritative specs (e.g. [KEY-File-Format](KEY-File-Format), [GFF-File-Format](GFF-File-Format), official BioWare Aurora docs) and to PyKotor/vendor implementation paths; for community consensus or historical context, link to DeadlyStream threads or LucasForums archive threads where appropriate.
+This wiki aims to consolidate and cite that knowledge where relevant. When adding or refining format or tool pages, prefer linking to authoritative specs (e.g. [KEY-File-Format](KEY-File-Format), [GFF-File-Format](GFF-File-Format), official BioWare Aurora docs) and to PyKotor/vendor implementation paths; for community consensus or historical context, link to DeadlyStream threads or LucasForums archive threads where appropriate. For very old format or tool history when other sources do not cover it, use the *Holowan Laboratories* (see [Community Sources and Archives](#community-sources-and-archives)).
 
 ### External Documentation
 
@@ -480,6 +480,4 @@ Reference documentation from related projects (external sources):
 
 ### See also
 
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution; [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) -- Core formats
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- Mod installation; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Mod development
 - [Wiki-Conventions](Wiki-Conventions) -- Wiki structure and style

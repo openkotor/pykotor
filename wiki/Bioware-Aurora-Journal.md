@@ -1,116 +1,110 @@
-# Journal
+# Journal (JRL) format — BioWare Aurora Engine
 
-*Official Bioware Aurora Documentation*
-
-> **Note**: This official BioWare documentation was originally written for **Neverwinter Nights**, but the Journal (JRL) format is **identical in KotOR**. All structures, fields, and behaviors described here apply to KotOR as well. The examples may reference NWN-specific features, but the core format is the same.
-
-**Source:** This documentation is extracted from the official BioWare Aurora Engine Journal Format PDF, archived in **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/bioware/Journal_Format.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/Journal_Format.pdf). The original documentation was published on the now-defunct nwn.bioware.com developer site.
+*Official BioWare Aurora documentation (archived extract).*
 
 ---
 
-## Page 1
+## Table of contents
 
-BioWare Corp.
-<http://www.bioware.com>
-BioWare Aurora Engine
-Journal System
+- [About this document](#about-this-document)
+- [1. Introduction](#1-introduction)
+- [2. Journal system structs](#2-journal-system-structs)
+  - [2.1 Top-level struct (Table 2.1)](#21-top-level-struct-table-21)
+  - [2.2 JournalCategory struct (Table 2.2)](#22-journalcategory-struct-table-22)
+  - [2.3 JournalEntry struct (Table 2.3)](#23-journalentry-struct-table-23)
+- [See also](#see-also)
 
-1. Introduction
-A Journal is system of keeping track of where a player is in each plot that the player has started, and a
-way of describing the current step of each plot to the player.
-Journal information is stored in the module.jrl file in a module or savegame. This file uses BioWare's
-Generic File Format (GFF), and it is assumed that the reader of this document is familiar with GFF. The
-GFF FileType string in the header of repute.fac is "JRL ".
-2. Journal System Structs
-The tables in this section describe the GFF Structs contained within module.jrl.
-2.1. Top Level Struct
-Table 2.1: Journal Top Level Struct
-Label
-Type
-Description
-Categories
-List
-List of JournalCategory Structs (StructID = list index)
-2.2. JournalCategory Struct
-The Table below lists the Fields that are present in a JournalCategory Struct found in the Categories
-list.
-Table 2.2: Fields in JournalCategory Struct (StructID = list index)
-Label
-Type
-Description
-Comment
-CExoString
-Module builder's comments
-EntryList
-List
-List of JournalEntry Structs (StructID = list index)
-Name
-CExoLocString
-Localized name of the Journal Category. Appears in the
-player's Journal in game.
-Picture
+---
 
-### WORD
+## About this document
 
-Unused. Always 0xFFFF.
-Priority
+**Source:** Official BioWare Aurora Engine Journal Format PDF, archived in [`vendor/xoreos-docs/specs/bioware/Journal_Format.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/Journal_Format.pdf) (mirror: [`th3w1zard1/xoreos-docs/.../Journal_Format.pdf`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/bioware/Journal_Format.pdf)). Originally published on `nwn.bioware.com`.
 
-### DWORD
+> **Note:** Written for **Neverwinter Nights**; the **Journal (JRL) format is identical in KotOR**. NWN-specific UI wording may appear, but the GFF layout is the same.
 
-Priority of this Journal Category.
-0 = Highest
-1 = High
-2 = Medium
-3 = Low
-4 = Lowest
-Tag
-CExoString
-Tag of the JournalCategory, used to refer to this Journal
-Category via scripting.
-There should not be more than one Journal Category
-having the same Tag.
-XP
+*BioWare Corp. · [bioware.com](http://www.bioware.com) · BioWare Aurora Engine — Journal system*
 
-### DWORD
+---
 
-Experience awarded for completing this Journal
-Category. To complete the Category, the player must
-reach a JournalEntry where End=1 (see Table 2.3).
-2.3. JournalEntry Struct
-The Table below lists the Fields that are present in a JournalEntry Struct found in the EntryList of a
-JournalCategory Struct. Each JournalEntry Struct describes a single entry within its category.
+## 1. Introduction
 
-## Page 2
+A **journal** tracks the player’s progress in each **plot** they have started and describes the **current step** of each plot.
 
-BioWare Corp.
-<http://www.bioware.com>
-Table 2.3: Fields in JournalEntry Struct (StructID = list index)
-Label
-Type
-Description
-End
+Journal data lives in **`module.jrl`** inside a module or save game. The file uses **[GFF](Bioware-Aurora-GFF)**; this document assumes you already know GFF basics.
 
-### WORD
+In the GFF header, the **FileType** string for a journal file is **`"JRL "`** (four characters, space-padded).
 
-1 if this Entry serves as an endpoint for its Category.
-There can be more than one ending entry in a category.
-ID
+> **Correction:** An older extract of this page said the FileType was for `repute.fac`; that was a **transcription error**. The journal resource is **`module.jrl`** with **`FileType`** **`"JRL "`**. Faction data uses a separate **FAC** resource (see [FAC (faction)](GFF-File-Format#fac-faction) in the KotOR GFF overview).
 
-### DWORD
+---
 
-ID of the Journal Entry.
-Referred to in scripting in order to get and set the
-current entry.
-This ID must be unique for each Entry within the
-Journal Category, but the IDs do not need to be
-contiguous or even sorted.
-Text
-CExoLocString
-Localized text for the Journal Entry. Appears in the
-player's Journal in game, under the appropriate
-category.
+## 2. Journal system structs
 
-### See also
+GFF layout of **`module.jrl`**. For **List** fields, **StructID** equals the element’s **index** in that list.
 
-- [GFF-JRL](GFF-JRL) -- KotOR journal implementation; [GFF-File-Format](GFF-File-Format) -- GFF structure
-- [NSS-File-Format](NSS-File-Format) -- Journal scripting; [KEY-File-Format](KEY-File-Format) -- Resource resolution
+### 2.1 Top-level struct (Table 2.1)
+
+#### Table 2.1: Journal top-level struct
+
+| Label | Type | Description |
+|-------|------|-------------|
+| `Categories` | List | **JournalCategory** structs. **StructID = list index.** |
+
+---
+
+### 2.2 JournalCategory struct (Table 2.2)
+
+Fields on each **JournalCategory** in **`Categories`**.
+
+#### Table 2.2: Fields in JournalCategory struct (StructID = list index)
+
+| Label | Type | Description |
+|-------|------|-------------|
+| `Comment` | CExoString | Builder / designer comments. |
+| `EntryList` | List | **JournalEntry** structs. **StructID = list index.** |
+| `Name` | CExoLocString | Localized category title (in-game journal UI). |
+| `Picture` | WORD | **Unused.** Always **`0xFFFF`**. |
+| `Priority` | DWORD | Display priority; see [Priority values](#priority-values). |
+| `Tag` | CExoString | Script identifier for this category. **Tags must be unique** across categories. |
+| `XP` | DWORD | XP granted when the category is **completed** (player reaches an entry with **`End` = 1**; see [Table 2.3](#23-journalentry-struct-table-23)). |
+
+<a id="priority-values"></a>
+
+#### Priority values (`Priority` field)
+
+| Value | Meaning |
+|-------|---------|
+| 0 | Highest |
+| 1 | High |
+| 2 | Medium |
+| 3 | Low |
+| 4 | Lowest |
+
+---
+
+### 2.3 JournalEntry struct (Table 2.3)
+
+Each **JournalEntry** is one step under a category’s **`EntryList`**.
+
+#### Table 2.3: Fields in JournalEntry struct (StructID = list index)
+
+| Label | Type | Description |
+|-------|------|-------------|
+| `End` | WORD | **1** if this entry is an **endpoint** for its category (there may be **multiple** endings). |
+| `ID` | DWORD | Entry ID used by **scripts** to read/write current progress. Must be **unique within the category**; IDs need not be contiguous or sorted. |
+| `Text` | CExoLocString | Localized body text shown in-game under the category. |
+
+---
+
+## See also
+
+| Resource | Notes |
+|----------|--------|
+| [GFF-JRL](GFF-JRL) | KotOR journal GFF |
+| [GFF-File-Format](GFF-File-Format) | GFF structure and types |
+| [NSS-File-Format](NSS-File-Format) | Journal-related scripting |
+| [KEY-File-Format](KEY-File-Format) | Resource resolution |
+
+---
+
+*Edition notes: Repeated per-page BioWare headers are folded into [About](#about-this-document). Table numbers match the BioWare Journal PDF. **FileType** line corrected from the erroneous `repute.fac` reference to **`module.jrl` / `"JRL "`**.*

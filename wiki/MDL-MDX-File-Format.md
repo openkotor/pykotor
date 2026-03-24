@@ -1085,7 +1085,7 @@ Part numbers are values assigned to [nodes](MDL-MDX-File-Format#node-structures)
 
 All time keys are stored contiguously, followed by all data values stored contiguously. For example, if a keyed [Controller](MDL-MDX-File-Format#controllers) has 3 rows with time keys starting at [float](GFF-File-Format#gff-data-types) index 5, the time keys would be at indices 5, 6, and 7.
 
-**Note**: [Controllers](MDL-MDX-File-Format#controllers) that aren't time-keyed are still stored as if they are time-keyed but with a single row and a time [KEY](KEY-File-Format) value of zero. It's impossible to distinguish between a non-keyed [Controller](MDL-MDX-File-Format#controllers) and a keyed [Controller](MDL-MDX-File-Format#controllers) with one row at time zero.
+**Note**: [Controllers](MDL-MDX-File-Format#controllers) that aren't time-keyed are still stored as if they are time-keyed but with a single row and a time key value of zero. It's impossible to distinguish between a non-keyed [Controller](MDL-MDX-File-Format#controllers) and a keyed [Controller](MDL-MDX-File-Format#controllers) with one row at time zero.
 
 **Reference**: [`vendor/xoreos-docs/specs/torlack/binmdl.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/binmdl.html) - [Controller](MDL-MDX-File-Format#controllers) structure and data storage
 

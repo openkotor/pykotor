@@ -8,7 +8,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 **For mod developers:** To modify module metadata in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
 
-**Related formats:** IFO references [ARE](GFF-ARE), [GIT](GFF-File-Format#git-game-instance-template), [NCS](NCS-File-Format), [KEY](KEY-File-Format), and [BIF](BIF-File-Format).
+**Related formats:** IFO references [ARE](GFF-ARE), [GIT](GFF-File-Format#git-game-instance-template), [NCS](NCS-File-Format), key, and [BIF](BIF-File-Format).
 
 ## References
 

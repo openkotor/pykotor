@@ -172,7 +172,7 @@ In **HoloPatcher**, the 2DAList runs in the following execution order:
 
 ### Top-Level Keys in [2DAList]
 
-| [KEY](KEY-File-Format) | type | Default | Description |
+| key | type | Default | Description |
 |-----|------|---------|-------------|
 | `!DefaultDestination` | string | `override` | Default destination for all [2DA files](2DA-File-Format) in this section |
 | `!DefaultSourceFolder` | string | `.` | Default source folder for [2DA files](2DA-File-Format). Relative path from `mod_path` (typically the `tslpatchdata` folder, which is the parent directory of `changes.ini` and `namespaces.ini`). When `.`, refers to the `tslpatchdata` folder itself. Path resolution: `mod_path / !DefaultSourceFolder / filename` |
@@ -1096,7 +1096,7 @@ I5=Value
 **Solutions:**
 
 - `****` explicitly sets a cell to an empty string
-- Omitting a column [KEY](KEY-File-Format) leaves the cell unchanged (in ChangeRow/CopyRow) or empty (in AddRow)
+- Omitting a column key leaves the cell unchanged (in ChangeRow/CopyRow) or empty (in AddRow)
 - Use `****` when you want to explicitly clear a value
 
 ### Special Functions Not Working
@@ -1330,7 +1330,7 @@ The `[2DAList]` section provides powerful tools for modifying [2DA files](2DA-Fi
 - **Memory Tokens**: Store values for cross-file and cross-section use
 - **Token Integration**: Use [StrRef](TLK-File-Format#string-references-strref) tokens from TLKList and provide 2DAMEMORY tokens to other sections
 
-[KEY](KEY-File-Format) points to remember:
+key points to remember:
 
 1. Tokens are evaluated after cell modifications within the same section
 2. Tokens persist across multiple files in the same `[2DAList]` section

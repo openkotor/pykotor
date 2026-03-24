@@ -8,7 +8,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 **For mod developers:** To modify door templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
 
-**Related formats:** UTD references [genericdoors.2da](2DA-File-Format), [traps.2da](2DA-traps), [GFF-UTP](GFF-UTP), [KEY](KEY-File-Format), [NCS](NCS-File-Format), [DLG](GFF-DLG), and [MDL](MDL-MDX-File-Format).
+**Related formats:** UTD references [genericdoors.2da](2DA-File-Format), [traps.2da](2DA-traps), [GFF-UTP](GFF-UTP), key, [NCS](NCS-File-Format), [DLG](GFF-DLG), and [MDL](MDL-MDX-File-Format).
 
 ## References
 
@@ -54,18 +54,18 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 | ----- | ---- | ----------- |
 | `Locked` | [byte](GFF-File-Format#gff-data-types) | Door is currently locked |
 | `Lockable` | [byte](GFF-File-Format#gff-data-types) | Door can be locked/unlocked |
-| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Requires specific [KEY](KEY-File-Format) item |
-| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](KEY-File-Format) item |
-| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | [KEY](KEY-File-Format) consumed on use |
+| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Requires specific key item |
+| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required key item |
+| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | key consumed on use |
 | `OpenLockDC` | [byte](GFF-File-Format#gff-data-types) | Security skill DC to pick lock |
 | `CloseLockDC` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Security skill DC to lock door |
 
 **Lock Mechanics:**
 
 - **Locked**: Door cannot be opened normally
-- **KeyRequired**: Must have [KEY](KEY-File-Format) in inventory
+- **KeyRequired**: Must have key in inventory
 - **OpenLockDC**: Player rolls Security skill vs. DC
-- **AutoRemoveKey**: [KEY](KEY-File-Format) destroyed after successful use
+- **AutoRemoveKey**: key destroyed after successful use
 
 ## Hit Points & Durability
 
@@ -187,7 +187,7 @@ Doors maintain runtime state:
 
 1. Player clicks door
 2. If conversation set, start dialog
-3. If locked, check for [KEY](KEY-File-Format) or Security skill
+3. If locked, check for key or Security skill
 4. If trapped, check for detection/disarm
 5. Fire `OnOpen` script
 6. Play opening [animation](MDL-MDX-File-Format#animation-header)
@@ -196,7 +196,7 @@ Doors maintain runtime state:
 **Locking System:**
 
 - **Lockable=0**: Door cannot be locked (always opens)
-- **Locked=1, KeyRequired=1**: Must have specific [KEY](KEY-File-Format)
+- **Locked=1, KeyRequired=1**: Must have specific key
 - **Locked=1, OpenLockDC>0**: Can pick lock with Security skill
 - **Locked=1, KeyRequired=0, OpenLockDC=0**: Locked via script only
 
@@ -210,7 +210,7 @@ Doors maintain runtime state:
 
 **Locked Doors:**
 
-- Requires [KEY](KEY-File-Format) or Security skill
+- Requires key or Security skill
 - Quest progression gates
 - May have conversation for passwords
 

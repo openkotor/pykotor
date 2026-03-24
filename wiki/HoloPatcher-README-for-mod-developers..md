@@ -4,18 +4,16 @@ _This page explains how to create a mod with HoloPatcher. If you are an end user
 
 HoloPatcher is a rewrite of TSLPatcher written in Python, utilizing the PyKotor library. Everything is backwards compatible with TSLPatcher. For this reason I suggest you first read [TSLPatcher's readme, really.](https://github.com/OldRepublicDevs/PyKotor/wiki/TSLPatcher's-Official-Readme)
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/tslpatcher/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/tslpatcher/)
+**Implementations:**
+- [`Libraries/PyKotor/src/pykotor/tslpatcher/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/tslpatcher/)
+- [`Tools/HolocronToolset/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Tools/HolocronToolset) - Integrated HoloPatcher [GUI](GFF-File-Format#gui-graphical-user-interface)
+- [`Libraries/PyKotor/src/pykotor/tslpatcher/mods/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/tslpatcher/mods) - Individual patching modules
 
 **Vendor Mod Installers:**
 
-- **[TSLPatcher](https://github.com/Fair-Strides/TSLPatcher)** - Original Perl TSLPatcher by stoffe (reference implementation) ([Mirror: th3w1zard1/TSLPatcher-1](https://github.com/th3w1zard1/TSLPatcher-1))
-- **[Kotor-Patch-Manager](https://github.com/LaneDibello/Kotor-Patch-Manager)** - Alternative mod manager with different patching approach ([Mirror: th3w1zard1/Kotor-Patch-Manager](https://github.com/th3w1zard1/Kotor-Patch-Manager))
-- **[KotORModSync](https://github.com/th3w1zard1/KotORModSync)** - Mod synchronization and installation tool (canonical repo)
-
-**Related PyKotor Tools:**
-
-- [`Tools/HolocronToolset/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Tools/HolocronToolset) - Integrated HoloPatcher [GUI](GFF-File-Format#gui-graphical-user-interface)
-- [`Libraries/PyKotor/src/pykotor/tslpatcher/mods/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/tslpatcher/mods) - Individual patching modules
+- **[TSLPatcher](https://github.com/Fair-Strides/TSLPatcher)** - Unofficial Perl rewrite of TSLPatcher by Fair-Strides ([Mirror: th3w1zard1/TSLPatcher-Perl-Rewrite](https://github.com/th3w1zard1/TSLPatcher-Perl-Rewrite))
+- **[Kotor-Patch-Manager](https://github.com/LaneDibello/Kotor-Patch-Manager)** - Alternative mod manager with different patching approach by LaneDibello ([Mirror: th3w1zard1/Kotor-Patch-Manager](https://github.com/th3w1zard1/Kotor-Patch-Manager))
+- **[KotORModSync](https://github.com/th3w1zard1/KotORModSync)** - Mod synchronization and installation tool by th3w1zard1
 
 ### See also
 
@@ -66,16 +64,11 @@ File0=script_to_modify.NCS
 
 This will:
 
-- Modify offset dec 20 (hex 0x14) of `script_to_modify.ncs` and overwrite that offset with the value of StrRef5.
-- Modify offset dec 40 (hex 0x28) of `script_to_modify.ncs` and overwrite that offset with the value of 2DAMEMORY10.
-- Modify offset dec 60 (hex 0x3C) of `script_to_modify.ncs` and overwrite that offset with the value of dec 65535 (hex 0xFFFF) i.e. the maximum possible value.
-In summary, HACKList writes unsigned WORDs (sized at two bytes) to offsets in the [NCS](NCS-File-Format) specified by the ini.
+- Modify offset dec 20 (hex 0x14) of `script_to_modify.ncs` and overwrite that offset with the value of `StrRef5`.
+- Modify offset dec 40 (hex 0x28) of `script_to_modify.ncs` and overwrite that offset with the value of `2DAMEMORY10`.
+- Modify offset dec 60 (hex 0x3C) of `script_to_modify.ncs` and overwrite that offset with the value of `65535` (hex `0xFFFF`) i.e. the maximum possible value.
 
-### For more information on HoloPatcher's implementation, please see the following links
-
-#### [pykotor.tslpatcher.reader](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/reader.py#L697)
-
-#### [pykotor.tslpatcher.mods.ncs](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/mods/ncs.py)
+In summary, HACKList writes unsigned WORDs (sized at two bytes) to offsets in the [NCS](NCS-File-Format) specified by the ini. See [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) for more information.
 
 ### See also
 

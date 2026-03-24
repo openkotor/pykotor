@@ -1,6 +1,6 @@
-# KotOR BIF file format Documentation
+# BIF File Format
 
-This document provides a detailed description of the BIF (BioWare index file) file format used in Knights of the Old Republic (KotOR) games. BIF files are [container containers](ERF-File-Format) that store the bulk of game resources.
+This document provides a detailed description of the BIF (BioWare Index File) format used in Knights of the Old Republic (KotOR) games. BIF files are [container files](Concepts#container-files) that store the bulk of game resources.
 
 ## Table of Contents
 
@@ -148,7 +148,7 @@ The *Resource ID* in the *BIF* file's *variable resource table* must match the *
 **Example:** A *Resource ID* of `0x00400029` decodes as:
 
 - Resource index: `0x29` (41st resource in the *BIF*)
-- BIF index: `0x004` (4th *BIF* file in the [KEY](KEY-File-Format)'s *BIF* table)
+- BIF index: `0x004` (4th *BIF* file in the key's *BIF* table)
 
 **References**
 
@@ -209,14 +209,14 @@ The *BZF* wrapper is completely transparent to the game engine - once decompress
 
 ---
 
-## [KEY](KEY-File-Format) File Relationship
+## key File Relationship
 
 *BIF* files require a [KEY file](KEY-File-Format) to map resource IDs to filenames (ResRefs). The [KEY file](KEY-File-Format) contains:
 
 - *BIF* file entries (filename, size, location)
-- [KEY](KEY-File-Format) entries mapping *ResRef* + *ResourceType* to *Resource ID*
+- key entries mapping *ResRef* + *ResourceType* to *Resource ID*
 
-The *Resource ID* in the *BIF* file matches the *Resource ID* in the [KEY File](KEY-File-Format)'s [KEY](KEY-File-Format) entries.
+The *Resource ID* in the *BIF* file matches the *Resource ID* in the [KEY File](KEY-File-Format)'s key entries.
 
 **References**
 

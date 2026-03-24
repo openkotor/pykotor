@@ -57,7 +57,7 @@ It cannot, in no uncertain terms:
 
 - Resolve naming/priority conflicts resulting from placing several variants of files with the same name in different sub-folders inside the override folder. It will always assume that all files it is supposed to modify are located directly in the override folder and not in any subfolders to avoid ambiguous situations.
 
-- Modify files held inside [BIF files](BIF-File-Format) in the game, since [KEY](KEY-File-Format)/[BIF files](BIF-File-Format) work pretty much the same as the override folder in most cases, and editing the [KEY](KEY-File-Format)/[BIF](BIF-File-Format) data can lead to problems. This does of course not prevent you from extracting whatever files you need from the [BIF](BIF-File-Format) data in advance and put them in the TSLPatcher's data folder.
+- Modify files held inside [BIF files](BIF-File-Format) in the game, since key/[BIF files](BIF-File-Format) work pretty much the same as the override folder in most cases, and editing the key/[BIF](BIF-File-Format) data can lead to problems. This does of course not prevent you from extracting whatever files you need from the [BIF](BIF-File-Format) data in advance and put them in the TSLPatcher's data folder.
 
 A few quick "how to" examples:
 
@@ -69,7 +69,7 @@ Q: I get a RichEdit line insertion error when trying to install mods. What's wro
 
 A: It seems a few people have odd versions of the RichEdit DLL files installed in their system that doesn't play nice with the colored text box component TSLPatcher uses. To work around this you could try to replace the RichEd DLL files with versions that should work. Extract the two DLL files from this container (<http://www.starwarsknights.com/forumdl/richedlibraries.rar>) and put them in your Windows\\Windows32 folder. Move existing files with those names to a safe location first so you can restore them if this causes other problems! Do not overwrite them!
 
-Alternatively, if you don't want to mess with your DLL files, you could force TSLPatcher to use a plain text box for status messages rather than the colored/formatted one. To do this, use Notepad to open the changes.ini file found inside the tslpatchdata folder that came with the mod you wish to install. Under the \[Settings\] section, change the value of the [KEY](KEY-File-Format) PlaintextLog from 0 to 1.
+Alternatively, if you don't want to mess with your DLL files, you could force TSLPatcher to use a plain text box for status messages rather than the colored/formatted one. To do this, use Notepad to open the changes.ini file found inside the tslpatchdata folder that came with the mod you wish to install. Under the \[Settings\] section, change the value of the key PlaintextLog from 0 to 1.
 
 Q: I'm not seeing any Install Mod button, and the text field in the TSLPatcher window seems to extend behind the window boundraries.
 
