@@ -27,7 +27,7 @@ and structural equivalency checks.
 
 References:
 ----------
-    Based on swkotor.exe (K1) and swkotor2.exe (TSL) MDL structure. All addresses verified
+    Based on /K1/k1_win_gog_swkotor.exe (K1) and swkotor2.exe (TSL) MDL structure. All addresses verified
     via RE tools through string cross-references, call chain analysis, and decompilation.
 
     For general MDL format information, see __init__.py.

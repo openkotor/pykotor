@@ -32,7 +32,7 @@ Usage:
 
 References:
 ----------
-        Based on swkotor.exe NWScript structure:
+        Based on /K1/k1_win_gog_swkotor.exe NWScript structure:
         - NCS (NWScript Compiled Script) bytecode format
         - Language Server Protocol specification
 

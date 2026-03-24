@@ -7,7 +7,7 @@ individual room models (MDL files) and where interactive elements like doors are
 
 References:
 ----------
-    Based on swkotor.exe LYT structure:
+    Based on /K1/k1_win_gog_swkotor.exe LYT structure:
     - CLYT::LoadLayout @ 0x005de900 - Loads LYT file for area layout
       * Parses ASCII LYT format
       * Loads room models, door hooks, tracks, obstacles

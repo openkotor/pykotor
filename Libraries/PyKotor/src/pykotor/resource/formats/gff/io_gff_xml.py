@@ -38,7 +38,7 @@ class GFFXMLReader(ResourceReader):
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates new GFF file with file_type and version
         - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
         - CResGFF::WriteGFFData @ 0x004113d0 - Writes GFF header and data sections

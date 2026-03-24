@@ -7,7 +7,7 @@ stores probability values for characters appearing at the start, middle, or end 
 
 References:
 ----------
-    Based on swkotor.exe LTR structure:
+    Based on /K1/k1_win_gog_swkotor.exe LTR structure:
     - LoadLTR - Loads LTR file for name generation
       * Parses binary LTR format with "LTR V1.0" header
       * Reads letter count (uint8, typically 28)
@@ -70,7 +70,7 @@ class LTR(ComparableMixin):
 
     References:
     ----------
-    Based on swkotor.exe LTR structure:
+    Based on /K1/k1_win_gog_swkotor.exe LTR structure:
     - LoadLTR - Loads LTR file for name generation
       * Parses binary LTR format with "LTR V1.0" header
       * Reads letter count (uint8, typically 28 for KotOR)
@@ -370,7 +370,7 @@ class LTRBlock(ComparableMixin):
 
         References:
         ----------
-        Based on swkotor.exe LTR structure:
+        Based on /K1/k1_win_gog_swkotor.exe LTR structure:
         - Probability block layout (start/middle/end)
           * Start probabilities: 28 floats (offset 0x09-0x70)
           * Middle probabilities: 28 floats (offset 0x71-0xD8)

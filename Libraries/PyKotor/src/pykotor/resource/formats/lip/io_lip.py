@@ -4,11 +4,59 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from pykotor.common.stream import BinaryReader
+from pykotor.kaitai_generated.lip import Lip
 from pykotor.resource.formats.lip.lip_data import LIP, LIPShape
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
 if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
+
+
+def _lip_shape_from_kaitai(shape) -> LIPShape:
+    v = shape if isinstance(shape, int) else int(shape.value)
+    return LIPShape(v)
+
+
+def _load_lip_from_kaitai(data: bytes) -> LIP:
+    parsed = Lip.from_bytes(data)
+    if parsed.file_type != "LIP ":
+        msg = "The file type that was loaded is invalid."
+        raise TypeError(msg)
+    if parsed.file_version != "V1.0":
+        msg = "The LIP version that was loaded is not supported."
+        raise TypeError(msg)
+    lip = LIP()
+    lip.length = parsed.length
+    for k in parsed.keyframes:
+        lip.add(k.timestamp, _lip_shape_from_kaitai(k.shape))
+    return lip
+
+
+def _load_lip_legacy(reader: BinaryReader) -> LIP:
+    lip = LIP()
+    file_type = reader.read_string(4)
+    file_version = reader.read_string(4)
+
+    if file_type != "LIP ":
+        msg = "The file type that was loaded is invalid."
+        raise TypeError(msg)
+
+    if file_version != "V1.0":
+        msg = "The LIP version that was loaded is not supported."
+        raise TypeError(msg)
+
+    lip.length = reader.read_single()
+    entry_count = reader.read_uint32()
+
+    for _ in range(entry_count):
+        time = reader.read_single()
+        shape = LIPShape(reader.read_uint8())
+        lip.add(time, shape)
+
+    return lip
 
 
 class LIPBinaryReader(ResourceReader):
@@ -19,7 +67,7 @@ class LIPBinaryReader(ResourceReader):
 
     References:
     ----------
-        Based on swkotor.exe LIP structure:
+        Based on /K1/k1_win_gog_swkotor.exe LIP structure:
         - LoadLip @ 0x0070c590 - LIP file loader (221 bytes, 6 callees)
           * Loads LIP file from resource
           * Parses "LIP V1.0" header
@@ -45,27 +93,11 @@ class LIPBinaryReader(ResourceReader):
 
     @autoclose
     def load(self, *, auto_close: bool = True) -> LIP:  # noqa: FBT001, FBT002, ARG002
-        self._lip = LIP()
-
-        file_type = self._reader.read_string(4)
-        file_version = self._reader.read_string(4)
-
-        if file_type != "LIP ":
-            msg = "The file type that was loaded is invalid."
-            raise TypeError(msg)
-
-        if file_version != "V1.0":
-            msg = "The LIP version that was loaded is not supported."
-            raise TypeError(msg)
-
-        self._lip.length = self._reader.read_single()
-        entry_count = self._reader.read_uint32()
-
-        for _ in range(entry_count):
-            time = self._reader.read_single()
-            shape = LIPShape(self._reader.read_uint8())
-            self._lip.add(time, shape)
-
+        data = self._reader.read_all()
+        try:
+            self._lip = _load_lip_from_kaitai(data)
+        except kaitaistruct.KaitaiStructError:
+            self._lip = _load_lip_legacy(BinaryReader.from_bytes(data, 0))
         return self._lip
 
 

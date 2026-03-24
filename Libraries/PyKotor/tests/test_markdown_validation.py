@@ -11,7 +11,7 @@ import re
 import subprocess
 
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 import pytest
 
@@ -100,18 +100,21 @@ def validate_link(link_url: str, source_file: Path, all_files: dict[str, Path], 
         if file_part.startswith("./"):
             file_part = file_part[2:]
 
+        # Percent-encoded paths (e.g. parentheses in wiki page names)
+        file_part_resolved = unquote(file_part)
+
         target_file = None
         # Try as-is first (already in wiki directory)
-        if (WIKI_DIR / file_part).exists():
-            target_file = WIKI_DIR / file_part
+        if (WIKI_DIR / file_part_resolved).exists():
+            target_file = WIKI_DIR / file_part_resolved
         # Try with .md extension
-        elif (WIKI_DIR / f"{file_part}.md").exists():
-            target_file = WIKI_DIR / f"{file_part}.md"
+        elif (WIKI_DIR / f"{file_part_resolved}.md").exists():
+            target_file = WIKI_DIR / f"{file_part_resolved}.md"
         # Try relative to source file
-        elif (source_file.parent / file_part).exists():
-            target_file = source_file.parent / file_part
-        elif (source_file.parent / f"{file_part}.md").exists():
-            target_file = source_file.parent / f"{file_part}.md"
+        elif (source_file.parent / file_part_resolved).exists():
+            target_file = source_file.parent / file_part_resolved
+        elif (source_file.parent / f"{file_part_resolved}.md").exists():
+            target_file = source_file.parent / f"{file_part_resolved}.md"
 
         if not target_file:
             return False, f"Target file not found: {file_part}"

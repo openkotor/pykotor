@@ -5,7 +5,7 @@ implemented by different rendering backends.
 
 References:
 ----------
-        Based on swkotor.exe scene graph:
+        Based on /K1/k1_win_gog_swkotor.exe scene graph:
         - Scene management and rendering pipeline
         - Area loading and room visibility (VIS files)
 

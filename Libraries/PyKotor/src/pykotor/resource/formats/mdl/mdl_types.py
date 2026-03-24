@@ -15,7 +15,7 @@ Architecture:
     - mdl_auto.py: Format detection and dispatch
 
 References:
-    Based on swkotor.exe MDL/MDX structure:
+    Based on /K1/k1_win_gog_swkotor.exe MDL/MDX structure:
     - LoadModel @ (K1: 0x00464200, TSL: 0x0047a570) - Loads MDL model via IODispatcher::ReadSync
     - LoadModel2 @ (K1: 0x0061b380, TSL: 0x00669ea0) - Alternative model loading function
       * Reads MDL/MDX file pair
@@ -85,7 +85,7 @@ class MDLNodeFlags(IntFlag):
     - saber mesh = HEADER + MESH + SABER = 0x821 = 2081
 
     References:
-    - Based on swkotor.exe MDL node structure:
+    - Based on /K1/k1_win_gog_swkotor.exe MDL node structure:
       * MdlNode::AsMdlNodeTriMesh @ (K1: 0x0043e400, TSL: 0x004501d0) - Casts node to tri-mesh (checks flags 0x21 = HEADER + MESH)
       * MdlNode::AsMdlNodeSkin @ (K1: 0x0043e3f0, TSL: 0x004501c0) - Casts node to skin mesh (checks flags 0x61 = HEADER + MESH + SKIN)
       * MdlNode::AsMdlNodeDanglyMesh @ (K1: 0x0043e380, TSL: 0x00450150) - Casts node to dangly mesh (checks flags 0x121 = HEADER + MESH + DANGLY)
@@ -142,7 +142,7 @@ class MDLControllerType(IntEnum):
     Controllers can be indexed by node type since some IDs are reused for different node types.
 
     References:
-    - Based on swkotor.exe MDL controller structure:
+    - Based on /K1/k1_win_gog_swkotor.exe MDL controller structure:
       * Controller types are used to animate node properties (position, orientation, scale, alpha)
       * "scale" string @ (K1: 0x00741f44, TSL: N/A - inline string literal) - Scale controller identifier
       * "scalekey" string @ (K1: 0x00741f38, TSL: N/A - inline string literal) - Scale keyframe identifier
@@ -316,7 +316,7 @@ class MDLTrimeshFlags(IntFlag):
     """Additional trimesh flags from KotOR implementation.
 
     References:
-    - Based on swkotor.exe MDL trimesh structure:
+    - Based on /K1/k1_win_gog_swkotor.exe MDL trimesh structure:
       * PartTriMesh::PartTriMesh @ (K1: 0x00445840, TSL: 0x00459be0) - Creates tri-mesh part from MDL node
       * MdlNode::AsMdlNodeTriMesh @ (K1: 0x0043e400, TSL: 0x004501d0) - Casts node to tri-mesh (checks flags 0x21)
       * LoadModel @ (K1: 0x00464200, TSL: 0x0047a570) - Loads MDL models with trimesh flags
@@ -338,7 +338,7 @@ class MDLLightFlags(IntFlag):
     """Light flags from KotOR implementation.
 
     References:
-    - Based on swkotor.exe MDL light structure:
+    - Based on /K1/k1_win_gog_swkotor.exe MDL light structure:
       * MdlNode::AsMdlNodeLight @ (K1: 0x0043e3d0, TSL: 0x004501a0) - Casts node to light
       * LoadModel @ (K1: 0x00464200, TSL: 0x0047a570) - Loads MDL models with light flags
       * LoadModel2 @ (K1: 0x0061b380, TSL: 0x00669ea0) - Alternative model loading function
@@ -359,7 +359,7 @@ class MDLEmitterFlags(IntFlag):
     inheritance, and rendering properties.
 
     References:
-    - Based on swkotor.exe MDL emitter structure:
+    - Based on /K1/k1_win_gog_swkotor.exe MDL emitter structure:
       * MdlNode::AsMdlNodeEmitter @ (K1: 0x0043e3c0, TSL: 0x00450190) - Casts node to emitter
       * LoadModel @ (K1: 0x00464200, TSL: 0x0047a570) - Loads MDL models with emitter flags
       * LoadModel2 @ (K1: 0x0061b380, TSL: 0x00669ea0) - Alternative model loading function

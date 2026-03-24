@@ -41,7 +41,7 @@ class ArchiveResource(BiowareResource):
 
     References:
     ----------
-        Based on swkotor.exe archive structure:
+        Based on /K1/k1_win_gog_swkotor.exe archive structure:
         - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file (123 bytes)
           * Initializes ERF/RIM archive structure
           * Sets up resource table and file data storage
@@ -210,7 +210,7 @@ class BiowareArchive(ComparableMixin, ABC):
 
     References:
     ----------
-        Based on swkotor.exe archive structure:
+        Based on /K1/k1_win_gog_swkotor.exe archive structure:
         - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file (123 bytes)
           * Initializes ERF/RIM archive structure
           * Sets up resource table and file data storage

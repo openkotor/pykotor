@@ -32,7 +32,7 @@ class TLKXMLReader(ResourceReader):
 
     References:
     ----------
-        Based on swkotor.exe TLK structure:
+        Based on /K1/k1_win_gog_swkotor.exe TLK structure:
         - CTlkTable::CTlkTable @ 0x0041d8d0 - Constructor for talk table manager
         - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table (loads .tlk and .tlkf files)
         - CTlkFile::CTlkFile @ 0x0041d810 - Constructor for TLK file reader

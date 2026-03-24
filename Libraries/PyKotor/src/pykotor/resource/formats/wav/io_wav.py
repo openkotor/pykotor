@@ -7,7 +7,7 @@ This module handles reading and writing WAV files from KotOR, including:
 
 References:
 ----------
-        Based on swkotor.exe WAV structure:
+        Based on /K1/k1_win_gog_swkotor.exe WAV structure:
         - Audio loading functions handle WAV file formats
         - ".wav" extension string @ 0x0074d308 - WAV file extension
         - "wav" resource type string @ 0x0074d32c - WAV resource type identifier
@@ -69,7 +69,7 @@ class WAVBinaryReader(ResourceReader):
 
     References:
     ----------
-        Based on swkotor.exe WAV structure:
+        Based on /K1/k1_win_gog_swkotor.exe WAV structure:
         - Audio loading functions handle WAV file formats
         - ".wav" extension string @ 0x0074d308 - WAV file extension
         - "wav" resource type string @ 0x0074d32c - WAV resource type identifier

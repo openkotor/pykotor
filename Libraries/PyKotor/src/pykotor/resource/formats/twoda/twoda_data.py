@@ -94,7 +94,7 @@ class TwoDA(ComparableMixin):
 
     References:
     ----------
-        Based on swkotor.exe 2DA structure:
+        Based on /K1/k1_win_gog_swkotor.exe 2DA structure:
         - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
           * Parses binary 2DA format
           * Reads column headers, row labels, and cell data
@@ -922,7 +922,7 @@ class TwoDARow(ComparableMixin):
 
     References:
     ----------
-        Based on swkotor.exe 2DA structure:
+        Based on /K1/k1_win_gog_swkotor.exe 2DA structure:
         - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
           * Parses binary 2DA format
           * Reads column headers, row labels, and cell data

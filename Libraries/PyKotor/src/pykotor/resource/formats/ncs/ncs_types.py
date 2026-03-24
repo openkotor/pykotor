@@ -5,10 +5,11 @@ including basic types, compound types, and struct types with proper size calcula
 """
 
 from __future__ import annotations
-from pykotor.resource.formats._base import BiowareResource
 
 from enum import IntEnum
 from typing import TYPE_CHECKING
+
+from pykotor.resource.formats._base import BiowareResource
 
 if TYPE_CHECKING:
     from typing_extensions import Self

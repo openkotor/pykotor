@@ -152,7 +152,16 @@ The edge record contains a **transition ID** (int32). In the file it is only an 
 
 Library read/write code for tooling alignment only; **normative** layout and engine semantics remain RE + pipelines on this page and in [reverse_engineering_findings — BWM / AABB](reverse_engineering_findings#bwm-walkmesh-aabb-engine-implementation-analysis).
 
-- [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm) — BWM binary and ASCII I/O
+| Artifact | Location |
+| -------- | -------- |
+| Package | [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm) |
+| Binary read | [`BWMBinaryReader.load` L97+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py#L97) in [`io_bwm.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py) |
+| Binary write | [`BWMBinaryWriter.write` L220+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py#L220) in [`io_bwm.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py) |
+| In-memory model | [`BWM` L145+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py#L145) in [`bwm_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py) |
+
+**KotOR.js:** [OdysseyWalkMesh.ts](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyWalkMesh.ts) — binary read [`readBinary` L301–L395](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyWalkMesh.ts#L301-L395), header parse [`readHeader` L492–L514](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyWalkMesh.ts#L492-L514), export [`toExportBuffer` ~L834+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyWalkMesh.ts#L834). Layout differs from PyKotor (KotOR.js reserves 48 bytes in header; no hook vectors in file per PyKotor `io_bwm.py` L131 comment).
+
+CLI helper: [`pykotor walkmesh-rebuild`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md#L98-L104) (see [CLI quickstart](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md)).
 
 ## Edge cases and validation
 

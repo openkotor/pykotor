@@ -7,7 +7,7 @@ lips during dialogue playback.
 
 References:
 ----------
-    Based on swkotor.exe LIP structure:
+    Based on /K1/k1_win_gog_swkotor.exe LIP structure:
     - CLIP::LoadLip @ 0x0070c590 - Loads LIP file for lip sync animation
       * Parses binary LIP format
       * Reads header ("LIP V1.0" identifier)

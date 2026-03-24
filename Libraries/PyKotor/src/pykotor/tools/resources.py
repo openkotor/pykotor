@@ -4,6 +4,9 @@ This module provides reusable, abstract functions for converting between differe
 resource formats (texture, sound, model conversions). These functions are tool-agnostic
 and can be used by any application that needs resource conversions.
 
+For **directory / multi-file TPC↔TGA** workflows and **editor byte loads** (TXI sidecars,
+small-TGA fallback), use :mod:`pykotor.tools.texture_batch` alongside this module.
+
 References:
 ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)

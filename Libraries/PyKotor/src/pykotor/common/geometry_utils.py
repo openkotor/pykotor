@@ -6,7 +6,7 @@ backend implementation.
 
 References:
 ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         - Vector3/Vector4 structures used in GFF fields
         - Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py:1448-1577 - Tangent space calculation
@@ -54,7 +54,7 @@ def compute_per_vertex_tangent_space(
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         - Vector3/Vector4 structures used in GFF fields
         - Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py:1448-1577 - Tangent space calculation
@@ -141,7 +141,7 @@ def determine_vertex_format_requirements(mesh: MDLMesh) -> dict[str, bool]:
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         - Vector3/Vector4 structures used in GFF fields
 

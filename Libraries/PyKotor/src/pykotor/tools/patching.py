@@ -9,7 +9,7 @@ This module provides functions for:
 
 References:
 ----------
-        Based on swkotor.exe resource formats:
+        Based on /K1/k1_win_gog_swkotor.exe resource formats:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates new GFF file
         - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
         - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table

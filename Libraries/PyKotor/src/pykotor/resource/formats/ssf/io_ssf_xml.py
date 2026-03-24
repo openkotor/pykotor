@@ -32,7 +32,7 @@ class SSFXMLReader(ResourceReader):
 
     References:
     ----------
-        Based on swkotor.exe SSF structure:
+        Based on /K1/k1_win_gog_swkotor.exe SSF structure:
         - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
         - CResSSF::~CResSSF @ 0x006db670, @ 0x006db6b0 - Destructors for SSF resource
         - SSF file format: "SSF " type, "V1.1" version

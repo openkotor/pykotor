@@ -24,7 +24,7 @@ class KEYBinaryReader(ResourceReader):
 
     References:
     ----------
-        Based on swkotor.exe KEY structure:
+        Based on /K1/k1_win_gog_swkotor.exe KEY structure:
         - CExoKeyTable::CExoKeyTable @ 0x0040d030 - Key table constructor (157 bytes, 2 callees)
           * Initializes key table structure
           * Sets up BIF file list and resource entry table

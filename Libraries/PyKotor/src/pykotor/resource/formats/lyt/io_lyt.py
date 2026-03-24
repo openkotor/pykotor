@@ -24,7 +24,7 @@ class LYTAsciiReader(ResourceReader):
 
     References:
     ----------
-        Based on swkotor.exe LYT structure:
+        Based on /K1/k1_win_gog_swkotor.exe LYT structure:
         - LoadLayout @ 0x005de900 - Main LYT loader (2024 bytes, 12 callees)
           * Loads ASCII layout file from resource
           * Parses roomcount, trackcount, obstaclecount, doorhookcount

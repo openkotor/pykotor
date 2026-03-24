@@ -101,7 +101,7 @@ class KModuleType(Enum):
 
     Reverse Engineering Notes:
     -------------------------
-        Based on swkotor.exe: FUN_004094a0 and swkotor2.exe: FUN_004096b0
+        Based on /K1/k1_win_gog_swkotor.exe: FUN_004094a0 and swkotor2.exe: FUN_004096b0
         - Simple Mode (flag at offset 0x54 == 0): Loads .rim directly
         - Complex Mode (flag != 0): Checks for _a.rim, _adx.rim, .mod, _s.rim, _dlg.erf
         - _a.rim and _adx.rim REPLACE .rim in complex mode
@@ -379,7 +379,7 @@ class Module:  # noqa: PLR0904
 
     References:
     ----------
-        Based on swkotor.exe module system:
+        Based on /K1/k1_win_gog_swkotor.exe module system:
         - CServerExoAppInternal::LoadModule @ 0x004b95b0 - Main module loader (4088 bytes, 36 callees)
           * Loads module from IFO file
           * Handles module initialization and resource loading
@@ -445,7 +445,7 @@ class Module:  # noqa: PLR0904
         self._load_textures: bool = load_textures
 
         # Build all capsules relevant to this root in the provided installation
-        # Based on swkotor.exe: FUN_004094a0 and swkotor2.exe: FUN_004096b0
+        # Based on /K1/k1_win_gog_swkotor.exe: FUN_004094a0 and swkotor2.exe: FUN_004096b0
         self._capsules: _CapsuleDictTypes = {
             KModuleType.MAIN.name: None,
             KModuleType.AREA.name: None,
@@ -513,7 +513,7 @@ class Module:  # noqa: PLR0904
 
         root = cls.name_to_root(filename)
         # Build all capsules relevant to this root in the provided installation
-        # Based on swkotor.exe: FUN_004094a0 and swkotor2.exe: FUN_004096b0
+        # Based on /K1/k1_win_gog_swkotor.exe: FUN_004094a0 and swkotor2.exe: FUN_004096b0
         capsules: _CapsuleDictTypes = {
             KModuleType.MAIN.name: None,
             KModuleType.AREA.name: None,
@@ -1762,7 +1762,7 @@ class Module:  # noqa: PLR0904
 
         References:
         ----------
-        Based on swkotor.exe GFF/ARE structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF/ARE structure:
         - CSWSArea::LoadAreaHeader (/K1/k1_win_gog_swkotor.exe @ 0x00508c50, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Loads area header from GFF
         - C2DA::Load2DArray (/K1/k1_win_gog_swkotor.exe @ 0x004143b0, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Loads 2DA file from resource
         - CResGFF::CreateGFFFile (/K1/k1_win_gog_swkotor.exe @ 0x00411260, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Creates GFF file structure

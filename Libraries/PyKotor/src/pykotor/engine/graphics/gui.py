@@ -4,7 +4,7 @@ This module provides minimal GUI infrastructure for testing without full renderi
 
 References:
 ----------
-        Based on swkotor.exe GUI structure:
+        Based on /K1/k1_win_gog_swkotor.exe GUI structure:
         - CSWGuiPanel::StartLoadFromLayout @ 0x0040a680 - Loads GUI panel from layout file
         - CSWGuiControl::Load @ 0x00418800 - Loads GUI control from GFF structure
         - CSWGuiExtent::Load @ 0x00409dc0 - Loads GUI extent (position/size) from GFF

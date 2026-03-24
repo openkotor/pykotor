@@ -6,7 +6,7 @@ numeric IDs and file extensions, with engine support tracking via the BiowareEng
 
 The ResourceType enum includes all resource types from:
 - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
-- Based on swkotor.exe resource type system:
+- Based on /K1/k1_win_gog_swkotor.exe resource type system:
   * CExoResRef - Resource reference structure used throughout engine
   * CResRef::GetResRef - Gets resource reference string
   * Resource type IDs defined in engine's resource system
@@ -22,9 +22,10 @@ Each resource type includes:
 References:
 ----------
     Original BioWare engine binaries (resource type IDs from swkotor.exe, swkotor2.exe, etc.)
-    Based on swkotor.exe resource type system:
+    Based on /K1/k1_win_gog_swkotor.exe resource type system:
     - GetResTypeFromFile @ 0x00406650 - Gets resource type from file extension
     - GetResTypeFromExtension @ 0x005e6670, @ 0x005e7a40 - Gets resource type from extension string
+    wiki/Resource-Formats-and-Resolution.md (hex resource type ID table)
     wiki/Bioware-Aurora-KeyBIF.md (Aurora engine resource type documentation)
 """
 
@@ -69,7 +70,7 @@ class BiowareEngine(Enum):
     References:
     -----------
         Original BioWare engine binaries (engine type information from swkotor.exe, swkotor2.exe, etc.)
-        Based on swkotor.exe resource type system:
+        Based on /K1/k1_win_gog_swkotor.exe resource type system:
     - GetResTypeFromFile @ 0x00406650 - Gets resource type from file extension
     - GetResTypeFromExtension @ 0x005e6670, @ 0x005e7a40 - Gets resource type from extension string
     """
@@ -170,7 +171,7 @@ class ResourceTuple(NamedTuple):
 
     References:
     -----------
-        Based on swkotor.exe resource type system:
+        Based on /K1/k1_win_gog_swkotor.exe resource type system:
         - GetResTypeFromFile @ 0x00406650 - Gets resource type from file extension
         - GetResTypeFromExtension @ 0x005e6670, @ 0x005e7a40 - Gets resource type from extension string
         - ".mdl" string @ 0x00740ca8 - MDL file extension
@@ -190,7 +191,7 @@ class ResourceTuple(NamedTuple):
 class ResourceType(Enum):
     """Represents a resource type used across BioWare game engines.
 
-    This enum contains comprehensive resource type definitions based on swkotor.exe resource type system
+    This enum contains comprehensive resource type definitions Based on /K1/k1_win_gog_swkotor.exe resource type system
     REVA analysis, representing all known resource types across BioWare's Infinity, Aurora,
     Odyssey, and Eclipse engines.
 
@@ -220,7 +221,7 @@ class ResourceType(Enum):
 
     References:
     ----------
-        Based on swkotor.exe resource type system:
+        Based on /K1/k1_win_gog_swkotor.exe resource type system:
         - GetResTypeFromFile @ 0x00406650 - Gets resource type from file extension
         - GetResTypeFromExtension @ 0x005e6670, @ 0x005e7a40 - Gets resource type from extension string
         - CExoResRef - Resource reference structure used throughout engine

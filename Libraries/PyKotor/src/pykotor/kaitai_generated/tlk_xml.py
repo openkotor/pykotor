@@ -1,0 +1,39 @@
+# This is a generated file! Please edit source .ksy file and use kaitai-struct-compiler to rebuild
+# type: ignore
+
+import kaitaistruct
+from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
+
+
+if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
+    raise Exception("Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s" % (kaitaistruct.__version__))
+
+class TlkXml(KaitaiStruct):
+    """TLK XML format is a human-readable XML representation of TLK (Talk Table) binary files.
+    Provides easier editing and translation than binary TLK format.
+    
+    References:
+    - https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk.py
+    - https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk_xml.py
+    - https://github.com/seedhartha/reone/tree/master/src/libs/resource/format/tlkreader.cpp
+    - https://github.com/OldRepublicDevs/PyKotor/wiki/TLK-File-Format.md
+    - https://github.com/xoreos/xoreos/tree/master/src/aurora/talktable.cpp
+    
+    - ../GFF/GFF
+    - ../GFF/XML/GFF_XML
+    - ../TLK/TLK
+    """
+    def __init__(self, _io, _parent=None, _root=None):
+        super(TlkXml, self).__init__(_io)
+        self._parent = _parent
+        self._root = _root or self
+        self._read()
+
+    def _read(self):
+        self.xml_content = (self._io.read_bytes_full()).decode(u"UTF-8")
+
+
+    def _fetch_instances(self):
+        pass
+
+

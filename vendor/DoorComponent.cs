@@ -312,7 +312,7 @@ namespace Andastra.Game.Games.Odyssey.Components
         /// </summary>
         /// <remarks>
         /// Module Transition Check:
-        /// - Based on swkotor.exe and swkotor2.exe door transition system
+        /// - Based on /K1/k1_win_gog_swkotor.exe and swkotor2.exe door transition system
         /// - swkotor.exe: CSWSArea::LoadDoors @ (K1: 0x0050a0e0, TSL: 0x004e5920) - loads door list from GIT
         /// - swkotor.exe: CSWSArea::SaveDoors @ (K1: 0x00507810, TSL: 0x004e56b0) - saves door list to GIT
         /// - swkotor.exe: CServerAIMaster::AddEventAbsoluteTime @ (K1: 0x004af630, TSL: 0x004dcfb0) - handles door events including transitions
@@ -336,7 +336,7 @@ namespace Andastra.Game.Games.Odyssey.Components
         /// </summary>
         /// <remarks>
         /// Area Transition Check:
-        /// - Based on swkotor.exe and swkotor2.exe door transition system
+        /// - Based on /K1/k1_win_gog_swkotor.exe and swkotor2.exe door transition system
         /// - swkotor.exe: CSWSArea::LoadDoors @ (K1: 0x0050a0e0, TSL: 0x004e5920) - loads door list from GIT
         /// - swkotor.exe: CSWSArea::SaveDoors @ (K1: 0x00507810, TSL: 0x004e56b0) - saves door list to GIT
         /// - swkotor.exe: CServerAIMaster::AddEventAbsoluteTime @ (K1: 0x004af630, TSL: 0x004dcfb0) - handles door events including transitions
@@ -370,7 +370,7 @@ namespace Andastra.Game.Games.Odyssey.Components
         /// </summary>
         /// <remarks>
         /// Door Locking:
-        /// - Based on swkotor.exe and swkotor2.exe door locking system
+        /// - Based on /K1/k1_win_gog_swkotor.exe and swkotor2.exe door locking system
         /// - Located via string references: "OnLock" @ 0x007c1a28 (swkotor2.exe), "EVENT_LOCK_OBJECT" @ 0x007bcd20 (swkotor2.exe, case 0xd in 0x004dcfb0)
         /// - "CSWSSCRIPTEVENT_EVENTTYPE_ON_LOCKED" @ 0x007bc754 (swkotor2.exe, 0x1c)
         /// - Event dispatching: 0x004dcfb0 @ 0x004dcfb0 (swkotor2.exe) handles EVENT_LOCK_OBJECT (case 0xd, fires before script execution)
@@ -396,7 +396,7 @@ namespace Andastra.Game.Games.Odyssey.Components
         /// <param name="damage">The amount of damage to apply.</param>
         /// <remarks>
         /// Door Bashing:
-        /// - Based on swkotor.exe and swkotor2.exe door bashing system
+        /// - Based on /K1/k1_win_gog_swkotor.exe and swkotor2.exe door bashing system
         /// - Located via string references: ["gui_mp_bashdp"] @ (TSL: 0x007b5e04) - door bash GUI panels
         /// - ["gui_mp_bashup"] @ (TSL: 0x007b5e14) - door bash GUI elements
         /// - Original implementation: Applies damage minus hardness, destroys door when HP reaches 0
@@ -418,7 +418,7 @@ namespace Andastra.Game.Games.Odyssey.Components
         /// <param name="damageType">The type of damage being applied.</param>
         /// <remarks>
         /// Door Damage Application with Type:
-        /// - Based on swkotor.exe and swkotor2.exe door damage system
+        /// - Based on /K1/k1_win_gog_swkotor.exe and swkotor2.exe door damage system
         /// - Located via string references:
         ///   - ["gui_mp_bashdp"] @ (TSL: 0x007b5e04) - door bash GUI panels
         ///   - ["gui_mp_bashup"] @ (TSL: 0x007b5e14) - door bash GUI elements

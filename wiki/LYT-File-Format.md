@@ -25,19 +25,16 @@ LYT (Layout) files define how area [room models](LYT-File-Format#room-definition
 
 - LYT files are [ASCII](https://en.wikipedia.org/wiki/ASCII) text with a deterministic order: `beginlayout`, optional sections, then `donelayout`.  
 - Every section declares a count and then lists entries on subsequent lines.  
-- All implementations ([reone](https://github.com/seedhartha/reone), [xoreos](https://github.com/xoreos/xoreos), [KotOR.js](https://github.com/KobaltBlu/KotOR.js), [Kotor.NET](https://github.com/NickHugi/Kotor.NET)) parse identical tokens; KotOR-Unity mirrors the same structure.  
+- All implementations ([reone](https://github.com/modawan/reone), [xoreos](https://github.com/xoreos/xoreos), [KotOR.js](https://github.com/KobaltBlu/KotOR.js), [Kotor.NET](https://github.com/NickHugi/Kotor.NET)) parse identical tokens; KotOR-Unity mirrors the same structure.
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt)
+**Implementation (PyKotor):** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt) — read [`LYTAsciiReader.load` L60+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L60), write [`LYTAsciiWriter.write` L150+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L150); data model [`LYT` L64+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L64).
 
-**Vendor References:**
+**Cross-reference (other implementations):**
 
-Repositories (original first, mirror second): **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)), **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)), **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)), **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)), **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)).
-
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/lytreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/lytreader.cpp) - Complete C++ LYT parser with room positioning
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp) - Generic Aurora LYT implementation (shared format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/LYTObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts) - TypeScript LYT parser with scene graph integration
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Scripts/FileObjects/LYTObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/LYTObject.cs) - C# Unity LYT loader
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorLYT/LYT.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs) - .NET LYT reader/writer
+- **[reone](https://github.com/modawan/reone)** (upstream [seedhartha/reone](https://github.com/seedhartha/reone)): [`src/libs/resource/format/lytreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp)
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/resource/LYTObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Formats/KotorLYT/LYT.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs)
 
 ### See also
 
@@ -110,10 +107,11 @@ trackcount <N>
 
 **References**
 
-**Vendor Implementations:**
+**Cross-reference:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/LYTObject.ts:73-83`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L73-L83) - Track parsing
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/lytfile.cpp:98-107`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp#L98-L107) - Track section
+- PyKotor — [`LYTTrack` L296+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L296), track parsing in `io_lyt.py`.
+- KotOR.js — [`LYTObject.ts` L73–L83](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L73-L83).
+- xoreos — [`lytfile.cpp` L98–L107](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp#L98-L107).
 
 ### Obstacle Definitions
 
@@ -144,10 +142,11 @@ obstaclecount <N>
 
 **References**
 
-**Vendor Implementations:**
+**Cross-reference:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/LYTObject.ts:79-83`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L79-L83) - Obstacle parsing
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/lytfile.cpp:109-118`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp#L109-L118) - Obstacle section
+- PyKotor — [`LYTObstacle` L354+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L354).
+- KotOR.js — [`LYTObject.ts` L79–L83](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L79-L83).
+- xoreos — [`lytfile.cpp` L109–L118](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp#L109-L118).
 
 ### Door Hooks
 
@@ -186,10 +185,11 @@ doorhookcount <N>
 
 **References**
 
-**Vendor Implementations:**
+**Cross-reference:**
 
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/lytfile.cpp:161-200`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp#L161-L200) - Door hook parsing
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/LYTObject.ts:85-91`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L85-L91) - Door hooks section
+- PyKotor — [`LYTDoorHook` L412+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L412), door parsing in `io_lyt.py`.
+- xoreos — [`lytfile.cpp` L161–L200](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp#L161-L200).
+- KotOR.js — [`LYTObject.ts` L85–L91](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L85-L91).
 
 ---
 
@@ -212,10 +212,10 @@ doorhookcount <N>
 - **Parser:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py)  
 - **data [model](MDL-MDX-File-Format):** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py)  
 - **Reference Implementations:**  
-  - **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/lytreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/lytreader.cpp)  
-  - **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp)  
-  - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/LYTObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts)  
-  - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorLYT/LYT.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs)  
+  - **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/lytreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp)  
+  - **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp)  
+  - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/resource/LYTObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts)  
+  - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Formats/KotorLYT/LYT.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs)  
 
 All of the projects listed above agree on the plain-text token sequence; KotOR-Unity and NorthernLights consume the same format without introducing additional metadata.
 

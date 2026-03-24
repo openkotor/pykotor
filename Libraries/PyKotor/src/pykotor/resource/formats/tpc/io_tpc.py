@@ -89,7 +89,7 @@ class TPCBinaryReader(ResourceReader):
 
     References:
     ----------
-        Based on swkotor.exe TPC structure:
+        Based on /K1/k1_win_gog_swkotor.exe TPC structure:
         - CResTPC::CResTPC @ 0x00712ea0 - Constructor for TPC resource
         - CResTPC::~CResTPC @ 0x00712ee0 - Destructor for TPC resource
         - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
@@ -312,7 +312,7 @@ class TPCBinaryWriter(ResourceWriter):
 
     References:
     ----------
-        Based on swkotor.exe TPC structure:
+        Based on /K1/k1_win_gog_swkotor.exe TPC structure:
         - CResTPC::CResTPC @ 0x00712ea0 - Constructor for TPC resource
         - CResTPC::~CResTPC @ 0x00712ee0 - Destructor for TPC resource
         - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes

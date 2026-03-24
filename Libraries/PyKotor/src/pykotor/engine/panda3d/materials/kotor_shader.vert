@@ -2,7 +2,7 @@
 
 // Panda3D vertex shader for KotOR materials.
 // References:
-//   Based on swkotor.exe shader system:
+//   Based on /K1/k1_win_gog_swkotor.exe shader system:
 //   - Vertex shader implementation in game engine's rendering pipeline
 //   - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
 //   Original BioWare engine binaries (Vertex shader from swkotor.exe, swkotor2.exe)

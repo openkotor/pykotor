@@ -71,6 +71,9 @@ This works after a successful `uv sync --all-packages --all-extras`. **Python 3.
 - Do not use `getattr(self.ui, "widgetName", None)` or similar for UI widgets; reference widgets directly (e.g. `self.ui.toolbarModuleCombo`) and compile the UI first so the uic has the widget.
 - Do not construct Qt widgets (QPushButton, QLineEdit, QButtonGroup, QWidget, etc.) in Python; define all GUI in `.ui` files and use the LTR pattern (`self.ui = Ui_Form(); self.ui.setupUi(self)`).
 - For Qt enum/flag properties in `.ui` (focusPolicy, contextMenuPolicy, allowedAreas, scrollBarPolicy, toolBarArea), use `<enum>Qt::...</enum>` or `<set>Qt::...|...</set>` in the `.ui` file so generated code works with PyQt6; do not set these in Python instead of in the `.ui`.
+- When asked to refine, deepen, or extend a plan document only, change the named plan under `.cursor/plans/` (or the path given) and do not start executing the planned implementation until the user asks to begin that work.
+- When the user specifies a no-pull-request delivery model for wiki or documentation batches, ship updates with commit and push (including the separate `wiki` submodule when that workflow applies) rather than opening pull requests.
+- When merging or retiring a wiki page into another, remove the old page, update inbound links across the repo (wiki, `docs/`, batch catalogs, cross-references in plans or solutions notes), and run markdown link validation on the files you changed.
 
 ## Learned Workspace Facts
 
@@ -80,12 +83,15 @@ This works after a successful `uv sync --all-packages --all-extras`. **Python 3.
 - The generic GFF editor resolves `GFFContent` for save as loaded content, then `from_res` (special `.res` names only), then `from_resource_type` when unambiguous, else `GFFContent.GFF`; clear stored content on `new()`.
 - CLI command names should follow existing patterns and use domain-accurate terminology (e.g. avoid "archive" where Bioware or docs use different names).
 - Instance dialogs (e.g. DoorDialog) import `Ui_*` from `toolset.uic.qtpy.dialogs.instance.<name>`; ensure the `instance` package and the corresponding UI module (e.g. `door.py` from `.ui` + convertui or programmatic) exist.
+- Root `wiki/` is a git submodule (`PyKotor.wiki.git`); initialize or update it before full-tree wiki scans, edits, or local link checks, and assume CI may need recursive submodule checkout to see wiki content.
+- HolocronToolset packaging copies `wiki/**/*.md` into the shipped help tree; wiki layout or content changes affect what appears in the GUI help bundle.
+- In Windows PowerShell, change directories with `Set-Location` or `cd` to a path; `cd /d` is cmd.exe-only and errors in PowerShell.
 
 ### Reverse engineering (agdec-http MCP)
 
 - Binary analysis tools (list-functions, search-everything, match-function, create-label, etc.) require a Ghidra project with at least one program **open/loaded**. If `list-project-files` returns Count: 0 or tools report "No program loaded", open the project and load a binary in Ghidra first; then MCP tools can target programs by project path (e.g. `/TSL/k2_win_gog_aspyr_swkotor2.exe`).
 - When matching K1→K2, prefer search-everything and address/size/call-graph over match-function (which often returns wrong mappings). Apply labels from layout and cross-binary comparison.
-- Wiki documentation stays conceptual only; no tool names or raw RE dumps in `.md`. Document resource resolution and engine behavior; link format pages to [KEY-File-Format](wiki/KEY-File-Format.md) for resolution order.
+- Wiki documentation stays conceptual only; no tool names or raw RE dumps in `.md`. Document resource resolution and engine behavior; link format pages to [KEY-File-Format](wiki/KEY-File-Format.md) for resolution order and to [Resource-Formats-and-Resolution](wiki/Resource-Formats-and-Resolution.md) for the hex resource type ID table and format index. Engine RE notes for `CExoResMan` / resource loading and for BWM / AABB / walkmesh live in [reverse_engineering_findings](wiki/reverse_engineering_findings.md) (Resource Management and BWM sections), not removed standalone pages. For BWM-related or walkmesh wiki work, align normative claims and any PyKotor implementation cross-links with `docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md` before treating them as project policy.
 
 ### KotorMCP and MCP governance
 

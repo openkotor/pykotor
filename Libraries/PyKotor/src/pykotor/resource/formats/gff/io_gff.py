@@ -35,7 +35,7 @@ class GFFBinaryReader(ResourceReader):
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates new GFF file with file_type and version
           * Sets file_type from 4-character string (e.g., "UTI ", "DLG ", "ARE ")
           * Sets file_version from GFFVersion string "V3.2" @ 0x0073e2c8
@@ -85,7 +85,7 @@ class GFFBinaryReader(ResourceReader):
             msg = "Not a valid binary GFF file."
             raise ValueError(msg)
 
-        # REVERSE ENGINEERING FINDINGS (Based on swkotor.exe GFF structure):
+        # REVERSE ENGINEERING FINDINGS (Based on /K1/k1_win_gog_swkotor.exe GFF structure):
         # The KOTOR engine's CResGFF::CreateGFFFile function does NOT accept a version parameter.
         # Instead, it uses a hardcoded global variable GFFVersion (0x0073e2c8) containing "V3.2".
         # The function copies this hardcoded version to the file header using:

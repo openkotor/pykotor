@@ -2,7 +2,7 @@
 
 References:
 ----------
-        Based on swkotor.exe material system:
+        Based on /K1/k1_win_gog_swkotor.exe material system:
         - CResTPC::CResTPC @ 0x00712ea0 - TPC texture resource constructor
         - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
         - Material and shader management in game engine
@@ -58,7 +58,7 @@ class Panda3DMaterial(IMaterial):
 
         References:
         ----------
-        Based on swkotor.exe texture loading:
+        Based on /K1/k1_win_gog_swkotor.exe texture loading:
         - CResTPC::CResTPC @ 0x00712ea0 - TPC texture resource constructor
         - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
 
@@ -96,7 +96,7 @@ class Panda3DMaterial(IMaterial):
 
         References:
         ----------
-        Based on swkotor.exe material application:
+        Based on /K1/k1_win_gog_swkotor.exe material application:
         - Material and shader management in game engine
         - Texture stage configuration and shader input setup
 

@@ -23,7 +23,7 @@ class TPCBMPWriter(ResourceWriter):
 
     References:
     ----------
-        Based on swkotor.exe TPC structure:
+        Based on /K1/k1_win_gog_swkotor.exe TPC structure:
         - CResTPC::CResTPC @ 0x00712ea0 - TPC resource constructor (51 bytes)
           * Initializes TPC resource with vtable
           * Sets texture format fields to 0

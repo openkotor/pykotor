@@ -21,7 +21,7 @@ class VISAsciiReader(ResourceReader):
 
     References:
     ----------
-        Based on swkotor.exe VIS structure:
+        Based on /K1/k1_win_gog_swkotor.exe VIS structure:
         - LoadVisibility @ 0x004568d0 - Loads VIS file for visibility culling
           * Parses ASCII format
           * Reads parent room names and child room counts

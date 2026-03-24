@@ -39,7 +39,7 @@ def find_nss_compiler() -> Path | None:
 
     References:
     ----------
-        Based on swkotor.exe NCS compilation:
+        Based on /K1/k1_win_gog_swkotor.exe NCS compilation:
         - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
         - NWScript compilation and execution within game engine
 

@@ -60,7 +60,7 @@ class GIT:
 
     References:
     ----------
-        Based on swkotor.exe GIT structure:
+        Based on /K1/k1_win_gog_swkotor.exe GIT structure:
         - CSWSArea::LoadGIT @ 0x0050dd80 - Loads GIT file from GFF structure
           * Creates CResGFF with "GIT " type and resource ref
           * Reads top-level struct
@@ -480,7 +480,7 @@ class GITCamera(GITObject):
 
     References:
     ----------
-        Based on swkotor.exe GIT structure:
+        Based on /K1/k1_win_gog_swkotor.exe GIT structure:
         - CSWSArea::LoadGIT @ 0x0050dd80 - Loads GIT file for area instances
         - CSWSArea::SaveGIT @ 0x0050ba00 - Saves GIT file for area instances
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
@@ -585,7 +585,7 @@ class GITCreature(GITInstance):
 
     References:
     ----------
-        Based on swkotor.exe GIT structure:
+        Based on /K1/k1_win_gog_swkotor.exe GIT structure:
         - CSWSArea::LoadGIT @ 0x0050dd80 - Loads GIT file for area instances
         - CSWSArea::SaveGIT @ 0x0050ba00 - Saves GIT file for area instances
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
@@ -660,7 +660,7 @@ class GITDoor(GITInstance):
 
     References:
     ----------
-        Based on swkotor.exe GIT structure:
+        Based on /K1/k1_win_gog_swkotor.exe GIT structure:
         - CSWSArea::LoadGIT @ 0x0050dd80 - Loads GIT file for area instances
         - CSWSArea::SaveGIT @ 0x0050ba00 - Saves GIT file for area instances
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure

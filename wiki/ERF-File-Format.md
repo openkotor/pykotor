@@ -33,19 +33,19 @@ This document provides a detailed description of the ERF (Encapsulated Resource 
 
 **Related formats:** *ERF* containers hold [GFF](GFF-File-Format), [2DA](2DA-File-Format), [TPC](TPC-File-Format), [NCS](NCS-File-Format), and other resource types; see [KEY](KEY-File-Format) and [BIF](BIF-File-Format) for alternative storage. **Modder note:** Use *MOD*s for module-specific content (area GFFs, module 2DAs); use [override](Concepts#override-folder) for global replacements. See [Concepts](Concepts#mod-erf-rim) and [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files).
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/erf/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/)
+**Implementation (PyKotor):** [`Libraries/PyKotor/src/pykotor/resource/formats/erf/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/) — layout table in [`erf_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L19-L54) docstring; read path [`ERFBinaryReader.load`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L51-L169); write path [`ERFBinaryWriter.write`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L186-L256).
 
-**Vendor References:**
+**Cross-reference (other implementations):**
 
-Repositories (original first, mirror second): **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)), **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)), **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)), **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)), **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)), **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)), **[bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats)** - Kaitai Struct format specs for ERF and other BioWare formats (no mirror).
+Canonical repos first; [th3w1zard1 mirrors](https://github.com/th3w1zard1?tab=repositories&q=kotor) are listed on [Home — Vendor Implementations](Home#vendor-implementations) where they exist.
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/erfreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/erfreader.cpp) - Complete C++ ERF reader implementation with MOD/SAV/HAK support
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`include/reone/resource/format/erfreader.h`](https://github.com/seedhartha/reone/blob/master/include/reone/resource/format/erfreader.h) - ERF reader type definitions
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/erffile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/erffile.cpp) - Generic Aurora ERF implementation (shared format across KotOR, NWN, and other Aurora games)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/ERFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/ERFObject.ts) - TypeScript ERF parser with streaming support
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Scripts/FileObjects/ERFObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/ERFObject.cs) - C# Unity ERF loader
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorERF/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorERF) - .NET ERF reader/writer with builder API
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)): [`src/aurora/erffile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/erffile.cpp) - Command-line ERF extraction tools
+- **[reone](https://github.com/modawan/reone)** (community continuation; original upstream [seedhartha/reone](https://github.com/seedhartha/reone)): [`src/libs/resource/format/erfreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/erfreader.cpp) — `ErfReader::load` ([L29–L40](https://github.com/modawan/reone/blob/master/src/libs/resource/format/erfreader.cpp#L29-L40)), signature check ([L42–L52](https://github.com/modawan/reone/blob/master/src/libs/resource/format/erfreader.cpp#L42-L52); accepts only `ERF V1.0` and `MOD V1.0` as one 8-byte string), key entries ([L62–L71](https://github.com/modawan/reone/blob/master/src/libs/resource/format/erfreader.cpp#L62-L71)), resource entries ([L84–L92](https://github.com/modawan/reone/blob/master/src/libs/resource/format/erfreader.cpp#L84-L92)); header [`erfreader.h`](https://github.com/modawan/reone/blob/master/include/reone/resource/format/erfreader.h). This reader **does not** parse the localized-string block; **SAV** files that still use the `MOD ` + `V1.0` header may match the MOD branch, but **`HAK `** / **`SAV `** fourcc paths are not handled here.
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/resource/ERFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/ERFObject.ts) — [`parseHeader` L69–L85](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/ERFObject.ts#L69-L85), [`parseStructures` L87–L119](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/ERFObject.ts#L87-L119) (localized strings, keys, resource list), [`getExportBuffer` L280–L346](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/ERFObject.ts#L280-L346) (serialize).
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs) — `FileRoot` load path ([L25–L46](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L25-L46)); `FileHeader` reader ([L86–L97](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L86-L97)) skips **Description StrRef** and the **116-byte** reserved tail (see PyKotor for the full 160-byte header); `KeyEntry` reader ([L128–L134](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L128-L134)); `ResourceEntry` reader ([L157–L161](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L157-L161)).
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/erffile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/erffile.cpp) — Aurora-wide ERF/MOD reader (multiple games).
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/aurora/erffile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/erffile.cpp) — CLI extraction / tooling.
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/ERFObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/ERFObject.cs) — Unity-side loader.
+- **[bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats)** — Kaitai Struct specs (ERF and related BioWare formats).
 
 ---
 
@@ -123,10 +123,12 @@ The Description [StrRef](TLK-File-Format#string-references-strref) field (offset
 
 **References**
 
-**Vendor Implementations:**
+**Cross-reference:**
 
-- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:11-46`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L11-L46) - .NET ERF header structure
-- [`vendor/xoreos-docs/specs/torlack/mod.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/mod.html) - Tim Smith (Torlack)'s reverse-engineered ERF format documentation
+- PyKotor — full 160-byte header read: [`io_erf.py` L70–L96](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L70-L96); layout table: [`erf_data.py` L19–L36](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L19-L36).
+- KotOR.js — [`ERFObject.parseHeader` L69–L85](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/ERFObject.ts#L69-L85).
+- Kotor.NET — [`FileHeader` reader L86–L97](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L86-L97) (partial; omits description StrRef + reserved).
+- Torlack (historical RE) — [xoreos-docs `specs/torlack/mod.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/mod.html) (canonical repo).
 
 ### Localized String List
 
@@ -154,9 +156,11 @@ ERF localized strings provide multi-language descriptions for the container itse
 
 **References**
 
-**Vendor Implementations:**
+**Cross-reference:**
 
-- [`vendor/reone/src/libs/resource/format/erfreader.cpp:47-65`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/erfreader.cpp#L47-L65) - Localized string list parsing
+- PyKotor — localized block: [`io_erf.py` L122–L143](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L122-L143); writer: [`io_erf.py` L235–L240](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L235-L240).
+- KotOR.js — [`parseStructures` L91–L97](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/ERFObject.ts#L91-L97).
+- reone — `ErfReader` does **not** read localized strings (see [cross-reference at top](#file-structure-overview)); use PyKotor or KotOR.js for that path.
 
 ### [KEY](KEY-File-Format) List
 
@@ -175,10 +179,13 @@ Resource names are padded with NULL bytes to 16 characters, but are not necessar
 
 **References**
 
-**Vendor Implementations:**
+**Cross-reference:**
 
-- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:115-168`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L115-L168) - KEY entry structure
-- [`vendor/xoreos-docs/specs/torlack/mod.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/mod.html) - Resource structure details and *ResRef* padding notes
+- PyKotor — key list: [`io_erf.py` L148–L155](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L148-L155); writer: [`io_erf.py` L242–L246](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L242-L246) (PyKotor preserves ResRef case; reone lowercases in [`readKeyEntry` L63](https://github.com/modawan/reone/blob/master/src/libs/resource/format/erfreader.cpp#L63)).
+- KotOR.js — key loop [`parseStructures` L101–L108](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/ERFObject.ts#L101-L108).
+- Kotor.NET — [`KeyEntry` reader L128–L134](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L128-L134).
+- reone — [`readKeyEntry` L62–L71](https://github.com/modawan/reone/blob/master/src/libs/resource/format/erfreader.cpp#L62-L71).
+- Torlack — [xoreos-docs `specs/torlack/mod.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/mod.html) (*ResRef* padding notes).
 
 ### Resource List
 
@@ -191,9 +198,12 @@ Each resource entry is 8 bytes:
 
 **References**
 
-**Vendor Implementations:**
+**Cross-reference:**
 
-- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:119-120`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L119-L120) - Resource list entry structure
+- PyKotor — resource list: [`io_erf.py` L159–L162](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L159-L162); writer: [`io_erf.py` L248–L252](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L248-L252).
+- KotOR.js — [`parseStructures` L112–L116](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/ERFObject.ts#L112-L116).
+- Kotor.NET — [`ResourceEntry` reader L157–L161](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L157-L161).
+- reone — [`readResourceEntry` L84–L92](https://github.com/modawan/reone/blob/master/src/libs/resource/format/erfreader.cpp#L84-L92).
 
 ### Resource data
 
@@ -209,9 +219,9 @@ Resource data is stored at the offsets specified in the resource list:
 
 **References**
 
-**Vendor Implementations:**
+**Cross-reference:**
 
-- [`vendor/xoreos-docs/specs/torlack/mod.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/mod.html) - "Strange Blank data" section documenting this MOD/NWM-specific quirk
+- Torlack — [xoreos-docs `specs/torlack/mod.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/mod.html) (“Strange Blank data”).
 
 ---
 
@@ -225,7 +235,7 @@ ERF files come in several variants based on file type:
 | MOD       | `.mod`    | Module file (contains area resources)                            |
 | SAV       | `.sav`    | Save game file (contains saved game state)                       |
 
-All variants use the same binary format structure, differing only in the file type signature.
+The **on-disk** 160-byte layout is the same family for shipped KotOR capsules; the **first four bytes** are not always a distinct `SAV ` type code—PyKotor treats many `.sav` files as the `MOD ` / `V1.0` header pair for typing purposes ([`ERFType.from_extension`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L128-L135)). `ERF ` and `HAK ` (and `SAV ` when present) are still valid Aurora signatures when they appear.
 
 ### MOD Files (module containers)
 
@@ -276,9 +286,9 @@ Generic ERF files serve miscellaneous purposes:
 
 **References**
 
-**Vendor Implementations:**
+**Cross-reference:**
 
-- [`vendor/reone/src/libs/resource/format/erfreader.cpp:27-34`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/erfreader.cpp#L27-L34) - File type and variant detection
+- reone — [`ErfReader::checkSignature` L42–L52](https://github.com/modawan/reone/blob/master/src/libs/resource/format/erfreader.cpp#L42-L52) (accepts `ERF V1.0` and `MOD V1.0` only, as a single 8-byte read after opening the stream).
 
 ---
 
@@ -316,11 +326,13 @@ Contrary to popular belief, the engine does **not** identify Save Games based on
 
 ## Implementation Details
 
-**Binary Reading**: [`Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py)
+| Component | PyKotor (line anchors) |
+| --------- | ------------------------ |
+| Layout / types | [`erf_data.py` L19–L54](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L19-L54) (docstring), [`ERFType`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L107-L137), [`ERF` archive](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L140-L253) |
+| Binary read | [`ERFBinaryReader.load` L51–L169](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L51-L169) |
+| Binary write | [`ERFBinaryWriter.write` L186–L256](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L186-L256) |
 
-**Binary Writing**: [`Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py)
-
-**ERF Class**: [`Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py:100-229`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L100-L229)
+See also **Cross-reference** at the [top of this page](#file-structure-overview) for KotOR.js, Kotor.NET, reone, and xoreos.
 
 ### See also
 

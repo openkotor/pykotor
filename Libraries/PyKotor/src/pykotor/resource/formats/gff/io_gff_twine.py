@@ -23,7 +23,7 @@ class GFFTwineReader(ResourceReader):
 
     References:
     ----------
-        Based on swkotor.exe dialog structure:
+        Based on /K1/k1_win_gog_swkotor.exe dialog structure:
         - CSWSDialog::LoadDialog @ 0x005a2ae0 - Loads dialog from GFF structure
         - CSWSDialog::LoadDialogBase @ 0x0059f5f0 - Loads dialog base properties
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure

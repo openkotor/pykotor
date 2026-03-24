@@ -227,18 +227,16 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 2DA files are tabular game data; role in modding and merge workflows: see the **2DA** section on [Concepts](Concepts). On disk in game archives they use binary version **`V2.b`** and the `.2da` extension. The engine loads them with the same *[resource resolution order](Concepts#resource-resolution-order)* as other resources (override, module [RIM](RIM-File-Format)/[MOD](ERF-File-Format), save, [KEY](KEY-File-Format)/[BIF](BIF-File-Format)).
 
-**PyKotor:** [`resource/formats/twoda/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/) — [`io_twoda.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py) reads/writes **binary `V2.b`** (what ships in BIF/MOD/RIM). Text **`V2.0`** / CSV / JSON interchange use `io_twoda_csv.py`, `io_twoda_json.py`, and [`twoda_auto.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py) dispatch, not the binary reader.
+**PyKotor:** [`resource/formats/twoda/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/) — binary `V2.b`: [`TwoDABinaryReader.load` L146+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L146), [`TwoDABinaryWriter.write` L183+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L183); data model [`TwoDA` L87+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L87), [`TwoDARow` L915+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L915). Text `V2.0` / CSV / JSON: `io_twoda_csv.py`, `io_twoda_json.py`, [`twoda_auto.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py).
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/)
+**Cross-reference (other implementations):**
 
-**Vendor References:**
-
-- **[kotor](https://github.com/reubenduncan/kotor)** ([Mirror: th3w1zard1/kotor](https://github.com/th3w1zard1/kotor)): [`docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md) - Basic format structure and parsing overview
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/2dareader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp) - Complete C++ 2DA parser implementation
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp) - Generic Aurora engine 2DA implementation (shared format)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Assets/Scripts/FileObjects/2DAObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs) - C# Unity 2DA loader
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/TwoDAObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts) - TypeScript 2DA parser with memory-efficient caching
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Kotor.NET/Formats/Kotor2DA/Kotor2DA.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/Kotor2DA.cs) - .NET 2DA reader/writer
+- **[reone](https://github.com/modawan/reone)** (upstream [seedhartha/reone](https://github.com/seedhartha/reone)): [`src/libs/resource/format/2dareader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/resource/TwoDAObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Formats/Kotor2DA/Kotor2DA.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/Kotor2DA.cs)
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs)
+- **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md) — basic format overview
 
 ### See Also
 
@@ -266,9 +264,10 @@ The file type can be either `"2DA "` (space-padded) or `"2DA\t"` (tab-padded). B
 
 **References**:
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/2dareader.cpp:29-32`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp#L29-L32) - *KotOR*-specific header validation
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/2dafile.cpp:48-51`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L48-L51) - Generic *Aurora* engine header constants (format shared across *KotOR* and other *Aurora* games)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Assets/Scripts/FileObjects/2DAObject.cs:25-32`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L25-L32) - *KotOR*-specific header reading
+- **PyKotor** — header read in [`_load_twoda_legacy` / Kaitai path](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py)
+- **[reone](https://github.com/modawan/reone)**: [`2dareader.cpp` L29–L32](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp#L29-L32)
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`2dafile.cpp` L48–L51](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L48-L51)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`2DAObject.cs` L25–L32](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L25-L32)
 
 ### Column Headers
 
@@ -283,10 +282,10 @@ Each column name is terminated by a tab character (`0x09`). The entire header li
 
 **References**:
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/2dareader.cpp:72-89`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp#L72-L89) - *KotOR*-specific token reading with tab separator
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/2dafile.cpp:260-275`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L260-L275) - Generic *Aurora* engine header reading (format shared across *KotOR* and other *Aurora* games)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Assets/Scripts/FileObjects/2DAObject.cs:36-48`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L36-L48) - *KotOR*-specific column header parsing
-- **[kotor](https://github.com/reubenduncan/kotor)** ([Mirror: th3w1zard1/kotor](https://github.com/th3w1zard1/kotor)): [`docs/2da.md:32-37`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L32-L37) - *KotOR*-specific column structure
+- **[reone](https://github.com/modawan/reone)**: [`2dareader.cpp` L72–L89](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp#L72-L89)
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`2dafile.cpp` L260–L275](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L260-L275)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`2DAObject.cs` L36–L48](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L36-L48)
+- **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md` L32–L37](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L32-L37)
 
 ### Row Count
 

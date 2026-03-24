@@ -655,7 +655,7 @@ class TwoDARegistry:
 
     References:
     ----------
-        Based on swkotor.exe 2DA structure:
+        Based on /K1/k1_win_gog_swkotor.exe 2DA structure:
         - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
         - C2DA::Unload2DArray @ 0x004139e0 - Unloads 2DA data
         Original BioWare engine binaries
@@ -838,7 +838,7 @@ class TwoDAManager:
 
     References:
     ----------
-        Based on swkotor.exe 2DA structure:
+        Based on /K1/k1_win_gog_swkotor.exe 2DA structure:
         - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
         - C2DA::Unload2DArray @ 0x004139e0 - Unloads 2DA data
         Original BioWare engine binaries

@@ -1098,7 +1098,7 @@ class Vector4(vec4):
 
         References:
         ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         - Vector3/Vector4 structures used in GFF fields
         Original BioWare engine binaries
@@ -1177,7 +1177,7 @@ class Vector4(vec4):
 
         References:
         ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         - Vector3/Vector4 structures used in GFF fields
         Original BioWare engine binaries

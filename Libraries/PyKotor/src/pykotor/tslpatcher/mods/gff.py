@@ -5,7 +5,7 @@ Handles field additions, modifications, list operations, and struct manipulation
 
 References:
 ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
         Original BioWare engine binaries

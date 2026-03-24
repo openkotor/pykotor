@@ -133,8 +133,7 @@ PyKotor is not the first of its kind, below you'll find other KotOR tools, resou
 Complete game engine rewrites that can load and play KotOR:
 
 - **[xoreos](https://github.com/xoreos/xoreos)** - C++ reimplementation of BioWare's Aurora/Odyssey/Eclipse engine, supports multiple BioWare games including KotOR. ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos))
-- **[reone](https://github.com/seedhartha/reone)** - Modern C++ KotOR engine with OpenGL rendering. Focus on performance and clean architecture. ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone))
-  - **NOTE**: This project seems to be abandoned by seedhartha, but was picked up by the community here: <https://github.com/modawan/reone> though I can't speak to its authority)
+- **[reone](https://github.com/modawan/reone)** — Community-maintained continuation of the modern C++ KotOR engine (OpenGL). Original upstream: [seedhartha/reone](https://github.com/seedhartha/reone). ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone))
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** - TypeScript/JavaScript engine running in browsers via WebGL. Enables playing KotOR directly in web browsers. ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js))
 - **[NorthernLights](https://github.com/lachjames/NorthernLights)** - .NET/C# engine implementation with Unity integration capabilities (based on KotOR-Unity project with further improvements) ([Mirror: th3w1zard1/NorthernLights](https://github.com/th3w1zard1/NorthernLights))
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** - Unity-based KotOR engine rewrite. Leverages Unity's rendering and physics. ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity))

@@ -27,7 +27,7 @@ classifiers = [
   "Topic :: File Formats",
   "Typing :: Typed",
 ]
-dependencies = ["defusedxml>=0.7", "ply>=3.11,<4"]
+dependencies = ["defusedxml>=0.7", "kaitaistruct>=0.11", "ply>=3.11,<4"]
 keywords = [
   "2da",
   "bif",
@@ -164,6 +164,7 @@ keywords = [
 [tool.poetry.dependencies]
 python = "^3.8"
 defusedxml = ">=0.7"
+kaitaistruct = ">=0.11"
 ply = ">=3.11,<4"
 charset-normalizer = { version = ">=2.0", optional = true }
 certifi = { version = ">=2021.10.8", optional = true }

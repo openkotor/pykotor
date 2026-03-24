@@ -4,7 +4,7 @@ This module provides TPC texture loading functionality for the Panda3D engine.
 
 References:
 ----------
-        Based on swkotor.exe TPC structure:
+        Based on /K1/k1_win_gog_swkotor.exe TPC structure:
         - CResTPC::CResTPC @ 0x00712ea0 - TPC resource constructor
         - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
         - TPC texture loading and format conversion functions
@@ -39,7 +39,7 @@ def load_tpc(tpc: TPC) -> Texture:
 
     References:
     ----------
-        Based on swkotor.exe TPC structure:
+        Based on /K1/k1_win_gog_swkotor.exe TPC structure:
         - CResTPC::CResTPC @ 0x00712ea0 - TPC resource constructor
         - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
         - TPC texture loading and format conversion functions

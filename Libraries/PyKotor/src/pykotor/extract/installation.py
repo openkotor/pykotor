@@ -163,7 +163,7 @@ class Installation:
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         Original BioWare engine binaries
         Derivations and Other Implementations:

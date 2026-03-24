@@ -317,7 +317,7 @@ def extract_kit(
 
     References:
     ----------
-        Based on swkotor.exe ERF structure:
+        Based on /K1/k1_win_gog_swkotor.exe ERF structure:
         - See pykotor.resource.formats.erf.erf_data for addresses (K1 + TSL TODO). CExoEncapsulatedFile, AddEncapsulatedContents.
         Original BioWare engine binaries
 

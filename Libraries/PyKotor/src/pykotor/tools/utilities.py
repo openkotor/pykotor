@@ -6,7 +6,7 @@ and can be used by any application that needs these utilities.
 
 References:
 ----------
-        Based on swkotor.exe resource formats:
+        Based on /K1/k1_win_gog_swkotor.exe resource formats:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates new GFF file
         - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
         - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
@@ -134,7 +134,7 @@ def diff_files(
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
         Tools/diff operations/src/kotordiff/differ.py
@@ -227,7 +227,7 @@ def grep_in_file(
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
 
@@ -329,7 +329,7 @@ def get_file_stats(file_path: Path) -> dict[str, int | str]:
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
 
@@ -373,7 +373,7 @@ def validate_file(file_path: Path) -> tuple[bool, str]:
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
+        Based on /K1/k1_win_gog_swkotor.exe GFF structure:
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
 

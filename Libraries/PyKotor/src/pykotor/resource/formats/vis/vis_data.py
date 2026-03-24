@@ -63,7 +63,7 @@ class VIS(ComparableMixin):
 
     References:
     ----------
-        Based on swkotor.exe VIS structure:
+        Based on /K1/k1_win_gog_swkotor.exe VIS structure:
         - Scene::LoadVisibility @ 0x004568d0 - Loads VIS file for area visibility culling
           * Parses ASCII VIS file format
           * Builds room visibility map for occlusion culling

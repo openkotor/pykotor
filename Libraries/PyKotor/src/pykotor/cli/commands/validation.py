@@ -8,7 +8,7 @@ This module provides CLI commands for:
 
 References:
 ----------
-        Based on swkotor.exe resource validation:
+        Based on /K1/k1_win_gog_swkotor.exe resource validation:
         - CExoResMan::GetResRef - Resource reference lookup
         - CResGFF, CRes2DA, CResTPC - Resource format validators
 

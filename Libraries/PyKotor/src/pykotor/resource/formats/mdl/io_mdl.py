@@ -621,7 +621,7 @@ These functions correspond to the game engine's MDL/MDX parsing implementation:
 
 References:
 ----------
-    Based on swkotor.exe (K1) and swkotor2.exe (TSL) MDL/MDX I/O implementation.
+    Based on /K1/k1_win_gog_swkotor.exe (K1) and swkotor2.exe (TSL) MDL/MDX I/O implementation.
     All addresses verified via RE tools through string cross-references,
     call chain analysis, and decompilation.
 """
@@ -2566,7 +2566,7 @@ def _calculate_face_area(v1: Vector3, v2: Vector3, v3: Vector3) -> float:
 
     References:
     ----------
-        Based on swkotor.exe geometry calculations:
+        Based on /K1/k1_win_gog_swkotor.exe geometry calculations:
         - Triangle area calculation uses standard Heron's formula
         - Used in mesh processing and collision detection
 
@@ -2610,7 +2610,7 @@ def _decompress_quaternion(compressed: int) -> Vector4:
 
     References:
     ----------
-        Based on swkotor.exe quaternion compression:
+        Based on /K1/k1_win_gog_swkotor.exe quaternion compression:
         - CompressQuaternionKey @ (K1: 0x00464b50, TSL: N/A - likely inlined or different implementation) - Compresses quaternion to 32-bit integer (742 bytes, 4 callees)
           * Packs X, Y, Z components into 11, 11, and 10 bits respectively
           * Maps quaternion components from [-1, 1] to integer ranges
@@ -2828,7 +2828,7 @@ class MDLBinaryReader(BiowareResource):
 
     References:
     ----------
-        Based on swkotor.exe MDL structure:
+        Based on /K1/k1_win_gog_swkotor.exe MDL structure:
         - LoadModel @ (K1: 0x00464200, TSL: 0x0047a570) - High-level model loader (172 bytes, 42 lines)
           * Loads MDL/MDX through IODispatcher::ReadSync
           * Manages model cache (modelsList) to avoid duplicate loads
@@ -3642,7 +3642,7 @@ class MDLBinaryWriter(BiowareResource):
 
     References:
     ----------
-        Based on swkotor.exe MDL structure:
+        Based on /K1/k1_win_gog_swkotor.exe MDL structure:
         - LoadModel @ (K1: 0x00464200, TSL: 0x0047a570) - High-level model loader (172 bytes, 42 lines)
           * Loads MDL/MDX through IODispatcher::ReadSync
           * Manages model cache (modelsList) to avoid duplicate loads

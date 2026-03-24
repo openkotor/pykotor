@@ -22,7 +22,7 @@ class LTRBinaryReader(ResourceReader):
 
         References:
         ----------
-            Based on swkotor.exe LTR structure:
+            Based on /K1/k1_win_gog_swkotor.exe LTR structure:
             - LTR files loaded as resources through CExoResMan
             - "LTR V1.0" format identifier - LTR file version string
             - ".ltr" extension string - LTR file extension

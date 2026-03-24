@@ -82,7 +82,7 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
 
     References:
     ----------
-        Based on swkotor.exe ERF structure:
+        Based on /K1/k1_win_gog_swkotor.exe ERF structure:
         - See pykotor.resource.formats.erf.erf_data for addresses (K1 + TSL TODO). CExoEncapsulatedFile, AddEncapsulatedContents.
         Original BioWare engine binaries
         Derivations and Other Implementations:
