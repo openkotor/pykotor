@@ -2,7 +2,7 @@
 
 FAC files are GFF-based format files that store faction definitions and reputation relationships between factions in KotOR modules. The file is typically named `repute.fac` in modules. FAC files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**Official BioWare Documentation:** For the authoritative BioWare Aurora Engine Faction Format specification, see [Bioware Aurora Faction Format](Bioware-Aurora-Faction).
+**Official BioWare Documentation:** For the authoritative BioWare Aurora Engine Faction Format specification, see [Bioware Aurora Faction Format](Bioware-Aurora-Items-Economy-and-Narrative#faction).
 
 **Source:** This documentation is based on the official BioWare Aurora Engine Faction Format PDF, contained in **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/bioware/Faction_Format.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/Faction_Format.pdf).
 
@@ -230,5 +230,5 @@ write_fac(fac, "output/repute.fac")
 - [GFF File Format](GFF-File-Format) - Parent GFF format
 - [2DA-repute](2DA-File-Format#repute2da) - Default faction standings table
 - [2DA File Format](2DA-File-Format) - repadjust.2da and repute.2da structure
-- [Bioware Aurora Faction](Bioware-Aurora-Faction) - Official faction specification
+- [Bioware Aurora Faction](Bioware-Aurora-Items-Economy-and-Narrative#faction) - Official faction specification
 

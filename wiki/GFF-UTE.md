@@ -4,22 +4,30 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spawn creatures when triggered by the player. Encounters handle spawning logic, difficulty scaling, respawning, and faction settings for groups of enemies or neutral creatures. UTE files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Encounter format specification, see [Bioware Aurora Encounter Format](Bioware-Aurora-Encounter).
+**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Encounter format specification, see [Bioware Aurora Encounter Format](Bioware-Aurora-Spatial-and-Interactive#encounter).
 
-**For mod developers:** To modify encounter templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
+
+- To modify encounter templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
+- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 ## References
 
 **PyKotor:**
 
 - [`ute.py` `UTE` L17+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ute.py#L17) — in-memory encounter model (creature list, spawn options, scripts)
-- [`construct_ute` L219+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ute.py#L219), [`read_ute` L329+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ute.py#L329), [`write_ute` L338+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ute.py#L338) — GFF ↔ `UTE` round-trip
+- [`construct_ute` L219+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ute.py#L219)
+- [`read_ute` L329+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ute.py#L329)
+- [`write_ute` L338+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ute.py#L338) — GFF ↔ `UTE` round-trip
 - [`gff_data.py` `GFFContent.UTE` L152](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L152) — four-character GFF type id (see also `GFFListSemanticConfig` for `CreatureList` in the same file)
 - [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — generic GFF reader (UTE as GFF)
+- **[reone](https://github.com/modawan/reone)** — generic GFF reader (UTE as GFF):
+
+  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
+  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — managed GFF reader/writer
 - **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF pipeline
@@ -105,8 +113,9 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 
 ### See also
 
-- [GFF File Format](GFF-File-Format) - Parent format and [UTE encounter](GFF-File-Format#ute-encounter) definition
+- [GFF File Format](GFF-File-Format) -- Parent GFF container
+- [UTE encounter](GFF-File-Format#ute-encounter) -- Field glossary inside the parent format page
 - [GFF-GIT](GFF-GIT) - Game instance template (encounter placement)
 - [GFF-UTW](GFF-UTW) - Waypoints used as spawn points
 - [GFF-UTC](GFF-UTC) - Creature templates spawned by encounters
-- [Bioware Aurora Encounter](Bioware-Aurora-Encounter) - Official encounter specification
+- [Bioware Aurora Encounter](Bioware-Aurora-Spatial-and-Interactive#encounter) - Official encounter specification

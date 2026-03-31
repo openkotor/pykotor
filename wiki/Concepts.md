@@ -83,7 +83,7 @@ The practical rule is that module-scoped content belongs here, not in global ove
 
 ## [**GFF** (Generic File Format)](GFF-File-Format)
 
-[**GFF**](GFF-File-Format) is BioWare’s binary format for structured game data: areas (ARE), creatures (UTC), items (UTI), dialogues (DLG), placeables (UTP), and many others. Files are hierarchical (structs, fields, lists). The same GFF layout is used across Aurora/Odyssey games; KotOR and TSL use specific GFF types and field meanings. Modders edit GFF with tools (KotOR Tool, Holocron Toolset, K-GFF) or via [TSLPatcher/HoloPatcher `[GFFList]` implementation](TSLPatcher-GFFList-Syntax). See [GFF-File-Format](GFF-File-Format), [Bioware-Aurora-GFF](Bioware-Aurora-GFF).
+[**GFF**](GFF-File-Format) is BioWare’s binary format for structured game data: areas (ARE), creatures (UTC), items (UTI), dialogues (DLG), placeables (UTP), and many others. Files are hierarchical (structs, fields, lists). The same GFF layout is used across Aurora/Odyssey games; KotOR and TSL use specific GFF types and field meanings. Modders edit GFF with tools (KotOR Tool, Holocron Toolset, K-GFF) or via [TSLPatcher/HoloPatcher `[GFFList]` implementation](TSLPatcher-GFFList-Syntax). See [GFF-File-Format](GFF-File-Format), [Bioware-Aurora-GFF](Bioware-Aurora-Core-Formats#gff).
 
 ## [**2DA** (Two-Dimensional Array)](2DA-File-Format)
 
@@ -101,7 +101,7 @@ The canonical **hex resource type ID** table (*Aurora* / *Odyssey* family, inclu
 
 Language IDs are a small integer enum shared across *Infinity*/*Aurora*/*Odyssey*/*Eclipse*-era engines (TLK headers, [ERF](ERF-File-Format) localized string lists, [GFF](GFF-File-Format) `LocalizedString` substrings, etc.). Newer *BioWare* titles added values but usually stay backward compatible with 0–5.
 
-Use this table as the **wiki SSOT** for numeric IDs and typical text encodings. Official *BioWare* PDFs duplicate the same numbering in places like [Bioware-Aurora-TalkTable](Bioware-Aurora-TalkTable) and [Bioware-Aurora-LocalizedStrings](Bioware-Aurora-LocalizedStrings).
+Use this table as the **wiki SSOT** for numeric IDs and typical text encodings. Official *BioWare* PDFs duplicate the same numbering in places like [Bioware-Aurora-TalkTable](Bioware-Aurora-Core-Formats#talktable) and [Bioware-Aurora-LocalizedStrings](Bioware-Aurora-Core-Formats#localizedstrings).
 
 | Language | ID | Typical encoding | Description |
 | -------- | -- | ---------------- | ----- |

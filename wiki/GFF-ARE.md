@@ -2,20 +2,40 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-ARE files define static [area properties](GFF-File-Format#are-area) including lighting, weather, ambient audio, grass rendering, fog settings, script hooks, and minimap data. ARE files contain environmental and atmospheric data for game areas, while dynamic object placement is handled by [GIT](GFF-File-Format#git-game-instance-template) files. When the engine loads an area it reads the ARE for metadata and lighting, then loads the area [walkmesh (WOK)](BWM-File-Format) and other resources (e.g. [GIT](GFF-GIT), [LYT](LYT-File-Format), [VIS](VIS-File-Format)) referenced by or associated with the area, using the usual [resource resolution order](Concepts#resource-resolution-order).
+ARE files define static [area properties](GFF-File-Format#are-area) including lighting, weather, ambient audio, grass rendering, fog settings, script hooks, and minimap data. ARE files contain environmental and atmospheric data for game areas, while dynamic object placement is handled by [GIT](GFF-File-Format#git-game-instance-template) files. When the engine loads an area it reads the ARE for metadata and lighting, then loads the area [walkmesh (WOK)](BWM-File-Format). Associated resources often include:
 
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine ARE format specification, see [Bioware Aurora Area File Format](Bioware-Aurora-AreaFile).
+- [GIT](GFF-GIT)
+- [LYT](LYT-File-Format)
+- [VIS](VIS-File-Format)
 
-**For mod developers:** To modify GFF/ARE files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+Those resources use the usual [resource resolution order](Concepts#resource-resolution-order).
 
-**Related formats:** ARE references [GIT](GFF-File-Format#git-game-instance-template), [BWM](BWM-File-Format), [LYT](LYT-File-Format), [VIS](VIS-File-Format), [2DA](2DA-File-Format) (e.g. camerastyle, ambientmusic), and [TLK](TLK-File-Format). Loading uses the same [resource resolution order](Concepts#resource-resolution-order).
+**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine ARE format specification, see [Bioware Aurora Area File Format](Bioware-Aurora-Module-and-Area#areafile).
+
+**For mod developers:**
+
+- To modify GFF/ARE files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
+- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+
+**Related formats:**
+
+- [GIT](GFF-File-Format#git-game-instance-template)
+- [BWM](BWM-File-Format)
+- [LYT](LYT-File-Format)
+- [VIS](VIS-File-Format)
+- [2DA](2DA-File-Format) (e.g. camerastyle, ambientmusic)
+- [TLK](TLK-File-Format)
+
+Loading uses the same [resource resolution order](Concepts#resource-resolution-order).
 
 ## References
 
 **PyKotor:**
 
 - [`are.py` `ARE` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L21) — in-memory area model (lighting, fog, scripts, rooms, etc.)
-- [`construct_are` L409+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L409), [`read_are` L807+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L807), [`write_are` L833+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L833) — GFF ↔ `ARE` round-trip
+- [`construct_are` L409+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L409)
+- [`read_are` L807+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L807)
+- [`write_are` L833+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L833) — GFF ↔ `ARE` round-trip
 - [`gff_data.py` `GFFContent.ARE` L159](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L159) — four-character GFF type id
 - [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
@@ -25,12 +45,21 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (ARE uses generic GFF structure); area-specific parsing may live under [`src/libs/resource/parser/`](https://github.com/modawan/reone/tree/master/src/libs/resource/parser) when present
+- **[reone](https://github.com/modawan/reone)** — C++ GFF reader (ARE uses generic GFF structure):
+
+  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
+  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
+  - Area-specific parsing may live under [`src/libs/resource/parser/`](https://github.com/modawan/reone/tree/master/src/libs/resource/parser) when present
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (ARE as GFF)
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (ARE uses generic GFF structure)
 - **[xoreos](https://github.com/xoreos/xoreos)** — Aurora ARE via generic GFF pipeline
 
-**Community context (workflow):** Area + walkmesh + module packaging discussions appear across Deadly Stream and forums—see [Home — Community sources](Home#community-sources-and-archives) and [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions). **BWM / walkmesh normative claims** follow [BWM-File-Format](BWM-File-Format) + repo `docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md`, not forum posts alone.
+**Community context (workflow):** Area + walkmesh + module packaging discussions appear across Deadly Stream and forums. See:
+
+- [Home — Community sources](Home#community-sources-and-archives)
+- [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions)
+
+**BWM / walkmesh normative claims** follow [BWM-File-Format](BWM-File-Format) and repo `docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md`, not forum posts alone.
 
 ## Core Identity fields
 
@@ -340,9 +369,12 @@ The minimap [texture](TPC-File-Format) is loaded from [texture](TPC-File-Format)
 **Relationship to [walkmesh](BWM-File-Format):**
 
 - The minimap [texture](TPC-File-Format) represents a top-down view of the area's [walkmesh](BWM-File-Format)
-- Map points correspond to specific [vertices](MDL-MDX-File-Format#vertex-structure)/[faces](MDL-MDX-File-Format#face-structure) in the walkmesh ([BWM file](BWM-File-Format))
+- Map points correspond to specific [vertices](MDL-MDX-File-Format#vertex-structure) and [faces](MDL-MDX-File-Format#face-structure) in the walkmesh ([BWM file](BWM-File-Format))
 - The blue walkable area shown in editors is rendered from the [walkmesh](BWM-File-Format) [faces](MDL-MDX-File-Format#face-structure)
-- Both the minimap [texture](TPC-File-Format) and [walkmesh](BWM-File-Format) must align correctly for proper gameplay
+- For proper gameplay these must align:
+
+  - Minimap [texture](TPC-File-Format)
+  - [walkmesh](BWM-File-Format)
 - Misalignment causes the walkable area to appear rotated/flipped relative to the minimap image
 
 ### Implementation Notes
@@ -579,7 +611,7 @@ The blue walkable area rendered in editors comes from the walkmesh ([BWM file](B
 
 - **[walkmesh](BWM-File-Format) coordinates**: 3D world space coordinates (X, Y, Z)
 - **Minimap [texture](TPC-File-Format)**: 2D [texture](TPC-File-Format) coordinates (0.0-1.0) mapped to world X/Y plane
-- **Alignment**: Map points correspond to specific [walkmesh](BWM-File-Format) [vertices](MDL-MDX-File-Format#vertex-structure)/[faces](MDL-MDX-File-Format#face-structure)
+- **Alignment**: Map points correspond to specific [walkmesh](BWM-File-Format) [vertices](MDL-MDX-File-Format#vertex-structure) and [faces](MDL-MDX-File-Format#face-structure)
 - **Verification**: The walkable area outline should match the minimap [texture](TPC-File-Format) boundaries
 
 **Testing & Validation:**
@@ -614,5 +646,6 @@ The blue walkable area rendered in editors comes from the walkmesh ([BWM file](B
 - [GFF File Format](GFF-File-Format) - Generic format underlying ARE
 - [GIT (Game Instance Template)](GFF-GIT) - Dynamic area contents (creatures, doors, placeables)
 - [BWM (Walkmesh)](BWM-File-Format) - Area walkable surfaces and minimap alignment
-- [LYT](LYT-File-Format), [VIS](VIS-File-Format) - Layout and visibility
-- [Bioware Aurora Area File Format](Bioware-Aurora-AreaFile) - Official ARE specification
+- [LYT](LYT-File-Format) — layout
+- [VIS](VIS-File-Format) — visibility
+- [Bioware Aurora Area File Format](Bioware-Aurora-Module-and-Area#areafile) - Official ARE specification

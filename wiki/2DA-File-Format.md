@@ -2,7 +2,7 @@
 
 This document provides a detailed description of the 2DA (Two-Dimensional array) file format used in **Knights of the Old Republic (KotOR)** and **Knights of the Old Republic II: The Sith Lords (KotOR 2)**. 2DA files store tabular game data in a spreadsheet-like format, containing configuration data for nearly all game systems: items, Force powers, creatures, skills, feats, and many other game mechanics.
 
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine 2DA format specification, see [Bioware Aurora 2DA Format](Bioware-Aurora-2DA).
+**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine 2DA format specification, see [Bioware Aurora 2DA Format](Bioware-Aurora-Core-Formats#2da).
 
 **For mod developers:**
 
@@ -3551,7 +3551,7 @@ The following 2DA files are used for item property parameter and cost calculatio
   - [2DA-appearance](#appearance2da)
   - [2DA-baseitems](#baseitems2da)
   - [2DA-classes](#classes2da)
-- [Bioware Aurora 2DA](Bioware-Aurora-2DA) - Official BioWare 2DA specification
+- [Bioware Aurora 2DA](Bioware-Aurora-Core-Formats#2da) - Official BioWare 2DA specification
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for 2DA modding and column references
 
 ---

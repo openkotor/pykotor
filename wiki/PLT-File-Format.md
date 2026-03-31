@@ -1,6 +1,12 @@
 # KotOR PLT file format Documentation (NWN legacy)
 
-> **⚠️ NOT USED IN KOTOR**: This format is **Neverwinter Nights-specific** and is **NOT used in KotOR games**. While the PLT resource type (`0x0006`) exists in KotOR's resource system due to shared *Aurora* engine heritage, **KotOR does not load, parse, or use PLT files**. KotOR uses standard [TPC](TPC-File-Format)/TGA/DDS [Textures](TPC-File-Format) for all [Textures](TPC-File-Format), including character [models](MDL-MDX-File-Format). This documentation is provided for reference only, as NWN-derived tools may encounter PLT resource type identifiers when working with KotOR's resource system.
+> **⚠️ NOT USED IN KOTOR**: This format is **Neverwinter Nights-specific** and is **NOT used in KotOR games**. While the PLT resource type (`0x0006`) exists in KotOR's resource system due to shared *Aurora* engine heritage, **KotOR does not load, parse, or use PLT files**. KotOR uses standard [Textures](TPC-File-Format) instead, including:
+>
+> - [TPC](TPC-File-Format)
+> - TGA
+> - DDS
+>
+> …for all surface work, including character [models](MDL-MDX-File-Format). This documentation is provided for reference only, as NWN-derived tools may encounter PLT resource type identifiers when working with KotOR's resource system.
 
 *PLT* ([Texture](TPC-File-Format) Palette File) is a variant [Texture](TPC-File-Format) format used in **Neverwinter Nights** that allows runtime color palette selection. Instead of fixed colors, *PLT* files store palette group indices and color indices that reference external palette files, enabling dynamic color customization for character [models](MDL-MDX-File-Format) (skin, hair, armor colors, etc.).
 
@@ -8,10 +14,17 @@
 
 **Cross-reference implementations (line anchors are against `master` and may drift):**
 
-- **PyKotor** — [`ResourceType.PLT` L247+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L247) (Aurora type id **6**, NWN-oriented metadata); [`kaitai_generated/plt.py` L11+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/kaitai_generated/plt.py#L11) (documentation-only generated layout).
+- **PyKotor**:
+
+  - [`ResourceType.PLT` L247+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L247) (Aurora type id **6**, NWN-oriented metadata)
+  - [`kaitai_generated/plt.py` L11+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/kaitai_generated/plt.py#L11) (documentation-only generated layout)
 - **[xoreos](https://github.com/xoreos/xoreos)** — NWN *PLT* loader [`src/graphics/aurora/pltfile.cpp` L1+](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/pltfile.cpp#L1); creature usage [`creature.cpp` L573-L589](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/creature.cpp#L573-L589). Torlack spec: [xoreos-docs `specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html).
 - **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)) — KotOR pipeline uses **TPC**, not PLT ([`TpcReader::load` L32+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/tpcreader.cpp#L32)).
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — runtime [textures](TPC-File-Format) via [`TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts) / [`TextureLoader.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/TextureLoader.ts); no KotOR PLT path.
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**
+
+  - [`TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts) — runtime [textures](TPC-File-Format)
+  - [`TextureLoader.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/TextureLoader.ts) — texture loading
+  - No KotOR PLT path (TPC pipeline only).
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — managed textures under [`Kotor.NET/Formats/KotorTPC/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTPC); no `KotorPLT` on the default branch.
 
 ## Table of Contents
@@ -146,7 +159,7 @@ Each pixel entry is 2 bytes:
 - [Resource formats and resolution](Resource-Formats-and-Resolution) - [Resource type identifiers](Resource-Formats-and-Resolution#resource-type-identifiers) (context for `0x0006` vs KotOR `0x07xx` textures)
 - [TPC File Format](TPC-File-Format) - *KotOR*'s native texture format (used instead of *PLT* in *KotOR*)
 - [TXI File Format](TXI-File-Format) - Texture metadata used with *TPC*
-- [Bioware Aurora PaletteITP](Bioware-Aurora-PaletteITP) - Related Palette/ITP specification
+- [Bioware Aurora PaletteITP](Bioware-Aurora-Module-and-Area#paletteitp) - Related Palette/ITP specification
 
 ---
 

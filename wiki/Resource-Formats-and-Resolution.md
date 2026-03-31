@@ -1,18 +1,43 @@
 # Resource formats and resolution
 
-This page is the **table of contents for KotOR/TSL file format documentation** on this wiki, the **canonical hex resource type ID table** ([below](#resource-type-identifiers)), and a **short** resolution-order reminder. Full narrative (resource manager *demands*, KEY’s role, override/MOD/[RIM](RIM-File-Format)): [Concepts](Concepts#resource-resolution-order). Glossary topics (override folder, BIF/KEY, MOD/ERF/RIM, GFF, 2DA, language IDs): [Concepts](Concepts).
+This page has three jobs:
+
+1. point you to the right format page,
+2. keep the canonical resource type ID table in one place,
+3. give a short reminder of how file lookup works before you dive into a specific format.
+
+For the full narrative on precedence, override behavior, module capsules, KEY/BIF, and language IDs, use [Concepts](Concepts). This page is the index and registry; Concepts is the explanation.
+
+Use this page when you already know you need a format page or a resource type ID. Use [Home](Home) for routing and [Concepts](Concepts) for the full explanation of why the resolution order behaves the way it does.
+
+## Verified against implementations
+
+The container and format summaries on this page are cross-checked against:
+
+- **PyKotor:** `pykotor.extract.installation`, `pykotor.extract.chitin`, `pykotor.resource.formats.key.io_key`, `pykotor.resource.formats.bif.io_bif`, `pykotor.resource.formats.erf.io_erf`, `pykotor.resource.formats.rim.io_rim`, `pykotor.resource.formats.tlk.io_tlk`, `pykotor.resource.formats.twoda.io_twoda`
+- **reone:** `src/libs/resource/director.cpp`, `src/libs/resource/resources.cpp`, `src/libs/resource/format/keyreader.cpp`, `src/libs/resource/format/bifreader.cpp`, `src/libs/resource/format/erfreader.cpp`
+- **KotOR.js:** `src/loaders/ResourceLoader.ts`, `src/resource/KEYObject.ts`, `src/resource/BIFObject.ts`, `src/managers/TwoDAManager.ts`, `src/managers/TLKManager.ts`, `src/resource/ResourceTypes.ts`
+- **Kotor.NET:** `Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs`, `Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs`, `Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs`, `Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs`, `Kotor.NET/Formats/Kotor2DA/TwoDABinaryReader.cs`, `Kotor.NET/ResourceContainers/Chitin.cs`, `Kotor.NET/ResourceContainers/Capsule.cs`
 
 ## Resource resolution order
 
 Full prose (resource manager *demands*, KEY’s role, override vs MOD/ERF/[RIM](RIM-File-Format)): **[Concepts — Resource resolution order](Concepts#resource-resolution-order)**.
 
-**Quick reference:** 1. `override/` 2. loaded [MOD](ERF-File-Format)/[ERF](ERF-File-Format)/[RIM](RIM-File-Format) for the active module 3. loaded save / SAV-side data (when applicable) 4. [KEY](KEY-File-Format)/[BIF](BIF-File-Format) 5. engine defaults.
+**Quick reference:**
+
+1. `override/`
+2. loaded [MOD](ERF-File-Format)/[ERF](ERF-File-Format)/[RIM](RIM-File-Format) for the active module
+3. loaded save-side data when applicable
+4. [KEY](KEY-File-Format)/[BIF](BIF-File-Format)
+5. engine defaults
 
 ## ResRef and resource type
 
-**ResRef** (name string, length rules, examples) and how it pairs with a **resource type** in lookups: **[Concepts — ResRef](Concepts#resref-resource-reference)**. GFF field typing: [GFF-File-Format](GFF-File-Format#gff-data-types).
+**ResRef** is the name portion of a game resource. A **resource type** is the numeric type ID that distinguishes, for example, `foo.utc` from `foo.utp` or `foo.2da`. The engine resolves the pair together.
 
-**Resource type IDs:** the **wiki SSOT** hex/label table is the **Resource Type Identifiers** section below (extensions like `.utc`, `.2da`, `.mdl` follow the same mapping for loose files).
+Read [Concepts — ResRef](Concepts#resref-resource-reference) for naming rules and examples. Read [GFF File Format](GFF-File-Format#gff-data-types) for field typing inside GFF payloads.
+
+The table below is the wiki SSOT for resource type IDs. Loose files such as `.utc`, `.2da`, `.mdl`, and `.tlk` follow the same mapping that the engine and archive formats use internally.
 
 **Language IDs** (`dialog.tlk`, localization): [Concepts — Language IDs](Concepts#language-ids-kotor).
 
@@ -55,7 +80,7 @@ Full prose (resource manager *demands*, KEY’s role, override vs MOD/ERF/[RIM](
 | BTC           | 0x07EA  | Blueprint Template Creature. *KotOR* supports these but nobody uses them, use [UTC](GFF-UTC) instead.                |
 | [UTC](GFF-File-Format#utc-creature)           | 0x07EB  | [Creature Template](GFF-File-Format#utc-creature) (see [GFF-UTC](GFF-UTC))                               |
 | [DLG](GFF-File-Format#dlg-dialogue)           | 0x07ED  | Dialogue/conversation (see [GFF-DLG](GFF-DLG))                           |
-| [ITP](Bioware-Aurora-PaletteITP)           | 0x07EE  | *ITP* format (see [Bioware-Aurora-PaletteITP](Bioware-Aurora-PaletteITP)).                         |
+| [ITP](Bioware-Aurora-Module-and-Area#paletteitp)           | 0x07EE  | *ITP* format (see [Bioware-Aurora-PaletteITP](Bioware-Aurora-Module-and-Area#paletteitp)).                         |
 | BTT           | 0x07EF  | *Blueprint Template Trigger*. *KotOR* supports these but nobody uses them, use [UTT](GFF-UTT) instead.                 |
 | [UTT](GFF-File-Format#utt-trigger)           | 0x07F0  | *Trigger Template* (see [GFF-UTT](GFF-UTT)).                                |
 | DDS           | 0x07F1  | *DirectDraw Surface Texture* (see [DDS File Format](DDS-File-Format)).                                |
@@ -99,7 +124,7 @@ Full prose (resource manager *demands*, KEY’s role, override vs MOD/ERF/[RIM](
 ### File formats
 
 - **[MDL/MDX File Format](MDL-MDX-File-Format)** ← Complete reference for 3D [model](MDL-MDX-File-Format) files
-  - **[2DA File Format](2DA-File-Format)** ← Complete reference for Two-Dimensional array format (see also [Official Bioware 2DA Documentation](Bioware-Aurora-2DA)). All individual 2DA file documentation has been inlined into this document.
+  - **[2DA File Format](2DA-File-Format)** ← Complete reference for Two-Dimensional array format (see also [Official Bioware 2DA Documentation](Bioware-Aurora-Core-Formats#2da)). All individual 2DA file documentation has been inlined into this document.
   - [acbonus.2da](2DA-File-Format#acbonus2da)
   - [ambientmusic.2da](2DA-File-Format#ambientmusic2da)
   - [ambientsound.2da](2DA-File-Format#ambientsound2da)
@@ -199,7 +224,7 @@ Full prose (resource manager *demands*, KEY’s role, override vs MOD/ERF/[RIM](
 - **[GUI File Format](GFF-GUI)** ← Complete reference for Graphical User Interface format
 - [ERF File Format](ERF-File-Format) ← Encapsulated Resource format (MOD, SAV, HAK; [RIM comparison](ERF-File-Format#rim-versus-erf))
 - **[Kit Structure Documentation](Kit-Structure-Documentation)** ← Complete reference for indoor kit structure and generation
-- [GFF File Format](GFF-File-Format) ← Generic file Format (see also [Official Bioware GFF Documentation](Bioware-Aurora-GFF))
+- [GFF File Format](GFF-File-Format) ← Generic file Format (see also [Official Bioware GFF Documentation](Bioware-Aurora-Core-Formats#gff))
   - [ARE (Area)](GFF-ARE)
   - [DLG (Dialogue)](GFF-DLG)
   - [GIT (Game Instance Template)](GFF-GIT)

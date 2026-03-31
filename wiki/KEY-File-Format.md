@@ -20,7 +20,12 @@ This document provides a detailed description of the KEY (KEY Table) file format
 
 ## File structure overview
 
-KEY files map resource names ([ResRefs](GFF-File-Format#gff-data-types)) and types to specific locations within [BIF containers](BIF-File-Format). KotOR uses `chitin.key` as the main KEY file which references all game [BIF files](BIF-File-Format). **Modder note:** Mods do not edit the KEY; they add content via the [override folder](Concepts#override-folder) or [MOD/ERF](Concepts#mod-erf-rim) so the engine finds their resources first. See [Concepts](Concepts) and [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files).
+KEY files map resource names ([ResRefs](GFF-File-Format#gff-data-types)) and types to specific locations within [BIF containers](BIF-File-Format). KotOR uses `chitin.key` as the main KEY file which references all game [BIF files](BIF-File-Format). **Modder note:** Mods do not edit the KEY; they add content via the [override folder](Concepts#override-folder) or [MOD/ERF](Concepts#mod-erf-rim) so the engine finds their resources first.
+
+See:
+
+- [Concepts](Concepts)
+- [Mod-Creation-Best-Practices — file priority](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files)
 
 ### KEY File Purpose
 
@@ -29,7 +34,9 @@ The *KEY* file, specifically `chitin.key` in KotOR, serves as the master index f
 1. **Resource Lookup**: Maps *ResRef* + *Resource Type* ([hex IDs and labels](Resource-Formats-and-Resolution#resource-type-identifiers)) → [BIF](BIF-File-Format) location
 2. **[BIF](BIF-File-Format) Registration**: Tracks all [BIF files](BIF-File-Format) and their install paths
 3. **Resource Naming**: Provides the filename (*ResRef*) missing from [BIF files](BIF-File-Format)
-4. **Drive Mapping**: Historical feature indicating which media ([CD](https://en.wikipedia.org/wiki/Compact_disc)/[HD](https://en.wikipedia.org/wiki/Hard_disk_drive)) contained each [BIF](BIF-File-Format)
+4. **Drive Mapping**: Historical feature indicating which media held each [BIF](BIF-File-Format):
+   - [CD](https://en.wikipedia.org/wiki/Compact_disc)
+   - [HD](https://en.wikipedia.org/wiki/Hard_disk_drive)
 
 **Resource resolution (conceptual):** The full search order (override → MOD/ERF → save → KEY/BIF → defaults) and how the resource manager satisfies a demand are documented on [Concepts](Concepts#resource-resolution-order). This page describes what the *KEY* contributes to that pipeline.
 
@@ -39,11 +46,34 @@ The *KEY* indexes [BIF](BIF-File-Format) entries only (step 4 in that order). Hi
 
 **Cross-reference implementations (line anchors are against `master` and may drift):**
 
-- **PyKotor** — in-repo layout spec: [`key_data.py` L1–L55](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L1-L55); binary I/O: [`KEYBinaryReader.load`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py#L65-L128), [`KEYBinaryWriter`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py#L143-L195) (`io_key.py`); data model: [`BifEntry`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L66-L152), [`KeyEntry`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L154-L288), [`KEY`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L291-L473).
-- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)) — [`keyreader.cpp` `KeyReader::load`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/keyreader.cpp#L29-L39), [`loadFiles` / `readFileEntry`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/keyreader.cpp#L41-L66), [`loadKeys` / `readKeyEntry`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/keyreader.cpp#L68-L86) (lowercases ResRefs; splits `resource_id` into BIF index and resource index). reone reads the 8-byte `"KEY V1 "` signature as one block, then the four table counts/offsets; it does not surface build year/day in this reader (those bytes are still present in KotOR `chitin.key` after the offsets).
-- **[xoreos](https://github.com/xoreos/xoreos)** — Aurora *KEY* (`src/aurora/keyfile.cpp`), shared across Aurora-family games ([tools mirror: xoreos-tools](https://github.com/xoreos/xoreos-tools)).
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — [`KEYObject.ts` `loadFile`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/KEYObject.ts#L39-L89) (header, BIF table, filename resolution, key entries); resource id helpers: [`getBIFIndex` / `getBIFResourceIndex`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/KEYObject.ts#L139-L147) (note: `getBIFResourceIndex` masks with `0x3FFF` in this file — the on-disk encoding uses **20** low bits; prefer `resId & 0xFFFFF` to match PyKotor/reone and the table below).
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`KEYBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs#L17-L114) (`FileRoot`, `FileHeader`, `BIFInfo`, `Key` with `IndexIntoFileTable` / `IndexIntoResourceTable` properties).
+- **PyKotor**
+
+  - Layout spec: [`key_data.py` L1–L55](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L1-L55)
+  - Binary I/O: [`KEYBinaryReader.load`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py#L65-L128)
+  - Binary I/O: [`KEYBinaryWriter`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py#L143-L195) (`io_key.py`)
+  - Data model: [`BifEntry`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L66-L152)
+  - Data model: [`KeyEntry`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L154-L288)
+  - Data model: [`KEY`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L291-L473)
+
+- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone))
+
+  - [`keyreader.cpp` `KeyReader::load`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/keyreader.cpp#L29-L39)
+  - [`loadFiles` / `readFileEntry`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/keyreader.cpp#L41-L66)
+  - [`loadKeys` / `readKeyEntry`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/keyreader.cpp#L68-L86)
+  - Notes: reone lowercases ResRefs and splits `resource_id` into BIF index and resource index. It reads the 8-byte `"KEY V1 "` signature as one block, then the four table counts/offsets; it does not surface build year/day in this reader (those bytes are still present in KotOR `chitin.key` after the offsets).
+
+- **[xoreos](https://github.com/xoreos/xoreos)**
+
+  - Aurora *KEY*: `src/aurora/keyfile.cpp` (shared across Aurora-family games)
+  - [xoreos-tools](https://github.com/xoreos/xoreos-tools) (tooling mirror)
+
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**
+
+  - [`KEYObject.ts` `loadFile`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/KEYObject.ts#L39-L89) (header, BIF table, filename resolution, key entries)
+  - Resource id helpers: [`getBIFIndex` / `getBIFResourceIndex`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/KEYObject.ts#L139-L147) (note: `getBIFResourceIndex` masks with `0x3FFF` in this file — the on-disk encoding uses **20** low bits; prefer `resId & 0xFFFFF` to match PyKotor/reone and the table below)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**:
+
+  - [`KEYBinaryStructure.cs` L17–L114](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs#L17-L114) (`FileRoot`, `FileHeader`, `BIFInfo`, `Key` with `IndexIntoFileTable` / `IndexIntoResourceTable` properties)
 
 ---
 
@@ -99,7 +129,13 @@ Each file entry is 12 bytes:
 
 **Modern Usage:**
 
-In contemporary distributions ([Steam](https://store.steampowered.com/), [GOG](https://www.gog.com/), [digital](https://en.wikipedia.org/wiki/Digital_distribution)):
+In contemporary distributions:
+
+- [Steam](https://store.steampowered.com/)
+- [GOG](https://www.gog.com/)
+- [digital](https://en.wikipedia.org/wiki/Digital_distribution)
+
+**Typical PC installs:**
 
 - All [BIF files](BIF-File-Format) use `0x0001` (`HD` Flag) since everything is installed locally
 - The engine doesn't prompt for disc swapping
@@ -217,9 +253,10 @@ See **Cross-reference implementations** under [File structure overview](#file-st
 
 - [BIF File Format](BIF-File-Format) - Container format indexed by KEY
 - [ERF File Format](ERF-File-Format) - Self-contained containers (MOD/SAV/HAK) and resolution order
-- [RIM File Format](RIM-File-Format) - Stock module archives (resource image); [RIM versus ERF](ERF-File-Format#rim-versus-erf)
+- [RIM File Format](RIM-File-Format) - Stock module archives (resource image)
+- [RIM versus ERF](ERF-File-Format#rim-versus-erf)
 - [GFF File Format](GFF-File-Format) - Common content type resolved via KEY/BIF
-- [Bioware Aurora KeyBIF](Bioware-Aurora-KeyBIF) - Official BioWare KEY/BIF specification
+- [Bioware Aurora KeyBIF](Bioware-Aurora-Core-Formats#keybif) - Official BioWare KEY/BIF specification
 - [Concepts](Concepts) - Resource resolution order, override folder
 - [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) - Hex resource type IDs (SSOT table)
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for override and resolution troubleshooting

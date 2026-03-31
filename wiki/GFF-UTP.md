@@ -4,7 +4,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 [UTP files](GFF-File-Format#utp-placeable) define [placeable object templates](GFF-File-Format#utp-placeable) including containers, furniture, switches, workbenches, and interactive environmental objects. [Placeables](GFF-File-Format#utp-placeable) can have inventories, be destroyed, locked, trapped, and trigger [scripts](NCS-File-Format). UTP files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Door/Placeable format specification, see [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-DoorPlaceableGFF).
+**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Door/Placeable format specification, see [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-Spatial-and-Interactive#doorplaceablegff).
 
 **For mod developers:**
 
@@ -312,4 +312,4 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
   - [2DA placeables](2DA-File-Format#placeables2da)
   - [2DA traps](2DA-File-Format#traps2da)
-- [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-DoorPlaceableGFF) - Official specification
+- [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-Spatial-and-Interactive#doorplaceablegff) - Official specification

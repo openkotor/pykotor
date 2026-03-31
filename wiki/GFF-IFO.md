@@ -4,28 +4,46 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 IFO files define module-level metadata including entry configuration, expansion requirements, area lists, and module-wide script hooks. [IFO](GFF-File-Format#ifo-module-info) files are the "main" descriptor for game modules, specifying where the player spawns and what scripts run at module scope. IFO files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine [IFO](GFF-File-Format#ifo-module-info) format specification, see [Bioware Aurora IFO Format](Bioware-Aurora-IFO).
+**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine [IFO](GFF-File-Format#ifo-module-info) format specification, see [Bioware Aurora IFO Format](Bioware-Aurora-Module-and-Area#ifo).
 
-**For mod developers:** To modify module metadata in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** IFO references [ARE](GFF-ARE), [GIT](GFF-File-Format#git-game-instance-template), [NCS](NCS-File-Format), [KEY](KEY-File-Format), and [BIF](BIF-File-Format).
+- To modify module metadata in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
+- For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+
+**Related formats:**
+
+- [ARE](GFF-ARE)
+- [GIT](GFF-File-Format#git-game-instance-template)
+- [NCS](NCS-File-Format)
+- [KEY](KEY-File-Format)
+- [BIF](BIF-File-Format)
 
 ## References
 
 **PyKotor:**
 
 - [`ifo.py` `IFO` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L18) — IFO [GFF](GFF-File-Format) field model
-- [`construct_ifo` L115+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L115), [`read_ifo` L262+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L262), [`write_ifo` L271+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L271)
+- [`construct_ifo` L115+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L115)
+- [`read_ifo` L262+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L262)
+- [`write_ifo` L271+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L271)
 - [`gff_data.py` `GFFContent.IFO` L164](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L164) — four-character GFF type id
 - Binary GFF pipeline: [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)
 
 **HolocronToolset:**
 
-- Module / IFO editing (entry point, area list, script hooks) — see [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started), [Module Editor](Holocron-Toolset-Module-Editor), and [Module Resources](Holocron-Toolset-Module-Resources) where the GUI exposes IFO-related fields.
+- Module / IFO editing (entry point, area list, script hooks):
+
+  - [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started)
+  - [Module Editor](Holocron-Toolset-Module-Editor)
+  - [Module Resources](Holocron-Toolset-Module-Resources)
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (IFO uses generic GFF structure)
+- **[reone](https://github.com/modawan/reone)** — C++ GFF reader (IFO uses generic GFF structure):
+
+  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
+  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (IFO uses generic GFF structure)
 - **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; IFO loaded as GFF in engine
@@ -126,7 +144,11 @@ IFO files define module-level metadata including entry configuration, expansion 
 **HAK System:**
 
 - HAK files override base game resources
-- Custom content ([models](MDL-MDX-File-Format), [textures](TPC-File-Format), scripts)
+- Custom content may include:
+
+  - [models](MDL-MDX-File-Format)
+  - [textures](TPC-File-Format)
+  - Scripts
 - Listed in load priority order
 
 ## Cache & XP Settings
@@ -264,7 +286,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 1. **Module Scripts** ([IFO](GFF-File-Format#ifo-module-info)): Highest scope, module-wide
 2. **Area Scripts** (are): Area-specific events
-3. **Object Scripts** ([UTC](GFF-File-Format#utc-creature)/[UTD](GFF-File-Format#utd-door)/etc.): Individual object events
+3. **Object Scripts** (per blueprint type such as [UTC](GFF-File-Format#utc-creature) or [UTD](GFF-File-Format#utd-door)): Individual object events
 
 **Common Module Configurations:**
 
@@ -301,4 +323,4 @@ IFO files define module-level metadata including entry configuration, expansion 
 - [GFF-File-Format](GFF-File-Format) -- Generic format underlying IFO
 - [GFF-ARE (Area)](GFF-ARE) - Area properties; Mod_Entry_Area and Mod_Area_list
 - [GIT (Game Instance Template)](GFF-File-Format#git-game-instance-template) - Dynamic area contents
-- [Bioware Aurora IFO Format](Bioware-Aurora-IFO) - Official module info specification
+- [Bioware Aurora IFO Format](Bioware-Aurora-Module-and-Area#ifo) - Official module info specification

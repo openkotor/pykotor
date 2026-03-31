@@ -2,9 +2,16 @@
 
 This document provides a detailed description of the TLK (Talk Table) file format used in Knights of the Old Republic (KotOR) games. TLK files contain all text strings used in the game, both written and spoken, enabling easy localization by providing a lookup table from string reference numbers ([StrRef](TLK-File-Format#string-references-strref)) to localized text and associated voice-over audio files.
 
-**For mod developers:** To modify TLK files in your mods, see the [TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** TLK files are referenced by [GFF files](GFF-File-Format) (especially [DLG](GFF-File-Format#dlg-dialogue) [dialogue files](GFF-File-Format#dlg-dialogue)), [2DA files](2DA-File-Format) for item names and descriptions, and [SSF files](SSF-File-Format) for character sound sets.
+- To modify TLK files in your mods, see the [TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax).
+- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+
+**Related formats:**
+
+- [GFF files](GFF-File-Format) — especially [DLG](GFF-File-Format#dlg-dialogue) / [dialogue files](GFF-File-Format#dlg-dialogue)
+- [2DA files](2DA-File-Format) — item names and descriptions
+- [SSF files](SSF-File-Format) — character sound sets
 
 ## Table of Contents
 
@@ -30,9 +37,22 @@ TLK files store localized strings in a binary format. The game loads `dialog.tlk
 
 **Cross-reference implementations (line anchors are against `master` and may drift):**
 
-- **PyKotor** — binary layout in module docstring: [`tlk_data.py` L1–L39](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L1-L39); `TLK` / `TLKEntry`: [`tlk_data.py` L54–L282](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L282), [`L285–L420`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L285-L420); read path (Kaitai + legacy 40-byte rows): [`io_tlk.py` `_load_tlk_from_kaitai` L32–L63](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L32-L63), [`_load_tlk_legacy` L66–L120](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L66-L120), [`TLKBinaryReader.load` L149–L156](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L149-L156); write path: [`TLKBinaryWriter` L168–L219](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L168-L219) (`_write_file_header` L183–L192, `_write_entry` L194–L219).
-- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)): [`tlkreader.cpp` `TlkReader::load` L34–L43](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L34-L43) (8-byte `"TLK V3.0"` signature + language/count/offset), [`loadStrings` L45–L71](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L45-L71) (40-byte rows, **lowercases** sound ResRef); flag constants L28–L32.
-- **[xoreos](https://github.com/xoreos/xoreos)** / **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`talktable.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/talktable.cpp) — Aurora talk table (shared with other Aurora titles).
+- **PyKotor**:
+
+  - binary layout in module docstring: [`tlk_data.py` L1–L39](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L1-L39)
+  - `TLK` / `TLKEntry`: [`tlk_data.py` L54–L282](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L282)
+  - [`tlk_data.py` L285–L420](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L285-L420)
+  - read path (Kaitai + legacy 40-byte rows): [`io_tlk.py` `_load_tlk_from_kaitai` L32–L63](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L32-L63)
+  - [`_load_tlk_legacy` L66–L120](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L66-L120)
+  - [`TLKBinaryReader.load` L149–L156](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L149-L156)
+  - write path: [`TLKBinaryWriter` L168–L219](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L168-L219) (`_write_file_header` L183–L192, `_write_entry` L194–L219)
+- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)):
+
+  - [`tlkreader.cpp` `TlkReader::load` L34–L43](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L34-L43) (8-byte `"TLK V3.0"` signature + language/count/offset)
+  - [`loadStrings` L45–L71](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L45-L71) (40-byte rows, **lowercases** sound ResRef)
+  - flag constants L28–L32
+- **[xoreos](https://github.com/xoreos/xoreos)** — [`talktable.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/talktable.cpp) (Aurora talk table shared with other Aurora titles)
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** — [`talktable.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/talktable.cpp) (CLI / tooling)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`TLKObject.ts` `LoadFromBuffer` L51–L96](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts#L51-L96) — 20-byte header then per-entry metadata; note the last field before text is read with `readUInt32()` while the on-disk field is a **float** sound length—compare PyKotor [`struct.unpack("<f", ...)` L106](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L106).
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`TLKObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/TLKObject.cs).
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`TLKBinaryStructure.cs` `FileHeader` / `StringData` / `FileRoot` L16–L130](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L16-L130).
@@ -60,7 +80,13 @@ The file header is 20 bytes in size:
 | string count        | [int32](GFF-File-Format#gff-data-types)   | 12 (0x0C) | 4    | Number of string entries in the file           |
 | string Entries offset | [int32](GFF-File-Format#gff-data-types) | 16 (0x10) | 4    | offset to string entries array (typically 20)  |
 
-**References:** [reone `TlkReader::load` L34–L43](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L34-L43); PyKotor header parse [`_load_tlk_legacy` L71–L75](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L71-L75) / Kaitai path [`_load_tlk_from_kaitai` L35–L44](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L35-L44); [Kotor.NET `FileHeader` L66–L76](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L66-L76); [KotOR.js `LoadFromBuffer` L59–L64](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts#L59-L64).
+**References:**
+
+- [reone `TlkReader::load` L34–L43](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L34-L43)
+- PyKotor header parse — [`_load_tlk_legacy` L71–L75](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L71-L75)
+- PyKotor Kaitai path — [`_load_tlk_from_kaitai` L35–L44](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L35-L44)
+- [Kotor.NET `FileHeader` L66–L76](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L66-L76)
+- [KotOR.js `LoadFromBuffer` L59–L64](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts#L59-L64).
 
 ### String data table
 
@@ -76,7 +102,12 @@ The string data table contains metadata for each string entry. Each entry is 40 
 | string size       | UInt32    | 32 (0x20) | 4    | Length of string text in bytes                                  |
 | Sound Length      | float     | 36 (0x24) | 4    | Duration of voice-over audio in seconds                         |
 
-**References:** [Kotor.NET `StringData` L92–L129](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L92-L129); PyKotor row decode [`_load_tlk_legacy` L96–L112](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L96-L112); [reone `loadStrings` L45–L69](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L45-L69); [KotOR.js `LoadFromBuffer` L65–L75](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts#L65-L75).
+**References:**
+
+- [Kotor.NET `StringData` L92–L129](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L92-L129)
+- PyKotor row decode [`_load_tlk_legacy` L96–L112](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L96-L112)
+- [reone `loadStrings` L45–L69](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L45-L69)
+- [KotOR.js `LoadFromBuffer` L65–L75](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts#L65-L75).
 
 **flag bits:**
 
@@ -111,7 +142,10 @@ String entries follow the string data table:
 | ------------ | ------ | ---------------------------------------------------------------- |
 | string Text  | [char](GFF-File-Format#gff-data-types)[] | [null-terminated string](https://en.cppreference.com/w/c/string/byte) data (UTF-8 or Windows-1252 encoded)     |
 
-string text is stored at the offset specified in the string data table entry. The encoding depends on the language ID (see [Concepts](Concepts#language-ids-kotor) and [Localization](#localization) below).
+string text is stored at the offset specified in the string data table entry. The encoding depends on the language ID; see:
+
+- [Concepts — Language IDs](Concepts#language-ids-kotor)
+- [Localization](#localization) below
 
 ---
 
@@ -119,7 +153,10 @@ string text is stored at the offset specified in the string data table entry. Th
 
 Each TLK entry contains:
 
-**References:** PyKotor `TLK` / `TLKEntry` — [`tlk_data.py` L54–L420](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L420); entry serialization — [`io_tlk.py` `_write_entry` L194–L219](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L194-L219).
+**References:**
+
+- PyKotor `TLK` / `TLKEntry` — [`tlk_data.py` L54–L420](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L420)
+- entry serialization — [`io_tlk.py` `_write_entry` L194–L219](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L194-L219).
 
 | Attribute        | type   | Description                                                      |
 | ---------------- | ------ | ---------------------------------------------------------------- |
@@ -208,9 +245,12 @@ See **Cross-reference implementations** under [File structure overview](#file-st
 
 - [Concepts](Concepts#language-ids-kotor) -- Language IDs and encodings
 - [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- Modifying TLK via HoloPatcher/TSLPatcher
-- [2DA-File-Format](2DA-File-Format), [GFF-File-Format](GFF-File-Format) -- StrRef consumers; [NSS-File-Format](NSS-File-Format) -- Script strings
-- [Bioware-Aurora-TalkTable](Bioware-Aurora-TalkTable) -- Aurora talk table spec
-- [Concepts](Concepts#resource-resolution-order) -- Resource resolution; [KEY-File-Format](KEY-File-Format) -- KEY/BIF index
+- [2DA-File-Format](2DA-File-Format)
+- [GFF-File-Format](GFF-File-Format) -- StrRef consumers
+- [NSS-File-Format](NSS-File-Format) -- Script strings
+- [Bioware-Aurora-TalkTable](Bioware-Aurora-Core-Formats#talktable) -- Aurora talk table spec
+- [Concepts](Concepts#resource-resolution-order) -- Resource resolution
+- [KEY-File-Format](KEY-File-Format) -- KEY/BIF index
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for TLK/StrRef modding
 
 ---

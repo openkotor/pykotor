@@ -1,34 +1,76 @@
 # Welcome to the PyKotor Wiki
 
-## Documentation
+<a id="documentation"></a>
 
-### KotOR modding toolchain (SDK overview)
+PyKotor is a source-available KotOR and TSL modding toolchain. It exists to make the ecosystem less fragmented: one place for file-format documentation, installer behavior, tool workflows, and implementation-backed reference material that can be improved by the community instead of disappearing into forum archaeology.
 
-[OldRepublicDevs/PyKotor](https://github.com/OldRepublicDevs/PyKotor) is a **source-available** spine for formats, HoloPatcher, Holocron Toolset, CLI automation, and KotorDiff. This wiki emphasizes **concepts** (resource resolution, patch semantics, binary layouts) so skills transfer across executables. **Interop first:** you do not have to abandon KotOR Tool, K-GFF, xoreos-tools, or other workflows that already work for you—use installers when you need safe [2DA](2DA-File-Format) / [TLK](TLK-File-Format) / [GFF](GFF-File-Format) merges, and use [Concepts](Concepts) plus format pages as SSOT for behavior.
+This wiki is organized around what you are trying to do, not around whichever executable or legacy tool you happened to open first. Use it as a front door into the stack, then follow the deeper format and engine-reference pages when you need exact behavior.
 
-**Non-goals:** “PyKotor only” or “replace every legacy tool.” **Cross-implementation references** on many pages point to [reone](https://github.com/modawan/reone), [KotOR.js](https://github.com/KobaltBlu/KotOR.js), and [Kotor.NET](https://github.com/NickHugi/Kotor.NET) with line anchors where practical.
+## Start here
 
-A high-level **author → automate → player** diagram lives on [HoloPatcher internal logic — Toolchain flow](Explanations-on-HoloPatcher-Internal-Logic#toolchain-flow-high-level).
+| If you need to... | Start here | Then read |
+| ----------------- | ---------- | --------- |
+| Install or troubleshoot a mod | [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) | [Concepts](Concepts), [Mod Creation Best Practices](Mod-Creation-Best-Practices) |
+| Author a patcher-based mod | [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) | [TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax), [TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax), [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax) |
+| Edit resources in a GUI | [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started) | [Holocron Toolset: Core resources](Holocron-Toolset-Core-Resources), [Holocron Toolset: Module resources](Holocron-Toolset-Module-Resources) |
+| Work headlessly or automate a workflow | [CLI quickstart](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md) | [KotorDiff Integration](KotorDiff-Integration), [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic) |
+| Understand why a file wins in-game | [Concepts](Concepts) | [Resource formats and resolution](Resource-Formats-and-Resolution), [KEY File Format](KEY-File-Format) |
+| Look up a binary format or game resource type | [Resource formats and resolution](Resource-Formats-and-Resolution) | The relevant format page for that extension |
 
-#### When to use which part of the stack
+## Toolchain map
 
-| You need | Start here | Alternatives |
-| -------- | ---------- | ------------- |
-| Install or revert a mod | [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) | Copy to `override/`; [KotORModSync](https://github.com/th3w1zard1/KotORModSync) for multi-mod workflows |
-| Author HoloPatcher / TSLPatcher INI | [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) | [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) |
-| Merge 2DA / TLK / GFF | HoloPatcher INI ([2DAList](TSLPatcher-2DAList-Syntax), [TLKList](TSLPatcher-TLKList-Syntax), [GFFList](TSLPatcher-GFFList-Syntax)) | Manual merge (fragile); state load order in readme |
-| Edit resources in a GUI | [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started) | KotOR Tool, K-GFF |
-| Headless convert / pack / kit | [CLI quickstart](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md) (`uv run pykotor`, `pykotorcli`) | [xoreos-tools](https://github.com/xoreos/xoreos-tools) |
-| Compare installs or emit patch data | [KotorDiff Integration](KotorDiff-Integration) | Manual diff |
-| Resolution order and vocabulary | [Concepts](Concepts) | [Resource formats and resolution](Resource-Formats-and-Resolution) |
+- **PyKotor** is the library and CLI foundation: parsers, writers, extraction helpers, automation commands, and format conversion.
+- **HoloPatcher** is the safe installer layer for merge-sensitive resources like [2DA](2DA-File-Format), [TLK](TLK-File-Format), and [GFF](GFF-File-Format).
+- **Holocron Toolset** is the GUI editing layer for modules, resources, and area content.
+- **KotorDiff** is the comparison layer for install state, emitted patch data, and regression checking.
 
-#### Learning paths
+That split is deliberate. The goal is not “use only PyKotor tools forever”; the goal is to make format knowledge and mod workflows portable across tools, while still giving you a modern stack when you want one.
 
-- **New player:** [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) → if conflicts or missing textures, [Concepts — resource resolution](Concepts#resource-resolution-order) and [Mod Creation Best Practices — testing](Mod-Creation-Best-Practices#testing-and-compatibility) → [Community sources](#community-sources-and-archives).
-- **First mod author:** [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) (includes a **first-mod walkthrough**) → deep-dive [2DA](2DA-File-Format) or [GFF](GFF-File-Format) → [Mod Creation Best Practices](Mod-Creation-Best-Practices).
-- **Contributor / integrator:** [Wiki Conventions](Wiki-Conventions) → PyKotor [`resource/formats/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats) and NSS/format **Implementation cross-reference** blocks (reone, KotOR.js, Kotor.NET).
+## Core reference pages
 
-**Start here (compact):** [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) → [Mod Creation Best Practices](Mod-Creation-Best-Practices) → [File formats and specifications](#file-formats-and-specifications) or [TSLPatcher guides](TSLPatcher's-Official-Readme) as needed. Core terms: [Concepts](Concepts); format index and type IDs: [Resource formats and resolution](Resource-Formats-and-Resolution). Binary and engine-level detail: [Low-level structures and implementations](#low-level-structures-and-implementations). [Community sources and archives](#community-sources-and-archives). Contributing: [Wiki Conventions](Wiki-Conventions).
+- [Concepts](Concepts) explains resource resolution order, override behavior, BIF/KEY, MOD/ERF/RIM, ResRef, GFF, 2DA, and language IDs.
+- [Resource formats and resolution](Resource-Formats-and-Resolution) is the wiki index for extensions, resource type IDs, and format entry pages.
+- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) is the player-facing install and troubleshooting guide.
+- [Mod Creation Best Practices](Mod-Creation-Best-Practices) is the author-facing compatibility and distribution guide.
+- [Reverse Engineering Findings](reverse_engineering_findings) is the technical reference hub for engine behavior that matters to tool authors and advanced modders.
+
+## Verified against implementations
+
+The claims on this landing page and the linked concept pages are not based on one codebase or one forum post. They are cross-checked against active tooling and independent parsers.
+
+- **PyKotor**
+  - [`pykotor.extract.installation`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/extract/installation.py)
+  - [`pykotor.extract.chitin`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/extract/chitin.py)
+  - [`pykotor.resource.formats.key.io_key`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py)
+  - [`pykotor.resource.formats.bif.io_bif`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py)
+  - [`pykotor.resource.formats.erf.io_erf`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py)
+  - [`pykotor.resource.formats.rim.io_rim`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py)
+  - [`pykotor.resource.formats.tlk.io_tlk`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py)
+  - [`pykotor.resource.formats.twoda.io_twoda`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py)
+- **reone**
+  - [`src/libs/resource/director.cpp`](https://github.com/modawan/reone/blob/main/src/libs/resource/director.cpp)
+  - [`src/libs/resource/resources.cpp`](https://github.com/modawan/reone/blob/main/src/libs/resource/resources.cpp)
+  - [`src/libs/resource/format/keyreader.cpp`](https://github.com/modawan/reone/blob/main/src/libs/resource/format/keyreader.cpp)
+  - [`src/libs/resource/format/bifreader.cpp`](https://github.com/modawan/reone/blob/main/src/libs/resource/format/bifreader.cpp)
+  - [`src/libs/resource/format/erfreader.cpp`](https://github.com/modawan/reone/blob/main/src/libs/resource/format/erfreader.cpp)
+- **KotOR.js**
+  - [`src/loaders/ResourceLoader.ts`](https://github.com/KobaltBlu/KotOR.js/blob/main/src/loaders/ResourceLoader.ts)
+  - [`src/resource/KEYObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/main/src/resource/KEYObject.ts)
+  - [`src/resource/BIFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/main/src/resource/BIFObject.ts)
+  - [`src/managers/TwoDAManager.ts`](https://github.com/KobaltBlu/KotOR.js/blob/main/src/managers/TwoDAManager.ts)
+  - [`src/managers/TLKManager.ts`](https://github.com/KobaltBlu/KotOR.js/blob/main/src/managers/TLKManager.ts)
+- **Kotor.NET**
+  - [`Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/main/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs)
+  - [`Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/main/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs)
+  - [`Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/main/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs)
+  - [`Kotor.NET/Formats/Kotor2DA/TwoDABinaryReader.cs`](https://github.com/NickHugi/Kotor.NET/blob/main/Kotor.NET/Formats/Kotor2DA/TwoDABinaryReader.cs)
+  - [`Kotor.NET/ResourceContainers/Chitin.cs`](https://github.com/NickHugi/Kotor.NET/blob/main/Kotor.NET/ResourceContainers/Chitin.cs)
+
+## Learning paths
+
+- **New player:** [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) → [Concepts](Concepts#resource-resolution-order) → [Community sources and archives](#community-sources-and-archives)
+- **First mod author:** [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) → [Mod Creation Best Practices](Mod-Creation-Best-Practices) → the format pages you actually touch
+- **Tool author or contributor:** [Resource formats and resolution](Resource-Formats-and-Resolution) → [Reverse Engineering Findings](reverse_engineering_findings) → [Wiki Conventions](Wiki-Conventions)
 
 ### For End Users
 
@@ -44,244 +86,64 @@ Installation, tool use, and step-by-step guides:
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
 - [TSLPatcher Thread Complete Container](TSLPatcher_Thread_Complete)
 - **[TSLPatcher InstallList Syntax Guide](TSLPatcher-InstallList-Syntax)** -- File installation
-- **[TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax)** -- TLK ([TalkTable](TLK-File-Format)) modifications
-- **[TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax)** -- [2DA](2DA-File-Format) patches
-- **[TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax)** -- [GFF](GFF-File-Format) modifications
-- **[TSLPatcher SSFList Syntax Guide](TSLPatcher-SSFList-Syntax)** -- SSF ([sound set files](SSF-File-Format))
-- **[TSLPatcher HACKList Syntax Guide](TSLPatcher-HACKList-Syntax)** -- Binary patches
-- [Blender Integration](Blender-Integration)
-- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Build indoor modules from kits
-- [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions) -- Understanding why room crossing fails and what must agree: layout, walkmesh, roomlinks, LYT/VIS
-- [Indoor Area Room Layout and Walkmesh Guide](Indoor-Area-Room-Layout-and-Walkmesh-Guide) -- Complete modder workflow for indoor rooms, walkmeshes, roomlinks, doors, LYT, and VIS
-- [KotorDiff Integration in PyKotorCLI](KotorDiff-Integration)
 
-**Holocron Toolset (in-app help):**
+## Preserved source documents
 
-- [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started)
-- [Holocron Toolset: New Features Quick Guide](Holocron-Toolset-New-Features-Guide) -- Favorites, batch ops, rename, Open With, etc.
-- [Holocron Toolset: Core resources](Holocron-Toolset-Core-Resources) -- Core tab (KEY/BIF)
-- [Holocron Toolset: Module resources](Holocron-Toolset-Module-Resources)
-- [Holocron Toolset: Override resources](Holocron-Toolset-Override-Resources)
-- [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor) -- Module Designer controls
-- [Holocron Toolset: Map Builder](Holocron-Toolset-Map-Builder) -- Indoor Map Builder controls
-
-**Tutorials:**
-
-- [Tutorial: Creating custom robes](Tutorial-Creating-Custom-Robes)
-- [Tutorial: Creating a new store](Tutorial-Creating-a-New-Store)
-- [Tutorial: Area transitions](Tutorial-Area-Transitions)
-- [Tutorial: Creating static cameras](Tutorial-Creating-Static-Cameras)
-
-**Scripting (NWScript):** Function and constant reference for writing scripts. Full index and all routine/constant pages: [NSS File Format](NSS-File-Format). Quick links to major categories:
-
-- [NSS Shared Functions: Actions](NSS-Shared-Functions-Actions) · [Combat](NSS-Shared-Functions-Combat-Functions) · [Dialog and conversation](NSS-Shared-Functions-Dialog-and-Conversation-Functions) · [Effects](NSS-Shared-Functions-Effects-System) · [Item management](NSS-Shared-Functions-Item-Management) · [Module and area](NSS-Shared-Functions-Module-and-Area) · [Party](NSS-Shared-Functions-Party-Management) · [Skills and feats](NSS-Shared-Functions-Skills-and-Feats) · [Sound and music](NSS-Shared-Functions-Sound-and-Music) · [String manipulation](NSS-Shared-Functions-String-Manipulation) · [Globals](NSS-Shared-Functions-Global-Variables) · [Locals](NSS-Shared-Functions-Local-Variables) · [Alignment](NSS-Shared-Functions-Alignment-System) · [Class](NSS-Shared-Functions-Class-System) · [PC / SWMG](NSS-Shared-Functions-Player-Character-Functions) · [Item properties](NSS-Shared-Functions-Item-Properties) · [Other](NSS-Shared-Functions-Other-Functions)
-- [NSS Shared Constants: Ability](NSS-Shared-Constants-Ability-Constants) · [Object type](NSS-Shared-Constants-Object-Type-Constants) · [Class type](NSS-Shared-Constants-Class-Type-Constants) · [Visual effects](NSS-Shared-Constants-Visual-Effects-%28VFX%29)
-- [NSS K1-Only constants and functions](NSS-K1-Only-Constants-NPC-Constants) (see [NSS File Format](NSS-File-Format) for full K1 index)
-- [NSS TSL-Only constants and functions](NSS-TSL-Only-Functions-Combat-Functions) (see [NSS File Format](NSS-File-Format) for full TSL index)
-
-### File formats and specifications
-
-Reference for binary layout, field definitions, and format behaviour. For scripting usage see [Scripting (NWScript)](#guides-and-tutorials) above; for implementation details see [Low-level structures and implementations](#low-level-structures-and-implementations).
-
-### Official Bioware Aurora Documentation
-
-The following documents are official Bioware Aurora Engine file format specifications. These are authoritative references for the underlying file formats used by KotOR:
-
-- **[2DA File Format](Bioware-Aurora-2DA)** - Official 2DA (Two-Dimensional array) format specification
-- **[GFF File Format](Bioware-Aurora-GFF)** - Official Generic file format specification
-- **[Common GFF Structs](Bioware-Aurora-CommonGFFStructs)** - Common [GFF](GFF-File-Format) structure definitions
-- **[Area File Format](Bioware-Aurora-AreaFile)** - Official ARE (Area) file format
-- **[Creature Format](Bioware-Aurora-Creature)** - Official UTC (Creature) format
-- **[Item Format](Bioware-Aurora-Item)** - Official UTI (Item) format
-- **[Door/Placeable Format](Bioware-Aurora-DoorPlaceableGFF)** - Official [UTD](GFF-File-Format#utd-door)/[UTP](GFF-File-Format#utp-placeable) formats
-- **[Encounter Format](Bioware-Aurora-Encounter)** - Official UTE (Encounter) format
-- **[Trigger Format](Bioware-Aurora-Trigger)** - Official UTT (Trigger) format
-- **[Waypoint Format](Bioware-Aurora-Waypoint)** - Official UTW (Waypoint) format
-- **[Store Format](Bioware-Aurora-Store)** - Official UTM (Store) format
-- **[Sound Object Format](Bioware-Aurora-SoundObject)** - Official UTS (Sound) format
-- **[Journal Format](Bioware-Aurora-Journal)** - Official JRL (Journal) format
-- **[Conversation Format](Bioware-Aurora-Conversation)** - Official DLG (Dialogue) format
-- **[IFO Format](Bioware-Aurora-IFO)** - Official [module info](GFF-File-Format#ifo-module-info) format
-- **[ERF Format](Bioware-Aurora-ERF)** - Official Encapsulated Resource format
-- **[Key/BIF Format](Bioware-Aurora-KeyBIF)** - Official [KEY](KEY-File-Format) and [BIF file](BIF-File-Format) formats
-- **[TalkTable Format](Bioware-Aurora-TalkTable)** - Official TLK ([Talk Table](TLK-File-Format)) format
-- **[SSF Format](Bioware-Aurora-SSF)** - Official [sound set files](SSF-File-Format) format
-- **[Localized Strings Format](Bioware-Aurora-LocalizedStrings)** - Official localized strings format
-- **[Faction Format](Bioware-Aurora-Faction)** - Official faction data format
-- **[Palette/ITP Format](Bioware-Aurora-PaletteITP)** - Official palette and ITP formats
-
-### Odyssey Engine Basics (KotOR)
-
-The following information describes the resource system used by **KotOR and TSL**. While KotOR is derived from the Aurora engine (Neverwinter Nights) and shares the same resource system, this section focuses on **KotOR-specific** behavior and file locations. Some details (like `nwn.ini`) are NWN-specific and are noted as such.
-
-#### Application lifecycle (KotOR and TSL)
-
-Both games use the same high-level flow: the executable initializes an application manager, creates a server (game world) and client (rendering, input, UI), then runs a main loop that pumps window messages, updates the render window, and drives the Aurora/Odyssey subsystems. Resource loading follows the [resource resolution order](Concepts#resource-resolution-order); the resource manager services requests from override, then module [RIM](RIM-File-Format)/[ERF](ERF-File-Format) capsules, then KEY/BIF. Reinitializing the Aurora engine (e.g. after resolution or display changes) reloads or refreshes core subsystems while preserving the same client/server split. Scripts (NCS) and dialogues (DLG) run in the server context; the client handles display, camera, and input and receives updates from the server.
-
-**Client and server:** The Odyssey engine (like Aurora) separates a **server** (game world, rules, scripts, resources) from a **client** (rendering, input, UI). The server owns area state, creatures, items, and script execution; the client displays the world and sends input. This split is important for modding and for understanding [NCS execution](NCS-File-Format) and [resource resolution](Concepts#resource-resolution-order).
-
-#### Important Files
-
-- **[`chitin.key`](KEY-File-Format)**: Master index file that maps resource names to [BIF containers](BIF-File-Format) locations. Given a resource name, [chitin.key](KEY-File-Format) can be used to locate the master data file ([BIF](BIF-File-Format)) containing the resource.
-- **[`dialog.tlk`](TLK-File-Format)**: Text resource file containing localized strings referenced by [StrRef](TLK-File-Format#string-references-strref) IDs. This centralizes strings for easy localization and allows changing text without modifying or recompiling scripts. Different language versions of [dialog.tlk](TLK-File-Format) can be installed for localization support.
-- **`kotor.ini`**: Configuration file with `[Alias]` section mapping logical directory names to physical paths. This allows the game to locate data files regardless of installation directory structure.
-
-**Reference:** [xoreos-docs](https://github.com/xoreos/xoreos-docs) — [`specs/torlack/basics.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/basics.html) (Tim Smith / Torlack; NWN-focused Aurora basics).
-
-#### Resource system (see Concepts)
-
-- **Lookup order and how demands are satisfied:** [Concepts — Resource resolution order](Concepts#resource-resolution-order)
-- **Hex resource type IDs:** [Resource formats and resolution — Resource Type Identifiers](Resource-Formats-and-Resolution#resource-type-identifiers)
-- **Language IDs** (`dialog.tlk`, localization): [Concepts — Language IDs](Concepts#language-ids-kotor)
-- **KEY file role and binary format:** [KEY-File-Format](KEY-File-Format)
-- **Format page index (all extensions, ResRef, resolution order):** [Resource formats and resolution](Resource-Formats-and-Resolution)
-
-### File format index
-
-The linked table of contents for format pages (2DA anchors, GFF variants, archives, media) lives on **[Resource formats and resolution](Resource-Formats-and-Resolution)** together with [ResRef / resource type](Resource-Formats-and-Resolution#resref-and-resource-type) and the [hex resource type ID table](Resource-Formats-and-Resolution#resource-type-identifiers). Narrative resolution order: [Concepts](Concepts#resource-resolution-order).
-
-### Low-level structures and implementations
-
-Binary layout, engine behaviour, and implementation details for developers and reverse engineering. These pages are **conceptual summaries** for the wiki (no raw tool dumps); see [Wiki Conventions](Wiki-Conventions) and [AGENTS.md](https://github.com/OldRepublicDevs/PyKotor/blob/main/AGENTS.md) for project policy.
-
-- [Reverse Engineering Findings](reverse_engineering_findings) (includes `CExoResMan` / resource manager notes and BWM / AABB / walkmesh engine analysis)
-- [Qt ItemView selection and RobustTableView](Qt-ItemView-Selection-and-RobustTableView)
-- [UTC Editor field types (AgentDecompile)](UTC-Editor-Field-Types-AgentDecompile)
-- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Technical details (distinct from the [user guide](Indoor-Map-Builder-User-Guide) in Guides and tutorials)
-- [HoloPatcher internal logic](Explanations-on-HoloPatcher-Internal-Logic)
+- The **Bioware Aurora** family preserves official BioWare Aurora Engine documentation: [Core Formats](Bioware-Aurora-Core-Formats), [Module & Area](Bioware-Aurora-Module-and-Area), [Creature](Bioware-Aurora-Creature), [Items, Economy & Narrative](Bioware-Aurora-Items-Economy-and-Narrative), [Spatial & Interactive](Bioware-Aurora-Spatial-and-Interactive), [Conversation](Bioware-Aurora-Conversation).
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) is the primary historical and technical source for TSLPatcher behavior.
 
 ## Cross-reference: other tools and engines
 
-PyKotor is not the only KotOR tooling ecosystem. Below are other engines, libraries, and community projects (canonical repository links; compare with [OldRepublicDevs](https://github.com/OldRepublicDevs) for PyKotor, kotorblender, bioware-kaitai-formats, and related repos).
+PyKotor is one part of a larger KotOR tooling ecosystem. This section is a compact directory to adjacent projects, not an attempt to duplicate their documentation.
 
-### Engine Reimplementations
+### Engine reimplementations
 
-Complete game engine rewrites that can load and play KotOR:
+- [xoreos](https://github.com/xoreos/xoreos) is a C++ Aurora/Odyssey/Eclipse reimplementation with KotOR support.
+- [reone](https://github.com/modawan/reone) is a community-maintained modern C++ KotOR engine.
+- [KotOR.js](https://github.com/KobaltBlu/KotOR.js) is a TypeScript/WebGL engine implementation.
+- [NorthernLights](https://github.com/lachjames/NorthernLights) and [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity) are Unity/.NET-based engine projects.
 
-- **[xoreos](https://github.com/xoreos/xoreos)** - C++ reimplementation of BioWare's Aurora/Odyssey/Eclipse engine, supports multiple BioWare games including KotOR.
-- **[reone](https://github.com/modawan/reone)** — Community-maintained continuation of the modern C++ KotOR engine (OpenGL). Historical upstream: [seedhartha/reone](https://github.com/seedhartha/reone).
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** - TypeScript/JavaScript engine running in browsers via WebGL. Enables playing KotOR directly in web browsers.
-- **[NorthernLights](https://github.com/lachjames/NorthernLights)** - .NET/C# engine implementation with Unity integration capabilities (based on KotOR-Unity project with further improvements)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** - Unity-based KotOR engine rewrite. Leverages Unity's rendering and physics.
+### File-format libraries and related tooling
 
-### File Format Libraries
+- [xoreos-tools](https://github.com/xoreos/xoreos-tools) provides CLI extraction and conversion tools for Aurora-family formats.
+- [Kotor.NET](https://github.com/NickHugi/Kotor.NET), [BioWare.NET](https://github.com/th3w1zard1/BioWare.NET/tree/98dd9c47d1b1ccd7cc5f72a0bd4279c418359ec2), and [Rakata](https://codeberg.org/Synchro/rakata) are alternative format-parsing stacks.
+- [kotorblender](https://github.com/OldRepublicDevs/kotorblender), [mdlops](https://github.com/ndixUR/mdlops), [tga2tpc](https://github.com/ndixUR/tga2tpc), [DLZ-Tool](https://github.com/LaneDibello/DLZ-Tool), and [WalkmeshVisualizer](https://github.com/glasnonck/WalkmeshVisualizer) cover common 3D and asset workflows.
+- [HoloLSP](https://github.com/th3w1zard1/HoloLSP/tree/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2), [nwscript-mode.el](https://github.com/implicit-image/nwscript-mode.el), and [Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source) are useful script-development references.
 
-Libraries focused on reading/writing KotOR file formats:
+### Community projects and tools
 
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** - Command-line tools for extracting and converting Aurora file formats
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** - .NET library for KotOR file formats with builder APIs
-- **[BioWare.NET](https://github.com/th3w1zard1/BioWare.NET)** - Another .NET library for KotOR file formats, intended to be a direct port of PyKotor
-- **[Rakata](https://codeberg.org/Synchro/rakata)** - A rust-native codebase for working with the Odyssey engine.
+- [HoloPatcher.NET](https://github.com/th3w1zard1/HoloPatcher.NET/tree/600630e55e2b6a62e3ed84f8cd84a413baf7795d), [Kotor-Patch-Manager](https://github.com/LaneDibello/Kotor-Patch-Manager), [KotORModSync](https://github.com/th3w1zard1/KotORModSync/tree/c8b0d10ce3fd7525d593d34a3be8d151da7d3387), [StarForge](https://github.com/th3w1zard1/StarForge/tree/01afebab065c606980cebe9120702fce2c825e2d), and [KotorModTools](https://github.com/Box65535/KotorModTools) are adjacent modding tools.
+- [sotor](https://github.com/StarfishXeno/sotor), [KSELinux](https://github.com/Bolche/KSELinux), [KotOR-Save-Editor](https://github.com/Fair-Strides/KotOR-Save-Editor), and [kotor-savegame-editor](https://github.com/nadrino/kotor-savegame-editor) cover save editing.
+- [SithCodec](https://github.com/BBBrassil/SithCodec) and [SWKotOR-Audio-Encoder](https://github.com/LoranRendel/SWKotOR-Audio-Encoder) cover audio-focused workflows.
+- [K1_Community_Patch](https://github.com/KOTORCommunityPatches/K1_Community_Patch), [TSL_Community_Patch](https://github.com/KOTORCommunityPatches/TSL_Community_Patch), [KOTOR-utils](https://github.com/JCarter426/KOTOR-utils), [KotOR-Bioware-Libs](https://github.com/Fair-Strides/KotOR-Bioware-Libs), [kotor_combat_faq](https://github.com/statsjedi/kotor_combat_faq), and [ds-kotor-modding-wiki](https://github.com/DeadlyStream/ds-kotor-modding-wiki) are useful adjacent references.
 
-### 3D Modeling Tools
+<a id="community-sources-and-archives"></a>
 
-Tools for working with KotOR 3D [models](MDL-MDX-File-Format) and [textures](TPC-File-Format):
+## Community sources and archives
 
-- **[kotorblender](https://github.com/OldRepublicDevs/kotorblender)** - Blender add-on for importing/exporting KotOR [MDL files](MDL-MDX-File-Format), [LYT layouts](LYT-File-Format), [PTH paths](GFF-PTH), and [walkmeshes](BWM-File-Format) with active Holocron Toolset bridge support (see [Blender Integration](Blender-Integration))
-- **[mdlops](https://github.com/ndixUR/mdlops)** - Legacy Python [MDL](MDL-MDX-File-Format) toolkit for [model](MDL-MDX-File-Format) conversions
-- **[tga2tpc](https://github.com/ndixUR/tga2tpc)** - Standalone TGA to [TPC](TPC-File-Format) [texture](TPC-File-Format) converter
-- **[DLZ-Tool](https://github.com/LaneDibello/DLZ-Tool)** - DLZ file decompression tool
-- **[WalkmeshVisualizer](https://github.com/glasnonck/WalkmeshVisualizer)** - [walkmesh](BWM-File-Format) viewing and debugging tool
+This wiki is meant to replace scattered tribal knowledge with maintainable documentation, but older communities still matter for release history, workflow pitfalls, and examples that never became formal docs.
 
-### Script Development
+| Source | Why it matters | How to use it |
+| ------ | -------------- | ------------- |
+| [DeadlyStream](https://deadlystream.com) | Primary KotOR modding hub for releases, tutorials, tool discussions, and troubleshooting threads. | Use for workflow context, release history, and real-world modder reports; keep normative format semantics on this wiki. |
+| [LucasForums Container](https://lucasforumscontainer.com) | Wayback-backed reconstruction of the original LucasForums communities. | Use for historical TSLPatcher, tool, and modding discussions when the wiki needs provenance or original author commentary. |
+| [LucasForums Archive](https://lucasforumsarchive.com) | Alternate archive of Editing/Modding, Holowan Laboratories, and tutorial threads. | Use as historical support, especially when a thread is easier to cite or search here than in the container. |
+| [PCGamingWiki for KotOR](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic) and [KotOR II](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic_II_-_The_Sith_Lords) | Player-facing path, launcher, widescreen, and install-layout guidance. | Use for player environment context only; cross-check binary or resource-system claims against [Concepts](Concepts), [KEY File Format](KEY-File-Format), and the relevant format pages. |
+| Holowan Laboratories / MixNMojo mirrors | Early KotOR modding discussion history. | Use when newer documentation does not preserve the original context for a tool, technique, or format note. |
+| Reddit and other general forums | Current troubleshooting and installation chatter. | Use as workflow context or discovery paths, not as the primary source for file-format or engine behavior. |
 
-Tools and Resources for working with NWScript in KotOR:
+## External documentation
 
-- **[HoloLSP](https://github.com/th3w1zard1/HoloLSP)** - Language Server Protocol implementation for NWScript, complete with all kotor-specific constants and functions, as well as everything else from each game's (k1/tsl's) `nwscript.nss`
-- **[nwscript-mode.el](https://github.com/implicit-image/nwscript-mode.el)** - Emacs major mode for NWScript editing
-- **[Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)** - Decompiled vanilla KotOR scripts for reference
+- [xoreos-docs](https://github.com/xoreos/xoreos-docs) preserves official BioWare specifications, Torlack reverse-engineered notes, and auxiliary format material used throughout Aurora-family reverse engineering.
+- [nwn-docs](https://github.com/kucik/nwn-docs) is helpful for older Aurora-family background where KotOR behavior inherits the same storage conventions.
+- [bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats) provides Kaitai Struct specifications for many BioWare and KotOR formats and is useful for parser cross-checking.
 
-### Modding Tools
+## See also
 
-Tools for creating and installing mods:
+- [Concepts](Concepts)
+- [Resource formats and resolution](Resource-Formats-and-Resolution)
+- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher)
+- [Mod Creation Best Practices](Mod-Creation-Best-Practices)
+- [Reverse Engineering Findings](reverse_engineering_findings)
+- [Wiki Conventions](Wiki-Conventions)
 
-- **PyKotorCLI (PyKotor)** - CLI-first toolset for packing, conversion, Holocron kit generation, and [GUI](GFF-File-Format#gui-graphical-user-interface) layout scaling. `uvx --refresh pykotor kit-generate --installation <path> --module <module> --output <dir>` runs headless; launching with no arguments opens the Tkinter kit generator [GUI](GFF-File-Format#gui-graphical-user-interface) for interactive use. `uvx --refresh pykotor gui-convert --input <gui_or_folder> --output <dir> --resolution ALL` runs headless for [GUI](GFF-File-Format#gui-graphical-user-interface) resizing; omitting args opens the converter [GUI](GFF-File-Format#gui-graphical-user-interface). Developers: `uv run --directory Libraries/PyKotor/src --module pykotor` for local source. (Implementations: `kit_generator.py` wraps `Libraries/PyKotor/src/pykotor/tools/kit.py`; `Libraries/PyKotor/src/pykotor/cli/gui_converter.py` delegates to `pykotor.resource.formats.gff`.)
-- **[HoloPatcher.NET](https://github.com/th3w1zard1/HoloPatcher.NET)** - .NET reimplementation of TSLPatcher
-- **[Kotor-Patch-Manager](https://github.com/LaneDibello/Kotor-Patch-Manager)** - Alternative mod manager
-- **[ModSync](https://github.com/th3w1zard1/KotORModSync)** - Mod synchronization and installation
-- **[StarForge](https://github.com/th3w1zard1/StarForge)** - Module editor and modding toolkit
-- **[KotorModTools](https://github.com/Box65535/KotorModTools)** - Collection of modding utilities
-
-### Save Editors
-
-Tools for editing KotOR save games:
-
-- **[sotor](https://github.com/StarfishXeno/sotor)** - Terminal-based save editor
-- **[KSELinux](https://github.com/Bolche/KSELinux)** - KotOR Save Editor for Linux
-- **[KotOR-Save-Editor](https://github.com/Fair-Strides/KotOR-Save-Editor)** - [GUI](GFF-File-Format#gui-graphical-user-interface) save editor
-- **[kotor-savegame-editor](https://github.com/nadrino/kotor-savegame-editor)** - Web-based save editor
-
-### Audio Tools
-
-Tools for working with KotOR audio:
-
-- **[SithCodec](https://github.com/BBBrassil/SithCodec)** - KotOR audio codec implementation
-- **[SWKotOR-Audio-Encoder](https://github.com/LoranRendel/SWKotOR-Audio-Encoder)** - Audio encoding tool for KotOR
-
-### Community Resources
-
-Guides, patches, and community-maintained resources:
-
-- **[K1_Community_Patch](https://github.com/KOTORCommunityPatches/K1_Community_Patch)** - Community bug fix patch for KotOR 1
-- **[TSL_Community_Patch](https://github.com/KOTORCommunityPatches/TSL_Community_Patch)** - Community bug fix patch for KotOR 2
-- **[KOTOR-utils](https://github.com/JCarter426/KOTOR-utils)** - JCarter426's utility scripts and tools
-- **[KotOR-Bioware-Libs](https://github.com/Fair-Strides/KotOR-Bioware-Libs)** - BioWare library references
-- **[kotor_combat_faq](https://github.com/statsjedi/kotor_combat_faq)** - Combat mechanics documentation
-- **[ds-kotor-modding-wiki](https://github.com/DeadlyStream/ds-kotor-modding-wiki)** - DeadlyStream modding wiki container
-
-### Community sources and archives
-
-For **complete, comprehensive, and accurate** wiki coverage, the following community sites and archives hold historical and ongoing KotOR/TSL modding knowledge. Use them to cross-check format behavior, tool usage, and engine quirks.
-
-| Source | Description | Use for |
-|--------|-------------|--------|
-| **[DeadlyStream](https://deadlystream.com)** | Primary KotOR modding hub: mod releases, tutorials, Script Shack, tool discussions. | File format questions, TSLPatcher/HoloPatcher usage, nwscript.nss and animation references, override practices. |
-| **[LucasForums Container](https://lucasforumscontainer.com)** | Archive of original LucasForums (StarWarsKnights.com) threads, reconstructed from the Wayback Machine. | TSLPatcher history and changelogs, Stoffe’s posts, format and tool discussions (2004–2007). |
-| **[LucasForums Archive](https://lucasforumsarchive.com)** | Alternative archive project (Editing/Modding, Holowan Laboratories, tutorials). | TSLPatcher thread, KotOR tool docs, mod-finding threads. |
-| **[PCGamingWiki — Star Wars: KotOR](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic)** / **[KotOR II](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic_II_-_The_Sith_Lords)** | Player-facing paths, widescreen/mod lists, common folders. | **Not** authoritative for binary semantics—cross-check [KEY-File-Format](KEY-File-Format), [Concepts](Concepts), and this wiki’s format pages. |
-| **Holowan Laboratories / MixNMojo** | Historical KotOR modding forums (MixNMojo). | Early format and tool discussions; some content may be in archives or mirrors. |
-| **Reddit** (e.g. r/kotor) | General KotOR community. | Mod installation, troubleshooting, links to DeadlyStream and wiki. |
-
-**Further reading (community):**
-
-- [Deadly Stream — HoloPatcher (file hub + discussion)](https://deadlystream.com/files/file/2243-holopatcher/) -- Primary distribution entry for HoloPatcher; user threads on install issues
-- [Deadly Stream -- TOOL: HoloPatcher (Mod Releases thread)](https://deadlystream.com/topic/9807-toolholopatcher/) -- Jan 2023 release thread (Cortisol): user Q&A on installs and merges—**workflow context only**; pair with [2DAList](TSLPatcher-2DAList-Syntax) / [HoloPatcher readme](HoloPatcher-README-for-mod-developers) for authoritative syntax
-- [Deadly Stream — KOTOR 1 Community Patch](https://deadlystream.com/files/file/1258-kotor-1-community-patch/) -- Large mod example; release notes discuss HoloPatcher vs legacy TSLPatcher packaging (verify current readme for your version)
-- [Deadly Stream — What's in your Override folder?](https://deadlystream.com/topic/7279-whats-in-your-override-folder/) -- Player/mod list discussion (pair with [Concepts — override](Concepts#override-folder))
-- [DeadlyStream: Help setting up TSLPatcher](https://deadlystream.com/topic/5785-help-setting-up-the-tslpatcher-for-mods/) -- TSLPatcher setup
-- [DeadlyStream: TSL Patcher, TLKEd, and accessories](https://deadlystream.com/files/file/1039-tsl-patcher-tlked-and-accessories/) -- Modding tools
-- [DeadlyStream: Modding tools category](https://deadlystream.com/files/category/17-modding-tools/) -- Tool releases
-- [Deadly Stream — Tutorials forum](https://deadlystream.com/forum/25-tutorials/) -- Curated tutorials (cross-check dates and tools against [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started))
-- [Deadly Stream — [TUTORIAL] KotOR Modding Tutorial Series](https://deadlystream.com/topic/6886-tutorial-kotor-modding-tutorial-series/) -- Broad intro (some tools superseded; Holocron + wiki SSOT for formats)
-- [LucasForums Archive — How to compile scripts?](https://www.lucasforumsarchive.com/thread/143681) -- Historical NSS compile thread (nwnnsscomp); use with [NSS File Format — Implementation](NSS-File-Format) / Holocron compiler today
-- [LucasForums Archive: TSLPatcher v1.2.10b1](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer/) -- Original TSLPatcher thread (see also [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) in this wiki)
-- [LucasForums Archive: Editing / Modding](https://lucasforumsarchive.com/forum/521) -- Holowan Laboratories and tutorials
-
-**How to use these sources:**
-
-- **DeadlyStream:** Search the forums for specific topics (e.g. "override folder", "TSLPatcher 2DA merge", "GFF struct", "nwscript"). The Script Shack and modding tools sections contain tutorials and tool releases. When the wiki documents a format or tool, DeadlyStream threads often provide real-world modder reports (e.g. which 2DA columns are safe to add, TSLPatcher setup gotchas). Cite threads in "See also" or "Further reading" when they are the best source for a given detail.
-- **LucasForums Container / LucasForums Archive:** Use for historical and authoritative context. The original TSLPatcher thread (Stoffe, etc.), KotOR Tool discussions, and early GFF/2DA explanations live in these archives. Search by keyword (e.g. "2da", "GFF", "TSLPatcher") in the Editing/Modding or Holowan Laboratories sections. Content may be fragmented across Wayback reconstructions; when a thread is cited, prefer stable archive URLs.
-- **Holowan / Mixmojo:** Early KotOR modding community; some content is preserved in archives or linked from LucasForums. Use for very old format or tool history when other sources do not cover it.
-- **Reddit (r/kotor):** Useful for installation help, troubleshooting, and links to DeadlyStream or this wiki. For format or engine-level accuracy, prefer this wiki and the format pages; for "how do I install X" or "why does my mod conflict with Y", community posts can complement the docs.
-
-This wiki aims to consolidate and cite that knowledge where relevant. When adding or refining format or tool pages, prefer linking to authoritative specs (e.g. [KEY-File-Format](KEY-File-Format), [GFF-File-Format](GFF-File-Format), official BioWare Aurora docs) and to PyKotor ([OldRepublicDevs](https://github.com/OldRepublicDevs/PyKotor)) and other canonical implementation repos; for community consensus or historical context, link to DeadlyStream threads or LucasForums archive threads where appropriate.
-
-### External Documentation
-
-Reference documentation from related projects (external sources):
-
-- **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** - Aurora engine format documentation repository containing file format specifications for reverse-engineering BioWare's Aurora engine games. Part of the [xoreos project](https://xoreos.org/). The repository includes:
-  - **Official BioWare specifications** (`specs/bioware/`): Official Aurora Engine file format PDFs from the now-defunct nwn.bioware.com developer site. These documents are authoritative references for formats used across Aurora engine games including KotOR.
-  - **Torlack's reverse-engineered specs** (`specs/torlack/`): Tim Smith (Torlack)'s reverse-engineered format documentation from his now-defunct website (torlock.com). These include detailed field-by-field breakdowns for formats like BIF, KEY, ERF (MOD), GFF (ITP), NCS, and binary MDL files.
-  - **KotOR-specific documentation** (`specs/kotor_mdl.html`): Partial KotOR model format specifications with detailed field descriptions.
-  - **Binary templates** (`templates/`): 010 Editor binary template files for analyzing binary file structures
-  
-  **Note:** Much of the *KotOR*-relevant content from xoreos-docs has been comprehensively integrated into this wiki. See individual format documentation pages for specific source references.
-- **[nwn-docs](https://github.com/kucik/nwn-docs)** - Neverwinter Nights documentation (shares Aurora formats)
-- **[bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats)** - Kaitai Struct format specifications for GFF, 2DA, BIF, ERF, TLK, and other BioWare/KotOR formats; useful for parser generation and cross-tool validation.
-
-### See also
-
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution; [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) -- Core formats
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- Mod installation; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Mod development
-- [Wiki-Conventions](Wiki-Conventions) -- Wiki structure and style

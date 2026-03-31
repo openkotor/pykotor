@@ -4,7 +4,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 UTI files define [item templates](GFF-File-Format#uti-item) for all objects in creature inventories, containers, and stores. Items range from weapons and armor to quest items, upgrades, and consumables. UTI files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Item format specification, see [Bioware Aurora Item Format](Bioware-Aurora-Item).
+**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Item format specification, see [Bioware Aurora Item Format](Bioware-Aurora-Items-Economy-and-Narrative#item).
 
 **For mod developers:**
 
@@ -281,4 +281,4 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 - [baseitems.2da](2DA-File-Format#baseitems2da) - Item type definitions
 - [itempropdef.2da](2DA-File-Format#itempropdef2da) - Item property definitions
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - Modding GFF/UTI with TSLPatcher
-- [Bioware Aurora Item Format](Bioware-Aurora-Item) - Official BioWare specification
+- [Bioware Aurora Item Format](Bioware-Aurora-Items-Economy-and-Narrative#item) - Official BioWare specification

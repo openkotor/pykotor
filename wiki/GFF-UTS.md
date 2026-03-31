@@ -4,27 +4,40 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 UTS files define [sound object templates](GFF-File-Format#uts-sound) for ambient and environmental audio. These can be positional 3D sounds or global stereo sounds, with looping, randomization, and volume control. UTS files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Sound Object format specification, see [Bioware Aurora Sound Object Format](Bioware-Aurora-SoundObject).
+**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Sound Object format specification, see [Bioware Aurora Sound Object Format](Bioware-Aurora-Spatial-and-Interactive#soundobject).
 
-**For mod developers:** To modify sound blueprints in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
+
+- To modify sound blueprints in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
+- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 ## References
 
 **PyKotor:**
 
 - [`uts.py` `UTS` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uts.py#L18) — in-memory sound-object model (playback, 3D params, sound list)
-- [`construct_uts` L187+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uts.py#L187), [`read_uts` L286+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uts.py#L286), [`write_uts` L295+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uts.py#L295) — GFF ↔ `UTS` round-trip
+- [`construct_uts` L187+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uts.py#L187)
+- [`read_uts` L286+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uts.py#L286)
+- [`write_uts` L295+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uts.py#L295) — GFF ↔ `UTS` round-trip
 - [`gff_data.py` `GFFContent.UTS` L155](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L155) — four-character GFF type id
 - [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — generic GFF reader (UTS as GFF)
+- **[reone](https://github.com/modawan/reone)** — generic GFF reader (UTS as GFF):
+
+  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
+  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — managed GFF reader/writer
 - **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF pipeline
 
-**Community context (workflow):** Ambient audio and WAV/MP3 packaging threads appear on Deadly Stream and archives—see [WAV-File-Format](WAV-File-Format) and [Home — Community sources](Home#community-sources-and-archives). Forum posts explain **workflow**; **UTS field tables** stay anchored here + BioWare + PyKotor.
+**Community context (workflow):** Ambient audio and WAV/MP3 packaging threads appear on Deadly Stream and archives. See:
+
+- [WAV-File-Format](WAV-File-Format)
+- [Home — Community sources](Home#community-sources-and-archives)
+
+Forum posts explain **workflow**; **UTS field tables** stay anchored here + BioWare + PyKotor.
 
 ## Core Identity fields
 
@@ -83,7 +96,7 @@ UTS files define [sound object templates](GFF-File-Format#uts-sound) for ambient
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Sounds` | List | List of [WAV](WAV-File-Format)/MP3 files to play |
+| `Sounds` | List | List of audio files to play ([WAV](WAV-File-Format) or MP3) |
 
 **Sounds Struct fields:**
 
@@ -96,6 +109,8 @@ UTS files define [sound object templates](GFF-File-Format#uts-sound) for ambient
 
 ### See also
 
-- [GFF-File-Format](GFF-File-Format) -- GFF structure; [Bioware-Aurora-SoundObject](Bioware-Aurora-SoundObject) -- Aurora sound spec
-- [WAV-File-Format](WAV-File-Format) -- Audio resources; [GFF-GIT](GFF-GIT) -- Sound instances in areas
+- [GFF-File-Format](GFF-File-Format) -- GFF structure
+- [Bioware-Aurora-SoundObject](Bioware-Aurora-Spatial-and-Interactive#soundobject) -- Aurora sound spec
+- [WAV-File-Format](WAV-File-Format) -- Audio resources
+- [GFF-GIT](GFF-GIT) -- Sound instances in areas
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
