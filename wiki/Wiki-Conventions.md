@@ -7,6 +7,7 @@ All PyKotor wiki edits — whether by a human or by an AI agent — follow these
 - **Entry points:** [Home](Home) lists formats and tools and is the main index
 - [Concepts](Concepts) defines resource resolution, ResRef, override folder, and core format concepts
 - [Resource formats and resolution](Resource-Formats-and-Resolution) is the format TOC plus the hex **resource type ID** table. Use these to discover what the wiki contains and to navigate to format, tool, or how-to pages.
+- [Wiki overhaul goals](Wiki-Overhaul-Goals) defines the live completion criteria for the wiki overhaul and the maintenance targets that current edits should satisfy.
 - **Page types:** The wiki contains format reference pages (one format per page), how-to/guide pages (steps and prerequisites), and tool-syntax or tool-readme pages. Match new pages to the appropriate template (Reference or How-to / guide).
 
 ## Naming
@@ -55,6 +56,7 @@ All PyKotor wiki edits — whether by a human or by an AI agent — follow these
 ## Content
 
 - **Goal:** This wiki aims to be **complete, comprehensive, accurate, specific, and accessible** for any use--modders, developers, and researchers. Prefer linking to canonical pages (KEY-File-Format, GFF-File-Format, official BioWare specs) and to **PyKotor** ([OldRepublicDevs/PyKotor](https://github.com/OldRepublicDevs/PyKotor)) plus other implementation repos (reone, KotOR.js, Kotor.NET, xoreos, etc.); cite community sources (DeadlyStream, LucasForums archives) where they add consensus or history.
+- **Live-wiki rule:** Overhaul goals, routing decisions, and wiki-maintenance status belong in `wiki/` itself, not in detached planning artifacts elsewhere in the repository.
 - **One page per format or tool:** Keep each page focused on one format, one tool feature, or one task.
 - **One exhaustive page per topic:** Where several pages touch the same concept, workflow, or format cluster, one page must be the exhaustive canonical explanation. Other pages may summarize, contextualize, or route to that page, but should not restate it in full.
 - **Summary-page rule:** A summary, companion, or shortcut page must stay visibly shorter and narrower than the exhaustive page it points to. Keep only local framing, scope notes, or task-specific context, then link directly to the canonical page for the full explanation.
@@ -180,6 +182,14 @@ Run `markdownlint-cli2` on touched files per CI config in the main repo. Contrib
 - [ ] If the topic relies on preserved source material such as `Bioware-Aurora-*` or [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme), keep the preserved page intact and put new interpretation in a companion page instead.
 
 Use this checklist for both human and agent-generated edits.
+
+### See also
+
+- [Home](Home)
+- [Concepts](Concepts)
+- [Resource formats and resolution](Resource-Formats-and-Resolution)
+- [Reverse Engineering Findings](reverse_engineering_findings)
+- [Wiki overhaul goals](Wiki-Overhaul-Goals)
 
 ## Templates
 

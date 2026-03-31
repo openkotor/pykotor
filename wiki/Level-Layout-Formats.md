@@ -39,12 +39,12 @@ The engine combines LYT spatial data with [MDL/MDX](MDL-MDX-File-Format) geometr
 - Every section declares a count and then lists entries on subsequent lines.  
 - Implementations that parse the same token stream:
 
-  - [reone](https://github.com/modawan/reone)
-  - [xoreos](https://github.com/xoreos/xoreos)
-  - [KotOR.js](https://github.com/KobaltBlu/KotOR.js)
-  - [Kotor.NET](https://github.com/NickHugi/Kotor.NET)
+  - [reone](https://github.com/modawan/reone), which provides a C++ reader for Aurora-family layout files
+  - [xoreos](https://github.com/xoreos/xoreos), which carries the shared Aurora layout parser used across several engines
+  - [KotOR.js](https://github.com/KobaltBlu/KotOR.js), which mirrors the format in a TypeScript/WebGL toolchain
+  - [Kotor.NET](https://github.com/NickHugi/Kotor.NET), which models the same room, door, track, and obstacle data in .NET
 
-  [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity) mirrors the same structure.
+  [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity) mirrors the same structure in its Unity-side loader.
 
 **Implementation (PyKotor):**
 
@@ -581,7 +581,7 @@ Library read/write code for tooling alignment only; **normative** layout and eng
 
 **KotOR.js:** [OdysseyWalkMesh.ts](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyWalkMesh.ts) — binary read [`readBinary` L301–L395](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/odyssey/OdysseyWalkMesh.ts#L301-L395), header parse [`readHeader` L492–L514](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/odyssey/OdysseyWalkMesh.ts#L492-L514), export [`toExportBuffer` ~L834+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/odyssey/OdysseyWalkMesh.ts#L834). Layout differs from PyKotor (KotOR.js reserves 48 bytes in header; no hook vectors in file per PyKotor `io_bwm.py` L131 comment).
 
-CLI helper: [`pykotor walkmesh-rebuild`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/CLI_QUICKSTART.md#L98-L104) (see [CLI quickstart](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md)).
+CLI helper: [`pykotor walkmesh-rebuild`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/CLI_QUICKSTART.md#L98-L104) for rebuilding walkmesh data from the command line.
 
 ## Edge cases and validation
 

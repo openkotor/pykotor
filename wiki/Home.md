@@ -34,6 +34,11 @@ That split is deliberate. The goal is not “use only PyKotor tools forever”; 
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) is the author-facing compatibility and distribution guide.
 - [Reverse Engineering Findings](reverse_engineering_findings) is the technical reference hub for engine behavior that matters to tool authors and advanced modders.
 
+## Contributor maintenance
+
+- [Wiki Conventions](Wiki-Conventions) defines the editorial rules for structure, evidence placement, preserved-source handling, and link style.
+- [Wiki overhaul goals](Wiki-Overhaul-Goals) defines the current completion criteria for the live wiki and the standards a cleanup pass should satisfy.
+
 ## Verified against implementations
 
 The format and behavior claims on this wiki are cross-checked against multiple independent codebases, not based on a single source or forum post. The primary verification targets are [PyKotor](https://github.com/OldRepublicDevs/PyKotor), [reone](https://github.com/modawan/reone), [KotOR.js](https://github.com/KobaltBlu/KotOR.js), and [Kotor.NET](https://github.com/NickHugi/Kotor.NET). Individual format and concept pages carry their own per-claim source links; see [Concepts](Concepts#verified-against-implementations) for the detailed module-level verification list.
@@ -110,4 +115,5 @@ Older communities still matter for release history, workflow pitfalls, and examp
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices)
 - [Reverse Engineering Findings](reverse_engineering_findings)
 - [Wiki Conventions](Wiki-Conventions)
+- [Wiki overhaul goals](Wiki-Overhaul-Goals)
 

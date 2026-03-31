@@ -4,6 +4,10 @@ PyKotor's `resource/formats/` modules mirror executable-level parsing rules for 
 
 For the condensed RVA lookup tables, see [Appendix: PyKotor resource/formats symbols](reverse_engineering_findings#pykotor-resource-formats-symbols). For the companion MDL binary I/O analysis, see [MDL module engine notes](reverse_engineering_findings_py_kotor_migrated_io_mdl).
 
+This page is a contributor-facing appendix, not the main entry point for readers learning a format. Start with [Reverse Engineering Findings](reverse_engineering_findings) for the synthesis layer, then use this page when you need preserved call chains, addresses, or migrated implementation notes.
+
+Some sections still contain explicit `TODO` markers where K1 and TSL have not yet both been confirmed. Treat those lines as incomplete reverse-engineering notes rather than settled engine facts.
+
 ---
 
 <a id="migrated-io-bwm-ascii"></a>
