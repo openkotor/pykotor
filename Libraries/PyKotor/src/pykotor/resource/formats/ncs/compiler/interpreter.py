@@ -39,11 +39,6 @@ class Interpreter(BiowareResource):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/controllers/ (Runtime script execution)
-
-
         Note: Interpreter is PyKotor-specific for testing, not a full runtime implementation
     """
 

@@ -38,13 +38,7 @@ class InbuiltNCSCompiler(NCSCompiler):
 
     References:
     ----------
-        See ncs_data module docstring for engine addresses (K1 + TSL TODO). CResNCS::CResNCS (K1: 0x005d4c30),
-        ReadScriptFile (K1: 0x005d2260), InitializeScript (K1: 0x005d461b, TSL: TODO). CVirtualMachineInternal — NWScript VM.
-        Note: PyKotor NSS compiler produces NCS bytecode compatible with the engine VM.
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (NSS compilation reference)
-
+        PyKotor's native compiler targets the same NWScript bytecode layout retail KotOR executes.
 
     """
 
@@ -81,12 +75,6 @@ class KnownExternalCompilers(Enum):
 
     References:
     ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/TSLPatcher/tree/master/TSLPatcher.pl (unfinished perl rewrite of TSLPatcher)
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET.Patcher/
-
 
     """
 
@@ -142,7 +130,7 @@ class KnownExternalCompilers(Enum):
         name="Xoreos Tools",
         release_date=date(2016, 1, 1),  # Approximate based on project history
         author="Xoreos Team",
-        commandline={},  # Xoreos tools are primarily for engine reimplementation
+        commandline={},  # Placeholder registry entry; no bundled NSS CLI from this stack
     )
     KNSSCOMP = ExternalCompilerConfig(
         # knsscomp is Nick Hugi's modern NSS compiler

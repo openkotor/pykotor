@@ -114,7 +114,7 @@ class ComparableMixin(BiowareResource):
 
         # Compare set-like fields (unordered)
         comparable_set_fields = type(self).COMPARABLE_SET_FIELDS
-        for set_name in comparable_set_fields:  # sourcery skip: for-append-to-extend
+        for set_name in comparable_set_fields:
             try:
                 old_set_raw = getattr(self, set_name)
                 new_set_raw = getattr(other, set_name)

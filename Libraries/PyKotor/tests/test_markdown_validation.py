@@ -20,19 +20,35 @@ WIKI_DIR = REPO_ROOT / "wiki"
 MARKDOWNLINT_CONFIG = REPO_ROOT / ".markdownlint-cli2.jsonc"
 
 
+def _looks_like_markdown_link(url: str) -> bool:
+    """Filter false positives (digits/hex/comma targets are never wiki paths)."""
+    u = url.strip()
+    if not u:
+        return True
+    if u.isdigit():
+        return False
+    if re.match(r"^0x[0-9a-fA-F]+\)?$", u):
+        return False
+    if "," in u:
+        return False
+    return True
+
+
 def extract_links(content: str, file_path: Path) -> list[tuple[str, str, int]]:
     """Extract all markdown links from content.
 
     Returns: List of (link_text, link_url, line_number) tuples
     """
     links = []
-    # Pattern matches [text](url) and [text](url "title")
-    pattern = r'\[([^\]]+)\]\(([^\)"]+)(?:\s+"[^"]+")?\)'
+    # [text](url) — require `[` not immediately after a word char so `vtable[0](1)` is ignored.
+    pattern = r'(?<![\w/\\])\[([^\]]+)\]\(([^\)"]+)(?:\s+"[^"]+")?\)'
 
     for line_num, line in enumerate(content.splitlines(), 1):
         for match in re.finditer(pattern, line):
             link_text = match.group(1)
             link_url = match.group(2)
+            if not _looks_like_markdown_link(link_url):
+                continue
             links.append((link_text, link_url, line_num))
 
     return links

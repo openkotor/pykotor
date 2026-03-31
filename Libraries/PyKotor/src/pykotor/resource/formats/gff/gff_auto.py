@@ -276,7 +276,7 @@ def read_gff(
     offset: int = 0,
     size: int | None = None,
     file_format: ResourceType | None = None,
-) -> GFF:  # sourcery skip: hoist-statement-from-if, reintroduce-else
+) -> GFF:
     """Returns an GFF instance from the source.
 
     The file format (GFF or GFF_XML) is automatically determined before parsing the data.

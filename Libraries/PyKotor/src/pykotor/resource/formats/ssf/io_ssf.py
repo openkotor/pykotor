@@ -4,24 +4,11 @@ in the TLK file. Each SSF defines a set of 28 sound effects that creatures can p
 various game events (battle cries, pain grunts, selection sounds, etc.). The StrRefs point
 to entries in dialog.tlk which contain the actual WAV file references.
 
-References:
+Observed retail behavior:
 ----------
-    Based on /K1/k1_win_gog_swkotor.exe SSF structure:
-    - LoadSSF - Loads SSF file for creature sound sets
-      * Parses binary SSF format with "SSF V1.1" header
-      * Reads offset to sound table (typically 12)
-      * Reads 28 StrRef entries (4 bytes each, int32)
-      * Maps sound event types to TLK string references
-    - "SSF " file type identifier - First 4 bytes of SSF files
-    - "V1.1" version identifier - Bytes 4-7 of SSF files
-    - Offset to Sound Table field at offset 0x08 (4 bytes, uint32, typically 12)
-    - Sound Table starts at offset 0x0C (112 bytes: 28 entries * 4 bytes)
-      * Each entry is a StrRef (int32) into dialog.tlk
-      * Value -1 indicates no sound for that event type
-      * Index corresponds to SSFSound enum value (0-27)
-    - ".ssf" extension - SSF file extension
-    - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
-    SSF file format specification
+    KotOR maps the 28 fixed creature sound slots to StrRefs in ``dialog.tlk`` using the
+    ``SSF `` / ``V1.1`` header and table layout below.
+
         Binary Format:
         -------------
         Header (12 bytes):
@@ -48,7 +35,7 @@ from typing import TYPE_CHECKING
 import kaitaistruct
 
 from pykotor.common.stream import BinaryReader
-from pykotor.kaitai_generated.ssf import Ssf
+from bioware_kaitai_formats.ssf import Ssf
 from pykotor.resource.formats.ssf.ssf_data import SSF, SSFSound
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
@@ -128,12 +115,9 @@ class SSFBinaryReader(ResourceReader):
     SSF files map sound event types to sound resource IDs. Used for creature sound sets
     that define battle cries, grunts, pain sounds, and other audio events.
 
-    References:
+    Observed retail behavior:
     ----------
-        Based on /K1/k1_gog_steam_swkotor.exe SSF structure:
-        - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
-        - CResSSF::~CResSSF @ 0x006db670, @ 0x006db6b0 - Destructors for SSF resource
-        - SSF file format: "SSF " type, "V1.1" version
+        Matches the binary layout summarized in the module docstring and ``ssf_data``.
 
         Note: SSF files map sound event types (BattleCry, Attack, Pain, etc.) to sound
         resource IDs. Used for creature sound sets that define battle cries, grunts,

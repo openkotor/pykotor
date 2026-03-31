@@ -9,7 +9,7 @@ import kaitaistruct
 from kaitaistruct import KaitaiStream
 
 from pykotor.common.stream import BinaryReader
-from pykotor.kaitai_generated.twoda import Twoda
+from bioware_kaitai_formats.twoda import Twoda
 from pykotor.resource.formats.twoda.twoda_data import TwoDA
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
@@ -120,16 +120,15 @@ class TwoDABinaryReader(ResourceReader):
     2DA files store tabular data used throughout KotOR for game configuration, item stats,
     spell data, and other structured information.
 
-    References:
+    Observed retail behavior:
     ----------
-        Based on /K1/k1_win_gog_swkotor.exe 2DA structure:
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource (binary V2.b in shipped data)
-        - C2DA::Unload2DArray @ 0x004139e0 - Unloads 2DA data
+        Shipped data overwhelmingly uses compact binary ``2DA V2.b``; ASCII ``2DA V2.0`` also
+        appears in tools and some distributions.
 
         ASCII V2.0 / CSV / JSON are handled by other modules in this package (e.g. ``io_twoda_csv``).
 
-    Algorithm Differences:  Cell reading: PyKotor uses `read_terminated_string`, reone uses `readCStringAt` with
-    limit.
+    Implementation note: cells are read with terminated-string semantics; other stacks may use
+    different C-string helpers with explicit limits.
 
     """
 

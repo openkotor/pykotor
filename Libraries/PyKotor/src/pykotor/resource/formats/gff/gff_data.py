@@ -3,47 +3,19 @@
 GFF is the primary structured data format used throughout KotOR for storing
 game data, including character templates, areas, dialogs, and more.
 
-References:
-----------
-    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) GFF implementation.
-    Addresses: (K1: swkotor.exe, TSL: swkotor2.exe Aspyr build).
+Observed behavior:
+----------------
+    Retail KotOR I and TSL read and write GFF payloads with a fixed on-disk layout (header,
+    struct/field/label tables, and data blobs). It has been observed that the shipped games
+    create new GFF files with version label ``V3.2`` only—not the higher GFF revisions some
+    community tools accept for other titles.
 
-    - CResGFF::CreateGFFFile
-        K1: 0x00411260, TSL: 0x00626530
-        Creates new GFF file with file_type and version.
-        * Sets file_type from 4-character string (e.g., "UTI ", "DLG ", "ARE ")
-        * Sets file_version from GFFVersion string "V3.2" (see below)
-        * Creates root struct with AddStruct(this, 0xffffffff)
+    Dialogs and all structured templates (UTC, UTI, ARE, DLG, etc.) share the same GFF
+    container; only the four-character type tag and schema differ.
 
-    - CResGFF::WriteGFFFile
-        K1: 0x00413030, TSL: 0x00626700
-        Writes GFF data to file.
-        * Opens file with "wb" mode
-        * Calls Pack() to prepare data
-        * Calls WriteGFFData() to write binary format
-
-    - CResGFF::WriteGFFData
-        K1: 0x004113d0, TSL: 0x006267d0
-        Writes GFF header and data sections.
-        * Writes 0x38 byte header
-        * Writes structs (12 bytes each), fields (12 bytes each), labels (16 bytes each)
-        * Writes field_data, field_indices, list_indices
-
-    - GFFVersion string "V3.2" (hardcoded GFF version identifier)
-        K1: 0x0073e2c8, TSL: 0x0099794c (CreateGFFFile uses pointer at 0x009f44d8)
-
-    - "gff" string (GFF format/extension identifier, resource extension table)
-        K1: 0x0074dd00 (referenced by CreateResourceExtensionTable @ 0x005e6d20)
-        TSL: TODO: locate in swkotor2.exe (resource table layout differs)
-
-    Dialog (DLG) loading (GFF-based):
-        - CSWSDialog::LoadDialog (loads dialog from GFF structure): K1: 0x005a2ae0, TSL: TODO
-        - CSWSDialog::LoadDialogBase (loads dialog base properties): K1: 0x0059f5f0, TSL: TODO
-        - CSWSDialog::LoadDialogLinkedNode (loads linked dialog nodes; called from LoadDialog): K1: 0x0059ec10, TSL: TODO
-
-    Note: GFF is used for all structured game data; critical to understand for modding.
-    All game resources (UTM, GUI, UTI, UTP, UTC, UTD, UTW, UTT, UTS, UTE, PTH, JRL, IFO, ARE, FAC, DLG)
-    are stored as GFF files with different 4-character type identifiers.
+    Maintainers: superseded engine-loader cross-references from older docstrings are **migrated**
+    to the project wiki’s engine-findings article (section *PyKotor package: migrated library
+    notes*).
 """
 
 from __future__ import annotations
@@ -249,9 +221,9 @@ class GFFContent(Enum):
 def _normalize_string_for_compare(value: object) -> str:
     """Normalize string for comparison to avoid false positives from whitespace/line endings.
 
-    Engine behavior: GFF string fields are compared byte-wise; trailing whitespace and
-    CRLF vs LF can differ between tools. Normalizing allows semantically equal values
-    to match. Used in GFFStruct.compare for String and LocalizedString fields.
+    Observed / tooling: GFF string fields are often compared as raw bytes on read paths;
+    trailing whitespace and CRLF vs LF can differ between tools. Normalizing allows semantically
+    equal values to match. Used in ``GFFStruct.compare`` for String and LocalizedString fields.
     """
     if not isinstance(value, str):
         return str(value) if value is not None else ""
@@ -288,11 +260,10 @@ class GFFListSemanticConfig(BiowareResource):
 # Registry: (GFFContent, list_field_name) -> semantic config for list comparison.
 # When present, list entries are matched by identity_fields + default_when_absent,
 # so "same creature, new optional field" is reported as MODIFIED not ADDED+REMOVED.
-# Engine: K1 ReadEncounterFromGff @ 0x00592430 reads ResRef, CR, SingleSpawn only (no Appearance).
-# TSL FUN_007eb810 reads ResRef, CR, SingleSpawn, GuaranteedCount. Appearance is toolset-only.
+# K1 encounter spawns only honor ResRef, CR, SingleSpawn; TSL adds GuaranteedCount.
+# Appearance on CreatureList is editor cruft the retail games ignore for encounters.
 _GFF_LIST_SEMANTIC_REGISTRY: dict[tuple[GFFContent, str], GFFListSemanticConfig] = {
-    # Engine: K1 ReadEncounterFromGff @ 0x00592430, TSL FUN_007eb810 read ResRef, CR, SingleSpawn (+ GuaranteedCount TSL).
-    # Appearance is toolset-only; use ResRef+CR+SingleSpawn for identity so K1/TSL files match correctly.
+    # Identity matches what both games actually load; optional fields get sane defaults for diffs.
     (GFFContent.UTE, "CreatureList"): GFFListSemanticConfig(
         identity_fields=("ResRef", "CR", "SingleSpawn"),
         default_when_absent={"GuaranteedCount": 0, "Appearance": 0},
@@ -306,10 +277,8 @@ _GFF_LIST_SEMANTIC_REGISTRY: dict[tuple[GFFContent, str], GFFListSemanticConfig]
 # Used when comparing GFFs: fields added/removed with these values are treated as no-change.
 # Prefer GFFContent enum; never use raw strings for content type.
 #
-# Engine references:
-#   K1 SaveEncounter @ 0x00591350: CreatureList writes ResRef, CR, SingleSpawn only.
-#   TSL FUN_007ed770: CreatureList writes ResRef, CR, SingleSpawn, GuaranteedCount.
-#   K1 lacks GuaranteedCount; TSL default 0 when absent. Ignorable for diff.
+# K1 encounter saves omit GuaranteedCount; TSL writes it (default 0). Treat "missing or zero"
+# as the same thing when diffing so vanilla files do not look artificially dirty.
 _GFF_IGNORABLE_FIELD_VALUES: dict[tuple[GFFContent, str | None], dict[str, frozenset[Any]]] = {
     (GFFContent.UTE, "CreatureList"): {"GuaranteedCount": frozenset({0})},
 }
@@ -693,14 +662,7 @@ class GFFStruct(ComparableMixin, dict):
     has a user-defined ID and contains named fields that can be primitives, other structs,
     or lists of structs.
 
-    References:
-    ----------
-        Based on unified K1/TSL GFF structure. See module docstring for full addresses.
-        - CResGFF::CreateGFFFile (K1: 0x00411260, TSL: 0x00626530)
-        - CResGFF::WriteGFFFile (K1: 0x00413030, TSL: 0x00626700)
-        - CResGFF::WriteGFFData (K1: 0x004113d0, TSL: 0x006267d0)
-        - GFFVersion "V3.2" (K1: 0x0073e2c8, TSL: 0x0099794c)
-        GFF struct format specification
+    GFF struct format specification
 
 
 
@@ -722,9 +684,9 @@ class GFFStruct(ComparableMixin, dict):
             - 4 bytes: DataOrDataOffset (int32) - field index or field indices array offset
             - 4 bytes: FieldCount (uint32) - number of fields in struct
 
-        Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/GFFBinaryStructure.cs:159-164, KotOR_IO/GFF.cs:114-152
-
-        Field count optimization (Kotor.NET/GFFBinaryWriter.cs:59-72):
+        Field count / ``DataOrDataOffset`` encoding (observed binary layout; third-party write-up
+        URLs formerly cited here are migrated to ``wiki/reverse_engineering_findings.md``,
+        *gff_data.py — GFFStruct binary notes*):
             - If FieldCount == 0: DataOrDataOffset = -1 (empty struct)
             - If FieldCount == 1: DataOrDataOffset = field array index directly
             - If FieldCount > 1: DataOrDataOffset = byte offset into field indices array

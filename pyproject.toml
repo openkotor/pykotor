@@ -353,10 +353,12 @@ holopazaak = {workspace = true}
 kotordiff = {workspace = true}
 pykotorcli = {workspace = true}
 pykotor = { workspace = true }
+bioware-kaitai-formats = { workspace = true }
 
 [tool.uv.workspace]
 members = [
   "Libraries/PyKotor",
+  "Libraries/bioware-kaitai-formats",
   "Tools/BatchPatcher",
   "Tools/HoloPatcher",
   "Tools/HoloPazaak",
@@ -429,6 +431,7 @@ exclude = [
 explicit_package_bases = true
 mypy_path = [
   "Libraries/PyKotor/src",
+  "Libraries/bioware-kaitai-formats/src",
   "Tools/BatchPatcher/src",
   "Tools/HoloPatcher/src",
   "Tools/HoloPazaak/src",
@@ -668,6 +671,7 @@ required-imports = ["from __future__ import annotations"]
   "N806"
 ]
 "Tools/HolocronToolset/src/toolset/uic/*.py" = ["ALL"]
+"Libraries/bioware-kaitai-formats/src/bioware_kaitai_formats/*.py" = ["ALL"]
 "__init__.py" = ["F401", "I001", "I002", "TID252"]
 "globalsettings.py" = ["F401", "I001"]
 "pykotor/resource/formats/ncs/compiler/*.py" = ["ALL"]

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import kaitaistruct
 
 from pykotor.common.stream import BinaryReader
-from pykotor.kaitai_generated.rim import Rim
+from bioware_kaitai_formats.rim import Rim
 from pykotor.resource.formats.rim.rim_data import RIM
 from pykotor.resource.type import ResourceReader, ResourceType, ResourceWriter, autoclose
 
@@ -52,7 +52,7 @@ def _load_rim_legacy(reader: BinaryReader) -> RIM:
     reader.skip(4)  # Skip 0x08 (4 bytes)
     entry_count = reader.read_uint32()  # 0x0C
     offset_to_keys = reader.read_uint32()  # 0x10
-    reader.skip(4)  # offset_to_resources @ 0x14
+    reader.skip(4)  # RIM header: reserved field at file offset 0x14 (see rim_data layout table)
 
     if offset_to_keys == 0:
         offset_to_keys = 120
@@ -96,15 +96,14 @@ class RIMBinaryReader(ResourceReader):
 
     References:
     ----------
-        See rim_data module docstring. Unified K1/TSL: AddResourceImageContents (K1: 0x0040f990), CExoEncapsulatedFile::CExoEncapsulatedFile (K1: 0x0040ef90), AddEncapsulatedContents (K1: 0x0040f3c0), RIM leak string (K1: 0x0073d8a8); TSL: TODO.
+        RIM IO mirrors the on-disk layout described in ``rim_data``.
 
         Note: RIM files use similar structure to ERF files but are read-only templates.
         The engine loads RIM files as module blueprints and exports to ERF for runtime mutation.
         Missing Features:
         ----------------
-        - ResRef lowercasing (reone lowercases resrefs at rimreader.cpp:47)
-        - Field order difference: PyKotor reads restype, resids, resoffsets, ressizes
-        vs reone which reads resRef, type (uint16), skips 6 bytes, offset, size
+        - ResRef lowercasing (not applied on read)
+        - Other readers may permute header/table field order; this module follows ``rim_data``.
 
     """
 

@@ -36,11 +36,6 @@ class CompileError(Exception):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (TypeScript compiler errors)
-
-
     """
 
     def __init__(self, message: str, line_num: int | None = None, context: str | None = None):
@@ -160,7 +155,6 @@ class Identifier(BiowareResource):
         self.label: str = label
 
     def __eq__(self, other: object) -> bool:
-        # sourcery skip: assign-if-exp, reintroduce-else
         if self is other:
             return True
         if isinstance(other, Identifier):
@@ -337,11 +331,6 @@ class CodeRoot(BiowareResource):
 
     References:
     ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (TypeScript compiler architecture)
-
 
     """
 
@@ -904,11 +893,6 @@ class Expression(BiowareResource, ABC):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (Expression compilation)
-
-
     """
 
     @abstractmethod
@@ -928,11 +912,6 @@ class Statement(BiowareResource, ABC):
 
     References:
     ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (Statement compilation)
-
 
     """
 

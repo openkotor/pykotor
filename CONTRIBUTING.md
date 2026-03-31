@@ -83,6 +83,9 @@ To install packages in editable mode with uv:
 
 ```bash
 uv pip install -e "Libraries/PyKotor[all,dev]"
+# PyKotor depends on workspace member ``bioware-kaitai-formats`` (import ``bioware_kaitai_formats``).
+# From repo root, ``uv sync`` installs it; for isolated ``pip install -e Libraries/PyKotor``, install
+# ``Libraries/bioware-kaitai-formats`` editable first or use a published ``bioware-kaitai-formats`` wheel on PyPI.
 uv pip install -e "Tools/HolocronToolset"
 uv pip install -e "Tools/HoloPatcher"
 uv pip install -e "Tools/KotorDiff"

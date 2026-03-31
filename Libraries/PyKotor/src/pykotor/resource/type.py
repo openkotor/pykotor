@@ -4,13 +4,9 @@ This module contains comprehensive resource type definitions for all known BioWa
 including Infinity, Aurora, Odyssey, and Eclipse engines. Resource types are identified by
 numeric IDs and file extensions, with engine support tracking via the BiowareEngine enum.
 
-The ResourceType enum includes all resource types from:
-- Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
-- Based on /K1/k1_win_gog_swkotor.exe resource type system:
-  * CExoResRef - Resource reference structure used throughout engine
-  * CResRef::GetResRef - Gets resource reference string
-  * Resource type IDs defined in engine's resource system
-- Derivations and other implementations (see References sections below)
+The ResourceType enum aggregates types used across BioWare engine families. Numeric IDs and
+extensions for Odyssey (KotOR I / TSL) match observed retail resolution behavior and the
+published resource-type tables; see project wiki cross-links below.
 
 Each resource type includes:
 - type_id: Numeric identifier used by game engines
@@ -21,10 +17,6 @@ Each resource type includes:
 
 References:
 ----------
-    Original BioWare engine binaries (resource type IDs from swkotor.exe, swkotor2.exe, etc.)
-    Based on /K1/k1_win_gog_swkotor.exe resource type system:
-    - GetResTypeFromFile @ 0x00406650 - Gets resource type from file extension
-    - GetResTypeFromExtension @ 0x005e6670, @ 0x005e7a40 - Gets resource type from extension string
     wiki/Resource-Formats-and-Resolution.md (hex resource type ID table)
     wiki/Bioware-Aurora-KeyBIF.md (Aurora engine resource type documentation)
 """
@@ -69,10 +61,7 @@ class BiowareEngine(Enum):
 
     References:
     -----------
-        Original BioWare engine binaries (engine type information from swkotor.exe, swkotor2.exe, etc.)
-        Based on /K1/k1_win_gog_swkotor.exe resource type system:
-    - GetResTypeFromFile @ 0x00406650 - Gets resource type from file extension
-    - GetResTypeFromExtension @ 0x005e6670, @ 0x005e7a40 - Gets resource type from extension string
+        Observed KotOR I / TSL resource pipelines (Odyssey) and broader BioWare engine lineage.
     """
 
     Infinity = "infinity"  # Baldur's Gate, Icewind Dale, Planescape: Torment
@@ -171,12 +160,7 @@ class ResourceTuple(NamedTuple):
 
     References:
     -----------
-        Based on /K1/k1_win_gog_swkotor.exe resource type system:
-        - GetResTypeFromFile @ 0x00406650 - Gets resource type from file extension
-        - GetResTypeFromExtension @ 0x005e6670, @ 0x005e7a40 - Gets resource type from extension string
-        - ".mdl" string @ 0x00740ca8 - MDL file extension
-        - ".wav" string @ 0x0074d308 - WAV file extension
-        - "_s.rim" string @ 0x00752ff0 - RIM file extension pattern
+        Observed extension-to-type mapping in retail KotOR builds; see wiki resource-type tables.
     """
 
     type_id: int
@@ -191,8 +175,8 @@ class ResourceTuple(NamedTuple):
 class ResourceType(Enum):
     """Represents a resource type used across BioWare game engines.
 
-    This enum contains comprehensive resource type definitions Based on /K1/k1_win_gog_swkotor.exe resource type system
-    REVA analysis, representing all known resource types across BioWare's Infinity, Aurora,
+    This enum contains comprehensive resource type definitions informed by observed retail KotOR
+    behavior and published tables, representing known resource types across BioWare's Infinity, Aurora,
     Odyssey, and Eclipse engines.
 
     Each enum member is a ResourceTuple containing:
@@ -204,8 +188,7 @@ class ResourceType(Enum):
     - target_member: For toolset-only types, the target ResourceType this maps to
     - supported_engines: Tuple of BiowareEngine values indicating engine support
 
-    Resource type IDs are consistent across all vendor implementations and match the
-    original BioWare engine binaries. Types marked as "Unused" are reserved IDs that
+    Resource type IDs are treated as stable across vendor builds for a given title. Types marked as "Unused" are reserved IDs that
     are not currently used by any known engine.
 
     Engine Support:
@@ -221,12 +204,7 @@ class ResourceType(Enum):
 
     References:
     ----------
-        Based on /K1/k1_win_gog_swkotor.exe resource type system:
-        - GetResTypeFromFile @ 0x00406650 - Gets resource type from file extension
-        - GetResTypeFromExtension @ 0x005e6670, @ 0x005e7a40 - Gets resource type from extension string
-        - CExoResRef - Resource reference structure used throughout engine
-        - Resource type IDs defined in engine's resource system
-        wiki/Bioware-Aurora-KeyBIF.md (Aurora engine documentation)
+        wiki/Resource-Formats-and-Resolution.md, wiki/Bioware-Aurora-KeyBIF.md
     """
 
     INVALID = ResourceTuple(-1, "", "Undefined", "binary", is_invalid=True)
@@ -1053,7 +1031,7 @@ class ResourceType(Enum):
     def __bool__(self) -> bool:
         return not self.is_invalid
 
-    def __repr__(self) -> str:  # sourcery skip: simplify-fstring-formatting
+    def __repr__(self) -> str:
         if self.name == "INVALID" or not self.is_invalid:
             return f"{self.__class__.__name__}.{self.name}"
 
@@ -1082,7 +1060,6 @@ class ResourceType(Enum):
         A ResourceType and a str are equal if the extension is case-sensitively equal to the string.
         A ResourceType and a int are equal if the type_id is equal to the integer.
         """
-        # sourcery skip: assign-if-exp, merge-duplicate-blocks, reintroduce-else, remove-redundant-if, split-or-ifs
         if self is other:
             return True
         if isinstance(other, ResourceType):

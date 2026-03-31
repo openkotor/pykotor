@@ -32,9 +32,8 @@ Usage:
 
 References:
 ----------
-        Based on /K1/k1_win_gog_swkotor.exe NWScript structure:
-        - NCS (NWScript Compiled Script) bytecode format
-        - Language Server Protocol specification
+        Targets the NWScript language and NCS bytecode layout used by retail KotOR builds,
+        plus the Language Server Protocol for editor integration.
 
         Note: This is a language server for NSS (NWScript Source) files, providing
         diagnostics, completions, and hover information. NSS compiles to NCS bytecode

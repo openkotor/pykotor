@@ -218,7 +218,7 @@ def set_winreg_path(
 def create_registry_path(
     hive: HKEYType | int,
     path: str,
-) -> None:  # sourcery skip: raise-from-previous-error
+) -> None:
     """Recursively creates the registry path if it doesn't exist."""
     log = RobustLogger()
     try:
@@ -232,7 +232,6 @@ def create_registry_path(
             except PermissionError as e:
                 raise PermissionError("Permission denied. Administrator privileges required.") from e  # noqa: B904, TRY003, EM101
             except Exception as e:  # pylint: disable=W0718  # noqa: BLE001
-                # sourcery skip: raise-specific-error
                 raise Exception(f"Failed to create registry key: {current_path}") from e  # noqa: TRY002, TRY003, EM102, B904
     except Exception:  # pylint: disable=W0718  # noqa: BLE001
         log.exception("An unexpected error occurred while creating a registry path.")

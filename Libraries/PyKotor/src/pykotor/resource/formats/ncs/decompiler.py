@@ -5,8 +5,7 @@ handling all instruction types, control flow, expressions, and data structures.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed in retail KotOR I and TSL.
         DeNCS - Original NCS decompiler implementation
 
 """
@@ -202,8 +201,7 @@ class NCSDecompiler(BiowareResource):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed in retail KotOR I and TSL.
         DeNCS - Original NCS decompiler implementation
 
     """

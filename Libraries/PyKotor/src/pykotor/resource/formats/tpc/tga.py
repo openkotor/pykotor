@@ -5,7 +5,7 @@ true-color and grayscale images. Used for texture conversion to/from TPC format.
 
 References:
 ----------
-        See tpc_data module docstring for engine addresses (K1 + TSL TODO). Standard TGA specification (Truevision TGA File Format Specification)
+        Standard Truevision TGA header/layout (see Truevision TGA specification).
 
 
 """

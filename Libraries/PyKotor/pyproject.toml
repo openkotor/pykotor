@@ -27,7 +27,12 @@ classifiers = [
   "Topic :: File Formats",
   "Typing :: Typed",
 ]
-dependencies = ["defusedxml>=0.7", "kaitaistruct>=0.11", "ply>=3.11,<4"]
+dependencies = [
+  "bioware-kaitai-formats>=0.1.0",
+  "defusedxml>=0.7",
+  "kaitaistruct>=0.11",
+  "ply>=3.11,<4",
+]
 keywords = [
   "2da",
   "bif",
@@ -163,6 +168,7 @@ keywords = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
+bioware-kaitai-formats = ">=0.1.0"
 defusedxml = ">=0.7"
 kaitaistruct = ">=0.11"
 ply = ">=3.11,<4"

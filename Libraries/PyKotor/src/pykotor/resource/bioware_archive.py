@@ -41,19 +41,7 @@ class ArchiveResource(BiowareResource):
 
     References:
     ----------
-        Based on /K1/k1_win_gog_swkotor.exe archive structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file (123 bytes)
-          * Initializes ERF/RIM archive structure
-          * Sets up resource table and file data storage
-          * Used for MOD, ERF, and RIM file formats
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds encapsulated file contents to key table (1469 bytes, 287 lines)
-          * Registers resources from ERF/RIM archives in the key table
-          * Enables resource lookup by ResRef and type
-          * Used when loading module archives and override files
-          * Handles both NWM (Neverwinter Nights) and MOD (KotOR) formats
-        - CExoKeyTable::LocateBifFile @ 0x0040d200 - Locates BIF file for resource lookup
-        BioWare archive format specification
-
+        Observed retail KotOR archive handling (ERF/RIM/BIF family) and KEY-table registration.
 
     """
 
@@ -210,18 +198,7 @@ class BiowareArchive(ComparableMixin, ABC):
 
     References:
     ----------
-        Based on /K1/k1_win_gog_swkotor.exe archive structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file (123 bytes)
-          * Initializes ERF/RIM archive structure
-          * Sets up resource table and file data storage
-          * Used for MOD, ERF, and RIM file formats
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds encapsulated file contents to key table (1469 bytes, 287 lines)
-          * Registers resources from ERF/RIM archives in the key table
-          * Enables resource lookup by ResRef and type
-          * Used when loading module archives and override files
-          * Handles both NWM (Neverwinter Nights) and MOD (KotOR) formats
-        - CExoKeyTable::LocateBifFile @ 0x0040d200 - Locates BIF file for resource lookup
-        BioWare archive format specification
+        Observed retail KotOR archive handling (ERF/RIM/BIF family) and KEY-table registration.
     """
 
     BINARY_TYPE: ClassVar[ResourceType]

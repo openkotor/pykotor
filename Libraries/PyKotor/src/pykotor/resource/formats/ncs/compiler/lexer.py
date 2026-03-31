@@ -31,9 +31,6 @@ class NssLexer(BiowareResource):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (Token handling)
         PLY (Python Lex-Yacc) library for lexer generation
 
     """

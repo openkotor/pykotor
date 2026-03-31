@@ -11,7 +11,7 @@ import kaitaistruct
 from pykotor.common.language import Language
 from pykotor.common.misc import ResRef, WrappedInt
 from pykotor.common.stream import ArrayHead, BinaryReader
-from pykotor.kaitai_generated.tlk import Tlk
+from bioware_kaitai_formats.tlk import Tlk
 from pykotor.resource.formats.tlk.tlk_data import TLK
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
@@ -126,12 +126,13 @@ class TLKBinaryReader(ResourceReader):
     TLK files store localized strings used throughout the game for dialog, item descriptions,
     and other text content. Each entry can have text, sound references, and flags.
 
-    References:
+    Observed retail behavior:
     ----------
-        See tlk_data module docstring for engine addresses (K1 + TSL TODO). CTlkTable::CTlkTable (K1: 0x0041d8d0), CTlkTable::AddFile (K1: 0x0041d920), CTlkFile::CTlkFile (K1: 0x0041d810), "TLK " (K1: 0x0073ecb0), "tlk" extension (K1: 0x0074dd40).
+        Matches the binary ``TLK `` / ``V3.0`` layout described in ``tlk_data``.
+
         Missing Features:
         ----------------
-        - ResRef lowercasing (reone lowercases sound resrefs)
+        - ResRef lowercasing for embedded sound ResRefs (not applied on read)
 
     """
 
