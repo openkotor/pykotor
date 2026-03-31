@@ -45,9 +45,9 @@ The **override** folder is the bluntest and most powerful mod-install location i
 
 That makes override useful for rapid testing and for global replacements, but it also makes it the easiest place to create mod conflicts. Only one file for a given ResRef and resource type can win. For mergeable content such as [2DA](2DA-File-Format), [TLK](TLK-File-Format), and many [GFF](GFF-File-Format) resources, patcher-based merging is usually safer than shipping a monolithic loose-file replacement.
 
-**Community context:** Players often compare loadouts in threads such as [Deadly Stream — What's in your Override folder?](https://deadlystream.com/topic/7279-whats-in-your-override-folder/) (mod combinations in practice). **Historical (pre-HoloPatcher era):** [LucasForums Archive — Load order?](https://www.lucasforumsarchive.com/thread/206128-load-order) and [Guide for the newbie: tools and how to install mods](https://www.lucasforumsarchive.com/thread/129789-guide-for-the-newbie-what-tools-do-i-need-to-mod-kotor-how-to-install-mods) (dated workflows; prefer current [Installing-Mods-with-HoloPatcher](Installing-Mods-with-HoloPatcher) and this page for **resolution order**). **Resolution order and conflicts** here and [KEY-File-Format](KEY-File-Format) remain SSOT.
+**Community context:** Players often compare loadouts in threads such as [Deadly Stream — What's in your Override folder?](https://deadlystream.com/topic/7279-whats-in-your-override-folder/) (mod combinations in practice). **Historical (pre-HoloPatcher era):** [LucasForums Archive — Load order?](https://www.lucasforumsarchive.com/thread/206128-load-order) and [Guide for the newbie: tools and how to install mods](https://www.lucasforumsarchive.com/thread/129789-guide-for-the-newbie-what-tools-do-i-need-to-mod-kotor-how-to-install-mods) (dated workflows; prefer current [Installing-Mods-with-HoloPatcher](HoloPatcher#installing-mods) and this page for **resolution order**). **Resolution order and conflicts** here and [KEY-File-Format](KEY-File-Format) remain SSOT.
 
-**Player-facing install paths (not SSOT for resolution):** For Steam/GOG/Aspyr folder layouts, widescreen, and common OS fixes, [PCGamingWiki — KotOR](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic) and [KotOR II: The Sith Lords](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic_II_-_The_Sith_Lords) complement [Installing-Mods-with-HoloPatcher](Installing-Mods-with-HoloPatcher); do **not** treat PCGW as authoritative for KEY/BIF semantics or override precedence—those stay on this page and [KEY-File-Format](KEY-File-Format).
+**Player-facing install paths (not SSOT for resolution):** For Steam/GOG/Aspyr folder layouts, widescreen, and common OS fixes, [PCGamingWiki — KotOR](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic) and [KotOR II: The Sith Lords](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic_II_-_The_Sith_Lords) complement [Installing-Mods-with-HoloPatcher](HoloPatcher#installing-mods); do **not** treat PCGW as authoritative for KEY/BIF semantics or override precedence—those stay on this page and [KEY-File-Format](KEY-File-Format).
 
 ## [**BIF**](BIF-File-Format) and [**KEY**](KEY-File-Format)
 
@@ -67,11 +67,11 @@ The practical rule is that module-scoped content belongs here, not in global ove
 
 | Delivery | Typical use | Notes |
 | -------- | ----------- | ----- |
-| **`override/`** | Global scripts, textures, 2DAs, TLK, GFF templates used in many modules | Highest precedence vs BIF; last writer wins if two mods use the same ResRef+type—prefer [2DAList](TSLPatcher-2DAList-Syntax) / [TLKList](TSLPatcher-TLKList-Syntax) merges |
+| **`override/`** | Global scripts, textures, 2DAs, TLK, GFF templates used in many modules | Highest precedence vs BIF; last writer wins if two mods use the same ResRef+type—prefer [2DAList](TSLPatcher-Data-Syntax#2dalist-syntax) / [TLKList](TSLPatcher-Data-Syntax#tlklist-syntax) merges |
 | **`Modules/*.mod`** | Module-scoped capsule (ERF-type [MOD](ERF-File-Format)) | Often overrides the vanilla `.rim` pair for that module name when present |
 | **Vanilla `.rim` / `_s.rim`** | Stock module archives ([RIM](RIM-File-Format)) | Mods usually ship a `.mod` instead of editing RIMs in place |
 
-**Prerequisites:** Game root layout; [InstallList](TSLPatcher-InstallList-Syntax) paths in INI relative to game root.
+**Prerequisites:** Game root layout; [InstallList](TSLPatcher-Install-and-Hack-Syntax#installlist-syntax) paths in INI relative to game root.
 
 **Steps (conceptual):** (1) Decide if each resource is global or module-only. (2) For module content, build a `.mod` (Holocron, PyKotor CLI pack, etc.) or use InstallList to write into `modules/`. (3) For global content, use `override/` or merge into shared 2DA/TLK via patch lists.
 
@@ -79,7 +79,7 @@ The practical rule is that module-scoped content belongs here, not in global ove
 
 **Alternatives:** Holocron Module Designer vs CLI `pack`; drop files manually into `override/` for quick tests (not for distribution if merges are needed).
 
-**Common failures:** Installing to `override/` when the resource must be inside the module capsule; duplicate 2DA rows from reinstalling the same patcher option without restore—see [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher).
+**Common failures:** Installing to `override/` when the resource must be inside the module capsule; duplicate 2DA rows from reinstalling the same patcher option without restore—see [Installing Mods with HoloPatcher](HoloPatcher#installing-mods).
 
 ## [**GFF** (Generic File Format)](GFF-File-Format)
 
@@ -87,7 +87,7 @@ The practical rule is that module-scoped content belongs here, not in global ove
 
 ## [**2DA** (Two-Dimensional Array)](2DA-File-Format)
 
-[**2DA**](2DA-File-Format) files are tabular data: rows and columns used for items, [spells](2DA-File-Format#spells2da), [appearances](2DA-File-Format#appearance2da), and most game configuration. The engine and [GFF](GFF-File-Format) resources reference [*2DA*](2DA-File-Format) rows by index or label. Mods often add or edit rows (e.g. new appearance row, new spell); when multiple mods change the same [*2DA*](2DA-File-Format), merging (e.g. via [*TSLPatcher*'s](TSLPatcher's-Official-Readme) `[2DAList]` implementation) avoids overwriting. See [2DA-File-Format](2DA-File-Format), [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax).
+[**2DA**](2DA-File-Format) files are tabular data: rows and columns used for items, [spells](2DA-File-Format#spells2da), [appearances](2DA-File-Format#appearance2da), and most game configuration. The engine and [GFF](GFF-File-Format) resources reference [*2DA*](2DA-File-Format) rows by index or label. Mods often add or edit rows (e.g. new appearance row, new spell); when multiple mods change the same [*2DA*](2DA-File-Format), merging (e.g. via [*TSLPatcher*'s](TSLPatcher's-Official-Readme) `[2DAList]` implementation) avoids overwriting. See [2DA-File-Format](2DA-File-Format), [TSLPatcher-2DAList-Syntax](TSLPatcher-Data-Syntax#2dalist-syntax).
 
 **Historical forum example:** Veterans debated `spells.2da` edits vs multi-mod compatibility in [LucasForums Archive — spells.2da, compatibility and TSL Patcher](https://www.lucasforumsarchive.com/thread/205823-spells2da-compatibility-and-tsl-patcher) (2010); the takeaway for authors is still **merge-aware installers** and row-level patches, not dropping a monolithic override—see [2DA-spells](2DA-File-Format#spells2da) **Community context**.
 
@@ -127,7 +127,7 @@ Use this table as the **wiki SSOT** for numeric IDs and typical text encodings. 
 - [Resource formats and resolution](Resource-Formats-and-Resolution) -- Format index, resolution order, hex resource type table
 - [Home — community sources and archives](Home#community-sources-and-archives) -- Deadly Stream, LucasForums Archive, PCGamingWiki (player paths and forum context)
 - [Home](Home) -- Wiki hub (formats, tools, tutorials)
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- Reader-facing install and troubleshooting workflow
+- [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) -- Reader-facing install and troubleshooting workflow
 - [KEY-File-Format](KEY-File-Format) -- KEY file format (e.g. `chitin.key`)
 - [GFF-File-Format](GFF-File-Format) -- GFF file format (e.g. `area.gff`)
 - [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices) -- Best practices for modding

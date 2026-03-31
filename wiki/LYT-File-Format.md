@@ -6,7 +6,7 @@ LYT (Layout) files define how area [room models](LYT-File-Format#room-definition
 
 - LYT is edited in the module/area layout tools.
 - See [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide).
-- See [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+- See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 

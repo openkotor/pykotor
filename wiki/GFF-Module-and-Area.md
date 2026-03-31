@@ -28,8 +28,8 @@ Those resources use the usual [resource resolution order](Concepts#resource-reso
 
 **For mod developers:**
 
-- To modify GFF/ARE files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+- To modify GFF/ARE files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
+- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 
@@ -1028,7 +1028,7 @@ Each instance type has common fields plus type-specific data:
 - [GFF-UTP](GFF-Spatial-Objects#utp)
 - [GFF-UTT](GFF-Spatial-Objects#utt)
 - [GFF-UTW](GFF-Spatial-Objects#utw) -- Instance types
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Patching GIT via mod installers
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Patching GIT via mod installers
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
 
 
@@ -1046,8 +1046,8 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 **For mod developers:**
 
-- To modify module metadata in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
-- For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+- To modify module metadata in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
+- For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 

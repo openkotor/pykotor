@@ -45,7 +45,7 @@ Module capsules may be `.rim` ([RIM File Format](RIM-File-Format)), `.mod`/`.erf
 
 **Alternatives:** Holocron-only compile + manual copy; diff two ZIP backups without KotorDiff (slower, no TSLPatcher scaffold).
 
-**Common failures:** Forgetting `--noCompile` vs compile when packing stale `.ncs`; diffing paths that are not both game roots or comparable trees; incremental INI conflicts—re-run after a [HoloPatcher restore](Installing-Mods-with-HoloPatcher) on the test install.
+**Common failures:** Forgetting `--noCompile` vs compile when packing stale `.ncs`; diffing paths that are not both game roots or comparable trees; incremental INI conflicts—re-run after a [HoloPatcher restore](HoloPatcher#installing-mods) on the test install.
 
 [KEY](KEY-File-Format) flags:
 
@@ -63,6 +63,10 @@ Module capsules may be `.rim` ([RIM File Format](RIM-File-Format)), `.mod`/`.erf
 
 ### See also
 
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher overview; [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Patching workflow
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution; [ERF-File-Format](ERF-File-Format), [RIM-File-Format](RIM-File-Format), [GFF-File-Format](GFF-File-Format) -- Diffed resources and module capsules
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher overview
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- Patching workflow
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [ERF-File-Format](ERF-File-Format)
+- [RIM-File-Format](RIM-File-Format)
+- [GFF-File-Format](GFF-File-Format) -- Diffed resources and module capsules
 - [TLK-File-Format](TLK-File-Format) -- StrRef handling in incremental output

@@ -7,8 +7,8 @@ GUI files define the layout and behavior of the user interface. They are [GFF fi
 **For mod developers:**
 
 - To edit GUI layout in the toolset, use the GUI editor.
-- For mod patches, see [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax).
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+- For mod patches, see [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax).
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 

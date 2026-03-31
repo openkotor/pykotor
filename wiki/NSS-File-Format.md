@@ -6,7 +6,7 @@ NSS (NWScript Source) files contain human-readable NWScript source code that com
 
 - NSS compiles to [NCS](NCS-File-Format).
 - Use the toolset compiler or HoloLSP.
-- See [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+- See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 

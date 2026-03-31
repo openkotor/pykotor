@@ -5,7 +5,18 @@
 - **Standard DirectX DDS** (header magic `0x44445320`, 124-byte header) used by downstream tools/ports.
 - **BioWare DDS variant** (no magic; width/height/bpp/dataSize leading integers) used in *KotOR* and *Neverwinter Nights* game assets (shared Aurora engine format).
 
-This page documents how PyKotor interprets both formats and how it aligns with reference implementations in [xoreos](https://github.com/xoreos/xoreos) and [xoreos-tools](https://github.com/xoreos/xoreos-tools). When the engine or tools load DDS by ResRef, they use the same [resource resolution order](Concepts#resource-resolution-order) as other resources ([override](Concepts#override-folder), [MOD/ERF/SAV](ERF-File-Format), [KEY/BIF](KEY-File-Format)). Hex type id **`0x07F1`** is listed under [Resource type identifiers](Resource-Formats-and-Resolution#resource-type-identifiers).
+This page documents how PyKotor interprets both formats and how it aligns with reference implementations:
+
+- [xoreos](https://github.com/xoreos/xoreos)
+- [xoreos-tools](https://github.com/xoreos/xoreos-tools)
+
+When the engine or tools load DDS by ResRef, they use the same [resource resolution order](Concepts#resource-resolution-order) as other resources:
+
+- [override](Concepts#override-folder)
+- [MOD/ERF/SAV](ERF-File-Format)
+- [KEY/BIF](KEY-File-Format)
+
+Hex type id **`0x07F1`** is listed under [Resource type identifiers](Resource-Formats-and-Resolution#resource-type-identifiers).
 
 ## Table of Contents
 
@@ -24,19 +35,37 @@ This page documents how PyKotor interprets both formats and how it aligns with r
 
 **Implementation (PyKotor)**
 
-- **Reader / writer:** [`io_dds.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py) — [`TPCDDSReader` L49+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L49), [`load` L191+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L191), [`TPCDDSWriter` L351+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L351); routing via [`tpc_auto.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_auto.py) (`ResourceType.DDS` detection).
+- **Reader / writer:**
+
+  - [`io_dds.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py)
+  - [`TPCDDSReader` L49+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L49)
+  - [`load` L191+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L191)
+  - [`TPCDDSWriter` L351+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L351)
+  - routing via [`tpc_auto.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_auto.py) (`ResourceType.DDS` detection)
 
 **Cross-reference implementations (line anchors are against `master` and may drift):**
 
 - **[xoreos](https://github.com/xoreos/xoreos)** ([tools mirror: xoreos-tools](https://github.com/xoreos/xoreos-tools)): [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) — engine DDS loading (standard and BioWare variant).
 - **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) — command-line DDS conversion.
 - **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)) — no standalone DDS reader in-tree; the game pipeline loads **TPC** via [`TpcReader::load` L32+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/tpcreader.cpp#L32). Use PyKotor or xoreos-tools to convert DDS for KotOR-style assets.
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — runtime textures follow the **TPC** path ([`TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts), [`TextureLoader.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/TextureLoader.ts)); see [TPC File Format](TPC-File-Format) for JS anchors. DDS remains an interchange format for tools, not the on-disk KotOR default.
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — runtime textures follow the **TPC** path:
+
+  - [`TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts)
+  - [`TextureLoader.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/TextureLoader.ts)
+
+  See [TPC File Format](TPC-File-Format) for JS anchors. DDS remains an interchange format for tools, not the on-disk KotOR default.
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — managed **TPC** under [`Kotor.NET/Formats/KotorTPC/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTPC); no separate `KotorDDS` project on the default branch—treat DDS like other tool-chain inputs mapped into TPC in PyKotor.
 
-**For mod developers:** DDS is an alternative texture format; *KotOR* typically uses [TPC](TPC-File-Format). See [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** DDS is read/written via PyKotor's [TPC](TPC-File-Format) pipeline; see [TPC File Format](TPC-File-Format) and [TXI File Format](TXI-File-Format).
+- DDS is an alternative texture format; *KotOR* typically uses [TPC](TPC-File-Format).
+- See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
+
+**Related formats:**
+
+- Read and written through PyKotor’s [TPC](TPC-File-Format) pipeline
+- [TPC File Format](TPC-File-Format)
+- [TXI File Format](TXI-File-Format)
 
 ### Standard DDS (DX7+ container)
 
@@ -113,7 +142,8 @@ Implementation reference:
 ### Practical differences vs. TGA/TPC
 
 - **TGA**: uncompressed/RLE raster data; no block compression; single [face](MDL-MDX-File-Format#face-structure) only; origin/alpha flags live in the header. DDS can be block-compressed (*DXT1/DXT5*) and include cubemap [faces](MDL-MDX-File-Format#face-structure)/mip hierarchies in one container.
-- **TPC**: *KotOR*-specific container with [TXI](TXI-File-Format) embedded and different header layout; PyKotor maps DDS surfaces into [*TPC*](TPC-File-Format) objects for unified downstream handling (conversion, [TXI](TXI-File-Format) logic, cubemap normalization).
+- **TPC**: *KotOR*-specific container with [TXI](TXI-File-Format) embedded and different header layout
+- PyKotor maps DDS surfaces into [*TPC*](TPC-File-Format) objects for unified downstream handling (conversion, [TXI](TXI-File-Format) logic, cubemap normalization).
 
 ### Notes and limits
 
@@ -124,6 +154,7 @@ Implementation reference:
 ### See also
 
 - [Resource formats and resolution](Resource-Formats-and-Resolution) - [Resource type identifiers](Resource-Formats-and-Resolution#resource-type-identifiers) (`DDS` / `0x07F1`)
-- [TPC File Format](TPC-File-Format) - *KotOR*'s primary texture format; PyKotor maps DDS into [*TPC*](TPC-File-Format).
+- [TPC File Format](TPC-File-Format) - *KotOR*'s primary texture format
+- PyKotor maps DDS into [*TPC*](TPC-File-Format).
 - [TXI File Format](TXI-File-Format) - Texture metadata used with [*TPC*](TPC-File-Format).
 - [KEY File Format](KEY-File-Format) - Resource resolution order for DDS by [ResRef](Concepts#resref-resource-reference).

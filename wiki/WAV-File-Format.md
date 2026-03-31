@@ -34,7 +34,7 @@ Hex type id **`0x0004`** is listed under [Resource type identifiers](Resource-Fo
 - [TLK](TLK-File-Format) (voice-over)
 - [SSF](SSF-File-Format)
 
-See [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 

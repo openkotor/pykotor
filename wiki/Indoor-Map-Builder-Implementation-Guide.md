@@ -35,4 +35,4 @@ Authoring kits (room templates, hooks, metadata) are described in [Kit Structure
 - [Indoor Area Room Layout and Walkmesh Guide](Indoor-Area-Room-Layout-and-Walkmesh-Guide)
 - [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions)
 - [Blender Integration](Blender-Integration) — limitations for roomlink authoring in Blender
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers)

@@ -5,7 +5,7 @@ NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts 
 **For mod developers:**
 
 - Scripts are compiled from [NSS](NSS-File-Format) source.
-- See the NSS/NCS toolset and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+- See the NSS/NCS toolset and [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 

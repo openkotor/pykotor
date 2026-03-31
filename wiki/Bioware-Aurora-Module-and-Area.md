@@ -2840,7 +2840,7 @@ Present only if the tileset has height transitions.
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [Bioware-Aurora-GFF](Bioware-Aurora-Core-Formats#gff) -- Aurora GFF spec
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
-- [TSLPatcher-GFFList-Syntax](TSLPatcher-GFFList-Syntax) -- Patching GFF
+- [TSLPatcher-GFFList-Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Patching GFF
 
 
 ---

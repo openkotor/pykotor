@@ -6,8 +6,8 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 **For mod developers:**
 
-- To modify 2DA files in your mods, see the [TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+- To modify 2DA files in your mods, see the [TSLPatcher 2DAList Syntax Guide](TSLPatcher-Data-Syntax#2dalist-syntax).
+- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 
@@ -272,7 +272,7 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 ### See Also
 
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) - Modding 2DA files with *TSLPatcher*
+- [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) - Modding 2DA files with *TSLPatcher*
 - [GFF File Format](GFF-File-Format) - Related format that often references *2DA* data
 - [TLK File Format](TLK-File-Format) - Text strings referenced by *2DA* entries
 

@@ -1,6 +1,6 @@
 # TSLPatcher Documentation
 
-_This page is a preserved primary-source artifact. Keep the original documentation intact and use modern narrative pages such as [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) and the dedicated syntax guides to summarize current usage around it rather than rewriting this source in place._
+_This page is a preserved primary-source artifact. Keep the original documentation intact and use modern narrative pages such as [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) and the dedicated syntax guides to summarize current usage around it rather than rewriting this source in place._
 
   TSLPatcher v1.2.10b1
 
@@ -1606,10 +1606,10 @@ And finally thanks to YOU, for enduring my English and reading all the way down 
 ### See also
 
 - [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) -- LucasForums thread container (Stoffe’s posts, changelogs)
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- GFF patching
-- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) -- 2DA and plain-text hacks
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- HoloPatcher usage
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- End-user installation
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- GFF patching
+- [TSLPatcher HACKList Syntax](TSLPatcher-Install-and-Hack-Syntax#hacklist-syntax) -- 2DA and plain-text hacks
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- HoloPatcher usage
+- [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) -- End-user installation
 - [GFF File Format](GFF-File-Format) -- Patched GFF resources
 - [2DA-File-Format](2DA-File-Format) -- Patched table resources
 - [TLK-File-Format](TLK-File-Format) -- Patched talk-table resources

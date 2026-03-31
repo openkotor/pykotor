@@ -6,7 +6,7 @@ KotOR modding has historically been fragmented: different tools, version quirks,
 
 This page is the practical author guide: where files should go, when patchers are required, how to avoid common compatibility mistakes, and what to test before release. For tool syntax and installation, see:
 
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers)
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
 
 The practices below are drawn from long-standing community consensus on:
@@ -44,11 +44,11 @@ The game resolves resources in a fixed order. Understanding this order is essent
 
 **TSLPatcher setup:** Point TSLPatcher at your **main game installation directory** (the folder that contains `swkotor.exe` or `swkotor2.exe` and the `override` folder), not at the override folder itself. If you use Steam Workshop content (e.g. TSLRCM), point the patcher at that workshop folder when installing mods that need to merge with Workshop content. This ensures the patcher finds the correct 2DA, TLK, and GFF files and can merge rather than overwrite when configured to do so.
 
-**Merging 2DA files:** When multiple mods change the same 2DA (e.g. `spells.2da`, `appearance.2da`), raw overwrites would make only one mod's changes take effect. TSLPatcher can **merge** 2DA changes: it adds or updates rows based on your 2DAList instructions so that several mods' additions coexist. Configure your mod's 2DAList (and optionally TLKList for string references) so that your rows are appended or matched by key column; the patcher then merges instead of replacing the whole file. See [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) for exact syntax.
+**Merging 2DA files:** When multiple mods change the same 2DA (e.g. `spells.2da`, `appearance.2da`), raw overwrites would make only one mod's changes take effect. TSLPatcher can **merge** 2DA changes: it adds or updates rows based on your 2DAList instructions so that several mods' additions coexist. Configure your mod's 2DAList (and optionally TLKList for string references) so that your rows are appended or matched by key column; the patcher then merges instead of replacing the whole file. See [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) for exact syntax.
 
-**Community (HoloPatcher vs TSLPatcher merges):** [Deadly Stream -- TOOL: HoloPatcher](https://deadlystream.com/topic/9807-toolholopatcher/) (release discussion) complements the wiki's [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers); treat threads as **workflow context**, not a substitute for `[2DAList]` syntax on this wiki.
+**Community (HoloPatcher vs TSLPatcher merges):** [Deadly Stream -- TOOL: HoloPatcher](https://deadlystream.com/topic/9807-toolholopatcher/) (release discussion) complements the wiki's [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers); treat threads as **workflow context**, not a substitute for `[2DAList]` syntax on this wiki.
 
-**Merging TLK (dialog.tlk):** Similarly, TLKList allows adding or changing string entries without wiping the rest of the TLK. Use TLKList so that your mod's new StrRefs are appended and existing entries are updated only where intended. See [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax).
+**Merging TLK (dialog.tlk):** Similarly, TLKList allows adding or changing string entries without wiping the rest of the TLK. Use TLKList so that your mod's new StrRefs are appended and existing entries are updated only where intended. See [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax).
 
 **GFF merging:** TSLPatcher GFFList can add or edit structs and fields in GFF files such as creature templates, module instances, inventories, and dialog data. It cannot remove structs; for that, use a script-based workaround (see below) or a tool/workflow that deliberately rebuilds the target data.
 
@@ -122,8 +122,8 @@ void DestroyPlaceablesAndCreaturesInArea(location oLoc1, int nShape, float areaS
   - [Concepts — resource resolution](Concepts#resource-resolution-order)
 - **Install order:** Many mods depend on load order (override and MOD order). Document recommended order in your mod’s readme; when using TSLPatcher/HoloPatcher, merging 2DA/TLK reduces order sensitivity for those files.
 - **Clean install:** Test on a clean game install or a known-good backup so conflicts are attributable to your mod or to a specific combination.
-- **Reversion:** Use the patcher’s backup/restore (e.g. HoloPatcher “Uninstall Mod/Restore Backup”) before reinstalling or switching options; installing twice without reverting can duplicate 2DA rows or TLK entries and cause crashes. See [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher).
-- **iOS/mobile:** For mobile (e.g. iOS), file names must be lowercase; use HoloPatcher’s “Fix iOS Case Sensitivity” when targeting mobile. See [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher#installing-mods-on-ios-devices).
+- **Reversion:** Use the patcher’s backup/restore (e.g. HoloPatcher “Uninstall Mod/Restore Backup”) before reinstalling or switching options; installing twice without reverting can duplicate 2DA rows or TLK entries and cause crashes. See [Installing Mods with HoloPatcher](HoloPatcher#installing-mods).
+- **iOS/mobile:** For mobile (e.g. iOS), file names must be lowercase; use HoloPatcher’s “Fix iOS Case Sensitivity” when targeting mobile. See [Installing Mods with HoloPatcher](HoloPatcher#installing-mods-on-ios-devices).
 
 ## Storing 2DAMEMORY without duplicating/creating a row
 
@@ -166,7 +166,7 @@ label=YavinHgrDoor1
 
 ### See also
 
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Mod tooling and workflow
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- Mod tooling and workflow
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher installation and usage
 - [GFF File Format](GFF-File-Format) -- GFF structure
 - [GIT](GFF-File-Format#git-game-instance-template)
@@ -174,13 +174,13 @@ label=YavinHgrDoor1
 - [UTP](GFF-Spatial-Objects#utp)
 - [NSS File Format](NSS-File-Format) -- Scripting
 - [NCS](NCS-File-Format) bytecode
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- End-user mod installation
+- [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) -- End-user mod installation
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums archives for tutorials and community knowledge
-- [Deadly Stream — HoloPatcher](https://deadlystream.com/files/file/2243-holopatcher/) -- User-facing tool hub and install discussions (complement [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher))
+- [Deadly Stream — HoloPatcher](https://deadlystream.com/files/file/2243-holopatcher/) -- User-facing tool hub and install discussions (complement [Installing Mods with HoloPatcher](HoloPatcher#installing-mods))
 - [LucasForums Archive — TSLPatcher v1.2.10b1 thread](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer/) -- Historical installer context (see also [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete))
 - [Deadly Stream -- TOOL: HoloPatcher](https://deadlystream.com/topic/9807-toolholopatcher/) -- Release thread (2DA merge / installer workflow context)
 - [Concepts](Concepts#resource-resolution-order) -- Resource resolution order
 - [KEY-File-Format](KEY-File-Format) -- KEY/BIF index format
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax)
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax)
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Merging and patching
+- [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax)
+- [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax)
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Merging and patching

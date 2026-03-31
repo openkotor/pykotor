@@ -4,8 +4,8 @@ This document provides a detailed description of the TLK (Talk Table) file forma
 
 **For mod developers:**
 
-- To modify TLK files in your mods, see the [TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+- To modify TLK files in your mods, see the [TSLPatcher TLKList Syntax Guide](TSLPatcher-Data-Syntax#tlklist-syntax).
+- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 
@@ -62,7 +62,7 @@ TLK files store localized strings in a binary format. The game loads `dialog.tlk
 - [2DA File Format](2DA-File-Format) - Game tables with name/description StrRefs
 - [GFF File Format](GFF-File-Format) - Dialogue and templates that reference TLK strings
 - [SSF File Format](SSF-File-Format) - Sound sets that reference TLK entries
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) - Modding TLK files with TSLPatcher
+- [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax) - Modding TLK files with TSLPatcher
 
 ---
 
@@ -244,7 +244,7 @@ See **Cross-reference implementations** under [File structure overview](#file-st
 ### See also
 
 - [Concepts](Concepts#language-ids-kotor) -- Language IDs and encodings
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- Modifying TLK via HoloPatcher/TSLPatcher
+- [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax) -- Modifying TLK via HoloPatcher/TSLPatcher
 - [2DA-File-Format](2DA-File-Format)
 - [GFF-File-Format](GFF-File-Format) -- StrRef consumers
 - [NSS-File-Format](NSS-File-Format) -- Script strings

@@ -21,8 +21,8 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 **For mod developers:**
 
-- To modify creature templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
-- For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+- To modify creature templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
+- For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 
@@ -274,8 +274,8 @@ DLG files are loaded with the same [resource resolution order](Concepts#resource
 **For mod developers:**
 
 - To edit dialogues in the toolset, use the DLG editor.
-- For mod patches, see [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax).
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+- For mod patches, see [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax).
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 

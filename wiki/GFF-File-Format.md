@@ -9,8 +9,8 @@ This document describes the GFF (Generic File Format) used in Knights of the Old
 
 **For mod developers:**
 
-- To modify GFF files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+- To modify GFF files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
+- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 
@@ -25,7 +25,7 @@ Loading any GFF (ARE, DLG, UTC, UTI, etc.) uses the same [resource resolution or
 - Loaded MOD/SAV (see [ERF](ERF-File-Format))
 - [KEY/BIF](KEY-File-Format)
 
-**Modder note:** Tools like KotOR Tool, K-GFF, and Holocron Toolset edit GFF; TSLPatcher/HoloPatcher [GFFList](TSLPatcher-GFFList-Syntax) can add or modify fields but not remove structs—see [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#removing-gff-structs-when-patchers-cannot) for script-based removal. [Concepts](Concepts) defines GFF and related terms.
+**Modder note:** Tools like KotOR Tool, K-GFF, and Holocron Toolset edit GFF; TSLPatcher/HoloPatcher [GFFList](TSLPatcher-GFF-Syntax#gfflist-syntax) can add or modify fields but not remove structs—see [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#removing-gff-structs-when-patchers-cannot) for script-based removal. [Concepts](Concepts) defines GFF and related terms.
 
 **Historical tooling:**
 
@@ -152,7 +152,7 @@ Dozens of other extensions are documented across this wiki.
 
 ### See also
 
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - Modding GFF files with TSLPatcher
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) - Modding GFF files with TSLPatcher
 - [2DA File Format](2DA-File-Format) - Configuration data referenced by GFF files
 - [TLK File Format](TLK-File-Format) - Text strings used by GFF LocalizedString fields
 - [Bioware Aurora GFF Format](Bioware-Aurora-Core-Formats#gff) - Official BioWare specification
@@ -535,7 +535,7 @@ Complex types require accessing data from the field data section:
 - [GFF-UTI](GFF-Items-and-Economy#uti)
 - [GFF-UTC](GFF-Creature-and-Dialogue#utc)
 - [GIT](GFF-File-Format#git-game-instance-template) -- GFF-based game resources
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Patching GFF via HoloPatcher/TSLPatcher
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Patching GFF via HoloPatcher/TSLPatcher
 - [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) -- Hex resource type IDs (ResRef + type in archives)
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
 - [Bioware-Aurora-GFF](Bioware-Aurora-Core-Formats#gff) -- Aurora GFF specification

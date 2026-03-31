@@ -2,9 +2,18 @@
 
 TXI ([texture](TPC-File-Format) Info) files are compact ASCII descriptors that attach metadata to [TPC](TPC-File-Format) [textures](TPC-File-Format). They control mipmap usage, filtering, [flipbook animation](#animation-and-flipbooks), environment mapping, font atlases, and platform-specific downsampling. Every TXI file is parsed at runtime to configure how a [TPC](TPC-File-Format) image is rendered. TXI files are resolved using the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** TXI is often embedded in TPC or shipped as a sibling `.txi`; see [TPC File Format](TPC-File-Format) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** TXI accompanies [TPC](TPC-File-Format) textures; referenced by [MDL/MDX](MDL-MDX-File-Format) and [GFF-GUI](GFF-GUI).
+- TXI is often embedded in [TPC](TPC-File-Format) or shipped as a sibling `.txi`.
+- See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
+
+**Related formats:**
+
+- Accompanies [TPC](TPC-File-Format) textures
+- Referenced from:
+
+  - [MDL/MDX](MDL-MDX-File-Format)
+  - [GFF-GUI](GFF-GUI)
 
 ## Table of Contents
 
@@ -28,24 +37,37 @@ TXI ([texture](TPC-File-Format) Info) files are compact ASCII descriptors that a
 
 ## Format overview
 
-- TXI files are plain-text [KEY](KEY-File-Format)/value lists; each command modifies a field in the [TPC](TPC-File-Format) runtime metadata.  
+- TXI files are plain-text key/value lists; each command modifies a field in the [TPC](TPC-File-Format) runtime metadata.  
 - Commands are case-insensitive but conventionally lowercase. values can be integers, floats, booleans (`0`/`1`), [ResRefs](GFF-File-Format#gff-data-types), or multi-line coordinate tables.  
 - A single TXI can be appended to the end of a `.tpc` file (as Bioware does) or shipped as a sibling `.txi` file; the parser treats both identically.  
 
-**Implementation (PyKotor):** ASCII/binary TXI parse loop [`TXIBinaryReader.load` L43+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/io_txi.py#L43); in-memory [`TXI` L94+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L94), [`TXICommand` L721+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L721).
+**Implementation (PyKotor):**
+
+- ASCII/binary TXI parse loop [`TXIBinaryReader.load` L43+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/io_txi.py#L43)
+- in-memory [`TXI` L94+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L94)
+- [`TXICommand` L721+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L721)
 
 **Cross-reference:**
 
-- **[reone](https://github.com/modawan/reone)** — [`TxiReader::load` L28+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/txireader.cpp#L28), [`processLine` L55+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/txireader.cpp#L55)
-- **[xoreos](https://github.com/xoreos/xoreos)** — [`src/graphics/images/txi.cpp` L1+](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/txi.cpp#L1) (Aurora TXI)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — [`TXI` L16+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TXI.ts#L16); command enums [`src/enums/graphics/txi/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/enums/graphics/txi)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** — [`TXI.cs` L1+](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/Resource/TXI.cs#L1)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`Kotor.NET/Formats/KotorTXI/TXI.cs` L8+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTXI/TXI.cs#L8) (modifier DTOs / `RawString()` helpers); [`TXIReader.cs` L13+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTXI/TXIReader.cs#L13) (reader scaffold; verify behavior on default branch before relying on `Read()`)
+- **[reone](https://github.com/modawan/reone)**:
+
+  - [`TxiReader::load` L28+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/txireader.cpp#L28)
+  - [`processLine` L55+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/txireader.cpp#L55)
+- **[xoreos](https://github.com/xoreos/xoreos)**
+  - [`src/graphics/images/txi.cpp` L1+](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/txi.cpp#L1) (Aurora TXI)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
+  - [`TXI` L16+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TXI.ts#L16)
+  - [command enums `src/enums/graphics/txi/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/enums/graphics/txi)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**
+  - [`TXI.cs` L1+](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/Resource/TXI.cs#L1)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**:
+  - [`Kotor.NET/Formats/KotorTXI/TXI.cs` L8+ (modifier DTOs / `RawString()` helpers)](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTXI/TXI.cs#L8)
+  - [`TXIReader.cs` L13+ (reader scaffold; verify behavior on default branch before relying on `Read()`)](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTXI/TXIReader.cs#L13)
 
 ### See also
 
-- [TPC File Format](TPC-File-Format) - [texture](TPC-File-Format) format that TXI metadata describes
-- [MDL/MDX File Format](MDL-MDX-File-Format) - [models](MDL-MDX-File-Format) that reference [textures](TPC-File-Format) with TXI metadata  
+- [TPC File Format](TPC-File-Format) - texture format that TXI metadata describes
+- [MDL/MDX File Format](MDL-MDX-File-Format) - models that reference textures with TXI metadata  
 
 ---
 
@@ -143,8 +165,13 @@ KotOR.js exposes identical structures in [`src/resource/TXI.ts`](https://github.
 
 ## Relationship to [TPC](TPC-File-Format) [textures](TPC-File-Format)
 
-- A TXI modifies the rendering pipeline for its paired [TPC](TPC-File-Format): mipmap flags alter sampler state, [animation](MDL-MDX-File-Format#animation-header) directives convert a single [texture](TPC-File-Format) into multiple layers, and [material](MDL-MDX-File-Format#trimesh-header) directives attach bump/shine maps.  
-- When embedded inside a `.tpc` file, the TXI text starts immediately after the binary payload; PyKotor reads it by seeking past the [texture](TPC-File-Format) data and consuming the remaining bytes as ASCII (`io_tpc.py:158-188`).  
+- A TXI modifies the rendering pipeline for its paired [TPC](TPC-File-Format):
+
+  - Mipmap flags alter sampler state
+  - [Animation](MDL-MDX-File-Format#animation-header) directives turn one [texture](TPC-File-Format) into multiple layers
+  - [Material](MDL-MDX-File-Format#trimesh-header) directives attach bump / shine maps
+- When embedded inside a `.tpc` file, the TXI text starts immediately after the binary payload
+- PyKotor reads it by seeking past the [texture](TPC-File-Format) data and consuming the remaining bytes as ASCII (`io_tpc.py:158-188`).
 - Exported `.txi` files are plain UTF-8 text and can be edited with any text editor; tools like `tga2tpc` and KotORBlender reserialize them alongside [TPC](TPC-File-Format) assets.
 
 ### Empty TXI files
@@ -183,7 +210,9 @@ Many TXI files in the game installation are **empty** (0 bytes). These empty TXI
 - **Reference implementations:**  
   - [reone `txireader.cpp` L28+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/txireader.cpp#L28)  
   - [KotOR.js `TXI.ts` L16+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TXI.ts#L16)  
-  - [tga2tpc](https://github.com/th3w1zard1/tga2tpc) (texture conversion tooling)  
+  - **tga2tpc** (texture conversion tooling)
+    - Upstream (ndixUR/tga2tpc): <https://github.com/ndixUR/tga2tpc/tree/758f3dbd155356408abc36508b1e10fa4a83f22a>
+    - Mirror (th3w1zard1/tga2tpc): <https://github.com/th3w1zard1/tga2tpc/tree/758f3dbd155356408abc36508b1e10fa4a83f22a>
 
 These sources all interpret commands the same way, so the tables above map directly to the behavior you will observe in-game.
 

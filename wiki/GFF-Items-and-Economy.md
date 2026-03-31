@@ -23,8 +23,8 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 **For mod developers:**
 
-- To modify GFF/UTI files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+- To modify GFF/UTI files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
+- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 **Related formats:**
 
@@ -295,7 +295,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 - [GFF File Format](GFF-File-Format) - Binary layout and data types
 - [baseitems.2da](2DA-File-Format#baseitems2da) - Item type definitions
 - [itempropdef.2da](2DA-File-Format#itempropdef2da) - Item property definitions
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - Modding GFF/UTI with TSLPatcher
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) - Modding GFF/UTI with TSLPatcher
 - [Bioware Aurora Item Format](Bioware-Aurora-Items-Economy-and-Narrative#item) - Official BioWare specification
 
 
@@ -313,8 +313,8 @@ UTM files are GFF resources with root content type **`UTM`** ([`GFFContent.UTM`]
 
 **For mod developers:**
 
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax)
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax)
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers)
 
 Global merchant metadata also lives in **[merchants.2da](2DA-File-Format)** (data table, not the per-template GFF).
 
@@ -392,8 +392,8 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **See also:**
 
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax)
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax)
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers)
 
 **Related formats:**
 

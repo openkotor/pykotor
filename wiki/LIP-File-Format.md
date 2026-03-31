@@ -10,7 +10,7 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 
 - [TLK](TLK-File-Format)
 - [DLG](GFF-Creature-and-Dialogue#dlg)
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers)
 
 **Related formats:**
 

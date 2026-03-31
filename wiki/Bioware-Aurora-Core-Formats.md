@@ -747,7 +747,7 @@ element.
 - [GFF-UTI](GFF-Items-and-Economy#uti)
 - [GFF-UTC](GFF-Creature-and-Dialogue#utc) -- KotOR GFF-based resources
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Patching GFF
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Patching GFF
 
 
 ---
@@ -922,8 +922,8 @@ Try to ensure that no existing data, in a 2da or otherwise, references the starr
 ### See also
 
 - [2DA-File-Format](2DA-File-Format) -- KotOR 2DA implementation and column reference
-- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax)
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Patching 2DA
+- [TSLPatcher HACKList Syntax](TSLPatcher-Install-and-Hack-Syntax#hacklist-syntax)
+- [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) -- Patching 2DA
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
 
 
@@ -2059,7 +2059,7 @@ null-terminated strings. As soon as one string ends, the next one begins.
 ### See also
 
 - [TLK-File-Format](TLK-File-Format) -- KotOR TLK implementation
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- Modifying TLK
+- [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax) -- Modifying TLK
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
 
 
@@ -2075,7 +2075,7 @@ null-terminated strings. As soon as one string ends, the next one begins.
 
 **Source:** This documentation is extracted from the official BioWare Aurora Engine SSF Format PDF, archived in [`xoreos-docs/specs/bioware/SSF_Format.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/SSF_Format.pdf). The original documentation was published on the now-defunct *nwn.bioware.com* developer site.
 
-**KotOR wiki SSOT (modding):** KotOR uses a **12-byte** header, version **`V1.1`**, and a **28-slot** StrRef table (many writers emit **40** uint32 words including padding). Binary layout, slot names, **[SSFList](TSLPatcher-SSFList-Syntax)** patching, and implementation permalinks (PyKotor, reone, KotOR.js, Kotor.NET) are maintained in **[SSF-File-Format](SSF-File-Format)**. Treat this PDF as **historical BioWare / NWN-oriented** reference; verify KotOR-specific claims there before relying on NWN-era entry counts or tooling notes alone.
+**KotOR wiki SSOT (modding):** KotOR uses a **12-byte** header, version **`V1.1`**, and a **28-slot** StrRef table (many writers emit **40** uint32 words including padding). Binary layout, slot names, **[SSFList](TSLPatcher-GFF-Syntax#ssflist-syntax)** patching, and implementation permalinks (PyKotor, reone, KotOR.js, Kotor.NET) are maintained in **[SSF-File-Format](SSF-File-Format)**. Treat this PDF as **historical BioWare / NWN-oriented** reference; verify KotOR-specific claims there before relying on NWN-era entry counts or tooling notes alone.
 
 ---
 
@@ -2478,7 +2478,7 @@ are displayed during player character creation.
 
 - [SSF-File-Format](SSF-File-Format) -- KotOR SSF implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
-- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) -- Modifying SSF
+- [TSLPatcher SSFList Syntax](TSLPatcher-GFF-Syntax#ssflist-syntax) -- Modifying SSF
 - [TLK-File-Format](TLK-File-Format) -- StrRef
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
 

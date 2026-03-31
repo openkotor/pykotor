@@ -10,10 +10,10 @@ This wiki is organized around what you are trying to do, not around whichever ex
 
 | If you need to... | Start here | Then read |
 | ----------------- | ---------- | --------- |
-| Install or troubleshoot a mod | [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) | [Concepts](Concepts), [Mod Creation Best Practices](Mod-Creation-Best-Practices) |
-| Author a patcher-based mod | [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) | [TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax), [TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax), [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax) |
+| Install or troubleshoot a mod | [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) | [Concepts](Concepts), [Mod Creation Best Practices](Mod-Creation-Best-Practices) |
+| Author a patcher-based mod | [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) | [TSLPatcher 2DAList Syntax Guide](TSLPatcher-Data-Syntax#2dalist-syntax), [TSLPatcher TLKList Syntax Guide](TSLPatcher-Data-Syntax#tlklist-syntax), [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax) |
 | Edit resources in a GUI | [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started) | [Holocron Toolset: Core resources](Holocron-Toolset-Core-Resources), [Holocron Toolset: Module resources](Holocron-Toolset-Module-Resources) |
-| Work headlessly or automate a workflow | [CLI quickstart](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md) | [KotorDiff Integration](KotorDiff-Integration), [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic) |
+| Work headlessly or automate a workflow | [CLI quickstart](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md) | [KotorDiff Integration](KotorDiff-Integration), [Explanations on HoloPatcher Internal Logic](HoloPatcher#internal-logic) |
 | Understand why a file wins in-game | [Concepts](Concepts) | [Resource formats and resolution](Resource-Formats-and-Resolution), [KEY File Format](KEY-File-Format) |
 | Look up a binary format or game resource type | [Resource formats and resolution](Resource-Formats-and-Resolution) | The relevant format page for that extension |
 
@@ -30,7 +30,7 @@ That split is deliberate. The goal is not “use only PyKotor tools forever”; 
 
 - [Concepts](Concepts) explains resource resolution order, override behavior, BIF/KEY, MOD/ERF/RIM, ResRef, GFF, 2DA, and language IDs.
 - [Resource formats and resolution](Resource-Formats-and-Resolution) is the wiki index for extensions, resource type IDs, and format entry pages.
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) is the player-facing install and troubleshooting guide.
+- [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) is the player-facing install and troubleshooting guide.
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) is the author-facing compatibility and distribution guide.
 - [Reverse Engineering Findings](reverse_engineering_findings) is the technical reference hub for engine behavior that matters to tool authors and advanced modders.
 
@@ -68,24 +68,24 @@ The claims on this landing page and the linked concept pages are not based on on
 
 ## Learning paths
 
-- **New player:** [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) → [Concepts](Concepts#resource-resolution-order) → [Community sources and archives](#community-sources-and-archives)
-- **First mod author:** [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) → [Mod Creation Best Practices](Mod-Creation-Best-Practices) → the format pages you actually touch
+- **New player:** [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) → [Concepts](Concepts#resource-resolution-order) → [Community sources and archives](#community-sources-and-archives)
+- **First mod author:** [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) → [Mod Creation Best Practices](Mod-Creation-Best-Practices) → the format pages you actually touch
 - **Tool author or contributor:** [Resource formats and resolution](Resource-Formats-and-Resolution) → [Reverse Engineering Findings](reverse_engineering_findings) → [Wiki Conventions](Wiki-Conventions)
 
 ### For End Users
 
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher)
+- [Installing Mods with HoloPatcher](HoloPatcher#installing-mods)
 
 ### Guides and tutorials
 
 Installation, tool use, and step-by-step guides:
 
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices)
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
-- [HoloPatcher Feature Coverage Overview](Explanations-on-HoloPatcher-Internal-Logic)
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers)
+- [HoloPatcher Feature Coverage Overview](HoloPatcher#internal-logic)
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
 - [TSLPatcher Thread Complete Container](TSLPatcher_Thread_Complete)
-- **[TSLPatcher InstallList Syntax Guide](TSLPatcher-InstallList-Syntax)** -- File installation
+- **[TSLPatcher InstallList Syntax Guide](TSLPatcher-Install-and-Hack-Syntax#installlist-syntax)** -- File installation
 
 ## Preserved source documents
 
@@ -142,7 +142,7 @@ This wiki is meant to replace scattered tribal knowledge with maintainable docum
 
 - [Concepts](Concepts)
 - [Resource formats and resolution](Resource-Formats-and-Resolution)
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher)
+- [Installing Mods with HoloPatcher](HoloPatcher#installing-mods)
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices)
 - [Reverse Engineering Findings](reverse_engineering_findings)
 - [Wiki Conventions](Wiki-Conventions)

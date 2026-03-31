@@ -74,5 +74,5 @@ Use a save from before escaping Taris (or `warp ebo_m12aa` with cheats). Talk to
 - [NCS-File-Format](NCS-File-Format) -- Scripts Format
 - [GFF-GIT](GFF-File-Format#git-game-instance-template) -- Placing Instances in Modules
 - [Concepts — module packaging](Concepts#module-packaging-for-mod-authors-override-vs-modules) -- `override/` vs `modules/` when shipping GIT changes
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Packaging a distributable mod (first-mod walkthrough)
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- Packaging a distributable mod (first-mod walkthrough)
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) -- Testing, merges, compatibility

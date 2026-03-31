@@ -1,6 +1,13 @@
 # KotOR RIM file format
 
-This document describes the **RIM** (**resource image**) container used in *Knights of the Old Republic* and *The Sith Lords*. RIM files ship with the game under `modules/` (and related paths) and hold the same kinds of resources as [ERF/MOD](ERF-File-Format) archives—[GFF](GFF-File-Format), [2DA](2DA-File-Format), [TPC](TPC-File-Format), [NCS](NCS-File-Format), models, walkmeshes, and so on—but use a **smaller, simpler binary layout** than [ERF](ERF-File-Format).
+This document describes the **RIM** (**resource image**) container used in *Knights of the Old Republic* and *The Sith Lords*. RIM files ship with the game under `modules/` (and related paths) and hold the same kinds of resources as [ERF/MOD](ERF-File-Format) archives, but use a **smaller, simpler binary layout** than generic [ERF](ERF-File-Format). Typical capsule contents include:
+
+- [GFF](GFF-File-Format)
+- [2DA](2DA-File-Format)
+- [TPC](TPC-File-Format)
+- [NCS](NCS-File-Format)
+- Models and walkmeshes
+- Other game resources packed in module archives
 
 ## Table of contents
 
@@ -18,7 +25,10 @@ This document describes the **RIM** (**resource image**) container used in *Knig
 
 ## Role in the game and modding
 
-Vanilla modules are usually split across one or more `.rim` files (for example a main archive and a `_s` supplementary archive). The engine resolves resources using the same high-level rules as for MOD/ERF: module-scoped containers participate in the pipeline described in [resource resolution order](Concepts#resource-resolution-order). A `module_name.mod` file in `modules/` typically **shadows** the corresponding `.rim` pair when present; see [Concepts](Concepts#mod-erf-rim) and [Holocron Toolset module resources](Holocron-Toolset-Module-Resources).
+Vanilla modules are usually split across one or more `.rim` files (for example a main archive and a `_s` supplementary archive). The engine resolves resources using the same high-level rules as for MOD/ERF: module-scoped containers participate in the pipeline described in [resource resolution order](Concepts#resource-resolution-order). A `module_name.mod` file in `modules/` typically **shadows** the corresponding `.rim` pair when present. For MOD versus RIM priority and practical editing notes, see:
+
+- [Concepts](Concepts#mod-erf-rim)
+- [Holocron Toolset module resources](Holocron-Toolset-Module-Resources)
 
 RIM is appropriate to read and edit when you are working directly with shipped module archives or building tools that must round-trip vanilla layout. Many modders ship changes as `.mod` ([ERF](ERF-File-Format) variant) instead so the game loads a single encapsulated file without replacing base RIMs.
 
@@ -121,18 +131,39 @@ For a side-by-side narrative aimed at ERF readers, see [RIM versus ERF](ERF-File
 
 **Cross-reference implementations (line anchors are against `master` and may drift):**
 
-- **PyKotor** — on-disk layout (120-byte header, 32-byte keys): [`rim_data.py` module docstring L1–L45](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/rim_data.py#L1-L45); `RIMResource` / `RIM`: [`rim_data.py` L59–L173](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/rim_data.py#L59-L173); Kaitai load: [`io_rim.py` `_load_rim_from_kaitai` L22–L35](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L22-L35); legacy reader (implicit table offset **120**, row order **ResRef, UInt32 type, id, offset, size**): [`_load_rim_legacy` L38–L61](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L38-L61), [`_read_rim_entries` L64–L88](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L64-L88); `RIMBinaryReader.load` L120–L127; vanilla-style writer: [`RIMBinaryWriter.write` L142–L198](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L142-L198).
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`RIMBinaryStructure.cs` `FileRoot` / `FileHeader` / `ResourceEntry` L16–L116](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorRIM/RIMBinaryStructure.cs#L16-L116) — reads the **20-byte** logical header then seeks `OffsetToResources` (vanilla **120**).
-- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)): [`rimreader.cpp` `RimReader::load` L27–L35](https://github.com/modawan/reone/blob/master/src/libs/resource/format/rimreader.cpp#L27-L35), [`readResource` L47–L58](https://github.com/modawan/reone/blob/master/src/libs/resource/format/rimreader.cpp#L47-L58) — **`UInt16` type** plus **`skipBytes(6)`**; **not** the same 32-byte KotOR row as PyKotor/Kotor.NET.
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`RIMObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/RIMObject.ts) — uses **`UInt16` + `UInt16`** after ResRef, **`RIM_HEADER_LENGTH = 160`** ([L9](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/RIMObject.ts#L9)), and **`34` bytes × row count** for `rimDataOffset` ([L84–L95](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/RIMObject.ts#L84-L95)); retail **KotOR** RIMs follow **120** / **32** as on this page.
+- **PyKotor**:
 
-Community tools and installers (TSLPatcher, HoloPatcher) support inserting or patching files inside RIM capsules as well as ERF/MOD; see [TSLPatcher’s official readme](TSLPatcher's-Official-Readme) and [HoloPatcher internal logic](Explanations-on-HoloPatcher-Internal-Logic).
+  - on-disk layout (120-byte header, 32-byte keys): [`rim_data.py` module docstring L1–L45](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/rim_data.py#L1-L45)
+  - `RIMResource` / `RIM`: [`rim_data.py` L59–L173](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/rim_data.py#L59-L173)
+  - Kaitai load: [`io_rim.py` `_load_rim_from_kaitai` L22–L35](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L22-L35)
+  - legacy reader (implicit table offset **120**, row order **ResRef, UInt32 type, id, offset, size**): [`_load_rim_legacy` L38–L61](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L38-L61)
+  - [`_read_rim_entries` L64–L88](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L64-L88)
+  - `RIMBinaryReader.load` L120–L127
+  - vanilla-style writer: [`RIMBinaryWriter.write` L142–L198](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L142-L198)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`RIMBinaryStructure.cs` `FileRoot` / `FileHeader` / `ResourceEntry` L16–L116](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorRIM/RIMBinaryStructure.cs#L16-L116) — reads the **20-byte** logical header then seeks `OffsetToResources` (vanilla **120**).
+- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)):
+
+  - [`rimreader.cpp` `RimReader::load` L27–L35](https://github.com/modawan/reone/blob/master/src/libs/resource/format/rimreader.cpp#L27-L35)
+  - [`readResource` L47–L58](https://github.com/modawan/reone/blob/master/src/libs/resource/format/rimreader.cpp#L47-L58) — **`UInt16` type** plus **`skipBytes(6)`**; **not** the same 32-byte KotOR row as PyKotor/Kotor.NET
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
+
+  - [`RIMObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/RIMObject.ts) — uses **`UInt16` + `UInt16`** after ResRef
+  - **`RIM_HEADER_LENGTH = 160`** ([L9](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/RIMObject.ts#L9))
+  - **`34` bytes × row count** for `rimDataOffset` ([L84–L95](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/RIMObject.ts#L84-L95))
+  - retail **KotOR** RIMs follow **120** / **32** as on this page
+
+Community tools and installers (TSLPatcher, HoloPatcher) support inserting or patching files inside RIM capsules as well as ERF/MOD. See:
+
+- [TSLPatcher’s official readme](TSLPatcher's-Official-Readme)
+- [HoloPatcher internal logic](HoloPatcher#internal-logic)
 
 This page summarizes the KotOR **RIM** container for modders and implementers. For ERF-specific fields and engine behavior around MOD/SAV, use [ERF File Format](ERF-File-Format).
 
 ### See also
 
-- [ERF File Format](ERF-File-Format) — Encapsulated resource format (MOD, SAV, HAK, generic ERF) and [RIM versus ERF](ERF-File-Format#rim-versus-erf)
+- [ERF File Format](ERF-File-Format) — Encapsulated resource format (MOD, SAV, HAK, generic ERF). Compare RIM layout under:
+
+  - [RIM versus ERF](ERF-File-Format#rim-versus-erf)
 - [Concepts](Concepts) — Resource resolution, override, MOD versus RIM priority
 - [KEY File Format](KEY-File-Format) — Index format for BIF storage (contrast with self-contained RIM)
 - [BIF File Format](BIF-File-Format) — Vanilla bulk storage with KEY
