@@ -1,5 +1,7 @@
 # Indoor Area — Room Layout and Walkmesh Guide
 
+This page is the high-level workflow overview for building or restructuring an indoor module. If your layout already exists and the specific problem is "the player cannot cross between rooms," use [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions) for the seam, roomlink, and transition-ID details.
+
 Building an indoor module requires coordinating several subsystems: **room layout**, **walkmesh transitions**, **visibility**, and **packaging**. The format specifics live on the linked format pages; the workflow below shows how they fit together.
 
 ## Workflow overview
@@ -24,7 +26,7 @@ Building an indoor module requires coordinating several subsystems: **room layou
 
 ## Troubleshooting
 
-- **Cannot walk between rooms** — Usually transition IDs on walkmesh edges, LYT order, or missing/incorrect VIS. Start with [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions) and the user guide section [Room crossing and walkmesh](Indoor-Map-Builder-User-Guide#room-crossing-and-walkmesh).
+- **Cannot walk between rooms** — Usually transition IDs on walkmesh edges, LYT order, or missing/incorrect VIS. Use [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions) as the dedicated troubleshooting reference, then compare your workflow against [Room crossing and walkmesh](Indoor-Map-Builder-User-Guide#room-crossing-and-walkmesh).
 - **Kit / template structure** — [Kit Structure Documentation](Kit-Structure-Documentation).
 
 ### See also

@@ -46,7 +46,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 **HolocronToolset:**
 
-- [`utc.py` (creature / UTC editor)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py) — GUI for UTC fields and creature templates in modules
+- [`utc.py` (creature / UTC editor)](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/gui/editors/utc.py) — GUI for UTC fields and creature templates in modules
 
 **Cross-reference (other implementations):**
 
@@ -62,7 +62,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 ## Core Identity fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | Template identifier for this creature (max 16 characters; should match UTC filename without extension) |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script/conversation references |
@@ -72,7 +72,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 ## Appearance & Visuals
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Appearance_Type` | UInt32 | Index into [`appearance.2da`](2DA-File-Format#appearance2da) |
 | `PortraitId` | [word](GFF-File-Format#gff-data-types) | Index into [`portraits.2da`](2DA-File-Format#portraits2da); 65535 (0xFFFF) = use Portrait ResRef instead |
@@ -85,7 +85,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 ## Core Stats & Attributes
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Str` | [byte](GFF-File-Format#gff-data-types) | Strength score (3-255) |
 | `Dex` | [byte](GFF-File-Format#gff-data-types) | Dexterity score (3-255) |
@@ -102,7 +102,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 ## Character Progression
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `ClassList` | [List](GFF-File-Format#gff-data-types) | List of character classes with levels |
 | `Experience` | UInt32 | Total experience points |
@@ -126,7 +126,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 ## Combat & Behavior
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `FactionID` | [word](GFF-File-Format#gff-data-types) | Faction identifier (determines hostility) |
 | `NaturalAC` | [byte](GFF-File-Format#gff-data-types) | Natural armor class bonus |
@@ -143,7 +143,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 ## Equipment & Inventory
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `ItemList` | [List](GFF-File-Format#gff-data-types) | Inventory items |
 | `Equip_ItemList` | [List](GFF-File-Format#gff-data-types) | Equipped items with slots |
@@ -163,7 +163,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 ## Script Hooks
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `ScriptAttacked` | *ResRef* | Fires when attacked |
 | `ScriptDamaged` | *ResRef* | Fires when damaged |
@@ -313,7 +313,7 @@ DLG files are loaded with the same [resource resolution order](Concepts#resource
 
 ## Conversation Properties
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `DelayEntry` | [int32](GFF-File-Format#gff-data-types) | Delay before conversation starts |
 | `DelayReply` | [int32](GFF-File-Format#gff-data-types) | Delay before player reply options appear |
@@ -335,7 +335,7 @@ DLG files are loaded with the same [resource resolution order](Concepts#resource
 
 ## Script Hooks
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `EndConversation` | *ResRef* | Fires when conversation ends normally |
 | `EndConverAbort` | *ResRef* | Fires when conversation is aborted |
@@ -361,7 +361,7 @@ DLG files are loaded with the same [resource resolution order](Concepts#resource
 
 Both Entry and Reply [nodes](MDL-MDX-File-Format#node-structures) share common fields:
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Text` | [CExoLocString](GFF-File-Format#gff-data-types) | Dialogue text |
 | `VO_ResRef` | *ResRef* | Voice-over audio file |
@@ -395,7 +395,7 @@ Both Entry and Reply [nodes](MDL-MDX-File-Format#node-structures) share common f
 
 Links connect [nodes](MDL-MDX-File-Format#node-structures) and define flow control:
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Index` | [int32](GFF-File-Format#gff-data-types) | Index of target [node](MDL-MDX-File-Format#node-structures) in Entry/Reply list |
 | `Active` | *ResRef* | Conditional script (returns TRUE/FALSE) |

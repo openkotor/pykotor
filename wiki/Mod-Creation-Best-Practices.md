@@ -9,13 +9,7 @@ The sections below cover where files should go, when patchers are required, how 
 - [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers)
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
 
-The practices below are drawn from long-standing community consensus on:
-
-- [DeadlyStream](https://deadlystream.com)
-- [LucasForums archives](https://lucasforumsarchive.com)
-- Tool documentation linked throughout this wiki
-
-**Historical context (LucasForums Archive):** The original [TSLPatcher v1.2.10b1 release thread](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer) documents the Perl-era installer design; use **HoloPatcher** and this wiki’s TSLPatcher-syntax pages for current semantics. For early standalone GFF editing culture, see [K-GFF v1.3.0](https://www.lucasforumsarchive.com/thread/149407) (pair with [GFF-File-Format](GFF-File-Format) historical tooling paragraph and [Holocron Toolset](Holocron-Toolset-Getting-Started) today).
+The practices below follow both the current toolchain and long-running community workflows. Stoffe's original TSLPatcher release thread explains the historical reasons for merge-aware installs [1](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer), while later community tooling discussions and release pages show how those expectations carried forward into HoloPatcher-era mod packaging [2](https://deadlystream.com/topic/9807-toolholopatcher/) [3](https://deadlystream.com/files/file/1258-kotor-1-community-patch/). For older standalone GFF-editing culture, see the K-GFF thread [4](https://www.lucasforumsarchive.com/thread/149407).
 
 ## Before you ship a mod
 
@@ -36,7 +30,7 @@ The game resolves resources in a fixed order. Understanding this order is essent
 
 - **Override folder:** Use for most standalone mod content: textures, models, scripts, 2DA edits, dialog TLK changes, and GFF-based resources (creatures, items, placeables) that are meant to replace or add to the base game globally. Files in `override/` are loaded for every module and save. If your mod only adds or replaces a few files and does not need an installer, placing files directly in `override/` is standard.
 - **MOD files (ERF):** Use for module-specific content: area GFFs (ARE, GIT, etc.), module-specific 2DAs or scripts, and anything that should load only when that module is played. TSLPatcher and HoloPatcher can write into both override and MOD; when building a MOD, your installer typically packs resources into a `.mod` file and optionally copies shared files (e.g. global 2DAs) to override. Putting everything in override can work but increases the chance of overwriting or being overwritten by other mods; merging 2DAs via TSLPatcher reduces conflicts.
-- **Folder priorities (community convention):** Community guidance (e.g. DeadlyStream: "Folder priorities: Where to put your mod's files") recommends: unless files differ per module, place them in override. Use MODs when content is module-specific or when you need TSLPatcher's 2DA/TLK/GFF merging. Point TSLPatcher at the **game root directory**, not directly at the override folder, so the patcher can resolve paths correctly.
+- **Folder priorities (community convention):** Community guidance has long favored `override` for global replacements and module containers for module-specific content, with patchers aimed at the **game root directory** rather than `override` by itself so they can resolve all affected paths correctly [1](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer) [2](https://deadlystream.com/topic/9807-toolholopatcher/).
 
 **Special cases:** Some data (e.g. certain creature or trigger state) is stored in save games. Changing those after a save is loaded may require new playthroughs or script-based workarounds. See "Removing GFF structs" below for script-based removal of instances when patchers cannot delete structs.
 
@@ -44,9 +38,9 @@ The game resolves resources in a fixed order. Understanding this order is essent
 
 **TSLPatcher setup:** Point TSLPatcher at your **main game installation directory** (the folder that contains `swkotor.exe` or `swkotor2.exe` and the `override` folder), not at the override folder itself. If you use Steam Workshop content (e.g. TSLRCM), point the patcher at that workshop folder when installing mods that need to merge with Workshop content. This ensures the patcher finds the correct 2DA, TLK, and GFF files and can merge rather than overwrite when configured to do so.
 
-**Merging 2DA files:** When multiple mods change the same 2DA (e.g. `spells.2da`, `appearance.2da`), raw overwrites would make only one mod's changes take effect. TSLPatcher can **merge** 2DA changes: it adds or updates rows based on your 2DAList instructions so that several mods' additions coexist. Configure your mod's 2DAList (and optionally TLKList for string references) so that your rows are appended or matched by key column; the patcher then merges instead of replacing the whole file. See [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) for exact syntax.
+**Community packaging cautions:** Real-world install guides and release pages consistently surface the same failure modes. Deadly Stream's K1CP release notes warn users to extract archives before running the installer and to avoid protected install locations when possible [3](https://deadlystream.com/files/file/1258-kotor-1-community-patch/), and the r/kotor install guides warn that users with multiple live installs can confuse legacy auto-detect patchers [5](https://www.reddit.com/r/kotor/wiki/kotor2modbuildspoilerbeta/). If your mod still ships classic TSLPatcher, document the intended target path explicitly and assume users may have Steam, GOG, Workshop, or backup copies side by side.
 
-**Community (HoloPatcher vs TSLPatcher merges):** [Deadly Stream -- TOOL: HoloPatcher](https://deadlystream.com/topic/9807-toolholopatcher/) (release discussion) complements the wiki's [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers); treat threads as **workflow context**, not a substitute for `[2DAList]` syntax on this wiki.
+**Merging 2DA files:** When multiple mods change the same 2DA (e.g. `spells.2da`, `appearance.2da`), raw overwrites would make only one mod's changes take effect. TSLPatcher can **merge** 2DA changes: it adds or updates rows based on your 2DAList instructions so that several mods' additions coexist. Configure your mod's 2DAList (and optionally TLKList for string references) so that your rows are appended or matched by key column; the patcher then merges instead of replacing the whole file. See [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) for exact syntax.
 
 **Merging TLK (dialog.tlk):** Similarly, TLKList allows adding or changing string entries without wiping the rest of the TLK. Use TLKList so that your mod's new StrRefs are appended and existing entries are updated only where intended. See [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax).
 
@@ -123,7 +117,9 @@ void DestroyPlaceablesAndCreaturesInArea(location oLoc1, int nShape, float areaS
 - **Install order:** Many mods depend on load order (override and MOD order). Document recommended order in your mod’s readme; when using TSLPatcher/HoloPatcher, merging 2DA/TLK reduces order sensitivity for those files.
 - **Clean install:** Test on a clean game install or a known-good backup so conflicts are attributable to your mod or to a specific combination.
 - **Reversion:** Use the patcher’s backup/restore (e.g. HoloPatcher “Uninstall Mod/Restore Backup”) before reinstalling or switching options; installing twice without reverting can duplicate 2DA rows or TLK entries and cause crashes. See [Installing Mods with HoloPatcher](HoloPatcher#installing-mods).
-- **iOS/mobile:** For mobile (e.g. iOS), file names must be lowercase; use HoloPatcher’s “Fix iOS Case Sensitivity” when targeting mobile. See [Installing Mods with HoloPatcher](HoloPatcher#installing-mods-on-ios-devices).
+- **Archive handling:** State clearly in your readme that users must extract the release archive before running any installer. This warning appears often because people still launch patchers from inside archive viewers and then report broken installs.
+- **Permissions and path clarity:** If your audience includes Windows users, mention that `Program Files` and similarly protected locations can block writes or confuse less technical users. Community support threads repeatedly show that a direct, explicit destination path in the instructions prevents a large share of install failures.
+- **iOS/mobile:** For mobile (e.g. iOS), file names must be lowercase; use HoloPatcher’s “Fix iOS Case Sensitivity” when targeting mobile. See [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher#installing-mods-on-ios-devices).
 
 ## Storing 2DAMEMORY without duplicating/creating a row
 

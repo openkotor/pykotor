@@ -55,7 +55,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 **HolocronToolset:**
 
-- [`are.py` (Area editor)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/are.py) — GUI for ARE fields; see [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor) for module workflow.
+- [`are.py` (Area editor)](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/gui/editors/are.py) — GUI for ARE fields; see [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor) for module workflow.
 
 **Cross-reference (other implementations):**
 
@@ -77,7 +77,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 ## Core Identity fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique area identifier |
 | `Name` | [CExoLocString](GFF-File-Format#gff-data-types) | Area name (localized) |
@@ -89,7 +89,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 ## Lighting & Sun
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `SunAmbientColor` | color | Ambient light color RGB |
 | `SunDiffuseColor` | color | Sun diffuse light color RGB |
@@ -107,7 +107,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 ## Fog Settings
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `SunFogOn` | [byte](GFF-File-Format#gff-data-types) | Enable fog rendering |
 | `SunFogNear` | float | Fog start distance |
@@ -129,7 +129,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 ## Moon Lighting (Unused)
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `MoonAmbientColor` | color | Moon ambient light (unused) |
 | `MoonDiffuseColor` | color | Moon diffuse light (unused) |
@@ -148,7 +148,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 ## Grass Rendering
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Grass_TexName` | *ResRef* | Grass [texture](Texture-Formats#tpc) name |
 | `Grass_Density` | float | Grass blade density (0.0-1.0) |
@@ -177,7 +177,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 ## Weather System (KotOR2)
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `ChanceRain` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Rain probability (0-100) |
 | `ChanceSnow` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Snow probability (0-100) |
@@ -191,7 +191,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 ## Dirty/Dust Settings (KotOR2)
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `DirtyARGBOne` (KotOR2) | UInt32 | First dust color ARGB |
 | `DirtySizeOne` (KotOR2) | float | First dust particle size |
@@ -214,7 +214,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 ## Environment & Camera
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `DefaultEnvMap` | *ResRef* | Default environment map [texture](Texture-Formats#tpc) |
 | `CameraStyle` | [int32](GFF-File-Format#gff-data-types) | Camera behavior type |
@@ -234,7 +234,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 ## Area behavior flags
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Unescapable` | [byte](GFF-File-Format#gff-data-types) | Cannot use save/travel functions |
 | `DisableTransit` | [byte](GFF-File-Format#gff-data-types) | Cannot travel to other modules |
@@ -255,7 +255,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 ## Skill Check Modifiers
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `ModSpotCheck` | [int32](GFF-File-Format#gff-data-types) | Awareness skill modifier (unused) |
 | `ModListenCheck` | [int32](GFF-File-Format#gff-data-types) | Listen skill modifier (unused) |
@@ -267,7 +267,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 ## Script Hooks
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `OnEnter` | *ResRef* | Fires when entering area |
 | `OnExit` | *ResRef* | Fires when leaving area |
@@ -287,7 +287,7 @@ The ARE file contains a `Map` struct that defines how the minimap texture (`lbl_
 
 ### Map struct fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `MapPt1X` | float | First map point X coordinate (normalized 0.0-1.0) |
 | `MapPt1Y` | float | First map point Y coordinate (normalized 0.0-1.0) |
@@ -423,7 +423,7 @@ When rendering the minimap [texture](Texture-Formats#tpc) over the [walkmesh](Le
 
 ## Rooms & Audio Zones
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Rooms` | [List](GFF-File-Format#gff-data-types) | Room definitions for audio zones and minimap regions |
 
@@ -690,7 +690,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **HolocronToolset:**
 
-- [`git/git.py` (GIT / instance editor)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/git/git.py) — see [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor)
+- [`git/git.py` (GIT / instance editor)](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/gui/editors/git/git.py) — see [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor)
 - [Module Resources](Holocron-Toolset-Module-Resources).
 
 **Cross-reference (other implementations):**
@@ -707,7 +707,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 These fields are stored on the **GIT root** (see PyKotor `construct_git` / `dismantle_git` around the `Properties` struct in [`git.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py)). They overlap conceptually with music/ambient columns on [ARE](GFF-Module-and-Area#are); treat [ARE](GFF-Module-and-Area#are) as the place for **static area metadata** (lighting, fog, minimap, hooks) and this section as **GIT-carried ints** the engine reads with the instance template.
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `AmbientSndDay` | Int | Day ambient sound ID |
 | `AmbientSndDayVol` | Int | Day ambient volume (0-127) |
@@ -767,7 +767,7 @@ Each instance type has common fields plus type-specific data:
 
 ## GITCreature Instances
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | [UTC](GFF-File-Format#utc-creature) template to spawn |
 | `XPosition` | Float | World X coordinate |
@@ -785,7 +785,7 @@ Each instance type has common fields plus type-specific data:
 
 ## GITDoor Instances
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | [UTD](GFF-File-Format#utd-door) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Instance tag override |
@@ -813,7 +813,7 @@ Each instance type has common fields plus type-specific data:
 
 ## GITPlaceable Instances
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | [UTP](GFF-File-Format#utp-placeable) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Instance tag override |
@@ -831,7 +831,7 @@ Each instance type has common fields plus type-specific data:
 
 ## GITTrigger Instances
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | [UTT](GFF-File-Format#utt-trigger) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Instance tag |
@@ -858,7 +858,7 @@ Each instance type has common fields plus type-specific data:
 
 ## GITWaypoint Instances
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | [UTW](GFF-File-Format#utw-waypoint) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Waypoint identifier |
@@ -879,7 +879,7 @@ Each instance type has common fields plus type-specific data:
 
 ## GITEncounter Instances
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | [UTE](GFF-File-Format#ute-encounter) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Encounter identifier |
@@ -894,7 +894,7 @@ Each instance type has common fields plus type-specific data:
 
 ## GITStore Instances
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | [UTM](GFF-File-Format#utm-merchant) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Store identifier |
@@ -909,7 +909,7 @@ Each instance type has common fields plus type-specific data:
 
 ## GITSound Instances
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | [UTS](GFF-File-Format#uts-sound) template |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Sound identifier |
@@ -927,7 +927,7 @@ Each instance type has common fields plus type-specific data:
 
 ## GITCamera Instances
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CameraID` | Int | Camera identifier |
 | `FOV` | Float | field of view (degrees) |
@@ -1090,7 +1090,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 ## Core Module Identity
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Mod_ID` | Void (16 bytes) | Unique module identifier (GUID) |
 | `Mod_Tag` | [CExoString](GFF-File-Format#gff-data-types) | Module tag identifier |
@@ -1108,7 +1108,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 ## Entry Configuration
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Mod_Entry_Area` | *ResRef* | Starting [area](GFF-File-Format#are-area) *ResRef* |
 | `Mod_Entry_X` | Float | Entry X coordinate |
@@ -1134,7 +1134,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 ## Area List
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Mod_Area_list` | [List](GFF-File-Format#gff-data-types) | Areas in this module |
 
@@ -1151,7 +1151,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 ## Expansion Pack Requirements
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Expansion_Pack` | [word](GFF-File-Format#gff-data-types) | Required expansion bitfield |
 | `Mod_MinGameVer` | [CExoString](GFF-File-Format#gff-data-types) | Minimum game version |
@@ -1170,7 +1170,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 ## Starting Movie & HAK files
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Mod_StartMovie` | *ResRef* | Starting movie file |
 | `Mod_Hak` | [CExoString](GFF-File-Format#gff-data-types) | Required HAK file list |
@@ -1193,7 +1193,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 ## Cache & XP Settings
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Mod_IsSaveGame` | [byte](GFF-File-Format#gff-data-types) | Module is from save file |
 | `Mod_CacheNSSData` | [byte](GFF-File-Format#gff-data-types) | Cache compiled scripts |
@@ -1207,7 +1207,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 ## DawnStar Property (Unused)
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Mod_DawnHour` | [byte](GFF-File-Format#gff-data-types) | Dawn start hour (unused) |
 | `Mod_DuskHour` | [byte](GFF-File-Format#gff-data-types) | Dusk start hour (unused) |
@@ -1221,7 +1221,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 ## Module Script Hooks
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Mod_OnAcquirItem` | *ResRef* | Fires when item acquired |
 | `Mod_OnActvtItem` | *ResRef* | Fires when item activated/used |

@@ -1,8 +1,8 @@
 # 2DA — Two-Dimensional Array
 
-The Two-Dimensional Array (2DA) format is the engine's primary configuration mechanism. Nearly every tunable game system — character classes, feats, Force powers, item properties, appearance models, sound sets, combat formulas — is driven by 2DA tables that the engine reads at startup. Each 2DA file is a simple spreadsheet: rows indexed by number, columns indexed by label, and cell values that are either strings, integers, or the special `****` token meaning "no value." The format is compact enough to ship on disc and simple enough that modders can edit tables with a text editor, but the binary V2.b encoding used in shipped game data provides faster load times than the older ASCII V2.0 format.
+The Two-Dimensional Array (2DA) format is the engine's primary configuration mechanism. Nearly every tunable game system — character classes, feats, Force powers, item properties, appearance models, sound sets, combat formulas — is driven by 2DA tables that the engine reads at startup [[`twoda_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L1-L10)]. Each 2DA file is a simple spreadsheet: rows indexed by number, columns indexed by label, and cell values that are either strings, integers, or the special `****` token meaning "no value" [[`twoda_data.py` L36](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L36)]. The format is compact enough to ship on disc and simple enough that modders can edit tables with a text editor, but the binary `V2.b` encoding used in shipped game data provides faster load times than the older ASCII `V2.0` format [[`twoda_data.py` binary spec](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L8-L50)].
 
-The [official BioWare 2DA specification](Bioware-Aurora-Core-Formats#2da) describes the format as Aurora introduced it. KotOR and TSL use that same foundation for per-table column semantics, game-specific enumerations, and resource lookups. To modify 2DA tables in a mod without overwriting the entire file, use [TSLPatcher/HoloPatcher 2DAList syntax](TSLPatcher-Data-Syntax#2dalist-syntax). 2DA tables are referenced from [GFF](GFF-File-Format) resources such as [UTC](GFF-File-Format#utc-creature) creature templates, [UTI](GFF-File-Format#uti-item) item blueprints, and [UTP](GFF-File-Format#utp-placeable) placeable definitions, and they often store [StrRef](Audio-and-Localization-Formats#string-references-strref) indices into [TLK](Audio-and-Localization-Formats#tlk) string tables for player-visible text.
+The [official BioWare 2DA specification](Bioware-Aurora-Core-Formats#2da) describes the format as Aurora introduced it. KotOR and TSL use that same foundation for per-table column semantics, game-specific enumerations, and [ResRef](Concepts#resref-resource-reference) lookups. To modify 2DA tables in a mod without overwriting the entire file, use [TSLPatcher/HoloPatcher 2DAList syntax](TSLPatcher-2DAList-Syntax). 2DA tables are referenced from [GFF](GFF-File-Format) resources such as [UTC](GFF-File-Format#utc-creature) creature templates, [UTI](GFF-File-Format#uti-item) item blueprints, and [UTP](GFF-File-Format#utp-placeable) placeable definitions, and they often store [StrRef](Audio-and-Localization-Formats#string-references-strref) indices into [TLK](Audio-and-Localization-Formats#tlk) string tables for player-visible text.
 
 **Important**: While the 2DA binary layout is shared across BioWare's Aurora, Odyssey, and Eclipse engines, all column structures and engine usage descriptions on this page are specific to KotOR and KotOR II.
 
@@ -167,9 +167,6 @@ The [official BioWare 2DA specification](Bioware-Aurora-Core-Formats#2da) descri
     - [grenadesnd.2da](#grenadesnd2da)
     - [inventorysnds.2da](#inventorysnds2da)
     - [areaeffects.2da](#areaeffects2da)
-  - [Implementation Details](#implementation-details)
-    - [PyKotor Implementation](#pykotor-implementation)
-    - [Other implementations](#other-implementations)
 
 ---
 
@@ -386,9 +383,7 @@ The cell data string table begins immediately after the `cell_data_size` field. 
 
 ### TwoDA Object
 
-The `TwoDA` object represents a complete *2DA* file in memory:
-
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py:77-119`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L77-L119)
+The `TwoDA` object represents a complete *2DA* file in memory ([`twoda_data.py:77–119`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L77-L119)):
 
 **Attributes:**
 
@@ -406,9 +401,7 @@ The `TwoDA` object represents a complete *2DA* file in memory:
 
 ### TwoDARow Object
 
-The `TwoDARow` object provides a convenient interface for accessing row data:
-
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py:850-950`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L850-L950)
+The `TwoDARow` object provides a convenient interface for accessing row data ([`twoda_data.py:850–950`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L850-L950)):
 
 **Attributes:**
 
@@ -423,7 +416,7 @@ All cell values are stored as strings in the *2DA* file, but are interpreted as 
 
 - **Integers**: Numeric strings parsed as [`int32`](https://en.wikipedia.org/wiki/Integer_(computer_science)) - used for numeric identifiers, counts, and enumerated values.
 - **Floats**: Decimal strings parsed as [`float`](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) - used for calculations like damage multipliers, timers, and percentages.
-- **ResRefs**: [Resource references](GFF-File-Format#gff-data-types) (max 16 characters, no extension) point to other game resources such as:
+- **ResRefs**: [Resource references](Concepts#resref-resource-reference) point to other game resources such as:
 
   - [models](MDL-MDX-File-Format)
   - [textures](Texture-Formats#tpc)
@@ -432,7 +425,7 @@ All cell values are stored as strings in the *2DA* file, but are interpreted as 
 - **Boolean**: `"0"` or `"1"` (sometimes `"TRUE"`/`"FALSE"`) - control feature flags and settings
 - **Empty Cells**: Represented as `"****"` - treated as null/undefined by the engine
 
-The game engine parses cell values based on context and expected data type for each column. For example, the `appearance.2da` file uses integers for [model](MDL-MDX-File-Format) indices, [ResRefs](GFF-File-Format#gff-data-types) for [texture](Texture-Formats#tpc) names, and [StrRefs](Audio-and-Localization-Formats#string-references-strref) for race names.
+The game engine parses cell values based on context and expected data type for each column. For example, the `appearance.2da` file uses integers for [model](MDL-MDX-File-Format) indices, [ResRefs](Concepts#resref-resource-reference) for [texture](Texture-Formats#tpc) names, and [StrRefs](Audio-and-Localization-Formats#string-references-strref) for race names.
 
 ---
 
@@ -693,9 +686,9 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 **HolocronToolset:**
 
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:55`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L55) - HTInstallation.TwoDA_APPEARANCES constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py) - Appearance selection combobox in [UTC](GFF-File-Format#utc-creature) editor (UI reference)
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py`](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/gui/editors/utc.py) - Appearance selection combobox in [UTC](GFF-File-Format#utc-creature) editor (UI reference)
 - [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:124-131`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L124-L131) - Appearance selection in UTP (placeable) editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py) - Appearance selection in UTD (door) editor (UI reference)
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py`](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/gui/editors/utd.py) - Appearance selection in UTD (door) editor (UI reference)
 - [`Tools/HolocronToolset/src/toolset/gui/editors/ute.py:181`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/ute.py#L181) - Appearance ID usage in encounter editor
 
 **Vendor Implementations:**
@@ -3011,7 +3004,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **HolocronToolset:**
 
-- No `HTInstallation.TwoDA_IPRP_LIGHTCOL` in [`installation.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py); cite PyKotor `twoda.py` above for resref proof.
+- No `HTInstallation.TwoDA_IPRP_LIGHTCOL` in [`installation.py`](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/data/installation.py); cite PyKotor `twoda.py` above for resref proof.
 
 ---
 
@@ -3489,52 +3482,3 @@ The following 2DA files are used for item property parameter and cost calculatio
 **References**:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:201`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L201) - Sound *ResRef* column definition for inventorysnds.2da
-
----
-
-## Implementation Details
-
-### PyKotor Implementation
-
-| Artifact | Location |
-| -------- | -------- |
-| Binary read | [`TwoDABinaryReader.load` L146+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L146) in [`io_twoda.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py) |
-| Binary write | [`TwoDABinaryWriter.write` L183+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L183) |
-| Data model (`TwoDA`) | [`TwoDA` L87+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L87) in [`twoda_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py) |
-| Data model (`TwoDARow`) | [`TwoDARow` L915+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L915) in [`twoda_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py) |
-| CSV/JSON | `io_twoda_csv.py`, `io_twoda_json.py` |
-
-### Other implementations
-
-- **reone**
-
-  - [`2dareader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp)
-  - [`2dawriter.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dawriter.cpp)
-  - [`2da.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/2da.cpp)
-
-- **KotOR.js**
-
-  - [`TwoDAObject.ts` L69–L145](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/TwoDAObject.ts#L69-L145)
-  - [`TwoDAManager.ts` L21–L37](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/managers/TwoDAManager.ts#L21-L37)
-
-- **Kotor.NET**
-
-  - [`TwoDABinaryStructure.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs#L12) (`FileRoot` / `FileHeader`)
-  - [`TwoDA.cs` L16+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/Kotor2DA/TwoDA.cs#L16)
-- **xoreos**: [`2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp)
-- **KotOR-Unity**: [`2DAObject.cs` L23–L105](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/FileObjects/2DAObject.cs#L23-L105)
-
-### See also
-
-- [TLK File Format](Audio-and-Localization-Formats#tlk) - String references (StrRef) used in 2DA columns
-- [GFF File Format](GFF-File-Format) - ResRef and data types; many GFF types reference 2DA tables
-- [KEY File Format](Container-Formats#key) - Resource resolution order for 2DA by ResRef
-- Example stub pages (each redirects into this document):
-
-  - [2DA-appearance](#appearance2da)
-  - [2DA-baseitems](#baseitems2da)
-  - [2DA-classes](#classes2da)
-- [Bioware Aurora 2DA](Bioware-Aurora-Core-Formats#2da) - Official BioWare 2DA specification
-- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for 2DA modding and column references
-
----

@@ -47,7 +47,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py) - Item (UTI) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py`](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/gui/editors/uti.py) - Item (UTI) editor
 
 **Cross-reference (other implementations):**
 
@@ -62,7 +62,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 ## Core Identity fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | Template identifier for this item |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
@@ -73,7 +73,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 ## Base Item Configuration
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `BaseItem` | [int32](GFF-File-Format#gff-data-types) | Index into [`baseitems.2da`](2DA-File-Format#baseitems2da) (defines item type) |
 | `Cost` | UInt32 | Base value in credits |
@@ -96,7 +96,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 ## Item Properties
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `PropertiesList` | [List](GFF-File-Format#gff-data-types) | Item properties and enchantments |
 | `Upgradable` | [byte](GFF-File-Format#gff-data-types) | Can accept upgrades (KotOR1 only) |
@@ -129,7 +129,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 ## Weapon-Specific fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `WeaponColor` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Blade color for lightsabers |
 | `WeaponWhoosh` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Whoosh sound type |
@@ -142,7 +142,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 ## Armor-Specific fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) variation (1-9) |
 | `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variation (1-9) |
@@ -157,7 +157,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 ## Quest & Special Items
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Plot` | [byte](GFF-File-Format#gff-data-types) | Cannot be sold or destroyed |
 | `Stolen` | [byte](GFF-File-Format#gff-data-types) | Marked as stolen |
@@ -172,7 +172,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 ## Upgrade System (KotOR1)
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Upgradable` | [byte](GFF-File-Format#gff-data-types) | Item accepts upgrade items |
 
@@ -185,7 +185,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 ## Upgrade System (KotOR2 Enhanced)
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `UpgradeLevel` | [byte](GFF-File-Format#gff-data-types) | Current upgrade tier (0-2) |
 | `WeaponColor` | [byte](GFF-File-Format#gff-data-types) | Lightsaber blade color |
@@ -201,7 +201,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 ## Visual & Audio
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | Base [model](MDL-MDX-File-Format) index |
 | `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) for armor |
@@ -216,7 +216,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 ## Palette & Editor
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `PaletteID` | [byte](GFF-File-Format#gff-data-types) | Toolset palette category |
 | `Comment` | [CExoString](GFF-File-Format#gff-data-types) | Designer notes/documentation |
@@ -436,13 +436,13 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 [JRL](GFF-File-Format#jrl-journal) files contain a list of `Categories` (Quests), each containing a list of `EntryList` (States).
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Categories` | [List](GFF-File-Format#gff-data-types) | List of quests |
 
 ## Quest Category (JRLQuest)
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique quest identifier |
 | `Name` | [CExoLocString](GFF-File-Format#gff-data-types) | Quest title |
@@ -462,7 +462,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 ## Quest Entry (JRLEntry)
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `ID` | [int32](GFF-File-Format#gff-data-types) | State identifier (referenced by scripts/dialogue) |
 | `Text` | [CExoLocString](GFF-File-Format#gff-data-types) | [Journal](GFF-File-Format#jrl-journal) text displayed for this state |

@@ -1,6 +1,6 @@
 # Resource formats and resolution
 
-The KotOR engine organizes game data into typed resources — models, textures, dialogues, 2DA tables, scripts, and dozens more. Each resource type has a numeric ID and one or more binary (or text) file formats. The engine resolves resources by searching a fixed precedence of containers: loose Override files first, then module capsules (ERF/MOD/RIM), then the global KEY/BIF archive, with language-specific TLK lookups alongside.
+The KotOR engine organizes game data into typed resources — models, textures, dialogues, 2DA tables, scripts, and dozens more. Each resource type has a numeric ID [[`ResourceType` enum](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L175)] and one or more binary (or text) file formats. The engine resolves resources by searching a fixed precedence of containers: loose Override files first, then module capsules (ERF/MOD/RIM), then the global KEY/BIF archive, with language-specific TLK lookups alongside.
 
 The sections below provide the canonical resource type ID table and quick links to each format's dedicated page. The container and format summaries are cross-checked against PyKotor, reone, KotOR.js, and Kotor.NET. For the full narrative on precedence, override behaviour, module capsules, KEY/BIF, and language IDs, see [Concepts](Concepts).
 
@@ -18,7 +18,7 @@ Full prose (resource manager *demands*, KEY’s role, override vs MOD/ERF/[RIM](
 
 ## ResRef and resource type
 
-**ResRef** is the name portion of a game resource. A **resource type** is the numeric type ID that distinguishes, for example, `foo.utc` from `foo.utp` or `foo.2da`. The engine resolves the pair together.
+**ResRef** is the name portion of a game resource. A **resource type** is the numeric type ID that distinguishes, for example, `foo.utc` from `foo.utp` or `foo.2da` [[`ResourceType` enum](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L175)]. The engine resolves the pair together.
 
 Read [Concepts — ResRef](Concepts#resref-resource-reference) for naming rules and examples. Read [GFF File Format](GFF-File-Format#gff-data-types) for field typing inside GFF payloads.
 

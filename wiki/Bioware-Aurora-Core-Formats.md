@@ -22,22 +22,18 @@
 
 *Official Bioware Aurora Documentation*
 
-**Source:** Extracted from the official BioWare Aurora Engine GFF Format PDF, archived in [xoreos-docs `specs/bioware/GFF_Format.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/GFF_Format.pdf). Original from the defunct nwn.bioware.com developer site.
+**Source:** Extracted from the official BioWare Aurora Engine GFF Format PDF, archived in [xoreos-docs `specs/bioware/GFF_Format.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/GFF_Format.pdf) ([mirror: `specs/bioware/GFF_Format.pdf`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/bioware/GFF_Format.pdf)). Original from the defunct nwn.bioware.com developer site.
 
 ---
 
-## Page 1
-
-BioWare Corp.
-<http://www.bioware.com>
 BioWare Aurora Engine
 Generic File Format (GFF)
 
 1. Introduction
-The Generic File Format (GFF) is an all-purpose generic format used to store data in BioWare games. It
+The [Generic File Format (GFF)](GFF-File-Format) is an all-purpose generic format used to store data in BioWare games. It
 is designed to make it easy to add or remove fields and data structures while still maintaining backward
 and forward compatibility in reading old or new versions of a file format.
-The backward and forward compatibility of GFF was important to the development of BioWare's games
+The backward and forward compatibility of [GFF](GFF-File-Format) was important to the development of BioWare's games
 because file formats changed rapidly. For example, if a designer needed creatures in the game to have a
 new property to store their Last Name, it was easy to add that field to the creature file format. New
 versions of the game and tools would write out the new field, and old versions would just ignore it.
@@ -45,34 +41,24 @@ versions of the game and tools would write out the new field, and old versions w
 > **Note**: This official BioWare documentation was originally written for **Neverwinter Nights**, but the GFF format is **identical in KotOR**. All file types and structures described here apply to KotOR as well. The examples reference NWN module structure, but KotOR modules use the same GFF-based file types.
 
 In Neverwinter Nights (and KotOR), most of the non-plain-text data contained in a module is in
-GFF, although the compiled scripts are a notable exception.
-The following file types within a module are all in GFF (applies to both NWN and KotOR):
-•
-Module info file (ifo)
-•
-Area-related files: area file (are), game object instances and dynamic area properties (git),
-game instance comments (gic)
-•
-Object Blueprints: creature (utc), door (utd), encounter (ute), item (uti), placeable (utp), sound
+[GFF](GFF-File-Format), although the compiled scripts are a notable exception.
+The following file types within a module are all in [GFF](GFF-File-Format) (applies to both NWN and KotOR):
+- [Module info file (IFO)](GFF-File-Format#ifo)
+- Area-related files: [area file (are)](GFF-File-Format#are), [game object instances and dynamic area properties (git)](GFF-File-Format#git), game instance comments (gic)
+• Object Blueprints: creature (utc), door (utd), encounter (ute), item (uti), placeable (utp), sound
 (uts), store (utm), trigger (utt), waypoint (utw)
-•
-Conversation files (dlg)
-•
-Journal file (jrl)
-•
-Faction file (fac)
-•
-Palette file (itp)
-•
-Plot Wizard files: plot instance/plot manager file (ptm), plot wizard blueprint (ptt)
-The following files created by the game are also GFF:
-•
-Character/Creature File (bic)
-2. File Format Conceptual Overview
+- [Conversation files (DLG)](GFF-File-Format#dlg)
+- [Journal file (JRL)](GFF-File-Format#jrl)
+- [Faction file (FAC)](GFF-File-Format#fac)
+- [Palette file (ITP)](GFF-File-Format#itp)
+- [Plot Wizard files: plot instance/plot manager file (PTM), plot wizard blueprint (PTT)](GFF-File-Format#ptm)
+The following files created by the game are also [GFF](GFF-File-Format):
+- Character/Creature File (BIC)
+1. File Format Conceptual Overview
 2.1. General Description
-A GFF file represents a collection of data. C programmers can think of this collection as a struct.
+A [GFF](GFF-File-Format) file represents a collection of data. C programmers can think of this collection as a struct.
 Pascal programmers can think of it as a record. Each item (properly called a Field) of data has: a text
-Label , a data type, and a value. C programmers can think of Fields as member variables in a C struct.
+Label, a data type, and a value. C programmers can think of Fields as member variables in a C struct.
 The labelling of Fields is the key to GFF being able to maintain backward and forward compatibility
 between different file formats.
 The above concepts are best illustrated by an example.
@@ -83,28 +69,34 @@ class TWaypoint
 {
 TString m_sTag;
 
-## Page 2
 
-BioWare Corp.
-<http://www.bioware.com>
+```c
 float m_fPositionX;
 float m_fPositionY;
 float m_fPositionZ;
 };
+```
+
 (Notes: In the above declaration, we have purposefully omitted member function declarations
 because they are irrelevant to this example. Also, assume that a string class called TString has
 already been defined)
-Suppose we have an instance of a Waypoint tagged "ShopEntrance", located at (3.2, 5.7, 0.0) in
-some Area.
+Suppose we have an instance of a Waypoint tagged "ShopEntrance", located at (3.2, 5.7, 0.0) in some Area.
+
 When saved to GFF, it would "look" like this:
-"Tag"        string  "ShopEntrance"
-"PositionX"  float   3.200
-"PositionY"  float   5.700
-"PositionZ"  float   0.000
+
+| Field | Type | Value |
+|-------|------|-------|
+| Tag | string | ShopEntrance |
+| PositionX | float | 3.200 |
+| PositionY | float | 5.700 |
+| PositionZ | float | 0.000 |
+
 Now suppose we decide to add a MapNote property, which is a string that appears when the
 player mouses over a Waypoint in the game's minimap, and a HasMapNote property to specify
 whether the Waypoint appears on the minimap in the first place. The C++ declaration for the
 Waypoint object might now be:
+
+```c
 class TWaypoint
 {
 TString m_sTag;
@@ -116,6 +108,8 @@ float m_fPositionX;
 float m_fPositionY;
 float m_fPositionZ;
 };
+```
+
 If we try to load our old Waypoint instance from before, the program would still correctly load
 the Tag and X, Y, Z coordinates because it reads them from the GFF file by finding their Labels
 and reading the associated data. The fact that we just inserted some extra data inbetween the Tag
@@ -125,119 +119,42 @@ In this example, it is a simple matter from a programming perspective to notice 
 Waypoint instance does not have a MapNoteText or HasMapNote property stored on it in the
 GFF file. On seeing this, it is equally simple to set default values for those properties if their
 GFF Fields were not found.
+
 2.2. Field Data Types
 Allowed GFF Field types are listed in the table below.
 
-## Page 3
-
-BioWare Corp.
-<http://www.bioware.com>
 Table 2.2a: Field Type Descriptions
 Field Type
 Size (in bytes)
-Description
 
-### BYTE
+| Field Type | Size (bytes) | Description |
+|---|---|---|
+| BYTE | 1 | Unsigned single byte (0 to 255) |
+| CHAR | 1 | Single character byte |
+| WORD | 2 | Unsigned integer value (0 to 65535) |
+| SHORT | 2 | Signed integer (−32,768 to 32,767) |
+| DWORD | 4 | Unsigned integer (0 to 4,294,967,295) |
+| INT | 4 | Signed integer (−2,147,483,648 to 2,147,483,647) |
+| DWORD64 | 8 | Unsigned integer (0 to ~18 × 10¹⁸) |
+| INT64 | 8 | Signed integer (~−9 × 10¹⁸ to +9 × 10¹⁸) |
+| FLOAT | 4 | Floating point value |
+| DOUBLE | 8 | Double-precision floating point value |
+| CExoString | variable | Non-localized string (max. 1024 characters recommended) |
+| CResRef | 16 | Filename of a game resource; max 16 characters (unused chars are nulls) |
+| CExoLocString | variable | Localized string: contains a StringRef DWORD and zero or more CExoStrings, each with their own language ID |
+| VOID | variable | Variable-length arbitrary data (raw bytes) |
+| Struct | variable | Complex data type containing any number of any other data types, including other Structs |
+| List | variable | A list of Structs |
 
-1
-Unsigned single byte (0 to 255)
-CExoLocString
-variable
-Localized string. Contains a StringRef DWORD, and
-a number of CExoStrings, each having their own
-language ID.
-CExoString
-variable
-Non-localized string
+**Notes on Complex Types:**
 
-### CHAR
+- **Void data:** Stores a stream of raw bytes as a single labeled item. Suitable for raw image or sound data; avoid dumping C structs directly—use primitive types instead.
+- **CExoString:** Simple character string used primarily for developer/designer-only text (tags, scripts) rather than user-visible text.
+- **CExoLocString:** Localized string for user-visible text with language support and optional embedded strings. Contains:
+    1. **StringRef** — 32-bit integer index into `dialog.tlk` (−1 / 0xFFFFFFFF = invalid; valid range 0 to 0x00FFFFFF)
+    2. **Embedded Strings with Language IDs** — Zero or more strings, each paired with a language ID (0–131; see Table 2.2b) for multi-language support
 
-1
-Single character byte
-CResRef
-16
-Filename of a game resource. Max length is 16
-characters. Unused characters are nulls.
 
-### DOUBLE
-
-8
-Double-precision floating point value
-
-### DWORD
-
-4
-Unsigned integer (0 to 4294967296)
-
-### DWORD64
-
-8
-Unsigned integer (0 to roughly 18E18)
-
-### FLOAT
-
-4
-Floating point value
-INT
-4
-Signed integer (-2147483648 to 2147483647)
-
-### INT64
-
-8
-Signed integer (roughly -9E18 to +9E18)
-
-### SHORT
-
-2
-Signed integer (-32768 to 32767)
-
-### VOID
-
-variable
-Variable-length arbitrary data
-
-### WORD
-
-2
-Unsigned integer value (0 to 65535)
-Struct
-variable
-A complex data type that can contain any number of
-any of the other data types, including other Structs.
-List
-variable
-A list of Structs.
-A few of these data types merit additional explanation.
-Void data
-The Void type is used to store a stream of raw bytes as a single item of data under a single label.
-Possible applications include storage of raw image or sound data. It is never a good idea to use
-the void type to directly dump a data structure (such as a user-defined C struct) from memory to
-disk. The other primitive data types should be used to store each structure element instead.
-CExoString
-The CExoString type is a simple character string.
-The suggested maximum allowed length is 1024 characters, which is a limit defined primarily to
-conserve network bandwidth in the case of strings that need to be passed from server to game
-client.
-CExoStrings are generally not used for text that the player might see, since it would be the same
-text regardless of the player's native language. Instead, CExoStrings are used largely for
-developer/designer-only text, such as Tags used in scripting.
-CExoLocString
-A CExoLocString is a string type used to store text that may appear to the user and has a number
-of features designed to allow users to see text in their own language.
-
-1) StringRef: A CExoLocString always contains at least a single integer called a StringRef (or
-StrRef). A StrRef is an index into the user's dialog.tlk file, which contains text that has been
-localized for the user's language.
-2) Embedded Strings with Language IDs: If the StrRef is -1, then dialog.tlk is not used, and
-instead, the localized text must be embedded within the CExoLocString. A CExoLocString may
-contain zero or more normal strings, each paired with a language ID that identifies what
-language the string should be displayed for.
-
-## Page 4
-
-BioWare Corp.
-<http://www.bioware.com>
 In the presence of both embedded strings and a valid StringRef, the behaviour is up to the
 application. In the toolset, embedded strings take precedence, assuming that there is an
 embedded string for the user's language. As with CExoStrings, embedded strings in
@@ -294,29 +211,24 @@ associated with it.
 It is this labelling of data elements that makes GFF useful for storing data structures that are subject to
 change. When new  information is added to a data structure, old GFF files can still be read because the
 
-## Page 5
-
-BioWare Corp.
-<http://www.bioware.com>
 old data is fetched by Label rather than by offset. That is, no assumptions are made as to where one
 variable is relative to another in the file.
 3. File Format Physical Layout
 This section describes what the actual bytes are in a GFF file, where they are, and what they do.
 The file format descriptions in this section use the following terminology:
-•
-BYTE: 1-byte (8-bit) unsigned integer
-•
-CHAR: 1-byte (8-bit) character
-•
-DWORD: 4-byte (32-bit) unsigned integer
+- BYTE: 1-byte (8-bit) unsigned integer
+- CHAR: 1-byte (8-bit) character
+- DWORD: 4-byte (32-bit) unsigned integer
 Note that GFF byte order is little endian, which is the format used by Intel processors. If an integer
 value is more than 1 byte long, then the least significant byte is the first one, and the most significant
 byte is the last one. For example, the number 258 (0x0102 in hex) expressed as a 4-byte integer would
 be stored as the following sequence of bytes within the file: 0x02, 0x01, 0x00, 0x00.
+
 3.1. Overall File Layout
 A GFF file contains 7 distinct sections--1 fixed-size header, 5 arrays of fixed-size elements, and 1 block
 of raw data. The offset to each section is stored in the header, as is the number of elements in each
 array.
+
 Figure 3.1: GFF File Structure
 Header
 Struct Array
@@ -333,14 +245,12 @@ FieldDataOffset
 FieldIndicesOffset
 ListIndicesOffset
 
-## Page 6
 
-BioWare Corp.
-<http://www.bioware.com>
 3.2. Header
 The GFF header contains a number of values, all of them DWORDs (32-bit unsigned integers). The
 header contains offset information for all the other sections in the GFF file. Values in the header are as
 follows, and arranged in the order listed:
+
 Table 3.2: Header Format
 Value
 Description
@@ -379,6 +289,7 @@ The FileType is a programmer-defined 4-byte character string that identifies the
 GFF file. By convention, it is a 3-letter file extension in all-caps, followed by a space. For example,
 "DLG ", "ITP ", etc. When opening a GFF file, the application should check the FileType to make
 sure that the file being opened is of the expected type.
+
 3.3. Structs
 In a GFF file, Struct Fields are stored differently from other fields. Whereas most Fields are stored in
 the Field array, Structs are stored in the Struct Array.
@@ -391,10 +302,6 @@ Since the Top-Level Struct is always present, every GFF file contains at least o
 Array.
 The Struct Array looks like this:
 
-## Page 7
-
-BioWare Corp.
-<http://www.bioware.com>
 Figure 3.3: Struct Array
 Struct 0 (Top-Level Struct)
 . . .
@@ -406,6 +313,7 @@ N is always greater than or equal to 1
 Struct 0 is always present
 
 Physically, a GFF Struct contains the values listed in the table below. All of them are DWORDs.
+
 Table 3.3: Struct Format
 Value
 Description
@@ -422,6 +330,7 @@ Number of fields in this Struct.
 The above table shows that the Fields that a Struct conceptually contains are referenced indirectly via
 the DataOrDataOffset value.
 Struct 0, which is the Top-Level Struct, always has a Type (aka Struct ID) of 0xFFFFFFFF.
+
 3.4. Fields
 The Field Array contains all the Fields in the GFF file except for the Top-Level Struct.
 Figure 3.4: Field Array
@@ -434,10 +343,7 @@ N = Header.FieldCount
 
 Each Field contains the values listed in the table below. All of the values are DWORDs.
 
-## Page 8
 
-BioWare Corp.
-<http://www.bioware.com>
 Table 3.4a: Field Format
 Value
 Description
@@ -531,6 +437,7 @@ instead of a byte offset into the Field Data Block.
 beginning of the List Indices Array, where there is a DWORD for the size of the array followed by an
 array of DWORDs.  The elements of the array are offsets into the Struct Array. See Section 4.9 for
 details.
+
 3.5. Labels
 A Label is a 16-CHAR array. Unused characters are nulls, but the label itself is non-null-terminated, so
 a 16-character label would use up all 16 CHARs with no null at the end.
@@ -538,15 +445,12 @@ The Label Array is a list of all the Labels used in a GFF file.
 Note that a single Label may be referenced by more than one Field. When multiple Fields have Labels
 with the exact same text, they share the same Label element instead of each having their own copy. This
 
-## Page 9
-
-BioWare Corp.
-<http://www.bioware.com>
 sharing occurs regardless of what Struct the Field belongs to. All Labels in the Label Array should be
 unique.
 Also, the Fields belonging to a Struct must all use different Labels. It is permissible, however, for Fields
 in two different Structs to use the same Label, regardless of whether one of those Structs is conceptually
 contained inside the other Struct.
+
 Figure 3.5: Label Array
 Label 0
 . . .
@@ -563,18 +467,16 @@ The FieldDataCount in the GFF header specifies the number of BYTEs contained in 
 block.
 The data in the Field Data Block is laid out according to the type of Field that owns each byte of data.
 See Section 4 for details.
+
 3.7. Field Indices
 A Field Index is a DWORD containing the index of the associated Field within the Field array.
 The Field Indices Array is an array of such DWORDs.
+
 3.8. List Indices
 The List Indices Array contains a sequence of List elements packed end-to-end.
 A List is an array of Structs, and being array, its length is variable. The format of a List is as shown
 below:
 
-## Page 10
-
-BioWare Corp.
-<http://www.bioware.com>
 Figure 3.8: List Format
 Size (DWORD)
 . . .
@@ -587,32 +489,29 @@ Indices into Struct Array (1 DWORD each)
 
 The first DWORD is the Size of the List, and it specifies how many Struct elements the List contains.
 There are Size DWORDS after that, each one an index into the Struct Array.
-4.  Complex Field Data: Descriptions and Physical Format
+### 4.  Complex Field Data: Descriptions and Physical Format
 This section describes the byte-by-byte makeup of each of the complex Field types' data, as they are
 stored in the Field Data Block.
 
-### 4.1. DWORD64
+#### 4.1. DWORD64
 
 A DWORD64 is a 64-bit (8-byte) unsigned integer. As with all integer values in GFF, the least
 significant byte comes first, and the most significant byte is last.
 
-### 4.2. INT64
+#### 4.2. INT64
 
 An INT64 is a 64-bit (8-byte) signed integer. As with all integer values in GFF, the least significant
 byte comes first, and the most significant byte is last.
 
-### 4.3. DOUBLE
+#### 4.3. DOUBLE
 
 A DOUBLE is a double-precision floating point value, and takes up 8 bytes. It is stored in little-endian
 byte order, with the least significant byte first.
 (Both the FLOAT and DOUBLE data types conform to IEEE Standard 754-1985).
-4.4. CExoString
+
+#### 4.4. CExoString
 A CExoString is a simple character string datatype. The figure below shows the layout of a CExoString:
 
-## Page 11
-
-BioWare Corp.
-<http://www.bioware.com>
 Figure 4.4: CExoString Format
 Size
 (4 bytes long)
@@ -630,7 +529,8 @@ If we let N equal the number stored in Size, then the next N bytes after the Siz
 make up the string. There is no null terminator.
 Example: The string "Test" would consist of the following byte sequence:
 0x04 0x00 0x00 0x00 'T' 'e' 's' 't'
-4.5. CResRef
+
+#### 4.5. CResRef
 A CResRef is used to store the name of a file used by the game or toolset. These files may be located in
 the BIF files in the user's data folder, inside an Encapsulated Resource File (ERF, MOD, or HAK), or in
 the user's override folder. For efficiency and to reduce network bandwidth, A ResRef can only have up
@@ -650,11 +550,7 @@ characters in string (1 byte each)
 The first byte is a Size, an unsigned value specifying the number of characters to follow. The Size is 16
 at most. The character string contains no null terminator.
 
-## Page 12
-
-BioWare Corp.
-<http://www.bioware.com>
-4.6. CExoLocString
+#### 4.6. CExoLocString
 A CExoLocString is a localized string. It can contain 0 or more CExoStrings, each one for a different
 language and possibly gender. For a list of language IDs, see Table 2.2b.
 The figure below shows the layout of a CExoLocString.
@@ -681,8 +577,6 @@ SubStrings the LocString contains. The remainder of the LocString is a list of S
 A LocString SubString has almost the same format as a CExoString, but includes an additional String
 ID at the beginning.
 
-## Page 13
-
 BioWare Corp.
 <http://www.bioware.com>
 Figure 4.6b: CExoLocString SubString Format
@@ -702,11 +596,9 @@ The StringID stored in a GFF file does not match up exactly to the LanguageIDs s
 Instead, it is 2 times the Language ID, plus the Gender (0 for neutral or masculine, 1 for feminine).
 If we let N equal the number stored in StringLength, then the N bytes after the StringLength are the
 characters that make up the string. There is no null terminator.
-4.7. Void/binary
+#### 4.7. Void/binary
 Void data is an arbitrary sequence of bytes to be interpreted by the application in a programmer-defined
 fashion. The format is shown below:
-
-## Page 14
 
 BioWare Corp.
 <http://www.bioware.com>
@@ -764,10 +656,6 @@ element.
 
 ---
 
-## Page 1
-
-BioWare Corp.
-<http://www.bioware.com>
 BioWare Aurora Engine
 2DA File Format
 
@@ -806,27 +694,20 @@ Note that the numbering in the first column is for the convenience of the person
 incorrectly, the game and tools will still use the correct number for the row index. Nevertheless, it is a
 good habit to make sure that rows are numbered correctly to avoid confusion.
 
-## Page 2
-
-BioWare Corp.
-<http://www.bioware.com>
 Column names
 All columns after the first one must have a heading. The heading can be in upper or lower case letters
 and may contain underscores.
 Data types
 There are three types of data that may be present in a 2da. All data under a given column must be of the
 same type. The data types are:
-•
-String: a string can be any arbitrary sequence of characters. However, if the string contains spaces,
+- String: a string can be any arbitrary sequence of characters. However, if the string contains spaces,
 then it must be enclosed by quotation mark characters (") because otherwise, the text after the space
 will be considered to be belong to the next column. The string itself can never contain a quotation
 mark.
-•
-Integer: an integer can be up to 32-bits in size, although the application reading the integer entry is
+- Integer: an integer can be up to 32-bits in size, although the application reading the integer entry is
 free to assume that the value is actually of a smaller type. For example, boolean values are stored in
 a 2da as integers, so the column for a boolean property should only contain 0s or 1s.
-•
-Float: a 32-bit floating point value.
+- Float: a 32-bit floating point value.
 The 2da format does not include data type information for each column because the application that
 reads the data from the 2da already knows what datatype to assume each column contains.
 Blank (****) entries
@@ -852,10 +733,6 @@ version header at the time of this writing is:
 
 ### 2DA V2.0
 
-## Page 3
-
-BioWare Corp.
-<http://www.bioware.com>
 Line 2 - blank or optional default
 The second line of a 2da file is usually empty.
 Optionally, it can specify a default value for all entries in the file. The syntax is:
@@ -896,20 +773,11 @@ Columns
 Applications may reference a column by position (column 0, column 1, etc.) or by name. To avoid
 breaking code that depends on column position, the following rules apply:
 
-## Page 4
-
-BioWare Corp.
-<http://www.bioware.com>
-•
-Always add new columns after the very last column.
-•
-Never insert a new column inbetween two existing ones or as the first one.
-•
-Never delete a column from a 2da.
-•
-Never rename a column.
-•
-When adding a column, make sure that all rows include entries for the new column.
+- Always add new columns after the very last column.
+- Never insert a new column inbetween two existing ones or as the first one.
+- Never delete a column from a 2da.
+- Never rename a column.
+- When adding a column, make sure that all rows include entries for the new column.
 Rows
 Many game object properties are integer values that serve as indices into particular 2da files.
 Consequently, care must be taken when changing 2da row data to ensure that a minimum amount of
@@ -941,10 +809,6 @@ Try to ensure that no existing data, in a 2da or otherwise, references the starr
 
 ---
 
-## Page 1
-
-BioWare Corp.
-<http://www.bioware.com>
 BioWare Aurora Engine
 Key and BIF File Formats
 
@@ -959,10 +823,8 @@ least significant byte is the first one, and the most significant byte is the la
 For example, the number 258 (0x0102 in hex) expressed as a 4-byte integer would be stored as the
 following sequence of bytes within the file: 0x02, 0x01, 0x00, 0x00.
 The following terms are used in this document to refer to integer types:
-•
-WORD: 16-bit (2-byte) unsigned integer
-•
-DWORD: 32-bit (4-byte) unsigned integer
+- WORD: 16-bit (2-byte) unsigned integer
+- DWORD: 32-bit (4-byte) unsigned integer
 1.2. Resource Management
 The game and toolset both use the same resource management system for requesting game
 resources (ie., files).
@@ -972,25 +834,18 @@ resource from whereever it is physically located, which may be in a folder, pack
 HAK file, etc. If there is more than one copy of a given file, then one of them overrides all the
 others, as determined by rules outlined later in this section.
 The resource manager has 3 types of source from which it builds its list of resources:
-•
-keytable: a .key file, typically located in the same directory as the application itself. A keyfile
+- keytable: a .key file, typically located in the same directory as the application itself. A keyfile
 provides information regarding the contents of a set of .bif files, and each bif file contains
 files that are used as game resources. (Examples of keytable files: chitin.key, xp1.key,
 patch.key. Examples of .bif files: any of the .bif files in the data folder). The key and bif
 formats will be discussed in much greater detail later in this document.
-•
-directories: an ordinary directory containing game resource files. (Examples of resource
+- directories: an ordinary directory containing game resource files. (Examples of resource
 directories: override, modules\temp0)
-•
-encapsulated file: an encapsulated resource file (ERF), which contains other files used as
+- encapsulated file: an encapsulated resource file (ERF), which contains other files used as
 game resources. (Examples of encapsulated files: hak paks located in hak folder, erf files
 located in texturepacks folder). See the ERF Format document for details on the encapsulated
 resouce file format.
 
-## Page 2
-
-BioWare Corp.
-<http://www.bioware.com>
 There can be any number of resource sources of each type. If there is more than one resource with
 the same name and type located in more than one resource source, then the following rules
 determine which copy of that resource takes priority:
@@ -1006,213 +861,58 @@ The resource manager will place them, in order of lowest to highest priority, as
 patch.key, override folder, modules\temp0 folder, textures_tpa.erf, customcontent.hak. If both
 your module and the customcontent.hak file both contained a script called ns_test00, then the one
 in the hak file would be used.
-1.3. Resource Types
+### 1.3. Resource Types
 All Resources have a Resource Type (ResType) that corresponds to their file type. Resources are
 stored in BIFs and ERFs without their file extensions, but with their ResTypes instead.
 The table below lists ResTypes for resources that may be stored in a BIF or ERF. All ResTypes
 from 0 to 2999, 9000 to 9999, and 0xFFFF are reserved.
 
-**PyKotor wiki (KotOR/TSL):** merged hex / label reference with *RIM*, *TPC*, and related types — [Resource Type Identifiers](Resource-Formats-and-Resolution#resource-type-identifiers).
+| ResType | File Extension | Content Type | Description |
+|---------|----------------|--------------|-------------|
+| 0xFFFF | N/A | N/A | Invalid resource type |
+| 1 | bmp | binary | Windows BMP file |
+| 3 | tga | binary | TGA image format |
+| 4 | wav | binary | WAV sound file |
+| 6 | plt | binary | Bioware Packed Layered Texture, used for player character skins, allows for multiple color layers |
+| 7 | ini | text (ini) | Windows INI file format |
+| 10 | txt | text | Text file |
+| 2002 | mdl | mdl | Aurora model |
+| 2009 | nss | text | NWScript Source |
+| 2010 | ncs | binary | NWScript Compiled Script |
+| 2012 | are | gff | BioWare Aurora Engine Area file. Contains information on what tiles are located in an area, as well as other static area properties that cannot change via scripting. For each .are file in a .mod, there must also be a corresponding .git and .gic file having the same ResRef. |
+| 2013 | set | text (ini) | BioWare Aurora Engine Tileset |
+| 2014 | ifo | gff | Module Info File. See the IFO Format document. |
+| 2015 | bic | gff | Character/Creature |
+| 2016 | wok | mdl | Walkmesh |
+| 2017 | 2da | text | 2-D Array |
+| 2022 | txi | text | Extra Texture Info |
+| 2023 | git | gff | Game Instance File. Contains information for all object instances in an area, and all area properties that can change via scripting. |
+| 2025 | uti | gff | Item Blueprint |
+| 2027 | utc | gff | Creature Blueprint |
+| 2029 | dlg | gff | Conversation File |
+| 2030 | itp | gff | Tile/Blueprint Palette File |
+| 2032 | utt | gff | Trigger Blueprint |
+| 2033 | dds | binary | Compressed texture file |
+| 2035 | uts | gff | Sound Blueprint |
+| 2036 | ltr | binary | Letter-combo probability info for name generation |
+| 2037 | gff | gff | Generic File Format. Used when undesirable to create a new file extension for a resource, but the resource is a GFF. (Examples of GFFs include itp, utc, uti, ifo, are, git) |
+| 2038 | fac | gff | Faction File |
+| 2040 | ute | gff | Encounter Blueprint |
+| 2042 | utd | gff | Door Blueprint |
+| 2044 | utp | gff | Placeable Object Blueprint |
+| 2045 | dft | text (ini) | Default Values file. Used by area properties dialog |
+| 2046 | gic | gff | Game Instance Comments. Comments on instances are not used by the game, only the toolset, so they are stored in a gic instead of in the git with the other instance properties. |
+| 2047 | gui | gff | Graphical User Interface layout used by game |
+| 2051 | utm | gff | Store/Merchant Blueprint |
+| 2052 | dwk | mdl | Door walkmesh |
+| 2053 | pwk | mdl | Placeable Object walkmesh |
+| 2056 | jrl | gff | Journal File |
+| 2058 | utw | gff | Waypoint Blueprint. See Waypoint GFF document. |
+| 2060 | ssf | binary | Sound Set File. See Sound Set File Format document |
+| 2064 | ndb | binary | Script Debugger File |
+| 2065 | ptm | gff | Plot Manager file/Plot Instance |
+| 2066 | ptt | gff | Plot Wizard Blueprint |
 
-Table 1.3.1: Resource Types
-ResType
-File
-Extension
-Content
-Type
-Description
-0xFFFF
-N/A
-N/A
-Invalid resource type
-1
-bmp
-binary
-Windows BMP file
-3
-tga
-binary
-TGA image format
-4
-wav
-binary
-WAV sound file
-6
-plt
-binary
-Bioware Packed Layered Texture, used for player
-character skins, allows for multiple color layers
-7
-ini
-text (ini)
-Windows INI file format
-10
-txt
-text
-Text file
-2002
-mdl
-mdl
-Aurora model
-2009
-nss
-text
-NWScript Source
-2010
-ncs
-binary
-NWScript Compiled Script
-2012
-are
-gff
-BioWare Aurora Engine Area file. Contains
-information on what tiles are located in an area, as well
-as other static area properties that cannot change via
-scripting.
-For each .are file in a .mod, there must also be a
-corresponding .git and .gic file having the same
-ResRef.
-2013
-set
-text (ini)
-BioWare Aurora Engine Tileset
-2014
-ifo
-gff
-Module Info File. See the IFO Format document.
-2015
-bic
-gff
-Character/Creature
-2016
-wok
-mdl
-Walkmesh
-2017
-2da
-text
-2-D Array
-2022
-txi
-text
-Extra Texture Info
-
-## Page 3
-
-BioWare Corp.
-<http://www.bioware.com>
-2023
-git
-gff
-Game Instance File. Contains information for all object
-instances in an area, and all area properties that can
-change via scripting.
-2025
-uti
-gff
-Item Blueprint
-2027
-utc
-gff
-Creature Blueprint
-2029
-dlg
-gff
-Conversation File
-2030
-itp
-gff
-Tile/Blueprint Palette File
-2032
-utt
-gff
-Trigger Blueprint
-2033
-dds
-binary
-Compressed texture file
-2035
-uts
-gff
-Sound Blueprint
-2036
-ltr
-binary
-Letter-combo probability info for name generation
-2037
-gff
-gff
-Generic File Format. Used when undesirable to create a
-new file extension for a resource, but the resource is a
-GFF. (Examples of GFFs include itp, utc, uti, ifo, are,
-git)
-2038
-fac
-gff
-Faction File
-2040
-ute
-gff
-Encounter Blueprint
-2042
-utd
-gff
-Door Blueprint
-2044
-utp
-gff
-Placeable Object Blueprint
-2045
-dft
-text (ini)
-Default Values file. Used by area properties dialog
-2046
-gic
-gff
-Game Instance Comments. Comments on instances are
-not used by the game, only the toolset, so they are
-stored in a gic instead of in the git with the other
-instance properties.
-2047
-gui
-gff
-Graphical User Interface layout used by game
-2051
-utm
-gff
-Store/Merchant Blueprint
-2052
-dwk
-mdl
-Door walkmesh
-2053
-pwk
-mdl
-Placeable Object walkmesh
-2056
-jrl
-gff
-Journal File
-2058
-utw
-gff
-Waypoint Blueprint. See Waypoint GFF document.
-2060
-ssf
-binary
-Sound Set File. See Sound Set File Format document
-2064
-ndb
-binary
-Script Debugger File
-2065
-ptm
-gff
-Plot Manager file/Plot Instance
-2066
-ptt
-gff
-Plot Wizard Blueprint
 
 Table 1.3.2: Resource Content Types
 Content Type
@@ -1232,11 +932,7 @@ BioWare Generic File Format. See the Generic File Format document.
 mdl
 BioWare Aurora model file format. Can be plain text or binary.
 
-## Page 4
-
-BioWare Corp.
-<http://www.bioware.com>
-2. Key File Format (KEY)
+1. Key File Format (KEY)
 A Key file is an index of all the resources contained within a set of BIF files. The key file contains
 information as to which BIFs it indexes for and what resources are contained in those BIFs.
 2.1. Key File Structure
@@ -1329,10 +1025,6 @@ A number that represents which drives the BIF file is
 located in.  Currently each bit represents a drive letter.
 e.g., bit 0 = HD0, which is the directory where the
 
-## Page 5
-
-BioWare Corp.
-<http://www.bioware.com>
 application was installed.
 2.4. Filename Table
 The Filename Table lists the filenames of all the BIF files associated with the key file.
@@ -1386,10 +1078,6 @@ y = [Index into Variable or Fixed Resource Table in BIF]
 A BIF contains mutliple resources (files). It does not contain information about each resource's name,
 and therefore requires its KEY file.
 
-## Page 6
-
-BioWare Corp.
-<http://www.bioware.com>
 3.1. BIF Structure
 Figure 3.1: BIF File Structure
 Header
@@ -1435,10 +1123,6 @@ beginning of this file. Currently, this value is 20.
 The Variable Resource Table has a number of entries equal to the Variable Resource Count
 specified in the Header.
 
-## Page 7
-
-BioWare Corp.
-<http://www.bioware.com>
 Table 3.3: Variable Resource Entry
 Value
 Type
@@ -1555,10 +1239,6 @@ Fixed Resource Parts (as defined in the fixed resource table).
 
 ---
 
-## Page 1
-
-BioWare Corp.
-<http://www.bioware.com>
 BioWare Aurora Engine
 Encapsulated Resource File Format
 NOTICE: This documentation provides information about specific file formats used with the BioWare Aurora Engine.
@@ -1625,10 +1305,6 @@ BuildDay
 4 bytes
 since January 1st
 
-## Page 2
-
-BioWare Corp.
-<http://www.bioware.com>
 DescriptionStrRef
 4 bytes
 strref for file description
@@ -1686,10 +1362,6 @@ Italian
 Spanish
 4
 
-## Page 3
-
-BioWare Corp.
-<http://www.bioware.com>
 Polish
 5
 Korean
@@ -1750,10 +1422,6 @@ document.
 ERF Resource List
 The Resource List specifies where the data for each file is located and how big it is.
 
-## Page 4
-
-BioWare Corp.
-<http://www.bioware.com>
 Resource List Format
 The Resource List looks just like the Key list, except that it has Resource List elements instead of Key
 List elements. The ERF header's EntryCount specifies the number of elements in both the Key List
@@ -1808,10 +1476,6 @@ and BIF File Format document for a table containing ResType values and their mea
 
 ---
 
-## Page 1
-
-BioWare Corp.
-<http://www.bioware.com>
 BioWare Aurora Engine
 Talk Table (dialog.tlk) File Format
 
@@ -1832,12 +1496,9 @@ least significant byte is the first one, and the most significant byte is the la
 For example, the number 258 (0x0102 in hex) expressed as a 4-byte integer would be stored as the
 following sequence of bytes within the file: 0x02, 0x01, 0x00, 0x00.
 The following terms are used in this document to refer to numerical types:
-•
-WORD: 16-bit (2-byte) unsigned integer
-•
-DWORD: 32-bit (4-byte) unsigned integer
-•
-FLOAT: 32-bit floating point value in IEEE Std 754-1985 format.
+- WORD: 16-bit (2-byte) unsigned integer
+- DWORD: 32-bit (4-byte) unsigned integer
+- FLOAT: 32-bit floating point value in IEEE Std 754-1985 format.
 2. StringRefs
 2.1. Fetching a String by StringRef
 When the game or toolset needs to display a language-dependent string to the user, it gets the
@@ -1853,10 +1514,6 @@ To specify an invalid StrRef, the talk table system uses a StrRef in which all t
 signed 32-bit value). When presented with the invalid StrRef value, the text returned should be a
 blank string.
 
-## Page 2
-
-BioWare Corp.
-<http://www.bioware.com>
 Valid StrRefs can have values of up to 0x00FFFFFF, or 16777215. Any higher values will have
 the upper 2 bytes masked off and set to 0, so 0x01000001, or 16777217, for example, will be
 treated as StrRef 1.
@@ -1891,10 +1548,6 @@ table must be located in the same directory as the masculine/neutral one.
 Example: If a non-English module uses an alternate talk table called "customspells", then
 there should be a customspells.tlk and customspellsF.tlk file.
 
-## Page 3
-
-BioWare Corp.
-<http://www.bioware.com>
 3. TLK File Format
 3.1. TLK File Structure
 Figure 3.1: TLK File Structure
@@ -1967,10 +1620,6 @@ Japanese
 The String Data Table is a list of String Data Elements, each one describing a single string in the
 dialog.tlk file.
 
-## Page 4
-
-BioWare Corp.
-<http://www.bioware.com>
 The number of elements in the String Data Table is equal to the StringCount specified in the
 Header of the file. Each element is packed one after another, immediately after the end of the file
 header.
@@ -2079,10 +1728,6 @@ null-terminated strings. As soon as one string ends, the next one begins.
 
 ---
 
-## Page 1
-
-BioWare Corp.
-<http://www.bioware.com>
 BioWare Aurora Engine
 Sound Set File (SSF) Format
 
@@ -2128,10 +1773,6 @@ Padding
 24 bytes
 NULL padding
 
-## Page 2
-
-BioWare Corp.
-<http://www.bioware.com>
 4. Entry Table
 The Entry Table is an array of 32-bit unsigned integers. Each integer entry is a byte offset from the
 beginning of the file to an item of data in the Data Table.
@@ -2177,10 +1818,6 @@ resources (BIF files, Override folder, Hak Paks) and can have up to 16 character
 including the .wav file extension. The wave files should be in mono format, since soundset sounds are
 played as 3D sound sources in the game engine, and stereo waves do not make sense in that context.
 
-## Page 3
-
-BioWare Corp.
-<http://www.bioware.com>
 The StringRef identifies a string in the user's dialog.tlk file that should be displayed when the current
 sound entry plays in the game. If the StringRef is -1 (ie., 0xFFFFFFFF), then no text appears.
 6. Entry Special Meanings
@@ -2196,10 +1833,6 @@ Some of the QuickChat entries have an asterisk (*) next to their names. The game
 entries to issue orders to any associates (henchmen, summonded creatures, etc) belonging to the player
 character.
 
-## Page 4
-
-BioWare Corp.
-<http://www.bioware.com>
 Table 6: Sound Set Entries
 Entry
 Type
@@ -2411,10 +2044,6 @@ E
 
 1. SoundSet 2da files
 
-## Page 5
-
-BioWare Corp.
-<http://www.bioware.com>
 Soundset references in the game and toolset are controlled by two 2da files.
 Soundset.2da is a centralized source of information about the SoundSet Files that exist in the game
 resources. It contains important information about the soundsets that is not stored within the SoundSet
@@ -2497,10 +2126,6 @@ are displayed during player character creation.
 
 ---
 
-## Page 1
-
-BioWare Corp.
-<http://www.bioware.com>
 BioWare Aurora Engine
 Localized Strings
 The game and toolset use a localized string format called a CExoLocString, or just LocString.
@@ -2552,10 +2177,6 @@ associated with them. 0 = neutral or masculine; 1 = feminine. In some languages,
 should appear would vary depending on the gender of the player character, and this flag allows the
 application to choose an appropriate string.
 
-## Page 2
-
-BioWare Corp.
-<http://www.bioware.com>
 4. LanguageID and Gender combination
 Internally, LocStrings store LanguageID and Gender as single combined ID that is equal to double
 the LanguageID, plus 0 for male strings and 1 for female strings. This is the same format in which

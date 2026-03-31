@@ -9,7 +9,7 @@ This guide explains how to install files using TSLPatcher syntax. For general TS
 - **th3w1zard1/TSLPatcher** — original Perl TSLPatcher (stoffe lineage)
 
   - Canonical (th3w1zard1/TSLPatcher): <https://github.com/th3w1zard1/TSLPatcher/tree/ad04700a47086c25e1c6ef4b4961f76dfa8cc6a5>
-- [`Tools/HolocronToolset/src/toolset/gui/dialogs/install_mod.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/dialogs/install_mod.py) - HoloPatcher [GUI](GFF-File-Format#gui-graphical-user-interface) implementation
+- [`Tools/HolocronToolset/src/toolset/gui/dialogs/install_mod.py`](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/gui/dialogs/install_mod.py) - HoloPatcher [GUI](GFF-File-Format#gui-graphical-user-interface) implementation
 - [`KotOR.js/src/manager/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/manager) - TypeScript mod management (different approach)
 
 ### See also

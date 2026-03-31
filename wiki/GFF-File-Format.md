@@ -1,6 +1,6 @@
 # GFF — Generic File Format
 
-The Generic File Format (GFF) is the all-purpose binary container used to store structured game data in Knights of the Old Republic and The Sith Lords. Nearly every non-script, non-texture resource the engine reads at runtime is a GFF file: area definitions, creature templates, item blueprints, dialogue trees, journal entries, placeables, triggers, waypoints, and user interface layouts. The format was designed for rapid iteration — new fields can be added to any resource type without breaking backward compatibility, because readers simply skip labels they do not recognize.
+The Generic File Format (GFF) is the all-purpose binary container used to store structured game data in Knights of the Old Republic and The Sith Lords. Nearly every non-script, non-texture resource the engine reads at runtime is a GFF file: area definitions, creature templates, item blueprints, dialogue trees, journal entries, placeables, triggers, waypoints, and user interface layouts [[`gff_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L1-L20)]. The format was designed for rapid iteration — new fields can be added to any resource type without breaking backward compatibility, because readers simply skip labels they do not recognize [[`gff_data.py` module docstring](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L1-L20)].
 
 GFF is shared across BioWare's Aurora engine family. The [official BioWare GFF specification](Bioware-Aurora-Core-Formats#gff) describes the original container design; KotOR and TSL build on that same structure with game-specific field schemas, resource subtypes, and modding workflows. For the common GFF struct schemas shared across area and module files, see [Bioware Aurora Common GFF Structs](Bioware-Aurora-Module-and-Area#commongffstructs).
 
@@ -50,7 +50,7 @@ GFF files work alongside [2DA](2DA-File-Format) configuration tables, [TLK](Audi
     - [Direct Access types](#direct-access-types)
     - [Indirect Access types](#indirect-access-types)
     - [Complex Access types](#complex-access-types)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
@@ -289,7 +289,7 @@ GFF supports the following field types:
 - Use **double** for high-precision calculations (rare in KotOR)
 - Use **CExoString** for text that doesn't need localization
 - Use **CExoLocString** for player-visible text that should be translated
-- Use **ResRef** for filenames without extensions. Typical payloads include:
+- Use **[ResRef](Concepts#resref-resource-reference)** for filenames without extensions. Typical payloads include:
 
   - [models](MDL-MDX-File-Format)
   - [textures](Texture-Formats#tpc)
@@ -433,71 +433,44 @@ See [UTT (Trigger)](GFF-Spatial-Objects#utt) for detailed documentation.
 
 See [UTW (Waypoint)](GFF-Spatial-Objects#utw) for detailed documentation.
 
-## Alternative Terminology (Historical)
-
-The GFF format is also known as "ITP" in [xoreos-docs `specs/torlack/itp.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/itp.html) (Tim Smith/Torlack's reverse-engineered documentation from the **Neverwinter Nights era**, but the format is **identical in KotOR**).
-
-The following terminology mapping may be helpful when reading older specifications:
-
-| Modern Term (GFF) | Historical Term (ITP) | Description |
-| ----------------- | --------------------- | ----------- |
-| Struct array | Entry Table / Entity Table | array of struct entries |
-| field array | Element Table | array of field/element entries |
-| Label array | Variable Names Table | array of 16-byte field name strings |
-| field data | Variable data Section | Storage for complex field types |
-| field indices | Multiple Element Map (MultiMap) | array mapping structs to their fields |
-| List indices | List Section | array mapping list fields to struct indices |
-
-**Note**: The first entry in the struct array is always the root of the entire hierarchy. All other structs and fields can be accessed from this root entry.
-
-**References:**
-
-- [xoreos-docs](https://github.com/xoreos/xoreos-docs)
-- [`specs/torlack/itp.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/itp.html) — Torlack GFF/ITP spec
-
-## field data Access Patterns
+## Field Data Access Patterns
 
 ### Direct Access types
 
-Simple types (uint8, Int8, uint16, int16, uint32, int32, float) store their values directly in the field entry's data/offset field (offset 0x0008 in the element structure). These values are stored in [little-endian](https://en.wikipedia.org/wiki/Endianness) format.
+Simple types (`uint8`, `int8`, `uint16`, `int16`, `uint32`, `int32`, `float`) store their values directly in the field entry's data/offset field (offset 0x0008 in the element structure). These values are stored in [little-endian](https://en.wikipedia.org/wiki/Endianness) format.
 
 ### Indirect Access types
 
 Complex types require accessing data from the field data section:
 
 - **UInt64, Int64, double**: The field's data/offset contains a byte offset into the field data section where the 8-byte value is stored.
-- **String (CExoString)**: The offset points to a uint32 length followed by the string bytes (not [null-terminated](https://en.cppreference.com/w/c/string/byte)).
+- **String (`CExoString`)**: The offset points to a uint32 length followed by the string bytes (not [null-terminated](https://en.cppreference.com/w/c/string/byte)).
 - **ResRef**: The offset points to a uint8 length (max 16) followed by the resource name bytes (not [null-terminated](https://en.cppreference.com/w/c/string/byte)).
-- **LocalizedString (CExoLocString)**: The offset points to a structure containing:
-  - uint32: Total size (not including this count)
-  - int32: [StrRef](Audio-and-Localization-Formats#string-references-strref) ID ([dialog.tlk](Audio-and-Localization-Formats#tlk) reference, -1 if none)
-  - uint32: Number of language-specific strings
+- **LocalizedString (`CExoLocString`)**: The offset points to a structure containing:
+  - `uint32`: Total size (not including this count)
+  - `int32`: [StrRef](Audio-and-Localization-Formats#string-references-strref) ID ([dialog.tlk](Audio-and-Localization-Formats#tlk) reference, -1 if none)
+  - `uint32`: Number of language-specific strings
   - For each language string (if count > 0):
-    - uint32: Language ID ([Concepts](Concepts#language-ids-kotor))
-    - uint32: string length in bytes
-    - char[]: string data
-- **Void (Binary)**: The offset points to a uint32 length followed by the binary data bytes.
-- **Vector3**: The offset points to 12 bytes (3×float) in the field data section.
-- **Vector4 / orientation**: The offset points to 16 bytes (4×float) in the field data section.
+    - `uint32`: Language ID ([Concepts](Concepts#language-ids-kotor))
+    - `uint32`: string length in bytes
+    - `char[]`: string data
+- **Void (Binary)**: The offset points to a `uint32` length followed by the binary data bytes.
+- **Vector3**: The offset points to 12 bytes (3×`float`) in the field data section.
+- **Vector4 / orientation**: The offset points to 16 bytes (4×`float`) in the field data section.
 
 ### Complex Access types
 
 - **Struct (CAPREF)**: The field's data/offset contains a struct index (not an offset). This references a struct in the struct array.
-- **List**: The field's data/offset contains a byte offset into the list indices array. At that offset, the first uint32 is the entry count, followed by that many uint32 struct indices.
+- **List**: The field's data/offset contains a byte offset into the list indices array. At that offset, the first uint32 is the entry count, followed by that many uint32 struct indices. Access patterns and code examples are documented in Torlack's Aurora basics, archived at [xoreos-docs — `specs/torlack/itp.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/itp.html).
 
-**References:**
+## Cross-reference: implementations
 
-- [xoreos-docs](https://github.com/xoreos/xoreos-docs)
-- [`specs/torlack/itp.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/itp.html) — access patterns, code examples
-
-## Implementation Details
-
-| Component | PyKotor path | Line reference |
-|-----------|--------------|----------------|
-| Binary read | `io_gff.py` | [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) |
-| Binary write | `io_gff.py` | [`GFFBinaryWriter.write` L345+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L345) |
-| GFF data model | `gff_data.py` | [`GFF` L509+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509) |
-| GFFStruct | `gff_data.py` | [L689+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689) |
+| Component | PyKotor Reference |
+|-----------|--------------|
+| Binary read | [`GFFBinaryReader.load` (io_gff.py)](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) |
+| Binary write | [`GFFBinaryWriter.write` (io_gff.py)](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L345) |
+| GFF data model | [`GFF` (gff_data.py)](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509) |
+| GFFStruct | [`GFFStruct` (gff_data.py)](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689) |
 
 ### See also
 

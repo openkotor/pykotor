@@ -1,5 +1,7 @@
 # Area Modding and Room Transitions
 
+This page focuses on one specific indoor-area problem: making room-to-room crossing actually work once a layout exists. If you need the broader module-building workflow, start with [Indoor Area - Room Layout and Walkmesh Guide](Indoor-Area-Room-Layout-and-Walkmesh-Guide).
+
 For the player to walk between rooms in a module, several data files must agree: the LYT must place the rooms, the VIS must declare visibility, walkmeshes must provide navigable triangles at the doorway, and the GIT/ARE must reference the correct room models. When any of these are missing or mismatched, the player hits an invisible wall or falls through the floor.
 
 ## What must agree for room crossing
@@ -32,7 +34,7 @@ Real doors (that open and allow crossing) require: a door model, a door walkmesh
 
 ## Community tooling / Further reading
 
-Step-by-step workflows for room layout and roomlink editing live in the community. The wiki describes concepts only; for tool-specific procedures (e.g. Area Tools, Room Linker, Export WOK), use the following links.
+Use the wiki for the engine-facing concepts on this page, then use the following community and tool-specific guides for the concrete editing workflow.
 
 - **KOTORMax** (Deadly Stream file by bead-v) — Plugin for 3ds Max and GMax; LYT/VIS import and export; Roomlink Editor; ASCII model workflow with [MDLEdit](https://deadlystream.com/forum/files/file/1150-mdledit/) or MDLOps.
   - [KOTORmax file](https://deadlystream.com/files/file/1151-kotormax/)
@@ -51,5 +53,6 @@ Step-by-step workflows for room layout and roomlink editing live in the communit
 - [LYT File Format](Level-Layout-Formats#lyt) -- Room order and [room definitions](Level-Layout-Formats#room-definitions); room index = transition ID.
 - [VIS File Format](Level-Layout-Formats#vis) -- Visibility graph for area rooms.
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Building indoor modules and [troubleshooting room crossing](Indoor-Map-Builder-User-Guide#room-crossing-and-walkmesh).
+- [Indoor Area - Room Layout and Walkmesh Guide](Indoor-Area-Room-Layout-and-Walkmesh-Guide) -- Higher-level indoor workflow before roomlink troubleshooting.
 - [Blender Integration](Blender-Integration) -- Limitations for roomlink authoring.
 - [2DA surfacemat](2DA-File-Format#surfacemat2da) -- Walkmesh face materials and walkability.

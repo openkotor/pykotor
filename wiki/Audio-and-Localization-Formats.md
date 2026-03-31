@@ -1,6 +1,6 @@
 # Audio and Localization Formats
 
-The KotOR engine handles text, voice, and character sound effects through a set of interconnected formats. **TLK** (Talk Table) files store every localized string the game displays or speaks — dialogue lines, item names, journal entries, feedback messages. **SSF** (Sound Set File) files map character combat and movement sounds to TLK entries. **LIP** files drive facial animation timing to match spoken dialogue. **WAV** files provide the raw audio data. Together, these formats implement the localization and voice-over pipeline that runs from authored content through to in-game playback.
+The KotOR engine handles text, voice, and character sound effects through a set of interconnected formats. **TLK** (Talk Table) files store every localized string the game displays or speaks — dialogue lines, item names, journal entries, feedback messages [[`tlk_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L1-L10)]. **SSF** (Sound Set File) files map character combat and movement sounds to TLK entries. **LIP** files drive facial animation timing to match spoken dialogue. **WAV** files provide the raw audio data. Together, these formats implement the localization and voice-over pipeline that runs from authored content through to in-game playback.
 
 ## Contents
 
@@ -15,7 +15,7 @@ The KotOR engine handles text, voice, and character sound effects through a set 
 
 # TLK — Talk Table
 
-The Talk Table is the game's central string database. Every piece of text the player sees — dialogue, item descriptions, journal entries, feedback messages, character names — is stored in `dialog.tlk` and accessed by a numeric index called a [StrRef](Audio-and-Localization-Formats#string-references-strref). This design makes localization straightforward: translating the game means replacing one file rather than hunting through thousands of individual resources. Each entry can also reference a voice-over sound file ([ResRef](Concepts#resref-resource-reference)), so the engine can play spoken audio alongside the displayed text.
+The Talk Table is the game's central string database. Every piece of text the player sees — dialogue, item descriptions, journal entries, feedback messages, character names — is stored in `dialog.tlk` and accessed by a numeric index called a [StrRef](Audio-and-Localization-Formats#string-references-strref) [[`tlk_data.py` L1–L35](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L1-L35)]. This design makes localization straightforward: translating the game means replacing one file rather than hunting through thousands of individual resources. Each entry can also reference a voice-over sound file ([ResRef](Concepts#resref-resource-reference)), so the engine can play spoken audio alongside the displayed text [[`TLKEntry`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54)].
 
 To modify TLK entries in a mod, use [TSLPatcher/HoloPatcher TLKList syntax](TSLPatcher-Data-Syntax#tlklist-syntax) — this appends new entries or patches existing ones without replacing the entire file, which is critical for mod compatibility. TLK entries are referenced from [GFF](GFF-File-Format) resources (especially [DLG](GFF-File-Format#dlg-dialogue) dialogue files), [2DA](2DA-File-Format) tables, and [SSF](Audio-and-Localization-Formats#ssf) sound sets.
 
@@ -31,7 +31,7 @@ To modify TLK entries in a mod, use [TSLPatcher/HoloPatcher TLKList syntax](TSLP
   - [String References (StrRef)](#string-references-strref)
     - [Custom TLK Files](#custom-tlk-files)
   - [Localization](#localization)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
@@ -234,7 +234,7 @@ Windows-1252 is a single-byte encoding (256 code points) and is often loosely ca
 
 ---
 
-## Implementation Details
+## Cross-reference: implementations
 
 | Layer | PyKotor (`master`) |
 | ----- | ------------------- |
@@ -281,7 +281,7 @@ To modify SSF files in mods, see the [TSLPatcher SSFList syntax guide](TSLPatche
     - [File Header](#file-header)
     - [Sound Table](#sound-table)
   - [Sound event types](#sound-event-types)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
@@ -385,7 +385,7 @@ Indices are fixed; **do not reorder**. PyKotor names are authoritative for this 
 
 ---
 
-## Implementation Details
+## Cross-reference: implementations
 
 | Component | Location |
 | --------- | -------- |
@@ -416,7 +416,7 @@ LIP is always paired with a [WAV](Audio-and-Localization-Formats#wav) of matchin
     - [Keyframe Table](#keyframe-table)
   - [Mouth Shapes (Viseme Table)](#mouth-shapes-viseme-table)
   - [Animation Rules](#animation-rules)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
@@ -542,7 +542,7 @@ KotOR reuses the 16-shape Preston Blair [phoneme](https://en.wikipedia.org/wiki/
 
 ---
 
-## Implementation Details
+## Cross-reference: implementations
 
 - **Binary Reader:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py)  
 - **data [model](MDL-MDX-File-Format):** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py)  
@@ -614,7 +614,7 @@ See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
     - [Data Chunk](#data-chunk)
   - [KotOR SFX Header](#kotor-sfx-header)
   - [Encoding Details](#encoding-details)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
@@ -644,7 +644,7 @@ KotOR sticks to the canonical RIFF chunk order:
 
 ### Format chunk
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `audio_format` | uint16 | `0x0001` for PCM, `0x0011` for IMA ADPCM. |
 | `channels` | uint16 | 1 (mono) or 2 (stereo). |
@@ -702,7 +702,7 @@ TSLPatcher-era threads discuss **Streamsounds** / **Streamwaves** paths, codec i
 
 ---
 
-## Implementation Details
+## Cross-reference: implementations
 
 - **Reference implementations (engines):** same as **Cross-reference implementations** at the top of this page (PyKotor `io_wav.py`, reone `wavreader.cpp`, KotOR.js `AudioFile.ts`).
 - **Community tooling (not normative):** **[SithCodec](https://github.com/BBBrassil/SithCodec)** — encode/decode helper; **[SWKotOR-Audio-Encoder](https://github.com/LoranRendel/SWKotOR-Audio-Encoder)** — batch-friendly encoder. Prefer verifying headers against **PyKotor** / **reone** / **KotOR.js** when debugging engine mismatches.

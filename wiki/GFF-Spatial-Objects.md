@@ -69,7 +69,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 ## Core Identity fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | Template identifier for this door |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
@@ -79,7 +79,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 ## Door Appearance & type
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Appearance` | UInt32 | Index into `genericdoors.2da` |
 | `GenericType` | UInt32 | Generic door type category |
@@ -96,7 +96,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 ## Locking & Security
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Locked` | [byte](GFF-File-Format#gff-data-types) | Door is currently locked |
 | `Lockable` | [byte](GFF-File-Format#gff-data-types) | Door can be locked/unlocked |
@@ -115,7 +115,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 ## Hit Points & Durability
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `HP` | [int16](GFF-File-Format#gff-data-types) | Maximum hit points |
 | `CurrentHP` | [int16](GFF-File-Format#gff-data-types) | Current hit points |
@@ -134,7 +134,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 ## Interaction & Behavior
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Plot` | [byte](GFF-File-Format#gff-data-types) | Plot-critical (cannot be destroyed) |
 | `Static` | [byte](GFF-File-Format#gff-data-types) | Door is static geometry (no interaction) |
@@ -151,7 +151,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 ## Script Hooks
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `OnOpen` | *ResRef* | Fires when door opens |
 | `OnClose` | *ResRef* | Fires when door closes |
@@ -170,7 +170,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 ## Trap System
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TrapDetectable` | [byte](GFF-File-Format#gff-data-types) | Trap can be detected |
 | `TrapDetectDC` | [byte](GFF-File-Format#gff-data-types) | Awareness DC to detect trap |
@@ -189,7 +189,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 ## Load-Bearing Doors (KotOR2)
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `LoadScreenID` (KotOR2) | Word | Loading screen to show |
 | `LinkedTo` (KotOR2) | [CExoString](GFF-File-Format#gff-data-types) | Destination module tag |
@@ -205,7 +205,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 ## Appearance Customization
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `PortraitId` | [word](GFF-File-Format#gff-data-types) | Portrait icon identifier |
 | `PaletteID` | [byte](GFF-File-Format#gff-data-types) | Toolset palette category |
@@ -345,7 +345,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 ## Core Identity fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | Template identifier for this placeable |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
@@ -355,7 +355,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 ## Appearance & type
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Appearance` | UInt32 | Index into [`placeables.2da`](2DA-File-Format#placeables2da) |
 | `Type` | [byte](GFF-File-Format#gff-data-types) | Placeable type category |
@@ -369,7 +369,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 ## Inventory System
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `HasInventory` | [byte](GFF-File-Format#gff-data-types) | Placeable contains items |
 | `ItemList` | [List](GFF-File-Format#gff-data-types) | Items in inventory |
@@ -391,7 +391,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 ## Locking & Security
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Locked` | [byte](GFF-File-Format#gff-data-types) | Placeable is currently locked |
 | `Lockable` | [byte](GFF-File-Format#gff-data-types) | Can be locked/unlocked |
@@ -411,7 +411,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 ## Hit Points & Durability
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `HP` | [int16](GFF-File-Format#gff-data-types) | Maximum hit points |
 | `CurrentHP` | [int16](GFF-File-Format#gff-data-types) | Current hit points |
@@ -429,7 +429,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 ## Interaction & Behavior
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Plot` | [byte](GFF-File-Format#gff-data-types) | Plot-critical (cannot be destroyed) |
 | `Static` | [byte](GFF-File-Format#gff-data-types) | Static geometry (no interaction) |
@@ -448,7 +448,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 ## Script Hooks
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `OnClosed` | *ResRef* | Fires when container closes |
 | `OnDamaged` | *ResRef* | Fires when placeable takes damage |
@@ -468,7 +468,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 ## Trap System
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TrapDetectable` | [byte](GFF-File-Format#gff-data-types) | Trap can be detected |
 | `TrapDetectDC` | [byte](GFF-File-Format#gff-data-types) | Awareness DC to detect trap |
@@ -486,7 +486,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 ## Visual Customization
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `PortraitId` | [word](GFF-File-Format#gff-data-types) | Portrait icon identifier |
 | `PaletteID` | [byte](GFF-File-Format#gff-data-types) | Toolset palette category |
@@ -660,7 +660,7 @@ Use community write-ups for **playtesting and tooling**; **UTT fields** follow t
 
 ## Core Identity fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | Template identifier for this trigger |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
@@ -669,7 +669,7 @@ Use community write-ups for **playtesting and tooling**; **UTT fields** follow t
 
 ## Trigger Configuration
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Type` | Int | Trigger type (0=Generic, 1=Transition, 2=Trap) |
 | `Faction` | Word | Faction identifier |
@@ -684,7 +684,7 @@ Use community write-ups for **playtesting and tooling**; **UTT fields** follow t
 
 ## Transition Settings
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `LinkedTo` | [CExoString](GFF-File-Format#gff-data-types) | Destination waypoint tag |
 | `LinkedToModule` | *ResRef* | Destination module *ResRef* |
@@ -700,7 +700,7 @@ Use community write-ups for **playtesting and tooling**; **UTT fields** follow t
 
 ## Trap System
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TrapFlag` | Byte | Trigger is a trap |
 | `TrapType` | Byte | index into `traps.2da` |
@@ -720,7 +720,7 @@ Use community write-ups for **playtesting and tooling**; **UTT fields** follow t
 
 ## Script Hooks
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `OnClick` | *ResRef* | Fires when clicked |
 | `OnDisarm` | *ResRef* | Fires when disarmed |
@@ -787,7 +787,7 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 
 ## Core Identity fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | Template identifier for this encounter |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
@@ -796,7 +796,7 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 
 ## Spawn Configuration
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Active` | Byte | Encounter is currently active |
 | `Difficulty` | Int | Difficulty setting (unused) |
@@ -815,7 +815,7 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 
 ## Respawn Logic
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Reset` | Byte | Encounter resets after being cleared |
 | `ResetTime` | Int | Time in seconds before reset |
@@ -829,7 +829,7 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 
 ## Creature List
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CreatureList` | List | List of creatures to spawn |
 
@@ -847,7 +847,7 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 
 ## Trigger Logic
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `PlayerOnly` | Byte | Only triggers for player (not NPCs) |
 | `OnEntered` | *ResRef* | Script fires when trigger entered |
@@ -919,7 +919,7 @@ Forum posts explain **workflow**; **UTS field tables** stay anchored here + BioW
 
 ## Core Identity fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TemplateResRef` | *ResRef* | Template identifier for this sound |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
@@ -928,7 +928,7 @@ Forum posts explain **workflow**; **UTS field tables** stay anchored here + BioW
 
 ## Playback Control
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Active` | Byte | Sound is currently active |
 | `Continuous` | Byte | Sound plays continuously |
@@ -941,7 +941,7 @@ Forum posts explain **workflow**; **UTS field tables** stay anchored here + BioW
 
 ## Timing & Interval
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Interval` | Int | Delay between plays (seconds) |
 | `IntervalVary` | Int | Random interval variation |
@@ -955,7 +955,7 @@ Forum posts explain **workflow**; **UTS field tables** stay anchored here + BioW
 
 ## Positioning
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Elevation` | Float | Height offset from ground |
 | `MaxDistance` | Float | Distance where sound becomes inaudible |
@@ -972,7 +972,7 @@ Forum posts explain **workflow**; **UTS field tables** stay anchored here + BioW
 
 ## Sound List
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Sounds` | List | List of audio files to play ([WAV](Audio-and-Localization-Formats#wav) or MP3) |
 
@@ -1041,7 +1041,7 @@ Treat forum threads as **workflow** context; **UTW fields** follow this page + B
 
 ## Core Identity fields
 
-| field | type | Engine default | Description |
+| Field | Type | Engine default | Description |
 |:------|:-----|:---------------|:------------|
 | `TemplateResRef` | *ResRef* | blank | Template identifier; max 16 chars. Engine loads the matching .utw. |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | "" | Unique tag for GetObjectByTag/GetWaypointByTag and door/trigger links. Keep unique per area. |
@@ -1053,7 +1053,7 @@ Treat forum threads as **workflow** context; **UTW fields** follow this page + B
 
 ## Map Note Functionality
 
-| field | type | Description |
+| Field | Type | Description |
 |:------|:-----|:------------|
 | `HasMapNote` | Byte | Waypoint has a map note |
 | `MapNoteEnabled` | Byte | Map note is initially visible |
@@ -1069,7 +1069,7 @@ Treat forum threads as **workflow** context; **UTW fields** follow this page + B
 
 ## Linking & Appearance
 
-| field | type | Description |
+| Field | Type | Description |
 |:------|:-----|:------------|
 | `LinkedTo` | [CExoString](GFF-File-Format#gff-data-types) | Tag of linked object (unused) |
 | `Appearance` | Byte | Appearance type (1=Waypoint) |
@@ -1134,7 +1134,7 @@ PTH files define pathfinding data for modules, distinct from the navigation mesh
 
 ## Path Points
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Path_Points` | List | List of navigation [nodes](MDL-MDX-File-Format#node-structures) |
 
@@ -1146,7 +1146,7 @@ PTH files define pathfinding data for modules, distinct from the navigation mesh
 
 ## Path Connections
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Path_Connections` | List | List of [edges](Level-Layout-Formats#edges-wok-only) between [nodes](MDL-MDX-File-Format#node-structures) |
 

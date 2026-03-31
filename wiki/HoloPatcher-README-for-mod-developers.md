@@ -22,7 +22,7 @@ Start with [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) if you n
 
   - Canonical (th3w1zard1/KotORModSync): <https://github.com/th3w1zard1/KotORModSync/tree/c8b0d10ce3fd7525d593d34a3be8d151da7d3387>
 
-**KotORModSync in practice:** Use HoloPatcher (or equivalent) to **apply** each mod’s `tslpatchdata` to a game root. Use **KotORModSync** when you need help **tracking**, ordering, or syncing many installs across folders or team members. It is **not** a drop-in substitute for reading `[2DAList]` / `[TLKList]` rules—those remain defined by TSLPatcher/HoloPatcher INI. Repository: **`th3w1zard1/KotORModSync`** (verify file paths on the repo default branch before adding deep `#L` links in the wiki).
+**KotORModSync in practice:** Use HoloPatcher (or equivalent) to **apply** each mod’s `tslpatchdata` to a game installation. Use **KotORModSync** when you need help **tracking**, ordering, or syncing many installs across folders or team members. It is **not** a drop-in substitute for reading `[2DAList]` / `[TLKList]` rules—those remain defined by TSLPatcher/HoloPatcher INI. Repository: **`th3w1zard1/KotORModSync`** (verify file paths on the repo default branch before adding deep `#L` links in the wiki).
 
 **Community context:** End users and mod authors often coordinate around [Deadly Stream — HoloPatcher](https://deadlystream.com/files/file/2243-holopatcher/) (downloads + discussion). Large distributions such as [KOTOR 1 Community Patch](https://deadlystream.com/files/file/1258-kotor-1-community-patch/) show what real-world HoloPatcher packaging looks like. Use those releases for workflow examples and player expectations; use this wiki and the TSLPatcher syntax pages as the source of truth for INI semantics.
 
@@ -36,10 +36,10 @@ Start with [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) if you n
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) - Original documentation
 - [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) - Player-facing install and restore flow
 - [TSLPatcher InstallList Syntax](TSLPatcher-InstallList-Syntax) - file installation
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) - [TLK](TLK-File-Format) patching
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) - [TLK](Audio-and-Localization-Formats#tlk) patching
 - [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) - [2DA](2DA-File-Format) patching
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - [GFF](GFF-File-Format) patching
-- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) - [SSF](SSF-File-Format) patching
+- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) - [SSF](Audio-and-Localization-Formats#ssf) patching
 - [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) - Advanced [NCS](NCS-File-Format) binary patching
 - [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic) - Internal component flow and patch-routine behavior
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) - General modding guidelines
@@ -60,7 +60,7 @@ Start with [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) if you n
 **Steps:**
 
 1. **Layout:** `YourMod/tslpatchdata/changes.ini` plus any side files (e.g. `mymod.tlk` fragment, source 2DA snippet, loose file to copy).
-2. **TLK:** In `[TLKList]`, reference a TLK patch file and add or modify rows per [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax). Prefer **merge** operations over replacing entire `dialog.tlk` unless you intend a total replacement (replace-style examples appear under **[TLK](TLK-File-Format) replacements** in [HoloPatcher changes](#holopatcher-changes--new-features) below).
+2. **TLK:** In `[TLKList]`, reference a TLK patch file and add or modify rows per [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax). Prefer **merge** operations over replacing entire `dialog.tlk` unless you intend a total replacement (replace-style examples appear under **[TLK](Audio-and-Localization-Formats#tlk) replacements** in [HoloPatcher changes](#holopatcher-changes--new-features) below).
 3. **2DA:** In `[2DAList]`, target a small change (e.g. append one row to a non-critical table in the test install) using [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax). Use `2DAMEMORY`/labels so later steps can reference row indices if needed.
 4. **InstallList:** Add `[InstallList]` entries to copy **one** file (e.g. a test `.nss` or texture) into `override/` or `modules/` per [TSLPatcher InstallList Syntax](TSLPatcher-InstallList-Syntax).
 5. **Namespaces:** If you offer variants, add `namespaces.ini`; otherwise one `changes.ini` is enough.
@@ -74,9 +74,9 @@ Start with [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) if you n
 
 ## HoloPatcher changes & New Features
 
-### [TLK](TLK-File-Format) replacements
+### [TLK](Audio-and-Localization-Formats#tlk) replacements
 
-- This is not recommended under most scenarios. You usually want to append a new entry and update your DLGs to point to it using [StrRef](TLK-File-Format#string-references-strref) in the ini. However for projects like the k1cp and mods that fix grammatical/spelling mistakes, this may be useful.
+- This is not recommended under most scenarios. You usually want to append a new entry and update your DLGs to point to it using [StrRef](Audio-and-Localization-Formats#string-references-strref) in the ini. However for projects like the k1cp and mods that fix grammatical/spelling mistakes, this may be useful.
 
 The basic syntax is:
 
@@ -88,7 +88,7 @@ ReplaceFile0=tlk_modifications_file.tlk
 StrRef0=2
 ```
 
-This will replace StrRef0 in [dialog.tlk](TLK-File-Format) with StrRef2 from `tlk_modifications_file.tlk`.
+This will replace `StrRef0` in [dialog.tlk](Audio-and-Localization-Formats#tlk) with `StrRef2` from `tlk_modifications_file.tlk`.
 
 [See our tests](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/tests/test_tslpatcher/test_reader.py#L463) for more examples.
 Don't use the 'ignore' syntax or the 'range' syntax, these won't be documented or supported until further notice.
@@ -131,5 +131,5 @@ In short, HACKList writes unsigned WORD values (two bytes each) to the [NCS](NCS
 - [TSLPatcher TLKList](TSLPatcher-TLKList-Syntax)
 - [TSLPatcher SSFList](TSLPatcher-SSFList-Syntax) -- Other patch lists
 - [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic) -- Implementation
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for patching workflows

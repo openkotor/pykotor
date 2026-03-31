@@ -124,7 +124,7 @@ patches_list: list[PatcherModifications] = [
 ]
 ```
 
-The priority order has been changed for various reasons, mostly relating to useability. For example, if a mod wanted to overwrite a whole [dialog.tlk](TLK-File-Format) for some reason it makes sense that InstallList patch should run before TLKList. As for the compilelist vs hacklist discrepancy, it makes more sense that users would want to compile a script and then potentially edit the [NCS](NCS-File-Format).
+The priority order has been changed for various reasons, mostly relating to useability. For example, if a mod wanted to overwrite a whole [dialog.tlk](Audio-and-Localization-Formats#tlk) for some reason it makes sense that InstallList patch should run before TLKList. As for the compilelist vs hacklist discrepancy, it makes more sense that users would want to compile a script and then potentially edit the [NCS](NCS-File-Format).
 
 We doubt these priority order changes will affect the output of any mods. If you discover one, please report an issue.
 
@@ -145,7 +145,7 @@ HoloPatcher is _finally_ ready to start applying the patches and modifying the i
 
 - If the resource exists, back it up to a timestamped directory in the `backup` folder.
 - If the resource does not exist, write the patch's intended filepath into the `remove these files.txt` file.
-- If the patch intends to install into a capsule (`.mod` / `.erf` / [`.rim`](RIM-File-Format) / `.sav`) and the capsule DOES NOT exist, throw a FileNotFoundError (matches tslpatcher behavior)
+- If the patch intends to install into a capsule (`.mod` / `.erf` / [`.rim`](Container-Formats#rim) / `.sav`) and the capsule DOES NOT exist, throw a FileNotFoundError (matches tslpatcher behavior)
 
 **Step 2: [Log the operation](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L265)**, such as `patching existing file in the 'path' folder'.
 
@@ -176,10 +176,10 @@ class OverrideType:
 
 Capsule formats:
 
-- [ERF / MOD](ERF-File-Format)
-- [RIM](RIM-File-Format)
+- [ERF / MOD](Container-Formats#erf)
+- [RIM](Container-Formats#rim)
 
-[RIM versus ERF](ERF-File-Format#rim-versus-erf) compares the on-disk layouts.
+[RIM versus ERF](Container-Formats#rim-versus-erf) compares the on-disk layouts.
 
 source code @ [tslpatcher.mods.template](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/mods/template.py#L25)
 
@@ -200,4 +200,4 @@ source code @ [tslpatcher.mods.template](https://github.com/OldRepublicDevs/PyKo
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher syntax
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax)
 - [TSLPatcher InstallList Syntax](TSLPatcher-InstallList-Syntax)
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [KEY-File-Format](Container-Formats#key) — Resource resolution

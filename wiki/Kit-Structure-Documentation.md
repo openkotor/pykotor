@@ -734,7 +734,7 @@ class KitDoor:
     utd: UTD  # Primary door blueprint alias (utd_k1)
 ```
 
-**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_base.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_base.py)
+**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_base.py`](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/data/indoorkit/indoorkit_base.py)
 
 ### Kit Loading
 
@@ -769,7 +769,7 @@ When generating an indoor map from kits:
 8. **Minimap Generation**: Minimap images are generated from component PNGs
 9. **Static Resources**: Always resources are added to every room via `add_static_resources()`
 
-**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoormap.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/indoormap.py)
+**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoormap.py`](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/data/indoormap.py)
 
 ### coordinate System
 

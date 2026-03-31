@@ -31,13 +31,13 @@ Mods do not normally edit the KEY file. Instead, they place content in the overr
     - [Filename Table](#filename-table)
     - [KEY Table](#key-table)
   - [Resource ID Encoding](#resource-id-encoding)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
 ## File structure overview
 
-KEY files map resource names ([ResRefs](GFF-File-Format#gff-data-types)) and types to specific locations within [BIF containers](Container-Formats#bif). KotOR uses `chitin.key` as the main KEY file which references all game [BIF files](Container-Formats#bif). **Modder note:** Mods do not edit the KEY; they add content via the [override folder](Concepts#override-folder) or [MOD/ERF](Concepts#mod-erf-rim) so the engine finds their resources first.
+KEY files map resource names ([ResRefs](Concepts#resref-resource-reference)) and types to specific locations within [BIF containers](Container-Formats#bif). KotOR uses `chitin.key` as the main KEY file which references all game [BIF files](Container-Formats#bif). **Modder note:** Mods do not edit the KEY; they add content via the [override folder](Concepts#override-folder) or [MOD/ERF](Concepts#mod-erf-rim) so the engine finds their resources first.
 
 See:
 
@@ -255,7 +255,7 @@ The encoding allows a single 32-bit integer to precisely locate any resource in 
 
 ---
 
-## Implementation Details
+## Cross-reference: implementations
 
 | Layer | PyKotor (`master`) |
 | ----- | ------------------- |
@@ -269,7 +269,7 @@ See **Cross-reference implementations** under [File structure overview](#file-st
 ### See also
 
 - [BIF File Format](Container-Formats#bif) - Container format indexed by KEY
-- [ERF File Format](Container-Formats#erf) - Self-contained containers (MOD/SAV/HAK) and resolution order
+- [ERF File Format](Container-Formats#erf) - Self-contained containers (MOD/SAV/ERF) and resolution order
 - [RIM File Format](Container-Formats#rim) - Stock module archives (resource image)
 - [RIM versus ERF](Container-Formats#rim-versus-erf)
 - [GFF File Format](GFF-File-Format) - Common content type resolved via KEY/BIF
@@ -302,13 +302,13 @@ BIF files hold the bulk of the game's read-only resources — models, textures, 
   - [BZF Compression](#bzf-compression)
     - [BZF format details](#bzf-format-details)
   - [KEY file Relationship](#key-file-relationship)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
 ## File structure overview
 
-BIF files work in tandem with [KEY files](Container-Formats#key) which provide the filename-to-resource mappings. BIF files contain only resource IDs, types, and data - the actual filenames ([ResRefs](GFF-File-Format#gff-data-types)) are stored in the [KEY file](Container-Formats#key). BIF files are [containers](Container-Formats#erf) that store the bulk of game resources.
+BIF files work in tandem with [KEY files](Container-Formats#key) which provide the filename-to-resource mappings. BIF files contain only resource IDs, types, and data - the actual filenames ([ResRefs](Concepts#resref-resource-reference)) are stored in the [KEY file](Container-Formats#key). BIF files are [containers](Container-Formats#erf) that store the bulk of game resources.
 
 ### BIF Usage in KotOR
 
@@ -520,7 +520,7 @@ The *Resource ID* in the *BIF* file matches the *Resource ID* in the [KEY File](
 
 ---
 
-## Implementation Details
+## Cross-reference: implementations
 
 **Binary Reading**: [`Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py)
 
@@ -546,7 +546,7 @@ The *Resource ID* in the *BIF* file matches the *Resource ID* in the [KEY File](
 
 # ERF — Encapsulated Resource File
 
-ERF is a self-contained resource archive: every entry carries its own ResRef and type, so no external KEY file is needed. The engine uses ERF (and its signature variants MOD, SAV, HAK) for module content, saved games, override packs, and any other bundle that must travel as a single file. The header includes an optional localized-string list — primarily used in SAV files to store the save-game description — followed by a key list pointing into a contiguous data block. Shipped modules also use **[RIM](Container-Formats#rim)** archives, which solve the same naming problem with a simpler binary layout; see [RIM versus ERF](#rim-versus-erf) and the dedicated [RIM section](Container-Formats#rim).
+ERF is a self-contained resource archive: every entry carries its own ResRef and type, so no external KEY file is needed. The engine uses ERF (and its signature variants MOD, SAV) for module content, saved games, override packs, and any other bundle that must travel as a single file. The header includes an optional localized-string list — primarily used in SAV files to store the save-game description — followed by a key list pointing into a contiguous data block. Shipped modules also use **[RIM](Container-Formats#rim)** archives, which solve the same naming problem with a simpler binary layout; see [RIM versus ERF](#rim-versus-erf) and the dedicated [RIM section](Container-Formats#rim).
 
 ## Table of Contents
 
@@ -564,20 +564,19 @@ ERF is a self-contained resource archive: every entry carries its own ResRef and
   - [ERF Variants](#erf-variants)
     - [MOD Files (module containers)](#mod-files-module-containers)
     - [SAV Files (save game containers)](#sav-files-save-game-containers)
-    - [HAK Files (Override Paks)](#hak-files-override-paks)
     - [RIM files (resource image)](#rim-files-resource-image)
     - [ERF Files (Generic Containers)](#erf-files-generic-containers)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
 ## File Structure Overview
 
-*ERF* files are self-contained containers that store both resource names ([ResRefs](GFF-File-Format#gff-data-types)) and data in the same file. Unlike [BIF files](Container-Formats#bif) which require a [KEY file](Container-Formats#key) for filename lookups, *ERF* files include *ResRef* information directly in the container. When the engine resolves a resource request, it can service from encapsulated containers (*MOD/ERF* and stock [RIM](Container-Formats#rim) module archives) before falling back to *KEY/BIF*; see [resource resolution order](Concepts#resource-resolution-order).
+*ERF* files are self-contained containers that store both resource names ([ResRefs](Concepts#resref-resource-reference)) and data in the same file. Unlike [BIF files](Container-Formats#bif) which require a [KEY file](Container-Formats#key) for filename lookups, *ERF* files include *ResRef* information directly in the container. When the engine resolves a resource request, it can service from encapsulated containers (*MOD/ERF* and stock [RIM](Container-Formats#rim) module archives) before falling back to *KEY/BIF*; see [resource resolution order](Concepts#resource-resolution-order).
 
 **For mod developers:**
 
-- *MOD* and *HAK* files are built with Holocron Toolset or other packers.
+- *MOD* files are built with Holocron Toolset or other packers.
 - See [Installing Mods with HoloPatcher](HoloPatcher#installing-mods).
 - See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 - Vanilla modules ship as `.rim` / `_s.rim` ([RIM](Container-Formats#rim)); a `.mod` in `modules/` overrides the same module’s RIM set when present.
@@ -622,7 +621,7 @@ More engines and tools: [Home — Cross-reference: other tools and engines](Home
   - key entries ([L62–L71](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/erfreader.cpp#L62-L71))
   - resource entries ([L84–L92](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/erfreader.cpp#L84-L92))
   - header [`erfreader.h`](https://github.com/modawan/reone/blob/master/include/reone/resource/format/erfreader.h)
-  - **Limitations:** this reader **does not** parse the localized-string block; **SAV** files that still use the `MOD` + `V1.0` header may match the MOD branch, but **`HAK`** / **`SAV`** fourcc paths are not handled here
+  - **Limitations:** this reader **does not** parse the localized-string block; **SAV** files that still use the `MOD` + `V1.0` header may match the MOD branch, but **`SAV`** fourcc paths are not handled here
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
 
   - [`src/resource/ERFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/ERFObject.ts) — [`parseHeader` L69–L85](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/ERFObject.ts#L69-L85)
@@ -645,9 +644,9 @@ More engines and tools: [Home — Cross-reference: other tools and engines](Home
 
 [RIM](Container-Formats#rim) (**resource image**) files are the **stock** module archives under `modules/`. They are **encapsulated** containers like ERF/MOD (ResRef + type + bytes in one file) but **not** the same on-disk structure as this document’s 160-byte **ERF** header. Tools that only parse ERF must convert or use a RIM-aware reader.
 
-| Feature | RIM ([RIM File Format](Container-Formats#rim)) | ERF / MOD / SAV / HAK (this page) |
+| Feature | RIM ([RIM File Format](Container-Formats#rim)) | ERF / MOD / SAV (this page) |
 | ------- | ---------------------------------------- | ---------------------------------- |
-| Signature | `RIM` + `V1.0` | `ERF` / `MOD` / `SAV` / `HAK` + `V1.0` |
+| Signature | `RIM` + `V1.0` | `ERF` / `MOD` / `SAV` + `V1.0` |
 | Header size | **120** bytes | **160** bytes |
 | Localized strings, build date, description StrRef | Absent | Present (strings optional) |
 | Index layout | One **32-byte** record per resource (includes **UInt32** type, offset, size) | **24-byte** [KEY](Container-Formats#key)-style list + separate **8-byte** offset/size list |
@@ -661,22 +660,22 @@ More engines and tools: [Home — Cross-reference: other tools and engines](Home
 
 ## [Binary Format](https://en.wikipedia.org/wiki/Binary_file)
 
-Everything in this section applies to **ERF**, **MOD**, **SAV**, and **HAK** signatures only. **[RIM](Container-Formats#rim)** uses a shorter header and a different index record layout; do not treat these tables as the RIM specification.
+Everything in this section applies to **ERF**, **MOD**, and **SAV** signatures only. **[RIM](Container-Formats#rim)** uses a shorter header and a different index record layout; do not treat these tables as the [RIM](Container-Formats#rim) specification.
 
 ### File Header
 
-The file header is 160 bytes in size:
+The *file header* is **160 bytes** in size:
 
-| Name                      | type    | offset | size | Description                                    |
+| Name                      | Type    | Offset | Size | Description                                    |
 | ------------------------- | ------- | ------ | ---- | ---------------------------------------------- |
-| file type                 | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | `"ERF "`, `"MOD "`, `"SAV "`, or `"HAK "`     |
-| file Version              | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | Always `"V1.0"`                                 |
+| File Type                 | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | `"ERF "`, `"MOD "`, `"SAV "` |
+| File Version              | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | Always `"V1.0"`                                 |
 | Language count            | UInt32  | 8 (0x08) | 4    | Number of localized string entries             |
 | Localized string size     | UInt32  | 12 (0x0C) | 4    | Total size of localized string data in bytes   |
 | Entry count               | UInt32  | 16 (0x10) | 4    | Number of resources in the container              |
-| offset to Localized string List | UInt32 | 20 (0x14) | 4 | offset to localized string entries             |
-| offset to [KEY](Container-Formats#key) List        | UInt32  | 24 (0x18) | 4    | offset to [KEY](Container-Formats#key) entries array                    |
-| offset to Resource List   | UInt32  | 28 (0x1C) | 4    | offset to resource entries array                |
+| Offset to Localized string List | UInt32 | 20 (0x14) | 4 | Offset to localized string entries             |
+| Offset to [KEY](Container-Formats#key) List        | UInt32  | 24 (0x18) | 4    | Offset to [KEY](Container-Formats#key) entries array                    |
+| Offset to Resource List   | UInt32  | 28 (0x1C) | 4    | Offset to resource entries array                |
 | Build Year                | UInt32  | 32 (0x20) | 4    | Build year (years since 1900)                   |
 | Build Day                 | UInt32  | 36 (0x24) | 4    | Build day (days since Jan 1)                   |
 | Description [StrRef](Audio-and-Localization-Formats#string-references-strref)        | UInt32  | 40 (0x28) | 4    | [TLK](Audio-and-Localization-Formats#tlk) string reference for description           |
@@ -684,9 +683,9 @@ The file header is 160 bytes in size:
 
 **Build Date Fields:**
 
-The Build Year and Build Day fields timestamp when the ERF file was created:
+The *Build Year* and *Build Day* fields timestamp when the [ERF](Container-Formats#erf) file was created:
 
-- **Build Year**: Years since 1900 (e.g., `103` = year 2003)
+- **Build Year**: Years since 1900 (e.g., 103 = year 2003)
 - **Build Day**: Day of year (1-365/366, with January 1 = day 1)
 
 These timestamps are primarily informational and used by development tools to track module versions. The game engine doesn't rely on them for functionality.
@@ -709,7 +708,7 @@ The Description [StrRef](Audio-and-Localization-Formats#string-references-strref
   - *Exception*: Some KOTOR 1 modules (e.g. `unk_m41` series) use `0`.
 - **SAV files**: `0` (typically no description)
 - **NWM files**: `-1` (**Neverwinter Nights module format, NOT used in KotOR**)
-- **ERF/HAK files**: Unpredictable (may contain valid [StrRef](Audio-and-Localization-Formats#string-references-strref) or `-1`)
+- **ERF files**: Unpredictable (may contain valid [StrRef](Audio-and-Localization-Formats#string-references-strref) or `-1`)
 
 **Technical Note**: The engine determines if a file is a Save Game based on context (loading from `saves/` vs `modules/` and presence of `SAVES:` resource alias), **NOT** by any flag or value in the ERF header.
 
@@ -828,7 +827,7 @@ ERF files come in several variants based on file type:
 | MOD       | `.mod`    | Module file (contains area resources)                            |
 | SAV       | `.sav`    | Save game file (contains saved game state)                       |
 
-The **on-disk** 160-byte layout is the same family for shipped KotOR capsules; the **first four bytes** are not always a distinct `SAV` type code—PyKotor treats many `.sav` files as the `MOD` / `V1.0` header pair for typing purposes ([`ERFType.from_extension`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L128-L135)). `ERF` and `HAK` (and `SAV` when present) are still valid Aurora signatures when they appear.
+The **on-disk** 160-byte layout is the same family for shipped KotOR capsules; the **first four bytes** are not always a distinct `SAV` type code—PyKotor treats many `.sav` files as the `MOD` / `V1.0` header pair for typing purposes ([`ERFType.from_extension`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L128-L135)). `ERF` (and `SAV` when present) are still valid Aurora signatures when they appear.
 
 ### MOD Files (module containers)
 
@@ -859,10 +858,6 @@ SAV files store complete game state:
 - Portrait images
 
 Save files preserve the state of all modified resources. When a placeable is looted or a door opened, the updated `.git` resource is stored in the SAV file.
-
-### HAK Files (Override Paks)
-
-`HAK` uses the same ERF binary layout as other variants; the file type signature is `"HAK "`. Historically used in Neverwinter Nights for hak paks; KotOR lists the type in the resource table but does not use HAK the same way as NWN. Treat as a generic ERF container when encountered.
 
 ### RIM files (resource image)
 
@@ -922,7 +917,7 @@ Contrary to popular belief, the engine does **not** identify Save Games based on
 
 ---
 
-## Implementation Details
+## Cross-reference: implementations
 
 | Component | PyKotor (line anchors) |
 | --------- | ------------------------ |
@@ -971,7 +966,7 @@ RIM is the lightweight module archive shipped with the base game. Like [ERF](Con
   - [Resource data and padding](#resource-data-and-padding)
 - [Module file sets (rim, _s, dlg)](#module-file-sets-rim-_s-dlg)
 - [Relationship to ERF and MOD](#relationship-to-erf-and-mod)
-- [Implementation details](#implementation-details)
+- [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
@@ -988,7 +983,7 @@ RIM is appropriate to read and edit when you are working directly with shipped m
 
 ## File structure overview
 
-A RIM file is a **self-contained** archive: each stored resource has a [ResRef](GFF-File-Format#gff-data-types), a **resource type** id, and raw **payload bytes**. There is **no** separate [KEY](Container-Formats#key) file and **no** localized description block like ERF’s optional string list.
+A RIM file is a **self-contained** archive: each stored resource has a [ResRef](Concepts#resref-resource-reference), a **resource type** id, and raw **payload bytes**. There is **no** separate [KEY](Container-Formats#key) file and **no** localized description block like ERF's optional string list.
 
 At a high level:
 
@@ -1063,15 +1058,15 @@ Exact splits vary by module. Kit and extraction tooling that scans `modules/` tr
 
 RIM and ERF solve the same problem—**named, typed resources in one file**—but they are **not** bit-identical layouts.
 
-| Topic | RIM | ERF / MOD / SAV / HAK |
+| Topic | RIM | ERF / MOD / SAV |
 | ----- | --- | --------------------- |
-| Header size | **120** bytes | **160** bytes |
-| File type tag | `RIM` | `ERF`, `MOD`, `SAV`, `HAK` |
-| Localized description strings | **No** | Optional block (language id + CP1252 text) |
-| Build year/day, description StrRef | **No** | Present in ERF header |
-| Per-resource metadata | One **32-byte** entry (includes offset + size) | **24-byte** key + **8-byte** resource entry |
-| Resource type in entry | **UInt32** | **UInt16** + 2 unused bytes |
-| MOD “blank block” quirk | **No** | Documented between key list and resource list for MOD/NWM in [ERF File Format](Container-Formats#erf) |
+| Header Size | **120** bytes | **160** bytes |
+| File type Tag | `RIM` | `ERF`, `MOD`, `SAV` |
+| Localized Description Strings | **No** | Optional block (language id + CP1252 text) |
+| Build year/day, Description StrRef | **No** | Present in ERF header |
+| Per-resource Metadata | One **32-byte** entry (includes offset + size) | **24-byte** key + **8-byte** resource entry |
+| Resource Type in Entry | **UInt32** | **UInt16** + 2 unused bytes |
+| MOD “blank block” Quirk | **No** | Documented between key list and resource list for MOD/NWM in [ERF File Format](Container-Formats#erf) |
 
 For a side-by-side narrative aimed at ERF readers, see [RIM versus ERF](Container-Formats#rim-versus-erf) on the ERF page.
 
@@ -1079,7 +1074,7 @@ For a side-by-side narrative aimed at ERF readers, see [RIM versus ERF](Containe
 
 ---
 
-## Implementation details
+## Cross-reference: implementations
 
 **Cross-reference implementations (line anchors are against `master` and may drift):**
 
@@ -1113,7 +1108,7 @@ The KotOR **RIM** container stores module resources without compression. For ERF
 
 ### See also
 
-- [ERF File Format](Container-Formats#erf) — Encapsulated resource format (MOD, SAV, HAK, generic ERF). Compare RIM layout under:
+- [ERF File Format](Container-Formats#erf) — Encapsulated resource format (MOD, SAV, generic ERF). Compare RIM layout under:
 
   - [RIM versus ERF](Container-Formats#rim-versus-erf)
 - [Concepts](Concepts) — Resource resolution, override, MOD versus RIM priority

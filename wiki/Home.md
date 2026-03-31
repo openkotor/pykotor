@@ -36,12 +36,7 @@ That split is deliberate. The goal is not “use only PyKotor tools forever”; 
 
 ## Contributor maintenance
 
-- [Wiki Conventions](Wiki-Conventions) defines the editorial rules for structure, evidence placement, preserved-source handling, and link style.
-- [Wiki overhaul goals](Wiki-Overhaul-Goals) defines the current completion criteria for the live wiki and the standards a cleanup pass should satisfy.
-
-## Verified against implementations
-
-The format and behavior claims on this wiki are cross-checked against multiple independent codebases, not based on a single source or forum post. The primary verification targets are [PyKotor](https://github.com/OldRepublicDevs/PyKotor), [reone](https://github.com/modawan/reone), [KotOR.js](https://github.com/KobaltBlu/KotOR.js), and [Kotor.NET](https://github.com/NickHugi/Kotor.NET). Individual format and concept pages carry their own per-claim source links; see [Concepts](Concepts#verified-against-implementations) for the detailed module-level verification list.
+- [Wiki Conventions](Wiki-Conventions) defines editorial rules for structure, evidence placement, preserved-source handling, and link style.
 
 ## Learning paths
 
@@ -95,11 +90,13 @@ Older communities still matter for release history, workflow pitfalls, and examp
 | Source | Why it matters | How to use it |
 | ------ | -------------- | ------------- |
 | [DeadlyStream](https://deadlystream.com) | Primary KotOR modding hub for releases, tutorials, tool discussions, and troubleshooting threads. | Use for workflow context, release history, and real-world modder reports; keep normative format semantics on this wiki. |
+| [KOTOR Community Portal](https://kotor.neocities.org) | Community-maintained landing page for FAQs, troubleshooting links, and player-facing resource directories. | Use its FAQ and links pages for player support context and discovery. Exclude its mod-build recommendation lists when writing normative wiki guidance here. |
 | [LucasForums Container](https://lucasforumscontainer.com) | Wayback-backed reconstruction of the original LucasForums communities. | Use for historical TSLPatcher, tool, and modding discussions when the wiki needs provenance or original author commentary. |
 | [LucasForums Archive](https://lucasforumsarchive.com) | Alternate archive of Editing/Modding, Holowan Laboratories, and tutorial threads. | Use as historical support, especially when a thread is easier to cite or search here than in the container. |
 | [PCGamingWiki for KotOR](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic) and [KotOR II](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic_II_-_The_Sith_Lords) | Player-facing path, launcher, widescreen, and install-layout guidance. | Use for player environment context only; cross-check binary or resource-system claims against [Concepts](Concepts), [KEY File Format](Container-Formats#key), and the relevant format pages. |
+| [r/kotor](https://www.reddit.com/r/kotor/) | Large active player and mod-user community with install guides, troubleshooting posts, and community-maintained build notes. | Use as workflow context and to discover common failure cases; do not treat Reddit posts as authoritative for file formats or engine behavior. |
 | Holowan Laboratories / MixNMojo mirrors | Early KotOR modding discussion history. | Use when newer documentation does not preserve the original context for a tool, technique, or format note. |
-| Reddit and other general forums | Current troubleshooting and installation chatter. | Use as workflow context or discovery paths, not as the primary source for file-format or engine behavior. |
+| Other general forums | Current troubleshooting and installation chatter. | Use as workflow context or discovery paths, not as the primary source for file-format or engine behavior. |
 
 ## External documentation
 
@@ -115,5 +112,4 @@ Older communities still matter for release history, workflow pitfalls, and examp
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices)
 - [Reverse Engineering Findings](reverse_engineering_findings)
 - [Wiki Conventions](Wiki-Conventions)
-- [Wiki overhaul goals](Wiki-Overhaul-Goals)
 

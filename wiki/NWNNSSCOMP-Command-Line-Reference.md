@@ -209,5 +209,5 @@ So: same flags and argument order as Fred Tetra’s KOTOR Tool; only the binary 
 
 - [NSS scripting reference](NSS-File-Format) — NWScript source language and function reference
 - [NCS bytecode format](NCS-File-Format) — Compiled script format that nwnnsscomp produces
-- [HoloPatcher — PatchLists](HoloPatcher#patchlists) — Patcher-driven script compilation workflow
+- [HoloPatcher — PatchLists](Explanations-on-HoloPatcher-Internal-Logic#patchlists) — Patcher-driven script compilation workflow
 - [Mod creation best practices](Mod-Creation-Best-Practices) — Packaging compiled scripts for distribution

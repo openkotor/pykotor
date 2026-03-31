@@ -2,205 +2,161 @@
 
 All PyKotor wiki edits — whether by a human or by an AI agent — follow these style and structure conventions. Apply them when adding or editing any page.
 
-## Wiki contents and entry points
+## What this page is for
 
-- **Entry points:** [Home](Home) lists formats and tools and is the main index
-- [Concepts](Concepts) defines resource resolution, ResRef, override folder, and core format concepts
-- [Resource formats and resolution](Resource-Formats-and-Resolution) is the format TOC plus the hex **resource type ID** table. Use these to discover what the wiki contains and to navigate to format, tool, or how-to pages.
-- [Wiki overhaul goals](Wiki-Overhaul-Goals) defines the live completion criteria for the wiki overhaul and the maintenance targets that current edits should satisfy.
-- **Page types:** The wiki contains format reference pages (one format per page), how-to/guide pages (steps and prerequisites), and tool-syntax or tool-readme pages. Match new pages to the appropriate template (Reference or How-to / guide).
+Use this page as the source of truth for wiki structure and editing standards.
 
-## Naming
+- Main entry points: [Home](Home), [Concepts](Concepts), [Resource formats and resolution](Resource-Formats-and-Resolution), and [Reverse Engineering Findings](reverse_engineering_findings).
+- Page types: reference pages, guides, and tool syntax or readme pages.
+- Maintenance status belongs in the live wiki, not in detached planning notes.
 
-- Use a consistent pattern for similar content: `Format-Name` (e.g. `GFF-ARE`, `2DA-File-Format`), `Tool-Feature` (e.g. `TSLPatcher-InstallList-Syntax`).
-- Avoid mixing names for the same concept (e.g. use "GFF-ARE" consistently, not "ARE File" in one place and "GFF-ARE" in another).
+## Core rules
 
-## Headings
+1. One page owns each topic. If a topic already has a canonical page, summarize briefly and link to it.
+2. Do not duplicate long explanations. Summary pages stay shorter and narrower than the page they point to.
+3. Do not lose distinct information when deduplicating. Merge it intentionally or keep a justified companion or archive page.
+4. Preserve source artifacts. `Bioware-Aurora-*` pages and [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme) are citation targets, not rewrite targets.
+5. Hubs route. Canonical pages explain. Archive pages preserve provenance.
+6. State claims at the confidence level the evidence supports. Use `inferred`, `unverified`, or similar when needed.
 
-- **One H1 per page:** The page title is the only H1 (`#`). Use H2 (`##`) for main sections and H3 (`###`) for subsections.
-- **No skipped levels:** Do not jump from H2 to H4; keep a strict hierarchy.
-- **Sentence case:** Use sentence case for headings (e.g. "Key file purpose", not "Key File Purpose"). Capitalize the first word, proper nouns, and the first word after a colon.
-- **Anchor stability:** Heading anchors are usually derived from the heading text. Avoid changing headings that are linked from elsewhere; if you rename one, update in-page and cross-page links that use the old anchor, or the links will break.
+## Current priorities
 
-## Links
+- Keep hub pages short and routing-focused.
+- Keep [Concepts](Concepts) and format reference pages as the shortest path to core information.
+- Keep reverse-engineering archives subordinate to [Reverse Engineering Findings](reverse_engineering_findings).
+- Resolve or isolate TODO-marked reverse-engineering notes so readers can tell what is verified.
 
-- **Internal links:** Use extension-less targets (no `.md` suffix), e.g. `[Concepts overview](Concepts)`, `[resource resolution](Concepts#resource-resolution-order)`, or `[KEY File Purpose](Container-Formats#key-file-purpose)`. Wrong: `](KEY-File-Format.md)`.
-- **External links:** Use HTTPS. Prefer **canonical** repository URLs; do not duplicate legacy mirror links.
+## Page structure
 
-  - [modawan/reone](https://github.com/modawan/reone)
-  - [KobaltBlu/KotOR.js](https://github.com/KobaltBlu/KotOR.js)
-  - [NickHugi/Kotor.NET](https://github.com/NickHugi/Kotor.NET)
-  - [xoreos/xoreos](https://github.com/xoreos/xoreos)
-  - [OldRepublicDevs/PyKotor](https://github.com/OldRepublicDevs/PyKotor)
+### Naming
 
-  Use headings **Cross-reference** or **Implementation (PyKotor)** instead of “Vendor” where you list implementations. When citing code, use stable line anchors on the canonical repo. Validate permalinks before adding; broken links reduce trust.
-- **Relevance rule:** Every hyperlink must be obviously relevant to the sentence, paragraph, or list item that contains it. If the link target is not self-explanatory from the link text alone, add a short explanation immediately next to it saying what the reader gets from that link and why it belongs there.
-- **Avoid weak link labels:** Do not use vague labels such as "here", "this", "link", "source", or "docs" unless surrounding text already makes the exact destination and purpose unambiguous.
-- **External list items:** A bullet that contains an external link should either use self-descriptive link text or include a short explanatory phrase after the link. Do not leave readers with a bare external URL target and no reason to click it.
-- **Community (Deadly Stream, LucasForums Archive, etc.):** Prefer **specific** thread or `/files/file/...` URLs over bare site homepages. Add **one short sentence** of synthesis (what the reader gets from the link); do not paste long quotes. If advice may be version-specific (TSLPatcher vs HoloPatcher), say so. For install-order or tool debates, mention **approximate era** when the thread is archival.
-- **Link text:** Use the page or section title or a short descriptive phrase, not "click here" or "this document".
+- Use consistent names for recurring page types: `Format-Name` such as `GFF-ARE` or `2DA-File-Format`, and `Tool-Feature` such as `TSLPatcher-InstallList-Syntax`.
+- Do not switch names for the same concept across pages.
 
-## See also
+### Headings
 
-- Put a **See also** section at the **end** of the page only, using the heading `### See also` (sentence case). Do not duplicate "See also" at the top of the page; keep a single block before the final closing line or after the last main section. If a page currently has See also near the top, move it to the end (cut/paste) to keep navigation consistent and avoid breaking in-page anchors.
-- Include 3–8 links to closely related pages: sibling formats, parent concept, or tools that use the format.
+- One H1 per page.
+- Use H2 for main sections and H3 for subsections. Do not skip levels.
+- Use sentence case for headings.
+- Do not rename linked headings casually. If you change one, update inbound anchor links.
 
-## Preserved source documents
+### Page layout
 
-- `Bioware-Aurora-*` pages are preserved official mirrors. They are not normal rewrite targets and should not be substantively edited, modernized, or rewritten in place.
-- [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme) is preserved legacy documentation. It should not be modernized, paraphrased in place, or quietly corrected as part of ordinary wiki cleanup.
-- When these preserved documents need context, clarification, or KotOR-specific interpretation, add that material to a companion page, hub page, or canonical reference page that links back to the preserved source.
-- Route readers to preserved source documents deliberately; do not let them act as the default first-stop page for a topic when a modern canonical page or hub should mediate the journey.
-- Treat preserved source documents as citation targets and provenance anchors, not as places to merge current recommendations.
+- Long reference pages should usually follow: Overview, Structure or fields, Examples if useful, then `### See also`.
+- Keep exactly one `### See also` section at the end of the page.
+- `See also` should usually contain 3 to 8 closely related internal links.
+- Format pages should include a clear structure or fields section. If layout is fixed, include offsets, total length, or byte ranges.
 
-## Content
+## Canonical pages and cross-links
 
-- **Goal:** This wiki aims to be **complete, comprehensive, accurate, specific, and accessible** for any use--modders, developers, and researchers. Prefer linking to canonical pages (KEY-File-Format, GFF-File-Format, official BioWare specs) and to **PyKotor** ([OldRepublicDevs/PyKotor](https://github.com/OldRepublicDevs/PyKotor)) plus other implementation repos (reone, KotOR.js, Kotor.NET, xoreos, etc.); cite community sources (DeadlyStream, LucasForums archives) where they add consensus or history.
-- **Live-wiki rule:** Overhaul goals, routing decisions, and wiki-maintenance status belong in `wiki/` itself, not in detached planning artifacts elsewhere in the repository.
-- **One page per format or tool:** Keep each page focused on one format, one tool feature, or one task.
-- **One exhaustive page per topic:** Where several pages touch the same concept, workflow, or format cluster, one page must be the exhaustive canonical explanation. Other pages may summarize, contextualize, or route to that page, but should not restate it in full.
-- **Summary-page rule:** A summary, companion, or shortcut page must stay visibly shorter and narrower than the exhaustive page it points to. Keep only local framing, scope notes, or task-specific context, then link directly to the canonical page for the full explanation.
-- **No silent duplication:** Do not repeat large explanations from another wiki page just to make a page feel self-contained. If the information already lives on a canonical page, summarize it briefly and link to that page instead.
-- **No omission during deduplication:** When consolidating overlapping pages, make sure materially distinct details survive somewhere: either on the exhaustive page, on an intentional archive-support page, or in an explicitly justified removal.
-- **Link to official specs:** For formats with an official BioWare (or other) specification, link to it and document only extensions, quirks, or tool-specific behavior.
-- **Single source of truth (SSOT):** Do not duplicate long specs or repeated concepts. Link to the canonical page instead:
-  - **Concepts (single overview):** [Concepts](Concepts) -- definitions for resource resolution order, ResRef, override folder, BIF/KEY pairings, MOD archives, and the major table/GFF families. Drills into language IDs live at [Concepts — language IDs](Concepts#language-ids-kotor). Companion capsule references:
-    - [ERF-File-Format](Container-Formats#erf)
-    - [RIM-File-Format](Container-Formats#rim)
-    - [GFF-File-Format](GFF-File-Format)
-    - [2DA-File-Format](2DA-File-Format)
-  - **Resource type IDs (hex table, SSOT):** [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers).
-  - **Format index (long TOC of format pages):** [Resource formats and resolution](Resource-Formats-and-Resolution#file-format-index).
-  - **Resource resolution order:** [Concepts](Concepts#resource-resolution-order) (SSOT); quick ref also under [Resource formats and resolution](Resource-Formats-and-Resolution#resource-resolution-order); [KEY-File-Format](Container-Formats#key-file-purpose) for KEY binary layout.
-  - **ResRef:** [Concepts](Concepts#resref-resource-reference); [GFF-File-Format](GFF-File-Format#gff-data-types) for field storage types.
-  - **Override folder:** [Concepts](Concepts#override-folder) or [resource resolution order](Concepts#resource-resolution-order).
-- **Section order (long format pages):** Use a consistent order: Overview → Structure / fields → Examples (optional) → See also. Add a short on-page table of contents at the top where it helps navigation.
-- **Format reference pages:** Include a clear **Structure / fields** (or equivalent) section. Where the format has a fixed or deterministic layout, state total length, offset base (e.g. "offsets from file start"), or byte ranges so that parsers and validators can use the page reliably.
-- **Preserved-source exception:** Do not apply ordinary rewrite/template cleanup to preserved source documents such as `Bioware-Aurora-*` pages or [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme). Those pages are intentionally retained as source artifacts; put modern explanation in companion pages instead.
-- **Implementation note blocks:** When a format or tool page genuinely benefits from code-level traceability, add a short **Implementation (PyKotor)** or **Cross-reference** block inside the relevant section instead of at the bottom of the page. Use canonical repository URLs and line anchors only after verifying that the target exists and still supports the claim. These blocks are optional contributor aids, not substitutes for inline evidence in reader-facing prose. See [Citation and evidence placement](#citation-and-evidence-placement) for the distinction between inline evidence and navigation.
+Use these pages instead of re-explaining the same material elsewhere.
 
-  - modawan/reone
-  - KobaltBlu/KotOR.js
-  - NickHugi/Kotor.NET
-  - xoreos / xoreos-tools
+- [Concepts](Concepts): resource resolution order, ResRef, override, BIF and KEY pairings, MOD archives, GFF and 2DA families, language IDs.
+- [Resource formats and resolution](Resource-Formats-and-Resolution): format index and resource type ID table.
+- [Container-Formats#key](Container-Formats#key): KEY binary layout.
+- [GFF-File-Format](GFF-File-Format): GFF structure and data types.
+- [2DA-File-Format](2DA-File-Format): 2DA structure.
 
-  **BWM exception:** On BWM-related pages, optional **Implementation (PyKotor)** must be labeled **non-normative**; normative spec stays RE + pipelines per [authoritative BWM policy](https://github.com/OldRepublicDevs/PyKotor/blob/main/docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md).
-- **Cross-links:** Formats loaded by ResRef should link to [Concepts](Concepts#resource-resolution-order) for resolution order and to [KEY-File-Format](Container-Formats#key) for the KEY/BIF index format; link to [GFF-File-Format](GFF-File-Format#gff-data-types) for ResRef where relevant.
-- **Semantic claims:** Prefer an evidence-backed voice for engine or layout facts (RE, vendor tools, labeled **K1**/**TSL**/**both**, stable community links). When evidence is missing, use **inferred** or **unknown** rather than stating as fact. PyKotor code documents **library** behavior; do not use it alone to assert engine truth unless policy explicitly allows (see BWM exception above).
-- **Community and historical context:** When adding or refining format or tool pages, link to [Community sources and archives](Home#community-sources-and-archives) (DeadlyStream, LucasForums Container, Mixmojo) where relevant for consensus, tutorials, or historical discussion.
+Cross-link rules:
 
-## Citation and evidence placement
+- Formats resolved by ResRef should link to [Concepts#resource-resolution-order](Concepts#resource-resolution-order).
+- Pages that mention ResRef storage should link to [GFF-File-Format#gff-data-types](GFF-File-Format#gff-data-types) when relevant.
+- If an official BioWare spec exists, link to it and document only KotOR-specific quirks, extensions, or tool behavior.
 
-This wiki separates three kinds of outbound links. They serve different purposes and must not be conflated.
+## Links and citations
 
-### Navigation links
+### Internal and external links
 
-Navigation links connect pages for discovery: **See also** sections, family hubs, parent-page references, and "where to go next" pointers. They tell the reader where related content lives. They do not prove anything.
+- Internal wiki links are extension-less. Example: `[Concepts](Concepts)`, not `](Concepts.md)`.
+- Internal targets must match the real wiki page name and anchor.
+- External links use HTTPS and should prefer canonical upstream URLs.
+- Do not use vague link labels like `here`, `this`, or `source`.
+- If the purpose of a link is not obvious from the link text, explain it in the same sentence or list item.
+- For community sources, prefer specific threads or file pages over site homepages.
 
-### Evidence citations
+### Evidence rules
 
-Evidence citations back a factual claim. Every non-trivial factual statement, behavioral claim, or workflow recommendation must be followed immediately by its supporting citation — in the same sentence or paragraph. Acceptable forms:
+- Navigation links help readers move around. They do not prove claims.
+- Non-trivial factual claims, behavior descriptions, and workflow recommendations need inline evidence in the same sentence or paragraph.
+- Use direct inline citation markers with live URLs whenever possible. Preferred pattern: `...cross-platform support [1](https://example.com/source) [2](https://example.com/second-source)`.
+- Do not rely on detached `References`, `Sources`, `Verified against`, `Implementation`, `Vendor implementations`, or `Community context` sections to prove body text.
+- Do not leave raw URLs with no explanation.
+- If no evidence is available, say so explicitly instead of asserting the claim as fact.
+- Prefer direct page, thread, file, section, or permalink URLs over repository roots or site homepages.
+- If two sources support the same sentence, cite both in that sentence instead of moving them to a separate block.
+- `See also` is navigation only. It should not carry the page's evidence burden.
 
-- Inline descriptive links whose position makes the source attachment unambiguous (e.g. "the engine resolves override first ([`pykotor.extract.installation`](https://github.com/...))").
-- Numeric or short parenthetical markers directly after the claim.
+Write source-backed facts as normal prose. The citation marker belongs where the reader needs it, not in a contributor-only appendix. Avoid sentences that sound like process notes or model output, such as `use this as evidence of real-world workflow expectations`, `verified against source files`, `community context`, or `vendor implementations`. State the fact plainly and attach the source to that sentence.
 
-Unacceptable forms on reader-facing pages:
+Example:
 
-- A paragraph of assertions followed later by a detached **References** or **Sources** section.
-- A **See also** list used as implicit proof for body text.
-- Raw URLs after a section without explaining what they verify.
-- An uncited summary paragraph followed only by a generic page-level source header.
+- Weak: `HoloPatcher is used in community releases. See references below.`
+- Strong: `KOTOR 1 Community Patch switched from TSLPatcher to HoloPatcher in version 1.10.0 for additional patching features, bug fixes, and cross-platform support [1](https://deadlystream.com/files/file/1258-kotor-1-community-patch/).`
 
-When rewriting a page that has a useful bottom source list, redistribute those links to the paragraphs they support. If a source link does not support any retained claim, remove it.
+If a page genuinely needs bibliographic notes beyond direct inline links, keep them compact and place them at the end without turning them into a second prose section. Use that only when inline URL markers are not enough.
 
-### Archive-support source inventories
+## Special cases
 
-Canonical reference pages (GFF type references, format specs) may keep per-section **Implementation** and **Cross-reference** blocks that list code-level entry points grouped by project. These are not bottom-page dumps — they sit inside the section for the specific type or format they document and serve contributors who need to trace a claim back to code.
+### Preserved sources
 
-Archive and evidence-index pages may also retain structured source inventories. These pages are not ordinary reader-facing documentation; they exist for provenance and traceability.
+- Do not modernize or quietly rewrite `Bioware-Aurora-*` pages.
+- Do not modernize or paraphrase [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme) in place.
+- Add new interpretation in a companion page, hub page, or canonical reference page that links back to the preserved source.
 
-### When evidence is missing
+### Community research
 
-When no source backs a claim, use explicit uncertainty language ("inferred", "unverified", "community consensus suggests") rather than stating it as established fact. Do not leave claims silently uncited.
+- Deadly Stream search can fail with `site:deadlystream.com` even when content exists. Retry without `site:` and filter results manually.
+- LucasForums Archive is useful for historical threads, but pair archival advice with current wiki or HoloPatcher links.
+- PCGamingWiki is acceptable for player paths, widescreen, and OS quirks. It is not authority for binary layout.
+- For large wiki batches, record which searches were empty and which worked so the next editor does not repeat dead queries.
 
-## External research and community link harvesting
+### BWM and implementation notes
 
-When batch-adding **Deadly Stream**, **LucasForums Archive**, or **PCGamingWiki** citations:
+- On BWM pages and other deep technical pages, implementation evidence still belongs next to the claim it supports. If multiple implementations are compared, introduce them in the sentence itself rather than under a detached heading.
+- The normative spec remains reverse engineering plus pipeline evidence, per the [authoritative BWM policy](https://github.com/OldRepublicDevs/PyKotor/blob/main/docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md).
 
-- **Deadly Stream indexers:** Some automated `site:deadlystream.com` searches return **no rows** even when content exists. Prefer **known high-signal URLs** (then scrape or open in a browser):
+### Images
 
-  - HoloPatcher [file 2243](https://deadlystream.com/files/file/2243-holopatcher/)
-  - HoloPatcher [topic 9807](https://deadlystream.com/topic/9807-toolholopatcher/)
-  - Override discussion [topic 7279](https://deadlystream.com/topic/7279-whats-in-your-override-folder/)
-  - K1 Community Patch [file 1258](https://deadlystream.com/files/file/1258-kotor-1-community-patch/)
-  - Tutorials [forum](https://deadlystream.com/forum/25-tutorials/)
-
-  Retry queries **without** `site:` and filter results for `deadlystream.com` when discovery is blocked.
-- **LucasForums Archive:** Use `site:lucasforumsarchive.com` with short KotOR + tool keywords (TSLPatcher, `spells.2da`, StreamVoice); pair archival threads with **current** HoloPatcher/wiki links so readers are not stranded on obsolete steps.
-- **PCGamingWiki:** Use for **player** paths, widescreen, and OS quirks only—never as authority for Bioware binary layout. Prefer these as SSOT instead:
-
-  - [Concepts](Concepts)
-  - [KEY-File-Format](Container-Formats#key)
-  - Format pages in this wiki
-- **Logging:** Record **empty** vs **successful** query patterns in PR descriptions or maintainer notes when doing large wiki batches (helps the next editor avoid repeating dead searches).
+- Prefer `raw.githubusercontent.com` image URLs pinned to a commit SHA or tag.
+- Branch-based image URLs are allowed only when maintainers accept drift.
+- Broken image URLs also break Holocron's packaged help.
 
 ## Verification
 
-- After changing internal links to extension-less form, confirm in the wiki UI that links resolve correctly. If the wiki renderer requires `.md`, document that here and do not remove extensions.
-- **Link targets:** Internal link targets (e.g. `Page-Name` in `](Page-Name)`) must match the exact wiki page name (case and hyphenation). Agents and scripts can verify by resolving links against existing page filenames (e.g. `*.md` in the wiki directory) or by running a link checker.
-- **Hyperlink relevance audit:** Run `python helper_scripts/wiki_scripts/audit_markdown_link_relevance.py` on repo documentation changes to catch vague link text and external links that lack enough local context for readers.
-- **Duplication check:** Before keeping several pages on the same topic, verify that one page is clearly exhaustive and that the others are intentionally summary, companion, or archive-support pages rather than accidental duplicates.
+From the repo root, with the `wiki` submodule initialized:
 
-## Embedded Images (`raw.githubusercontent.com`)
+1. Run `python helper_scripts/wiki_scripts/validate_markdown_links.py` for internal targets and anchors.
+2. Run `python helper_scripts/wiki_scripts/verify_anchors.py` when headings or a TOC changed.
+3. Run `python helper_scripts/wiki_scripts/verify_toc.py` when a page has or depends on a TOC.
+4. Run `python helper_scripts/wiki_scripts/audit_markdown_link_relevance.py` for descriptive-link and local-context checks.
+5. Run `markdownlint-cli2` on touched files.
 
-Tutorials sometimes embed PNGs from `raw.githubusercontent.com/.../refs/heads/master/...`. **Prefer** URLs pinned to a **commit SHA** or **tag** so renders do not break when the default branch moves. Using `master`/`main` is allowed when maintainers accept drift. Remember Holocron packages `wiki/**/*.md` into in-app help—broken image URLs degrade the shipped help bundle.
+Before keeping overlapping pages, confirm that one page is clearly canonical and the others are clearly summary, companion, or archive-support pages.
 
-## Repository Automation Scripts
+## Checklist
 
-From the **PyKotor repo root** with the `wiki` submodule initialized (`git submodule update --init wiki`), a typical validation order is:
-
-1. `python helper_scripts/wiki_scripts/validate_markdown_links.py` — internal wiki targets and anchors
-2. `python helper_scripts/wiki_scripts/verify_anchors.py` — heading anchors (when editing TOC-heavy pages)
-3. `python helper_scripts/wiki_scripts/verify_toc.py` — table-of-contents consistency (when applicable)
-4. `python helper_scripts/wiki_scripts/audit_markdown_link_relevance.py` — descriptive-link and local-context audit for repo markdown
-
-Run `markdownlint-cli2` on touched files per CI config in the main repo. Contributor workflow (submodule + dual push) is documented in [CONTRIBUTING.md](https://github.com/OldRepublicDevs/PyKotor/blob/main/CONTRIBUTING.md).
-
----
-
-## Checklist for new or edited pages
-
-- [ ] One H1 only; headings in sentence case; no skipped levels.
-- [ ] Internal links extension-less; external links HTTPS; mirror format for GitHub where applicable.
-- [ ] Link text is descriptive, and every external link is locally explained when the target is not obvious from the link text alone.
-- [ ] Single "See also" at end with 3–8 links.
-- [ ] No duplicated long specs; link to canonical page (Concepts, KEY-File-Format, GFF-File-Format) instead.
-- [ ] If overlapping pages exist on the same topic, one page is clearly exhaustive and the current page either defers to it or owns a genuinely distinct scope.
-- [ ] Any summarized content preserves the reader-critical distinctions from the fuller page and does not silently omit unique information.
-- [ ] Factual claims have inline citations (same sentence or paragraph), not detached bottom reference dumps. See [Citation and evidence placement](#citation-and-evidence-placement).
-- [ ] Format pages: use Reference template; include Structure/fields and, when relevant, length or offset base.
-- [ ] If the topic relies on preserved source material such as `Bioware-Aurora-*` or [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme), keep the preserved page intact and put new interpretation in a companion page instead.
-
-Use this checklist for both human and agent-generated edits.
-
-### See also
-
-- [Home](Home)
-- [Concepts](Concepts)
-- [Resource formats and resolution](Resource-Formats-and-Resolution)
-- [Reverse Engineering Findings](reverse_engineering_findings)
-- [Wiki overhaul goals](Wiki-Overhaul-Goals)
+- [ ] One H1 only; headings use sentence case; no skipped levels.
+- [ ] Internal links are extension-less and correct.
+- [ ] External links are HTTPS, canonical where possible, and locally explained when needed.
+- [ ] The page has one clear scope and does not restate a canonical page.
+- [ ] `### See also` appears once at the end.
+- [ ] Reader-facing factual claims have inline evidence with direct URLs.
+- [ ] The page does not use detached evidence headings such as `Verified against`, `Implementation`, `Vendor implementations`, `Community context`, or mid-page `References` blocks.
+- [ ] Format pages include structure or fields, and offsets or lengths when relevant.
+- [ ] Preserved-source pages remain preserved; new interpretation lives elsewhere.
 
 ## Templates
 
-Use these section outlines when creating new pages so structure stays consistent.
+Use these section outlines when creating new pages.
 
-### Reference (file format)
+### Reference page
 
 ```markdown
 # [Format name] file format
 
 Brief overview (what the format is, where it is used).
+
+Back non-trivial factual claims with inline citation markers and direct URLs.
 
 If this page is not the exhaustive format page, add one short sentence near the top linking to the canonical exhaustive page.
 
@@ -218,12 +174,14 @@ If this page is not the exhaustive format page, add one short sentence near the 
 - [Parent concept](Concepts)
 ```
 
-### How-to / guide
+### Guide page
 
 ```markdown
 # [Task or feature name]
 
 Goal: one sentence describing what the reader will achieve.
+
+Back workflow guidance and historical claims with inline citation markers and direct URLs.
 
 If a canonical reference page contains the full background or exhaustive explanation, link to it near the top instead of repeating that material here.
 
@@ -241,7 +199,7 @@ If a canonical reference page contains the full background or exhaustive explana
 - [Related guide](HoloPatcher#installing-mods)
 ```
 
-### Tutorial (embedded walkthrough on an existing page)
+### Embedded walkthrough
 
 Use this when adding a **P0/P1-style** section to a guide (e.g. HoloPatcher readme, Concepts, KotorDiff)—**do not** create a new wiki file for a short walkthrough.
 

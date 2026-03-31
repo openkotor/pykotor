@@ -36,7 +36,7 @@ GUI files define the layout and behavior of every in-game interface screen — m
 
 ## Core Identity fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique [GUI](GFF-File-Format#gui-graphical-user-interface) identifier |
 | `ObjName` | [CExoString](GFF-File-Format#gff-data-types) | Object name (unused) |
@@ -46,7 +46,7 @@ GUI files define the layout and behavior of every in-game interface screen — m
 
 [GUI](GFF-File-Format#gui-graphical-user-interface) files contain a `Controls` list, which holds the top-level UI elements. Each control can contain child controls, forming a tree structure.
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Controls` | [List](GFF-File-Format#gff-data-types) | List of child controls |
 | `Type` | [int32](GFF-File-Format#gff-data-types) | Control type identifier |
@@ -73,7 +73,7 @@ GUI files define the layout and behavior of every in-game interface screen — m
 
 All controls share these base properties:
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CONTROLTYPE` | [int32](GFF-File-Format#gff-data-types) | Control type identifier (see Control types) |
 | `ID` | [int32](GFF-File-Format#gff-data-types) | Unique control ID for script references |
@@ -91,7 +91,7 @@ All controls share these base properties:
 
 **EXTENT Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `LEFT` | [int32](GFF-File-Format#gff-data-types) | X position relative to parent (pixels) |
 | `TOP` | [int32](GFF-File-Format#gff-data-types) | Y position relative to parent (pixels) |
@@ -107,7 +107,7 @@ All controls share these base properties:
 
 **BORDER Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CORNER` | *ResRef* | Corner texture ([TPC](Texture-Formats#tpc) or TGA) |
 | `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) texture ([TPC](Texture-Formats#tpc) or TGA) |
@@ -130,7 +130,7 @@ All controls share these base properties:
 
 **TEXT Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TEXT` | [CExoString](GFF-File-Format#gff-data-types) | Direct text content (overrides [StrRef](Audio-and-Localization-Formats#string-references-strref) if set) |
 | `STRREF` | DWord | [TLK](Audio-and-Localization-Formats#tlk) string reference (0xFFFFFFFF = unused) |
@@ -159,7 +159,7 @@ All controls share these base properties:
 
 **MOVETO Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `UP` | [int32](GFF-File-Format#gff-data-types) | Control ID to navigate to when pressing Up |
 | `DOWN` | [int32](GFF-File-Format#gff-data-types) | Control ID to navigate to when pressing Down |
@@ -175,7 +175,7 @@ All controls share these base properties:
 
 **HILIGHT Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CORNER` | *ResRef* | Corner [texture](Texture-Formats#tpc) for highlight state |
 | `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) [texture](Texture-Formats#tpc) for highlight state |
@@ -196,7 +196,7 @@ All controls share these base properties:
 
 **SELECTED Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CORNER` | *ResRef* | Corner [texture](Texture-Formats#tpc) for selected state |
 | `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) [texture](Texture-Formats#tpc) for selected state |
@@ -210,7 +210,7 @@ All controls share these base properties:
 
 **HILIGHTSELECTED Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CORNER` | *ResRef* | Corner [texture](Texture-Formats#tpc) for highlight+selected state |
 | `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) [texture](Texture-Formats#tpc) for highlight+selected state |
@@ -233,7 +233,7 @@ All controls share these base properties:
 
 **ListBox (type 11):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `PROTOITEM` | Struct | Template for list item appearance |
 | `SCROLLBAR` | Struct | Embedded scrollbar control |
@@ -254,7 +254,7 @@ All controls share these base properties:
 
 **PROTOITEM Struct (for ListBox):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CONTROLTYPE` | [int32](GFF-File-Format#gff-data-types) | Always 4 (ProtoItem) |
 | `EXTENT` | Struct | Item size and position |
@@ -267,7 +267,7 @@ All controls share these base properties:
 
 **ScrollBar (type 9):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `DIR` | Struct | Direction arrow buttons appearance |
 | `THUMB` | Struct | Draggable thumb appearance |
@@ -285,7 +285,7 @@ All controls share these base properties:
 
 **DIR Struct (ScrollBar Direction Buttons):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `IMAGE` | *ResRef* | Arrow button [texture](Texture-Formats#tpc) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment (typically 18=center) |
@@ -295,7 +295,7 @@ All controls share these base properties:
 
 **THUMB Struct (ScrollBar Thumb):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `IMAGE` | *ResRef* | Thumb [texture](Texture-Formats#tpc) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment (typically 18=center) |
@@ -305,7 +305,7 @@ All controls share these base properties:
 
 **ProgressBar (type 10):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `PROGRESS` | Struct | Progress fill appearance |
 | `CURVALUE` | [int32](GFF-File-Format#gff-data-types) | Current progress value (0-100) |
@@ -320,7 +320,7 @@ All controls share these base properties:
 
 **PROGRESS Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CORNER` | *ResRef* | Corner [texture](Texture-Formats#tpc) for progress fill |
 | `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) [texture](Texture-Formats#tpc) for progress fill |
@@ -334,7 +334,7 @@ All controls share these base properties:
 
 **CheckBox (type 7):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `SELECTED` | Struct | Appearance when checked |
 | `HILIGHTSELECTED` | Struct | Appearance when checked and hovered |
@@ -349,7 +349,7 @@ All controls share these base properties:
 
 **Slider (type 8):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `THUMB` | Struct | Slider thumb appearance |
 | `CURVALUE` | [int32](GFF-File-Format#gff-data-types) | Current slider value |
@@ -365,7 +365,7 @@ All controls share these base properties:
 
 **Slider THUMB Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `IMAGE` | *ResRef* | Thumb [texture](Texture-Formats#tpc) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment |
@@ -375,7 +375,7 @@ All controls share these base properties:
 
 **Button (type 6):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `HILIGHT` | Struct | Hover state appearance |
 | `MOVETO` | Struct | D-pad navigation targets |
@@ -390,7 +390,7 @@ All controls share these base properties:
 
 **Label (type 5):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TEXT` | Struct | Text display properties |
 
@@ -402,7 +402,7 @@ All controls share these base properties:
 
 **Panel (type 2):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CONTROLS` | [List](GFF-File-Format#gff-data-types) | Child controls list |
 | `BORDER` | Struct | Panel border (optional background) |
@@ -418,7 +418,7 @@ All controls share these base properties:
 
 **ProtoItem (type 4):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TEXT` | Struct | Item label text |
 | `BORDER` | Struct | Item border appearance |
