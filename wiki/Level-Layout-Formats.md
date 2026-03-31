@@ -60,22 +60,22 @@ LYT (Layout) files define how area [room models](Level-Layout-Formats#room-defin
 **Implementation (PyKotor):**
 
 - package: [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt)
-- read [`LYTAsciiReader.load` L60+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L60)
-- write [`LYTAsciiWriter.write` L150+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L150)
-- data model [`LYT` L64+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L64)
+- read [`LYTAsciiReader.load` L60+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L60)
+- write [`LYTAsciiWriter.write` L150+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L150)
+- data model [`LYT` L64+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L64)
 
 **Cross-reference (other implementations):**
 
 - **[reone](https://github.com/modawan/reone)**:
 
-  - [`lytreader.cpp` `LytReader::load` L27+](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp#L27)
-  - [`processLine` L37+](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp#L37)
+  - [`lytreader.cpp` `LytReader::load` L27+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/lytreader.cpp#L27)
+  - [`processLine` L37+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/lytreader.cpp#L37)
 - **[xoreos](https://github.com/xoreos/xoreos)**: [`lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
 
-  - [`LYTObject.ts` L19+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L19)
-  - [`_parse` L95+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L95)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`LYT.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs#L11) (in-memory room/door/track/obstacle DTOs)
+  - [`LYTObject.ts` L19+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L19)
+  - [`_parse` L95+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L95)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`LYT.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorLYT/LYT.cs#L11) (in-memory room/door/track/obstacle DTOs)
 
 ### See also
 
@@ -121,7 +121,7 @@ Rooms are case-insensitive; PyKotor lowercases entries for caching and resource 
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/lytreader.cpp:37-77`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp#L37-L77) - Room definitions parsing
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/lytreader.cpp:37-77`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/lytreader.cpp#L37-L77) - Room definitions parsing
 
 ### Track Definitions
 
@@ -147,15 +147,15 @@ trackcount <N>
 - Each track element represents a booster that can be placed along the racing track
 - The engine uses these positions to spawn track boosters during racing mini-games
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:286-329`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L286-L329)
+**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:286-329`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L286-L329)
 
 **References**
 
 **Cross-reference:**
 
-- PyKotor — [`LYTTrack` L296+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L296), track parsing in `io_lyt.py`.
-- KotOR.js — [`LYTObject.ts` L73–L83](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L73-L83).
-- xoreos — [`lytfile.cpp` L98–L107](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp#L98-L107).
+- PyKotor — [`LYTTrack` L296+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L296), track parsing in `io_lyt.py`.
+- KotOR.js — [`LYTObject.ts` L73–L83](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L73-L83).
+- xoreos — [`lytfile.cpp` L98–L107](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/lytfile.cpp#L98-L107).
 
 ### Obstacle Definitions
 
@@ -182,15 +182,15 @@ obstaclecount <N>
 - The engine uses these positions to spawn obstacles during racing mini-games
 - Mirrors the track format but represents hazards instead of boosters
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:332-375`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L332-L375)
+**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:332-375`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L332-L375)
 
 **References**
 
 **Cross-reference:**
 
-- PyKotor — [`LYTObstacle` L354+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L354).
-- KotOR.js — [`LYTObject.ts` L79–L83](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L79-L83).
-- xoreos — [`lytfile.cpp` L109–L118](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp#L109-L118).
+- PyKotor — [`LYTObstacle` L354+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L354).
+- KotOR.js — [`LYTObject.ts` L79–L83](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L79-L83).
+- xoreos — [`lytfile.cpp` L109–L118](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/lytfile.cpp#L109-L118).
 
 ### Door Hooks
 
@@ -225,15 +225,15 @@ doorhookcount <N>
 - [BWM](Level-Layout-Formats#bwm) [walkmeshes](Level-Layout-Formats#bwm) may have [edge](Level-Layout-Formats#edges-wok-only) transitions that reference these door hooks
 - The engine combines LYT doorhook positions with [BWM](Level-Layout-Formats#bwm) transition data to create functional doorways
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:378-456`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L378-L456)
+**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:378-456`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L378-L456)
 
 **References**
 
 **Cross-reference:**
 
-- PyKotor — [`LYTDoorHook` L412+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L412), door parsing in `io_lyt.py`.
-- xoreos — [`lytfile.cpp` L161–L200](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp#L161-L200).
-- KotOR.js — [`LYTObject.ts` L85–L91](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L85-L91).
+- PyKotor — [`LYTDoorHook` L412+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L412), door parsing in `io_lyt.py`.
+- xoreos — [`lytfile.cpp` L161–L200](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/lytfile.cpp#L161-L200).
+- KotOR.js — [`LYTObject.ts` L85–L91](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L85-L91).
 
 ---
 
@@ -248,7 +248,7 @@ doorhookcount <N>
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:150-267`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L150-L267) - Coordinate validation and room/hook handling
+- [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:150-267`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L150-L267) - Coordinate validation and room/hook handling
 
 ---
 
@@ -257,10 +257,10 @@ doorhookcount <N>
 - **Parser:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py)  
 - **data [model](MDL-MDX-File-Format):** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py)  
 - **Reference Implementations:**  
-  - **[reone](https://github.com/modawan/reone)**: [`lytreader.cpp` L27+](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp#L27)  
+  - **[reone](https://github.com/modawan/reone)**: [`lytreader.cpp` L27+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/lytreader.cpp#L27)  
   - **[xoreos](https://github.com/xoreos/xoreos)**: [`lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp)  
-  - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`LYTObject.ts` L19+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L19)  
-  - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`LYT.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs#L11)  
+  - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`LYTObject.ts` L19+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L19)  
+  - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`LYT.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorLYT/LYT.cs#L11)  
 
 All of the projects listed above agree on the plain-text token sequence; KotOR-Unity and NorthernLights consume the same format without introducing additional metadata.
 
@@ -323,12 +323,12 @@ VIS (Visibility) files describe which module rooms can be seen from other rooms.
 
 - **PyKotor**:
 
-  - ASCII parse loop (parent line + count + children; skips optional `V*` version header lines): [`VISAsciiReader.load` L45–L88](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L45-L88)
-  - writer: [`VISAsciiWriter.write` L97–L101](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L97-L101)
-  - in-memory graph: [`VIS` L56+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/vis/vis_data.py#L56)
-- **[reone](https://github.com/modawan/reone)** (upstream: [seedhartha/reone](https://github.com/modawan/reone), canonical: [modawan/reone](https://github.com/modawan/reone)): [`visreader.cpp` `VisReader::load` / `processLine` L29–L61](https://github.com/modawan/reone/blob/master/src/libs/resource/format/visreader.cpp#L29-L61) — line-based tokenizer; two tokens set the current parent room, single-token lines add visibility edges.
+  - ASCII parse loop (parent line + count + children; skips optional `V*` version header lines): [`VISAsciiReader.load` L45–L88](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L45-L88)
+  - writer: [`VISAsciiWriter.write` L97–L101](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L97-L101)
+  - in-memory graph: [`VIS` L56+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/vis_data.py#L56)
+- **[reone](https://github.com/modawan/reone)** (upstream: [seedhartha/reone](https://github.com/modawan/reone), canonical: [modawan/reone](https://github.com/modawan/reone)): [`visreader.cpp` `VisReader::load` / `processLine` L29–L61](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/visreader.cpp#L29-L61) — line-based tokenizer; two tokens set the current parent room, single-token lines add visibility edges.
 - **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/visfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/visfile.cpp) — Aurora VIS (shared with other Aurora titles).
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`VISObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/VISObject.ts); parent/child line handling: [`VISObject.ts` L71–L126](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/VISObject.ts#L71-L126).
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`VISObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/VISObject.ts); parent/child line handling: [`VISObject.ts` L71–L126](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/VISObject.ts#L71-L126).
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`VISObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/VISObject.cs) — Unity-side loader.
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`Kotor.NET/Formats/KotorVIS/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorVIS) (`VISReader.cs` is a stub throwing `NotImplementedException` on `master`; listed for parity with other format pages).
 
@@ -403,7 +403,7 @@ VIS files are crucial for performance in large areas:
 
 Module designers balance between performance (fewer visible rooms) and visual quality (no pop-in/clipping). Testing VIS changes in-game is essential.  
 
-PyKotor’s `VIS` class stores the data as a `dict[str, set[str]]`, exposing helpers like `set_visible()` and `set_all_visible()` for tooling (see [`vis_data.py:52-294`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/vis/vis_data.py#L52-L294)).
+PyKotor’s `VIS` class stores the data as a `dict[str, set[str]]`, exposing helpers like `set_visible()` and `set_all_visible()` for tooling (see [`vis_data.py:52-294`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/vis_data.py#L52-L294)).
 
 ---
 
@@ -411,10 +411,10 @@ PyKotor’s `VIS` class stores the data as a `dict[str, set[str]]`, exposing hel
 
 | Layer | PyKotor (`master`) | Other repos |
 | ----- | ------------------- | ----------- |
-| Parser | [`io_vis.py` `VISAsciiReader` L45–L88](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L45-L88) | [reone `visreader.cpp` L29–L61](https://github.com/modawan/reone/blob/master/src/libs/resource/format/visreader.cpp#L29-L61) |
-| | | [KotOR.js `VISObject.ts` L71–L126](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/VISObject.ts#L71-L126) |
-| Writer | [`io_vis.py` `VISAsciiWriter` L97–L101](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L97-L101) | — |
-| Data model | [`vis_data.py` L52–L294](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/vis/vis_data.py#L52-L294) | — |
+| Parser | [`io_vis.py` `VISAsciiReader` L45–L88](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L45-L88) | [reone `visreader.cpp` L29–L61](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/visreader.cpp#L29-L61) |
+| | | [KotOR.js `VISObject.ts` L71–L126](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/VISObject.ts#L71-L126) |
+| Writer | [`io_vis.py` `VISAsciiWriter` L97–L101](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L97-L101) | — |
+| Data model | [`vis_data.py` L52–L294](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/vis_data.py#L52-L294) | — |
 
 The ASCII grammar in [File layout](#file-layout) matches these parsers; always round-trip test new rooms in-game because whitespace and version header lines differ slightly between toolchains.
 
@@ -597,13 +597,13 @@ Library read/write code for tooling alignment only; **normative** layout and eng
 | Artifact | Location |
 | -------- | -------- |
 | Package | [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm) |
-| Binary read | [`BWMBinaryReader.load` L97+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py#L97) in [`io_bwm.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py) |
-| Binary write | [`BWMBinaryWriter.write` L220+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py#L220) in [`io_bwm.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py) |
-| In-memory model | [`BWM` L145+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py#L145) in [`bwm_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py) |
+| Binary read | [`BWMBinaryReader.load` L97+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py#L97) in [`io_bwm.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py) |
+| Binary write | [`BWMBinaryWriter.write` L220+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py#L220) in [`io_bwm.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py) |
+| In-memory model | [`BWM` L145+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py#L145) in [`bwm_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py) |
 
-**KotOR.js:** [OdysseyWalkMesh.ts](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyWalkMesh.ts) — binary read [`readBinary` L301–L395](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyWalkMesh.ts#L301-L395), header parse [`readHeader` L492–L514](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyWalkMesh.ts#L492-L514), export [`toExportBuffer` ~L834+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyWalkMesh.ts#L834). Layout differs from PyKotor (KotOR.js reserves 48 bytes in header; no hook vectors in file per PyKotor `io_bwm.py` L131 comment).
+**KotOR.js:** [OdysseyWalkMesh.ts](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyWalkMesh.ts) — binary read [`readBinary` L301–L395](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/odyssey/OdysseyWalkMesh.ts#L301-L395), header parse [`readHeader` L492–L514](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/odyssey/OdysseyWalkMesh.ts#L492-L514), export [`toExportBuffer` ~L834+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/odyssey/OdysseyWalkMesh.ts#L834). Layout differs from PyKotor (KotOR.js reserves 48 bytes in header; no hook vectors in file per PyKotor `io_bwm.py` L131 comment).
 
-CLI helper: [`pykotor walkmesh-rebuild`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md#L98-L104) (see [CLI quickstart](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md)).
+CLI helper: [`pykotor walkmesh-rebuild`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/CLI_QUICKSTART.md#L98-L104) (see [CLI quickstart](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md)).
 
 ## Edge cases and validation
 

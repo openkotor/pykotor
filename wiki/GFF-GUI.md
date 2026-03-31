@@ -20,13 +20,13 @@ GUI files define the layout and behavior of the user interface. They are [GFF fi
 
 **PyKotor:**
 
-- [`gui.py` `GUI` L154+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L154)
-- [`GUIControl` L100+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L100) — control tree model (`GUIButton`, `GUIPanel`, `GUIListBox`, …)
-- [`construct_gui` L349+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L349)
-- [`read_gui` L1060+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L1060)
-- [`write_gui` L1078+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L1078) — GFF ↔ `GUI` round-trip
-- [`gff_data.py` `GFFContent.GUI` L163](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L163) — four-character GFF type id
-- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
+- [`gui.py` `GUI` L154+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L154)
+- [`GUIControl` L100+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L100) — control tree model (`GUIButton`, `GUIPanel`, `GUIListBox`, …)
+- [`construct_gui` L349+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L349)
+- [`read_gui` L1060+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L1060)
+- [`write_gui` L1078+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L1078) — GFF ↔ `GUI` round-trip
+- [`gff_data.py` `GFFContent.GUI` L163](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L163) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **HolocronToolset:**
 
@@ -38,8 +38,8 @@ GUI files define the layout and behavior of the user interface. They are [GFF fi
 
   - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
   - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (GUI as GFF)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (GUI uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (GUI as GFF)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (GUI uses generic GFF structure)
 - **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; GUI loaded as GFF in engine
 
 ## Core Identity fields
@@ -452,7 +452,7 @@ All controls share these base properties:
 - Parent visibility affects children (hidden parent hides children)
 - Z-order: Children render above parents, later controls render above earlier ones (rendering order determined by control list order)
 
-**Reference**: **[reone](https://github.com/modawan/reone)**: [`src/libs/gui/gui.cpp:80-92`](https://github.com/modawan/reone/blob/master/src/libs/gui/gui.cpp#L80-L92) shows children are added to parent controls, and [`src/libs/gui/control.cpp:192-194`](https://github.com/modawan/reone/blob/master/src/libs/gui/control.cpp#L192-L194) shows children are updated/rendered in order
+**Reference**: **[reone](https://github.com/modawan/reone)**: [`src/libs/gui/gui.cpp:80-92`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/gui/gui.cpp#L80-L92) shows children are added to parent controls, and [`src/libs/gui/control.cpp:192-194`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/gui/control.cpp#L192-L194) shows children are updated/rendered in order
 
 **Positioning System:**
 
@@ -462,7 +462,7 @@ All controls share these base properties:
 - Negative coordinates allowed (positioning outside parent bounds)
 - Root control EXTENT defines [GUI](GFF-File-Format#gui-graphical-user-interface) bounds
 
-**Reference**: **[reone](https://github.com/modawan/reone)**: [`include/reone/gui/gui.h:38-39`](https://github.com/modawan/reone/blob/master/include/reone/gui/gui.h#L38-L39) defines `kDefaultResolutionX = 640` and `kDefaultResolutionY = 480`
+**Reference**: **[reone](https://github.com/modawan/reone)**: [`include/reone/gui/gui.h:38-39`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/include/reone/gui/gui.h#L38-L39) defines `kDefaultResolutionX = 640` and `kDefaultResolutionY = 480`
 
 **color System:**
 
@@ -473,7 +473,7 @@ All controls share these base properties:
 - KotOR 2 default text color: RGB(0.102, 0.698, 0.549) - teal (exact values from engine)
 - Default highlight color: RGB(1.0, 1.0, 0.0) - yellow
 
-**Reference**: **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/gui/GUIControl.ts:188-194`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/gui/GUIControl.ts#L188-L194) defines default colors for KotOR 1 and 2
+**Reference**: **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/gui/GUIControl.ts:188-194`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/gui/GUIControl.ts#L188-L194) defines default colors for KotOR 1 and 2
 
 **Border Rendering:**
 

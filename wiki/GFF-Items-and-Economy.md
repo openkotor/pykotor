@@ -43,7 +43,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 **PyKotor:**
 
-- [`uti.py` `UTI` L22+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L22) — UTI [GFF](GFF-File-Format) field model and `read_uti` / `write_uti` helpers in the same module
+- [`uti.py` `UTI` L22+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L22) — UTI [GFF](GFF-File-Format) field model and `read_uti` / `write_uti` helpers in the same module
 
 **HolocronToolset:**
 
@@ -55,9 +55,9 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
   - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
   - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (UTI uses generic GFF structure)
-- **[PyKotor](https://github.com/OldRepublicDevs/PyKotor)** (binary GFF): [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — same pipeline as other GFF types
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (UTI uses generic GFF structure)
+- **[PyKotor](https://github.com/OldRepublicDevs/PyKotor)** (binary GFF): [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — same pipeline as other GFF types
 - **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; UTI loaded as GFF in engine
 
 ## Core Identity fields
@@ -307,7 +307,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTM files are GFF resources with root content type **`UTM`** ([`GFFContent.UTM`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L156)) that define **merchant templates**: localized name, pricing (mark up / mark down), buy/sell flags, optional `OnOpenStore` script hook, and an **`ItemList`** of stock lines. Module **store instances** in the [**GIT**](GFF-Module-and-Area#git) reference a UTM template via the area’s store list (PyKotor maps GIT stores to [`ResourceType.UTM`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L107); instance wrapper [`GITStore` L967–L1000](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L967-L1000)). UTMs resolve like other resources: [override → MOD/SAV → KEY/BIF](Concepts#resource-resolution-order).
+UTM files are GFF resources with root content type **`UTM`** ([`GFFContent.UTM`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L156)) that define **merchant templates**: localized name, pricing (mark up / mark down), buy/sell flags, optional `OnOpenStore` script hook, and an **`ItemList`** of stock lines. Module **store instances** in the [**GIT**](GFF-Module-and-Area#git) reference a UTM template via the area’s store list (PyKotor maps GIT stores to [`ResourceType.UTM`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L107); instance wrapper [`GITStore` L967–L1000](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L967-L1000)). UTMs resolve like other resources: [override → MOD/SAV → KEY/BIF](Concepts#resource-resolution-order).
 
 **Official Bioware Documentation:** See [Bioware Aurora Store Format](Bioware-Aurora-Items-Economy-and-Narrative#store) for Aurora-era store semantics; KotOR field names below match PyKotor’s `construct_utm` / `dismantle_utm` and the class docstring’s `LoadStore` notes.
 
@@ -329,9 +329,9 @@ Global merchant metadata also lives in **[merchants.2da](2DA-File-Format)** (dat
 | `MarkDown` | int32 | Markdown when buying **from** the player (percent). |
 | `OnOpenStore` | ResRef | Script executed when the store UI opens. |
 | `Comment` | CExoString | Authoring comment. |
-| `BuySellFlag` | byte | Bit 0 = can buy from player; bit 1 = can sell to player ([`construct_utm` L173–L174](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L173-L174)). |
+| `BuySellFlag` | byte | Bit 0 = can buy from player; bit 1 = can sell to player ([`construct_utm` L173–L174](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L173-L174)). |
 | `ItemList` | List | Stock entries (see below). |
-| `ID` | byte | Legacy / unused in practice; PyKotor can still emit it when `use_deprecated=True` in [`dismantle_utm` L218–L219](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L218-L219). |
+| `ID` | byte | Legacy / unused in practice; PyKotor can still emit it when `use_deprecated=True` in [`dismantle_utm` L218–L219](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L218-L219). |
 
 ## ItemList element struct
 
@@ -341,19 +341,19 @@ Each list element is a struct with (at minimum) the fields PyKotor reads and wri
 | ----- | -------- | ---- |
 | `InventoryRes` | ResRef | Item template ([UTI](GFF-Items-and-Economy#uti)) resref. |
 | `Infinite` | byte | Infinite stock when non-zero. |
-| `Dropable` | byte | Droppable flag (PyKotor writes the field only when true — [`dismantle_utm` L213–L214](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L213-L214)). |
-| `Repos_PosX` | uint16 | Repository grid X (writer uses slot index — [`dismantle_utm` L211](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L211)). |
+| `Dropable` | byte | Droppable flag (PyKotor writes the field only when true — [`dismantle_utm` L213–L214](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L213-L214)). |
+| `Repos_PosX` | uint16 | Repository grid X (writer uses slot index — [`dismantle_utm` L211](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L211)). |
 | `Repos_PosY` | uint16 | Repository grid Y (writer uses `0` — same block). |
 
 ## References
 
 **PyKotor**
 
-- [`utm.py` `UTM` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L18) — dataclass + engine-oriented docstring (`CSWSStore::LoadStore` / `SaveStore` K1 addresses).
-- [`construct_utm` L147–L185](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L147-L185)
-- [`dismantle_utm` L188–L221](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L188-L221)
-- [`read_utm` / `write_utm` / `bytes_utm` L224–L253](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L224-L253).
-- Binary GFF pipeline (same as other generics): [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82).
+- [`utm.py` `UTM` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L18) — dataclass + engine-oriented docstring (`CSWSStore::LoadStore` / `SaveStore` K1 addresses).
+- [`construct_utm` L147–L185](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L147-L185)
+- [`dismantle_utm` L188–L221](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L188-L221)
+- [`read_utm` / `write_utm` / `bytes_utm` L224–L253](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L224-L253).
+- Binary GFF pipeline (same as other generics): [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82).
 
 **Cross-reference (other implementations)**
 
@@ -361,8 +361,8 @@ Each list element is a struct with (at minimum) the fields PyKotor reads and wri
 
   - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
   - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp) — generic GFF reader (UTM is a typed GFF root).
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser for all BioWare struct types including merchant templates.
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`Resources/KotorUTM/UTM.cs` L13–L35](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Resources/KotorUTM/UTM.cs#L13-L35) — `UTM` / `UTMItem` field model; pair with [`Formats/KotorGFF/GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) for container I/O.
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser for all BioWare struct types including merchant templates.
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`Resources/KotorUTM/UTM.cs` L13–L35](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Resources/KotorUTM/UTM.cs#L13-L35) — `UTM` / `UTMItem` field model; pair with [`Formats/KotorGFF/GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) for container I/O.
 - **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF stack; UTM treated as GFF instance like other templates.
 
 ### See also
@@ -405,14 +405,14 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **PyKotor:**
 
-- [`jrl.py` `JRL` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L18)
-- [`JRLQuest` L38+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L38)
-- [`JRLEntry` L71+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L71) — quest / entry model
-- [`construct_jrl` L103+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L103)
-- [`read_jrl` L173+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L173)
-- [`write_jrl` L182+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L182) — GFF ↔ `JRL` round-trip
-- [`gff_data.py` `GFFContent.JRL` L166](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L166) — four-character GFF type id
-- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
+- [`jrl.py` `JRL` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L18)
+- [`JRLQuest` L38+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L38)
+- [`JRLEntry` L71+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L71) — quest / entry model
+- [`construct_jrl` L103+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L103)
+- [`read_jrl` L173+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L173)
+- [`write_jrl` L182+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L182) — GFF ↔ `JRL` round-trip
+- [`gff_data.py` `GFFContent.JRL` L166](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L166) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **HolocronToolset:**
 
@@ -426,8 +426,8 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
   - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
   - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (JRL as GFF)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (JRL uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (JRL as GFF)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (JRL uses generic GFF structure)
 - **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; JRL loaded as GFF in engine
 
 ## Quest structure
@@ -515,14 +515,14 @@ A Faction is a control system for determining how game objects interact with eac
 
 **PyKotor:**
 
-- [`fac.py` `FACFaction` L16+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L16)
-- [`FACReputation` L40+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L40)
-- [`FAC` L64+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L64) — in-memory faction / reputation model
-- [`construct_fac` L125+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L125)
-- [`read_fac` L260+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L260)
-- [`write_fac` L281+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L281) — GFF ↔ `FAC` round-trip
-- [`gff_data.py` `GFFContent.FAC` L161](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L161) — four-character GFF type id
-- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
+- [`fac.py` `FACFaction` L16+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L16)
+- [`FACReputation` L40+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L40)
+- [`FAC` L64+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L64) — in-memory faction / reputation model
+- [`construct_fac` L125+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L125)
+- [`read_fac` L260+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L260)
+- [`write_fac` L281+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L281) — GFF ↔ `FAC` round-trip
+- [`gff_data.py` `GFFContent.FAC` L161](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L161) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **HolocronToolset:**
 
@@ -534,8 +534,8 @@ A Faction is a control system for determining how game objects interact with eac
 
   - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
   - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (FAC as GFF)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (FAC uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (FAC as GFF)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (FAC uses generic GFF structure)
 - **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; FAC loaded as GFF in engine
 
 ---

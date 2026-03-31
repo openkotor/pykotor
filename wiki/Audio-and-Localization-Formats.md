@@ -54,23 +54,23 @@ TLK files store localized strings in a binary format. The game loads `dialog.tlk
 
 - **PyKotor**:
 
-  - binary layout in module docstring: [`tlk_data.py` L1–L39](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L1-L39)
-  - `TLK` / `TLKEntry`: [`tlk_data.py` L54–L282](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L282)
-  - [`tlk_data.py` L285–L420](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L285-L420)
-  - read path (Kaitai + legacy 40-byte rows): [`io_tlk.py` `_load_tlk_from_kaitai` L32–L63](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L32-L63)
-  - [`_load_tlk_legacy` L66–L120](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L66-L120)
-  - [`TLKBinaryReader.load` L149–L156](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L149-L156)
-  - write path: [`TLKBinaryWriter` L168–L219](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L168-L219) (`_write_file_header` L183–L192, `_write_entry` L194–L219)
+  - binary layout in module docstring: [`tlk_data.py` L1–L39](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L1-L39)
+  - `TLK` / `TLKEntry`: [`tlk_data.py` L54–L282](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L282)
+  - [`tlk_data.py` L285–L420](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L285-L420)
+  - read path (Kaitai + legacy 40-byte rows): [`io_tlk.py` `_load_tlk_from_kaitai` L32–L63](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L32-L63)
+  - [`_load_tlk_legacy` L66–L120](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L66-L120)
+  - [`TLKBinaryReader.load` L149–L156](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L149-L156)
+  - write path: [`TLKBinaryWriter` L168–L219](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L168-L219) (`_write_file_header` L183–L192, `_write_entry` L194–L219)
 - **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)):
 
-  - [`tlkreader.cpp` `TlkReader::load` L34–L43](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L34-L43) (8-byte `"TLK V3.0"` signature + language/count/offset)
-  - [`loadStrings` L45–L71](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L45-L71) (40-byte rows, **lowercases** sound ResRef)
+  - [`tlkreader.cpp` `TlkReader::load` L34–L43](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/tlkreader.cpp#L34-L43) (8-byte `"TLK V3.0"` signature + language/count/offset)
+  - [`loadStrings` L45–L71](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/tlkreader.cpp#L45-L71) (40-byte rows, **lowercases** sound ResRef)
   - flag constants L28–L32
 - **[xoreos](https://github.com/xoreos/xoreos)** — [`talktable.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/talktable.cpp) (Aurora talk table shared with other Aurora titles)
 - **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** — [`talktable.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/talktable.cpp) (CLI / tooling)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`TLKObject.ts` `LoadFromBuffer` L51–L96](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts#L51-L96) — 20-byte header then per-entry metadata; note the last field before text is read with `readUInt32()` while the on-disk field is a **float** sound length—compare PyKotor [`struct.unpack("<f", ...)` L106](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L106).
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`TLKObject.ts` `LoadFromBuffer` L51–L96](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/TLKObject.ts#L51-L96) — 20-byte header then per-entry metadata; note the last field before text is read with `readUInt32()` while the on-disk field is a **float** sound length—compare PyKotor [`struct.unpack("<f", ...)` L106](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L106).
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`TLKObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/TLKObject.cs).
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`TLKBinaryStructure.cs` `FileHeader` / `StringData` / `FileRoot` L16–L130](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L16-L130).
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`TLKBinaryStructure.cs` `FileHeader` / `StringData` / `FileRoot` L16–L130](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L16-L130).
 
 ### See also
 
@@ -97,11 +97,11 @@ The file header is 20 bytes in size:
 
 **References:**
 
-- [reone `TlkReader::load` L34–L43](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L34-L43)
-- PyKotor header parse — [`_load_tlk_legacy` L71–L75](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L71-L75)
-- PyKotor Kaitai path — [`_load_tlk_from_kaitai` L35–L44](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L35-L44)
-- [Kotor.NET `FileHeader` L66–L76](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L66-L76)
-- [KotOR.js `LoadFromBuffer` L59–L64](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts#L59-L64).
+- [reone `TlkReader::load` L34–L43](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/tlkreader.cpp#L34-L43)
+- PyKotor header parse — [`_load_tlk_legacy` L71–L75](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L71-L75)
+- PyKotor Kaitai path — [`_load_tlk_from_kaitai` L35–L44](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L35-L44)
+- [Kotor.NET `FileHeader` L66–L76](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L66-L76)
+- [KotOR.js `LoadFromBuffer` L59–L64](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/TLKObject.ts#L59-L64).
 
 ### String data table
 
@@ -119,10 +119,10 @@ The string data table contains metadata for each string entry. Each entry is 40 
 
 **References:**
 
-- [Kotor.NET `StringData` L92–L129](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L92-L129)
-- PyKotor row decode [`_load_tlk_legacy` L96–L112](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L96-L112)
-- [reone `loadStrings` L45–L69](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L45-L69)
-- [KotOR.js `LoadFromBuffer` L65–L75](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts#L65-L75).
+- [Kotor.NET `StringData` L92–L129](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L92-L129)
+- PyKotor row decode [`_load_tlk_legacy` L96–L112](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L96-L112)
+- [reone `loadStrings` L45–L69](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/tlkreader.cpp#L45-L69)
+- [KotOR.js `LoadFromBuffer` L65–L75](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/TLKObject.ts#L65-L75).
 
 **flag bits:**
 
@@ -170,8 +170,8 @@ Each TLK entry contains:
 
 **References:**
 
-- PyKotor `TLK` / `TLKEntry` — [`tlk_data.py` L54–L420](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L420)
-- entry serialization — [`io_tlk.py` `_write_entry` L194–L219](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L194-L219).
+- PyKotor `TLK` / `TLKEntry` — [`tlk_data.py` L54–L420](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L420)
+- entry serialization — [`io_tlk.py` `_write_entry` L194–L219](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L194-L219).
 
 | Attribute        | type   | Description                                                      |
 | ---------------- | ------ | ---------------------------------------------------------------- |
@@ -247,12 +247,12 @@ Windows-1252 is a single-byte encoding (256 code points) and is often loosely ca
 
 | Layer | PyKotor (`master`) |
 | ----- | ------------------- |
-| Layout spec (docstring) | [`tlk_data.py` L1–L39](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L1-L39) |
-| `TLK` / `TLKEntry` | [`tlk_data.py` L54–L420](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L420) |
-| Binary read | [`io_tlk.py` L32–L156](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L32-L156) (`TLKBinaryReader` L123–L156) |
-| Binary write | [`io_tlk.py` L159–L219](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L159-L219) |
+| Layout spec (docstring) | [`tlk_data.py` L1–L39](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L1-L39) |
+| `TLK` / `TLKEntry` | [`tlk_data.py` L54–L420](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L420) |
+| Binary read | [`io_tlk.py` L32–L156](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L32-L156) (`TLKBinaryReader` L123–L156) |
+| Binary write | [`io_tlk.py` L159–L219](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L159-L219) |
 
-**Kotor.NET:** [`TLKBinaryStructure.cs` L16–L130](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L16-L130).
+**Kotor.NET:** [`TLKBinaryStructure.cs` L16–L130](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L16-L130).
 
 See **Cross-reference implementations** under [File structure overview](#file-structure-overview) for reone, xoreos, KotOR.js, and KotOR-Unity.
 
@@ -313,10 +313,10 @@ SSF files define **28** logical sound slots (indices `0`–`27`) that creatures 
 
 - The header is **12** bytes; the **semantic** KotOR table is **28** × 4 = **112** bytes.
 - Some writers emit **40** × 4 = **160** bytes after the header (28 mapped slots plus **12** extra `0xFFFFFFFF` words).
-- PyKotor’s writer does this ([`io_ssf.py` L177–L181](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py#L177-L181)).
-- Kotor.NET models a 40-entry table in [`SSFBinaryStructure.cs` `SoundTable` L61–L77](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorSSF/SSFBinaryStructure.cs#L61-L77).
+- PyKotor’s writer does this ([`io_ssf.py` L177–L181](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py#L177-L181)).
+- Kotor.NET models a 40-entry table in [`SSFBinaryStructure.cs` `SoundTable` L61–L77](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorSSF/SSFBinaryStructure.cs#L61-L77).
 - Readers that only consume the first 28 entries after `offset` still match vanilla behavior.
-- KotOR.js [`SSFObject.Open`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/SSFObject.ts#L31-L49) derives `soundCount = (length - 12) / 4` and therefore accepts either width.
+- KotOR.js [`SSFObject.Open`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/SSFObject.ts#L31-L49) derives `soundCount = (length - 12) / 4` and therefore accepts either width.
 
 **Implementation (PyKotor):** [`Libraries/PyKotor/src/pykotor/resource/formats/ssf/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/)
 
@@ -324,21 +324,21 @@ SSF files define **28** logical sound slots (indices `0`–`27`) that creatures 
 
 - **PyKotor**:
 
-  - format notes in module docstring: [`io_ssf.py` L1–L42](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py#L1-L42)
-  - legacy load path (28 slots, order fixed): [`_load_ssf_legacy` L63–L112](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py#L63-L112)
-  - reader dispatch: [`SSFBinaryReader.load` L152–L159](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py#L152-L159)
-  - writer: [`SSFBinaryWriter.write` L171–L181](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py#L171-L181)
-  - enum + semantics: [`SSFSound` L123–L234](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/ssf_data.py#L123-L234)
-- **[reone](https://github.com/modawan/reone)** — [`ssfreader.cpp` `SsfReader::load` L28–L36](https://github.com/modawan/reone/blob/master/src/libs/resource/format/ssfreader.cpp#L28-L36) (validates `SSF V1.1`, seeks to table offset, reads **all** remaining `int32`s into an array — works for 28- or 40-word tables).
+  - format notes in module docstring: [`io_ssf.py` L1–L42](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py#L1-L42)
+  - legacy load path (28 slots, order fixed): [`_load_ssf_legacy` L63–L112](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py#L63-L112)
+  - reader dispatch: [`SSFBinaryReader.load` L152–L159](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py#L152-L159)
+  - writer: [`SSFBinaryWriter.write` L171–L181](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py#L171-L181)
+  - enum + semantics: [`SSFSound` L123–L234](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ssf/ssf_data.py#L123-L234)
+- **[reone](https://github.com/modawan/reone)** — [`ssfreader.cpp` `SsfReader::load` L28–L36](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/ssfreader.cpp#L28-L36) (validates `SSF V1.1`, seeks to table offset, reads **all** remaining `int32`s into an array — works for 28- or 40-word tables).
 - **[xoreos](https://github.com/xoreos/xoreos)** — Aurora SSF (`src/aurora/ssffile.cpp`), shared with other Aurora titles.
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
 
-  - [`SSFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/SSFObject.ts#L31-L49)
-  - slot names: [`SSFType` enum L14–L43](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/resource/SSFType.ts#L14-L43) (same indices as PyKotor `SSFSound`; identifier spellings differ slightly — see table below)
+  - [`SSFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/SSFObject.ts#L31-L49)
+  - slot names: [`SSFType` enum L14–L43](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/enums/resource/SSFType.ts#L14-L43) (same indices as PyKotor `SSFSound`; identifier spellings differ slightly — see table below)
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**:
 
-  - header + 40-slot table: [`SSFBinaryStructure.cs` L29–L77](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorSSF/SSFBinaryStructure.cs#L29-L77)
-  - high-level read loop (28 creature sounds): [`SSFBinaryReader.Read` L31–L45](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorSSF/SSFBinaryReader.cs#L31-L45)
+  - header + 40-slot table: [`SSFBinaryStructure.cs` L29–L77](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorSSF/SSFBinaryStructure.cs#L29-L77)
+  - high-level read loop (28 creature sounds): [`SSFBinaryReader.Read` L31–L45](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorSSF/SSFBinaryReader.cs#L31-L45)
 
 ### See also
 
@@ -372,7 +372,7 @@ Some files and tools use **40** uint32 entries (extra trailing `-1` words). Trea
 
 ## Sound event types
 
-Indices are fixed; **do not reorder**. PyKotor names are authoritative for this repo; [KotOR.js `SSFType`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/resource/SSFType.ts#L14-L43) uses the same numeric values with different spellings on a few rows (noted in the third column).
+Indices are fixed; **do not reorder**. PyKotor names are authoritative for this repo; [KotOR.js `SSFType`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/enums/resource/SSFType.ts#L14-L43) uses the same numeric values with different spellings on a few rows (noted in the third column).
 
 | Index | PyKotor `SSFSound` | KotOR.js `SSFType` (if different) | Role |
 | ----- | ------------------ | ----------------------------------- | ---- |
@@ -397,9 +397,9 @@ Indices are fixed; **do not reorder**. PyKotor names are authoritative for this 
 
 **Primary references:**
 
-- [`ssf_data.py` `SSFSound` L123–L234](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/ssf_data.py#L123-L234)
-- [`io_ssf.py` `_load_ssf_legacy` L80–L110](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py#L80-L110)
-- [KotOR.js `SSFType.ts` L14–L43](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/resource/SSFType.ts#L14-L43)
+- [`ssf_data.py` `SSFSound` L123–L234](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ssf/ssf_data.py#L123-L234)
+- [`io_ssf.py` `_load_ssf_legacy` L80–L110](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py#L80-L110)
+- [KotOR.js `SSFType.ts` L14–L43](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/enums/resource/SSFType.ts#L14-L43)
 
 ---
 
@@ -407,8 +407,8 @@ Indices are fixed; **do not reorder**. PyKotor names are authoritative for this 
 
 | Component | Location |
 | --------- | -------- |
-| SSF data model (`SSF`) | [`ssf_data.py` `SSF` L26–L121](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/ssf_data.py#L26-L121) |
-| SSF data model (`SSFSound`) | [`SSFSound` L123–L234](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/ssf_data.py#L123-L234) |
+| SSF data model (`SSF`) | [`ssf_data.py` `SSF` L26–L121](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ssf/ssf_data.py#L26-L121) |
+| SSF data model (`SSFSound`) | [`SSFSound` L123–L234](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ssf/ssf_data.py#L123-L234) |
 | Binary I/O | [`io_ssf.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py) (see [File structure overview](#file-structure-overview) for line-level anchors) |
 
 ---
@@ -473,20 +473,20 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 **Implementation (PyKotor):**
 
 - package: [`resource/formats/lip/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/)
-- binary read [`LIPBinaryReader.load` L95+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py#L95)
-- write [`LIPBinaryWriter.write` L117+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py#L117)
+- binary read [`LIPBinaryReader.load` L95+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py#L95)
+- write [`LIPBinaryWriter.write` L117+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py#L117)
 - data model in `lip_data.py`
 - XML/JSON in `io_lip_xml`, `io_lip_json`
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`lipreader.cpp` L27+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/lipreader.cpp#L27) — C++ LIP parser
+- **[reone](https://github.com/modawan/reone)**: [`lipreader.cpp` L27+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/lipreader.cpp#L27) — C++ LIP parser
 - **[xoreos](https://github.com/xoreos/xoreos)**: [`lipfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lipfile.cpp) — Aurora LIP
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
 
-  - [`LIPObject.ts` L26+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LIPObject.ts#L26)
-  - [`readBinary` L112–L136](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LIPObject.ts#L112-L136) — header + keyframe table
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`LIP.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLIP/LIP.cs#L11) — in-memory LIP / viseme DTOs
+  - [`LIPObject.ts` L26+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LIPObject.ts#L26)
+  - [`readBinary` L112–L136](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LIPObject.ts#L112-L136) — header + keyframe table
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`LIP.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorLIP/LIP.cs#L11) — in-memory LIP / viseme DTOs
 
 ### See also
 
@@ -511,7 +511,7 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 
 **Cross-reference:**
 
-- **[reone](https://github.com/modawan/reone)**: [`lipreader.cpp` L27–L42](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/lipreader.cpp#L27-L42) — LIP header parsing
+- **[reone](https://github.com/modawan/reone)**: [`lipreader.cpp` L27–L42](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/lipreader.cpp#L27-L42) — LIP header parsing
 
 ### [keyframe](MDL-MDX-File-Format#controller-structure) Table
 
@@ -534,7 +534,7 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 
 **Cross-reference:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`LIPObject.ts` `readBinary` L112–L136](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LIPObject.ts#L112-L136) — keyframe table parsing
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`LIPObject.ts` `readBinary` L112–L136](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LIPObject.ts#L112-L136) — keyframe table parsing
 
 ---
 
@@ -561,7 +561,7 @@ KotOR reuses the 16-shape Preston Blair [phoneme](https://en.wikipedia.org/wiki/
 | 14 | **L** | Tongue forward ("l", "r") |
 | 15 | **KG** | Back of tongue raised ("k", "g", "h") |
 
-**Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:50-169`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L50-L169)
+**Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:50-169`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L50-L169)
 
 ---
 
@@ -569,11 +569,11 @@ KotOR reuses the 16-shape Preston Blair [phoneme](https://en.wikipedia.org/wiki/
 
 - **[Interpolation](https://en.wikipedia.org/wiki/Interpolation):** The engine interpolates between consecutive [keyframes](https://en.wikipedia.org/wiki/Key_frame)
 - PyKotor exposes `LIP.get_shapes()` to compute the left/right [visemes](https://en.wikipedia.org/wiki/Viseme) plus blend factor.
-  **Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:342-385`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L342-L385)
+  **Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:342-385`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L342-L385)
 - **Sorting:** When adding frames, PyKotor removes existing entries at the same timestamp and keeps the list sorted.  
-  **Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:305-323`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L305-L323)
+  **Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:305-323`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L305-L323)
 - **Duration Alignment:** LIP `length` is updated to the max timestamp so exported [animations](MDL-MDX-File-Format#animation-header) stay aligned with their [WAV](Audio-and-Localization-Formats#wav) line.  
-  **Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:267-323`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L267-L323)
+  **Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:267-323`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L267-L323)
 - **Generation:** Automated pipelines (MDLOps, KotORBlender) map phonemes to visemes via `LIPShape.from_phoneme()`, and the same mapping table appears in the vendor projects referenced above to keep authoring tools consistent.  
 
 ---
@@ -583,10 +583,10 @@ KotOR reuses the 16-shape Preston Blair [phoneme](https://en.wikipedia.org/wiki/
 - **Binary Reader:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py)  
 - **data [model](MDL-MDX-File-Format):** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py)  
 - **Reference implementations:**  
-  - **[reone](https://github.com/modawan/reone)** [`lipreader.cpp` L27+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/lipreader.cpp#L27)
+  - **[reone](https://github.com/modawan/reone)** [`lipreader.cpp` L27+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/lipreader.cpp#L27)
   - **[xoreos](https://github.com/xoreos/xoreos)** [`lipfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lipfile.cpp)
-  - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** [`LIPObject.ts` L26+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LIPObject.ts#L26)
-  - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** [`LIP.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLIP/LIP.cs#L11)
+  - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** [`LIPObject.ts` L26+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LIPObject.ts#L26)
+  - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** [`LIP.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorLIP/LIP.cs#L11)
 
 The references above implement the same header layout and [keyframe](MDL-MDX-File-Format#controller-structure) encoding, ensuring PyKotor stays compatible with the other toolchains.
 
@@ -610,17 +610,17 @@ Hex type id **`0x0004`** is listed under [Resource type identifiers](Resource-Fo
 - **Binary reader/writer:**
 
   - [`io_wav.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py)
-  - [`WAVBinaryReader` L100+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L100)
-  - [`load` L148+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L148) (SFX obfuscation + RIFF)
-  - [`WAVBinaryWriter` L302+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L302)
-  - RIFF parse helper [`_parse_riff_wave_from_kaitai` L56+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L56)
+  - [`WAVBinaryReader` L100+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L100)
+  - [`load` L148+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L148) (SFX obfuscation + RIFF)
+  - [`WAVBinaryWriter` L302+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L302)
+  - RIFF parse helper [`_parse_riff_wave_from_kaitai` L56+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L56)
 - **Data model:** [`wav_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/wav_data.py).
 
 **Cross-reference implementations (line anchors are against `master` and may drift):**
 
-- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)) — [`wavreader.cpp` — `WavReader::load` L32+](https://github.com/modawan/reone/blob/master/src/libs/audio/format/wavreader.cpp#L32) (470-byte SFX signature `FF F3 60 C4` then seek `0x1DA`, RIFF/`fmt`/`data`, MP3-in-WAV edge case).
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — [`AudioFile.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/audio/AudioFile.ts) — SFX probe [`fakeHeaderTest` / `riffHeaderTest` L12-L13](https://github.com/KobaltBlu/KotOR.js/blob/master/src/audio/AudioFile.ts#L12-L13), strip 470-byte prefix [`processFile` L118-L124](https://github.com/KobaltBlu/KotOR.js/blob/master/src/audio/AudioFile.ts#L118-L124), MP3-in-WAV `riffSize == 50` branch [L131-L137](https://github.com/KobaltBlu/KotOR.js/blob/master/src/audio/AudioFile.ts#L131-L137).
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — no dedicated `KotorWAV` reader on the default branch; creature sound **StrRefs** (resolved to `.wav` via [TLK](Audio-and-Localization-Formats#tlk) at runtime) are modeled in [`Kotor.NET/Formats/KotorSSF/SSF.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorSSF/SSF.cs#L12). For byte-level RIFF/SFX layout, prefer the implementations above:
+- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)) — [`wavreader.cpp` — `WavReader::load` L32+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/audio/format/wavreader.cpp#L32) (470-byte SFX signature `FF F3 60 C4` then seek `0x1DA`, RIFF/`fmt`/`data`, MP3-in-WAV edge case).
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — [`AudioFile.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/audio/AudioFile.ts) — SFX probe [`fakeHeaderTest` / `riffHeaderTest` L12-L13](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/audio/AudioFile.ts#L12-L13), strip 470-byte prefix [`processFile` L118-L124](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/audio/AudioFile.ts#L118-L124), MP3-in-WAV `riffSize == 50` branch [L131-L137](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/audio/AudioFile.ts#L131-L137).
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — no dedicated `KotorWAV` reader on the default branch; creature sound **StrRefs** (resolved to `.wav` via [TLK](Audio-and-Localization-Formats#tlk) at runtime) are modeled in [`Kotor.NET/Formats/KotorSSF/SSF.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorSSF/SSF.cs#L12). For byte-level RIFF/SFX layout, prefer the implementations above:
 
   - PyKotor (`io_wav.py` in this section)
   - [reone](https://github.com/modawan/reone)

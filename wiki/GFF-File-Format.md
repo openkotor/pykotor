@@ -130,10 +130,10 @@ Dozens of other extensions are documented across this wiki.
 **Implementation (PyKotor):**
 
 - package: [`resource/formats/gff/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/)
-- binary read [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)
-- write [`GFFBinaryWriter.write` L355+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L355)
-- data model [`GFF` L509+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509)
-- [`GFFStruct` L689+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689)
+- binary read [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)
+- write [`GFFBinaryWriter.write` L355+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L355)
+- data model [`GFF` L509+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509)
+- [`GFFStruct` L689+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689)
 - XML/JSON/Twine variants in `io_gff_xml`, `io_gff_json`, `io_gff_twine`
 
 **Cross-reference (other implementations):**
@@ -144,8 +144,8 @@ Dozens of other extensions are documented across this wiki.
 | [reone](https://github.com/modawan/reone) | [`gffwriter.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffwriter.cpp) | C++ writer |
 | [reone](https://github.com/modawan/reone) | [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp) | core GFF types |
 | [xoreos](https://github.com/xoreos/xoreos) | [`gff3file.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/gff3file.cpp) | Aurora GFF3 |
-| [KotOR.js](https://github.com/KobaltBlu/KotOR.js) | [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) | TypeScript parser |
-| [Kotor.NET](https://github.com/NickHugi/Kotor.NET) | [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) | .NET reader/writer |
+| [KotOR.js](https://github.com/KobaltBlu/KotOR.js) | [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) | TypeScript parser |
+| [Kotor.NET](https://github.com/NickHugi/Kotor.NET) | [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) | .NET reader/writer |
 | [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity) | [`GFFObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/GFFObject.cs) | C# Unity loader |
 | [xoreos-tools](https://github.com/xoreos/xoreos-tools) | [`gff3file.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/gff3file.cpp) | CLI tools |
 | [bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats) | GFF Kaitai specs | Format specs |
@@ -184,9 +184,9 @@ The file header is 56 bytes in size:
 
 **References:**
 
-- PyKotor [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)
+- PyKotor [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)
 - [reone](https://github.com/modawan/reone)
-- [`gffreader.cpp` L30–L44](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp#L30-L44)
+- [`gffreader.cpp` L30–L44](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/gffreader.cpp#L30-L44)
 
 ### Label array
 
@@ -199,7 +199,7 @@ Labels are 16-[byte](https://en.wikipedia.org/wiki/Byte) [null-terminated](https
 **References:**
 
 - [reone](https://github.com/modawan/reone)
-- [`gffreader.cpp` L151–L154](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp#L151-L154)
+- [`gffreader.cpp` L151–L154](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/gffreader.cpp#L151-L154)
 
 ### Struct array
 
@@ -214,7 +214,7 @@ Each struct entry is 12 bytes:
 **References:**
 
 - [reone](https://github.com/modawan/reone)
-- [`gffreader.cpp` L40–L62](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp#L40-L62)
+- [`gffreader.cpp` L40–L62](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/gffreader.cpp#L40-L62)
 
 ### field array
 
@@ -229,7 +229,7 @@ Each field entry is 12 bytes:
 **References:**
 
 - [reone](https://github.com/modawan/reone)
-- [`gffreader.cpp` L67–L76](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp#L67-L76)
+- [`gffreader.cpp` L67–L76](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/gffreader.cpp#L67-L76)
 
 ### field data
 
@@ -250,7 +250,7 @@ Complex field types store their data in the field data section:
 **References:**
 
 - [reone](https://github.com/modawan/reone)
-- [`gffreader.cpp` L78–L146](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp#L78-L146)
+- [`gffreader.cpp` L78–L146](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/gffreader.cpp#L78-L146)
 
 ### field Indices (Multiple Element Map / MultiMap)
 
@@ -306,7 +306,7 @@ GFF supports the following field types:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py:73-108`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L73-L108) - GFF data type definitions
+- [`Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py:73-108`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L73-L108) - GFF data type definitions
 
 **type Selection Guidelines:**
 
@@ -522,10 +522,10 @@ Complex types require accessing data from the field data section:
 
 | Component | PyKotor path | Line reference |
 |-----------|--------------|----------------|
-| Binary read | `io_gff.py` | [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) |
-| Binary write | `io_gff.py` | [`GFFBinaryWriter.write` L345+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L345) |
-| GFF data model | `gff_data.py` | [`GFF` L509+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509) |
-| GFFStruct | `gff_data.py` | [L689+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689) |
+| Binary read | `io_gff.py` | [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) |
+| Binary write | `io_gff.py` | [`GFFBinaryWriter.write` L345+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L345) |
+| GFF data model | `gff_data.py` | [`GFF` L509+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509) |
+| GFFStruct | `gff_data.py` | [L689+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689) |
 
 ### See also
 

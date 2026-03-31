@@ -22,14 +22,14 @@ NSS (NWScript Source) files contain human-readable NWScript source code that com
 
 **Implementation (PyKotor):**
 
-- NSS compiles to [NCS](NCS-File-Format) via the in-tree compiler — [`InbuiltNCSCompiler.compile_script` L51+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py#L51)
-- [`compile_nss` L128+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py#L128)
-- CLI wiring [`use_builtin_compiler` / `cmd_compile`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/cli/commands/compile.py#L66)
-- parser [`NssParser` L80+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/parser.py#L80)
-- definitions [`ScriptConstant` / `ScriptFunction` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/script.py#L21)
-- [`KOTOR_CONSTANTS` L12+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L12)
-- [`KOTOR_FUNCTIONS` L3268+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3268)
-- [`KOTOR_LIBRARY` L5+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5)
+- NSS compiles to [NCS](NCS-File-Format) via the in-tree compiler — [`InbuiltNCSCompiler.compile_script` L51+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py#L51)
+- [`compile_nss` L128+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py#L128)
+- CLI wiring [`use_builtin_compiler` / `cmd_compile`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/cli/commands/compile.py#L66)
+- parser [`NssParser` L80+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/parser.py#L80)
+- definitions [`ScriptConstant` / `ScriptFunction` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/script.py#L21)
+- [`KOTOR_CONSTANTS` L12+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L12)
+- [`KOTOR_FUNCTIONS` L3268+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3268)
+- [`KOTOR_LIBRARY` L5+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5)
 - bytecode I/O: [NCS-File-Format](NCS-File-Format) (`io_ncs.py`, `ncs_data.py`)
 
 **Cross-reference (other compilers and tooling):**
@@ -50,14 +50,14 @@ NSS (NWScript Source) files contain human-readable NWScript source code that com
 - **[xoreos](https://github.com/xoreos/xoreos)** — NWScript VM ([`src/aurora/nwscript/`](https://github.com/xoreos/xoreos/tree/master/src/aurora/nwscript))
 - **[reone](https://github.com/modawan/reone)**:
 
-  - Script VM: [`VirtualMachine` L41+](https://github.com/modawan/reone/blob/master/include/reone/script/virtualmachine.h#L41)
-  - [`virtualmachine.cpp` L36+](https://github.com/modawan/reone/blob/master/src/libs/script/virtualmachine.cpp#L36)
+  - Script VM: [`VirtualMachine` L41+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/include/reone/script/virtualmachine.h#L41)
+  - [`virtualmachine.cpp` L36+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/script/virtualmachine.cpp#L36)
   - tree [`src/libs/script/`](https://github.com/modawan/reone/tree/master/src/libs/script)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
 
-  - NCS load/execute and defs: [`NWScript` class L39+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScript.ts#L39)
+  - NCS load/execute and defs: [`NWScript` class L39+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScript.ts#L39)
   - tree [`src/nwscript/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/nwscript)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`NCS` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (`Kotor.NET/Formats/KotorNCS/`)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`NCS` L9+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (`Kotor.NET/Formats/KotorNCS/`)
 - **[Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)** — Decompiled vanilla KotOR scripts and `nwscript.nss` references
 
 **Community (scripts):**
@@ -3083,12 +3083,12 @@ PyKotor implements `nwscript.nss` definitions in three Python modules:
 
 **Reference:**
 
-- [`script.py` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/script.py#L21) (data structures)
-- [`KOTOR_CONSTANTS` L12+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L12) (constants)
-- [`KOTOR_FUNCTIONS` L3268+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3268) (function signatures)
-- [`scriptlib.py` L5+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5) (`#include` library text)
-- [`compilers.py` `InbuiltNCSCompiler` L28+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py#L28)
-- [`parser.py` `NssParser` L80+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/parser.py#L80)
+- [`script.py` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/script.py#L21) (data structures)
+- [`KOTOR_CONSTANTS` L12+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L12) (constants)
+- [`KOTOR_FUNCTIONS` L3268+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3268) (function signatures)
+- [`scriptlib.py` L5+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5) (`#include` library text)
+- [`compilers.py` `InbuiltNCSCompiler` L28+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py#L28)
+- [`parser.py` `NssParser` L80+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/parser.py#L80)
 
 ---
 
@@ -6586,7 +6586,7 @@ In summary, while no one has publicly shared a "uncomment everything" patch (lik
 - [`KotOR.js/src/nwscript/NWScript.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScript.ts) - TypeScript function definitions
 - [`KotOR.js/src/nwscript/NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) - KotOR 1 definitions
 - [`KotOR.js/src/nwscript/NWScriptDefK2.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK2.ts) - KotOR 2 definitions
-- [`KotOR.js/src/nwscript/compiler/NWScriptParser.ts` L65+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/compiler/NWScriptParser.ts#L65) — Parser for `nwscript.nss` / NSS (engine types, constants, actions)
+- [`KotOR.js/src/nwscript/compiler/NWScriptParser.ts` L65+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/compiler/NWScriptParser.ts#L65) — Parser for `nwscript.nss` / NSS (engine types, constants, actions)
 - [`KotOR.js/src/nwscript/NWScriptInstructionSet.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstructionSet.ts) - Instruction set definitions
 - [`KotOR.js/src/nwscript/NWScriptConstants.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptConstants.ts) - Constant definitions
 - **`HoloLSP/server/src/nwscript-parser.ts` L52+** — `NWScriptParser` (recursive descent)
@@ -6625,7 +6625,7 @@ In summary, while no one has publicly shared a "uncomment everything" patch (lik
 
 **Other Implementations:**
 
-- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) — C# [NCS](NCS-File-Format) model (`Kotor.NET/Formats/KotorNCS/`)
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) — C# [NCS](NCS-File-Format) model (`Kotor.NET/Formats/KotorNCS/`)
 - **`KotORModSync/KOTORModSync.Core/Data/NWScriptHeader.cs`** - C# NWScript header parser
   - Canonical (th3w1zard1/KotORModSync): <https://github.com/th3w1zard1/KotORModSync/blob/c8b0d10ce3fd7525d593d34a3be8d151da7d3387/KOTORModSync.Core/Data/NWScriptHeader.cs>
 - **`KotORModSync/KOTORModSync.Core/Data/NWScriptFileReader.cs`** - C# NWScript file reader
@@ -6641,7 +6641,7 @@ In summary, while no one has publicly shared a "uncomment everything" patch (lik
 - [`xoreos/src/engines/kotorbase/object.h`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotorbase/object.h) - KotOR object implementation
 - [`NorthernLights/Assets/Scripts/ncs/control.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/control.cs) - Unity C# [NCS](NCS-File-Format) VM control
 - [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs) - Unity C# [NCS](NCS-File-Format) reader
-- [`KotOR.js/src/nwscript/NWScript.ts` L39+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScript.ts#L39) — TypeScript NCS container (`NWScript.Load`, instruction map, `newInstance`)
+- [`KotOR.js/src/nwscript/NWScript.ts` L39+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScript.ts#L39) — TypeScript NCS container (`NWScript.Load`, instruction map, `newInstance`)
 - [`KotOR.js/src/nwscript/NWScriptInstance.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts) - TypeScript NWScript instance
 - [`KotOR.js/src/nwscript/NWScriptStack.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptStack.ts) - TypeScript stack implementation
 - [`KotOR.js/src/nwscript/NWScriptSubroutine.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptSubroutine.ts) - TypeScript subroutine handling
@@ -6666,14 +6666,14 @@ In summary, while no one has publicly shared a "uncomment everything" patch (lik
 
 **NWScript Execution:**
 
-- [`reone/src/libs/script/virtualmachine.cpp` L36+](https://github.com/modawan/reone/blob/master/src/libs/script/virtualmachine.cpp#L36) — Script VM (`VirtualMachine` implementation)
-- [`reone/include/reone/script/virtualmachine.h` L41+](https://github.com/modawan/reone/blob/master/include/reone/script/virtualmachine.h#L41) — `VirtualMachine` declaration
-- [`reone/src/libs/script/program.cpp` L28+](https://github.com/modawan/reone/blob/master/src/libs/script/program.cpp#L28) — `ScriptProgram` bytecode container (`add`, instruction helpers)
+- [`reone/src/libs/script/virtualmachine.cpp` L36+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/script/virtualmachine.cpp#L36) — Script VM (`VirtualMachine` implementation)
+- [`reone/include/reone/script/virtualmachine.h` L41+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/include/reone/script/virtualmachine.h#L41) — `VirtualMachine` declaration
+- [`reone/src/libs/script/program.cpp` L28+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/script/program.cpp#L28) — `ScriptProgram` bytecode container (`add`, instruction helpers)
 - [`xoreos/src/aurora/nwscript/execution.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/execution.cpp) - NWScript execution engine
 - [`xoreos/src/aurora/nwscript/variable.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/variable.cpp) - Variable handling
 - [`xoreos/src/aurora/nwscript/function.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/function.cpp) - Function call handling
 - [`NorthernLights/Assets/Scripts/ncs/control.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/control.cs) - Unity C# [NCS](NCS-File-Format) VM control and execution
-- [`KotOR.js/src/nwscript/NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts#L32) — Per-script execution state (`run` / `runScript`, stack, instruction stepping)
+- [`KotOR.js/src/nwscript/NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScriptInstance.ts#L32) — Per-script execution state (`run` / `runScript`, stack, instruction stepping)
 
 **Routine Implementations:**
 
@@ -6714,8 +6714,8 @@ In summary, while no one has publicly shared a "uncomment everything" patch (lik
 
 **NWScript AST and Parsing:**
 
-- [`KotOR.js/src/nwscript/compiler/NWScriptCompiler.ts` L95+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/compiler/NWScriptCompiler.ts#L95) — NSS → NCS compiler pipeline (`NWScriptCompiler`)
-- [`KotOR.js/src/nwscript/compiler/ASTTypes.ts` L4+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/compiler/ASTTypes.ts#L4) — Compiler AST node types (`ProgramNode`, `FunctionNode`, …)
+- [`KotOR.js/src/nwscript/compiler/NWScriptCompiler.ts` L95+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/compiler/NWScriptCompiler.ts#L95) — NSS → NCS compiler pipeline (`NWScriptCompiler`)
+- [`KotOR.js/src/nwscript/compiler/ASTTypes.ts` L4+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/compiler/ASTTypes.ts#L4) — Compiler AST node types (`ProgramNode`, `FunctionNode`, …)
 - **`HoloLSP/server/src/nwscript-ast.ts` L7+** — LSP-side AST definitions
   - Canonical (th3w1zard1/HoloLSP): <https://github.com/th3w1zard1/HoloLSP/blob/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2/server/src/nwscript-ast.ts#L7>
 

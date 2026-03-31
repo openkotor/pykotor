@@ -53,16 +53,16 @@ Hex type id **`0x07F1`** is listed under [Resource type identifiers](Resource-Fo
 - **Reader / writer:**
 
   - [`io_dds.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py)
-  - [`TPCDDSReader` L49+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L49)
-  - [`load` L191+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L191)
-  - [`TPCDDSWriter` L351+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L351)
+  - [`TPCDDSReader` L49+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L49)
+  - [`load` L191+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L191)
+  - [`TPCDDSWriter` L351+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L351)
   - routing via [`tpc_auto.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_auto.py) (`ResourceType.DDS` detection)
 
 **Cross-reference implementations (line anchors are against `master` and may drift):**
 
 - **[xoreos](https://github.com/xoreos/xoreos)** ([tools mirror: xoreos-tools](https://github.com/xoreos/xoreos-tools)): [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) — engine DDS loading (standard and BioWare variant).
 - **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) — command-line DDS conversion.
-- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)) — no standalone DDS reader in-tree; the game pipeline loads **TPC** via [`TpcReader::load` L32+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/tpcreader.cpp#L32). Use PyKotor or xoreos-tools to convert DDS for KotOR-style assets.
+- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)) — no standalone DDS reader in-tree; the game pipeline loads **TPC** via [`TpcReader::load` L32+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/tpcreader.cpp#L32). Use PyKotor or xoreos-tools to convert DDS for KotOR-style assets.
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — runtime textures follow the **TPC** path:
 
   - [`TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts)
@@ -284,8 +284,8 @@ Repository roots (file-level links follow in the bullets below):
 
 **PyKotor:**
 
-- [`io_tpc.py` L132-L186 (`TPCBinaryReader.load`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L132-L186) - header fields, compressed/uncompressed size handling, optional TXI footer string
-- [`io_tpc.py` L419-L427 (`TPCBinaryWriter.write`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L419-L427) - header serialization
+- [`io_tpc.py` L132-L186 (`TPCBinaryReader.load`)](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L132-L186) - header fields, compressed/uncompressed size handling, optional TXI footer string
+- [`io_tpc.py` L419-L427 (`TPCBinaryWriter.write`)](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L419-L427) - header serialization
 
 ---
 
@@ -306,7 +306,7 @@ TPC supports the following encodings (documented in `TPCTextureFormat`):
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py:54-178`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py#L54-L178) - Pixel format and encoding
+- [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py:54-178`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py#L54-L178) - Pixel format and encoding
 
 ---
 
@@ -320,7 +320,7 @@ TPC supports the following encodings (documented in `TPCTextureFormat`):
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py:216-285`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L216-L285) - Mipmaps and layers
+- [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py:216-285`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L216-L285) - Mipmaps and layers
 
 ---
 
@@ -334,7 +334,7 @@ TPC supports the following encodings (documented in `TPCTextureFormat`):
 
 **PyKotor:**
 
-- [`io_tpc.py` L158-L304](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L158-L304) - cube-map detection, layer/mipmap read loop, BGRA deswizzle, `_normalize_cubemaps`
+- [`io_tpc.py` L158-L304](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L158-L304) - cube-map detection, layer/mipmap read loop, BGRA deswizzle, `_normalize_cubemaps`
 
 ---
 
@@ -348,7 +348,7 @@ TPC supports the following encodings (documented in `TPCTextureFormat`):
 
 **PyKotor:**
 
-- [`io_tpc.py` L179-L197](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L179-L197) - TXI footer string read and `is_animated` flag
+- [`io_tpc.py` L179-L197](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L179-L197) - TXI footer string read and `is_animated` flag
 
 ---
 
@@ -395,10 +395,10 @@ All of the engines listed above treat the header and mipmap data identically. Th
 
 - **PyKotor**:
 
-  - [`ResourceType.PLT` L247+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L247) (Aurora type id **6**, NWN-oriented metadata)
-  - [`kaitai_generated/plt.py` L11+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/kaitai_generated/plt.py#L11) (documentation-only generated layout)
-- **[xoreos](https://github.com/xoreos/xoreos)** — NWN *PLT* loader [`src/graphics/aurora/pltfile.cpp` L1+](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/pltfile.cpp#L1); creature usage [`creature.cpp` L573-L589](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/creature.cpp#L573-L589). Torlack spec: [xoreos-docs `specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html).
-- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)) — KotOR pipeline uses **TPC**, not PLT ([`TpcReader::load` L32+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/tpcreader.cpp#L32)).
+  - [`ResourceType.PLT` L247+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/type.py#L247) (Aurora type id **6**, NWN-oriented metadata)
+  - [`kaitai_generated/plt.py` L11+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/kaitai_generated/plt.py#L11) (documentation-only generated layout)
+- **[xoreos](https://github.com/xoreos/xoreos)** — NWN *PLT* loader [`src/graphics/aurora/pltfile.cpp` L1+](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/aurora/pltfile.cpp#L1); creature usage [`creature.cpp` L573-L589](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/engines/nwn/creature.cpp#L573-L589). Torlack spec: [xoreos-docs `specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html).
+- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)) — KotOR pipeline uses **TPC**, not PLT ([`TpcReader::load` L32+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/tpcreader.cpp#L32)).
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**
 
   - [`TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts) — runtime [textures](Texture-Formats#tpc)
@@ -519,7 +519,7 @@ Each pixel entry is 2 bytes:
 
 **KotOR vs Neverwinter Nights**:
 
-- **Neverwinter Nights**: *PLT* files are actively used for character customization. The [xoreos](https://github.com/xoreos/xoreos) engine includes a complete *PLT* implementation ([`pltfile.cpp` L1+](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/pltfile.cpp#L1)) that is used in *NWN*'s creature system ([`creature.cpp` L573-L589](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/creature.cpp#L573-L589)).
+- **Neverwinter Nights**: *PLT* files are actively used for character customization. The [xoreos](https://github.com/xoreos/xoreos) engine includes a complete *PLT* implementation ([`pltfile.cpp` L1+](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/aurora/pltfile.cpp#L1)) that is used in *NWN*'s creature system ([`creature.cpp` L573-L589](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/engines/nwn/creature.cpp#L573-L589)).
 
 - **KotOR**: While the *PLT* resource type (`0x0006`) is defined in *KotOR*'s resource type system, ***PLT* files are not actually used in *KotOR* games**. *KotOR* uses standard [TPC](Texture-Formats#tpc) [Textures](Texture-Formats#tpc) for all [Textures](Texture-Formats#tpc), including character [Models](MDL-MDX-File-Format). No *KotOR*-specific implementations load or parse *PLT* files.
 
@@ -531,7 +531,7 @@ Each pixel entry is 2 bytes:
 
 **Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Complete *PLT* format specification  
 **Reference**: **[xoreos](https://github.com/xoreos/xoreos)**: [`src/graphics/aurora/pltfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/pltfile.cpp) - *xoreos* *PLT* implementation (*NWN*-specific)  
-**Reference**: **[xoreos](https://github.com/xoreos/xoreos)**: [`creature.cpp` L573-L589](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/creature.cpp#L573-L589) - *Neverwinter Nights* creature *PLT* usage
+**Reference**: **[xoreos](https://github.com/xoreos/xoreos)**: [`creature.cpp` L573-L589](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/engines/nwn/creature.cpp#L573-L589) - *Neverwinter Nights* creature *PLT* usage
 
 ### See also
 
@@ -594,26 +594,26 @@ TXI ([texture](Texture-Formats#tpc) Info) files are compact ASCII descriptors th
 
 **Implementation (PyKotor):**
 
-- ASCII/binary TXI parse loop [`TXIBinaryReader.load` L43+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/io_txi.py#L43)
-- in-memory [`TXI` L94+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L94)
-- [`TXICommand` L721+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L721)
+- ASCII/binary TXI parse loop [`TXIBinaryReader.load` L43+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/txi/io_txi.py#L43)
+- in-memory [`TXI` L94+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L94)
+- [`TXICommand` L721+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L721)
 
 **Cross-reference:**
 
 - **[reone](https://github.com/modawan/reone)**:
 
-  - [`TxiReader::load` L28+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/txireader.cpp#L28)
-  - [`processLine` L55+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/txireader.cpp#L55)
+  - [`TxiReader::load` L28+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/txireader.cpp#L28)
+  - [`processLine` L55+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/txireader.cpp#L55)
 - **[xoreos](https://github.com/xoreos/xoreos)**
-  - [`src/graphics/images/txi.cpp` L1+](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/txi.cpp#L1) (Aurora TXI)
+  - [`src/graphics/images/txi.cpp` L1+](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/images/txi.cpp#L1) (Aurora TXI)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
-  - [`TXI` L16+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TXI.ts#L16)
+  - [`TXI` L16+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/TXI.ts#L16)
   - [command enums `src/enums/graphics/txi/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/enums/graphics/txi)
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**
-  - [`TXI.cs` L1+](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/Resource/TXI.cs#L1)
+  - [`TXI.cs` L1+](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/Resource/TXI.cs#L1)
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**:
-  - [`Kotor.NET/Formats/KotorTXI/TXI.cs` L8+ (modifier DTOs / `RawString()` helpers)](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTXI/TXI.cs#L8)
-  - [`TXIReader.cs` L13+ (reader scaffold; verify behavior on default branch before relying on `Read()`)](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTXI/TXIReader.cs#L13)
+  - [`Kotor.NET/Formats/KotorTXI/TXI.cs` L8+ (modifier DTOs / `RawString()` helpers)](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorTXI/TXI.cs#L8)
+  - [`TXIReader.cs` L13+ (reader scaffold; verify behavior on default branch before relying on `Read()`)](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorTXI/TXIReader.cs#L13)
 
 ### See also
 
@@ -688,7 +688,7 @@ Each line encodes a UV triplet; UV coordinates follow standard UV mapping conven
 | `fps` | Frames per second for playback. |
 | `speed` | Legacy alias for `fps` (still parsed for compatibility). |
 
-When `proceduretype=cycle`, PyKotor splits the [TPC](Texture-Formats#tpc) into `numx × numy` layers and advances them at `fps` (see [`io_tpc.py:169-190`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L169-L190)).
+When `proceduretype=cycle`, PyKotor splits the [TPC](Texture-Formats#tpc) into `numx × numy` layers and advances them at `fps` (see [`io_tpc.py:169-190`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L169-L190)).
 
 ### Font Atlas Layout
 
@@ -701,7 +701,7 @@ KotOR’s bitmap fonts use TXI commands to describe glyph boxes:
 | `upperleftcoords`, `lowerrightcoords` | arrays of UV coordinates for each glyph corner. |
 | `codepage`, `isdoublebyte`, `dbmapping` | Support multi-[byte](https://en.wikipedia.org/wiki/Byte) font atlases (Asian locales). |
 
-KotOR.js exposes identical structures in [`src/resource/TXI.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TXI.ts#L16-L255), ensuring the coordinates here match the engine’s expectations.
+KotOR.js exposes identical structures in [`src/resource/TXI.ts`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/TXI.ts#L16-L255), ensuring the coordinates here match the engine’s expectations.
 
 ### Streaming and Platform Hints
 
@@ -756,11 +756,11 @@ Many TXI files in the game installation are **empty** (0 bytes). These empty TXI
 
 ## Implementation Details
 
-- **Parser:** [`io_txi.py` `TXIBinaryReader.load` L43+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/io_txi.py#L43)  
-- **Data model:** [`txi_data.py` `TXI` L94+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L94)  
+- **Parser:** [`io_txi.py` `TXIBinaryReader.load` L43+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/txi/io_txi.py#L43)  
+- **Data model:** [`txi_data.py` `TXI` L94+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L94)  
 - **Reference implementations:**  
-  - [reone `txireader.cpp` L28+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/txireader.cpp#L28)  
-  - [KotOR.js `TXI.ts` L16+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TXI.ts#L16)  
+  - [reone `txireader.cpp` L28+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/txireader.cpp#L28)  
+  - [KotOR.js `TXI.ts` L16+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/TXI.ts#L16)  
   - **tga2tpc** (texture conversion tooling)
     - Upstream (ndixUR/tga2tpc): <https://github.com/ndixUR/tga2tpc/tree/758f3dbd155356408abc36508b1e10fa4a83f22a>
     - Mirror (th3w1zard1/tga2tpc): <https://github.com/th3w1zard1/tga2tpc/tree/758f3dbd155356408abc36508b1e10fa4a83f22a>

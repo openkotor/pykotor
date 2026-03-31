@@ -75,7 +75,7 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 - **Section order (long format pages):** Use a consistent order: Overview → Structure / fields → Examples (optional) → See also. Add a short on-page table of contents at the top where it helps navigation.
 - **Format reference pages:** Include a clear **Structure / fields** (or equivalent) section. Where the format has a fixed or deterministic layout, state total length, offset base (e.g. "offsets from file start"), or byte ranges so that parsers and validators can use the page reliably.
 - **Preserved-source exception:** Do not apply ordinary rewrite/template cleanup to preserved source documents such as `Bioware-Aurora-*` pages or [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme). Those pages are intentionally retained as source artifacts; put modern explanation in companion pages instead.
-- **Implementation and references:** On format and tool pages, add **Implementation (PyKotor)** and **Cross-reference** (other repos, specs) where missing. PyKotor link form: `[symbol Lx+](https://github.com/OldRepublicDevs/PyKotor/blob/master/path#Lx)` with line anchors when practical. Prefer canonical repos; avoid duplicate mirror links.
+- **Implementation and references:** On format and tool pages, add **Implementation (PyKotor)** and **Cross-reference** (other repos, specs) where missing. PyKotor link form: `[symbol Lx+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/path#Lx)` with line anchors when practical. Prefer canonical repos; avoid duplicate mirror links.
 
   - modawan/reone
   - KobaltBlu/KotOR.js

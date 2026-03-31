@@ -46,12 +46,12 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 **PyKotor:**
 
-- [`are.py` `ARE` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L21) — in-memory area model (lighting, fog, scripts, rooms, etc.)
-- [`construct_are` L409+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L409)
-- [`read_are` L807+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L807)
-- [`write_are` L833+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L833) — GFF ↔ `ARE` round-trip
-- [`gff_data.py` `GFFContent.ARE` L159](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L159) — four-character GFF type id
-- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
+- [`are.py` `ARE` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L21) — in-memory area model (lighting, fog, scripts, rooms, etc.)
+- [`construct_are` L409+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L409)
+- [`read_are` L807+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L807)
+- [`write_are` L833+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L833) — GFF ↔ `ARE` round-trip
+- [`gff_data.py` `GFFContent.ARE` L159](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L159) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **HolocronToolset:**
 
@@ -64,8 +64,8 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
   - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
   - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
   - Area-specific parsing may live under [`src/libs/resource/parser/`](https://github.com/modawan/reone/tree/master/src/libs/resource/parser) when present
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (ARE as GFF)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (ARE uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (ARE as GFF)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (ARE uses generic GFF structure)
 - **[xoreos](https://github.com/xoreos/xoreos)** — Aurora ARE via generic GFF pipeline
 
 **Community context (workflow):** Area + walkmesh + module packaging discussions appear across Deadly Stream and forums. See:
@@ -650,8 +650,8 @@ The blue walkable area rendered in editors comes from the walkmesh ([BWM file](L
 
 **Reference Code Locations:**
 
-- **Reone Forward [transformation](Level-Layout-Formats#adjacencies-wok-only)**: **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/map.cpp:174-199`](https://github.com/modawan/reone/blob/master/src/libs/game/gui/map.cpp#L174-L199) - `getMapPosition()`
-- **Reone are Parsing**: **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/gff/are.cpp:284-297`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/gff/are.cpp#L284-L297) - Map struct parsing
+- **Reone Forward [transformation](Level-Layout-Formats#adjacencies-wok-only)**: **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/map.cpp:174-199`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/gui/map.cpp#L174-L199) - `getMapPosition()`
+- **Reone are Parsing**: **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/gff/are.cpp:284-297`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/parser/gff/are.cpp#L284-L297) - Map struct parsing
 - **PyKotor are Class**: `Libraries/PyKotor/src/pykotor/resource/generics/are.py:250-260` - Map coordinate storage
 - **PyKotor Minimap Rendering**: `Tools/HolocronToolset/src/toolset/gui/widgets/renderer/[walkmesh](Level-Layout-Formats#bwm).py:555-603` - [texture](Texture-Formats#tpc) rendering implementation
 
@@ -679,12 +679,12 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **PyKotor:**
 
-- [`git.py` `GIT` L53+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L53) — root GIT model and instance subclasses (`GITCreature`, `GITDoor`, …)
-- [`construct_git` L1148+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L1148)
-- [`read_git` L1541+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L1541)
-- [`write_git` L1550+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L1550) — GFF ↔ `GIT` round-trip (includes root ambient/music field wiring in `construct_git` / `dismantle_git`)
-- [`gff_data.py` `GFFContent.GIT` L162](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L162) — four-character GFF type id
-- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
+- [`git.py` `GIT` L53+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L53) — root GIT model and instance subclasses (`GITCreature`, `GITDoor`, …)
+- [`construct_git` L1148+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L1148)
+- [`read_git` L1541+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L1541)
+- [`write_git` L1550+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L1550) — GFF ↔ `GIT` round-trip (includes root ambient/music field wiring in `construct_git` / `dismantle_git`)
+- [`gff_data.py` `GFFContent.GIT` L162](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L162) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **HolocronToolset:**
 
@@ -697,8 +697,8 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
   - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
   - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (GIT as GFF)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (GIT uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (GIT as GFF)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (GIT uses generic GFF structure)
 - **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; GIT loaded as GFF in engine
 
 ## Root properties (ambient audio and music)
@@ -1061,12 +1061,12 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 **PyKotor:**
 
-- [`ifo.py` `IFO` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L18) — IFO [GFF](GFF-File-Format) field model
-- [`construct_ifo` L115+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L115)
-- [`read_ifo` L262+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L262)
-- [`write_ifo` L271+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L271)
-- [`gff_data.py` `GFFContent.IFO` L164](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L164) — four-character GFF type id
-- Binary GFF pipeline: [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)
+- [`ifo.py` `IFO` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L18) — IFO [GFF](GFF-File-Format) field model
+- [`construct_ifo` L115+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L115)
+- [`read_ifo` L262+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L262)
+- [`write_ifo` L271+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L271)
+- [`gff_data.py` `GFFContent.IFO` L164](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L164) — four-character GFF type id
+- Binary GFF pipeline: [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)
 
 **HolocronToolset:**
 
@@ -1082,8 +1082,8 @@ IFO files define module-level metadata including entry configuration, expansion 
 
   - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
   - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (IFO uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (IFO uses generic GFF structure)
 - **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; IFO loaded as GFF in engine
 
 ## Core Module Identity

@@ -248,10 +248,10 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 **PyKotor:**
 
 - package: [`resource/formats/twoda/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/)
-- binary `V2.b`: [`TwoDABinaryReader.load` L146+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L146)
-- [`TwoDABinaryWriter.write` L183+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L183)
-- data model [`TwoDA` L87+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L87)
-- [`TwoDARow` L915+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L915)
+- binary `V2.b`: [`TwoDABinaryReader.load` L146+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L146)
+- [`TwoDABinaryWriter.write` L183+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L183)
+- data model [`TwoDA` L87+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L87)
+- [`TwoDARow` L915+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L915)
 - text `V2.0` / CSV / JSON:
 
   - `io_twoda_csv.py`
@@ -264,8 +264,8 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/resource/TwoDAObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts)
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**
 
-  - [`TwoDA.cs` L16+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDA.cs#L16) (in-memory table)
-  - [`TwoDABinaryStructure.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs#L12) (`V2.b` binary layout)
+  - [`TwoDA.cs` L16+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/Kotor2DA/TwoDA.cs#L16) (in-memory table)
+  - [`TwoDABinaryStructure.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs#L12) (`V2.b` binary layout)
 - **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp)
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs)
 - **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md) — basic format overview
@@ -297,9 +297,9 @@ The file type can be either `"2DA "` (space-padded) or `"2DA\t"` (tab-padded). B
 **References**:
 
 - **PyKotor** — header read in [`_load_twoda_legacy` / Kaitai path](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py)
-- **[reone](https://github.com/modawan/reone)**: [`2dareader.cpp` L29–L32](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp#L29-L32)
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`2dafile.cpp` L48–L51](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L48-L51)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`2DAObject.cs` L25–L32](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L25-L32)
+- **[reone](https://github.com/modawan/reone)**: [`2dareader.cpp` L29–L32](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/2dareader.cpp#L29-L32)
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`2dafile.cpp` L48–L51](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L48-L51)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`2DAObject.cs` L25–L32](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/FileObjects/2DAObject.cs#L25-L32)
 
 ### Column Headers
 
@@ -314,9 +314,9 @@ Each column name is terminated by a tab character (`0x09`). The entire header li
 
 **References**:
 
-- **[reone](https://github.com/modawan/reone)**: [`2dareader.cpp` L72–L89](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp#L72-L89)
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`2dafile.cpp` L260–L275](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L260-L275)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`2DAObject.cs` L36–L48](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L36-L48)
+- **[reone](https://github.com/modawan/reone)**: [`2dareader.cpp` L72–L89](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/2dareader.cpp#L72-L89)
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`2dafile.cpp` L260–L275](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L260-L275)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`2DAObject.cs` L36–L48](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/FileObjects/2DAObject.cs#L36-L48)
 - **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md` L32–L37](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L32-L37)
 
 ### Row Count
@@ -329,8 +329,8 @@ The row count is stored as a 32-bit unsigned integer in [little-endian](https://
 
 **References**:
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp:34`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp#L34) - *KotOR*-specific row count reading
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:284`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L284) - Generic *Aurora* engine row count reading (format shared across *KotOR* and other *Aurora*-derived games)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp:34`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/2dareader.cpp#L34) - *KotOR*-specific row count reading
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:284`](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L284) - Generic *Aurora* engine row count reading (format shared across *KotOR* and other *Aurora*-derived games)
 - **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md:39-44`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L39-L44) - *KotOR*-specific row indices structure
 
 ### Row Labels
@@ -347,9 +347,9 @@ Each row label is read as a [tab-terminated](#column-headers) string (tab charac
 
 **References**:
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp:35`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp#L35) - *KotOR*-specific row label reading (skipped in *reone*)
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:277-294`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L277-L294) - Generic *Aurora* engine row label skipping implementation (format shared across *KotOR* and other *Aurora*-derived games)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs:56-70`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L56-L70) - *KotOR*-specific row label parsing
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp:35`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/2dareader.cpp#L35) - *KotOR*-specific row label reading (skipped in *reone*)
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:277-294`](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L277-L294) - Generic *Aurora* engine row label skipping implementation (format shared across *KotOR* and other *Aurora*-derived games)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs:56-70`](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/FileObjects/2DAObject.cs#L56-L70) - *KotOR*-specific row label parsing
 - **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md:39-46`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L39-L46) - *KotOR*-specific row indices structure and termination note
 
 ### Cell Data Offsets
@@ -367,10 +367,10 @@ Each cell has a 16-bit unsigned integer offset ([little-endian](https://en.wikip
 
 **References**:
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp:47-52`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp#L47-L52) - *KotOR*-specific offset array reading
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:314-317`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L314-L317) - Generic *Aurora* engine offset reading (format shared across *KotOR* and other *Aurora*-derived games)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs:72-83`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L72-L83) - *KotOR*-specific offset array parsing
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dawriter.cpp:63-89`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dawriter.cpp#L63-L89) - *KotOR*-specific offset *[deduplication](https://en.wikipedia.org/wiki/Data_deduplication)* during writing
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp:47-52`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/2dareader.cpp#L47-L52) - *KotOR*-specific offset array reading
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:314-317`](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L314-L317) - Generic *Aurora* engine offset reading (format shared across *KotOR* and other *Aurora*-derived games)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs:72-83`](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/FileObjects/2DAObject.cs#L72-L83) - *KotOR*-specific offset array parsing
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dawriter.cpp:63-89`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/2dawriter.cpp#L63-L89) - *KotOR*-specific offset *[deduplication](https://en.wikipedia.org/wiki/Data_deduplication)* during writing
 - **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md:48-54`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L48-L54) - *KotOR*-specific cell offsets structure
 
 ### Cell Data String Table
@@ -391,10 +391,10 @@ The cell data string table begins immediately after the `cell_data_size` field. 
 
 **References**:
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp:54-65`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp#L54-L65) - *KotOR*-specific cell data reading with offset calculation
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:319-335`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L319-L335) - Generic *Aurora* engine cell data reading (format shared across *KotOR* and other *Aurora*-derived games, with *KotOR*-specific comment at line 545)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs:85-100`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L85-L100) - *KotOR*-specific cell data reading loop
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:63-64`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp#L63-L64) - Generic *Aurora* engine empty cell representation (`"****"`, shared across *KotOR* and other *Aurora*-derived games)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp:54-65`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/2dareader.cpp#L54-L65) - *KotOR*-specific cell data reading with offset calculation
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:319-335`](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L319-L335) - Generic *Aurora* engine cell data reading (format shared across *KotOR* and other *Aurora*-derived games, with *KotOR*-specific comment at line 545)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs:85-100`](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/FileObjects/2DAObject.cs#L85-L100) - *KotOR*-specific cell data reading loop
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp:63-64`](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L63-L64) - Generic *Aurora* engine empty cell representation (`"****"`, shared across *KotOR* and other *Aurora*-derived games)
 - **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md:57-64`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L57-L64) - *KotOR*-specific cell data structure
 
 ---
@@ -405,7 +405,7 @@ The cell data string table begins immediately after the `cell_data_size` field. 
 
 The `TwoDA` object represents a complete *2DA* file in memory:
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py:77-119`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L77-L119)
+**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py:77-119`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L77-L119)
 
 **Attributes:**
 
@@ -425,7 +425,7 @@ The `TwoDA` object represents a complete *2DA* file in memory:
 
 The `TwoDARow` object provides a convenient interface for accessing row data:
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py:850-950`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L850-L950)
+**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py:850-950`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L850-L950)
 
 **Attributes:**
 
@@ -699,27 +699,27 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:73`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L73) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for appearance.2da
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:248`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L248) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for appearance.2da
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:155`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L155) - *ResRef* column definition for appearance.2da (race)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:168`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L168) - [model](MDL-MDX-File-Format) *ResRef* column definitions for appearance.2da (`modela` through `modelj`)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:213-214`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L213-L214) - [texture](Texture-Formats#tpc) *ResRef* column definitions for appearance.2da (`racetex`, `texa` through `texj`, `headtexve`, `headtexe`, `headtexvg`, `headtexg`)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:456`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L456) - TwoDARegistry.APPEARANCES constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:524`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L524) - [GFF](GFF-File-Format) field mapping: `"Appearance_Type" -> appearance.2da`
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:73`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L73) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for appearance.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:248`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L248) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for appearance.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:155`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L155) - *ResRef* column definition for appearance.2da (race)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:168`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L168) - [model](MDL-MDX-File-Format) *ResRef* column definitions for appearance.2da (`modela` through `modelj`)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:213-214`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L213-L214) - [texture](Texture-Formats#tpc) *ResRef* column definitions for appearance.2da (`racetex`, `texa` through `texj`, `headtexve`, `headtexe`, `headtexvg`, `headtexg`)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:456`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L456) - TwoDARegistry.APPEARANCES constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:524`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L524) - [GFF](GFF-File-Format) field mapping: `"Appearance_Type" -> appearance.2da`
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:55`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L55) - HTInstallation.TwoDA_APPEARANCES constant
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:55`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L55) - HTInstallation.TwoDA_APPEARANCES constant
 - [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py) - Appearance selection combobox in [UTC](GFF-File-Format#utc-creature) editor (UI reference)
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:124-131`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L124-L131) - Appearance selection in UTP (placeable) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:124-131`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L124-L131) - Appearance selection in UTP (placeable) editor
 - [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py) - Appearance selection in UTD (door) editor (UI reference)
-- [`Tools/HolocronToolset/src/toolset/gui/editors/ute.py:181`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/ute.py#L181) - Appearance ID usage in encounter editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/ute.py:181`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/ute.py#L181) - Appearance ID usage in encounter editor
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/appearance.cpp:28-125`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/appearance.cpp#L28-L125) - Complete column parsing implementation with all column names
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:98-107`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L98-L107) - Appearance loading and column usage
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1156-1228`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1156-L1228) — column access for:
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/appearance.cpp:28-125`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/parser/2da/appearance.cpp#L28-L125) - Complete column parsing implementation with all column names
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:98-107`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/creature.cpp#L98-L107) - Appearance loading and column usage
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1156-1228`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/creature.cpp#L1156-L1228) — column access for:
 
   - [model](MDL-MDX-File-Format)
   - [texture](Texture-Formats#tpc)
@@ -809,26 +809,26 @@ The following columns are accessed by the game engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:169`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L169) - [model](MDL-MDX-File-Format) *ResRef* column definition for `baseitems.2da` (defaultmodel)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:187`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L187) - Sound *ResRef* column definitions for `baseitems.2da` (powerupsnd, powerdownsnd, poweredsnd)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:215`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L215) - [texture](Texture-Formats#tpc) *ResRef* column definition for `baseitems.2da` (defaulticon)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:225`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L225) - Item *ResRef* column definitions for `baseitems.2da` (itemclass, baseitemstatref)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:466`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L466) - TwoDARegistry.BASEITEMS constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:537`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L537) - [GFF](GFF-File-Format) field mapping: "BaseItem" and "ModelVariation" -> `baseitems.2da`
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:169`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L169) - [model](MDL-MDX-File-Format) *ResRef* column definition for `baseitems.2da` (defaultmodel)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:187`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L187) - Sound *ResRef* column definitions for `baseitems.2da` (powerupsnd, powerdownsnd, poweredsnd)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:215`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L215) - [texture](Texture-Formats#tpc) *ResRef* column definition for `baseitems.2da` (defaulticon)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:225`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L225) - Item *ResRef* column definitions for `baseitems.2da` (itemclass, baseitemstatref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:466`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L466) - TwoDARegistry.BASEITEMS constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:537`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L537) - [GFF](GFF-File-Format) field mapping: "BaseItem" and "ModelVariation" -> `baseitems.2da`
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:65`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L65) - HTInstallation.TwoDA_BASEITEMS constant
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:594-607`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L594-L607) - get_item_icon_from_uti method using `baseitems.2da` for item class lookup
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:609-620`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L609-L620) - get_item_base_name method using `baseitems.2da`
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:630-643`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L630-L643) - get_item_icon_path method using `baseitems.2da` for item class and icon path
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:107-117`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L107-L117) - `baseitems.2da` loading and usage in [UTI](GFF-Items-and-Economy#uti) (item) editor for base item selection
-- [`Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py:668-704`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py#L668-L704) - `baseitems.2da` usage for equipment slot and droid/human flag lookup
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:65`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L65) - HTInstallation.TwoDA_BASEITEMS constant
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:594-607`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L594-L607) - get_item_icon_from_uti method using `baseitems.2da` for item class lookup
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:609-620`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L609-L620) - get_item_base_name method using `baseitems.2da`
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:630-643`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L630-L643) - get_item_icon_path method using `baseitems.2da` for item class and icon path
+- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:107-117`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L107-L117) - `baseitems.2da` loading and usage in [UTI](GFF-Items-and-Economy#uti) (item) editor for base item selection
+- [`Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py:668-704`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py#L668-L704) - `baseitems.2da` usage for equipment slot and droid/human flag lookup
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/item.cpp:126-136`](https://github.com/modawan/reone/blob/master/src/libs/game/object/item.cpp#L126-L136) - Base item column access
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/item.cpp:160-171`](https://github.com/modawan/reone/blob/master/src/libs/game/object/item.cpp#L160-L171) - Ammunition type lookup from `baseitems.2da`
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/item.cpp:126-136`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/item.cpp#L126-L136) - Base item column access
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/item.cpp:160-171`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/item.cpp#L160-L171) - Ammunition type lookup from `baseitems.2da`
 
 ---
 
@@ -886,22 +886,22 @@ The following columns are accessed by the game engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:75`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L75) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for classes.2da (K1: name, description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:250`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L250) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for classes.2da (K2: name, description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:463`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L463) - TwoDARegistry.CLASSES constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:531`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L531) - [GFF](GFF-File-Format) field mapping: "Class" -> classes.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:75`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L75) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for classes.2da (K1: name, description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:250`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L250) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for classes.2da (K2: name, description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:463`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L463) - TwoDARegistry.CLASSES constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:531`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L531) - [GFF](GFF-File-Format) field mapping: "Class" -> classes.2da
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:62`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L62) - HTInstallation.TwoDA_CLASSES constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:242`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L242) - classes.2da included in batch cache for [UTC](GFF-File-Format#utc-creature) editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:256`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L256) - classes.2da loading from cache
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:291-298`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L291-L298) - classes.2da usage in class selection comboboxes and label population
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:62`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L62) - HTInstallation.TwoDA_CLASSES constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:242`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L242) - classes.2da included in batch cache for [UTC](GFF-File-Format#utc-creature) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:256`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L256) - classes.2da loading from cache
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:291-298`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L291-L298) - classes.2da usage in class selection comboboxes and label population
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/class.cpp:34-56`](https://github.com/modawan/reone/blob/master/src/libs/game/d20/class.cpp#L34-L56) - Class loading from [2DA](2DA-File-Format) with column access
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/class.cpp:58-86`](https://github.com/modawan/reone/blob/master/src/libs/game/d20/class.cpp#L58-L86) - Class skills, saving throws, and attack bonuses loading
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/class.cpp:34-56`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/d20/class.cpp#L34-L56) - Class loading from [2DA](2DA-File-Format) with column access
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/class.cpp:58-86`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/d20/class.cpp#L58-L86) - Class skills, saving throws, and attack bonuses loading
 
 ---
 
@@ -974,25 +974,25 @@ The following columns are accessed by the reone engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:82`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L82) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for feat.2da (K1: name, description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:260`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L260) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for feat.2da (K2: name, description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:227`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L227) - *ResRef* column definition for feat.2da (icon)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:464`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L464) - TwoDARegistry.FEATS constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:561-562`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L561-L562) - [GFF](GFF-File-Format) field mapping: "FeatID" and "Feat" -> feat.2da
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:321-323`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L321-L323) - [UTC](GFF-File-Format#utc-creature) feat list field documentation
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L432) - [UTC](GFF-File-Format#utc-creature) feats list initialization
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:762-768`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L762-L768) - Feat list parsing from [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:907-909`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L907-L909) - Feat list writing to [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:82`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L82) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for feat.2da (K1: name, description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:260`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L260) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for feat.2da (K2: name, description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:227`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L227) - *ResRef* column definition for feat.2da (icon)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:464`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L464) - TwoDARegistry.FEATS constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:561-562`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L561-L562) - [GFF](GFF-File-Format) field mapping: "FeatID" and "Feat" -> feat.2da
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:321-323`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L321-L323) - [UTC](GFF-File-Format#utc-creature) feat list field documentation
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L432) - [UTC](GFF-File-Format#utc-creature) feats list initialization
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:762-768`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L762-L768) - Feat list parsing from [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:907-909`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L907-L909) - Feat list writing to [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:63`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L63) - HTInstallation.TwoDA_FEATS constant
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:63`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L63) - HTInstallation.TwoDA_FEATS constant
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/feats.cpp:32-58`](https://github.com/modawan/reone/blob/master/src/libs/game/d20/feats.cpp#L32-L58) - Feat loading from [2DA](2DA-File-Format) with column access
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentFeat.ts:36-53`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentFeat.ts#L36-L53) - Feat structure with additional columns
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentFeat.ts:122-132`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentFeat.ts#L122-L132) - Feat loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/feats.cpp:32-58`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/d20/feats.cpp#L32-L58) - Feat loading from [2DA](2DA-File-Format) with column access
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentFeat.ts:36-53`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/talents/TalentFeat.ts#L36-L53) - Feat structure with additional columns
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentFeat.ts:122-132`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/talents/TalentFeat.ts#L122-L132) - Feat loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1034,23 +1034,23 @@ The following columns are accessed by the reone engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:148`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L148) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for skills.2da (K1: name, description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:326`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L326) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for skills.2da (K2: name, description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:472`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L472) - TwoDARegistry.SKILLS constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:563`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L563) - [GFF](GFF-File-Format) field mapping: "SkillID" -> skills.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:148`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L148) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for skills.2da (K1: name, description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:326`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L326) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for skills.2da (K2: name, description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:472`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L472) - TwoDARegistry.SKILLS constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:563`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L563) - [GFF](GFF-File-Format) field mapping: "SkillID" -> skills.2da
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:71`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L71) - HTInstallation.TwoDA_SKILLS constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/savegame.py:129`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L129) - Skills table widget in save game editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/savegame.py:511-519`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L511-L519) - Skills table population in save game editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/savegame.py:542-543`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L542-L543) - Skills table update logic
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:71`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L71) - HTInstallation.TwoDA_SKILLS constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/savegame.py:129`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L129) - Skills table widget in save game editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/savegame.py:511-519`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L511-L519) - Skills table population in save game editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/savegame.py:542-543`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L542-L543) - Skills table update logic
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/skills.cpp:32-48`](https://github.com/modawan/reone/blob/master/src/libs/game/d20/skills.cpp#L32-L48) - Skill loading from [2DA](2DA-File-Format)
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/class.cpp:58-65`](https://github.com/modawan/reone/blob/master/src/libs/game/d20/class.cpp#L58-L65) - Class skill checking using dynamic column names
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentSkill.ts:38-49`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSkill.ts#L38-L49) - Skill loading from [2DA](2DA-File-Format) with droidcanuse and npccanuse columns
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/skills.cpp:32-48`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/d20/skills.cpp#L32-L48) - Skill loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/class.cpp:58-65`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/d20/class.cpp#L58-L65) - Class skill checking using dynamic column names
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentSkill.ts:38-49`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/talents/TalentSkill.ts#L38-L49) - Skill loading from [2DA](2DA-File-Format) with droidcanuse and npccanuse columns
 
 ---
 
@@ -1138,24 +1138,24 @@ The following columns are accessed by the reone engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:149`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L149) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for spells.2da (K1: name, spelldesc)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:327`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L327) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for spells.2da (K2: name, spelldesc)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L239) - Script *ResRef* column definition for spells.2da (impactscript)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L432) - Script *ResRef* column definition for spells.2da (K2: impactscript)
-- [`TwoDARegistry.POWERS` L709](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L709) — `spells` resref (`Load2DArrays_Spells()`)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:558-560`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L558-L560) - [GFF](GFF-File-Format) field mapping: "Subtype", "SpellId", and "Spell" -> spells.2da
-- [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:9380-9381`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L9380-L9381) - GetLastForcePowerUsed function comment referencing spells.2da
-- [`Libraries/PyKotor/src/pykotor/common/scriptlib.py:5676`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5676) - Debug print referencing spells.2da ID
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:149`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L149) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for spells.2da (K1: name, spelldesc)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:327`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L327) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for spells.2da (K2: name, spelldesc)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L239) - Script *ResRef* column definition for spells.2da (impactscript)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L432) - Script *ResRef* column definition for spells.2da (K2: impactscript)
+- [`TwoDARegistry.POWERS` L709](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L709) — `spells` resref (`Load2DArrays_Spells()`)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:558-560`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L558-L560) - [GFF](GFF-File-Format) field mapping: "Subtype", "SpellId", and "Spell" -> spells.2da
+- [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:9380-9381`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L9380-L9381) - GetLastForcePowerUsed function comment referencing spells.2da
+- [`Libraries/PyKotor/src/pykotor/common/scriptlib.py:5676`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5676) - Debug print referencing spells.2da ID
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_POWERS` L110](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L110)
+- [`HTInstallation.TwoDA_POWERS` L110](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L110)
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/spells.cpp:32-48`](https://github.com/modawan/reone/blob/master/src/libs/game/d20/spells.cpp#L32-L48) - Spell loading from [2DA](2DA-File-Format) with column access
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentSpell.ts:16-44`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSpell.ts#L16-L44) - Spell structure with additional columns
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentSpell.ts:42-53`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSpell.ts#L42-L53) - Spell loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/d20/spells.cpp:32-48`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/d20/spells.cpp#L32-L48) - Spell loading from [2DA](2DA-File-Format) with column access
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentSpell.ts:16-44`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/talents/TalentSpell.ts#L16-L44) - Spell structure with additional columns
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/talents/TalentSpell.ts:42-53`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/talents/TalentSpell.ts#L42-L53) - Spell loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1186,15 +1186,15 @@ The following columns are accessed by the reone engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:135`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L135) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for itemprops.2da (K1: stringref)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:313`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L313) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for itemprops.2da (K2: stringref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:135`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L135) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for itemprops.2da (K1: stringref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:313`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L313) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for itemprops.2da (K2: stringref)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:74`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L74) - HTInstallation.TwoDA_ITEM_PROPERTIES constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:107-111`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L107-L111) - itemprops.2da loading in [UTI](GFF-File-Format#uti-item) editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:278-287`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L278-L287) - itemprops.2da usage for property cost table and parameter lookups
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:449-465`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L449-L465) - itemprops.2da usage in property selection and loading
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:74`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L74) - HTInstallation.TwoDA_ITEM_PROPERTIES constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:107-111`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L107-L111) - itemprops.2da loading in [UTI](GFF-File-Format#uti-item) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:278-287`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L278-L287) - itemprops.2da usage for property cost table and parameter lookups
+- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:449-465`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L449-L465) - itemprops.2da usage in property selection and loading
 
 ---
 
@@ -1216,8 +1216,8 @@ The following columns are accessed by the reone engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:99`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L99) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for iprp_damagecost.2da (K1: name)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:277`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L277) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for iprp_damagecost.2da (K2: name)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:99`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L99) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for iprp_damagecost.2da (K1: name)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:277`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L277) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for iprp_damagecost.2da (K2: name)
 
 ---
 
@@ -1279,25 +1279,25 @@ The complete column structure is defined in reone's placeables parser:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:141`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L141) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for placeables.2da (K1: [StrRef](Audio-and-Localization-Formats#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:170`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L170) - [model](MDL-MDX-File-Format) *ResRef* column definition for placeables.2da (K1: modelname)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:319`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L319) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for placeables.2da (K2: [StrRef](Audio-and-Localization-Formats#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:349`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L349) - [model](MDL-MDX-File-Format) *ResRef* column definition for placeables.2da (K2: modelname)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:467`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L467) - TwoDARegistry.PLACEABLES constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:542`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L542) - [GFF](GFF-File-Format) field mapping: "Appearance" -> placeables.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:141`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L141) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for placeables.2da (K1: [StrRef](Audio-and-Localization-Formats#string-references-strref))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:170`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L170) - [model](MDL-MDX-File-Format) *ResRef* column definition for placeables.2da (K1: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:319`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L319) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for placeables.2da (K2: [StrRef](Audio-and-Localization-Formats#string-references-strref))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:349`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L349) - [model](MDL-MDX-File-Format) *ResRef* column definition for placeables.2da (K2: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:467`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L467) - TwoDARegistry.PLACEABLES constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:542`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L542) - [GFF](GFF-File-Format) field mapping: "Appearance" -> placeables.2da
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:66`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L66) - HTInstallation.TwoDA_PLACEABLES constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:52`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L52) - placeables.2da cache initialization comment
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:62`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L62) - placeables.2da cache loading
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:121-131`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L121-L131) - placeables.2da usage in appearance selection combobox
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:471`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L471) - placeables.2da usage for [model](MDL-MDX-File-Format) name lookup
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:66`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L66) - HTInstallation.TwoDA_PLACEABLES constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:52`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L52) - placeables.2da cache initialization comment
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:62`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L62) - placeables.2da cache loading
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:121-131`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L121-L131) - placeables.2da usage in appearance selection combobox
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:471`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L471) - placeables.2da usage for [model](MDL-MDX-File-Format) name lookup
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/placeables.cpp:29-49`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/placeables.cpp#L29-L49) - Complete column parsing implementation with all column names
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/placeable.cpp:59-60`](https://github.com/modawan/reone/blob/master/src/libs/game/object/placeable.cpp#L59-L60) - Placeable loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/placeables.cpp:29-49`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/parser/2da/placeables.cpp#L29-L49) - Complete column parsing implementation with all column names
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/placeable.cpp:59-60`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/placeable.cpp#L59-L60) - Placeable loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1345,28 +1345,28 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for [doortypes.2da](#doortypes2da) (K1: stringrefgame)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:86`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L86) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for genericdoors.2da (K1: [StrRef](Audio-and-Localization-Formats#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](#doortypes2da) (K1: [model](MDL-MDX-File-Format))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:178`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L178) - [model](MDL-MDX-File-Format) *ResRef* column definition for genericdoors.2da (K1: modelname)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:256`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L256) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for [doortypes.2da](#doortypes2da) (K2: stringrefgame)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:264`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L264) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for genericdoors.2da (K2: [StrRef](Audio-and-Localization-Formats#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:356`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L356) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](#doortypes2da) (K2: [model](MDL-MDX-File-Format))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:357`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L357) - [model](MDL-MDX-File-Format) *ResRef* column definition for genericdoors.2da (K2: modelname)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:468`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L468) - TwoDARegistry.DOORS constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:543`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L543) - [GFF](GFF-File-Format) field mapping: "GenericType" -> genericdoors.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for [doortypes.2da](#doortypes2da) (K1: stringrefgame)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:86`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L86) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for genericdoors.2da (K1: [StrRef](Audio-and-Localization-Formats#string-references-strref))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](#doortypes2da) (K1: [model](MDL-MDX-File-Format))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:178`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L178) - [model](MDL-MDX-File-Format) *ResRef* column definition for genericdoors.2da (K1: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:256`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L256) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for [doortypes.2da](#doortypes2da) (K2: stringrefgame)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:264`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L264) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for genericdoors.2da (K2: [StrRef](Audio-and-Localization-Formats#string-references-strref))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:356`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L356) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](#doortypes2da) (K2: [model](MDL-MDX-File-Format))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:357`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L357) - [model](MDL-MDX-File-Format) *ResRef* column definition for genericdoors.2da (K2: modelname)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:468`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L468) - TwoDARegistry.DOORS constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:543`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L543) - [GFF](GFF-File-Format) field mapping: "GenericType" -> genericdoors.2da
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:67`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L67) - HTInstallation.TwoDA_DOORS constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:60`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L60) - genericdoors.2da cache loading
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:117-123`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L117-L123) - genericdoors.2da usage in appearance selection combobox
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:409`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L409) - genericdoors.2da usage for [model](MDL-MDX-File-Format) name lookup
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:67`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L67) - HTInstallation.TwoDA_DOORS constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:60`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L60) - genericdoors.2da cache loading
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:117-123`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L117-L123) - genericdoors.2da usage in appearance selection combobox
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:409`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L409) - genericdoors.2da usage for [model](MDL-MDX-File-Format) name lookup
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/genericdoors.cpp:29-41`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/genericdoors.cpp#L29-L41) - Complete column parsing implementation with all column names
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/door.cpp:66-67`](https://github.com/modawan/reone/blob/master/src/libs/game/object/door.cpp#L66-L67) - Door loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/genericdoors.cpp:29-41`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/parser/2da/genericdoors.cpp#L29-L41) - Complete column parsing implementation with all column names
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/door.cpp:66-67`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/door.cpp#L66-L67) - Door loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1389,8 +1389,8 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for doortypes.2da
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for doortypes.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for doortypes.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for doortypes.2da
 
 ---
 
@@ -1411,23 +1411,23 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:143`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L143) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for soundset.2da (K1: [StrRef](Audio-and-Localization-Formats#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:321`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L321) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for soundset.2da (K2: [StrRef](Audio-and-Localization-Formats#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:459`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L459) - TwoDARegistry.SOUNDSETS constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:522`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L522) - [GFF](GFF-File-Format) field mapping: "SoundSetFile" -> soundset.2da
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:90-92`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L90-L92) - [UTC](GFF-File-Format#utc-creature) soundset_id field documentation
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:359`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L359) - [UTC](GFF-File-Format#utc-creature) soundset_id field initialization
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:549-550`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L549-L550) - SoundSetFile field parsing from [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:821`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L821) - SoundSetFile field writing to [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:143`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L143) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for soundset.2da (K1: [StrRef](Audio-and-Localization-Formats#string-references-strref))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:321`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L321) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for soundset.2da (K2: [StrRef](Audio-and-Localization-Formats#string-references-strref))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:459`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L459) - TwoDARegistry.SOUNDSETS constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:522`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L522) - [GFF](GFF-File-Format) field mapping: "SoundSetFile" -> soundset.2da
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:90-92`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L90-L92) - [UTC](GFF-File-Format#utc-creature) soundset_id field documentation
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:359`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L359) - [UTC](GFF-File-Format#utc-creature) soundset_id field initialization
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:549-550`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L549-L550) - SoundSetFile field parsing from [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:821`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L821) - SoundSetFile field writing to [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:58`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L58) - HTInstallation.TwoDA_SOUNDSETS constant
-- [`Tools/HolocronToolset/src/ui/editors/utc.ui:260-267`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/ui/editors/utc.ui#L260-L267) - Soundset selection combobox in [UTC](GFF-File-Format#utc-creature) editor UI
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:58`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L58) - HTInstallation.TwoDA_SOUNDSETS constant
+- [`Tools/HolocronToolset/src/ui/editors/utc.ui:260-267`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/ui/editors/utc.ui#L260-L267) - Soundset selection combobox in [UTC](GFF-File-Format#utc-creature) editor UI
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1347-1354`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1347-L1354) - Sound set loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1347-1354`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/creature.cpp#L1347-L1354) - Sound set loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1504,7 +1504,7 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:593`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L593) - [GFF](GFF-File-Format) field mapping: "VisualType" -> visualeffects.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:593`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L593) - [GFF](GFF-File-Format) field mapping: "VisualType" -> visualeffects.2da
 
 ---
 
@@ -1530,28 +1530,28 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:455`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L455) - TwoDARegistry.PORTRAITS constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:523`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L523) - [GFF](GFF-File-Format) field mapping: "PortraitId" -> portraits.2da
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:66`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L66) - Party portraits documentation comment
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:226-228`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L226-L228) - Portrait rotation logic documentation
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:241`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L241) - Party portraits field documentation
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:391`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L391) - Portraits parsing comment
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:456`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L456) - Portraits writing comment
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:2157`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L2157) - SAVENFO.res portraits documentation
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:2309`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L2309) - Party portraits documentation
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:2370`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L2370) - Portrait debug print
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:455`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L455) - TwoDARegistry.PORTRAITS constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:523`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L523) - [GFF](GFF-File-Format) field mapping: "PortraitId" -> portraits.2da
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:66`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L66) - Party portraits documentation comment
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:226-228`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L226-L228) - Portrait rotation logic documentation
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:241`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L241) - Party portraits field documentation
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:391`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L391) - Portraits parsing comment
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:456`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L456) - Portraits writing comment
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:2157`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L2157) - SAVENFO.res portraits documentation
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:2309`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L2309) - Party portraits documentation
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:2370`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L2370) - Portrait debug print
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:54`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L54) - HTInstallation.TwoDA_PORTRAITS constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:140-152`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L140-L152) - portraits.2da usage for portrait selection with alignment-based variant selection (baseresref, baseresrefe, baseresrefve, baseresrefvve, baseresrefvvve)
-- [`Tools/HolocronToolset/src/ui/editors/utc.ui:407`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/ui/editors/utc.ui#L407) - Portrait selection combobox in [UTC](GFF-File-Format#utc-creature) editor UI
-- [`Tools/HolocronToolset/src/toolset/gui/editors/savegame.py:51`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L51) - Portraits documentation in save game editor
-- [`Tools/HolocronToolset/src/ui/editors/savegame.ui:94-98`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/ui/editors/savegame.ui#L94-L98) - Portraits group box in save game editor UI
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:54`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L54) - HTInstallation.TwoDA_PORTRAITS constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:140-152`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L140-L152) - portraits.2da usage for portrait selection with alignment-based variant selection (baseresref, baseresrefe, baseresrefve, baseresrefvve, baseresrefvvve)
+- [`Tools/HolocronToolset/src/ui/editors/utc.ui:407`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/ui/editors/utc.ui#L407) - Portrait selection combobox in [UTC](GFF-File-Format#utc-creature) editor UI
+- [`Tools/HolocronToolset/src/toolset/gui/editors/savegame.py:51`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L51) - Portraits documentation in save game editor
+- [`Tools/HolocronToolset/src/ui/editors/savegame.ui:94-98`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/ui/editors/savegame.ui#L94-L98) - Portraits group box in save game editor UI
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/portraits.cpp:33-51`](https://github.com/modawan/reone/blob/master/src/libs/game/portraits.cpp#L33-L51) - Portrait loading from [2DA](2DA-File-Format) with all column access
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/portraits.cpp:33-51`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/portraits.cpp#L33-L51) - Portrait loading from [2DA](2DA-File-Format) with all column access
 
 ---
 
@@ -1596,8 +1596,8 @@ The complete column structure is defined in reone's heads parser:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/heads.cpp:29-39`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/heads.cpp#L29-L39) - Complete column parsing implementation with all column names
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1223-1228`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1223-L1228) - Head loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/heads.cpp:29-39`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/parser/2da/heads.cpp#L29-L39) - Complete column parsing implementation with all column names
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1223-1228`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/creature.cpp#L1223-L1228) - Head loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1664,9 +1664,9 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:206`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L206) - Music *ResRef* column definitions for ambientmusic.2da (K1: resource, stinger1, stinger2, stinger3)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:398`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L398) - Music *ResRef* column definitions for ambientmusic.2da (K2: resource, stinger1, stinger2, stinger3)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:545-548`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L545-L548) - [GFF](GFF-File-Format) field mapping: "MusicDay", "MusicNight", "MusicBattle", "MusicDelay" -> ambientmusic.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:206`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L206) - Music *ResRef* column definitions for ambientmusic.2da (K1: resource, stinger1, stinger2, stinger3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:398`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L398) - Music *ResRef* column definitions for ambientmusic.2da (K2: resource, stinger1, stinger2, stinger3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:545-548`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L545-L548) - [GFF](GFF-File-Format) field mapping: "MusicDay", "MusicNight", "MusicBattle", "MusicDelay" -> ambientmusic.2da
 
 ---
 
@@ -1689,11 +1689,11 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:72`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L72) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for ambientsound.2da (K1: description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:184`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L184) - Sound *ResRef* column definition for ambientsound.2da (K1: resource)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:247`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L247) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for ambientsound.2da (K2: description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:376`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L376) - Sound *ResRef* column definition for ambientsound.2da (K2: resource)
-- [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:6986-6988`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6986-L6988) - AmbientSoundPlay function comment
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:72`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L72) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for ambientsound.2da (K1: description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:184`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L184) - Sound *ResRef* column definition for ambientsound.2da (K1: resource)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:247`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L247) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for ambientsound.2da (K2: description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:376`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L376) - Sound *ResRef* column definition for ambientsound.2da (K2: resource)
+- [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:6986-6988`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6986-L6988) - AmbientSoundPlay function comment
 
 ---
 
@@ -1718,7 +1718,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/item.cpp:164-171`](https://github.com/modawan/reone/blob/master/src/libs/game/object/item.cpp#L164-L171) - Ammunition type loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/item.cpp:164-171`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/item.cpp#L164-L171) - Ammunition type loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1743,22 +1743,22 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:497`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L497) - TwoDARegistry.CAMERAS constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:550`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L550) - [GFF](GFF-File-Format) field mapping: "CameraStyle" -> camerastyle.2da
-- [`Libraries/PyKotor/src/pykotor/resource/generics/are.py:37`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L37) - are camera_style field documentation
-- [`Libraries/PyKotor/src/pykotor/resource/generics/are.py:123`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L123) - Camera style index comment
-- [`Libraries/PyKotor/src/pykotor/resource/generics/are.py:442`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L442) - CameraStyle field parsing from are [GFF](GFF-File-Format)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/are.py:579`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L579) - CameraStyle field writing to are [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:497`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L497) - TwoDARegistry.CAMERAS constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:550`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L550) - [GFF](GFF-File-Format) field mapping: "CameraStyle" -> camerastyle.2da
+- [`Libraries/PyKotor/src/pykotor/resource/generics/are.py:37`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L37) - are camera_style field documentation
+- [`Libraries/PyKotor/src/pykotor/resource/generics/are.py:123`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L123) - Camera style index comment
+- [`Libraries/PyKotor/src/pykotor/resource/generics/are.py:442`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L442) - CameraStyle field parsing from are [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/are.py:579`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L579) - CameraStyle field writing to are [GFF](GFF-File-Format)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:96`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L96) - HTInstallation.TwoDA_CAMERAS constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/are.py:102`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/are.py#L102) - camerastyle.2da loading in are editor
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:96`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L96) - HTInstallation.TwoDA_CAMERAS constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/are.py:102`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/are.py#L102) - camerastyle.2da loading in are editor
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/camerastyles.cpp:29-42`](https://github.com/modawan/reone/blob/master/src/libs/game/camerastyles.cpp#L29-L42) - Camera style loading from [2DA](2DA-File-Format)
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/area.cpp:140-148`](https://github.com/modawan/reone/blob/master/src/libs/game/object/area.cpp#L140-L148) - Camera style usage in areas
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/camerastyles.cpp:29-42`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/camerastyles.cpp#L29-L42) - Camera style loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/area.cpp:140-148`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/area.cpp#L140-L148) - Camera style usage in areas
 
 ---
 
@@ -1786,13 +1786,13 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:188-198`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L188-L198) - Sound *ResRef* column definitions for footstepsounds.2da (K1: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:380-390`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L380-L390) - Sound *ResRef* column definitions for footstepsounds.2da (K2: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:188-198`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L188-L198) - Sound *ResRef* column definitions for footstepsounds.2da (K1: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:380-390`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L380-L390) - Sound *ResRef* column definitions for footstepsounds.2da (K2: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/footstepsounds.cpp:31-57`](https://github.com/modawan/reone/blob/master/src/libs/game/footstepsounds.cpp#L31-L57) - Footstep sounds loading from [2DA](2DA-File-Format)
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:106`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L106) - Footstep type usage from [appearance.2da](#appearance2da)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/footstepsounds.cpp:31-57`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/footstepsounds.cpp#L31-L57) - Footstep sounds loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:106`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/creature.cpp#L106) - Footstep type usage from [appearance.2da](#appearance2da)
 
 ---
 
@@ -1813,7 +1813,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/sound.cpp:92-96`](https://github.com/modawan/reone/blob/master/src/libs/game/object/sound.cpp#L92-L96) - Priority group loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/sound.cpp:92-96`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/sound.cpp#L92-L96) - Priority group loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1836,29 +1836,29 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:460`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L460) - TwoDARegistry.FACTIONS constant definition (maps to "repute")
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:526-527`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L526-L527) - [GFF](GFF-File-Format) field mapping: "FactionID" and "Faction" -> repute.2da
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:92`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L92) - REPUTE.fac documentation comment
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1593`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1593) - REPUTE.fac file check comment
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1627`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1627) - REPUTE.fac documentation
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1667`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1667) - REPUTE_IDENTIFIER constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1683-1684`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1683-L1684) - repute [GFF](GFF-File-Format) field initialization
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1759-1761`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1759-L1761) - REPUTE.fac parsing
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1795-1796`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1795-L1796) - REPUTE.fac writing
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:460`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L460) - TwoDARegistry.FACTIONS constant definition (maps to "repute")
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:526-527`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L526-L527) - [GFF](GFF-File-Format) field mapping: "FactionID" and "Faction" -> repute.2da
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:92`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L92) - REPUTE.fac documentation comment
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1593`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1593) - REPUTE.fac file check comment
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1627`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1627) - REPUTE.fac documentation
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1667`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1667) - REPUTE_IDENTIFIER constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1683-1684`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1683-L1684) - repute [GFF](GFF-File-Format) field initialization
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1759-1761`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1759-L1761) - REPUTE.fac parsing
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1795-1796`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1795-L1796) - REPUTE.fac writing
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:59`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L59) - HTInstallation.TwoDA_FACTIONS constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L239) - repute.2da included in batch cache for [UTC](GFF-File-Format#utc-creature) editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:253-280`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L253-L280) - repute.2da usage in faction selection combobox
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:121-128`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L121-L128) - repute.2da usage in [UTP](GFF-File-Format#utp-placeable) editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:117-124`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L117-L124) - repute.2da usage in [UTD](GFF-File-Format#utd-door) editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/ute.py:106-109`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/ute.py#L106-L109) - repute.2da usage in [UTE](GFF-File-Format#ute-encounter) editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:72-78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L72-L78) - repute.2da usage in [UTT](GFF-File-Format#utt-trigger) editor
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:59`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L59) - HTInstallation.TwoDA_FACTIONS constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L239) - repute.2da included in batch cache for [UTC](GFF-File-Format#utc-creature) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:253-280`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L253-L280) - repute.2da usage in faction selection combobox
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:121-128`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L121-L128) - repute.2da usage in [UTP](GFF-File-Format#utp-placeable) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:117-124`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L117-L124) - repute.2da usage in [UTD](GFF-File-Format#utd-door) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/ute.py:106-109`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/ute.py#L106-L109) - repute.2da usage in [UTE](GFF-File-Format#ute-encounter) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:72-78`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L72-L78) - repute.2da usage in [UTT](GFF-File-Format#utt-trigger) editor
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/reputes.cpp:36-62`](https://github.com/modawan/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](Level-Layout-Formats#adjacencies-wok-only) loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/reputes.cpp:36-62`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](Level-Layout-Formats#adjacencies-wok-only) loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1883,17 +1883,17 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py:21`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py#L21) - SurfaceMaterial import
-- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py:9`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py#L9) - SurfaceMaterial import
-- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py:412`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py#L412) - SurfaceMaterial.GRASS default value
-- [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py:47`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py#L47) - SurfaceMaterial ID per [face](MDL-MDX-File-Format#face-structure) documentation
-- [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py:784`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py#L784) - SurfaceMaterial ID field documentation
-- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py:1578`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1578) - Comment referencing surfacemat.2da for [walkmesh](Level-Layout-Formats#bwm) surface material
-- [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py:160`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py#L160) - SurfaceMaterial parsing from [BWM](Level-Layout-Formats#bwm)
+- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py:21`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py#L21) - SurfaceMaterial import
+- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py:9`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py#L9) - SurfaceMaterial import
+- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py:412`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py#L412) - SurfaceMaterial.GRASS default value
+- [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py:47`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py#L47) - SurfaceMaterial ID per [face](MDL-MDX-File-Format#face-structure) documentation
+- [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py:784`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py#L784) - SurfaceMaterial ID field documentation
+- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py:1578`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1578) - Comment referencing surfacemat.2da for [walkmesh](Level-Layout-Formats#bwm) surface material
+- [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py:160`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py#L160) - SurfaceMaterial parsing from [BWM](Level-Layout-Formats#bwm)
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/surfaces.cpp:29-44`](https://github.com/modawan/reone/blob/master/src/libs/game/surfaces.cpp#L29-L44) - surface material loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/surfaces.cpp:29-44`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/surfaces.cpp#L29-L44) - surface material loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1914,7 +1914,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/engines/kotor/gui/loadscreen/loadscreen.cpp:45`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotor/gui/loadscreen/loadscreen.cpp#L45) - Loading screen hints TODO comment (KotOR-specific)
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/engines/kotor/gui/loadscreen/loadscreen.cpp:45`](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/engines/kotor/gui/loadscreen/loadscreen.cpp#L45) - Loading screen hints TODO comment (KotOR-specific)
 
 ---
 
@@ -1937,19 +1937,19 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:536`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L536) - [GFF](GFF-File-Format) field mapping: "BodyBag" -> bodybag.2da
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:296-298`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L296-L298) - [UTC](GFF-File-Format#utc-creature) bodybag_id field documentation (not used by game engine)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:438`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L438) - [UTC](GFF-File-Format#utc-creature) bodybag_id field initialization
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:555-556`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L555-L556) - BodyBag field parsing from [UTC](GFF-File-Format#utc-creature) GFF (deprecated)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:944`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L944) - BodyBag field writing to [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:105`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L105) - [UTP](GFF-File-Format#utp-placeable) bodybag_id field documentation
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:179`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L179) - [UTP](GFF-File-Format#utp-placeable) bodybag_id field initialization
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:254`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L254) - BodyBag field parsing from [UTP](GFF-File-Format#utp-placeable) [GFF](GFF-File-Format)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:341`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L341) - BodyBag field writing to [UTP](GFF-File-Format#utp-placeable) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:536`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L536) - [GFF](GFF-File-Format) field mapping: "BodyBag" -> bodybag.2da
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:296-298`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L296-L298) - [UTC](GFF-File-Format#utc-creature) bodybag_id field documentation (not used by game engine)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:438`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L438) - [UTC](GFF-File-Format#utc-creature) bodybag_id field initialization
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:555-556`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L555-L556) - BodyBag field parsing from [UTC](GFF-File-Format#utc-creature) GFF (deprecated)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:944`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L944) - BodyBag field writing to [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:105`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L105) - [UTP](GFF-File-Format#utp-placeable) bodybag_id field documentation
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:179`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L179) - [UTP](GFF-File-Format#utp-placeable) bodybag_id field initialization
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:254`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L254) - BodyBag field parsing from [UTP](GFF-File-Format#utp-placeable) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:341`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L341) - BodyBag field writing to [UTP](GFF-File-Format#utp-placeable) [GFF](GFF-File-Format)
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1357-1366`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1357-L1366) - Body bag loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1357-1366`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/creature.cpp#L1357-L1366) - Body bag loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -1971,8 +1971,8 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1398-1406`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1398-L1406) - Perception range loading from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:3178-3187`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L3178-L3187) - Perception range access from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1398-1406`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/creature.cpp#L1398-L1406) - Perception range loading from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:3178-3187`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleCreature.ts#L3178-L3187) - Perception range access from [2DA](2DA-File-Format)
 
 ---
 
@@ -1993,7 +1993,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:759`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L759) - Regeneration rate loading from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:759`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleCreature.ts#L759) - Regeneration rate loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -2014,9 +2014,9 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:1474-1482`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L1474-L1482) - [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModulePlaceable.ts:1063-1103`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L1063-L1103) - Placeable [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleDoor.ts:1343-1365`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L1343-L1365) - Door [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:1474-1482`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleCreature.ts#L1474-L1482) - [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModulePlaceable.ts:1063-1103`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModulePlaceable.ts#L1063-L1103) - Placeable [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleDoor.ts:1343-1365`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleDoor.ts#L1343-L1365) - Door [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
 
 ### combatanimations.2da
 
@@ -2035,7 +2035,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:1482`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L1482) - Combat [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:1482`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleCreature.ts#L1482) - Combat [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2056,7 +2056,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:1819-1822`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L1819-L1822) - Weapon sound lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:1819-1822`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleCreature.ts#L1819-L1822) - Weapon sound lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2077,8 +2077,8 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModulePlaceable.ts:387-389`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L387-L389) - Placeable sound lookup from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleDoor.ts:239-241`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L239-L241) - Door sound lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModulePlaceable.ts:387-389`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModulePlaceable.ts#L387-L389) - Placeable sound lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleDoor.ts:239-241`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleDoor.ts#L239-L241) - Door sound lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2100,7 +2100,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:2875-2887`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L2875-L2887) - Creature speed lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:2875-2887`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleCreature.ts#L2875-L2887) - Creature speed lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2121,7 +2121,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:2926-2941`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L2926-L2941) - Experience table lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:2926-2941`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleCreature.ts#L2926-L2941) - Experience table lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2142,12 +2142,12 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:200`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L200) - Sound *ResRef* column definition for guisounds.2da (K1: soundresref)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:392`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L392) - Sound *ResRef* column definition for guisounds.2da (K2: soundresref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:200`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L200) - Sound *ResRef* column definition for guisounds.2da (K1: soundresref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:392`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L392) - Sound *ResRef* column definition for guisounds.2da (K2: soundresref)
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/sounds.cpp:31-45`](https://github.com/modawan/reone/blob/master/src/libs/game/gui/sounds.cpp#L31-L45) - [GUI](GFF-File-Format#gui-graphical-user-interface) sound loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/sounds.cpp:31-45`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/gui/sounds.cpp#L31-L45) - [GUI](GFF-File-Format#gui-graphical-user-interface) sound loading from [2DA](2DA-File-Format)
 
 ---
 
@@ -2168,7 +2168,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/dialog.cpp:302-315`](https://github.com/modawan/reone/blob/master/src/libs/game/gui/dialog.cpp#L302-L315) - Dialog [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/dialog.cpp:302-315`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/gui/dialog.cpp#L302-L315) - Dialog [animation](MDL-MDX-File-Format#animation-header) lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2190,7 +2190,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:5552`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L5552) - Force shield lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:5552`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScriptDefK1.ts#L5552) - Force shield lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2211,21 +2211,21 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:123-125`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L123-L125) - [UTC](GFF-File-Format#utc-creature) plot field documentation
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:375`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L375) - [UTC](GFF-File-Format#utc-creature) plot field initialization
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:579-580`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L579-L580) - Plot field parsing from [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:839`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L839) - Plot field writing to [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/uti.py:71-73`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L71-L73) - [UTI](GFF-File-Format#uti-item) plot field documentation
-- [`Libraries/PyKotor/src/pykotor/resource/generics/uti.py:129`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L129) - [UTI](GFF-File-Format#uti-item) plot field initialization
-- [`Libraries/PyKotor/src/pykotor/resource/generics/uti.py:256-258`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L256-L258) - Plot field parsing from [UTI](GFF-File-Format#uti-item) [GFF](GFF-File-Format)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/uti.py:339`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L339) - Plot field writing to [UTI](GFF-File-Format#uti-item) [GFF](GFF-File-Format)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py:89-92`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py#L89-L92) - Dialog [node](MDL-MDX-File-Format#node-structures) PlotIndex and PlotXPPercentage field parsing
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:123-125`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L123-L125) - [UTC](GFF-File-Format#utc-creature) plot field documentation
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:375`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L375) - [UTC](GFF-File-Format#utc-creature) plot field initialization
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:579-580`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L579-L580) - Plot field parsing from [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:839`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L839) - Plot field writing to [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/uti.py:71-73`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L71-L73) - [UTI](GFF-File-Format#uti-item) plot field documentation
+- [`Libraries/PyKotor/src/pykotor/resource/generics/uti.py:129`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L129) - [UTI](GFF-File-Format#uti-item) plot field initialization
+- [`Libraries/PyKotor/src/pykotor/resource/generics/uti.py:256-258`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L256-L258) - Plot field parsing from [UTI](GFF-File-Format#uti-item) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/uti.py:339`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L339) - Plot field writing to [UTI](GFF-File-Format#uti-item) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py:89-92`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py#L89-L92) - Dialog [node](MDL-MDX-File-Format#node-structures) PlotIndex and PlotXPPercentage field parsing
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/managers/JournalManager.ts:58-64`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/JournalManager.ts#L58-L64) - Plot/quest experience lookup from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/managers/JournalManager.ts:101-104`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/JournalManager.ts#L101-L104) - Plot existence check from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:7845-7848`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L7845-L7848) - Plot table access for quest experience
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/managers/JournalManager.ts:58-64`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/managers/JournalManager.ts#L58-L64) - Plot/quest experience lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/managers/JournalManager.ts:101-104`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/managers/JournalManager.ts#L101-L104) - Plot existence check from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:7845-7848`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScriptDefK1.ts#L7845-L7848) - Plot table access for quest experience
 
 ---
 
@@ -2249,27 +2249,27 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:150`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L150) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for traps.2da (K1: trapname, name)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:328`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L328) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for traps.2da (K2: trapname, name)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:470`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L470) - TwoDARegistry.TRAPS constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:568`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L568) - [GFF](GFF-File-Format) field mapping: "TrapType" -> traps.2da
-- [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:6347-6348`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6347-L6348) - VersusTrapEffect function comments
-- [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:7975-7976`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L7975-L7976) - GetLastHostileActor function comment mentioning traps
-- [`Libraries/PyKotor/src/pykotor/common/scriptlib.py:21692`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L21692) - Trap targeting comment
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:150`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L150) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for traps.2da (K1: trapname, name)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:328`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L328) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for traps.2da (K2: trapname, name)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:470`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L470) - TwoDARegistry.TRAPS constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:568`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L568) - [GFF](GFF-File-Format) field mapping: "TrapType" -> traps.2da
+- [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:6347-6348`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6347-L6348) - VersusTrapEffect function comments
+- [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:7975-7976`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L7975-L7976) - GetLastHostileActor function comment mentioning traps
+- [`Libraries/PyKotor/src/pykotor/common/scriptlib.py:21692`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L21692) - Trap targeting comment
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:69`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L69) - HTInstallation.TwoDA_TRAPS constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:73-87`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L73-L87) - traps.2da loading and usage in trap type selection combobox
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:167`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L167) - traps.2da usage for setting trap type index
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:216`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L216) - traps.2da usage for getting trap type index
-- [`Tools/HolocronToolset/src/ui/editors/utt.ui:252`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/ui/editors/utt.ui#L252) - Trap selection combobox in [UTT](GFF-File-Format#utt-trigger) editor UI
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:69`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L69) - HTInstallation.TwoDA_TRAPS constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:73-87`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L73-L87) - traps.2da loading and usage in trap type selection combobox
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:167`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L167) - traps.2da usage for setting trap type index
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:216`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L216) - traps.2da usage for getting trap type index
+- [`Tools/HolocronToolset/src/ui/editors/utt.ui:252`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/ui/editors/utt.ui#L252) - Trap selection combobox in [UTT](GFF-File-Format#utt-trigger) editor UI
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/trigger.cpp:75-78`](https://github.com/modawan/reone/blob/master/src/libs/game/object/trigger.cpp#L75-L78) - Trap type loading from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleTrigger.ts:605-611`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleTrigger.ts#L605-L611) - Trap loading from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleObject.ts:1822`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleObject.ts#L1822) - Trap lookup from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/trigger.cpp:75-78`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/trigger.cpp#L75-L78) - Trap type loading from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleTrigger.ts:605-611`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleTrigger.ts#L605-L611) - Trap loading from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleObject.ts:1822`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleObject.ts#L1822) - Trap lookup from [2DA](2DA-File-Format)
 
 ---
 
@@ -2291,7 +2291,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/Module.ts:663-669`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/Module.ts#L663-L669) - Module save inclusion check from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/Module.ts:663-669`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/Module.ts#L663-L669) - Module save inclusion check from [2DA](2DA-File-Format)
 
 ---
 
@@ -2312,8 +2312,8 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/managers/PartyManager.ts:180-187`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/PartyManager.ts#L180-L187) - Tutorial window tracker initialization from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/managers/PartyManager.ts:438`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/PartyManager.ts#L438) - Tutorial table access
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/managers/PartyManager.ts:180-187`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/managers/PartyManager.ts#L180-L187) - Tutorial window tracker initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/managers/PartyManager.ts:438`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/managers/PartyManager.ts#L438) - Tutorial table access
 
 ---
 
@@ -2335,7 +2335,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- [`NorthernLights/Assets/Scripts/Systems/StateSystem.cs:282-294`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/Systems/StateSystem.cs#L282-L294) - Global variable initialization from [2DA](2DA-File-Format)
+- [`NorthernLights/Assets/Scripts/Systems/StateSystem.cs:282-294`](https://github.com/lachjames/NorthernLights/blob/8dcfd2aee28546db7e42f2ab894a5127f4130021/Assets/Scripts/Systems/StateSystem.cs#L282-L294) - Global variable initialization from [2DA](2DA-File-Format)
 
 ---
 
@@ -2356,11 +2356,11 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:457`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L457) - TwoDARegistry definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:457`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L457) - TwoDARegistry definition
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:56`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L56) - HTInstallation constant
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:56`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L56) - HTInstallation constant
 
 ---
 
@@ -2381,11 +2381,11 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:461`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L461) - TwoDARegistry definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:461`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L461) - TwoDARegistry definition
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:60`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L60) - HTInstallation constant
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:60`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L60) - HTInstallation constant
 
 ---
 
@@ -2406,11 +2406,11 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:471`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L471) - TwoDARegistry definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:471`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L471) - TwoDARegistry definition
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:70`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L70) - HTInstallation constant
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:70`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L70) - HTInstallation constant
 
 ---
 
@@ -2431,12 +2431,12 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:473`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L473) - TwoDARegistry definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:473`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L473) - TwoDARegistry definition
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:72`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L72) - HTInstallation constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:632-639`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L632-L639) - Upgrade selection in item editor
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:72`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L72) - HTInstallation constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:632-639`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L632-L639) - Upgrade selection in item editor
 
 ---
 
@@ -2457,12 +2457,12 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:474`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L474) - TwoDARegistry definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:474`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L474) - TwoDARegistry definition
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:73`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L73) - HTInstallation constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/ute.py:101-104`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/ute.py#L101-L104) - Encounter difficulty selection
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:73`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L73) - HTInstallation constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/ute.py:101-104`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/ute.py#L101-L104) - Encounter difficulty selection
 
 ---
 
@@ -2485,12 +2485,12 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:475`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L475) - TwoDARegistry definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:475`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L475) - TwoDARegistry definition
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:74`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L74) - HTInstallation constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:107-111`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L107-L111) - Item property loading in item editor
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:74`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L74) - HTInstallation constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:107-111`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L107-L111) - Item property loading in item editor
 
 ---
 
@@ -2511,12 +2511,12 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:491`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L491) - TwoDARegistry definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:491`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L491) - TwoDARegistry definition
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:90`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L90) - HTInstallation constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py:1267-1319`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py#L1267-L1319) - Emotion loading in dialog editor (KotOR 2 only)
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:90`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L90) - HTInstallation constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py:1267-1319`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py#L1267-L1319) - Emotion loading in dialog editor (KotOR 2 only)
 
 ---
 
@@ -2537,12 +2537,12 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:492`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L492) - TwoDARegistry definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:492`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L492) - TwoDARegistry definition
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:91`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L91) - HTInstallation constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py:1267-1325`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py#L1267-L1325) - Expression loading in dialog editor (KotOR 2 only)
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:91`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L91) - HTInstallation constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py:1267-1325`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py#L1267-L1325) - Expression loading in dialog editor (KotOR 2 only)
 
 ---
 
@@ -2563,12 +2563,12 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:493`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L493) - TwoDARegistry definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:493`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L493) - TwoDARegistry definition
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:92`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L92) - HTInstallation constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py:1263-1298`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py#L1263-L1298) - Video effect loading in dialog editor
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:92`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L92) - HTInstallation constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py:1263-1298`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/dlg/editor.py#L1263-L1298) - Video effect loading in dialog editor
 
 ---
 
@@ -2589,11 +2589,11 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:495`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L495) - TwoDARegistry definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:495`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L495) - TwoDARegistry definition
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:94`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L94) - HTInstallation constant
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:94`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L94) - HTInstallation constant
 
 ---
 
@@ -2614,12 +2614,12 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:469`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L469) - TwoDARegistry definition
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:469`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L469) - TwoDARegistry definition
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:68`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L68) - HTInstallation constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:71-76`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L71-L76) - Cursor selection in trigger editor
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:68`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L68) - HTInstallation constant
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:71-76`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L71-L76) - Cursor selection in trigger editor
 
 ---
 
@@ -2644,12 +2644,12 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_PARAMTABLE` L698](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L698) — `iprp_paramtable` (`LoadIPRPParamTables()`)
+- [`TwoDARegistry.IPRP_PARAMTABLE` L698](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L698) — `iprp_paramtable` (`LoadIPRPParamTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_PARAMTABLE` L99](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L99)
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:517-558`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L517-L558) - Parameter table lookup in item editor
+- [`HTInstallation.TwoDA_IPRP_PARAMTABLE` L99](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L99)
+- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:517-558`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L517-L558) - Parameter table lookup in item editor
 
 ---
 
@@ -2670,12 +2670,12 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_COSTTABLE` L693](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L693) — `iprp_costtable` (`LoadIPRPCostTables()`)
+- [`TwoDARegistry.IPRP_COSTTABLE` L693](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L693) — `iprp_costtable` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_COSTTABLE` L94](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L94)
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:486-496`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L486-L496) - Cost table lookup in item editor
+- [`HTInstallation.TwoDA_IPRP_COSTTABLE` L94](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L94)
+- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:486-496`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L486-L496) - Cost table lookup in item editor
 
 ---
 
@@ -2696,11 +2696,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_ABILITIES` L688](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L688) — `iprp_abilities` (`Load2DArrays_IPRPAbilities()`)
+- [`TwoDARegistry.IPRP_ABILITIES` L688](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L688) — `iprp_abilities` (`Load2DArrays_IPRPAbilities()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_ABILITIES` L89](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L89)
+- [`HTInstallation.TwoDA_IPRP_ABILITIES` L89](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L89)
 
 ---
 
@@ -2721,11 +2721,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_ALIGNGRP` L690](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L690) — `iprp_aligngrp` (`LoadIPRPCostTables()`)
+- [`TwoDARegistry.IPRP_ALIGNGRP` L690](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L690) — `iprp_aligngrp` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_ALIGNGRP` L91](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L91)
+- [`HTInstallation.TwoDA_IPRP_ALIGNGRP` L91](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L91)
 
 ---
 
@@ -2746,11 +2746,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_COMBATDAM` L692](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L692) — canonical `iprp_combatdam` resref (`LoadIPRPCostTables()`)
+- [`TwoDARegistry.IPRP_COMBATDAM` L692](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L692) — canonical `iprp_combatdam` resref (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_COMBATDAM` L93](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L93)
+- [`HTInstallation.TwoDA_IPRP_COMBATDAM` L93](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L93)
 
 ---
 
@@ -2771,11 +2771,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_DAMAGETYPE` L694](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L694) — `iprp_damagetype` (`LoadIPRPCostTables()`)
+- [`TwoDARegistry.IPRP_DAMAGETYPE` L694](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L694) — `iprp_damagetype` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_DAMAGETYPE` L95](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L95)
+- [`HTInstallation.TwoDA_IPRP_DAMAGETYPE` L95](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L95)
 
 ---
 
@@ -2796,11 +2796,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_PROTECTION` L699](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L699) — `iprp_protection` (`LoadIPRPCostTables()`)
+- [`TwoDARegistry.IPRP_PROTECTION` L699](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L699) — `iprp_protection` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_PROTECTION` L100](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L100)
+- [`HTInstallation.TwoDA_IPRP_PROTECTION` L100](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L100)
 
 ---
 
@@ -2821,11 +2821,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_ACMODTYPE` L689](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L689) — `iprp_acmodtype` (`LoadIPRPCostTables()`)
+- [`TwoDARegistry.IPRP_ACMODTYPE` L689](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L689) — `iprp_acmodtype` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_ACMODTYPE` L90](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L90)
+- [`HTInstallation.TwoDA_IPRP_ACMODTYPE` L90](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L90)
 
 ---
 
@@ -2846,11 +2846,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_IMMUNITY` L695](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L695) — `iprp_immunity` (`LoadIPRPCostTables()`)
+- [`TwoDARegistry.IPRP_IMMUNITY` L695](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L695) — `iprp_immunity` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_IMMUNITY` L96](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L96)
+- [`HTInstallation.TwoDA_IPRP_IMMUNITY` L96](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L96)
 
 ---
 
@@ -2871,11 +2871,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_SAVEELEMENT` L700](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L700) — `iprp_saveelement` (`LoadIPRPCostTables()`)
+- [`TwoDARegistry.IPRP_SAVEELEMENT` L700](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L700) — `iprp_saveelement` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_SAVEELEMENT` L101](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L101)
+- [`HTInstallation.TwoDA_IPRP_SAVEELEMENT` L101](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L101)
 
 ---
 
@@ -2896,11 +2896,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_SAVINGTHROW` L701](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L701) — `iprp_savingthrow` (`LoadIPRPCostTables()`)
+- [`TwoDARegistry.IPRP_SAVINGTHROW` L701](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L701) — `iprp_savingthrow` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_SAVINGTHROW` L102](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L102)
+- [`HTInstallation.TwoDA_IPRP_SAVINGTHROW` L102](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L102)
 
 ---
 
@@ -2921,11 +2921,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_ONHIT` L697](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L697) — `iprp_onhit` (`Load2DArrays_OnHit()`)
+- [`TwoDARegistry.IPRP_ONHIT` L697](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L697) — `iprp_onhit` (`Load2DArrays_OnHit()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_ONHIT` L98](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L98)
+- [`HTInstallation.TwoDA_IPRP_ONHIT` L98](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L98)
 
 ---
 
@@ -2946,11 +2946,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_AMMOTYPE` L691](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L691) — `iprp_ammotype` (`LoadIPRPCostTables()`)
+- [`TwoDARegistry.IPRP_AMMOTYPE` L691](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L691) — `iprp_ammotype` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_AMMOTYPE` L92](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L92)
+- [`HTInstallation.TwoDA_IPRP_AMMOTYPE` L92](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L92)
 
 ---
 
@@ -2973,11 +2973,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_MONSTERHIT` L696](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L696) — `iprp_mosterhit` (`LoadIPRPCostTables()`)
+- [`TwoDARegistry.IPRP_MONSTERHIT` L696](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L696) — `iprp_mosterhit` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_MONSTERHIT` L97](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L97)
+- [`HTInstallation.TwoDA_IPRP_MONSTERHIT` L97](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L97)
 
 ---
 
@@ -2998,11 +2998,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`TwoDARegistry.IPRP_WALK` L702](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L702) — `iprp_walk` (`LoadIPRPCostTables()`)
+- [`TwoDARegistry.IPRP_WALK` L702](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L702) — `iprp_walk` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`HTInstallation.TwoDA_IPRP_WALK` L103](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L103)
+- [`HTInstallation.TwoDA_IPRP_WALK` L103](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L103)
 
 ---
 
@@ -3023,8 +3023,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`_GFF_FIELD_TO_2DA` — `"LightColor"` → `iprp_lightcol` L774](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L774) — [GFF](GFF-File-Format) field wiring (UTI / item property context)
-- [`TwoDARegistry` docstring — `iprp_lightcol` / `Load2DArrays_LightColor()` L600](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L600)
+- [`_GFF_FIELD_TO_2DA` — `"LightColor"` → `iprp_lightcol` L774](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L774) — [GFF](GFF-File-Format) field wiring (UTI / item property context)
+- [`TwoDARegistry` docstring — `iprp_lightcol` / `Load2DArrays_LightColor()` L600](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L600)
 
 **HolocronToolset:**
 
@@ -3049,8 +3049,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`twoda.py` `_GFF_FIELD_TO_2DA` — `"MonsterDamage"` → `iprp_monstdam` L779](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L779)
-- [`read_2da` L67+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py#L67) — generic 2DA reader
+- [`twoda.py` `_GFF_FIELD_TO_2DA` — `"MonsterDamage"` → `iprp_monstdam` L779](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L779)
+- [`read_2da` L67+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py#L67) — generic 2DA reader
 
 **Note:** Unlike `iprp_combatdam`, there is no separate `TwoDARegistry.IPRP_MONSTDAM` constant—the file is reached via the **MonsterDamage** GFF field mapping above and via **[itemprops.2da](#itemprops2da)** cost-table wiring.
 
@@ -3074,7 +3074,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:66-74`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L66-L74) - Difficulty options initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:66-74`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/engine/rules/SWRuleSet.ts#L66-L74) - Difficulty options initialization from [2DA](2DA-File-Format)
 
 ---
 
@@ -3095,7 +3095,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:89-95`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L89-L95) - XP table initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:89-95`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/engine/rules/SWRuleSet.ts#L89-L95) - XP table initialization from [2DA](2DA-File-Format)
 
 ---
 
@@ -3114,7 +3114,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:101-105`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L101-L105) - Feat gain initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:101-105`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/engine/rules/SWRuleSet.ts#L101-L105) - Feat gain initialization from [2DA](2DA-File-Format)
 
 ---
 
@@ -3133,9 +3133,9 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:143-150`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L143-L150) - Effect icon initialization from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:6441-6446`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L6441-L6446) - SetEffectIcon function
-- [`NorthernLights/nwscript.nss:4678`](https://github.com/lachjames/NorthernLights/blob/master/nwscript.nss#L4678) - Comment referencing effecticon.2da
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:143-150`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/engine/rules/SWRuleSet.ts#L143-L150) - Effect icon initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:6441-6446`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScriptDefK1.ts#L6441-L6446) - SetEffectIcon function
+- [`NorthernLights/nwscript.nss:4678`](https://github.com/lachjames/NorthernLights/blob/8dcfd2aee28546db7e42f2ab894a5127f4130021/nwscript.nss#L4678) - Comment referencing effecticon.2da
 
 ---
 
@@ -3156,9 +3156,9 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **Vendor Implementations:**
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:178-185`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L178-L185) - Pazaak decks initialization from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:4438`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4438) - StartPazaakGame function comment
-- [`NorthernLights/nwscript.nss:3847`](https://github.com/lachjames/NorthernLights/blob/master/nwscript.nss#L3847) - Comment referencing PazaakDecks.2da
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:178-185`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/engine/rules/SWRuleSet.ts#L178-L185) - Pazaak decks initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:4438`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScriptDefK1.ts#L4438) - StartPazaakGame function comment
+- [`NorthernLights/nwscript.nss:3847`](https://github.com/lachjames/NorthernLights/blob/8dcfd2aee28546db7e42f2ab894a5127f4130021/nwscript.nss#L3847) - Comment referencing PazaakDecks.2da
 
 ---
 
@@ -3177,8 +3177,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/combat/CreatureClass.ts:302-304`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/combat/CreatureClass.ts#L302-L304) - AC bonus loading from [2DA](2DA-File-Format)
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:63`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L63) - HTInstallation.ACBONUS constant
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/combat/CreatureClass.ts:302-304`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/combat/CreatureClass.ts#L302-L304) - AC bonus loading from [2DA](2DA-File-Format)
+- [`Tools/HolocronToolset/src/toolset/data/installation.py:63`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L63) - HTInstallation.ACBONUS constant
 
 ---
 
@@ -3197,7 +3197,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/controls/KeyMapper.ts:293-299`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/controls/KeyMapper.ts#L293-L299) - Keymap initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/controls/KeyMapper.ts:293-299`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/controls/KeyMapper.ts#L293-L299) - Keymap initialization from [2DA](2DA-File-Format)
 
 ---
 
@@ -3216,8 +3216,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`NorthernLights/nwscript.nss:949`](https://github.com/lachjames/NorthernLights/blob/master/nwscript.nss#L949) - Comment referencing poison.2da constants
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:3194-3199`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L3194-L3199) - EffectPoison function
+- [`NorthernLights/nwscript.nss:949`](https://github.com/lachjames/NorthernLights/blob/8dcfd2aee28546db7e42f2ab894a5127f4130021/nwscript.nss#L949) - Comment referencing poison.2da constants
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:3194-3199`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScriptDefK1.ts#L3194-L3199) - EffectPoison function
 
 ---
 
@@ -3236,8 +3236,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`NorthernLights/nwscript.nss:3858`](https://github.com/lachjames/NorthernLights/blob/master/nwscript.nss#L3858) - Comment referencing FeedBackText.2da
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:4464-4465`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4464-L4465) - DisplayFeedBackText function
+- [`NorthernLights/nwscript.nss:3858`](https://github.com/lachjames/NorthernLights/blob/8dcfd2aee28546db7e42f2ab894a5127f4130021/nwscript.nss#L3858) - Comment referencing FeedBackText.2da
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:4464-4465`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScriptDefK1.ts#L4464-L4465) - DisplayFeedBackText function
 
 ---
 
@@ -3256,7 +3256,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Appearance.cs` L56–L60](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Tables/Appearance.cs#L56-L60) — `SoundAppTypeID` maps into `appearancesndset.2da`
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Appearance.cs` L56–L60](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Tables/Appearance.cs#L56-L60) — `SoundAppTypeID` maps into `appearancesndset.2da`
 
 ---
 
@@ -3276,8 +3276,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/game/tsl/menu/MenuGraphicsAdvanced.ts:51-122`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/game/tsl/menu/MenuGraphicsAdvanced.ts#L51-L122) - [texture](Texture-Formats#tpc) pack loading from [2DA](2DA-File-Format) for graphics menu (KotOR 2 only)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/game/kotor/menu/MenuGraphicsAdvanced.ts:63-121`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/game/kotor/menu/MenuGraphicsAdvanced.ts#L63-L121) - [texture](Texture-Formats#tpc) pack usage in KotOR 1 graphics menu
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/game/tsl/menu/MenuGraphicsAdvanced.ts:51-122`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/game/tsl/menu/MenuGraphicsAdvanced.ts#L51-L122) - [texture](Texture-Formats#tpc) pack loading from [2DA](2DA-File-Format) for graphics menu (KotOR 2 only)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/game/kotor/menu/MenuGraphicsAdvanced.ts:63-121`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/game/kotor/menu/MenuGraphicsAdvanced.ts#L63-L121) - [texture](Texture-Formats#tpc) pack usage in KotOR 1 graphics menu
 
 ---
 
@@ -3298,8 +3298,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleArea.ts:210`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleArea.ts#L210) - Comment referencing loadscreens.2da for area loading screen index
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:549`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L549) - [GFF](GFF-File-Format) field mapping: "LoadScreenID" -> loadscreens.2da
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleArea.ts:210`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleArea.ts#L210) - Comment referencing loadscreens.2da for area loading screen index
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:549`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L549) - [GFF](GFF-File-Format) field mapping: "LoadScreenID" -> loadscreens.2da
 
 ---
 
@@ -3319,7 +3319,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:84`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L84) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for fractionalcr.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:84`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L84) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for fractionalcr.2da
 
 ---
 
@@ -3339,7 +3339,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:74`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L74) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for bindablekeys.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:74`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L74) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for bindablekeys.2da
 
 ---
 
@@ -3359,7 +3359,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:138`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L138) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for masterfeats.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:138`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L138) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for masterfeats.2da
 
 ---
 
@@ -3380,7 +3380,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:140`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L140) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for movies.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:140`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L140) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for movies.2da
 
 ---
 
@@ -3400,7 +3400,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:144`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L144) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for stringtokens.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:144`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L144) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for stringtokens.2da
 
 ---
 
@@ -3422,8 +3422,8 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:255`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L255) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for disease.2da (KotOR 2)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:238,431`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L238) - Script *ResRef* column definitions for disease.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:255`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L255) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for disease.2da (KotOR 2)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:238,431`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L238) - Script *ResRef* column definitions for disease.2da
 
 ---
 
@@ -3443,7 +3443,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:156`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L156) - *ResRef* column definition for droiddischarge.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:156`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L156) - *ResRef* column definition for droiddischarge.2da
 
 ---
 
@@ -3465,7 +3465,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:172`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L172) - [model](MDL-MDX-File-Format) *ResRef* column definitions for upcrystals.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:172`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L172) - [model](MDL-MDX-File-Format) *ResRef* column definitions for upcrystals.2da
 
 ---
 
@@ -3485,7 +3485,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:199`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L199) - Sound *ResRef* column definition for grenadesnd.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:199`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L199) - Sound *ResRef* column definition for grenadesnd.2da
 
 ---
 
@@ -3505,7 +3505,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:201`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L201) - Sound *ResRef* column definition for inventorysnds.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:201`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L201) - Sound *ResRef* column definition for inventorysnds.2da
 
 ---
 
@@ -3515,10 +3515,10 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 | Artifact | Location |
 | -------- | -------- |
-| Binary read | [`TwoDABinaryReader.load` L146+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L146) in [`io_twoda.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py) |
-| Binary write | [`TwoDABinaryWriter.write` L183+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L183) |
-| Data model (`TwoDA`) | [`TwoDA` L87+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L87) in [`twoda_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py) |
-| Data model (`TwoDARow`) | [`TwoDARow` L915+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L915) in [`twoda_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py) |
+| Binary read | [`TwoDABinaryReader.load` L146+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L146) in [`io_twoda.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py) |
+| Binary write | [`TwoDABinaryWriter.write` L183+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L183) |
+| Data model (`TwoDA`) | [`TwoDA` L87+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L87) in [`twoda_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py) |
+| Data model (`TwoDARow`) | [`TwoDARow` L915+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L915) in [`twoda_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py) |
 | CSV/JSON | `io_twoda_csv.py`, `io_twoda_json.py` |
 
 ### Other implementations
@@ -3531,15 +3531,15 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 - **KotOR.js**
 
-  - [`TwoDAObject.ts` L69–L145](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts#L69-L145)
-  - [`TwoDAManager.ts` L21–L37](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/TwoDAManager.ts#L21-L37)
+  - [`TwoDAObject.ts` L69–L145](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/TwoDAObject.ts#L69-L145)
+  - [`TwoDAManager.ts` L21–L37](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/managers/TwoDAManager.ts#L21-L37)
 
 - **Kotor.NET**
 
-  - [`TwoDABinaryStructure.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs#L12) (`FileRoot` / `FileHeader`)
-  - [`TwoDA.cs` L16+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDA.cs#L16)
+  - [`TwoDABinaryStructure.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs#L12) (`FileRoot` / `FileHeader`)
+  - [`TwoDA.cs` L16+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/Kotor2DA/TwoDA.cs#L16)
 - **xoreos**: [`2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp)
-- **KotOR-Unity**: [`2DAObject.cs` L23–L105](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L23-L105)
+- **KotOR-Unity**: [`2DAObject.cs` L23–L105](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/FileObjects/2DAObject.cs#L23-L105)
 
 ### See also
 

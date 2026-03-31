@@ -185,7 +185,7 @@ The kit JSON file (`{kit_id}.json`) defines the kit structure:
 - `width`: Door width in world units (default: 2.0)
 - `height`: Door height in world units (default: 3.0)
 
-**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_loader.py:23-260`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_loader.py#L23-L260)
+**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_loader.py:23-260`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_loader.py#L23-L260)
 
 ---
 
@@ -237,7 +237,7 @@ Components are reusable [room models](Level-Layout-Formats#room-definitions) tha
 - The [walkmesh](Level-Layout-Formats#bwm) is translated BY `room.position` from its original coordinates
 - For alignment, the [BWM](Level-Layout-Formats#bwm) must be centered around (0, 0) so both image and [walkmesh](Level-Layout-Formats#bwm) are at the same position after [transformation](Level-Layout-Formats#adjacencies-wok-only)
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1538-1588`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1538-L1588)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1538-1588`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1538-L1588)
 
 **Door Hooks**:
 
@@ -248,11 +248,11 @@ Components are reusable [room models](Level-Layout-Formats#room-definitions) tha
 
 **Hook Extraction**: Door hooks are extracted from [BWM](Level-Layout-Formats#bwm) [edges](Level-Layout-Formats#edges-wok-only) that have valid transitions (`edge.transition >= 0`). The transition index maps to the door index in the kit's doors array.
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1467-1535`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1467-L1535)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1467-1535`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1467-L1535)
 
 **Hook Connection Logic**: Components are connected when their hook points are within proximity. The toolset automatically links compatible hooks to form room connections.
 
-**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_base.py:88-106`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_base.py#L88-L106)
+**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_base.py:88-106`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_base.py#L88-L106)
 
 ---
 
@@ -290,7 +290,7 @@ Kits contain all [textures](Texture-Formats#tpc) and lightmaps referenced by the
 3. Converts mipmaps to RGBA format if needed
 4. Writes TGA file with BGRA pixel order (TGA format requirement)
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:926-948`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L926-L948)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:926-948`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L926-L948)
 
 ### Resource Resolution Priority
 
@@ -304,7 +304,7 @@ The extraction process uses the same resource resolution priority as the game en
 4. **TEXTURES_TPA** (priority 4): [texture](Texture-Formats#tpc) packs
 5. **CHITIN** (priority 5 - lowest): Base game [BIF files](Container-Formats#bif)
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:74-120`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L74-L120)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:74-120`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L74-L120)
 
 **Batch Processing**: [texture](Texture-Formats#tpc)/lightmap lookups are batched for performance:
 
@@ -312,7 +312,7 @@ The extraction process uses the same resource resolution priority as the game en
 - Results are pre-sorted by priority once to avoid repeated sorting
 - [TPC](Texture-Formats#tpc)/TGA files are grouped by filepath for batch I/O operations
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:814-964`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L814-L964)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:814-964`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L814-L964)
 
 ### [TXI](Texture-Formats#txi) files
 
@@ -328,7 +328,7 @@ Each [texture](Texture-Formats#tpc)/lightmap can have an accompanying `.txi` fil
 2. If not found, lookup standalone [TXI file](Texture-Formats#txi) using batch location results
 3. If still not found, create empty [TXI](Texture-Formats#txi) placeholder
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:849-1020`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L849-L1020)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:849-1020`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L849-L1020)
 
 ### Shared Resources
 
@@ -394,7 +394,7 @@ These are added to every room when using the sithbase kit, ensuring consistent a
 - Resources needed for kit functionality but not tied to specific components
 - Shared assets that multiple components might reference
 
-**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoormap.py:236-256`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/indoormap.py#L236-L256)
+**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoormap.py:236-256`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/indoormap.py#L236-L256)
 
 ---
 
@@ -434,7 +434,7 @@ Doors are defined in the kit JSON and have corresponding [UTD](GFF-File-Format#u
 3. [DWK](Level-Layout-Formats#bwm) [walkmeshes](Level-Layout-Formats#bwm) are extracted for each door model (3 states: 0=closed, 1=open1, 2=open2)
 4. Door dimensions are set to fast defaults (2.0x3.0) to avoid expensive extraction
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1253-1304`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1253-L1304)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1253-1304`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1253-L1304)
 
 Doors are placed at component hook points and connect adjacent rooms. The [door templates](GFF-File-Format#utd-door) define appearance, locking, scripts, and other properties.
 
@@ -455,9 +455,9 @@ Doors have 3 [walkmesh](Level-Layout-Formats#bwm) states that define pathfinding
 3. Batch lookup all [DWK](Level-Layout-Formats#bwm) files (3 states per door) using `installation.locations()`
 4. Extract [DWK](Level-Layout-Formats#bwm) files from module first (fastest), then fall back to installation-wide resolution
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1090-1174`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1090-L1174)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1090-1174`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1090-L1174)
 
-**Game Engine Reference (reone):** [`door.cpp` L80–L94](https://github.com/modawan/reone/blob/master/src/libs/game/object/door.cpp#L80-L94) — attaches closed/open [DWK](Level-Layout-Formats#bwm) walkmeshes to the door model scene node
+**Game Engine Reference (reone):** [`door.cpp` L80–L94](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/door.cpp#L80-L94) — attaches closed/open [DWK](Level-Layout-Formats#bwm) walkmeshes to the door model scene node
 
 ---
 
@@ -476,7 +476,7 @@ Placeables are interactive objects (containers, terminals, etc.) that can be pla
 3. [PWK](Level-Layout-Formats#bwm) [walkmeshes](Level-Layout-Formats#bwm) are extracted for each placeable [model](MDL-MDX-File-Format)
 4. [PWK](Level-Layout-Formats#bwm) files are written to kit directory root
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1176-1251`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1176-L1251)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1176-1251`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1176-L1251)
 
 ### Placeable Walkmeshes ([PWK](Level-Layout-Formats#bwm))
 
@@ -489,9 +489,9 @@ Placeables have [walkmeshes](Level-Layout-Formats#bwm) that define their collisi
 3. Batch lookup all [PWK](Level-Layout-Formats#bwm) files using `installation.locations()`
 4. Extract [PWK](Level-Layout-Formats#bwm) files from module first (fastest), then fall back to installation-wide resolution
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1176-1251`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1176-L1251)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1176-1251`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1176-L1251)
 
-**Game Engine Reference (reone):** [`placeable.cpp` L77–L80](https://github.com/modawan/reone/blob/master/src/libs/game/object/placeable.cpp#L77-L80) — loads [PWK](Level-Layout-Formats#bwm) for the resolved placeable model (`ResType::Pwk`)
+**Game Engine Reference (reone):** [`placeable.cpp` L77–L80](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/placeable.cpp#L77-L80) — loads [PWK](Level-Layout-Formats#bwm) for the resolved placeable model (`ResType::Pwk`)
 
 ---
 
@@ -512,7 +512,7 @@ Skyboxes are optional [MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format) [mod
 
 Skyboxes are typically used for outdoor areas and provide the distant sky/background rendering. They are loaded separately from room components and don't have [walkmeshes](Level-Layout-Formats#bwm).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:740-744`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L740-L744)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:740-744`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L740-L744)
 
 ---
 
@@ -534,7 +534,7 @@ The `doorway/` folder contains padding [models](MDL-MDX-File-Format) that fill g
 - `{door_id}`: Door identifier (matches door index in JSON, extracted using `get_nums()`)
 - `size{size}`: Padding size in world units (e.g., `size650`, `size800`)
 
-**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_loader.py:127-150`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_loader.py#L127-L150)
+**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_loader.py:127-150`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_loader.py#L127-L150)
 
 ---
 
@@ -554,7 +554,7 @@ models/
 └── {model_name}.mdx
 ```
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1311-1324`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1311-L1324)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1311-1324`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1311-L1324)
 
 ---
 
@@ -575,7 +575,7 @@ The extraction process supports multiple archive formats:
 2. If extension is specified, use that format directly
 3. If no extension, search for both RIM and [ERF files](Container-Formats#erf), prioritizing `.mod` files
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:291-550`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L291-L550)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:291-550`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L291-L550)
 
 ### Component Identification
 
@@ -589,7 +589,7 @@ Components are identified using the following process:
    - It's not a skybox (skyboxes have [MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format) but no [WOK](Level-Layout-Formats#bwm))
 4. **Component Name Mapping**: Component IDs are mapped from [model](MDL-MDX-File-Format) names using `_get_component_name_mapping()` to create friendly names (e.g., `danm13_room01` → `room_01`)
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/src/pykotor/tools/kit.py:600-767`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L600-L767)
+**Reference**: [`Libraries/PyKotor/src/pykotor/src/pykotor/tools/kit.py:600-767`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L600-L767)
 
 ### [texture](Texture-Formats#tpc) and Lightmap Extraction
 
@@ -609,7 +609,7 @@ Components are identified using the following process:
 7. **TPC to TGA Conversion**: Convert all [TPC files](Texture-Formats#tpc) to TGA format during extraction
 8. **TXI Extraction**: Extract [TXI files](Texture-Formats#txi) from embedded [TPC](Texture-Formats#tpc) data or standalone files
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:769-1020`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L769-L1020)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:769-1020`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L769-L1020)
 
 ### Door Extraction
 
@@ -621,7 +621,7 @@ Doors are extracted from module [UTD](GFF-File-Format#utd-door) files:
 4. **[DWK](Level-Layout-Formats#bwm) Extraction**: Extract door walkmeshes (3 states per door) using batch lookup
 5. **Door JSON Generation**: Generate door entries in kit JSON with fast defaults (2.0x3.0 dimensions)
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1253-1304`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1253-L1304)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1253-1304`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1253-L1304)
 
 ### [walkmesh](Level-Layout-Formats#bwm) Extraction
 
@@ -631,7 +631,7 @@ Doors are extracted from module [UTD](GFF-File-Format#utd-door) files:
 2. **Door [DWK](Level-Layout-Formats#bwm)**: Extracted using batch lookup (3 states: 0, 1, 2)
 3. **Placeable [PWK](Level-Layout-Formats#bwm)**: Extracted using batch lookup
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1090-1251`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1090-L1251)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1090-1251`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1090-L1251)
 
 ### [BWM](Level-Layout-Formats#bwm) Re-centering
 
@@ -659,7 +659,7 @@ Component [WOK files](Level-Layout-Formats#bwm) are **re-centered to origin (0, 
 3. Translate all [vertices](MDL-MDX-File-Format#vertex-structure) by negative center to move [BWM](Level-Layout-Formats#bwm) to origin
 4. Save re-centered [WOK file](Level-Layout-Formats#bwm)
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1538-1588`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1538-L1588)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1538-1588`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1538-L1588)
 
 ### Minimap Generation
 
@@ -673,7 +673,7 @@ Component minimap images are generated from re-centered [BWM](Level-Layout-Forma
 
 **[walkable face](Level-Layout-Formats#faces) [materials](MDL-MDX-File-Format#trimesh-header)**: [faces](MDL-MDX-File-Format#face-structure) with [materials](MDL-MDX-File-Format#trimesh-header) 1, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 16, 18, 20, 21, 22 are considered walkable.
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1348-1465`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1348-L1465)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1348-1465`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1348-L1465)
 
 ### Doorhook Extraction
 
@@ -688,7 +688,7 @@ Door hooks are extracted from [BWM](Level-Layout-Formats#bwm) [edges](Level-Layo
 
 **[edge](Level-Layout-Formats#edges-wok-only) index Calculation**: Global [edge](Level-Layout-Formats#edges-wok-only) index = `face_index * 3 + local_edge_index`
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1467-1535`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1467-L1535)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1467-1535`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1467-L1535)
 
 ---
 
@@ -753,7 +753,7 @@ Kits are loaded by `load_kits()` which:
 11. **Populates Hooks**: Extracts doorhook data from JSON and creates `KitComponentHook` instances
 12. **Error Handling**: Collects missing files instead of failing fast, returns list of missing files
 
-**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_loader.py:23-260`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_loader.py#L23-L260)
+**Reference**: [`Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_loader.py:23-260`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/indoorkit/indoorkit_loader.py#L23-L260)
 
 ### Indoor Map Generation
 
@@ -836,7 +836,7 @@ Kits are designed to be compatible with the KOTOR game engine's resource resolut
 - [UTD](GFF-File-Format#utd-door) for door blueprints
 - [DWK](Level-Layout-Formats#bwm)/[PWK](Level-Layout-Formats#bwm) for [walkmeshes](Level-Layout-Formats#bwm)
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:74-120`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L74-L120)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:74-120`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L74-L120)
 
 ---
 
@@ -846,42 +846,42 @@ The kit extraction process is aligned with open-source engine code ([reone](http
 
 ### Door Walkmesh ([DWK](Level-Layout-Formats#bwm)) Extraction
 
-**reone** ([`door.cpp` L80–L98](https://github.com/modawan/reone/blob/master/src/libs/game/object/door.cpp#L80-L98)):
+**reone** ([`door.cpp` L80–L98](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/door.cpp#L80-L98)):
 
 - Doors load 3 [walkmesh](Level-Layout-Formats#bwm) states: `{modelName}0.dwk` (closed), `{modelName}1.dwk` (open1), `{modelName}2.dwk` (open2)
 - [walkmeshes](Level-Layout-Formats#bwm) are loaded via `_services.resource.walkmeshes.get(modelName + "0", ResType::Dwk)`
 - Each [walkmesh](Level-Layout-Formats#bwm) state is stored as a separate `WalkmeshSceneNode` with enabled/disabled state based on door state
 - **PyKotor Implementation**: Matches reone exactly - extracts all 3 [DWK](Level-Layout-Formats#bwm) states using the same naming convention
 
-**KotOR.js** ([`ModuleDoor.ts` L990–L1003](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L990-L1003)):
+**KotOR.js** ([`ModuleDoor.ts` L990–L1003](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleDoor.ts#L990-L1003)):
 
 - Only loads the closed state [walkmesh](Level-Layout-Formats#bwm): `ResourceLoader.loadResource(ResourceTypes['dwk'], resRef+'0')`
 - Open states are handled dynamically through collision state updates, not separate [walkmesh](Level-Layout-Formats#bwm) files
 - **Discrepancy**: KotOR.js only loads `{modelName}0.dwk`, while reone and PyKotor extract all 3 states
 - **PyKotor Implementation**: Extracts all 3 states to match reone's comprehensive approach
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1090-1174`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1090-L1174)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1090-1174`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1090-L1174)
 
 ### Placeable Walkmesh ([PWK](Level-Layout-Formats#bwm)) Extraction
 
-**reone** ([`placeable.cpp` L77–L80](https://github.com/modawan/reone/blob/master/src/libs/game/object/placeable.cpp#L77-L80)):
+**reone** ([`placeable.cpp` L77–L80](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/placeable.cpp#L77-L80)):
 
 - Placeables load a single [walkmesh](Level-Layout-Formats#bwm): `_services.resource.walkmeshes.get(modelName, ResType::Pwk)`
 - [walkmesh](Level-Layout-Formats#bwm) is stored as a `WalkmeshSceneNode` attached to the placeable's scene [node](MDL-MDX-File-Format#node-structures)
 - **PyKotor Implementation**: Matches reone exactly - extracts [PWK](Level-Layout-Formats#bwm) using [model](MDL-MDX-File-Format) name directly
 
-**KotOR.js** ([`ModulePlaceable.ts` `loadWalkmesh` L665–L682](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L665-L682)):
+**KotOR.js** ([`ModulePlaceable.ts` `loadWalkmesh` L665–L682](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModulePlaceable.ts#L665-L682)):
 
 - Loads [walkmesh](Level-Layout-Formats#bwm): `ResourceLoader.loadResource(ResourceTypes['pwk'], resRef)`
 - Creates `OdysseyWalkMesh` from binary data and attaches to [model](MDL-MDX-File-Format)
 - Falls back to empty [walkmesh](Level-Layout-Formats#bwm) if loading fails
 - **PyKotor Implementation**: Matches KotOR.js approach - extracts [PWK](Level-Layout-Formats#bwm) using [model](MDL-MDX-File-Format) name
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1176-1251`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1176-L1251)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1176-1251`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1176-L1251)
 
 ### [room model](Level-Layout-Formats#room-definitions) and Component Identification
 
-**reone** ([`area.cpp` L305–L375](https://github.com/modawan/reone/blob/master/src/libs/game/object/area.cpp#L305-L375)):
+**reone** ([`area.cpp` L305–L375](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/area.cpp#L305-L375)):
 
 - Loads [LYT file](Level-Layout-Formats#lyt) via `_services.resource.layouts.get(_name)`
 - Iterates through `layout->rooms` to get [room model](Level-Layout-Formats#room-definitions) names
@@ -890,48 +890,48 @@ The kit extraction process is aligned with open-source engine code ([reone](http
 - Rooms are identified as [MDL](MDL-MDX-File-Format) [models](MDL-MDX-File-Format) with corresponding [WOK files](Level-Layout-Formats#bwm) from [LYT](Level-Layout-Formats#lyt)
 - **PyKotor Implementation**: Matches reone exactly - uses [LYT](Level-Layout-Formats#lyt) to identify [room models](Level-Layout-Formats#room-definitions), then resolves [MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format)/[WOK](Level-Layout-Formats#bwm)
 
-**KotOR.js** ([`ModuleRoom.ts` L338–L342](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleRoom.ts#L338-L342); [`loadWalkmesh` L360–L367](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleRoom.ts#L360-L367)):
+**KotOR.js** ([`ModuleRoom.ts` L338–L342](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleRoom.ts#L338-L342); [`loadWalkmesh` L360–L367](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleRoom.ts#L360-L367)):
 
 - Loads [walkmesh](Level-Layout-Formats#bwm): `ResourceLoader.loadResource(ResourceTypes['wok'], resRef)`
 - Creates `OdysseyWalkMesh` from binary data and attaches to [room model](Level-Layout-Formats#room-definitions)
 - Rooms are identified from [LYT file](Level-Layout-Formats#lyt) room definitions
 - **PyKotor Implementation**: Matches KotOR.js approach - uses [LYT](Level-Layout-Formats#lyt) [room models](Level-Layout-Formats#room-definitions) to identify components
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:545-767`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L545-L767)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:545-767`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L545-L767)
 
 ### Door [model](MDL-MDX-File-Format) Resolution
 
-**reone** ([`door.cpp` `loadFromBlueprint` L59+](https://github.com/modawan/reone/blob/master/src/libs/game/object/door.cpp#L59)):
+**reone** ([`door.cpp` `loadFromBlueprint` L59+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/door.cpp#L59)):
 
 - Door [models](MDL-MDX-File-Format) are resolved from [UTD](GFF-File-Format#utd-door) files using `genericdoors.2da`
 - The `appearance_id` field in [UTD](GFF-File-Format#utd-door) maps to a row in `genericdoors.2da`
 - The `modelname` column in that row provides the door [model](MDL-MDX-File-Format) name
 - **PyKotor Implementation**: Matches reone exactly - uses `door_tools.get_model()` which reads `genericdoors.2da`
 
-**KotOR.js** ([`ModuleDoor.ts` L1062–L1063](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L1062-L1063) — `GenericType` from [UTD](GFF-File-Format#utd-door); see also [`getGenericType` / appearance](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L224-L237)):
+**KotOR.js** ([`ModuleDoor.ts` L1062–L1063](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleDoor.ts#L1062-L1063) — `GenericType` from [UTD](GFF-File-Format#utd-door); see also [`getGenericType` / appearance](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModuleDoor.ts#L224-L237)):
 
 - Door [models](MDL-MDX-File-Format) are resolved similarly using `[genericdoors.2da](2DA-File-Format#genericdoors2da)`
 - The appearance ID from [UTD](GFF-File-Format#utd-door) is used to lookup [model](MDL-MDX-File-Format) name
 - **PyKotor Implementation**: Matches KotOR.js approach
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/door.py:25-64`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/door.py#L25-L64)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/door.py:25-64`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/door.py#L25-L64)
 
 ### Placeable [model](MDL-MDX-File-Format) Resolution
 
-**reone** ([`placeable.cpp` `loadFromBlueprint` L50+](https://github.com/modawan/reone/blob/master/src/libs/game/object/placeable.cpp#L50)):
+**reone** ([`placeable.cpp` `loadFromBlueprint` L50+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/game/object/placeable.cpp#L50)):
 
 - Placeable [models](MDL-MDX-File-Format) are resolved from [UTP](GFF-File-Format#utp-placeable) files using `placeables.2da`
 - The `appearance_id` field in [UTP](GFF-File-Format#utp-placeable) maps to a row in `placeables.2da`
 - The `modelname` column in that row provides the placeable [model](MDL-MDX-File-Format) name
 - **PyKotor Implementation**: Matches reone exactly - uses `placeable_tools.get_model()` which reads `placeables.2da`
 
-**KotOR.js** ([`ModulePlaceable.ts` L729–L732](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L729-L732) — `Appearance` → `placeableAppearance`; [L575](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L575) — `modelname`):
+**KotOR.js** ([`ModulePlaceable.ts` L729–L732](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModulePlaceable.ts#L729-L732) — `Appearance` → `placeableAppearance`; [L575](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/module/ModulePlaceable.ts#L575) — `modelname`):
 
 - Placeable [models](MDL-MDX-File-Format) are resolved similarly using `placeables.2da`
 - The appearance ID from [UTP](GFF-File-Format#utp-placeable) is used to lookup [model](MDL-MDX-File-Format) name
 - **PyKotor Implementation**: Matches KotOR.js approach
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/placeable.py:20-50`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/placeable.py#L20-L50)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/placeable.py:20-50`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/placeable.py#L20-L50)
 
 ### [texture](Texture-Formats#tpc) and Lightmap Extraction
 
@@ -944,7 +944,7 @@ The kit extraction process is aligned with open-source engine code ([reone](http
 - **Discrepancy**: PyKotor proactively extracts all [textures](Texture-Formats#tpc)/lightmaps, while engines load them lazily during rendering
 - **Rationale**: Kit extraction needs all [textures](Texture-Formats#tpc) upfront for self-contained kit structure
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/model.py:99-887`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/model.py#L99-L887)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/model.py:99-887`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/model.py#L99-L887)
 
 ### Resource Resolution Priority
 
@@ -954,24 +954,24 @@ The kit extraction process is aligned with open-source engine code ([reone](http
 - `.mod` files take precedence over `.rim` files in Modules directory
 - **PyKotor Implementation**: Matches reone exactly - uses same priority order via `_get_resource_priority()`
 
-**KotOR.js** ([`ResourceLoader.ts` L22+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/ResourceLoader.ts#L22)):
+**KotOR.js** ([`ResourceLoader.ts` L22+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/loaders/ResourceLoader.ts#L22)):
 
 - Resource resolution follows similar priority order
 - Override folder checked first, then modules, then chitin
 - **PyKotor Implementation**: Matches KotOR.js approach
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:74-120`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L74-L120)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:74-120`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L74-L120)
 
 ### [BWM](Level-Layout-Formats#bwm)/[WOK](Level-Layout-Formats#bwm) [walkmesh](Level-Layout-Formats#bwm) Handling
 
-**reone** ([`walkmesh.cpp` L1+](https://github.com/modawan/reone/blob/master/src/libs/graphics/walkmesh.cpp#L1)):
+**reone** ([`walkmesh.cpp` L1+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/walkmesh.cpp#L1)):
 
 - [walkmeshes](Level-Layout-Formats#bwm) are loaded from [WOK](Level-Layout-Formats#bwm)/[BWM files](Level-Layout-Formats#bwm)
 - [face](MDL-MDX-File-Format#face-structure) [materials](MDL-MDX-File-Format#trimesh-header) determine walkability ([materials](MDL-MDX-File-Format#trimesh-header) 1, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 16, 18, 20, 21, 22 are walkable)
 - [edge](Level-Layout-Formats#edges-wok-only) transitions indicate door connections
 - **PyKotor Implementation**: Matches reone - uses same walkable [material](MDL-MDX-File-Format#trimesh-header) values for minimap generation
 
-**KotOR.js** ([`OdysseyWalkMesh.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyWalkMesh.ts#L24)):
+**KotOR.js** ([`OdysseyWalkMesh.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/odyssey/OdysseyWalkMesh.ts#L24)):
 
 - [walkmeshes](Level-Layout-Formats#bwm) are loaded from [WOK](Level-Layout-Formats#bwm) binary data
 - [face](MDL-MDX-File-Format#face-structure) [materials](MDL-MDX-File-Format#trimesh-header) and walk types determine walkability
@@ -980,8 +980,8 @@ The kit extraction process is aligned with open-source engine code ([reone](http
 
 **Reference**:
 
-- [`Libraries/PyKotor/src/pykotor/tools/kit.py:1348-1465`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1348-L1465) (Minimap generation)
-- [`Libraries/PyKotor/src/pykotor/tools/kit.py:1467-1535`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1467-L1535) (Doorhook extraction)
+- [`Libraries/PyKotor/src/pykotor/tools/kit.py:1348-1465`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1348-L1465) (Minimap generation)
+- [`Libraries/PyKotor/src/pykotor/tools/kit.py:1467-1535`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1467-L1535) (Doorhook extraction)
 
 ### [module archives](Container-Formats#erf) Loading
 
@@ -991,13 +991,13 @@ The kit extraction process is aligned with open-source engine code ([reone](http
 - `.mod` files ([ERF](Container-Formats#erf) format) take precedence over `.rim` files
 - **PyKotor Implementation**: Matches reone exactly - prioritizes `.mod` files over `.rim` files
 
-**KotOR.js** ([`ResourceLoader.ts` L22+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/ResourceLoader.ts#L22)):
+**KotOR.js** ([`ResourceLoader.ts` L22+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/loaders/ResourceLoader.ts#L22)):
 
 - Supports RIM and [ERF file](Container-Formats#erf) formats
 - Module loading follows same priority order
 - **PyKotor Implementation**: Matches KotOR.js approach
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:291-550`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L291-L550)
+**Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:291-550`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L291-L550)
 
 ### [KEY](Container-Formats#key) Discrepancies and Rationale
 
@@ -1040,7 +1040,7 @@ The kit generation tests (`Tools/HolocronToolset/tests/data/test_kit_generation.
 
 **Rationale**: These files contain critical game data that must match exactly for functional compatibility.
 
-**Reference**: [`Tools/HolocronToolset/tests/data/test_kit_generation.py:912-970`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/tests/data/test_kit_generation.py#L912-L970)
+**Reference**: [`Tools/HolocronToolset/tests/data/test_kit_generation.py:912-970`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/tests/data/test_kit_generation.py#L912-L970)
 
 ### Approximate Matching (Tolerance-Based)
 
@@ -1054,7 +1054,7 @@ The kit generation tests (`Tools/HolocronToolset/tests/data/test_kit_generation.
 
 **Rationale**: [TPC files](Texture-Formats#tpc) use DXT compression which can introduce small pixel differences even for identical source images.
 
-**Reference**: [`Tools/HolocronToolset/tests/data/test_kit_generation.py:972-1111`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/tests/data/test_kit_generation.py#L972-L1111)
+**Reference**: [`Tools/HolocronToolset/tests/data/test_kit_generation.py:972-1111`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/tests/data/test_kit_generation.py#L972-L1111)
 
 ### structure-Only Verification (No value Comparison)
 
@@ -1094,7 +1094,7 @@ if "height" in exp_door:
 - **High granularity matching is NOT enforced** - coordinate precision is not verified
 - **Error acceptability is currently 100%** - any coordinate values are accepted as long as fields exist
 
-**Reference**: [`Tools/HolocronToolset/tests/data/test_kit_generation.py:1113-1234`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/tests/data/test_kit_generation.py#L1113-L1234)
+**Reference**: [`Tools/HolocronToolset/tests/data/test_kit_generation.py:1113-1234`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/tests/data/test_kit_generation.py#L1113-L1234)
 
 ### Recommended Test Improvements
 
