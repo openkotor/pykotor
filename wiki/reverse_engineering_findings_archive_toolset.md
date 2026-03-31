@@ -1,6 +1,6 @@
 # Toolset Editor Archives
 
-Implementation references and reverse-engineering notes for Holocron Toolset's editor helper modules: creature, item, door, placeable, and other GFF-backed resource editors.
+Holocron Toolset's editor helpers drive creature, item, door, placeable, and other GFF-backed resource editors. This archive preserves the supporting implementation links behind those editor workflows.
 
 ---
 

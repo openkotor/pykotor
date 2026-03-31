@@ -42,7 +42,7 @@ Those resources use the usual [resource resolution order](Concepts#resource-reso
 
 Loading uses the same [resource resolution order](Concepts#resource-resolution-order).
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 
@@ -677,7 +677,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 [GIT files](GFF-File-Format#git-game-instance-template) store dynamic instance data for areas, defining where creatures, doors, placeables, triggers, waypoints, stores, encounters, sounds, and cameras are positioned in the game world. While [ARE](GFF-Module-and-Area#are) files define static environmental properties, [GIT files](GFF-File-Format#git-game-instance-template) hold **instance lists** and **root-level audio/music ints** used when the area loads. GIT files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 
@@ -1059,7 +1059,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 - [KEY](Container-Formats#key)
 - [BIF](Container-Formats#bif)
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 

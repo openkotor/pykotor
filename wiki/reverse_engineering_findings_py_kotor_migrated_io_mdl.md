@@ -1,12 +1,12 @@
 # MDL Binary I/O Engine Notes
 
-Detailed executable-level analysis of the KotOR MDL/MDX binary model format as implemented in PyKotor's `mdl/io_mdl.py` module. Documents the complete node tree structure, controller key layouts, animation data, and mesh geometry packing derived from disassembly of both KotOR I and TSL executables.
+PyKotor's `mdl/io_mdl.py` module mirrors the KotOR MDL/MDX binary model loader: node trees, controller key layouts, animation data, and mesh geometry packing all follow behavior recovered from both executables.
 
 Companion to the [reverse-engineering synthesis hub](reverse_engineering_findings.md) and the [resource format engine notes](reverse_engineering_findings_py_kotor_migrated_docstrings.md).
 
 <a id="migrated-io-mdl-module"></a>
 
-## Module docstring (verbatim)
+## Module reference text
 
 ```text
 Binary MDL/MDX file I/O operations.

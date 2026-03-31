@@ -39,7 +39,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
   - [MDL](MDL-MDX-File-Format) ([model](MDL-MDX-File-Format) geometry)
   - [TPC](Texture-Formats#tpc) ([texture](Texture-Formats#tpc) data)
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 
@@ -347,7 +347,7 @@ Each list element is a struct with (at minimum) the fields PyKotor reads and wri
 | `Repos_PosX` | uint16 | Repository grid X (writer uses slot index — [`dismantle_utm` L211](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L211)). |
 | `Repos_PosY` | uint16 | Repository grid Y (writer uses `0` — same block). |
 
-## References
+## Implementation evidence
 
 **PyKotor**
 
@@ -403,7 +403,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 - [NCS](NCS-File-Format) (journal API)
 - [2DA](2DA-File-Format) (e.g. journal.2da for XP)
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 
@@ -513,7 +513,7 @@ A Faction is a control system for determining how game objects interact with eac
 - `repute.2da` - Default faction standings (see [2DA File Format](2DA-File-Format))
 - `repadjust.2da` - Reputation adjustment values (see [2DA File Format](2DA-File-Format))
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 

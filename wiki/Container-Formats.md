@@ -55,7 +55,7 @@ The *KEY* file, specifically `chitin.key` in KotOR, serves as the master index f
    - [CD](https://en.wikipedia.org/wiki/Compact_disc)
    - [HD](https://en.wikipedia.org/wiki/Hard_disk_drive)
 
-**Resource resolution (conceptual):** The full search order (override → MOD/ERF → save → KEY/BIF → defaults) and how the resource manager satisfies a demand are documented on [Concepts](Concepts#resource-resolution-order). This page describes what the *KEY* contributes to that pipeline.
+**Resource resolution (conceptual):** The full search order (override → MOD/ERF → save → KEY/BIF → defaults) and how the resource manager satisfies a demand are documented on [Concepts](Concepts#resource-resolution-order).
 
 The *KEY* indexes [BIF](Container-Formats#bif) entries only (step 4 in that order). Higher-priority sources can shadow *KEY*-indexed assets without editing the *KEY*; using override or MOD for that is normal modding practice.
 

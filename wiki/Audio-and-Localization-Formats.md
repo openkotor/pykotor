@@ -224,7 +224,7 @@ Priority: Custom TLKs --> dialogf.tlk --> `dialog.tlk`
 
 ## Localization
 
-Numeric **language IDs** and typical encodings (0–8) are defined on [Concepts](Concepts#language-ids-kotor). This section covers **TLK-specific** behavior only.
+Numeric **language IDs** and typical encodings (0–8) are defined on [Concepts](Concepts#language-ids-kotor). The notes below focus on **TLK-specific** behavior.
 
 **KotOR:** Retail builds usually install one `dialog.tlk` per language; the file header’s Language ID is often ignored at runtime and is mainly useful for tools tagging which language a TLK was built for.
 

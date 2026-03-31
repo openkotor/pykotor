@@ -1,6 +1,6 @@
 # Engine, Rendering, and Extraction Archives
 
-Implementation references and executable-level notes for the KotOR engine's rendering pipeline, model loading, resource extraction, and 3D subsystems. Covers `engine/`, `gl/`, `panda3d/`, `extract/`, and MDL/model I/O modules.
+KotOR's rendering pipeline, model loading, resource extraction, and related 3D subsystems span the `engine/`, `gl/`, `panda3d/`, `extract/`, and MDL/model I/O modules. This archive preserves the supporting implementation links behind that analysis.
 
 ---
 

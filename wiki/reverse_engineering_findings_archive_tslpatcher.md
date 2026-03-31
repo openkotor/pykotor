@@ -1,6 +1,6 @@
 # TSLPatcher Implementation Archives
 
-Implementation references and reverse-engineering notes for HoloPatcher's TSLPatcher-compatible patch engine: diff logic, INI parsing, GFF field patching, 2DA row insertion, and TLK token resolution.
+HoloPatcher's TSLPatcher-compatible patch engine applies diff logic, parses `changes.ini`, patches GFF fields, inserts 2DA rows, and resolves TLK tokens. This archive preserves the supporting source links that back the reverse-engineering synthesis.
 
 ---
 

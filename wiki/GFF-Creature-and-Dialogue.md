@@ -33,7 +33,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 - [TPC](Texture-Formats#tpc)
 - [GFF-UTI](GFF-Items-and-Economy#uti) (inventory items)
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 
@@ -285,7 +285,7 @@ DLG files are loaded with the same [resource resolution order](Concepts#resource
 - [GFF-JRL](GFF-Items-and-Economy#jrl) — journal updates
 - [MDL](MDL-MDX-File-Format) — camera models
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 

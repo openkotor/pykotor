@@ -1,6 +1,6 @@
 # Resource Format Implementation Archives
 
-Implementation references and executable-level notes for each binary resource format parsed by PyKotor: GFF, 2DA, TLK, ERF/RIM, KEY/BIF, TPC, MDL/MDX, SSF, LIP, NCS, and others. Each section documents the code-level entry points and reverse-engineered details for one format module.
+PyKotor parses every major KotOR binary resource format: GFF, 2DA, TLK, ERF/RIM, KEY/BIF, TPC, MDL/MDX, SSF, LIP, NCS, and more. This archive preserves the code-level entry points and supporting reverse-engineering links for each format module.
 
 ---
 

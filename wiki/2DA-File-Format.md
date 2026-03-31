@@ -2,7 +2,7 @@
 
 The Two-Dimensional Array (2DA) format is the engine's primary configuration mechanism. Nearly every tunable game system — character classes, feats, Force powers, item properties, appearance models, sound sets, combat formulas — is driven by 2DA tables that the engine reads at startup. Each 2DA file is a simple spreadsheet: rows indexed by number, columns indexed by label, and cell values that are either strings, integers, or the special `****` token meaning "no value." The format is compact enough to ship on disc and simple enough that modders can edit tables with a text editor, but the binary V2.b encoding used in shipped game data provides faster load times than the older ASCII V2.0 format.
 
-The [official BioWare 2DA specification](Bioware-Aurora-Core-Formats#2da) documents the format as originally designed for the Aurora engine. This page documents how KotOR and TSL actually use it, including per-table column semantics and engine behavior. To modify 2DA tables in a mod without overwriting the entire file, use [TSLPatcher/HoloPatcher 2DAList syntax](TSLPatcher-Data-Syntax#2dalist-syntax). 2DA tables are referenced from [GFF](GFF-File-Format) resources such as [UTC](GFF-File-Format#utc-creature) creature templates, [UTI](GFF-File-Format#uti-item) item blueprints, and [UTP](GFF-File-Format#utp-placeable) placeable definitions, and they often store [StrRef](Audio-and-Localization-Formats#string-references-strref) indices into [TLK](Audio-and-Localization-Formats#tlk) string tables for player-visible text.
+The [official BioWare 2DA specification](Bioware-Aurora-Core-Formats#2da) describes the format as Aurora introduced it. KotOR and TSL use that same foundation for per-table column semantics, game-specific enumerations, and resource lookups. To modify 2DA tables in a mod without overwriting the entire file, use [TSLPatcher/HoloPatcher 2DAList syntax](TSLPatcher-Data-Syntax#2dalist-syntax). 2DA tables are referenced from [GFF](GFF-File-Format) resources such as [UTC](GFF-File-Format#utc-creature) creature templates, [UTI](GFF-File-Format#uti-item) item blueprints, and [UTP](GFF-File-Format#utp-placeable) placeable definitions, and they often store [StrRef](Audio-and-Localization-Formats#string-references-strref) indices into [TLK](Audio-and-Localization-Formats#tlk) string tables for player-visible text.
 
 **Important**: While the 2DA binary layout is shared across BioWare's Aurora, Odyssey, and Eclipse engines, all column structures and engine usage descriptions on this page are specific to KotOR and KotOR II.
 
@@ -569,7 +569,7 @@ The following 2DA files are loaded in KotOR 2 but not in KotOR 1:
 
 ## Known 2DA Files
 
-This section documents all known *2DA* files used in *KotOR* 1 and *KotOR* 2/TSL, organized by category. Each entry includes engine usage, column definitions, and data structure details.
+KotOR and TSL ship a large set of 2DA tables. The sections below group them by system and call out engine usage, column definitions, and the data each table drives.
 
 ---
 

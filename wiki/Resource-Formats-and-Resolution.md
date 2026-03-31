@@ -2,16 +2,7 @@
 
 The KotOR engine organizes game data into typed resources — models, textures, dialogues, 2DA tables, scripts, and dozens more. Each resource type has a numeric ID and one or more binary (or text) file formats. The engine resolves resources by searching a fixed precedence of containers: loose Override files first, then module capsules (ERF/MOD/RIM), then the global KEY/BIF archive, with language-specific TLK lookups alongside.
 
-The sections below provide the canonical resource type ID table and quick links to each format's dedicated page. For the full narrative on precedence, override behaviour, module capsules, KEY/BIF, and language IDs, see [Concepts](Concepts).
-
-## Verified against implementations
-
-The container and format summaries on this page are cross-checked against:
-
-- **PyKotor:** `pykotor.extract.installation`, `pykotor.extract.chitin`, `pykotor.resource.formats.key.io_key`, `pykotor.resource.formats.bif.io_bif`, `pykotor.resource.formats.erf.io_erf`, `pykotor.resource.formats.rim.io_rim`, `pykotor.resource.formats.tlk.io_tlk`, `pykotor.resource.formats.twoda.io_twoda`
-- **reone:** `src/libs/resource/director.cpp`, `src/libs/resource/resources.cpp`, `src/libs/resource/format/keyreader.cpp`, `src/libs/resource/format/bifreader.cpp`, `src/libs/resource/format/erfreader.cpp`
-- **KotOR.js:** `src/loaders/ResourceLoader.ts`, `src/resource/KEYObject.ts`, `src/resource/BIFObject.ts`, `src/managers/TwoDAManager.ts`, `src/managers/TLKManager.ts`, `src/resource/ResourceTypes.ts`
-- **Kotor.NET:** `Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs`, `Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs`, `Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs`, `Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs`, `Kotor.NET/Formats/Kotor2DA/TwoDABinaryReader.cs`, `Kotor.NET/ResourceContainers/Chitin.cs`, `Kotor.NET/ResourceContainers/Capsule.cs`
+The sections below provide the canonical resource type ID table and quick links to each format's dedicated page. The container and format summaries are cross-checked against PyKotor, reone, KotOR.js, and Kotor.NET. For the full narrative on precedence, override behaviour, module capsules, KEY/BIF, and language IDs, see [Concepts](Concepts).
 
 ## Resource resolution order
 

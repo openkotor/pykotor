@@ -1,6 +1,6 @@
 # PyKotor Resource Format Engine Notes
 
-Detailed executable-level analysis of each binary resource format handled by PyKotor's `resource/formats/` modules. These notes document function addresses, call chains, struct layouts, and runtime behavior derived from disassembly of both KotOR I and TSL executables.
+PyKotor's `resource/formats/` modules mirror executable-level parsing rules for the binary resource formats used by KotOR and TSL. The sections below preserve function addresses, call chains, struct layouts, and runtime behavior derived from disassembly of both executables.
 
 For the condensed RVA lookup tables, see [Appendix: PyKotor resource/formats symbols](reverse_engineering_findings.md#pykotor-resource-formats-symbols). For the companion MDL binary I/O analysis, see [MDL module engine notes](reverse_engineering_findings_py_kotor_migrated_io_mdl.md).
 
@@ -8,9 +8,9 @@ For the condensed RVA lookup tables, see [Appendix: PyKotor resource/formats sym
 
 <a id="migrated-io-bwm-ascii"></a>
 
-## ASCII walkmesh — `bwm/io_bwm_ascii.py` (HEAD module + reader/writer docstrings)
+## ASCII walkmesh — `bwm/io_bwm_ascii.py` (HEAD module + reader/writer reference text)
 
-### Module docstring (lines 1–105)
+### Module reference text (lines 1–105)
 
 ```text
 """
@@ -131,7 +131,7 @@ FLOAT_EPSILON = 0.0001  # Used for coordinate quantization checks
 MAX_LINE_LENGTH = 0x100  # 256 bytes - maximum line length buffer
 ```
 
-### Class `BWMAsciiReader` docstring (lines 127–254)
+### `BWMAsciiReader` reference text (lines 127–254)
 
 ```text
     """
@@ -264,7 +264,7 @@ MAX_LINE_LENGTH = 0x100  # 256 bytes - maximum line length buffer
     """
 ```
 
-### Method `BWMAsciiReader.load` docstring (lines 281–343)
+### `BWMAsciiReader.load` reference text (lines 281–343)
 
 ```text
         """Loads an ASCII walkmesh file into a BWM instance.
@@ -332,7 +332,7 @@ MAX_LINE_LENGTH = 0x100  # 256 bytes - maximum line length buffer
         """
 ```
 
-### Class `BWMAsciiWriter` docstring (lines 849–902)
+### `BWMAsciiWriter` reference text (lines 849–902)
 
 ```text
 class BWMAsciiWriter(ResourceWriter):
@@ -397,7 +397,7 @@ class BWMAsciiWriter(ResourceWriter):
 
 ## GFF — `gff/gff_data.py`
 
-### Module docstring (lines 1–47)
+### Module reference text (lines 1–47)
 
 ```text
 """GFF (Generic File Format) data structures and utilities.
@@ -488,7 +488,7 @@ _GFF_IGNORABLE_FIELD_VALUES: dict[tuple[GFFContent, str | None], dict[str, froze
 
 ## MDL/MDX types — `mdl/mdl_types.py`
 
-### Module docstring (lines 1–34)
+### Module reference text (lines 1–34)
 
 ```text
 """Type definitions for MDL/MDX files.
@@ -527,7 +527,7 @@ References:
 """
 ```
 
-### `MDLNodeFlags` docstring References (lines 78–103)
+### `MDLNodeFlags` reference text (lines 78–103)
 
 ```text
     """Node flags indicating what type of data is attached to the node.
@@ -558,7 +558,7 @@ References:
     """
 ```
 
-### `MDLControllerType` docstring References (lines 139–160)
+### `MDLControllerType` reference text (lines 139–160)
 
 ```text
     """Controller types for animations and node properties.
@@ -585,7 +585,7 @@ References:
     """
 ```
 
-### `MDLTrimeshFlags` docstring (lines 315–325)
+### `MDLTrimeshFlags` reference text (lines 315–325)
 
 ```text
 class MDLTrimeshFlags(IntFlag):
@@ -601,7 +601,7 @@ class MDLTrimeshFlags(IntFlag):
     """
 ```
 
-### `MDLLightFlags` docstring (lines 337–346)
+### `MDLLightFlags` reference text (lines 337–346)
 
 ```text
 class MDLLightFlags(IntFlag):
@@ -616,7 +616,7 @@ class MDLLightFlags(IntFlag):
     """
 ```
 
-### `MDLEmitterFlags` docstring (lines 355–369)
+### `MDLEmitterFlags` reference text (lines 355–369)
 
 ```text
 class MDLEmitterFlags(IntFlag):
@@ -640,7 +640,7 @@ class MDLEmitterFlags(IntFlag):
 
 <a id="migrated-txi-data"></a>
 
-## TXI — `txi/txi_data.py` module docstring (lines 1–79, em-dash normalization)
+## TXI — `txi/txi_data.py` module reference text (lines 1–79, em-dash normalization)
 
 ```text
 """This module handles TXI (Texture Information) files for KotOR.
@@ -728,7 +728,7 @@ Note:
 
 <a id="migrated-tlk-data"></a>
 
-## TLK — `tlk/tlk_data.py` module docstring (lines 1–39)
+## TLK — `tlk/tlk_data.py` module reference text (lines 1–39)
 
 ```text
 """This module handles classes relating to working with TLK files.

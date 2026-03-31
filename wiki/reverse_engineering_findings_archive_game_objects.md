@@ -1,6 +1,6 @@
 # Game Object and Generic Structure Archives
 
-Implementation references and reverse-engineering notes for KotOR game objects: creatures, items, placeables, triggers, and the generic GFF-backed data structures that represent them in memory. Covers `common/`, `resource/generics/`, and related data-model modules.
+KotOR game objects such as creatures, items, placeables, triggers, and related GFF-backed structures share a common runtime model. This archive preserves the supporting source links for the `common/`, `resource/generics/`, and related data-model modules behind that synthesis.
 
 ---
 

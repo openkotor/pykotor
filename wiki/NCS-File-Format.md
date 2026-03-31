@@ -2,7 +2,7 @@
 
 NCS files contain compiled NWScript bytecode — the executable form of the scripting language that drives game logic in Knights of the Old Republic and The Sith Lords. Scripts control dialogue branching, trigger responses, combat behavior, cutscene sequencing, and virtually every dynamic system in the game. The bytecode runs inside a stack-based virtual machine inherited from the Aurora engine, where the "server" context (game world simulation) executes scripts and the client handles display and input.
 
-The format is shared across Aurora engine games (Neverwinter Nights, Jade Empire, etc.), though KotOR adds game-specific action routines. This page documents KotOR-specific behavior. Scripts are compiled from [NSS](NSS-File-Format) source code and triggered by script hooks on [GFF](GFF-File-Format) resources — [DLG](GFF-Creature-and-Dialogue#dlg) dialogue files, [GIT](GFF-File-Format#git-game-instance-template) area instances, [UTC](GFF-File-Format#utc-creature) creatures, [UTD](GFF-Spatial-Objects#utd) doors, [UTP](GFF-Spatial-Objects#utp) placeables, and [IFO](GFF-Module-and-Area#ifo) module definitions. Like all resources, NCS files are resolved through the standard [resource resolution order](Concepts#resource-resolution-order) (override → MOD/SAV → KEY/BIF).
+The format is shared across Aurora engine games (Neverwinter Nights, Jade Empire, etc.), though KotOR adds game-specific action routines. The sections below focus on KotOR-specific behavior. Scripts are compiled from [NSS](NSS-File-Format) source code and triggered by script hooks on [GFF](GFF-File-Format) resources — [DLG](GFF-Creature-and-Dialogue#dlg) dialogue files, [GIT](GFF-File-Format#git-game-instance-template) area instances, [UTC](GFF-File-Format#utc-creature) creatures, [UTD](GFF-Spatial-Objects#utd) doors, [UTP](GFF-Spatial-Objects#utp) placeables, and [IFO](GFF-Module-and-Area#ifo) module definitions. Like all resources, NCS files are resolved through the standard [resource resolution order](Concepts#resource-resolution-order) (override → MOD/SAV → KEY/BIF).
 
 **Implementation (PyKotor):**
 
@@ -25,35 +25,6 @@ The format is shared across Aurora engine games (Neverwinter Nights, Jade Empire
 - **[NorthernLights](https://github.com/lachjames/NorthernLights)**: [`Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs)
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Formats/KotorNCS/NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorNCS/NCS.cs#L9)
 - **[Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)** — decompiled scripts
-
-## Table of Contents
-
-- NCS — Compiled Script Bytecode
-  - Table of Contents
-  - [File Structure Overview](#file-structure-overview)
-    - [Stack-Based Virtual Machine](#stack-based-virtual-machine)
-  - [Header](#header)
-  - [Instruction Encoding](#instruction-encoding)
-    - [Bytecode](#bytecode)
-    - [Qualifier](#qualifier)
-    - [Arguments](#arguments)
-    - [Instruction Encoding Examples](#instruction-encoding-examples)
-      - [Example 1: *Integer* Constant](#example-1-integer-constant)
-      - [Example 2: *String* Constant](#example-2-string-constant)
-      - [Example 3: *Jump* Instruction](#example-3-jump-instruction)
-      - [Example 4: *Stack Copy* Operation](#example-4-stack-copy-operation)
-      - [Example 5: *Engine Function Call*](#example-5-engine-function-call)
-      - [Example 6: *Float* Constant](#example-6-float-constant)
-      - [Example 7: *Object* Constant (`OBJECT_SELF`)](#example-7-object-constant-object_self)
-      - [Example 8: *Conditional Jump* (`JZ`)](#example-8-conditional-jump-jz)
-  - [Instruction Categories](#instruction-categories)
-    - [Detailed Instruction Descriptions](#detailed-instruction-descriptions)
-  - [Control Flow and Jumps](#control-flow-and-jumps)
-    - [Subroutine Calls](#subroutine-calls)
-    - [Jump Instructions](#jump-instructions)
-  - [Implementation Details](#implementation-details)
-
----
 
 ## File Structure Overview
 

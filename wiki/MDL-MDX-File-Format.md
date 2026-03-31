@@ -1956,7 +1956,7 @@ The ASCII MDL support in TSL is implemented identically to K1, but with differen
 
 **Conclusion:** Both K1 and TSL support ASCII MDL format with identical parsing logic.
 
-## References
+## Implementation evidence
 
 ### K1 (swkotor.exe)
 

@@ -39,7 +39,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 - [DLG](GFF-Creature-and-Dialogue#dlg)
 - [MDL](MDL-MDX-File-Format)
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 
@@ -320,7 +320,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 - [DLG](GFF-Creature-and-Dialogue#dlg)
 - [MDL](MDL-MDX-File-Format)
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 
@@ -630,7 +630,7 @@ UTT files define [trigger templates](GFF-File-Format#utt-trigger) for invisible 
 - To modify trigger templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
 - For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 
@@ -762,7 +762,7 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 - To modify encounter templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
 - For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 
@@ -889,7 +889,7 @@ UTS files define [sound object templates](GFF-File-Format#uts-sound) for ambient
 - To modify sound blueprints in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
 - For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 
@@ -1011,7 +1011,7 @@ UTW files define [waypoint templates](GFF-File-Format#utw-waypoint). Waypoints a
 - To modify waypoint templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
 - For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 
@@ -1108,7 +1108,7 @@ PTH files define pathfinding data for modules, distinct from the navigation mesh
 - General GFF patching uses the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
 - For Holocronworkflows, start from [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started) and module/path tooling pages linked from [Home](Home).
 
-## References
+## Implementation evidence
 
 **PyKotor:**
 

@@ -1449,7 +1449,7 @@ To extend these findings or verify behavior against a specific binary:
 - **Ghidra:** Binary analysis and decompilation
 - **Function Analysis:** Cross-referencing and call graph analysis
 
-## References
+## Evidence baseline
 
 - Original game executables: `/K1/k1_win_gog_swkotor.exe`, `/TSL/k2_win_gog_aspyr_swkotor2.exe`
 - Analysis conducted using RE tools in Ghidra
@@ -1466,7 +1466,7 @@ To extend these findings or verify behavior against a specific binary:
 
 ### Implementation evidence archives
 
-Detailed executable-level analysis and code-level entry points for each PyKotor subsystem:
+The pages below preserve executable-level analysis and code-level entry points for each PyKotor subsystem:
 
 - [Resource format engine notes](reverse_engineering_findings_py_kotor_migrated_docstrings) — Function addresses, call chains, and struct layouts for each binary format module
 - [MDL binary I/O engine notes](reverse_engineering_findings_py_kotor_migrated_io_mdl) — Complete model node tree, controller keys, and mesh geometry analysis
