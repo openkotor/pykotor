@@ -12,8 +12,8 @@ GUI files define the layout and behavior of the user interface. They are [GFF fi
 
 **Related formats:**
 
-- [TPC](TPC-File-Format) / TGA textures
-- [TLK](TLK-File-Format) for text
+- [TPC](Texture-Formats#tpc) / TGA textures
+- [TLK](Audio-and-Localization-Formats#tlk) for text
 - Engine use: menus and HUD
 
 ## References
@@ -117,10 +117,10 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | *ResRef* | Corner texture ([TPC](TPC-File-Format) or TGA) |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges-wok-only) texture ([TPC](TPC-File-Format) or TGA) |
-| `FILL` | *ResRef* | Fill/background texture ([TPC](TPC-File-Format) or TGA) |
-| `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill rendering style (-1=None, 0=Empty, 1=Solid, 2=[texture](TPC-File-Format)) |
+| `CORNER` | *ResRef* | Corner texture ([TPC](Texture-Formats#tpc) or TGA) |
+| `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) texture ([TPC](Texture-Formats#tpc) or TGA) |
+| `FILL` | *ResRef* | Fill/background texture ([TPC](Texture-Formats#tpc) or TGA) |
+| `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill rendering style (-1=None, 0=Empty, 1=Solid, 2=[texture](Texture-Formats#tpc)) |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness in pixels |
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis (pixels) |
 | `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (pixels, optional) |
@@ -130,19 +130,19 @@ All controls share these base properties:
 **Border Rendering:**
 
 - **CORNER**: 4 corner pieces (top-left, top-right, bottom-left, bottom-right)
-- **[edge](BWM-File-Format#edges-wok-only)**: 4 [edge](BWM-File-Format#edges-wok-only) pieces (top, right, bottom, left)
+- **[edge](Level-Layout-Formats#edges-wok-only)**: 4 [edge](Level-Layout-Formats#edges-wok-only) pieces (top, right, bottom, left)
 - **FILL**: Center fill area (scaled to fit)
-- **DIMENSION**: Thickness of border [edges](BWM-File-Format#edges-wok-only)
-- **FILLSTYLE**: Controls how fill [texture](TPC-File-Format) is rendered (tiled, stretched, solid color)
-- Border pieces are tiled/repeated along [edges](BWM-File-Format#edges-wok-only)
+- **DIMENSION**: Thickness of border [edges](Level-Layout-Formats#edges-wok-only)
+- **FILLSTYLE**: Controls how fill [texture](Texture-Formats#tpc) is rendered (tiled, stretched, solid color)
+- Border pieces are tiled/repeated along [edges](Level-Layout-Formats#edges-wok-only)
 
 **TEXT Struct:**
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `TEXT` | [CExoString](GFF-File-Format#gff-data-types) | Direct text content (overrides [StrRef](TLK-File-Format#string-references-strref) if set) |
-| `STRREF` | DWord | [TLK](TLK-File-Format) string reference (0xFFFFFFFF = unused) |
-| `FONT` | *ResRef* | Font [texture](TPC-File-Format) resource ([TPC](TPC-File-Format) or TGA) |
+| `TEXT` | [CExoString](GFF-File-Format#gff-data-types) | Direct text content (overrides [StrRef](Audio-and-Localization-Formats#string-references-strref) if set) |
+| `STRREF` | DWord | [TLK](Audio-and-Localization-Formats#tlk) string reference (0xFFFFFFFF = unused) |
+| `FONT` | *ResRef* | Font [texture](Texture-Formats#tpc) resource ([TPC](Texture-Formats#tpc) or TGA) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Text alignment flags (bitfield) |
 | `COLOR` | vector | Text color (RGB, 0.0-1.0) |
 | `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag (0=off, 1=on) |
@@ -162,7 +162,7 @@ All controls share these base properties:
 **Text Resolution:**
 
 - If both `TEXT` and `STRREF` are set, `TEXT` takes precedence
-- Font [textures](TPC-File-Format) contain character glyphs in fixed grid
+- Font [textures](Texture-Formats#tpc) contain character glyphs in fixed grid
 - Text color modulates font texture (white = full color, black = no color)
 
 **MOVETO Struct:**
@@ -185,9 +185,9 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for highlight state |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges-wok-only) [texture](TPC-File-Format) for highlight state |
-| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for highlight state |
+| `CORNER` | *ResRef* | Corner [texture](Texture-Formats#tpc) for highlight state |
+| `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) [texture](Texture-Formats#tpc) for highlight state |
+| `FILL` | *ResRef* | Fill [texture](Texture-Formats#tpc) for highlight state |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill style for highlight |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
@@ -206,9 +206,9 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for selected state |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges-wok-only) [texture](TPC-File-Format) for selected state |
-| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for selected state |
+| `CORNER` | *ResRef* | Corner [texture](Texture-Formats#tpc) for selected state |
+| `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) [texture](Texture-Formats#tpc) for selected state |
+| `FILL` | *ResRef* | Fill [texture](Texture-Formats#tpc) for selected state |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill style for selected state |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
@@ -220,9 +220,9 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for highlight+selected state |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges-wok-only) [texture](TPC-File-Format) for highlight+selected state |
-| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for highlight+selected state |
+| `CORNER` | *ResRef* | Corner [texture](Texture-Formats#tpc) for highlight+selected state |
+| `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) [texture](Texture-Formats#tpc) for highlight+selected state |
+| `FILL` | *ResRef* | Fill [texture](Texture-Formats#tpc) for highlight+selected state |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill style |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
@@ -295,7 +295,7 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `IMAGE` | *ResRef* | Arrow button [texture](TPC-File-Format) |
+| `IMAGE` | *ResRef* | Arrow button [texture](Texture-Formats#tpc) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment (typically 18=center) |
 | `DRAWSTYLE` | [int32](GFF-File-Format#gff-data-types) | Drawing style (unused) |
 | `FLIPSTYLE` | [int32](GFF-File-Format#gff-data-types) | Flip/rotation style (unused) |
@@ -305,7 +305,7 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `IMAGE` | *ResRef* | Thumb [texture](TPC-File-Format) |
+| `IMAGE` | *ResRef* | Thumb [texture](Texture-Formats#tpc) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment (typically 18=center) |
 | `DRAWSTYLE` | [int32](GFF-File-Format#gff-data-types) | Drawing style (unused) |
 | `FLIPSTYLE` | [int32](GFF-File-Format#gff-data-types) | Flip/rotation style (unused) |
@@ -330,9 +330,9 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for progress fill |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges-wok-only) [texture](TPC-File-Format) for progress fill |
-| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for progress bar |
+| `CORNER` | *ResRef* | Corner [texture](Texture-Formats#tpc) for progress fill |
+| `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) [texture](Texture-Formats#tpc) for progress fill |
+| `FILL` | *ResRef* | Fill [texture](Texture-Formats#tpc) for progress bar |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill rendering style |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
@@ -375,7 +375,7 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `IMAGE` | *ResRef* | Thumb [texture](TPC-File-Format) |
+| `IMAGE` | *ResRef* | Thumb [texture](Texture-Formats#tpc) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment |
 | `DRAWSTYLE` | [int32](GFF-File-Format#gff-data-types) | Drawing style (unused) |
 | `FLIPSTYLE` | [int32](GFF-File-Format#gff-data-types) | Flip/rotation style (unused) |
@@ -393,7 +393,7 @@ All controls share these base properties:
 
 - Clickable control with text label
 - **HILIGHT**: Shown on mouse hover
-- **TEXT**: Button label (can use [StrRef](TLK-File-Format#string-references-strref) for localization)
+- **TEXT**: Button label (can use [StrRef](Audio-and-Localization-Formats#string-references-strref) for localization)
 - **MOVETO**: Keyboard/D-pad navigation
 
 **Label (type 5):**
@@ -477,21 +477,21 @@ All controls share these base properties:
 
 **Border Rendering:**
 
-- Border consists of 9 pieces: 4 corners, 4 [edges](BWM-File-Format#edges-wok-only), 1 fill
-- CORNER [textures](TPC-File-Format): Top-left, top-right, bottom-left, bottom-right
-- [edge](BWM-File-Format#edges-wok-only) [textures](TPC-File-Format): Top, right, bottom, left (tiled along length)
-- FILL [texture](TPC-File-Format): Center area (scaled or tiled based on FILLSTYLE)
-- DIMENSION: Thickness of border [edges](BWM-File-Format#edges-wok-only) in pixels
+- Border consists of 9 pieces: 4 corners, 4 [edges](Level-Layout-Formats#edges-wok-only), 1 fill
+- CORNER [textures](Texture-Formats#tpc): Top-left, top-right, bottom-left, bottom-right
+- [edge](Level-Layout-Formats#edges-wok-only) [textures](Texture-Formats#tpc): Top, right, bottom, left (tiled along length)
+- FILL [texture](Texture-Formats#tpc): Center area (scaled or tiled based on FILLSTYLE)
+- DIMENSION: Thickness of border [edges](Level-Layout-Formats#edges-wok-only) in pixels
 - INNEROFFSET: Padding between border and content
 
 **Text Rendering:**
 
-- Fonts are [texture](TPC-File-Format)-based ([TPC](TPC-File-Format) or TGA files with character grid)
-- Each character has fixed width/height in font [texture](TPC-File-Format)
-- TEXT field takes precedence over [StrRef](TLK-File-Format#string-references-strref) if both set
-- [StrRef](TLK-File-Format#string-references-strref) references [dialog.tlk](TLK-File-Format) for localized strings
+- Fonts are [texture](Texture-Formats#tpc)-based ([TPC](Texture-Formats#tpc) or TGA files with character grid)
+- Each character has fixed width/height in font [texture](Texture-Formats#tpc)
+- TEXT field takes precedence over [StrRef](Audio-and-Localization-Formats#string-references-strref) if both set
+- [StrRef](Audio-and-Localization-Formats#string-references-strref) references [dialog.tlk](Audio-and-Localization-Formats#tlk) for localized strings
 - ALIGNMENT uses bitfield: horizontal (1=left, 2=center, 3=right) + vertical (0=top, 16=center, 32=bottom)
-- Text color modulates font [texture](TPC-File-Format)
+- Text color modulates font [texture](Texture-Formats#tpc)
 
 **State Management:**
 
@@ -534,18 +534,18 @@ All controls share these base properties:
 - Used for attention-grabbing effects
 - [animation](MDL-MDX-File-Format#animation-header) speed controlled by engine
 
-**[texture](TPC-File-Format) formats:**
+**[texture](Texture-Formats#tpc) formats:**
 
-- [GUI](GFF-File-Format#gui-graphical-user-interface) [textures](TPC-File-Format) use TPC (Targa Packed) or TGA format
-- [textures](TPC-File-Format) often have alpha channels for transparency
+- [GUI](GFF-File-Format#gui-graphical-user-interface) [textures](Texture-Formats#tpc) use TPC (Targa Packed) or TGA format
+- [textures](Texture-Formats#tpc) often have alpha channels for transparency
 - Border pieces designed to tile seamlessly
-- Font [textures](TPC-File-Format) contain character glyphs in fixed grid
+- Font [textures](Texture-Formats#tpc) contain character glyphs in fixed grid
 
 **Performance Considerations:**
 
 - Complex GUIs with many controls impact rendering
 - Nested controls increase draw calls
-- Large [texture](TPC-File-Format) borders increase memory usage
+- Large [texture](Texture-Formats#tpc) borders increase memory usage
 - Pulsing [animations](MDL-MDX-File-Format#animation-header) require per-frame updates
 
 **Common Patterns:**
@@ -567,7 +567,7 @@ All controls share these base properties:
 ### See also
 
 - [GFF-File-Format](GFF-File-Format) -- Generic format underlying GUI
-- [TPC File Format](TPC-File-Format) — textures used by GUI controls
-- [TXI File Format](TXI-File-Format) — companion metadata for those textures
-- [TLK File Format](TLK-File-Format) - String references for GUI text
+- [TPC File Format](Texture-Formats#tpc) — textures used by GUI controls
+- [TXI File Format](Texture-Formats#txi) — companion metadata for those textures
+- [TLK File Format](Audio-and-Localization-Formats#tlk) - String references for GUI text
 - [NCS File Format](NCS-File-Format) - Scripts that drive GUI behavior

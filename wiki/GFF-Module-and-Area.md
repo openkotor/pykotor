@@ -16,11 +16,11 @@ This page groups related GFF-based resource types for convenient reference. Each
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-ARE files define static [area properties](GFF-File-Format#are-area) including lighting, weather, ambient audio, grass rendering, fog settings, script hooks, and minimap data. ARE files contain environmental and atmospheric data for game areas, while dynamic object placement is handled by [GIT](GFF-File-Format#git-game-instance-template) files. When the engine loads an area it reads the ARE for metadata and lighting, then loads the area [walkmesh (WOK)](BWM-File-Format). Associated resources often include:
+ARE files define static [area properties](GFF-File-Format#are-area) including lighting, weather, ambient audio, grass rendering, fog settings, script hooks, and minimap data. ARE files contain environmental and atmospheric data for game areas, while dynamic object placement is handled by [GIT](GFF-File-Format#git-game-instance-template) files. When the engine loads an area it reads the ARE for metadata and lighting, then loads the area [walkmesh (WOK)](Level-Layout-Formats#bwm). Associated resources often include:
 
 - [GIT](GFF-Module-and-Area#git)
-- [LYT](LYT-File-Format)
-- [VIS](VIS-File-Format)
+- [LYT](Level-Layout-Formats#lyt)
+- [VIS](Level-Layout-Formats#vis)
 
 Those resources use the usual [resource resolution order](Concepts#resource-resolution-order).
 
@@ -34,11 +34,11 @@ Those resources use the usual [resource resolution order](Concepts#resource-reso
 **Related formats:**
 
 - [GIT](GFF-File-Format#git-game-instance-template)
-- [BWM](BWM-File-Format)
-- [LYT](LYT-File-Format)
-- [VIS](VIS-File-Format)
+- [BWM](Level-Layout-Formats#bwm)
+- [LYT](Level-Layout-Formats#lyt)
+- [VIS](Level-Layout-Formats#vis)
 - [2DA](2DA-File-Format) (e.g. camerastyle, ambientmusic)
-- [TLK](TLK-File-Format)
+- [TLK](Audio-and-Localization-Formats#tlk)
 
 Loading uses the same [resource resolution order](Concepts#resource-resolution-order).
 
@@ -73,7 +73,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 - [Home — Community sources](Home#community-sources-and-archives)
 - [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions)
 
-**BWM / walkmesh normative claims** follow [BWM-File-Format](BWM-File-Format) and repo `docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md`, not forum posts alone.
+**BWM / walkmesh normative claims** follow [BWM-File-Format](Level-Layout-Formats#bwm) and repo `docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md`, not forum posts alone.
 
 ## Core Identity fields
 
@@ -150,7 +150,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Grass_TexName` | *ResRef* | Grass [texture](TPC-File-Format) name |
+| `Grass_TexName` | *ResRef* | Grass [texture](Texture-Formats#tpc) name |
 | `Grass_Density` | float | Grass blade density (0.0-1.0) |
 | `Grass_QuadSize` | float | Size of grass patches |
 | `Grass_Ambient` | color | Grass ambient color RGB |
@@ -163,7 +163,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 **Grass System:**
 
-- **Grass_TexName**: [texture](TPC-File-Format) for grass blades (TGA/[TPC](TPC-File-Format))
+- **Grass_TexName**: [texture](Texture-Formats#tpc) for grass blades (TGA/[TPC](Texture-Formats#tpc))
 - **Grass_Density**: Coverage density (1.0 = full coverage)
 - **Grass_QuadSize**: Patch size in world units
 - **Probability fields**: Control grass distribution across area
@@ -216,7 +216,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `DefaultEnvMap` | *ResRef* | Default environment map [texture](TPC-File-Format) |
+| `DefaultEnvMap` | *ResRef* | Default environment map [texture](Texture-Formats#tpc) |
 | `CameraStyle` | [int32](GFF-File-Format#gff-data-types) | Camera behavior type |
 | `AlphaTest` | [byte](GFF-File-Format#gff-data-types) | Alpha testing threshold |
 | `WindPower` | [int32](GFF-File-Format#gff-data-types) | Wind strength for effects |
@@ -283,7 +283,7 @@ Loading uses the same [resource resolution order](Concepts#resource-resolution-o
 
 ## Minimap coordinate system
 
-The ARE file contains a `Map` struct that defines how the minimap texture (`lbl_map<resname>`) aligns with the world space [walkmesh](BWM-File-Format). This coordinate system allows the game to display the player's position on the minimap and render map notes at correct locations.
+The ARE file contains a `Map` struct that defines how the minimap texture (`lbl_map<resname>`) aligns with the world space [walkmesh](Level-Layout-Formats#bwm). This coordinate system allows the game to display the player's position on the minimap and render map notes at correct locations.
 
 ### Map struct fields
 
@@ -299,23 +299,23 @@ The ARE file contains a `Map` struct that defines how the minimap texture (`lbl_
 | `WorldPt2Y` | float | Second world point Y coordinate (world units) |
 | `NorthAxis` | [int32](GFF-File-Format#gff-data-types) | North direction orientation (0-3) |
 | `MapZoom` | [int32](GFF-File-Format#gff-data-types) | Map zoom level |
-| `MapResX` | [int32](GFF-File-Format#gff-data-types) | Map [texture](TPC-File-Format) resolution X dimension |
+| `MapResX` | [int32](GFF-File-Format#gff-data-types) | Map [texture](Texture-Formats#tpc) resolution X dimension |
 
 **coordinate System:**
 
-- **Map Points** (`MapPt1X/Y`, `MapPt2X/Y`): Normalized [texture](TPC-File-Format) coordinates (0.0-1.0) that correspond to specific locations on the minimap [texture](TPC-File-Format)
-- **World Points** (`WorldPt1X/Y`, `WorldPt2X/Y`): World space coordinates (in game units) that correspond to the same locations in the 3D [walkmesh](BWM-File-Format)
+- **Map Points** (`MapPt1X/Y`, `MapPt2X/Y`): Normalized [texture](Texture-Formats#tpc) coordinates (0.0-1.0) that correspond to specific locations on the minimap [texture](Texture-Formats#tpc)
+- **World Points** (`WorldPt1X/Y`, `WorldPt2X/Y`): World space coordinates (in game units) that correspond to the same locations in the 3D [walkmesh](Level-Layout-Formats#bwm)
 - **NorthAxis**: Determines which axis is "north" and affects coordinate mapping (see below)
 
-### coordinate [transformation](BWM-File-Format#adjacencies-wok-only)
+### coordinate [transformation](Level-Layout-Formats#adjacencies-wok-only)
 
-The game engine uses a linear [transformation](BWM-File-Format#adjacencies-wok-only) to convert between world coordinates and map [texture](TPC-File-Format) coordinates. This allows:
+The game engine uses a linear [transformation](Level-Layout-Formats#adjacencies-wok-only) to convert between world coordinates and map [texture](Texture-Formats#tpc) coordinates. This allows:
 
-1. **Rendering the minimap [texture](TPC-File-Format)** in world space (overlaying it on the [walkmesh](BWM-File-Format))
+1. **Rendering the minimap [texture](Texture-Formats#tpc)** in world space (overlaying it on the [walkmesh](Level-Layout-Formats#bwm))
 2. **Converting player position** to minimap coordinates for the minimap UI
 3. **Placing map notes** at correct positions on the minimap
 
-**Mathematical Formula (World --> Map [texture](TPC-File-Format) coordinates):**
+**Mathematical Formula (World --> Map [texture](Texture-Formats#tpc) coordinates):**
 
 Reference: **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/map.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/gui/map.cpp) - `getMapPosition()`
 
@@ -337,9 +337,9 @@ mapPos.x = (world.y - WorldPt1Y) * scaleY + MapPt1X
 mapPos.y = (world.x - WorldPt1X) * scaleX + MapPt1Y
 ```
 
-**Inverse Transformation (Map [texture](TPC-File-Format) --> World coordinates):**
+**Inverse Transformation (Map [texture](Texture-Formats#tpc) --> World coordinates):**
 
-For rendering the minimap [texture](TPC-File-Format) in world space:
+For rendering the minimap [texture](Texture-Formats#tpc) in world space:
 
 ```
 worldScaleX = (WorldPt1X - WorldPt2X) / (MapPt1X - MapPt2X)
@@ -348,7 +348,7 @@ world.x = WorldPt1X + (mapPos.x - MapPt1X) * worldScaleX
 world.y = WorldPt1Y + (mapPos.y - MapPt1Y) * worldScaleY
 ```
 
-For [texture](TPC-File-Format) origin (0,0) in world space:
+For [texture](Texture-Formats#tpc) origin (0,0) in world space:
 
 ```
 originX = WorldPt1X - MapPt1X * worldScaleX
@@ -367,28 +367,28 @@ originY = WorldPt1Y - MapPt1Y * worldScaleY
 **NorthAxis Usage:**
 
 - Determines which direction is "north" for the minimap
-- Affects how world coordinates map to [texture](TPC-File-Format) coordinates
+- Affects how world coordinates map to [texture](Texture-Formats#tpc) coordinates
 - Used for rotating the player arrow on the minimap
 - Cases 0,1 use direct mapping; cases 2,3 swap X/Y axes
 
-### Map [texture](TPC-File-Format)
+### Map [texture](Texture-Formats#tpc)
 
-The minimap [texture](TPC-File-Format) is loaded from [texture](TPC-File-Format) resource:
+The minimap [texture](Texture-Formats#tpc) is loaded from [texture](Texture-Formats#tpc) resource:
 
 - **Resource Name**: `lbl_map<resname>` (e.g., `lbl_maptat001` for area `tat001`)
-- **format**: [TPC](TPC-File-Format) ([texture](TPC-File-Format) Pack Container)
+- **format**: [TPC](Texture-Formats#tpc) ([texture](Texture-Formats#tpc) Pack Container)
 - **Typical size**: 435x256 pixels (may vary)
-- **Usage**: Displayed in minimap UI and overlaid on [walkmesh](BWM-File-Format) in editor
+- **Usage**: Displayed in minimap UI and overlaid on [walkmesh](Level-Layout-Formats#bwm) in editor
 
-**Relationship to [walkmesh](BWM-File-Format):**
+**Relationship to [walkmesh](Level-Layout-Formats#bwm):**
 
-- The minimap [texture](TPC-File-Format) represents a top-down view of the area's [walkmesh](BWM-File-Format)
-- Map points correspond to specific [vertices](MDL-MDX-File-Format#vertex-structure) and [faces](MDL-MDX-File-Format#face-structure) in the walkmesh ([BWM file](BWM-File-Format))
-- The blue walkable area shown in editors is rendered from the [walkmesh](BWM-File-Format) [faces](MDL-MDX-File-Format#face-structure)
+- The minimap [texture](Texture-Formats#tpc) represents a top-down view of the area's [walkmesh](Level-Layout-Formats#bwm)
+- Map points correspond to specific [vertices](MDL-MDX-File-Format#vertex-structure) and [faces](MDL-MDX-File-Format#face-structure) in the walkmesh ([BWM file](Level-Layout-Formats#bwm))
+- The blue walkable area shown in editors is rendered from the [walkmesh](Level-Layout-Formats#bwm) [faces](MDL-MDX-File-Format#face-structure)
 - For proper gameplay these must align:
 
-  - Minimap [texture](TPC-File-Format)
-  - [walkmesh](BWM-File-Format)
+  - Minimap [texture](Texture-Formats#tpc)
+  - [walkmesh](Level-Layout-Formats#bwm)
 - Misalignment causes the walkable area to appear rotated/flipped relative to the minimap image
 
 ### Implementation Notes
@@ -396,30 +396,30 @@ The minimap [texture](TPC-File-Format) is loaded from [texture](TPC-File-Format)
 **coordinate Precision:**
 
 - Map points are normalized (0.0-1.0) and require high precision (6+ decimal places)
-- Rounding errors can cause misalignment between [walkmesh](BWM-File-Format) and minimap [texture](TPC-File-Format)
+- Rounding errors can cause misalignment between [walkmesh](Level-Layout-Formats#bwm) and minimap [texture](Texture-Formats#tpc)
 - Always preserve full precision when editing map coordinates
 
 **Common Issues:**
 
-1. **Misaligned Minimap**: Caused by incorrect coordinate [transformation](BWM-File-Format#adjacencies-wok-only) or NorthAxis handling
-2. **Inverted Mapping**: Negative scales indicate inverted mapping ([texture](TPC-File-Format) needs mirroring)
+1. **Misaligned Minimap**: Caused by incorrect coordinate [transformation](Level-Layout-Formats#adjacencies-wok-only) or NorthAxis handling
+2. **Inverted Mapping**: Negative scales indicate inverted mapping ([texture](Texture-Formats#tpc) needs mirroring)
 3. **Precision Loss**: Using insufficient decimal precision in UI spinboxes causes drift
 
 **Editor Rendering:**
 
-When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-File-Format) in editors:
+When rendering the minimap [texture](Texture-Formats#tpc) over the [walkmesh](Level-Layout-Formats#bwm) in editors:
 
 - Calculate linear scale: `worldScale = worldDelta / mapDelta`
 - Calculate origin: `origin = worldPoint1 - mapPoint1 * worldScale`
 - Handle NorthAxis swapping for cases 2,3
-- Mirror [texture](TPC-File-Format) if scale is negative (inverted mapping)
+- Mirror [texture](Texture-Formats#tpc) if scale is negative (inverted mapping)
 
 **Reference Implementations:**
 
 - **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/map.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/gui/map.cpp) - `getMapPosition()` function
 - **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/gff/are.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/gff/are.cpp) - are parsing
 - `Libraries/PyKotor/src/pykotor/resource/generics/are.py` - PyKotor are implementation
-- `Tools/HolocronToolset/src/toolset/gui/widgets/renderer/[walkmesh](BWM-File-Format).py` - Minimap rendering
+- `Tools/HolocronToolset/src/toolset/gui/widgets/renderer/[walkmesh](Level-Layout-Formats#bwm).py` - Minimap rendering
 
 ## Rooms & Audio Zones
 
@@ -429,7 +429,7 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 
 **Rooms Struct fields:**
 
-- `RoomName` ([CExoString](GFF-File-Format#gff-data-types)): Room identifier (referenced by [VIS files](VIS-File-Format))
+- `RoomName` ([CExoString](GFF-File-Format#gff-data-types)): Room identifier (referenced by [VIS files](Level-Layout-Formats#vis))
 - `EnvAudio` ([int32](GFF-File-Format#gff-data-types)): Environment audio index for room acoustics
 - `AmbientScale` (float): Ambient audio volume scaling factor
 - `DisableWeather` (KotOR2, [byte](GFF-File-Format#gff-data-types)): Disable weather effects in this room
@@ -441,7 +441,7 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 - Each room has audio properties (EnvAudio, AmbientScale)
 - Audio transitions smoothly between rooms
 - Minimap reveals room-by-room as player explores
-- Rooms referenced by [VIS](VIS-File-Format) (visibility) files for audio occlusion
+- Rooms referenced by [VIS](Level-Layout-Formats#vis) (visibility) files for audio occlusion
 - KotOR2: Rooms can disable weather and modify force rating
 
 ## Implementation Notes
@@ -455,7 +455,7 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 5. **Configure Weather**: Activate weather systems (KotOR2)
 6. **Register Scripts**: Setup area event handlers
 7. **Load [GIT](GFF-File-Format#git-game-instance-template)**: Spawn dynamic objects (separate file)
-8. **Load Minimap**: Parse map coordinates and load minimap [texture](TPC-File-Format)
+8. **Load Minimap**: Parse map coordinates and load minimap [texture](Texture-Formats#tpc)
 
 ### Minimap coordinate System Best Practices
 
@@ -467,16 +467,16 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 
 **Common Pitfalls:**
 
-1. **Incorrect rotation**: Do NOT rotate map points around (0.5, 0.5) - use direct linear [transformation](BWM-File-Format#adjacencies-wok-only)
+1. **Incorrect rotation**: Do NOT rotate map points around (0.5, 0.5) - use direct linear [transformation](Level-Layout-Formats#adjacencies-wok-only)
 2. **Precision Loss**: Always use high-precision spinboxes (6+ decimals) for map coordinate editing
-3. **NorthAxis Handling**: Remember that cases 2,3 swap X/Y coordinates in the [transformation](BWM-File-Format#adjacencies-wok-only)
-4. **Negative Scales**: Negative scale values indicate inverted mapping - mirror the [texture](TPC-File-Format) accordingly
+3. **NorthAxis Handling**: Remember that cases 2,3 swap X/Y coordinates in the [transformation](Level-Layout-Formats#adjacencies-wok-only)
+4. **Negative Scales**: Negative scale values indicate inverted mapping - mirror the [texture](Texture-Formats#tpc) accordingly
 
 **Validation:**
 
 - Always validate map coordinates preserve exactly through save/load roundtrips
 - Test minimap alignment visually in editor after coordinate changes
-- Verify [walkmesh](BWM-File-Format) and minimap [texture](TPC-File-Format) align correctly for all NorthAxis values
+- Verify [walkmesh](Level-Layout-Formats#bwm) and minimap [texture](Texture-Formats#tpc) align correctly for all NorthAxis values
 
 **Lighting Performance:**
 
@@ -526,9 +526,9 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 
 ### Minimap Rendering Implementation Details
 
-**World Space [texture](TPC-File-Format) Rendering:**
+**World Space [texture](Texture-Formats#tpc) Rendering:**
 
-When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-File-Format) in editors, the following steps are required:
+When rendering the minimap [texture](Texture-Formats#tpc) over the [walkmesh](Level-Layout-Formats#bwm) in editors, the following steps are required:
 
 1. **Calculate World scale Factors:**
 
@@ -537,40 +537,40 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
    worldScaleY = (WorldPt1Y - WorldPt2Y) / (MapPt1Y - MapPt2Y)
    ```
 
-   These represent world units per [texture](TPC-File-Format) unit (inverse of reone's scale factors).
+   These represent world units per [texture](Texture-Formats#tpc) unit (inverse of reone's scale factors).
 
-2. **Calculate [texture](TPC-File-Format) Origin in World Space:**
+2. **Calculate [texture](Texture-Formats#tpc) Origin in World Space:**
 
    ```
    originX = WorldPt1X - MapPt1X * worldScaleX
    originY = WorldPt1Y - MapPt1Y * worldScaleY
    ```
 
-   This finds where [texture](TPC-File-Format) coordinate (0,0) maps to in world space.
+   This finds where [texture](Texture-Formats#tpc) coordinate (0,0) maps to in world space.
 
-3. **Calculate [texture](TPC-File-Format) End in World Space:**
+3. **Calculate [texture](Texture-Formats#tpc) End in World Space:**
 
    ```
    endX = WorldPt1X + (1.0 - MapPt1X) * worldScaleX
    endY = WorldPt1Y + (1.0 - MapPt1Y) * worldScaleY
    ```
 
-   This finds where [texture](TPC-File-Format) coordinate (1,1) maps to in world space.
+   This finds where [texture](Texture-Formats#tpc) coordinate (1,1) maps to in world space.
 
 4. **Handle NorthAxis coordinate Swapping:**
-   - For NorthAxis 2 or 3: Swap `originX/originY` and `endX/endY` ([texture](TPC-File-Format) X maps to world Y, [texture](TPC-File-Format) Y maps to world X)
+   - For NorthAxis 2 or 3: Swap `originX/originY` and `endX/endY` ([texture](Texture-Formats#tpc) X maps to world Y, [texture](Texture-Formats#tpc) Y maps to world X)
 
 5. **Handle Inverted Mappings:**
-   - If `worldScaleX < 0` or `worldScaleY < 0`: Mirror the [texture](TPC-File-Format) horizontally/vertically respectively
-   - Negative scales indicate the mapping is inverted ([texture](TPC-File-Format) is flipped relative to world space)
+   - If `worldScaleX < 0` or `worldScaleY < 0`: Mirror the [texture](Texture-Formats#tpc) horizontally/vertically respectively
+   - Negative scales indicate the mapping is inverted ([texture](Texture-Formats#tpc) is flipped relative to world space)
 
-6. **Render [texture](TPC-File-Format):**
-   - Draw [texture](TPC-File-Format) in world space rectangle from `(min(originX, endX), min(originY, endY))` to `(max(originX, endX), max(originY, endY))`
+6. **Render [texture](Texture-Formats#tpc):**
+   - Draw [texture](Texture-Formats#tpc) in world space rectangle from `(min(originX, endX), min(originY, endY))` to `(max(originX, endX), max(originY, endY))`
    - Apply mirroring if scales are negative
 
 **Mathematical Derivation:**
 
-The inverse [transformation](BWM-File-Format#adjacencies-wok-only) is derived from reone's forward [transformation](BWM-File-Format#adjacencies-wok-only):
+The inverse [transformation](Level-Layout-Formats#adjacencies-wok-only) is derived from reone's forward [transformation](Level-Layout-Formats#adjacencies-wok-only):
 
 Forward (World --> Map): `mapPos.x = (world.x - WorldPt1X) * scaleX + MapPt1X`
 
@@ -588,7 +588,7 @@ Substituting `scaleX = (MapPt1X - MapPt2X) / (WorldPt1X - WorldPt2X)`:
 world.x = WorldPt1X + (mapPos.x - MapPt1X) * (WorldPt1X - WorldPt2X) / (MapPt1X - MapPt2X)
 ```
 
-For [texture](TPC-File-Format) origin (mapPos = 0):
+For [texture](Texture-Formats#tpc) origin (mapPos = 0):
 
 ```
 world.x = WorldPt1X - MapPt1X * (WorldPt1X - WorldPt2X) / (MapPt1X - MapPt2X)
@@ -598,9 +598,9 @@ world.x = WorldPt1X - MapPt1X * worldScaleX
 **Common Rendering Bugs:**
 
 1. **rotation Around Center Bug:**
-   - **Symptom**: Walkable area appears rotated/flipped ~180° relative to minimap [texture](TPC-File-Format)
-   - **Cause**: Incorrectly rotating map points around (0.5, 0.5) before calculating [texture](TPC-File-Format) position
-   - **Fix**: Use direct linear [transformation](BWM-File-Format#adjacencies-wok-only) without any rotation of map points
+   - **Symptom**: Walkable area appears rotated/flipped ~180° relative to minimap [texture](Texture-Formats#tpc)
+   - **Cause**: Incorrectly rotating map points around (0.5, 0.5) before calculating [texture](Texture-Formats#tpc) position
+   - **Fix**: Use direct linear [transformation](Level-Layout-Formats#adjacencies-wok-only) without any rotation of map points
    - **Pattern**: `map_point = rotate(map_point - 0.5, angle) + 0.5` ❌ (WRONG)
 
 2. **Precision Loss Bug:**
@@ -615,18 +615,18 @@ world.x = WorldPt1X - MapPt1X * worldScaleX
    - **Fix**: Swap X/Y coordinates when NorthAxis is 2 or 3
 
 4. **Inverted Mapping Bug:**
-   - **Symptom**: Minimap [texture](TPC-File-Format) appears flipped horizontally or vertically
+   - **Symptom**: Minimap [texture](Texture-Formats#tpc) appears flipped horizontally or vertically
    - **Cause**: Not detecting and handling negative scale values
-   - **Fix**: Check scale signs and mirror [texture](TPC-File-Format) accordingly
+   - **Fix**: Check scale signs and mirror [texture](Texture-Formats#tpc) accordingly
 
-**[walkmesh](BWM-File-Format) Alignment:**
+**[walkmesh](Level-Layout-Formats#bwm) Alignment:**
 
-The blue walkable area rendered in editors comes from the walkmesh ([BWM file](BWM-File-Format)) [faces](MDL-MDX-File-Format#face-structure). The minimap [texture](TPC-File-Format) must align with this [walkmesh](BWM-File-Format):
+The blue walkable area rendered in editors comes from the walkmesh ([BWM file](Level-Layout-Formats#bwm)) [faces](MDL-MDX-File-Format#face-structure). The minimap [texture](Texture-Formats#tpc) must align with this [walkmesh](Level-Layout-Formats#bwm):
 
-- **[walkmesh](BWM-File-Format) coordinates**: 3D world space coordinates (X, Y, Z)
-- **Minimap [texture](TPC-File-Format)**: 2D [texture](TPC-File-Format) coordinates (0.0-1.0) mapped to world X/Y plane
-- **Alignment**: Map points correspond to specific [walkmesh](BWM-File-Format) [vertices](MDL-MDX-File-Format#vertex-structure) and [faces](MDL-MDX-File-Format#face-structure)
-- **Verification**: The walkable area outline should match the minimap [texture](TPC-File-Format) boundaries
+- **[walkmesh](Level-Layout-Formats#bwm) coordinates**: 3D world space coordinates (X, Y, Z)
+- **Minimap [texture](Texture-Formats#tpc)**: 2D [texture](Texture-Formats#tpc) coordinates (0.0-1.0) mapped to world X/Y plane
+- **Alignment**: Map points correspond to specific [walkmesh](Level-Layout-Formats#bwm) [vertices](MDL-MDX-File-Format#vertex-structure) and [faces](MDL-MDX-File-Format#face-structure)
+- **Verification**: The walkable area outline should match the minimap [texture](Texture-Formats#tpc) boundaries
 
 **Testing & Validation:**
 
@@ -636,32 +636,32 @@ The blue walkable area rendered in editors comes from the walkmesh ([BWM file](B
    - Verify NorthAxis, MapZoom, MapResX preserve exactly
 
 2. **Visual Alignment Check:**
-   - Open are in editor with [walkmesh](BWM-File-Format) loaded
-   - Verify blue walkable area aligns with minimap [texture](TPC-File-Format)
+   - Open are in editor with [walkmesh](Level-Layout-Formats#bwm) loaded
+   - Verify blue walkable area aligns with minimap [texture](Texture-Formats#tpc)
    - Check alignment for all NorthAxis values (0, 1, 2, 3)
-   - Verify [texture](TPC-File-Format) isn't flipped or rotated incorrectly
+   - Verify [texture](Texture-Formats#tpc) isn't flipped or rotated incorrectly
 
-3. **coordinate [transformation](BWM-File-Format#adjacencies-wok-only) Test:**
-   - Pick known world coordinates from [walkmesh](BWM-File-Format)
-   - Convert to map coordinates using forward [transformation](BWM-File-Format#adjacencies-wok-only)
+3. **coordinate [transformation](Level-Layout-Formats#adjacencies-wok-only) Test:**
+   - Pick known world coordinates from [walkmesh](Level-Layout-Formats#bwm)
+   - Convert to map coordinates using forward [transformation](Level-Layout-Formats#adjacencies-wok-only)
    - Verify map coordinates are within valid range (0.0-1.0)
-   - Convert back to world coordinates using inverse [transformation](BWM-File-Format#adjacencies-wok-only)
+   - Convert back to world coordinates using inverse [transformation](Level-Layout-Formats#adjacencies-wok-only)
    - Verify roundtrip accuracy (tolerance: 0.01 world units)
 
 **Reference Code Locations:**
 
-- **Reone Forward [transformation](BWM-File-Format#adjacencies-wok-only)**: **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/map.cpp:174-199`](https://github.com/modawan/reone/blob/master/src/libs/game/gui/map.cpp#L174-L199) - `getMapPosition()`
+- **Reone Forward [transformation](Level-Layout-Formats#adjacencies-wok-only)**: **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/map.cpp:174-199`](https://github.com/modawan/reone/blob/master/src/libs/game/gui/map.cpp#L174-L199) - `getMapPosition()`
 - **Reone are Parsing**: **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/gff/are.cpp:284-297`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/gff/are.cpp#L284-L297) - Map struct parsing
 - **PyKotor are Class**: `Libraries/PyKotor/src/pykotor/resource/generics/are.py:250-260` - Map coordinate storage
-- **PyKotor Minimap Rendering**: `Tools/HolocronToolset/src/toolset/gui/widgets/renderer/[walkmesh](BWM-File-Format).py:555-603` - [texture](TPC-File-Format) rendering implementation
+- **PyKotor Minimap Rendering**: `Tools/HolocronToolset/src/toolset/gui/widgets/renderer/[walkmesh](Level-Layout-Formats#bwm).py:555-603` - [texture](Texture-Formats#tpc) rendering implementation
 
 ## See also
 
 - [GFF File Format](GFF-File-Format) - Generic format underlying ARE
 - [GIT (Game Instance Template)](GFF-Module-and-Area#git) - Dynamic area contents (creatures, doors, placeables)
-- [BWM (Walkmesh)](BWM-File-Format) - Area walkable surfaces and minimap alignment
-- [LYT](LYT-File-Format) — layout
-- [VIS](VIS-File-Format) — visibility
+- [BWM (Walkmesh)](Level-Layout-Formats#bwm) - Area walkable surfaces and minimap alignment
+- [LYT](Level-Layout-Formats#lyt) — layout
+- [VIS](Level-Layout-Formats#vis) — visibility
 - [Bioware Aurora Area File Format](Bioware-Aurora-Module-and-Area#areafile) - Official ARE specification
 
 
@@ -1029,7 +1029,7 @@ Each instance type has common fields plus type-specific data:
 - [GFF-UTT](GFF-Spatial-Objects#utt)
 - [GFF-UTW](GFF-Spatial-Objects#utw) -- Instance types
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Patching GIT via mod installers
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -1054,8 +1054,8 @@ IFO files define module-level metadata including entry configuration, expansion 
 - [ARE](GFF-Module-and-Area#are)
 - [GIT](GFF-File-Format#git-game-instance-template)
 - [NCS](NCS-File-Format)
-- [KEY](KEY-File-Format)
-- [BIF](BIF-File-Format)
+- [KEY](Container-Formats#key)
+- [BIF](Container-Formats#bif)
 
 ## References
 
@@ -1185,7 +1185,7 @@ IFO files define module-level metadata including entry configuration, expansion 
 - Custom content may include:
 
   - [models](MDL-MDX-File-Format)
-  - [textures](TPC-File-Format)
+  - [textures](Texture-Formats#tpc)
   - Scripts
 - Listed in load priority order
 

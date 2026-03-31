@@ -17,7 +17,7 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
   - [UTI (Item)](GFF-File-Format#uti-item)
   - [UTP (Placeable)](GFF-File-Format#utp-placeable) templates
 
-- Often store [StrRefs](TLK-File-Format#string-references-strref) into [TLK files](TLK-File-Format) for text strings
+- Often store [StrRefs](Audio-and-Localization-Formats#string-references-strref) into [TLK files](Audio-and-Localization-Formats#tlk) for text strings
 
 **Important**: While the 2DA file format structure is shared across BioWare's Aurora, Odyssey, and probably even Eclipse's engines (including Neverwinter Nights, Dragon Age, and Jade Empire), this documentation focuses exclusively on KotOR and KotOR 2. All 2DA file examples, column structures, and engine usage descriptions are specific to these games. References to vendor implementations are marked as either *KotOR*-specific or generic *Aurora* engine code (shared format).
 
@@ -239,11 +239,11 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 2DA files are tabular game data; role in modding and merge workflows: see the **2DA** section on [Concepts](Concepts). On disk in game archives they use binary version **`V2.b`** and the `.2da` extension. The engine loads them with the same *[resource resolution order](Concepts#resource-resolution-order)* as other resources:
 
 - override
-- module [RIM](RIM-File-Format)
-- [MOD](ERF-File-Format)
+- module [RIM](Container-Formats#rim)
+- [MOD](Container-Formats#erf)
 - save
-- [KEY](KEY-File-Format)
-- [BIF](BIF-File-Format)
+- [KEY](Container-Formats#key)
+- [BIF](Container-Formats#bif)
 
 **PyKotor:**
 
@@ -274,7 +274,7 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 - [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) - Modding 2DA files with *TSLPatcher*
 - [GFF File Format](GFF-File-Format) - Related format that often references *2DA* data
-- [TLK File Format](TLK-File-Format) - Text strings referenced by *2DA* entries
+- [TLK File Format](Audio-and-Localization-Formats#tlk) - Text strings referenced by *2DA* entries
 
 ---
 
@@ -443,13 +443,13 @@ All cell values are stored as strings in the *2DA* file, but are interpreted as 
 - **ResRefs**: [Resource references](GFF-File-Format#gff-data-types) (max 16 characters, no extension) point to other game resources such as:
 
   - [models](MDL-MDX-File-Format)
-  - [textures](TPC-File-Format)
+  - [textures](Texture-Formats#tpc)
   - [NCS](NCS-File-Format) scripts (and other resource types by ResRef)
-- **StrRefs**: [String references](TLK-File-Format#string-references-strref) into [`dialog.tlk`](TLK-File-Format) (typically negative values like `-1` indicate no reference) - used for localized text display.
+- **StrRefs**: [String references](Audio-and-Localization-Formats#string-references-strref) into [`dialog.tlk`](Audio-and-Localization-Formats#tlk) (typically negative values like `-1` indicate no reference) - used for localized text display.
 - **Boolean**: `"0"` or `"1"` (sometimes `"TRUE"`/`"FALSE"`) - control feature flags and settings
 - **Empty Cells**: Represented as `"****"` - treated as null/undefined by the engine
 
-The game engine parses cell values based on context and expected data type for each column. For example, the `appearance.2da` file uses integers for [model](MDL-MDX-File-Format) indices, [ResRefs](GFF-File-Format#gff-data-types) for [texture](TPC-File-Format) names, and [StrRefs](TLK-File-Format#string-references-strref) for race names.
+The game engine parses cell values based on context and expected data type for each column. For example, the `appearance.2da` file uses integers for [model](MDL-MDX-File-Format) indices, [ResRefs](GFF-File-Format#gff-data-types) for [texture](Texture-Formats#tpc) names, and [StrRefs](Audio-and-Localization-Formats#string-references-strref) for race names.
 
 ---
 
@@ -597,10 +597,10 @@ This section documents all known *2DA* files used in *KotOR* 1 and *KotOR* 2/TSL
 **Engine Usage**: The `appearance.2da` file is one of the most critical *2DA* files in the games. It maps appearance IDs (from [creature templates](GFF-File-Format#utc-creature) and character creation) into the data the renderer needs when loading creatures:
 
 - 3D [model](MDL-MDX-File-Format) *ResRefs*
-- [texture](TPC-File-Format) assignments
+- [texture](Texture-Formats#tpc) assignments
 - Race associations and physical properties
 - Which [model](MDL-MDX-File-Format) to display
-- Which [textures](TPC-File-Format) to display
+- Which [textures](Texture-Formats#tpc) to display
 - Hit detection inputs
 - [animations](MDL-MDX-File-Format#animation-header)
 
@@ -613,16 +613,16 @@ This section documents all known *2DA* files used in *KotOR* 1 and *KotOR* 2/TSL
 | `label` | *String* (optional) | Human-readable label for the appearance |
 | `modeltype` | *String* | [model](MDL-MDX-File-Format) type identifier (e.g., "F", "B", "P") |
 | `modela` through `modeln` | *ResRef* (optional) | [model](MDL-MDX-File-Format) *ResRefs* for different body parts or variations ([models](MDL-MDX-File-Format) a-n) |
-| `texa` through `texn` | *ResRef* (optional) | [texture](TPC-File-Format) *ResRefs* for different body parts ([textures](TPC-File-Format) a-n) |
-| `texaevil`, `texbevil`, `texievil`, `texlevil`, `texnevil` | *ResRef* (optional) | Dark side variant [textures](TPC-File-Format) *ResRefs* |
+| `texa` through `texn` | *ResRef* (optional) | [texture](Texture-Formats#tpc) *ResRefs* for different body parts ([textures](Texture-Formats#tpc) a-n) |
+| `texaevil`, `texbevil`, `texievil`, `texlevil`, `texnevil` | *ResRef* (optional) | Dark side variant [textures](Texture-Formats#tpc) *ResRefs* |
 | `race` | *ResRef* (optional) | Race identifier *ResRef* |
-| `racetex` | *ResRef* (optional) | Race-specific [texture](TPC-File-Format) *ResRef* |
+| `racetex` | *ResRef* (optional) | Race-specific [texture](Texture-Formats#tpc) *ResRef* |
 | `racialtype` | *Integer* | Numeric racial type identifier |
 | `normalhead` | *Integer* (optional) | Default head appearance ID |
 | `backuphead` | *Integer* (optional) | Fallback head appearance ID |
 | `portrait` | *ResRef* (optional) | Portrait image *ResRef* |
-| `skin` | *ResRef* (optional) | Skin [texture](TPC-File-Format) *ResRef* |
-| `headtexe`, `headtexg`, `headtexve`, `headtexvg` | *ResRef* (optional) | Head [texture](TPC-File-Format) *ResRefs* variations |
+| `skin` | *ResRef* (optional) | Skin [texture](Texture-Formats#tpc) *ResRef* |
+| `headtexe`, `headtexg`, `headtexve`, `headtexvg` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) *ResRefs* variations |
 | `headbone` | *String* (optional) | Bone name for head attachment |
 | `height` | [Float](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) | Character height multiplier |
 | `hitdist` | [Float](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) | Hit detection distance |
@@ -663,7 +663,7 @@ This section documents all known *2DA* files used in *KotOR* 1 and *KotOR* 2/TSL
 | `wingTailScale` | *Boolean* | Whether wing/tail scaling is enabled |
 | `helmetScaleF` | *String* (optional) | Female helmet scale |
 | `helmetScaleM` | *String* (optional) | Male helmet scale |
-| `envmap` | *ResRef* (optional) | Environment map [texture](TPC-File-Format) *ResRef* |
+| `envmap` | *ResRef* (optional) | Environment map [texture](Texture-Formats#tpc) *ResRef* |
 | `bodyBag` | *Integer* (optional) | Body bag appearance ID |
 | `stringRef` | *Integer* (optional) | *String* reference for appearance name |
 | `driveaccl` | *Integer* | Vehicle drive acceleration |
@@ -677,9 +677,9 @@ This section documents all known *2DA* files used in *KotOR* 1 and *KotOR* 2/TSL
 The `appearance.2da` file contains a comprehensive set of columns for character appearance configuration. The complete column list is parsed by the game engine:
 
 - [model](MDL-MDX-File-Format) columns: `modela` through `modeln` (14 [model](MDL-MDX-File-Format) variations)
-- [texture](TPC-File-Format) columns: `texa` through `texn` (14 [texture](TPC-File-Format) variations)
-- Evil [texture](TPC-File-Format) columns: `texaevil`, `texbevil`, `texievil`, `texlevil`, `texnevil`
-- Head [texture](TPC-File-Format) columns: `headtexe`, `headtexg`, `headtexve`, `headtexvg`
+- [texture](Texture-Formats#tpc) columns: `texa` through `texn` (14 [texture](Texture-Formats#tpc) variations)
+- Evil [texture](Texture-Formats#tpc) columns: `texaevil`, `texbevil`, `texievil`, `texlevil`, `texnevil`
+- Head [texture](Texture-Formats#tpc) columns: `headtexe`, `headtexg`, `headtexve`, `headtexvg`
 - Movement: `walkdist`, `rundist`, `prefatckdist`, `moverate`
 - Physical properties: `height`, `hitdist`, `hitradius`, `sizecategory`, `perceptiondist`
 - Personal space: `perspace`, `creperspace`
@@ -690,7 +690,7 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 - Sounds: `armorSound`, `combatSound`, `soundapptype`
 - Visual effects: `deathvfx`, `deathvfxnode`, `fadedelayondeath`, `freelookeffect`
 - Equipment: `equipslotslocked`, `weaponscale`, `helmetScaleF`, `helmetScaleM`
-- [textures](TPC-File-Format): `envmap`, `skin`, `portrait`, `race`, `racetex`, `racialtype`
+- [textures](Texture-Formats#tpc): `envmap`, `skin`, `portrait`, `race`, `racetex`, `racialtype`
 - Heads: `normalhead`, `backuphead`, `headbone`
 - Vehicle: `driveaccl`, `drivemaxspeed`, `driveanimwalk`, `driveanimrunPc`, `driveanimrunXbox`
 - Other: `bloodcolr`, `bodyBag`, `stringRef`, `abortonparry`, `destroyobjectdelay`, `disableinjuredanim`
@@ -699,11 +699,11 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:73`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L73) - [StrRef](TLK-File-Format#string-references-strref) column definition for appearance.2da
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:248`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L248) - [StrRef](TLK-File-Format#string-references-strref) column definition for appearance.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:73`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L73) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for appearance.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:248`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L248) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for appearance.2da
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:155`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L155) - *ResRef* column definition for appearance.2da (race)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:168`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L168) - [model](MDL-MDX-File-Format) *ResRef* column definitions for appearance.2da (`modela` through `modelj`)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:213-214`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L213-L214) - [texture](TPC-File-Format) *ResRef* column definitions for appearance.2da (`racetex`, `texa` through `texj`, `headtexve`, `headtexe`, `headtexvg`, `headtexg`)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:213-214`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L213-L214) - [texture](Texture-Formats#tpc) *ResRef* column definitions for appearance.2da (`racetex`, `texa` through `texj`, `headtexve`, `headtexe`, `headtexvg`, `headtexg`)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:456`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L456) - TwoDARegistry.APPEARANCES constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:524`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L524) - [GFF](GFF-File-Format) field mapping: `"Appearance_Type" -> appearance.2da`
 
@@ -722,7 +722,7 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 - **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1156-1228`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1156-L1228) — column access for:
 
   - [model](MDL-MDX-File-Format)
-  - [texture](TPC-File-Format)
+  - [texture](Texture-Formats#tpc)
 
 ### [baseitems.2da](#baseitems2da)
 
@@ -735,7 +735,7 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Item type label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for item type name |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for item type name |
 | `basecost` | *Integer* | Base gold cost |
 | `stacking` | *Integer* | Stack size limit |
 | `invslotwidth` | *Integer* | Inventory slot width |
@@ -759,11 +759,11 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 | `damagebonusfeat` | *Integer* | Feat ID for damage bonus |
 | `weaponfocustype` | *Integer* | Weapon focus type |
 | `weaponfocusfeat` | *Integer* | Weapon focus feat ID |
-| `description` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for item description |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for item description |
 | `icon` | *ResRef* | Icon image *ResRef* |
 | `equipableslots` | *Integer* | Equipment slot flags |
 | `model1` through `model6` | *ResRef* (optional) | 3D [model](MDL-MDX-File-Format) *ResRefs* for different variations |
-| `partenvmap` | *ResRef* (optional) | Partial environment map [texture](TPC-File-Format) |
+| `partenvmap` | *ResRef* (optional) | Partial environment map [texture](Texture-Formats#tpc) |
 | `defaultmodel` | *ResRef* (optional) | Default [model](MDL-MDX-File-Format) *ResRef* |
 | `defaulticon` | *ResRef* (optional) | Default icon *ResRef* |
 | `container` | *Boolean* | Whether item is a container |
@@ -811,7 +811,7 @@ The following columns are accessed by the game engine:
 
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:169`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L169) - [model](MDL-MDX-File-Format) *ResRef* column definition for `baseitems.2da` (defaultmodel)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:187`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L187) - Sound *ResRef* column definitions for `baseitems.2da` (powerupsnd, powerdownsnd, poweredsnd)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:215`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L215) - [texture](TPC-File-Format) *ResRef* column definition for `baseitems.2da` (defaulticon)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:215`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L215) - [texture](Texture-Formats#tpc) *ResRef* column definition for `baseitems.2da` (defaulticon)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:225`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L225) - Item *ResRef* column definitions for `baseitems.2da` (itemclass, baseitemstatref)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:466`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L466) - TwoDARegistry.BASEITEMS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:537`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L537) - [GFF](GFF-File-Format) field mapping: "BaseItem" and "ModelVariation" -> `baseitems.2da`
@@ -843,8 +843,8 @@ The following columns are accessed by the game engine:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Class label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for class name |
-| `description` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for class description |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for class name |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for class description |
 | `hitdie` | *Integer* | Hit dice size (d6, d8, d10, etc.) |
 | `skillpointbase` | *Integer* | Base skill points per level |
 | `skillpointbonus` | *Integer* | Intelligence bonus skill points |
@@ -867,7 +867,7 @@ The following columns are accessed by the game engine:
 | `portrait` | *ResRef* (optional) | Class portrait *ResRef* |
 | `startingfeat0` through `startingfeat9` | *Integer* (optional) | Starting feat IDs |
 | `startingpack` | *Integer* (optional) | Starting equipment pack ID |
-| `description` | [StrRef](TLK-File-Format#string-references-strref) | Class description string reference |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | Class description string reference |
 
 **Column Details** (from reone implementation):
 
@@ -886,8 +886,8 @@ The following columns are accessed by the game engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:75`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L75) - [StrRef](TLK-File-Format#string-references-strref) column definitions for classes.2da (K1: name, description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:250`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L250) - [StrRef](TLK-File-Format#string-references-strref) column definitions for classes.2da (K2: name, description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:75`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L75) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for classes.2da (K1: name, description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:250`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L250) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for classes.2da (K2: name, description)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:463`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L463) - TwoDARegistry.CLASSES constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:531`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L531) - [GFF](GFF-File-Format) field mapping: "Class" -> classes.2da
 
@@ -916,10 +916,10 @@ The following columns are accessed by the game engine:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Feat label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for feat name |
-| `description` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for feat description |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for feat name |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for feat description |
 | `icon` | *ResRef* | Feat icon *ResRef* |
-| `takentext` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for "feat taken" message |
+| `takentext` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for "feat taken" message |
 | `prerequisite` | *Integer* (optional) | Prerequisite feat ID |
 | `minattackbonus` | *Integer* (optional) | Minimum attack bonus requirement |
 | `minstr` | *Integer* (optional) | Minimum strength requirement |
@@ -943,7 +943,7 @@ The following columns are accessed by the game engine:
 | `constant` | *Integer* (optional) | Constant value for feat calculations |
 | `toolscategories` | *Integer* (optional) | Tool categories flags |
 | `effecticon` | *ResRef* (optional) | Effect icon *ResRef* |
-| `effectdesc` | [StrRef](TLK-File-Format#string-references-strref) (optional) | Effect description string reference |
+| `effectdesc` | [StrRef](Audio-and-Localization-Formats#string-references-strref) (optional) | Effect description string reference |
 | `effectcategory` | *Integer* (optional) | Effect category identifier |
 | `allclassescanuse` | *Boolean* | Whether all classes can use this feat |
 | `category` | *Integer* | Feat category identifier |
@@ -974,8 +974,8 @@ The following columns are accessed by the reone engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:82`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L82) - [StrRef](TLK-File-Format#string-references-strref) column definitions for feat.2da (K1: name, description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:260`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L260) - [StrRef](TLK-File-Format#string-references-strref) column definitions for feat.2da (K2: name, description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:82`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L82) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for feat.2da (K1: name, description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:260`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L260) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for feat.2da (K2: name, description)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:227`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L227) - *ResRef* column definition for feat.2da (icon)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:464`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L464) - TwoDARegistry.FEATS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:561-562`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L561-L562) - [GFF](GFF-File-Format) field mapping: "FeatID" and "Feat" -> feat.2da
@@ -998,7 +998,7 @@ The following columns are accessed by the reone engine:
 
 ### [skills.2da](#skills2da)
 
-**Engine Usage**: Defines all skills available in the game, including which classes can use them, their [KEY](KEY-File-Format) ability scores, and skill descriptions. The engine uses this file to determine skill availability, skill point costs, and skill checks.
+**Engine Usage**: Defines all skills available in the game, including which classes can use them, their [KEY](Container-Formats#key) ability scores, and skill descriptions. The engine uses this file to determine skill availability, skill point costs, and skill checks.
 
 **Row index**: Skill ID (integer)
 
@@ -1007,9 +1007,9 @@ The following columns are accessed by the reone engine:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Skill label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for skill name |
-| `description` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for skill description |
-| `keyability` | *Integer* | [KEY](KEY-File-Format) ability score (STR, DEX, INT, etc.) |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for skill name |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for skill description |
+| `keyability` | *Integer* | [KEY](Container-Formats#key) ability score (STR, DEX, INT, etc.) |
 | `armorcheckpenalty` | *Boolean* | Whether armor check penalty applies |
 | `allclassescanuse` | *Boolean* | Whether all classes can use this skill |
 | `category` | *Integer* | Skill category identifier |
@@ -1034,8 +1034,8 @@ The following columns are accessed by the reone engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:148`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L148) - [StrRef](TLK-File-Format#string-references-strref) column definitions for skills.2da (K1: name, description)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:326`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L326) - [StrRef](TLK-File-Format#string-references-strref) column definitions for skills.2da (K2: name, description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:148`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L148) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for skills.2da (K1: name, description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:326`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L326) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for skills.2da (K2: name, description)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:472`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L472) - TwoDARegistry.SKILLS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:563`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L563) - [GFF](GFF-File-Format) field mapping: "SkillID" -> skills.2da
 
@@ -1065,7 +1065,7 @@ The following columns are accessed by the reone engine:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Spell label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for spell name |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for spell name |
 | `school` | *Integer* | Spell school identifier |
 | `range` | *Integer* | Spell range type |
 | `vs` | *Integer* | Versus type (self, touch, etc.) |
@@ -1099,8 +1099,8 @@ The following columns are accessed by the reone engine:
 | `projectilemodel2` through `projectilemodel50` | *ResRef* (optional) | Additional projectile models (numbered 2-50) |
 | `icon` | *ResRef* | Spell icon *ResRef* |
 | `icon2` through `icon50` | *ResRef* (optional) | Additional icons (numbered 2-50) |
-| `description` | [StrRef](TLK-File-Format#string-references-strref) | Spell description string reference |
-| `altmessage` | [StrRef](TLK-File-Format#string-references-strref) (optional) | Alternative message string reference |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | Spell description string reference |
+| `altmessage` | [StrRef](Audio-and-Localization-Formats#string-references-strref) (optional) | Alternative message string reference |
 | `usewhencast` | *Integer* | Use when cast flags |
 | `blood` | *Boolean* | Whether spell causes blood effects |
 | `concentration` | *Integer* | Concentration check DC |
@@ -1138,8 +1138,8 @@ The following columns are accessed by the reone engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:149`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L149) - [StrRef](TLK-File-Format#string-references-strref) column definitions for spells.2da (K1: name, spelldesc)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:327`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L327) - [StrRef](TLK-File-Format#string-references-strref) column definitions for spells.2da (K2: name, spelldesc)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:149`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L149) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for spells.2da (K1: name, spelldesc)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:327`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L327) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for spells.2da (K2: name, spelldesc)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L239) - Script *ResRef* column definition for spells.2da (impactscript)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L432) - Script *ResRef* column definition for spells.2da (K2: impactscript)
 - [`TwoDARegistry.POWERS` L709](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L709) — `spells` resref (`Load2DArrays_Spells()`)
@@ -1172,7 +1172,7 @@ The following columns are accessed by the reone engine:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Property label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for property name |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for property name |
 | `costtable` | *String* | Cost calculation table reference |
 | `param1` | *String* | Parameter 1 label |
 | `param2` | *String* | Parameter 2 label |
@@ -1180,14 +1180,14 @@ The following columns are accessed by the reone engine:
 | `costvalue` | *Integer* | Base cost value |
 | `param1value` | *Integer* | Parameter 1 default value |
 | `param2value` | *Integer* | Parameter 2 default value |
-| `description` | [StrRef](TLK-File-Format#string-references-strref) | Property description string reference |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | Property description string reference |
 
 **References**:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:135`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L135) - [StrRef](TLK-File-Format#string-references-strref) column definition for itemprops.2da (K1: stringref)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:313`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L313) - [StrRef](TLK-File-Format#string-references-strref) column definition for itemprops.2da (K2: stringref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:135`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L135) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for itemprops.2da (K1: stringref)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:313`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L313) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for itemprops.2da (K2: stringref)
 
 **HolocronToolset:**
 
@@ -1216,8 +1216,8 @@ The following columns are accessed by the reone engine:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:99`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L99) - [StrRef](TLK-File-Format#string-references-strref) column definition for iprp_damagecost.2da (K1: name)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:277`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L277) - [StrRef](TLK-File-Format#string-references-strref) column definition for iprp_damagecost.2da (K2: name)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:99`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L99) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for iprp_damagecost.2da (K1: name)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:277`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L277) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for iprp_damagecost.2da (K2: name)
 
 ---
 
@@ -1279,9 +1279,9 @@ The complete column structure is defined in reone's placeables parser:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:141`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L141) - [StrRef](TLK-File-Format#string-references-strref) column definition for placeables.2da (K1: [StrRef](TLK-File-Format#string-references-strref))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:141`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L141) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for placeables.2da (K1: [StrRef](Audio-and-Localization-Formats#string-references-strref))
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:170`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L170) - [model](MDL-MDX-File-Format) *ResRef* column definition for placeables.2da (K1: modelname)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:319`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L319) - [StrRef](TLK-File-Format#string-references-strref) column definition for placeables.2da (K2: [StrRef](TLK-File-Format#string-references-strref))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:319`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L319) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for placeables.2da (K2: [StrRef](Audio-and-Localization-Formats#string-references-strref))
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:349`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L349) - [model](MDL-MDX-File-Format) *ResRef* column definition for placeables.2da (K2: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:467`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L467) - TwoDARegistry.PLACEABLES constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:542`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L542) - [GFF](GFF-File-Format) field mapping: "Appearance" -> placeables.2da
@@ -1345,12 +1345,12 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](TLK-File-Format#string-references-strref) column definition for [doortypes.2da](#doortypes2da) (K1: stringrefgame)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:86`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L86) - [StrRef](TLK-File-Format#string-references-strref) column definition for genericdoors.2da (K1: [StrRef](TLK-File-Format#string-references-strref))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for [doortypes.2da](#doortypes2da) (K1: stringrefgame)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:86`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L86) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for genericdoors.2da (K1: [StrRef](Audio-and-Localization-Formats#string-references-strref))
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](#doortypes2da) (K1: [model](MDL-MDX-File-Format))
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:178`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L178) - [model](MDL-MDX-File-Format) *ResRef* column definition for genericdoors.2da (K1: modelname)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:256`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L256) - [StrRef](TLK-File-Format#string-references-strref) column definition for [doortypes.2da](#doortypes2da) (K2: stringrefgame)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:264`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L264) - [StrRef](TLK-File-Format#string-references-strref) column definition for genericdoors.2da (K2: [StrRef](TLK-File-Format#string-references-strref))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:256`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L256) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for [doortypes.2da](#doortypes2da) (K2: stringrefgame)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:264`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L264) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for genericdoors.2da (K2: [StrRef](Audio-and-Localization-Formats#string-references-strref))
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:356`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L356) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](#doortypes2da) (K2: [model](MDL-MDX-File-Format))
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:357`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L357) - [model](MDL-MDX-File-Format) *ResRef* column definition for genericdoors.2da (K2: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:468`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L468) - TwoDARegistry.DOORS constant definition
@@ -1381,7 +1381,7 @@ The complete column structure is defined in reone's genericdoors parser:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Door type label |
-| `stringrefgame` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for door type name |
+| `stringrefgame` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for door type name |
 | `model` | *ResRef* | [model](MDL-MDX-File-Format) *ResRef* for the door type |
 | Additional columns | Various | Door type properties |
 
@@ -1389,7 +1389,7 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](TLK-File-Format#string-references-strref) column definition for doortypes.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for doortypes.2da
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for doortypes.2da
 
 ---
@@ -1405,14 +1405,14 @@ The complete column structure is defined in reone's genericdoors parser:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Sound set label |
-| `resref` | *ResRef* | [sound set files](SSF-File-Format) ResRef (e.g., `c_human_m_01`) |
+| `resref` | *ResRef* | [sound set files](Audio-and-Localization-Formats#ssf) ResRef (e.g., `c_human_m_01`) |
 
 **References**:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:143`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L143) - [StrRef](TLK-File-Format#string-references-strref) column definition for soundset.2da (K1: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:321`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L321) - [StrRef](TLK-File-Format#string-references-strref) column definition for soundset.2da (K2: [StrRef](TLK-File-Format#string-references-strref))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:143`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L143) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for soundset.2da (K1: [StrRef](Audio-and-Localization-Formats#string-references-strref))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:321`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L321) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for soundset.2da (K2: [StrRef](Audio-and-Localization-Formats#string-references-strref))
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:459`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L459) - TwoDARegistry.SOUNDSETS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:522`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L522) - [GFF](GFF-File-Format) field mapping: "SoundSetFile" -> soundset.2da
 - [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:90-92`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L90-L92) - [UTC](GFF-File-Format#utc-creature) soundset_id field documentation
@@ -1444,7 +1444,7 @@ The complete column structure is defined in reone's genericdoors parser:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Visual effect label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for effect name |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for effect name |
 | `model` | *ResRef* (optional) | Effect [model](MDL-MDX-File-Format) *ResRef* |
 | `impactmodel` | *ResRef* (optional) | Impact [model](MDL-MDX-File-Format) *ResRef* |
 | `impactorient` | *Integer* | Impact orientation |
@@ -1560,9 +1560,9 @@ The complete column structure is defined in reone's genericdoors parser:
 **Engine Usage**: Defines head assets for player characters and NPCs. When loading character heads, the engine uses this file to choose:
 
 - [models](MDL-MDX-File-Format)
-- [textures](TPC-File-Format)
+- [textures](Texture-Formats#tpc)
 - Which 3D [model](MDL-MDX-File-Format) to apply
-- Which [textures](TPC-File-Format) to apply
+- Which [textures](Texture-Formats#tpc) to apply
 
 **Row index**: Head ID (integer)
 
@@ -1571,26 +1571,26 @@ The complete column structure is defined in reone's genericdoors parser:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `head` | *ResRef* (optional) | Head [model](MDL-MDX-File-Format) *ResRef* |
-| `headtexe` | *ResRef* (optional) | Head [texture](TPC-File-Format) E *ResRef* |
-| `headtexg` | *ResRef* (optional) | Head [texture](TPC-File-Format) G *ResRef* |
-| `headtexve` | *ResRef* (optional) | Head [texture](TPC-File-Format) VE *ResRef* |
-| `headtexvg` | *ResRef* (optional) | Head [texture](TPC-File-Format) VG *ResRef* |
-| `headtexvve` | *ResRef* (optional) | Head [texture](TPC-File-Format) VVE *ResRef* |
-| `headtexvvve` | *ResRef* (optional) | Head [texture](TPC-File-Format) VVVE *ResRef* |
-| `alttexture` | *ResRef* (optional) | Alternative [texture](TPC-File-Format) *ResRef* |
+| `headtexe` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) E *ResRef* |
+| `headtexg` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) G *ResRef* |
+| `headtexve` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) VE *ResRef* |
+| `headtexvg` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) VG *ResRef* |
+| `headtexvve` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) VVE *ResRef* |
+| `headtexvvve` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) VVVE *ResRef* |
+| `alttexture` | *ResRef* (optional) | Alternative [texture](Texture-Formats#tpc) *ResRef* |
 
 **Column Details**:
 
 The complete column structure is defined in reone's heads parser:
 
 - `head`: Optional *ResRef* - head [model](MDL-MDX-File-Format) *ResRef*
-- `alttexture`: Optional *ResRef* - alternative [texture](TPC-File-Format) *ResRef*
-- `headtexe`: Optional *ResRef* - head [texture](TPC-File-Format) for evil alignment
-- `headtexg`: Optional *ResRef* - head [texture](TPC-File-Format) for good alignment
-- `headtexve`: Optional *ResRef* - head [texture](TPC-File-Format) for very evil alignment
-- `headtexvg`: Optional *ResRef* - head [texture](TPC-File-Format) for very good alignment
-- `headtexvve`: Optional *ResRef* - head [texture](TPC-File-Format) for very very evil alignment
-- `headtexvvve`: Optional *ResRef* - head [texture](TPC-File-Format) for very very very evil alignment
+- `alttexture`: Optional *ResRef* - alternative [texture](Texture-Formats#tpc) *ResRef*
+- `headtexe`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for evil alignment
+- `headtexg`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for good alignment
+- `headtexve`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for very evil alignment
+- `headtexvg`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for very good alignment
+- `headtexvve`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for very very evil alignment
+- `headtexvvve`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for very very very evil alignment
 
 **References**:
 
@@ -1683,15 +1683,15 @@ Similar name generation files exist for other species:
 | `label` | *String* | Sound label |
 | `sound` | *ResRef* | Sound file *ResRef* |
 | `resource` | *ResRef* | Sound resource *ResRef* |
-| `description` | [StrRef](TLK-File-Format#string-references-strref) | Sound description string reference |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | Sound description string reference |
 
 **References**:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:72`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L72) - [StrRef](TLK-File-Format#string-references-strref) column definition for ambientsound.2da (K1: description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:72`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L72) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for ambientsound.2da (K1: description)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:184`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L184) - Sound *ResRef* column definition for ambientsound.2da (K1: resource)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:247`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L247) - [StrRef](TLK-File-Format#string-references-strref) column definition for ambientsound.2da (K2: description)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:247`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L247) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for ambientsound.2da (K2: description)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:376`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L376) - Sound *ResRef* column definition for ambientsound.2da (K2: resource)
 - [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:6986-6988`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6986-L6988) - AmbientSoundPlay function comment
 
@@ -1830,7 +1830,7 @@ Similar name generation files exist for other species:
 | `label` | *String* | Faction label |
 | Additional columns | *Integer* | Reputation values for each faction (column names match faction labels) |
 
-**Note**: The `repute.2da` file is a square [matrix](BWM-File-Format#adjacencies-wok-only) where each row represents a faction, and each column (after `label`) represents the reputation value toward another faction. Reputation values typically range from 0-100, where values below 50 are enemies, above 50 are friends, and 50 is neutral.
+**Note**: The `repute.2da` file is a square [matrix](Level-Layout-Formats#adjacencies-wok-only) where each row represents a faction, and each column (after `label`) represents the reputation value toward another faction. Reputation values typically range from 0-100, where values below 50 are enemies, above 50 are friends, and 50 is neutral.
 
 **References**:
 
@@ -1858,13 +1858,13 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/reputes.cpp:36-62`](https://github.com/modawan/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](BWM-File-Format#adjacencies-wok-only) loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/reputes.cpp:36-62`](https://github.com/modawan/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](Level-Layout-Formats#adjacencies-wok-only) loading from [2DA](2DA-File-Format)
 
 ---
 
 ### surfacemat.2da
 
-**Engine Usage**: Defines surface material properties for [walkmesh](BWM-File-Format) surfaces, including walkability, line of sight blocking, and grass rendering. The engine uses this file to determine surface behavior during pathfinding and rendering.
+**Engine Usage**: Defines surface material properties for [walkmesh](Level-Layout-Formats#bwm) surfaces, including walkability, line of sight blocking, and grass rendering. The engine uses this file to determine surface behavior during pathfinding and rendering.
 
 **Row index**: surface material ID (integer)
 
@@ -1888,8 +1888,8 @@ Similar name generation files exist for other species:
 - [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py:412`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py#L412) - SurfaceMaterial.GRASS default value
 - [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py:47`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py#L47) - SurfaceMaterial ID per [face](MDL-MDX-File-Format#face-structure) documentation
 - [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py:784`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py#L784) - SurfaceMaterial ID field documentation
-- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py:1578`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1578) - Comment referencing surfacemat.2da for [walkmesh](BWM-File-Format) surface material
-- [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py:160`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py#L160) - SurfaceMaterial parsing from [BWM](BWM-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py:1578`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1578) - Comment referencing surfacemat.2da for [walkmesh](Level-Layout-Formats#bwm) surface material
+- [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py:160`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py#L160) - SurfaceMaterial parsing from [BWM](Level-Layout-Formats#bwm)
 
 **Vendor Implementations:**
 
@@ -1908,7 +1908,7 @@ Similar name generation files exist for other species:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Hint label |
-| `strref` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for hint text |
+| `strref` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for hint text |
 
 **References**:
 
@@ -1929,7 +1929,7 @@ Similar name generation files exist for other species:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Body bag label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for body bag name |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for body bag name |
 | `appearance` | *Integer* | Appearance ID for the body bag [model](MDL-MDX-File-Format) |
 | `corpse` | *Boolean* | Whether the body bag represents a corpse |
 
@@ -2240,7 +2240,7 @@ Similar name generation files exist for other species:
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Trap type label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for trap name |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for trap name |
 | `model` | *ResRef* | Trap [model](MDL-MDX-File-Format) *ResRef* |
 | `explosionsound` | *ResRef* | Explosion sound effect *ResRef* |
 | `resref` | *ResRef* | Trap script *ResRef* |
@@ -2249,8 +2249,8 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:150`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L150) - [StrRef](TLK-File-Format#string-references-strref) column definitions for traps.2da (K1: trapname, name)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:328`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L328) - [StrRef](TLK-File-Format#string-references-strref) column definitions for traps.2da (K2: trapname, name)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:150`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L150) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for traps.2da (K1: trapname, name)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:328`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L328) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for traps.2da (K2: trapname, name)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:470`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L470) - TwoDARegistry.TRAPS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:568`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L568) - [GFF](GFF-File-Format) field mapping: "TrapType" -> traps.2da
 - [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:6347-6348`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6347-L6348) - VersusTrapEffect function comments
@@ -3184,7 +3184,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 ### keymap.2da
 
-**Engine Usage**: Defines keyboard and [controller](MDL-MDX-File-Format#controllers) [KEY](KEY-File-Format) mappings for different game contexts (in-game, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, etc.). The engine uses this file to determine which keys trigger which actions in different contexts.
+**Engine Usage**: Defines keyboard and [controller](MDL-MDX-File-Format#controllers) [KEY](Container-Formats#key) mappings for different game contexts (in-game, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, etc.). The engine uses this file to determine which keys trigger which actions in different contexts.
 
 **Row index**: Keymap Entry ID (integer)
 
@@ -3193,7 +3193,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Keymap entry label |
-| Additional columns | Various | [KEY](KEY-File-Format) mappings for different contexts (ingame, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, freelook, movie) |
+| Additional columns | Various | [KEY](Container-Formats#key) mappings for different contexts (ingame, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, freelook, movie) |
 
 **References**:
 
@@ -3262,22 +3262,22 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 ### texpacks.2da
 
-**Engine Usage**: Defines [texture](TPC-File-Format) pack configurations for graphics settings (KotOR 2 only). The engine uses this file to determine available [texture](TPC-File-Format) pack options in the graphics menu.
+**Engine Usage**: Defines [texture](Texture-Formats#tpc) pack configurations for graphics settings (KotOR 2 only). The engine uses this file to determine available [texture](Texture-Formats#tpc) pack options in the graphics menu.
 
-**Row index**: [texture](TPC-File-Format) Pack ID (integer)
+**Row index**: [texture](Texture-Formats#tpc) Pack ID (integer)
 
 **Column structure**:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | *String* | [texture](TPC-File-Format) pack label |
-| `strrefname` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for [texture](TPC-File-Format) pack name |
-| Additional columns | Various | [texture](TPC-File-Format) pack properties and settings |
+| `label` | *String* | [texture](Texture-Formats#tpc) pack label |
+| `strrefname` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for [texture](Texture-Formats#tpc) pack name |
+| Additional columns | Various | [texture](Texture-Formats#tpc) pack properties and settings |
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/game/tsl/menu/MenuGraphicsAdvanced.ts:51-122`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/game/tsl/menu/MenuGraphicsAdvanced.ts#L51-L122) - [texture](TPC-File-Format) pack loading from [2DA](2DA-File-Format) for graphics menu (KotOR 2 only)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/game/kotor/menu/MenuGraphicsAdvanced.ts:63-121`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/game/kotor/menu/MenuGraphicsAdvanced.ts#L63-L121) - [texture](TPC-File-Format) pack usage in KotOR 1 graphics menu
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/game/tsl/menu/MenuGraphicsAdvanced.ts:51-122`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/game/tsl/menu/MenuGraphicsAdvanced.ts#L51-L122) - [texture](Texture-Formats#tpc) pack loading from [2DA](2DA-File-Format) for graphics menu (KotOR 2 only)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/game/kotor/menu/MenuGraphicsAdvanced.ts:63-121`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/game/kotor/menu/MenuGraphicsAdvanced.ts#L63-L121) - [texture](Texture-Formats#tpc) pack usage in KotOR 1 graphics menu
 
 ---
 
@@ -3314,32 +3314,32 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Fractional CR label |
-| `displaystrref` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for fractional CR display text |
+| `displaystrref` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for fractional CR display text |
 | Additional columns | Various | Fractional CR properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:84`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L84) - [StrRef](TLK-File-Format#string-references-strref) column definition for fractionalcr.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:84`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L84) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for fractionalcr.2da
 
 ---
 
 ### bindablekeys.2da
 
-**Engine Usage**: Defines bindable [KEY](KEY-File-Format) actions and their string references. The engine uses this file to determine [KEY](KEY-File-Format) action names for the [KEY](KEY-File-Format) binding interface.
+**Engine Usage**: Defines bindable [KEY](Container-Formats#key) actions and their string references. The engine uses this file to determine [KEY](Container-Formats#key) action names for the [KEY](Container-Formats#key) binding interface.
 
-**Row index**: Bindable [KEY](KEY-File-Format) ID (integer)
+**Row index**: Bindable [KEY](Container-Formats#key) ID (integer)
 
 **Column structure**:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | *String* | Bindable [KEY](KEY-File-Format) label |
-| `keynamestrref` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for [KEY](KEY-File-Format) name |
-| Additional columns | Various | [KEY](KEY-File-Format) binding properties |
+| `label` | *String* | Bindable [KEY](Container-Formats#key) label |
+| `keynamestrref` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for [KEY](Container-Formats#key) name |
+| Additional columns | Various | [KEY](Container-Formats#key) binding properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:74`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L74) - [StrRef](TLK-File-Format#string-references-strref) column definition for bindablekeys.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:74`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L74) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for bindablekeys.2da
 
 ---
 
@@ -3354,12 +3354,12 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Master feat label |
-| `strref` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for master feat name |
+| `strref` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for master feat name |
 | Additional columns | Various | Master feat properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:138`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L138) - [StrRef](TLK-File-Format#string-references-strref) column definition for masterfeats.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:138`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L138) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for masterfeats.2da
 
 ---
 
@@ -3374,13 +3374,13 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Movie label |
-| `strrefname` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for movie name |
-| `strrefdesc` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for movie description |
+| `strrefname` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for movie name |
+| `strrefdesc` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for movie description |
 | Additional columns | Various | Movie properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:140`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L140) - [StrRef](TLK-File-Format#string-references-strref) column definitions for movies.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:140`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L140) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for movies.2da
 
 ---
 
@@ -3395,12 +3395,12 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | string token label |
-| `strref1` through `strref4` | [StrRef](TLK-File-Format#string-references-strref) | string references for token values |
+| `strref1` through `strref4` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | string references for token values |
 | Additional columns | Various | string token properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:144`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L144) - [StrRef](TLK-File-Format#string-references-strref) column definitions for stringtokens.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:144`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L144) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definitions for stringtokens.2da
 
 ---
 
@@ -3415,14 +3415,14 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Disease label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for disease name (KotOR 2) |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for disease name (KotOR 2) |
 | `end_incu_script` | *ResRef* | Script *ResRef* for end incubation period |
 | `24_hour_script` | *ResRef* | Script *ResRef* for 24-hour disease effect |
 | Additional columns | Various | Disease properties |
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:255`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L255) - [StrRef](TLK-File-Format#string-references-strref) column definition for disease.2da (KotOR 2)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:255`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L255) - [StrRef](Audio-and-Localization-Formats#string-references-strref) column definition for disease.2da (KotOR 2)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:238,431`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L238) - Script *ResRef* column definitions for disease.2da
 
 ---
@@ -3543,9 +3543,9 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 ### See also
 
-- [TLK File Format](TLK-File-Format) - String references (StrRef) used in 2DA columns
+- [TLK File Format](Audio-and-Localization-Formats#tlk) - String references (StrRef) used in 2DA columns
 - [GFF File Format](GFF-File-Format) - ResRef and data types; many GFF types reference 2DA tables
-- [KEY File Format](KEY-File-Format) - Resource resolution order for 2DA by ResRef
+- [KEY File Format](Container-Formats#key) - Resource resolution order for 2DA by ResRef
 - Example stub pages (each redirects into this document):
 
   - [2DA-appearance](#appearance2da)

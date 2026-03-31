@@ -51,7 +51,7 @@ Copy all files into your game's **override** folder. In-game, use the cheat **gi
 ### See also
 
 - [GFF-UTI](GFF-Items-and-Economy#uti) -- Item (UTI) format
-- [TPC-File-Format](TPC-File-Format) -- Textures
+- [TPC-File-Format](Texture-Formats#tpc) -- Textures
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) -- Override and compatibility
 - [Concepts](Concepts#override-folder) -- Override folder
 - [Home — toolchain overview](Home#documentation) -- When to use HoloPatcher vs CLI vs diff tools

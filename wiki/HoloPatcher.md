@@ -50,10 +50,10 @@ Start with [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) if you n
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) - Original documentation
 - [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) - Player-facing install and restore flow
 - [TSLPatcher InstallList Syntax](TSLPatcher-Install-and-Hack-Syntax#installlist-syntax) - file installation
-- [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax) - [TLK](TLK-File-Format) patching
+- [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax) - [TLK](Audio-and-Localization-Formats#tlk) patching
 - [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) - [2DA](2DA-File-Format) patching
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) - [GFF](GFF-File-Format) patching
-- [TSLPatcher SSFList Syntax](TSLPatcher-GFF-Syntax#ssflist-syntax) - [SSF](SSF-File-Format) patching
+- [TSLPatcher SSFList Syntax](TSLPatcher-GFF-Syntax#ssflist-syntax) - [SSF](Audio-and-Localization-Formats#ssf) patching
 - [TSLPatcher HACKList Syntax](TSLPatcher-Install-and-Hack-Syntax#hacklist-syntax) - Advanced [NCS](NCS-File-Format) binary patching
 - [Explanations on HoloPatcher Internal Logic](HoloPatcher#internal-logic) - Internal component flow and patch-routine behavior
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) - General modding guidelines
@@ -74,7 +74,7 @@ Start with [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) if you n
 **Steps:**
 
 1. **Layout:** `YourMod/tslpatchdata/changes.ini` plus any side files (e.g. `mymod.tlk` fragment, source 2DA snippet, loose file to copy).
-2. **TLK:** In `[TLKList]`, reference a TLK patch file and add or modify rows per [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax). Prefer **merge** operations over replacing entire `dialog.tlk` unless you intend a total replacement (replace-style examples appear under **[TLK](TLK-File-Format) replacements** in [HoloPatcher changes](#holopatcher-changes--new-features) below).
+2. **TLK:** In `[TLKList]`, reference a TLK patch file and add or modify rows per [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax). Prefer **merge** operations over replacing entire `dialog.tlk` unless you intend a total replacement (replace-style examples appear under **[TLK](Audio-and-Localization-Formats#tlk) replacements** in [HoloPatcher changes](#holopatcher-changes--new-features) below).
 3. **2DA:** In `[2DAList]`, target a small change (e.g. append one row to a non-critical table in the test install) using [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax). Use `2DAMEMORY`/labels so later steps can reference row indices if needed.
 4. **InstallList:** Add `[InstallList]` entries to copy **one** file (e.g. a test `.nss` or texture) into `override/` or `modules/` per [TSLPatcher InstallList Syntax](TSLPatcher-Install-and-Hack-Syntax#installlist-syntax).
 5. **Namespaces:** If you offer variants, add `namespaces.ini`; otherwise one `changes.ini` is enough.
@@ -88,9 +88,9 @@ Start with [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) if you n
 
 ## HoloPatcher changes & New Features
 
-### [TLK](TLK-File-Format) replacements
+### [TLK](Audio-and-Localization-Formats#tlk) replacements
 
-- This is not recommended under most scenarios. You usually want to append a new entry and update your DLGs to point to it using [StrRef](TLK-File-Format#string-references-strref) in the ini. However for projects like the k1cp and mods that fix grammatical/spelling mistakes, this may be useful.
+- This is not recommended under most scenarios. You usually want to append a new entry and update your DLGs to point to it using [StrRef](Audio-and-Localization-Formats#string-references-strref) in the ini. However for projects like the k1cp and mods that fix grammatical/spelling mistakes, this may be useful.
 
 The basic syntax is:
 
@@ -102,7 +102,7 @@ ReplaceFile0=tlk_modifications_file.tlk
 StrRef0=2
 ```
 
-This will replace StrRef0 in [dialog.tlk](TLK-File-Format) with StrRef2 from `tlk_modifications_file.tlk`.
+This will replace StrRef0 in [dialog.tlk](Audio-and-Localization-Formats#tlk) with StrRef2 from `tlk_modifications_file.tlk`.
 
 [See our tests](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/tests/test_tslpatcher/test_reader.py#L463) for more examples.
 Don't use the 'ignore' syntax or the 'range' syntax, these won't be documented or supported until further notice.
@@ -145,7 +145,7 @@ In short, HACKList writes unsigned WORD values (two bytes each) to the [NCS](NCS
 - [TSLPatcher TLKList](TSLPatcher-Data-Syntax#tlklist-syntax)
 - [TSLPatcher SSFList](TSLPatcher-GFF-Syntax#ssflist-syntax) -- Other patch lists
 - [Explanations on HoloPatcher Internal Logic](HoloPatcher#internal-logic) -- Implementation
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for patching workflows
 
 
@@ -184,7 +184,7 @@ See [Mod Creation Best Practices](Mod-Creation-Best-Practices#testing-and-compat
   - [KotOR II: TSL](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic_II_-_The_Sith_Lords)
   - [Series hub](https://www.pcgamingwiki.com/wiki/Series:Star_Wars:_Knights_of_the_Old_Republic)
   - Player-facing install notes only—**not** authoritative for KEY/BIF semantics or override resolution:
-    - [KEY-File-Format](KEY-File-Format)
+    - [KEY-File-Format](Container-Formats#key)
     - [Concepts](Concepts)
 - **Historical forum context:** [LucasForums Archive — newbie tools + how to install mods](https://www.lucasforumsarchive.com/thread/129789-guide-for-the-newbie-what-tools-do-i-need-to-mod-kotor-how-to-install-mods) (legacy tool lists; cross-check with this wiki and Deadly Stream file hubs). [Installing a mod without TSLPatcher (e.g. Mac / manual)](https://www.lucasforumsarchive.com/thread/180751-how-do-install-a-mod-without-tsl-patcher) illustrates why **merge-aware** installers remain important for many releases.
 - **TSLPatcher lineage (read for history, use HoloPatcher today):** [TSLPatcher v1.2.10b1 release thread](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer) — original mod-installer design goals. [Can't get TSL Patcher to work anymore](https://www.lucasforumsarchive.com/thread/206390-argh-cant-get-tsl-patcher-to-work-for-me-anymore) — typical override/path confusion; compare with steps above and [Concepts](Concepts#override-folder).
@@ -241,7 +241,7 @@ Run that fix before troubleshooting deeper compatibility issues on iOS. A surpri
 - [TSLPatcher-2DAList-Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) -- Exact author-facing 2DAList semantics
 - [TSLPatcher-GFFList-Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Exact author-facing GFFList semantics
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) -- Workarounds and compatibility
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution and override order
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution and override order
 - [2DA-File-Format](2DA-File-Format) -- Game data tables (e.g. appearance.2da)
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for troubleshooting and guides
 
@@ -376,7 +376,7 @@ patches_list: list[PatcherModifications] = [
 ]
 ```
 
-The priority order has been changed for various reasons, mostly relating to useability. For example, if a mod wanted to overwrite a whole [dialog.tlk](TLK-File-Format) for some reason it makes sense that InstallList patch should run before TLKList. As for the compilelist vs hacklist discrepancy, it makes more sense that users would want to compile a script and then potentially edit the [NCS](NCS-File-Format).
+The priority order has been changed for various reasons, mostly relating to useability. For example, if a mod wanted to overwrite a whole [dialog.tlk](Audio-and-Localization-Formats#tlk) for some reason it makes sense that InstallList patch should run before TLKList. As for the compilelist vs hacklist discrepancy, it makes more sense that users would want to compile a script and then potentially edit the [NCS](NCS-File-Format).
 
 We doubt these priority order changes will affect the output of any mods. If you discover one, please report an issue.
 
@@ -397,7 +397,7 @@ HoloPatcher is _finally_ ready to start applying the patches and modifying the i
 
 - If the resource exists, back it up to a timestamped directory in the `backup` folder.
 - If the resource does not exist, write the patch's intended filepath into the `remove these files.txt` file.
-- If the patch intends to install into a capsule (`.mod` / `.erf` / [`.rim`](RIM-File-Format) / `.sav`) and the capsule DOES NOT exist, throw a FileNotFoundError (matches tslpatcher behavior)
+- If the patch intends to install into a capsule (`.mod` / `.erf` / [`.rim`](Container-Formats#rim) / `.sav`) and the capsule DOES NOT exist, throw a FileNotFoundError (matches tslpatcher behavior)
 
 **Step 2: [Log the operation](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L265)**, such as `patching existing file in the 'path' folder'.
 
@@ -428,10 +428,10 @@ class OverrideType:
 
 Capsule formats:
 
-- [ERF / MOD](ERF-File-Format)
-- [RIM](RIM-File-Format)
+- [ERF / MOD](Container-Formats#erf)
+- [RIM](Container-Formats#rim)
 
-[RIM versus ERF](ERF-File-Format#rim-versus-erf) compares the on-disk layouts.
+[RIM versus ERF](Container-Formats#rim-versus-erf) compares the on-disk layouts.
 
 source code @ [tslpatcher.mods.template](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/mods/template.py#L25)
 
@@ -452,7 +452,7 @@ source code @ [tslpatcher.mods.template](https://github.com/OldRepublicDevs/PyKo
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher syntax
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax)
 - [TSLPatcher InstallList Syntax](TSLPatcher-Install-and-Hack-Syntax#installlist-syntax)
-- [KEY-File-Format](KEY-File-Format) — Resource resolution
+- [KEY-File-Format](Container-Formats#key) — Resource resolution
 
 
 ---

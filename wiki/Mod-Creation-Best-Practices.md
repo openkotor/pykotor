@@ -20,7 +20,7 @@ The practices below are drawn from long-standing community consensus on:
 ## Before you ship a mod
 
 - Decide whether each file is global (`override/`) or module-scoped (`modules/*.mod`).
-- Use patcher-based merges for shared [2DA](2DA-File-Format), [TLK](TLK-File-Format), and [GFF](GFF-File-Format) content instead of shipping blind overwrites.
+- Use patcher-based merges for shared [2DA](2DA-File-Format), [TLK](Audio-and-Localization-Formats#tlk), and [GFF](GFF-File-Format) content instead of shipping blind overwrites.
 - Install into a clean test setup at least once from scratch.
 - Test reinstall, uninstall/restore, and any mutually exclusive installer options.
 - Document load order or incompatibilities when they still matter after patching.
@@ -30,7 +30,7 @@ The practices below are drawn from long-standing community consensus on:
 
 The game resolves resources in a fixed order. Understanding this order is essential for knowing where to place your mod's files and how conflicts arise.
 
-**Resolution order (summary):** The engine checks (1) the **override folder** (`override/`), (2) currently loaded **MOD/ERF** files (e.g. modules in the Modules folder), (3) the current **save game** when in-game, then (4) **KEY/BIF** (vanilla game data). So override and MOD content take precedence over vanilla BIFs. See [Concepts](Concepts#resource-resolution-order) for the full sequence and how the resource manager satisfies requests; [KEY-File-Format](KEY-File-Format) documents the KEY binary layout.
+**Resolution order (summary):** The engine checks (1) the **override folder** (`override/`), (2) currently loaded **MOD/ERF** files (e.g. modules in the Modules folder), (3) the current **save game** when in-game, then (4) **KEY/BIF** (vanilla game data). So override and MOD content take precedence over vanilla BIFs. See [Concepts](Concepts#resource-resolution-order) for the full sequence and how the resource manager satisfies requests; [KEY-File-Format](Container-Formats#key) documents the KEY binary layout.
 
 **Where to put files:**
 
@@ -118,7 +118,7 @@ void DestroyPlaceablesAndCreaturesInArea(location oLoc1, int nShape, float areaS
 
 - **Textures (TGA vs TPC, install order):** Players often debate override order for texture stacks. For **workflow context**, see [Deadly Stream — mod installation order and TGA vs TPC](https://deadlystream.com/topic/11056-mod-installation-order-and-tga-vs-tpc-files/). Format SSOT remains:
 
-  - [TPC-File-Format](TPC-File-Format)
+  - [TPC-File-Format](Texture-Formats#tpc)
   - [Concepts — resource resolution](Concepts#resource-resolution-order)
 - **Install order:** Many mods depend on load order (override and MOD order). Document recommended order in your mod’s readme; when using TSLPatcher/HoloPatcher, merging 2DA/TLK reduces order sensitivity for those files.
 - **Clean install:** Test on a clean game install or a known-good backup so conflicts are attributable to your mod or to a specific combination.
@@ -180,7 +180,7 @@ label=YavinHgrDoor1
 - [LucasForums Archive — TSLPatcher v1.2.10b1 thread](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer/) -- Historical installer context (see also [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete))
 - [Deadly Stream -- TOOL: HoloPatcher](https://deadlystream.com/topic/9807-toolholopatcher/) -- Release thread (2DA merge / installer workflow context)
 - [Concepts](Concepts#resource-resolution-order) -- Resource resolution order
-- [KEY-File-Format](KEY-File-Format) -- KEY/BIF index format
+- [KEY-File-Format](Container-Formats#key) -- KEY/BIF index format
 - [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax)
 - [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax)
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Merging and patching

@@ -21,14 +21,14 @@ The container and format summaries on this page are cross-checked against:
 
 ## Resource resolution order
 
-Full prose (resource manager *demands*, KEY’s role, override vs MOD/ERF/[RIM](RIM-File-Format)): **[Concepts — Resource resolution order](Concepts#resource-resolution-order)**.
+Full prose (resource manager *demands*, KEY’s role, override vs MOD/ERF/[RIM](Container-Formats#rim)): **[Concepts — Resource resolution order](Concepts#resource-resolution-order)**.
 
 **Quick reference:**
 
 1. `override/`
-2. loaded [MOD](ERF-File-Format)/[ERF](ERF-File-Format)/[RIM](RIM-File-Format) for the active module
+2. loaded [MOD](Container-Formats#erf)/[ERF](Container-Formats#erf)/[RIM](Container-Formats#rim) for the active module
 3. loaded save-side data when applicable
-4. [KEY](KEY-File-Format)/[BIF](BIF-File-Format)
+4. [KEY](Container-Formats#key)/[BIF](Container-Formats#bif)
 5. engine defaults
 
 ## ResRef and resource type
@@ -47,11 +47,11 @@ The table below is the wiki SSOT for resource type IDs. Loose files such as `.ut
 
 | Resource Name | Type ID | Description                                    |
 | ------------- | ------- | ---------------------------------------------- |
-| RES           | 0x0000  | Used for `.res` resources within the [save game containers](ERF-File-Format)                     |
+| RES           | 0x0000  | Used for `.res` resources within the [save game containers](Container-Formats#erf)                     |
 | BMP           | 0x0001  | Bitmap image                         |
 | MVE           | 0x0002  | Movie/video file       Not used in *KotOR*                   |
 | [TGA](https://en.wikipedia.org/wiki/Truevision_TGA)           | 0x0003  | TarGA image format                          |
-| [WAV](WAV-File-Format)           | 0x0004  | Wave audio file (see [WAV File Format](WAV-File-Format)) |
+| [WAV](Audio-and-Localization-Formats#wav)           | 0x0004  | Wave audio file (see [WAV File Format](Audio-and-Localization-Formats#wav)) |
 | [INI](https://en.wikipedia.org/wiki/INI_file)           | 0x0007  | Configuration file (e.g., `swkotor.ini`, `swkotor2.ini`)                          |
 | BMU           | 0x0008  | Unknown  Not used in *KotOR*                                |
 | MPG           | 0x0009  | MPEG video  Not used in *KotOR*                            |
@@ -65,15 +65,15 @@ The table below is the wiki SSOT for resource type IDs. Loose files such as `.ut
 | SLT           | 0x07D8  | Unknown. Not used in *KotOR*                               |
 | [NSS](NSS-File-Format)           | 0x07D9  | *NWScript* source code (see [NSS File Format](NSS-File-Format))                            |
 | [NCS](NCS-File-Format)           | 0x07DA  | *Compiled NWScript* bytecode (see [NCS File Format](NCS-File-Format))                     |
-| [MOD](ERF-File-Format)           | 0x07DB  | [*Module* ERF archive/container](ERF-File-Format)                         |
+| [MOD](Container-Formats#erf)           | 0x07DB  | [*Module* ERF archive/container](Container-Formats#erf)                         |
 | [ARE](GFF-File-Format#are-area)           | 0x07DC  | *Area* definition (see [GFF-ARE](GFF-Module-and-Area#are))                                 |
 | SET           | 0x07DD  | Unknown.  Not used in *KotOR*                               |
 | [IFO](GFF-File-Format#ifo-module-info)           | 0x07DE  | *Module* InFOrmation (see [GFF-IFO](GFF-Module-and-Area#ifo))                              |
 | BIC           | 0x07DF  | BlueprInt Creature. *KotOR* supports these but nobody uses them, use [UTC](GFF-Creature-and-Dialogue#utc) instead.                  |
-| [WOK](BWM-File-Format)           | 0x07E0  | *Walkmesh* (see [BWM File Format](BWM-File-Format))                                |
+| [WOK](Level-Layout-Formats#bwm)           | 0x07E0  | *Walkmesh* (see [BWM File Format](Level-Layout-Formats#bwm))                                |
 | [2DA](2DA-File-Format)           | 0x07E1  | *Two-Dimensional Array* data (see [2DA File Format](2DA-File-Format))                      |
-| [TLK](TLK-File-Format)           | 0x07E2  | *Talk Table* (Localized Strings, see [TLK File Format](TLK-File-Format))                 |
-| [TXI](TXI-File-Format)           | 0x07E6  | [TeXture Information](TXI-File-Format)                            |
+| [TLK](Audio-and-Localization-Formats#tlk)           | 0x07E2  | *Talk Table* (Localized Strings, see [TLK File Format](Audio-and-Localization-Formats#tlk))                 |
+| [TXI](Texture-Formats#txi)           | 0x07E6  | [TeXture Information](Texture-Formats#txi)                            |
 | [GIT](GFF-File-Format#git-game-instance-template)           | 0x07E7  | [Game Instance Template](GFF-File-Format#git-game-instance-template) (see [GFF-GIT](GFF-Module-and-Area#git))                          |
 | BTI           | 0x07E8  | Blueprint Template Item. *KotOR* supports these but nobody uses them, use [UTI](GFF-Items-and-Economy#uti) instead.                 |
 | [UTI](GFF-File-Format#uti-item)           | 0x07E9  | [item templates](GFF-File-Format#uti-item) (see [GFF-UTI](GFF-Items-and-Economy#uti))                                   |
@@ -83,7 +83,7 @@ The table below is the wiki SSOT for resource type IDs. Loose files such as `.ut
 | [ITP](Bioware-Aurora-Module-and-Area#paletteitp)           | 0x07EE  | *ITP* format (see [Bioware-Aurora-PaletteITP](Bioware-Aurora-Module-and-Area#paletteitp)).                         |
 | BTT           | 0x07EF  | *Blueprint Template Trigger*. *KotOR* supports these but nobody uses them, use [UTT](GFF-Spatial-Objects#utt) instead.                 |
 | [UTT](GFF-File-Format#utt-trigger)           | 0x07F0  | *Trigger Template* (see [GFF-UTT](GFF-Spatial-Objects#utt)).                                |
-| DDS           | 0x07F1  | *DirectDraw Surface Texture* (see [DDS File Format](DDS-File-Format)).                                |
+| DDS           | 0x07F1  | *DirectDraw Surface Texture* (see [DDS File Format](Texture-Formats#dds)).                                |
 | [UTS](GFF-File-Format#uts-sound)           | 0x07F3  | *Sound Template* (see [GFF-UTS](GFF-Spatial-Objects#uts)).                                |
 | LTR           | 0x07F4  | *Letter Format* (see [LTR File Format](LTR-File-Format)). Not used in *KotOR*                                |
 | [GFF](GFF-File-Format)           | 0x07F5  | Generic file format (container, see [GFF File Format](GFF-File-Format))                 |
@@ -101,23 +101,23 @@ The table below is the wiki SSOT for resource type IDs. Loose files such as `.ut
 | CCS           | 0x0801  | Unknown  Not used in *KotOR*                                |
 | BTM           | 0x0802  | Blueprint merchant.  *KotOR* supports these but nobody uses them, use [UTM](GFF-Items-and-Economy#utm) instead.              |
 | [UTM](GFF-File-Format#utm-merchant)           | 0x0803  | [Merchant/store template](GFF-File-Format#utm-merchant) (see [GFF-UTM](GFF-Items-and-Economy#utm))                         |
-| [DWK](BWM-File-Format)           | 0x0804  | [Door walkmesh](BWM-File-Format) (see [BWM File Format](BWM-File-Format))                                |
-| [PWK](BWM-File-Format)           | 0x0805  | [Placeable walkmesh](BWM-File-Format) (see [BWM File Format](BWM-File-Format))                                |
+| [DWK](Level-Layout-Formats#bwm)           | 0x0804  | [Door walkmesh](Level-Layout-Formats#bwm) (see [BWM File Format](Level-Layout-Formats#bwm))                                |
+| [PWK](Level-Layout-Formats#bwm)           | 0x0805  | [Placeable walkmesh](Level-Layout-Formats#bwm) (see [BWM File Format](Level-Layout-Formats#bwm))                                |
 | BTG           | 0x0806  | Blueprint trigger  Not used in *KotOR*       |
 | UTG           | 0x0807  | Unknown            Not used in *KotOR*   |
 | [JRL](GFF-File-Format#jrl-journal)           | 0x0808  | Journal/quest log (see [GFF-JRL](GFF-Items-and-Economy#jrl))                               |
-| SAV           | 0x0809  | [Save game containers](ERF-File-Format) (see [ERF File Format](ERF-File-Format))                               |
+| SAV           | 0x0809  | [Save game containers](Container-Formats#erf) (see [ERF File Format](Container-Formats#erf))                               |
 | [UTW](GFF-File-Format#utw-waypoint)           | 0x080A  | [Waypoint Template](GFF-File-Format#utw-waypoint)                               |
 | 4PC           | 0x080B  | Unknown  Not used in *KotOR*          |
-| [SSF](SSF-File-Format)           | 0x080C  | [Sound Set Files](SSF-File-Format) (see [SSF File Format](SSF-File-Format))                                  |
+| [SSF](Audio-and-Localization-Formats#ssf)           | 0x080C  | [Sound Set Files](Audio-and-Localization-Formats#ssf) (see [SSF File Format](Audio-and-Localization-Formats#ssf))                                  |
 | HAK           | 0x080D  | Hak pak container. Not used in *KotOR*                                |
 | NWM           | 0x080E  | *Neverwinter Nights* module (Not used in *KotOR*)                                 |
 | BIK           | 0x080F  | BInK video format                                |
 | PTM           | 0x0811  | Unknown       Not used in *KotOR*         |
 | PTT           | 0x0812  | Unknown       Not used in *KotOR*         |
-| [ERF](ERF-File-Format)           | 0x270D  | [Encapsulated Resource File](ERF-File-Format) (see [ERF File Format](ERF-File-Format))                      |
-| [BIF](BIF-File-Format)           | 0x270E  | [Bioware Index File](BIF-File-Format) (container, see [BIF File Format](BIF-File-Format))                    |
-| [KEY](KEY-File-Format)           | 0x270F  | [KEY](KEY-File-Format) table ([BIF](BIF-File-Format) index, see [KEY File Format](KEY-File-Format))                          |
+| [ERF](Container-Formats#erf)           | 0x270D  | [Encapsulated Resource File](Container-Formats#erf) (see [ERF File Format](Container-Formats#erf))                      |
+| [BIF](Container-Formats#bif)           | 0x270E  | [Bioware Index File](Container-Formats#bif) (container, see [BIF File Format](Container-Formats#bif))                    |
+| [KEY](Container-Formats#key)           | 0x270F  | [KEY](Container-Formats#key) table ([BIF](Container-Formats#bif) index, see [KEY File Format](Container-Formats#key))                          |
 
 ## File format index
 
@@ -217,12 +217,12 @@ The table below is the wiki SSOT for resource type IDs. Loose files such as `.ut
   - [visualeffects.2da](2DA-File-Format#visualeffects2da)
   - [weaponsounds.2da](2DA-File-Format#weaponsounds2da)
   - [xptable.2da](2DA-File-Format#xptable2da)
-- **[TLK File Format](TLK-File-Format)** ← Complete reference for [Talk Table](TLK-File-Format) format
-- [BIF File Format](BIF-File-Format) ← BioWare Infinity format
-- [KEY File Format](KEY-File-Format) ← [KEY](KEY-File-Format) file format
-- **[BWM File Format](BWM-File-Format)** ← Complete reference for Binary [walkmesh](BWM-File-Format) format
+- **[TLK File Format](Audio-and-Localization-Formats#tlk)** ← Complete reference for [Talk Table](Audio-and-Localization-Formats#tlk) format
+- [BIF File Format](Container-Formats#bif) ← BioWare Infinity format
+- [KEY File Format](Container-Formats#key) ← [KEY](Container-Formats#key) file format
+- **[BWM File Format](Level-Layout-Formats#bwm)** ← Complete reference for Binary [walkmesh](Level-Layout-Formats#bwm) format
 - **[GUI File Format](GFF-GUI)** ← Complete reference for Graphical User Interface format
-- [ERF File Format](ERF-File-Format) ← Encapsulated Resource format (MOD, SAV, HAK; [RIM comparison](ERF-File-Format#rim-versus-erf))
+- [ERF File Format](Container-Formats#erf) ← Encapsulated Resource format (MOD, SAV, HAK; [RIM comparison](Container-Formats#rim-versus-erf))
 - **[Kit Structure Documentation](Kit-Structure-Documentation)** ← Complete reference for indoor kit structure and generation
 - [GFF File Format](GFF-File-Format) ← Generic file Format (see also [Official Bioware GFF Documentation](Bioware-Aurora-Core-Formats#gff))
   - [ARE (Area)](GFF-Module-and-Area#are)
@@ -241,23 +241,23 @@ The table below is the wiki SSOT for resource type IDs. Loose files such as `.ut
   - [UTS (Sound)](GFF-Spatial-Objects#uts)
   - [UTT (Trigger)](GFF-Spatial-Objects#utt)
   - [UTW (Waypoint)](GFF-Spatial-Objects#utw)
-- [DDS File Format](DDS-File-Format) ← DirectDraw Surface texture format
-- [LIP File Format](LIP-File-Format) ← [LIP](LIP-File-Format) sync format
+- [DDS File Format](Texture-Formats#dds) ← DirectDraw Surface texture format
+- [LIP File Format](Audio-and-Localization-Formats#lip) ← [LIP](Audio-and-Localization-Formats#lip) sync format
 - [LTR File Format](LTR-File-Format) ← [Letter](LTR-File-Format) format
-- [LYT File Format](LYT-File-Format) ← [Layout](LYT-File-Format) format
+- [LYT File Format](Level-Layout-Formats#lyt) ← [Layout](Level-Layout-Formats#lyt) format
 - [NCS File Format](NCS-File-Format) ← [NwScript Compiled Script](NCS-File-Format) format
 - [NSS File Format](NSS-File-Format) ← [NwScript Source](NSS-File-Format) format (*nwscript.nss*, function/constant definitions)
-- [RIM File Format](RIM-File-Format) ← [Resource Image](RIM-File-Format) format
-- [SSF File Format](SSF-File-Format) ← [Sound Set Files](SSF-File-Format) format
-- [TPC File Format](TPC-File-Format) ← [Texture Pack Container](TPC-File-Format) format
-- [TXI File Format](TXI-File-Format) ← [Texture Info](TXI-File-Format) format
-- [VIS File Format](VIS-File-Format) ← [Visibility](VIS-File-Format) format
-- [WAV File Format](WAV-File-Format) ← [Wave](WAV-File-Format) audio format
+- [RIM File Format](Container-Formats#rim) ← [Resource Image](Container-Formats#rim) format
+- [SSF File Format](Audio-and-Localization-Formats#ssf) ← [Sound Set Files](Audio-and-Localization-Formats#ssf) format
+- [TPC File Format](Texture-Formats#tpc) ← [Texture Pack Container](Texture-Formats#tpc) format
+- [TXI File Format](Texture-Formats#txi) ← [Texture Info](Texture-Formats#txi) format
+- [VIS File Format](Level-Layout-Formats#vis) ← [Visibility](Level-Layout-Formats#vis) format
+- [WAV File Format](Audio-and-Localization-Formats#wav) ← [Wave](Audio-and-Localization-Formats#wav) audio format
 
 ### See also
 
 - [Concepts](Concepts) — Override, BIF/KEY, MOD/ERF/RIM, GFF, 2DA, language IDs
-- [KEY-File-Format](KEY-File-Format) — KEY binary layout and index role
+- [KEY-File-Format](Container-Formats#key) — KEY binary layout and index role
 - [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files) — Where to install files
 - [Home](Home) — Wiki hub
 - [Reverse Engineering Findings — Resource Management System](reverse_engineering_findings#resource-management-system) — Engine `CExoResMan` / resource loading (conceptual)

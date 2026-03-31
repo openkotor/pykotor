@@ -33,11 +33,11 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
   - [baseitems.2da](2DA-File-Format#baseitems2da)
   - [itempropdef.2da](2DA-File-Format#itempropdef2da)
 
-- [TLK](TLK-File-Format) — localized names
+- [TLK](Audio-and-Localization-Formats#tlk) — localized names
 - Visual variants resolve through:
 
   - [MDL](MDL-MDX-File-Format) ([model](MDL-MDX-File-Format) geometry)
-  - [TPC](TPC-File-Format) ([texture](TPC-File-Format) data)
+  - [TPC](Texture-Formats#tpc) ([texture](Texture-Formats#tpc) data)
 
 ## References
 
@@ -83,7 +83,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 | `StackSize` | [word](GFF-File-Format#gff-data-types) | Current stack quantity |
 | `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) variation index (1-99) |
 | `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body variation for armor (1-9) |
-| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](TPC-File-Format) variation for armor (1-9) |
+| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variation for armor (1-9) |
 
 **BaseItem types** (from [`baseitems.2da`](2DA-File-Format#baseitems2da)):
 
@@ -145,13 +145,13 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) variation (1-9) |
-| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](TPC-File-Format) variation (1-9) |
+| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variation (1-9) |
 | `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) type (typically 1-3) |
 | `ArmorRulesType` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Armor class category |
 
 **Armor [model](MDL-MDX-File-Format) Variations:**
 
-- **Body + [texture](TPC-File-Format) Variation**: Creates visual diversity
+- **Body + [texture](Texture-Formats#tpc) Variation**: Creates visual diversity
 - Armor adapts to wearer's body type and gender
 - `appearance.2da` defines valid combinations
 
@@ -205,14 +205,14 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 | ----- | ---- | ----------- |
 | `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | Base [model](MDL-MDX-File-Format) index |
 | `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) for armor |
-| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](TPC-File-Format) variant |
+| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variant |
 
 **[model](MDL-MDX-File-Format) Resolution:**
 
 1. Engine looks up `BaseItem` in [`baseitems.2da`](2DA-File-Format#baseitems2da)
 2. Retrieves [model](MDL-MDX-File-Format) prefix (e.g., `w_lghtsbr`)
 3. Appends variations: `w_lghtsbr_001.mdl`
-4. [textures](TPC-File-Format) follow similar pattern
+4. [textures](Texture-Formats#tpc) follow similar pattern
 
 ## Palette & Editor
 
@@ -234,7 +234,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 1. **Template Loading**: [GFF](GFF-File-Format) structure parsed from [UTI](GFF-File-Format#uti-item)
 2. **Property Application**: PropertiesList merged into item
 3. **Cost Calculation**: Base cost + AddCost + property costs
-4. **Visual Setup**: resolve [model](MDL-MDX-File-Format) variants and [texture](TPC-File-Format) variants
+4. **Visual Setup**: resolve [model](MDL-MDX-File-Format) variants and [texture](Texture-Formats#tpc) variants
 5. **Stack Handling**: StackSize determines inventory behavior
 
 **Property System:**
@@ -371,7 +371,7 @@ Each list element is a struct with (at minimum) the fields PyKotor reads and wri
 - [GFF-GIT](GFF-Module-and-Area#git) — store **instances** in areas
 - [GFF-UTI](GFF-Items-and-Economy#uti) — item templates referenced by `InventoryRes`
 - [Bioware-Aurora-Store](Bioware-Aurora-Items-Economy-and-Narrative#store) — Aurora store documentation
-- [KEY-File-Format](KEY-File-Format) — resource resolution
+- [KEY-File-Format](Container-Formats#key) — resource resolution
 
 
 ---

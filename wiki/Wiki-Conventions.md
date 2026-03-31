@@ -23,7 +23,7 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 
 ## Links
 
-- **Internal links:** Use extension-less targets (no `.md` suffix), e.g. `[Concepts overview](Concepts)`, `[resource resolution](Concepts#resource-resolution-order)`, or `[KEY File Purpose](KEY-File-Format#key-file-purpose)`. Wrong: `](KEY-File-Format.md)`.
+- **Internal links:** Use extension-less targets (no `.md` suffix), e.g. `[Concepts overview](Concepts)`, `[resource resolution](Concepts#resource-resolution-order)`, or `[KEY File Purpose](Container-Formats#key-file-purpose)`. Wrong: `](KEY-File-Format.md)`.
 - **External links:** Use HTTPS. Prefer **canonical** repository URLs; do not duplicate legacy mirror links.
 
   - [modawan/reone](https://github.com/modawan/reone)
@@ -63,13 +63,13 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 - **Link to official specs:** For formats with an official BioWare (or other) specification, link to it and document only extensions, quirks, or tool-specific behavior.
 - **Single source of truth (SSOT):** Do not duplicate long specs or repeated concepts. Link to the canonical page instead:
   - **Concepts (single overview):** [Concepts](Concepts) -- definitions for resource resolution order, ResRef, override folder, BIF/KEY pairings, MOD archives, and the major table/GFF families. Drills into language IDs live at [Concepts — language IDs](Concepts#language-ids-kotor). Companion capsule references:
-    - [ERF-File-Format](ERF-File-Format)
-    - [RIM-File-Format](RIM-File-Format)
+    - [ERF-File-Format](Container-Formats#erf)
+    - [RIM-File-Format](Container-Formats#rim)
     - [GFF-File-Format](GFF-File-Format)
     - [2DA-File-Format](2DA-File-Format)
   - **Resource type IDs (hex table, SSOT):** [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers).
   - **Format index (long TOC of format pages):** [Resource formats and resolution](Resource-Formats-and-Resolution#file-format-index).
-  - **Resource resolution order:** [Concepts](Concepts#resource-resolution-order) (SSOT); quick ref also under [Resource formats and resolution](Resource-Formats-and-Resolution#resource-resolution-order); [KEY-File-Format](KEY-File-Format#key-file-purpose) for KEY binary layout.
+  - **Resource resolution order:** [Concepts](Concepts#resource-resolution-order) (SSOT); quick ref also under [Resource formats and resolution](Resource-Formats-and-Resolution#resource-resolution-order); [KEY-File-Format](Container-Formats#key-file-purpose) for KEY binary layout.
   - **ResRef:** [Concepts](Concepts#resref-resource-reference); [GFF-File-Format](GFF-File-Format#gff-data-types) for field storage types.
   - **Override folder:** [Concepts](Concepts#override-folder) or [resource resolution order](Concepts#resource-resolution-order).
 - **Section order (long format pages):** Use a consistent order: Overview → Structure / fields → Examples (optional) → See also. Add a short on-page table of contents at the top where it helps navigation.
@@ -83,7 +83,7 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
   - xoreos / xoreos-tools
 
   **BWM exception:** On BWM-related pages, optional **Implementation (PyKotor)** must be labeled **non-normative**; normative spec stays RE + pipelines per [authoritative BWM policy](https://github.com/OldRepublicDevs/PyKotor/blob/main/docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md).
-- **Cross-links:** Formats loaded by ResRef should link to [Concepts](Concepts#resource-resolution-order) for resolution order and to [KEY-File-Format](KEY-File-Format) for the KEY/BIF index format; link to [GFF-File-Format](GFF-File-Format#gff-data-types) for ResRef where relevant.
+- **Cross-links:** Formats loaded by ResRef should link to [Concepts](Concepts#resource-resolution-order) for resolution order and to [KEY-File-Format](Container-Formats#key) for the KEY/BIF index format; link to [GFF-File-Format](GFF-File-Format#gff-data-types) for ResRef where relevant.
 - **Semantic claims:** Prefer an evidence-backed voice for engine or layout facts (RE, vendor tools, labeled **K1**/**TSL**/**both**, stable community links). When evidence is missing, use **inferred** or **unknown** rather than stating as fact. PyKotor code documents **library** behavior; do not use it alone to assert engine truth unless policy explicitly allows (see BWM exception above).
 - **Community and historical context:** When adding or refining format or tool pages, link to [Community sources and archives](Home#community-sources-and-archives) (DeadlyStream, LucasForums Container, Mixmojo) where relevant for consensus, tutorials, or historical discussion.
 
@@ -104,7 +104,7 @@ When batch-adding **Deadly Stream**, **LucasForums Archive**, or **PCGamingWiki*
 - **PCGamingWiki:** Use for **player** paths, widescreen, and OS quirks only—never as authority for Bioware binary layout. Prefer these as SSOT instead:
 
   - [Concepts](Concepts)
-  - [KEY-File-Format](KEY-File-Format)
+  - [KEY-File-Format](Container-Formats#key)
   - Format pages in this wiki
 - **Logging:** Record **empty** vs **successful** query patterns in PR descriptions or maintainer notes when doing large wiki batches (helps the next editor avoid repeating dead searches).
 
@@ -223,7 +223,7 @@ Use this when adding a **P0/P1-style** section to a guide (e.g. HoloPatcher read
 - [Home](Home) -- Wiki overview and format index
 - [Concepts](Concepts) -- Resource resolution, ResRef, override, BIF/KEY, MOD/ERF, GFF, 2DA, language IDs
 - [Resource formats and resolution](Resource-Formats-and-Resolution) -- Format index, type ID table, resolution hub
-- [KEY-File-Format](KEY-File-Format)
+- [KEY-File-Format](Container-Formats#key)
 - [GFF-File-Format](GFF-File-Format)
 - [2DA-File-Format](2DA-File-Format) -- Canonical format pages
 - [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme)

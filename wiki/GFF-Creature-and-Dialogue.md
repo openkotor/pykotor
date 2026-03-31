@@ -27,10 +27,10 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 **Related formats:**
 
 - [2DA](2DA-File-Format) (appearance, portraits, classes, feats, racialtypes, creaturespeed)
-- [SSF](SSF-File-Format)
-- [TLK](TLK-File-Format)
+- [SSF](Audio-and-Localization-Formats#ssf)
+- [TLK](Audio-and-Localization-Formats#tlk)
 - [MDL](MDL-MDX-File-Format)
-- [TPC](TPC-File-Format)
+- [TPC](Texture-Formats#tpc)
 - [GFF-UTI](GFF-Items-and-Economy#uti) (inventory items)
 
 ## References
@@ -80,8 +80,8 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 | `Race` | [byte](GFF-File-Format#gff-data-types) | Index into [`racialtypes.2da`](2DA-File-Format#racialtypes2da). If value is greater than or equal to the number of rows in race.2da, the creature fails to load. |
 | `SubraceIndex` | [byte](GFF-File-Format#gff-data-types) | Index into subrace.2da; refines race (e.g. subspecies). |
 | `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) variation (0-9) |
-| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](TPC-File-Format) variation (1-9) |
-| `SoundSetFile` | [word](GFF-File-Format#gff-data-types) | Index into [sound set table](SSF-File-Format) |
+| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variation (1-9) |
+| `SoundSetFile` | [word](GFF-File-Format#gff-data-types) | Index into [sound set table](Audio-and-Localization-Formats#ssf) |
 
 ## Core Stats & Attributes
 
@@ -268,8 +268,8 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 DLG files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources:
 
 - [override](Concepts#override-folder)
-- MOD/SAV (see [ERF](ERF-File-Format))
-- [KEY/BIF](KEY-File-Format)
+- MOD/SAV (see [ERF](Container-Formats#erf))
+- [KEY/BIF](Container-Formats#key)
 
 **For mod developers:**
 
@@ -279,8 +279,8 @@ DLG files are loaded with the same [resource resolution order](Concepts#resource
 
 **Related formats:**
 
-- [TLK](TLK-File-Format) / [StrRef](TLK-File-Format#string-references-strref) — displayed text
-- [WAV](WAV-File-Format) — voice-over
+- [TLK](Audio-and-Localization-Formats#tlk) / [StrRef](Audio-and-Localization-Formats#string-references-strref) — displayed text
+- [WAV](Audio-and-Localization-Formats#wav) — voice-over
 - [NCS](NCS-File-Format) — scripts
 - [GFF-JRL](GFF-Items-and-Economy#jrl) — journal updates
 - [MDL](MDL-MDX-File-Format) — camera models
@@ -329,8 +329,8 @@ DLG files are loaded with the same [resource resolution order](Concepts#resource
 
 **Conversation types:**
 
-- **Human**: Cinematic camera, [voice-over](WAV-File-Format) support, standard UI
-- **Computer**: Full-screen terminal interface, no [voice-over](WAV-File-Format), green text
+- **Human**: Cinematic camera, [voice-over](Audio-and-Localization-Formats#wav) support, standard UI
+- **Computer**: Full-screen terminal interface, no [voice-over](Audio-and-Localization-Formats#wav), green text
 - **Other**: Overhead text bubbles (bark strings)
 
 ## Script Hooks
@@ -462,8 +462,8 @@ PyKotor exposes a Twine bridge for DLGs to support authoring and visualization i
 ## See also
 
 - [GFF File Format](GFF-File-Format) - Generic format underlying DLG
-- [TLK File Format](TLK-File-Format) -- Talk table container
-- [StrRef](TLK-File-Format#string-references-strref) -- String index semantics used by DLG fields
+- [TLK File Format](Audio-and-Localization-Formats#tlk) -- Talk table container
+- [StrRef](Audio-and-Localization-Formats#string-references-strref) -- String index semantics used by DLG fields
 - [GFF-JRL (Journal)](GFF-Items-and-Economy#jrl) - Journal entries referenced by Quest/QuestEntry
 - [Bioware Aurora Conversation Format](Bioware-Aurora-Conversation) - Official conversation specification
 

@@ -2474,7 +2474,7 @@ When upstream and mirror SHAs differ, line anchors may not match both trees.
 
 ## Archived external reference lines — resource/formats/txi/txi_data.py
 
-Verbatim lines removed from `Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py` (NWN wiki pointer, module header attribution). Normative TXI layout: [TXI-File-Format](TXI-File-Format.md).
+Verbatim lines removed from `Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py` (NWN wiki pointer, module header attribution). Normative TXI layout: [TXI-File-Format](Texture-Formats#txi).
 
 ```
     External: https://nwn.wiki/display/NWN1/TXI - NWN TXI documentation (similar format).
@@ -2490,7 +2490,7 @@ Verbatim lines removed from `Libraries/PyKotor/src/pykotor/resource/formats/txi/
 
 ## Archived GitHub URL lines — resource/formats/txi/txi_data.py
 
-Verbatim lines removed from Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py (KotOR.js / Kotor.NET TXI anchors). Normative layout and commands: [TXI-File-Format](TXI-File-Format.md); see also TPC texture docs.
+Verbatim lines removed from Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py (KotOR.js / Kotor.NET TXI anchors). Normative layout and commands: [TXI-File-Format](Texture-Formats#txi); see also TPC texture docs.
 
 
 

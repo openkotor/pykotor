@@ -3,10 +3,10 @@
 LTR (Letter) resources store third-order Markov chain probability tables that the game uses to procedurally generate NPC names. The data encodes likelihoods for characters appearing at the start, middle, and end of names given zero, one, or two-character context. LTR files are loaded with the same [Resource Resolution Order](Concepts#resource-resolution-order) as other resources:
 
 - `override/`
-- [`.erf/.mod/.sav`](ERF-File-Format)
-- [`.rim`](RIM-File-Format)
-- [`KEY`](KEY-File-Format)
-- [`BIF`](BIF-File-Format)
+- [`.erf/.mod/.sav`](Container-Formats#erf)
+- [`.rim`](Container-Formats#rim)
+- [`KEY`](Container-Formats#key)
+- [`BIF`](Container-Formats#bif)
 
 **For mod developers:**
 

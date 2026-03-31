@@ -6,17 +6,17 @@ This page documents **HolocronToolset** Indoor Map Builder behavior at a technic
 
 A typical build produces module resources consistent with engine expectations:
 
-- **[LYT](LYT-File-Format)** — Room list, transforms, and door hooks; room **index** matches **walkmesh transition IDs** (see [BWM](BWM-File-Format#transitions-and-door-placement)).
-- **[VIS](VIS-File-Format)** — Parent/child visibility between rooms.
-- **Walkmeshes ([BWM](BWM-File-Format))** — Per-room WOK with materials, adjacency, and transition edges.
+- **[LYT](Level-Layout-Formats#lyt)** — Room list, transforms, and door hooks; room **index** matches **walkmesh transition IDs** (see [BWM](Level-Layout-Formats#transitions-and-door-placement)).
+- **[VIS](Level-Layout-Formats#vis)** — Parent/child visibility between rooms.
+- **Walkmeshes ([BWM](Level-Layout-Formats#bwm))** — Per-room WOK with materials, adjacency, and transition edges.
 - **[GFF ARE](GFF-Module-and-Area#are)** and related module resources — Area metadata used with the layout.
 - **Textures** — Often emitted as TGA (and related TXI) where the pipeline expects uncompressed sources; see PyKotor and toolset texture helpers under `pykotor.tools`.
 
 Packaging into a playable override or module follows normal archive conventions:
 
-- **[ERF](ERF-File-Format)**
-- **[RIM](RIM-File-Format)**
-- MOD (see [ERF](ERF-File-Format))
+- **[ERF](Container-Formats#erf)**
+- **[RIM](Container-Formats#rim)**
+- MOD (see [ERF](Container-Formats#erf))
 
 See [Resource Formats and Resolution](Resource-Formats-and-Resolution).
 

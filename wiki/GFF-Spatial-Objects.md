@@ -34,7 +34,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 - [genericdoors.2da](2DA-File-Format)
 - [traps.2da](2DA-File-Format#traps2da)
 - [GFF-UTP](GFF-Spatial-Objects#utp)
-- [KEY](KEY-File-Format)
+- [KEY](Container-Formats#key)
 - [NCS](NCS-File-Format)
 - [DLG](GFF-Creature-and-Dialogue#dlg)
 - [MDL](MDL-MDX-File-Format)
@@ -100,18 +100,18 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 | ----- | ---- | ----------- |
 | `Locked` | [byte](GFF-File-Format#gff-data-types) | Door is currently locked |
 | `Lockable` | [byte](GFF-File-Format#gff-data-types) | Door can be locked/unlocked |
-| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Requires specific [KEY](KEY-File-Format) item |
-| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](KEY-File-Format) item |
-| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | [KEY](KEY-File-Format) consumed on use |
+| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Requires specific [KEY](Container-Formats#key) item |
+| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](Container-Formats#key) item |
+| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | [KEY](Container-Formats#key) consumed on use |
 | `OpenLockDC` | [byte](GFF-File-Format#gff-data-types) | Security skill DC to pick lock |
 | `CloseLockDC` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Security skill DC to lock door |
 
 **Lock Mechanics:**
 
 - **Locked**: Door cannot be opened normally
-- **KeyRequired**: Must have [KEY](KEY-File-Format) in inventory
+- **KeyRequired**: Must have [KEY](Container-Formats#key) in inventory
 - **OpenLockDC**: Player rolls Security skill vs. DC
-- **AutoRemoveKey**: [KEY](KEY-File-Format) destroyed after successful use
+- **AutoRemoveKey**: [KEY](Container-Formats#key) destroyed after successful use
 
 ## Hit Points & Durability
 
@@ -213,7 +213,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 **Visual Representation:**
 
 - `Appearance` determines 3D [model](MDL-MDX-File-Format)
-- Some doors have customizable [textures](TPC-File-Format)
+- Some doors have customizable [textures](Texture-Formats#tpc)
 - Portrait used in UI elements
 
 ## Implementation Notes
@@ -233,7 +233,7 @@ Doors maintain runtime state:
 
 1. Player clicks door
 2. If conversation set, start dialog
-3. If locked, check for [KEY](KEY-File-Format) or Security skill
+3. If locked, check for [KEY](Container-Formats#key) or Security skill
 4. If trapped, check for detection/disarm
 5. Fire `OnOpen` script
 6. Play opening [animation](MDL-MDX-File-Format#animation-header)
@@ -242,7 +242,7 @@ Doors maintain runtime state:
 **Locking System:**
 
 - **Lockable=0**: Door cannot be locked (always opens)
-- **Locked=1, KeyRequired=1**: Must have specific [KEY](KEY-File-Format)
+- **Locked=1, KeyRequired=1**: Must have specific [KEY](Container-Formats#key)
 - **Locked=1, OpenLockDC>0**: Can pick lock with Security skill
 - **Locked=1, KeyRequired=0, OpenLockDC=0**: Locked via script only
 
@@ -256,7 +256,7 @@ Doors maintain runtime state:
 
 **Locked Doors:**
 
-- Requires [KEY](KEY-File-Format) or Security skill
+- Requires [KEY](Container-Formats#key) or Security skill
 - Quest progression gates
 - May have conversation for passwords
 
@@ -315,7 +315,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 - [2DA traps](2DA-File-Format#traps2da)
 - [GFF-UTI](GFF-Items-and-Economy#uti)
 - [GFF-UTD](GFF-Spatial-Objects#utd)
-- [KEY](KEY-File-Format)
+- [KEY](Container-Formats#key)
 - [NCS](NCS-File-Format)
 - [DLG](GFF-Creature-and-Dialogue#dlg)
 - [MDL](MDL-MDX-File-Format)
@@ -395,9 +395,9 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 | ----- | ---- | ----------- |
 | `Locked` | [byte](GFF-File-Format#gff-data-types) | Placeable is currently locked |
 | `Lockable` | [byte](GFF-File-Format#gff-data-types) | Can be locked/unlocked |
-| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Requires specific [KEY](KEY-File-Format) item |
-| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](KEY-File-Format) [item](GFF-File-Format#uti-item) |
-| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | [KEY](KEY-File-Format) consumed on use |
+| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Requires specific [KEY](Container-Formats#key) item |
+| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](Container-Formats#key) [item](GFF-File-Format#uti-item) |
+| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | [KEY](Container-Formats#key) consumed on use |
 | `OpenLockDC` | [byte](GFF-File-Format#gff-data-types) | Security skill DC to pick lock |
 | `CloseLockDC` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Security DC to lock |
 | `OpenLockDiff` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Additional difficulty modifier |
@@ -407,7 +407,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 - Identical to [UTD](GFF-File-Format#utd-door) door locking system
 - Prevents access to inventory
-- Can be picked or opened with [KEY](KEY-File-Format)
+- Can be picked or opened with [KEY](Container-Formats#key)
 
 ## Hit Points & Durability
 
@@ -709,8 +709,8 @@ Use community write-ups for **playtesting and tooling**; **UTT fields** follow t
 | `TrapDisarmable` | Byte | Can be disarmed |
 | `DisarmDC` | Byte | Security DC to disarm |
 | `TrapOneShot` | Byte | Fires once then disables |
-| `AutoRemoveKey` | Byte | [KEY](KEY-File-Format) removed on use |
-| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | [KEY](KEY-File-Format) tag required to disarm/bypass |
+| `AutoRemoveKey` | Byte | [KEY](Container-Formats#key) removed on use |
+| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | [KEY](Container-Formats#key) tag required to disarm/bypass |
 
 **Trap Mechanics:**
 
@@ -912,7 +912,7 @@ UTS files define [sound object templates](GFF-File-Format#uts-sound) for ambient
 
 **Community context (workflow):** Ambient audio and WAV/MP3 packaging threads appear on Deadly Stream and archives. See:
 
-- [WAV-File-Format](WAV-File-Format)
+- [WAV-File-Format](Audio-and-Localization-Formats#wav)
 - [Home — Community sources](Home#community-sources-and-archives)
 
 Forum posts explain **workflow**; **UTS field tables** stay anchored here + BioWare + PyKotor.
@@ -974,7 +974,7 @@ Forum posts explain **workflow**; **UTS field tables** stay anchored here + BioW
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Sounds` | List | List of audio files to play ([WAV](WAV-File-Format) or MP3) |
+| `Sounds` | List | List of audio files to play ([WAV](Audio-and-Localization-Formats#wav) or MP3) |
 
 **Sounds Struct fields:**
 
@@ -989,9 +989,9 @@ Forum posts explain **workflow**; **UTS field tables** stay anchored here + BioW
 
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [Bioware-Aurora-SoundObject](Bioware-Aurora-Spatial-and-Interactive#soundobject) -- Aurora sound spec
-- [WAV-File-Format](WAV-File-Format) -- Audio resources
+- [WAV-File-Format](Audio-and-Localization-Formats#wav) -- Audio resources
 - [GFF-GIT](GFF-Module-and-Area#git) -- Sound instances in areas
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -1101,7 +1101,7 @@ Treat forum threads as **workflow** context; **UTW fields** follow this page + B
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-PTH files define pathfinding data for modules, distinct from the navigation mesh ([walkmesh](BWM-File-Format)). They store a network of waypoints and connections used for high-level AI navigation planning. PTH files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
+PTH files define pathfinding data for modules, distinct from the navigation mesh ([walkmesh](Level-Layout-Formats#bwm)). They store a network of waypoints and connections used for high-level AI navigation planning. PTH files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
 **For mod developers:**
 
@@ -1130,7 +1130,7 @@ PTH files define pathfinding data for modules, distinct from the navigation mesh
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — managed GFF reader/writer
 - **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF pipeline
 
-**Community / engine context:** PTH is **not** the walkmesh; normative walkmesh discussion stays on [BWM-File-Format](BWM-File-Format) and repo `docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md`. For player movement and AI pathing **workflow**, see [Home — Community sources](Home#community-sources-and-archives).
+**Community / engine context:** PTH is **not** the walkmesh; normative walkmesh discussion stays on [BWM-File-Format](Level-Layout-Formats#bwm) and repo `docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md`. For player movement and AI pathing **workflow**, see [Home — Community sources](Home#community-sources-and-archives).
 
 ## Path Points
 
@@ -1148,7 +1148,7 @@ PTH files define pathfinding data for modules, distinct from the navigation mesh
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Path_Connections` | List | List of [edges](BWM-File-Format#edges-wok-only) between [nodes](MDL-MDX-File-Format#node-structures) |
+| `Path_Connections` | List | List of [edges](Level-Layout-Formats#edges-wok-only) between [nodes](MDL-MDX-File-Format#node-structures) |
 
 **Path_Connections Struct fields:**
 
@@ -1157,7 +1157,7 @@ PTH files define pathfinding data for modules, distinct from the navigation mesh
 
 ## Usage
 
-- **AI Navigation**: Used by NPCs to plot paths across large distances or complex areas where straight-line [walkmesh](BWM-File-Format) navigation fails.
+- **AI Navigation**: Used by NPCs to plot paths across large distances or complex areas where straight-line [walkmesh](Level-Layout-Formats#bwm) navigation fails.
 - **Legacy Support**: Often redundant in modern engines with navigation [meshes](MDL-MDX-File-Format#trimesh-header), but used in Aurora/Odyssey for optimization.
 - **Editor**: Visualized as a web of lines connecting [nodes](MDL-MDX-File-Format#node-structures).
 
@@ -1165,9 +1165,9 @@ PTH files define pathfinding data for modules, distinct from the navigation mesh
 
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [GFF-ARE](GFF-Module-and-Area#are) -- Area and path resolution
-- [BWM-File-Format](BWM-File-Format) -- Walkmesh and edges
+- [BWM-File-Format](Level-Layout-Formats#bwm) -- Walkmesh and edges
 - [GFF-UTW](GFF-Spatial-Objects#utw) -- Waypoints
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution
 
 ---
 

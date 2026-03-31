@@ -29,16 +29,16 @@ This guide explains how to install files using TSLPatcher syntax. For general TS
 
 - [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) - Patching [2DA files](2DA-File-Format)
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) - Patching [GFF files](GFF-File-Format)
-- [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax) - Patching [TLK files](TLK-File-Format)
-- [TSLPatcher SSFList Syntax](TSLPatcher-GFF-Syntax#ssflist-syntax) - Patching [SSF files](SSF-File-Format)
+- [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax) - Patching [TLK files](Audio-and-Localization-Formats#tlk)
+- [TSLPatcher SSFList Syntax](TSLPatcher-GFF-Syntax#ssflist-syntax) - Patching [SSF files](Audio-and-Localization-Formats#ssf)
 - [TSLPatcher HACKList Syntax](TSLPatcher-Install-and-Hack-Syntax#hacklist-syntax) - Binary patching [NCS files](NCS-File-Format)
 - [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) - HoloPatcher extensions
 
 ## Overview
 
-The `[InstallList]` section in TSLPatcher's changes.ini file enables you to copy files from your mod's `tslpatchdata` folder to their proper location in the game installation. This includes installing files to folders (such as `Override`, `Modules`, `StreamVoice`, etc.) or directly into module capsules ([MOD](ERF-File-Format), [ERF](ERF-File-Format), or [RIM](RIM-File-Format)). Unlike other patch lists, InstallList is designed for copying files that haven't been modified by other sections.
+The `[InstallList]` section in TSLPatcher's changes.ini file enables you to copy files from your mod's `tslpatchdata` folder to their proper location in the game installation. This includes installing files to folders (such as `Override`, `Modules`, `StreamVoice`, etc.) or directly into module capsules ([MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim)). Unlike other patch lists, InstallList is designed for copying files that haven't been modified by other sections.
 
-**Important:** Do **not** add any files that have been modified by any of the other sections ([GFFList](TSLPatcher-GFF-Syntax#gfflist-syntax), CompileList, [2DAList](TSLPatcher-Data-Syntax#2dalist-syntax), etc.) to the InstallList, or the modified files might be overwritten! The other sections already handle saving files to their proper locations. The only exception to this is [ERF files](ERF-File-Format) which have had files added to them by those sections. They must still be added to the InstallList to be put in their proper places.
+**Important:** Do **not** add any files that have been modified by any of the other sections ([GFFList](TSLPatcher-GFF-Syntax#gfflist-syntax), CompileList, [2DAList](TSLPatcher-Data-Syntax#2dalist-syntax), etc.) to the InstallList, or the modified files might be overwritten! The other sections already handle saving files to their proper locations. The only exception to this is [ERF files](Container-Formats#erf) which have had files added to them by those sections. They must still be added to the InstallList to be put in their proper places.
 
 ## Table of Contents
 
@@ -93,20 +93,20 @@ File1=sound2.wav
 In **HoloPatcher**, the InstallList runs **first** in the patch execution order:
 
 1. **[InstallList]** - files are installed first
-2. **[TLKList]** - [TLK](TLK-File-Format) modifications
+2. **[TLKList]** - [TLK](Audio-and-Localization-Formats#tlk) modifications
 3. **[2DAList]** - [2DA file](2DA-File-Format) modifications
 4. **[GFFList]** - [GFF file](GFF-File-Format) modifications
 5. **[CompileList]** - Script compilation
 6. **[HACKList]** - Binary hacking
 7. **[SSFList]** - Sound set modifications
 
-**Note:** In original TSLPatcher, InstallList executes **after** TLKList, but HoloPatcher changed this order to allow installing a whole [dialog.tlk](TLK-File-Format) file before [TLK](TLK-File-Format) modifications are applied. This priority change should not affect the output of mods.
+**Note:** In original TSLPatcher, InstallList executes **after** TLKList, but HoloPatcher changed this order to allow installing a whole [dialog.tlk](Audio-and-Localization-Formats#tlk) file before [TLK](Audio-and-Localization-Formats#tlk) modifications are applied. This priority change should not affect the output of mods.
 
 ## Folder-Level Configuration
 
 Each folder section (e.g., `[Override]`) supports the following configuration keys:
 
-| [KEY](KEY-File-Format) | type | Default | Description |
+| [KEY](Container-Formats#key) | type | Default | Description |
 |-----|------|---------|-------------|
 | `!SourceFolder` | string | `.` (tslpatchdata folder) | Relative path from `mod_path` (typically the `tslpatchdata` folder, the parent directory of `changes.ini` or `namespaces.ini`) where files should be sourced from. The default value `.` refers to the `tslpatchdata` folder itself, not its parent directory. Path resolution: `mod_path / !SourceFolder / filename`. **HoloPatcher extension** - allows subfolder organization within tslpatchdata. |
 
@@ -114,7 +114,7 @@ Each folder section (e.g., `[Override]`) supports the following configuration ke
 
 The folder section contains the list of files to install. Each file entry uses one of two syntaxes:
 
-| [KEY](KEY-File-Format) format | Replace Behavior | Description |
+| [KEY](Container-Formats#key) format | Replace Behavior | Description |
 |------------|-----------------|-------------|
 | `File#=filename.ext` | No replacement | Install the file only if it doesn't already exist at the destination. If the file exists, it will be skipped (warning logged). |
 | `Replace#=filename.ext` | Replacement enabled | Install the file and overwrite any existing file at the destination. |
@@ -141,7 +141,7 @@ File2=subfolder\texture3.tpc
 
 Each file can optionally have its own section (e.g., `[my_texture.tpc]`) for per-file configuration:
 
-| [KEY](KEY-File-Format) | type | Default | Description |
+| [KEY](Container-Formats#key) | type | Default | Description |
 |-----|------|---------|-------------|
 | `!SourceFile` | string | Same as filename in file#/Replace# entry | Alternative source filename to load from tslpatchdata. The file will be installed with the name specified in the file#/Replace# entry (or `!SaveAs`/`!Filename` if specified). |
 | `!SaveAs` | string | Same as `!SourceFile` | The final filename to save the file as at the destination. Allows renaming during installation. |
@@ -297,7 +297,7 @@ File0=file2.mod
 
 ## Installing to Containers
 
-InstallList supports installing files directly into [MOD](ERF-File-Format), [ERF](ERF-File-Format), or [RIM](RIM-File-Format) container files. This is done by specifying the container file path (relative to the game folder) as the destination.
+InstallList supports installing files directly into [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) container files. This is done by specifying the container file path (relative to the game folder) as the destination.
 
 ### Container file Syntax
 
@@ -328,10 +328,10 @@ File0=another_resource.2da
     - If `!ReplaceFile=0` or `File#=`: The file is skipped (see [File Replacement Behavior](#file-replacement-behavior))
 
 - **Container types Supported:**
-  - `.mod` (MOD/[ERF](ERF-File-Format) format)
-  - `.erf` ([ERF](ERF-File-Format) format)
-  - `.rim` ([RIM](RIM-File-Format) format)
-  - `.sav` (Save game [ERF](ERF-File-Format) format)
+  - `.mod` (MOD/[ERF](Container-Formats#erf) format)
+  - `.erf` ([ERF](Container-Formats#erf) format)
+  - `.rim` ([RIM](Container-Formats#rim) format)
+  - `.sav` (Save game [ERF](Container-Formats#erf) format)
 
 ### Installing Modified Containers
 
@@ -428,7 +428,7 @@ In this example:
 
 ## Override type Handling
 
-When installing files to containers ([MOD](ERF-File-Format), [ERF](ERF-File-Format), or [RIM](RIM-File-Format)), there's a potential conflict: a file might already exist in the Override folder with the same name. The `!OverrideType` setting controls how this conflict is handled:
+When installing files to containers ([MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim)), there's a potential conflict: a file might already exist in the Override folder with the same name. The `!OverrideType` setting controls how this conflict is handled:
 
 | value | Behavior | Description |
 |-------|----------|-------------|
@@ -450,7 +450,7 @@ The game's resource loading system checks folders in this order:
 
 1. Override folder (highest priority)
 2. Module containers (.mod files)
-3. [RIM](RIM-File-Format) files (`.rim` / `_s.rim`)
+3. [RIM](Container-Formats#rim) files (`.rim` / `_s.rim`)
 4. Other containers
 
 If a file exists in both Override and an container, the Override version takes precedence. The `!OverrideType` setting helps manage this shadowing behavior.
@@ -572,7 +572,7 @@ File0=line1.wav
 File1=line2.wav
 ```
 
-## Special Cases and [edge](BWM-File-Format#edges-wok-only) Cases
+## Special Cases and [edge](Level-Layout-Formats#edges-wok-only) Cases
 
 ### Empty InstallList
 
@@ -586,7 +586,7 @@ No files will be installed, and a note will be logged: `[InstallList] section mi
 
 ### Missing Folder Sections
 
-If a folder [KEY](KEY-File-Format) in `[InstallList]` references a section that doesn't exist, a `KeyError` is raised:
+If a folder [KEY](Container-Formats#key) in `[InstallList]` references a section that doesn't exist, a `KeyError` is raised:
 
 ```ini
 [InstallList]
@@ -813,7 +813,7 @@ The `[HACKList]` section declares [NCS files](NCS-File-Format) to modify. Each e
 
 ### Top-Level Keys in [HACKList]
 
-| [KEY](KEY-File-Format) | type | Default | Description |
+| [KEY](Container-Formats#key) | type | Default | Description |
 |-----|------|---------|-------------|
 | `!DefaultDestination` | string | `override` | Default destination for all [NCS files](NCS-File-Format) in this section |
 | `!DefaultSourceFolder` | string | `.` | Default source folder for [NCS files](NCS-File-Format). This is a relative path from `mod_path`, which is typically the `tslpatchdata` folder (the parent directory of the `changes.ini` file). The default value `.` refers to the `tslpatchdata` folder itself. Path resolution: `mod_path / !DefaultSourceFolder / filename` |
@@ -833,10 +833,10 @@ Each [NCS file](NCS-File-Format) requires its own section (e.g., `[myscript.ncs]
 **Destination values:**
 
 - `override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container
+- `Modules\module.mod`: Insert into an [ERF](Container-Formats#erf)/MOD/[RIM](Container-Formats#rim) container
 - Use backslashes for path separators
 
-**Important:** The `ReplaceFile` [KEY](KEY-File-Format) in HACKList does NOT use an exclamation point prefix. This is unique to HACKList compared to other patch lists.
+**Important:** The `ReplaceFile` [KEY](Container-Formats#key) in HACKList does NOT use an exclamation point prefix. This is unique to HACKList compared to other patch lists.
 
 ## Token types and data Sizes
 
@@ -861,8 +861,8 @@ offset=type:value
 | `u8:123` | u8 | 1 [byte](https://en.wikipedia.org/wiki/Byte) | 8-bit unsigned integer (0-255) |
 | `u16:12345` | u16 | 2 bytes | 16-bit unsigned integer (0-65535) |
 | `u32:123456` | u32 | 4 bytes | 32-bit unsigned integer |
-| `StrRef0` | [StrRef](TLK-File-Format#string-references-strref) | Varies* | Reference to [TLK](TLK-File-Format) string from memory |
-| `StrRefN` | strref32 | 4 bytes | 32-bit signed [TLK](TLK-File-Format) reference (CONSTI) |
+| `StrRef0` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | Varies* | Reference to [TLK](Audio-and-Localization-Formats#tlk) string from memory |
+| `StrRefN` | strref32 | 4 bytes | 32-bit signed [TLK](Audio-and-Localization-Formats#tlk) reference (CONSTI) |
 | `2DAMEMORY1` | 2damemory | Varies* | Reference to [2DA](2DA-File-Format) memory value |
 | `2DAMEMORYN` | 2damemory32 | 4 bytes | 32-bit signed [2DA](2DA-File-Format) reference (CONSTI) |
 
@@ -876,7 +876,7 @@ All multi-[byte](https://en.wikipedia.org/wiki/Byte) values are written in **[bi
 
 **Historical Background:** TSLPatcher originally distinguished between `strref` and `strref32` (and `2damemory` vs `2damemory32`), but PyKotor's implementation unifies these:
 
-- `[StrRef](TLK-File-Format#string-references-strref)#` tokens are automatically handled as 32-bit values
+- `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` tokens are automatically handled as 32-bit values
 - `2DAMEMORY#` tokens are automatically handled as 32-bit values
 
 If you need legacy 16-bit compatibility, use explicit type specifiers like `u16:StrRef5`, though this is not typically necessary.
@@ -885,7 +885,7 @@ If you need legacy 16-bit compatibility, use explicit type specifiers like `u16:
 
 HACKList integrates seamlessly with TSLPatcher's memory token system, allowing dynamic value injection from other patch sections.
 
-### [StrRef](TLK-File-Format#string-references-strref) Tokens
+### [StrRef](Audio-and-Localization-Formats#string-references-strref) Tokens
 
 Reference values stored in TLKList memory:
 
@@ -904,7 +904,7 @@ File0=myscript.ncs
 
 **Use Cases:**
 
-- Injecting dynamically-added [dialog.tlk](TLK-File-Format) string references
+- Injecting dynamically-added [dialog.tlk](Audio-and-Localization-Formats#tlk) string references
 - Patching scripts to reference custom text entries
 - Updating hardcoded string IDs to mod-added entries
 
@@ -1017,7 +1017,7 @@ File0=combat_script.ncs
 0x50=u16:50
 ```
 
-### Example 2: Injecting Dynamic [TLK](TLK-File-Format) Reference
+### Example 2: Injecting Dynamic [TLK](Audio-and-Localization-Formats#tlk) Reference
 
 Inject a dynamically-added string reference:
 
@@ -1101,7 +1101,7 @@ ReplaceFile=1
 
 ### Example 6: Saving to Container
 
-Save modified scripts to a [module container](ERF-File-Format):
+Save modified scripts to a [module container](Container-Formats#erf):
 
 ```ini
 [HACKList]
@@ -1121,7 +1121,7 @@ ReplaceFile=1
 
 *DeNCS* provides comprehensive [NCS](NCS-File-Format) disassembly capabilities for locating exact [byte](https://en.wikipedia.org/wiki/Byte) offsets. Understanding its output is essential for `[HACKList]` usage.
 
-### [KEY](KEY-File-Format) DeNCS Features
+### [KEY](Container-Formats#key) DeNCS Features
 
 - **Instruction-level disassembly**: See each bytecode instruction
 - **offset mapping**: Exact [byte](https://en.wikipedia.org/wiki/Byte) positions for each instruction
@@ -1183,7 +1183,7 @@ The jump offset is a 4-[byte](https://en.wikipedia.org/wiki/Byte) signed integer
 
 ### 1. Updating Hardcoded string References
 
-Many vanilla scripts have hardcoded [StrRef](TLK-File-Format#string-references-strref) values. HACKList lets you redirect them to mod-added entries:
+Many vanilla scripts have hardcoded [StrRef](Audio-and-Localization-Formats#string-references-strref) values. HACKList lets you redirect them to mod-added entries:
 
 ```ini
 [TLKList]
@@ -1314,7 +1314,7 @@ File0=buggy_script.ncs
 
 ### Archival Insertion Issues
 
-**Problem:** Modified script not appearing in [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container
+**Problem:** Modified script not appearing in [ERF](Container-Formats#erf)/MOD/[RIM](Container-Formats#rim) container
 
 **Solutions:**
 
@@ -1369,7 +1369,7 @@ I have no idea why this is the exclusive instance of Stoffe's variables that doe
 
 - PyKotor's HACKList implementation is compatible with TSLPatcher v1.2.10b+
 - All [NCS](NCS-File-Format) versions V1.0 are supported
-- Container insertion works for [ERF](ERF-File-Format), MOD, and [RIM](RIM-File-Format) formats
+- Container insertion works for [ERF](Container-Formats#erf), MOD, and [RIM](Container-Formats#rim) formats
 - Memory tokens from TLKList and 2DAList are fully supported
 - `!FieldPath` is **not** supported (only numeric values)
 

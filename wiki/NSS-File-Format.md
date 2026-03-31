@@ -6486,7 +6486,7 @@ KOTOR's `nwscript.nss` retains many NWN-era declarations but prefixes unsupporte
 
 No official BioWare documentation explains this (as KOTOR predates widespread modding support), but forum consensus attributes it to engine streamlining for single-player RPG vs. NWN's multiplayer focus.
 
-### [KEY](KEY-File-Format) Examples of Commented Elements
+### [KEY](Container-Formats#key) Examples of Commented Elements
 
 | Category | Examples | Notes from nwscript.nss |
 |----------|----------|-------------------------|
@@ -6528,7 +6528,7 @@ void SetOrientOnClick( object oCreature = OBJECT_SELF, ... )
 
 Modding communities actively reference these commented sections, especially on **Deadly Stream** (primary KOTOR hub), **LucasForums containers**, **Holowan Laboratories** (via MixNMojo/Mixmojo forums), and Reddit.
 
-| Forum | [KEY](KEY-File-Format) threads | Topics covered |
+| Forum | [KEY](Container-Formats#key) threads | Topics covered |
 |-------|-------------|----------------|
 | Deadly Stream | [Script Shack](https://deadlystream.com/topic/4808-fair-strides-script-shack/page/7/) | [animations](MDL-MDX-File-Format)<br>overrides |
 | Deadly Stream | [nwscript.nss Request](https://deadlystream.com/topic/6892-nwscriptnss/) | [animations](MDL-MDX-File-Format)<br>overrides |
@@ -6556,7 +6556,7 @@ Modding communities actively reference these commented sections, especially on *
 
 In summary, while no one has publicly shared a "uncomment everything" patch (likely futile), the modding scene thrives on careful overrides, with thousands of posts across these sites confirming the practice since 2003.
 
-### [KEY](KEY-File-Format) Citations
+### [KEY](Container-Formats#key) Citations
 
 - [Deadly Stream: Fair Strides' Script Shack](https://deadlystream.com/topic/4808-fair-strides-script-shack/page/7/)
 - [Czerka Wiki: nwscript.nss](https://czerka-rd.fandom.com/wiki/Nwscript.nss)
@@ -6605,7 +6605,7 @@ In summary, while no one has publicly shared a "uncomment everything" patch (lik
 **Original Sources:**
 
 - [`Vanilla_KOTOR_Script_Source`](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source) - Original KotOR script sources including nwscript.nss
-- [`Vanilla_KOTOR_Script_Source/K1/Data/scripts.bif/`](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source/tree/master/K1/Data/scripts.bif) - KotOR 1 script sources from [BIF](BIF-File-Format)
+- [`Vanilla_KOTOR_Script_Source/K1/Data/scripts.bif/`](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source/tree/master/K1/Data/scripts.bif) - KotOR 1 script sources from [BIF](Container-Formats#bif)
 - [`Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/`](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source/tree/master/TSL/Vanilla/Data/Scripts) - KotOR 2 script sources
 - **`KotOR-Scripting-Tool/NWN Script/k1/nwscript.nss`** - KotOR 1 nwscript.nss
   - Upstream (KobaltBlu/KotOR-Scripting-Tool): <https://github.com/KobaltBlu/KotOR-Scripting-Tool/blob/ddd580e1b85e9c25bf5eea77a0b6938e396579c6/NWN%20Script/k1/nwscript.nss>
@@ -6762,7 +6762,7 @@ See [Other Constants](NSS-File-Format#other-constants) for detailed documentatio
   - [UTP](GFF-File-Format#utp-placeable)
   - [IFO](GFF-File-Format#ifo-module-info)
   - (see [GFF File Format](GFF-File-Format) for the full type index)
-- **[KEY File Format](KEY-File-Format)**: nwscript.nss is stored in [chitin.key](KEY-File-Format)
+- **[KEY File Format](Container-Formats#key)**: nwscript.nss is stored in [chitin.key](Container-Formats#key)
 
 ### See also
 

@@ -18,7 +18,7 @@ When the game needs a resource, it resolves a pair: **ResRef + resource type**. 
 In normal play, the effective order is:
 
 1. **Override folder** (`override/` in the game directory)
-2. **Currently loaded MOD/ERF/[RIM](RIM-File-Format) module archives** (e.g. the module being played)
+2. **Currently loaded MOD/ERF/[RIM](Container-Formats#rim) module archives** (e.g. the module being played)
 3. **Currently loaded save game** (when in-game; situational — often exposed as a loaded SAV / save-side container)
 4. **BIF files** indexed by **KEY** (vanilla game data)
 5. **Hardcoded defaults** (if the engine provides them)
@@ -27,11 +27,11 @@ Anything in `override/` or in the active module capsule wins before the game fal
 
 ### How the *resource manager* resolves a request
 
-The engine first checks whether the resource is already loaded or cached. If not, it routes the request to the correct backend for that storage shape: directory, active module capsule, save-side data, or the KEY/BIF stack. The [KEY](KEY-File-Format) only participates in that fourth step. It does not control override precedence, and it does not need to be edited for a mod to shadow a vanilla file.
+The engine first checks whether the resource is already loaded or cached. If not, it routes the request to the correct backend for that storage shape: directory, active module capsule, save-side data, or the KEY/BIF stack. The [KEY](Container-Formats#key) only participates in that fourth step. It does not control override precedence, and it does not need to be edited for a mod to shadow a vanilla file.
 
-### Role of the [**KEY**](KEY-File-Format) file
+### Role of the [**KEY**](Container-Formats#key) file
 
-The [**KEY**](KEY-File-Format) file (normally `chitin.key`) is the master index for vanilla archive data. It maps a ResRef and resource type to a specific BIF archive and an entry inside that archive. It does not define the whole resolution order; it only enables the vanilla-data fallback stage.
+The [**KEY**](Container-Formats#key) file (normally `chitin.key`) is the master index for vanilla archive data. It maps a ResRef and resource type to a specific BIF archive and an entry inside that archive. It does not define the whole resolution order; it only enables the vanilla-data fallback stage.
 
 That distinction matters for authors. If your mod ships a file in `override/`, or a resource in a module `.mod`, the engine can find it before ever consulting `chitin.key`.
 
@@ -43,21 +43,21 @@ A **ResRef** is the resource’s name: a short string (up to ***16 characters***
 
 The **override** folder is the bluntest and most powerful mod-install location in the game. Loose files placed there are resolved before the vanilla KEY/BIF stack and before most stock content for the active module.
 
-That makes override useful for rapid testing and for global replacements, but it also makes it the easiest place to create mod conflicts. Only one file for a given ResRef and resource type can win. For mergeable content such as [2DA](2DA-File-Format), [TLK](TLK-File-Format), and many [GFF](GFF-File-Format) resources, patcher-based merging is usually safer than shipping a monolithic loose-file replacement.
+That makes override useful for rapid testing and for global replacements, but it also makes it the easiest place to create mod conflicts. Only one file for a given ResRef and resource type can win. For mergeable content such as [2DA](2DA-File-Format), [TLK](Audio-and-Localization-Formats#tlk), and many [GFF](GFF-File-Format) resources, patcher-based merging is usually safer than shipping a monolithic loose-file replacement.
 
-**Community context:** Players often compare loadouts in threads such as [Deadly Stream — What's in your Override folder?](https://deadlystream.com/topic/7279-whats-in-your-override-folder/) (mod combinations in practice). **Historical (pre-HoloPatcher era):** [LucasForums Archive — Load order?](https://www.lucasforumsarchive.com/thread/206128-load-order) and [Guide for the newbie: tools and how to install mods](https://www.lucasforumsarchive.com/thread/129789-guide-for-the-newbie-what-tools-do-i-need-to-mod-kotor-how-to-install-mods) (dated workflows; prefer current [Installing-Mods-with-HoloPatcher](HoloPatcher#installing-mods) and this page for **resolution order**). **Resolution order and conflicts** here and [KEY-File-Format](KEY-File-Format) remain SSOT.
+**Community context:** Players often compare loadouts in threads such as [Deadly Stream — What's in your Override folder?](https://deadlystream.com/topic/7279-whats-in-your-override-folder/) (mod combinations in practice). **Historical (pre-HoloPatcher era):** [LucasForums Archive — Load order?](https://www.lucasforumsarchive.com/thread/206128-load-order) and [Guide for the newbie: tools and how to install mods](https://www.lucasforumsarchive.com/thread/129789-guide-for-the-newbie-what-tools-do-i-need-to-mod-kotor-how-to-install-mods) (dated workflows; prefer current [Installing-Mods-with-HoloPatcher](HoloPatcher#installing-mods) and this page for **resolution order**). **Resolution order and conflicts** here and [KEY-File-Format](Container-Formats#key) remain SSOT.
 
-**Player-facing install paths (not SSOT for resolution):** For Steam/GOG/Aspyr folder layouts, widescreen, and common OS fixes, [PCGamingWiki — KotOR](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic) and [KotOR II: The Sith Lords](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic_II_-_The_Sith_Lords) complement [Installing-Mods-with-HoloPatcher](HoloPatcher#installing-mods); do **not** treat PCGW as authoritative for KEY/BIF semantics or override precedence—those stay on this page and [KEY-File-Format](KEY-File-Format).
+**Player-facing install paths (not SSOT for resolution):** For Steam/GOG/Aspyr folder layouts, widescreen, and common OS fixes, [PCGamingWiki — KotOR](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic) and [KotOR II: The Sith Lords](https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic_II_-_The_Sith_Lords) complement [Installing-Mods-with-HoloPatcher](HoloPatcher#installing-mods); do **not** treat PCGW as authoritative for KEY/BIF semantics or override precedence—those stay on this page and [KEY-File-Format](Container-Formats#key).
 
-## [**BIF**](BIF-File-Format) and [**KEY**](KEY-File-Format)
+## [**BIF**](Container-Formats#bif) and [**KEY**](Container-Formats#key)
 
-[**BIF**](BIF-File-Format) files store most of the shipped game data. [**KEY**](KEY-File-Format) tells the game which BIF contains a given ResRef and type, and which entry inside that BIF to read.
+[**BIF**](Container-Formats#bif) files store most of the shipped game data. [**KEY**](Container-Formats#key) tells the game which BIF contains a given ResRef and type, and which entry inside that BIF to read.
 
 From a modder’s point of view, the important rule is simple: BIF and KEY are the baseline, not the preferred mod target. Most mods leave them untouched and win by providing a higher-priority file in override or a module capsule.
 
-## [**MOD**](ERF-File-Format) / [**ERF**](ERF-File-Format) / [**RIM**](RIM-File-Format)
+## [**MOD**](Container-Formats#erf) / [**ERF**](Container-Formats#erf) / [**RIM**](Container-Formats#rim)
 
-[**ERF**](ERF-File-Format) is a general-purpose container format. [**MOD**](ERF-File-Format) files are ERFs used as module capsules; [**SAV**](ERF-File-Format) files are ERF-style save containers. [**RIM**](RIM-File-Format) is the stock module archive format used by the shipped game data.
+[**ERF**](Container-Formats#erf) is a general-purpose container format. [**MOD**](Container-Formats#erf) files are ERFs used as module capsules; [**SAV**](Container-Formats#erf) files are ERF-style save containers. [**RIM**](Container-Formats#rim) is the stock module archive format used by the shipped game data.
 
 The practical rule is that module-scoped content belongs here, not in global override, when you want the resource to apply only to a specific area or module. In many common setups, a module `.mod` in `modules/` overrides the matching stock `.rim` pair for that module name.
 
@@ -68,8 +68,8 @@ The practical rule is that module-scoped content belongs here, not in global ove
 | Delivery | Typical use | Notes |
 | -------- | ----------- | ----- |
 | **`override/`** | Global scripts, textures, 2DAs, TLK, GFF templates used in many modules | Highest precedence vs BIF; last writer wins if two mods use the same ResRef+type—prefer [2DAList](TSLPatcher-Data-Syntax#2dalist-syntax) / [TLKList](TSLPatcher-Data-Syntax#tlklist-syntax) merges |
-| **`Modules/*.mod`** | Module-scoped capsule (ERF-type [MOD](ERF-File-Format)) | Often overrides the vanilla `.rim` pair for that module name when present |
-| **Vanilla `.rim` / `_s.rim`** | Stock module archives ([RIM](RIM-File-Format)) | Mods usually ship a `.mod` instead of editing RIMs in place |
+| **`Modules/*.mod`** | Module-scoped capsule (ERF-type [MOD](Container-Formats#erf)) | Often overrides the vanilla `.rim` pair for that module name when present |
+| **Vanilla `.rim` / `_s.rim`** | Stock module archives ([RIM](Container-Formats#rim)) | Mods usually ship a `.mod` instead of editing RIMs in place |
 
 **Prerequisites:** Game root layout; [InstallList](TSLPatcher-Install-and-Hack-Syntax#installlist-syntax) paths in INI relative to game root.
 
@@ -99,7 +99,7 @@ The canonical **hex resource type ID** table (*Aurora* / *Odyssey* family, inclu
 
 ## Language IDs (*KotOR*)
 
-Language IDs are a small integer enum shared across *Infinity*/*Aurora*/*Odyssey*/*Eclipse*-era engines (TLK headers, [ERF](ERF-File-Format) localized string lists, [GFF](GFF-File-Format) `LocalizedString` substrings, etc.). Newer *BioWare* titles added values but usually stay backward compatible with 0–5.
+Language IDs are a small integer enum shared across *Infinity*/*Aurora*/*Odyssey*/*Eclipse*-era engines (TLK headers, [ERF](Container-Formats#erf) localized string lists, [GFF](GFF-File-Format) `LocalizedString` substrings, etc.). Newer *BioWare* titles added values but usually stay backward compatible with 0–5.
 
 Use this table as the **wiki SSOT** for numeric IDs and typical text encodings. Official *BioWare* PDFs duplicate the same numbering in places like [Bioware-Aurora-TalkTable](Bioware-Aurora-Core-Formats#talktable) and [Bioware-Aurora-LocalizedStrings](Bioware-Aurora-Core-Formats#localizedstrings).
 
@@ -115,7 +115,7 @@ Use this table as the **wiki SSOT** for numeric IDs and typical text encodings. 
 | Chinese  | 7  | UTF-8            | Same as Korean row |
 | Japanese | 8  | UTF-8            | Same as Korean row |
 
-**Where the ID appears:** [TLK-File-Format](TLK-File-Format) file header and tooling; [ERF-File-Format](ERF-File-Format) localized description list per language; [GFF-File-Format](GFF-File-Format) `LocalizedString` embedded strings. KotOR often ignores the TLK header language field and loads the `dialog.tlk` that matches the installation—see [TLK-File-Format](TLK-File-Format#localization).
+**Where the ID appears:** [TLK-File-Format](Audio-and-Localization-Formats#tlk) file header and tooling; [ERF-File-Format](Container-Formats#erf) localized description list per language; [GFF-File-Format](GFF-File-Format) `LocalizedString` embedded strings. KotOR often ignores the TLK header language field and loads the `dialog.tlk` that matches the installation—see [TLK-File-Format](Audio-and-Localization-Formats#localization).
 
 **Reference**:
 
@@ -128,8 +128,8 @@ Use this table as the **wiki SSOT** for numeric IDs and typical text encodings. 
 - [Home — community sources and archives](Home#community-sources-and-archives) -- Deadly Stream, LucasForums Archive, PCGamingWiki (player paths and forum context)
 - [Home](Home) -- Wiki hub (formats, tools, tutorials)
 - [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) -- Reader-facing install and troubleshooting workflow
-- [KEY-File-Format](KEY-File-Format) -- KEY file format (e.g. `chitin.key`)
+- [KEY-File-Format](Container-Formats#key) -- KEY file format (e.g. `chitin.key`)
 - [GFF-File-Format](GFF-File-Format) -- GFF file format (e.g. `area.gff`)
 - [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices) -- Best practices for modding
-- [TLK-File-Format](TLK-File-Format) -- TLK file format (e.g. `dialog.tlk`)
+- [TLK-File-Format](Audio-and-Localization-Formats#tlk) -- TLK file format (e.g. `dialog.tlk`)
 - [2DA-File-Format](2DA-File-Format) -- 2DA structure and table reference

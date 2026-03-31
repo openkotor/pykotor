@@ -36,7 +36,7 @@ The Indoor Map Builder is a visual editor for creating indoor modules (areas) fo
 - **Kits**: Traditional kit-based components (deprecated, use Modules instead)
 - **Modules**: Components extracted from game modules (recommended)
 - **Options**: Grid and snap settings
-- **[walkmesh](BWM-File-Format) Painter**: [material](MDL-MDX-File-Format#trimesh-header) painting tools
+- **[walkmesh](Level-Layout-Formats#bwm) Painter**: [material](MDL-MDX-File-Format#trimesh-header) painting tools
 
 ### Status Bar
 
@@ -78,12 +78,12 @@ The central area where you place and arrange rooms. Use mouse and keyboard contr
 
 - **Scroll wheel** (without Ctrl) to rotate the selected component
 - **Right-click** → **Rotate** → Choose angle (90°, 180°, 270°)
-- **R [KEY](KEY-File-Format)** to rotate selected rooms by the rotation snap amount
+- **R [KEY](Container-Formats#key)** to rotate selected rooms by the rotation snap amount
 
 ### Flipping Rooms
 
 - **Right-click** → **Flip** → **Flip Horizontal** or **Flip Vertical**
-- **F [KEY](KEY-File-Format)** to quickly flip selected rooms horizontally
+- **F [KEY](Container-Formats#key)** to quickly flip selected rooms horizontally
 
 ### Connecting Rooms
 
@@ -166,25 +166,25 @@ You can combine 2 or more rooms into a single merged room:
 - Default: 15°
 - Scroll wheel rotation uses this increment
 
-## [walkmesh](BWM-File-Format) Painting
+## [walkmesh](Level-Layout-Formats#bwm) Painting
 
-The [walkmesh](BWM-File-Format) painter allows you to change surface materials (walkable/non-walkable areas) on room [walkmeshes](BWM-File-Format).
+The [walkmesh](Level-Layout-Formats#bwm) painter allows you to change surface materials (walkable/non-walkable areas) on room [walkmeshes](Level-Layout-Formats#bwm).
 
 ### Enabling Paint Mode
 
-1. Expand **[walkmesh](BWM-File-Format) Painter** section
+1. Expand **[walkmesh](Level-Layout-Formats#bwm) Painter** section
 2. Check **Enable Painting (P)** (or press **P**)
 3. Select a [material](MDL-MDX-File-Format#trimesh-header) from the list
 
 ### Painting [materials](MDL-MDX-File-Format#trimesh-header)
 
-- **Shift + Left-click and drag** on [walkmesh](BWM-File-Format) [faces](MDL-MDX-File-Format#face-structure) to paint (prevents accidental dragging/selection)
+- **Shift + Left-click and drag** on [walkmesh](Level-Layout-Formats#bwm) [faces](MDL-MDX-File-Format#face-structure) to paint (prevents accidental dragging/selection)
 - [materials](MDL-MDX-File-Format#trimesh-header) are colorized by default (toggle with **Colorize [materials](MDL-MDX-File-Format#trimesh-header)**)
 - Each [material](MDL-MDX-File-Format#trimesh-header) has a distinct color for easy identification
 
-### Resetting [walkmesh](BWM-File-Format)
+### Resetting [walkmesh](Level-Layout-Formats#bwm)
 
-- Select room(s) with modified [walkmeshes](BWM-File-Format)
+- Select room(s) with modified [walkmeshes](Level-Layout-Formats#bwm)
 - Click **Reset Selected** to revert to original [materials](MDL-MDX-File-Format#trimesh-header)
 
 ### [material](MDL-MDX-File-Format#trimesh-header) types
@@ -259,9 +259,13 @@ Once your map is complete:
 
 The build process creates:
 
-- **Module file** (`.mod`): Contains all resources ([models](MDL-MDX-File-Format), [textures](TPC-File-Format), [walkmeshes](BWM-File-Format), etc.)
-- **[layout files](LYT-File-Format)** (`.lyt`): Room positions and door connections
-- **[visibility files](VIS-File-Format)** (`.vis`): Room visibility relationships
+- **Module file** (`.mod`): Contains all resources needed for the module, for example:
+
+  - [models](MDL-MDX-File-Format)
+  - [textures](Texture-Formats#tpc)
+  - [walkmeshes](Level-Layout-Formats#bwm)
+- **[layout files](Level-Layout-Formats#lyt)** (`.lyt`): Room positions and door connections
+- **[visibility files](Level-Layout-Formats#vis)** (`.vis`): Room visibility relationships
 - **[area files](GFF-File-Format#are-area)** (`.are`): [area properties](GFF-File-Format#are-area) and settings
 - **Game Info file** (`.git`): Doors and placeables
 - **[module info](GFF-File-Format#ifo-module-info) file** (`.ifo`): Module metadata
@@ -274,7 +278,7 @@ The build process creates:
 
 3. **Check Connections**: Green hooks indicate successful connections. Red hooks need to be connected.
 
-4. **Test Walkability**: Use the [walkmesh](BWM-File-Format) painter to mark non-walkable areas (lava, pits, etc.) before building.
+4. **Test Walkability**: Use the [walkmesh](Level-Layout-Formats#bwm) painter to mark non-walkable areas (lava, pits, etc.) before building.
 
 5. **Organize Your Layout**: Use the grid to keep rooms aligned and organized.
 
@@ -292,7 +296,11 @@ The build process creates:
 
 ### Room crossing and walkmesh
 
-If the player cannot move between rooms, the issue is usually **roomlinks / transition IDs** on walkmesh edges, **LYT room order**, or **VIS**, not the 3D hook placement alone. See [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions), [BWM File Format — Transitions and Door Placement](BWM-File-Format#transitions-and-door-placement), and [LYT File Format](LYT-File-Format).
+If the player cannot move between rooms, the issue is usually **roomlinks / transition IDs** on walkmesh edges, **LYT room order**, or **VIS**, not the 3D hook placement alone. See:
+
+- [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions)
+- [BWM File Format — Transitions and Door Placement](Level-Layout-Formats#transitions-and-door-placement)
+- [LYT File Format](Level-Layout-Formats#lyt)
 
 ### Missing Components
 
@@ -302,7 +310,7 @@ If the player cannot move between rooms, the issue is usually **roomlinks / tran
 
 ### Build Failures
 
-- Ensure all rooms have valid [walkmeshes](BWM-File-Format)
+- Ensure all rooms have valid [walkmeshes](Level-Layout-Formats#bwm)
 - Check that module ID is valid (alphanumeric, no spaces)
 - Verify installation path is correct
 
@@ -315,5 +323,5 @@ If the player cannot move between rooms, the issue is usually **roomlinks / tran
 ## Related Documentation
 
 - [Indoor Map Builder - Implementation Guide](Indoor-Map-Builder-Implementation-Guide) - Technical details for developers
-- [LYT File Format](LYT-File-Format) - [layout files](LYT-File-Format) structure
-- [BWM File Format](BWM-File-Format) - [walkmesh](BWM-File-Format) file structure
+- [LYT File Format](Level-Layout-Formats#lyt) - [layout files](Level-Layout-Formats#lyt) structure
+- [BWM File Format](Level-Layout-Formats#bwm) - [walkmesh](Level-Layout-Formats#bwm) file structure

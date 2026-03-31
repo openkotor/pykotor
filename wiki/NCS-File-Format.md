@@ -779,7 +779,7 @@ Core analyses: Stack tracking (variable assignments/reads via copy ops), Control
 
 **Analysis Passes:**
 
-1. **Parse**: Bytecode --> instructions + control flow graph (jumps as [edges](BWM-File-Format#edges-wok-only))
+1. **Parse**: Bytecode --> instructions + control flow graph (jumps as [edges](Level-Layout-Formats#edges-wok-only))
 2. **Subroutines**: Identify boundaries via `JSR`/`RETN`, analyze separately
 3. **type Inference**: Operations reveal types (`ADDII` --> ints, calls --> engine function table)
 4. **Prototyping**: Infer subroutine signatures from usage (may need multiple passes for recursion)

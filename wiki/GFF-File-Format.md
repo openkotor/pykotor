@@ -15,15 +15,15 @@ This document describes the GFF (Generic File Format) used in Knights of the Old
 **Related formats:**
 
 - [2DA files](2DA-File-Format) — configuration data
-- [TLK files](TLK-File-Format) — text strings
+- [TLK files](Audio-and-Localization-Formats#tlk) — text strings
 - [MDL/MDX files](MDL-MDX-File-Format) — 3D [models](MDL-MDX-File-Format)
 - [NCS files](NCS-File-Format) — scripts
 
 Loading any GFF (ARE, DLG, UTC, UTI, etc.) uses the same [resource resolution order](Concepts#resource-resolution-order) as other resources:
 
 - [override](Concepts#override-folder)
-- Loaded MOD/SAV (see [ERF](ERF-File-Format))
-- [KEY/BIF](KEY-File-Format)
+- Loaded MOD/SAV (see [ERF](Container-Formats#erf))
+- [KEY/BIF](Container-Formats#key)
 
 **Modder note:** Tools like KotOR Tool, K-GFF, and Holocron Toolset edit GFF; TSLPatcher/HoloPatcher [GFFList](TSLPatcher-GFF-Syntax#gfflist-syntax) can add or modify fields but not remove structs—see [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#removing-gff-structs-when-patchers-cannot) for script-based removal. [Concepts](Concepts) defines GFF and related terms.
 
@@ -154,7 +154,7 @@ Dozens of other extensions are documented across this wiki.
 
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) - Modding GFF files with TSLPatcher
 - [2DA File Format](2DA-File-Format) - Configuration data referenced by GFF files
-- [TLK File Format](TLK-File-Format) - Text strings used by GFF LocalizedString fields
+- [TLK File Format](Audio-and-Localization-Formats#tlk) - Text strings used by GFF LocalizedString fields
 - [Bioware Aurora GFF Format](Bioware-Aurora-Core-Formats#gff) - Official BioWare specification
 
 ---
@@ -242,7 +242,7 @@ Complex field types store their data in the field data section:
 | double            | 8 bytes (double)                                                    |
 | string            | 4 bytes length + N bytes string data                                |
 | ResRef            | 1 byte length + N bytes ResRef data (max 16 chars)                  |
-| LocalizedString   | 4 bytes count + N×8 bytes ([Language ID](Concepts#language-ids-kotor) + [StrRef](TLK-File-Format#string-references-strref) pairs)              |
+| LocalizedString   | 4 bytes count + N×8 bytes ([Language ID](Concepts#language-ids-kotor) + [StrRef](Audio-and-Localization-Formats#string-references-strref) pairs)              |
 | Binary            | 4 bytes length + N bytes binary data                                 |
 | Vector3           | 12 bytes (3×float)                                                   |
 | Vector4           | 16 bytes (4×float)                                                   |
@@ -300,7 +300,7 @@ GFF supports the following field types:
 | 15      | List              | 4             | List of structs (offset to list indices stored inline)            |
 | 16      | orientation       | 16            | Quaternion (4×float, stored in field data as Vector4)            |
 | 17      | vector            | 12            | 3D vector (3×float, stored in field data)                       |
-| 18      | [StrRef](TLK-File-Format#string-references-strref)            | 4             | string reference ([TLK](TLK-File-Format) [StrRef](TLK-File-Format#string-references-strref), stored inline as int32)             |
+| 18      | [StrRef](Audio-and-Localization-Formats#string-references-strref)            | 4             | string reference ([TLK](Audio-and-Localization-Formats#tlk) [StrRef](Audio-and-Localization-Formats#string-references-strref), stored inline as int32)             |
 
 **References**
 
@@ -320,14 +320,14 @@ GFF supports the following field types:
 - Use **ResRef** for filenames without extensions. Typical payloads include:
 
   - [models](MDL-MDX-File-Format)
-  - [textures](TPC-File-Format)
+  - [textures](Texture-Formats#tpc)
   - Scripts and other resources referenced by ResRef
 - Use **Void** for binary blobs like encrypted data or custom structures
 - Use **Struct** for nested objects with multiple fields
 - Use **List** for arrays of structs (inventory items, dialogue replies)
 - Use **vector** for 3D positions and directions
 - Use **orientation** for [quaternion](MDL-MDX-File-Format#node-header) rotations
-- Use **[StrRef](TLK-File-Format#string-references-strref)** for references to [dialog.tlk](TLK-File-Format) entries
+- Use **[StrRef](Audio-and-Localization-Formats#string-references-strref)** for references to [dialog.tlk](Audio-and-Localization-Formats#tlk) entries
 
 **Storage Optimization:**
 
@@ -498,7 +498,7 @@ Complex types require accessing data from the field data section:
 - **ResRef**: The offset points to a uint8 length (max 16) followed by the resource name bytes (not [null-terminated](https://en.cppreference.com/w/c/string/byte)).
 - **LocalizedString (CExoLocString)**: The offset points to a structure containing:
   - uint32: Total size (not including this count)
-  - int32: [StrRef](TLK-File-Format#string-references-strref) ID ([dialog.tlk](TLK-File-Format) reference, -1 if none)
+  - int32: [StrRef](Audio-and-Localization-Formats#string-references-strref) ID ([dialog.tlk](Audio-and-Localization-Formats#tlk) reference, -1 if none)
   - uint32: Number of language-specific strings
   - For each language string (if count > 0):
     - uint32: Language ID ([Concepts](Concepts#language-ids-kotor))
@@ -537,7 +537,7 @@ Complex types require accessing data from the field data section:
 - [GIT](GFF-File-Format#git-game-instance-template) -- GFF-based game resources
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Patching GFF via HoloPatcher/TSLPatcher
 - [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) -- Hex resource type IDs (ResRef + type in archives)
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution
 - [Bioware-Aurora-GFF](Bioware-Aurora-Core-Formats#gff) -- Aurora GFF specification
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for GFF structure and modding
 

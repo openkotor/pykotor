@@ -76,7 +76,7 @@ TypeId=7
 
 5. Use tokens when a value comes from earlier steps:
 
-   - [TLK](TLK-File-Format) entries (for example [StrRef](TLK-File-Format#string-references-strref) tokens)
+   - [TLK](Audio-and-Localization-Formats#tlk) entries (for example [StrRef](Audio-and-Localization-Formats#string-references-strref) tokens)
    - [2DA](2DA-File-Format) memory tokens
 
 ```ini
@@ -92,11 +92,11 @@ That's it. The rest of this page explains the knobs and dials you'll use as your
 - Paths use backslashes: `Parent\Child\Field`
 - Lists use numbers: `RepliesList\0\Text`
 - Localized strings use parentheses on the field name:
-  - `(strref)` --> set the [dialog.tlk](TLK-File-Format) reference
+  - `(strref)` --> set the [dialog.tlk](Audio-and-Localization-Formats#tlk) reference
   - `(lang0)`..`(lang9)` --> set per-language text
 - vectors: `Position=1.5|2.0|3.0`, `Orientation=0.0|0.0|0.0|1.0`
 - Tokens as values:
-  - `[StrRef](TLK-File-Format#string-references-strref)#` --> a [TLK](TLK-File-Format) token you set elsewhere
+  - `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` --> a [TLK](Audio-and-Localization-Formats#tlk) token you set elsewhere
   - `2DAMEMORY#` --> a [2DA](2DA-File-Format) token you set elsewhere
 - Tokens for dynamic field targets and list indices:
   - In AddField: `2DAMEMORY#=ListIndex` saves where a struct was inserted
@@ -142,7 +142,7 @@ The `[GFFList]` section declares [GFF files](GFF-File-Format) to patch. Each ent
 
 ### Top-Level Keys in [GFFList]
 
-| [KEY](KEY-File-Format) | type | Default | Description |
+| [KEY](Container-Formats#key) | type | Default | Description |
 |-----|------|---------|-------------|
 | `!DefaultDestination` | string | `override` | Default destination for all [GFF files](GFF-File-Format) in this section |
 | `!DefaultSourceFolder` | string | `.` | Default source folder for [GFF files](GFF-File-Format). Relative path from `mod_path` (typically the `tslpatchdata` folder, which is the parent directory of `changes.ini` and `namespaces.ini`). When `.`, refers to the `tslpatchdata` folder itself. Path resolution: `mod_path / !DefaultSourceFolder / filename` |
@@ -158,12 +158,12 @@ Each [GFF file](GFF-File-Format) requires its own section (e.g., `[example.dlg]`
 | `!SourceFile` | string | Same as section name | Alternative source filename (useful for multiple setup options using different source files) |
 | `!ReplaceFile` | 0/1 | 0 | If `1`, overwrite existing file before applying modifications. If `0` (default), modify the existing file in place. |
 | `!SaveAs` | string | Same as section name | Alternative filename to save as (useful for renaming files during installation) |
-| `!OverrideType` | string | `ignore` | How to handle existing files in Override when destination is an [ERF](ERF-File-Format) or [RIM](RIM-File-Format) container. Valid values: `ignore` (default), `warn` (log warning), `rename` (prefix with `old_`) |
+| `!OverrideType` | string | `ignore` | How to handle existing files in Override when destination is an [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) container. Valid values: `ignore` (default), `warn` (log warning), `rename` (prefix with `old_`) |
 
 **Destination values:**
 
 - `override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into a module capsule ([MOD](ERF-File-Format), [ERF](ERF-File-Format), or [RIM](RIM-File-Format); use backslashes for path separators)
+- `Modules\module.mod`: Insert into a module capsule ([MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim); use backslashes for path separators)
 - Container paths must be relative to the game folder root
 
 **Source file Resolution:**
@@ -177,7 +177,7 @@ The patcher resolves source files in this order:
 
 ## Modifying Existing fields
 
-To change an existing field's value, use the field name as the [KEY](KEY-File-Format):
+To change an existing field's value, use the field name as the [KEY](Container-Formats#key):
 
 ```ini
 [example.uti]
@@ -205,12 +205,12 @@ Orientation=0.0|0.0|0.0|1.0
 - Use numeric indices for list elements: `ListName\0\Field`
 - Case-sensitive labels
 - Parenthesis syntax for complex types:
-  - `FieldName(strref)` for localized string [StrRef](TLK-File-Format#string-references-strref)
+  - `FieldName(strref)` for localized string [StrRef](Audio-and-Localization-Formats#string-references-strref)
   - `FieldName(lang0)` through `FieldName(lang9)` for language/gender strings
 
 **Supported Memory Token formats:**
 
-- `[StrRef](TLK-File-Format#string-references-strref)#` - References [TLK](TLK-File-Format) memory token
+- `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` - References [TLK](Audio-and-Localization-Formats#tlk) memory token
 - `2DAMEMORY#` - References [2DA](2DA-File-Format) memory token
 
 ## Adding New fields
@@ -230,14 +230,14 @@ Value=123
 
 ### AddField Section structure
 
-| [KEY](KEY-File-Format) | type | Required | Description |
+| [KEY](Container-Formats#key) | type | Required | Description |
 |-----|------|----------|-------------|
 | `FieldType` | string | Yes | One of the following keywords (case as shown in tools):<br>- [byte](https://en.wikipedia.org/wiki/Byte)<br>- [char](GFF-File-Format#gff-data-types)<br>- Word, Short, DWORD, Int, Int64<br>- double, float<br>- ExoString, *ResRef*, ExoLocString<br>- Binary, Struct, List<br>- orientation, position |
 | `Label` | string | Yes* | field name (max 16 alphanumeric characters, no spaces). Must be unique within the same STRUCT parent. |
 | `Path` | string | No | field location in [GFF](GFF-File-Format) hierarchy. Empty string (`Path=`) means root level. For nested AddField sections, if `Path` is empty or not specified, it inherits the path from the parent AddField. Use backslashes to separate hierarchy levels. |
 | `Value` | varies | Conditional | field value (see field types below). Not used for Struct, List, or ExoLocString types. |
-| `[StrRef](TLK-File-Format#string-references-strref)` | int/string | LocString only | [TLK](TLK-File-Format) stringref value, `[StrRef](TLK-File-Format#string-references-strref)#` token, `2DAMEMORY#` token, or `-1` (no dialog.tlk reference) |
-| `TypeId` | int/string | Struct only | Struct type ID (numeric), `ListIndex` (auto-set to list index), `[StrRef](TLK-File-Format#string-references-strref)#` token, or `2DAMEMORY#` token |
+| `[StrRef](Audio-and-Localization-Formats#string-references-strref)` | int/string | LocString only | [TLK](Audio-and-Localization-Formats#tlk) stringref value, `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` token, `2DAMEMORY#` token, or `-1` (no dialog.tlk reference) |
+| `TypeId` | int/string | Struct only | Struct type ID (numeric), `ListIndex` (auto-set to list index), `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` token, or `2DAMEMORY#` token |
 | `lang#` | string | LocString only | Localized string entries where `#` is the language+gender ID (0-9). Use `<#LF#>` for linefeeds. |
 | `AddField#` | string | No | Reference to another section for nested field addition |
 | `2DAMEMORY#` | string | No | Store field path (`!FieldPath`), list index (`ListIndex`), or copy from another token (`2DAMEMORY#`) |
@@ -643,9 +643,9 @@ TypeId=5
    - `2DAMEMORY#=!FieldPath` - Store field path
    - `2DAMEMORY#=2DAMEMORY#` - Copy token value
 
-### [StrRef](TLK-File-Format#string-references-strref) Tokens
+### [StrRef](Audio-and-Localization-Formats#string-references-strref) Tokens
 
-Reference [TLK](TLK-File-Format) entries:
+Reference [TLK](Audio-and-Localization-Formats#tlk) entries:
 
 ```ini
 [example.uti]
@@ -821,7 +821,7 @@ Label=EntriesRepliesList   ; Required - field inside struct
 Value=2DAMEMORY5            ; Use stored entry index as value
 ```
 
-**[KEY](KEY-File-Format) Rules Summary:**
+**[KEY](Container-Formats#key) Rules Summary:**
 
 1. **Adding STRUCT to LIST**: `Label=` must be blank, `Path=` points to list name
 2. **Adding field to STRUCT**: `Label=` is required, `Path=` can be empty (inherits) or explicit
@@ -990,7 +990,7 @@ GFFList does not support [2DA](2DA-File-Format)-style ExclusiveColumn.
 
 ### Localized string Syntax
 
-- **[StrRef](TLK-File-Format#string-references-strref) vs lang#**: Use `FieldName(strref)=...` for the [StrRef](TLK-File-Format#string-references-strref) value, and `FieldName(lang#)=...` for text substrings. Don't mix them on the same [KEY](KEY-File-Format).
+- **[StrRef](Audio-and-Localization-Formats#string-references-strref) vs lang#**: Use `FieldName(strref)=...` for the [StrRef](Audio-and-Localization-Formats#string-references-strref) value, and `FieldName(lang#)=...` for text substrings. Don't mix them on the same [KEY](Container-Formats#key).
 - **Multiple substrings**: You can set multiple `lang#` entries for the same field (e.g., `lang0=English`, `lang2=French`).
 - **Line breaks**: Use `<#LF#>` for linefeeds in `lang#` values, not literal newlines.
 
@@ -998,7 +998,7 @@ GFFList does not support [2DA](2DA-File-Format)-style ExclusiveColumn.
 
 - **Token initialization**: Tokens must be set before use. Using `2DAMEMORY5` before assignment results in an error.
 - **Execution order**: Within GFFList, AddField sections run before field modifications. Store `!FieldPath` when creating fields, then use the token to modify them.
-- **Token scope**: `[StrRef](TLK-File-Format#string-references-strref)#` tokens are created in TLKList and available to GFFList. `2DAMEMORY#` tokens are file-scoped unless explicitly copied.
+- **Token scope**: `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` tokens are created in TLKList and available to GFFList. `2DAMEMORY#` tokens are file-scoped unless explicitly copied.
 
 ### Path and Source Configuration
 
@@ -1014,7 +1014,7 @@ GFFList does not support [2DA](2DA-File-Format)-style ExclusiveColumn.
 
 ### Common Error Messages
 
-- **"Cannot parse '[KEY](KEY-File-Format)=value'"**: Invalid syntax for memory token assignment or field path
+- **"Cannot parse '[KEY](Container-Formats#key)=value'"**: Invalid syntax for memory token assignment or field path
 - **"field did not exist at path"**: Tried to modify a field that doesn't exist (use AddField instead)
 - **"2DAMEMORY# was not defined before use"**: Token was referenced before being set
 - **"Label must be set for FieldType"**: Non-Struct field requires a label, or Struct in LIST requires blank label
@@ -1032,11 +1032,11 @@ Understanding execution order is crucial when your edits depend on earlier token
 
 **Standard Execution Order:**
 
-1. **TLKList**: Appends entries to [dialog.tlk](TLK-File-Format), creates `[StrRef](TLK-File-Format#string-references-strref)#` tokens
-2. **InstallList**: Copies files to destination ([ERF](ERF-File-Format) or [RIM](RIM-File-Format) containers may be created here)
+1. **TLKList**: Appends entries to [dialog.tlk](Audio-and-Localization-Formats#tlk), creates `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` tokens
+2. **InstallList**: Copies files to destination ([ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) containers may be created here)
 3. **2DAList**: Modifies [2DA files](2DA-File-Format), creates `2DAMEMORY#` tokens
-4. **GFFList**: Modifies [GFF](GFF-File-Format) files (can use `[StrRef](TLK-File-Format#string-references-strref)#` and `2DAMEMORY#` tokens)
-5. **CompileList**: Preprocesses [NSS](NSS-File-Format) scripts (replaces `#[StrRef](TLK-File-Format#string-references-strref)#` and `#2DAMEMORY#` tokens), then compiles
+4. **GFFList**: Modifies [GFF](GFF-File-Format) files (can use `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` and `2DAMEMORY#` tokens)
+5. **CompileList**: Preprocesses [NSS](NSS-File-Format) scripts (replaces `#[StrRef](Audio-and-Localization-Formats#string-references-strref)#` and `#2DAMEMORY#` tokens), then compiles
 6. **HACKList**: Applies binary patches to [NCS files](NCS-File-Format)
 7. **SSFList**: Modifies soundset files
 
@@ -1052,7 +1052,7 @@ Modifications within a single [GFF file](GFF-File-Format) are processed in order
 
 - **Add before modify**: Use AddField to create structures, store their paths with `2DAMEMORY#=!FieldPath`, then modify them using those tokens
 - **Token dependencies**: Ensure tokens are set before use. `2DAMEMORY#` tokens from 2DAList are available to GFFList
-- **Container handling**: If patching files into [ERF](ERF-File-Format) or [RIM](RIM-File-Format) containers, the container must exist (created by InstallList) or be built automatically by the patcher
+- **Container handling**: If patching files into [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) containers, the container must exist (created by InstallList) or be built automatically by the patcher
 
 **Important Notes:**
 
@@ -1411,7 +1411,7 @@ Common mistakes:
 - Invalid FieldType
 - Missing required keys
 - Circular memory references
-- Invalid 2DAMEMORY/[StrRef](TLK-File-Format#string-references-strref) syntax
+- Invalid 2DAMEMORY/[StrRef](Audio-and-Localization-Formats#string-references-strref) syntax
 
 PyKotor validates configuration and logs errors during INI loading and patching.
 
@@ -1473,10 +1473,10 @@ Common [GFF](GFF-File-Format)-based file types you can modify:
 - **[1.2.10b](TSLPatcher's-Official-Readme#change-log-for-version-1210b1-rel)** (2007-09-19): Fixed ExoLocString substring linefeed handling (use `<#LF#>` for newlines)
 - **[1.2.9b](TSLPatcher's-Official-Readme#change-log-for-version-129b-rel)** (2007-08-13): Changed behavior when adding duplicate fields--now modifies existing field instead of skipping
 - **[1.2.8b10](TSLPatcher's-Official-Readme#change-log-for-version-128b10-rel)** (2006-12-10): Bug fixes for required file checks
-- **[1.2.8b6](TSLPatcher's-Official-Readme#change-log-for-version-128b6-rel)** (2006-10-03): Added `!OverrideType` support for [ERF](ERF-File-Format) and [RIM](RIM-File-Format) destinations
+- **[1.2.8b6](TSLPatcher's-Official-Readme#change-log-for-version-128b6-rel)** (2006-10-03): Added `!OverrideType` support for [ERF](Container-Formats#erf) and [RIM](Container-Formats#rim) destinations
 - **[1.2.7b9](TSLPatcher's-Official-Readme#change-log-for-version-127b9-rel)** (2006-07-23): **Dynamic field paths** - Added `!FieldPath` support for storing and using field paths via `2DAMEMORY#` tokens
 - **[1.2.7b4](TSLPatcher's-Official-Readme#change-log-for-version-127b4-rel)** (2006-05-11): Multiple setups support improvements
-- **[1.2.6b3](TSLPatcher's-Official-Readme#change-log-for-version-126b3-rel)** (2006-03-09): [SSF](SSF-File-Format) soundset file modification support added
+- **[1.2.6b3](TSLPatcher's-Official-Readme#change-log-for-version-126b3-rel)** (2006-03-09): [SSF](Audio-and-Localization-Formats#ssf) soundset file modification support added
 - **[1.2a](TSLPatcher's-Official-Readme#change-log-for-version-12a-rel)** (2006-01-10): **AddField support** - Initial support for adding new fields to [GFF files](GFF-File-Format)
 
 ### HoloPatcher Extensions
@@ -1489,7 +1489,7 @@ Common [GFF](GFF-File-Format)-based file types you can modify:
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher overview and change log
 - [TSLPatcher HACKList Syntax](TSLPatcher-Install-and-Hack-Syntax#hacklist-syntax) -- 2DA and text patching
 - [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- HoloPatcher usage
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution and override order
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution and override order
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for GFF modding examples
 
 ---
@@ -1503,11 +1503,11 @@ Common [GFF](GFF-File-Format)-based file types you can modify:
 
 # TSLPatcher SSFList Syntax Documentation
 
-This guide explains how to modify [SSF files](SSF-File-Format) using TSLPatcher syntax. For the complete [SSF file](SSF-File-Format) format specification, see [SSF File Format](SSF-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
+This guide explains how to modify [SSF files](Audio-and-Localization-Formats#ssf) using TSLPatcher syntax. For the complete [SSF file](Audio-and-Localization-Formats#ssf) format specification, see [SSF File Format](Audio-and-Localization-Formats#ssf). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 ## Overview
 
-The `[SSFList]` section in TSLPatcher's changes.ini file enables you to modify SSF ([sound set files](SSF-File-Format)) files that define sound string references for characters. [SSF files](SSF-File-Format) contain 28 predefined sound slots that map to specific character audio cues such as battle cries, select sounds, attack grunts, pain reactions, and various action-based sound effects.
+The `[SSFList]` section in TSLPatcher's changes.ini file enables you to modify SSF ([sound set files](Audio-and-Localization-Formats#ssf)) files that define sound string references for characters. [SSF files](Audio-and-Localization-Formats#ssf) contain 28 predefined sound slots that map to specific character audio cues such as battle cries, select sounds, attack grunts, pain reactions, and various action-based sound effects.
 
 ## Table of Contents
 
@@ -1540,43 +1540,43 @@ Attack 1=StrRef10
 Death=100
 ```
 
-The `[SSFList]` section declares [SSF files](SSF-File-Format) to patch. Each entry references another section with the same name as the filename.
+The `[SSFList]` section declares [SSF files](Audio-and-Localization-Formats#ssf) to patch. Each entry references another section with the same name as the filename.
 
 ## file-Level Configuration
 
 ### Top-Level Keys in [SSFList]
 
-| [KEY](KEY-File-Format) | type | Default | Description |
+| [KEY](Container-Formats#key) | type | Default | Description |
 |-----|------|---------|-------------|
-| `!DefaultDestination` | string | `Override` | Default destination for all [SSF files](SSF-File-Format) in this section |
-| `!DefaultSourceFolder` | string | `.` | Default source folder for [SSF files](SSF-File-Format). This is a relative path from `mod_path`, which is typically the `tslpatchdata` folder (the parent directory of the `changes.ini` file). The default value `.` refers to the `tslpatchdata` folder itself. Path resolution: `mod_path / !DefaultSourceFolder / filename` |
+| `!DefaultDestination` | string | `Override` | Default destination for all [SSF files](Audio-and-Localization-Formats#ssf) in this section |
+| `!DefaultSourceFolder` | string | `.` | Default source folder for [SSF files](Audio-and-Localization-Formats#ssf). This is a relative path from `mod_path`, which is typically the `tslpatchdata` folder (the parent directory of the `changes.ini` file). The default value `.` refers to the `tslpatchdata` folder itself. Path resolution: `mod_path / !DefaultSourceFolder / filename` |
 
 ### file Section Configuration
 
-Each [SSF file](SSF-File-Format) requires its own section (e.g., `[example.ssf]`).
+Each [SSF file](Audio-and-Localization-Formats#ssf) requires its own section (e.g., `[example.ssf]`).
 
 | Key | type | Default | Description |
 |-----|------|---------|-------------|
 | `!Destination` | string | Inherited from `!DefaultDestination` | Where to save the modified file (`Override` or `path\to\file.mod`) |
-| `!SourceFolder` | string | Inherited from `!DefaultSourceFolder` | Source folder for the [SSF file](SSF-File-Format). Relative path from `mod_path` (typically the tslpatchdata folder). When `.`, refers to the tslpatchdata folder itself. |
+| `!SourceFolder` | string | Inherited from `!DefaultSourceFolder` | Source folder for the [SSF file](Audio-and-Localization-Formats#ssf). Relative path from `mod_path` (typically the tslpatchdata folder). When `.`, refers to the tslpatchdata folder itself. |
 | `!SourceFile` | string | Same as section name | Alternative source filename |
 | `!ReplaceFile` | 0/1 | 0 | Overwrite existing file before modifications |
 
 **Destination values:**
 
 - `Override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into a [MOD](ERF-File-Format), [ERF](ERF-File-Format), or [RIM](RIM-File-Format) container
+- `Modules\module.mod`: Insert into a [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) container
 - Use backslashes for path separators
 
 **Replace file Behavior:**
 
-- If `FileN=filename.ssf` is used: The [SSF file](SSF-File-Format) will be checked if it exists in the target destination. If it exists, it will be modified in place. If it doesn't exist, a copy from tslpatchdata will be made and modified.
-- If `ReplaceN=filename.ssf` is used: The [SSF file](SSF-File-Format) will be copied from tslpatchdata to the target destination (overwriting any existing file with the same name) and then modified.
+- If `FileN=filename.ssf` is used: The [SSF file](Audio-and-Localization-Formats#ssf) will be checked if it exists in the target destination. If it exists, it will be modified in place. If it doesn't exist, a copy from tslpatchdata will be made and modified.
+- If `ReplaceN=filename.ssf` is used: The [SSF file](Audio-and-Localization-Formats#ssf) will be copied from tslpatchdata to the target destination (overwriting any existing file with the same name) and then modified.
 - If `!ReplaceFile=1` is set in the file section: Same behavior as `ReplaceN`, taking priority over the `FileN` vs `ReplaceN` syntax.
 
 ## Sound Entry Modifiers
 
-Each line in the [SSF file](SSF-File-Format) section defines a sound entry to modify. The format is:
+Each line in the [SSF file](Audio-and-Localization-Formats#ssf) section defines a sound entry to modify. The format is:
 
 ```ini
 [SoundName]=Value
@@ -1587,7 +1587,7 @@ Where:
 - `SoundName` is one of the 28 predefined sound entry names (see [Available Sound Entries](#available-sound-entries))
 - `Value` can be:
   - A numeric stringref value
-  - A `[StrRef](TLK-File-Format#string-references-strref)#` token referencing [TLK](TLK-File-Format) memory
+  - A `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` token referencing [TLK](Audio-and-Localization-Formats#tlk) memory
   - A `2DAMEMORY#` token referencing [2DA](2DA-File-Format) memory
 
 ### value Syntax Examples
@@ -1618,12 +1618,12 @@ Pain 1=-1
 
 SSFList supports memory tokens for dynamic stringref assignment from:
 
-- [TLK](TLK-File-Format)
+- [TLK](Audio-and-Localization-Formats#tlk)
 - [2DA](2DA-File-Format)
 
-### [StrRef](TLK-File-Format#string-references-strref) Tokens
+### [StrRef](Audio-and-Localization-Formats#string-references-strref) Tokens
 
-`[StrRef](TLK-File-Format#string-references-strref)#` tokens reference TLK (Talk) memory tokens that have been set elsewhere in changes.ini (typically from TLKList entries). When the [SSF file](SSF-File-Format) is patched, the stored [StrRef](TLK-File-Format#string-references-strref) value from memory will be used.
+`[StrRef](Audio-and-Localization-Formats#string-references-strref)#` tokens reference TLK (Talk) memory tokens that have been set elsewhere in changes.ini (typically from TLKList entries). When the [SSF file](Audio-and-Localization-Formats#ssf) is patched, the stored [StrRef](Audio-and-Localization-Formats#string-references-strref) value from memory will be used.
 
 ```ini
 [example.ssf]
@@ -1636,7 +1636,7 @@ Attack 1=StrRef12
 
 **Syntax:** `StrRef` followed immediately by a numeric token ID
 
-**When to use:** When you want the sound entry to reference a dialog entry you've added to the game's [TLK file](TLK-File-Format).
+**When to use:** When you want the sound entry to reference a dialog entry you've added to the game's [TLK file](Audio-and-Localization-Formats#tlk).
 
 ### 2DAMEMORY Tokens
 
@@ -1659,7 +1659,7 @@ Pain 1=2DAMEMORY10
 
 Both token types are resolved during patch application:
 
-1. TLK Memory (`[StrRef](TLK-File-Format#string-references-strref)#`): Returns the stored integer stringref value
+1. TLK Memory (`[StrRef](Audio-and-Localization-Formats#string-references-strref)#`): Returns the stored integer stringref value
 2. 2DA Memory (`2DAMEMORY#`): Returns the stored integer value (converted from string)
 3. Constant values: Used directly as integer stringref values
 
@@ -1667,7 +1667,7 @@ If a token references an uninitialized memory slot, the behavior is undefined an
 
 ## Available Sound Entries
 
-[SSF files](SSF-File-Format) contain exactly 28 sound slots. The following table lists all available sound entry names:
+[SSF files](Audio-and-Localization-Formats#ssf) contain exactly 28 sound slots. The following table lists all available sound entry names:
 
 | Sound Entry Name | ID | Enum value | Description |
 |------------------|----|----|-------------|
@@ -1720,9 +1720,9 @@ Attack 1=50004
 Death=50005
 ```
 
-### Example 2: Using [TLK](TLK-File-Format) Memory Tokens
+### Example 2: Using [TLK](Audio-and-Localization-Formats#tlk) Memory Tokens
 
-This example uses [StrRef](TLK-File-Format#string-references-strref) tokens to dynamically reference dialog entries added to the [TLK file](TLK-File-Format):
+This example uses [StrRef](Audio-and-Localization-Formats#string-references-strref) tokens to dynamically reference dialog entries added to the [TLK file](Audio-and-Localization-Formats#tlk):
 
 ```ini
 [TLKList]
@@ -1876,9 +1876,9 @@ Rejoin party=50111
 Poisoned=50120
 ```
 
-### Example 7: Modifying [SSF](SSF-File-Format) files in Containers
+### Example 7: Modifying [SSF](Audio-and-Localization-Formats#ssf) files in Containers
 
-This example shows how to patch [SSF files](SSF-File-Format) that are stored in [MOD](ERF-File-Format), [ERF](ERF-File-Format), or [RIM](RIM-File-Format) container files:
+This example shows how to patch [SSF files](Audio-and-Localization-Formats#ssf) that are stored in [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) container files:
 
 ```ini
 [SSFList]
@@ -1895,7 +1895,7 @@ Death=60004
 **Important:** When patching files in containers, ensure that:
 
 1. The container file exists in the game directory
-2. The [SSF file](SSF-File-Format) already exists in that container (or use ReplaceN to force overwrite)
+2. The [SSF file](Audio-and-Localization-Formats#ssf) already exists in that container (or use ReplaceN to force overwrite)
 3. Use backslashes for path separators in `!Destination`
 
 ### Example 8: Clearing Sound Entries
@@ -1927,7 +1927,7 @@ Selected 3=12347
 
 ### Combining Multiple Token types
 
-You can mix different value types within the same [SSF file](SSF-File-Format) section:
+You can mix different value types within the same [SSF file](Audio-and-Localization-Formats#ssf) section:
 
 ```ini
 [SSFList]
@@ -1968,12 +1968,12 @@ Battlecry 1=20001
 
 ### Compatibility Notes
 
-- [SSF files](SSF-File-Format) are binary format files with version "V1.1"
+- [SSF files](Audio-and-Localization-Formats#ssf) are binary format files with version "V1.1"
 - All stringref values are stored as 32-bit unsigned integers
 - The game engine interprets negative values (-1) as "no sound"
-- [SSF files](SSF-File-Format) have a fixed structure with exactly 28 sound slots
-- Empty or unset sound slots default to -1 when a new [SSF](SSF-File-Format) is created
-- PyKotor/TSLPatcher loads existing [SSF files](SSF-File-Format) from the override folder or specified container if they exist
+- [SSF files](Audio-and-Localization-Formats#ssf) have a fixed structure with exactly 28 sound slots
+- Empty or unset sound slots default to -1 when a new [SSF](Audio-and-Localization-Formats#ssf) is created
+- PyKotor/TSLPatcher loads existing [SSF files](Audio-and-Localization-Formats#ssf) from the override folder or specified container if they exist
 
 ## Troubleshooting
 
@@ -1982,11 +1982,11 @@ Battlecry 1=20001
 **Problem:** Sound entries not applying
 
 - **Solution:** Verify that the sound entry name matches exactly (including spaces) from the [Available Sound Entries](#available-sound-entries) table
-- **Solution:** Ensure the [SSF file](SSF-File-Format) exists in the specified source location (tslpatchdata folder)
+- **Solution:** Ensure the [SSF file](Audio-and-Localization-Formats#ssf) exists in the specified source location (tslpatchdata folder)
 
 **Problem:** Token values not resolving
 
-- **Solution:** Ensure [TLK](TLK-File-Format) memory tokens ([StrRef](TLK-File-Format#string-references-strref)#) are set before SSFList section runs
+- **Solution:** Ensure [TLK](Audio-and-Localization-Formats#tlk) memory tokens ([StrRef](Audio-and-Localization-Formats#string-references-strref)#) are set before SSFList section runs
 - **Solution:** Ensure [2DA](2DA-File-Format) memory tokens (2DAMEMORY#) are set before SSFList section runs
 - **Solution:** Verify token IDs match between where they're set and where they're used
 
@@ -2006,7 +2006,7 @@ Battlecry 1=20001
 
 - **Solution:** Verify the container file exists in the game directory
 - **Solution:** Use backslashes (not forward slashes) in !Destination paths
-- **Solution:** Ensure the [SSF file](SSF-File-Format) already exists in the container if not using ReplaceN syntax
+- **Solution:** Ensure the [SSF file](Audio-and-Localization-Formats#ssf) already exists in the container if not using ReplaceN syntax
 
 ### Installation Order
 
@@ -2026,7 +2026,7 @@ This means that memory tokens set in TLKList and 2DAList will be available when 
 
 **Binary format:**
 
-- header: "[SSF](SSF-File-Format) " (4 bytes)
+- header: "[SSF](Audio-and-Localization-Formats#ssf) " (4 bytes)
 - Version: "V1.1" (4 bytes)
 - offset to sound data: 4 bytes (UInt32)
 - Sound entries: 28 x 4 bytes (UInt32 each) = 112 bytes
@@ -2035,25 +2035,25 @@ This means that memory tokens set in TLKList and 2DAList will be available when 
 
 **Default values:**
 
-- All sound entries default to -1 in a new [SSF file](SSF-File-Format)
+- All sound entries default to -1 in a new [SSF file](Audio-and-Localization-Formats#ssf)
 - Replacement behavior defaults to modifying existing files when possible
 - Destination defaults to Override folder
 - Source folder defaults to tslpatchdata root (`.`)
 
 **Supported Operations:**
 
-- Read existing [SSF files](SSF-File-Format) from Override or containers
-- Write modified [SSF files](SSF-File-Format) to Override or containers
+- Read existing [SSF files](Audio-and-Localization-Formats#ssf) from Override or containers
+- Write modified [SSF files](Audio-and-Localization-Formats#ssf) to Override or containers
 - Modify any of the 28 sound entry stringrefs
 - Memory token resolution for:
 
-  - [TLK](TLK-File-Format)
+  - [TLK](Audio-and-Localization-Formats#tlk)
   - [2DA](2DA-File-Format)
 - Replace file or modify existing file modes
 
 ### See also
 
-- [SSF-File-Format](SSF-File-Format) -- Sound set structure
+- [SSF-File-Format](Audio-and-Localization-Formats#ssf) -- Sound set structure
 - [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax) -- StrRef tokens
 - [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) -- Token usage
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)

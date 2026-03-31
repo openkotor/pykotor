@@ -27,7 +27,7 @@ pykotorcli diff "D:\workspace\Dantooine_Modifications\danm13" "C:\Program Files 
 pykotorcli diff "C:\Program Files (x86)\Steam\steamapps\common\swkotor" "D:\workspace\folder_with_various_gffs_2das_etc\"
 ```
 
-Module capsules may be `.rim` ([RIM File Format](RIM-File-Format)), `.mod`/`.erf` ([ERF File Format](ERF-File-Format)), or composite module folders.
+Module capsules may be `.rim` ([RIM File Format](Container-Formats#rim)), `.mod`/`.erf` ([ERF File Format](Container-Formats#erf)), or composite module folders.
 
 ## Headless pipeline: NSS → pack → diff (P1)
 
@@ -47,7 +47,7 @@ Module capsules may be `.rim` ([RIM File Format](RIM-File-Format)), `.mod`/`.erf
 
 **Common failures:** Forgetting `--noCompile` vs compile when packing stale `.ncs`; diffing paths that are not both game roots or comparable trees; incremental INI conflicts—re-run after a [HoloPatcher restore](HoloPatcher#installing-mods) on the test install.
 
-[KEY](KEY-File-Format) flags:
+[KEY](Container-Formats#key) flags:
 
 - `--path1/--path2/--path3/--path` for multi-path comparisons
 - `--filter` to constrain resources/modules
@@ -57,7 +57,7 @@ Module capsules may be `.rim` ([RIM File Format](RIM-File-Format)), `.mod`/`.erf
 
 ## Implementation Notes
 
-- Diff orchestration, filtering, and incremental TSLPatcher generation live in `[Libraries/PyKotor/src/pykotor/diff_tool/app.py](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/diff_tool/app.py)` L40-L530. Incremental writer creation and [StrRef](TLK-File-Format#string-references-strref) analysis are handled in `handle_diff` and `generate_tslpatcher_data` (L295-L529).
+- Diff orchestration, filtering, and incremental TSLPatcher generation live in `[Libraries/PyKotor/src/pykotor/diff_tool/app.py](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/diff_tool/app.py)` L40-L530. Incremental writer creation and [StrRef](Audio-and-Localization-Formats#string-references-strref) analysis are handled in `handle_diff` and `generate_tslpatcher_data` (L295-L529).
 - CLI argument wiring and headless execution are defined in `[Libraries/PyKotor/src/pykotor/diff_tool/cli.py](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/diff_tool/cli.py)` L26-L238.
 - [GUI](GFF-File-Format#gui-graphical-user-interface) fallback is implemented in `[Libraries/PyKotor/src/pykotor/diff_tool/gui.py](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/diff_tool/gui.py)` (headless when arguments are present, UI when omitted).
 
@@ -65,8 +65,8 @@ Module capsules may be `.rim` ([RIM File Format](RIM-File-Format)), `.mod`/`.erf
 
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher overview
 - [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- Patching workflow
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
-- [ERF-File-Format](ERF-File-Format)
-- [RIM-File-Format](RIM-File-Format)
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [ERF-File-Format](Container-Formats#erf)
+- [RIM-File-Format](Container-Formats#rim)
 - [GFF-File-Format](GFF-File-Format) -- Diffed resources and module capsules
-- [TLK-File-Format](TLK-File-Format) -- StrRef handling in incremental output
+- [TLK-File-Format](Audio-and-Localization-Formats#tlk) -- StrRef handling in incremental output

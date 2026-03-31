@@ -746,7 +746,7 @@ element.
 - [GFF-IFO](GFF-Module-and-Area#ifo)
 - [GFF-UTI](GFF-Items-and-Economy#uti)
 - [GFF-UTC](GFF-Creature-and-Dialogue#utc) -- KotOR GFF-based resources
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Patching GFF
 
 
@@ -924,7 +924,7 @@ Try to ensure that no existing data, in a 2da or otherwise, references the starr
 - [2DA-File-Format](2DA-File-Format) -- KotOR 2DA implementation and column reference
 - [TSLPatcher HACKList Syntax](TSLPatcher-Install-and-Hack-Syntax#hacklist-syntax)
 - [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) -- Patching 2DA
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -1533,11 +1533,11 @@ Fixed Resource Parts (as defined in the fixed resource table).
 
 ### See also
 
-- [KEY-File-Format](KEY-File-Format) -- KotOR KEY implementation and resolution order
-- [BIF-File-Format](BIF-File-Format) -- KotOR BIF implementation
+- [KEY-File-Format](Container-Formats#key) -- KotOR KEY implementation and resolution order
+- [BIF-File-Format](Container-Formats#bif) -- KotOR BIF implementation
 - [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) -- KotOR wiki hex / label resource type table
-- [ERF-File-Format](ERF-File-Format) -- MOD / generic ERF containers
-- [RIM-File-Format](RIM-File-Format) -- module RIM archives
+- [ERF-File-Format](Container-Formats#erf) -- MOD / generic ERF containers
+- [RIM-File-Format](Container-Formats#rim) -- module RIM archives
 - [GFF-File-Format](GFF-File-Format) -- GFF resources
 
 
@@ -1788,10 +1788,10 @@ and BIF File Format document for a table containing ResType values and their mea
 
 ### See also
 
-- [ERF-File-Format](ERF-File-Format) -- KotOR ERF/MOD implementation
-- [RIM-File-Format](RIM-File-Format) -- resource image (module RIM archives)
-- [KEY-File-Format](KEY-File-Format)
-- [BIF-File-Format](BIF-File-Format) -- Resource resolution and BIF layout
+- [ERF-File-Format](Container-Formats#erf) -- KotOR ERF/MOD implementation
+- [RIM-File-Format](Container-Formats#rim) -- resource image (module RIM archives)
+- [KEY-File-Format](Container-Formats#key)
+- [BIF-File-Format](Container-Formats#bif) -- Resource resolution and BIF layout
 - [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) -- ResType / hex resource type ID table
 - [GFF-File-Format](GFF-File-Format) -- GFF resources inside ERF modules
 
@@ -2058,9 +2058,9 @@ null-terminated strings. As soon as one string ends, the next one begins.
 
 ### See also
 
-- [TLK-File-Format](TLK-File-Format) -- KotOR TLK implementation
+- [TLK-File-Format](Audio-and-Localization-Formats#tlk) -- KotOR TLK implementation
 - [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax) -- Modifying TLK
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -2075,7 +2075,7 @@ null-terminated strings. As soon as one string ends, the next one begins.
 
 **Source:** This documentation is extracted from the official BioWare Aurora Engine SSF Format PDF, archived in [`xoreos-docs/specs/bioware/SSF_Format.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/SSF_Format.pdf). The original documentation was published on the now-defunct *nwn.bioware.com* developer site.
 
-**KotOR wiki SSOT (modding):** KotOR uses a **12-byte** header, version **`V1.1`**, and a **28-slot** StrRef table (many writers emit **40** uint32 words including padding). Binary layout, slot names, **[SSFList](TSLPatcher-GFF-Syntax#ssflist-syntax)** patching, and implementation permalinks (PyKotor, reone, KotOR.js, Kotor.NET) are maintained in **[SSF-File-Format](SSF-File-Format)**. Treat this PDF as **historical BioWare / NWN-oriented** reference; verify KotOR-specific claims there before relying on NWN-era entry counts or tooling notes alone.
+**KotOR wiki SSOT (modding):** KotOR uses a **12-byte** header, version **`V1.1`**, and a **28-slot** StrRef table (many writers emit **40** uint32 words including padding). Binary layout, slot names, **[SSFList](TSLPatcher-GFF-Syntax#ssflist-syntax)** patching, and implementation permalinks (PyKotor, reone, KotOR.js, Kotor.NET) are maintained in **[SSF-File-Format](Audio-and-Localization-Formats#ssf)**. Treat this PDF as **historical BioWare / NWN-oriented** reference; verify KotOR-specific claims there before relying on NWN-era entry counts or tooling notes alone.
 
 ---
 
@@ -2476,11 +2476,11 @@ are displayed during player character creation.
 
 ### See also
 
-- [SSF-File-Format](SSF-File-Format) -- KotOR SSF implementation
+- [SSF-File-Format](Audio-and-Localization-Formats#ssf) -- KotOR SSF implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [TSLPatcher SSFList Syntax](TSLPatcher-GFF-Syntax#ssflist-syntax) -- Modifying SSF
-- [TLK-File-Format](TLK-File-Format) -- StrRef
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [TLK-File-Format](Audio-and-Localization-Formats#tlk) -- StrRef
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -2587,9 +2587,9 @@ indicate success, or indicate failure and return a blank string if none was foun
 ### See also
 
 - [GFF-File-Format](GFF-File-Format) -- CExoLocString in GFF
-- [TLK-File-Format](TLK-File-Format) -- Talk table and StrRef
+- [TLK-File-Format](Audio-and-Localization-Formats#tlk) -- Talk table and StrRef
 - [Bioware-Aurora-TalkTable](Bioware-Aurora-Core-Formats#talktable) -- Aurora talk table spec
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [KEY-File-Format](Container-Formats#key) -- Resource resolution
 
 
 ---

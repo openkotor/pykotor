@@ -6,13 +6,13 @@ This page explains why you sometimes cannot walk between rooms in a module and w
 
 For the player to move from one room to another, all of the following must be consistent:
 
-1. **Rooms positioned in the area layout** -- The [LYT](LYT-File-Format) file lists room models and their world positions.
-2. **Walkmesh seam alignment** -- Each room has its own [WOK](BWM-File-Format) walkmesh; at the boundary between two rooms, the perimeter edges of both walkmeshes must align (same world-space seam).
+1. **Rooms positioned in the area layout** -- The [LYT](Level-Layout-Formats#lyt) file lists room models and their world positions.
+2. **Walkmesh seam alignment** -- Each room has its own [WOK](Level-Layout-Formats#bwm) walkmesh; at the boundary between two rooms, the perimeter edges of both walkmeshes must align (same world-space seam).
 3. **Roomlinks (transitions) reassigned** -- Perimeter edges in the walkmesh carry a *transition ID* that identifies the adjacent room. That ID is the 0-based index of the room in the LYT. If you add, remove, or reorder rooms, existing roomlinks no longer match and must be reassigned in a workflow that supports roomlink/transition editing.
 4. **Area LYT and VIS** — both must include the new or changed rooms:
 
-   - [LYT](LYT-File-Format)
-   - [VIS](VIS-File-Format)
+   - [LYT](Level-Layout-Formats#lyt)
+   - [VIS](Level-Layout-Formats#vis)
 5. **Exported room includes WOK** -- When you edit room geometry or walkmesh, the WOK must be exported/updated; many tools have an "Export WOK" option that is off by default.
 6. **Binaries compiled** -- ASCII model edits (e.g. roomlinks in the model) must be compiled back to binary (MDL/MDX and WOK) for the game to use them.
 
@@ -20,7 +20,7 @@ For the player to move from one room to another, all of the following must be co
 
 Crossing fails when the engine does not see a valid transition at the seam. Common causes:
 
-- **Roomlinks not reassigned** -- If you reuse or rearrange room models, the perimeter edges still point at the old LYT room indices. The only fix is to load the full layout and reassign which edge links to which room (see [BWM File Format](BWM-File-Format#transitions-and-door-placement)).
+- **Roomlinks not reassigned** -- If you reuse or rearrange room models, the perimeter edges still point at the old LYT room indices. The only fix is to load the full layout and reassign which edge links to which room (see [BWM File Format](Level-Layout-Formats#transitions-and-door-placement)).
 - **Layout vs model-only workflow** -- Loading a single room model without the area layout does not establish room order (transition ID = LYT room index). Reassigning roomlinks requires a layout-aware workflow (load LYT, then edit room models/walkmeshes in that context).
 - **Walkmesh not exported** -- If you change the walkmesh but do not export WOK (or the tool does not write it), the game still uses the old walkmesh.
 
@@ -48,10 +48,10 @@ Step-by-step workflows for room layout and roomlink editing live in the communit
 
 For more information, see:
 
-- [BWM File Format](BWM-File-Format) -- WOK structure, perimeters, transition IDs
-- [Transitions and Door Placement](BWM-File-Format#transitions-and-door-placement).
-- [LYT File Format](LYT-File-Format) -- Room order and [room definitions](LYT-File-Format#room-definitions); room index = transition ID.
-- [VIS File Format](VIS-File-Format) -- Visibility graph for area rooms.
+- [BWM File Format](Level-Layout-Formats#bwm) -- WOK structure, perimeters, transition IDs
+- [Transitions and Door Placement](Level-Layout-Formats#transitions-and-door-placement).
+- [LYT File Format](Level-Layout-Formats#lyt) -- Room order and [room definitions](Level-Layout-Formats#room-definitions); room index = transition ID.
+- [VIS File Format](Level-Layout-Formats#vis) -- Visibility graph for area rooms.
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Building indoor modules and [troubleshooting room crossing](Indoor-Map-Builder-User-Guide#room-crossing-and-walkmesh).
 - [Blender Integration](Blender-Integration) -- Limitations for roomlink authoring.
 - [2DA surfacemat](2DA-File-Format#surfacemat2da) -- Walkmesh face materials and walkability.

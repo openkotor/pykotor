@@ -107,8 +107,8 @@ This lines up with the behavior documented on [Concepts](Concepts#resource-resol
 **Container type flags** (how the engine classifies registered sources):
 
 - `FIXED` (0x00000000): KEY/BIF files (chitin.key + data/*.bif)
-- `RIM` (0x20000000): Resource-image path in the resource manager (e.g. texture packs; naming per MacOS symbols / `AddResourceImageFile()`, see [PyKotor#47](https://github.com/OldRepublicDevs/PyKotor/issues/47); compare on-disk [RIM](RIM-File-Format.md) capsules)
-- `ERF` (0x40000000): Encapsulated archives on disk ([ERF File Format](ERF-File-Format.md), [RIM File Format](RIM-File-Format.md); often `modules/*.rim`, `modules/*.mod`, `modules/*.erf`)
+- `RIM` (0x20000000): Resource-image path in the resource manager (e.g. texture packs; naming per MacOS symbols / `AddResourceImageFile()`, see [PyKotor#47](https://github.com/OldRepublicDevs/PyKotor/issues/47); compare on-disk [RIM](Container-Formats#rim) capsules)
+- `ERF` (0x40000000): Encapsulated archives on disk ([ERF File Format](Container-Formats#erf), [RIM File Format](Container-Formats#rim); often `modules/*.rim`, `modules/*.mod`, `modules/*.erf`)
 - `DIRECTORY` (0x80000000): Loose files in directories
 
 **Logical storage categories** (orthogonal to the flags above):
@@ -147,7 +147,7 @@ This lines up with the behavior documented on [Concepts](Concepts#resource-resol
 
 - When extending RE notes for new resource types, follow the same hash/lookup pattern described above.
 - Cross-check both K1 and TSL; the engines are nearly identical but addresses differ.
-- [2DA-File-Format](2DA-File-Format.md) documents table layout; pair with [KEY-File-Format](KEY-File-Format.md), [BIF-File-Format](BIF-File-Format.md), and [ERF-File-Format](ERF-File-Format.md) for container-level behaviour.
+- [2DA-File-Format](2DA-File-Format.md) documents table layout; pair with [KEY-File-Format](Container-Formats#key), [BIF-File-Format](Container-Formats#bif), and [ERF-File-Format](Container-Formats#erf) for container-level behaviour.
 
 Open work: map these methods to the exact BIF/ERF/KEY parser routines in a loaded binary and keep this section aligned with those findings.
 
@@ -875,7 +875,7 @@ The game engine uses several key data structures and functions to manage walkmes
 
 #### `CSWWalkMeshHeader`
 
-The *[BWM](BWM-File-Format.md)* file header structure that the game reads directly from disk:
+The *[BWM](Level-Layout-Formats#bwm)* file header structure that the game reads directly from disk:
 
 ```c
 struct CSWWalkMeshHeader {
@@ -1011,7 +1011,7 @@ if (iVar2 != 0) {
 3. **Offset 120 (0x78)**: Edge count
 4. **Offset 124 (0x7C)**: Edge offset
 
-This confirms our [BWM](BWM-File-Format.md) documentation is correct!
+This confirms our [BWM](Level-Layout-Formats#bwm) documentation is correct!
 
 #### `CheckAABBNode` / `HitCheckAABBnode`
 
@@ -1144,7 +1144,7 @@ When placed at (100.0, 200.0, 0.0) with 0° rotation:
 
 **Game engine transformation sequence:**
 
-1. Read `world_coords` from [BWM](BWM-File-Format.md) header (offset 0x08)
+1. Read `world_coords` from [BWM](Level-Layout-Formats#bwm) header (offset 0x08)
 2. If `world_coords == 0`:
    - Call `CSWCollisionMesh__LocalToWorld` to transform vertices
    - Apply placeable/door transformation matrix
@@ -1399,7 +1399,7 @@ Based on this analysis, our *PyKotor/HolocronToolset* implementation **MUST**:
 1. **Coordinate spaces**:
    - *WOK* files: Write `world_coords = 1`, store vertices in world space
    - *PWK/DWK* files: Write `world_coords = 0`, store vertices in local space
-   - *ModuleKit*: Do ***NOT*** translate *[WOK](BWM-File-Format.md)* vertices when building composite modules
+   - *ModuleKit*: Do ***NOT*** translate *[WOK](Level-Layout-Formats#bwm)* vertices when building composite modules
 
 2. **AABB trees**:
    - Use **0-based array indexing** for child node references
@@ -1432,7 +1432,7 @@ Based on this analysis, our *PyKotor/HolocronToolset* implementation **MUST**:
 ### References
 
 - *`swkotor.c`* / *`swkotor.h`* — Decompiled engine source/headers used alongside local RE work (not part of the PyKotor distribution)
-- [BWM-File-Format](BWM-File-Format.md) — **Format specification** (binary layout, header, vertices, faces, AABB, adjacency, edges, perimeters). This section covers engine-side behavior only; the BWM wiki is the canonical format reference.
+- [BWM-File-Format](Level-Layout-Formats#bwm) — **Format specification** (binary layout, header, vertices, faces, AABB, adjacency, edges, perimeters). This section covers engine-side behavior only; the BWM wiki is the canonical format reference.
 
 ## Using agdec for further analysis
 
@@ -1440,7 +1440,7 @@ To extend these findings or verify behavior against a specific binary:
 
 1. **Open a game binary in Ghidra:** Load `/K1/k1_win_gog_swkotor.exe`, `/TSL/k2_win_gog_aspyr_swkotor2.exe` into a Ghidra project. Ensure the program is **loaded and analyzed** (e.g. Auto Analysis complete); agdec tools require an open program to query.
 2. **Use the agdec MCP server:** With the binary loaded, tools such as `list-functions`, `search-strings`, `list-exports`, and `list-cross-references` can map entry points, locate format-related strings (e.g. "KEY ", "GFF ", "NCS "), and trace call graphs. This is useful for confirming which functions read KEY/BIF, parse GFF or 2DA, or execute NCS.
-3. **Match findings to format docs:** Cross-reference addresses and function names with vendor implementations (e.g. reone, xoreos) and with this wiki’s format pages. Document engine-specific quirks (e.g. alignment, field order) in the relevant format page; for geometry/walkmesh, align with [BWM / walkmesh / AABB](reverse_engineering_findings.md#bwm-walkmesh-aabb-engine-implementation-analysis) and [BWM-File-Format](BWM-File-Format.md).
+3. **Match findings to format docs:** Cross-reference addresses and function names with vendor implementations (e.g. reone, xoreos) and with this wiki’s format pages. Document engine-specific quirks (e.g. alignment, field order) in the relevant format page; for geometry/walkmesh, align with [BWM / walkmesh / AABB](reverse_engineering_findings.md#bwm-walkmesh-aabb-engine-implementation-analysis) and [BWM-File-Format](Level-Layout-Formats#bwm).
 4. **Community and archives:** For historical RE notes and tool discussions, see [Community sources and archives](Home.md#community-sources-and-archives) (DeadlyStream, LucasForums archives). Wiki content stays conceptual; do not paste raw RE dumps or tool names into format pages—link to this document (especially [Resource Management System](reverse_engineering_findings.md#resource-management-system)) for engine-level detail.
 
 ## Tools Used
@@ -1457,8 +1457,8 @@ To extend these findings or verify behavior against a specific binary:
 
 ### See also
 
-- [BWM-File-Format](BWM-File-Format.md) -- BWM binary layout (canonical format); [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide.md), [Kit-Structure-Documentation](Kit-Structure-Documentation.md) -- Walkmesh extraction
-- [KEY-File-Format](KEY-File-Format.md), [BIF-File-Format](BIF-File-Format.md), [ERF-File-Format](ERF-File-Format.md) -- Containers and resolution with KEY/BIF
+- [BWM-File-Format](Level-Layout-Formats#bwm) -- BWM binary layout (canonical format); [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide.md), [Kit-Structure-Documentation](Kit-Structure-Documentation.md) -- Walkmesh extraction
+- [KEY-File-Format](Container-Formats#key), [BIF-File-Format](Container-Formats#bif), [ERF-File-Format](Container-Formats#erf) -- Containers and resolution with KEY/BIF
 - [NCS-File-Format](NCS-File-Format.md), [NSS-File-Format](NSS-File-Format.md) -- Script execution; [MDL-MDX-File-Format](MDL-MDX-File-Format.md) -- Model loading
 - [GFF-File-Format](GFF-File-Format.md), [2DA-File-Format](2DA-File-Format.md) -- Engine data formats
 - [Concepts](Concepts.md) -- Resource resolution, ResRef, override folder

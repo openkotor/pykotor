@@ -30,4 +30,4 @@ Kits are collections of models from specific game areas. The toolset does not sh
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Full guide: rooms, doors, walkmeshes, building
 - [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Technical details
 - [Kit Structure Documentation](Kit-Structure-Documentation) -- Kit layout and generation
-- [BWM-File-Format](BWM-File-Format) -- Walkmesh format used by built modules
+- [BWM-File-Format](Level-Layout-Formats#bwm) -- Walkmesh format used by built modules

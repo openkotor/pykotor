@@ -4,9 +4,9 @@ This guide ties together **indoor module** authoring: room layout, walkmesh tran
 
 ## Workflow overview
 
-1. **Layout** — Define rooms and transforms in **[LYT](LYT-File-Format)**. Room order determines indices used elsewhere.
-2. **Walkmesh** — Each room needs a **[BWM](BWM-File-Format)** (WOK) with correct **transition** indices matching the LYT room index for doorways and crossings. See [Transitions and Door Placement](BWM-File-Format#transitions-and-door-placement).
-3. **Visibility** — **[VIS](VIS-File-Format)** describes which rooms can see which; keep it in sync with the LYT room names.
+1. **Layout** — Define rooms and transforms in **[LYT](Level-Layout-Formats#lyt)**. Room order determines indices used elsewhere.
+2. **Walkmesh** — Each room needs a **[BWM](Level-Layout-Formats#bwm)** (WOK) with correct **transition** indices matching the LYT room index for doorways and crossings. See [Transitions and Door Placement](Level-Layout-Formats#transitions-and-door-placement).
+3. **Visibility** — **[VIS](Level-Layout-Formats#vis)** describes which rooms can see which; keep it in sync with the LYT room names.
 4. **Area data** — **[GFF ARE](GFF-Module-and-Area#are)** and the rest of the module set follow normal module layout. Resolution order is described under:
 
    - [Concepts — Resource resolution](Concepts#resource-resolution-order)
@@ -29,7 +29,7 @@ This guide ties together **indoor module** authoring: room layout, walkmesh tran
 
 ## See also
 
-- [BWM File Format](BWM-File-Format)
-- [LYT File Format](LYT-File-Format)
-- [VIS File Format](VIS-File-Format)
+- [BWM File Format](Level-Layout-Formats#bwm)
+- [LYT File Format](Level-Layout-Formats#lyt)
+- [VIS File Format](Level-Layout-Formats#vis)
 - [Reverse Engineering Findings — BWM / walkmesh / AABB](reverse_engineering_findings#bwm-walkmesh-aabb-engine-implementation-analysis) — engine-side walkmesh tree behavior

@@ -32,7 +32,7 @@ Camera information is stored in the module's [GIT (Game Instance Template)](GFF-
 ## Step 1: Open the module and GIT
 
 - **With Holocron Toolset:** In the **Modules** tab, select the module (e.g. Manaan Ahto West: `manm26aa.rim` or the corresponding `.mod`). Open the **GIT** file listed under Module Data (e.g. **manm26aa**). You can edit the [GIT](GFF-File-Format#git-game-instance-template) directly; saving will write back to the module or override as configured.
-- **With KotOR Tool:** Expand [RIM](RIM-File-Format) archives → Modules → your module (e.g. `manm26aa.rim`, not the `_s` one `manm26aa_s.rim`). Expand Dynamic Area Info, extract the GIT to a folder, then open it in K-GFF (or another GFF editor).
+- **With KotOR Tool:** Expand [RIM](Container-Formats#rim) archives → Modules → your module (e.g. `manm26aa.rim`, not the `_s` one `manm26aa_s.rim`). Expand Dynamic Area Info, extract the GIT to a folder, then open it in K-GFF (or another GFF editor).
 
 In the GIT, open or expand **CameraList** to see existing cameras.
 
@@ -88,10 +88,10 @@ If you extracted the [GIT](GFF-File-Format#git-game-instance-template) and edite
 
 2. **Option B -- MOD file:** Create a `.mod` that contains the original module files plus your modified GIT and DLG. The game loads a `.mod` in place of the `.rim` pair when present. Compare:
 
-   - [ERF](ERF-File-Format) (MOD capsule layout)
-   - [RIM](RIM-File-Format) (stock module archives)
+   - [ERF](Container-Formats#erf) (MOD capsule layout)
+   - [RIM](Container-Formats#rim) (stock module archives)
 
-   You can use an ERF/MOD editor to create the `.mod`, add all files from the original [RIM](RIM-File-Format) archives, then add/replace with your modified GIT and DLG. Place the `.mod` in the game's **modules** folder.
+   You can use an ERF/MOD editor to create the `.mod`, add all files from the original [RIM](Container-Formats#rim) archives, then add/replace with your modified GIT and DLG. Place the `.mod` in the game's **modules** folder.
 
 With **Holocron Toolset**, editing the [GIT](GFF-File-Format#git-game-instance-template) (and [DLG](GFF-Creature-and-Dialogue#dlg)) from the Modules tab and saving usually updates the module or writes to override, so you may not need a separate packaging step.
 
