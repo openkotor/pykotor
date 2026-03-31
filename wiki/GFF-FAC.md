@@ -21,8 +21,12 @@ A Faction is a control system for determining how game objects interact with eac
 
 **PyKotor:**
 
-- [`fac.py` `FACFaction` L16+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L16), [`FACReputation` L40+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L40), [`FAC` L64+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L64) — in-memory faction / reputation model
-- [`construct_fac` L125+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L125), [`read_fac` L260+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L260), [`write_fac` L281+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L281) — GFF ↔ `FAC` round-trip
+- [`fac.py` `FACFaction` L16+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L16)
+- [`FACReputation` L40+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L40)
+- [`FAC` L64+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L64) — in-memory faction / reputation model
+- [`construct_fac` L125+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L125)
+- [`read_fac` L260+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L260)
+- [`write_fac` L281+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L281) — GFF ↔ `FAC` round-trip
 - [`gff_data.py` `GFFContent.FAC` L161](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L161) — four-character GFF type id
 - [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
@@ -32,7 +36,10 @@ A Faction is a control system for determining how game objects interact with eac
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (FAC uses generic GFF structure)
+- **[reone](https://github.com/modawan/reone)** — C++ GFF reader (FAC uses generic GFF structure):
+
+  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
+  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (FAC as GFF)
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (FAC uses generic GFF structure)
 - **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; FAC loaded as GFF in engine
@@ -221,7 +228,7 @@ write_fac(fac, "output/repute.fac")
 ### See also
 
 - [GFF File Format](GFF-File-Format) - Parent GFF format
-- [2DA-repute](2DA-repute) - Default faction standings table
+- [2DA-repute](2DA-File-Format#repute2da) - Default faction standings table
 - [2DA File Format](2DA-File-Format) - repadjust.2da and repute.2da structure
 - [Bioware Aurora Faction](Bioware-Aurora-Faction) - Official faction specification
 

@@ -1,5 +1,7 @@
 # TSLPatcher Documentation
 
+_This page is a preserved primary-source artifact. Keep the original documentation intact and use modern narrative pages such as [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) and the dedicated syntax guides to summarize current usage around it rather than rewriting this source in place._
+
   TSLPatcher v1.2.10b1
 
   ChangeEdit v1.0.5b1
@@ -97,7 +99,10 @@ SWKotORII:The Sith Lords game (though it will work with SWKotOR1 as well). Its p
 intended use is as an installer-type of application to distribute with Mods to make them easier
 to install and make compatible with other Mods.
 
-**Modder quick reference:** Point TSLPatcher at your **game root directory** (the folder containing `swkotor.exe` or `swkotor2.exe` and the `override` folder), not at the override folder itself. Use 2DAList and TLKList to **merge** 2DA and TLK changes so multiple mods can coexist; raw file copies overwrite. Make sure "Make Backups" is enabled so you can revert. If using Steam Workshop (e.g. TSLRCM), direct TSLPatcher to the Workshop mod folder when installing mods that must merge with it. For concepts (override, resource order, ResRef), see [Concepts](Concepts) and [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices).
+**Modder quick reference:** Point TSLPatcher at your **game root directory** (the folder containing `swkotor.exe` or `swkotor2.exe` and the `override` folder), not at the override folder itself. Use 2DAList and TLKList to **merge** 2DA and TLK changes so multiple mods can coexist; raw file copies overwrite. Make sure "Make Backups" is enabled so you can revert. If using Steam Workshop (e.g. TSLRCM), direct TSLPatcher to the Workshop mod folder when installing mods that must merge with it. For concepts (override, resource order, ResRef), see:
+
+- [Concepts](Concepts)
+- [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices)
 
 It does not claim to be the "Ultimate Mod Installer". While it can be useful for many types of
 MODs, it will not help in all situations. See the bullet list below to for some examples to see  if
@@ -127,41 +132,56 @@ allows you to update fields that refer to lines in a [2DA file](2DA-File-Format)
 TSLPatcher has added dynamically.
 
 - It allows you to keep StrRefs of the new entries the TSLPatcher has added in memory, and
-insert those StrRefs into [2DA](2DA-File-Format) and [GFF files](GFF-File-Format) as needed. For example, if you have added the
+insert those StrRefs into downstream files as needed:
+  - [2DA](2DA-File-Format)
+  - [GFF](GFF-File-Format)
+  For example, if you have added the
 name of a new force power to [dialog.tlk](TLK-File-Format), the TSLPatcher may memorize the [StrRef](TLK-File-Format#string-references-strref) the name
-string ended up as, and insert that value in the "name" column in [spells.2da](2DA-spells).
+string ended up as, and insert that value in the "name" column in [spells.2da](2DA-File-Format#spells2da).
 
 - It allows you to keep cell values from [2DA files](2DA-File-Format) as well as the line number of newly added
 rows in memory, and insert those values into other [2DA files](2DA-File-Format) or [GFF](GFF-File-Format) files. For example, if
-you add a new row to [appearance.2da](2DA-appearance), the TSLPatcher may memorize the line number that
+you add a new row to [appearance.2da](2DA-File-Format#appearance2da), the TSLPatcher may memorize the line number that
 row was added as, and insert that number as Appearance_type value in a Creature template
 (.[UTC](GFF-File-Format#utc-creature)) file.
 
-- It allows you to insert new fields into [GFF](GFF-File-Format)-format files (UT*, [DLG](GFF-File-Format#dlg-dialogue), [JRL](GFF-File-Format#jrl-journal) etc...) present in the
+- It allows you to insert new fields into [GFF](GFF-File-Format)-format files present in the
 override folder and either assign the value directly or fetch it from a memorized [StrRef](TLK-File-Format#string-references-strref) or
-[2DA](2DA-File-Format) value. For example you could use it to insert new [journal entries](GFF-File-Format#jrl-journal) into a custom
+[2DA](2DA-File-Format) value.
+  - Common [GFF](GFF-File-Format) templates include:
+    - UT* (doors, creatures, placeables, triggers, etc.)
+    - [DLG](GFF-File-Format#dlg-dialogue)
+    - [JRL](GFF-File-Format#jrl-journal)
+    - Other GFF-backed resources shipped with mods
+
+  For example you could use it to insert new [journal entries](GFF-File-Format#jrl-journal) into a custom
 global.jrl file that another mod has already put in override.
 
 - If used in combination with the nwnnsscomp.exe utility (by Edward T. Smith and KotORified
-by tk102) it can replace tokens placed within script source files with the proper memorized
-[StrRef](TLK-File-Format#string-references-strref) or [2DA](2DA-File-Format) values before compiling those scripts and putting the resulting [NCS files](NCS-File-Format) in
+by tk102) it can replace tokens placed within script source files with memorized values before compiling those scripts and putting the resulting [NCS files](NCS-File-Format) in
 the user's Override folder.
+  - Supported token classes include:
+    - [StrRef](TLK-File-Format#string-references-strref) memory values
+    - [2DA](2DA-File-Format) memory values
 
 For example it could be used to make the parameter to a ChangeObjectAppearance() script
 function call point to the correct line number of a row TSLPatcher has added to
-[appearance.2da](2DA-appearance). Or it could be used to make sure the parameter to BarkString() is the correct
+[appearance.2da](2DA-File-Format#appearance2da). Or it could be used to make sure the parameter to BarkString() is the correct
 [StrRef](TLK-File-Format#string-references-strref) of a [dialog.tlk](TLK-File-Format) entry that has just been added.
 
 - It allows you to put other files it does not need to modify in the necessary folders within the
 game folder. I.e. it could make sure that .MOD files go in the Modules folder, .WAVs go in
 the proper StreamVoice/StreamSounds/StreamMusic folder, other files get put in Override etc.
 
-- It allows you to modify [GFF files](GFF-File-Format) that already exist in either the override folder or an [ERF](ERF-File-Format) or [RIM](RIM-File-Format) format container file within the game folder or any of its sub-folders. You can also insert
-new [GFF files](GFF-File-Format) into any such files.
+- It allows you to modify [GFF files](GFF-File-Format) that already exist in the override folder or inside module capsules under the game tree. You can also insert new [GFF files](GFF-File-Format) into those destinations.
+  - Supported capsule kinds:
+    - [ERF](ERF-File-Format)
+    - [RIM](RIM-File-Format)
 
-- It allows you to insert recompiled [NCS files](NCS-File-Format) into an [ERF](ERF-File-Format) or [RIM](RIM-File-Format) format container file within
-the game folder or any of its sub-folders, or overwrite any [NCS file](NCS-File-Format) with the same name
-already existing at the destination.
+- It allows you to insert recompiled [NCS files](NCS-File-Format) into module capsules under the game folder or any sub-folder, or overwrite any [NCS file](NCS-File-Format) with the same name already present at the destination.
+  - Supported capsule kinds:
+    - [ERF](ERF-File-Format)
+    - [RIM](RIM-File-Format)
 
 ### 1.2. What can TSLPatcher NOT help with?
 
@@ -181,8 +201,10 @@ file being present in different sub-folders (or the user mistakenly placing the 
 associated files in a subfolder within the override folder). It will only look for files to modify
 directly in the override folder.
 
-- It is currently unable to modify files inside [BIF](BIF-File-Format) format files. Only files located in the
-override folder and [ERF](ERF-File-Format) or [RIM](RIM-File-Format) format container files can be modified.
+- It is currently unable to modify files inside [BIF](BIF-File-Format) format files. Only files located in these places can be modified:
+  - The override folder
+  - [ERF](ERF-File-Format) capsules
+  - [RIM](RIM-File-Format) capsules
 
 ## 2. Setup Instructions
 
@@ -287,8 +309,8 @@ button will display (hopefully) useful information about that feature in ChangeE
 **Important:**
 Keep in mind as you read on that all files and modifiers are processed in the
 order they are listed. This usually doesn't matter, but if several modifiers
-depend on each other (i.e. a new row in [portraits.2da](2DA-portraits) refer to a new row in
-[appearance.2da](2DA-appearance) which refer to a new row in heads.2da), then the sequence
+depend on each other (i.e. a new row in [portraits.2da](2DA-File-Format#portraits2da) refer to a new row in
+[appearance.2da](2DA-File-Format#appearance2da) which refer to a new row in heads.2da), then the sequence
 things are added becomes important.
 
 The different sections are:
@@ -405,7 +427,7 @@ tree view and select Add [2DA](2DA-File-Format) file in the context menu.
 
 You will then be prompted for the name of the file to modify. Check your spelling carefully,
 type the name in all lowercase letters and be sure to include the .2da extension. E.g. if you want
-to modify the [appearance.2da](2DA-appearance) file, type in [appearance.2da](2DA-appearance) in the box and click OK. Then
+to modify the [appearance.2da](2DA-File-Format#appearance2da) file, type in [appearance.2da](2DA-File-Format#appearance2da) in the box and click OK. Then
 select the newly added file in the tree view.
 
 The right panel will now show an empty Modifier list (since you haven't added any yet). When
@@ -428,7 +450,7 @@ knowledge of how those values are used. Thus, if there are any fields that
 should have special token values assigned, you will have to go through the
 fabricated modifiers and add those tokens by hand.
 For example, if the Compare function added a modifier for a new line in
-[spells.2da](2DA-spells), you will have to manually assign the proper [StrRef](TLK-File-Format#string-references-strref)# tokens to
+[spells.2da](2DA-File-Format#spells2da), you will have to manually assign the proper [StrRef](TLK-File-Format#string-references-strref)# tokens to
 the name and desc columns to point to your new custom [dialog.tlk](TLK-File-Format) entries (see
 section 3.2 above), and you will have to assign the high() token to the
 forcefriendly or forcehostile column.
@@ -693,13 +715,13 @@ modifying existing files) or should be saved (if adding new files). There are tw
 
 2) If the Destination box is set to the relative path (within the game folder) and name of an
 
-[ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container file, the modified [GFF file](GFF-File-Format) will be modified (if already existing) or
+[MOD](ERF-File-Format), [ERF](ERF-File-Format), or [RIM](RIM-File-Format) container file, the modified [GFF file](GFF-File-Format) will be modified (if already existing) or
 inserted (if not already existing or the Replace setting is set) into this container file instead of
 being placed in the override folder.
 
 **Important:**
-If you set an [ERF](ERF-File-Format)/[RIM](RIM-File-Format) file to save your modified files in you must specify the
-relative path from the game folder to where the [ERF](ERF-File-Format)/[RIM](RIM-File-Format) file is located. If, for
+If you set an [ERF](ERF-File-Format) or [RIM](RIM-File-Format) file to save your modified files in you must specify the
+relative path from the game folder to where the [ERF](ERF-File-Format) or [RIM](RIM-File-Format) file is located. If, for
 example, you want to modify a [GFF file](GFF-File-Format) within the file myarea.mod located in
 the Modules folder, you would set the Destination to Modules\\myarea.mod.
 
@@ -966,16 +988,16 @@ question doesn't already have what your mod needs.
 
 If you want the resulting [NCS file](NCS-File-Format) to be installed in the user's override folder, leave the
 Destination box blank or set it to "override" (without the quotation marks). If you want the [NCS](NCS-File-Format)
-file to be  saved inside an [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) file instead, put the relative path (from the game
+file to be saved inside a [MOD](ERF-File-Format), [ERF](ERF-File-Format), or [RIM](RIM-File-Format) file instead, put the relative path (from the game
 folder) and name of that [ERF](ERF-File-Format) format file in this box.
 
 **Important:**
 You must specify the relative path from the main game folder to where the
-[ERF](ERF-File-Format)/[RIM](RIM-File-Format) file you want to save your recompile script in exists. If you for
+[ERF](ERF-File-Format) or [RIM](RIM-File-Format) file you want to save your recompile script in exists. If you for
 example want to save your script inside the myarea.mod file located in the
 Modules folder you would set the Destination box to Modules\\myarea.mod.
 
-Only override or the path\\name of an [ERF](ERF-File-Format)/[RIM](RIM-File-Format) file is a valid value in the Destination box. This
+Only override or the path\\name of an [ERF](ERF-File-Format) or [RIM](RIM-File-Format) file is a valid value in the Destination box. This
 can currently not be used to put the file in another folder than the override within the game
 folder. If someone needs that functionality, please let me know.
 
@@ -1041,7 +1063,7 @@ existing modifier, either double click it in the grid, or select it in the grid 
 down-arrow icon. To delete a modifier, select it in the grid and click the trashcan icon above the
 grid.
 
-Like with [2DA](2DA-File-Format) and [GFF files](GFF-File-Format), the TSLPatcher will check if a [SSF file](SSF-File-Format) already exists in the override
+Like other merge-style sections for [2DA](2DA-File-Format) and for [GFF](GFF-File-Format), the TSLPatcher will check if a [SSF file](SSF-File-Format) already exists in the override
 folder of the user and modify the existing file there if found. If you want it to always install and
 modify a fresh copy of the [SSF file](SSF-File-Format) from the tslpatchdata folder, overwriting any existing [SSF file](SSF-File-Format)
 with the same name in override, check the Replace file... check box near the bottom of the [SSF](SSF-File-Format)
@@ -1153,7 +1175,7 @@ your changes.ini file and change the Progress Log Style setting to "Compatibilit
 
 ### 4.3. Ambiguity problems
 
-You: Changes applied to [2DA](2DA-File-Format)/[GFF files](GFF-File-Format) don't seem to take effect in-game!
+You: Changes applied to [2DA](2DA-File-Format) tables or [GFF files](GFF-File-Format) don't seem to take effect in-game!
 Me: Make sure you don't have copies of those files within sub-folders of your override folder.
 The TSLPatcher only looks for files to modify in the override folder itself, not in sub-folders.
 
@@ -1247,7 +1269,7 @@ the new !SourceFile and !SaveAs keys).
 Added an optional !OverrideType [KEY](KEY-File-Format) to the [filename] sections of files
 to be saved into [ERF](ERF-File-Format) or [RIM](RIM-File-Format) files. If set it can determine how TSLPatcher
 should react if a file with the same name already exists in the override folder
-(and thus would make the game not use the one in the [ERF](ERF-File-Format)/[RIM](RIM-File-Format)). This [KEY](KEY-File-Format) can
+(and thus would make the game not use the one in the [ERF](ERF-File-Format) or [RIM](RIM-File-Format)). This [KEY](KEY-File-Format) can
 hold one of three values: ignore (default behavior), warn (post a warning in the
 progress log) or rename (add a old_ prefix to the name of the file in the
 override folder to deactivate it).
@@ -1261,9 +1283,9 @@ value can then be overridden with the !Destination [KEY](KEY-File-Format) for in
 before.
 
 Optimized speed and efficiency of storing many recompiled [NCS files](NCS-File-Format) into an
-[ERF](ERF-File-Format) or [RIM](RIM-File-Format) file. Before the [ERF](ERF-File-Format)/[RIM](RIM-File-Format) was saved, closed and reopened between
+[ERF](ERF-File-Format) or [RIM](RIM-File-Format) file. Before the [ERF](ERF-File-Format) or [RIM](RIM-File-Format) was saved, closed and reopened between
 each file that was inserted, now it's kept open until another destination is
-encountered. Thus if you insert scripts into multiple [ERF](ERF-File-Format)/[RIM](RIM-File-Format) files it's a good
+encountered. Thus if you insert scripts into multiple [ERF](ERF-File-Format) or [RIM](RIM-File-Format) files it's a good
 idea to keep them grouped by destination in the [CompileList] modifier list.
 
 Added optional !SourceFile and !SourceFileF keys to the [TLKList]
@@ -1302,7 +1324,7 @@ Apparently there was an error in the RIM spec...
 ### Change Log for Version 1.2.8b1 (REL)
 
 2006-08-09
-Changed the InstallList functionality to allow installing files into [ERF](ERF-File-Format)/[RIM](RIM-File-Format)
+Changed the InstallList functionality to allow installing files into [ERF](ERF-File-Format) or [RIM](RIM-File-Format)
 containers as well, and not just folders within the game folder. This destination is
 set the same as you set the folder, only specify a filename at the end of the
 relative path (from the game folder) as well. (E.g. Modules\\904mal.rim)
@@ -1325,16 +1347,27 @@ rather substantial changed made in version 1.2.8b0.
 ### Change Log for Version 1.2.8b0 (REL)
 
 2006-08-06
-Changed how the [ERF](ERF-File-Format)/[RIM](RIM-File-Format) insertion of [GFF](GFF-File-Format) and [NCS files](NCS-File-Format) work to make it a
-bit more useful. It'll now work directly with such files located in the game
-folder or any subfolders, and it will modify existing [GFF files](GFF-File-Format) instead of
-overwriting unless the Replace setting is set.
+Changed how insertion of [GFF](GFF-File-Format) and [NCS](NCS-File-Format) resources into capsules works. Supported capsule kinds include:
 
-Changed processing order for the InstallList to allow placing new
-[ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) files in their proper location before the [GFF](GFF-File-Format)/Compile sections
-run so they can save any necessary modified files into those container files. The
-different install phases now run in this order: [TLK](TLK-File-Format) Appending, Install List,
-[2DA](2DA-File-Format) changes, [GFF](GFF-File-Format) Changes, Script compilation, [SSF](SSF-File-Format) Editing.
+- [ERF](ERF-File-Format)
+- [RIM](RIM-File-Format)
+
+It'll now work directly with such files located in the game folder or any subfolders, and it will modify existing [GFF files](GFF-File-Format) instead of overwriting unless the Replace setting is set.
+
+Changed processing order for the InstallList to allow placing new module archives before [GFF](GFF-File-Format) changes and script compilation so modified resources can land inside those containers. New archive types covered include:
+
+- [ERF](ERF-File-Format)
+- MOD
+- [RIM](RIM-File-Format)
+
+The different install phases now run in this order:
+
+- [TLK](TLK-File-Format) appending
+- Install list
+- [2DA](2DA-File-Format) changes
+- [GFF](GFF-File-Format) changes
+- Script compilation
+- [SSF](SSF-File-Format) editing
 
 Extended the [ERF](ERF-File-Format) insertion functionality to support [RIM](RIM-File-Format) format files as well.
 
@@ -1364,8 +1397,12 @@ as keys must always come below the Add field section in which they are set).
 The main TSLPatcher window now shows the installation path both when
 reading it from the registry and when then user has selected it.
 
-Added a "!SourceFile" special [KEY](KEY-File-Format) to all sections except [TLK](TLK-File-Format) and [2DA](2DA-File-Format), which
-allows specifying the name of the file that should be used as a blueprint if it
+Added a "!SourceFile" special [KEY](KEY-File-Format) to all sections except:
+
+- [TLK](TLK-File-Format)
+- [2DA](2DA-File-Format)
+
+which allows specifying the name of the file that should be used as a blueprint if it
 needs to be copied to the installation destination. The file will be renamed to
 the section name when being installed, this is just to allow different install
 options to coexist in the same folder which requires different versions of the
@@ -1569,8 +1606,11 @@ And finally thanks to YOU, for enduring my English and reading all the way down 
 ### See also
 
 - [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) -- LucasForums thread container (Stoffe’s posts, changelogs)
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- GFF patching; [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) -- 2DA/text
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- GFF patching
+- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) -- 2DA and plain-text hacks
 - [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- HoloPatcher usage
 - [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- End-user installation
-- [GFF File Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format), [TLK-File-Format](TLK-File-Format) -- Patched resources
+- [GFF File Format](GFF-File-Format) -- Patched GFF resources
+- [2DA-File-Format](2DA-File-Format) -- Patched table resources
+- [TLK-File-Format](TLK-File-Format) -- Patched talk-table resources
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums archives for setup help and history

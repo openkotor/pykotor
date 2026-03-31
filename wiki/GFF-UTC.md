@@ -6,16 +6,28 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Creature format specification, see [Bioware Aurora Creature Format](Bioware-Aurora-Creature).
 
-**For mod developers:** To modify creature templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** UTC references [2DA](2DA-File-Format) (appearance, portraits, classes, feats, racialtypes, creaturespeed), [SSF](SSF-File-Format), [TLK](TLK-File-Format), [MDL](MDL-MDX-File-Format), [TPC](TPC-File-Format), and [GFF-UTI](GFF-UTI) for inventory items.
+- To modify creature templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
+- For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+
+**Related formats:**
+
+- [2DA](2DA-File-Format) (appearance, portraits, classes, feats, racialtypes, creaturespeed)
+- [SSF](SSF-File-Format)
+- [TLK](TLK-File-Format)
+- [MDL](MDL-MDX-File-Format)
+- [TPC](TPC-File-Format)
+- [GFF-UTI](GFF-UTI) (inventory items)
 
 ## References
 
 **PyKotor:**
 
 - [`utc.py` `UTC` L36+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L36) — in-memory creature model (classes, feats, inventory, appearance, scripts)
-- [`construct_utc` L494+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L494), [`read_utc` L982+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L982), [`write_utc` L992+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L992) — GFF ↔ `UTC` round-trip
+- [`construct_utc` L494+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L494)
+- [`read_utc` L982+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L982)
+- [`write_utc` L992+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L992) — GFF ↔ `UTC` round-trip
 - [`gff_data.py` `GFFContent.UTC` L150](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L150) — four-character GFF type id
 - [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
@@ -25,7 +37,10 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — generic GFF reader (UTC as GFF)
+- **[reone](https://github.com/modawan/reone)** — generic GFF reader (UTC as GFF):
+
+  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
+  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — managed GFF reader/writer
 - **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF pipeline
@@ -46,10 +61,10 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Appearance_Type` | UInt32 | Index into [`appearance.2da`](2DA-appearance) |
-| `PortraitId` | [word](GFF-File-Format#gff-data-types) | Index into [`portraits.2da`](2DA-portraits); 65535 (0xFFFF) = use Portrait ResRef instead |
+| `Appearance_Type` | UInt32 | Index into [`appearance.2da`](2DA-File-Format#appearance2da) |
+| `PortraitId` | [word](GFF-File-Format#gff-data-types) | Index into [`portraits.2da`](2DA-File-Format#portraits2da); 65535 (0xFFFF) = use Portrait ResRef instead |
 | `Gender` | [byte](GFF-File-Format#gff-data-types) | 0=Male, 1=Female, 2=Both, 3=Other, 4=None (engine clamps values > 4 to 4) |
-| `Race` | [byte](GFF-File-Format#gff-data-types) | Index into [`racialtypes.2da`](2DA-racialtypes). If value is greater than or equal to the number of rows in race.2da, the creature fails to load. |
+| `Race` | [byte](GFF-File-Format#gff-data-types) | Index into [`racialtypes.2da`](2DA-File-Format#racialtypes2da). If value is greater than or equal to the number of rows in race.2da, the creature fails to load. |
 | `SubraceIndex` | [byte](GFF-File-Format#gff-data-types) | Index into subrace.2da; refines race (e.g. subspecies). |
 | `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) variation (0-9) |
 | `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](TPC-File-Format) variation (1-9) |
@@ -85,7 +100,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 **ClassList Struct fields:**
 
-- `Class` ([int32](GFF-File-Format#gff-data-types)): Index into [`classes.2da`](2DA-classes) ([class definitions](2DA-classes))
+- `Class` ([int32](GFF-File-Format#gff-data-types)): Index into [`classes.2da`](2DA-File-Format#classes2da) ([class definitions](2DA-File-Format#classes2da))
 - `ClassLevel` ([int16](GFF-File-Format#gff-data-types)): Levels in this class
 
 **SkillList Struct fields:**
@@ -94,7 +109,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 **FeatList Struct fields:**
 
-- `Feat` ([word](GFF-File-Format#gff-data-types)): Index into [`feat.2da`](2DA-feat) ([feat definitions](2DA-feat))
+- `Feat` ([word](GFF-File-Format#gff-data-types)): Index into [`feat.2da`](2DA-File-Format#feat2da) ([feat definitions](2DA-File-Format#feat2da))
 
 ## Combat & Behavior
 
@@ -192,7 +207,7 @@ All script hooks store a ResRef to an NCS file; leave blank for no script. The t
 [UTC](GFF-File-Format#utc-creature) files are loaded during module initialization or creature spawning. The engine:
 
 1. **Reads template data** from the [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format) structure
-2. **Applies appearance** based on [`appearance.2da`](2DA-appearance) ([appearance definitions](2DA-appearance)) lookup
+2. **Applies appearance** based on [`appearance.2da`](2DA-File-Format#appearance2da) ([appearance definitions](2DA-File-Format#appearance2da)) lookup
 3. **Calculates derived stats** (AC, saves, attack bonuses) from attributes and equipment
 4. **Loads inventory** by instantiating [UTI](GFF-File-Format#uti-item) ([item templates](GFF-File-Format#uti-item)) templates
 5. **Applies effects** from equipped items and active powers
@@ -216,5 +231,10 @@ All script hooks store a ResRef to an NCS file; leave blank for no script. The t
 
 - [GFF File Format](GFF-File-Format) - Generic format underlying UTC
 - [GFF-UTI (Item)](GFF-UTI) - Item templates in creature inventory
-- [2DA appearance](2DA-appearance), [classes](2DA-classes), [feat](2DA-feat), [racialtypes](2DA-racialtypes) - Lookup tables
+- Common lookup tables:
+
+  - [2DA appearance](2DA-File-Format#appearance2da)
+  - [classes](2DA-File-Format#classes2da)
+  - [feat](2DA-File-Format#feat2da)
+  - [racialtypes](2DA-File-Format#racialtypes2da)
 - [Bioware Aurora Creature Format](Bioware-Aurora-Creature) - Official creature specification

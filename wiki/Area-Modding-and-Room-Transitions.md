@@ -9,7 +9,10 @@ For the player to move from one room to another, all of the following must be co
 1. **Rooms positioned in the area layout** -- The [LYT](LYT-File-Format) file lists room models and their world positions.
 2. **Walkmesh seam alignment** -- Each room has its own [WOK](BWM-File-Format) walkmesh; at the boundary between two rooms, the perimeter edges of both walkmeshes must align (same world-space seam).
 3. **Roomlinks (transitions) reassigned** -- Perimeter edges in the walkmesh carry a *transition ID* that identifies the adjacent room. That ID is the 0-based index of the room in the LYT. If you add, remove, or reorder rooms, existing roomlinks no longer match and must be reassigned in a workflow that supports roomlink/transition editing.
-4. **Area LYT and VIS** -- The [LYT](LYT-File-Format) and [VIS](VIS-File-Format) must include the new or changed rooms.
+4. **Area LYT and VIS** — both must include the new or changed rooms:
+
+   - [LYT](LYT-File-Format)
+   - [VIS](VIS-File-Format)
 5. **Exported room includes WOK** -- When you edit room geometry or walkmesh, the WOK must be exported/updated; many tools have an "Export WOK" option that is off by default.
 6. **Binaries compiled** -- ASCII model edits (e.g. roomlinks in the model) must be compiled back to binary (MDL/MDX and WOK) for the game to use them.
 
@@ -31,18 +34,24 @@ Real doors (that open and allow crossing) require: a door model, a door walkmesh
 
 Step-by-step workflows for room layout and roomlink editing live in the community. The wiki describes concepts only; for tool-specific procedures (e.g. Area Tools, Room Linker, Export WOK), use the following links.
 
-- **KOTORMax** (Deadly Stream file by bead-v) -- Plugin for 3ds Max and GMax; LYT/VIS import and export; Roomlink Editor; ASCII model workflow with [MDLEdit](https://deadlystream.com/forum/files/file/1150-mdledit/) or MDLOps. [KOTORmax file](https://deadlystream.com/files/file/1151-kotormax/), [KOTORmax topic](https://deadlystream.com/topic/5731-kotormax/).
+- **KOTORMax** (Deadly Stream file by bead-v) — Plugin for 3ds Max and GMax; LYT/VIS import and export; Roomlink Editor; ASCII model workflow with [MDLEdit](https://deadlystream.com/forum/files/file/1150-mdledit/) or MDLOps.
+  - [KOTORmax file](https://deadlystream.com/files/file/1151-kotormax/)
+  - [KOTORmax topic](https://deadlystream.com/topic/5731-kotormax/)
 - **Adding existing rooms to a module** (Deadly Stream) -- Explains roomlinks, reassigning in KOTORMax, and what must agree. [Topic 8517](https://deadlystream.com/topic/8517-adding-existing-rooms-to-a-module/).
 - **[K1] Creating a new room in an existing module** (Deadly Stream) -- Workflow for new rooms and using KOTORMax for layout, visibility, and walkmesh edges. [Topic 11729](https://deadlystream.com/topic/11729-k1-creating-a-new-room-in-an-existing-module/).
-- **KOTORBlender** -- Room transition/roomlink support is incomplete; fine for geometry, not reliable for finalizing room-to-room crossing. See [Blender Integration](Blender-Integration#current-limitations) and [Indoor Map Builder](Indoor-Map-Builder-User-Guide) for alternatives.
+- **KOTORBlender** -- Room transition/roomlink support is incomplete; fine for geometry, not reliable for finalizing room-to-room crossing. Alternatives:
+
+  - [Blender Integration — current limitations](Blender-Integration#current-limitations)
+  - [Indoor Map Builder](Indoor-Map-Builder-User-Guide)
 
 ## Related format pages
 
 For more information, see:
 
-- [BWM File Format](BWM-File-Format) -- WOK structure, perimeters, transition IDs, [Transitions and Door Placement](BWM-File-Format#transitions-and-door-placement).
+- [BWM File Format](BWM-File-Format) -- WOK structure, perimeters, transition IDs
+- [Transitions and Door Placement](BWM-File-Format#transitions-and-door-placement).
 - [LYT File Format](LYT-File-Format) -- Room order and [room definitions](LYT-File-Format#room-definitions); room index = transition ID.
 - [VIS File Format](VIS-File-Format) -- Visibility graph for area rooms.
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Building indoor modules and [troubleshooting room crossing](Indoor-Map-Builder-User-Guide#room-crossing-and-walkmesh).
 - [Blender Integration](Blender-Integration) -- Limitations for roomlink authoring.
-- [2DA surfacemat](2DA-surfacemat) -- Walkmesh face materials and walkability.
+- [2DA surfacemat](2DA-File-Format#surfacemat2da) -- Walkmesh face materials and walkability.

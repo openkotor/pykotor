@@ -404,6 +404,9 @@ Format document.
 
 ### See also
 
-- [GFF-UTE](GFF-UTE) -- KotOR encounter implementation; [GFF-File-Format](GFF-File-Format) -- GFF structure
-- [2DA-encdifficulty](2DA-encdifficulty) -- Difficulty table; [GFF-GIT](GFF-GIT) -- Encounter instances
-- [Bioware-Aurora-Trigger](Bioware-Aurora-Trigger) -- Geometry rules; [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [GFF-UTE](GFF-UTE) -- KotOR encounter implementation
+- [GFF-File-Format](GFF-File-Format) -- GFF structure
+- [2DA-encdifficulty](2DA-File-Format#encdifficulty2da) -- Difficulty table
+- [GFF-GIT](GFF-GIT) -- Encounter instances
+- [Bioware-Aurora-Trigger](Bioware-Aurora-Trigger) -- Geometry rules
+- [KEY-File-Format](KEY-File-Format) -- Resource resolution

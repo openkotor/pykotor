@@ -4,13 +4,24 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine 2DA format specification, see [Bioware Aurora 2DA Format](Bioware-Aurora-2DA).
 
-**For mod developers:** To modify 2DA files in your mods, see the [TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** 2DA files are often referenced by [GFF files](GFF-File-Format) (such as [UTC (Creature)](GFF-File-Format#utc-creature), [UTI (Item)](GFF-File-Format#uti-item), [UTP (Placeable)](GFF-File-Format#utp-placeable) templates) and may contain references to [TLK files](TLK-File-Format) for text strings.
+- To modify 2DA files in your mods, see the [TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax).
+- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+
+**Related formats:**
+
+- Referenced from [GFF files](GFF-File-Format), commonly:
+
+  - [UTC (Creature)](GFF-File-Format#utc-creature)
+  - [UTI (Item)](GFF-File-Format#uti-item)
+  - [UTP (Placeable)](GFF-File-Format#utp-placeable) templates
+
+- Often store [StrRefs](TLK-File-Format#string-references-strref) into [TLK files](TLK-File-Format) for text strings
 
 **Important**: While the 2DA file format structure is shared across BioWare's Aurora, Odyssey, and probably even Eclipse's engines (including Neverwinter Nights, Dragon Age, and Jade Empire), this documentation focuses exclusively on KotOR and KotOR 2. All 2DA file examples, column structures, and engine usage descriptions are specific to these games. References to vendor implementations are marked as either *KotOR*-specific or generic *Aurora* engine code (shared format).
 
-**Document structure and stub pages:** This document is the single source of truth for KotOR/TSL 2DA format and table-specific column semantics. All individual 2DA table documentation (e.g. [appearance.2da](2DA-File-Format#appearance2da), [baseitems.2da](2DA-File-Format#baseitems2da)) is inlined here with anchor links below. Separate wiki pages such as [2DA-appearance](2DA-File-Format#appearance2da), [2DA-baseitems](2DA-File-Format#baseitems2da), [2DA-animations](2DA-File-Format#animations2da), and other `2DA-*.md` stubs exist only as shortcuts: they link to the corresponding section in this document and do not duplicate content. When adding or editing 2DA table documentation, update this file and keep stub pages as single-line redirects to the appropriate anchor.
+**Document structure:** This document is the single source of truth for KotOR/TSL 2DA format and table-specific column semantics. Individual 2DA table documentation is inlined here. Use the table of contents below to jump to a specific table.
 
 ## Table of Contents
 
@@ -225,15 +236,36 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 ## file structure Overview
 
-2DA files are tabular game data; role in modding and merge workflows: see the **2DA** section on [Concepts](Concepts). On disk in game archives they use binary version **`V2.b`** and the `.2da` extension. The engine loads them with the same *[resource resolution order](Concepts#resource-resolution-order)* as other resources (override, module [RIM](RIM-File-Format)/[MOD](ERF-File-Format), save, [KEY](KEY-File-Format)/[BIF](BIF-File-Format)).
+2DA files are tabular game data; role in modding and merge workflows: see the **2DA** section on [Concepts](Concepts). On disk in game archives they use binary version **`V2.b`** and the `.2da` extension. The engine loads them with the same *[resource resolution order](Concepts#resource-resolution-order)* as other resources:
 
-**PyKotor:** [`resource/formats/twoda/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/) — binary `V2.b`: [`TwoDABinaryReader.load` L146+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L146), [`TwoDABinaryWriter.write` L183+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L183); data model [`TwoDA` L87+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L87), [`TwoDARow` L915+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L915). Text `V2.0` / CSV / JSON: `io_twoda_csv.py`, `io_twoda_json.py`, [`twoda_auto.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py).
+- override
+- module [RIM](RIM-File-Format)
+- [MOD](ERF-File-Format)
+- save
+- [KEY](KEY-File-Format)
+- [BIF](BIF-File-Format)
+
+**PyKotor:**
+
+- package: [`resource/formats/twoda/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/)
+- binary `V2.b`: [`TwoDABinaryReader.load` L146+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L146)
+- [`TwoDABinaryWriter.write` L183+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L183)
+- data model [`TwoDA` L87+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L87)
+- [`TwoDARow` L915+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L915)
+- text `V2.0` / CSV / JSON:
+
+  - `io_twoda_csv.py`
+  - `io_twoda_json.py`
+  - [`twoda_auto.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py)
 
 **Cross-reference (other implementations):**
 
 - **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/resource/TwoDAObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`TwoDA.cs` L16+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDA.cs#L16) (in-memory table), [`TwoDABinaryStructure.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs#L12) (`V2.b` binary layout)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**
+
+  - [`TwoDA.cs` L16+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDA.cs#L16) (in-memory table)
+  - [`TwoDABinaryStructure.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs#L12) (`V2.b` binary layout)
 - **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp)
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs)
 - **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md) — basic format overview
@@ -309,7 +341,7 @@ Row labels immediately follow the row count:
 | ---------- | ------- | ---------------------------------------------------------------- |
 | Row Labels | [char](GFF-File-Format#gff-data-types)[]  | [Tab-separated](https://en.wikipedia.org/wiki/Tab-separated_values) row labels (one per row, typically numeric)       |
 
-Each row label is read as a [tab-terminated](2DA-File-Format#column-headers) string (tab character `0x09`). Row labels are usually numeric (`"0"`, `"1"`, `"2"`...) but can be arbitrary strings.
+Each row label is read as a [tab-terminated](#column-headers) string (tab character `0x09`). Row labels are usually numeric (`"0"`, `"1"`, `"2"`...) but can be arbitrary strings.
 
 **Important**: The row label list is **not** terminated by a [null byte](https://en.cppreference.com/w/c/string/byte) (`0x00`). The reader must consume exactly `row_count` labels based on the count field. This differs from the column headers which do have a [null terminator](https://en.cppreference.com/w/c/string/byte). The row labels are primarily for human readability and editing tools - the actual row indexing in the KotOR game engine is based on position, not label value.
 
@@ -326,7 +358,7 @@ After row labels, cell data offsets are stored:
 
 | Name            | type     | size | Description                                                      |
 | --------------- | -------- | ---- | ---------------------------------------------------------------- |
-| Cell Offsets    | [uint16](GFF-File-Format#gff-data-types)[] | `2`×`N`  | [Array](https://en.wikipedia.org/wiki/Array_data_structure) of offsets into cell data string table (N = [row_count](2DA-File-Format#row-labels) × [column_count](2DA-File-Format#column-headers), [little-endian](https://en.wikipedia.org/wiki/Endianness)) |
+| Cell Offsets    | [uint16](GFF-File-Format#gff-data-types)[] | `2`×`N`  | [Array](https://en.wikipedia.org/wiki/Array_data_structure) of offsets into the cell data string table. Row-major size *N* uses:<br>- [row_count](#row-labels)<br>- [column_count](#column-headers)<br>Values are stored [little-endian](https://en.wikipedia.org/wiki/Endianness). |
 | Cell Data Size  | [uint16](GFF-File-Format#gff-data-types)   | `2`    | Total size of cell data string table in bytes ([little-endian](https://en.wikipedia.org/wiki/Endianness))   |
 
 Each cell has a 16-bit unsigned integer offset ([little-endian](https://en.wikipedia.org/wiki/Endianness)) pointing to its string value in the cell data string table. Offsets are stored in [row-major order](https://en.wikipedia.org/wiki/Row-_and_column-major_order) (all cells of row `0`, then all cells of row `1`, etc.). The cell data size field immediately follows the offset array and precedes the actual cell data.
@@ -408,7 +440,11 @@ All cell values are stored as strings in the *2DA* file, but are interpreted as 
 
 - **Integers**: Numeric strings parsed as [`int32`](https://en.wikipedia.org/wiki/Integer_(computer_science)) - used for numeric identifiers, counts, and enumerated values.
 - **Floats**: Decimal strings parsed as [`float`](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) - used for calculations like damage multipliers, timers, and percentages.
-- **ResRefs**: [Resource references](GFF-File-Format#gff-data-types) (max 16 characters, no extension) - point to other game resources like [models](MDL-MDX-File-Format), [textures](TPC-File-Format), or scripts.
+- **ResRefs**: [Resource references](GFF-File-Format#gff-data-types) (max 16 characters, no extension) point to other game resources such as:
+
+  - [models](MDL-MDX-File-Format)
+  - [textures](TPC-File-Format)
+  - [NCS](NCS-File-Format) scripts (and other resource types by ResRef)
 - **StrRefs**: [String references](TLK-File-Format#string-references-strref) into [`dialog.tlk`](TLK-File-Format) (typically negative values like `-1` indicate no reference) - used for localized text display.
 - **Boolean**: `"0"` or `"1"` (sometimes `"TRUE"`/`"FALSE"`) - control feature flags and settings
 - **Empty Cells**: Represented as `"****"` - treated as null/undefined by the engine
@@ -558,7 +594,15 @@ This section documents all known *2DA* files used in *KotOR* 1 and *KotOR* 2/TSL
 
 ### `appearance.2da`
 
-**Engine Usage**: The `appearance.2da` file is one of the most critical *2DA* files in the games. It maps appearance IDs (used in [creature templates](GFF-File-Format#utc-creature) and character creation) to 3D [model](MDL-MDX-File-Format) *ResRefs*, [texture](TPC-File-Format) assignments, race associations, and physical properties. The engine uses this file when loading creatures, determining which [model](MDL-MDX-File-Format) and [textures](TPC-File-Format) to display, calculating hit detection, and managing character [animations](MDL-MDX-File-Format#animation-header).
+**Engine Usage**: The `appearance.2da` file is one of the most critical *2DA* files in the games. It maps appearance IDs (from [creature templates](GFF-File-Format#utc-creature) and character creation) into the data the renderer needs when loading creatures:
+
+- 3D [model](MDL-MDX-File-Format) *ResRefs*
+- [texture](TPC-File-Format) assignments
+- Race associations and physical properties
+- Which [model](MDL-MDX-File-Format) to display
+- Which [textures](TPC-File-Format) to display
+- Hit detection inputs
+- [animations](MDL-MDX-File-Format#animation-header)
 
 **Row index**: Appearance ID (*integer*, typically `0`-based)
 
@@ -675,9 +719,12 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 
 - **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/appearance.cpp:28-125`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/appearance.cpp#L28-L125) - Complete column parsing implementation with all column names
 - **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:98-107`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L98-L107) - Appearance loading and column usage
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1156-1228`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1156-L1228) - [model](MDL-MDX-File-Format) and [texture](TPC-File-Format) column access
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1156-1228`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1156-L1228) — column access for:
 
-### [baseitems.2da](2DA-baseitems)
+  - [model](MDL-MDX-File-Format)
+  - [texture](TPC-File-Format)
+
+### [baseitems.2da](#baseitems2da)
 
 **Engine Usage**: Defines base item types that form the foundation for all items in the game. Each row represents a base item type (*weapon*, *armor*, *shield*, etc.) with properties like damage dice, weapon categories, equipment slots, and item flags. The engine uses this file to determine item behavior, combat statistics, and equipment compatibility.
 
@@ -785,7 +832,7 @@ The following columns are accessed by the game engine:
 
 ---
 
-### [classes.2da](2DA-classes)
+### [classes.2da](#classes2da)
 
 **Engine Usage**: Defines character classes with their progression tables, skill point calculations, hit dice, saving throw progressions, and feat access. The engine uses this file to determine class abilities, skill point allocation, and level progression mechanics.
 
@@ -858,7 +905,7 @@ The following columns are accessed by the game engine:
 
 ---
 
-### [feat.2da](2DA-feat)
+### [feat.2da](#feat2da)
 
 **Engine Usage**: Defines all feats available in the game, including combat feats, skill feats, Force feats, and class-specific abilities. The engine uses this file to determine feat prerequisites, effects, and availability during character creation and level-up.
 
@@ -949,7 +996,7 @@ The following columns are accessed by the reone engine:
 
 ---
 
-### [skills.2da](2DA-skills)
+### [skills.2da](#skills2da)
 
 **Engine Usage**: Defines all skills available in the game, including which classes can use them, their [KEY](KEY-File-Format) ability scores, and skill descriptions. The engine uses this file to determine skill availability, skill point costs, and skill checks.
 
@@ -1007,7 +1054,7 @@ The following columns are accessed by the reone engine:
 
 ---
 
-### [spells.2da](2DA-spells)
+### [spells.2da](#spells2da)
 
 **Engine Usage**: Defines all Force powers (and legacy spell entries) in KotOR, including their costs, targeting modes, visual effects, and descriptions. The engine uses this file to determine Force power availability, casting requirements, and effects. Note: KotOR uses Force powers rather than traditional D&D spells, though the file structure is inherited from the Aurora engine (originally designed for Neverwinter Nights).
 
@@ -1176,7 +1223,7 @@ The following columns are accessed by the reone engine:
 
 ## Objects & Area 2DA files
 
-### [placeables.2da](2DA-placeables)
+### [placeables.2da](#placeables2da)
 
 **Engine Usage**: Defines placeable objects (containers, usable objects, interactive elements) with their [models](MDL-MDX-File-Format), properties, and behaviors. The engine uses this file when loading placeable objects in areas, determining their [models](MDL-MDX-File-Format), hit detection, and interaction properties.
 
@@ -1254,9 +1301,13 @@ The complete column structure is defined in reone's placeables parser:
 
 ---
 
-### [genericdoors.2da](2DA-genericdoors)
+### [genericdoors.2da](#genericdoors2da)
 
-**Engine Usage**: Defines door types with their [models](MDL-MDX-File-Format), [animations](MDL-MDX-File-Format#animation-header), and properties. The engine uses this file when loading doors in areas, determining which [model](MDL-MDX-File-Format) to display and how the door behaves.
+**Engine Usage**: Defines door types and how they behave in areas. The engine consults this file when loading doors to choose:
+
+- [models](MDL-MDX-File-Format)
+- [animations](MDL-MDX-File-Format#animation-header)
+- Associated properties and which [model](MDL-MDX-File-Format) to display
 
 **Row index**: Door type ID (integer)
 
@@ -1294,13 +1345,13 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](TLK-File-Format#string-references-strref) column definition for [doortypes.2da](2DA-doortypes) (K1: stringrefgame)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](TLK-File-Format#string-references-strref) column definition for [doortypes.2da](#doortypes2da) (K1: stringrefgame)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:86`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L86) - [StrRef](TLK-File-Format#string-references-strref) column definition for genericdoors.2da (K1: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](2DA-doortypes) (K1: [model](MDL-MDX-File-Format))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](#doortypes2da) (K1: [model](MDL-MDX-File-Format))
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:178`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L178) - [model](MDL-MDX-File-Format) *ResRef* column definition for genericdoors.2da (K1: modelname)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:256`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L256) - [StrRef](TLK-File-Format#string-references-strref) column definition for [doortypes.2da](2DA-doortypes) (K2: stringrefgame)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:256`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L256) - [StrRef](TLK-File-Format#string-references-strref) column definition for [doortypes.2da](#doortypes2da) (K2: stringrefgame)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:264`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L264) - [StrRef](TLK-File-Format#string-references-strref) column definition for genericdoors.2da (K2: [StrRef](TLK-File-Format#string-references-strref))
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:356`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L356) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](2DA-doortypes) (K2: [model](MDL-MDX-File-Format))
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:356`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L356) - [model](MDL-MDX-File-Format) *ResRef* column definition for [doortypes.2da](#doortypes2da) (K2: [model](MDL-MDX-File-Format))
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:357`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L357) - [model](MDL-MDX-File-Format) *ResRef* column definition for genericdoors.2da (K2: modelname)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:468`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L468) - TwoDARegistry.DOORS constant definition
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:543`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L543) - [GFF](GFF-File-Format) field mapping: "GenericType" -> genericdoors.2da
@@ -1319,7 +1370,7 @@ The complete column structure is defined in reone's genericdoors parser:
 
 ---
 
-### [doortypes.2da](2DA-doortypes)
+### [doortypes.2da](#doortypes2da)
 
 **Engine Usage**: Defines door type configurations and their properties. The engine uses this file to determine door type names, [models](MDL-MDX-File-Format), and behaviors.
 
@@ -1343,7 +1394,7 @@ The complete column structure is defined in reone's genericdoors parser:
 
 ---
 
-### [soundset.2da](2DA-soundset)
+### [soundset.2da](#soundset2da)
 
 **Engine Usage**: Maps sound set IDs to voice set assignments for characters. The engine uses this file to determine which voice lines to play for characters based on their sound set.
 
@@ -1382,7 +1433,7 @@ The complete column structure is defined in reone's genericdoors parser:
 
 ## Visual Effects & [animations](MDL-MDX-File-Format#animation-header) 2DA files
 
-### [visualeffects.2da](2DA-visualeffects)
+### [visualeffects.2da](#visualeffects2da)
 
 **Engine Usage**: Defines visual effects (particle effects, impact effects, environmental effects) with their durations, [models](MDL-MDX-File-Format), and properties. The engine uses this file when playing visual effects for spells, combat, and environmental events.
 
@@ -1457,7 +1508,7 @@ The complete column structure is defined in reone's genericdoors parser:
 
 ---
 
-### [portraits.2da](2DA-portraits)
+### [portraits.2da](#portraits2da)
 
 **Engine Usage**: Maps portrait IDs to portrait image ResRefs for character selection screens and character sheets. The engine uses this file to display character portraits in the UI.
 
@@ -1506,7 +1557,12 @@ The complete column structure is defined in reone's genericdoors parser:
 
 ### heads.2da
 
-**Engine Usage**: Defines head [models](MDL-MDX-File-Format) and [textures](TPC-File-Format) for player characters and NPCs. The engine uses this file when loading character heads, determining which 3D [model](MDL-MDX-File-Format) and [textures](TPC-File-Format) to apply.
+**Engine Usage**: Defines head assets for player characters and NPCs. When loading character heads, the engine uses this file to choose:
+
+- [models](MDL-MDX-File-Format)
+- [textures](TPC-File-Format)
+- Which 3D [model](MDL-MDX-File-Format) to apply
+- Which [textures](TPC-File-Format) to apply
 
 **Row index**: Head ID (integer)
 
@@ -1736,7 +1792,7 @@ Similar name generation files exist for other species:
 **Vendor Implementations:**
 
 - **[reone](https://github.com/modawan/reone)**: [`src/libs/game/footstepsounds.cpp:31-57`](https://github.com/modawan/reone/blob/master/src/libs/game/footstepsounds.cpp#L31-L57) - Footstep sounds loading from [2DA](2DA-File-Format)
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:106`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L106) - Footstep type usage from [appearance.2da](2DA-appearance)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:106`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L106) - Footstep type usage from [appearance.2da](#appearance2da)
 
 ---
 
@@ -2173,7 +2229,7 @@ Similar name generation files exist for other species:
 
 ---
 
-### [traps.2da](2DA-traps)
+### [traps.2da](#traps2da)
 
 **Engine Usage**: Defines trap properties including [models](MDL-MDX-File-Format), sounds, and scripts. The engine uses this file when loading triggers with trap types to determine trap appearance and behavior.
 
@@ -2333,7 +2389,7 @@ Similar name generation files exist for other species:
 
 ---
 
-### [racialtypes.2da](2DA-racialtypes)
+### [racialtypes.2da](#racialtypes2da)
 
 **Engine Usage**: Defines racial types for character creation and [creature templates](GFF-File-Format#utc-creature). The engine uses this file to determine race-specific properties, restrictions, and bonuses.
 
@@ -2410,7 +2466,7 @@ Similar name generation files exist for other species:
 
 ---
 
-### [itempropdef.2da](2DA-itempropdef)
+### [itempropdef.2da](#itempropdef2da)
 
 **Engine Usage**: Defines item property definitions and their base properties. This is the master table for all item properties in the game. The engine uses this file to determine item property types, costs, and effects.
 
@@ -2996,9 +3052,9 @@ The following 2DA files are used for item property parameter and cost calculatio
 - [`twoda.py` `_GFF_FIELD_TO_2DA` — `"MonsterDamage"` → `iprp_monstdam` L779](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L779)
 - [`read_2da` L67+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py#L67) — generic 2DA reader
 
-**Note:** Unlike `iprp_combatdam`, there is no separate `TwoDARegistry.IPRP_MONSTDAM` constant—the file is reached via the **MonsterDamage** GFF field mapping above and via **[itemprops.2da](2DA-itemprops)** cost-table wiring.
+**Note:** Unlike `iprp_combatdam`, there is no separate `TwoDARegistry.IPRP_MONSTDAM` constant—the file is reached via the **MonsterDamage** GFF field mapping above and via **[itemprops.2da](#itemprops2da)** cost-table wiring.
 
-**See:** [2DA-iprp_monstdam](2DA-iprp_monstdam) — expanded stub page (combat vs monster damage, cross-links).
+**See:** [2DA-iprp_monstdam](#iprp_monstdam2da) — expanded stub page (combat vs monster damage, cross-links).
 
 ---
 
@@ -3461,14 +3517,27 @@ The following 2DA files are used for item property parameter and cost calculatio
 | -------- | -------- |
 | Binary read | [`TwoDABinaryReader.load` L146+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L146) in [`io_twoda.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py) |
 | Binary write | [`TwoDABinaryWriter.write` L183+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L183) |
-| Data model | [`TwoDA` L87+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L87), [`TwoDARow` L915+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L915) in [`twoda_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py) |
+| Data model (`TwoDA`) | [`TwoDA` L87+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L87) in [`twoda_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py) |
+| Data model (`TwoDARow`) | [`TwoDARow` L915+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L915) in [`twoda_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py) |
 | CSV/JSON | `io_twoda_csv.py`, `io_twoda_json.py` |
 
 ### Other implementations
 
-- **reone**: [`2dareader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp), [`2dawriter.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dawriter.cpp), [`2da.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/2da.cpp)
-- **KotOR.js**: [`TwoDAObject.ts` L69–L145](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts#L69-L145), [`TwoDAManager.ts` L21–L37](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/TwoDAManager.ts#L21-L37)
-- **Kotor.NET**: [`TwoDABinaryStructure.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs#L12) (`FileRoot` / `FileHeader`), [`TwoDA.cs` L16+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDA.cs#L16)
+- **reone**
+
+  - [`2dareader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp)
+  - [`2dawriter.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dawriter.cpp)
+  - [`2da.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/2da.cpp)
+
+- **KotOR.js**
+
+  - [`TwoDAObject.ts` L69–L145](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts#L69-L145)
+  - [`TwoDAManager.ts` L21–L37](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/TwoDAManager.ts#L21-L37)
+
+- **Kotor.NET**
+
+  - [`TwoDABinaryStructure.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs#L12) (`FileRoot` / `FileHeader`)
+  - [`TwoDA.cs` L16+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDA.cs#L16)
 - **xoreos**: [`2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp)
 - **KotOR-Unity**: [`2DAObject.cs` L23–L105](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L23-L105)
 
@@ -3477,7 +3546,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 - [TLK File Format](TLK-File-Format) - String references (StrRef) used in 2DA columns
 - [GFF File Format](GFF-File-Format) - ResRef and data types; many GFF types reference 2DA tables
 - [KEY File Format](KEY-File-Format) - Resource resolution order for 2DA by ResRef
-- [2DA-appearance](2DA-appearance), [2DA-baseitems](2DA-baseitems), [2DA-classes](2DA-classes) - Example table docs
+- Example stub pages (each redirects into this document):
+
+  - [2DA-appearance](#appearance2da)
+  - [2DA-baseitems](#baseitems2da)
+  - [2DA-classes](#classes2da)
 - [Bioware Aurora 2DA](Bioware-Aurora-2DA) - Official BioWare 2DA specification
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for 2DA modding and column references
 

@@ -62,7 +62,7 @@ Each [SSF file](SSF-File-Format) requires its own section (e.g., `[example.ssf]`
 **Destination values:**
 
 - `Override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container
+- `Modules\module.mod`: Insert into a [MOD](ERF-File-Format), [ERF](ERF-File-Format), or [RIM](RIM-File-Format) container
 - Use backslashes for path separators
 
 **Replace file Behavior:**
@@ -113,7 +113,10 @@ Pain 1=-1
 
 ## Memory Token System
 
-SSFList supports both [TLK](TLK-File-Format) and [2DA](2DA-File-Format) memory tokens for dynamic stringref assignment.
+SSFList supports memory tokens for dynamic stringref assignment from:
+
+- [TLK](TLK-File-Format)
+- [2DA](2DA-File-Format)
 
 ### [StrRef](TLK-File-Format#string-references-strref) Tokens
 
@@ -235,7 +238,7 @@ Pain 1=StrRef1002
 
 ### Example 3: Using [2DA](2DA-File-Format) Memory Tokens
 
-This example uses 2DAMEMORY tokens to reference row indices from a custom [appearance.2da](2DA-appearance) table:
+This example uses 2DAMEMORY tokens to reference row indices from a custom [appearance.2da](2DA-File-Format#appearance2da) table:
 
 ```ini
 [2DAList]
@@ -372,7 +375,7 @@ Poisoned=50120
 
 ### Example 7: Modifying [SSF](SSF-File-Format) files in Containers
 
-This example shows how to patch [SSF files](SSF-File-Format) that are stored in [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container files:
+This example shows how to patch [SSF files](SSF-File-Format) that are stored in [MOD](ERF-File-Format), [ERF](ERF-File-Format), or [RIM](RIM-File-Format) container files:
 
 ```ini
 [SSFList]
@@ -539,14 +542,19 @@ This means that memory tokens set in TLKList and 2DAList will be available when 
 - Read existing [SSF files](SSF-File-Format) from Override or containers
 - Write modified [SSF files](SSF-File-Format) to Override or containers
 - Modify any of the 28 sound entry stringrefs
-- Support for [TLK](TLK-File-Format) and [2DA](2DA-File-Format) memory token resolution
+- Memory token resolution for:
+
+  - [TLK](TLK-File-Format)
+  - [2DA](2DA-File-Format)
 - Replace file or modify existing file modes
 
 ### See also
 
 - [SSF-File-Format](SSF-File-Format) -- Sound set structure
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- StrRef tokens; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Token usage
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme); [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- StrRef tokens
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Token usage
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for soundset modding
 
 ---

@@ -141,6 +141,8 @@ Verified against (/K1/k1_win_gog_swkotor.exe: `CSWSCreatureStats::ReadStatsFromG
 
 ### See also
 
-- [GFF-UTC](GFF-UTC) -- Creature GFF structure; [GFF-File-Format](GFF-File-Format) -- GFF types.
-- [2DA-File-Format](2DA-File-Format), [2DA-appearance](2DA-appearance) -- Appearance and feats/spells tables.
+- [GFF-UTC](GFF-UTC) -- Creature GFF structure
+- [GFF-File-Format](GFF-File-Format) -- GFF types.
+- [2DA-File-Format](2DA-File-Format)
+- [2DA-appearance](2DA-File-Format#appearance2da) -- Appearance and feats/spells tables.
 - [reverse_engineering_findings](reverse_engineering_findings) -- Engine analysis.

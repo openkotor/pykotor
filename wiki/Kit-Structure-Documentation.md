@@ -910,7 +910,7 @@ The kit extraction process is aligned with open-source engine code ([reone](http
 
 **KotOR.js** ([`ModuleDoor.ts` L1062–L1063](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L1062-L1063) — `GenericType` from [UTD](GFF-File-Format#utd-door); see also [`getGenericType` / appearance](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L224-L237)):
 
-- Door [models](MDL-MDX-File-Format) are resolved similarly using `[genericdoors.2da](2DA-genericdoors)`
+- Door [models](MDL-MDX-File-Format) are resolved similarly using `[genericdoors.2da](2DA-File-Format#genericdoors2da)`
 - The appearance ID from [UTD](GFF-File-Format#utd-door) is used to lookup [model](MDL-MDX-File-Format) name
 - **PyKotor Implementation**: Matches KotOR.js approach
 

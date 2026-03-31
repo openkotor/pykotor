@@ -6,22 +6,39 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Door/Placeable format specification, see [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-DoorPlaceableGFF).
 
-**For mod developers:** To modify placeable templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** UTP references [2DA placeables](2DA-placeables), [2DA traps](2DA-traps), [GFF-UTI](GFF-UTI), [GFF-UTD](GFF-UTD), [KEY](KEY-File-Format), [NCS](NCS-File-Format), [DLG](GFF-DLG), and [MDL](MDL-MDX-File-Format).
+- To modify placeable templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
+- For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+
+**Related formats:**
+
+- [2DA placeables](2DA-File-Format#placeables2da)
+- [2DA traps](2DA-File-Format#traps2da)
+- [GFF-UTI](GFF-UTI)
+- [GFF-UTD](GFF-UTD)
+- [KEY](KEY-File-Format)
+- [NCS](NCS-File-Format)
+- [DLG](GFF-DLG)
+- [MDL](MDL-MDX-File-Format)
 
 ## References
 
 **PyKotor:**
 
 - [`utp.py` `UTP` L19+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L19) — in-memory placeable template (inventory, traps, HP, scripts)
-- [`construct_utp` L227+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L227), [`read_utp` L405+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L405), [`write_utp` L414+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L414) — GFF ↔ `UTP` round-trip
+- [`construct_utp` L227+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L227)
+- [`read_utp` L405+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L405)
+- [`write_utp` L414+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L414) — GFF ↔ `UTP` round-trip
 - [`gff_data.py` `GFFContent.UTP` L154](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L154) — four-character GFF type id
 - [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — generic GFF reader (UTP shares door/placeable patterns with UTD)
+- **[reone](https://github.com/modawan/reone)** — generic GFF reader (UTP shares door/placeable patterns with UTD):
+
+  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
+  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — managed GFF reader/writer
 - **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF pipeline
@@ -42,13 +59,13 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Appearance` | UInt32 | Index into [`placeables.2da`](2DA-placeables) |
+| `Appearance` | UInt32 | Index into [`placeables.2da`](2DA-File-Format#placeables2da) |
 | `Type` | [byte](GFF-File-Format#gff-data-types) | Placeable type category |
 | `AnimationState` | [byte](GFF-File-Format#gff-data-types) | Current [animation](MDL-MDX-File-Format#animation-header) state |
 
 **Appearance System:**
 
-- [`placeables.2da`](2DA-placeables) defines [models](MDL-MDX-File-Format), lighting, and sounds
+- [`placeables.2da`](2DA-File-Format#placeables2da) defines [models](MDL-MDX-File-Format), lighting, and sounds
 - Appearance determines visual [model](MDL-MDX-File-Format) and interaction [animation](MDL-MDX-File-Format#animation-header)
 - type influences behavior (container, switch, generic)
 
@@ -161,7 +178,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 | `DisarmDC` | [byte](GFF-File-Format#gff-data-types) | Security DC to disarm trap |
 | `TrapFlag` | [byte](GFF-File-Format#gff-data-types) | Trap is active |
 | `TrapOneShot` | [byte](GFF-File-Format#gff-data-types) | Trap triggers only once |
-| `TrapType` | [byte](GFF-File-Format#gff-data-types) | Index into [`traps.2da`](2DA-traps) ([trap definitions](2DA-traps)) |
+| `TrapType` | [byte](GFF-File-Format#gff-data-types) | Index into [`traps.2da`](2DA-File-Format#traps2da) ([trap definitions](2DA-File-Format#traps2da)) |
 
 **Trap Behavior:**
 
@@ -180,7 +197,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 - Appearance determines [model](MDL-MDX-File-Format) and light color
 - Some placeables have animated components
-- Light properties defined in [`placeables.2da`](2DA-placeables)
+- Light properties defined in [`placeables.2da`](2DA-File-Format#placeables2da)
 
 ## Implementation Notes
 
@@ -221,7 +238,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 **Instantiation Flow:**
 
 1. **Template Load**: [GFF](GFF-File-Format) parsed from [UTP](GFF-File-Format#utp-placeable)
-2. **Appearance Setup**: [model](MDL-MDX-File-Format) loaded from [`placeables.2da`](2DA-placeables)
+2. **Appearance Setup**: [model](MDL-MDX-File-Format) loaded from [`placeables.2da`](2DA-File-Format#placeables2da)
 3. **Inventory Population**: ItemList instantiated
 4. **Lock State**: Locked status applied
 5. **Trap Activation**: Trap armed if configured
@@ -291,5 +308,8 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 - [GFF File Format](GFF-File-Format) - Generic format underlying UTP
 - [GFF-UTD (Door)](GFF-UTD) - Door templates (shared lock/trap behavior)
 - [GFF-UTI (Item)](GFF-UTI) - Item templates in placeable inventory
-- [2DA placeables](2DA-placeables), [2DA traps](2DA-traps) - Lookup tables
+- Lookup tables:
+
+  - [2DA placeables](2DA-File-Format#placeables2da)
+  - [2DA traps](2DA-File-Format#traps2da)
 - [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-DoorPlaceableGFF) - Official specification

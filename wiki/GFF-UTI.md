@@ -6,9 +6,23 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Item format specification, see [Bioware Aurora Item Format](Bioware-Aurora-Item).
 
-**For mod developers:** To modify GFF/UTI files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** UTI fields reference [2DA files](2DA-File-Format) ([baseitems.2da](2DA-File-Format#baseitems2da), [itempropdef.2da](2DA-File-Format#itempropdef2da)), [TLK](TLK-File-Format) for localized names, and [MDL](MDL-MDX-File-Format)/[TPC](TPC-File-Format) for [model](MDL-MDX-File-Format) and [texture](TPC-File-Format) variants.
+- To modify GFF/UTI files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
+- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+
+**Related formats:**
+
+- [2DA files](2DA-File-Format):
+
+  - [baseitems.2da](2DA-File-Format#baseitems2da)
+  - [itempropdef.2da](2DA-File-Format#itempropdef2da)
+
+- [TLK](TLK-File-Format) — localized names
+- Visual variants resolve through:
+
+  - [MDL](MDL-MDX-File-Format) ([model](MDL-MDX-File-Format) geometry)
+  - [TPC](TPC-File-Format) ([texture](TPC-File-Format) data)
 
 ## References
 
@@ -22,7 +36,10 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (UTI uses generic GFF structure)
+- **[reone](https://github.com/modawan/reone)** — C++ GFF reader (UTI uses generic GFF structure):
+
+  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
+  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (UTI uses generic GFF structure)
 - **[PyKotor](https://github.com/OldRepublicDevs/PyKotor)** (binary GFF): [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — same pipeline as other GFF types
@@ -53,7 +70,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 | `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body variation for armor (1-9) |
 | `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](TPC-File-Format) variation for armor (1-9) |
 
-**BaseItem types** (from [`baseitems.2da`](2DA-baseitems)):
+**BaseItem types** (from [`baseitems.2da`](2DA-File-Format#baseitems2da)):
 
 - **0-10**: Various weapon types (shortsword, longsword, blaster, etc.)
 - **11-30**: Armor types and shields
@@ -177,7 +194,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 **[model](MDL-MDX-File-Format) Resolution:**
 
-1. Engine looks up `BaseItem` in [`baseitems.2da`](2DA-baseitems)
+1. Engine looks up `BaseItem` in [`baseitems.2da`](2DA-File-Format#baseitems2da)
 2. Retrieves [model](MDL-MDX-File-Format) prefix (e.g., `w_lghtsbr`)
 3. Appends variations: `w_lghtsbr_001.mdl`
 4. [textures](TPC-File-Format) follow similar pattern
@@ -202,12 +219,12 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 1. **Template Loading**: [GFF](GFF-File-Format) structure parsed from [UTI](GFF-File-Format#uti-item)
 2. **Property Application**: PropertiesList merged into item
 3. **Cost Calculation**: Base cost + AddCost + property costs
-4. **Visual Setup**: [model](MDL-MDX-File-Format)/[texture](TPC-File-Format) variants resolved
+4. **Visual Setup**: resolve [model](MDL-MDX-File-Format) variants and [texture](TPC-File-Format) variants
 5. **Stack Handling**: StackSize determines inventory behavior
 
 **Property System:**
 
-- Properties defined in [`itempropdef.2da`](2DA-itempropdef)
+- Properties defined in [`itempropdef.2da`](2DA-File-Format#itempropdef2da)
 - Each property has cost formula
 - Properties stack or override based on type
 - Engine recalculates effects when equipped

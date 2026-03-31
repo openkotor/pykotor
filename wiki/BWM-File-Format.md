@@ -114,7 +114,8 @@ A BWM file stores a triangular mesh used for collision, pathfinding, and spatial
 ## Perimeters (WOK only)
 
 - **Format**: Array of uint32; each value is a 1-based end index for a closed loop of edges.
-- **Interpretation**: `perimeters[0] = N` means loop 1 contains edges 0..N-1; `perimeters[1] = M` means loop 2 contains edges N..M-1; etc.
+- **Interpretation**: `perimeters[0] = N` means loop 1 contains edges 0..N-1
+- `perimeters[1] = M` means loop 2 contains edges N..M-1; etc.
 
 ## Load / write order
 
@@ -132,7 +133,13 @@ Data tables are stored in this order (offsets in header must match):
 
 ## Transitions and door placement
 
-Door and room transitions are expressed in [LYT-File-Format](LYT-File-Format), [GFF-ARE](GFF-ARE), and related area data. In the BWM file, each **edge** record carries only a **transition ID** integer; interpreting that ID is engine and layout specific, not defined further by the BWM binary layout alone. See the next section for the on-disk field.
+Door and room transitions are expressed using area layout data, including:
+
+- [LYT-File-Format](LYT-File-Format)
+- [GFF-ARE](GFF-ARE)
+- Related module and area resources
+
+In the BWM file, each **edge** record carries only a **transition ID** integer; interpreting that ID is engine and layout specific, not defined further by the BWM binary layout alone. See the next section for the on-disk field.
 
 ## Transition ID (format only)
 
@@ -172,7 +179,7 @@ CLI helper: [`pykotor walkmesh-rebuild`](https://github.com/OldRepublicDevs/PyKo
 ## See also
 
 - [Reverse Engineering Findings — BWM / walkmesh / AABB](reverse_engineering_findings#bwm-walkmesh-aabb-engine-implementation-analysis) — Engine behavior, coordinate handling, AABB traversal.
-- [2DA-surfacemat](2DA-surfacemat) — Material IDs and walkability.
+- [2DA-surfacemat](2DA-File-Format#surfacemat2da) — Material IDs and walkability.
 - [GFF-ARE](GFF-ARE) — Area files that reference WOK/PWK/DWK.
 - [LYT-File-Format](LYT-File-Format) — Room layout; transition ID semantics.
 - [MDL-MDX-File-Format](MDL-MDX-File-Format) — Room MDLs can contain separate AABB/walkmesh data for camera collision.

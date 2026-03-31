@@ -6,27 +6,48 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Door/Placeable format specification, see [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-DoorPlaceableGFF).
 
-**For mod developers:** To modify door templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** UTD references [genericdoors.2da](2DA-File-Format), [traps.2da](2DA-traps), [GFF-UTP](GFF-UTP), [KEY](KEY-File-Format), [NCS](NCS-File-Format), [DLG](GFF-DLG), and [MDL](MDL-MDX-File-Format).
+- To modify door templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
+- For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+
+**Related formats:**
+
+- [genericdoors.2da](2DA-File-Format)
+- [traps.2da](2DA-File-Format#traps2da)
+- [GFF-UTP](GFF-UTP)
+- [KEY](KEY-File-Format)
+- [NCS](NCS-File-Format)
+- [DLG](GFF-DLG)
+- [MDL](MDL-MDX-File-Format)
 
 ## References
 
 **PyKotor:**
 
 - [`utd.py` `UTD` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L18) — in-memory door template (locks, keys, traps, scripts)
-- [`construct_utd` L396+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L396), [`read_utd` L546+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L546), [`write_utd` L555+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L555) — GFF ↔ `UTD` round-trip
+- [`construct_utd` L396+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L396)
+- [`read_utd` L546+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L546)
+- [`write_utd` L555+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L555) — GFF ↔ `UTD` round-trip
 - [`gff_data.py` `GFFContent.UTD` L151](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L151) — four-character GFF type id
 - [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — generic GFF reader (UTD shares door/placeable patterns with UTP)
+- **[reone](https://github.com/modawan/reone)** — generic GFF reader (UTD shares door/placeable patterns with UTP):
+
+  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
+  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — managed GFF reader/writer
 - **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF pipeline
 
-**Community context (workflow):** Door scripting and trap wiring appear in mod threads—see [NSS — Doors and placeables](NSS-Shared-Functions-Doors-and-Placeables) and [Home — Community sources](Home#community-sources-and-archives). **UTD fields** stay anchored here + BioWare + PyKotor.
+**Community context (workflow):** Door scripting and trap wiring appear in mod threads. See:
+
+- [NSS — Doors and placeables](NSS-Shared-Functions-Doors-and-Placeables)
+- [Home — Community sources](Home#community-sources-and-archives)
+
+**UTD fields** stay anchored here + BioWare + PyKotor.
 
 ## Core Identity fields
 
@@ -48,7 +69,10 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 **Appearance System:**
 
-- `genericdoors.2da` defines door [models](MDL-MDX-File-Format) and [animations](MDL-MDX-File-Format#animation-header)
+- `genericdoors.2da` defines door assets including:
+
+  - [models](MDL-MDX-File-Format)
+  - [animations](MDL-MDX-File-Format#animation-header)
 - Different appearance types support different behaviors
 - Opening [animation](MDL-MDX-File-Format#animation-header) determined by appearance entry
 
@@ -246,5 +270,5 @@ Doors maintain runtime state:
 
 - [GFF File Format](GFF-File-Format) - Generic format underlying UTD
 - [GFF-UTP (Placeable)](GFF-UTP) - Placeable templates (shared lock/trap behavior)
-- [2DA traps](2DA-traps) - Trap definitions; genericdoors.2da for door appearance
+- [2DA traps](2DA-File-Format#traps2da) - Trap definitions; genericdoors.2da for door appearance
 - [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-DoorPlaceableGFF) - Official specification
