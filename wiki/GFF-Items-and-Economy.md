@@ -1,6 +1,6 @@
 # GFF Types: Items and Economy
 
-Items, merchants, journals, and factions form the game’s economy and progression systems. UTI defines every equippable or consumable object, UTM describes store inventories and pricing, JRL tracks quest progress visible to the player, and FAC controls inter-faction hostility and friendship.
+Items, merchants, journals, and factions form the game’s economy and progression systems. UTI defines every equippable or consumable object [[`UTI`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L22)], UTM describes store inventories and pricing, JRL tracks quest progress visible to the player, and FAC controls inter-faction hostility and friendship.
 
 ## Contents
 

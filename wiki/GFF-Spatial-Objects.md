@@ -1,6 +1,6 @@
 # GFF Types: Spatial Objects
 
-Spatial objects are the building blocks placed into areas via the GIT (Game Instance) file. Each type defines a template — doors, placeables, triggers, encounters, sound emitters, and waypoints — that the engine instantiates at specific coordinates when the module loads.
+Spatial objects are the building blocks placed into areas via the GIT (Game Instance) file [[`GIT`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L57)]. Each type defines a template — doors, placeables, triggers, encounters, sound emitters, and waypoints — that the engine instantiates at specific coordinates when the module loads.
 
 ## Contents
 

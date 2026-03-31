@@ -252,7 +252,7 @@ Lists are stored as arrays of struct indices. The list field contains an offset 
 
 GFF supports the following field types:
 
-| type ID | Name              | Size (inline) | Description                                                      |
+| Type ID | Name              | Size (inline) | Description                                                      |
 | ------- | ----------------- | ------------- | ---------------------------------------------------------------- |
 | 0       | byte              | 1             | 8-bit unsigned integer                                           |
 | 1       | char              | 1             | 8-bit signed integer                                              |

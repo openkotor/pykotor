@@ -1,6 +1,6 @@
 # GFF Types: Creature and Dialogue
 
-Creature templates and dialogue trees are the two GFF types that most directly define how characters behave and speak. A UTC stores everything about a creature — stats, appearance, inventory, scripts — while DLG encodes branching conversation logic with conditions, animations, and voice-over references.
+Creature templates and dialogue trees are the two GFF types that most directly define how characters behave and speak. A UTC stores everything about a creature — stats, appearance, inventory, scripts [[`UTC`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L36)] — while DLG encodes branching conversation logic with conditions, animations, and voice-over references [[`DLG`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/base.py#L36)].
 
 ## Contents
 

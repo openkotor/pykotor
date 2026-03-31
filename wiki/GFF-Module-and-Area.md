@@ -1,6 +1,6 @@
 # GFF Types: Module and Area
 
-Every playable location is assembled from three core GFF files: ARE defines the area’s static properties (rooms, ambient sound, lighting), GIT holds all dynamic instance data (creature spawns, placeables, triggers placed in the area), and IFO ties the module together with entry points, area references, and global module state.
+Every playable location is assembled from three core GFF files: ARE defines the area's static properties (rooms, ambient sound, lighting) [[`ARE`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L21)], GIT holds all dynamic instance data (creature spawns, placeables, triggers placed in the area) [[`GIT`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L57)], and IFO ties the module together with entry points, area references, and global module state.’s static properties (rooms, ambient sound, lighting), GIT holds all dynamic instance data (creature spawns, placeables, triggers placed in the area), and IFO ties the module together with entry points, area references, and global module state.
 
 ## Contents
 
