@@ -365,70 +365,87 @@ When modifying lists, always maintain struct IDs and parent references to avoid 
 
 GFF files are used as containers for various game resource types. Each generic type has its own structure and field definitions.
 
+<a id="are"></a>
 ### ARE (Area)
 
 See [ARE (Area)](GFF-Module-and-Area#are) for detailed documentation.
 
+<a id="dlg"></a>
 ### DLG (Dialogue)
 
 See [DLG (Dialogue)](GFF-Creature-and-Dialogue#dlg) for detailed documentation.
 
+<a id="fac"></a>
 ### FAC (Faction)
 
 See [FAC (Faction)](GFF-Items-and-Economy#fac) for detailed documentation.
 
+<a id="git"></a>
 ### GIT (game instance template)
 
 See [GIT (Game Instance Template)](GFF-Module-and-Area#git) for detailed documentation.
 
+<a id="gui"></a>
 ### GUI (Graphical User Interface)
 
 See [GUI (Graphical User Interface)](GFF-GUI) for detailed documentation.
 
+<a id="ifo"></a>
 ### IFO (module info)
 
 See [IFO (Module Info)](GFF-Module-and-Area#ifo) for detailed documentation.
 
+<a id="jrl"></a>
 ### JRL (Journal)
 
 See [JRL (Journal)](GFF-Items-and-Economy#jrl) for detailed documentation.
 
+<a id="pth"></a>
 ### PTH (Path)
 
 See [PTH (Path)](GFF-Spatial-Objects#pth) for detailed documentation.
 
+<a id="utc"></a>
 ### UTC (Creature)
 
 See [UTC (Creature)](GFF-Creature-and-Dialogue#utc) for detailed documentation.
 
+<a id="utd"></a>
 ### UTD (Door)
 
 See [UTD (Door)](GFF-Spatial-Objects#utd) for detailed documentation.
 
+<a id="ute"></a>
 ### UTE (Encounter)
 
 See [UTE (Encounter)](GFF-Spatial-Objects#ute) for detailed documentation.
 
+<a id="uti"></a>
 ### UTI (Item)
 
 See [UTI (Item)](GFF-Items-and-Economy#uti) for detailed documentation.
 
+<a id="utm"></a>
 ### UTM (Merchant)
 
 See [UTM (Merchant)](GFF-Items-and-Economy#utm) for detailed documentation.
 
+<a id="utp"></a>
 ### UTP (Placeable)
 
 See [UTP (Placeable)](GFF-Spatial-Objects#utp) for detailed documentation.
 
+<a id="uts"></a>
 ### UTS (Sound)
 
 See [UTS (Sound)](GFF-Spatial-Objects#uts) for detailed documentation.
 
+<a id="utt"></a>
 ### UTT (Trigger)
 
 See [UTT (Trigger)](GFF-Spatial-Objects#utt) for detailed documentation.
 
+<a id="utw"></a>
 ### UTW (Waypoint)
 
 See [UTW (Waypoint)](GFF-Spatial-Objects#utw) for detailed documentation.

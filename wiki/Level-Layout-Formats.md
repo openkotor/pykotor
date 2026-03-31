@@ -1,6 +1,6 @@
 # Level Layout Formats
 
-The KotOR engine assembles playable areas from three complementary data files. **LYT** (Layout) files define the spatial arrangement of rooms within a module — which [models](MDL-MDX-File-Format) go where, how they are positioned and oriented, and where door hooks connect adjacent spaces. **VIS** (Visibility) files tell the renderer which rooms can see which other rooms, enabling the engine to skip drawing geometry that the player cannot observe. **BWM** (Binary Walkmesh) files — also known as WOK files — define the walkable surfaces, material types, and adjacent-face connectivity that the pathfinding and collision systems use to move characters through the world.
+The KotOR engine assembles playable areas from three complementary data files. **LYT** (Layout) files define the spatial arrangement of rooms within a module — which [models](MDL-MDX-File-Format) go where, how they are positioned and oriented, and where door hooks connect adjacent spaces ([`LYTRoom` L182](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L182), [reone `lytreader.cpp` L27](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/lytreader.cpp#L27), [xoreos `lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp)). **VIS** (Visibility) files tell the renderer which rooms can see which other rooms, enabling the engine to skip drawing geometry that the player cannot observe ([`vis_data.py` `VIS` L56](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/vis_data.py#L56), [reone `visreader.cpp` L29](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/visreader.cpp#L29)). **BWM** (Binary Walkmesh) files — also known as WOK files — define the walkable surfaces, material types, and adjacent-face connectivity that the pathfinding and collision systems use to move characters through the world ([`bwm_data.py` `BWM` L145](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py#L145), [KotOR.js `OdysseyWalkMesh.ts` L301](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/odyssey/OdysseyWalkMesh.ts#L301)).
 
 ## Contents
 
@@ -14,7 +14,7 @@ The KotOR engine assembles playable areas from three complementary data files. *
 
 # LYT — Level Layout
 
-LYT (Layout) files define how the rooms that make up a playable area are positioned in 3D space. Each entry in the layout specifies a room [model](MDL-MDX-File-Format) name and its world-space coordinates, so the engine knows where to place the geometry when loading a module. Beyond rooms, LYT files also describe swoop-track props, obstacles, and door-hook transforms that connect adjacent spaces. The format is plain text with a deterministic section order, making it straightforward to inspect and edit.
+LYT (Layout) files define how the rooms that make up a playable area are positioned in 3D space ([`LYTRoom` L182](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L182), [KotOR.js `LYTObject.ts` L19](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L19)). Each entry in the layout specifies a room [model](MDL-MDX-File-Format) name and its world-space coordinates, so the engine knows where to place the geometry when loading a module ([`LYTAsciiReader.load` L60](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L60), [reone `lytreader.cpp` `processLine` L37](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/lytreader.cpp#L37)). Beyond rooms, LYT files also describe swoop-track props ([`LYTTrack` L259](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L259)), obstacles ([`LYTObstacle` L306](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L306)), and door-hook transforms ([`LYTDoorHook` L353](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L353)) that connect adjacent spaces. The format is plain text with a deterministic section order, making it straightforward to inspect and edit.
 
 The engine combines LYT spatial data with [MDL/MDX](MDL-MDX-File-Format) geometry, [VIS](Level-Layout-Formats#vis) visibility culling, and [BWM](Level-Layout-Formats#bwm) walkmesh navigation to assemble the final area. LYT files are resolved through the standard [resource resolution order](Concepts#resource-resolution-order) (override → MOD/SAV → KEY/BIF). For area modding workflows, see [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) and [HoloPatcher](HoloPatcher#mod-developers). Related GFF data lives in [ARE](GFF-Module-and-Area#are) area definitions.
 
@@ -37,34 +37,8 @@ The engine combines LYT spatial data with [MDL/MDX](MDL-MDX-File-Format) geometr
 
 - LYT files are [ASCII](https://en.wikipedia.org/wiki/ASCII) text with a deterministic order: `beginlayout`, optional sections, then `donelayout`.  
 - Every section declares a count and then lists entries on subsequent lines.  
-- Implementations that parse the same token stream:
-
-  - [reone](https://github.com/modawan/reone), which provides a C++ reader for Aurora-family layout files
-  - [xoreos](https://github.com/xoreos/xoreos), which carries the shared Aurora layout parser used across several engines
-  - [KotOR.js](https://github.com/KobaltBlu/KotOR.js), which mirrors the format in a TypeScript/WebGL toolchain
-  - [Kotor.NET](https://github.com/NickHugi/Kotor.NET), which models the same room, door, track, and obstacle data in .NET
-
-  [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity) mirrors the same structure in its Unity-side loader.
-
-**Implementation (PyKotor):**
-
-- package: [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt)
-- read [`LYTAsciiReader.load` L60+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L60)
-- write [`LYTAsciiWriter.write` L150+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L150)
-- data model [`LYT` L64+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L64)
-
-**Cross-reference (other implementations):**
-
-- **[reone](https://github.com/modawan/reone)**:
-
-  - [`lytreader.cpp` `LytReader::load` L27+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/lytreader.cpp#L27)
-  - [`processLine` L37+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/lytreader.cpp#L37)
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
-
-  - [`LYTObject.ts` L19+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L19)
-  - [`_parse` L95+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L95)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`LYT.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorLYT/LYT.cs#L11) (in-memory room/door/track/obstacle DTOs)
+- Implementations that parse the same token stream: [reone `lytreader.cpp` L27](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/lytreader.cpp#L27), [xoreos `lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp), [KotOR.js `LYTObject.ts` L19](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L19), [Kotor.NET `LYT.cs` L11](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorLYT/LYT.cs#L11), and [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity).
+- PyKotor reads via [`LYTAsciiReader.load` L60](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L60) and writes via [`LYTAsciiWriter.write` L150](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L150) against the [`LYT` data model L64](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L64).
 
 ### See also
 
@@ -99,22 +73,16 @@ donelayout
 | `<room_model>` | *ResRef* of the [MDL](MDL-MDX-File-Format), [MDX](MDL-MDX-File-Format), and [WOK](Level-Layout-Formats#bwm) triple (max 16 chars, no spaces). |
 | `<x y z>` | World-space position for the room’s origin. |
 
-Rooms are case-insensitive; PyKotor lowercases entries for caching and resource lookup. **Room order in the LYT defines the 0-based room index** used as the **transition ID** in [BWM](Level-Layout-Formats#bwm) perimeter edges. Changing room order or adding/removing rooms invalidates existing transition indices in walkmeshes; see [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions).
+Rooms are case-insensitive; PyKotor lowercases entries for caching and resource lookup ([`LYTAsciiReader` rooms parsing L60](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L60)). **Room order in the LYT defines the 0-based room index** used as the **transition ID** in [BWM](Level-Layout-Formats#bwm) perimeter edges ([reone `lytreader.cpp` L37–L77](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/lytreader.cpp#L37-L77)). Changing room order or adding/removing rooms invalidates existing transition indices in walkmeshes; see [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions).
 
 **For mod developers:**
 
 - Loading a **layout** (LYT, optionally with [VIS](Level-Layout-Formats#vis) and room models) establishes the room context needed for placement and **roomlink/transition editing**. Loading only individual room models without the layout does not provide that context.
 - For more on room crossing and reassigning roomlinks, see [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions).
 
-**References**
-
-**Vendor Implementations:**
-
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/lytreader.cpp:37-77`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/lytreader.cpp#L37-L77) - Room definitions parsing
-
 ### Track Definitions
 
-Tracks (`LYTTrack`) are booster elements used exclusively in swoop racing mini-games, primarily in KotOR II. Each track entry defines a booster element that can be placed along a racing track to provide speed boosts or other gameplay effects.
+Tracks ([`LYTTrack` L259](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L259)) are booster elements used exclusively in swoop racing mini-games, primarily in KotOR II. Each track entry defines a booster element that can be placed along a racing track to provide speed boosts or other gameplay effects.
 
 **format:**
 
@@ -133,22 +101,12 @@ trackcount <N>
 
 - Tracks are optional - most modules omit this section entirely
 - Primarily used in KotOR II swoop racing modules (e.g., Telos surface racing)
-- Each track element represents a booster that can be placed along the racing track
+- Each track element represents a booster that can be placed along the racing track ([`LYTTrack` L296](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L296), [xoreos `lytfile.cpp` L98](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/lytfile.cpp#L98), [KotOR.js `LYTObject.ts` L73](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L73))
 - The engine uses these positions to spawn track boosters during racing mini-games
-
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:286-329`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L286-L329)
-
-**References**
-
-**Cross-reference:**
-
-- PyKotor — [`LYTTrack` L296+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L296), track parsing in `io_lyt.py`.
-- KotOR.js — [`LYTObject.ts` L73–L83](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L73-L83).
-- xoreos — [`lytfile.cpp` L98–L107](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/lytfile.cpp#L98-L107).
 
 ### Obstacle Definitions
 
-Obstacles (`LYTObstacle`) are hazard elements used exclusively in swoop racing mini-games, primarily in KotOR II. Each obstacle entry defines a hazard element that can be placed along a racing track to create challenges or obstacles for the player.
+Obstacles ([`LYTObstacle` L306](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L306)) are hazard elements used exclusively in swoop racing mini-games, primarily in KotOR II. Each obstacle entry defines a hazard element that can be placed along a racing track to create challenges or obstacles for the player.
 
 **format:**
 
@@ -167,23 +125,13 @@ obstaclecount <N>
 
 - Obstacles are optional - most modules omit this section entirely
 - Typically only present in KotOR II racing modules (e.g., Telos surface racing)
-- Each obstacle element represents a hazard that can be placed along the racing track
+- Each obstacle element represents a hazard that can be placed along the racing track ([`LYTObstacle` L354](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L354), [xoreos `lytfile.cpp` L109](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/lytfile.cpp#L109), [KotOR.js `LYTObject.ts` L79](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L79))
 - The engine uses these positions to spawn obstacles during racing mini-games
 - Mirrors the track format but represents hazards instead of boosters
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:332-375`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L332-L375)
-
-**References**
-
-**Cross-reference:**
-
-- PyKotor — [`LYTObstacle` L354+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L354).
-- KotOR.js — [`LYTObject.ts` L79–L83](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L79-L83).
-- xoreos — [`lytfile.cpp` L109–L118](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/lytfile.cpp#L109-L118).
-
 ### Door Hooks
 
-Door hooks (`LYTDoorHook`) bind door models (DYN or placeable) to rooms. Each entry defines a position and orientation where a door can be placed, enabling area transitions and room connections.
+Door hooks ([`LYTDoorHook` L353](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L353)) bind door models (DYN or placeable) to rooms. Each entry defines a position and orientation where a door can be placed, enabling area transitions and room connections ([`LYTDoorHook` L412](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L412), [xoreos `lytfile.cpp` L161](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/lytfile.cpp#L161), [KotOR.js `LYTObject.ts` L85](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L85)).
 
 **format:**
 
@@ -214,30 +162,14 @@ doorhookcount <N>
 - [BWM](Level-Layout-Formats#bwm) [walkmeshes](Level-Layout-Formats#bwm) may have [edge](Level-Layout-Formats#edges-wok-only) transitions that reference these door hooks
 - The engine combines LYT doorhook positions with [BWM](Level-Layout-Formats#bwm) transition data to create functional doorways
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:378-456`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L378-L456)
-
-**References**
-
-**Cross-reference:**
-
-- PyKotor — [`LYTDoorHook` L412+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L412), door parsing in `io_lyt.py`.
-- xoreos — [`lytfile.cpp` L161–L200](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/lytfile.cpp#L161-L200).
-- KotOR.js — [`LYTObject.ts` L85–L91](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LYTObject.ts#L85-L91).
-
 ---
 
 ## Coordinate system
 
 - Units are meters in the same left-handed coordinate system as [MDL](MDL-MDX-File-Format) [models](MDL-MDX-File-Format).  
-- PyKotor validates that room ResRefs and hook targets are lowercase and conform to resource naming restrictions.  
+- PyKotor validates that room ResRefs and hook targets are lowercase and conform to resource naming restrictions ([`lyt_data.py` L150–L267](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L150-L267)).  
 - The engine expects rooms to be pre-aligned so that adjoining doors share positions/rotations
 - [VIS files](Level-Layout-Formats#vis) then control visibility between those rooms.
-
-**References**
-
-**PyKotor:**
-
-- [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py:150-267`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L150-L267) - Coordinate validation and room/hook handling
 
 ---
 
@@ -268,7 +200,7 @@ All of the projects listed above agree on the plain-text token sequence; KotOR-U
 
 # VIS — Visibility
 
-VIS files define room-to-room visibility for the engine’s occlusion culling. Each entry names a parent room followed by the rooms visible from it, so the renderer only draws geometry the player can actually see — cutting draw calls and overdraw significantly in indoor areas. The format is plain ASCII text, one parent per block, with child rooms indented below.
+VIS files define room-to-room visibility for the engine's occlusion culling ([`vis_data.py` `VIS` L56](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/vis_data.py#L56), [reone `visreader.cpp` L29](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/visreader.cpp#L29), [xoreos `visfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/visfile.cpp)). Each entry names a parent room followed by the rooms visible from it, so the renderer only draws geometry the player can actually see — cutting draw calls and overdraw significantly in indoor areas. The format is plain ASCII text, one parent per block, with child rooms indented below ([`VISAsciiReader.load` L45](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L45), [KotOR.js `VISObject.ts` L71](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/VISObject.ts#L71)).
 
 VIS pairs with [LYT](Level-Layout-Formats#lyt) (which defines room placement) and [BWM](Level-Layout-Formats#bwm) walkmeshes (which handle collision and pathfinding). Room names in the VIS file must exactly match the room model names declared in the LYT.
 
@@ -295,20 +227,7 @@ VIS pairs with [LYT](Level-Layout-Formats#lyt) (which defines room placement) an
 
 **Modding note:** When debugging room layout or first testing new rooms, VIS can be omitted (or simplified) to reduce variables; VIS adds complexity on top of [LYT](Level-Layout-Formats#lyt) and walkmesh setup.
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/vis/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/vis)
-
-**Cross-reference implementations (line anchors are against `master` and may drift):**
-
-- **PyKotor**:
-
-  - ASCII parse loop (parent line + count + children; skips optional `V*` version header lines): [`VISAsciiReader.load` L45–L88](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L45-L88)
-  - writer: [`VISAsciiWriter.write` L97–L101](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L97-L101)
-  - in-memory graph: [`VIS` L56+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/vis_data.py#L56)
-- **[reone](https://github.com/modawan/reone)** (upstream: [seedhartha/reone](https://github.com/modawan/reone), canonical: [modawan/reone](https://github.com/modawan/reone)): [`visreader.cpp` `VisReader::load` / `processLine` L29–L61](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/visreader.cpp#L29-L61) — line-based tokenizer; two tokens set the current parent room, single-token lines add visibility edges.
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/visfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/visfile.cpp) — Aurora VIS (shared with other Aurora titles).
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`VISObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/VISObject.ts); parent/child line handling: [`VISObject.ts` L71–L126](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/VISObject.ts#L71-L126).
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`VISObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/VISObject.cs) — Unity-side loader.
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`Kotor.NET/Formats/KotorVIS/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorVIS) (`VISReader.cs` is a stub throwing `NotImplementedException` on `master`; listed for parity with other format pages).
+Parsers that share this format: PyKotor ([`VISAsciiReader.load` L45–L88](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L45-L88), write [`VISAsciiWriter.write` L97](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L97), data [`VIS` L56](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/vis_data.py#L56)), [reone `visreader.cpp` L29–L61](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/visreader.cpp#L29-L61), [xoreos `visfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/visfile.cpp), [KotOR.js `VISObject.ts` L71–L126](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/VISObject.ts#L71-L126), [KotOR-Unity `VISObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/VISObject.cs).
 
 ### See also
 

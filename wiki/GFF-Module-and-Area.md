@@ -1,6 +1,6 @@
 # GFF Types: Module and Area
 
-Every playable location is assembled from three core GFF files: ARE defines the area's static properties (rooms, ambient sound, lighting) [[`ARE`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L21)], GIT holds all dynamic instance data (creature spawns, placeables, triggers placed in the area) [[`GIT`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L57)], and IFO ties the module together with entry points, area references, and global module state.’s static properties (rooms, ambient sound, lighting), GIT holds all dynamic instance data (creature spawns, placeables, triggers placed in the area), and IFO ties the module together with entry points, area references, and global module state.
+Every playable location is assembled from three core GFF files: ARE defines the area's static properties (rooms, ambient sound, lighting) [[`ARE`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L21)], GIT holds all dynamic instance data (creature spawns, placeables, triggers placed in the area) [[`GIT`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L57)], and IFO ties the module together with entry points, area references, and global module state.
 
 ## Contents
 
@@ -660,7 +660,7 @@ The blue walkable area rendered in editors comes from the walkmesh ([BWM file](L
 - [GFF File Format](GFF-File-Format) - Generic format underlying ARE
 - [GFF Creature and Dialogue](GFF-Creature-and-Dialogue) - UTC and DLG types
 - [GFF Items and Economy](GFF-Items-and-Economy) - UTI, UTM, JRL, FAC types
-- [GFF Spatial Objects](GFF-Spatial-Objects) - UTD, UTP, UTT, UTE, UTS, UTW, PTH types
+- [GFF Spatial Objects](GFF-Spatial-Objects) - UTD, UTP, UTT, UTE, UTS, UTW types
 - [BWM (Walkmesh)](Level-Layout-Formats#bwm) - Area walkable surfaces and minimap alignment
 - [LYT](Level-Layout-Formats#lyt) — layout
 - [VIS](Level-Layout-Formats#vis) — visibility
@@ -1367,3 +1367,48 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 
 ---
+
+<a id="pth"></a>
+
+# PTH (Path)
+
+PTH is a GFF-based module file that stores the NPC pathfinding graph for an area. It holds a list of 2D nodes (`Path_Points`) and directed edges (`Path_Connections`) that the AI uses to plan high-level movement routes across the area. Unlike the [BWM walkmesh](Level-Layout-Formats#bwm) (which handles per-step collision and surface types), PTH encodes a coarser connectivity graph for NPC route planning [[1](https://deadlystream.com/files/file/518-modhex)] [[2](https://lucasforumsarchive.com/thread/178681-kotor-i-ii-file-format-docs)] [[`pth.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/pth.py#L19)].
+
+PTH is stored as a `.res` resource (resource type `0x0BBB`) inside the module package alongside `.are`, `.git`, and `.ifo` [[3](https://lucasforumsarchive.com/thread/178681-kotor-i-ii-file-format-docs)]. In the Holocron Toolset and KotOR Tool, it can be edited with Bead-V's PTH editor [[4](https://deadlystream.com/files/file/518-modhex)].
+
+## Path points
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `Path_Points` | List | List of 2D navigation nodes for this area |
+
+**Path_Points struct fields:**
+
+- `X` (Float): X world coordinate of the node.
+- `Y` (Float): Y world coordinate of the node.
+- `Connections` (Int): Number of outgoing edges from this node.
+- `First_Conection` (Int): Index into `Path_Connections` of the first edge for this node.
+
+## Path connections
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `Path_Connections` | List | Directed edges between path nodes |
+
+**Path_Connections struct fields:**
+
+- `Destination` (Int): Index of the destination node in `Path_Points`.
+
+## Notes
+
+- `Path_Points` and `Path_Connections` may both be absent in retail modules; the game treats absent lists as empty [[`pth.py` L19-27](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/pth.py#L19)].
+- The Z coordinate is not used in path movement; pathfinding is effectively 2D.
+- PTH is **not** the same as the walkmesh. The walkmesh ([BWM](Level-Layout-Formats#bwm)) is a triangle mesh used for per-character collision and step-by-step movement. PTH is a separate high-level graph used for route planning.
+
+### See also
+
+- [GFF File Format](GFF-File-Format) - Parent GFF format
+- [GFF-ARE](GFF-Module-and-Area#are) - Area properties
+- [GFF-GIT](GFF-Module-and-Area#git) - Game instance template (creature and encounter placement)
+- [BWM File Format](Level-Layout-Formats#bwm) - Walkmesh (distinct from PTH)
+- [GFF-UTW](GFF-Spatial-Objects#utw) - Waypoints (used for NPC patrol scripts)

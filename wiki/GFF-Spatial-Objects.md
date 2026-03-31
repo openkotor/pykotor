@@ -1,6 +1,8 @@
 # GFF Types: Spatial Objects
 
-Spatial objects are the building blocks placed into areas via the GIT (Game Instance) file [[`GIT`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L57)]. Each type defines a template — doors, placeables, triggers, encounters, sound emitters, and waypoints — that the engine instantiates at specific coordinates when the module loads.
+KotOR uses six GFF template types for interactive area objects: doors (UTD), placeables (UTP), triggers (UTT), encounters (UTE), sound emitters (UTS), and waypoints (UTW) [[1](https://deadlystream.com/topic/3010-new-to-modding-i-have-a-few-questions/)] [[2](https://lucasforumsarchive.com/thread/178681-kotor-i-ii-file-format-docs)]. The engine reads each template's ResRef from the area's [GIT](GFF-Module-and-Area#git) [[`git.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L57)] and instantiates the object at the stored coordinates when the module loads [[3](https://deadlystream.com/files/file/280-kotor-tool/)] [[4](https://deadlystream.com/topic/3894-module-npc-and-object-placement/)].
+
+PTH (path navigation) is a module-level GFF stored alongside `.are`, `.git`, and `.ifo` in the module package — not an instanced template. It is documented at [GFF-Module-and-Area#pth](GFF-Module-and-Area#pth).
 
 ## Contents
 
@@ -10,7 +12,7 @@ Spatial objects are the building blocks placed into areas via the GIT (Game Inst
 - [UTE — Encounter](#ute)
 - [UTS — Sound](#uts)
 - [UTW — Waypoint](#utw)
-- [PTH — Path](#pth)
+- [PTH — Path](GFF-Module-and-Area#pth) *(module-level file — see GFF-Module-and-Area)*
 
 ---
 
@@ -20,21 +22,13 @@ Spatial objects are the building blocks placed into areas via the GIT (Game Inst
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTD files define [door templates](GFF-File-Format#utd-door) for all interactive doors in the game world. Doors can be locked, require keys, have hit points, conversations, and various gameplay interactions. UTD files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
-
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Door/Placeable format specification, see [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-Spatial-and-Interactive#doorplaceablegff).
-
-**For mod developers:**
-
-- To modify door templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
-- For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
+UTD files store door templates for all interactive doors in an area. A door can be locked (requiring a key item or skill check), have hit points, trigger a conversation, and fire scripts on various events [[1](https://deadlystream.com/topic/6886-tutorial-kotor-modding-tutorial-series/)] [[2](https://deadlystream.com/files/file/280-kotor-tool/)]. UTD files follow the standard [resource resolution order](Concepts#resource-resolution-order) (override, MOD/SAV, KEY/BIF). The authoritative BioWare spec is at [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-Spatial-and-Interactive#doorplaceablegff). To patch UTD fields with TSLPatcher, see [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax).
 
 **Related formats:**
 
 - [genericdoors.2da](2DA-File-Format)
 - [traps.2da](2DA-File-Format#traps2da)
 - [GFF-UTP](GFF-Spatial-Objects#utp)
-- [KEY](Container-Formats#key)
 - [NCS](NCS-File-Format)
 - [DLG](GFF-Creature-and-Dialogue#dlg)
 - [MDL](MDL-MDX-File-Format)
@@ -100,18 +94,18 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 | ----- | ---- | ----------- |
 | `Locked` | [byte](GFF-File-Format#gff-data-types) | Door is currently locked |
 | `Lockable` | [byte](GFF-File-Format#gff-data-types) | Door can be locked/unlocked |
-| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Requires specific [KEY](Container-Formats#key) item |
-| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](Container-Formats#key) item |
-| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | [KEY](Container-Formats#key) consumed on use |
+| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Door requires a specific inventory item to open |
+| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of the required key item in the player's inventory |
+| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | Key item is consumed after a successful use |
 | `OpenLockDC` | [byte](GFF-File-Format#gff-data-types) | Security skill DC to pick lock |
 | `CloseLockDC` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Security skill DC to lock door |
 
-**Lock Mechanics:**
+**Lock mechanics:**
 
-- **Locked**: Door cannot be opened normally
-- **KeyRequired**: Must have [KEY](Container-Formats#key) in inventory
-- **OpenLockDC**: Player rolls Security skill vs. DC
-- **AutoRemoveKey**: [KEY](Container-Formats#key) destroyed after successful use
+- **Locked**: Door cannot be opened normally.
+- **KeyRequired**: Player must carry the item whose tag matches `KeyName`.
+- **OpenLockDC**: Player rolls Security skill vs. DC.
+- **AutoRemoveKey**: The key item is destroyed after a successful use.
 
 ## Hit Points & Durability
 
@@ -233,18 +227,18 @@ Doors maintain runtime state:
 
 1. Player clicks door
 2. If conversation set, start dialog
-3. If locked, check for [KEY](Container-Formats#key) or Security skill
+3. If locked, check for a key item in inventory or Security skill
 4. If trapped, check for detection/disarm
 5. Fire `OnOpen` script
 6. Play opening [animation](MDL-MDX-File-Format#animation-header)
 7. Transition to "open" state
 
-**Locking System:**
+**Locking system:**
 
-- **Lockable=0**: Door cannot be locked (always opens)
-- **Locked=1, KeyRequired=1**: Must have specific [KEY](Container-Formats#key)
-- **Locked=1, OpenLockDC>0**: Can pick lock with Security skill
-- **Locked=1, KeyRequired=0, OpenLockDC=0**: Locked via script only
+- **Lockable=0**: Door cannot be locked (always opens).
+- **Locked=1, KeyRequired=1**: Player must carry the item with the tag stored in `KeyName`.
+- **Locked=1, OpenLockDC>0**: Can pick the lock with the Security skill.
+- **Locked=1, KeyRequired=0, OpenLockDC=0**: Locked via script only.
 
 **Common Door types:**
 
@@ -254,11 +248,11 @@ Doors maintain runtime state:
 - No lock, HP, or trap
 - Used for interior navigation
 
-**Locked Doors:**
+**Locked doors:**
 
-- Requires [KEY](Container-Formats#key) or Security skill
-- Quest progression gates
-- May have conversation for passwords
+- Requires a key item or the Security skill.
+- Used as quest progression gates.
+- May have a conversation for password entry.
 
 **Destructible Doors:**
 
@@ -300,14 +294,7 @@ Doors maintain runtime state:
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-[UTP files](GFF-File-Format#utp-placeable) define [placeable object templates](GFF-File-Format#utp-placeable) including containers, furniture, switches, workbenches, and interactive environmental objects. [Placeables](GFF-File-Format#utp-placeable) can have inventories, be destroyed, locked, trapped, and trigger [scripts](NCS-File-Format). UTP files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
-
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Door/Placeable format specification, see [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-Spatial-and-Interactive#doorplaceablegff).
-
-**For mod developers:**
-
-- To modify placeable templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
-- For general modding, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
+UTP files store placeable object templates: containers, furniture, switches, workbenches, computer terminals, and other interactive environmental objects. A placeable can hold inventory items, be destroyed, locked, trapped, and fire scripts on events [[1](https://deadlystream.com/topic/6886-tutorial-kotor-modding-tutorial-series/)] [[2](https://deadlystream.com/topic/3010-new-to-modding-i-have-a-few-questions/)]. UTP files follow the standard [resource resolution order](Concepts#resource-resolution-order) (override, MOD/SAV, KEY/BIF). The authoritative BioWare spec is at [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-Spatial-and-Interactive#doorplaceablegff). To patch UTP fields with TSLPatcher, see [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax).
 
 **Related formats:**
 
@@ -315,7 +302,6 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 - [2DA traps](2DA-File-Format#traps2da)
 - [GFF-UTI](GFF-Items-and-Economy#uti)
 - [GFF-UTD](GFF-Spatial-Objects#utd)
-- [KEY](Container-Formats#key)
 - [NCS](NCS-File-Format)
 - [DLG](GFF-Creature-and-Dialogue#dlg)
 - [MDL](MDL-MDX-File-Format)
@@ -395,9 +381,9 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 | ----- | ---- | ----------- |
 | `Locked` | [byte](GFF-File-Format#gff-data-types) | Placeable is currently locked |
 | `Lockable` | [byte](GFF-File-Format#gff-data-types) | Can be locked/unlocked |
-| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Requires specific [KEY](Container-Formats#key) item |
-| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](Container-Formats#key) [item](GFF-File-Format#uti-item) |
-| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | [KEY](Container-Formats#key) consumed on use |
+| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Placeable requires a specific inventory item to open |
+| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of the required key item in the player's inventory |
+| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | Key item is consumed after a successful use |
 | `OpenLockDC` | [byte](GFF-File-Format#gff-data-types) | Security skill DC to pick lock |
 | `CloseLockDC` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Security DC to lock |
 | `OpenLockDiff` (KotOR2) | [int32](GFF-File-Format#gff-data-types) | Additional difficulty modifier |
@@ -405,9 +391,9 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **Lock Mechanics:**
 
-- Identical to [UTD](GFF-File-Format#utd-door) door locking system
-- Prevents access to inventory
-- Can be picked or opened with [KEY](Container-Formats#key)
+- Identical to the [UTD](GFF-Spatial-Objects#utd) door locking system.
+- Prevents access to the placeable's inventory.
+- Can be opened with the Security skill or by carrying the matching key item.
 
 ## Hit Points & Durability
 
@@ -621,14 +607,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTT files define [trigger templates](GFF-File-Format#utt-trigger) for invisible volumes that fire scripts when entered, exited, or used. Triggers are essential for area transitions, cutscenes, traps, and game logic. UTT files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
-
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Trigger format specification, see [Bioware Aurora Trigger Format](Bioware-Aurora-Spatial-and-Interactive#trigger).
-
-**For mod developers:**
-
-- To modify trigger templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
+UTT files store trigger templates. Triggers are invisible volumes that fire scripts when entered, exited, or clicked. They handle area transitions, cutscene starts, floor traps, and general game-logic events [[1](https://deadlystream.com/topic/6886-tutorial-kotor-modding-tutorial-series/)] [[2](https://lucasforumsarchive.com/thread/157396-tutorial-making-a-storyline-mod-for-kotor-2)]. UTT files follow the standard [resource resolution order](Concepts#resource-resolution-order) (override, MOD/SAV, KEY/BIF). The authoritative BioWare spec is at [Bioware Aurora Trigger Format](Bioware-Aurora-Spatial-and-Interactive#trigger). To patch UTT fields with TSLPatcher, see [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax).
 
 ## Implementation evidence
 
@@ -709,8 +688,8 @@ Use community write-ups for **playtesting and tooling**; **UTT fields** follow t
 | `TrapDisarmable` | Byte | Can be disarmed |
 | `DisarmDC` | Byte | Security DC to disarm |
 | `TrapOneShot` | Byte | Fires once then disables |
-| `AutoRemoveKey` | Byte | [KEY](Container-Formats#key) removed on use |
-| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | [KEY](Container-Formats#key) tag required to disarm/bypass |
+| `AutoRemoveKey` | Byte | Key item is consumed on use |
+| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of the key item required to disarm or bypass the trap |
 
 **Trap Mechanics:**
 
@@ -753,14 +732,7 @@ Use community write-ups for **playtesting and tooling**; **UTT fields** follow t
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spawn creatures when triggered by the player. Encounters handle spawning logic, difficulty scaling, respawning, and faction settings for groups of enemies or neutral creatures. UTE files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
-
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Encounter format specification, see [Bioware Aurora Encounter Format](Bioware-Aurora-Spatial-and-Interactive#encounter).
-
-**For mod developers:**
-
-- To modify encounter templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
+UTE files store encounter templates. An encounter is a trigger volume that spawns creatures from a `CreatureList` when the player enters. The template controls which creatures spawn, how many, how often they respawn, and what scripts fire [[1](https://deadlystream.com/files/file/280-kotor-tool/)] [[`ute.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ute.py#L17)]. UTE files follow the standard [resource resolution order](Concepts#resource-resolution-order) (override, MOD/SAV, KEY/BIF). The authoritative BioWare spec is at [Bioware Aurora Encounter Format](Bioware-Aurora-Spatial-and-Interactive#encounter). To patch UTE fields with TSLPatcher, see [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax).
 
 ## Implementation evidence
 
@@ -880,14 +852,7 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTS files define [sound object templates](GFF-File-Format#uts-sound) for ambient and environmental audio. These can be positional 3D sounds or global stereo sounds, with looping, randomization, and volume control. UTS files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
-
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Sound Object format specification, see [Bioware Aurora Sound Object Format](Bioware-Aurora-Spatial-and-Interactive#soundobject).
-
-**For mod developers:**
-
-- To modify sound blueprints in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
+UTS files store sound emitter templates. A sound emitter can play looping positional 3D audio (machinery, waterfalls) or global stereo audio (music, ambient atmosphere), with randomized sample selection and volume variation [[`uts.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uts.py#L18)]. UTS files follow the standard [resource resolution order](Concepts#resource-resolution-order) (override, MOD/SAV, KEY/BIF). The authoritative BioWare spec is at [Bioware Aurora Sound Object Format](Bioware-Aurora-Spatial-and-Interactive#soundobject). To patch UTS fields with TSLPatcher, see [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax).
 
 ## Implementation evidence
 
@@ -1002,14 +967,7 @@ Forum posts explain **workflow**; **UTS field tables** stay anchored here + BioW
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTW files define [waypoint templates](GFF-File-Format#utw-waypoint). Waypoints are invisible markers used for spawn points, navigation targets, map notes, and reference points for scripts. UTW files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
-
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Waypoint format specification, see [Bioware Aurora Waypoint Format](Bioware-Aurora-Spatial-and-Interactive#waypoint).
-
-**For mod developers:**
-
-- To modify waypoint templates in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
+UTW files store waypoint templates. Waypoints are invisible markers used as NPC patrol targets, creature spawn points, door/trigger link destinations, and map-note pins [[1](https://deadlystream.com/topic/6886-tutorial-kotor-modding-tutorial-series/)] [[2](https://deadlystream.com/topic/8438-about-map-notes/)] [[`utw.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utw.py#L17)]. UTW files follow the standard [resource resolution order](Concepts#resource-resolution-order) (override, MOD/SAV, KEY/BIF). The authoritative BioWare spec is at [Bioware Aurora Waypoint Format](Bioware-Aurora-Spatial-and-Interactive#waypoint). To patch UTW fields with TSLPatcher, see [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax).
 
 ## Implementation evidence
 
@@ -1097,79 +1055,4 @@ Treat forum threads as **workflow** context; **UTW fields** follow this page + B
 
 <a id="pth"></a>
 
-# PTH (Path)
-
-Part of the [GFF File Format Documentation](GFF-File-Format).
-
-PTH files define pathfinding data for modules, distinct from the navigation mesh ([walkmesh](Level-Layout-Formats#bwm)). They store a network of waypoints and connections used for high-level AI navigation planning. PTH files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
-
-**For mod developers:**
-
-- General GFF patching uses the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
-- For Holocronworkflows, start from [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started) and module/path tooling pages linked from [Home](Home).
-
-## Implementation evidence
-
-**PyKotor:**
-
-- [`pth.py` `PTH` L19+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/pth.py#L19)
-- [`PTHEdge` L125+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/pth.py#L125) — path graph model (points + connections)
-- [`construct_pth` L151+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/pth.py#L151)
-- [`read_pth` L223+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/pth.py#L223)
-- [`write_pth` L232+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/pth.py#L232) — GFF ↔ `PTH` round-trip
-- [`gff_data.py` `GFFContent.PTH` L167](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L167) — four-character GFF type id
-- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
-
-**Cross-reference (other implementations):**
-
-- **[reone](https://github.com/modawan/reone)** — generic GFF reader (PTH as GFF):
-
-  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
-  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — managed GFF reader/writer
-- **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF pipeline
-
-**Community / engine context:** PTH is **not** the walkmesh; normative walkmesh discussion stays on [BWM-File-Format](Level-Layout-Formats#bwm) and repo `docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md`. For player movement and AI pathing **workflow**, see [Home — Community sources](Home#community-sources-and-archives).
-
-## Path Points
-
-| Field | Type | Description |
-| ----- | ---- | ----------- |
-| `Path_Points` | List | List of navigation [nodes](MDL-MDX-File-Format#node-structures) |
-
-**Path_Points Struct fields:**
-
-- `X` (Float): X coordinate
-- `Y` (Float): Y coordinate
-- `Z` (Float): Z Coordinate (unused/flat)
-
-## Path Connections
-
-| Field | Type | Description |
-| ----- | ---- | ----------- |
-| `Path_Connections` | List | List of [edges](Level-Layout-Formats#edges-wok-only) between [nodes](MDL-MDX-File-Format#node-structures) |
-
-**Path_Connections Struct fields:**
-
-- `Path_Source` (Int): index of source point
-- `Path_Dest` (Int): index of destination point
-
-## Usage
-
-- **AI Navigation**: Used by NPCs to plot paths across large distances or complex areas where straight-line [walkmesh](Level-Layout-Formats#bwm) navigation fails.
-- **Legacy Support**: Often redundant in modern engines with navigation [meshes](MDL-MDX-File-Format#trimesh-header), but used in Aurora/Odyssey for optimization.
-- **Editor**: Visualized as a web of lines connecting [nodes](MDL-MDX-File-Format#node-structures).
-
-### See also
-
-- [GFF-File-Format](GFF-File-Format) -- GFF structure
-- [GFF-ARE](GFF-Module-and-Area#are) -- Area and path resolution
-- [BWM-File-Format](Level-Layout-Formats#bwm) -- Walkmesh and edges
-- [GFF-UTW](GFF-Spatial-Objects#utw) -- Waypoints
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
-
----
-
-
----
+> **PTH — Path** has moved. PTH is a module-level GFF, not an instanced area template. See [GFF-Module-and-Area#pth](GFF-Module-and-Area#pth) for full documentation.
