@@ -1,55 +1,10 @@
 # NSS — NWScript Source
 
-NSS files contain human-readable NWScript source code — the scripting language that controls game logic in Knights of the Old Republic and The Sith Lords. The engine does not execute NSS directly; source files are compiled to [NCS bytecode](NCS-File-Format) before they can run. The master include file `nwscript.nss` defines all engine-exposed functions and constants available to scripts; KotOR and TSL each ship their own version with game-specific additions.
+NSS files contain human-readable NWScript source code — the scripting language that controls game logic in Knights of the Old Republic and The Sith Lords ([`NssParser` L80](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/parser.py#L80), [xoreos-tools `src/nwscript/`](https://github.com/xoreos/xoreos-tools/tree/master/src/nwscript)). The engine does not execute NSS directly; source files are compiled to [NCS bytecode](NCS-File-Format) before they can run ([`InbuiltNCSCompiler.compile_script` L51](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py#L51), [KotOR-Scripting-Tool](https://github.com/KobaltBlu/KotOR-Scripting-Tool)). The master include file `nwscript.nss` defines all engine-exposed functions and constants available to scripts; KotOR and TSL each ship their own version with game-specific additions ([`KOTOR_FUNCTIONS` L3268](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3268), [`KOTOR_CONSTANTS` L12](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L12), [Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)).
 
-NWScript is a C-like language with strong typing, automatic garbage collection for strings, and a fixed set of engine action routines. Scripts interact with the game world through these action routines — spawning creatures, modifying objects, running dialogue branches, applying effects — and are triggered from [GFF](GFF-File-Format) resources: [DLG](GFF-Creature-and-Dialogue#dlg) dialogue files, [UTC](GFF-File-Format#utc-creature) creatures, [UTD](GFF-Spatial-Objects#utd) doors, [UTP](GFF-Spatial-Objects#utp) placeables, and [IFO](GFF-Module-and-Area#ifo) module definitions. Scripts also commonly read [2DA](2DA-File-Format) configuration data at runtime. Like all resources, NSS files are resolved through the standard [resource resolution order](Concepts#resource-resolution-order) (override → MOD/SAV → KEY/BIF).
+NWScript is a C-like language with strong typing, automatic garbage collection for strings, and a fixed set of engine action routines ([reone `VirtualMachine` L41](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/include/reone/script/virtualmachine.h#L41), [xoreos `src/aurora/nwscript/`](https://github.com/xoreos/xoreos/tree/master/src/aurora/nwscript), [KotOR.js `NWScript` L39](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScript.ts#L39)). Scripts interact with the game world through these action routines — spawning creatures, modifying objects, running dialogue branches, applying effects — and are triggered from [GFF](GFF-File-Format) resources: [DLG](GFF-Creature-and-Dialogue#dlg) dialogue files, [UTC](GFF-File-Format#utc-creature) creatures, [UTD](GFF-Spatial-Objects#utd) doors, [UTP](GFF-Spatial-Objects#utp) placeables, and [IFO](GFF-Module-and-Area#ifo) module definitions. Scripts also commonly read [2DA](2DA-File-Format) configuration data at runtime. Like all resources, NSS files are resolved through the standard [resource resolution order](Concepts#resource-resolution-order) (override → MOD/SAV → KEY/BIF).
 
-**Implementation (PyKotor):**
-
-- NSS compiles to [NCS](NCS-File-Format) via the in-tree compiler — [`InbuiltNCSCompiler.compile_script` L51+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py#L51)
-- [`compile_nss` L128+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py#L128)
-- CLI wiring [`use_builtin_compiler` / `cmd_compile`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/cli/commands/compile.py#L66)
-- parser [`NssParser` L80+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/parser.py#L80)
-- definitions [`ScriptConstant` / `ScriptFunction` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/script.py#L21)
-- [`KOTOR_CONSTANTS` L12+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L12)
-- [`KOTOR_FUNCTIONS` L3268+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3268)
-- [`KOTOR_LIBRARY` L5+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5)
-- bytecode I/O: [NCS-File-Format](NCS-File-Format) (`io_ncs.py`, `ncs_data.py`)
-
-**Cross-reference (other compilers and tooling):**
-
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** — NWScript compiler/decompiler ([`src/nwscript/`](https://github.com/xoreos/xoreos-tools/tree/master/src/nwscript))
-- **KotOR-Scripting-Tool** — Visual NWScript IDE with integrated compiler
-
-  - Upstream (KobaltBlu/KotOR-Scripting-Tool): <https://github.com/KobaltBlu/KotOR-Scripting-Tool/tree/ddd580e1b85e9c25bf5eea77a0b6938e396579c6>
-  - Mirror (th3w1zard1/KotOR-Scripting-Tool): <https://github.com/th3w1zard1/KotOR-Scripting-Tool/tree/ddd580e1b85e9c25bf5eea77a0b6938e396579c6>
-
-- **HoloLSP** — LSP for NWScript ([`server/src/`](https://github.com/th3w1zard1/HoloLSP/tree/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2/server/src)) on branch `main`
-
-  - Canonical (th3w1zard1/HoloLSP): <https://github.com/th3w1zard1/HoloLSP/tree/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2>
-- **[nwscript-mode.el](https://github.com/implicit-image/nwscript-mode.el)** — Emacs major mode for NWScript
-
-**Cross-reference (runtimes and script corpora):**
-
-- **[xoreos](https://github.com/xoreos/xoreos)** — NWScript VM ([`src/aurora/nwscript/`](https://github.com/xoreos/xoreos/tree/master/src/aurora/nwscript))
-- **[reone](https://github.com/modawan/reone)**:
-
-  - Script VM: [`VirtualMachine` L41+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/include/reone/script/virtualmachine.h#L41)
-  - [`virtualmachine.cpp` L36+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/script/virtualmachine.cpp#L36)
-  - tree [`src/libs/script/`](https://github.com/modawan/reone/tree/master/src/libs/script)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
-
-  - NCS load/execute and defs: [`NWScript` class L39+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScript.ts#L39)
-  - tree [`src/nwscript/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/nwscript)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`NCS` L9+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (`Kotor.NET/Formats/KotorNCS/`)
-- **[Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)** — Decompiled vanilla KotOR scripts and `nwscript.nss` references
-
-**Community (scripts):**
-
-- For NWScript help, modder threads, and tooling chatter, search [Deadly Stream](https://deadlystream.com) forums (index: [Tutorials](https://deadlystream.com/forum/25-tutorials/)) and see the hub list on [Home — community sources and archives](Home#community-sources-and-archives)
-- **Historical compile workflow:** LucasForums Archive — [How to compile scripts?](https://www.lucasforumsarchive.com/thread/143681) (nwnnsscomp-era notes; pair with PyKotor/Holocron compilers in **Implementation (PyKotor)** above)
-- **Dated tutorial series:** Deadly Stream — [[TUTORIAL] KotOR Modding Tutorial Series](https://deadlystream.com/topic/6886-tutorial-kotor-modding-tutorial-series/) (author warns some tools are outdated; prefer Holocron Toolset + this wiki for current paths)
-- Treat forum posts as **peer guidance**, not proof of bytecode or engine behavior—verify against this wiki and the implementations above
+For community guidance, modding guides, and historical compile workflows, see the [Deadly Stream Tutorials forum](https://deadlystream.com/forum/25-tutorials/) and the hub on [Home — community sources and archives](Home#community-sources-and-archives). A nwnnsscomp-era compile tutorial is archived at [LucasForums: How to compile scripts?](https://www.lucasforumsarchive.com/thread/143681), and an introductory series at [KotOR Modding Tutorial Series on Deadly Stream](https://deadlystream.com/topic/6886-tutorial-kotor-modding-tutorial-series/) (some referenced tools are outdated — prefer Holocron Toolset and this wiki for current paths). The original shipped K1 scripts are preserved in [Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source). Forum posts are peer guidance; verify behavioral claims against the source implementations cited on this page.
 
 ## PyKotor Implementation
 
@@ -105,8 +60,6 @@ PyKotor implements `nwscript.nss` definitions in three Python modules:
    - Looks up the library name in the library dictionary
    - Parses the included source code
    - Merges functions and constants into the current scope
-
-**Reference:**
 
 - [`script.py` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/script.py#L21) (data structures)
 - [`KOTOR_CONSTANTS` L12+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L12) (constants)

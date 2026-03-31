@@ -1,6 +1,6 @@
 # Texture Formats
 
-The KotOR engine uses several texture formats, each serving a different purpose in the rendering pipeline. **TPC** (Texture Pack Container) is the primary compressed texture format shipped with the game — most visual assets the player sees are TPC files inside BIF archives. **DDS** (DirectDraw Surface) textures appear in two variants: the standard DirectX format used by modding tools and ports, and a BioWare-specific headerless variant inherited from the Aurora engine. **PLT** (Palette Texture) files support the dye-channel system that lets the engine recolor armor and clothing at runtime without duplicating texture data. **TXI** files are plain-text sidecar metadata that control rendering properties such as blending, animation frames, and environment mapping.
+The KotOR engine uses several texture formats, each serving a different purpose in the rendering pipeline. **TPC** (Texture Pack Container) is the primary compressed texture format shipped with the game — most visual assets the player sees are TPC files inside BIF archives ([`TPC` L494](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py#L494), [reone `TpcReader::load` L32](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/tpcreader.cpp#L32)). **DDS** (DirectDraw Surface) textures appear in two variants: the standard DirectX format used by modding tools and ports, and a BioWare-specific headerless variant inherited from the Aurora engine ([`TPCDDSReader` L49](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L49), [xoreos `dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp)). **PLT** (Palette Texture) files support the dye-channel system that lets the engine recolor armor and clothing at runtime without duplicating texture data ([xoreos-docs `specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html), [Kaitai `PLT.ksy`](https://github.com/OldRepublicDevs/bioware-kaitai-formats/blob/master/formats/PLT/PLT.ksy)). **TXI** files are plain-text sidecar metadata that control rendering properties such as blending, animation frames, and environment mapping ([`TXI` L52](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L52), [`TXICommand` L613](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L613)).
 
 ## Contents
 
@@ -37,40 +37,7 @@ The engine resolves DDS textures through the standard [resource resolution order
 
 ---
 
-**Implementation (PyKotor)**
-
-- **Reader / writer:**
-
-  - [`io_dds.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py)
-  - [`TPCDDSReader` L49+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L49)
-  - [`load` L191+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L191)
-  - [`TPCDDSWriter` L351+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L351)
-  - routing via [`tpc_auto.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_auto.py) (`ResourceType.DDS` detection)
-
-**Cross-reference implementations (line anchors are against `master` and may drift):**
-
-- **[xoreos](https://github.com/xoreos/xoreos)** ([tools mirror: xoreos-tools](https://github.com/xoreos/xoreos-tools)): [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) — engine DDS loading (standard and BioWare variant).
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) — command-line DDS conversion.
-- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)) — no standalone DDS reader in-tree; the game pipeline loads **TPC** via [`TpcReader::load` L32+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/tpcreader.cpp#L32). Use PyKotor or xoreos-tools to convert DDS for KotOR-style assets.
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — runtime textures follow the **TPC** path:
-
-  - [`TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts)
-  - [`TextureLoader.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/TextureLoader.ts)
-
-  See [TPC File Format](Texture-Formats#tpc) for JS anchors. DDS remains an interchange format for tools, not the on-disk KotOR default.
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — managed **TPC** under [`Kotor.NET/Formats/KotorTPC/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTPC); no separate `KotorDDS` project on the default branch—treat DDS like other tool-chain inputs mapped into TPC in PyKotor.
-
-**For mod developers:**
-
-- DDS is an alternative texture format; *KotOR* typically uses [TPC](Texture-Formats#tpc).
-- See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
-
-**Related formats:**
-
-- Read and written through PyKotor’s [TPC](Texture-Formats#tpc) pipeline
-- [TPC File Format](Texture-Formats#tpc)
-- [TXI File Format](Texture-Formats#txi)
-
+PyKotor reads both variants via [\TPCDDSReader.load\ L191+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L191) (class [\TPCDDSReader\ L49+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L49)) and writes standard DDS via [\TPCDDSWriter\ L351+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L351), routed through [\	pc_auto.py\](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_auto.py) via \ResourceType.DDS\ detection. The same structure is decoded by [xoreos \src/graphics/images/dds.cpp\](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) (engine, both variants) and [xoreos-tools \src/images/dds.cpp\](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) (command-line conversion). Reone has no standalone DDS reader and loads all textures through [TPC via \TpcReader::load\ L32+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/tpcreader.cpp#L32). KotOR.js follows the TPC path via [\TPCObject.ts\](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts) and [\TextureLoader.ts\](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/TextureLoader.ts); Kotor.NET manages textures under [\Kotor.NET/Formats/KotorTPC/\](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTPC) with no separate DDS project. DDS is primarily a tool interchange format — KotOR ships textures as [TPC](Texture-Formats#tpc) — but DDS files in the override folder are fully supported. For mod workflows see [HoloPatcher for mod developers](HoloPatcher#mod-developers); related formats: [TPC](Texture-Formats#tpc), [TXI](Texture-Formats#txi).
 ### Standard DDS (DX7+ container)
 
 - Magic: `DDS` followed by a 124-[byte](https://en.wikipedia.org/wiki/Byte) header.
