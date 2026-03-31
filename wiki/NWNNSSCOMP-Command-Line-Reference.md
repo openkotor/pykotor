@@ -204,3 +204,10 @@ So: same flags and argument order as Fred Tetra’s KOTOR Tool; only the binary 
 
 - **DeNCS:** Same SHA256 as TSLPatcher in PyKotor; `commandline={}` (decompiler-only or different interface).
 - **Xoreos Tools / knsscomp:** knsscomp uses `-c` `{source}` `-o` `{output}` for compile; no decompile. Xoreos has no commandline template in PyKotor.
+
+### See also
+
+- [NSS scripting reference](NSS-File-Format) — NWScript source language and function reference
+- [NCS bytecode format](NCS-File-Format) — Compiled script format that nwnnsscomp produces
+- [HoloPatcher — PatchLists](HoloPatcher#patchlists) — Patcher-driven script compilation workflow
+- [Mod creation best practices](Mod-Creation-Best-Practices) — Packaging compiled scripts for distribution

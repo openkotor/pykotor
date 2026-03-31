@@ -293,8 +293,10 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 ## See also
 
 - [GFF File Format](GFF-File-Format) - Binary layout and data types
+- [GFF Creature and Dialogue](GFF-Creature-and-Dialogue) - UTC and DLG types
+- [GFF Spatial Objects](GFF-Spatial-Objects) - UTD, UTP, UTT, UTE, UTS, UTW, PTH types
+- [GFF Module and Area](GFF-Module-and-Area) - ARE, GIT, IFO types
 - [baseitems.2da](2DA-File-Format#baseitems2da) - Item type definitions
-- [itempropdef.2da](2DA-File-Format#itempropdef2da) - Item property definitions
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) - Modding GFF/UTI with TSLPatcher
 - [Bioware Aurora Item Format](Bioware-Aurora-Items-Economy-and-Narrative#item) - Official BioWare specification
 

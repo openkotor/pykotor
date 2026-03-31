@@ -25,6 +25,8 @@ Kits are collections of models from specific game areas. The toolset does not sh
 
 ### See also
 
+- [Holocron Toolset: Module editor](Holocron-Toolset-Module-Editor) -- Editing module contents
+- [Holocron Toolset: Getting started](Holocron-Toolset-Getting-Started) -- Installation and first launch
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Full guide: rooms, doors, walkmeshes, building
 - [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Technical details
 - [Kit Structure Documentation](Kit-Structure-Documentation) -- Kit layout and generation

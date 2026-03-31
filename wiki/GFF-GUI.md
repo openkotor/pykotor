@@ -559,7 +559,9 @@ All controls share these base properties:
 ### See also
 
 - [GFF-File-Format](GFF-File-Format) -- Generic format underlying GUI
+- [GFF Creature and Dialogue](GFF-Creature-and-Dialogue) -- UTC and DLG types
+- [GFF Items and Economy](GFF-Items-and-Economy) -- UTI, UTM, JRL, FAC types
+- [GFF Module and Area](GFF-Module-and-Area) -- ARE, GIT, IFO types
 - [TPC File Format](Texture-Formats#tpc) — textures used by GUI controls
-- [TXI File Format](Texture-Formats#txi) — companion metadata for those textures
 - [TLK File Format](Audio-and-Localization-Formats#tlk) - String references for GUI text
 - [NCS File Format](NCS-File-Format) - Scripts that drive GUI behavior

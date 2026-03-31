@@ -105,7 +105,9 @@ Load a save from **before** you entered the area (so the module/[GIT](GFF-File-F
 
 ## See also
 
+- [Tutorial: Creating a new store](Tutorial-Creating-a-New-Store) -- Store and dialogue workflow
+- [Tutorial: Area transitions](Tutorial-Area-Transitions) -- Connecting areas with doors and triggers
+- [Tutorial: Creating custom robes](Tutorial-Creating-Custom-Robes) -- Item creation and texture workflow
 - [GFF-GIT](GFF-File-Format#git-game-instance-template) -- Game Instance Template (`CameraList` and `camera` structs)
 - [GFF-DLG](GFF-Creature-and-Dialogue#dlg) -- Dialogue format (`CameraID` and camera angle)
 - [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor) -- Opening and editing modules
-- [Holocron Toolset: Module resources](Holocron-Toolset-Module-Resources) -- Module tab and `GIT` access

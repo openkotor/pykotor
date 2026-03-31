@@ -157,7 +157,7 @@ QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib \
 - External asset import is supported, but end-to-end "import arbitrary asset --> automatically ship as final *KotOR*-compatible resource" is still a guided pipeline rather than a one-click conversion path.
 - Engine-level documentation updates that require direct *K1* + *TSL* binary analysis were **not** added here, because those binaries were not available in the current environment during this work.
 
-### See Also
+### See also
 
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- User workflow for Indoor Maps
 - [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Implementation Details

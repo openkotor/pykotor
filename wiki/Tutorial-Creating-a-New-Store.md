@@ -63,14 +63,12 @@ Use a save from before escaping Taris (or `warp ebo_m12aa` with cheats). Talk to
 ![Store](https://raw.githubusercontent.com/OldRepublicDevs/HolocronToolset/refs/heads/master/src/toolset/help/tutorials/2m.png)
 ![Result](https://raw.githubusercontent.com/OldRepublicDevs/HolocronToolset/refs/heads/master/src/toolset/help/tutorials/2n.png)
 
-### See Also
+### See also
 
+- [Tutorial: Creating custom robes](Tutorial-Creating-Custom-Robes) -- Item creation and texture workflow
+- [Tutorial: Creating static cameras](Tutorial-Creating-Static-Cameras) -- Camera placement in modules
+- [Tutorial: Area transitions](Tutorial-Area-Transitions) -- Connecting areas with doors and triggers
 - [GFF-UTM](GFF-File-Format#utm-merchant) -- Merchant (UTM) Format
 - [GFF-UTC](GFF-Creature-and-Dialogue#utc) -- Creature (UTC) Format
 - [GFF-DLG](GFF-Creature-and-Dialogue#dlg) -- Dialogue (DLG) Format
-- [NSS-File-Format](NSS-File-Format)
-- [NCS-File-Format](NCS-File-Format) -- Scripts Format
-- [GFF-GIT](GFF-File-Format#git-game-instance-template) -- Placing Instances in Modules
-- [Concepts — module packaging](Concepts#module-packaging-for-mod-authors-override-vs-modules) -- `override/` vs `modules/` when shipping GIT changes
-- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- Packaging a distributable mod (first-mod walkthrough)
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) -- Testing, merges, compatibility

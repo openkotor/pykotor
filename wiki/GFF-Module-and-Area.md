@@ -658,7 +658,9 @@ The blue walkable area rendered in editors comes from the walkmesh ([BWM file](L
 ## See also
 
 - [GFF File Format](GFF-File-Format) - Generic format underlying ARE
-- [GIT (Game Instance Template)](GFF-Module-and-Area#git) - Dynamic area contents (creatures, doors, placeables)
+- [GFF Creature and Dialogue](GFF-Creature-and-Dialogue) - UTC and DLG types
+- [GFF Items and Economy](GFF-Items-and-Economy) - UTI, UTM, JRL, FAC types
+- [GFF Spatial Objects](GFF-Spatial-Objects) - UTD, UTP, UTT, UTE, UTS, UTW, PTH types
 - [BWM (Walkmesh)](Level-Layout-Formats#bwm) - Area walkable surfaces and minimap alignment
 - [LYT](Level-Layout-Formats#lyt) — layout
 - [VIS](Level-Layout-Formats#vis) — visibility

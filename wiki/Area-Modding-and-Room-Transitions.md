@@ -44,9 +44,7 @@ Step-by-step workflows for room layout and roomlink editing live in the communit
   - [Blender Integration — current limitations](Blender-Integration#current-limitations)
   - [Indoor Map Builder](Indoor-Map-Builder-User-Guide)
 
-## Related format pages
-
-For more information, see:
+### See also
 
 - [BWM File Format](Level-Layout-Formats#bwm) -- WOK structure, perimeters, transition IDs
 - [Transitions and Door Placement](Level-Layout-Formats#transitions-and-door-placement).

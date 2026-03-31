@@ -15,8 +15,10 @@ The "Override" tab allows you to navigate through the override files. In TSL you
 
 ![Override Tab](https://raw.githubusercontent.com/OldRepublicDevs/PyKotor/master/Tools/HolocronToolset/src/toolset/help/images/introduction_1-overrideResources=1.png)
 
-### See Also
+### See also
 
+- [Holocron Toolset: Core resources](Holocron-Toolset-Core-Resources) -- Core resource tab
+- [Holocron Toolset: Module resources](Holocron-Toolset-Module-Resources) -- Module resource tab
 - [Concepts](Concepts#override-folder) -- Override folder and resource resolution
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files) -- When to use override vs MOD
 - [Concepts](Concepts#resource-resolution-order) -- Resolution order

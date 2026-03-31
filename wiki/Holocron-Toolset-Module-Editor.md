@@ -55,6 +55,8 @@ You can edit the controls in **Settings** (Main Window) under the **Module Desig
 
 ### See also
 
+- [Holocron Toolset: Getting started](Holocron-Toolset-Getting-Started) -- Installation and first launch
+- [Holocron Toolset: Module resources](Holocron-Toolset-Module-Resources) -- Module tab and resource browsing
 - [GFF-GIT](GFF-File-Format#git-game-instance-template) -- Game Instance Template (placeables, creatures, doors, etc.)
 - [GFF-ARE](GFF-Module-and-Area#are) -- Area format
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Building new areas

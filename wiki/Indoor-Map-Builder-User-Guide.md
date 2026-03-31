@@ -320,7 +320,7 @@ If the player cannot move between rooms, the issue is usually **roomlinks / tran
 - Disable [material](MDL-MDX-File-Format#trimesh-header) colorization for better performance
 - Close other applications to free up memory
 
-## Related Documentation
+### See also
 
 - [Indoor Map Builder - Implementation Guide](Indoor-Map-Builder-Implementation-Guide) - Technical details for developers
 - [LYT File Format](Level-Layout-Formats#lyt) - [layout files](Level-Layout-Formats#lyt) structure

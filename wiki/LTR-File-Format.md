@@ -121,3 +121,10 @@ The runtime algorithm (PyKotor, reone, xoreos, KotOR.js, etc.) follows the same 
 - [KotOR.js `LTRObject.ts` L51–L210](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LTRObject.ts#L51-L210).
 
 Because PyKotor matches the binary layout described above, *LTR* resources round-trip with the other cited implementations for **28-letter** KotOR tables.
+
+### See also
+
+- [Resource formats and resolution](Resource-Formats-and-Resolution) — Resource type identifiers and format discovery
+- [Bioware Aurora core formats](Bioware-Aurora-Core-Formats) — Aurora engine specification (includes LTR)
+- [2DA File Format](2DA-File-Format) — Configuration tables that reference generated names
+- [NSS scripting reference](NSS-File-Format) — NWScript functions that call LTR-based name generation

@@ -50,10 +50,10 @@ Copy all files into your game's **override** folder. In-game, use the cheat **gi
 
 ### See also
 
+- [Tutorial: Creating a new store](Tutorial-Creating-a-New-Store) -- Store and dialogue workflow
+- [Tutorial: Area transitions](Tutorial-Area-Transitions) -- Connecting areas with doors and triggers
+- [Tutorial: Creating static cameras](Tutorial-Creating-Static-Cameras) -- Camera placement in modules
 - [GFF-UTI](GFF-Items-and-Economy#uti) -- Item (UTI) format
 - [TPC-File-Format](Texture-Formats#tpc) -- Textures
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) -- Override and compatibility
 - [Concepts](Concepts#override-folder) -- Override folder
-- [Home — toolchain overview](Home#documentation) -- When to use HoloPatcher vs CLI vs diff tools
-- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- Shipping a patcher-based mod
-- [Concepts — module packaging](Concepts#module-packaging-for-mod-authors-override-vs-modules) -- When override alone is not enough

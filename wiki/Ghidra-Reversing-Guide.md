@@ -332,6 +332,13 @@ Unaffected EBX and return value from vtable call
 
 This concludes the walkthrough. For more detail, consult the official Ghidra documentation and community resources.
 
+### See also
+
+- [Reverse engineering findings](reverse_engineering_findings) — Engine behavior synthesis from K1 and TSL binaries
+- [UTC Editor field types (AgentDecompile)](UTC-Editor-Field-Types-AgentDecompile) — RE findings for creature editor fields
+- [NCS bytecode format](NCS-File-Format) — Compiled script format encountered during binary analysis
+- [MDL/MDX model format](MDL-MDX-File-Format) — 3D model structures visible in decompiled engine code
+
 ---
 
 *This guide walks through the Ghidra Code Browser using a Windows binary (Star Wars: Knights of the Old Republic — KOTOR) as the example. Names and terms such as swkotor.exe, NGO array, MGO array, refill word, CSWMinigame, and PyGhidra are used as they appear in the example codebase or in common usage.*

@@ -253,7 +253,7 @@ The [official BioWare 2DA specification](Bioware-Aurora-Core-Formats#2da) docume
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs)
 - **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md) — basic format overview
 
-### See Also
+### See also
 
 - [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) - Modding 2DA files with *TSLPatcher*
 - [GFF File Format](GFF-File-Format) - Related format that often references *2DA* data
