@@ -1,6 +1,6 @@
 # Indoor Map Builder — Implementation Guide
 
-The Indoor Map Builder emits a complete module from a visual room layout: LYT, VIS, ARE, GIT, IFO, walkmeshes, and a MOD/RIM capsule. This guide explains what files it produces, how they relate to engine formats, and where to read the code. For end-user workflow, see the [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide).
+The Indoor Map Builder emits a complete module from a visual room layout: LYT, VIS, ARE, GIT, IFO, walkmeshes, and a MOD/RIM capsule. The sections below cover what files it produces, how they relate to engine formats, and where to read the code. For end-user workflow, see the [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide).
 
 ## Outputs and formats
 
@@ -29,7 +29,7 @@ Authoring kits (room templates, hooks, metadata) are described in [Kit Structure
 - **PyKotor** readers/writers: `Libraries/PyKotor/src/pykotor/resource/formats/` for LYT, BWM, VIS, GFF, ERF/RIM, and related types.
 - **HolocronToolset** GUI: module / indoor editors under `Tools/HolocronToolset/src/toolset/gui/` (e.g. layout, walkmesh, and area editors). Prefer the shipped help bundle for UI specifics.
 
-## See also
+### See also
 
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide)
 - [Indoor Area Room Layout and Walkmesh Guide](Indoor-Area-Room-Layout-and-Walkmesh-Guide)

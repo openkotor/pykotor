@@ -1109,7 +1109,7 @@ Community tools and installers (TSLPatcher, HoloPatcher) support inserting or pa
 - [TSLPatcher’s official readme](TSLPatcher's-Official-Readme)
 - [HoloPatcher internal logic](HoloPatcher#internal-logic)
 
-This page summarizes the KotOR **RIM** container for modders and implementers. For ERF-specific fields and engine behavior around MOD/SAV, use [ERF File Format](Container-Formats#erf).
+The KotOR **RIM** container stores module resources without compression. For ERF-specific fields and engine behavior around MOD/SAV, see [ERF File Format](Container-Formats#erf).
 
 ### See also
 

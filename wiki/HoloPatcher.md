@@ -12,7 +12,7 @@ HoloPatcher is PyKotor’s cross-platform reimplementation of the TSLPatcher mod
 
 <a id="mod-developers"></a>
 
-_This page explains how to package and test a mod with HoloPatcher. If you are installing a mod as a player, see [Installing Mods with HoloPatcher](HoloPatcher#installing-mods)._
+_For mod installation as a player, see [Installing Mods with HoloPatcher](HoloPatcher#installing-mods)._
 
 ## Creating a HoloPatcher mod
 

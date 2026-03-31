@@ -1,6 +1,6 @@
 # Indoor Area — Room Layout and Walkmesh Guide
 
-This guide ties together **indoor module** authoring: room layout, walkmesh transitions, visibility, and packaging. It is a **wiki hub**; format details live on the linked format pages.
+Building an indoor module requires coordinating several subsystems: **room layout**, **walkmesh transitions**, **visibility**, and **packaging**. The format specifics live on the linked format pages; the workflow below shows how they fit together.
 
 ## Workflow overview
 
@@ -27,7 +27,7 @@ This guide ties together **indoor module** authoring: room layout, walkmesh tran
 - **Cannot walk between rooms** — Usually transition IDs on walkmesh edges, LYT order, or missing/incorrect VIS. Start with [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions) and the user guide section [Room crossing and walkmesh](Indoor-Map-Builder-User-Guide#room-crossing-and-walkmesh).
 - **Kit / template structure** — [Kit Structure Documentation](Kit-Structure-Documentation).
 
-## See also
+### See also
 
 - [BWM File Format](Level-Layout-Formats#bwm)
 - [LYT File Format](Level-Layout-Formats#lyt)

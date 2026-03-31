@@ -1,6 +1,6 @@
 # Toolset Editor Archives
 
-Consolidated archive of GitHub URL references removed from toolset editor helper modules under `Libraries/PyKotor/src/pykotor/tools/`.
+Implementation references and reverse-engineering notes for Holocron Toolset's editor helper modules: creature, item, door, placeable, and other GFF-backed resource editors.
 
 ---
 

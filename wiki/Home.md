@@ -4,7 +4,7 @@
 
 PyKotor is a source-available KotOR and TSL modding toolchain. It exists to make the ecosystem less fragmented: one place for file-format documentation, installer behavior, tool workflows, and implementation-backed reference material that can be improved by the community instead of disappearing into forum archaeology.
 
-This wiki is organized around what you are trying to do, not around whichever executable or legacy tool you happened to open first. Use it as a front door into the stack, then follow the deeper format and engine-reference pages when you need exact behavior.
+The documentation is organized around what you are trying to do, not around whichever executable or legacy tool you happened to open first. Start from the table below, then follow the deeper format and engine-reference pages when you need exact behavior.
 
 ## Start here
 
@@ -93,7 +93,7 @@ PyKotor is one part of a larger KotOR tooling ecosystem. This section is a compa
 
 ## Community sources and archives
 
-This wiki is meant to replace scattered tribal knowledge with maintainable documentation, but older communities still matter for release history, workflow pitfalls, and examples that never became formal docs.
+Older communities still matter for release history, workflow pitfalls, and examples that never became formal documentation.
 
 | Source | Why it matters | How to use it |
 | ------ | -------------- | ------------- |
@@ -110,7 +110,7 @@ This wiki is meant to replace scattered tribal knowledge with maintainable docum
 - [nwn-docs](https://github.com/kucik/nwn-docs) is helpful for older Aurora-family background where KotOR behavior inherits the same storage conventions.
 - [bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats) provides Kaitai Struct specifications for many BioWare and KotOR formats and is useful for parser cross-checking.
 
-## See also
+### See also
 
 - [Concepts](Concepts)
 - [Resource formats and resolution](Resource-Formats-and-Resolution)

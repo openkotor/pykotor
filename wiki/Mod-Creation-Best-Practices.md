@@ -2,9 +2,9 @@
 
 ## Philosophy: a contributable toolchain, not a tool monoculture
 
-KotOR modding has historically been fragmented: different tools, version quirks, and a lot of critical knowledge trapped in forum memory. This wiki is meant to make the practical parts durable. Use whatever tools help you ship, but prefer workflows that are reproducible, merge-aware, and explainable to the next person who has to maintain the mod.
+KotOR modding has historically been fragmented: different tools, version quirks, and a lot of critical knowledge trapped in forum memory. The practical parts deserve to be durable. Use whatever tools help you ship, but prefer workflows that are reproducible, merge-aware, and explainable to the next person who has to maintain the mod.
 
-This page is the practical author guide: where files should go, when patchers are required, how to avoid common compatibility mistakes, and what to test before release. For tool syntax and installation, see:
+The sections below cover where files should go, when patchers are required, how to avoid common compatibility mistakes, and what to test before release. For tool syntax and installation, see:
 
 - [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers)
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)

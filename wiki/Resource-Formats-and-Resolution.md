@@ -1,14 +1,8 @@
 # Resource formats and resolution
 
-This page has three jobs:
+The KotOR engine organizes game data into typed resources — models, textures, dialogues, 2DA tables, scripts, and dozens more. Each resource type has a numeric ID and one or more binary (or text) file formats. The engine resolves resources by searching a fixed precedence of containers: loose Override files first, then module capsules (ERF/MOD/RIM), then the global KEY/BIF archive, with language-specific TLK lookups alongside.
 
-1. point you to the right format page,
-2. keep the canonical resource type ID table in one place,
-3. give a short reminder of how file lookup works before you dive into a specific format.
-
-For the full narrative on precedence, override behavior, module capsules, KEY/BIF, and language IDs, use [Concepts](Concepts). This page is the index and registry; Concepts is the explanation.
-
-Use this page when you already know you need a format page or a resource type ID. Use [Home](Home) for routing and [Concepts](Concepts) for the full explanation of why the resolution order behaves the way it does.
+The sections below provide the canonical resource type ID table and quick links to each format's dedicated page. For the full narrative on precedence, override behaviour, module capsules, KEY/BIF, and language IDs, see [Concepts](Concepts).
 
 ## Verified against implementations
 

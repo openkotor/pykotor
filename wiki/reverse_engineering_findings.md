@@ -1466,12 +1466,12 @@ To extend these findings or verify behavior against a specific binary:
 
 ### Implementation evidence archives
 
-Verbatim URL references and implementation notes removed from PyKotor source modules during code cleanup, preserved for traceability:
+Detailed executable-level analysis and code-level entry points for each PyKotor subsystem:
 
-- [Migrated docstrings](reverse_engineering_findings_py_kotor_migrated_docstrings) -- Migrated engine notes from format-module docstrings
-- [Migrated MDL I/O notes](reverse_engineering_findings_py_kotor_migrated_io_mdl) -- Migrated MDL binary I/O module docstrings
-- [Resource format archives](reverse_engineering_findings_archive_resource_formats) -- URL references from `resource/formats/` modules
-- [Game object and generic structure archives](reverse_engineering_findings_archive_game_objects) -- URL references from `common/`, `resource/generics/`
-- [Engine, rendering, and extraction archives](reverse_engineering_findings_archive_engine_rendering) -- URL references from `engine/`, `gl/`, `extract/`
-- [TSLPatcher implementation archives](reverse_engineering_findings_archive_tslpatcher) -- URL references from `tslpatcher/`
-- [Toolset editor archives](reverse_engineering_findings_archive_toolset) -- URL references from `tools/`
+- [Resource format engine notes](reverse_engineering_findings_py_kotor_migrated_docstrings) — Function addresses, call chains, and struct layouts for each binary format module
+- [MDL binary I/O engine notes](reverse_engineering_findings_py_kotor_migrated_io_mdl) — Complete model node tree, controller keys, and mesh geometry analysis
+- [Resource format archives](reverse_engineering_findings_archive_resource_formats) — Implementation references from `resource/formats/` modules
+- [Game object and generic structure archives](reverse_engineering_findings_archive_game_objects) — Implementation references from `common/`, `resource/generics/`
+- [Engine, rendering, and extraction archives](reverse_engineering_findings_archive_engine_rendering) — Implementation references from `engine/`, `gl/`, `extract/`
+- [TSLPatcher implementation archives](reverse_engineering_findings_archive_tslpatcher) — Implementation references from `tslpatcher/`
+- [Toolset editor archives](reverse_engineering_findings_archive_toolset) — Implementation references from `tools/`

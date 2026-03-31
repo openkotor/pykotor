@@ -1,6 +1,6 @@
 # Holocron Toolset: New Features Quick Guide
 
-**10 powerful new features now available**
+The most impactful recent additions to the Holocron Toolset are listed below. Each feature works out of the box — no configuration required beyond having the latest version installed.
 
 ---
 
@@ -206,7 +206,7 @@ Saves go to the Override folder (or current location); file browser refreshes; "
 
 ---
 
-## See also
+### See also
 
 - [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started)
 - [Holocron Toolset: Override resources](Holocron-Toolset-Override-Resources)

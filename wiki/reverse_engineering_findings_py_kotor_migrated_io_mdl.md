@@ -1,12 +1,8 @@
-# PyKotor `mdl/io_mdl.py` — migrated module docstring (HEAD)
+# MDL Binary I/O Engine Notes
 
-Companion to [reverse_engineering_findings](reverse_engineering_findings.md) and
-[migrated long-form notes part 1](reverse_engineering_findings_py_kotor_migrated_docstrings.md).
+Detailed executable-level analysis of the KotOR MDL/MDX binary model format as implemented in PyKotor's `mdl/io_mdl.py` module. Documents the complete node tree structure, controller key layouts, animation data, and mesh geometry packing derived from disassembly of both KotOR I and TSL executables.
 
-The working-tree `io_mdl.py` replaced this large module docstring with a short **observed behavior** summary.
-The text below is the **full** former docstring extracted with `ast.get_docstring` from
-`git show HEAD:Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py` at commit
-`14db9bc97f5099356e38f39cdf8388dc6cf7b8a5`.
+Companion to the [reverse-engineering synthesis hub](reverse_engineering_findings.md) and the [resource format engine notes](reverse_engineering_findings_py_kotor_migrated_docstrings.md).
 
 <a id="migrated-io-mdl-module"></a>
 

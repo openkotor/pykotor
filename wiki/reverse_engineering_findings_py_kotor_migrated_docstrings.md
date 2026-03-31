@@ -1,12 +1,8 @@
-# PyKotor `resource/formats` — migrated long-form engine notes
+# PyKotor Resource Format Engine Notes
 
-This companion to [reverse_engineering_findings](reverse_engineering_findings.md) preserves **verbatim** (or encoding-corrected) text removed from `Libraries/PyKotor/src/pykotor/resource/formats/` when library modules were rewritten to stay retail- and tooling-facing. It does **not** replace format wiki pages; it archives **executable-oriented** references that used to live in Python docstrings and comments.
+Detailed executable-level analysis of each binary resource format handled by PyKotor's `resource/formats/` modules. These notes document function addresses, call chains, struct layouts, and runtime behavior derived from disassembly of both KotOR I and TSL executables.
 
-**Source snapshot:** Extracted with `git show HEAD:<path>` against commit `14db9bc97f5099356e38f39cdf8388dc6cf7b8a5`. If your tree has diverged, recover gaps with `git log --follow -p -- <path>` or `git show <commit>:<path>`.
-
-**See also:** Condensed RVA tables in [Appendix: PyKotor resource/formats symbols](reverse_engineering_findings.md#pykotor-resource-formats-symbols).
-
-**Part 2 (binary MDL I/O):** The huge former `mdl/io_mdl.py` module docstring is in [migrated `io_mdl` module docstring](reverse_engineering_findings_py_kotor_migrated_io_mdl.md) (kept separate so this page stays reviewable in editors).
+For the condensed RVA lookup tables, see [Appendix: PyKotor resource/formats symbols](reverse_engineering_findings.md#pykotor-resource-formats-symbols). For the companion MDL binary I/O analysis, see [MDL module engine notes](reverse_engineering_findings_py_kotor_migrated_io_mdl.md).
 
 ---
 

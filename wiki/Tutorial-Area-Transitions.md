@@ -1,7 +1,5 @@
 # Tutorial: Area transitions
 
-*This tutorial is merged from the Holocron Toolset in-app help (Tools/HolocronToolset/src/toolset/help/tutorials/).*
-
 This tutorial shows how to link two modules with area transitions. You will:
 
 - Create a new module with the Map Builder

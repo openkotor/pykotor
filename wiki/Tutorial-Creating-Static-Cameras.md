@@ -1,8 +1,6 @@
 # Tutorial: Creating static cameras
 
-*This tutorial is merged from the Holocron Toolset in-app help (Tools/HolocronToolset/src/toolset/help/tutorials/). It describes static cameras only; animated cameras are not covered. Some steps reference legacy tools (KotOR Tool, K-GFF, ERF editor); you can use Holocron Toolset's **Modules** tab and [GIT](GFF-File-Format#git-game-instance-template) editor instead to open and edit the same files.*
-
-Static cameras are fixed viewpoints you can place in an area to control dialogue and cutscene framing. They make in-game dialogue more than just a sequence of talking heads.
+Static cameras are fixed viewpoints you can place in an area to control dialogue and cutscene framing. This tutorial covers static cameras only; animated cameras are not covered. They make in-game dialogue more than just a sequence of talking heads.
 
 ## Prerequisites
 
@@ -103,7 +101,7 @@ Load a save from **before** you entered the area (so the module/[GIT](GFF-File-F
 
 ---
 
-## See also
+### See also
 
 - [Tutorial: Creating a new store](Tutorial-Creating-a-New-Store) -- Store and dialogue workflow
 - [Tutorial: Area transitions](Tutorial-Area-Transitions) -- Connecting areas with doors and triggers

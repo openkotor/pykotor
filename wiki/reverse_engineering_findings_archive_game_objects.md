@@ -1,8 +1,6 @@
 # Game Object and Generic Structure Archives
 
-Consolidated archive of GitHub URL references, class docstrings, and implementation notes removed from game-object and generic-structure modules under `Libraries/PyKotor/src/pykotor/`.
-
-Covers `common/`, `resource/generics/`, and related data-model modules.
+Implementation references and reverse-engineering notes for KotOR game objects: creatures, items, placeables, triggers, and the generic GFF-backed data structures that represent them in memory. Covers `common/`, `resource/generics/`, and related data-model modules.
 
 ---
 

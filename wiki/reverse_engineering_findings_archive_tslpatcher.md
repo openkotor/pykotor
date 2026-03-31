@@ -1,6 +1,6 @@
 # TSLPatcher Implementation Archives
 
-Consolidated archive of GitHub URL references removed from TSLPatcher implementation modules under `Libraries/PyKotor/src/pykotor/tslpatcher/`.
+Implementation references and reverse-engineering notes for HoloPatcher's TSLPatcher-compatible patch engine: diff logic, INI parsing, GFF field patching, 2DA row insertion, and TLK token resolution.
 
 ---
 

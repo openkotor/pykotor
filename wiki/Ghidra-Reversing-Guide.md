@@ -1,6 +1,6 @@
 # Ghidra Code Browser: An Authoritative Walkthrough
 
-This guide introduces the Ghidra Code Browser and core concepts for reverse engineering: the symbol tree, data type manager, listing, decompiler, function signatures, calling conventions (cdecl, fastcall, stdcall, thiscall), structures, vtables, template classes, and common decompile pitfalls. The following sections use a Windows binary (KOTOR one) as the example.
+The Ghidra Code Browser provides a disassembly listing, decompiler, symbol tree, and data type manager — everything needed to reverse-engineer a binary. The sections below cover function signatures, calling conventions (cdecl, fastcall, stdcall, thiscall), structures, vtables, template classes, and common decompile pitfalls, using a Windows KotOR binary as the running example.
 
 ---
 

@@ -1,7 +1,5 @@
 # Tutorial: Creating custom robes
 
-*This tutorial is merged from the Holocron Toolset in-app help (Tools/HolocronToolset/src/toolset/help/tutorials/).*
-
 This tutorial covers creating a new, custom-textured robe and adding it to the game. The steps use KotOR 1 but are very similar for TSL.
 
 ## Step 1: Extract Resources

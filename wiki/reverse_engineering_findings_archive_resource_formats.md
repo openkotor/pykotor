@@ -1,8 +1,6 @@
 # Resource Format Implementation Archives
 
-Consolidated archive of GitHub URL references and implementation notes removed from resource format modules under `Libraries/PyKotor/src/pykotor/resource/formats/`.
-
-Each section preserves the verbatim lines from one source module. For the original scrub workflow, see `scripts/archive_github_url_lines.py`.
+Implementation references and executable-level notes for each binary resource format parsed by PyKotor: GFF, 2DA, TLK, ERF/RIM, KEY/BIF, TPC, MDL/MDX, SSF, LIP, NCS, and others. Each section documents the code-level entry points and reverse-engineered details for one format module.
 
 ---
 

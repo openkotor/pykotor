@@ -589,7 +589,7 @@ CLI helper: [`pykotor walkmesh-rebuild`](https://github.com/OldRepublicDevs/PyKo
 - **PWK/DWK**: aabb_count, adjacency_count, edge_count, perimeter_count should be 0; corresponding offsets typically 0 or unused.
 - **Walkable ordering**: Engine may expect walkable faces first in the face array; adjacency_count equals number of walkable faces. See engine and 2DA docs.
 
-## See also
+### See also
 
 - [Reverse Engineering Findings — BWM / walkmesh / AABB](reverse_engineering_findings#bwm-walkmesh-aabb-engine-implementation-analysis) — Engine behavior, coordinate handling, AABB traversal.
 - [2DA-surfacemat](2DA-File-Format#surfacemat2da) — Material IDs and walkability.

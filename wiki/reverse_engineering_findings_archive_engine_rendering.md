@@ -1,8 +1,6 @@
 # Engine, Rendering, and Extraction Archives
 
-Consolidated archive of GitHub URL references and implementation notes removed from engine, rendering, model-loading, and extraction modules.
-
-Covers `engine/`, `gl/`, `panda3d/`, `extract/`, and MDL/model I/O modules.
+Implementation references and executable-level notes for the KotOR engine's rendering pipeline, model loading, resource extraction, and 3D subsystems. Covers `engine/`, `gl/`, `panda3d/`, `extract/`, and MDL/model I/O modules.
 
 ---
 
