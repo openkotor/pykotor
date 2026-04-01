@@ -90,7 +90,7 @@ Each [NCS file](NCS-File-Format) requires its own section (e.g., `[myscript.ncs]
 - `Modules\module.mod`: Insert into an [ERF](Container-Formats#erf)/MOD/[RIM](Container-Formats#rim) container
 - Use backslashes for path separators
 
-**Important:** The `ReplaceFile` [KEY](Container-Formats#key) in HACKList does NOT use an exclamation point prefix. This is unique to HACKList compared to other patch lists.
+**Important:** The `ReplaceFile` key in HACKList does NOT use an exclamation point prefix. This is unique to HACKList compared to other patch lists.
 
 ## Token Types and Data Sizes Syntax
 

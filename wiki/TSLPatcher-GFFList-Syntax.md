@@ -977,7 +977,7 @@ lang0=My Custom Quests
 
 ### Localized String Syntax
 
-- **[StrRef](Audio-and-Localization-Formats#string-references-strref) vs lang#**: Use `FieldName(strref)=...` for the [StrRef](Audio-and-Localization-Formats#string-references-strref) value, and `FieldName(lang#)=...` for text substrings. Don't mix them on the same [KEY](Container-Formats#key).
+- **[StrRef](Audio-and-Localization-Formats#string-references-strref) vs lang#**: Use `FieldName(strref)=...` for the [StrRef](Audio-and-Localization-Formats#string-references-strref) value, and `FieldName(lang#)=...` for text substrings. Don't mix them on the same key.
 - **Multiple substrings**: You can set multiple `lang#` entries for the same field (e.g., `lang0=English`, `lang2=French`).
 - **Line breaks**: Use `<#LF#>` for linefeeds in `lang#` values, not literal newlines.
 

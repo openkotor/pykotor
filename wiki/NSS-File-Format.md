@@ -3464,7 +3464,7 @@ KOTOR's `nwscript.nss` retains many NWN-era declarations but prefixes unsupporte
 
 No official BioWare documentation explains this (as KOTOR predates widespread modding support), but forum consensus attributes it to engine streamlining for single-player RPG vs. NWN's multiplayer focus.
 
-### [KEY](Container-Formats#key) Examples of Commented Elements
+### Key Examples of Commented Elements
 
 | Category | Examples | Notes from nwscript.nss |
 |----------|----------|-------------------------|
@@ -3506,7 +3506,7 @@ void SetOrientOnClick( object oCreature = OBJECT_SELF, ... )
 
 Modding communities actively reference these commented sections, especially on **Deadly Stream** (primary KOTOR hub), **LucasForums containers**, **Holowan Laboratories** (via MixNMojo/Mixmojo forums), and Reddit.
 
-| Forum | [KEY](Container-Formats#key) threads | Topics covered |
+| Forum | Key threads | Topics covered |
 |-------|-------------|----------------|
 | Deadly Stream | [Script Shack](https://deadlystream.com/topic/4808-fair-strides-script-shack/page/7/) | [animations](MDL-MDX-File-Format)<br>overrides |
 | Deadly Stream | [nwscript.nss Request](https://deadlystream.com/topic/6892-nwscriptnss/) | [animations](MDL-MDX-File-Format)<br>overrides |
@@ -3534,7 +3534,7 @@ Modding communities actively reference these commented sections, especially on *
 
 In summary, while no one has publicly shared a "uncomment everything" patch (likely futile), the modding scene thrives on careful overrides, with thousands of posts across these sites confirming the practice since 2003.
 
-### [KEY](Container-Formats#key) Citations
+### Key Citations
 
 - [Deadly Stream: Fair Strides' Script Shack](https://deadlystream.com/topic/4808-fair-strides-script-shack/page/7/)
 - [Czerka Wiki: nwscript.nss](https://czerka-rd.fandom.com/wiki/Nwscript.nss)

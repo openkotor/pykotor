@@ -47,7 +47,7 @@ Module capsules may be `.rim` ([RIM File Format](Container-Formats#rim)), `.mod`
 
 **Common failures:** Forgetting `--noCompile` vs compile when packing stale `.ncs`; diffing paths that are not both game roots or comparable trees; incremental INI conflicts—re-run after a [HoloPatcher restore](HoloPatcher#installing-mods) on the test install.
 
-[KEY](Container-Formats#key) flags:
+Key flags:
 
 - `--path1/--path2/--path3/--path` for multi-path comparisons
 - `--filter` to constrain resources/modules

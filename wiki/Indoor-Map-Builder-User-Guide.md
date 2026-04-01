@@ -77,12 +77,12 @@ The central area where you place and arrange rooms. Use mouse and keyboard contr
 ### Rotating Rooms
 
 - **Scroll wheel** (without Ctrl) to rotate the selected component
-- **Right-click** --> **Rotate** --> Choose angle (90°, 180°, 270°)
+- **Right-click** → **Rotate** → Choose angle (90°, 180°, 270°)
 - **R key** to rotate selected rooms by the rotation snap amount
 
 ### Flipping Rooms
 
-- **Right-click** --> **Flip** --> **Flip Horizontal** or **Flip Vertical**
+- **Right-click** → **Flip** → **Flip Horizontal** or **Flip Vertical**
 - **F key** to quickly flip selected rooms horizontally
 
 ### Connecting Rooms

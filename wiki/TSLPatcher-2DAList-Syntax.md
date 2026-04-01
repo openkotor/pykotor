@@ -1096,7 +1096,7 @@ I5=Value
 **Solutions:**
 
 - `****` explicitly sets a cell to an empty string
-- Omitting a column [KEY](Container-Formats#key) leaves the cell unchanged (in ChangeRow/CopyRow) or empty (in AddRow)
+- Omitting a column key leaves the cell unchanged (in ChangeRow/CopyRow) or empty (in AddRow)
 - Use `****` when you want to explicitly clear a value
 
 ### Special Functions Not Working
@@ -1330,7 +1330,7 @@ The `[2DAList]` section provides powerful tools for modifying [2DA files](2DA-Fi
 - **Memory Tokens**: Store values for cross-file and cross-section use
 - **Token Integration**: Use [StrRef](Audio-and-Localization-Formats#string-references-strref) tokens from TLKList and provide 2DAMEMORY tokens to other sections
 
-[KEY](Container-Formats#key) points to remember:
+Key points to remember:
 
 1. Tokens are evaluated after cell modifications within the same section
 2. Tokens persist across multiple files in the same `[2DAList]` section

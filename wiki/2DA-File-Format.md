@@ -807,7 +807,7 @@ The following columns are accessed by the reone engine:
 
 ### [skills.2da](#skills2da)
 
-**Engine Usage**: Defines all skills available in the game, including which classes can use them, their [KEY](Container-Formats#key) ability scores, and skill descriptions. The engine uses this file to determine skill availability, skill point costs, and skill checks.
+**Engine Usage**: Defines all skills available in the game, including which classes can use them, their key ability scores, and skill descriptions. The engine uses this file to determine skill availability, skill point costs, and skill checks.
 
 **Row index**: Skill ID (integer)
 
@@ -818,7 +818,7 @@ The following columns are accessed by the reone engine:
 | `label` | *String* | Skill label |
 | `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for skill name |
 | `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for skill description |
-| `keyability` | *Integer* | [KEY](Container-Formats#key) ability score (STR, DEX, INT, etc.) |
+| `keyability` | *Integer* | key ability score (STR, DEX, INT, etc.) |
 | `armorcheckpenalty` | *Boolean* | Whether armor check penalty applies |
 | `allclassescanuse` | *Boolean* | Whether all classes can use this skill |
 | `category` | *Integer* | Skill category identifier |
@@ -2809,7 +2809,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 ### keymap.2da
 
-**Engine Usage**: Defines keyboard and [controller](MDL-MDX-File-Format#controllers) [KEY](Container-Formats#key) mappings for different game contexts (in-game, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, etc.). The engine uses this file to determine which keys trigger which actions in different contexts.
+**Engine Usage**: Defines keyboard and [controller](MDL-MDX-File-Format#controllers) key mappings for different game contexts (in-game, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, etc.). The engine uses this file to determine which keys trigger which actions in different contexts.
 
 **Row index**: Keymap Entry ID (integer)
 
@@ -2818,7 +2818,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | *String* | Keymap entry label |
-| Additional columns | Various | [KEY](Container-Formats#key) mappings for different contexts (ingame, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, freelook, movie) |
+| Additional columns | Various | key mappings for different contexts (ingame, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, freelook, movie) |
 
 **References**:
 
@@ -2950,17 +2950,17 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 ### bindablekeys.2da
 
-**Engine Usage**: Defines bindable [KEY](Container-Formats#key) actions and their string references. The engine uses this file to determine [KEY](Container-Formats#key) action names for the [KEY](Container-Formats#key) binding interface.
+**Engine Usage**: Defines bindable key actions and their string references. The engine uses this file to determine key action names for the key binding interface.
 
-**Row index**: Bindable [KEY](Container-Formats#key) ID (integer)
+**Row index**: Bindable key ID (integer)
 
 **Column structure**:
 
 | Column Name | type | Description |
 |------------|------|-------------|
-| `label` | *String* | Bindable [KEY](Container-Formats#key) label |
-| `keynamestrref` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for [KEY](Container-Formats#key) name |
-| Additional columns | Various | [KEY](Container-Formats#key) binding properties |
+| `label` | *String* | Bindable key label |
+| `keynamestrref` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for key name |
+| Additional columns | Various | key binding properties |
 
 **References**:
 

@@ -998,7 +998,7 @@ PyKotor's corresponding minimap and doorhook logic is implemented in the relevan
 
 PyKotor's module-archive loading implementation for this flow is in the extraction archive resolution code ([`kit.py` L291-L550](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L291-L550)).
 
-### [KEY](Container-Formats#key) Discrepancies and Rationale
+### Key Discrepancies and Rationale
 
 1. **[DWK](Level-Layout-Formats#bwm) Extraction**:
    - **KotOR.js**: Only extracts closed state (`{modelName}0.dwk`)

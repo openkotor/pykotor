@@ -10,7 +10,7 @@ TSLPatcher was designed by Stoffe with an **append-only philosophy** for [TLK](A
 
 ## Benefits of [TLK](Audio-and-Localization-Formats#tlk) Modification
 
-TSLPatcher's [TLK](Audio-and-Localization-Formats#tlk) modification system provides several [KEY](Container-Formats#key) advantages:
+TSLPatcher's [TLK](Audio-and-Localization-Formats#tlk) modification system provides several key advantages:
 
 - **Avoid distributing large files**: The [`dialog.tlk`](Audio-and-Localization-Formats#tlk) file is approximately 10 MB. Instead of distributing the entire modified file, TSLPatcher allows you to add only your new entries, significantly reducing mod file size.
 
@@ -31,7 +31,7 @@ TSLPatcher's [TLK](Audio-and-Localization-Formats#tlk) modification system provi
 
 - **StringRef ([StrRef](Audio-and-Localization-Formats#string-references-strref))**: Short for "string Reference", this is a numeric identifier/index for an entry in a [TLK file](Audio-and-Localization-Formats#tlk). StringRefs start at 0 and increment sequentially. Example: StringRef 12345 refers to the 12346th entry in a [TLK file](Audio-and-Localization-Formats#tlk). The [StrRef](Audio-and-Localization-Formats#string-references-strref) is the identifier number that the game engine uses to retrieve text strings from [`dialog.tlk`](Audio-and-Localization-Formats#tlk).
 
-- **[KEY](Container-Formats#key)**: The left side of the `=` symbol in an INI entry (e.g., `StrRef0`, `AppendFile0`)
+- **key**: The left side of the `=` symbol in an INI entry (e.g., `StrRef0`, `AppendFile0`)
 
 - **value**: The right side of the `=` symbol in an INI entry. In `[TLKList]`, values specify the index into [TLK](Audio-and-Localization-Formats#tlk) source files to read from.
 
@@ -166,7 +166,7 @@ AppendFile0=custom_entries.tlk
 1=11
 ```
 
-**[KEY](Container-Formats#key) Points:**
+**key Points:**
 
 - All examples use **append** operations - the recommended approach
 - values specify which [StrRef](Audio-and-Localization-Formats#string-references-strref) indices to read from source files
@@ -222,7 +222,7 @@ The `[TLKList]` section supports two primary entry syntax patterns, both using *
 
 ### How Token Creation Works
 
-**Important**: Tokens are created from the **value** (the number on the right side of `=`). For `StrRef<number>=<number>` entries, the number in the [KEY](Container-Formats#key) and value must match, and this matching number determines the token name.
+**Important**: Tokens are created from the **value** (the number on the right side of `=`). For `StrRef<number>=<number>` entries, the number in the key and value must match, and this matching number determines the token name.
 
 - `StrRef0=0` creates token `StrRef0` (reads index 0 from `append.tlk`)
 - `StrRef5=5` creates token `StrRef5` (reads index 5 from `append.tlk`)
@@ -242,7 +242,7 @@ StrRef<number>=<number>
 
 **Parameters**:
 
-- `<number>` - The index into `append.tlk` (or `!SourceFile`) to read from. This number must match in both the [KEY](Container-Formats#key) and value.
+- `<number>` - The index into `append.tlk` (or `!SourceFile`) to read from. This number must match in both the key and value.
 
 **Behavior**:
 
@@ -292,7 +292,7 @@ StrRef<token_identifier>=StrRef<source_index>  ; Alternative explicit syntax
 
 **Subsection Parameters**:
 
-- `<source_index>` - The index into the source [TLK file](Audio-and-Localization-Formats#tlk) to read from. Token `StrRef{source_index}` is created from this value. The number in the [KEY](Container-Formats#key) should match the number in the value for clarity.
+- `<source_index>` - The index into the source [TLK file](Audio-and-Localization-Formats#tlk) to read from. Token `StrRef{source_index}` is created from this value. The number in the key should match the number in the value for clarity.
 
 **Examples**:
 
@@ -358,7 +358,7 @@ memory.memory_str[token_identifier] = new_stringref
 
 ### Token Creation from values
 
-Tokens are created from the matching number in both the [KEY](Container-Formats#key) and value. See [How Token Creation Works](#how-token-creation-works) for details. After processing, tokens are available for use in other sections like `[2DAList]`, `[GFFList]`, and `[CompileList]`.
+Tokens are created from the matching number in both the key and value. See [How Token Creation Works](#how-token-creation-works) for details. After processing, tokens are available for use in other sections like `[2DAList]`, `[GFFList]`, and `[CompileList]`.
 
 ### Using [TLK](Audio-and-Localization-Formats#tlk) Memory in Other Sections
 
@@ -661,13 +661,13 @@ StrRef2=2
 
 ### Error: "Invalid syntax found in [TLKList]"
 
-**Cause**: Unrecognized [KEY](Container-Formats#key) format
+**Cause**: Unrecognized key format
 
 **Solutions**:
 
-- Check for typos in [KEY](Container-Formats#key) names
+- Check for typos in key names
 - Ensure you're using one of the supported syntaxes: `[StrRef](Audio-and-Localization-Formats#string-references-strref)<key>=<value>` or `AppendFile<key>=<value>`
-- Verify the [KEY](Container-Formats#key) matches the expected pattern
+- Verify the key matches the expected pattern
 
 **Correct Syntaxes**:
 
@@ -911,7 +911,7 @@ StrRef2=2
 # Memory: memory.memory_str[10] = new_stringref (from dialog.tlk append)
 ```
 
-**[KEY](Container-Formats#key) Points**:
+**key Points**:
 
 - See [How Token Creation Works](#how-token-creation-works) for token lifecycle
 - See [Memory System](#memory-system) for StrRef retention
@@ -925,7 +925,7 @@ StrRef2=2
 1. Parse [TLKList] section
 2. Load source [TLK files](Audio-and-Localization-Formats#tlk) from `!SourceFile`/`!SourceFileF` e.g. `!SourceFile=append.tlk`
 3. For each [StrRef](Audio-and-Localization-Formats#string-references-strref) entry:
-   - Parse: *[KEY](Container-Formats#key)* (ignored), *value* (source index)
+   - Parse: *key* (ignored), *value* (source index)
    - Load entry from source file at *value* index
    - Append to dialog.tlk (gets new stringref)
    - Create token [StrRef](Audio-and-Localization-Formats#string-references-strref){value} from *value* to store the new stringref
@@ -933,7 +933,7 @@ StrRef2=2
    - Parse: Key (part after the word 'append' is ignored), *value* (filename) e.g. `AppendFile0=some_append_contents.tlk`
    - Parse subsection [filename] mappings
    - For each mapping:
-- Parse: *[KEY](Container-Formats#key)* (ignored), *value* (source index)
+- Parse: *key* (ignored), *value* (source index)
      - Load entry from referenced file at *value* index
      - Append to dialog.tlk (gets new stringref)
      - Create token [StrRef](Audio-and-Localization-Formats#string-references-strref){value} from *value* to store the new stringref

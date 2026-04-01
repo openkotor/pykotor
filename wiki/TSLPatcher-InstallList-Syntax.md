@@ -101,7 +101,7 @@ Each folder section (e.g., `[Override]`) supports the following configuration ke
 
 The folder section contains the list of files to install. Each file entry uses one of two syntaxes:
 
-| [KEY](Container-Formats#key) format | Replace Behavior | Description |
+| key format | Replace Behavior | Description |
 |------------|-----------------|-------------|
 | `File#=filename.ext` | No replacement | Install the file only if it doesn't already exist at the destination. If the file exists, it will be skipped (warning logged). |
 | `Replace#=filename.ext` | Replacement enabled | Install the file and overwrite any existing file at the destination. |
