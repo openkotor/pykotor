@@ -17,7 +17,7 @@ from utility.error_handling import universal_simplify_exception  # pyright: igno
 
 LOCAL_PROGRAM_INFO: dict[str, Any] = {
     # <---JSON_START--->#{
-    "currentVersion": "3.1.2",
+    "currentVersion": "3.1.3",
     "toolsetLatestVersion": "3.1.1",
     "toolsetLatestBetaVersion": "3.1.1",
     "updateInfoLink": "https://api.github.com/repos/NickHugi/PyKotor/contents/Tools/HolocronToolset/src/toolset/config.py",

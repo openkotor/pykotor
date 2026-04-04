@@ -203,25 +203,31 @@ class ModuleRenderer(QOpenGLWidget):
             RobustLogger().warning("ModuleDesigner.paintGL - not initialized.")
             return  # Do nothing if not initialized
         #get_root_logger().debug("ModuleDesigner.paintGL called.")
-        super().paintGL()
-        start = datetime.now(tz=timezone.utc).astimezone()
-        if self.doSelect:
-            self.doSelect = False
-            obj = self.scene.pick(self._mousePrev.x, self.height() - self._mousePrev.y)
+        if self._scene is None:
+            return
+        try:
+            super().paintGL()
+            start = datetime.now(tz=timezone.utc).astimezone()
+            if self.doSelect:
+                self.doSelect = False
+                obj = self.scene.pick(self._mousePrev.x, self.height() - self._mousePrev.y)
 
-            if obj is not None and isinstance(obj.data, GITInstance):
-                self.objectSelected.emit(obj.data)
-            else:
-                self.scene.selection.clear()
-                self.objectSelected.emit(None)
+                if obj is not None and isinstance(obj.data, GITInstance):
+                    self.objectSelected.emit(obj.data)
+                else:
+                    self.scene.selection.clear()
+                    self.objectSelected.emit(None)
 
-        screenCursor = self.mapFromGlobal(self.cursor().pos())
-        worldCursor = self.scene.screenToWorld(screenCursor.x(), screenCursor.y())
-        if screenCursor.x() < self.width() and screenCursor.x() >= 0 and screenCursor.y() < self.height() and screenCursor.y() >= 0:
-            self.scene.cursor.set_position(worldCursor.x, worldCursor.y, worldCursor.z)
+            screenCursor = self.mapFromGlobal(self.cursor().pos())
+            worldCursor = self.scene.screenToWorld(screenCursor.x(), screenCursor.y())
+            if screenCursor.x() < self.width() and screenCursor.x() >= 0 and screenCursor.y() < self.height() and screenCursor.y() >= 0:
+                self.scene.cursor.set_position(worldCursor.x, worldCursor.y, worldCursor.z)
 
-        self.scene.render()
-        self._renderTime = int((datetime.now(tz=timezone.utc).astimezone() - start).total_seconds() * 1000)
+            self.scene.render()
+            self._renderTime = int((datetime.now(tz=timezone.utc).astimezone() - start).total_seconds() * 1000)
+        except Exception:  # noqa: BLE001
+            RobustLogger().exception("Error during paintGL rendering")
+            self.pauseRenderLoop()
 
     def loop(self):
         """Repaints and checks for keyboard input on mouse press.

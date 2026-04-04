@@ -387,9 +387,15 @@ class Scene:
 
         if self.git is None:
             self.git = self._getGit()
+        if self.git is None:
+            RobustLogger().error("Cannot build scene cache: GIT resource is missing.")
+            return
 
         if self.layout is None:
             self.layout = self._getLyt()
+        if self.layout is None:
+            RobustLogger().error("Cannot build scene cache: LYT resource is missing.")
+            return
 
         for identifier in self.clearCacheBuffer:
             for git_creature in self.git.creatures.copy():
@@ -409,10 +415,16 @@ class Scene:
                 for instance in self.git.instances():
                     del self.objects[instance]
                 self.git = self._getGit()
+                if self.git is None:
+                    RobustLogger().error("Cannot build scene cache: GIT resource is missing after cache invalidation.")
+                    return
             if identifier.restype is ResourceType.LYT:
                 for room in self.layout.rooms:
                     del self.objects[room]
                 self.layout = self._getLyt()
+                if self.layout is None:
+                    RobustLogger().error("Cannot build scene cache: LYT resource is missing after cache invalidation.")
+                    return
         self.clearCacheBuffer = []
 
         for room in self.layout.rooms:
