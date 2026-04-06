@@ -41,7 +41,7 @@ That split is deliberate. The goal is not “use only PyKotor tools forever”; 
 ## Learning paths
 
 - **New player:** [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) → [Concepts](Concepts#resource-resolution-order) → [Resource formats and resolution](Resource-Formats-and-Resolution)
-- **First mod author:** [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) → [Mod Creation Best Practices](Mod-Creation-Best-Practices) → [TSLPatcher data syntax](TSLPatcher-Data-Syntax)
+- **First mod author:** [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) → [Mod Creation Best Practices](Mod-Creation-Best-Practices) → [TSLPatcher Data Syntax](TSLPatcher-Data-Syntax)
 - **Tool author or contributor:** [Resource formats and resolution](Resource-Formats-and-Resolution) → [Reverse Engineering Findings](reverse_engineering_findings) → the relevant archive or preserved-source page only when you need provenance
 
 ## Workflow guides
@@ -49,7 +49,7 @@ That split is deliberate. The goal is not “use only PyKotor tools forever”; 
 - [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) for player-facing install and troubleshooting steps
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) for compatibility, packaging, and release discipline
 - [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) for the modern patcher-authoring workflow
-- [TSLPatcher data syntax](TSLPatcher-Data-Syntax), [TSLPatcher GFF syntax](TSLPatcher-GFF-Syntax), and [TSLPatcher install and hack syntax](TSLPatcher-Install-and-Hack-Syntax) when you need exact INI section behavior
+- [TSLPatcher Data Syntax](TSLPatcher-Data-Syntax), [TSLPatcher GFF Syntax](TSLPatcher-GFF-Syntax), and [TSLPatcher Install and Hack Syntax](TSLPatcher-Install-and-Hack-Syntax) when you need exact INI section behavior
 
 ## Preserved source documents
 
@@ -63,6 +63,7 @@ PyKotor is one part of a larger KotOR tooling ecosystem. This section is a compa
 ### Engine reimplementations
 
 - [xoreos](https://github.com/xoreos/xoreos) is an open-source C++ implementation of BioWare's Aurora engine and its derivatives (including the Odyssey engine used by KotOR) [[README](https://github.com/xoreos/xoreos/blob/master/README.md#L3-L6)].
+- [xoreos-docs](https://github.com/xoreos/xoreos-docs)
 - [reone](https://github.com/seedhartha/reone) is a C++ game engine capable of running KotOR and TSL [[README](https://github.com/seedhartha/reone#readme)].
 - [KotOR.js](https://github.com/KobaltBlu/KotOR.js) is a TypeScript/WebGL engine implementation.
 - [NorthernLights](https://github.com/lachjames/NorthernLights) and [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity) are Unity/.NET-based engine projects.
@@ -76,7 +77,9 @@ PyKotor is one part of a larger KotOR tooling ecosystem. This section is a compa
 
 ### Community projects and tools
 
-- [HoloPatcher.NET](https://github.com/th3w1zard1/HoloPatcher.NET/tree/600630e55e2b6a62e3ed84f8cd84a413baf7795d), [Kotor-Patch-Manager](https://github.com/LaneDibello/Kotor-Patch-Manager), [KotORModSync](https://github.com/th3w1zard1/KotORModSync/tree/c8b0d10ce3fd7525d593d34a3be8d151da7d3387), [StarForge](https://github.com/th3w1zard1/StarForge/tree/01afebab065c606980cebe9120702fce2c825e2d), and [KotorModTools](https://github.com/Box65535/KotorModTools) are adjacent modding tools.
+- [KPatcher](https://github.com/th3w1zard1/KPatcher/tree/600630e55e2b6a62e3ed84f8cd84a413baf7795d)
+- [Kotor-Patch-Manager](https://github.com/LaneDibello/Kotor-Patch-Manager)
+- [KotORModSync](https://github.com/th3w1zard1/KotORModSync/tree/c8b0d10ce3fd7525d593d34a3be8d151da7d3387), [StarForge](https://github.com/th3w1zard1/StarForge/tree/01afebab065c606980cebe9120702fce2c825e2d), and [KotorModTools](https://github.com/Box65535/KotorModTools) are adjacent modding tools.
 - [sotor](https://github.com/StarfishXeno/sotor), [KSELinux](https://github.com/Bolche/KSELinux), [KotOR-Save-Editor](https://github.com/Fair-Strides/KotOR-Save-Editor), and [kotor-savegame-editor](https://github.com/nadrino/kotor-savegame-editor) cover save editing.
 - [SithCodec](https://github.com/BBBrassil/SithCodec) and [SWKotOR-Audio-Encoder](https://github.com/LoranRendel/SWKotOR-Audio-Encoder) cover audio-focused workflows.
 - [K1_Community_Patch](https://github.com/KOTORCommunityPatches/K1_Community_Patch), [TSL_Community_Patch](https://github.com/KOTORCommunityPatches/TSL_Community_Patch), [KOTOR-utils](https://github.com/JCarter426/KOTOR-utils), [KotOR-Bioware-Libs](https://github.com/Fair-Strides/KotOR-Bioware-Libs), [kotor_combat_faq](https://github.com/statsjedi/kotor_combat_faq), and [ds-kotor-modding-wiki](https://github.com/DeadlyStream/ds-kotor-modding-wiki) are useful adjacent references.
