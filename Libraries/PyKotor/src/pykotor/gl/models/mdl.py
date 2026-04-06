@@ -317,7 +317,7 @@ class Mesh:
         texture_offset: int,
         lightmap_offset: int,
     ):
-        self._scene: Scene = scene
+        self.scene: Scene = scene
         self._node: Node = node
 
         self.texture: str = "NULL"
@@ -382,7 +382,7 @@ class Mesh:
         shader.set_matrix4("model", transform)
 
         glActiveTexture(GL_TEXTURE0)
-        diffuse_tex = self._scene.texture(override_texture or self.texture)
+        diffuse_tex = self.scene.texture(override_texture or self.texture)
         diffuse_tex.use()
 
         # Material hints (TXI blending) influence how we draw “effect” meshes (e.g. light shafts).
@@ -409,7 +409,7 @@ class Mesh:
             shader.set_float("alphaCutoff", 0.0)
 
         glActiveTexture(GL_TEXTURE1)
-        self._scene.texture(self.lightmap, lightmap=True).use()
+        self.scene.texture(self.lightmap, lightmap=True).use()
 
         glBindVertexArray(self._vao)
         glDrawElements(GL_TRIANGLES, self._face_count, GL_UNSIGNED_SHORT, None)
