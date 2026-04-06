@@ -219,7 +219,7 @@ For KotOR specifically, do not stop reading at `0x270F`: the Odyssey-only `3000+
 ### File formats
 
 - **[MDL/MDX File Format](MDL-MDX-File-Format)** ← Complete reference for 3D [model](MDL-MDX-File-Format) files
-  - **[2DA File Format](2DA-File-Format)** ← Complete reference for Two-Dimensional array format (see also [Official Bioware 2DA Documentation](Bioware-Aurora-Core-Formats#2da)). All individual 2DA file documentation has been inlined into this document.
+- **[2DA File Format](2DA-File-Format)** ← Complete reference for Two-Dimensional array format (see also [Official Bioware 2DA Documentation](Bioware-Aurora-Core-Formats#2da)). All individual 2DA file documentation has been inlined into this document.
   - [acbonus.2da](2DA-File-Format#acbonus2da)
   - [ambientmusic.2da](2DA-File-Format#ambientmusic2da)
   - [ambientsound.2da](2DA-File-Format#ambientsound2da)
