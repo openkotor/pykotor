@@ -360,6 +360,8 @@ class Installation:
     def _build_single_resource(
         self,
         filepath: Path | str,
+        *,
+        size: int | None = None,
     ) -> FileResource | None:
         resource: FileResource | None = None
         try:
@@ -368,7 +370,9 @@ class Installation:
             resname, restype = ResourceIdentifier.from_path(filepath).unpack()
             if restype.is_invalid:
                 return None
-            resource = FileResource(resname, restype, os.path.getsize(filepath), 0, filepath)  # noqa: PTH202
+            if size is None:
+                size = os.path.getsize(filepath)  # noqa: PTH202
+            resource = FileResource(resname, restype, size, 0, filepath)
         except Exception as e:  # noqa: BLE001
             RobustLogger().exception(f"Error loading file '{filepath}'", exc_info=e)
             return None
@@ -455,23 +459,48 @@ class Installation:
             self._log.info("The '%s' folder did not exist when loading the installation at '%s', skipping...", r_path.name, self._path)
             return []
 
-        resources_list: list[FileResource] = []
         str_path = str(r_path)
         self._log.debug("Loading '%s' resources list from installation...", os.path.relpath(str_path, self._path))
+        resources_list: list[FileResource] = []
 
-        try:
-            for entry in os.scandir(str_path):
-                try:
-                    if recurse and entry.is_dir(follow_symlinks=False):
-                        resources_list.extend(self.load_resources_list(entry.path, recurse=True))
-                    elif entry.is_file():
-                        resource: FileResource | None = self._build_single_resource(entry.path)
-                        if resource is not None:
-                            resources_list.append(resource)
-                except Exception as e:  # noqa: PERF203, BLE001
-                    RobustLogger().warning(f"Error processing file '{entry.path}'", exc_info=e)
-        except Exception as e:  # noqa: BLE001
-            RobustLogger().exception(f"Error scanning directory '{str_path}'", exc_info=e)
+        if recurse:
+            # Use an explicit scandir stack instead of recursive calls: eliminates
+            # ~N_dirs Python frames, CaseAwarePath constructions, is_dir() checks,
+            # per-dir logging, and reuses each DirEntry's cached stat for file size.
+            try:
+                stack: list[str] = [str_path]
+                while stack:
+                    current_dir = stack.pop()
+                    try:
+                        with os.scandir(current_dir) as it:
+                            for entry in it:
+                                try:
+                                    if entry.is_dir(follow_symlinks=False):
+                                        stack.append(entry.path)
+                                    elif entry.is_file(follow_symlinks=False):
+                                        resource: FileResource | None = self._build_single_resource(
+                                            entry.path, size=entry.stat().st_size
+                                        )
+                                        if resource is not None:
+                                            resources_list.append(resource)
+                                except Exception as e:  # noqa: PERF203, BLE001
+                                    RobustLogger().warning(f"Error processing file '{entry.path}'", exc_info=e)
+                    except Exception as e:  # noqa: BLE001
+                        RobustLogger().exception(f"Error scanning directory '{current_dir}'", exc_info=e)
+            except Exception as e:  # noqa: BLE001
+                RobustLogger().exception(f"Error during recursive resource scan of '{str_path}'", exc_info=e)
+        else:
+            try:
+                for entry in os.scandir(str_path):
+                    try:
+                        if entry.is_file():
+                            resource = self._build_single_resource(entry.path)
+                            if resource is not None:
+                                resources_list.append(resource)
+                    except Exception as e:  # noqa: PERF203, BLE001
+                        RobustLogger().warning(f"Error processing file '{entry.path}'", exc_info=e)
+            except Exception as e:  # noqa: BLE001
+                RobustLogger().exception(f"Error scanning directory '{str_path}'", exc_info=e)
 
         if not resources_list:
             self._log.debug("No resources found at '%s' when loading the installation, skipping...", str_path)
