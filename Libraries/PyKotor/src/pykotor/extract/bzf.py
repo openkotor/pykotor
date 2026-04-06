@@ -39,7 +39,6 @@ class BZFFile:
 
     References:
     ----------
-
         Missing Features:
         ----------------
         - Fixed resources not yet supported (see line 67)

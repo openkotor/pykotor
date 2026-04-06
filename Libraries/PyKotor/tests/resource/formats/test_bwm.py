@@ -42,7 +42,7 @@ for path in (PYKOTOR_SRC, UTILITY_SRC):
     if as_posix not in sys.path:
         sys.path.insert(0, as_posix)
 
-from pykotor.resource.formats.bwm import read_bwm, write_bwm, write_bwm_ascii  # noqa: E402  # pyright: ignore[reportMissingImports]
+from pykotor.resource.formats.bwm import read_bwm  # noqa: E402  # pyright: ignore[reportMissingImports]
 from pykotor.resource.formats.bwm.bwm_auto import BWMBinaryReader, BWMBinaryWriter  # noqa: E402  # pyright: ignore[reportMissingImports]
 from pykotor.resource.formats.bwm.io_bwm_ascii import BWMAsciiWriter  # noqa: E402  # pyright: ignore[reportMissingImports]
 from pykotor.resource.formats.bwm.bwm_data import BWM, BWMFace, BWMType  # noqa: E402  # pyright: ignore[reportMissingImports]

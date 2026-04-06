@@ -15,8 +15,7 @@ if TYPE_CHECKING:
 
 
 class UTE:
-    """
-    Stores encounter data from the on-disk UTE GFF template.
+    """Stores encounter data from the on-disk UTE GFF template.
     
     Spawn limits, faction, reset/respawn flags, script hooks, and ``CreatureList`` rows (template
     ResRef, CR, spawn flags; TSL may add ``GuaranteedCount``). The former per-attribute Kotor.NET
@@ -61,8 +60,7 @@ class UTE:
 
 
 class UTECreature:
-    """
-    One row in ``CreatureList`` (template ResRef, CR, ``SingleSpawn``, optional ``GuaranteedCount``).
+    """One row in ``CreatureList`` (template ResRef, CR, ``SingleSpawn``, optional ``GuaranteedCount``).
     
     Former attribute-level Kotor.NET references are in the same wiki archive as ``UTE``.
     """

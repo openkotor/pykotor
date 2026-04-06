@@ -534,7 +534,7 @@ class ShellFolder(comtypes.COMObject):
         return S_OK
 
     def GetUIObjectOf(
-        self, hwndOwner: HWND | int, cidl: c_uint | int, apidl: _Pointer[c_void_p], riid: GUID, rgfReserved: _Pointer[c_uint], ppv: _Pointer[c_void_p]
+        self, hwndOwner: HWND | int, cidl: c_uint | int, apidl: _Pointer[c_void_p], riid: GUID, rgfReserved: _Pointer[c_uint], ppv: _Pointer[c_void_p],
     ) -> HRESULT:  # noqa: N803, PLR0913, E501
         return S_OK
 
@@ -863,7 +863,7 @@ class FileOperationProgressSink(comtypes.COMObject):
         return S_OK
 
     def PostMoveItem(
-        self, dwFlags: c_ulong | int, psiItem: IShellItem, psiDestinationFolder: IShellItem, pszNewName: LPCWSTR | str, hrMove: HRESULT, psiNewlyCreated: IShellItem
+        self, dwFlags: c_ulong | int, psiItem: IShellItem, psiDestinationFolder: IShellItem, pszNewName: LPCWSTR | str, hrMove: HRESULT, psiNewlyCreated: IShellItem,
     ) -> HRESULT:  # noqa: N803, E501
         return S_OK
 
@@ -871,7 +871,7 @@ class FileOperationProgressSink(comtypes.COMObject):
         return S_OK
 
     def PostCopyItem(
-        self, dwFlags: c_ulong | int, psiItem: IShellItem, psiDestinationFolder: IShellItem, pszNewName: LPCWSTR | str, hrCopy: HRESULT, psiNewlyCreated: IShellItem
+        self, dwFlags: c_ulong | int, psiItem: IShellItem, psiDestinationFolder: IShellItem, pszNewName: LPCWSTR | str, hrCopy: HRESULT, psiNewlyCreated: IShellItem,
     ) -> HRESULT:  # noqa: N803, E501
         return S_OK
 
@@ -929,7 +929,7 @@ class IFileOperation(comtypes.IUnknown):
         comtypes.COMMETHOD([], HRESULT, "ApplyPropertiesToItems", (["in"], POINTER(comtypes.IUnknown), "punkItems")),
         # Operation methods
         comtypes.COMMETHOD(
-            [], HRESULT, "RenameItem", (["in"], POINTER(IShellItem), "psiItem"), (["in"], c_wchar_p, "pszNewName"), (["in"], POINTER(IFileOperationProgressSink), "pfopsItem")
+            [], HRESULT, "RenameItem", (["in"], POINTER(IShellItem), "psiItem"), (["in"], c_wchar_p, "pszNewName"), (["in"], POINTER(IFileOperationProgressSink), "pfopsItem"),
         ),
         comtypes.COMMETHOD([], HRESULT, "RenameItems", (["in"], POINTER(comtypes.IUnknown), "pUnkItems"), (["in"], c_wchar_p, "pszNewName")),
         comtypes.COMMETHOD(

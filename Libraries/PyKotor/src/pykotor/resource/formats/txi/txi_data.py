@@ -851,7 +851,7 @@ class TXITextureInformation(TXIBaseInformation):
                 self.useglobalalpha,
                 self.isenvironmentmapped,
                 self.pltreplacement,
-            )
+            ),
         )
 
 
@@ -947,7 +947,7 @@ class TXIFontInformation(TXIBaseInformation):
                 self.texturewidth,
                 tuple(self.upper_left_coords),
                 tuple(self.lower_right_coords),
-            )
+            ),
         )
         #
         # The 3rd int in the upperleftcoords and bottomright coords is unknown. It could be any of the following:
@@ -1027,7 +1027,7 @@ lowerrightcoords {self.lr_coords_count}
         return boxes
 
     def normalize_coords(
-        self, boxes: list[tuple[float, float, float, float]], resolution: tuple[int, int]
+        self, boxes: list[tuple[float, float, float, float]], resolution: tuple[int, int],
     ) -> tuple[list[tuple[float, float, int]], list[tuple[float, float, int]]]:
         """Converts boxes to normalized coordinates.
 

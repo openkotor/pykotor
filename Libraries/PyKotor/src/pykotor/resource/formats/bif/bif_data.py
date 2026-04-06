@@ -94,6 +94,7 @@ class BIFResource(ArchiveResource):
     References:
     ----------
         Observed in retail KotOR I and TSL.
+
     Attributes:
     ----------
         resname_key_index: Composite resource ID that matches KEY file entries (same bit layout as KeyEntry.resource_id)
@@ -178,6 +179,7 @@ class BIF(BiowareArchive):
     References:
     ----------
         Observed in retail KotOR I and TSL.
+
     Attributes:
     ----------
         HEADER_SIZE: Size of BIF header in bytes (20 bytes)
@@ -381,7 +383,7 @@ class BIF(BiowareArchive):
                     resref=resource.resref,
                     restype=resource.restype,
                     resid=resource.resname_key_index,
-                )
+                ),
             )
 
         return key
@@ -506,7 +508,7 @@ class BIF(BiowareArchive):
                 f"Resource {key_res.resref}:{key_res.restype} from KEY not found in BIF (ID: {key_res.resname_key_index})"
                 for key_res in key_resources.values()
                 if key_res.resname_key_index not in bif_ids
-            ]
+            ],
         )  # noqa: E501
 
         # Rebuild lookup tables with new names

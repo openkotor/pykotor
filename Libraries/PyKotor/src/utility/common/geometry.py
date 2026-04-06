@@ -546,7 +546,7 @@ class Vector3(vec3):
 
     def __truediv__(
         self,
-        other: int | float,
+        other: float,
     ):
         """Performs element-wise true division of vector by scalar value."""
         if isinstance(other, (int, float)):
@@ -953,7 +953,7 @@ class Vector4(vec4):
 
     def __mul__(
         self,
-        other: int | float | Vector4,
+        other: float | Vector4,
     ):
         """Multiplies the components by a scalar or element-wise with another Vector4."""
         if isinstance(other, (int, float)):
@@ -974,7 +974,7 @@ class Vector4(vec4):
 
     def __rmul__(
         self,
-        other: int | float,
+        other: float,
     ):
         """Right multiplication: scalar * Vector4."""
         if isinstance(other, (int, float)):
@@ -988,7 +988,7 @@ class Vector4(vec4):
 
     def __truediv__(
         self,
-        other: int | float,
+        other: float,
     ):
         """Performs element-wise true division of vector by scalar value."""
         if isinstance(other, (int, float)):

@@ -8,8 +8,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.misc import ResRef
 from bioware_kaitai_formats.tlk_json import TlkJson
+
+from pykotor.common.misc import ResRef
 from pykotor.resource.formats.tlk.tlk_data import TLK
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 from pykotor.tools.encoding import decode_bytes_with_fallbacks

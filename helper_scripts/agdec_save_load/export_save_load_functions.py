@@ -2,7 +2,6 @@
 # Run via execute-script (agdec-http). Output is JSON printed to stdout.
 # Usage: script is invoked with current program; addresses are hardcoded for K1.
 
-import json
 
 # K1 save/load core addresses (from KOTOR_SAVE_LOAD_RE_REPORT.md)
 K1_ADDRESSES = [

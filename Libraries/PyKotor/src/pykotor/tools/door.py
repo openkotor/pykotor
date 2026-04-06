@@ -34,7 +34,6 @@ def get_model(
 
     References:
     ----------
-
         Note: Door model lookup uses genericdoors.2da
 
 
@@ -336,9 +335,8 @@ def _get_door_dimensions_from_model(
             door_name_str = f"'{door_name}'" if door_name else ""
             logger.debug(f"[DOOR DEBUG] Extracted dimensions for door {door_name_str}: {width:.2f} x {height:.2f} (from {mesh_count} meshes, model='{model_name}')")
             return width, height
-        else:
-            door_name_str = f"'{door_name}'" if door_name else ""
-            logger.warning(f"Calculated dimensions for door {door_name_str} out of range: {width:.2f} x {height:.2f}, using defaults")
+        door_name_str = f"'{door_name}'" if door_name else ""
+        logger.warning(f"Calculated dimensions for door {door_name_str} out of range: {width:.2f} x {height:.2f}, using defaults")
     else:
         door_name_str = f"'{door_name}'" if door_name else ""
         logger.warning(f"Could not calculate bounding box for door {door_name_str} (processed {mesh_count} meshes), using defaults")
@@ -503,14 +501,13 @@ def get_door_dimensions(
             if dimensions:
                 door_width, door_height = dimensions
                 return door_width, door_height
-            else:
-                logger.warning(f"Could not extract dimensions from model '{model_name}' for door {door_name_str}, trying texture fallback")
+            logger.warning(f"Could not extract dimensions from model '{model_name}' for door {door_name_str}, trying texture fallback")
         else:
             model_variations = _get_model_variations(model_name)
             logger.warning(
                 f"Could not load MDL '{model_name}' (tried variations: {model_variations}) "
                 f"for door {door_name_str} "
-                f"(appearance_id={utd.appearance_id}), trying texture fallback"
+                f"(appearance_id={utd.appearance_id}), trying texture fallback",
             )
 
         # Fallback: Get dimensions from door texture if model-based extraction failed

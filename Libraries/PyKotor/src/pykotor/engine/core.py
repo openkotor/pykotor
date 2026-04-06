@@ -4,7 +4,6 @@ This module provides minimal game engine infrastructure for testing purposes.
 
 References:
 ----------
-
     Note: This is a minimal stub; full engine is in ./Engines directory
 """
 

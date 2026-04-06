@@ -206,11 +206,11 @@ class SceneCache:
                             else:
                                 RobustLogger().warning(
                                     f"Door '{door.resref}.utd' references appearance_id {utd.appearance_id} "
-                                    f"which exists in doors.2da but lacks 'modelname' header. Using default model 'unknown'."
+                                    f"which exists in doors.2da but lacks 'modelname' header. Using default model 'unknown'.",
                                 )
                         else:
                             RobustLogger().warning(
-                                f"Door '{door.resref}.utd' references appearance_id {utd.appearance_id} which does not exist in doors.2da. Using default model 'unknown'."
+                                f"Door '{door.resref}.utd' references appearance_id {utd.appearance_id} which does not exist in doors.2da. Using default model 'unknown'.",
                             )
                 except (IndexError, KeyError) as e:
                     RobustLogger().warning(f"Could not get the model name from the UTD '{door.resref}.utd' and/or the doors.2da: {e}. Using default model 'unknown'.")
@@ -244,16 +244,16 @@ class SceneCache:
                             else:
                                 RobustLogger().warning(
                                     f"Placeable '{placeable.resref}.utp' references appearance_id {utp.appearance_id} "
-                                    f"which exists in placeables.2da but lacks 'modelname' header. Using default model 'unknown'."
+                                    f"which exists in placeables.2da but lacks 'modelname' header. Using default model 'unknown'.",
                                 )
                         else:
                             RobustLogger().warning(
                                 f"Placeable '{placeable.resref}.utp' references appearance_id {utp.appearance_id} "
-                                f"which does not exist in placeables.2da. Using default model 'unknown'."
+                                f"which does not exist in placeables.2da. Using default model 'unknown'.",
                             )
                 except (IndexError, KeyError) as e:
                     RobustLogger().warning(
-                        f"Could not get the model name from the UTP '{placeable.resref}.utp' and/or the placeables.2da: {e}. Using default model 'unknown'."
+                        f"Could not get the model name from the UTP '{placeable.resref}.utp' and/or the placeables.2da: {e}. Using default model 'unknown'.",
                     )
                 except Exception:  # noqa: BLE001
                     RobustLogger().exception(f"Could not get the model name from the UTP '{placeable.resref}.utp' and/or the appearance.2da")

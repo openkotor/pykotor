@@ -109,7 +109,7 @@ class PyFileInfo:
 
     def setCaching(self, enable: bool):
         """Placeholder method for compatibility. Caching is not implemented."""
-        ...  # Caching is not implemented in this class.
+        # Caching is not implemented in this class.
 
     def caching(self) -> bool:
         """Returns False as caching is not implemented."""
@@ -568,7 +568,7 @@ class PyWrappedQFileInfo:
         """Returns the creation time."""
         if self._stat:
             return datetime.fromtimestamp(  # noqa: DTZ006
-                self._stat.st_ctime if os.name == "nt" else self._stat.st_birthtime
+                self._stat.st_ctime if os.name == "nt" else self._stat.st_birthtime,
             )
         return None
 

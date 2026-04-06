@@ -82,12 +82,11 @@ class Restarter:
                 self._win_overwrite()
             else:
                 self._win_rename_restart()
+        # macOS and Linux
+        elif self.u_strategy == UpdateStrategy.OVERWRITE:
+            self._unix_overwrite()
         else:
-            # macOS and Linux
-            if self.u_strategy == UpdateStrategy.OVERWRITE:
-                self._unix_overwrite()
-            else:
-                self._unix_join()
+            self._unix_join()
 
     def _win_simple_restart(self):
         """Simple restart without file operations - just launch the app and exit."""

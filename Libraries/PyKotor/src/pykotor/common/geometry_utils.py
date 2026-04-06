@@ -11,7 +11,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.mdl import MDLSkin
-
 from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:

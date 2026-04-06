@@ -8,11 +8,12 @@ from typing import TYPE_CHECKING, Any, cast
 
 import kaitaistruct
 
-from pykotor.common.language import LocalizedString
 from bioware_kaitai_formats.gff_json import GffJson
-from pykotor.tools.encoding import decode_bytes_with_fallbacks
+
+from pykotor.common.language import LocalizedString
 from pykotor.resource.formats.gff.gff_data import GFF, GFFFieldType, GFFList, GFFStruct, _GFFField
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
+from pykotor.tools.encoding import decode_bytes_with_fallbacks
 
 if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES

@@ -9,8 +9,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.tpc import Tpc
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.tpc.manipulate.rotate import rotate_rgb_rgba  # noqa: F401
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCMipmap, TPCTextureFormat
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose

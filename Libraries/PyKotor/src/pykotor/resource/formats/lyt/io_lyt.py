@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.lyt import Lyt
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.lyt.lyt_data import LYT, LYTDoorHook, LYTObstacle, LYTRoom, LYTTrack
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 from utility.common.geometry import Vector3, Vector4

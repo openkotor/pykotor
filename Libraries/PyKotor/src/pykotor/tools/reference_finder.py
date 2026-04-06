@@ -926,9 +926,7 @@ def _search_ncs_for_string(
 
                 # Skip to next instruction based on opcode/qualifier
                 elif opcode == NCSByteCode.CONSTx:
-                    if qualifier == NCSInstructionQualifier.Int:
-                        reader.skip(4)
-                    elif qualifier == NCSInstructionQualifier.Float:
+                    if qualifier == NCSInstructionQualifier.Int or qualifier == NCSInstructionQualifier.Float:
                         reader.skip(4)
                     elif qualifier == NCSInstructionQualifier.String:
                         str_len = reader.read_uint16(big=True)
@@ -957,9 +955,7 @@ def _search_ncs_for_string(
                     reader.skip(3)
                 elif opcode == NCSByteCode.DESTRUCT:
                     reader.skip(6)
-                elif opcode == NCSByteCode.EQUALxx and qualifier == NCSInstructionQualifier.StructStruct:
-                    reader.skip(2)
-                elif opcode == NCSByteCode.NEQUALxx and qualifier == NCSInstructionQualifier.StructStruct:
+                elif (opcode == NCSByteCode.EQUALxx and qualifier == NCSInstructionQualifier.StructStruct) or (opcode == NCSByteCode.NEQUALxx and qualifier == NCSInstructionQualifier.StructStruct):
                     reader.skip(2)
                 # Other instructions have no additional data
 

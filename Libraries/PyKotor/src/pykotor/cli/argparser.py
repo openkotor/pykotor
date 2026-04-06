@@ -746,7 +746,7 @@ Compare two paths and show differences. Supports any combination of:
     indoor_extract_parser.add_argument("--output", "-o", required=True, help="Output .indoor file")
     indoor_extract_parser.add_argument("--installation", required=True, help="Path to KOTOR installation")
     indoor_extract_parser.add_argument(
-        "--implicit-kit", action="store_true", help="Extract using implicit ModuleKit components derived from module resources (no external kits required)"
+        "--implicit-kit", action="store_true", help="Extract using implicit ModuleKit components derived from module resources (no external kits required)",
     )
     indoor_extract_parser.add_argument("--kits", "-k", required=False, help="(Deprecated) Path to kits directory (only needed for reverse-extraction in non-implicit mode).")
     indoor_extract_parser.add_argument("--game", "-g", choices=["k1", "k2", "kotor1", "kotor2", "tsl"], help="Target game version (default: auto-detect from installation)")

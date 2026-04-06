@@ -325,7 +325,7 @@ class GIT:
         """
         instance_list = self._get_instance_list(instance)
         type_name = self._get_instance_type_name(instance)
-        
+
         if instance in instance_list:
             raise ValueError(f"{type_name} instance already exists inside the GIT object.")
         instance_list.append(instance)

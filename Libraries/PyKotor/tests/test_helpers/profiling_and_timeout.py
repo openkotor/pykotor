@@ -15,7 +15,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeoutError
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Iterator
+from typing import Any, Callable, Iterator
 
 
 def get_profile_threshold_ms() -> int:

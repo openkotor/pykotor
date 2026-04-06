@@ -128,7 +128,7 @@ class QFileDialogOptionsPrivate:
         self.supportedSchemes: list[str] = []
         self.useDefaultNameFilters: bool = True
         self.options: RealQFileDialog.Options = RealQFileDialog.Options(
-            RealQFileDialog.Option.DontUseNativeDialog if hasattr(RealQFileDialog.Option, "DontUseNativeDialog") else RealQFileDialog.DontUseNativeDialog
+            RealQFileDialog.Option.DontUseNativeDialog if hasattr(RealQFileDialog.Option, "DontUseNativeDialog") else RealQFileDialog.DontUseNativeDialog,
         )  # noqa: E501  # pyright: ignore[reportAttributeAccessIssue]
         self.sidebar_urls: list[QUrl] = []
         self.default_suffix: str = ""
@@ -533,11 +533,9 @@ class QFileDialogPrivate:
         self,
         selection_model: QItemSelectionModel | None,
     ) -> None:
-        """
-        Qt's C++ API exposes QItemSelectionModel::index(). PyQt's binding omits this helper,
+        """Qt's C++ API exposes QItemSelectionModel::index(). PyQt's binding omits this helper,
         so we emulate it to keep the Python behaviour aligned with Qt.
         """
-
         if selection_model is None or hasattr(selection_model, "index"):
             return
 
@@ -552,7 +550,7 @@ class QFileDialogPrivate:
             parent_index = parent if parent is not None else QModelIndex()
             return model.index(row, column, parent_index)
 
-        setattr(selection_model, "index", _index)
+        selection_model.index = _index
 
     def retranslateStrings(self) -> None:
         """Retranslate the UI, including all child widgets."""
@@ -1194,7 +1192,7 @@ class QFileDialogPrivate:
         # Match C++: using B = QMessageBox;
         # Match C++: const auto res = B::warning(q, q->windowTitle(), msg, B::Yes | B::No, B::No);
         res: QMessageBox.StandardButton = QMessageBox.warning(
-            q, q.windowTitle(), msg, QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No
+            q, q.windowTitle(), msg, QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No,
         )
         # Match C++: return res == B::Yes;
         return res == QMessageBox.StandardButton.Yes
@@ -1839,7 +1837,7 @@ class QFileDialogPrivate:
             result = os.environ.get(var_name, "")
             return result if result else string
         # Match C++: if (string.size() > 2 && string.startsWith(u'%') && string.endsWith(u'%'))
-        elif len(string) > 2 and string.startswith("%") and string.endswith("%"):
+        if len(string) > 2 and string.startswith("%") and string.endswith("%"):
             # Match C++: return qEnvironmentVariable(QStringView{string}.mid(1, string.size() - 2).toLatin1().constData());
             var_name = string[1:-1]
             result = os.environ.get(var_name, "")
@@ -2626,16 +2624,15 @@ class QFileDialogPrivate:
         if self.options.isLabelExplicitlySet(RealQFileDialog.DialogLabel.FileName):
             # Match C++: setLabelTextControl(QFileDialog::FileName, options->labelText(QFileDialogOptions::FileName));
             self.setLabelTextControl(RealQFileDialog.DialogLabel.FileName, self.options.labelText(RealQFileDialog.DialogLabel.FileName))
+        # Match C++: switch (q_func()->fileMode())
+        # Match C++: case QFileDialog::Directory:
+        elif q.fileMode() == RealQFileDialog.FileMode.Directory:
+            # Match C++: setLabelTextControl(QFileDialog::FileName, QFileDialog::tr("Directory:"));
+            self.setLabelTextControl(RealQFileDialog.DialogLabel.FileName, q.tr("Directory:"))
+        # Match C++: default:
         else:
-            # Match C++: switch (q_func()->fileMode())
-            # Match C++: case QFileDialog::Directory:
-            if q.fileMode() == RealQFileDialog.FileMode.Directory:
-                # Match C++: setLabelTextControl(QFileDialog::FileName, QFileDialog::tr("Directory:"));
-                self.setLabelTextControl(RealQFileDialog.DialogLabel.FileName, q.tr("Directory:"))
-            # Match C++: default:
-            else:
-                # Match C++: setLabelTextControl(QFileDialog::FileName, QFileDialog::tr("File &name:"));
-                self.setLabelTextControl(RealQFileDialog.DialogLabel.FileName, q.tr("File &name:"))
+            # Match C++: setLabelTextControl(QFileDialog::FileName, QFileDialog::tr("File &name:"));
+            self.setLabelTextControl(RealQFileDialog.DialogLabel.FileName, q.tr("File &name:"))
 
     def updateFileTypeLabel(self) -> None:
         """Update File Type label. Matches C++ QFileDialogPrivate::updateFileTypeLabel() implementation."""
@@ -2845,7 +2842,7 @@ class QFileDialogPrivate:
         if key == Qt.Key.Key_Backspace:
             self._q_navigateToParent()
             return True
-        elif key == Qt.Key.Key_Back:
+        if key == Qt.Key.Key_Back:
             # Note: QT_KEYPAD_NAVIGATION check omitted in Python (platform-specific)
             # In C++, Key_Back falls through to Key_Left case
             # Match C++: if (event->key() == Qt::Key_Back || event->modifiers() == Qt::AltModifier)

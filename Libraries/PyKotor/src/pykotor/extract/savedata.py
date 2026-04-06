@@ -34,7 +34,6 @@ if TYPE_CHECKING:
 class SaveInfo:
     """SAVENFO.res - Save information resource.
 
-
     STRUCTURE:
     ==========
     Contains metadata about the save game including:
@@ -157,7 +156,6 @@ class SaveInfo:
     def load(self):
         """Load SAVENFO.res data from the save folder.
 
-
         PROCESS:
         ========
         1. Read GFF file from save folder
@@ -232,7 +230,6 @@ class SaveInfo:
 
     def save(self):
         """Save SAVENFO.res data to the save folder.
-
 
         PROCESS:
         ========
@@ -409,7 +406,6 @@ class GalaxyMapEntry:
 class PartyTable:
     """PARTYTABLE.res - Party and game state information.
 
-
     STRUCTURE:
     ==========
     Contains comprehensive party and game state information including:
@@ -486,11 +482,10 @@ class PartyTable:
     @pt_num_members.setter
     def pt_num_members(self, value: int):
         """No-op setter for compatibility with loading/existing code."""
-        pass  # Intentionally does nothing - value is always derived from len(pt_members)
+        # Intentionally does nothing - value is always derived from len(pt_members)
 
     def load(self):
         """Load PARTYTABLE.res data from the save folder.
-
 
         PROCESS:
         ========
@@ -616,7 +611,6 @@ class PartyTable:
 
     def save(self):
         """Save PARTYTABLE.res data to the save folder.
-
 
         PROCESS:
         ========
@@ -812,7 +806,6 @@ class PartyTable:
 class GlobalVars:
     """GLOBALVARS.res - Global variable storage.
 
-
     BINARY FORMAT:
     ==============
     Booleans: Packed bits
@@ -867,7 +860,6 @@ class GlobalVars:
 
     def load(self):
         """Load GLOBALVARS.res data from the save folder.
-
 
         PROCESS:
         ========
@@ -1015,7 +1007,6 @@ class GlobalVars:
 
     def save(self):
         """Save GLOBALVARS.res data to the save folder.
-
 
         PROCESS:
         ========
@@ -1291,7 +1282,6 @@ class GlobalVars:
 
 class SaveNestedCapsule:
     """SAVEGAME.sav - Nested ERF containing save game data.
-
 
     STRUCTURE & CONTENTS:
     ====================
@@ -1616,7 +1606,6 @@ class SaveNestedCapsule:
     def is_corrupted(self) -> bool:
         """Check if this save has EventQueue corruption.
 
-
         Returns:
         -------
             True if any cached module has EventQueue entries (corrupted save)
@@ -1650,7 +1639,6 @@ class SaveNestedCapsule:
 
     def clear_event_queues(self):
         """Clear event queues from cached modules to prevent corruption.
-
 
         PROCESS:
         ========
@@ -1777,7 +1765,6 @@ class SaveNestedCapsule:
 class SaveFolderEntry:
     """Represents all data in a single KOTOR save game folder.
 
-
     STRUCTURE:
     ==========
     A complete KOTOR save game consists of a folder containing:
@@ -1816,7 +1803,7 @@ class SaveFolderEntry:
     save.save()
     ```
 
-    ATTRIBUTES:
+    Attributes:
     ===========
     - save_path: Path to save folder
     - save_info: SaveInfo instance (SAVENFO.res)
@@ -1860,7 +1847,6 @@ class SaveFolderEntry:
 
     def load(self):
         """Load all save game components from the folder.
-
 
         LOAD ORDER:
         ===========

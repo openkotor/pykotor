@@ -6,13 +6,13 @@ import ctypes
 
 from typing import TYPE_CHECKING
 
+from pykotor.gl import mat4, value_ptr
 from pykotor.gl.compat import (
     has_pyopengl,
     missing_constant,
     missing_gl_func,
     safe_gl_error_module,
 )
-from pykotor.gl import mat4, value_ptr
 from utility.common.geometry import Vector3, Vector4
 
 HAS_PYOPENGL = has_pyopengl()
@@ -79,21 +79,21 @@ class Mesh:
     """
 
     __slots__ = (
-        "_scene",
-        "_node",
-        "texture",
-        "lightmap",
-        "vertex_data",
-        "mdx_size",
-        "mdx_vertex",
-        "mdx_texture",
-        "mdx_lightmap",
-        "_index_data",
-        "_vao",
-        "_vbo",
         "_ebo",
         "_face_count",
+        "_index_data",
+        "_node",
+        "_scene",
+        "_vao",
+        "_vbo",
         "_vertex_blob_cache",
+        "lightmap",
+        "mdx_lightmap",
+        "mdx_size",
+        "mdx_texture",
+        "mdx_vertex",
+        "texture",
+        "vertex_data",
     )
 
     def __init__(

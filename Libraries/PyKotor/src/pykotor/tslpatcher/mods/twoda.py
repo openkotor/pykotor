@@ -698,5 +698,5 @@ class Modifications2DA(PatcherModifications):
         rows_added = cur_row_count - twoda_row_limit
         if cur_row_count > twoda_row_limit:
             raise ValueError(
-                f"{self.saveas} has a max row count of {twoda_row_limit}. Adding more will break the game. This mod attempted to add {rows_added} rows and have not been applied."
+                f"{self.saveas} has a max row count of {twoda_row_limit}. Adding more will break the game. This mod attempted to add {rows_added} rows and have not been applied.",
             )

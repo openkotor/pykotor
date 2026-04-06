@@ -10,7 +10,6 @@ import os
 import tempfile
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 
@@ -29,7 +28,7 @@ def qapp():
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
-    yield app
+    return app
 
 
 @pytest.fixture

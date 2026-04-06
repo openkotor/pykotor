@@ -40,10 +40,11 @@ from typing import TYPE_CHECKING, ClassVar, cast
 
 import kaitaistruct
 
-from pykotor.common.misc import Color, Game
-from pykotor.common.stream import BinaryReader, BinaryWriter
 from bioware_kaitai_formats.mdl import Mdl
 from bioware_kaitai_formats.mdx import Mdx
+
+from pykotor.common.misc import Color, Game
+from pykotor.common.stream import BinaryReader, BinaryWriter
 from pykotor.resource.formats._base import BiowareResource
 from pykotor.resource.formats.mdl.mdl_data import (
     MDL,
@@ -144,12 +145,10 @@ class _ModelHeader:
         self.child_model_count = reader.read_uint32()  # Number of child models (uint32 at binary offset 0x54)
         self.offset_to_animations = reader.read_uint32()
         animation_count_raw = reader.read_uint32()
-        if animation_count_raw > 0x7FFFFFFF:
-            animation_count_raw = 0x7FFFFFFF
+        animation_count_raw = min(animation_count_raw, 0x7FFFFFFF)
         self.animation_count = animation_count_raw
         animation_count2_raw = reader.read_uint32()
-        if animation_count2_raw > 0x7FFFFFFF:
-            animation_count2_raw = 0x7FFFFFFF
+        animation_count2_raw = min(animation_count2_raw, 0x7FFFFFFF)
         self.animation_count2 = animation_count2_raw
         self.parent_model_pointer = reader.read_uint32()  # Parent model link / context field (uint32 at binary offset 0x64)
         self.bounding_box_min = reader.read_vector3()
@@ -165,12 +164,10 @@ class _ModelHeader:
         self.mdx_offset = reader.read_uint32()
         self.offset_to_name_offsets = reader.read_uint32()
         name_offsets_count_raw = reader.read_uint32()
-        if name_offsets_count_raw > 0x7FFFFFFF:
-            name_offsets_count_raw = 0x7FFFFFFF
+        name_offsets_count_raw = min(name_offsets_count_raw, 0x7FFFFFFF)
         self.name_offsets_count = name_offsets_count_raw
         name_offsets_count2_raw = reader.read_uint32()
-        if name_offsets_count2_raw > 0x7FFFFFFF:
-            name_offsets_count2_raw = 0x7FFFFFFF
+        name_offsets_count2_raw = min(name_offsets_count2_raw, 0x7FFFFFFF)
         self.name_offsets_count2 = name_offsets_count2_raw
         return self
 
@@ -246,8 +243,7 @@ class _GeometryHeader:
         self.model_name = reader.read_terminated_string("\0", 32)
         self.root_node_offset = reader.read_uint32()
         node_count_raw = reader.read_uint32()
-        if node_count_raw > 0x7FFFFFFF:
-            node_count_raw = 0x7FFFFFFF
+        node_count_raw = min(node_count_raw, 0x7FFFFFFF)
         self.node_count = node_count_raw
         self.unknown0 = reader.read_bytes(28)
         self.geometry_type = reader.read_uint8()
@@ -294,12 +290,10 @@ class _AnimationHeader:
         self.root = reader.read_terminated_string("\0", 32)
         self.offset_to_events = reader.read_uint32()
         event_count_raw = reader.read_uint32()
-        if event_count_raw > 0x7FFFFFFF:
-            event_count_raw = 0x7FFFFFFF
+        event_count_raw = min(event_count_raw, 0x7FFFFFFF)
         self.event_count = event_count_raw
         event_count2_raw = reader.read_uint32()
-        if event_count2_raw > 0x7FFFFFFF:
-            event_count2_raw = 0x7FFFFFFF
+        event_count2_raw = min(event_count2_raw, 0x7FFFFFFF)
         self.event_count2 = event_count2_raw
         self.unknown0 = reader.read_uint32()
         return self
@@ -496,7 +490,7 @@ class _Node:
             # set_offset(+12) applied, the raw value can be used directly without adjustment.
             aabb_offset_raw: int = reader.read_int32()
             # Do NOT add 12 here - the reader's offset is already adjusted
-            self.trimesh.offset_to_aabb = aabb_offset_raw if aabb_offset_raw > 0 else 0
+            self.trimesh.offset_to_aabb = max(0, aabb_offset_raw)
 
         if self.trimesh is not None:
             self.trimesh.read_extra(reader)
@@ -733,24 +727,23 @@ class _Node:
                 writer.write_int32(0)  # MDLOps always writes 0, not node.unknown
                 node_index[0] += 1
                 return start_pos + 40
-            else:
-                # Branch node: write children first, then fix child pointers
-                # Left child is immediately after this node
-                left_child_pos = start_pos + 40
-                node_index[0] += 1
-                right_child_pos = _write_aabb_recursive(writer, left_child_pos)
-                last_pos = _write_aabb_recursive(writer, right_child_pos)
+            # Branch node: write children first, then fix child pointers
+            # Left child is immediately after this node
+            left_child_pos = start_pos + 40
+            node_index[0] += 1
+            right_child_pos = _write_aabb_recursive(writer, left_child_pos)
+            last_pos = _write_aabb_recursive(writer, right_child_pos)
 
-                # Seek back to write child pointers (at offset 24 from start_pos)
-                # Format: (left_offset - 12, right_offset - 12, -1, 0)
-                #
-                writer.seek(start_pos + 24)
-                writer.write_int32(left_child_pos - 12)
-                writer.write_int32(right_child_pos - 12)
-                writer.write_int32(-1)
-                writer.write_int32(0)  # MDLOps always writes 0, not node.unknown
+            # Seek back to write child pointers (at offset 24 from start_pos)
+            # Format: (left_offset - 12, right_offset - 12, -1, 0)
+            #
+            writer.seek(start_pos + 24)
+            writer.write_int32(left_child_pos - 12)
+            writer.write_int32(right_child_pos - 12)
+            writer.write_int32(-1)
+            writer.write_int32(0)  # MDLOps always writes 0, not node.unknown
 
-                return last_pos
+            return last_pos
 
         # Write recursively starting from tree_start
         _write_aabb_recursive(writer, tree_start)
@@ -1008,14 +1001,12 @@ class _NodeHeader:
         # Clamp children_count to prevent Perl from interpreting it as negative (values >= 2^31)
         # MDLOps reads this as a signed integer, so we must ensure it's < 2^31
         children_count_raw = reader.read_uint32()
-        if children_count_raw > 0x7FFFFFFF:
-            children_count_raw = 0x7FFFFFFF
+        children_count_raw = min(children_count_raw, 0x7FFFFFFF)
         self.children_count = children_count_raw
         # Read children_count2 as a separate field to maintain correct file position
         # The binary format has two separate uint32 fields for children_count and children_count2
         children_count2_raw = reader.read_uint32()
-        if children_count2_raw > 0x7FFFFFFF:
-            children_count2_raw = 0x7FFFFFFF
+        children_count2_raw = min(children_count2_raw, 0x7FFFFFFF)
         self.children_count2 = children_count2_raw
         self.offset_to_controllers = reader.read_uint32()
         self.controller_count = reader.read_uint32()
@@ -1024,12 +1015,10 @@ class _NodeHeader:
         # Clamp controller_data_length to prevent Perl from interpreting it as negative (values >= 2^31)
         # MDLOps reads this as a signed integer, so we must ensure it's < 2^31
         controller_data_length_raw = reader.read_uint32()
-        if controller_data_length_raw > 0x7FFFFFFF:
-            controller_data_length_raw = 0x7FFFFFFF
+        controller_data_length_raw = min(controller_data_length_raw, 0x7FFFFFFF)
         self.controller_data_length = controller_data_length_raw
         controller_data_length2_raw = reader.read_uint32()
-        if controller_data_length2_raw > 0x7FFFFFFF:
-            controller_data_length2_raw = 0x7FFFFFFF
+        controller_data_length2_raw = min(controller_data_length2_raw, 0x7FFFFFFF)
         self.controller_data_length2 = controller_data_length2_raw
         return self
 
@@ -1199,12 +1188,10 @@ class _TrimeshHeader:
         self.layout_token1 = reader.read_uint32()
         self.offset_to_faces = reader.read_uint32()
         faces_count_raw = reader.read_uint32()
-        if faces_count_raw > 0x7FFFFFFF:
-            faces_count_raw = 0x7FFFFFFF
+        faces_count_raw = min(faces_count_raw, 0x7FFFFFFF)
         self.faces_count = faces_count_raw
         faces_count2_raw = reader.read_uint32()
-        if faces_count2_raw > 0x7FFFFFFF:
-            faces_count2_raw = 0x7FFFFFFF
+        faces_count2_raw = min(faces_count2_raw, 0x7FFFFFFF)
         self.faces_count2 = faces_count2_raw
         self.bounding_box_min = reader.read_vector3()
         self.bounding_box_max = reader.read_vector3()
@@ -1218,30 +1205,24 @@ class _TrimeshHeader:
         self.unknown0 = reader.read_bytes(24)
         self.offset_to_indices_counts = reader.read_uint32()
         indices_counts_count_raw = reader.read_uint32()
-        if indices_counts_count_raw > 0x7FFFFFFF:
-            indices_counts_count_raw = 0x7FFFFFFF
+        indices_counts_count_raw = min(indices_counts_count_raw, 0x7FFFFFFF)
         self.indices_counts_count = indices_counts_count_raw
         indices_counts_count2_raw = reader.read_uint32()
-        if indices_counts_count2_raw > 0x7FFFFFFF:
-            indices_counts_count2_raw = 0x7FFFFFFF
+        indices_counts_count2_raw = min(indices_counts_count2_raw, 0x7FFFFFFF)
         self.indices_counts_count2 = indices_counts_count2_raw
         self.offset_to_indices_offset = reader.read_uint32()
         indices_offsets_count_raw = reader.read_uint32()
-        if indices_offsets_count_raw > 0x7FFFFFFF:
-            indices_offsets_count_raw = 0x7FFFFFFF
+        indices_offsets_count_raw = min(indices_offsets_count_raw, 0x7FFFFFFF)
         self.indices_offsets_count = indices_offsets_count_raw
         indices_offsets_count2_raw = reader.read_uint32()
-        if indices_offsets_count2_raw > 0x7FFFFFFF:
-            indices_offsets_count2_raw = 0x7FFFFFFF
+        indices_offsets_count2_raw = min(indices_offsets_count2_raw, 0x7FFFFFFF)
         self.indices_offsets_count2 = indices_offsets_count2_raw
         self.offset_to_counters = reader.read_uint32()
         counters_count_raw = reader.read_uint32()
-        if counters_count_raw > 0x7FFFFFFF:
-            counters_count_raw = 0x7FFFFFFF
+        counters_count_raw = min(counters_count_raw, 0x7FFFFFFF)
         self.counters_count = counters_count_raw
         counters_count2_raw = reader.read_uint32()
-        if counters_count2_raw > 0x7FFFFFFF:
-            counters_count2_raw = 0x7FFFFFFF
+        counters_count2_raw = min(counters_count2_raw, 0x7FFFFFFF)
         self.counters_count2 = counters_count2_raw
         # Reference: wiki/MDL-MDX-File-Format.md:380 - "Unknown values" (3 int32s, typically {-1, -1, 0})
         self.unknown1 = reader.read_bytes(12)  # Unknown values (3 int32s, MDLOps `l[3]`, typically {-1, -1, 0})
@@ -2070,7 +2051,6 @@ def _compress_quaternion(quat: Vector4) -> int:
 
     References:
     ----------
-
         Inverse operation derived from decompression algorithm
 
 
@@ -2078,7 +2058,6 @@ def _compress_quaternion(quat: Vector4) -> int:
     -----
         Values are clamped to [-1, 1] range before packing to prevent overflow.
     """
-
     # Clamp values to valid range
     x = max(-1.0, min(1.0, quat.x))
     y = max(-1.0, min(1.0, quat.y))
@@ -2695,7 +2674,7 @@ class MDLBinaryReader(BiowareResource):
                                 self._reader_ext.read_single(),
                                 self._reader_ext.read_single(),
                                 self._reader_ext.read_single(),
-                            )
+                            ),
                         )
                 vertices_read = True
 
@@ -3126,8 +3105,7 @@ class MDLBinaryWriter(BiowareResource):
         # Set children_count now so calc_size() returns correct values during _calc_top_offsets()
         # This is critical for correct node offset calculation
         actual_children_count: int = len(mdl_node.children)
-        if actual_children_count > 0x7FFFFFFF:
-            actual_children_count = 0x7FFFFFFF
+        actual_children_count = min(actual_children_count, 0x7FFFFFFF)
         bin_node.header.children_count = bin_node.header.children_count2 = actual_children_count
         # MDLOps writes 0 for the nodeheader's 4th short; names come from partnames[node_id].
         bin_node.header.name_id = 0
@@ -3379,16 +3357,12 @@ class MDLBinaryWriter(BiowareResource):
             bin_node.emitter.loop = emitter.loop
             # MDLOps encodes renderorder as uint16 and frame blending as uint8.
             ro = int(emitter.render_order)
-            if ro < 0:
-                ro = 0
-            if ro > 0xFFFF:
-                ro = 0xFFFF
+            ro = max(ro, 0)
+            ro = min(ro, 0xFFFF)
             bin_node.emitter.render_order = ro
             fb = int(emitter.frame_blender)
-            if fb < 0:
-                fb = 0
-            if fb > 0xFF:
-                fb = 0xFF
+            fb = max(fb, 0)
+            fb = min(fb, 0xFF)
             bin_node.emitter.frame_blending = fb
             bin_node.emitter.depth_texture = emitter.depth_texture
             # MDLOps writes this byte as 0 (m_bUnknown1 in perl).
@@ -3420,8 +3394,7 @@ class MDLBinaryWriter(BiowareResource):
 
             first_row = mdl_controller.rows[0]
             data_floats_per_row = len(first_row.data)
-            if data_floats_per_row < 0:
-                data_floats_per_row = 0
+            data_floats_per_row = max(data_floats_per_row, 0)
 
             # Handle compressed quaternions for orientation controllers
             # If compress_quaternions is set and this is an orientation controller with 4 floats per row,
@@ -3621,7 +3594,7 @@ class MDLBinaryWriter(BiowareResource):
             bin_node.trimesh.mdx_data_bitmap |= _MDXDataFlags.TEX0
             if _DEBUG_MDL:
                 print(
-                    f"DEBUG _update_mdx: Node {mdl_node.name} has_uv1=True texture1={mdl_node.mesh.texture_1} bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} TEX0={bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0)} texture1_offset={bin_node.trimesh.mdx_texture1_offset}"
+                    f"DEBUG _update_mdx: Node {mdl_node.name} has_uv1=True texture1={mdl_node.mesh.texture_1} bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} TEX0={bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0)} texture1_offset={bin_node.trimesh.mdx_texture1_offset}",
                 )
             assert bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0, f"Failed to set TEX0 flag for node {mdl_node.name}"
             suboffset += 8
@@ -3636,7 +3609,7 @@ class MDLBinaryWriter(BiowareResource):
             bin_node.trimesh.mdx_data_bitmap |= _MDXDataFlags.TEX0
             if _DEBUG_MDL:
                 print(
-                    f"DEBUG _update_mdx: Node {mdl_node.name} has_uv1=False texture1={mdl_node.mesh.texture_1} vcount={vcount} generated default UVs bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} TEX0={bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0)}"
+                    f"DEBUG _update_mdx: Node {mdl_node.name} has_uv1=False texture1={mdl_node.mesh.texture_1} vcount={vcount} generated default UVs bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} TEX0={bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0)}",
                 )
             suboffset += 8
 
@@ -3842,8 +3815,7 @@ class MDLBinaryWriter(BiowareResource):
             # This is critical for MDLOps compatibility - the count must match the array length
             actual_children_count: int = len(bin_node.children_offsets)
             # Clamp to prevent Perl from interpreting it as negative (values >= 2^31)
-            if actual_children_count > 0x7FFFFFFF:
-                actual_children_count = 0x7FFFFFFF
+            actual_children_count = min(actual_children_count, 0x7FFFFFFF)
             bin_node.header.children_count = bin_node.header.children_count2 = actual_children_count
 
             # MDLOps writes 0 for controller offsets when both controller_count and
@@ -4039,7 +4011,7 @@ class MDLBinaryWriter(BiowareResource):
             if bin_node.trimesh is not None:
                 if _DEBUG_MDL:
                     print(
-                        f"DEBUG _write_all: Calling _update_mdx for node {mdl_node.name} (node_id={node_id}, orig_idx={orig_idx}, bin_node_id={id(bin_node)}, trimesh_id={id(bin_node.trimesh)})"
+                        f"DEBUG _write_all: Calling _update_mdx for node {mdl_node.name} (node_id={node_id}, orig_idx={orig_idx}, bin_node_id={id(bin_node)}, trimesh_id={id(bin_node.trimesh)})",
                     )
                 self._update_mdx(bin_node, mdl_node)
                 if _DEBUG_MDL and bin_node.trimesh.texture1:
@@ -4141,7 +4113,7 @@ class MDLBinaryWriter(BiowareResource):
         for i, bin_node in enumerate(self._bin_nodes):
             if _DEBUG_MDL and bin_node.trimesh and bin_node.trimesh.texture1:
                 print(
-                    f"DEBUG _write_all: About to write node {i} (name_id={bin_node.header.name_id if bin_node.header else '?'}) texture1={bin_node.trimesh.texture1} bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} texture1_offset={bin_node.trimesh.mdx_texture1_offset}"
+                    f"DEBUG _write_all: About to write node {i} (name_id={bin_node.header.name_id if bin_node.header else '?'}) texture1={bin_node.trimesh.texture1} bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} texture1_offset={bin_node.trimesh.mdx_texture1_offset}",
                 )
             bin_node.write(self._writer, self.game)
             if _DEBUG_MDL and bin_node.trimesh and bin_node.trimesh.texture1:

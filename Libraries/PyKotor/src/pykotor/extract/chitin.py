@@ -88,7 +88,6 @@ class Chitin:
         -------
             None
         """
-
         with BinaryReader.from_file(bif_path) as reader:
             _bif_file_type: str = reader.read_string(4)  # 0x0
             _bif_file_version: str = reader.read_string(4)  # 0x4

@@ -1,5 +1,4 @@
-"""
-ASCII walkmeshes—the ones that look like a shader graph someone dumped to Notepad.
+"""ASCII walkmeshes—the ones that look like a shader graph someone dumped to Notepad.
 
 Aurora-era exports use the familiar block soup: ``node aabb``, ``position`` / ``orientation``,
 ``verts``, ``faces`` (eight integers per triangle), then an ``aabb`` stanza and ``endnode``.

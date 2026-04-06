@@ -69,9 +69,7 @@ def _run_gtk_dialog(  # noqa: PLR0913, PLR0911, ANN201
     GTK_RESPONSE_ACCEPT = -3
 
     # Determine the action type for the dialog
-    if dialog_type == "open_file":
-        action = GTK_FILE_CHOOSER_ACTION_OPEN
-    elif dialog_type == "open_folder":
+    if dialog_type == "open_file" or dialog_type == "open_folder":
         action = GTK_FILE_CHOOSER_ACTION_OPEN
     elif dialog_type == "save_file":
         action = GTK_FILE_CHOOSER_ACTION_SAVE
@@ -80,7 +78,7 @@ def _run_gtk_dialog(  # noqa: PLR0913, PLR0911, ANN201
 
     # Create the file chooser dialog
     dialog = libgtk.gtk_file_chooser_dialog_new(
-        title.encode("utf-8") if title else None, None, action, b"_Cancel", ctypes.c_int(-6), b"_Open", ctypes.c_int(GTK_RESPONSE_ACCEPT), None
+        title.encode("utf-8") if title else None, None, action, b"_Cancel", ctypes.c_int(-6), b"_Open", ctypes.c_int(GTK_RESPONSE_ACCEPT), None,
     )
 
     # Set the initial directory

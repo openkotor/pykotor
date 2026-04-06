@@ -10,7 +10,7 @@ import os
 import tempfile
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Generator
+from typing import Any, Generator
 
 import pytest
 

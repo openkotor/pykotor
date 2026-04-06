@@ -16,8 +16,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.language import Language
 from bioware_kaitai_formats.tlk_xml import TlkXml
+
+from pykotor.common.language import Language
 from pykotor.common.misc import ResRef
 from pykotor.resource.formats.tlk.tlk_data import TLK
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
@@ -69,7 +70,7 @@ class TLKXMLReader(ResourceReader):
             if id_str is None:
                 raise ValueError(
                     "The 'id' attribute is missing for a string element in the TLK XML. Each <string>"
-                    f" element must have an 'id' attribute to specify its index in the TLK file. Problematic element: {ET.tostring(string, encoding='unicode')}"
+                    f" element must have an 'id' attribute to specify its index in the TLK file. Problematic element: {ET.tostring(string, encoding='unicode')}",
                 )
             index = int(id_str)
 
@@ -77,7 +78,7 @@ class TLKXMLReader(ResourceReader):
             if text is None:
                 raise ValueError(
                     "The text content is missing for a string element in the TLK XML. Each <string>"
-                    f" element must contain text content. Problematic element with id '{id_str}': {ET.tostring(string, encoding='unicode')}"
+                    f" element must contain text content. Problematic element with id '{id_str}': {ET.tostring(string, encoding='unicode')}",
                 )
             self._tlk.entries[index].text = text
 

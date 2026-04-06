@@ -8,8 +8,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.ltr import Ltr
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.ltr.ltr_data import LTR
 from pykotor.resource.type import ResourceReader, ResourceWriter
 
@@ -43,16 +44,16 @@ def _ltr_from_kaitai(parsed: Ltr) -> LTR | None:
 class LTRBinaryReader(ResourceReader):
     """Reads LTR (Letter) files.
 
-        LTR files contain Markov chain probability data for generating random names
-        during character creation. They use a 3rd-order Markov chain model with
-        single-letter, double-letter (bigram), and triple-letter (trigram) probability tables.
+    LTR files contain Markov chain probability data for generating random names
+    during character creation. They use a 3rd-order Markov chain model with
+    single-letter, double-letter (bigram), and triple-letter (trigram) probability tables.
 
-        Observed retail behavior:
-        ----------
-            KotOR loads ``LTR `` / ``V1.0`` tables from the resource tree for the random-name
-            picker; structure matches ``ltr_data`` (single-, double-, and triple-letter blocks).
+    Observed retail behavior:
+    ----------
+        KotOR loads ``LTR `` / ``V1.0`` tables from the resource tree for the random-name
+        picker; structure matches ``ltr_data`` (single-, double-, and triple-letter blocks).
 
-        Note: LTR files are used for random name generation during character creation.
+    Note: LTR files are used for random name generation during character creation.
     """
 
     def __init__(

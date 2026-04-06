@@ -347,7 +347,7 @@ class AddStructToListGFF(ModifyGFF):
 
         if not isinstance(new_struct, GFFStruct):
             logger.add_error(
-                f"Failed to add a new struct to list '{self.path}' in [{self.identifier}]. Reason: Expected GFFStruct but got '{new_struct}' ({new_struct!r}) of type {type(new_struct).__name__} Skipping..."
+                f"Failed to add a new struct to list '{self.path}' in [{self.identifier}]. Reason: Expected GFFStruct but got '{new_struct}' ({new_struct!r}) of type {type(new_struct).__name__} Skipping...",
             )
             return
 
@@ -430,7 +430,7 @@ class AddFieldGFF(ModifyGFF):
                 logger.add_verbose(f"Looking up field pointer of stored !FieldPath ({stored_fieldpath}) in 2DAMEMORY{self.value.token_id}")
             else:
                 logger.add_verbose(
-                    f'Found PureWindowsPath object in value() lookup from non-FieldValue2DAMemory object? Path: "{stored_fieldpath}" INI section: [{self.identifier}]'
+                    f'Found PureWindowsPath object in value() lookup from non-FieldValue2DAMemory object? Path: "{stored_fieldpath}" INI section: [{self.identifier}]',
                 )  # noqa: E501
             from_container: GFFList | GFFStruct | None = self._navigate_containers(root_container, stored_fieldpath.parent)
             if not isinstance(from_container, GFFStruct):
@@ -494,7 +494,7 @@ class Memory2DAModifierGFF(ModifyGFF):
             dest_field = self._navigate_to_field(root_container, ptr_to_dest)
             if dest_field is None:
                 raise ValueError(
-                    f"Cannot assign 2DAMEMORY{self.dest_token_id}=2DAMEMORY{self.src_token_id}: LEFT side of assignment's path '{ptr_to_dest}' does not point to a valid GFF Field!"
+                    f"Cannot assign 2DAMEMORY{self.dest_token_id}=2DAMEMORY{self.src_token_id}: LEFT side of assignment's path '{ptr_to_dest}' does not point to a valid GFF Field!",
                 )  # noqa: E501
             assert isinstance(dest_field, _GFFField)
             logger.add_verbose(f"LEFT SIDE 2DAMEMORY{self.src_token_id} lookup at '{ptr_to_dest}' returned '{dest_field.value()}'")
@@ -515,7 +515,7 @@ class Memory2DAModifierGFF(ModifyGFF):
             assert isinstance(source_field, _GFFField)
         else:
             logger.add_verbose(
-                f"Assigner {display_src_name} holds literal value '{ptr_to_src}'. other stored info debug: Path: '{self.path}' INI section: [{self.identifier}]"
+                f"Assigner {display_src_name} holds literal value '{ptr_to_src}'. other stored info debug: Path: '{self.path}' INI section: [{self.identifier}]",
             )  # noqa: E501
 
         if isinstance(dest_field, _GFFField):
@@ -575,7 +575,7 @@ class ModifyFieldGFF(ModifyGFF):
                 logger.add_verbose(f"Looking up field pointer of stored !FieldPath ({stored_fieldpath}) in 2DAMEMORY{self.value.token_id}")
             else:
                 logger.add_verbose(
-                    f'Found PureWindowsPath object in value() lookup from non-FieldValue2DAMemory object? Path: "{stored_fieldpath}" INI section: [{self.identifier}]'
+                    f'Found PureWindowsPath object in value() lookup from non-FieldValue2DAMemory object? Path: "{stored_fieldpath}" INI section: [{self.identifier}]',
                 )  # noqa: E501
             from_container: GFFList | GFFStruct | None = self._navigate_containers(root_container, value.parent)
             if not isinstance(from_container, GFFStruct):

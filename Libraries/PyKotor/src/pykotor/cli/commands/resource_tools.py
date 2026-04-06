@@ -179,15 +179,14 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
             if trans_after:
                 if cleared:
                     logger.info(  # noqa: G004
-                        f"Transitions: {trans_before} -> {trans_after} (cleared {cleared} from internal edges). {trans_after} arrow(s) on perimeter, pointing inward."
+                        f"Transitions: {trans_before} -> {trans_after} (cleared {cleared} from internal edges). {trans_after} arrow(s) on perimeter, pointing inward.",
                     )
                 else:
                     logger.info(f"Transitions: {trans_after} on perimeter (all valid). Arrows point inward.")  # noqa: G004
+            elif cleared:
+                logger.info(f"Transitions: cleared {cleared} (were on internal edges); 0 remain on perimeter.")  # noqa: G004
             else:
-                if cleared:
-                    logger.info(f"Transitions: cleared {cleared} (were on internal edges); 0 remain on perimeter.")  # noqa: G004
-                else:
-                    logger.info("Transitions: 0 (no door/area links on this walkmesh).")  # noqa: G004
+                logger.info("Transitions: 0 (no door/area links on this walkmesh).")  # noqa: G004
         else:
             logger.info("Transitions: preserved (placeable/door walkmesh).")  # noqa: G004
 
@@ -207,7 +206,9 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
                     "For PNGs: uv sync --extra render then re-run, or use the .diagram file.",
                 )
                 from pykotor.resource.formats.bwm.bwm_auto import write_bwm_validation_diagram
-                from pykotor.tools.walkmesh_render_diagram import render_bwm_validation_diagram_lines
+                from pykotor.tools.walkmesh_render_diagram import (
+                    render_bwm_validation_diagram_lines,
+                )
 
                 diagram_path = output_path.parent / f"{output_path.stem}.diagram"
                 write_bwm_validation_diagram(bwm, diagram_path)
@@ -229,7 +230,9 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
                         e,
                     )
                     from pykotor.resource.formats.bwm.bwm_auto import write_bwm_validation_diagram
-                    from pykotor.tools.walkmesh_render_diagram import render_bwm_validation_diagram_lines
+                    from pykotor.tools.walkmesh_render_diagram import (
+                        render_bwm_validation_diagram_lines,
+                    )
 
                     diagram_path = output_path.parent / f"{output_path.stem}.diagram"
                     write_bwm_validation_diagram(bwm, diagram_path)

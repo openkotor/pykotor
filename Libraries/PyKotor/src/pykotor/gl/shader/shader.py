@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from pykotor.gl import mat4, value_ptr, vec3, vec4
 from pykotor.gl.compat import (
     MissingPyOpenGLError,
     has_pyopengl,
     missing_constant,
     missing_gl_func,
 )
-from pykotor.gl import mat4, value_ptr, vec3, vec4
 
 HAS_PYOPENGL = has_pyopengl()
 

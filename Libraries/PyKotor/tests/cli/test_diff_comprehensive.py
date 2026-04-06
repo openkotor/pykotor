@@ -32,7 +32,6 @@ import tempfile
 
 from io import StringIO
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 
@@ -52,7 +51,6 @@ from pykotor.cli.commands.utility_commands import (
 from pykotor.common.misc import Game
 from pykotor.resource.formats.key.key_auto import write_key
 from pykotor.resource.formats.key.key_data import KEY
-from pykotor.resource.type import ResourceType
 from pykotor.tools.create_installation import create_installation
 
 # ============================================================================

@@ -42,7 +42,7 @@ class Frustum:
     - Observed retail KotOR I and KotOR II behavior
     """
 
-    __slots__ = ("planes", "_cached_vp_hash")
+    __slots__ = ("_cached_vp_hash", "planes")
 
     def __init__(self):
         """Initialize frustum with default planes."""
@@ -82,7 +82,7 @@ class Frustum:
                 vp[3][1],
                 vp[3][2],
                 vp[3][3],
-            )
+            ),
         )
         if vp_hash == self._cached_vp_hash:
             return
@@ -252,7 +252,7 @@ class Frustum:
 class CullingStats:
     """Statistics for frustum culling performance monitoring."""
 
-    __slots__ = ("total_objects", "culled_objects", "visible_objects", "frame_count")
+    __slots__ = ("culled_objects", "frame_count", "total_objects", "visible_objects")
 
     def __init__(self):
         self.total_objects: int = 0

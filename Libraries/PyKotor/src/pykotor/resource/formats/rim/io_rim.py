@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.rim import Rim
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.rim.rim_data import RIM
 from pykotor.resource.type import ResourceReader, ResourceType, ResourceWriter, autoclose
 

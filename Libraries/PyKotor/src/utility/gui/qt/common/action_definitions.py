@@ -223,20 +223,20 @@ class FileExplorerActions:
         # Icon sizes and view layouts (matches Windows Explorer View tab)
         # =========================================================================
         ActionKey.EXTRA_LARGE_ICONS: ActionDefinition(
-            "view-list-icons", "Extra large icons", "Ctrl+Shift+1", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "extra_large"}
+            "view-list-icons", "Extra large icons", "Ctrl+Shift+1", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "extra_large"},
         ),
         ActionKey.LARGE_ICONS: ActionDefinition(
-            "view-list-icons", "Large icons", "Ctrl+Shift+2", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "large"}
+            "view-list-icons", "Large icons", "Ctrl+Shift+2", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "large"},
         ),
         ActionKey.MEDIUM_ICONS: ActionDefinition(
-            "view-list-icons", "Medium icons", "Ctrl+Shift+3", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "medium"}
+            "view-list-icons", "Medium icons", "Ctrl+Shift+3", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "medium"},
         ),
         ActionKey.SMALL_ICONS: ActionDefinition(
-            "view-list-icons", "Small icons", "Ctrl+Shift+4", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "small"}
+            "view-list-icons", "Small icons", "Ctrl+Shift+4", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "small"},
         ),
         ActionKey.LIST_VIEW: ActionDefinition("view-list-details", "List", "Ctrl+Shift+5", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "list"}),
         ActionKey.DETAIL_VIEW: ActionDefinition(
-            "view-list-tree", "Details", "Ctrl+Shift+6", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "detail"}
+            "view-list-tree", "Details", "Ctrl+Shift+6", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "detail"},
         ),
         ActionKey.TILES: ActionDefinition("view-list-icons", "Tiles", "Ctrl+Shift+7", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "tiles"}),
         ActionKey.CONTENT: ActionDefinition("view-list-text", "Content", "Ctrl+Shift+8", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "content"}),
@@ -245,7 +245,7 @@ class FileExplorerActions:
         # Navigation pane, preview pane, details pane toggles
         # =========================================================================
         ActionKey.NAVIGATION_PANE: ActionDefinition(
-            "view-sidetree", "Navigation Pane", "Ctrl+Shift+E", None, handler_func="toggle_navigation_pane", checkable=True, checked=True
+            "view-sidetree", "Navigation Pane", "Ctrl+Shift+E", None, handler_func="toggle_navigation_pane", checkable=True, checked=True,
         ),
         ActionKey.PREVIEW_PANE: ActionDefinition("view-preview", "Preview Pane", "Alt+P", None, handler_func="toggle_preview_pane", checkable=True),
         ActionKey.DETAILS_PANE: ActionDefinition("view-list-tree", "Details Pane", "Alt+Shift+P", None, handler_func="toggle_details_pane", checkable=True),
@@ -256,7 +256,7 @@ class FileExplorerActions:
         ActionKey.SHOW_HIDDEN_FILES: ActionDefinition("view-hidden", "Hidden Items", "Ctrl+H", None, handler_func="toggle_hidden_files", checkable=True),
         ActionKey.SHOW_HIDE_HIDDEN_ITEMS: ActionDefinition("view-hidden", "Show/Hide Hidden Items", "Ctrl+H", None, handler_func="toggle_hidden_items", checkable=True),
         ActionKey.SHOW_FILE_EXTENSIONS: ActionDefinition(
-            "view-list-details", "File Name Extensions", None, None, handler_func="toggle_file_extensions", checkable=True, checked=True
+            "view-list-details", "File Name Extensions", None, None, handler_func="toggle_file_extensions", checkable=True, checked=True,
         ),
         ActionKey.SHOW_ITEM_CHECKBOXES: ActionDefinition("checkbox", "Item Check Boxes", None, None, handler_func="toggle_item_checkboxes", checkable=True),
         # =========================================================================
@@ -351,9 +351,7 @@ class FileExplorerActions:
             action = QAction(QIcon.fromTheme(definition.icon), definition.text)
             action.setObjectName(key.value)
             if definition.shortcut:
-                if isinstance(definition.shortcut, str):
-                    action.setShortcut(QKeySequence(definition.shortcut))
-                elif isinstance(definition.shortcut, (QKeySequence.StandardKey, Qt.Key)):
+                if isinstance(definition.shortcut, str) or isinstance(definition.shortcut, (QKeySequence.StandardKey, Qt.Key)):
                     action.setShortcut(QKeySequence(definition.shortcut))
                 else:
                     action.setShortcut(definition.shortcut)

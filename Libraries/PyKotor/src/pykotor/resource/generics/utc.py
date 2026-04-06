@@ -6,11 +6,12 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
+from bioware_kaitai_formats.gff import Gff
+
 from loggerplus import RobustLogger
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import EquipmentSlot, Game, InventoryItem, ResRef
 from pykotor.common.stream import BinaryReader
-from bioware_kaitai_formats.gff import Gff
 from pykotor.resource.formats.gff import (
     GFF,
     GFFContent,

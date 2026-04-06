@@ -17,7 +17,6 @@ from dataclasses import dataclass, field
 from enum import IntEnum, auto
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger
 from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.formats.tpc.convert.bgra import (
     bgr_to_bgra,
@@ -93,14 +92,13 @@ class TPCTextureFormat(IntEnum):
         """Get the number of bytes per pixel for this format."""
         if self is self.Greyscale:
             return 1
-        elif self.is_dxt():
+        if self.is_dxt():
             return 1  # technically incorrect, but used for size calculations
-        elif self in (self.RGB, self.BGR):
+        if self in (self.RGB, self.BGR):
             return 3
-        elif self in (self.RGBA, self.BGRA):
+        if self in (self.RGBA, self.BGRA):
             return 4
-        else:
-            return 1  # Default fallback for Invalid or unknown formats
+        return 1  # Default fallback for Invalid or unknown formats
 
     def is_dxt(self) -> bool:
         """Check if this format is a DXT compression format."""
@@ -504,7 +502,7 @@ class TPC(ComparableMixin):
                 bytearray(0 for _ in range(width * height * 4)),
             )
             for width, height in ((256, 256), (128, 128), (64, 64), (32, 32), (16, 16), (8, 8), (4, 4), (2, 2), (1, 1))
-        ]
+        ],
     )
 
     def __init__(self):

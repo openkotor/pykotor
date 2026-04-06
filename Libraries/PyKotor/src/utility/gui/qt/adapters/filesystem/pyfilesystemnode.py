@@ -378,7 +378,6 @@ class PyFileSystemNode:
             }
         }
         """
-
         if iconProvider is None:
             return
 
@@ -417,7 +416,6 @@ class PyFileSystemNode:
             }
         }
         """
-
         if iconProvider is None:
             return
 

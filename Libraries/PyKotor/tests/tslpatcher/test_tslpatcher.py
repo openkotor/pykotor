@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 from configparser import ConfigParser
-from typing import TYPE_CHECKING, Callable, cast
+from typing import Callable, cast
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[5].joinpath("Libraries", "PyKotor", "src")

@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import os
 import time
+
 from typing import TYPE_CHECKING, ClassVar, TypeVar, cast
 
 from pykotor.extract.installation import SearchLocation
+from pykotor.gl import mat4, unProject, vec3, vec4
 from pykotor.gl.compat import (
     GL_BGRA,
     GL_BLEND,
@@ -34,7 +36,6 @@ from pykotor.gl.compat import (
     glPolygonMode,
     glReadPixels,
 )
-from pykotor.gl import mat4, unProject, vec3, vec4
 from pykotor.gl.models.axis_gizmo import AxisGizmo
 from pykotor.gl.scene.frustum import CullingStats, Frustum
 from pykotor.gl.scene.scene_base import SceneBase

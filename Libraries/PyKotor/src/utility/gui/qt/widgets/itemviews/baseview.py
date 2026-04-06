@@ -111,7 +111,7 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
         def get_object_name():
             return self.__class__.__name__
 
-        self._settings_name: str = settings_name and settings_name.strip() or getattr(self, "objectName", get_object_name)()
+        self._settings_name: str = (settings_name and settings_name.strip()) or getattr(self, "objectName", get_object_name)()
 
         self._settings_cache: dict[str, QSettings] = {}
         self.original_stylesheet: str = self.styleSheet()
@@ -312,7 +312,7 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
         assert accessibility_menu is not None
         self._add_menu_action(accessibility_menu, "Set Accessible Name", self.accessibleName, self.setAccessibleName, "accessibleName", param_type=str)
         self._add_menu_action(
-            accessibility_menu, "Set Accessible Description", self.accessibleDescription, self.setAccessibleDescription, "accessibleDescription", param_type=str
+            accessibility_menu, "Set Accessible Description", self.accessibleDescription, self.setAccessibleDescription, "accessibleDescription", param_type=str,
         )
 
         # Locale

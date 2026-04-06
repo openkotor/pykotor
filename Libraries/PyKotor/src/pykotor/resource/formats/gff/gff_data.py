@@ -1078,7 +1078,7 @@ class GFFStruct(ComparableMixin, dict):
 
                 if str(old_value) == str(new_value):
                     log_func(
-                        f"Field '{old_ftype.name}' is different at '{child_path}': String representations match, but have other properties that don't (such as a lang id difference)."
+                        f"Field '{old_ftype.name}' is different at '{child_path}': String representations match, but have other properties that don't (such as a lang id difference).",
                     )  # noqa: E501
                     continue
                 log_func("", message_type="diff")
@@ -2071,9 +2071,7 @@ class GFFStruct(ComparableMixin, dict):
                     full_path = f"{current_path}.{label}" if current_path else label
                     if label == field_name and (field_type is None or ftype == field_type):
                         results.append((full_path, value))
-                    if ftype == GFFFieldType.Struct and isinstance(value, GFFStruct):
-                        _search_recursive(value, full_path)
-                    elif ftype == GFFFieldType.List and isinstance(value, GFFList):
+                    if (ftype == GFFFieldType.Struct and isinstance(value, GFFStruct)) or (ftype == GFFFieldType.List and isinstance(value, GFFList)):
                         _search_recursive(value, full_path)
             elif isinstance(current, GFFList):
                 for idx, struct in enumerate(current):
@@ -2094,7 +2092,7 @@ class GFFList(ComparableMixin, list):
         super().__init__()
         self._structs: list[GFFStruct] = []
 
-    def __copy__(self) -> "GFFList":
+    def __copy__(self) -> GFFList:
         """Support `copy.copy(GFFList)` safely.
 
         `GFFList` subclasses `list`, but stores its real content in `_structs`. The default
@@ -2106,14 +2104,14 @@ class GFFList(ComparableMixin, list):
         new_obj._structs = self._structs.copy()
         return new_obj
 
-    def __deepcopy__(self, memo: dict[int, object]) -> "GFFList":
+    def __deepcopy__(self, memo: dict[int, object]) -> GFFList:
         new_obj = GFFList()
         memo[id(self)] = new_obj
         new_obj._structs = deepcopy(self._structs, memo)
         return new_obj
 
     @staticmethod
-    def _from_reduce(structs: list[GFFStruct]) -> "GFFList":
+    def _from_reduce(structs: list[GFFStruct]) -> GFFList:
         obj = GFFList()
         obj._structs = structs
         return obj

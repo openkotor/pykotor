@@ -71,7 +71,7 @@ class ERFResource(ArchiveResource):
     Unlike BIF resources, ERF resources include their ResRef (filename) directly in the
     archive. Each resource is identified by a unique ResRef and ResourceType combination.
 
-    See also:
+    See Also:
     ----------
 
 
@@ -97,7 +97,7 @@ class ERFType(Enum):
     - SAV: Save game file
     - HAK: Hak pak file (custom content, unused in KotOR)
 
-    See also:
+    See Also:
     ----------
 
     """
@@ -125,7 +125,7 @@ class ERF(BiowareArchive):
     save games, and resource packs. Unlike BIF+KEY pairs, ERF files contain both resource names
     and data in a single file, making them ideal for distributable content like mods.
 
-    See also:
+    See Also:
     ----------
 
 

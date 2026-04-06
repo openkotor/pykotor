@@ -7,6 +7,7 @@ CLI find/get and MCP find/extract. Per KotorMCP redesign plan Phase 1.1.
 from __future__ import annotations
 
 import fnmatch
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING

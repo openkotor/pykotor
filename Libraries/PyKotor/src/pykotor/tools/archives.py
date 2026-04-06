@@ -768,7 +768,7 @@ def get_resource_from_archive(
         with archive_path.open("rb") as key_file:
             key_data = read_key(key_file)
 
-        def _try_get_key_entry(rt: ResourceType) -> "object | None":
+        def _try_get_key_entry(rt: ResourceType) -> object | None:
             return key_data.get_resource(resref, rt)
 
         key_entry = _try_get_key_entry(resource_type) if resource_type else None

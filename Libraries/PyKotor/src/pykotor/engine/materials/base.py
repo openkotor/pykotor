@@ -51,7 +51,7 @@ class IMaterialManager(ABC):
     """Abstract material manager responsible for creating and applying materials."""
 
     @abstractmethod
-    def create_material_from_mesh(self, mesh: "MDLMesh") -> IMaterial:
+    def create_material_from_mesh(self, mesh: MDLMesh) -> IMaterial:
         """Create a material definition from an MDL mesh."""
 
     @abstractmethod

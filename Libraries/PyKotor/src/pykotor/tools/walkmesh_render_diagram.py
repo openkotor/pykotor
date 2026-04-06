@@ -253,23 +253,22 @@ def render_bwm_validation_diagram_lines(
                 if 0 <= stem_c < width and 0 <= rr < height:
                     grid[rr][stem_c] = "-"
                     color_role[rr][stem_c] = "arrow_stem"
-        else:
-            if dy > 0:  # inward up (smaller row): head above stem
-                head_r, stem_r = rr, rr + 1
-                if 0 <= head_r < height and 0 <= cc < width:
-                    grid[head_r][cc] = "^"
-                    color_role[head_r][cc] = "arrow_head"
-                if 0 <= stem_r < height and 0 <= cc < width:
-                    grid[stem_r][cc] = "|"
-                    color_role[stem_r][cc] = "arrow_stem"
-            else:  # inward down: stem above head
-                stem_r, head_r = rr - 1, rr
-                if 0 <= stem_r < height and 0 <= cc < width:
-                    grid[stem_r][cc] = "|"
-                    color_role[stem_r][cc] = "arrow_stem"
-                if 0 <= head_r < height and 0 <= cc < width:
-                    grid[head_r][cc] = "v"
-                    color_role[head_r][cc] = "arrow_head"
+        elif dy > 0:  # inward up (smaller row): head above stem
+            head_r, stem_r = rr, rr + 1
+            if 0 <= head_r < height and 0 <= cc < width:
+                grid[head_r][cc] = "^"
+                color_role[head_r][cc] = "arrow_head"
+            if 0 <= stem_r < height and 0 <= cc < width:
+                grid[stem_r][cc] = "|"
+                color_role[stem_r][cc] = "arrow_stem"
+        else:  # inward down: stem above head
+            stem_r, head_r = rr - 1, rr
+            if 0 <= stem_r < height and 0 <= cc < width:
+                grid[stem_r][cc] = "|"
+                color_role[stem_r][cc] = "arrow_stem"
+            if 0 <= head_r < height and 0 <= cc < width:
+                grid[head_r][cc] = "v"
+                color_role[head_r][cc] = "arrow_head"
 
     # "X marks the spot": draw error markers at world positions (e.g. validation failures)
     for (x, y) in (error_positions or []):

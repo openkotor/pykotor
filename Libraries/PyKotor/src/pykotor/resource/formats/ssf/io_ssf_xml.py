@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from contextlib import suppress
 
-import kaitaistruct
-
 # Try to import defusedxml, fallback to ElementTree if not available
 from xml.etree import ElementTree
+
+import kaitaistruct
 
 try:
     from defusedxml.ElementTree import fromstring as _fromstring
@@ -19,6 +19,7 @@ except (ImportError, ModuleNotFoundError):
 from typing import TYPE_CHECKING
 
 from bioware_kaitai_formats.ssf_xml import SsfXml
+
 from pykotor.resource.formats.ssf.ssf_data import SSF, SSFSound
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 from pykotor.tools.encoding import decode_bytes_with_fallbacks

@@ -404,7 +404,7 @@ def validate_file(file_path: Path) -> tuple[bool, str]:
 
         return True, "File exists (format validation not implemented)"
     except Exception as e:
-        return False, f"Validation failed: {str(e)}"
+        return False, f"Validation failed: {e!s}"
 
 
 # Helper functions for text conversion

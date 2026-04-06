@@ -87,7 +87,7 @@ def qt_strip_filters(filters: list[str]) -> list[str]:
 class _CancelledFilename(str):
     """String subclass that behaves like an empty string but reports .txt suffix when queried."""
 
-    def __new__(cls) -> "_CancelledFilename":
+    def __new__(cls) -> _CancelledFilename:
         return super().__new__(cls, "")
 
     def endswith(self, suffix: str | tuple[str, ...], *args: object) -> bool:  # type: ignore[override]
@@ -1201,16 +1201,15 @@ class QFileDialog(RealQFileDialog if TYPE_CHECKING else QDialog):  # pyright: ig
         # Match C++: if (d->nativeDialogInUse) { return d->userSelectedFiles(); }
         if d.nativeDialogInUse:
             return d.userSelectedFiles()
-        else:
-            # Match C++: QList<QUrl> urls;
-            urls: list[QUrl] = []
-            # Match C++: const QStringList selectedFileList = selectedFiles();
-            selected_file_list = self.selectedFiles()
-            # Match C++: urls.reserve(selectedFileList.size());
-            # Match C++: for (const QString &file : selectedFileList) urls.append(QUrl::fromLocalFile(file));
-            for file in selected_file_list:
-                urls.append(QUrl.fromLocalFile(file))
-            return urls
+        # Match C++: QList<QUrl> urls;
+        urls: list[QUrl] = []
+        # Match C++: const QStringList selectedFileList = selectedFiles();
+        selected_file_list = self.selectedFiles()
+        # Match C++: urls.reserve(selectedFileList.size());
+        # Match C++: for (const QString &file : selectedFileList) urls.append(QUrl::fromLocalFile(file));
+        for file in selected_file_list:
+            urls.append(QUrl.fromLocalFile(file))
+        return urls
 
     def selectUrl(
         self,
@@ -1229,8 +1228,7 @@ class QFileDialog(RealQFileDialog if TYPE_CHECKING else QDialog):  # pyright: ig
         if d.nativeDialogInUse:
             return d.directory_sys()
         # Match C++: else return QUrl::fromLocalFile(directory().absolutePath());
-        else:
-            return QUrl.fromLocalFile(self.directory().absolutePath())
+        return QUrl.fromLocalFile(self.directory().absolutePath())
 
     def setDirectoryUrl(
         self,
@@ -1637,16 +1635,12 @@ class QFileDialog(RealQFileDialog if TYPE_CHECKING else QDialog):  # pyright: ig
             if (
                 not info.exists()
                 or self.testOption(
-                    RealQFileDialog.Option.DontConfirmOverwrite  # pyright: ignore[reportArgumentType]
+                    RealQFileDialog.Option.DontConfirmOverwrite,  # pyright: ignore[reportArgumentType]
                 )
                 or sip_enum_to_int(self.acceptMode()) == sip_enum_to_int(RealQFileDialog.AcceptMode.AcceptOpen)
-            ):
+            ) or d.itemAlreadyExists(info.fileName()):
                 d.emitFilesSelected([fn])
                 super().accept()
-            else:
-                if d.itemAlreadyExists(info.fileName()):
-                    d.emitFilesSelected([fn])
-                    super().accept()
             return
 
         if mode_int in (

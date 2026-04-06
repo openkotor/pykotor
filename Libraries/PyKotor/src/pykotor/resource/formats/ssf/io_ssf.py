@@ -1,5 +1,4 @@
-"""
-SSF (Sound Set File) files contain mappings from sound event types to string references (StrRefs)
+"""SSF (Sound Set File) files contain mappings from sound event types to string references (StrRefs)
 in the TLK file. Each SSF defines a set of 28 sound effects that creatures can play during
 various game events (battle cries, pain grunts, selection sounds, etc.). The StrRefs point
 to entries in dialog.tlk which contain the actual WAV file references.
@@ -34,8 +33,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.ssf import Ssf
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.ssf.ssf_data import SSF, SSFSound
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 

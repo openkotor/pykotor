@@ -1,5 +1,4 @@
-"""
-Binary WalkMesh (BWM/WOK) runtime model for KotOR (Aurora/NWN engine lineage).
+"""Binary WalkMesh (BWM/WOK) runtime model for KotOR (Aurora/NWN engine lineage).
 
 KotOR areas use a walkmesh (stored on disk in WOK/BWM form) to describe the set of
 triangles the player and AI can stand on, plus edge metadata for transitions
@@ -211,7 +210,7 @@ class BWM(ComparableMixin):
                 self.relative_hook2,
                 self.absolute_hook1,
                 self.absolute_hook2,
-            )
+            ),
         )
 
     def walkable_faces(self) -> list[BWMFace]:
@@ -397,13 +396,12 @@ class BWM(ComparableMixin):
                     leaf = BWMNodeAABB(bbmin, bbmax, faces[0], 0, None, None)
                     aabbs.append(leaf)
                     return leaf
-                else:
-                    # Multiple faces with same center - create a single leaf with first face
-                    # This is a fallback for truly degenerate cases
-                    # NOTE: This may not match original file structure, but allows roundtrip
-                    leaf = BWMNodeAABB(bbmin, bbmax, faces[0], 0, None, None)
-                    aabbs.append(leaf)
-                    return leaf
+                # Multiple faces with same center - create a single leaf with first face
+                # This is a fallback for truly degenerate cases
+                # NOTE: This may not match original file structure, but allows roundtrip
+                leaf = BWMNodeAABB(bbmin, bbmax, faces[0], 0, None, None)
+                aabbs.append(leaf)
+                return leaf
 
         aabb = BWMNodeAABB(bbmin, bbmax, None, split_axis + 1, None, None)
         aabbs.append(aabb)
@@ -413,24 +411,22 @@ class BWM(ComparableMixin):
         if faces_left:
             left_child = self._aabbs_rec(aabbs, faces_left, rlevel + 1)
             aabb.left = left_child
-        else:
-            # This should never happen due to the check above, but handle gracefully
-            # Create a leaf node with the first face from faces_right as fallback
-            if faces_right:
-                leaf = BWMNodeAABB(bbmin, bbmax, faces_right[0], 0, None, None)
-                aabbs.append(leaf)
-                aabb.left = leaf
+        # This should never happen due to the check above, but handle gracefully
+        # Create a leaf node with the first face from faces_right as fallback
+        elif faces_right:
+            leaf = BWMNodeAABB(bbmin, bbmax, faces_right[0], 0, None, None)
+            aabbs.append(leaf)
+            aabb.left = leaf
 
         if faces_right:
             right_child = self._aabbs_rec(aabbs, faces_right, rlevel + 1)
             aabb.right = right_child
-        else:
-            # This should never happen due to the check above, but handle gracefully
-            # Create a leaf node with the first face from faces_left as fallback
-            if faces_left:
-                leaf = BWMNodeAABB(bbmin, bbmax, faces_left[0], 0, None, None)
-                aabbs.append(leaf)
-                aabb.right = leaf
+        # This should never happen due to the check above, but handle gracefully
+        # Create a leaf node with the first face from faces_left as fallback
+        elif faces_left:
+            leaf = BWMNodeAABB(bbmin, bbmax, faces_left[0], 0, None, None)
+            aabbs.append(leaf)
+            aabb.right = leaf
 
         return aabb
 
@@ -772,10 +768,8 @@ class BWM(ComparableMixin):
         if (tmin > tymax) or (tymin > tmax):
             return False
 
-        if tymin > tmin:
-            tmin = tymin
-        if tymax < tmax:
-            tmax = tymax
+        tmin = max(tmin, tymin)
+        tmax = min(tmax, tymax)
 
         tzmin = (bb_min.z - origin.z) * inv_dir.z
         tzmax = (bb_max.z - origin.z) * inv_dir.z
@@ -786,10 +780,8 @@ class BWM(ComparableMixin):
         if (tmin > tzmax) or (tzmin > tmax):
             return False
 
-        if tzmin > tmin:
-            tmin = tzmin
-        if tzmax < tmax:
-            tmax = tzmax
+        tmin = max(tmin, tzmin)
+        tmax = min(tmax, tzmax)
 
         # Check if intersection is within max_distance
         if tmin < 0:
@@ -925,7 +917,6 @@ class BWM(ComparableMixin):
 
         References:
         ----------
-
         Libraries/PyKotor/src/utility/common/geometry.py:1270-1292 (Face.determine_z)
 
 
@@ -1434,7 +1425,7 @@ class BWM(ComparableMixin):
                     "trans1": face.trans1,
                     "trans2": face.trans2,
                     "trans3": face.trans3,
-                }
+                },
             )
 
         return {
@@ -1454,7 +1445,6 @@ class BWMFace(Face, ComparableMixin):
 
     References:
     ----------
-
         Binary Format (per face):
         -----------------------
         Face data is stored in separate arrays:
@@ -1560,7 +1550,6 @@ class BWMNodeAABB(ComparableMixin):
 
     References:
     ----------
-
         Binary Format (per AABB node, 32 bytes):
         ---------------------------------------
         Offset | Size | Type   | Description
@@ -1632,7 +1621,6 @@ class BWMNodeAABB(ComparableMixin):
             - Sets the splitting face and most significant plane
             - Sets the left and right child nodes.
         """
-
         # Minimum bounds of axis-aligned bounding box
         self.bb_min: Vector3 = bb_min
 
@@ -1674,7 +1662,7 @@ class BWMNodeAABB(ComparableMixin):
                 self.sigplane,
                 self.left,
                 self.right,
-            )
+            ),
         )
 
 

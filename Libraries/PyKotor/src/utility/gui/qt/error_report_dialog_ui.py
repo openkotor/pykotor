@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'c:\GitHub\PyKotor\Libraries\PyKotor\src\utility\gui\qt\error_report_dialog.ui'
 #
@@ -80,6 +79,6 @@ class Ui_Dialog:
                 "Dialog",
                 "How can we contact you (optional, only if you want to get a response). Your report is\n"
                 "       anonymous by default, so you can provide contact info like an email address here.",
-            )
+            ),
         )
         self.sendButton.setText(_translate("Dialog", "Send report"))

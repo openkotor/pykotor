@@ -360,14 +360,13 @@ class QUrlModel(QStandardItemModel):
                             if j <= row:
                                 row -= 1
                             break
-                    else:
-                        # Case-sensitive comparison on Unix-like systems (equivalent to Qt::CaseSensitive)
-                        if clean_url == local:
-                            # Match C++: removeRow(j); if (j <= row) row--; break;
-                            self.removeRow(j)
-                            if j <= row:
-                                row -= 1
-                            break
+                    # Case-sensitive comparison on Unix-like systems (equivalent to Qt::CaseSensitive)
+                    elif clean_url == local:
+                        # Match C++: removeRow(j); if (j <= row) row--; break;
+                        self.removeRow(j)
+                        if j <= row:
+                            row -= 1
+                        break
             # Match C++: row = qMax(row, 0);
             row = max(row, 0)
             # Match C++: QModelIndex idx = fileSystemModel->index(cleanUrl);
@@ -494,7 +493,6 @@ class QSidebar(QListView):
 
     def __del__(self):
         """Destructor matching C++ QSidebar::~QSidebar() implementation (empty)."""
-        pass
 
     def urls(self) -> list[QUrl]:
         assert self.urlModel is not None, f"{type(self).__name__}.urls: No URL model setup."

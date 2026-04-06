@@ -162,7 +162,7 @@ def _erf_to_dict(data: bytes, *, embed_plaintext: bool) -> dict[str, Any]:
                 "restype": restype.extension,
                 "data_encoding": encoding,
                 "data": payload,
-            }
+            },
         )
     return {
         "format": "erf",
@@ -190,7 +190,7 @@ def _rim_to_dict(data: bytes, *, embed_plaintext: bool) -> dict[str, Any]:
                 "restype": restype.extension,
                 "data_encoding": encoding,
                 "data": payload,
-            }
+            },
         )
     return {
         "format": "rim",
@@ -223,7 +223,7 @@ def _bif_to_dict(
                 "resname_key_index": res.resname_key_index,
                 "data_encoding": encoding,
                 "data": payload,
-            }
+            },
         )
     return {
         "format": "bif",

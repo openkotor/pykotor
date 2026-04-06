@@ -162,7 +162,7 @@ class UnifiedFormatter(DiffFormatter):
                         fromfile=diff_result.left_identifier,
                         tofile=diff_result.right_identifier,
                         lineterm="",
-                    )
+                    ),
                 )
 
                 return "\n".join(diff_lines)
@@ -213,7 +213,7 @@ class ContextFormatter(DiffFormatter):
                         fromfile=diff_result.left_identifier,
                         tofile=diff_result.right_identifier,
                         lineterm="",
-                    )
+                    ),
                 )
 
                 return "\n".join(diff_lines)

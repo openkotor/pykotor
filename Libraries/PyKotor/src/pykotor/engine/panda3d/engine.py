@@ -44,6 +44,7 @@ class KotorEngine(ShowBase):
     ----------
         Observed retail KotOR I and KotOR II behavior.
         /panda3d/panda3d-docs/introduction/tutorial/starting-panda3d - ShowBase
+
     Attributes:
     ----------
         scene_root: Root NodePath for KotOR scene content

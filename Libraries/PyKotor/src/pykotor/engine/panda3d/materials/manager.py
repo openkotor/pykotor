@@ -48,7 +48,7 @@ class Panda3DMaterial(IMaterial):
         self.normal_texture: Texture | None = None
         self.lightmap_texture: Texture | None = None
 
-    def load_resources(self, loader: "Loader", base_path: Path) -> None:
+    def load_resources(self, loader: Loader, base_path: Path) -> None:
         """Load textures required by this material.
 
         """
@@ -115,9 +115,9 @@ class Panda3DMaterial(IMaterial):
 class Panda3DMaterialManager(IMaterialManager):
     """Material manager responsible for compiling shaders and applying materials."""
 
-    def __init__(self, loader: "Loader", texture_base_path: Path | None = None):
+    def __init__(self, loader: Loader, texture_base_path: Path | None = None):
         self.loader = loader
-        self.texture_base_path = texture_base_path or Path(".")
+        self.texture_base_path = texture_base_path or Path()
         self.shader = self._load_shader()
 
     def _load_shader(self) -> Shader:
@@ -130,7 +130,7 @@ class Panda3DMaterialManager(IMaterialManager):
             raise RuntimeError("Failed to load KotOR material shader")
         return shader
 
-    def create_material_from_mesh(self, mesh: "MDLMesh") -> Panda3DMaterial:
+    def create_material_from_mesh(self, mesh: MDLMesh) -> Panda3DMaterial:
         """Create a Panda3DMaterial from MDL mesh data."""
         diffuse = mesh.texture_1 if mesh.texture_1 else None
         lightmap = mesh.texture_2 if mesh.has_lightmap and mesh.texture_2 else None

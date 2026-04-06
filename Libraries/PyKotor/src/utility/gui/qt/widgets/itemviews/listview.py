@@ -98,7 +98,7 @@ class RobustListView(RobustAbstractItemView, QListView):
         self._add_simple_action(actions_menu, "Select All", self.selectAll)
         self._add_simple_action(actions_menu, "Scroll to Top", lambda: self.scrollTo(self.model().index(0, 0), QListView.ScrollHint.PositionAtTop))  # pyright: ignore[reportOptionalMemberAccess]
         self._add_simple_action(
-            actions_menu, "Scroll to Bottom", lambda: self.scrollTo(self.model().index(self.model().rowCount() - 1, 0), QListView.ScrollHint.PositionAtBottom)
+            actions_menu, "Scroll to Bottom", lambda: self.scrollTo(self.model().index(self.model().rowCount() - 1, 0), QListView.ScrollHint.PositionAtBottom),
         )  # pyright: ignore[reportOptionalMemberAccess]
         self._add_simple_action(actions_menu, "Reset", self.reset)
         self._add_simple_action(actions_menu, "Clear Property Flags", self.clearPropertyFlags)

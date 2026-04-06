@@ -138,7 +138,7 @@ except ImportError:
 if qtpy.API_NAME == "PySide2":
     from qtpy.QtCore import QJsonArray, QJsonValue  # noqa: F401
 elif qtpy.API_NAME == "PySide6":
-    from qtpy.QtCore import QJsonArray, QJsonValue  # noqa: F401, TCH002
+    from qtpy.QtCore import QJsonArray, QJsonValue  # noqa: F401, TC002
 
 if TYPE_CHECKING:
     from datetime import date, datetime, time

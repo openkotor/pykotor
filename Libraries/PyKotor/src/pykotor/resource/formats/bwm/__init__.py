@@ -24,13 +24,13 @@ from pykotor.resource.formats.bwm.io_bwm import (
 
 __all__ = [
     "BWM",
+    "BWM_VALIDATION_DIAGRAM_MAGIC",
     "BWMAdjacency",
     "BWMBinaryReader",
     "BWMBinaryWriter",
     "BWMEdge",
     "BWMFace",
     "BWMType",
-    "BWM_VALIDATION_DIAGRAM_MAGIC",
     "bytes_bwm",
     "read_bwm",
     "write_bwm",

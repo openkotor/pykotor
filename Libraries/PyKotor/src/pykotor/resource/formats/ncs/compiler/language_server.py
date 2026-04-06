@@ -42,7 +42,6 @@ References:
 """
 
 from __future__ import annotations
-from pykotor.resource.formats._base import BiowareResource
 
 import re
 import traceback
@@ -54,6 +53,7 @@ from typing import TYPE_CHECKING, Any
 
 from ply import yacc
 
+from pykotor.resource.formats._base import BiowareResource
 from pykotor.resource.formats.ncs.compiler.classes import (
     CompileError,
     FunctionDefinition,
@@ -397,7 +397,7 @@ class NSSLanguageServer(BiowareResource):
                         message="Redundant semicolon",
                         severity=DiagnosticSeverity.WARNING,
                         code="redundant-semicolon",
-                    )
+                    ),
                 )
 
             # Check for common typos
@@ -414,7 +414,7 @@ class NSSLanguageServer(BiowareResource):
                             severity=DiagnosticSeverity.ERROR,
                             code="unknown-type",
                             suggestions=["void"],
-                        )
+                        ),
                     )
 
         # Check for unbalanced braces
@@ -428,7 +428,7 @@ class NSSLanguageServer(BiowareResource):
                     message=f"Missing {brace_balance} closing brace(s) '}}'",
                     severity=DiagnosticSeverity.ERROR,
                     code="unbalanced-braces",
-                )
+                ),
             )
         elif brace_balance < 0:
             diagnostics.append(
@@ -440,7 +440,7 @@ class NSSLanguageServer(BiowareResource):
                     message=f"Extra {-brace_balance} closing brace(s) '}}'",
                     severity=DiagnosticSeverity.ERROR,
                     code="unbalanced-braces",
-                )
+                ),
             )
 
         return diagnostics
@@ -482,7 +482,7 @@ class NSSLanguageServer(BiowareResource):
                         "Add void main() { } for executable scripts",
                         "Add int StartingConditional() { return TRUE; } for conditional scripts",
                     ],
-                )
+                ),
             )
 
         return diagnostics
@@ -498,8 +498,7 @@ class NSSLanguageServer(BiowareResource):
 
         for obj in ast.objects:
             line_num = getattr(obj, "line_num", 1) - 1  # Convert to 0-indexed
-            if line_num < 0:
-                line_num = 0
+            line_num = max(line_num, 0)
 
             if isinstance(obj, FunctionDefinition):
                 # Get function details
@@ -554,7 +553,7 @@ class NSSLanguageServer(BiowareResource):
                                 end=Position(line=line_num, character=0),
                             ),
                             detail=param_type,
-                        )
+                        ),
                     )
 
                 symbols.append(func_symbol)
@@ -595,7 +594,7 @@ class NSSLanguageServer(BiowareResource):
                                 end=Position(line=line_num, character=0),
                             ),
                             detail=member_type,
-                        )
+                        ),
                     )
 
                 symbols.append(struct_symbol)
@@ -618,7 +617,7 @@ class NSSLanguageServer(BiowareResource):
                             end=Position(line=line_num, character=0),
                         ),
                         detail=var_type,
-                    )
+                    ),
                 )
 
         return symbols
@@ -671,7 +670,7 @@ class NSSLanguageServer(BiowareResource):
                         documentation=getattr(func, "description", "") or "",
                         insert_text=f"{func.name}($0)",
                         sort_text=f"0_{func.name}",  # Functions first
-                    )
+                    ),
                 )
 
         # Add constants
@@ -688,7 +687,7 @@ class NSSLanguageServer(BiowareResource):
                         documentation=getattr(const, "description", "") or "",
                         insert_text=const.name,
                         sort_text=f"1_{const.name}",  # Constants second
-                    )
+                    ),
                 )
 
         # Add keywords
@@ -733,7 +732,7 @@ class NSSLanguageServer(BiowareResource):
                         detail="keyword",
                         insert_text=kw,
                         sort_text=f"2_{kw}",  # Keywords last
-                    )
+                    ),
                 )
 
         return completions
@@ -855,7 +854,7 @@ class NSSLanguageServer(BiowareResource):
                     "error": None,
                 }
 
-            elif method == "completions":
+            if method == "completions":
                 completions = self.get_completions(
                     text=params.get("text", ""),
                     line=params.get("line", 0),
@@ -867,7 +866,7 @@ class NSSLanguageServer(BiowareResource):
                     "error": None,
                 }
 
-            elif method == "hover":
+            if method == "hover":
                 hover = self.get_hover(
                     text=params.get("text", ""),
                     line=params.get("line", 0),
@@ -879,14 +878,14 @@ class NSSLanguageServer(BiowareResource):
                     "error": None,
                 }
 
-            elif method == "shutdown":
+            if method == "shutdown":
                 return {
                     "id": request_id,
                     "result": {"status": "shutdown"},
                     "error": None,
                 }
 
-            elif method == "update_config":
+            if method == "update_config":
                 # Update functions/constants/library
                 if "functions" in params:
                     self.functions = params["functions"]
@@ -905,12 +904,11 @@ class NSSLanguageServer(BiowareResource):
                     "error": None,
                 }
 
-            else:
-                return {
-                    "id": request_id,
-                    "result": None,
-                    "error": {"code": -32601, "message": f"Unknown method: {method}"},
-                }
+            return {
+                "id": request_id,
+                "result": None,
+                "error": {"code": -32601, "message": f"Unknown method: {method}"},
+            }
 
         except Exception as e:
             return {
@@ -1035,7 +1033,7 @@ class NSSLanguageServer(BiowareResource):
                 "id": None,
                 "result": {"status": "ready"},
                 "error": None,
-            }
+            },
         )
 
         # Process requests

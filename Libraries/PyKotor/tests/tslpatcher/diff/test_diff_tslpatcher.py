@@ -9,7 +9,7 @@ import unittest
 
 from configparser import ConfigParser
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
 REPO_ROOT = THIS_SCRIPT_PATH.parents[4]

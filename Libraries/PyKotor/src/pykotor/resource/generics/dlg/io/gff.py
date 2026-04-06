@@ -63,7 +63,6 @@ def construct_dlg(  # noqa: C901, PLR0915
         -------
             None - Populates the node in-place
         """
-
         node.text = gff_struct.acquire("Text", LocalizedString.from_invalid())
 
         node.listener = gff_struct.acquire("Listener", "")

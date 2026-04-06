@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pykotor.gl.compat import has_pyopengl, missing_constant, missing_gl_func, safe_gl_error_module
 from pykotor.gl import vec3
+from pykotor.gl.compat import has_pyopengl, missing_constant, missing_gl_func, safe_gl_error_module
 
 HAS_PYOPENGL = has_pyopengl()
 gl_error = safe_gl_error_module()

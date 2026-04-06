@@ -49,11 +49,11 @@ Binary Format:
 """
 
 from __future__ import annotations
-from pykotor.resource.formats._base import BiowareResource
 
 from typing import ClassVar
 
 from pykotor.common.misc import ResRef
+from pykotor.resource.formats._base import BiowareResource
 from pykotor.resource.type import ResourceType
 
 

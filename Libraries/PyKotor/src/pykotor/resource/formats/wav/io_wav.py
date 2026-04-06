@@ -20,8 +20,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.wav import Wav
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.wav.wav_data import (
     WAV,
     AudioFormat,
@@ -181,7 +182,6 @@ class WAVBinaryReader(ResourceReader):
         file_size = reader.read_uint32()
         wave_tag = reader.read_bytes(4)
 
-        #
         if wave_tag != b"WAVE":
             msg = f"Not a valid WAVE file, got: {wave_tag!r}"
             raise ValueError(msg)

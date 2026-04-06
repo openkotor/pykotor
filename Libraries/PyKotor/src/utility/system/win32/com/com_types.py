@@ -134,7 +134,7 @@ class GUID(*inherit):
         if result is None:
             d4_hex = "".join(f"{byte:02X}" for byte in self.Data4)
             result = f"{{{self.Data1:08X}-{self.Data2:04X}-{self.Data3:04X}-{d4_hex[:4]}-{d4_hex[4:]}}}"
-        return result and result.strip() or str(self.NULL())
+        return (result and result.strip()) or str(self.NULL())
 
     @classmethod
     def guid_ducktypes(cls) -> tuple[type[COMTYPE_GUID], type[Self]] | tuple[type[COMTYPE_GUID], type[GUID], type[Self]]:

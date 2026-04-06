@@ -1,5 +1,4 @@
-"""
-MDL (Model) data structures for KotOR.
+"""MDL (Model) data structures for KotOR.
 
 This module defines the in-memory representation of MDL/MDX model files used in KotOR.
 MDL files store 3D model geometry, animations, materials, and node hierarchies for
@@ -477,7 +476,7 @@ def _mdl_ids_equivalent_subtree(a_root: MDLNode, b_root: MDLNode) -> bool:
     a_fully_labeled = len(a_name_to_id) == len(a_by_name)
     b_fully_labeled = len(b_name_to_id) == len(b_by_name)
     if a_fully_labeled and b_fully_labeled:
-        id_map: dict[int, int] = {a_name_to_id[name]: b_name_to_id[name] for name in a_by_name.keys()}
+        id_map: dict[int, int] = {a_name_to_id[name]: b_name_to_id[name] for name in a_by_name}
         if len(set(id_map.values())) != len(id_map):
             return False
         for name, a_node in a_by_name.items():
@@ -730,7 +729,7 @@ def _mdl_aabb_hash(aabb: MDLWalkmesh) -> int:
                 _qfloat(float(n.bbox_max.y)),
                 _qfloat(float(n.bbox_max.z)),
                 int(n.face_index),
-            )
+            ),
         )
     return hash(("aabb", len(nodes), acc))
 
@@ -955,9 +954,8 @@ def _mdl_node_payload_equal(
     if in_geometry_tree:
         if _mdl_canonical_controllers(a, drop_transform_controllers=True) != _mdl_canonical_controllers(b, drop_transform_controllers=True):
             return False
-    else:
-        if not _mdl_controllers_equivalent(a, b, ignore_keys=_MDL_EQ_IGNORE_KEYS, _visited=set()):
-            return False
+    elif not _mdl_controllers_equivalent(a, b, ignore_keys=_MDL_EQ_IGNORE_KEYS, _visited=set()):
+        return False
 
     # node_type consistency validation (no ignoring)
     if not (_mdl_node_validate_node_type_consistent(a) and _mdl_node_validate_node_type_consistent(b)):
@@ -1054,7 +1052,7 @@ def _mdl_subtree_equal(
     if all(v == 1 for v in a_name_counts.values()):
         a_by_name = {c.name: c for c in a_children}
         b_by_name = {c.name: c for c in b_children}
-        for name in a_by_name.keys():
+        for name in a_by_name:
             if not _mdl_subtree_equal(a_by_name[name], b_by_name[name], in_geometry_tree=in_geometry_tree):
                 return False
         return True
@@ -1147,7 +1145,7 @@ def _mdl_animation_equal(
         return False
     a_by = {n.name: n for n in a_nodes}
     b_by = {n.name: n for n in b_nodes}
-    for name in a_by.keys():
+    for name in a_by:
         if not _mdl_node_payload_equal(a_by[name], b_by[name], in_geometry_tree=False):
             return False
 
@@ -1264,7 +1262,7 @@ def _mdl_deep_eq(
             return False
 
         return True
-    elif isinstance(a, MDLFace) or isinstance(b, MDLFace):
+    if isinstance(a, MDLFace) or isinstance(b, MDLFace):
         return False
 
     # Color (pykotor.common.misc.Color)
@@ -1278,7 +1276,7 @@ def _mdl_deep_eq(
         if not _mdl_float_eq(float(a.a), float(b.a)):
             return False
         return True
-    elif isinstance(a, Color) or isinstance(b, Color):
+    if isinstance(a, Color) or isinstance(b, Color):
         return False
 
     # Sequences
@@ -1490,7 +1488,7 @@ def _mdl_deep_hash(
         # Dicts
         if isinstance(v, dict):
             dict_items = tuple(
-                sorted(((k, _mdl_deep_hash(val, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE)) for k, val in v.items()), key=lambda kv: str(kv[0]).lower())
+                sorted(((k, _mdl_deep_hash(val, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE)) for k, val in v.items()), key=lambda kv: str(kv[0]).lower()),
             )
             return hash(("dict", dict_items))
 
@@ -1682,7 +1680,7 @@ class MDL(ComparableMixin):
             return False
         if set(a_anims.keys()) != set(b_anims.keys()):
             return False
-        for k in a_anims.keys():
+        for k in a_anims:
             if not _mdl_animation_equal(a_anims[k], b_anims[k]):
                 return False
 
@@ -1711,7 +1709,7 @@ class MDL(ComparableMixin):
         def _akey(anim: MDLAnimation) -> tuple[str, str]:
             return (anim.name, anim.root_model)
 
-        for k in sorted((_akey(a) for a in self.anims)):
+        for k in sorted(_akey(a) for a in self.anims):
             anim = next(a for a in self.anims if _akey(a) == k)
             h ^= hash(("anim", k, _qfloat(float(anim.anim_length)), _qfloat(float(anim.transition_length))))
             h ^= hash(_mdl_deep_hash(anim.events, ignore_keys=_MDL_EQ_IGNORE_KEYS))
@@ -1882,7 +1880,6 @@ class MDL(ComparableMixin):
             This is essential for multi-part character models where body parts
             reference bones in the full skeleton hierarchy.
         """
-
         nodes = self.all_nodes()
         for node in nodes:
             # Only process skin mesh nodes
@@ -1973,7 +1970,7 @@ class MDLAnimation(ComparableMixin):
                     _mdl_node_canonical_position_strict(n, prefer_controllers=True),
                     _mdl_node_canonical_orientation_strict(n, prefer_controllers=True),
                     _mdl_canonical_controllers_hashable(n, drop_transform_controllers=False),
-                )
+                ),
             )
         return h
 
@@ -2130,7 +2127,6 @@ class MDLNode(ComparableMixin):
         ----
             self: The MDLNode object being initialized
         """
-
         # Child nodes inherit transforms and participate in rendering hierarchy
         self.children: list[MDLNode] = []
 
@@ -2402,7 +2398,6 @@ class MDLEmitter(ComparableMixin):
 
     References:
     ----------
-
         Update Modes (update field):
         ---------------------------
         "Fountain" - Continuous particle stream at birthrate
@@ -2644,7 +2639,6 @@ class MDLMesh(ComparableMixin):
 
     References:
     ----------
-
         Key Features:
         ------------
         - UV Animation: Texture scrolling for water, lava, holograms
@@ -2890,7 +2884,6 @@ class MDLSkin(MDLMesh):
             The bonemap contains local-to-global bone index mappings.
             Invalid bone indices (0xFFFF) are skipped.
         """
-
         # Build a lookup of node_id -> serial index to correctly map global bone IDs.
         node_index_by_id: dict[int, int] = {}
         for serial_index, node in enumerate(nodes):
@@ -3258,7 +3251,7 @@ class MDLFace(ComparableMixin):
         return _mdl_hash(self, ignore_keys=_MDL_EQ_IGNORE_KEYS)
 
 
-def _mdl_recompute_mesh_face_payload(mesh: "MDLMesh") -> None:
+def _mdl_recompute_mesh_face_payload(mesh: MDLMesh) -> None:
     """Recompute derived per-face payload (adjacency, plane coefficient, normal) from mesh geometry.
 
     MDLOps-style ASCII does not carry these binary-only fields. To keep roundtrips idempotent

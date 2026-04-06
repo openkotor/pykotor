@@ -89,7 +89,7 @@ class VIS(ComparableMixin):
             (
                 tuple(sorted(self._rooms)),
                 tuple(sorted((k, tuple(sorted(v))) for k, v in self._visibility.items())),
-            )
+            ),
         )
 
     def __iter__(self) -> Generator[tuple[str, set[str]], Any, None]:

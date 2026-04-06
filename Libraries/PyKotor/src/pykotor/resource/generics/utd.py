@@ -16,8 +16,7 @@ if TYPE_CHECKING:
 
 
 class UTD:
-    """
-    Stores door data from the on-disk UTD GFF template.
+    """Stores door data from the on-disk UTD GFF template.
     
     Fields cover locks, HP, scripts, traps, appearance, localized strings, and KotOR II-only
     modifiers. Defaults match observed retail when a field is absent. The former long class

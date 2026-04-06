@@ -27,19 +27,19 @@ class RenderObject:
     """
 
     __slots__ = (
-        "model",
-        "children",
-        "_transform",
+        "_boundary",
+        "_bounds_dirty",
+        "_cached_center",
+        "_cached_radius",
+        "_cube",
         "_position",
         "_rotation",
-        "_cube",
-        "_boundary",
-        "gen_boundary",
+        "_transform",
+        "children",
         "data",
+        "gen_boundary",
+        "model",
         "override_texture",
-        "_cached_radius",
-        "_cached_center",
-        "_bounds_dirty",
     )
 
     def __init__(

@@ -11,13 +11,12 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 REPO_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(REPO_ROOT / "Libraries/PyKotor/src"))
 sys.path.insert(0, str(REPO_ROOT / "Libraries/Utility/src"))
 
-from pykotor.common.script import DataType, ScriptConstant, ScriptFunction, ScriptParam
+from pykotor.common.script import DataType, ScriptConstant, ScriptFunction
 from pykotor.common.scriptdefs import KOTOR_CONSTANTS, KOTOR_FUNCTIONS, TSL_CONSTANTS, TSL_FUNCTIONS
 
 # ─── TYPE NAME LOOKUP ─────────────────────────────────────────────────────────

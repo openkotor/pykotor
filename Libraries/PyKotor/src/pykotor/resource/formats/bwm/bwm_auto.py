@@ -237,7 +237,7 @@ def write_bwm_validation_diagram(
     elif isinstance(target, io.TextIOBase):
         target.write(data.decode("utf-8"))
     elif isinstance(target, io.BytesIO):
-        cast(io.BytesIO, target).write(data)
+        cast("io.BytesIO", target).write(data)
     else:
         raise ValueError(f"Unsupported target type: {type(target)}")
 

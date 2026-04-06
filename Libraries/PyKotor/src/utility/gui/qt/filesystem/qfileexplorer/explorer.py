@@ -583,7 +583,7 @@ class FileSystemExplorerWidget(QMainWindow):
             cb: QClipboard | None = None
             QApplication.clipboard().setMimeData(mime_data)
 
-            operation: Literal["cut"] | Literal["copy"] = "cut" if cut else "copy"
+            operation: Literal["cut", "copy"] = "cut" if cut else "copy"
             self.executor.queue_task(
                 lambda _: setattr(self, "to_cut", source_paths if cut else None),
                 args=(source_paths,),

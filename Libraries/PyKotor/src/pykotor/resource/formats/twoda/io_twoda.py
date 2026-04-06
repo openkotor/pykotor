@@ -6,10 +6,11 @@ from io import BytesIO
 from typing import TYPE_CHECKING
 
 import kaitaistruct
+
+from bioware_kaitai_formats.twoda import Twoda
 from kaitaistruct import KaitaiStream
 
 from pykotor.common.stream import BinaryReader
-from bioware_kaitai_formats.twoda import Twoda
 from pykotor.resource.formats.twoda.twoda_data import TwoDA
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 

@@ -33,8 +33,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.bwm import Bwm
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.bwm.bwm_data import (  # noqa: E402
     BWM,
     BWMFace,

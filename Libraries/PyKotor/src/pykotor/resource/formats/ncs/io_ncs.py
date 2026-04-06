@@ -6,9 +6,10 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.ncs import Ncs
 from bioware_kaitai_formats.ncs_minimal import NcsMinimal
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.ncs.ncs_data import (
     NCS,
     NCSByteCode,
@@ -453,22 +454,10 @@ class NCSBinaryReader(ResourceReader):
             in {  # noqa: SIM114
                 # NCSInstructionType.STORE_STATEALL,
             }
-        ):
-            ...
-
-        elif instruction.ins_type == NCSInstructionType.RETN:  # noqa: SIM114
-            ...
-
-        elif instruction.ins_type == NCSInstructionType.NOTI:  # noqa: SIM114
-            ...
-
-        elif instruction.ins_type in {  # noqa: SIM114
+        ) or instruction.ins_type == NCSInstructionType.RETN or instruction.ins_type == NCSInstructionType.NOTI or instruction.ins_type in {  # noqa: SIM114
             NCSInstructionType.SAVEBP,
             NCSInstructionType.RESTOREBP,
-        }:
-            ...
-
-        elif instruction.ins_type == NCSInstructionType.NOP:  # noqa: SIM114
+        } or instruction.ins_type == NCSInstructionType.NOP:
             ...
 
         elif instruction.ins_type in {  # noqa: SIM114

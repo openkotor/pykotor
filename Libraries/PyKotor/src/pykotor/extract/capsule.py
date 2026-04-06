@@ -169,7 +169,7 @@ class LazyCapsule(FileResource):
             next(
                 (resource for resource in self.resources() if resource == query),
                 False,
-            )
+            ),
         )
 
     def info(
@@ -356,7 +356,6 @@ class LazyCapsule(FileResource):
             - Seeks to resource data offset table
             - Loops to read offsets and sizes and populate resource objects.
         """
-
         resources: list[FileResource] = []
         reader.skip(8)
         entry_count = reader.read_uint32()
@@ -411,7 +410,6 @@ class LazyCapsule(FileResource):
                 - Read the 4 byte offset
                 - Read the 4 byte size
         """
-
         resources: list[FileResource] = []
         reader.skip(4)
         entry_count = reader.read_uint32()

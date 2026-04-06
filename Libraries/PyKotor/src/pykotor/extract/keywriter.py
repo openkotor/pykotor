@@ -51,7 +51,6 @@ class KEYWriter:
 
     References:
     ----------
-
         Note: KEY writing is uncommon in vendor implementations; most tools only read KEY files.
         PyKotor's KEYWriter is primarily for modding and tooling purposes.
 
@@ -91,7 +90,6 @@ class KEYWriter:
 
         References:
         ----------
-
         KEY file format: 8-byte signature, BIF count, resource count, offsets, timestamps
 
         """

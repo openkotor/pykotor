@@ -11,13 +11,14 @@ References:
 """
 
 from __future__ import annotations
-from pykotor.resource.formats._base import BiowareResource
 
 import io
 import struct
 
 from dataclasses import dataclass
 from typing import BinaryIO
+
+from pykotor.resource.formats._base import BiowareResource
 
 TGA_TYPE_TRUE_COLOR = 2
 TGA_TYPE_GRAYSCALE = 3
@@ -173,8 +174,7 @@ def write_tga(image: TGAImage, stream: BinaryIO, rle: bool = False) -> None:
         count = len(packet_pixels)
         if raw:
             stream.write(bytes([count - 1]))
-            for px in packet_pixels:
-                stream.write(px)
+            stream.writelines(packet_pixels)
         else:
             stream.write(bytes([0x80 | (count - 1)]))
             stream.write(packet_pixels[0])

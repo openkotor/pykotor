@@ -18,6 +18,6 @@ from pykotor.engine.animation.base import (
 
 __all__ = [
     "IAnimationController",
-    "IAnimationState",
     "IAnimationManager",
+    "IAnimationState",
 ]

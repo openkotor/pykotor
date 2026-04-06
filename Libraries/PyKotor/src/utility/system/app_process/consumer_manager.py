@@ -187,7 +187,7 @@ class ConsumerManager(Generic[P, R]):
             self._result_queue.get_nowait()
 
     async def add_task(
-        self, func: P, *args: Any, priority: TaskPriority = TaskPriority.NORMAL, timeout: float | None = None, dependencies: list[int] = None, **kwargs: Any
+        self, func: P, *args: Any, priority: TaskPriority = TaskPriority.NORMAL, timeout: float | None = None, dependencies: list[int] = None, **kwargs: Any,
     ) -> int:
         print("add_task called")
         if not self._is_running:

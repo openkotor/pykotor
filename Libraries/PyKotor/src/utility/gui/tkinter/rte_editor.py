@@ -179,9 +179,7 @@ class RichTextEditor:
             selected_text = self.text_area.get(selection_start, selection_end)
 
             # Determine if we're adding or removing list formatting
-            if any(line.startswith("• ") for line in selected_text.splitlines()) and list_type == "bullet":
-                process = "remove"
-            elif any(re.match(r"^\d+\.\s", line) for line in selected_text.splitlines()) and list_type == "number":
+            if (any(line.startswith("• ") for line in selected_text.splitlines()) and list_type == "bullet") or (any(re.match(r"^\d+\.\s", line) for line in selected_text.splitlines()) and list_type == "number"):
                 process = "remove"
             else:
                 process = "add"

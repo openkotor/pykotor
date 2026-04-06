@@ -229,7 +229,7 @@ class FileDownloader:
                                             "percent_complete": self._calc_progress_percent(chunk_start, content_length),
                                             "time": self._calc_eta(start_time, time.time(), content_length, chunk_start),
                                         },
-                                    }
+                                    },
                                 )
                     success = self._check_hash()
                     if success:

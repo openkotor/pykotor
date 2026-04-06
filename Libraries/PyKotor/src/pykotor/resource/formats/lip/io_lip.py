@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.lip import Lip
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.lip.lip_data import LIP, LIPShape
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 

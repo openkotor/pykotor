@@ -421,10 +421,7 @@ class NCSDecompiler(BiowareResource):
             if i + 1 < len(blocks):
                 next_block = blocks[i + 1]
                 # Fall-through if last instruction doesn't branch or is conditional
-                if last_inst and last_inst.ins_type in {NCSInstructionType.JZ, NCSInstructionType.JNZ}:
-                    block.successors.append(next_block)
-                    next_block.predecessors.append(block)
-                elif last_inst and not last_inst.is_control_flow():
+                if (last_inst and last_inst.ins_type in {NCSInstructionType.JZ, NCSInstructionType.JNZ}) or (last_inst and not last_inst.is_control_flow()):
                     block.successors.append(next_block)
                     next_block.predecessors.append(block)
 

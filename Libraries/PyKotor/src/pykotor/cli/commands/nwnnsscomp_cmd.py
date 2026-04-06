@@ -62,16 +62,15 @@ def cmd_nwnnsscomp(args: Namespace, logger: RobustLogger) -> int:
         mode = "compile"
     elif getattr(args, "decompile", False) or getattr(args, "do_decompile", False):
         mode = "decompile"
+    elif suffix == ".nss":
+        mode = "compile"
+    elif suffix == ".ncs":
+        mode = "decompile"
     else:
-        if suffix == ".nss":
-            mode = "compile"
-        elif suffix == ".ncs":
-            mode = "decompile"
-        else:
-            logger.error(
-                "Could not infer mode (compile or decompile). Use -c or -d, or provide input with .nss or .ncs extension.",
-            )
-            return 1
+        logger.error(
+            "Could not infer mode (compile or decompile). Use -c or -d, or provide input with .nss or .ncs extension.",
+        )
+        return 1
 
     if mode == "compile" and suffix != ".nss":
         logger.error("Compile mode requires an .nss input file.")

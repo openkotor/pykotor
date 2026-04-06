@@ -9,7 +9,10 @@ from typing import TYPE_CHECKING, TypeVar, cast
 
 from pykotor.common.misc import ResRef  # type: ignore[import-untyped]
 from pykotor.extract.file import ResourceIdentifier  # type: ignore[import-untyped]
-from pykotor.resource.formats._base import BiowareResource, ComparableMixin  # type: ignore[import-untyped]
+from pykotor.resource.formats._base import (  # type: ignore[import-untyped]
+    BiowareResource,
+    ComparableMixin,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -97,8 +100,7 @@ class ArchiveResource(BiowareResource):
                 text = self.data.decode("utf-8", errors="replace")
                 if self.restype == ResourceType.NSS:
                     return f"NSS Script '{self.resref}':\n{text}"
-                else:
-                    return f"NCS Script '{self.resref}' (compiled, {self.size} bytes)"
+                return f"NCS Script '{self.resref}' (compiled, {self.size} bytes)"
             except UnicodeDecodeError:
                 return f"Script '{self.resref}' ({self.restype.name}, {self.size} bytes, binary)"
 
@@ -138,8 +140,7 @@ class ArchiveResource(BiowareResource):
                     width = tpc.layers[0].mipmaps[0].width
                     height = tpc.layers[0].mipmaps[0].height
                     return f"TPC Texture '{self.resref}' ({width}x{height}, {self.size} bytes)"
-                else:
-                    return f"TPC Texture '{self.resref}' ({self.size} bytes)"
+                return f"TPC Texture '{self.resref}' ({self.size} bytes)"
             except Exception:
                 return f"TPC Texture '{self.resref}' ({self.size} bytes, parse error)"
 
@@ -157,12 +158,11 @@ class ArchiveResource(BiowareResource):
         elif self.restype in (ResourceType.TGA, ResourceType.TXI):
             if self.restype == ResourceType.TGA:
                 return f"TGA Image '{self.resref}' ({self.size} bytes)"
-            else:
-                try:
-                    text = self.data.decode("utf-8", errors="replace")
-                    return f"TXI Info '{self.resref}':\n{text}"
-                except UnicodeDecodeError:
-                    return f"TXI Info '{self.resref}' ({self.size} bytes, binary)"
+            try:
+                text = self.data.decode("utf-8", errors="replace")
+                return f"TXI Info '{self.resref}':\n{text}"
+            except UnicodeDecodeError:
+                return f"TXI Info '{self.resref}' ({self.size} bytes, binary)"
 
         # Handle sound resources
         elif self.restype in (ResourceType.WAV, ResourceType.BMU, ResourceType.WMA, ResourceType.WMV):
@@ -322,7 +322,7 @@ class BiowareArchive(ComparableMixin, ABC):
     ) -> bytes | None:
         resource_dict: dict[ResourceIdentifier, ArchiveResource] = cast("dict[ResourceIdentifier, ArchiveResource]", self._resource_dict)
         key = ResourceIdentifier(resref, restype)
-        resource: ArchiveResource | None = resource_dict.get(key, None)
+        resource: ArchiveResource | None = resource_dict.get(key)
         return None if resource is None else resource.data
 
     def get_data(

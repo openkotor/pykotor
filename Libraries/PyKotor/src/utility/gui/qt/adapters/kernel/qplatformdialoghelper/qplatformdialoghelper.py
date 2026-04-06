@@ -272,13 +272,13 @@ class QPlatformDialogHelper(QObject):
         return super().__new__(new_cls)
 
     def exec(self) -> DialogCode:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def show(self, window_flags: Qt.WindowFlags, window_state: Qt.WindowState, parent: QObject | None):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def hide(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def selectMimeTypeFilter(self, filter: str) -> None:
         self._selected_mime_type_filter = filter

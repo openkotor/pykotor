@@ -293,33 +293,33 @@ class LTR(ComparableMixin):
 class LTRBlock(ComparableMixin):
     """Stores probability values for characters appearing in different name positions.
 
-        Each LTRBlock contains three probability arrays (start, middle, end) that define
-        the likelihood of each character appearing at the start, middle, or end of a name
-        segment. These probabilities are cumulative (values increase monotonically) and
-        are used with random number generation to select characters.
+    Each LTRBlock contains three probability arrays (start, middle, end) that define
+    the likelihood of each character appearing at the start, middle, or end of a name
+    segment. These probabilities are cumulative (values increase monotonically) and
+    are used with random number generation to select characters.
 
-        On-disk layout:
-        ----------
-        Each letter set stores three parallel float tables (start, middle, end) sized by the
-        file's letter count.
+    On-disk layout:
+    ----------
+    Each letter set stores three parallel float tables (start, middle, end) sized by the
+    file's letter count.
 
 
-        Attributes:
-        ----------
-            _start: Probability array for characters at start of name segment
-                Array of 28 floats (one per character)
-                Cumulative probabilities (monotonically increasing)
-                Used when generating first character or after name breaks
+    Attributes:
+    ----------
+        _start: Probability array for characters at start of name segment
+            Array of 28 floats (one per character)
+            Cumulative probabilities (monotonically increasing)
+            Used when generating first character or after name breaks
 
-            _middle: Probability array for characters in middle of name segment
-                Array of 28 floats (one per character)
-                Cumulative probabilities (monotonically increasing)
-                Used when generating characters after start but before end
+        _middle: Probability array for characters in middle of name segment
+            Array of 28 floats (one per character)
+            Cumulative probabilities (monotonically increasing)
+            Used when generating characters after start but before end
 
-            _end: Probability array for characters at end of name segment
-                Array of 28 floats (one per character)
-                Cumulative probabilities (monotonically increasing)
-                Used when generating final character of name
+        _end: Probability array for characters at end of name segment
+            Array of 28 floats (one per character)
+            Cumulative probabilities (monotonically increasing)
+            Used when generating final character of name
     """
 
     COMPARABLE_SEQUENCE_FIELDS = ("_start", "_middle", "_end")

@@ -185,7 +185,7 @@ def obfuscate_audio(
         # Using 0x00 for the rest is safe
         return bytes(header) + data
 
-    elif wav_type == "VO":
+    if wav_type == "VO":
         # Create 20-byte VO header
         # Header starts with "RIFF" (magic number 1179011410 = 0x46464952)
         # This satisfies deobfuscation check at offset 16

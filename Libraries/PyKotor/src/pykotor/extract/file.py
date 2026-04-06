@@ -149,7 +149,7 @@ def _extract_from_nested_capsules(
             # ERF-based formats: ERF, MOD, SAV, HAK (all use similar structure)
             # NOTE: SAV uses "MOD " signature, HAK may use "ERF "
             erf_signatures = set(member.value for member in ERFType)
-            erf_signatures.update({"SAV ",})  # Add explicit signatures that might be used
+            erf_signatures.update({"SAV "})  # Add explicit signatures that might be used
 
             if file_type in erf_signatures:
                 resources = _read_erf_resources(reader, current_data)
@@ -503,20 +503,20 @@ class FileResource:
     ) -> bytes:
         """Opens the file the resource is located at and returns the bytes data of the resource.
 
-            Supports nested capsule paths (e.g., SAVEGAME.sav/inner.sav) by recursively
-            extracting through each capsule level.
+        Supports nested capsule paths (e.g., SAVEGAME.sav/inner.sav) by recursively
+        extracting through each capsule level.
 
-            Args:
-            ----
-                reload (bool, kwarg): Whether to reload the file from disk or use the cache. Default is False
+        Args:
+        ----
+            reload (bool, kwarg): Whether to reload the file from disk or use the cache. Default is False
 
-            Returns:
-            -------
-                Bytes data of the resource.
+        Returns:
+        -------
+            Bytes data of the resource.
 
-            Raises:
-            ------
-                FileNotFoundError: File not found on disk or in nested capsule.
+        Raises:
+        ------
+            FileNotFoundError: File not found on disk or in nested capsule.
 
         """
         if reload:

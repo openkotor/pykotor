@@ -1,7 +1,6 @@
 """NCS bytecode interpreter: execute NCS for testing and script debugging."""
 
 from __future__ import annotations
-from pykotor.resource.formats._base import BiowareResource
 
 import logging
 import struct
@@ -12,6 +11,7 @@ from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 from pykotor.common.misc import Game
 from pykotor.common.script import DataType
+from pykotor.resource.formats._base import BiowareResource
 from pykotor.resource.formats.ncs import NCSInstruction, NCSInstructionType
 from utility.common.geometry import Vector3
 
@@ -38,7 +38,6 @@ class Interpreter(BiowareResource):
 
     References:
     ----------
-
         Note: Interpreter is PyKotor-specific for testing, not a full runtime implementation
     """
 
@@ -1486,7 +1485,7 @@ class Stack(BiowareResource):
             self.add(DataType.FLOAT, y * scalar)
             self.add(DataType.FLOAT, z * scalar)
             return
-        elif instruction_type == NCSInstructionType.MULFV:
+        if instruction_type == NCSInstructionType.MULFV:
             # MULFV: float * vector (float is lhs, vector is rhs, so vector is on top)
             if len(self._stack) < 4:
                 msg = "Stack underflow in vector multiplication operation"

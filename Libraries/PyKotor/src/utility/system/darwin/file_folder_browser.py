@@ -119,7 +119,7 @@ def _run_cocoa_dialog(  # noqa: C901, PLR0913
             else:
                 allowed_file_types.extend(NSString_from_str(ext) for ext in ft[1])
         allowed_file_types_nsarray = libobjc.objc_msgSend(
-            NSArray, libobjc.sel_registerName(b"arrayWithObjects:count:"), (cID * len(allowed_file_types))(*allowed_file_types), len(allowed_file_types)
+            NSArray, libobjc.sel_registerName(b"arrayWithObjects:count:"), (cID * len(allowed_file_types))(*allowed_file_types), len(allowed_file_types),
         )
         libobjc.objc_msgSend(panel, libobjc.sel_registerName(b"setAllowedFileTypes:"), allowed_file_types_nsarray)
 

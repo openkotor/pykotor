@@ -9,6 +9,6 @@ from __future__ import annotations
 from pykotor.engine.scene.base import ISceneGraph, FogProperties
 
 __all__ = [
-    "ISceneGraph",
     "FogProperties",
+    "ISceneGraph",
 ]

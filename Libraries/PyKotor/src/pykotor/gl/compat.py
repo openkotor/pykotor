@@ -57,7 +57,13 @@ def missing_constant(_name: str) -> int:
 HAS_PYOPENGL = has_pyopengl()
 
 if HAS_PYOPENGL:
-    from OpenGL.GL import glReadPixels  # pyright: ignore[reportMissingImports]
+    from OpenGL.GL import (  # pyright: ignore[reportMissingImports]
+        GL_FILL,
+        GL_FRONT_AND_BACK,
+        GL_LINE,
+        glPolygonMode,
+        glReadPixels,  # pyright: ignore[reportMissingImports]
+    )
     from OpenGL.raw.GL.ARB.vertex_shader import GL_FLOAT  # pyright: ignore[reportMissingImports]
     from OpenGL.raw.GL.VERSION.GL_1_0 import (  # pyright: ignore[reportMissingImports]
         GL_BLEND,
@@ -82,12 +88,6 @@ if HAS_PYOPENGL:
     from OpenGL.raw.GL.VERSION.GL_1_2 import (  # pyright: ignore[reportMissingImports]
         GL_BGRA,
         GL_UNSIGNED_INT_8_8_8_8,
-    )
-    from OpenGL.GL import (  # pyright: ignore[reportMissingImports]
-        GL_FILL,
-        GL_FRONT_AND_BACK,
-        GL_LINE,
-        glPolygonMode,
     )
 else:
     glReadPixels = missing_gl_func("glReadPixels")

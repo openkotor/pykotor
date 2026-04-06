@@ -25,7 +25,7 @@ if cffi is not None:  # pragma: no branch
             float out_min[3],
             float out_max[3]
         );
-        """
+        """,
     )
     _C_SRC = r"""
     #include <math.h>

@@ -639,7 +639,7 @@ class PyQStandardItem:
 
     def sortChildren(self, column: int, order: Qt.SortOrder = Qt.AscendingOrder) -> None:
         self._children = sorted(
-            [child for child in self._children if isinstance(child[0], PyQStandardItem)], key=lambda item: item[0].data(column), reverse=(order == Qt.DescendingOrder)
+            [child for child in self._children if isinstance(child[0], PyQStandardItem)], key=lambda item: item[0].data(column), reverse=(order == Qt.DescendingOrder),
         )
         if self._model:
             self._model.layoutChanged.emit()

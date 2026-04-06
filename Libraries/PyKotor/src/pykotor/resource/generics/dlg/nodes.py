@@ -356,7 +356,7 @@ class DLGNode:
 
             if py_type == "list" and key == "links":
                 continue  # Process links after all other fields
-            elif py_type == "str":
+            if py_type == "str":
                 setattr(node, key, actual_value)
             elif py_type == "int":
                 setattr(node, key, int(actual_value))

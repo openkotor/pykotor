@@ -1004,9 +1004,7 @@ def _extract_ncs_consti_offsets(  # noqa: C901, PLR0912
                     reader.skip(3)
                 elif opcode == 0x21:  # DESTRUCT  # noqa: PLR2004
                     reader.skip(6)
-                elif opcode == 0x0B and qualifier == 0x24:  # EQUALTT  # noqa: PLR2004
-                    reader.skip(2)
-                elif opcode == 0x0C and qualifier == 0x24:  # NEQUALTT  # noqa: PLR2004
+                elif (opcode == 0x0B and qualifier == 0x24) or (opcode == 0x0C and qualifier == 0x24):  # EQUALTT  # noqa: PLR2004
                     reader.skip(2)
                     # Other instructions have no additional data
 
@@ -1068,7 +1066,7 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
             swkotor_exists = swkotor_exe.is_file()
             swkotor2_exists = swkotor2_exe.is_file()
             print(
-                f"Game detection files: chitin_exists={chitin_exists}, swkotor_exists={swkotor_exists}, swkotor2_exists={swkotor2_exists}, path={installation_or_folder_path}"
+                f"Game detection files: chitin_exists={chitin_exists}, swkotor_exists={swkotor_exists}, swkotor2_exists={swkotor2_exists}, path={installation_or_folder_path}",
             )  # noqa: E501
 
             if swkotor2_exists:
@@ -1079,7 +1077,7 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
                 print(f"Detected K1 from files: game={game}, swkotor_exists={swkotor_exists}, chitin_exists={chitin_exists}, path={installation_or_folder_path}")
             else:
                 print(
-                    f"Could not detect game type: path={installation_or_folder_path}, chitin_exists={chitin_exists}, swkotor_exists={swkotor_exists}, swkotor2_exists={swkotor2_exists}"  # noqa: E501
+                    f"Could not detect game type: path={installation_or_folder_path}, chitin_exists={chitin_exists}, swkotor_exists={swkotor_exists}, swkotor2_exists={swkotor2_exists}",  # noqa: E501
                 )  # noqa: E501
                 print(f"Assuming K2 by default: path={installation_or_folder_path}")
                 game = Game.K2

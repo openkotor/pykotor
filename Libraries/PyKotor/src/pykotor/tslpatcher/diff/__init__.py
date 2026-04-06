@@ -66,10 +66,10 @@ def __getattr__(name: str):
 __all__ = [
     "CachedFileComparison",
     "ContextFormatter",
-    "DiffConfig",
     "DefaultFormatter",
     "DiffAnalyzerFactory",
     "DiffCache",
+    "DiffConfig",
     "DiffContext",
     "DiffEngine",
     "DiffFormat",

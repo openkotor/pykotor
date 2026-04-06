@@ -104,7 +104,7 @@ class TaskStatusWidget(QWidget):
                 width: 10px;
                 margin: 0.5px;
             }
-            """
+            """,
         )
         return progress_bar
 
@@ -127,7 +127,7 @@ class TaskStatusWidget(QWidget):
                 background-color: #3498db;
                 color: white;
             }
-            """
+            """,
         )
         return task_list
 
@@ -235,7 +235,7 @@ class TaskStatusWidget(QWidget):
                 width: 5px;
                 margin: 0.5px;
             }
-            """
+            """,
         )
         return progress_bar
 
@@ -271,7 +271,7 @@ class TaskStatusWidget(QWidget):
             QPushButton:hover {{
                 background-color: {hover_color};
             }}
-            """
+            """,
         )
         return button
 
@@ -401,7 +401,7 @@ class TaskStatusWidget(QWidget):
             QProgressBar::chunk {
                 background-color: #27ae60;
             }
-            """
+            """,
         )
 
     def _update_failed_task_widget(
@@ -422,7 +422,7 @@ class TaskStatusWidget(QWidget):
             QProgressBar::chunk {
                 background-color: #e74c3c;
             }
-            """
+            """,
         )
 
     def _update_cancelled_task_widget(
@@ -443,7 +443,7 @@ class TaskStatusWidget(QWidget):
             QProgressBar::chunk {
                 background-color: #f39c12;
             }
-            """
+            """,
         )
 
     def _update_paused_task_widget(
@@ -464,7 +464,7 @@ class TaskStatusWidget(QWidget):
             QProgressBar::chunk {
                 background-color: #3498db;
             }
-            """
+            """,
         )
 
     def _update_active_task_widget(
@@ -486,7 +486,7 @@ class TaskStatusWidget(QWidget):
             QProgressBar::chunk {
                 background-color: #2ecc71;
             }
-            """
+            """,
         )
 
     def clear_completed_tasks(self):

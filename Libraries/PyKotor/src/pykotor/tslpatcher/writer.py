@@ -241,7 +241,7 @@ class TSLPatcherINISerializer:
                 f"Serializing {len(modifications_by_type.twoda)} 2DA, {len(modifications_by_type.gff)} GFF, "
                 f"{len(modifications_by_type.tlk)} TLK, {len(modifications_by_type.ssf)} SSF, "
                 f"{len(modifications_by_type.ncs)} NCS, "
-                f"{len(modifications_by_type.install)} install files"
+                f"{len(modifications_by_type.install)} install files",
             )
 
         lines: list[str] = []
@@ -1763,7 +1763,7 @@ class IncrementalTSLPatchDataWriter:
                             row_index=-1,  # Unknown until patch time
                             token_id=token_id,
                             row_label=modifier.row_label,
-                        )
+                        ),
                     )
                     continue
 
@@ -1782,7 +1782,7 @@ class IncrementalTSLPatchDataWriter:
                             row_index=-1,  # Unknown until patch time
                             token_id=token_id,
                             row_label=modifier.row_label,
-                        )
+                        ),
                     )
 
         return change_row_targets, add_row_targets

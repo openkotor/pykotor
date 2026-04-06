@@ -10,9 +10,10 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
+from bioware_kaitai_formats.key import Key
+
 from pykotor.common.misc import ResRef
 from pykotor.common.stream import BinaryReader
-from bioware_kaitai_formats.key import Key
 from pykotor.resource.formats.key.key_data import KEY, BifEntry, KeyEntry
 from pykotor.resource.type import ResourceReader, ResourceType, ResourceWriter, autoclose
 

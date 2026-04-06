@@ -9,7 +9,6 @@ from __future__ import annotations
 import tempfile
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 
@@ -42,7 +41,7 @@ class TestQtAdapterAPICompatibility:
         app = QApplication.instance()
         if app is None:
             app = QApplication([])
-        yield app
+        return app
 
     @pytest.fixture
     def temp_dir(self):

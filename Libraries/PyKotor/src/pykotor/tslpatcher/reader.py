@@ -917,7 +917,7 @@ class ConfigReader:
                     modifiers.insert(0, modifier)
                 elif lower_iterated_value.startswith("2damemory"):
                     modifier = Memory2DAModifierGFF(
-                        identifier, dst_token_id=int(key[9:]), src_token_id=int(iterated_value[9:]), path=path
+                        identifier, dst_token_id=int(key[9:]), src_token_id=int(iterated_value[9:]), path=path,
                     )  # Assign field at path to a value or (path to field's value)
                     modifiers.insert(0, modifier)
 

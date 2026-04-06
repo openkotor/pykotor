@@ -1,5 +1,4 @@
-"""
-Enhanced diffing algorithms for KOTOR file formats.
+"""Enhanced diffing algorithms for KOTOR file formats.
 
 This module provides improved diffing capabilities for all KOTOR file formats,
 converting them to text representations for standardized diffing.
@@ -165,11 +164,10 @@ class KotorDiffer:
         try:
             if is_capsule_file(file1.name):
                 return self._diff_capsule_files(file1, file2, relative_path)
-            else:
-                return self._diff_regular_files(file1, file2, relative_path)
+            return self._diff_regular_files(file1, file2, relative_path)
         except Exception as e:
             # Return an error change
-            return FileChange(relative_path, "error", self._get_resource_type(file1), None, None, [f"Error comparing files: {str(e)}"])
+            return FileChange(relative_path, "error", self._get_resource_type(file1), None, None, [f"Error comparing files: {e!s}"])
 
     def _diff_capsule_files(self, file1: Path, file2: Path, relative_path: str) -> FileChange | None:
         """Compare capsule files (ERF, MOD, etc.)."""
@@ -229,16 +227,15 @@ class KotorDiffer:
 
         if ext in self.gff_types:
             return self._diff_gff_files(file1, file2, relative_path)
-        elif ext == "2da":
+        if ext == "2da":
             return self._diff_2da_files(file1, file2, relative_path)
-        elif ext == "tlk":
+        if ext == "tlk":
             return self._diff_tlk_files(file1, file2, relative_path)
-        elif ext == "ssf":
+        if ext == "ssf":
             return self._diff_ssf_files(file1, file2, relative_path)
-        elif ext == "lip":
+        if ext == "lip":
             return self._diff_lip_files(file1, file2, relative_path)
-        else:
-            return self._diff_by_hash(file1, file2, relative_path)
+        return self._diff_by_hash(file1, file2, relative_path)
 
     def _diff_gff_files(self, file1: Path, file2: Path, relative_path: str) -> FileChange | None:
         """Compare GFF files."""
@@ -253,8 +250,8 @@ class KotorDiffer:
             if text1 != text2:
                 diff_lines = list(
                     difflib.unified_diff(
-                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{relative_path}", tofile=f"modified/{relative_path}", lineterm=""
-                    )
+                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{relative_path}", tofile=f"modified/{relative_path}", lineterm="",
+                    ),
                 )
                 return FileChange(relative_path, "modified", "gff", text1, text2, diff_lines)
 
@@ -275,8 +272,8 @@ class KotorDiffer:
             if text1 != text2:
                 diff_lines = list(
                     difflib.unified_diff(
-                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{relative_path}", tofile=f"modified/{relative_path}", lineterm=""
-                    )
+                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{relative_path}", tofile=f"modified/{relative_path}", lineterm="",
+                    ),
                 )
                 return FileChange(relative_path, "modified", "2da", text1, text2, diff_lines)
 
@@ -297,8 +294,8 @@ class KotorDiffer:
             if text1 != text2:
                 diff_lines = list(
                     difflib.unified_diff(
-                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{relative_path}", tofile=f"modified/{relative_path}", lineterm=""
-                    )
+                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{relative_path}", tofile=f"modified/{relative_path}", lineterm="",
+                    ),
                 )
                 return FileChange(relative_path, "modified", "tlk", text1, text2, diff_lines)
 
@@ -319,8 +316,8 @@ class KotorDiffer:
             if text1 != text2:
                 diff_lines = list(
                     difflib.unified_diff(
-                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{relative_path}", tofile=f"modified/{relative_path}", lineterm=""
-                    )
+                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{relative_path}", tofile=f"modified/{relative_path}", lineterm="",
+                    ),
                 )
                 return FileChange(relative_path, "modified", "ssf", text1, text2, diff_lines)
 
@@ -341,8 +338,8 @@ class KotorDiffer:
             if text1 != text2:
                 diff_lines = list(
                     difflib.unified_diff(
-                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{relative_path}", tofile=f"modified/{relative_path}", lineterm=""
-                    )
+                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{relative_path}", tofile=f"modified/{relative_path}", lineterm="",
+                    ),
                 )
                 return FileChange(relative_path, "modified", "lip", text1, text2, diff_lines)
 
@@ -387,18 +384,17 @@ class KotorDiffer:
             # Handle different resource types
             if restype in self.gff_types:
                 return self._diff_gff_resources(res1, res2, resource_path)
-            elif restype == twoda.TwoDA.BINARY_TYPE:
+            if restype == twoda.TwoDA.BINARY_TYPE:
                 return self._diff_2da_resources(res1, res2, resource_path)
-            elif restype == tlk.TLK.BINARY_TYPE:
+            if restype == tlk.TLK.BINARY_TYPE:
                 return self._diff_tlk_resources(res1, res2, resource_path)
-            elif restype == ssf.SSF.BINARY_TYPE:
+            if restype == ssf.SSF.BINARY_TYPE:
                 return self._diff_ssf_resources(res1, res2, resource_path)
-            elif restype == lip.LIP.BINARY_TYPE:
+            if restype == lip.LIP.BINARY_TYPE:
                 return self._diff_lip_resources(res1, res2, resource_path)
-            else:
-                # For unsupported types, fall back to hash comparison
-                if res1.data() != res2.data():
-                    return FileChange(resource_path, "modified", restype.name)
+            # For unsupported types, fall back to hash comparison
+            if res1.data() != res2.data():
+                return FileChange(resource_path, "modified", restype.name)
 
             return None
         except Exception:
@@ -420,8 +416,8 @@ class KotorDiffer:
             if text1 != text2:
                 diff_lines = list(
                     difflib.unified_diff(
-                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{resource_path}", tofile=f"modified/{resource_path}", lineterm=""
-                    )
+                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{resource_path}", tofile=f"modified/{resource_path}", lineterm="",
+                    ),
                 )
                 return FileChange(resource_path, "modified", "gff", text1, text2, diff_lines)
 
@@ -445,8 +441,8 @@ class KotorDiffer:
             if text1 != text2:
                 diff_lines = list(
                     difflib.unified_diff(
-                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{resource_path}", tofile=f"modified/{resource_path}", lineterm=""
-                    )
+                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{resource_path}", tofile=f"modified/{resource_path}", lineterm="",
+                    ),
                 )
                 return FileChange(resource_path, "modified", "2da", text1, text2, diff_lines)
 
@@ -470,8 +466,8 @@ class KotorDiffer:
             if text1 != text2:
                 diff_lines = list(
                     difflib.unified_diff(
-                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{resource_path}", tofile=f"modified/{resource_path}", lineterm=""
-                    )
+                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{resource_path}", tofile=f"modified/{resource_path}", lineterm="",
+                    ),
                 )
                 return FileChange(resource_path, "modified", "tlk", text1, text2, diff_lines)
 
@@ -495,8 +491,8 @@ class KotorDiffer:
             if text1 != text2:
                 diff_lines = list(
                     difflib.unified_diff(
-                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{resource_path}", tofile=f"modified/{resource_path}", lineterm=""
-                    )
+                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{resource_path}", tofile=f"modified/{resource_path}", lineterm="",
+                    ),
                 )
                 return FileChange(resource_path, "modified", "ssf", text1, text2, diff_lines)
 
@@ -520,8 +516,8 @@ class KotorDiffer:
             if text1 != text2:
                 diff_lines = list(
                     difflib.unified_diff(
-                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{resource_path}", tofile=f"modified/{resource_path}", lineterm=""
-                    )
+                        text1.splitlines(keepends=True), text2.splitlines(keepends=True), fromfile=f"original/{resource_path}", tofile=f"modified/{resource_path}", lineterm="",
+                    ),
                 )
                 return FileChange(resource_path, "modified", "lip", text1, text2, diff_lines)
 

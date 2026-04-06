@@ -349,7 +349,6 @@ def create_panda3d_controller(mdl_controller: MDLController) -> Panda3DAnimation
 
     References:
     ----------
-
         Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py:148-206
 
     """

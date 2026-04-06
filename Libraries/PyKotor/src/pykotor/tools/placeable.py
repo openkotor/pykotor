@@ -89,6 +89,7 @@ def extract_placeable_walkmesh(
     References:
     ----------
         Observed retail KotOR I and KotOR II behavior.
+
     Args:
     ----
         utp_data: UTP placeable data bytes

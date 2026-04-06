@@ -271,12 +271,11 @@ class ThumbnailIconDelegate(QStyledItemDelegate):
                 self._icon_size + 16,
                 self._icon_size + text_height + 16,
             )
-        else:
-            # List/details view: icon beside text
-            return QSize(
-                self._icon_size + 200,
-                max(self._icon_size + 4, text_height + 4),
-            )
+        # List/details view: icon beside text
+        return QSize(
+            self._icon_size + 200,
+            max(self._icon_size + 4, text_height + 4),
+        )
 
 
 class ThumbnailListView(QListView):

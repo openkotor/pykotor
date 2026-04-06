@@ -134,7 +134,7 @@ def _create_layer(
                 height=frame.height,
                 tpc_format=TPCTextureFormat.RGBA,
                 data=bytearray(frame.data),
-            )
+            ),
         ]
     return layer
 

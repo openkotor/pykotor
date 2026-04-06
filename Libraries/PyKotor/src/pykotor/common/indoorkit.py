@@ -124,19 +124,16 @@ class KitDoor:
     @property
     def utd_k1(self) -> UTD:  # noqa: D401
         """Alias for `utdK1`."""
-
         return self.utdK1
 
     @property
     def utd_k2(self) -> UTD:  # noqa: D401
         """Alias for `utdK2`."""
-
         return self.utdK2
 
     @property
     def utd(self) -> UTD:  # noqa: D401
         """Canonical single-blueprint alias (Toolset compatibility)."""
-
         return self.utdK1
 
 

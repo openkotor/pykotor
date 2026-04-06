@@ -13,7 +13,7 @@ import qtpy
 
 from qtpy.QtCore import QDir, QDirIterator, QFile, QTextStream, Qt
 from qtpy.QtGui import QColor, QFont, QPalette
-from qtpy.QtWidgets import QApplication, QStyle, QStyleFactory
+from qtpy.QtWidgets import QApplication, QStyleFactory
 
 from utility.gui.qt.widgets.theme.theme_apply import (
     apply_style as _apply_style,
@@ -24,7 +24,6 @@ from utility.gui.qt.widgets.theme.theme_catalog import build_builtin_theme_confi
 from utility.gui.qt.widgets.theme.theme_types import ThemeSources
 
 if TYPE_CHECKING:
-    from qtpy.QtCore import QObject, QPoint
     from qtpy.QtGui import QMouseEvent
     from qtpy.QtWidgets import QLayout, QWidget
 
@@ -164,7 +163,7 @@ class ThemeManager:
         if not theme_path or not theme_path.exists():
             return None
         try:
-            with open(theme_path, "r", encoding="utf-8") as f:
+            with open(theme_path, encoding="utf-8") as f:
                 theme_data = json.load(f)
         except Exception:
             return None

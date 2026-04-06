@@ -410,7 +410,7 @@ class QFileDialogExtended(AdapterQFileDialog):
         # If the ribbons implementation supports a columns_callback attribute,
         # set it after construction so the behaviour is preserved when available.
         try:
-            setattr(self.ribbons, "columns_callback", self.dispatcher.show_set_default_columns_dialog)
+            self.ribbons.columns_callback = self.dispatcher.show_set_default_columns_dialog
         except Exception:
             pass
         self.ribbons.setObjectName("ribbonsWidget")
@@ -1153,14 +1153,14 @@ class QFileDialogExtended(AdapterQFileDialog):
     def setNameFilter(self, filter: str | None) -> None:  # noqa: A002
         super().setNameFilter(self._none_to_empty(filter))
 
-    def proxyModel(self) -> "QAbstractProxyModel | None":
+    def proxyModel(self) -> QAbstractProxyModel | None:
         """Returns the proxy model used by the file dialog.
 
         Matches all stub signatures.
         """
         return super().proxyModel()
 
-    def setProxyModel(self, model: "QAbstractProxyModel | None") -> None:
+    def setProxyModel(self, model: QAbstractProxyModel | None) -> None:
         """Sets the proxy model used by the file dialog.
 
         Matches all stub signatures.
@@ -1252,7 +1252,7 @@ class QFileDialogExtended(AdapterQFileDialog):
         supportedSchemes: Iterable[str | None] = (),
     ) -> QUrl:  # noqa: E501
         return AdapterQFileDialog.getExistingDirectoryUrl(
-            parent, QFileDialogExtended._none_to_empty(caption), directory, options, QFileDialogExtended._filter_none_from_iterable(supportedSchemes)
+            parent, QFileDialogExtended._none_to_empty(caption), directory, options, QFileDialogExtended._filter_none_from_iterable(supportedSchemes),
         )
 
     @staticmethod

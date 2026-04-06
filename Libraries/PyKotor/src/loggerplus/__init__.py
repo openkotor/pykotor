@@ -195,8 +195,7 @@ _worker_task: asyncio.Task | None = None
 
 
 def _ensure_async_worker(logger: logging.Logger) -> bool:
-    """
-    Ensure an asyncio worker is running to drain the logging queue.
+    """Ensure an asyncio worker is running to drain the logging queue.
 
     Returns True if async path is active, False to fall back to synchronous logging.
     """
@@ -331,7 +330,7 @@ def _dir_requires_admin(
 
 
 def _delete_any_file_or_folder(  # noqa: C901
-    path: os.PathLike | str, *, ignore_errors: bool = True, missing_ok: bool = True
+    path: os.PathLike | str, *, ignore_errors: bool = True, missing_ok: bool = True,
 ):
     path_obj = Path(path)
     isdir_func = _safe_isdir if ignore_errors else Path.is_dir
@@ -708,8 +707,8 @@ if __name__ == "__main__":
 
 __all__ = [
     "RobustLogger",
-    "get_root_logger",
-    "get_log_directory",
     "SafeEncodingLogger",
     "UTF8StreamWrapper",
+    "get_log_directory",
+    "get_root_logger",
 ]

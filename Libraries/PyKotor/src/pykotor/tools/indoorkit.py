@@ -282,7 +282,7 @@ def _load_kits_internal(
     return kits, missing_files
 
 
-def load_kits(path: "os.PathLike | str") -> list[Kit]:
+def load_kits(path: os.PathLike | str) -> list[Kit]:
     """Load Holocron indoor kits from disk (headless).
 
     Expected layout matches Holocron Toolset kits:

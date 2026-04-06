@@ -323,7 +323,7 @@ def investigate_module_structure(
                 {
                     "model": model_name,
                     "position": (room.position.x, room.position.y, room.position.z),
-                }
+                },
             )
 
             # Check for MDL/MDX/WOK

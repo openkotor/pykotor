@@ -91,7 +91,7 @@ def askquestion(title: str, message: str, **options) -> str:
                 check=True,
                 capture_output=True,
             )
-            return "button returned:Yes" in result.stdout.decode() and "yes" or "no"
+            return ("button returned:Yes" in result.stdout.decode() and "yes") or "no"
     else:
         _get_tk_root()
         return messagebox.askquestion(title, message, **options)

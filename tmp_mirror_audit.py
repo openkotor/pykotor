@@ -1,4 +1,5 @@
-import os, re
+import os
+import re
 
 WIKI = r"c:\GitHub\PyKotor\Tools\HolocronToolset\src\toolset\help\wiki"
 

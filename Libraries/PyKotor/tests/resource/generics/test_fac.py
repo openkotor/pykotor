@@ -27,7 +27,6 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
-from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.gff import read_gff
 from pykotor.resource.generics.fac import FAC, FACFaction, FACReputation, construct_fac, dismantle_fac

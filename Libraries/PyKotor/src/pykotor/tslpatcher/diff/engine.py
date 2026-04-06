@@ -2501,7 +2501,7 @@ def diff_directories(
                     ext=ext,
                     left_exists=True,
                     right_exists=True,
-                )
+                ),
             )
 
     # Report all missing files after comparisons
@@ -2531,7 +2531,7 @@ def diff_directories(
                         ext=ext,
                         left_exists=False,
                         right_exists=True,
-                    )
+                    ),
                 )
         else:
             file2_path = dir2 / rel_path
@@ -2547,7 +2547,7 @@ def diff_directories(
                         ext=ext,
                         left_exists=True,
                         right_exists=False,
-                    )
+                    ),
                 )
         is_same_result = False
 

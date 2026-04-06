@@ -168,7 +168,7 @@ class CustomListView(QListView):
         viewport_pos: QPoint = view_port.mapFromGlobal(
             event.globalPos()  # type: ignore[attr-defined]
             if qtpy.QT5
-            else event.globalPosition().toPoint()
+            else event.globalPosition().toPoint(),
         )
         index: QModelIndex | None = self.indexAt(viewport_pos)
         if index is None or not index.isValid():

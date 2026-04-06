@@ -568,7 +568,7 @@ if os.name == "nt":
                         "length": lock_info.Length,
                         "process_id": lock_info.ProcessId,
                         "flags": lock_info.Flags,
-                    }
+                    },
                 )
 
             return cls(locks=locks)
@@ -1245,7 +1245,7 @@ if os.name == "nt":
             # Call DeviceIoControl to get the file record
             bytes_returned = wintypes.DWORD(0)
             success = cls.device_io_control(
-                handle, FSCTL.FSCTL_GET_NTFS_FILE_RECORD, input_buffer, ctypes.sizeof(input_buffer), output_buffer, output_buffer_size, ctypes.byref(bytes_returned), None
+                handle, FSCTL.FSCTL_GET_NTFS_FILE_RECORD, input_buffer, ctypes.sizeof(input_buffer), output_buffer, output_buffer_size, ctypes.byref(bytes_returned), None,
             )
 
             if not success:
@@ -1294,7 +1294,7 @@ if os.name == "nt":
             usn_journal_data = cls.USN_JOURNAL_DATA_V0()
             bytes_returned = wintypes.DWORD(0)
             cls.device_io_control(
-                handle, FSCTL.FSCTL_QUERY_USN_JOURNAL, None, 0, ctypes.byref(usn_journal_data), ctypes.sizeof(cls.USN_JOURNAL_DATA_V0), ctypes.byref(bytes_returned), None
+                handle, FSCTL.FSCTL_QUERY_USN_JOURNAL, None, 0, ctypes.byref(usn_journal_data), ctypes.sizeof(cls.USN_JOURNAL_DATA_V0), ctypes.byref(bytes_returned), None,
             )
 
             mft_enum_data = cls.MFT_ENUM_DATA_V0(FileReferenceNumber=0, NextFileReferenceNumber=usn_journal_data.NextUsn)
@@ -1385,7 +1385,7 @@ if os.name == "nt":
                 parent_file_reference_number=FileReference.from_bytes(data[16:24]),
                 usn=int.from_bytes(data[24:32], "little"),
                 timestamp=datetime.fromtimestamp(
-                    int.from_bytes(data[32:40], "little") / 10**7
+                    int.from_bytes(data[32:40], "little") / 10**7,
                 ),  # Assuming timestamp is in 100-nanosecond intervals since 1601-01-01  # noqa: DTZ006
                 reason=UsnReason(int.from_bytes(data[40:44], "little")),
                 source_info=SourceInfo(int.from_bytes(data[44:48], "little")),
@@ -1467,7 +1467,7 @@ if os.name == "nt":
                         used_space=int.from_bytes(data[offset + 24 : offset + 32], "little"),
                         sid_length=int.from_bytes(data[offset + 32 : offset + 36], "little"),
                         sid=sid,
-                    )
+                    ),
                 )
 
                 offset += entry_length
@@ -1668,7 +1668,7 @@ if os.name == "nt":
 
             try:
                 reparse_point_information = WindowsDataClass.device_io_control(
-                    handle, FSCTL.FSCTL_GET_REPARSE_POINT, err_msg=f"Failed to retrieve reparse point information for {filepath}"
+                    handle, FSCTL.FSCTL_GET_REPARSE_POINT, err_msg=f"Failed to retrieve reparse point information for {filepath}",
                 )
                 assert not isinstance(reparse_point_information, HRESULT)
 
@@ -1729,7 +1729,7 @@ if os.name == "nt":
                 # assert object_id, f"could not retrieve object id from device_io_control. (object_id: {object_id}, type: {object_id.__class__.__name__})"
 
                 reparse_point_information = cls.device_io_control(
-                    handle, FSCTL.FSCTL_GET_REPARSE_POINT, err_msg=f"Failed to retrieve reparse point information for {filepath}"
+                    handle, FSCTL.FSCTL_GET_REPARSE_POINT, err_msg=f"Failed to retrieve reparse point information for {filepath}",
                 )
                 usn_journal_data = cls.device_io_control(handle, FSCTL.FSCTL_READ_FILE_USN_DATA, err_msg=f"Failed to retrieve USN journal information for {filepath}")
                 quota_information = cls.device_io_control(handle, FSCTL.FSCTL_GET_QUOTA_INFORMATION, err_msg=f"Failed to retrieve quota information for {filepath}")
@@ -1793,7 +1793,7 @@ if os.name == "nt":
         def from_path(cls, filepath: os.PathLike | str) -> Self:
             filepath_str = str(WindowsPath(filepath))
             handle: wintypes.HANDLE = cls.get_file_handle_win32(
-                filepath_str, flags=FileFlags.FILE_FLAG_BACKUP_SEMANTICS, err_msg=f"Failed to open file handle for {filepath_str}"
+                filepath_str, flags=FileFlags.FILE_FLAG_BACKUP_SEMANTICS, err_msg=f"Failed to open file handle for {filepath_str}",
             )
 
             buffer: Array[c_char] = create_string_buffer(1024)

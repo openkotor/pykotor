@@ -329,7 +329,7 @@ class SearchFilterWidget(QWidget):
             self._on_history_up()
             event.accept()
             return
-        elif event.key() == Qt.Key.Key_Down:
+        if event.key() == Qt.Key.Key_Down:
             self._on_history_down()
             event.accept()
             return

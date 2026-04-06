@@ -9,7 +9,6 @@ should be handled in the respective backend modules.
 
 References:
 ----------
-
         Libraries/PyKotor/src/pykotor/common/geometry_utils.py - Geometry utilities
 
 """
@@ -79,7 +78,7 @@ class VertexFormatRequirements:
         )
 
 
-def get_node_type_priority(mdl_node: "MDLNode") -> int:
+def get_node_type_priority(mdl_node: MDLNode) -> int:
     """Get node type priority for conversion order.
 
     Some node types (like skin, dangly, saber) also have mesh data, so we need
@@ -118,7 +117,7 @@ def get_node_type_priority(mdl_node: "MDLNode") -> int:
     return 0  # Dummy node
 
 
-def get_node_converter_type(mdl_node: "MDLNode") -> str:
+def get_node_converter_type(mdl_node: MDLNode) -> str:
     """Get the converter type string for an MDL node.
 
     Args:

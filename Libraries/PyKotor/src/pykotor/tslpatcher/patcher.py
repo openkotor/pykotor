@@ -199,7 +199,7 @@ class ModInstaller:
             tslrcm_omitted_rims: tuple[Literal["702KOR"], Literal["401DXN"]] = ("702KOR", "401DXN")
             if module_root.upper() not in tslrcm_omitted_rims and is_rim_file(output_container_path):
                 self.log.add_warning(
-                    f"This mod is patching RIM file Modules/{output_container_path.name}!\nPatching RIMs is highly incompatible, not recommended, and widely considered bad practice. Please request the mod developer to fix this."
+                    f"This mod is patching RIM file Modules/{output_container_path.name}!\nPatching RIMs is highly incompatible, not recommended, and widely considered bad practice. Please request the mod developer to fix this.",
                 )  # noqa: E501
             if not output_container_path.is_file():
                 if is_mod_file(output_container_path):
@@ -207,7 +207,7 @@ class ModInstaller:
                         f"IMPORTANT! The module at path '{output_container_path}' did not exist, building one in the 'Modules' folder immediately from the following files:"  # noqa: ISC003
                         + f"\n    Modules/{module_root}.rim"
                         + f"\n    Modules/{module_root}_s.rim"
-                        + (f"\n    Modules/{module_root}_dlg.erf" if self.game is not None and self.game.is_k2() else "")
+                        + (f"\n    Modules/{module_root}_dlg.erf" if self.game is not None and self.game.is_k2() else ""),
                     )
                     try:
                         rim_to_mod(output_container_path, self.game_path / "Modules", module_root, self.game)

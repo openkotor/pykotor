@@ -1,13 +1,13 @@
 """NSS (NWScript) parser: PLY yacc grammar and AST construction."""
 
 from __future__ import annotations
-from pykotor.resource.formats._base import BiowareResource
 
 from pathlib import Path
 from typing import TYPE_CHECKING, NoReturn, Sequence, cast
 
 from ply import yacc
 
+from pykotor.resource.formats._base import BiowareResource
 from pykotor.resource.formats.ncs.compiler.classes import (
     AdditionAssignment,
     Assignment,

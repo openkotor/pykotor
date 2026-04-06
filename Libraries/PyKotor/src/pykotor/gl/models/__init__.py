@@ -26,7 +26,7 @@ __all__ = [
     "VertexFormatRequirements",
     "get_node_converter_type",
     "get_node_type_priority",
-    "should_reverse_winding_order",
     "gl_load_mdl",
     "gl_load_stitched_model",
+    "should_reverse_winding_order",
 ]

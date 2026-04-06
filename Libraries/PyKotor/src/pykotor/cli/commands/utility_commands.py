@@ -154,12 +154,11 @@ def _diff_archives_or_directories(
             if output_mode == OutputMode.FULL:
                 print(msg)
             return 0
-        else:
-            msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
-            diff_logger.info(msg)
-            if output_mode == OutputMode.FULL:
-                print(msg)
-            return 1
+        msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
+        diff_logger.info(msg)
+        if output_mode == OutputMode.FULL:
+            print(msg)
+        return 1
 
     except Exception:
         Logger().exception("Error comparing archives/directories")
@@ -468,33 +467,32 @@ def cmd_diff(
                 diff_logger,
                 output_mode,
             )
+        # Both are regular files - direct comparison
+        ext = path1.suffix.casefold()[1:] if path1.suffix else ""
+        context = DiffContext(path1, path2, ext)
+
+        result = diff_data(
+            path1,
+            path2,
+            context,
+            log_func=diff_logger.info,
+            compare_hashes=True,
+            format_type=format_type,
+        )
+
+        # Add summary message in full mode only
+        if result:
+            msg = f"'{args.path1}' MATCHES '{args.path2}'"
+            diff_logger.info(msg)
+            if output_mode == OutputMode.FULL:
+                print(msg)
         else:
-            # Both are regular files - direct comparison
-            ext = path1.suffix.casefold()[1:] if path1.suffix else ""
-            context = DiffContext(path1, path2, ext)
+            msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
+            diff_logger.info(msg)
+            if output_mode == OutputMode.FULL:
+                print(msg)
 
-            result = diff_data(
-                path1,
-                path2,
-                context,
-                log_func=diff_logger.info,
-                compare_hashes=True,
-                format_type=format_type,
-            )
-
-            # Add summary message in full mode only
-            if result:
-                msg = f"'{args.path1}' MATCHES '{args.path2}'"
-                diff_logger.info(msg)
-                if output_mode == OutputMode.FULL:
-                    print(msg)
-            else:
-                msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
-                diff_logger.info(msg)
-                if output_mode == OutputMode.FULL:
-                    print(msg)
-
-            return 0 if result else 1
+        return 0 if result else 1
 
     except Exception as e:
         logger.exception(f"Error generating diff: {e.__class__.__name__}: {e}")

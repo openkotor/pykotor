@@ -20,7 +20,7 @@ from pykotor.gl import (
     vec4,
 )
 from pykotor.gl.compat import has_pyopengl, missing_constant, missing_gl_func, safe_gl_error_module
-from utility.common.geometry import Vector3, Vector4
+from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
     from pykotor.gl.scene import Scene
@@ -31,7 +31,9 @@ gl_error = safe_gl_error_module()
 
 
 if HAS_PYOPENGL:
-    from OpenGL import error as gl_error  # type: ignore[no-redef]  # pyright: ignore[reportMissingImports]
+    from OpenGL import (
+        error as gl_error,  # type: ignore[no-redef]  # pyright: ignore[reportMissingImports]
+    )
     from OpenGL.GL import glGenBuffers, glGenVertexArrays, glVertexAttribPointer
     from OpenGL.GL.shaders import GL_FALSE  # pyright: ignore[reportMissingImports]
     from OpenGL.raw.GL.ARB.tessellation_shader import (

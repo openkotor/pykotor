@@ -478,7 +478,7 @@ class Installation:
                                         stack.append(entry.path)
                                     elif entry.is_file(follow_symlinks=False):
                                         resource: FileResource | None = self._build_single_resource(
-                                            entry.path, size=entry.stat().st_size
+                                            entry.path, size=entry.stat().st_size,
                                         )
                                         if resource is not None:
                                             resources_list.append(resource)
@@ -894,7 +894,7 @@ class Installation:
                 (
                     local_virtual_store.joinpath("Program Files", "LucasArts", game_folder2, "saves"),
                     local_virtual_store.joinpath("Program Files (x86)", "LucasArts", game_folder2, "saves"),
-                )
+                ),
             )
 
         elif system == "Darwin":  # TODO
@@ -903,9 +903,9 @@ class Installation:
                 (
                     home.joinpath("Library", "Application Support", "Star Wars Knights of the Old Republic II", "saves"),
                     home.joinpath(
-                        "Library", "Containers", "com.aspyr.kotor2.appstore", "Data", "Library", "Application Support", "Star Wars Knights of the Old Republic II", "saves"
+                        "Library", "Containers", "com.aspyr.kotor2.appstore", "Data", "Library", "Application Support", "Star Wars Knights of the Old Republic II", "saves",
                     ),
-                )
+                ),
             )
 
         elif system == "Linux":  # TODO(th3w1zard1): Linux save paths
@@ -1544,11 +1544,11 @@ class Installation:
 
     @overload
     def location(
-        self, file: os.PathLike | str, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None
+        self, file: os.PathLike | str, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None,
     ) -> list[LocationResult]: ...
     @overload
     def location(
-        self, query: ResourceIdentifier, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None
+        self, query: ResourceIdentifier, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None,
     ) -> list[LocationResult]: ...
     @overload
     def location(
@@ -1634,7 +1634,7 @@ class Installation:
                 query = resname
             else:
                 raise TypeError(
-                    f"Invalid argument at position 0. Expected filename or filepath (os.PathLike | str), got {resname} ({resname!r}) of type {resname.__class__.__name__}"
+                    f"Invalid argument at position 0. Expected filename or filepath (os.PathLike | str), got {resname} ({resname!r}) of type {resname.__class__.__name__}",
                 )
         elif isinstance(restype, ResourceType):
             assert isinstance(resname, (str, ResRef)), f"resname must be a string or ResRef, got {resname} ({resname!r}) of type {resname.__class__.__name__}"
@@ -2423,7 +2423,7 @@ class Installation:
         folders = [] if folders is None else folders
         sound_formats: tuple[ResourceType, ...] = (ResourceType.WAV, ResourceType.MP3)
 
-        results: CaseInsensitiveDict[ResourceResult | None] = CaseInsensitiveDict({resname: None for resname in resnames_set})
+        results: CaseInsensitiveDict[ResourceResult | None] = CaseInsensitiveDict(dict.fromkeys(resnames_set))
         remaining: set[str] = {name.casefold() for name in resnames_set}
 
         def build_result(resource: FileResource) -> ResourceResult:

@@ -124,13 +124,13 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
         sizing_menu = header_menu.addMenu("Sizing")
         self._add_simple_action(sizing_menu, "Reset Default Section Size", self.header().resetDefaultSectionSize)
         self._add_menu_action(
-            sizing_menu, "Set Maximum Section Size", self.header().maximumSectionSize, self.header().setMaximumSectionSize, "maximumSectionSize", param_type=int
+            sizing_menu, "Set Maximum Section Size", self.header().maximumSectionSize, self.header().setMaximumSectionSize, "maximumSectionSize", param_type=int,
         )  # noqa: E501
         self._add_menu_action(
-            sizing_menu, "Set Minimum Section Size", self.header().minimumSectionSize, self.header().setMinimumSectionSize, "minimumSectionSize", param_type=int
+            sizing_menu, "Set Minimum Section Size", self.header().minimumSectionSize, self.header().setMinimumSectionSize, "minimumSectionSize", param_type=int,
         )  # noqa: E501
         self._add_menu_action(
-            sizing_menu, "Set Default Section Size", self.header().defaultSectionSize, self.header().setDefaultSectionSize, "defaultSectionSize", param_type=int
+            sizing_menu, "Set Default Section Size", self.header().defaultSectionSize, self.header().setDefaultSectionSize, "defaultSectionSize", param_type=int,
         )  # noqa: E501
         self._add_menu_action(
             sizing_menu,

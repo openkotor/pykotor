@@ -26,7 +26,6 @@ from pykotor.tools.validation import (
     get_installation_summary,
     get_module_referenced_resources,
     investigate_module_structure,
-    validate_installation,
 )
 
 if TYPE_CHECKING:

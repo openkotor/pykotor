@@ -412,7 +412,7 @@ class StrRefReferenceCache:
             f"\nStrRef Cache Summary:\n"
             f"  • {stats['unique_strrefs']} unique StrRefs cached\n"
             f"  • {stats['total_references']} total StrRef references found\n"
-            f"  • {stats['files_with_strrefs']} files contain StrRef references"
+            f"  • {stats['files_with_strrefs']} files contain StrRef references",
         )
 
     def to_dict(self) -> dict[str, list[dict[str, str | list[str]]]]:
@@ -1120,9 +1120,7 @@ def find_strref_references(
                         reader.skip(3)
                     elif opcode == 0x21:  # DESTRUCT  # noqa: PLR2004
                         reader.skip(6)
-                    elif opcode == 0x0B and qualifier == 0x24:  # EQUALTT  # noqa: PLR2004
-                        reader.skip(2)
-                    elif opcode == 0x0C and qualifier == 0x24:  # NEQUALTT  # noqa: PLR2004
+                    elif (opcode == 0x0B and qualifier == 0x24) or (opcode == 0x0C and qualifier == 0x24):  # EQUALTT  # noqa: PLR2004
                         reader.skip(2)
 
             if locations:
@@ -1313,7 +1311,7 @@ def find_tlk_entry_references(
                         if not stripped_cell.isdigit():
                             if stripped_cell and stripped_cell not in ("****", "*****", "-1"):
                                 RobustLogger().warning(
-                                    f"column '{column_name}' rowindex {i} in '{filename_2da}' is invalid, expected a stringref number. Instead got '{cell}'"
+                                    f"column '{column_name}' rowindex {i} in '{filename_2da}' is invalid, expected a stringref number. Instead got '{cell}'",
                                 )
                             continue
                         if int(stripped_cell) == query_stringref:
@@ -1460,9 +1458,7 @@ def find_tlk_entry_references(
                         reader.skip(3)
                     elif opcode == 0x21:  # DESTRUCT  # noqa: PLR2004
                         reader.skip(6)
-                    elif opcode == 0x0B and qualifier == 0x24:  # EQUALTT  # noqa: PLR2004
-                        reader.skip(2)
-                    elif opcode == 0x0C and qualifier == 0x24:  # NEQUALTT  # noqa: PLR2004
+                    elif (opcode == 0x0B and qualifier == 0x24) or (opcode == 0x0C and qualifier == 0x24):  # EQUALTT  # noqa: PLR2004
                         reader.skip(2)
                         # Other instructions have no additional data
 

@@ -250,6 +250,7 @@ class NCS(ComparableMixin):
     References:
     ----------
         Observed in retail KotOR I and TSL..
+
     Attributes:
     ----------
         instructions: List of NCSInstruction objects making up the program
@@ -625,6 +626,7 @@ class NCSInstruction(ComparableMixin):
     References:
     ----------
         Observed in retail KotOR I and TSL..
+
     Attributes:
     ----------
         ins_type: Instruction type (opcode + qualifier combination)
@@ -882,5 +884,5 @@ class NCSOptimizer(BiowareResource, ABC):
 class NCSCompiler(BiowareResource, ABC):
     @abstractmethod
     def compile_script(
-        self, source_file: os.PathLike | str, output_file: os.PathLike | str, game: Game | int, timeout: int = 5, *, debug: bool = False
+        self, source_file: os.PathLike | str, output_file: os.PathLike | str, game: Game | int, timeout: int = 5, *, debug: bool = False,
     ) -> tuple[str, str]: ...

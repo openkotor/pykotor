@@ -456,12 +456,10 @@ def create_case_insensitive_pathlib_class(cls: type[CaseAwarePath]) -> None:
         "create_case_insensitive_pathlib_class()",
         "CaseAwarePath now manages compatibility behavior internally.",
     )
-    return None
 
 
 def _deprecated_noop(endpoint: str, replacement: str) -> None:
     _warn_deprecated_endpoint(endpoint, replacement)
-    return None
 
 
 def _cleanup_fuse_mounts() -> None:

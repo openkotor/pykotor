@@ -1,7 +1,6 @@
 """NSS compiler AST and helpers: CompileError, expression/statement nodes, type helpers."""
 
 from __future__ import annotations
-from pykotor.resource.formats._base import BiowareResource
 
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -9,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple, cast
 
 from pykotor.common.script import DataType
+from pykotor.resource.formats._base import BiowareResource
 from pykotor.resource.formats.ncs import NCS, NCSInstruction, NCSInstructionType
 from pykotor.tools.path import CaseAwarePath
 
@@ -763,7 +763,7 @@ class FunctionDefinition(TopLevelObject):
                 for i, (def_param, proto_param) in enumerate(zip(self.parameters, prototype.parameters)):
                     if def_param.data_type != proto_param.data_type:
                         details.append(
-                            f"Parameter {i + 1} type mismatch: prototype has {proto_param.data_type.builtin.name}, definition has {def_param.data_type.builtin.name}"
+                            f"Parameter {i + 1} type mismatch: prototype has {proto_param.data_type.builtin.name}, definition has {def_param.data_type.builtin.name}",
                         )
 
             msg = f"Function '{name}' definition does not match its prototype\n  " + "\n  ".join(details)
@@ -2308,13 +2308,12 @@ class ExpressionStatement(Statement):
             else:
                 # temp_stack decreased, which means the expression already removed its result
                 pass
-        else:
-            # Void expression - check if temp_stack increased (shouldn't happen, but clean up if it did)
-            if temp_stack_after > temp_stack_before:
-                # Something was left on the stack (e.g., from nested function call arguments)
-                cleanup_size = temp_stack_after - temp_stack_before
-                ncs.add(NCSInstructionType.MOVSP, args=[-cleanup_size])
-                block.temp_stack -= cleanup_size
+        # Void expression - check if temp_stack increased (shouldn't happen, but clean up if it did)
+        elif temp_stack_after > temp_stack_before:
+            # Something was left on the stack (e.g., from nested function call arguments)
+            cleanup_size = temp_stack_after - temp_stack_before
+            ncs.add(NCSInstructionType.MOVSP, args=[-cleanup_size])
+            block.temp_stack -= cleanup_size
             # else: no cleanup needed - void expression with balanced stack
 
 

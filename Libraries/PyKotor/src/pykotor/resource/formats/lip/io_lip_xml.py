@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import kaitaistruct
-
 # Try to import defusedxml, fallback to ET if not available
 from xml.etree import ElementTree as ET
+
+import kaitaistruct
 
 try:
     from defusedxml.ElementTree import fromstring
@@ -17,6 +17,7 @@ except (ImportError, ModuleNotFoundError):
     fromstring = ET.fromstring
 
 from bioware_kaitai_formats.lip_xml import LipXml
+
 from pykotor.resource.formats.lip.lip_data import LIP, LIPShape
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 from utility.misc import indent

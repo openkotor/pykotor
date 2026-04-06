@@ -91,7 +91,7 @@ if __name__ == "__main__":
             # Game selection row
             _game_label = DirectLabel(text="Game", scale=label_scale, pos=(-0.85, 0, 0.3), parent=content_frame, text_align=TextNode.ALeft, text_fg=(0.9, 0.9, 0.9, 1))
 
-            game_options = [game.name for game in paths.keys()]
+            game_options = [game.name for game in paths]
             self.game_menu = DirectOptionMenu(
                 text="Select Game",
                 scale=menu_scale,
@@ -235,7 +235,7 @@ if __name__ == "__main__":
                     self.selected_game,
                     self.selected_installation_path and self.selected_installation_path != "No installations found",
                     self.selected_level and self.selected_level != "No levels found",
-                ]
+                ],
             ):
                 self.should_exit = True
 

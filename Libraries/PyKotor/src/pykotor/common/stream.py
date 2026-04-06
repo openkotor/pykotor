@@ -291,7 +291,7 @@ if __name__ == "__main__":
                     total_instantiation_time,
                     total_operation_time,
                     total_time,
-                ]
+                ],
             )
 
         # Sort by total performance (fastest first)

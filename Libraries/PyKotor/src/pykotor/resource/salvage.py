@@ -144,7 +144,7 @@ def validate_capsule(
 
 
 def validate_resource(  # noqa: C901, PLR0911, PLR0912
-    resource: FileResource | ERFResource | RIMResource, *, strict: bool = False, game: Game | None = None, should_raise: bool = False
+    resource: FileResource | ERFResource | RIMResource, *, strict: bool = False, game: Game | None = None, should_raise: bool = False,
 ) -> bytes | bytearray | None:
     """Attempts to validate a kotor resource by loading into memory.
 

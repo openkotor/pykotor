@@ -407,8 +407,7 @@ class RobustAddressBar(QWidget):
             if child_path.is_dir():
                 icon = self.fs_model.fileIcon(child_index)
                 contents.append((child_path.name, child_path, icon))
-        else:
-            contents = self._scan_directory(path)
+        contents = self._scan_directory(path)
         return contents
 
     def _scan_directory(self, path: Path) -> list[tuple[str, Path, QIcon]]:

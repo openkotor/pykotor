@@ -854,8 +854,7 @@ if __name__ == "__main__":
     test_menu_actions_dispatcher = ActionsDispatcher(test_fs_model, test_file_dialog, test_file_actions_executor)
 
     def on_task_failed(task_id: str, error: Exception):
-        """
-        Handle task failure by logging the error and displaying an error dialog.
+        """Handle task failure by logging the error and displaying an error dialog.
 
         Args:
             task_id: The unique identifier of the failed task.

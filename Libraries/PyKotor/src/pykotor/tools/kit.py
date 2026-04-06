@@ -733,14 +733,7 @@ def extract_kit(
     # Also extract all TPC/TGA files from RIM that might be textures/lightmaps
     # Some kits (like jedienclave) only have textures/lightmaps without components
     for (resname, restype), data in all_resources.items():
-        if restype == ResourceType.TPC:
-            # Determine if it's a texture or lightmap based on naming
-            resname_lower = resname.lower()
-            if "_lm" in resname_lower or resname_lower.endswith("_lm"):
-                all_lightmap_names.add(resname)
-            else:
-                all_texture_names.add(resname)
-        elif restype == ResourceType.TGA:
+        if restype == ResourceType.TPC or restype == ResourceType.TGA:
             # Determine if it's a texture or lightmap based on naming
             resname_lower = resname.lower()
             if "_lm" in resname_lower or resname_lower.endswith("_lm"):
@@ -962,11 +955,11 @@ def extract_kit(
 
     # Create empty TXI placeholders for textures/lightmaps that don't have TXI files
     # This matches the expected kit structure where textures have corresponding TXI files
-    for texture_name_lower in textures.keys():
+    for texture_name_lower in textures:
         if texture_name_lower not in texture_txis:
             texture_txis[texture_name_lower] = b""
 
-    for lightmap_name_lower in lightmaps.keys():
+    for lightmap_name_lower in lightmaps:
         if lightmap_name_lower not in lightmap_txis:
             lightmap_txis[lightmap_name_lower] = b""
 
@@ -1015,7 +1008,7 @@ def extract_kit(
                 "id": component_id,
                 "native": 1,
                 "doorhooks": doorhooks,
-            }
+            },
         )
 
     # Write texture files
@@ -1244,7 +1237,7 @@ def extract_kit(
                 "utd_k2": f"{door_id}_k2",
                 "width": door_width,
                 "height": door_height,
-            }
+            },
         )
 
     # Write placeable walkmeshes (PWK files)
@@ -1313,8 +1306,7 @@ def _generate_component_minimap(bwm: BWM):  # type: ignore[return-value]
             image = QImage(256, 256, QImage.Format.Format_RGB888)  # type: ignore[misc, call-overload]
             image.fill(QColor(0, 0, 0))  # type: ignore[misc, call-overload]
             return image
-        else:
-            return Image.new("RGB", (256, 256), (0, 0, 0))  # type: ignore[misc, call-overload]
+        return Image.new("RGB", (256, 256), (0, 0, 0))  # type: ignore[misc, call-overload]
 
     bbmin: Vector3 = Vector3(min(v.x for v in vertices), min(v.y for v in vertices), min(v.z for v in vertices))
     bbmax: Vector3 = Vector3(max(v.x for v in vertices), max(v.y for v in vertices), max(v.z for v in vertices))
@@ -1380,7 +1372,7 @@ def _generate_component_minimap(bwm: BWM):  # type: ignore[return-value]
         return q_image
 
     # Fallback to Pillow
-    elif importlib.util.find_spec("PIL") is not None:
+    if importlib.util.find_spec("PIL") is not None:
         # Create image
         pil_image = Image.new("RGB", (width, height), (0, 0, 0))
         draw = ImageDraw.Draw(pil_image)
@@ -1473,7 +1465,7 @@ def _extract_doorhooks_from_bwm(bwm: BWM, num_doors: int) -> list[dict[str, floa
                 "rotation": rotation,
                 "door": door_index,
                 "edge": edge.index,  # Global edge index
-            }
+            },
         )
 
     return doorhooks

@@ -252,7 +252,7 @@ class LibUpdate:
     def _find_archive_path(self) -> Path | None:
         """Find the first existing archive path from the list of archive names.
 
-        Returns
+        Returns:
         -------
             Path | None: The path to the first existing archive, or None if none found.
         """
@@ -630,7 +630,7 @@ class AppUpdate(LibUpdate):  # pragma: no cover
 
         try:
             r = Restarter(
-                cur_app_filepath, temp_app_filepath, restart_strategy=self.r_strategy, filename=self.filename, update_strategy=self.u_strategy, exithook=self.exithook
+                cur_app_filepath, temp_app_filepath, restart_strategy=self.r_strategy, filename=self.filename, update_strategy=self.u_strategy, exithook=self.exithook,
             )
             r.process()
         except OSError as e:

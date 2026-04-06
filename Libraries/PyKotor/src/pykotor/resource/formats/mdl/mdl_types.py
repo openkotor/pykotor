@@ -313,7 +313,6 @@ class MDLEmitterFlags(IntFlag):
 
     """
 
-    #
     P2P = 0x0001  # EMITTER_FLAG_P2P - Point-to-point emitter (kotorblender:115)
     P2P_SEL = 0x0002  # EMITTER_FLAG_P2P_SEL - P2P selection (kotorblender:116)
     P2P_BEZIER = 0x0002  # P2P with Bezier curves (alias of P2P_SEL)

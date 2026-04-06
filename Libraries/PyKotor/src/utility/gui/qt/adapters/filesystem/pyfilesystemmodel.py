@@ -103,13 +103,12 @@ if TYPE_CHECKING:
     from qtpy.QtWidgets import QScrollBar
     from typing_extensions import Literal
 
+elif qtpy.QT6:
+    QDesktopWidget = None
+elif qtpy.QT5:
+    from qtpy.QtWidgets import QDesktopWidget
 else:
-    if qtpy.QT6:
-        QDesktopWidget = None
-    elif qtpy.QT5:
-        from qtpy.QtWidgets import QDesktopWidget
-    else:
-        raise RuntimeError(f"Unexpected qtpy version: '{qtpy.API_NAME}'")
+    raise RuntimeError(f"Unexpected qtpy version: '{qtpy.API_NAME}'")
 
 
 if os.name == "nt_disabled":
@@ -967,14 +966,12 @@ class PyFileSystemModel(QAbstractItemModel):
                 pathElements.pop(0)
                 separator = "\\"
                 elementPath = host + separator
-            else:
-                if pathElements and ":" not in pathElements[0]:
-                    rootPath = QDir(longPath).rootPath()
-                    pathElements.insert(0, rootPath)
-        else:
-            # add the "/" item, since it is a valid path element on Unix
-            if absolutePath and absolutePath[0] == "/":
-                pathElements.insert(0, "/")
+            elif pathElements and ":" not in pathElements[0]:
+                rootPath = QDir(longPath).rootPath()
+                pathElements.insert(0, rootPath)
+        # add the "/" item, since it is a valid path element on Unix
+        elif absolutePath and absolutePath[0] == "/":
+            pathElements.insert(0, "/")
 
         parent = self.node(index)
 

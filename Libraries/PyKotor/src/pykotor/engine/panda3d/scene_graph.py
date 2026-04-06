@@ -29,7 +29,6 @@ if TYPE_CHECKING:
         NodePath,
     )
 
-    pass
 
 
 class Panda3DSceneGraph(ISceneGraph):
@@ -97,7 +96,6 @@ class Panda3DSceneGraph(ISceneGraph):
     def update(self, dt: float) -> None:
         """Update the scene graph for the current frame."""
         # Panda3D handles most updates automatically via task system
-        pass
 
     def add_model_root(self, model_np: NodePath) -> None:
         """Add a model root to the scene."""

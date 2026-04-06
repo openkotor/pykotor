@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 import kaitaistruct
 
 from bioware_kaitai_formats.tga import Tga
+
 from pykotor.resource.formats.tpc.tga import read_tga
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCTextureFormat
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose

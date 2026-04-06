@@ -7,8 +7,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from loggerplus import RobustLogger
 from bioware_kaitai_formats.txi import Txi
+
+from loggerplus import RobustLogger
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
 if TYPE_CHECKING:

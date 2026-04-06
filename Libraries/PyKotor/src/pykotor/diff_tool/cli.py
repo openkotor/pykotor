@@ -38,7 +38,7 @@ def add_kotordiff_arguments(parser: ArgumentParser) -> None:
     parser.add_argument("--path2", type=str, help="Additional path to compare.")
     parser.add_argument("--path3", type=str, help="Additional path to compare.")
     parser.add_argument(
-        "--path", action="append", dest="extra_paths", help="Additional paths for N-way comparison (can be used multiple times). Example: --path path4 --path path5"
+        "--path", action="append", dest="extra_paths", help="Additional paths for N-way comparison (can be used multiple times). Example: --path path4 --path path5",
     )
 
     # Output options
@@ -204,8 +204,8 @@ def execute_cli(cmdline_args: Namespace):
                 line_buffering=True,
             )
         except Exception:  # noqa: BLE001
-            logging.error("Failed to configure console for UTF-8 output on Windows")
-            logging.error(traceback.format_exc())
+            logging.exception("Failed to configure console for UTF-8 output on Windows")
+            logging.exception(traceback.format_exc())
 
     logging.info(f"diff operations version {CURRENT_VERSION}")
 
@@ -254,13 +254,13 @@ def execute_cli(cmdline_args: Namespace):
                 os.path.relpath(
                     os.path.dirname(path1),
                     path1,
-                )
+                ),
             ),
             file2_rel=Path(
                 os.path.relpath(
                     os.path.dirname(path2),
                     path2,
-                )
+                ),
             ),
             ext=(
                 path1.suffix.casefold().lstrip(".").strip()

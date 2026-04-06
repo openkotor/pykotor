@@ -11,7 +11,6 @@ import tempfile
 import time
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 
@@ -75,7 +74,7 @@ class TestPyFileSystemModel:
         app = QApplication.instance()
         if app is None:
             app = QApplication([])
-        yield app
+        return app
 
     @pytest.fixture
     def temp_dir(self):
@@ -108,7 +107,7 @@ class TestPyFileSystemModel:
                         | QFile.Permission.ExeUser
                         | QFile.Permission.WriteUser
                         | QFile.Permission.WriteOwner
-                        | QFile.Permission.WriteOther
+                        | QFile.Permission.WriteOther,
                     )
                     assert dead.remove()
             assert dir_obj.entryInfoList(filters).isEmpty()
@@ -501,10 +500,9 @@ class TestPyFileSystemModel:
                 if i == 10 or len(spy0) != 0:
                     assert len(spy0) >= 1
                     assert len(spy1) >= 1
-            else:
-                if i == 10 or len(spy0) == 0:
-                    assert len(spy0) == 0
-                    assert len(spy1) == 0
+            elif i == 10 or len(spy0) == 0:
+                assert len(spy0) == 0
+                assert len(spy1) == 0
 
             if model.rowCount(root) == old_count - count:
                 break

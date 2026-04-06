@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "Libraries/PyKotor/src"))
 
 from pykotor.common.scriptdefs import KOTOR_FUNCTIONS, TSL_FUNCTIONS
-from pykotor.common.script import DataType, ScriptFunction, ScriptParam
+from pykotor.common.script import DataType, ScriptFunction
 
 # ─── Category assignment ──────────────────────────────────────────────────────
 # Rules checked in ORDER - first match wins.
@@ -217,7 +217,6 @@ def build_category_map(
 
 
 def main() -> None:
-    from pykotor.common.scriptdefs import KOTOR_FUNCTIONS, TSL_FUNCTIONS
 
     kotor_map = build_category_map(list(KOTOR_FUNCTIONS))
     tsl_map = build_category_map(list(TSL_FUNCTIONS))

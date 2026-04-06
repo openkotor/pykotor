@@ -18,8 +18,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.dds import Dds
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCMipmap, TPCTextureFormat
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
@@ -182,7 +183,7 @@ class TPCDDSReader(ResourceReader):
         else:
             raise ValueError(
                 f"Unknown DDS pixel format: flags={fmt.flags:#x} fourcc={fmt.fourcc:#x} "
-                f"bit_count={fmt.bit_count} masks={fmt.r_mask:#x}/{fmt.g_mask:#x}/{fmt.b_mask:#x}/{fmt.a_mask:#x}"
+                f"bit_count={fmt.bit_count} masks={fmt.r_mask:#x}/{fmt.g_mask:#x}/{fmt.b_mask:#x}/{fmt.a_mask:#x}",
             )
 
         return tpc_format, data_layout
@@ -342,7 +343,7 @@ class TPCDDSReader(ResourceReader):
                         height=mm_height,
                         tpc_format=tpc_format if layout == _DDSDataLayout.DIRECT else (TPCTextureFormat.RGB if layout == _DDSDataLayout.R5G6B5 else TPCTextureFormat.RGBA),
                         data=data,
-                    )
+                    ),
                 )
                 mm_width >>= 1
                 mm_height >>= 1

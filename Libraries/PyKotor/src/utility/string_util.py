@@ -488,7 +488,7 @@ def striprtf(text: str) -> str:  # noqa: C901, PLR0915, PLR0912
             "xmlname",
             "xmlnstbl",
             "xmlopen",
-        )
+        ),
     )
     # Translation of some special characters.
     specialchars: dict[str, str] = {
@@ -591,7 +591,7 @@ StrictStr = TypeVar("StrictStr", bound=str)
 
 
 class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
-    __slots__: tuple[str, ...] = ("_content", "__dict__")
+    __slots__: tuple[str, ...] = ("__dict__", "_content")
 
     @classmethod
     def _assert_str_type(

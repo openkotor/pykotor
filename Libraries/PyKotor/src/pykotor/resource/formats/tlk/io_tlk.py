@@ -8,10 +8,11 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
+from bioware_kaitai_formats.tlk import Tlk
+
 from pykotor.common.language import Language
 from pykotor.common.misc import ResRef, WrappedInt
 from pykotor.common.stream import ArrayHead, BinaryReader
-from bioware_kaitai_formats.tlk import Tlk
 from pykotor.resource.formats.tlk.tlk_data import TLK
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 

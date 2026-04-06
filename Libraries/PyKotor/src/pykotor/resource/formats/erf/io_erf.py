@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.erf import Erf
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.erf.erf_data import ERF, ERFType
 from pykotor.resource.type import ResourceReader, ResourceType, ResourceWriter, autoclose
 

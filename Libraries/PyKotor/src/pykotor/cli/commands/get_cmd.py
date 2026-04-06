@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pathlib
+
 from typing import TYPE_CHECKING
 
 from pykotor.extract.file import ResourceIdentifier

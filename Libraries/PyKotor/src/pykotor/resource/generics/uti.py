@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Game, ResRef
-from pykotor.resource.formats.gff.gff_data import GFF, GFFContent, GFFList
 from pykotor.resource.formats.gff.gff_auto import bytes_gff, read_gff, write_gff
+from pykotor.resource.formats.gff.gff_data import GFF, GFFContent, GFFList
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:

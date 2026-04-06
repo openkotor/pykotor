@@ -117,7 +117,7 @@ class FileSystemExtents:
     def from_fcntl(cls, filepath: str) -> FileSystemExtents:
         # Placeholder for fcntl with F_LOG2PHYS implementation
         return cls(
-            physical_block_addresses=[]  # To be filled in
+            physical_block_addresses=[],  # To be filled in
         )
 
 
@@ -175,7 +175,7 @@ class ResourceForks:
     def from_file(cls, filepath: str) -> ResourceForks:
         # Placeholder for resource fork data retrieval
         return cls(
-            resource_fork_data=None  # To be filled in
+            resource_fork_data=None,  # To be filled in
         )
 
 
@@ -203,7 +203,7 @@ class FileSystemEventNotifications:
     def from_file(cls, filepath: str) -> FileSystemEventNotifications:
         # Placeholder for FSEvents monitoring and retrieval
         return cls(
-            recent_events=None  # To be filled in
+            recent_events=None,  # To be filled in
         )
 
 

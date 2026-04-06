@@ -22,14 +22,14 @@ from pykotor.resource.formats.gff.gff_auto import write_gff, read_gff, detect_gf
 
 __all__ = [
     "GFF",
-    "GFFComparisonResult",
-    "GFFListSemanticConfig",
-    "GFFContent",
     "GFFBinaryReader",
     "GFFBinaryWriter",
+    "GFFComparisonResult",
+    "GFFContent",
     "GFFContent",
     "GFFFieldType",
     "GFFList",
+    "GFFListSemanticConfig",
     "GFFStruct",
     "GFFXMLReader",
     "GFFXMLWriter",

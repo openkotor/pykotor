@@ -14,8 +14,9 @@ from typing import TYPE_CHECKING, cast
 
 import kaitaistruct
 
-from pykotor.common.misc import Color
 from bioware_kaitai_formats.mdl_ascii import MdlAscii
+
+from pykotor.common.misc import Color
 from pykotor.resource.formats.mdl.mdl_data import (
     MDL,
     MDLAABBNode,
@@ -257,7 +258,6 @@ def _pack_face_material(
 def _aa_to_quaternion(aa: list[float]) -> list[float]:
     """Convert angle-axis to quaternion (x, y, z, w).
 
-
     Args:
         aa: Angle-axis representation [x, y, z, angle]
 
@@ -297,7 +297,6 @@ def _quaternion_to_aa(q: list[float]) -> list[float]:
 
 def _normalize_vector(vec: list[float]) -> list[float]:
     """Normalize a 3D vector.
-
 
     Args:
         vec: 3D vector [x, y, z]
@@ -458,9 +457,7 @@ class MDLAsciiWriter(ResourceWriter):
             node_type_str = "danglymesh"
         elif type_id == 97 and not self._convert_skin:  # NODE_SKIN
             node_type_str = "skin"
-        elif type_id == 97 and self._convert_skin:  # NODE_SKIN (convert to trimesh)
-            node_type_str = "trimesh"
-        elif type_id == 33:  # NODE_TRIMESH
+        elif (type_id == 97 and self._convert_skin) or type_id == 33:  # NODE_SKIN (convert to trimesh)
             node_type_str = "trimesh"
         elif type_id in (513, 545):  # HEADER|AABB (513), HEADER|MESH|AABB (545) NODE_AABB
             node_type_str = "aabb"
@@ -690,7 +687,7 @@ class MDLAsciiWriter(ResourceWriter):
                 or (light.flare_positions and len(light.flare_positions) > 0)
                 or (light.flare_sizes and len(light.flare_sizes) > 0)
                 or (light.flare_color_shifts and len(light.flare_color_shifts) > 0)
-            )
+            ),
         )
 
         if has_flares:
@@ -870,8 +867,8 @@ class MDLAsciiWriter(ResourceWriter):
         # Preserve exact float values across Binary→ASCII→Binary roundtrips.
         # Using general-format precision (e.g., .7g) will round float32-derived values like 1.899999976 → 1.9,
         # which breaks strict equality tests.
-        self.write_line(1, f"length {repr(float(anim.anim_length))}")
-        self.write_line(1, f"transtime {repr(float(anim.transition_length))}")
+        self.write_line(1, f"length {float(anim.anim_length)!r}")
+        self.write_line(1, f"transtime {float(anim.transition_length)!r}")
         if anim.root_model:
             self.write_line(1, f"animroot {anim.root_model}")
 
@@ -2632,9 +2629,7 @@ class MDLAsciiReader(ResourceReader):
             and len(top_level_nodes) == 1
             and top_level_nodes[0].name
             and top_level_nodes[0].name.lower() not in ("root", (self._mdl.name or "").lower())
-        ):
-            use_implicit_root = True
-        elif explicit_root is None and len(top_level_nodes) > 1:
+        ) or (explicit_root is None and len(top_level_nodes) > 1):
             use_implicit_root = True
 
         if explicit_root is not None:

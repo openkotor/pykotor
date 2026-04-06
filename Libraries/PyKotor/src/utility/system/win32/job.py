@@ -254,7 +254,6 @@ def create_job_object(
 ) -> int:
     """Creates a job object with the specified limit flags and extended limit information.
 
-
     Relevant windows documentation:
     - https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_extended_limit_information
     - https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_basic_limit_information

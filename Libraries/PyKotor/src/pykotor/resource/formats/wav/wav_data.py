@@ -16,10 +16,10 @@ Observed retail behavior:
 """
 
 from __future__ import annotations
-from pykotor.resource.formats._base import BiowareResource
 
 from enum import IntEnum
 
+from pykotor.resource.formats._base import BiowareResource
 from pykotor.resource.type import ResourceType
 
 

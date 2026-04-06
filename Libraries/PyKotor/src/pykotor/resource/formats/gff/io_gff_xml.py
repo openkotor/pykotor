@@ -6,10 +6,10 @@ import base64
 
 from typing import TYPE_CHECKING, Any
 
-import kaitaistruct
-
 # Try to import defusedxml, fallback to ElementTree if not available
 from xml.etree import ElementTree as ET
+
+import kaitaistruct
 
 from loggerplus import RobustLogger
 
@@ -21,8 +21,9 @@ except (ImportError, ModuleNotFoundError):
     print("warning: defusedxml is not available but recommended for security")
 
 
-from pykotor.common.language import LocalizedString
 from bioware_kaitai_formats.gff_xml import GffXml
+
+from pykotor.common.language import LocalizedString
 from pykotor.common.misc import ResRef
 from pykotor.resource.formats.gff.gff_data import GFF, GFFFieldType, GFFList, GFFStruct
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose

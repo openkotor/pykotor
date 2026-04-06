@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 import kaitaistruct
 
 from bioware_kaitai_formats.lip_json import LipJson
+
 from pykotor.resource.formats.lip.lip_data import LIP, LIPShape
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
@@ -95,7 +96,7 @@ class LIPJSONWriter(ResourceWriter):
                 LIPKeyframeDict(
                     time=str(keyframe.time),
                     shape=str(keyframe.shape.value),
-                )
+                ),
             )
 
         json_string: str = json.dumps(self._json, indent=4)

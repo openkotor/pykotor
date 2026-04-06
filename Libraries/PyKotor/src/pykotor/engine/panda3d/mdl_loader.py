@@ -620,7 +620,6 @@ class MDLLoader:
         Archived KotOR.js line anchors: ``wiki/reverse_engineering_findings_panda3d_mdl_loader_github_urls_pre_scrub.md``.
 
         """
-        #
         if not self._resource_loader or not reference.model_name:
             return
 

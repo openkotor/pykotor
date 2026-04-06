@@ -37,20 +37,20 @@ class Camera:
     """
 
     __slots__ = (
-        "_x",
-        "_y",
-        "_z",
-        "_width",
-        "_height",
-        "_pitch",
-        "_yaw",
+        "_cached_projection",
+        "_cached_view",
         "_distance",
         "_fov",
+        "_height",
         "_orthographic",
-        "_cached_view",
-        "_cached_projection",
-        "_view_dirty",
+        "_pitch",
         "_projection_dirty",
+        "_view_dirty",
+        "_width",
+        "_x",
+        "_y",
+        "_yaw",
+        "_z",
     )
 
     def __init__(

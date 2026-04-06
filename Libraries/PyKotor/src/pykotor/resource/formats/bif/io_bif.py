@@ -8,10 +8,11 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.misc import ResRef
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.bif import Bif
 from bioware_kaitai_formats.bzf import Bzf
+
+from pykotor.common.misc import ResRef
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.bif.bif_data import BIF, BIFResource, BIFType
 from pykotor.resource.type import ResourceReader, ResourceType, ResourceWriter, autoclose
 

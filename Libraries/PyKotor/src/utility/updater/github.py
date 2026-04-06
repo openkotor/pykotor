@@ -633,7 +633,7 @@ def download_github_file(
                 raise ValueError(f"Cannot extract owner/repo from GitHub URL: {url_or_repo!r}")
         else:
             raise ValueError(
-                f"URL must be a github.com, raw.githubusercontent.com, or api.github.com URL, got: {url_or_repo!r}"
+                f"URL must be a github.com, raw.githubusercontent.com, or api.github.com URL, got: {url_or_repo!r}",
             )
 
     if repo_path is not None:

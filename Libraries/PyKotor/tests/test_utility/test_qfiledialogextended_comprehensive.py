@@ -33,7 +33,6 @@ import tempfile
 import unittest
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from qtpy.QtCore import (
     Qt,

@@ -530,15 +530,14 @@ class Module:  # noqa: PLR0904
                 relevant_capsule = self._capsules[KModuleType.MOD.name]
             else:
                 relevant_capsule = self._capsules[KModuleType.MAIN.name]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        # Complex mode: Check for _a.rim or _adx.rim first (replaces .rim)
+        # Simple mode: Just .rim
+        elif KModuleType.AREA.name in self._capsules and self._capsules[KModuleType.AREA.name] is not None:
+            relevant_capsule = self._capsules[KModuleType.AREA.name]
+        elif KModuleType.AREA_EXTENDED.name in self._capsules and self._capsules[KModuleType.AREA_EXTENDED.name] is not None:
+            relevant_capsule = self._capsules[KModuleType.AREA_EXTENDED.name]
         else:
-            # Complex mode: Check for _a.rim or _adx.rim first (replaces .rim)
-            # Simple mode: Just .rim
-            if KModuleType.AREA.name in self._capsules and self._capsules[KModuleType.AREA.name] is not None:
-                relevant_capsule = self._capsules[KModuleType.AREA.name]
-            elif KModuleType.AREA_EXTENDED.name in self._capsules and self._capsules[KModuleType.AREA_EXTENDED.name] is not None:
-                relevant_capsule = self._capsules[KModuleType.AREA_EXTENDED.name]
-            else:
-                relevant_capsule = self._capsules[KModuleType.MAIN.name]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            relevant_capsule = self._capsules[KModuleType.MAIN.name]  # pyright: ignore[reportTypedDictNotRequiredAccess]
         assert relevant_capsule is not None
         return relevant_capsule
 
@@ -858,9 +857,9 @@ class Module:  # noqa: PLR0904
                 continue
             location_paths = [str(loc.filepath) for loc in locations]
             if len(location_paths) <= 3:
-               paths_str = ', '.join(location_paths)
+               paths_str = ", ".join(location_paths)
             else:
-               paths_str = ', '.join(location_paths[:3]) + f', ... and {len(location_paths) - 3} more'
+               paths_str = ", ".join(location_paths[:3]) + f", ... and {len(location_paths) - 3} more"
             RobustLogger().debug(f"Adding {len(locations)} texture location(s) for '{identifier.resname}.{identifier.restype.extension}' to '{display_name}': {paths_str}")
             self.add_locations(identifier.resname, identifier.restype, (location.filepath for location in locations)).activate()
 
@@ -1771,7 +1770,7 @@ class Module:  # noqa: PLR0904
 
         # Return the FileResource from the first location found
         for query in texture_queries:
-            if query in texture_locations and texture_locations[query]:
+            if texture_locations.get(query):
                 location: LocationResult = texture_locations[query][0]
                 try:
                     return location.as_file_resource()
@@ -2124,7 +2123,7 @@ class ModuleResource(Generic[T]):
             installation_path = str(self._installation.path())
             locations_info = f"Searched locations: {[str(loc) for loc in self._locations]}." if self._locations else "No locations were added to this resource."
             RobustLogger().warning(
-                f"Cannot activate module resource '{self.identifier()}'{module_info}: No locations found. Installation: {installation_path}. {locations_info}"
+                f"Cannot activate module resource '{self.identifier()}'{module_info}: No locations found. Installation: {installation_path}. {locations_info}",
             )
         # else:
         #    other_locations_available = len(self._locations) - 1

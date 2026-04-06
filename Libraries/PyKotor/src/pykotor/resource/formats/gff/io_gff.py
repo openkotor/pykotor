@@ -8,9 +8,10 @@ from typing import TYPE_CHECKING, Any
 
 import kaitaistruct
 
+from bioware_kaitai_formats.gff import Gff
+
 from pykotor.common.misc import ResRef
 from pykotor.common.stream import BinaryReader, BinaryWriter
-from bioware_kaitai_formats.gff import Gff
 from pykotor.resource.formats.gff import GFF, GFFContent, GFFFieldType, GFFList, GFFStruct
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 

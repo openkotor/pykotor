@@ -57,8 +57,7 @@ class ThemeDialog(QDialog):
         saturation: int = 100,
         hue_shift: int = 0,
     ) -> QColor:
-        """
-        Adjusts the color's lightness, saturation, and hue.
+        """Adjusts the color's lightness, saturation, and hue.
 
         Args:
             color: Input color to adjust.
@@ -140,8 +139,7 @@ class ThemeDialog(QDialog):
         apply_style(app, sheet=sheet, style=style, palette=palette)
 
     def get_theme(self) -> str:
-        """
-        Get the selected theme.
+        """Get the selected theme.
 
         Returns:
             The name of the selected theme.

@@ -6,7 +6,6 @@ utilities from Libraries/PyKotor.
 
 References:
 ----------
-
         Libraries/PyKotor/src/pykotor/common/module_loader.py - Backend-agnostic loading
 
 """
@@ -39,7 +38,6 @@ class ModuleLoader:
 
     References:
     ----------
-
         Libraries/PyKotor/src/pykotor/common/module_loader.py - Data extraction
 
     """

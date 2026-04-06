@@ -688,7 +688,7 @@ def _dlg_to_story(
         if link.node is None:
             continue
 
-        stack: list[tuple["DLGEntry | DLGReply", str]] = [(cast("DLGEntry | DLGReply", link.node), str(i + 1))]
+        stack: list[tuple[DLGEntry | DLGReply, str]] = [(cast("DLGEntry | DLGReply", link.node), str(i + 1))]
         start_passage: TwinePassage | None = None
 
         while stack:

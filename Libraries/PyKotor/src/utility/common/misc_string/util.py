@@ -430,7 +430,7 @@ def striprtf(text: str) -> str:  # noqa: C901, PLR0915, PLR0912
             "xmlname",
             "xmlnstbl",
             "xmlopen",
-        )
+        ),
     )
     # Translation of some special characters.
     specialchars: dict[str, str] = {

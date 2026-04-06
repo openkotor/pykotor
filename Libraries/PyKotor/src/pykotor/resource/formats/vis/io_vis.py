@@ -8,8 +8,9 @@ from typing import TYPE_CHECKING
 
 import kaitaistruct
 
-from pykotor.common.stream import BinaryReader
 from bioware_kaitai_formats.vis import Vis
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.vis.vis_data import VIS
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 

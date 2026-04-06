@@ -33,7 +33,7 @@ class IconManager:
 
     def __init__(self):
         self.MAIN_FG_COLOR = SpyderPalette.ICON_1
-        self.BIN_FILES: dict[str, str] = {x: "ArchiveFileIcon" for x in ["zip", "x-tar", "x-7z-compressed", "rar"]}
+        self.BIN_FILES: dict[str, str] = dict.fromkeys(["zip", "x-tar", "x-7z-compressed", "rar"], "ArchiveFileIcon")
 
         self.DOCUMENT_FILES: dict[str, str] = {
             "vnd.ms-powerpoint": "PowerpointFileIcon",

@@ -61,6 +61,7 @@ class LYT(ComparableMixin):
     References:
     ----------
         Observed in retail KotOR I and TSL.
+
     Attributes:
     ----------
         rooms: List of room definitions (area model positions)
@@ -190,6 +191,7 @@ class LYTRoom(ComparableMixin):
     References:
     ----------
         Observed in retail KotOR I and TSL.
+
     Attributes:
     ----------
         model: ResRef name of the room model (MDL file)
@@ -265,6 +267,7 @@ class LYTTrack(ComparableMixin):
     References:
     ----------
         Observed in retail KotOR I and TSL.
+
     Attributes:
     ----------
         model: ResRef name of the track model (MDL file)
@@ -312,6 +315,7 @@ class LYTObstacle(ComparableMixin):
     References:
     ----------
         Observed in retail KotOR I and TSL.
+
     Attributes:
     ----------
         model: ResRef name of the obstacle model (MDL file)

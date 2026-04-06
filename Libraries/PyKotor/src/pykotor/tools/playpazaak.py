@@ -153,9 +153,7 @@ class PazaakGame:
         yellow_card: PazaakSideCard,
     ) -> None:
         for i, card in enumerate(player.hand):
-            if isinstance(card, PazaakSideCard) and card.card_type == CardType.POSITIVE and card.value in yellow_card.value:
-                player.hand[i] = PazaakSideCard(card.value, CardType.NEGATIVE)
-            elif isinstance(card, int) and card in yellow_card.value:
+            if (isinstance(card, PazaakSideCard) and card.card_type == CardType.POSITIVE and card.value in yellow_card.value) or (isinstance(card, int) and card in yellow_card.value):
                 player.hand[i] = PazaakSideCard(card.value, CardType.NEGATIVE)
 
     def switch_player(self):
