@@ -84,7 +84,7 @@ class RenderObject:
         perspective = Vector4()
         decompose(transform, scale, rotation, self._position, skew, perspective)  # pyright: ignore[reportArgumentType, reportCallIssue]
         self._rotation = eulerAngles(rotation)
-        self._bounds_dirty = True
+        # NOTE: Do NOT set _bounds_dirty here. Bounds are model-local.
 
     def _recalc_transform(self):
         self._transform = mat4() * translate(self._position)
@@ -104,7 +104,9 @@ class RenderObject:
 
         self._position = Vector3(x, y, z)
         self._recalc_transform()
-        self._bounds_dirty = True
+        # NOTE: Do NOT set _bounds_dirty here. The bounding sphere center is
+        # stored as a model-local offset and position is added dynamically in
+        # bounding_sphere(). Position changes don't affect the model-space AABB.
 
     def rotation(self) -> Vector3:
         return copy(self._rotation)
@@ -120,7 +122,9 @@ class RenderObject:
 
         self._rotation = Vector3(x, y, z)
         self._recalc_transform()
-        self._bounds_dirty = True
+        # NOTE: Do NOT set _bounds_dirty here. cube() computes bounds from
+        # identity transform (model-local space), so rotation doesn't change
+        # the cached bounding sphere radius.
 
     def reset_cube(self):
         self._cube = None

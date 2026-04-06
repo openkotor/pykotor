@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import time
-from typing import TYPE_CHECKING, TypeVar, cast
+from typing import TYPE_CHECKING, ClassVar, TypeVar, cast
 
 from pykotor.extract.installation import SearchLocation
 from pykotor.gl.compat import (
@@ -216,11 +216,10 @@ class Scene(SceneBase):
             # Poll for completed async resources (non-blocking) - MAIN PROCESS ONLY
             self.poll_async_resources()
 
-            # ALWAYS build cache - it updates object positions for existing objects!
-            # SceneCache.build_cache updates positions (set_position/set_rotation)
-            # even for objects already in scene.objects. Skipping this causes:
-            # 1. Objects not moving when dragged
-            # 2. Camera snapping not working until rotation
+            # Build/sync scene cache.
+            # Fast path: when all objects exist and no invalidations, only syncs
+            # positions (set_position/set_rotation have identity-check early returns).
+            # Full rebuild only runs when object counts differ or caches are cleared.
             SceneCache.build_cache(self)
 
             if _profile and _t0 is not None:
@@ -448,24 +447,26 @@ class Scene(SceneBase):
         center, radius = obj.bounding_sphere(self, self.default_cull_radius)
         return self.frustum.sphere_in_frustum(center, radius)
 
+    # Class-level type map for should_hide_obj (avoids dict creation per call)
+    _HIDE_TYPE_MAP: ClassVar[tuple[tuple[type, str], ...]] = (
+        (GITCreature, "hide_creatures"),
+        (GITPlaceable, "hide_placeables"),
+        (GITDoor, "hide_doors"),
+        (GITTrigger, "hide_triggers"),
+        (GITEncounter, "hide_encounters"),
+        (GITWaypoint, "hide_waypoints"),
+        (GITSound, "hide_sounds"),
+        (GITStore, "hide_sounds"),
+        (GITCamera, "hide_cameras"),
+    )
+
     def should_hide_obj(
         self,
         obj: RenderObject,
     ) -> bool:
-        type_to_hide_attr = {
-            GITCreature: "hide_creatures",
-            GITPlaceable: "hide_placeables",
-            GITDoor: "hide_doors",
-            GITTrigger: "hide_triggers",
-            GITEncounter: "hide_encounters",
-            GITWaypoint: "hide_waypoints",
-            GITSound: "hide_sounds",
-            GITStore: "hide_sounds",
-            GITCamera: "hide_cameras",
-        }
-
-        for obj_type, hide_attr in type_to_hide_attr.items():
-            if isinstance(obj.data, obj_type):
+        data = obj.data
+        for obj_type, hide_attr in self._HIDE_TYPE_MAP:
+            if isinstance(data, obj_type):
                 return bool(getattr(self, hide_attr, False))
         return False
 

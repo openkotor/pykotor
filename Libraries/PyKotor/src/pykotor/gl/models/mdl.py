@@ -12,93 +12,96 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pykotor.gl import glm, mat4, quat
+from pykotor.gl import (
+    glm,
+    mat4,  # pyright: ignore[reportMissingTypeStubs]
+    quat,  # pyright: ignore[reportMissingTypeStubs]
+)
 from pykotor.gl.compat import has_pyopengl, missing_constant, missing_gl_func, safe_gl_error_module
 from utility.common.geometry import Vector3, Vector4
-
-HAS_PYOPENGL = has_pyopengl()
-gl_error = safe_gl_error_module()
 
 if TYPE_CHECKING:
     from pykotor.gl.scene import Scene
     from pykotor.gl.shader import Shader
-else:
-    HAS_PYOPENGL = has_pyopengl()
-    gl_error = safe_gl_error_module()
-    if HAS_PYOPENGL:
-        from OpenGL import error as gl_error  # pyright: ignore[reportMissingImports]
-        from OpenGL.GL import glGenBuffers, glGenVertexArrays, glVertexAttribPointer
-        from OpenGL.GL.shaders import GL_FALSE  # pyright: ignore[reportMissingImports]
-        from OpenGL.raw.GL.ARB.tessellation_shader import (
-            GL_TRIANGLES,  # pyright: ignore[reportMissingImports]
-        )
-        from OpenGL.raw.GL.ARB.vertex_shader import (
-            GL_FLOAT,  # pyright: ignore[reportMissingImports]
-        )
-        from OpenGL.raw.GL.VERSION.GL_1_0 import (
-            GL_UNSIGNED_SHORT,  # pyright: ignore[reportMissingImports]
-        )
-        from OpenGL.raw.GL.VERSION.GL_1_1 import (
-            glDrawElements,  # pyright: ignore[reportMissingImports]
-        )
-        from OpenGL.raw.GL.VERSION.GL_1_3 import (  # pyright: ignore[reportMissingImports]
-            GL_TEXTURE0,
-            GL_TEXTURE1,
-            glActiveTexture,
-        )
-        from OpenGL.raw.GL.VERSION.GL_1_5 import (  # pyright: ignore[reportMissingImports]
-            GL_ARRAY_BUFFER,
-            GL_ELEMENT_ARRAY_BUFFER,
-            GL_STATIC_DRAW,
-            glBindBuffer,
-            glBufferData,
-        )
-        from OpenGL.raw.GL.VERSION.GL_2_0 import (
-            glEnableVertexAttribArray,  # pyright: ignore[reportMissingImports]
-        )
-        from OpenGL.raw.GL.VERSION.GL_3_0 import (
-            glBindVertexArray,  # pyright: ignore[reportMissingImports]
-        )
 
-        from pykotor.gl.compat import (  # noqa: E501
-            GL_BLEND,
-            GL_ONE,
-            GL_ONE_MINUS_SRC_ALPHA,
-            GL_SRC_ALPHA,
-            GL_SRC_COLOR,
-            glBlendFunc,
-            glDepthMask,
-            glDisable,
-            glEnable,
-        )
-    else:
-        glGenBuffers = missing_gl_func("glGenBuffers")
-        glGenVertexArrays = missing_gl_func("glGenVertexArrays")
-        glVertexAttribPointer = missing_gl_func("glVertexAttribPointer")
-        glDrawElements = missing_gl_func("glDrawElements")
-        glActiveTexture = missing_gl_func("glActiveTexture")
-        glBindBuffer = missing_gl_func("glBindBuffer")
-        glBufferData = missing_gl_func("glBufferData")
-        glEnableVertexAttribArray = missing_gl_func("glEnableVertexAttribArray")
-        glBindVertexArray = missing_gl_func("glBindVertexArray")
-        GL_FALSE = missing_constant("GL_FALSE")
-        GL_TRIANGLES = missing_constant("GL_TRIANGLES")
-        GL_FLOAT = missing_constant("GL_FLOAT")
-        GL_UNSIGNED_SHORT = missing_constant("GL_UNSIGNED_SHORT")
-        GL_TEXTURE0 = missing_constant("GL_TEXTURE0")
-        GL_TEXTURE1 = missing_constant("GL_TEXTURE1")
-        GL_ARRAY_BUFFER = missing_constant("GL_ARRAY_BUFFER")
-        GL_ELEMENT_ARRAY_BUFFER = missing_constant("GL_ELEMENT_ARRAY_BUFFER")
-        GL_STATIC_DRAW = missing_constant("GL_STATIC_DRAW")
-        GL_BLEND = missing_constant("GL_BLEND")
-        GL_ONE = missing_constant("GL_ONE")
-        GL_ONE_MINUS_SRC_ALPHA = missing_constant("GL_ONE_MINUS_SRC_ALPHA")
-        GL_SRC_ALPHA = missing_constant("GL_SRC_ALPHA")
-        GL_SRC_COLOR = missing_constant("GL_SRC_COLOR")
-        glBlendFunc = missing_gl_func("glBlendFunc")
-        glDepthMask = missing_gl_func("glDepthMask")
-        glDisable = missing_gl_func("glDisable")
-        glEnable = missing_gl_func("glEnable")
+HAS_PYOPENGL = has_pyopengl()
+gl_error = safe_gl_error_module()
+
+
+if HAS_PYOPENGL:
+    from OpenGL import error as gl_error  # type: ignore[no-redef]  # pyright: ignore[reportMissingImports]
+    from OpenGL.GL import glGenBuffers, glGenVertexArrays, glVertexAttribPointer
+    from OpenGL.GL.shaders import GL_FALSE  # pyright: ignore[reportMissingImports]
+    from OpenGL.raw.GL.ARB.tessellation_shader import (
+        GL_TRIANGLES,  # pyright: ignore[reportMissingImports]
+    )
+    from OpenGL.raw.GL.ARB.vertex_shader import (
+        GL_FLOAT,  # pyright: ignore[reportMissingImports]
+    )
+    from OpenGL.raw.GL.VERSION.GL_1_0 import (
+        GL_UNSIGNED_SHORT,  # pyright: ignore[reportMissingImports]
+    )
+    from OpenGL.raw.GL.VERSION.GL_1_1 import (
+        glDrawElements,  # pyright: ignore[reportMissingImports]
+    )
+    from OpenGL.raw.GL.VERSION.GL_1_3 import (  # pyright: ignore[reportMissingImports]
+        GL_TEXTURE0,
+        GL_TEXTURE1,
+        glActiveTexture,
+    )
+    from OpenGL.raw.GL.VERSION.GL_1_5 import (  # pyright: ignore[reportMissingImports]
+        GL_ARRAY_BUFFER,
+        GL_ELEMENT_ARRAY_BUFFER,
+        GL_STATIC_DRAW,
+        glBindBuffer,
+        glBufferData,
+    )
+    from OpenGL.raw.GL.VERSION.GL_2_0 import (
+        glEnableVertexAttribArray,  # pyright: ignore[reportMissingImports]
+    )
+    from OpenGL.raw.GL.VERSION.GL_3_0 import (
+        glBindVertexArray,  # pyright: ignore[reportMissingImports]
+    )
+
+    from pykotor.gl.compat import (  # noqa: E501
+        GL_BLEND,
+        GL_ONE,
+        GL_ONE_MINUS_SRC_ALPHA,
+        GL_SRC_ALPHA,
+        GL_SRC_COLOR,
+        glBlendFunc,
+        glDepthMask,
+        glDisable,
+        glEnable,
+    )
+else:
+    glGenBuffers = missing_gl_func("glGenBuffers")
+    glGenVertexArrays = missing_gl_func("glGenVertexArrays")
+    glVertexAttribPointer = missing_gl_func("glVertexAttribPointer")
+    glDrawElements = missing_gl_func("glDrawElements")
+    glActiveTexture = missing_gl_func("glActiveTexture")
+    glBindBuffer = missing_gl_func("glBindBuffer")
+    glBufferData = missing_gl_func("glBufferData")
+    glEnableVertexAttribArray = missing_gl_func("glEnableVertexAttribArray")
+    glBindVertexArray = missing_gl_func("glBindVertexArray")
+    GL_FALSE = missing_constant("GL_FALSE")
+    GL_TRIANGLES = missing_constant("GL_TRIANGLES")
+    GL_FLOAT = missing_constant("GL_FLOAT")
+    GL_UNSIGNED_SHORT = missing_constant("GL_UNSIGNED_SHORT")
+    GL_TEXTURE0 = missing_constant("GL_TEXTURE0")
+    GL_TEXTURE1 = missing_constant("GL_TEXTURE1")
+    GL_ARRAY_BUFFER = missing_constant("GL_ARRAY_BUFFER")
+    GL_ELEMENT_ARRAY_BUFFER = missing_constant("GL_ELEMENT_ARRAY_BUFFER")
+    GL_STATIC_DRAW = missing_constant("GL_STATIC_DRAW")
+    GL_BLEND = missing_constant("GL_BLEND")
+    GL_ONE = missing_constant("GL_ONE")
+    GL_ONE_MINUS_SRC_ALPHA = missing_constant("GL_ONE_MINUS_SRC_ALPHA")
+    GL_SRC_ALPHA = missing_constant("GL_SRC_ALPHA")
+    GL_SRC_COLOR = missing_constant("GL_SRC_COLOR")
+    glBlendFunc = missing_gl_func("glBlendFunc")
+    glDepthMask = missing_gl_func("glDepthMask")
+    glDisable = missing_gl_func("glDisable")
+    glEnable = missing_gl_func("glEnable")
 
 
 logger = logging.getLogger(__name__)

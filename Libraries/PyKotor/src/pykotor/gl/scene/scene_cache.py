@@ -43,6 +43,93 @@ class SceneCache:
     _last_layout_hash: ClassVar[dict[int, int]] = {}  # scene id -> layout hash
 
     @staticmethod
+    def _expected_instance_count(scene: Scene) -> int:
+        """Cheap O(1) count of all expected objects (GIT instances + layout rooms)."""
+        git = scene.git
+        return (
+            len(scene.layout.rooms)
+            + len(git.doors) + len(git.placeables) + len(git.creatures)
+            + len(git.waypoints) + len(git.stores) + len(git.sounds)
+            + len(git.encounters) + len(git.triggers) + len(git.cameras)
+        )
+
+    @staticmethod
+    def _sync_positions(scene: Scene):  # noqa: C901, PLR0912
+        """Fast path: sync GIT instance positions to RenderObjects.
+
+        Only calls set_position/set_rotation which have early-return guards
+        for unchanged values, so this is O(1) per static object.
+        """
+        git = scene.git
+        for door in git.doors:
+            obj = scene.objects.get(door)
+            if obj is None:
+                continue
+            obj.set_position(door.position.x, door.position.y, door.position.z)
+            obj.set_rotation(0, 0, door.bearing)
+
+        for placeable in git.placeables:
+            obj = scene.objects.get(placeable)
+            if obj is None:
+                continue
+            obj.set_position(placeable.position.x, placeable.position.y, placeable.position.z)
+            obj.set_rotation(0, 0, placeable.bearing)
+
+        for git_creature in git.creatures:
+            obj = scene.objects.get(git_creature)
+            if obj is None:
+                continue
+            obj.set_position(git_creature.position.x, git_creature.position.y, git_creature.position.z)
+            obj.set_rotation(0, 0, git_creature.bearing)
+
+        for waypoint in git.waypoints:
+            obj = scene.objects.get(waypoint)
+            if obj is None:
+                continue
+            obj.set_position(waypoint.position.x, waypoint.position.y, waypoint.position.z)
+            obj.set_rotation(0, 0, waypoint.bearing)
+
+        for store in git.stores:
+            obj = scene.objects.get(store)
+            if obj is None:
+                continue
+            obj.set_position(store.position.x, store.position.y, store.position.z)
+            obj.set_rotation(0, 0, store.bearing)
+
+        for sound in git.sounds:
+            obj = scene.objects.get(sound)
+            if obj is None:
+                continue
+            obj.set_position(sound.position.x, sound.position.y, sound.position.z)
+            obj.set_rotation(0, 0, 0)
+
+        for encounter in git.encounters:
+            obj = scene.objects.get(encounter)
+            if obj is None:
+                continue
+            obj.set_position(encounter.position.x, encounter.position.y, encounter.position.z)
+            obj.set_rotation(0, 0, 0)
+
+        for trigger in git.triggers:
+            obj = scene.objects.get(trigger)
+            if obj is None:
+                continue
+            obj.set_position(trigger.position.x, trigger.position.y, trigger.position.z)
+            obj.set_rotation(0, 0, 0)
+
+        for camera in git.cameras:
+            obj = scene.objects.get(camera)
+            if obj is None:
+                continue
+            obj.set_position(camera.position.x, camera.position.y, camera.position.z + camera.height)
+            euler: Vector3 = eulerAngles(quat(camera.orientation.w, camera.orientation.x, camera.orientation.y, camera.orientation.z))
+            obj.set_rotation(
+                euler.y,
+                euler.z - math.pi / 2 + math.radians(camera.pitch),
+                -euler.x + math.pi / 2,
+            )
+
+    @staticmethod
     def build_cache(  # noqa: C901, PLR0912, PLR0915
         scene: Scene,
         *,
@@ -60,6 +147,8 @@ class SceneCache:
         if scene.layout is None:
             scene.layout = scene._get_lyt()
 
+        # --- Phase 1: Process explicit cache invalidations ---
+        had_invalidation = bool(scene.clear_cache_buffer)
         for identifier in scene.clear_cache_buffer:
             for git_creature in scene.git.creatures.copy():
                 if identifier.resname == git_creature.resref and identifier.restype == ResourceType.UTC:
@@ -84,6 +173,15 @@ class SceneCache:
                 scene.layout = scene._get_lyt()
         scene.clear_cache_buffer = []
 
+        # --- Phase 2: Fast path – if all objects exist, just sync positions ---
+        _expected = SceneCache._expected_instance_count(scene)
+        _current = len(scene.objects)
+        if not had_invalidation and not clear_cache and _current == _expected:
+            # All objects already created, no removals needed. Just sync positions.
+            SceneCache._sync_positions(scene)
+            return
+
+        # --- Phase 3: Full build – create missing objects + sync positions ---
         for room in scene.layout.rooms:
             if room not in scene.objects:
                 position = Vector3(room.position.x, room.position.y, room.position.z)
@@ -285,13 +383,20 @@ class SceneCache:
                 -euler.x + math.pi / 2,
             )
 
-        # --- Detect removed GIT objects and clean them from the render list ---
-        # Build frozenset of live instances (required every frame for correctness).
-        _live_instances: frozenset[GITInstance | LYTRoom] = frozenset(scene.git.instances()) | frozenset(scene.layout.rooms)
-        # Only run the remove pass when there may be dead objects (avoids list comp + del loop most frames).
-        if len(scene.objects) > len(_live_instances) or any(k not in _live_instances for k in scene.objects):
-            _to_remove: list[GITInstance | LYTRoom] = [obj for obj in scene.objects if obj not in _live_instances]
-            for obj in _to_remove:
-                del scene.objects[obj]
-
-    # _del_git_objects removed - replaced by frozenset-based O(1) lookup in build_cache.
+        # --- Phase 4: Remove stale objects (only when count exceeds expected) ---
+        # This replaces the expensive per-frame frozenset construction.
+        # Only runs during full rebuilds when object count indicates stale entries.
+        if len(scene.objects) > SceneCache._expected_instance_count(scene):
+            _live: set[GITInstance | LYTRoom] = set()
+            for room in scene.layout.rooms:
+                _live.add(room)
+            for inst_list in (
+                scene.git.doors, scene.git.placeables, scene.git.creatures,
+                scene.git.waypoints, scene.git.stores, scene.git.sounds,
+                scene.git.encounters, scene.git.triggers, scene.git.cameras,
+            ):
+                for inst in inst_list:
+                    _live.add(inst)
+            _to_remove = [k for k in scene.objects if k not in _live]
+            for k in _to_remove:
+                del scene.objects[k]
