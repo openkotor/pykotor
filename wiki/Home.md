@@ -49,11 +49,19 @@ That split is deliberate. The goal is not “use only PyKotor tools forever”; 
 - [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) for player-facing install and troubleshooting steps
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) for compatibility, packaging, and release discipline
 - [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) for the modern patcher-authoring workflow
-- [TSLPatcher Data Syntax](TSLPatcher-Data-Syntax), [TSLPatcher GFF Syntax](TSLPatcher-GFF-Syntax), and [TSLPatcher Install and Hack Syntax](TSLPatcher-Install-and-Hack-Syntax) when you need exact INI section behavior
+- [TSLPatcher Data Syntax](TSLPatcher-Data-Syntax)
+- [TSLPatcher GFF Syntax](TSLPatcher-GFF-Syntax)
+- [TSLPatcher Install and Hack Syntax](TSLPatcher-Install-and-Hack-Syntax)
 
 ## Preserved source documents
 
-- The **Bioware Aurora** family preserves official BioWare Aurora Engine documentation [[xoreos-docs/specs/bioware](https://github.com/xoreos/xoreos-docs/tree/master/specs/bioware)]: [Core Formats](Bioware-Aurora-Core-Formats), [Module & Area](Bioware-Aurora-Module-and-Area), [Creature](Bioware-Aurora-Creature), [Items, Economy & Narrative](Bioware-Aurora-Items-Economy-and-Narrative), [Spatial & Interactive](Bioware-Aurora-Spatial-and-Interactive), [Conversation](Bioware-Aurora-Conversation).
+- The **Bioware Aurora** family preserves official BioWare Aurora Engine documentation [[xoreos-docs/specs/bioware](https://github.com/xoreos/xoreos-docs/tree/master/specs/bioware)]:
+  - [Core Formats](Bioware-Aurora-Core-Formats)
+  - [Module & Area](Bioware-Aurora-Module-and-Area)
+  - [Creature](Bioware-Aurora-Creature)
+  - [Items, Economy & Narrative](Bioware-Aurora-Items-Economy-and-Narrative)
+  - [Spatial & Interactive](Bioware-Aurora-Spatial-and-Interactive)
+  - [Conversation](Bioware-Aurora-Conversation)
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) is the primary historical and technical source for TSLPatcher behavior.
 
 ## Cross-reference: other tools and engines
@@ -66,23 +74,43 @@ PyKotor is one part of a larger KotOR tooling ecosystem. This section is a compa
 - [xoreos-docs](https://github.com/xoreos/xoreos-docs)
 - [reone](https://github.com/seedhartha/reone) is a C++ game engine capable of running KotOR and TSL [[README](https://github.com/seedhartha/reone#readme)].
 - [KotOR.js](https://github.com/KobaltBlu/KotOR.js) is a TypeScript/WebGL engine implementation.
-- [NorthernLights](https://github.com/lachjames/NorthernLights) and [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity) are Unity/.NET-based engine projects.
+- [NorthernLights](https://github.com/lachjames/NorthernLights)
+- [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)
 
 ### File-format libraries and related tooling
 
 - [xoreos-tools](https://github.com/xoreos/xoreos-tools) provides CLI extraction and conversion tools for Aurora-family formats [[README](https://github.com/xoreos/xoreos-tools/blob/master/README.md#L4-L8)].
-- [Kotor.NET](https://github.com/NickHugi/Kotor.NET), [BioWare.NET](https://github.com/th3w1zard1/BioWare.NET/tree/98dd9c47d1b1ccd7cc5f72a0bd4279c418359ec2), and [Rakata](https://codeberg.org/Synchro/rakata) are alternative format-parsing stacks.
-- [kotorblender](https://github.com/OpenKotOR/kotorblender), [mdlops](https://github.com/ndixUR/mdlops), [tga2tpc](https://github.com/ndixUR/tga2tpc), [DLZ-Tool](https://github.com/LaneDibello/DLZ-Tool), and [WalkmeshVisualizer](https://github.com/glasnonck/WalkmeshVisualizer) cover common 3D and asset workflows.
-- [HoloLSP](https://github.com/th3w1zard1/HoloLSP/tree/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2), [nwscript-mode.el](https://github.com/implicit-image/nwscript-mode.el), and [Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source) are useful script-development references.
+- [Kotor.NET](https://github.com/NickHugi/Kotor.NET)
+- [BioWare.NET](https://github.com/th3w1zard1/BioWare.NET/tree/98dd9c47d1b1ccd7cc5f72a0bd4279c418359ec2)
+- [Rakata](https://codeberg.org/Synchro/rakata)
+- [kotorblender](https://github.com/OpenKotOR/kotorblender)
+- [mdlops](https://github.com/ndixUR/mdlops)
+- [tga2tpc](https://github.com/ndixUR/tga2tpc)
+- [DLZ-Tool](https://github.com/LaneDibello/DLZ-Tool)
+- [WalkmeshVisualizer](https://github.com/glasnonck/WalkmeshVisualizer)
+- [HoloLSP](https://github.com/th3w1zard1/HoloLSP/tree/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2)
+- [nwscript-mode.el](https://github.com/implicit-image/nwscript-mode.el)
+- [Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)
 
 ### Community projects and tools
 
 - [KPatcher](https://github.com/th3w1zard1/KPatcher/tree/600630e55e2b6a62e3ed84f8cd84a413baf7795d)
 - [Kotor-Patch-Manager](https://github.com/LaneDibello/Kotor-Patch-Manager)
-- [KotORModSync](https://github.com/th3w1zard1/KotORModSync/tree/c8b0d10ce3fd7525d593d34a3be8d151da7d3387), [StarForge](https://github.com/th3w1zard1/StarForge/tree/01afebab065c606980cebe9120702fce2c825e2d), and [KotorModTools](https://github.com/Box65535/KotorModTools) are adjacent modding tools.
-- [sotor](https://github.com/StarfishXeno/sotor), [KSELinux](https://github.com/Bolche/KSELinux), [KotOR-Save-Editor](https://github.com/Fair-Strides/KotOR-Save-Editor), and [kotor-savegame-editor](https://github.com/nadrino/kotor-savegame-editor) cover save editing.
-- [SithCodec](https://github.com/BBBrassil/SithCodec) and [SWKotOR-Audio-Encoder](https://github.com/LoranRendel/SWKotOR-Audio-Encoder) cover audio-focused workflows.
-- [K1_Community_Patch](https://github.com/KOTORCommunityPatches/K1_Community_Patch), [TSL_Community_Patch](https://github.com/KOTORCommunityPatches/TSL_Community_Patch), [KOTOR-utils](https://github.com/JCarter426/KOTOR-utils), [KotOR-Bioware-Libs](https://github.com/Fair-Strides/KotOR-Bioware-Libs), [kotor_combat_faq](https://github.com/statsjedi/kotor_combat_faq), and [ds-kotor-modding-wiki](https://github.com/DeadlyStream/ds-kotor-modding-wiki) are useful adjacent references.
+- [KotORModSync](https://github.com/th3w1zard1/KotORModSync/tree/c8b0d10ce3fd7525d593d34a3be8d151da7d3387)
+- [StarForge](https://github.com/th3w1zard1/StarForge/tree/01afebab065c606980cebe9120702fce2c825e2d)
+- [KotorModTools](https://github.com/Box65535/KotorModTools)
+- [sotor](https://github.com/StarfishXeno/sotor)
+- [KSELinux](https://github.com/Bolche/KSELinux)
+- [KotOR-Save-Editor](https://github.com/Fair-Strides/KotOR-Save-Editor)
+- [kotor-savegame-editor](https://github.com/nadrino/kotor-savegame-editor)
+- [SithCodec](https://github.com/BBBrassil/SithCodec)
+- [SWKotOR-Audio-Encoder](https://github.com/LoranRendel/SWKotOR-Audio-Encoder)
+- [K1_Community_Patch](https://github.com/KOTORCommunityPatches/K1_Community_Patch)
+- [TSL_Community_Patch](https://github.com/KOTORCommunityPatches/TSL_Community_Patch)
+- [KOTOR-utils](https://github.com/JCarter426/KOTOR-utils)
+- [KotOR-Bioware-Libs](https://github.com/Fair-Strides/KotOR-Bioware-Libs)
+- [kotor_combat_faq](https://github.com/statsjedi/kotor_combat_faq)
+- [ds-kotor-modding-wiki](https://github.com/DeadlyStream/ds-kotor-modding-wiki)
 
 <a id="community-sources-and-archives"></a>
 
