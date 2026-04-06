@@ -33,7 +33,7 @@ jobs:
             .
 
       - name: Upload backup artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: repository-backup-$(date +%Y%m%d)
           path: pykotor-backup-*.tar.gz
