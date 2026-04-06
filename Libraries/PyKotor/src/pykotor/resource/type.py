@@ -234,8 +234,8 @@ class ResourceType(Enum):
         10, "txt", "Text Files", "plaintext", supported_engines=(BiowareEngine.Infinity, BiowareEngine.Aurora, BiowareEngine.Odyssey, BiowareEngine.Eclipse)
     )
     WMA = ResourceTuple(11, "wma", "Audio", "binary", supported_engines=(BiowareEngine.Odyssey,))  # pyright: ignore[reportCallIssue]  # Audio, Windows media (K1 only, not in TSL)
-    WMV = ResourceTuple(12, "wmv", "Audio", "binary", supported_engines=(BiowareEngine.Odyssey,))  # pyright: ignore[reportCallIssue]  # Video, Windows media
-    XMV = ResourceTuple(13, "xmv", "Audio", "binary", supported_engines=(BiowareEngine.Odyssey,))  # pyright: ignore[reportCallIssue]  # Video, Xbox
+    WMV = ResourceTuple(12, "wmv", "Videos", "binary", supported_engines=(BiowareEngine.Odyssey,))  # pyright: ignore[reportCallIssue]  # Video, Windows media
+    XMV = ResourceTuple(13, "xmv", "Videos", "binary", supported_engines=(BiowareEngine.Odyssey,))  # pyright: ignore[reportCallIssue]  # Video, Xbox
     PLH = ResourceTuple(2000, "plh", "Models", "binary", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]
     TEX = ResourceTuple(2001, "tex", "Textures", "binary", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Texture
     MDL = ResourceTuple(2002, "mdl", "Models", "binary", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey, BiowareEngine.Eclipse))  # pyright: ignore[reportCallIssue]  # Geometry, BioWare model
@@ -266,8 +266,8 @@ class ResourceType(Enum):
     UTC = ResourceTuple(2027, "utc", "Creatures", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Creature template (user), GFF
     # Type ID 2028 is reserved/unused
     DLG = ResourceTuple(2029, "dlg", "Dialogs", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey, BiowareEngine.Eclipse))  # pyright: ignore[reportCallIssue]  # Dialog tree, GFF
-    ITP = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Toolset "palette" (tree of tiles or object templates)
-        2030, "itp", "Palettes", "binary", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey)
+    ITP = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Toolset "palette" (tree of tiles or object templates), GFF
+        2030, "itp", "Palettes", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey)
     )
     BTT = ResourceTuple(2031, "btt", "Triggers", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Trigger template (BioWare), GFF
     UTT = ResourceTuple(2032, "utt", "Triggers", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Trigger template (user), GFF
@@ -281,11 +281,12 @@ class ResourceType(Enum):
     FAC = ResourceTuple(2038, "fac", "Factions", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Faction information, GFF
     BTE = ResourceTuple(2039, "bte", "Encounters", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Encounter template (BioWare), GFF
     UTE = ResourceTuple(2040, "ute", "Encounters", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Encounter template (user), GFF
+    BTD = ResourceTuple(2041, "btd", "Doors", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Door template (BioWare), GFF
     UTD = ResourceTuple(2042, "utd", "Doors", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Door template (user), GFF
     BTP = ResourceTuple(2043, "btp", "Placeables", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Placeable template (BioWare), GFF
     UTP = ResourceTuple(2044, "utp", "Placeables", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Placeable template (user), GFF
     DFT = ResourceTuple(2045, "dft", "Defaults", "binary", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Default values
-    DTF = ResourceTuple(2045, "dft", "Defaults", "plaintext", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Default value file, INI
+    DTF = ResourceTuple(2045, "dtf", "Defaults", "plaintext", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Default value file, INI
     GIC = ResourceTuple(2046, "gic", "Module Data", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Game instance comments, GFF
     GUI = ResourceTuple(2047, "gui", "GUIs", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey, BiowareEngine.Eclipse))  # pyright: ignore[reportCallIssue]  # GUI definition, GFF
     CSS = ResourceTuple(2048, "css", "Scripts", "plaintext", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Script, conditional source script
@@ -317,8 +318,8 @@ class ResourceType(Enum):
     TTF = ResourceTuple(2072, "ttf", "Fonts", "binary", supported_engines=())  # pyright: ignore[reportCallIssue]  # Font, True Type
     TTC = ResourceTuple(2073, "ttc", "Unused", "binary")  # pyright: ignore[reportCallIssue]  # Unused type, reserved
     CUT = ResourceTuple(2074, "cut", "Cutscenes", "gff", supported_engines=())  # pyright: ignore[reportCallIssue]  # Cutscene, GFF
-    KA = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Unused type, reserved  # noqa: E221
-        2075, "ka", "Unused", "xml"
+    KA = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Karma, XML  # noqa: E221
+        2075, "ka", "Other", "xml"
     )
     JPG = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Image, JPEG
         2076, "jpg", "Images", "binary", supported_engines=(BiowareEngine.Eclipse,)
@@ -327,23 +328,23 @@ class ResourceType(Enum):
         2077, "ico", "Images", "binary", supported_engines=(BiowareEngine.Eclipse,)
     )
     OGG = ResourceTuple(2078, "ogg", "Audio", "binary", supported_engines=(BiowareEngine.Eclipse,))  # pyright: ignore[reportCallIssue]  # Audio, Ogg Vorbis
-    SPT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Unused type, reserved
-        2079, "spt", "Unused", "binary"
+    SPT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Tree data, SpeedTree
+        2079, "spt", "Other", "binary"
     )
-    SPW = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Unused type, reserved
-        2080, "spw", "Unused", "binary"
+    SPW = ResourceTuple(  # pyright: ignore[reportCallIssue]
+        2080, "spw", "Other", "binary"
     )
-    WFX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Unused type, reserved
-        2081, "wfx", "Unused", "xml"
+    WFX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Woot effect class, XML
+        2081, "wfx", "Other", "xml"
     )
     UGM = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Unused type, reserved
         2082, "ugm", "Unused", "binary"
     )
-    QDB = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Unused type, reserved
-        2083, "qdb", "Unused", "gff"
+    QDB = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Quest database, GFF
+        2083, "qdb", "Quests", "gff"
     )
-    QST = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Unused type, reserved
-        2084, "qst", "Unused", "gff"
+    QST = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Quest, GFF
+        2084, "qst", "Quests", "gff"
     )
     NPC = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Unused type, reserved
         2085, "npc", "Unused", "binary"
@@ -385,7 +386,7 @@ class ResourceType(Enum):
     THEWITCHERSAVE = ResourceTuple(2098, "thewitchersave", "Save Data", "binary")  # pyright: ignore[reportCallIssue]  # The Witcher save file, not BioWare engine
     PVS = ResourceTuple(2099, "pvs", "Unused", "binary")  # pyright: ignore[reportCallIssue]  # Unused type, reserved
     CFX = ResourceTuple(2100, "cfx", "Unused", "binary")  # pyright: ignore[reportCallIssue]  # Unused type, reserved
-    LUC = ResourceTuple(2101, "luc", "Scripts", "binary", supported_engines=(BiowareEngine.Eclipse,))  # pyright: ignore[reportCallIssue]  # Compiled Lua script, Eclipse only
+    LUC = ResourceTuple(2101, "luc", "Scripts", "binary", supported_engines=(BiowareEngine.Eclipse,))  # pyright: ignore[reportCallIssue]  # Script, LUA bytecode
     # Type ID 2102 is reserved/unused
     PRB = ResourceTuple(2103, "prb", "Unused", "binary")  # pyright: ignore[reportCallIssue]  # Unused type, reserved
     CAM = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Campaign information, Aurora only
@@ -503,55 +504,55 @@ class ResourceType(Enum):
     PWC = ResourceTuple(  # pyright: ignore[reportCallIssue]  # PWC file, Eclipse only
         4008, "pwc", "Other", "binary", supported_engines=(BiowareEngine.Eclipse,)
     )
-    EXE = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Windows executable
+    EXE = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Windows PE EXE file
         19000, "exe", "Other", "binary"
     )
-    DBF = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Database file
+    DBF = ResourceTuple(  # pyright: ignore[reportCallIssue]  # xBase database
         19001, "dbf", "Other", "binary"
     )
-    CDX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # CDX file
+    CDX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # FoxPro database index
         19002, "cdx", "Other", "binary"
     )
-    FPT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # FPT file
+    FPT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # FoxPro database memo file
         type_id=19003, extension="fpt", category="Other", contents="binary"
     )
     ZIP = ResourceTuple(  # pyright: ignore[reportCallIssue]  # ZIP archive
         20000, "zip", "Archives", "binary"
     )
-    FXM = ResourceTuple(  # pyright: ignore[reportCallIssue]  # FXM file
+    FXM = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Face metadata, FaceFX
         20001, "fxm", "Other", "binary"
     )
-    FXS = ResourceTuple(  # pyright: ignore[reportCallIssue]  # FXS file
+    FXS = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Face metadata, FaceFX
         20002, "fxs", "Other", "binary"
     )
-    XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # XML file
+    XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Extensible Markup Language
         20003, "xml", "Other", "plaintext"
     )
-    WLK = ResourceTuple(  # pyright: ignore[reportCallIssue]  # WLK file
+    WLK = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Walk mesh
         20004, "wlk", "Walkmeshes", "binary"
     )
-    UTR = ResourceTuple(  # pyright: ignore[reportCallIssue]  # UTR file
-        20005, "utr", "Unused", "binary"
+    UTR = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Tree template (user), GFF
+        20005, "utr", "Other", "gff"
     )
-    SEF = ResourceTuple(  # pyright: ignore[reportCallIssue]  # SEF file
+    SEF = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Special effect file
         20006, "sef", "Other", "binary"
     )
-    PFX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # PFX file
+    PFX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Particle effect
         20007, "pfx", "Other", "binary"
     )
-    TFX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # TFX file
+    TFX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Trail effect
         20008, "tfx", "Other", "binary"
     )
     IFX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # IFX file
         20009, "ifx", "Other", "binary"
     )
-    LFX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # LFX file
+    LFX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Line effect
         20010, "lfx", "Other", "binary"
     )
-    BBX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # BBX file
+    BBX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Billboard effect
         20011, "bbx", "Other", "binary"
     )
-    PFB = ResourceTuple(  # pyright: ignore[reportCallIssue]  # PFB file
+    PFB = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Prefab blueprint
         20012, "pfb", "Other", "binary"
     )
     UPE = ResourceTuple(  # pyright: ignore[reportCallIssue]  # UPE file
@@ -560,8 +561,8 @@ class ResourceType(Enum):
     USC = ResourceTuple(  # pyright: ignore[reportCallIssue]  # USC file
         20014, "usc", "Unused", "binary"
     )
-    ULT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # ULT file
-        20015, "ult", "Unused", "binary"
+    ULT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Light template (user), GFF
+        20015, "ult", "Other", "gff"
     )
     FX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # FX file
         20016, "fx", "Other", "binary"
@@ -575,8 +576,8 @@ class ResourceType(Enum):
     SCC = ResourceTuple(  # pyright: ignore[reportCallIssue]  # SCC file
         20019, "scc", "Other", "binary"
     )
-    WMP = ResourceTuple(  # pyright: ignore[reportCallIssue]  # WMP file
-        20020, "wmp", "Other", "binary"
+    WMP = ResourceTuple(  # pyright: ignore[reportCallIssue]  # World map, GFF
+        20020, "wmp", "Other", "gff"
     )
     OSC = ResourceTuple(  # pyright: ignore[reportCallIssue]  # OSC file
         20021, "osc", "Other", "binary"
@@ -602,30 +603,30 @@ class ResourceType(Enum):
     TRX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # TRX file
         20028, "trx", "Other", "binary"
     )
-    NDS = ResourceTuple(21000, "nds", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    HERF = ResourceTuple(  # pyright: ignore[reportCallIssue]  # HERF file
-        21001, "herf", "Other", "binary"
+    NDS = ResourceTuple(21000, "nds", "Archives", "binary")  # pyright: ignore[reportCallIssue]  # Archive, Nintendo DS ROM file
+    HERF = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Archive, hashed ERF
+        21001, "herf", "Archives", "binary"
     )
-    DICT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Dictionary file
+    DICT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # HERF file name -> hashes dictionary
         21002, "dict", "Other", "binary"
     )
-    SMALL = ResourceTuple(21003, "small", "Other", "binary")  # pyright: ignore[reportCallIssue]
+    SMALL = ResourceTuple(21003, "small", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Compressed file, Nintendo LZSS
     CBGT = ResourceTuple(21004, "cbgt", "Other", "binary")  # pyright: ignore[reportCallIssue]
     CDPTH = ResourceTuple(21005, "cdpth", "Other", "binary")  # pyright: ignore[reportCallIssue]
     EMIT = ResourceTuple(21006, "emit", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    ITM = ResourceTuple(21007, "itm", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NANR = ResourceTuple(21008, "nanr", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NBFP = ResourceTuple(21009, "nbfp", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NBFS = ResourceTuple(21010, "nbfs", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NCER = ResourceTuple(21011, "ncer", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NCGR = ResourceTuple(21012, "ncgr", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NCLR = ResourceTuple(21013, "nclr", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NFTR = ResourceTuple(21014, "nftr", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NSBCA = ResourceTuple(21015, "nsbca", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NSBMD = ResourceTuple(21016, "nsbmd", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NSBTA = ResourceTuple(21017, "nsbta", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NSBTP = ResourceTuple(21018, "nsbtp", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NSBTX = ResourceTuple(21019, "nsbtx", "Other", "binary")  # pyright: ignore[reportCallIssue]
+    ITM = ResourceTuple(21007, "itm", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Items, 2DA
+    NANR = ResourceTuple(21008, "nanr", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Animation, Nitro ANimation Resource
+    NBFP = ResourceTuple(21009, "nbfp", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Palette, Nitro Basic File Palette
+    NBFS = ResourceTuple(21010, "nbfs", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Image/Map, Nitro Basic File Screen
+    NCER = ResourceTuple(21011, "ncer", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Image, Nitro CEll Resource
+    NCGR = ResourceTuple(21012, "ncgr", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Image, Nitro Character Graphic Resource
+    NCLR = ResourceTuple(21013, "nclr", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Palette, Nitro CoLoR
+    NFTR = ResourceTuple(21014, "nftr", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Font
+    NSBCA = ResourceTuple(21015, "nsbca", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Model Animation
+    NSBMD = ResourceTuple(21016, "nsbmd", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Model
+    NSBTA = ResourceTuple(21017, "nsbta", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Texture animation
+    NSBTP = ResourceTuple(21018, "nsbtp", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Texture part
+    NSBTX = ResourceTuple(21019, "nsbtx", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Texture
     PAL = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Palette file
         21020, "pal", "Palettes", "binary"
     )
@@ -633,92 +634,92 @@ class ResourceType(Enum):
         21021, "raw", "Other", "binary"
     )
     SADL = ResourceTuple(21022, "sadl", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    SDAT = ResourceTuple(21023, "sdat", "Other", "binary")  # pyright: ignore[reportCallIssue]
+    SDAT = ResourceTuple(21023, "sdat", "Audio", "binary")  # pyright: ignore[reportCallIssue]  # Audio, Sound DATa
     SMP = ResourceTuple(21024, "smp", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    SPL = ResourceTuple(21025, "spl", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    VX = ResourceTuple(21026, "vx", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    ANB = ResourceTuple(22000, "anb", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    ANI = ResourceTuple(22001, "ani", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    CNS = ResourceTuple(22002, "cns", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    CUR = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Cursor file
+    SPL = ResourceTuple(21025, "spl", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Spells, 2DA
+    VX = ResourceTuple(21026, "vx", "Videos", "binary")  # pyright: ignore[reportCallIssue]  # Video, Actimagine
+    ANB = ResourceTuple(22000, "anb", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Animation blend
+    ANI = ResourceTuple(22001, "ani", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Animation sequence
+    CNS = ResourceTuple(22002, "cns", "Scripts", "binary")  # pyright: ignore[reportCallIssue]  # Script, client script source
+    CUR = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Cursor, Windows cursor
         22003, "cur", "Other", "binary"
     )
-    EVT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Event file
+    EVT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Animation event
         22004, "evt", "Other", "binary"
     )
     FDL = ResourceTuple(22005, "fdl", "Other", "binary")  # pyright: ignore[reportCallIssue]
     FXO = ResourceTuple(22006, "fxo", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    GAD = ResourceTuple(22007, "gad", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    GDA = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Game data archive, Eclipse only
-        22008, "gda", "Other", "binary", supported_engines=(BiowareEngine.Eclipse,)
+    GAD = ResourceTuple(22007, "gad", "Other", "binary")  # pyright: ignore[reportCallIssue]  # GOB Animation Data
+    GDA = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Table data, GFF'd 2DA, 2-dimensional text array
+        22008, "gda", "2D Arrays", "binary", supported_engines=(BiowareEngine.Eclipse,)
     )
-    GFX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Graphics file
+    GFX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Vector graphics animation, Scaleform GFx
         22009, "gfx", "Other", "binary"
     )
-    LDF = ResourceTuple(22010, "ldf", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    LST = ResourceTuple(  # pyright: ignore[reportCallIssue]  # List file
+    LDF = ResourceTuple(22010, "ldf", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Language definition file
+    LST = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Area list
         22011, "lst", "Other", "plaintext"
     )
-    MAL = ResourceTuple(22012, "mal", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    MAO = ResourceTuple(22013, "mao", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    MMH = ResourceTuple(22014, "mmh", "Other", "binary")  # pyright: ignore[reportCallIssue]
+    MAL = ResourceTuple(22012, "mal", "Materials", "binary")  # pyright: ignore[reportCallIssue]  # Material Library
+    MAO = ResourceTuple(22013, "mao", "Materials", "binary")  # pyright: ignore[reportCallIssue]  # Material Object
+    MMH = ResourceTuple(22014, "mmh", "Models", "binary")  # pyright: ignore[reportCallIssue]  # Model Mesh Hierarchy
     MOP = ResourceTuple(22015, "mop", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    MOR = ResourceTuple(22016, "mor", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    MSH = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Mesh file
+    MOR = ResourceTuple(22016, "mor", "Models", "binary")  # pyright: ignore[reportCallIssue]  # Head Morph
+    MSH = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Mesh
         22017, "msh", "Models", "binary"
     )
     MTX = ResourceTuple(22018, "mtx", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NCC = ResourceTuple(22019, "ncc", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    PHY = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Physics file
+    NCC = ResourceTuple(22019, "ncc", "Scripts", "binary")  # pyright: ignore[reportCallIssue]  # Script, compiled client script
+    PHY = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Physics, Novodex collision info
         22020, "phy", "Other", "binary"
     )
-    PLO = ResourceTuple(22021, "plo", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    STG = ResourceTuple(22022, "stg", "Other", "binary")  # pyright: ignore[reportCallIssue]
+    PLO = ResourceTuple(22021, "plo", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Plot information
+    STG = ResourceTuple(22022, "stg", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Cutscene stage
     TBI = ResourceTuple(22023, "tbi", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    TNT = ResourceTuple(22024, "tnt", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    ARL = ResourceTuple(22025, "arl", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    FEV = ResourceTuple(22026, "fev", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    FSB = ResourceTuple(  # pyright: ignore[reportCallIssue]  # FMOD Sound Bank
+    TNT = ResourceTuple(22024, "tnt", "Materials", "binary")  # pyright: ignore[reportCallIssue]  # Material tint
+    ARL = ResourceTuple(22025, "arl", "Module Data", "binary")  # pyright: ignore[reportCallIssue]  # Area layout
+    FEV = ResourceTuple(22026, "fev", "Audio", "binary")  # pyright: ignore[reportCallIssue]  # FMOD Event
+    FSB = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Audio, FMOD sound bank
         22027, "fsb", "Audio", "binary"
     )
     OPF = ResourceTuple(22028, "opf", "Other", "binary")  # pyright: ignore[reportCallIssue]
     CRF = ResourceTuple(22029, "crf", "Other", "binary")  # pyright: ignore[reportCallIssue]
     RIMP = ResourceTuple(22030, "rimp", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    MET = ResourceTuple(22031, "met", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    META = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Metadata file
+    MET = ResourceTuple(22031, "met", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Resource meta information
+    META = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Resource meta information
         22032, "meta", "Other", "binary"
     )
-    FXR = ResourceTuple(22033, "fxr", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    FXT = ResourceTuple(22033, "fxt", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    CIF = ResourceTuple(22034, "cif", "Other", "binary")  # pyright: ignore[reportCallIssue]
+    FXR = ResourceTuple(22033, "fxr", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Face metadata, FaceFX
+    FXT = ResourceTuple(22033, "fxt", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Face metadata, FaceFX
+    CIF = ResourceTuple(22034, "cif", "Other", "gff")  # pyright: ignore[reportCallIssue]  # Campaign Information File, GFF4
     CUB = ResourceTuple(22035, "cub", "Other", "binary")  # pyright: ignore[reportCallIssue]
     DLB = ResourceTuple(22036, "dlb", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    NSC = ResourceTuple(22037, "nsc", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    MOV = ResourceTuple(  # pyright: ignore[reportCallIssue]  # QuickTime movie
+    NSC = ResourceTuple(22037, "nsc", "Scripts", "binary")  # pyright: ignore[reportCallIssue]  # NWScript client script source
+    MOV = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Video, QuickTime/MPEG-4
         23000, "mov", "Videos", "binary"
     )
-    CURS = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Cursor resource
+    CURS = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Cursor, Mac CURS format
         23001, "curs", "Other", "binary"
     )
-    PICT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # PICT image
+    PICT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Image, Mac PICT format
         23002, "pict", "Images", "binary"
     )
-    RSRC = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Resource file
+    RSRC = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Mac resource fork
         23003, "rsrc", "Other", "binary"
     )
-    PLIST = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Property list
+    PLIST = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Mac property list, XML
         23004, "plist", "Other", "plaintext"
     )
-    CRE = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Creature file
-        24000, "cre", "Creatures", "binary"
+    CRE = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Creature, GFF
+        24000, "cre", "Creatures", "gff"
     )
-    PSO = ResourceTuple(24001, "pso", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    VSO = ResourceTuple(24002, "vso", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    ABC = ResourceTuple(24003, "abc", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    SBM = ResourceTuple(24004, "sbm", "Other", "binary")  # pyright: ignore[reportCallIssue]
+    PSO = ResourceTuple(24001, "pso", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Shader
+    VSO = ResourceTuple(24002, "vso", "Other", "binary")  # pyright: ignore[reportCallIssue]  # Shader
+    ABC = ResourceTuple(24003, "abc", "Fonts", "binary")  # pyright: ignore[reportCallIssue]  # Font, character descriptions
+    SBM = ResourceTuple(24004, "sbm", "Fonts", "binary")  # pyright: ignore[reportCallIssue]  # Font, character bitmap data
     PVD = ResourceTuple(24005, "pvd", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    PLA = ResourceTuple(24006, "pla", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    TRG = ResourceTuple(24007, "trg", "Other", "binary")  # pyright: ignore[reportCallIssue]
+    PLA = ResourceTuple(24006, "pla", "Placeables", "gff")  # pyright: ignore[reportCallIssue]  # Placeable, GFF
+    TRG = ResourceTuple(24007, "trg", "Triggers", "gff")  # pyright: ignore[reportCallIssue]  # Trigger, GFF
     PK = ResourceTuple(24008, "pk", "Other", "binary")  # pyright: ignore[reportCallIssue]
     ALS = ResourceTuple(25000, "als", "Other", "binary")  # pyright: ignore[reportCallIssue]
     APL = ResourceTuple(25001, "apl", "Other", "binary")  # pyright: ignore[reportCallIssue]
@@ -761,40 +762,40 @@ class ResourceType(Enum):
     XLS = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Excel file
         25023, "xls", "Other", "binary"
     )
-    BZF = ResourceTuple(26000, "bzf", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    ADV = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Adventure file
-        27000, "adv", "Other", "binary"
+    BZF = ResourceTuple(26000, "bzf", "Archives", "binary")  # pyright: ignore[reportCallIssue]  # Game resource data, LZMA-compressed BIF
+    ADV = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Extra adventure modules, ERF
+        27000, "adv", "Modules", "binary"
     )
     JSON = ResourceTuple(  # pyright: ignore[reportCallIssue]  # JSON file
         28000, "json", "Other", "plaintext"
     )
-    TLK_EXPERT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Expert talk table
-        28001, "tlk_expert", "Talk Tables", "binary"
+    TLK_EXPERT = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Talk table for extra expert-level control strings, plain text
+        28001, "tlk_expert", "Talk Tables", "plaintext"
     )
-    TLK_MOBILE = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Mobile talk table
-        28002, "tlk_mobile", "Talk Tables", "binary"
+    TLK_MOBILE = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Talk table for extra mobile port strings, plain text
+        28002, "tlk_mobile", "Talk Tables", "plaintext"
     )
-    TLK_TOUCH = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Touch talk table
-        28003, "tlk_touch", "Talk Tables", "binary"
+    TLK_TOUCH = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Talk table for extra touch control strings, plain text
+        28003, "tlk_touch", "Talk Tables", "plaintext"
     )
     OTF = ResourceTuple(  # pyright: ignore[reportCallIssue]  # OpenType font
         28004, "otf", "Fonts", "binary"
     )
     PAR = ResourceTuple(28005, "par", "Other", "binary")  # pyright: ignore[reportCallIssue]
-    XWB = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Xbox Wave Bank
+    XWB = ResourceTuple(  # pyright: ignore[reportCallIssue]  # XACT WaveBank
         29000, "xwb", "Audio", "binary"
     )
-    XSB = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Xbox Sound Bank
+    XSB = ResourceTuple(  # pyright: ignore[reportCallIssue]  # XACT SoundBank
         29001, "xsb", "Audio", "binary"
     )
-    XDS = ResourceTuple(30000, "xds", "Other", "binary")  # pyright: ignore[reportCallIssue]
+    XDS = ResourceTuple(30000, "xds", "Textures", "binary")  # pyright: ignore[reportCallIssue]  # Texture
     WND = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Window file
         30001, "wnd", "Other", "binary"
     )
     XEOSITEX = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Xeositex texture
         40000, "xeositex", "Textures", "binary"
     )
-    WBM = ResourceTuple(41000, "wbm", "Other", "binary")  # pyright: ignore[reportCallIssue]
+    WBM = ResourceTuple(41000, "wbm", "Videos", "binary")  # pyright: ignore[reportCallIssue]  # Video, WebM
     OneDA = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Table data, 1-dimensional text array
         9996, "1da", "2D Arrays", "binary", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey, BiowareEngine.Eclipse)
     )
