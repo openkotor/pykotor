@@ -102,8 +102,8 @@ The string data table contains metadata for each string entry. Each entry is 40 
 | ----------------- | --------- | ------ | ---- | ---------------------------------------------------------------- |
 | flags             | UInt32    | 0 (0x00) | 4    | bit flags: bit 0=text present, bit 1=sound present, bit 2=sound length present |
 | Sound *ResRef*      | [char](GFF-File-Format#gff-data-types)  | 4 (0x04) | 16   | Voice-over audio filename ([null-terminated](https://en.cppreference.com/w/c/string/byte), max 16 chars)        |
-| Volume Variance   | UInt32    | 20 (0x14) | 4    | Unused in KotOR (always 0)                                      |
-| Pitch Variance    | UInt32    | 24 (0x18) | 4    | Unused in KotOR (always 0)                                      |
+| Volume Variance   | UInt32    | 20 (0x14) | 4    | Unused in KotOR (always 0) [[`tlk_data.py` L27](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L27), [`io_tlk.py` L214](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L214)] |
+| Pitch Variance    | UInt32    | 24 (0x18) | 4    | Unused in KotOR (always 0) [[`tlk_data.py` L28](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L28), [`io_tlk.py` L215](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L215)] |
 | offset to string  | UInt32    | 28 (0x1C) | 4    | offset to string text (relative to string Entries offset)       |
 | string size       | UInt32    | 32 (0x20) | 4    | Length of string text in bytes                                  |
 | Sound Length      | float     | 36 (0x24) | 4    | Duration of voice-over audio in seconds                         |
@@ -134,11 +134,12 @@ Common flag patterns in KotOR TLK files:
 
 The engine uses these flags to decide:
 
-- Whether to display subtitles (Text present flag)
-- Whether to play voice-over audio (Sound present flag)
-- How long to wait before auto-advancing dialog (Sound length present flag)
+- Whether to display subtitles (Text present flag) [[`io_tlk.py` L108](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L108)]
+- Whether to play voice-over audio (Sound present flag) [[`io_tlk.py` L109](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L109)]
 
-Missing flags are treated as `false` - if Text present is not set, the string is treated as empty even if text data exists.
+The soundlength-present flag (bit 2) is parsed into `soundlength_present` [[`io_tlk.py` L110](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L110)] but is noted as "Unused by KOTOR1 and 2" in PyKotor's writer [[`io_tlk.py` L210](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L210)]. The `sound_length` float stores duration in seconds but the engine does not appear to require the flag to be set to read that value.
+
+Missing flags are treated as `false` by PyKotor's reader [[`io_tlk.py` L108–L110](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L108-L110)] — if Text present is not set, the string is treated as empty even if text data exists.
 
 ### String entries
 
@@ -276,12 +277,12 @@ To modify SSF files in mods, see the [TSLPatcher SSFList syntax guide](TSLPatche
 
 - SSF — Sound Set File
   - Table of Contents
-  - [File structure overview](#file-structure-overview)
-  - [Binary Format](#binary-format)
-    - [File Header](#file-header)
+  - [File structure overview](#file-structure-overview-1)
+  - [Binary Format](#binary-format-1)
+    - [File Header](#file-header-1)
     - [Sound Table](#sound-table)
   - [Sound event types](#sound-event-types)
-  - [Cross-reference: implementations](#cross-reference-implementations)
+  - [Cross-reference: implementations](#cross-reference-implementations-1)
 
 ---
 
@@ -391,7 +392,7 @@ Indices are fixed; **do not reorder**. PyKotor names are authoritative for this 
 | --------- | -------- |
 | SSF data model (`SSF`) | [`ssf_data.py` `SSF` L26–L121](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ssf/ssf_data.py#L26-L121) |
 | SSF data model (`SSFSound`) | [`SSFSound` L123–L234](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ssf/ssf_data.py#L123-L234) |
-| Binary I/O | [`io_ssf.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py) (see [File structure overview](#file-structure-overview) for line-level anchors) |
+| Binary I/O | [`io_ssf.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ssf/io_ssf.py) (see [File structure overview](#file-structure-overview-1) for line-level anchors) |
 
 ---
 
@@ -410,13 +411,12 @@ LIP is always paired with a [WAV](Audio-and-Localization-Formats#wav) of matchin
 
 - LIP — Lip Synchronization
   - Table of Contents
-  - [File Structure Overview](#file-structure-overview)
-  - [Binary format](#binary-format)
+  - [File Structure Overview](#file-structure-overview-2)
+  - [Binary format](#binary-format-2)
     - [Header](#header)
     - [Keyframe Table](#keyframe-table)
   - [Mouth Shapes (Viseme Table)](#mouth-shapes-viseme-table)
   - [Animation Rules](#animation-rules)
-  - [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
@@ -578,13 +578,13 @@ See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 - WAV — Audio
   - Table of Contents
-  - File Types
+  - [File Types](#file-types)
   - [Standard RIFF/WAVE Structure](#standard-riffwave-structure)
     - [Format Chunk](#format-chunk)
     - [Data Chunk](#data-chunk)
   - [KotOR SFX Header](#kotor-sfx-header)
   - [Encoding Details](#encoding-details)
-  - [Cross-reference: implementations](#cross-reference-implementations)
+  - [Cross-reference: implementations](#cross-reference-implementations-2)
 
 ---
 
