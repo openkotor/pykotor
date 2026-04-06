@@ -2,7 +2,7 @@
 
 <a id="documentation"></a>
 
-PyKotor is a source-available KotOR and TSL modding toolchain. It exists to make the ecosystem less fragmented: one place for file-format documentation, installer behavior, tool workflows, and implementation-backed reference material that can be improved by the community instead of disappearing into forum archaeology.
+PyKotor is an LGPL-3.0 open-source KotOR and TSL modding toolchain [[`pyproject.toml` license](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/pyproject.toml#L59)]. It exists to make the ecosystem less fragmented: one place for file-format documentation, installer behavior, tool workflows, and implementation-backed reference material that can be improved by the community instead of disappearing into forum archaeology.
 
 The documentation is organized around what you are trying to do, not around whichever executable or legacy tool you happened to open first. Start from the table below, then follow the deeper format and engine-reference pages when you need exact behavior.
 
@@ -19,10 +19,10 @@ The documentation is organized around what you are trying to do, not around whic
 
 ## Toolchain map
 
-- **PyKotor** is the library and CLI foundation: parsers, writers, extraction helpers, automation commands, and format conversion.
-- **HoloPatcher** is the safe installer layer for merge-sensitive resources like [2DA](2DA-File-Format), [TLK](Audio-and-Localization-Formats#tlk), and [GFF](GFF-File-Format).
-- **Holocron Toolset** is the GUI editing layer for modules, resources, and area content.
-- **KotorDiff** is the comparison layer for install state, emitted patch data, and regression checking.
+- **PyKotor** is the library and CLI foundation: parsers, writers, extraction helpers, automation commands, and format conversion [[`pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/pyproject.toml#L8)].
+- **HoloPatcher** is the safe installer layer for merge-sensitive resources like [2DA](2DA-File-Format), [TLK](Audio-and-Localization-Formats#tlk), and [GFF](GFF-File-Format) [[`pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HoloPatcher/pyproject.toml#L7)].
+- **Holocron Toolset** is the GUI editing layer for modules, resources, and area content [[`pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/pyproject.toml#L26)].
+- **KotorDiff** is the comparison layer for install state, emitted patch data, and regression checking [[`pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/KotorDiff/pyproject.toml#L8)].
 
 That split is deliberate. The goal is not “use only PyKotor tools forever”; the goal is to make format knowledge and mod workflows portable across tools, while still giving you a modern stack when you want one.
 
@@ -53,7 +53,7 @@ That split is deliberate. The goal is not “use only PyKotor tools forever”; 
 
 ## Preserved source documents
 
-- The **Bioware Aurora** family preserves official BioWare Aurora Engine documentation: [Core Formats](Bioware-Aurora-Core-Formats), [Module & Area](Bioware-Aurora-Module-and-Area), [Creature](Bioware-Aurora-Creature), [Items, Economy & Narrative](Bioware-Aurora-Items-Economy-and-Narrative), [Spatial & Interactive](Bioware-Aurora-Spatial-and-Interactive), [Conversation](Bioware-Aurora-Conversation).
+- The **Bioware Aurora** family preserves official BioWare Aurora Engine documentation [[xoreos-docs/specs/bioware](https://github.com/xoreos/xoreos-docs/tree/master/specs/bioware)]: [Core Formats](Bioware-Aurora-Core-Formats), [Module & Area](Bioware-Aurora-Module-and-Area), [Creature](Bioware-Aurora-Creature), [Items, Economy & Narrative](Bioware-Aurora-Items-Economy-and-Narrative), [Spatial & Interactive](Bioware-Aurora-Spatial-and-Interactive), [Conversation](Bioware-Aurora-Conversation).
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) is the primary historical and technical source for TSLPatcher behavior.
 
 ## Cross-reference: other tools and engines
@@ -62,14 +62,14 @@ PyKotor is one part of a larger KotOR tooling ecosystem. This section is a compa
 
 ### Engine reimplementations
 
-- [xoreos](https://github.com/xoreos/xoreos) is a C++ Aurora/Odyssey/Eclipse reimplementation with KotOR support.
-- [reone](https://github.com/modawan/reone) is a community-maintained modern C++ KotOR engine.
+- [xoreos](https://github.com/xoreos/xoreos) is an open-source C++ implementation of BioWare's Aurora engine and its derivatives (including the Odyssey engine used by KotOR) [[README](https://github.com/xoreos/xoreos/blob/master/README.md#L3-L6)].
+- [reone](https://github.com/seedhartha/reone) is a C++ game engine capable of running KotOR and TSL [[README](https://github.com/seedhartha/reone#readme)].
 - [KotOR.js](https://github.com/KobaltBlu/KotOR.js) is a TypeScript/WebGL engine implementation.
 - [NorthernLights](https://github.com/lachjames/NorthernLights) and [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity) are Unity/.NET-based engine projects.
 
 ### File-format libraries and related tooling
 
-- [xoreos-tools](https://github.com/xoreos/xoreos-tools) provides CLI extraction and conversion tools for Aurora-family formats.
+- [xoreos-tools](https://github.com/xoreos/xoreos-tools) provides CLI extraction and conversion tools for Aurora-family formats [[README](https://github.com/xoreos/xoreos-tools/blob/master/README.md#L4-L8)].
 - [Kotor.NET](https://github.com/NickHugi/Kotor.NET), [BioWare.NET](https://github.com/th3w1zard1/BioWare.NET/tree/98dd9c47d1b1ccd7cc5f72a0bd4279c418359ec2), and [Rakata](https://codeberg.org/Synchro/rakata) are alternative format-parsing stacks.
 - [kotorblender](https://github.com/OpenKotOR/kotorblender), [mdlops](https://github.com/ndixUR/mdlops), [tga2tpc](https://github.com/ndixUR/tga2tpc), [DLZ-Tool](https://github.com/LaneDibello/DLZ-Tool), and [WalkmeshVisualizer](https://github.com/glasnonck/WalkmeshVisualizer) cover common 3D and asset workflows.
 - [HoloLSP](https://github.com/th3w1zard1/HoloLSP/tree/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2), [nwscript-mode.el](https://github.com/implicit-image/nwscript-mode.el), and [Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source) are useful script-development references.
@@ -100,7 +100,7 @@ Older communities still matter for release history, workflow pitfalls, and examp
 
 ## External documentation
 
-- [xoreos-docs](https://github.com/xoreos/xoreos-docs) preserves official BioWare specifications, Torlack reverse-engineered notes, and auxiliary format material used throughout Aurora-family reverse engineering.
+- [xoreos-docs](https://github.com/xoreos/xoreos-docs) preserves official BioWare specifications [[specs/bioware](https://github.com/xoreos/xoreos-docs/tree/master/specs/bioware)], Torlack reverse-engineered notes [[specs/torlack](https://github.com/xoreos/xoreos-docs/tree/master/specs/torlack)], and auxiliary format material (including `kotor_mdl.html` [[direct link](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html)]) used throughout Aurora-family reverse engineering.
 - [nwn-docs](https://github.com/kucik/nwn-docs) is helpful for older Aurora-family background where KotOR behavior inherits the same storage conventions.
 - [bioware-kaitai-formats](https://github.com/OpenKotOR/bioware-kaitai-formats) provides Kaitai Struct specifications for many BioWare and KotOR formats and is useful for parser cross-checking.
 
