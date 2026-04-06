@@ -56,6 +56,9 @@ class InputState:
     middle_button: bool = False
     right_button: bool = False
 
+    # Virtual pan button: set True by external bindings (e.g. Ctrl+LMB) to force pan mode
+    pan_button: bool = False
+
     # Modifier keys
     shift_held: bool = False
     ctrl_held: bool = False
@@ -253,6 +256,11 @@ class CameraController:
         available for object selection / manipulation without accidentally
         entering orbit mode when clicking.
         """
+        # Virtual pan button: external caller (e.g. Ctrl+LMB binding) forces pan mode
+        if input_state.pan_button:
+            self.mode = CameraMode.PAN
+            return
+
         # Pan: Shift+MMB  (Blender primary)  or Alt+MMB  (Unity compat)
         if input_state.middle_button and (input_state.shift_held or input_state.alt_held):
             self.mode = CameraMode.PAN
