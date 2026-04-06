@@ -62,18 +62,11 @@ PyKotor models UTI templates with the dedicated [`UTI` data class and `read_uti`
 | `Plot` | [byte](GFF-File-Format#gff-data-types) | Plot-critical item (cannot be sold/destroyed) |
 | `Charges` | [byte](GFF-File-Format#gff-data-types) | Number of uses remaining |
 | `StackSize` | [word](GFF-File-Format#gff-data-types) | Current stack quantity |
-| `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) variation index (1-99) |
-| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body variation for armor (1-9) |
-| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variation for armor (1-9) |
+| `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) variation index [[`uti.py` L82](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L82)] |
+| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body variation for armor [[`uti.py` L81](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L81)] |
+| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variation for armor [[`uti.py` L83](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L83)] |
 
-**BaseItem types** (from [`baseitems.2da`](2DA-File-Format#baseitems2da)):
-
-- **0-10**: Various weapon types (shortsword, longsword, blaster, etc.)
-- **11-30**: Armor types and shields
-- **31-50**: Quest items, grenades, medical supplies
-- **51-70**: Upgrades, armbands, belts
-- **71-90**: Droid equipment, special items
-- **91+**: KotOR2-specific items
+**BaseItem types** (from [`baseitems.2da`](2DA-File-Format#baseitems2da)); row index into the 2DA defines item type.
 
 ## Item Properties
 
@@ -125,9 +118,9 @@ PyKotor models UTI templates with the dedicated [`UTI` data class and `read_uti`
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) variation (1-9) |
-| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variation (1-9) |
-| `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) type (typically 1-3) |
+| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) variation [[`uti.py` L81](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L81)] |
+| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variation [[`uti.py` L83](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L83)] |
+| `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) type [[`uti.py` L82](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L82)] |
 | `ArmorRulesType` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Armor class category |
 
 **Armor [model](MDL-MDX-File-Format) Variations:**
@@ -175,25 +168,19 @@ PyKotor models UTI templates with the dedicated [`UTI` data class and `read_uti`
 
 **KotOR2 Upgrade Slots:**
 
-- Weapons can have multiple upgrade slots
-- Each slot has specific type restrictions
-- Lightsabers get color customization
-- Armor upgrades affect appearance
+Weapons and armor may have upgrade slots defined in [`baseitems.2da`](2DA-File-Format#baseitems2da).
 
 ## Visual & Audio
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | Base [model](MDL-MDX-File-Format) index |
-| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) for armor |
-| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variant |
+| `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | Base [model](MDL-MDX-File-Format) index [[`uti.py` L82](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L82)] |
+| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) for armor [[`uti.py` L81](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L81)] |
+| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variant [[`uti.py` L83](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L83)] |
 
 **[model](MDL-MDX-File-Format) Resolution:**
 
-1. Engine looks up `BaseItem` in [`baseitems.2da`](2DA-File-Format#baseitems2da)
-2. Retrieves [model](MDL-MDX-File-Format) prefix (e.g., `w_lghtsbr`)
-3. Appends variations: `w_lghtsbr_001.mdl`
-4. [textures](Texture-Formats#tpc) follow similar pattern
+Item model names are derived from the `ModelResRef` column in [`baseitems.2da`](2DA-File-Format#baseitems2da), combined with the `ModelVariation` index. [textures](Texture-Formats#tpc) follow the same naming convention.
 
 ## Palette & Editor
 
@@ -210,27 +197,12 @@ PyKotor models UTI templates with the dedicated [`UTI` data class and `read_uti`
 
 ## Implementation Notes
 
-**Item Instantiation:**
-
-1. **Template Loading**: [GFF](GFF-File-Format) structure parsed from [UTI](GFF-File-Format#uti-item)
-2. **Property Application**: PropertiesList merged into item
-3. **Cost Calculation**: Base cost + AddCost + property costs
-4. **Visual Setup**: resolve [model](MDL-MDX-File-Format) variants and [texture](Texture-Formats#tpc) variants
-5. **Stack Handling**: StackSize determines inventory behavior
+PyKotor parses UTI via `construct_uti` [[`uti.py` L137](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L137)], which deserializes each GFF field into the `UTI` data object.
 
 **Property System:**
 
 - Properties defined in [`itempropdef.2da`](2DA-File-Format#itempropdef2da)
 - Each property has cost formula
-- Properties stack or override based on type
-- Engine recalculates effects when equipped
-
-**Performance Optimization:**
-
-- Simple items (no properties) load fastest
-- Complex property lists increase spawn time
-- Stack-based items share template data
-- Unique items (non-stackable) require instance data
 
 **Common Item Categories:**
 
