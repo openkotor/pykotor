@@ -490,7 +490,7 @@ KotOR.js's binary reader shows the same contiguous keyframe-table decode ([`LIPO
 
 KotOR reuses the 16-shape Preston Blair [phoneme](https://en.wikipedia.org/wiki/Phoneme) set. Every implementation agrees on the [byte](https://en.wikipedia.org/wiki/Byte) value assignments; KotOR.js only renames a few labels but the indices match.
 
-| value | Shape | Description |
+| Value | Shape | Description |
 | ----- | ----- | ----------- |
 | 0 | **NEUTRAL** | Rest/closed mouth |
 | 1 | **EE** | Teeth apart, wide smile (long "ee") |
@@ -603,7 +603,7 @@ PyKotor exposes these via the `WAVType` enum (`VO` vs. `SFX`) so tools know whet
 
 KotOR sticks to the canonical RIFF chunk order:
 
-| offset | field | Description |
+| Offset | Field | Description |
 | ------ | ----- | ----------- |
 | 0 (0x00) | `"RIFF"` | Chunk ID |
 | 4 (0x04) | `<uint32>` | file size minus 8 |
@@ -628,7 +628,7 @@ KotOR sticks to the canonical RIFF chunk order:
 
 After the `fmt` chunk (and any optional `fact` chunk), the `"data"` chunk begins:
 
-| field | Description |
+| Field | Description |
 | ----- | ----------- |
 | `"data"` | Chunk ID. |
 | `<uint32>` | Number of bytes of raw audio. |

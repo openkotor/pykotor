@@ -326,7 +326,7 @@ originY = WorldPt1Y - MapPt1Y * worldScaleY
 
 ### NorthAxis values
 
-| value | Enum | Description | coordinate Mapping |
+| Value | Enum | Description | Coordinate Mapping |
 | ----- | ---- | ----------- | ------------------ |
 | 0 | PositiveY | +Y is north | Direct X/Y mapping |
 | 1 | NegativeY | -Y is north | Direct X/Y mapping |

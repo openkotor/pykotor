@@ -147,7 +147,7 @@ TPC (texture Pack Container) is KotOR's native texture format. It supports palet
 
 ## File structure overview
 
-| offset | size | Description |
+| Offset | Size | Description |
 | ------ | ---- | ----------- |
 | 0 (0x00)   | 4    | data size (0 for uncompressed RGB; compressed textures store total bytes) |
 | 4 (0x04)   | 4    | Alpha test/threshold float |
@@ -174,7 +174,7 @@ For community discussion of TGA vs. TPC workflows, see [Mod installation order a
 
 ## Header layout
 
-| field | Description |
+| Field | Description |
 | ----- | ----------- |
 | `data_size` | If non-zero, specifies total compressed payload size; uncompressed textures set this to 0 and derive size from format/width/height. |
 | `alpha_test` | Float threshold used by punch-through rendering (commonly `0.0` or `0.5`). |

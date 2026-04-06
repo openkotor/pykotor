@@ -417,7 +417,7 @@ In this example:
 
 When installing files to containers ([MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim)), there's a potential conflict: a file might already exist in the Override folder with the same name. The `!OverrideType` setting controls how this conflict is handled:
 
-| value | Behavior | Description |
+| Value | Behavior | Description |
 |-------|----------|-------------|
 | `ignore` | No action | Do nothing - don't even check for conflicts. This is the **TSLPatcher** default. |
 | `warn` | Log warning | Check for conflicts and log a warning if found, but continue with installation. This is the **HoloPatcher** default. |

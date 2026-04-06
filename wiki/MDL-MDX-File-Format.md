@@ -1236,7 +1236,7 @@ Bezier support details come from Torlack's interpolation notes ([`xoreos-docs/sp
 
 [AABB](Level-Layout-Formats#aabb-tree-wok-only) [Mesh](MDL-MDX-File-Format#trimesh-header) [nodes](MDL-MDX-File-Format#node-structures) provide collision detection capabilities. The [AABB](Level-Layout-Formats#aabb-tree-wok-only) structure uses a binary tree for efficient collision queries:
 
-| offset | type           | Description                                    |
+| Offset | Type           | Description                                    |
 | ------ | -------------- | ---------------------------------------------- |
 | 0x0000 | float       | Min [bounding box](MDL-MDX-File-Format#model-header) coordinates                   |
 | 0x000C | float       | Max [bounding box](MDL-MDX-File-Format#model-header) coordinates                   |
