@@ -61,12 +61,15 @@ else:
         )
 
         from pykotor.gl.compat import (  # noqa: E501
+            GL_BLEND,
             GL_ONE,
             GL_ONE_MINUS_SRC_ALPHA,
             GL_SRC_ALPHA,
             GL_SRC_COLOR,
             glBlendFunc,
             glDepthMask,
+            glDisable,
+            glEnable,
         )
     else:
         glGenBuffers = missing_gl_func("glGenBuffers")
@@ -87,12 +90,15 @@ else:
         GL_ARRAY_BUFFER = missing_constant("GL_ARRAY_BUFFER")
         GL_ELEMENT_ARRAY_BUFFER = missing_constant("GL_ELEMENT_ARRAY_BUFFER")
         GL_STATIC_DRAW = missing_constant("GL_STATIC_DRAW")
+        GL_BLEND = missing_constant("GL_BLEND")
         GL_ONE = missing_constant("GL_ONE")
         GL_ONE_MINUS_SRC_ALPHA = missing_constant("GL_ONE_MINUS_SRC_ALPHA")
         GL_SRC_ALPHA = missing_constant("GL_SRC_ALPHA")
         GL_SRC_COLOR = missing_constant("GL_SRC_COLOR")
         glBlendFunc = missing_gl_func("glBlendFunc")
         glDepthMask = missing_gl_func("glDepthMask")
+        glDisable = missing_gl_func("glDisable")
+        glEnable = missing_gl_func("glEnable")
 
 
 logger = logging.getLogger(__name__)
@@ -385,21 +391,22 @@ class Mesh:
         has_alpha = bool(getattr(diffuse_tex, "has_alpha", True))
 
         # Blend + depth-write selection:
-        # - additive: no depth writes + additive blend (prevents “solid sheets” / incorrect occlusion)
-        # - punchthrough: depth writes + alpha cutout
-        # - default: depth writes + standard alpha blend
+        # - additive: true blended effect meshes
+        # - punchthrough / alpha-cutout: discard-based masking, no regular alpha blending
+        # - default: opaque draw, because KotOR commonly uses diffuse alpha for masks/envmap control
         if blend_mode == 1:  # Additive
+            glEnable(GL_BLEND)
             glDepthMask(False)
             glBlendFunc(GL_SRC_ALPHA if has_alpha else GL_SRC_COLOR, GL_ONE)
             shader.set_float("alphaCutoff", 0.0)
-        elif blend_mode == 2:  # Punchthrough
+        elif blend_mode == 2 or alpha_cutoff > 0.0:  # Punchthrough / implicit cutout
+            glDisable(GL_BLEND)
             glDepthMask(True)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             shader.set_float("alphaCutoff", alpha_cutoff)
-        else:  # Default blend mode
+        else:  # Default opaque material
+            glDisable(GL_BLEND)
             glDepthMask(True)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            shader.set_float("alphaCutoff", alpha_cutoff)
+            shader.set_float("alphaCutoff", 0.0)
 
         glActiveTexture(GL_TEXTURE1)
         self._scene.texture(self.lightmap, lightmap=True).use()
@@ -408,6 +415,7 @@ class Mesh:
         glDrawElements(GL_TRIANGLES, self._face_count, GL_UNSIGNED_SHORT, None)
 
         # Restore conservative defaults for the next draw.
+        glEnable(GL_BLEND)
         glDepthMask(True)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         shader.set_float("alphaCutoff", 0.0)
