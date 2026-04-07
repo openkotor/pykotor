@@ -32,13 +32,16 @@ def bench_uniform_dict_vs_direct():
 
     t_old = min(timeit.repeat(old_path, number=100, repeat=5))
     t_new = min(timeit.repeat(new_path, number=100, repeat=5))
-    print(f"uniform lookup (10k calls × 100): dict.get={t_old*1000:.2f}ms  cached_int={t_new*1000:.2f}ms  speedup={t_old/t_new:.1f}x")
+    print(
+        f"uniform lookup (10k calls × 100): dict.get={t_old * 1000:.2f}ms  cached_int={t_new * 1000:.2f}ms  speedup={t_old / t_new:.1f}x"
+    )
 
 
 def bench_redundant_bind_check():
     """Compare unconditional bind vs tracked-state conditional skip."""
     # Simulate 500 meshes where ~80% share the same texture
     import random
+
     random.seed(42)
     tex_ids = [random.choice([1, 1, 1, 1, 2]) for _ in range(500)]
 
@@ -56,7 +59,9 @@ def bench_redundant_bind_check():
     t_old = min(timeit.repeat(old_path, number=5000, repeat=5))
     t_new = min(timeit.repeat(new_path, number=5000, repeat=5))
     skipped = sum(1 for i in range(1, len(tex_ids)) if tex_ids[i] == tex_ids[i - 1])
-    print(f"texture bind skip (500 meshes × 5000): always={t_old*1000:.2f}ms  tracked={t_new*1000:.2f}ms  speedup={t_old/t_new:.1f}x  skipped={skipped}/499")
+    print(
+        f"texture bind skip (500 meshes × 5000): always={t_old * 1000:.2f}ms  tracked={t_new * 1000:.2f}ms  speedup={t_old / t_new:.1f}x  skipped={skipped}/499"
+    )
 
 
 def bench_blend_mode_branching():
@@ -64,6 +69,7 @@ def bench_blend_mode_branching():
     # 99% opaque, 0.5% additive, 0.5% punchthrough
     blend_modes = [0] * 990 + [1] * 5 + [2] * 5
     import random
+
     random.seed(42)
     random.shuffle(blend_modes)
 
@@ -91,7 +97,9 @@ def bench_blend_mode_branching():
 
     t_old = min(timeit.repeat(old_order, number=5000, repeat=5))
     t_new = min(timeit.repeat(new_order, number=5000, repeat=5))
-    print(f"blend branch order (1000 meshes × 5000): additive_first={t_old*1000:.2f}ms  opaque_first={t_new*1000:.2f}ms  speedup={t_old/t_new:.1f}x")
+    print(
+        f"blend branch order (1000 meshes × 5000): additive_first={t_old * 1000:.2f}ms  opaque_first={t_new * 1000:.2f}ms  speedup={t_old / t_new:.1f}x"
+    )
 
 
 def bench_getattr_lazy():
@@ -120,7 +128,9 @@ def bench_getattr_lazy():
 
     t_old = min(timeit.repeat(old_path, number=100, repeat=5))
     t_new = min(timeit.repeat(new_path, number=100, repeat=5))
-    print(f"getattr lazy eval (10k calls × 100): eager_3={t_old*1000:.2f}ms  lazy_2={t_new*1000:.2f}ms  speedup={t_old/t_new:.1f}x")
+    print(
+        f"getattr lazy eval (10k calls × 100): eager_3={t_old * 1000:.2f}ms  lazy_2={t_new * 1000:.2f}ms  speedup={t_old / t_new:.1f}x"
+    )
 
 
 if __name__ == "__main__":
