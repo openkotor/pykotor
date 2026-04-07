@@ -26,7 +26,9 @@ class _DummyShader:
 
 
 class _DummyTexture:
-    def __init__(self, *, blend_mode: int, alpha_cutoff: float, has_alpha: bool, _id: int = 1) -> None:
+    def __init__(
+        self, *, blend_mode: int, alpha_cutoff: float, has_alpha: bool, _id: int = 1
+    ) -> None:
         self.blend_mode: int = blend_mode
         self.alpha_cutoff: float = alpha_cutoff
         self.has_alpha: bool = has_alpha
@@ -79,7 +81,9 @@ def test_default_alpha_texture_renders_opaque(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(mdl, "glActiveTexture", lambda value: calls.append(("active", value)))
     monkeypatch.setattr(mdl, "glBindVertexArray", lambda value: calls.append(("vao", value)))
     monkeypatch.setattr(mdl, "glDrawElements", lambda *_args: calls.append(("draw", None)))
-    monkeypatch.setattr(mdl, "glUniformMatrix4fv", lambda *_args: calls.append(("uniform_mat4", None)))
+    monkeypatch.setattr(
+        mdl, "glUniformMatrix4fv", lambda *_args: calls.append(("uniform_mat4", None))
+    )
     monkeypatch.setattr(mdl, "glBindTexture", lambda *_args: calls.append(("bind_tex", None)))
     monkeypatch.setattr(mdl, "value_ptr", lambda _v: None)
 
@@ -109,7 +113,9 @@ def test_cutout_texture_disables_regular_blending(monkeypatch: pytest.MonkeyPatc
     monkeypatch.setattr(mdl, "glActiveTexture", lambda value: calls.append(("active", value)))
     monkeypatch.setattr(mdl, "glBindVertexArray", lambda value: calls.append(("vao", value)))
     monkeypatch.setattr(mdl, "glDrawElements", lambda *_args: calls.append(("draw", None)))
-    monkeypatch.setattr(mdl, "glUniformMatrix4fv", lambda *_args: calls.append(("uniform_mat4", None)))
+    monkeypatch.setattr(
+        mdl, "glUniformMatrix4fv", lambda *_args: calls.append(("uniform_mat4", None))
+    )
     monkeypatch.setattr(mdl, "glBindTexture", lambda *_args: calls.append(("bind_tex", None)))
     monkeypatch.setattr(mdl, "value_ptr", lambda _v: None)
 
