@@ -130,11 +130,15 @@ class Texture:
         # If PyOpenGL is not available, keep an in-memory texture placeholder.
         txi = getattr(tpc, "_txi", None)  # noqa: SLF001
         txi_features = getattr(txi, "features", None)
-        blend_mode = int((getattr(txi_features, "blending", 0) if txi_features is not None else 0) or 0)
+        blend_mode = int(
+            (getattr(txi_features, "blending", 0) if txi_features is not None else 0) or 0
+        )
         has_alpha = _rgba_has_transparency(rgba_cache)
         alpha_cutoff = 0.01 if has_alpha and blend_mode != 1 else 0.0
         if blend_mode == 2:
-            alphamean = getattr(txi_features, "alphamean", None) if txi_features is not None else None
+            alphamean = (
+                getattr(txi_features, "alphamean", None) if txi_features is not None else None
+            )
             alpha_cutoff = max(alpha_cutoff, float(alphamean) if alphamean is not None else 0.1)
 
         if not HAS_PYOPENGL:
@@ -154,15 +158,63 @@ class Texture:
             image_size: int = len(mip.data)
             if mip.tpc_format == TPCTextureFormat.DXT1:
                 mip_rgba = bytes(dxt1_to_rgba(mip.data, mip.width, mip.height))
-                glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, mip.width, mip.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, mip_rgba)
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    level,
+                    GL_RGBA,
+                    mip.width,
+                    mip.height,
+                    0,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    mip_rgba,
+                )
             elif mip.tpc_format == TPCTextureFormat.DXT3:
-                glCompressedTexImage2D(GL_TEXTURE_2D, level, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, mip.width, mip.height, 0, image_size, mip.data)
+                glCompressedTexImage2D(
+                    GL_TEXTURE_2D,
+                    level,
+                    GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
+                    mip.width,
+                    mip.height,
+                    0,
+                    image_size,
+                    mip.data,
+                )
             elif mip.tpc_format == TPCTextureFormat.DXT5:
-                glCompressedTexImage2D(GL_TEXTURE_2D, level, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, mip.width, mip.height, 0, image_size, mip.data)
+                glCompressedTexImage2D(
+                    GL_TEXTURE_2D,
+                    level,
+                    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+                    mip.width,
+                    mip.height,
+                    0,
+                    image_size,
+                    mip.data,
+                )
             elif mip.tpc_format == TPCTextureFormat.RGB:
-                glTexImage2D(GL_TEXTURE_2D, level, GL_RGB, mip.width, mip.height, 0, GL_RGB, GL_UNSIGNED_BYTE, mip.data)
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    level,
+                    GL_RGB,
+                    mip.width,
+                    mip.height,
+                    0,
+                    GL_RGB,
+                    GL_UNSIGNED_BYTE,
+                    mip.data,
+                )
             elif mip.tpc_format == TPCTextureFormat.RGBA:
-                glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, mip.width, mip.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, mip.data)
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    level,
+                    GL_RGBA,
+                    mip.width,
+                    mip.height,
+                    0,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    mip.data,
+                )
             else:
                 raise ValueError(f"Unsupported texture format: {mip.tpc_format!r}")
 
@@ -207,7 +259,9 @@ class Texture:
         gl_id: int = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, gl_id)
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba_data)
+        glTexImage2D(
+            GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba_data
+        )
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)

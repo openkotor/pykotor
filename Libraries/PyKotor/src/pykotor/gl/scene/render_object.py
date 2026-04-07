@@ -30,8 +30,11 @@ class RenderObject:
         "_boundary",
         "_bounds_dirty",
         "_cached_center",
+        "_cached_model",
+        "_cached_model_gen",
         "_cached_radius",
         "_cube",
+        "_hide_attr",
         "_position",
         "_rotation",
         "_transform",
@@ -68,7 +71,30 @@ class RenderObject:
         self._cached_center: Vector3 | None = None
         self._bounds_dirty: bool = True
 
+        # Cached Model reference (avoids CaseInsensitiveDict lookup every frame)
+        self._cached_model: Any = None  # Model | None, typed as Any to avoid import cycle
+        self._cached_model_gen: int = -1  # CaseInsensitiveDict._generation when cached
+
+        # Precomputed hide attribute (set by _rebuild_object_caches for O(1) hide checks)
+        self._hide_attr: str = ""  # Empty = never hidden; e.g. "hide_creatures"
+
         self._recalc_transform()
+
+    def resolve_model(self, scene: Scene) -> Any:
+        """Get the Model for this RenderObject, using a per-object cache.
+
+        Uses CaseInsensitiveDict generation counter to detect when the scene
+        has added/replaced model entries (e.g. async load completion), avoiding
+        expensive .lower() dict lookups on every frame.
+        """
+        cached = self._cached_model
+        models_gen = scene.models._generation
+        if cached is not None and self._cached_model_gen == models_gen:
+            return cached
+        resolved = scene.model(self.model)
+        self._cached_model = resolved
+        self._cached_model_gen = models_gen
+        return resolved
 
     def transform(self) -> mat4:
         return self._transform

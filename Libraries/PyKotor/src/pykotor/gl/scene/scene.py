@@ -37,9 +37,12 @@ from pykotor.gl.compat import (
     glReadPixels,
 )
 from pykotor.gl.models.axis_gizmo import AxisGizmo
-from pykotor.gl.native.gl_accel import c_available as _gl_accel_available
-from pykotor.gl.native.gl_accel import frustum_cull_objects as _batch_frustum_cull
+from pykotor.gl.models.mdl import Mesh as _Mesh
+from pykotor.gl.native.gl_accel import (
+    frustum_cull_objects as _batch_frustum_cull,
+)
 from pykotor.gl.scene.frustum import CullingStats, Frustum
+from pykotor.gl.scene.render_object import RenderObject
 from pykotor.gl.scene.scene_base import SceneBase
 from pykotor.gl.scene.scene_cache import SceneCache
 from pykotor.gl.shader import (
@@ -70,7 +73,6 @@ if TYPE_CHECKING:
     from pykotor.common.module import Module
     from pykotor.extract.installation import Installation
     from pykotor.gl.models.mdl import Model
-    from pykotor.gl.scene.scene_base import RenderObject
 
 T = TypeVar("T")
 SEARCH_ORDER_2DA: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN]
@@ -158,11 +160,18 @@ class Scene(SceneBase):
         self._cached_trigger_objects = None
 
     def _rebuild_object_caches(self):
-        """Rebuild cached object lists for efficient iteration."""
+        """Rebuild cached object lists for efficient iteration.
+
+        Also precomputes _hide_attr on each RenderObject so that
+        should_hide_obj() becomes O(1) instead of O(9 isinstance).
+        """
         if not self._objects_dirty and len(self.objects) == self._last_objects_count:
             return
 
         special_models: frozenset[str] = frozenset(self.SPECIAL_MODELS)
+
+        # Build type→hide_attr mapping for precomputation
+        hide_attr_map: dict[type, str] = {t: a for t, a in self._HIDE_TYPE_MAP}
 
         regular: list[RenderObject] = []
         special: list[RenderObject] = []
@@ -171,6 +180,14 @@ class Scene(SceneBase):
         triggers: list[RenderObject] = []
 
         for obj in self.objects.values():
+            # Precompute hide_attr (avoids 9 isinstance checks per frame per object)
+            data = obj.data
+            hide_attr = ""
+            if data is not None:
+                data_type = type(data)
+                hide_attr = hide_attr_map.get(data_type, "")
+            obj._hide_attr = hide_attr
+
             model = obj.model
             if model in special_models:
                 special.append(obj)
@@ -213,7 +230,12 @@ class Scene(SceneBase):
         if self.is_shutdown:
             return
 
-        _profile = os.environ.get("TOOLSET_MODULE_DESIGNER_PROFILE", "").strip().lower() in ("1", "true", "yes", "on")
+        _profile = os.environ.get("TOOLSET_MODULE_DESIGNER_PROFILE", "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        )
         _t0 = time.perf_counter() if _profile else None
 
         try:
@@ -247,6 +269,10 @@ class Scene(SceneBase):
             # Prepare GL state and main shader
             self._prepare_gl_and_shader_optimized()
             self.shader.set_bool("enableLightmap", self.use_lightmap)
+
+            # Reset per-frame state tracking for optimized draw calls
+            _Mesh.reset_draw_state(getattr(self.textures, "_generation", -1))
+            Shader._active_id = -1
 
             # Render regular objects (models)
             assert self._cached_regular_objects is not None
@@ -311,7 +337,7 @@ class Scene(SceneBase):
             glDisable(GL_CULL_FACE)  # Draw both inner and outer faces for a solid-filled look
             self.plain_shader.set_vector4("color", vec4(1.0, 0.0, 0.0, 0.4))
             for obj in self.selection:
-                if hasattr(obj, "cube"):
+                if isinstance(obj, RenderObject):
                     obj.cube(self).draw(self.plain_shader, obj.transform())
             glEnable(GL_DEPTH_TEST)
             glDepthMask(GL_TRUE)  # type: ignore[arg-type]
@@ -320,7 +346,7 @@ class Scene(SceneBase):
             glDisable(GL_CULL_FACE)
             self.plain_shader.set_vector4("color", vec4(0.0, 1.0, 0.0, 0.8))
             for obj in self.selection:
-                if hasattr(obj, "boundary"):
+                if isinstance(obj, RenderObject):
                     obj.boundary(self).draw(self.plain_shader, obj.transform())
 
             # Draw non-selected boundaries (only if visible and enabled)
@@ -361,9 +387,13 @@ class Scene(SceneBase):
                     mean_cache = sum(p[0] for p in self._profile_frame_times) / n
                     mean_draw = sum(p[1] for p in self._profile_frame_times) / n
                     from loggerplus import RobustLogger
+
                     RobustLogger().info(
                         "[MODULE_DESIGNER_PROFILE] per-frame (n=%d): mean cache=%.2f ms, mean draw=%.2f ms, mean total=%.2f ms",
-                        n, mean_cache, mean_draw, mean_cache + mean_draw,
+                        n,
+                        mean_cache,
+                        mean_draw,
+                        mean_cache + mean_draw,
                     )
                     self._profile_frame_times.clear()
 
@@ -378,7 +408,9 @@ class Scene(SceneBase):
                 if isinstance(exc, GLError):
                     from loggerplus import RobustLogger
 
-                    RobustLogger().debug("Scene.render: OpenGL error during render; skipping frame", exc_info=True)
+                    RobustLogger().debug(
+                        "Scene.render: OpenGL error during render; skipping frame", exc_info=True
+                    )
                     return
             except Exception:  # noqa: BLE001
                 # If OpenGL isn't importable for some reason, just re-raise the original error.
@@ -497,11 +529,8 @@ class Scene(SceneBase):
         self,
         obj: RenderObject,
     ) -> bool:
-        data = obj.data
-        for obj_type, hide_attr in self._HIDE_TYPE_MAP:
-            if isinstance(data, obj_type):
-                return bool(getattr(self, hide_attr, False))
-        return False
+        hide_attr = obj._hide_attr
+        return bool(hide_attr and getattr(self, hide_attr, False))
 
     def _object_list_snapshot(self) -> list[RenderObject]:
         """Return a stable snapshot of objects for index-based rendering workflows."""
@@ -516,7 +545,7 @@ class Scene(SceneBase):
         if self.should_hide_obj(obj):
             return
 
-        model: Model = self.model(obj.model)
+        model: Model = obj.resolve_model(self)
         next_transform = cast("mat4", transform * obj.transform())
         model.draw(shader, next_transform, override_texture=obj.override_texture)
 
@@ -564,7 +593,7 @@ class Scene(SceneBase):
         if self.should_hide_obj(obj) and not self.pick_include_hidden:
             return
 
-        model: Model = self.model(obj.model)
+        model: Model = obj.resolve_model(self)
         model.draw(self.picker_shader, cast("mat4", transform * obj.transform()))
         for child in obj.children:
             self._picker_render_object(child, obj.transform())

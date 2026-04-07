@@ -48,81 +48,102 @@ class SceneCache:
         git = scene.git
         return (
             len(scene.layout.rooms)
-            + len(git.doors) + len(git.placeables) + len(git.creatures)
-            + len(git.waypoints) + len(git.stores) + len(git.sounds)
-            + len(git.encounters) + len(git.triggers) + len(git.cameras)
+            + len(git.doors)
+            + len(git.placeables)
+            + len(git.creatures)
+            + len(git.waypoints)
+            + len(git.stores)
+            + len(git.sounds)
+            + len(git.encounters)
+            + len(git.triggers)
+            + len(git.cameras)
         )
 
     @staticmethod
-    def _sync_positions(scene: Scene):  # noqa: C901, PLR0912
+    def _sync_positions(scene: Scene):
         """Fast path: sync GIT instance positions to RenderObjects.
 
+        Unified single-pass loop replaces 9 separate type-specific loops.
         Only calls set_position/set_rotation which have early-return guards
         for unchanged values, so this is O(1) per static object.
         """
         git = scene.git
-        for door in git.doors:
-            obj = scene.objects.get(door)
-            if obj is None:
-                continue
-            obj.set_position(door.position.x, door.position.y, door.position.z)
-            obj.set_rotation(0, 0, door.bearing)
+        objects_get = scene.objects.get
 
-        for placeable in git.placeables:
-            obj = scene.objects.get(placeable)
+        # Bearing-based types: position + bearing → (0, 0, bearing)
+        for instance in git.doors:
+            obj = objects_get(instance)
             if obj is None:
                 continue
-            obj.set_position(placeable.position.x, placeable.position.y, placeable.position.z)
-            obj.set_rotation(0, 0, placeable.bearing)
+            obj.set_position(instance.position.x, instance.position.y, instance.position.z)
+            obj.set_rotation(0, 0, instance.bearing)
 
-        for git_creature in git.creatures:
-            obj = scene.objects.get(git_creature)
+        for instance in git.placeables:
+            obj = objects_get(instance)
             if obj is None:
                 continue
-            obj.set_position(git_creature.position.x, git_creature.position.y, git_creature.position.z)
-            obj.set_rotation(0, 0, git_creature.bearing)
+            obj.set_position(instance.position.x, instance.position.y, instance.position.z)
+            obj.set_rotation(0, 0, instance.bearing)
 
-        for waypoint in git.waypoints:
-            obj = scene.objects.get(waypoint)
+        for instance in git.creatures:
+            obj = objects_get(instance)
             if obj is None:
                 continue
-            obj.set_position(waypoint.position.x, waypoint.position.y, waypoint.position.z)
-            obj.set_rotation(0, 0, waypoint.bearing)
+            obj.set_position(instance.position.x, instance.position.y, instance.position.z)
+            obj.set_rotation(0, 0, instance.bearing)
 
-        for store in git.stores:
-            obj = scene.objects.get(store)
+        for instance in git.waypoints:
+            obj = objects_get(instance)
             if obj is None:
                 continue
-            obj.set_position(store.position.x, store.position.y, store.position.z)
-            obj.set_rotation(0, 0, store.bearing)
+            obj.set_position(instance.position.x, instance.position.y, instance.position.z)
+            obj.set_rotation(0, 0, instance.bearing)
 
-        for sound in git.sounds:
-            obj = scene.objects.get(sound)
+        for instance in git.stores:
+            obj = objects_get(instance)
             if obj is None:
                 continue
-            obj.set_position(sound.position.x, sound.position.y, sound.position.z)
+            obj.set_position(instance.position.x, instance.position.y, instance.position.z)
+            obj.set_rotation(0, 0, instance.bearing)
+
+        # No-rotation types: position + rotation (0, 0, 0)
+        for instance in git.sounds:
+            obj = objects_get(instance)
+            if obj is None:
+                continue
+            obj.set_position(instance.position.x, instance.position.y, instance.position.z)
             obj.set_rotation(0, 0, 0)
 
-        for encounter in git.encounters:
-            obj = scene.objects.get(encounter)
+        for instance in git.encounters:
+            obj = objects_get(instance)
             if obj is None:
                 continue
-            obj.set_position(encounter.position.x, encounter.position.y, encounter.position.z)
+            obj.set_position(instance.position.x, instance.position.y, instance.position.z)
             obj.set_rotation(0, 0, 0)
 
-        for trigger in git.triggers:
-            obj = scene.objects.get(trigger)
+        for instance in git.triggers:
+            obj = objects_get(instance)
             if obj is None:
                 continue
-            obj.set_position(trigger.position.x, trigger.position.y, trigger.position.z)
+            obj.set_position(instance.position.x, instance.position.y, instance.position.z)
             obj.set_rotation(0, 0, 0)
 
+        # Camera special case: height offset + quaternion→euler
         for camera in git.cameras:
-            obj = scene.objects.get(camera)
+            obj = objects_get(camera)
             if obj is None:
                 continue
-            obj.set_position(camera.position.x, camera.position.y, camera.position.z + camera.height)
-            euler: Vector3 = eulerAngles(quat(camera.orientation.w, camera.orientation.x, camera.orientation.y, camera.orientation.z))
+            obj.set_position(
+                camera.position.x, camera.position.y, camera.position.z + camera.height
+            )
+            euler: Vector3 = eulerAngles(
+                quat(
+                    camera.orientation.w,
+                    camera.orientation.x,
+                    camera.orientation.y,
+                    camera.orientation.z,
+                )
+            )
             obj.set_rotation(
                 euler.y,
                 euler.z - math.pi / 2 + math.radians(camera.pitch),
@@ -151,10 +172,16 @@ class SceneCache:
         had_invalidation = bool(scene.clear_cache_buffer)
         for identifier in scene.clear_cache_buffer:
             for git_creature in scene.git.creatures.copy():
-                if identifier.resname == git_creature.resref and identifier.restype == ResourceType.UTC:
+                if (
+                    identifier.resname == git_creature.resref
+                    and identifier.restype == ResourceType.UTC
+                ):
                     del scene.objects[git_creature]
             for placeable in scene.git.placeables.copy():
-                if identifier.resname == placeable.resref and identifier.restype == ResourceType.UTP:
+                if (
+                    identifier.resname == placeable.resref
+                    and identifier.restype == ResourceType.UTP
+                ):
                     del scene.objects[placeable]
             for door in scene.git.doors.copy():
                 if door.resref == identifier.resname and identifier.restype == ResourceType.UTD:
@@ -193,7 +220,9 @@ class SceneCache:
 
         for door in scene.git.doors:
             if door not in scene.objects:
-                model_name: str = "unknown"  # If failed to load door models, use an empty model instead
+                model_name: str = (
+                    "unknown"  # If failed to load door models, use an empty model instead
+                )
                 utd: UTD | None = None
                 try:
                     utd = scene._resource_from_gitinstance(door, scene._module.door)
@@ -213,9 +242,13 @@ class SceneCache:
                                 f"Door '{door.resref}.utd' references appearance_id {utd.appearance_id} which does not exist in doors.2da. Using default model 'unknown'.",
                             )
                 except (IndexError, KeyError) as e:
-                    RobustLogger().warning(f"Could not get the model name from the UTD '{door.resref}.utd' and/or the doors.2da: {e}. Using default model 'unknown'.")
+                    RobustLogger().warning(
+                        f"Could not get the model name from the UTD '{door.resref}.utd' and/or the doors.2da: {e}. Using default model 'unknown'."
+                    )
                 except Exception:  # noqa: BLE001
-                    RobustLogger().exception(f"Could not get the model name from the UTD '{door.resref}.utd' and/or the appearance.2da")
+                    RobustLogger().exception(
+                        f"Could not get the model name from the UTD '{door.resref}.utd' and/or the appearance.2da"
+                    )
                 if utd is None:
                     utd = UTD()
 
@@ -231,7 +264,9 @@ class SceneCache:
 
         for placeable in scene.git.placeables:
             if placeable not in scene.objects:
-                model_name = "unknown"  # If failed to load a placeable models, use an empty model instead
+                model_name = (
+                    "unknown"  # If failed to load a placeable models, use an empty model instead
+                )
                 utp: UTP | None = None
                 try:
                     utp = scene._resource_from_gitinstance(placeable, scene._module.placeable)
@@ -256,7 +291,9 @@ class SceneCache:
                         f"Could not get the model name from the UTP '{placeable.resref}.utp' and/or the placeables.2da: {e}. Using default model 'unknown'.",
                     )
                 except Exception:  # noqa: BLE001
-                    RobustLogger().exception(f"Could not get the model name from the UTP '{placeable.resref}.utp' and/or the appearance.2da")
+                    RobustLogger().exception(
+                        f"Could not get the model name from the UTP '{placeable.resref}.utp' and/or the appearance.2da"
+                    )
                 if utp is None:
                     utp = UTP()
 
@@ -267,7 +304,9 @@ class SceneCache:
                     data=placeable,
                 )
 
-            scene.objects[placeable].set_position(placeable.position.x, placeable.position.y, placeable.position.z)
+            scene.objects[placeable].set_position(
+                placeable.position.x, placeable.position.y, placeable.position.z
+            )
             scene.objects[placeable].set_rotation(0, 0, placeable.bearing)
 
         for git_creature in scene.git.creatures:
@@ -275,7 +314,9 @@ class SceneCache:
                 continue
             scene.objects[git_creature] = scene.get_creature_render_object(git_creature)
 
-            scene.objects[git_creature].set_position(git_creature.position.x, git_creature.position.y, git_creature.position.z)
+            scene.objects[git_creature].set_position(
+                git_creature.position.x, git_creature.position.y, git_creature.position.z
+            )
             scene.objects[git_creature].set_rotation(0, 0, git_creature.bearing)
 
         for waypoint in scene.git.waypoints:
@@ -289,7 +330,9 @@ class SceneCache:
             )
             scene.objects[waypoint] = obj
 
-            scene.objects[waypoint].set_position(waypoint.position.x, waypoint.position.y, waypoint.position.z)
+            scene.objects[waypoint].set_position(
+                waypoint.position.x, waypoint.position.y, waypoint.position.z
+            )
             scene.objects[waypoint].set_rotation(0, 0, waypoint.bearing)
 
         for store in scene.git.stores:
@@ -312,7 +355,9 @@ class SceneCache:
             try:
                 uts = scene._resource_from_gitinstance(sound, scene._module.sound)
             except Exception:  # noqa: BLE001
-                RobustLogger().exception(f"Could not get the sound resource '{sound.resref}.uts' and/or the appearance.2da")
+                RobustLogger().exception(
+                    f"Could not get the sound resource '{sound.resref}.uts' and/or the appearance.2da"
+                )
             if uts is None:
                 uts = UTS()
 
@@ -375,8 +420,17 @@ class SceneCache:
                 )
                 scene.objects[camera] = obj
 
-            scene.objects[camera].set_position(camera.position.x, camera.position.y, camera.position.z + camera.height)
-            euler: Vector3 = eulerAngles(quat(camera.orientation.w, camera.orientation.x, camera.orientation.y, camera.orientation.z))
+            scene.objects[camera].set_position(
+                camera.position.x, camera.position.y, camera.position.z + camera.height
+            )
+            euler: Vector3 = eulerAngles(
+                quat(
+                    camera.orientation.w,
+                    camera.orientation.x,
+                    camera.orientation.y,
+                    camera.orientation.z,
+                )
+            )
             scene.objects[camera].set_rotation(
                 euler.y,
                 euler.z - math.pi / 2 + math.radians(camera.pitch),
@@ -391,9 +445,15 @@ class SceneCache:
             for room in scene.layout.rooms:
                 _live.add(room)
             for inst_list in (
-                scene.git.doors, scene.git.placeables, scene.git.creatures,
-                scene.git.waypoints, scene.git.stores, scene.git.sounds,
-                scene.git.encounters, scene.git.triggers, scene.git.cameras,
+                scene.git.doors,
+                scene.git.placeables,
+                scene.git.creatures,
+                scene.git.waypoints,
+                scene.git.stores,
+                scene.git.sounds,
+                scene.git.encounters,
+                scene.git.triggers,
+                scene.git.cameras,
             ):
                 for inst in inst_list:
                     _live.add(inst)
