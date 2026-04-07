@@ -144,3 +144,4 @@ else:
     GL_FRONT_AND_BACK = missing_constant("GL_FRONT_AND_BACK")
     GL_LINE = missing_constant("GL_LINE")
     glPolygonMode = missing_gl_func("glPolygonMode")
+    GL_TRUE = missing_constant("GL_TRUE")
