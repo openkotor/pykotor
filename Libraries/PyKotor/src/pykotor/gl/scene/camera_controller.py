@@ -308,6 +308,18 @@ class CameraController:
         accelerated = math.pow(magnitude, self.settings.acceleration_power)
         return sign * accelerated
 
+    def _camera_right_vector(self, yaw: float) -> vec3:
+        return normalize(vec3(-math.sin(yaw), math.cos(yaw), 0.0))
+
+    def _camera_up_vector(self, yaw: float, pitch: float) -> vec3:
+        return normalize(
+            vec3(
+                math.cos(pitch) * math.cos(yaw),
+                math.cos(pitch) * math.sin(yaw),
+                math.sin(pitch),
+            )
+        )
+
     def _process_orbit(self, input_state: InputState, delta_time: float) -> None:
         """Process orbit mode input.
 
@@ -328,8 +340,8 @@ class CameraController:
         if self.settings.shift_for_fine_control and input_state.shift_held:
             sensitivity *= self.settings.fine_control_multiplier
         # Update target rotation
-        self.state.target_yaw += dx * sensitivity
-        self.state.target_pitch += dy * sensitivity
+        self.state.target_yaw -= dx * sensitivity
+        self.state.target_pitch -= dy * sensitivity
 
         # Clamp pitch to prevent gimbal lock
         self.state.target_pitch = max(0.01, min(math.pi - 0.01, self.state.target_pitch))
@@ -364,16 +376,8 @@ class CameraController:
         if self.settings.pan_invert_y:
             dy = -dy
 
-        # Calculate pan vectors in world space
-        # Right vector
-        right = vec3(
-            math.cos(self.state.current_yaw - math.pi / 2),
-            math.sin(self.state.current_yaw - math.pi / 2),
-            0,
-        )
-
-        # Up vector (world up for most intuitive panning)
-        up = vec3(0, 0, 1)
+        right = self._camera_right_vector(self.state.target_yaw)
+        up = self._camera_up_vector(self.state.target_yaw, self.state.target_pitch)
 
         # Calculate pan offset
         offset = right * (-dx * sensitivity) + up * (dy * sensitivity)
@@ -444,15 +448,14 @@ class CameraController:
             ndc_y: float = 0.5 - input_state.mouse_y / input_state.viewport_height
             # Distance change: negative = zoom in (camera moves toward focal pt)
             delta_distance: float = new_distance - old_distance
-            # Camera right vector (perpendicular to forward in the XY plane)
-            right_x: float = math.cos(self.state.current_yaw - math.pi / 2)
-            right_y: float = math.sin(self.state.current_yaw - math.pi / 2)
+            right = self._camera_right_vector(self.state.target_yaw)
+            up = self._camera_up_vector(self.state.target_yaw, self.state.target_pitch)
             # Scale so the cursor point stays stationary at screen edge (factor 2).
             shift: float = -delta_distance * 2.0
             self.state.target_focal_point = vec3(
-                self.state.target_focal_point.x + right_x * ndc_x * shift,
-                self.state.target_focal_point.y + right_y * ndc_x * shift,
-                self.state.target_focal_point.z + ndc_y * shift,
+                self.state.target_focal_point.x + right.x * ndc_x * shift + up.x * ndc_y * shift,
+                self.state.target_focal_point.y + right.y * ndc_x * shift + up.y * ndc_y * shift,
+                self.state.target_focal_point.z + right.z * ndc_x * shift + up.z * ndc_y * shift,
             )
 
         self.state.target_distance = new_distance

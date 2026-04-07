@@ -22,6 +22,11 @@ if TYPE_CHECKING:
     from utility.common.geometry import Vector3
 
 
+def _wrap_angle_pi(angle: float) -> float:
+    """Normalize an angle to the [-pi, pi] range."""
+    return (angle + math.pi) % (2 * math.pi) - math.pi
+
+
 class Camera:
     """Camera with cached view/projection matrices.
 
@@ -309,37 +314,23 @@ class Camera:
         lower_limit: float = 0,
         upper_limit: float = math.pi,
     ):
-        # Update pitch and yaw (properties handle cache invalidation)
-        self.pitch = self.pitch + pitch
-        self.yaw = self.yaw + yaw
-
-        # ensure yaw doesn't get too large.
-        if self.yaw > 2 * math.pi:
-            self.yaw -= 4 * math.pi
-        elif self.yaw < -2 * math.pi:
-            self.yaw += 4 * math.pi
-
-        if pitch == 0:
-            return
-
-        # ensure pitch doesn't get too large.
-        if self.pitch > 2 * math.pi:
-            self.pitch -= 4 * math.pi
-        elif self.pitch < -2 * math.pi:
-            self.pitch += 4 * math.pi
+        new_yaw = _wrap_angle_pi(self.yaw + yaw)
+        new_pitch = self.pitch + pitch
 
         if clamp:
-            if self.pitch < lower_limit:
-                self.pitch = lower_limit
-            elif self.pitch > upper_limit:
-                self.pitch = upper_limit
+            orbit_epsilon = 0.01
+            min_pitch = lower_limit + orbit_epsilon
+            max_pitch = upper_limit - orbit_epsilon
+            if min_pitch > max_pitch:
+                midpoint = (lower_limit + upper_limit) * 0.5
+                min_pitch = midpoint
+                max_pitch = midpoint
+            new_pitch = max(min_pitch, min(max_pitch, new_pitch))
+        else:
+            new_pitch = _wrap_angle_pi(new_pitch)
 
-        # Add a small value to pitch to jump to the other side if near the limits
-        gimbal_lock_range = 0.05
-        pitch_limit = math.pi / 2
-        if pitch_limit - gimbal_lock_range < self.pitch < pitch_limit + gimbal_lock_range:
-            small_value = 0.02 if pitch > 0 else -0.02
-            self.pitch += small_value
+        self.yaw = new_yaw
+        self.pitch = new_pitch
 
     def forward(
         self,

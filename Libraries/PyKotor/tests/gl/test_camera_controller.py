@@ -220,6 +220,30 @@ class TestCameraController(unittest.TestCase):
         self.assertNotEqual(self.controller.state.target_yaw, initial_yaw)
         self.assertNotEqual(self.controller.state.target_pitch, initial_pitch)
 
+    def test_orbit_drag_right_matches_rotate_right_direction(self):
+        """Dragging right should yaw right, matching the keyboard rotation path."""
+        input_state = InputState(
+            middle_button=True,
+            mouse_delta_x=50.0,
+            mouse_delta_y=0.0,
+        )
+
+        self.controller.update(input_state, delta_time=0.016)
+
+        self.assertLess(self.controller.state.target_yaw, 0.0)
+
+    def test_orbit_drag_up_moves_toward_top_view(self):
+        """Dragging upward should increase pitch toward a top-down view."""
+        input_state = InputState(
+            middle_button=True,
+            mouse_delta_x=0.0,
+            mouse_delta_y=-50.0,
+        )
+
+        self.controller.update(input_state, delta_time=0.016)
+
+        self.assertGreater(self.controller.state.target_pitch, math.pi / 2)
+
     def test_pan_changes_position(self):
         """Test that pan mode changes camera position."""
         initial_focal = vec3(
@@ -290,8 +314,9 @@ class TestCameraController(unittest.TestCase):
         )
         self.controller.update(input_state, delta_time=0.016)
 
-        # Pitch should be clamped near 0 (but not exactly 0)
-        self.assertGreater(self.controller.state.target_pitch, 0.001)
+        # Pitch should be clamped near pi (but not exactly pi)
+        self.assertLess(self.controller.state.target_pitch, math.pi - 0.001)
+        self.assertGreater(self.controller.state.target_pitch, math.pi / 2)
 
         # Try extreme downward rotation
         input_state = InputState(
@@ -300,8 +325,9 @@ class TestCameraController(unittest.TestCase):
         )
         self.controller.update(input_state, delta_time=0.016)
 
-        # Pitch should be clamped near pi (but not exactly pi)
-        self.assertLess(self.controller.state.target_pitch, math.pi - 0.001)
+        # Pitch should be clamped near 0 (but not exactly 0)
+        self.assertGreater(self.controller.state.target_pitch, 0.001)
+        self.assertLess(self.controller.state.target_pitch, math.pi / 2)
 
     def test_smoothing_interpolates_values(self):
         """Test that smoothing creates gradual transitions."""
