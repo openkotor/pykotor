@@ -5,6 +5,8 @@ PyKotor's OpenGL support is PyOpenGL-based.
 
 from __future__ import annotations
 
+import os
+
 from functools import lru_cache
 from types import SimpleNamespace
 from typing import Any, Callable
@@ -22,6 +24,28 @@ def has_pyopengl() -> bool:
     except Exception:  # noqa: BLE001
         return False
     return True
+
+
+def _configure_pyopengl():
+    """Disable PyOpenGL error checking for production rendering performance.
+
+    glGetError() after every GL call forces GPU pipeline flushes and adds
+    significant overhead (~2-10μs per call). With ~700 GL calls per frame,
+    this saves ~1-7ms/frame.
+
+    Set PYOPENGL_DEBUG=1 to re-enable error checking for debugging.
+    """
+    if not has_pyopengl():
+        return
+    import OpenGL
+
+    debug = os.environ.get("PYOPENGL_DEBUG", "").strip().lower() in ("1", "true", "yes", "on")
+    if not debug:
+        OpenGL.ERROR_CHECKING = False
+        OpenGL.ERROR_LOGGING = False
+
+
+_configure_pyopengl()
 
 
 def require_pyopengl(usage: str = "OpenGL rendering") -> None:
@@ -43,7 +67,9 @@ def missing_gl_func(name: str) -> Callable[..., Any]:
     """Create a stub that raises a helpful error when a GL function is unavailable."""
 
     def _missing(*_args: Any, **_kwargs: Any) -> None:
-        raise MissingPyOpenGLError(f"PyOpenGL function '{name}' is unavailable because PyOpenGL is not installed. Install PyOpenGL.")
+        raise MissingPyOpenGLError(
+            f"PyOpenGL function '{name}' is unavailable because PyOpenGL is not installed. Install PyOpenGL."
+        )
 
     return _missing
 

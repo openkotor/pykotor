@@ -499,6 +499,311 @@ gl_accel_aabb_in_frustum_batch(PyObject *self, PyObject *args) {
 }
 
 /* --------------------------------------------------------------------------
+ * compute_node_world_transforms(local_transforms, parent_indices, root_transform)
+ *
+ * Computes world-space transforms for a flattened node hierarchy by walking
+ * the parent index chain.  Nodes MUST be sorted in topological order
+ * (parent before child) so each node's parent is already computed.
+ *
+ * local_transforms: bytes of N×16 floats (column-major mat4 per node)
+ * parent_indices:   bytes of N int32     (-1 = root node)
+ * root_transform:   bytes of 16 floats   (column-major)
+ *
+ * Returns: bytes of N×16 floats  (world-space transforms, column-major)
+ * -------------------------------------------------------------------------- */
+
+static PyObject *
+gl_accel_compute_node_world_transforms(PyObject *self, PyObject *args) {
+    Py_buffer locals_buf, parents_buf, root_buf;
+
+    if (!PyArg_ParseTuple(args, "y*y*y*", &locals_buf, &parents_buf, &root_buf)) {
+        return NULL;
+    }
+
+    if (root_buf.len != 16 * (Py_ssize_t)sizeof(float)) {
+        PyBuffer_Release(&locals_buf);
+        PyBuffer_Release(&parents_buf);
+        PyBuffer_Release(&root_buf);
+        PyErr_SetString(PyExc_ValueError, "root_transform must be 16 floats");
+        return NULL;
+    }
+
+    Py_ssize_t num_nodes = locals_buf.len / (16 * (Py_ssize_t)sizeof(float));
+    if (locals_buf.len != num_nodes * 16 * (Py_ssize_t)sizeof(float)) {
+        PyBuffer_Release(&locals_buf);
+        PyBuffer_Release(&parents_buf);
+        PyBuffer_Release(&root_buf);
+        PyErr_SetString(PyExc_ValueError, "local_transforms must be N×16 floats");
+        return NULL;
+    }
+
+    if (parents_buf.len != num_nodes * (Py_ssize_t)sizeof(int)) {
+        PyBuffer_Release(&locals_buf);
+        PyBuffer_Release(&parents_buf);
+        PyBuffer_Release(&root_buf);
+        PyErr_SetString(PyExc_ValueError, "parent_indices length must match node count");
+        return NULL;
+    }
+
+    const float *locals = (const float *)locals_buf.buf;
+    const int *parents = (const int *)parents_buf.buf;
+    const float *root = (const float *)root_buf.buf;
+
+    Py_ssize_t result_size = num_nodes * 16 * (Py_ssize_t)sizeof(float);
+    PyObject *result = PyBytes_FromStringAndSize(NULL, result_size);
+    if (!result) {
+        PyBuffer_Release(&locals_buf);
+        PyBuffer_Release(&parents_buf);
+        PyBuffer_Release(&root_buf);
+        return NULL;
+    }
+
+    float *out = (float *)PyBytes_AS_STRING(result);
+
+    for (Py_ssize_t i = 0; i < num_nodes; i++) {
+        int parent_idx = parents[i];
+        const float *parent_mat;
+        if (parent_idx < 0 || parent_idx >= num_nodes) {
+            parent_mat = root;
+        } else {
+            parent_mat = &out[parent_idx * 16];
+        }
+        mat4_mul(parent_mat, &locals[i * 16], &out[i * 16]);
+    }
+
+    PyBuffer_Release(&locals_buf);
+    PyBuffer_Release(&parents_buf);
+    PyBuffer_Release(&root_buf);
+    return result;
+}
+
+/* --------------------------------------------------------------------------
+ * batch_transform_vertices_2d(vertices_xy, n_verts, cos_r, sin_r,
+ *                             flip_x, flip_y, tx, ty)
+ *
+ * Applies flip → rotate → translate to N 2D vertices in one C pass.
+ * Used by indoor builder for room label bounds and marquee selection.
+ *
+ * vertices_xy: bytes of N×2 floats (x, y pairs in local space)
+ * cos_r, sin_r: precomputed cos/sin of rotation angle
+ * flip_x, flip_y: boolean flip flags (0 or 1)
+ * tx, ty: translation to add after rotation
+ *
+ * Returns: bytes of N×2 floats (world x, y pairs)
+ *          + bytes of 4 floats (min_x, min_y, max_x, max_y) as AABB
+ * -------------------------------------------------------------------------- */
+
+static PyObject *
+gl_accel_batch_transform_vertices_2d(PyObject *self, PyObject *args) {
+    Py_buffer verts_buf;
+    float cos_r, sin_r, tx, ty;
+    int flip_x, flip_y;
+
+    if (!PyArg_ParseTuple(args, "y*ffppff",
+                          &verts_buf, &cos_r, &sin_r,
+                          &flip_x, &flip_y, &tx, &ty)) {
+        return NULL;
+    }
+
+    Py_ssize_t n_verts = verts_buf.len / (2 * (Py_ssize_t)sizeof(float));
+    if (verts_buf.len != n_verts * 2 * (Py_ssize_t)sizeof(float)) {
+        PyBuffer_Release(&verts_buf);
+        PyErr_SetString(PyExc_ValueError, "vertices must be N×2 floats");
+        return NULL;
+    }
+
+    const float *in = (const float *)verts_buf.buf;
+
+    /* Output: N×2 floats for transformed verts */
+    Py_ssize_t out_size = n_verts * 2 * (Py_ssize_t)sizeof(float);
+    PyObject *result = PyBytes_FromStringAndSize(NULL, out_size);
+    if (!result) {
+        PyBuffer_Release(&verts_buf);
+        return NULL;
+    }
+    float *out = (float *)PyBytes_AS_STRING(result);
+
+    float bmin_x = FLT_MAX, bmin_y = FLT_MAX;
+    float bmax_x = -FLT_MAX, bmax_y = -FLT_MAX;
+
+    for (Py_ssize_t i = 0; i < n_verts; i++) {
+        float lx = in[i * 2];
+        float ly = in[i * 2 + 1];
+
+        /* flip */
+        if (flip_x) lx = -lx;
+        if (flip_y) ly = -ly;
+
+        /* rotate */
+        float rx = lx * cos_r - ly * sin_r;
+        float ry = lx * sin_r + ly * cos_r;
+
+        /* translate */
+        float wx = rx + tx;
+        float wy = ry + ty;
+
+        out[i * 2]     = wx;
+        out[i * 2 + 1] = wy;
+
+        /* AABB update */
+        if (wx < bmin_x) bmin_x = wx;
+        if (wy < bmin_y) bmin_y = wy;
+        if (wx > bmax_x) bmax_x = wx;
+        if (wy > bmax_y) bmax_y = wy;
+    }
+
+    PyBuffer_Release(&verts_buf);
+
+    /* Return tuple: (transformed_bytes, (min_x, min_y, max_x, max_y)) */
+    PyObject *bounds = Py_BuildValue("(ffff)", bmin_x, bmin_y, bmax_x, bmax_y);
+    if (!bounds) {
+        Py_DECREF(result);
+        return NULL;
+    }
+
+    PyObject *ret = PyTuple_New(2);
+    if (!ret) {
+        Py_DECREF(result);
+        Py_DECREF(bounds);
+        return NULL;
+    }
+    PyTuple_SET_ITEM(ret, 0, result);
+    PyTuple_SET_ITEM(ret, 1, bounds);
+    return ret;
+}
+
+
+/* --------------------------------------------------------------------------
+ * batch_hook_snap_distances(
+ *     test_hooks_world,     -- bytes of M×2 floats (world x,y of test hooks)
+ *     existing_hooks_world, -- bytes of K×2 floats (world x,y of existing hooks)
+ *     existing_hook_rooms,  -- bytes of K int32 (room index for each existing hook)
+ *     test_hook_local,      -- bytes of M×2 floats (local x,y offsets of test hooks)
+ *     position_xy,          -- 2 floats: current position being snapped
+ *     snap_threshold         -- float: max distance to consider
+ * )
+ *
+ * For each pair (test_hook i, existing_hook j):
+ *   snapped_pos = existing_hooks_world[j] - test_hook_local[i]
+ *   distance = |position - snapped_pos|
+ *
+ * Returns tuple: (best_distance, best_test_idx, best_existing_idx,
+ *                 snap_x, snap_y)  or None if no snap found.
+ * -------------------------------------------------------------------------- */
+
+static PyObject *
+gl_accel_batch_hook_snap_distances(PyObject *self, PyObject *args) {
+    Py_buffer existing_hooks_buf, test_local_buf;
+    float pos_x, pos_y, snap_threshold;
+
+    if (!PyArg_ParseTuple(args, "y*y*fff",
+                          &existing_hooks_buf, &test_local_buf,
+                          &pos_x, &pos_y, &snap_threshold)) {
+        return NULL;
+    }
+
+    Py_ssize_t n_existing = existing_hooks_buf.len / (2 * (Py_ssize_t)sizeof(float));
+    Py_ssize_t n_test = test_local_buf.len / (2 * (Py_ssize_t)sizeof(float));
+
+    const float *existing = (const float *)existing_hooks_buf.buf;
+    const float *test_local = (const float *)test_local_buf.buf;
+
+    float best_dist = snap_threshold;
+    Py_ssize_t best_test = -1, best_existing = -1;
+    float best_sx = 0.0f, best_sy = 0.0f;
+    float threshold_sq = snap_threshold * snap_threshold;
+
+    for (Py_ssize_t t = 0; t < n_test; t++) {
+        float tlx = test_local[t * 2];
+        float tly = test_local[t * 2 + 1];
+
+        for (Py_ssize_t e = 0; e < n_existing; e++) {
+            float ewx = existing[e * 2];
+            float ewy = existing[e * 2 + 1];
+
+            /* Where test room must be placed for this hook alignment */
+            float sx = ewx - tlx;
+            float sy = ewy - tly;
+
+            /* Squared distance from current position to snap candidate */
+            float dx = pos_x - sx;
+            float dy = pos_y - sy;
+            float dsq = dx * dx + dy * dy;
+
+            if (dsq < threshold_sq && dsq < best_dist * best_dist) {
+                float d = sqrtf(dsq);
+                if (d < best_dist) {
+                    best_dist = d;
+                    best_test = t;
+                    best_existing = e;
+                    best_sx = sx;
+                    best_sy = sy;
+                }
+            }
+        }
+    }
+
+    PyBuffer_Release(&existing_hooks_buf);
+    PyBuffer_Release(&test_local_buf);
+
+    if (best_test < 0) {
+        Py_RETURN_NONE;
+    }
+
+    return Py_BuildValue("(fnnff)", best_dist, best_test, best_existing,
+                         best_sx, best_sy);
+}
+
+
+/* --------------------------------------------------------------------------
+ * batch_vertices_in_rect(vertices_xy, n_verts, cos_r, sin_r,
+ *                        flip_x, flip_y, tx, ty,
+ *                        rect_min_x, rect_min_y, rect_max_x, rect_max_y)
+ *
+ * Transforms N local-space 2D vertices via flip→rotate→translate and
+ * returns 1 if ANY vertex falls inside the given axis-aligned rect.
+ * Early-terminates on first hit.  Used for marquee room selection.
+ *
+ * Returns: int (1 if any vertex inside rect, 0 otherwise)
+ * -------------------------------------------------------------------------- */
+
+static PyObject *
+gl_accel_batch_vertices_in_rect(PyObject *self, PyObject *args) {
+    Py_buffer verts_buf;
+    float cos_r, sin_r, tx, ty;
+    float rmin_x, rmin_y, rmax_x, rmax_y;
+    int flip_x, flip_y;
+
+    if (!PyArg_ParseTuple(args, "y*ffppffffff",
+                          &verts_buf, &cos_r, &sin_r,
+                          &flip_x, &flip_y, &tx, &ty,
+                          &rmin_x, &rmin_y, &rmax_x, &rmax_y)) {
+        return NULL;
+    }
+
+    Py_ssize_t n_verts = verts_buf.len / (2 * (Py_ssize_t)sizeof(float));
+    const float *in = (const float *)verts_buf.buf;
+    int found = 0;
+
+    for (Py_ssize_t i = 0; i < n_verts; i++) {
+        float lx = in[i * 2];
+        float ly = in[i * 2 + 1];
+        if (flip_x) lx = -lx;
+        if (flip_y) ly = -ly;
+        float wx = lx * cos_r - ly * sin_r + tx;
+        float wy = lx * sin_r + ly * cos_r + ty;
+        if (wx >= rmin_x && wx <= rmax_x && wy >= rmin_y && wy <= rmax_y) {
+            found = 1;
+            break;
+        }
+    }
+
+    PyBuffer_Release(&verts_buf);
+    return PyLong_FromLong(found);
+}
+
+
+/* --------------------------------------------------------------------------
  * Module definition
  * -------------------------------------------------------------------------- */
 
@@ -552,6 +857,47 @@ static PyMethodDef GlAccelMethods[] = {
      "    aabbs: bytes of N×6 floats (min_x, min_y, min_z, max_x, max_y, max_z)\n\n"
      "Returns:\n"
      "    bytearray of N bytes (1=visible, 0=culled)"},
+
+    {"compute_node_world_transforms", gl_accel_compute_node_world_transforms, METH_VARARGS,
+     "Compute world-space transforms for a flattened node hierarchy.\n\n"
+     "Nodes must be in topological order (parent index < own index).\n\n"
+     "Args:\n"
+     "    local_transforms: bytes of N×16 floats (column-major mat4 per node)\n"
+     "    parent_indices: bytes of N int32 (-1 for root nodes)\n"
+     "    root_transform: bytes of 16 floats (column-major root transform)\n\n"
+     "Returns:\n"
+     "    bytes of N×16 floats (world-space transforms)"},
+
+    {"batch_transform_vertices_2d", gl_accel_batch_transform_vertices_2d, METH_VARARGS,
+     "Batch transform N 2D vertices: flip -> rotate -> translate.\n\n"
+     "Args:\n"
+     "    vertices: bytes of N×2 floats (local x,y pairs)\n"
+     "    cos_r, sin_r: floats (precomputed rotation)\n"
+     "    flip_x, flip_y: booleans\n"
+     "    tx, ty: floats (translation)\n\n"
+     "Returns:\n"
+     "    tuple(bytes of N×2 floats, (min_x, min_y, max_x, max_y))"},
+
+    {"batch_hook_snap_distances", gl_accel_batch_hook_snap_distances, METH_VARARGS,
+     "Find best hook snap among all test×existing hook pairs.\n\n"
+     "Args:\n"
+     "    existing_hooks: bytes of K×2 floats (world x,y)\n"
+     "    test_local: bytes of M×2 floats (local offsets)\n"
+     "    pos_x, pos_y: current position floats\n"
+     "    snap_threshold: float\n\n"
+     "Returns:\n"
+     "    tuple(dist, test_idx, existing_idx, snap_x, snap_y) or None"},
+
+    {"batch_vertices_in_rect", gl_accel_batch_vertices_in_rect, METH_VARARGS,
+     "Test if any local-space vertex transforms into an axis-aligned rect.\n\n"
+     "Args:\n"
+     "    vertices: bytes of N×2 floats\n"
+     "    cos_r, sin_r: floats\n"
+     "    flip_x, flip_y: booleans\n"
+     "    tx, ty: floats\n"
+     "    rect_min_x, rect_min_y, rect_max_x, rect_max_y: floats\n\n"
+     "Returns:\n"
+     "    int (1 if any vertex inside rect, 0 otherwise)"},
 
     {NULL, NULL, 0, NULL}
 };
