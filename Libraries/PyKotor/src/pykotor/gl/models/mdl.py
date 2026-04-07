@@ -8,7 +8,7 @@ import math
 import struct
 
 from copy import copy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -16,6 +16,7 @@ from pykotor.gl import (
     glm,
     mat4,
     quat,
+    value_ptr,
     vec3,
     vec4,
 )
@@ -34,7 +35,7 @@ if HAS_PYOPENGL:
     from OpenGL import (
         error as gl_error,  # type: ignore[no-redef]  # pyright: ignore[reportMissingImports]
     )
-    from OpenGL.GL import glGenBuffers, glGenVertexArrays, glVertexAttribPointer
+    from OpenGL.GL import glGenBuffers, glGenVertexArrays, glUniformMatrix4fv, glVertexAttribPointer
     from OpenGL.GL.shaders import GL_FALSE  # pyright: ignore[reportMissingImports]
     from OpenGL.raw.GL.ARB.tessellation_shader import (
         GL_TRIANGLES,  # pyright: ignore[reportMissingImports]
@@ -45,8 +46,10 @@ if HAS_PYOPENGL:
     from OpenGL.raw.GL.VERSION.GL_1_0 import (
         GL_UNSIGNED_SHORT,  # pyright: ignore[reportMissingImports]
     )
-    from OpenGL.raw.GL.VERSION.GL_1_1 import (
-        glDrawElements,  # pyright: ignore[reportMissingImports]
+    from OpenGL.raw.GL.VERSION.GL_1_1 import (  # pyright: ignore[reportMissingImports]
+        GL_TEXTURE_2D,
+        glBindTexture,
+        glDrawElements,
     )
     from OpenGL.raw.GL.VERSION.GL_1_3 import (  # pyright: ignore[reportMissingImports]
         GL_TEXTURE0,
@@ -81,8 +84,11 @@ if HAS_PYOPENGL:
 else:
     glGenBuffers = missing_gl_func("glGenBuffers")
     glGenVertexArrays = missing_gl_func("glGenVertexArrays")
+    glUniformMatrix4fv = missing_gl_func("glUniformMatrix4fv")
     glVertexAttribPointer = missing_gl_func("glVertexAttribPointer")
+    glBindTexture = missing_gl_func("glBindTexture")
     glDrawElements = missing_gl_func("glDrawElements")
+    GL_TEXTURE_2D = missing_constant("GL_TEXTURE_2D")
     glActiveTexture = missing_gl_func("glActiveTexture")
     glBindBuffer = missing_gl_func("glBindBuffer")
     glBufferData = missing_gl_func("glBufferData")
@@ -108,13 +114,115 @@ else:
     glEnable = missing_gl_func("glEnable")
 
 
+from pykotor.gl.native.gl_accel import (
+    c_available as _gl_accel_c_available,
+    compute_node_world_transforms as _c_compute_node_transforms,
+)
+
 logger = logging.getLogger(__name__)
+
+
+def _pack_mat4(m: mat4) -> bytes:
+    """Pack a glm.mat4 into 16 column-major floats as bytes."""
+    vp = value_ptr(m)
+    return struct.pack(
+        "16f",
+        vp[0],
+        vp[1],
+        vp[2],
+        vp[3],
+        vp[4],
+        vp[5],
+        vp[6],
+        vp[7],
+        vp[8],
+        vp[9],
+        vp[10],
+        vp[11],
+        vp[12],
+        vp[13],
+        vp[14],
+        vp[15],
+    )
+
+
+def _unpack_mat4(data: bytes, offset: int = 0) -> mat4:
+    """Unpack 16 column-major floats from bytes into a glm.mat4."""
+    f = struct.unpack_from("16f", data, offset)
+    return mat4(
+        f[0],
+        f[1],
+        f[2],
+        f[3],
+        f[4],
+        f[5],
+        f[6],
+        f[7],
+        f[8],
+        f[9],
+        f[10],
+        f[11],
+        f[12],
+        f[13],
+        f[14],
+        f[15],
+    )
 
 
 class Model:
     def __init__(self, scene: Scene, root: Node):
         self._scene: Scene = scene
         self.root: Node = root
+        # Flattened node hierarchy for batch C transform computation
+        self._flat_local_transforms: bytes | None = None
+        self._flat_parent_indices: bytes | None = None
+        self._flat_mesh_indices: list[tuple[int, Any, bool]] | None = (
+            None  # (flat_idx, mesh, render_flag)
+        )
+        self._flat_node_count: int = 0
+        self._flat_built: bool = False
+
+    def _build_flat_hierarchy(self):
+        """Pre-flatten the node tree into arrays for batch C transform computation.
+
+        Nodes are stored in BFS (topological) order so parent indices are always
+        less than child indices, which the C function requires.
+        """
+        if self._flat_built:
+            return
+
+        nodes: list[Node] = []
+        parent_map: list[int] = []
+
+        # BFS traversal ensures topological order
+        queue: list[tuple[Node, int]] = [(self.root, -1)]
+        while queue:
+            node, parent_idx = queue.pop(0)
+            my_idx = len(nodes)
+            nodes.append(node)
+            parent_map.append(parent_idx)
+            for child in node.children:
+                queue.append((child, my_idx))
+
+        n = len(nodes)
+        self._flat_node_count = n
+
+        # Pack local transforms
+        local_parts: list[bytes] = []
+        for node in nodes:
+            local_parts.append(_pack_mat4(node._transform))  # noqa: SLF001
+        self._flat_local_transforms = b"".join(local_parts)
+
+        # Pack parent indices as int32
+        self._flat_parent_indices = struct.pack(f"{n}i", *parent_map)
+
+        # Record which flat indices have drawable meshes
+        mesh_list: list[tuple[int, Any, bool]] = []
+        for i, node in enumerate(nodes):
+            if node.mesh is not None and node.render:
+                mesh_list.append((i, node.mesh, True))
+        self._flat_mesh_indices = mesh_list
+        self._flat_built = True
 
     def draw(
         self,
@@ -123,7 +231,44 @@ class Model:
         *,
         override_texture: str | None = None,
     ):
-        self.root.draw(shader, transform, override_texture)
+        # Use flattened C path if available
+        if _gl_accel_c_available():
+            self._draw_flat(shader, transform, override_texture)
+        else:
+            self.root.draw(shader, transform, override_texture)
+
+    def _draw_flat(
+        self,
+        shader: Shader,
+        transform: mat4,
+        override_texture: str | None = None,
+    ):
+        """Draw using flattened node hierarchy + batch C transform computation.
+
+        Instead of recursive Python calls through the node tree, this:
+        1. Pre-flattens the tree once (BFS order)
+        2. Computes ALL world transforms in a single C call
+        3. Only iterates nodes that have meshes for GL draw calls
+        """
+        if not self._flat_built:
+            self._build_flat_hierarchy()
+
+        assert self._flat_local_transforms is not None
+        assert self._flat_parent_indices is not None
+        assert self._flat_mesh_indices is not None
+
+        # One C call computes all N world transforms
+        root_bytes = _pack_mat4(transform)
+        world_bytes = _c_compute_node_transforms(
+            self._flat_local_transforms,
+            self._flat_parent_indices,
+            root_bytes,
+        )
+
+        # Only iterate nodes with meshes (typically ~50-100 out of thousands)
+        for flat_idx, mesh, _render in self._flat_mesh_indices:
+            world_transform = _unpack_mat4(world_bytes, flat_idx * 64)  # 16 floats × 4 bytes
+            mesh.draw(shader, world_transform, override_texture)
 
     def find(self, name: str) -> Node | None:
         nodes: list[Node] = [self.root]
@@ -309,6 +454,20 @@ class Node:
 
 
 class Mesh:
+    _blend_state: int = (
+        -1
+    )  # -1=unknown, 0=disabled, 1=enabled — tracks glEnable/glDisable(GL_BLEND)
+    _last_alpha_cutoff: float = -1.0  # Tracks last alphaCutoff uniform to skip redundant sets
+    _frame_tex_gen: int = (
+        -1
+    )  # Cached per-frame texture generation counter (set in reset_draw_state)
+    # Per-frame GL state tracking to skip redundant calls
+    _last_diffuse_tex_id: int = -1  # Last bound diffuse texture GL id
+    _last_lightmap_tex_id: int = -1  # Last bound lightmap texture GL id
+    _last_vao: int = -1  # Last bound VAO
+    _last_active_texture: int = -1  # Last glActiveTexture unit
+    _model_uniform_loc: int = -1  # Cached "model" uniform location for current shader
+
     def __init__(
         self,
         scene: Scene,
@@ -338,6 +497,13 @@ class Mesh:
         self._index_data: bytes = bytes(element_data)
         self._vertex_blob_cache: bytes | None = None
 
+        # Cached texture references (avoids CaseInsensitiveDict lookup per frame)
+        self._cached_diffuse_tex: Any = None
+        self._cached_diffuse_name: str = ""
+        self._cached_lightmap_tex: Any = None
+        self._cached_lightmap_name: str = ""
+        self._cached_tex_gen: int = -1
+
         if HAS_PYOPENGL:
             self._vao = glGenVertexArrays(1)
             self._vbo = glGenBuffers(1)
@@ -352,20 +518,28 @@ class Mesh:
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._ebo)
             # Convert element_data bytearray to MemoryView
             element_data_mv = memoryview(element_data)
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, len(element_data), element_data_mv, GL_STATIC_DRAW)
+            glBufferData(
+                GL_ELEMENT_ARRAY_BUFFER, len(element_data), element_data_mv, GL_STATIC_DRAW
+            )
 
             if data_bitflags & 0x0001:
                 glEnableVertexAttribArray(1)
-                glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, block_size, ctypes.c_void_p(vertex_offset))
+                glVertexAttribPointer(
+                    1, 3, GL_FLOAT, GL_FALSE, block_size, ctypes.c_void_p(vertex_offset)
+                )
 
             if data_bitflags & 0x0020 and texture and texture != "NULL":
                 glEnableVertexAttribArray(3)
-                glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, block_size, ctypes.c_void_p(texture_offset))
+                glVertexAttribPointer(
+                    3, 2, GL_FLOAT, GL_FALSE, block_size, ctypes.c_void_p(texture_offset)
+                )
                 self.texture = texture
 
             if data_bitflags & 0x0004 and lightmap and lightmap != "NULL":
                 glEnableVertexAttribArray(4)
-                glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, block_size, ctypes.c_void_p(lightmap_offset))
+                glVertexAttribPointer(
+                    4, 2, GL_FLOAT, GL_FALSE, block_size, ctypes.c_void_p(lightmap_offset)
+                )
                 self.lightmap = lightmap
 
             glBindBuffer(GL_ARRAY_BUFFER, 0)
@@ -377,55 +551,135 @@ class Mesh:
 
         self._face_count: int = len(element_data) // 2
 
+    def _resolve_texture(self, name: str, *, lightmap: bool = False):
+        """Resolve texture with per-mesh cache; uses frame-level generation counter."""
+        tex_gen = Mesh._frame_tex_gen
+        if lightmap:
+            if (
+                self._cached_lightmap_tex is not None
+                and self._cached_lightmap_name == name
+                and self._cached_tex_gen == tex_gen
+            ):
+                return self._cached_lightmap_tex
+            resolved = self.scene.texture(name, lightmap=True)
+            self._cached_lightmap_tex = resolved
+            self._cached_lightmap_name = name
+            self._cached_tex_gen = tex_gen
+            return resolved
+        else:
+            if (
+                self._cached_diffuse_tex is not None
+                and self._cached_diffuse_name == name
+                and self._cached_tex_gen == tex_gen
+            ):
+                return self._cached_diffuse_tex
+            resolved = self.scene.texture(name)
+            self._cached_diffuse_tex = resolved
+            self._cached_diffuse_name = name
+            self._cached_tex_gen = tex_gen
+            return resolved
+
     def draw(
         self,
         shader: Shader,
         transform: mat4,
         override_texture: str | None = None,
     ):
-        # Defensive: ensure the shader program is bound before setting uniforms.
-        # In some Qt/OpenGL driver combinations, the current program can be lost between calls.
+        # Ensure shader is bound (usually a no-op due to active-ID tracking).
         shader.use()
-        shader.set_matrix4("model", transform)
 
-        glActiveTexture(GL_TEXTURE0)
-        diffuse_tex = self.scene.texture(override_texture or self.texture)
-        diffuse_tex.use()
+        # Upload model matrix directly — bypass shader.set_matrix4 dict lookup.
+        loc = Mesh._model_uniform_loc
+        if loc < 0:
+            loc = shader.uniform("model")
+            Mesh._model_uniform_loc = loc
+        glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(transform))
 
-        # Material hints (TXI blending) influence how we draw “effect” meshes (e.g. light shafts).
+        # Resolve diffuse texture (cached per-frame via generation counter).
+        tex_name = override_texture or self.texture
+        diffuse_tex = self._resolve_texture(tex_name)
+        diffuse_id: int = diffuse_tex._id  # noqa: SLF001
+
+        # Bind diffuse on TEXTURE0 — skip if already bound.
+        if Mesh._last_diffuse_tex_id != diffuse_id:
+            if Mesh._last_active_texture != GL_TEXTURE0:
+                glActiveTexture(GL_TEXTURE0)
+                Mesh._last_active_texture = GL_TEXTURE0
+            glBindTexture(GL_TEXTURE_2D, diffuse_id)
+            Mesh._last_diffuse_tex_id = diffuse_id
+
+        # Material hints (TXI blending) for effect meshes (light shafts, etc.).
         blend_mode = int(getattr(diffuse_tex, "blend_mode", 0))
-        alpha_cutoff = float(getattr(diffuse_tex, "alpha_cutoff", 0.0))
-        has_alpha = bool(getattr(diffuse_tex, "has_alpha", True))
 
-        # Blend + depth-write selection:
-        # - additive: true blended effect meshes
-        # - punchthrough / alpha-cutout: discard-based masking, no regular alpha blending
-        # - default: opaque draw, because KotOR commonly uses diffuse alpha for masks/envmap control
-        if blend_mode == 1:  # Additive
-            glEnable(GL_BLEND)
+        # Fast path: ~99% of meshes are opaque (blend_mode == 0, no alpha cutoff).
+        if blend_mode == 0:
+            alpha_cutoff = float(getattr(diffuse_tex, "alpha_cutoff", 0.0))
+            if alpha_cutoff > 0.0:
+                # Punchthrough / implicit cutout
+                if Mesh._blend_state != 0:
+                    glDisable(GL_BLEND)
+                    Mesh._blend_state = 0
+                glDepthMask(True)
+                if Mesh._last_alpha_cutoff != alpha_cutoff:
+                    shader.set_float("alphaCutoff", alpha_cutoff)
+                    Mesh._last_alpha_cutoff = alpha_cutoff
+            else:
+                # Default opaque — most common
+                if Mesh._blend_state != 0:
+                    glDisable(GL_BLEND)
+                    Mesh._blend_state = 0
+                glDepthMask(True)
+                if Mesh._last_alpha_cutoff != 0.0:
+                    shader.set_float("alphaCutoff", 0.0)
+                    Mesh._last_alpha_cutoff = 0.0
+        elif blend_mode == 1:  # Additive
+            has_alpha = bool(getattr(diffuse_tex, "has_alpha", True))
+            if Mesh._blend_state != 1:
+                glEnable(GL_BLEND)
+                Mesh._blend_state = 1
             glDepthMask(False)
             glBlendFunc(GL_SRC_ALPHA if has_alpha else GL_SRC_COLOR, GL_ONE)
-            shader.set_float("alphaCutoff", 0.0)
-        elif blend_mode == 2 or alpha_cutoff > 0.0:  # Punchthrough / implicit cutout
-            glDisable(GL_BLEND)
+            if Mesh._last_alpha_cutoff != 0.0:
+                shader.set_float("alphaCutoff", 0.0)
+                Mesh._last_alpha_cutoff = 0.0
+        else:  # blend_mode == 2: Punchthrough
+            alpha_cutoff = float(getattr(diffuse_tex, "alpha_cutoff", 0.0))
+            if Mesh._blend_state != 0:
+                glDisable(GL_BLEND)
+                Mesh._blend_state = 0
             glDepthMask(True)
-            shader.set_float("alphaCutoff", alpha_cutoff)
-        else:  # Default opaque material
-            glDisable(GL_BLEND)
-            glDepthMask(True)
-            shader.set_float("alphaCutoff", 0.0)
+            if Mesh._last_alpha_cutoff != alpha_cutoff:
+                shader.set_float("alphaCutoff", alpha_cutoff)
+                Mesh._last_alpha_cutoff = alpha_cutoff
 
-        glActiveTexture(GL_TEXTURE1)
-        self.scene.texture(self.lightmap, lightmap=True).use()
+        # Bind lightmap on TEXTURE1 — skip if already bound.
+        lightmap_tex = self._resolve_texture(self.lightmap, lightmap=True)
+        lightmap_id: int = lightmap_tex._id  # noqa: SLF001
+        if Mesh._last_lightmap_tex_id != lightmap_id:
+            if Mesh._last_active_texture != GL_TEXTURE1:
+                glActiveTexture(GL_TEXTURE1)
+                Mesh._last_active_texture = GL_TEXTURE1
+            glBindTexture(GL_TEXTURE_2D, lightmap_id)
+            Mesh._last_lightmap_tex_id = lightmap_id
 
-        glBindVertexArray(self._vao)
+        # Bind VAO and draw — skip VAO bind if already active.
+        vao = self._vao
+        if Mesh._last_vao != vao:
+            glBindVertexArray(vao)
+            Mesh._last_vao = vao
         glDrawElements(GL_TRIANGLES, self._face_count, GL_UNSIGNED_SHORT, None)
 
-        # Restore conservative defaults for the next draw.
-        glEnable(GL_BLEND)
-        glDepthMask(True)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        shader.set_float("alphaCutoff", 0.0)
+    @staticmethod
+    def reset_draw_state(tex_gen: int = -1):
+        """Reset tracked GL blend/alpha state at the start of each render pass."""
+        Mesh._blend_state = -1
+        Mesh._last_alpha_cutoff = -1.0
+        Mesh._frame_tex_gen = tex_gen
+        Mesh._last_diffuse_tex_id = -1
+        Mesh._last_lightmap_tex_id = -1
+        Mesh._last_vao = -1
+        Mesh._last_active_texture = -1
+        Mesh._model_uniform_loc = -1
 
     def vertex_blob(self) -> bytes:
         """Generate an interleaved vertex blob for rendering.
@@ -524,7 +778,44 @@ class Cube:
         )
 
         elements = np.array(
-            [0, 1, 2, 2, 3, 0, 1, 5, 6, 6, 2, 1, 7, 6, 5, 5, 4, 7, 4, 0, 3, 3, 7, 4, 4, 5, 1, 1, 0, 4, 3, 2, 6, 6, 7, 3],
+            [
+                0,
+                1,
+                2,
+                2,
+                3,
+                0,
+                1,
+                5,
+                6,
+                6,
+                2,
+                1,
+                7,
+                6,
+                5,
+                5,
+                4,
+                7,
+                4,
+                0,
+                3,
+                3,
+                7,
+                4,
+                4,
+                5,
+                1,
+                1,
+                0,
+                4,
+                3,
+                2,
+                6,
+                6,
+                7,
+                3,
+            ],
             dtype="int16",
         )
 
@@ -555,7 +846,9 @@ class Cube:
                 glBindVertexArray(0)
                 self._buffers_supported = True
             except gl_error.NullFunctionError:
-                logger.warning("OpenGL buffer objects are unavailable; falling back to CPU-only cube bounds.")
+                logger.warning(
+                    "OpenGL buffer objects are unavailable; falling back to CPU-only cube bounds."
+                )
                 self._face_count = 0
                 self._vao = 0
                 self._vbo = 0
@@ -612,7 +905,9 @@ class Boundary:
                 glBufferData(GL_ARRAY_BUFFER, len(vertices_np) * 4, vertices_np, GL_STATIC_DRAW)
 
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._ebo)
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_np.nbytes, elements_np, GL_STATIC_DRAW)
+                glBufferData(
+                    GL_ELEMENT_ARRAY_BUFFER, elements_np.nbytes, elements_np, GL_STATIC_DRAW
+                )
 
                 glEnableVertexAttribArray(1)
                 glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12, ctypes.c_void_p(0))
@@ -621,7 +916,9 @@ class Boundary:
                 glBindVertexArray(0)
                 self._buffers_supported = True
             except gl_error.NullFunctionError:
-                logger.warning("OpenGL buffer objects are unavailable; boundary rendering disabled.")
+                logger.warning(
+                    "OpenGL buffer objects are unavailable; boundary rendering disabled."
+                )
                 self._face_count = 0
                 self._vao = 0
                 self._vbo = 0
