@@ -25,7 +25,7 @@ dependencies = [
   "pykotor[render]>=2.3.11",
   "holocrontoolset",
   "numpy>=1.24.4",
-  "matplotlib>=3.7.5",
+  "matplotlib>=3.9.4",
 ]
 description = "PyKotor workspace - meta-package for PyKotor ecosystem"
 keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", "toolset", "tslpatcher"]
