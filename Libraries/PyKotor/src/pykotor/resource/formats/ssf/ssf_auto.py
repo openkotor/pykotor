@@ -105,7 +105,8 @@ def read_ssf(
         return SSFXMLReader(source, offset, size or 0).load()
     if file_format == ResourceType.SSF_JSON:
         from pykotor.resource.formats.ssf.ssf_data import SSF
-        raw = BinaryReader.load_file(source, offset).read_all()
+        with BinaryReader.from_auto(source, offset) as reader:
+            raw = reader.read_all()
         decoded = decode_bytes_with_fallbacks(raw)
         return SSF.from_json(json.loads(decoded))
     msg = "Failed to determine the format of the SSF file."

@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING
 
 from pykotor.common.stream import BinaryReader
+from pykotor.resource.formats._base import BiowareEncoder
 from pykotor.resource.formats.twoda.io_twoda import TwoDABinaryReader, TwoDABinaryWriter
 from pykotor.resource.formats.twoda.io_twoda_csv import TwoDACSVReader, TwoDACSVWriter
-from pykotor.resource.formats.twoda.io_twoda_json import TwoDAJSONReader, TwoDAJSONWriter
 from pykotor.resource.type import ResourceType
+from pykotor.tools.encoding import decode_bytes_with_fallbacks
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.twoda.twoda_data import TwoDA
@@ -104,7 +106,11 @@ def read_2da(
     if file_format == ResourceType.TwoDA_CSV:
         return TwoDACSVReader(source, offset, size or 0).load()
     if file_format == ResourceType.TwoDA_JSON:
-        return TwoDAJSONReader(source, offset, size or 0).load()
+        from pykotor.resource.formats.twoda.twoda_data import TwoDA
+        with BinaryReader.from_auto(source, offset) as reader:
+            raw = reader.read_all()
+        decoded = decode_bytes_with_fallbacks(raw)
+        return TwoDA.from_json(json.loads(decoded))
     msg = "detect_2da failed unexpectedly"
     raise ValueError(msg)
 
@@ -135,7 +141,10 @@ def write_2da(
     elif file_format == ResourceType.TwoDA_CSV:
         TwoDACSVWriter(twoda, target).write()
     elif file_format == ResourceType.TwoDA_JSON:
-        TwoDAJSONWriter(twoda, target).write()
+        json_dump = json.dumps(twoda, cls=BiowareEncoder, indent=4)
+        from pykotor.common.stream import BinaryWriter
+        with BinaryWriter.to_auto(target) as writer:
+            writer.write_bytes(json_dump.encode())
     else:
         msg = "Unsupported format specified; use TwoDA, TwoDA_CSV or TwoDA_JSON."
         raise ValueError(msg)

@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
+import json
 import os
 
 from typing import TYPE_CHECKING
 
 from pykotor.common.stream import BinaryReader
+from pykotor.resource.formats._base import BiowareEncoder
 from pykotor.resource.formats.tlk.io_tlk import TLKBinaryReader, TLKBinaryWriter
-from pykotor.resource.formats.tlk.io_tlk_json import TLKJSONReader, TLKJSONWriter
 from pykotor.resource.formats.tlk.io_tlk_xml import TLKXMLReader, TLKXMLWriter
 from pykotor.resource.type import ResourceType
+from pykotor.tools.encoding import decode_bytes_with_fallbacks
 
 if TYPE_CHECKING:
     from pykotor.common.language import Language
@@ -122,7 +124,11 @@ def read_tlk(
     if file_format == ResourceType.TLK_XML:
         return TLKXMLReader(normalized_source, offset, size or 0).load()
     if file_format == ResourceType.TLK_JSON:
-        return TLKJSONReader(normalized_source, offset, size or 0).load()
+        from pykotor.resource.formats.tlk.tlk_data import TLK
+        with BinaryReader.from_auto(normalized_source, offset) as reader:
+            raw = reader.read_all()
+        decoded = decode_bytes_with_fallbacks(raw)
+        return TLK.from_json(json.loads(decoded))
     msg = "Unsupported TLK format specified."
     raise ValueError(msg)
 
@@ -151,7 +157,10 @@ def write_tlk(
     elif file_format == ResourceType.TLK_XML:
         TLKXMLWriter(tlk, target).write()
     elif file_format == ResourceType.TLK_JSON:
-        TLKJSONWriter(tlk, target).write()
+        json_dump = json.dumps(tlk, cls=BiowareEncoder, indent=4)
+        from pykotor.common.stream import BinaryWriter
+        with BinaryWriter.to_auto(target) as writer:
+            writer.write_bytes(json_dump.encode())
     else:
         msg = "Unsupported format specified; use TLK or TLK_XML."
         raise ValueError(msg)

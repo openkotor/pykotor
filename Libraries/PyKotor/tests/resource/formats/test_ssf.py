@@ -24,7 +24,6 @@ if UTILITY_PATH.joinpath("utility").exists():
 from pykotor.resource.formats.ssf import (
     SSF,
     SSFBinaryReader,
-    SSFJSONReader,
     SSFSound,
     SSFXMLReader,
     read_ssf,
@@ -207,7 +206,7 @@ class TestSSF(unittest.TestCase):
     def test_json_io(self):
         assert detect_ssf(JSON_TEST_DATA.encode("utf-8")) == ResourceType.SSF_JSON
 
-        ssf = SSFJSONReader(JSON_TEST_DATA.encode("utf-8")).load()
+        ssf = read_ssf(JSON_TEST_DATA.encode("utf-8"))
         self.validate_io(ssf)
 
         data = bytearray()

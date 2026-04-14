@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import json
 from pykotor.common.stream import BinaryReader
+from pykotor.resource.formats._base import BiowareEncoder
 from pykotor.resource.formats.lip.io_lip import LIPBinaryReader, LIPBinaryWriter
-from pykotor.resource.formats.lip.io_lip_json import LIPJSONReader, LIPJSONWriter
 from pykotor.resource.formats.lip.io_lip_xml import LIPXMLReader, LIPXMLWriter
 from pykotor.resource.type import ResourceType
+from pykotor.tools.encoding import decode_bytes_with_fallbacks
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.lip.lip_data import LIP
@@ -97,7 +99,11 @@ def read_lip(
     if file_format == ResourceType.LIP_XML:
         return LIPXMLReader(source, offset, size or 0).load()
     if file_format == ResourceType.LIP_JSON:
-        return LIPJSONReader(source, offset, size or 0).load()
+        from pykotor.resource.formats.lip.lip_data import LIP
+        with BinaryReader.from_auto(source, offset) as reader:
+            raw = reader.read_all()
+        decoded = decode_bytes_with_fallbacks(raw)
+        return LIP.from_json(json.loads(decoded))
     # if file_format == ResourceType.INVALID:
     msg = "Failed to determine the format of the GFF file."
     raise ValueError(msg)
@@ -127,7 +133,10 @@ def write_lip(
     elif file_format == ResourceType.LIP_XML:
         LIPXMLWriter(lip, target).write()
     elif file_format == ResourceType.LIP_JSON:
-        LIPJSONWriter(lip, target).write()
+        json_dump = json.dumps(lip, cls=BiowareEncoder, indent=4)
+        from pykotor.common.stream import BinaryWriter
+        with BinaryWriter.to_auto(target) as writer:
+            writer.write_bytes(json_dump.encode())
     else:
         msg = "Unsupported format specified; use LIP or LIP_XML or LIP_JSON."
         raise ValueError(msg)
