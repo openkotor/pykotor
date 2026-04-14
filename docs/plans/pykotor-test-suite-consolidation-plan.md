@@ -1,29 +1,36 @@
 # PyKotor Test Suite Consolidation Plan
 
 ## Scope
+
 This plan audits the test suite under `Libraries/PyKotor/tests` with two goals:
+
 1. keep the tests that catch meaningful regressions in public behavior, file-format fidelity, and end-to-end workflows;
 2. reduce noise from duplicate, brittle, skipped, overly granular, or expensive tests that mostly validate implementation detail.
 
 The inventory appendix at the end names every collected test symbol discovered from `test_*.py` files so no test is omitted from the planning surface.
 
 ## What Matters
+
 Prioritize these categories:
+
 - format round-trip and corruption handling for stable resource formats;
 - integration tests that exercise CLI workflows, TSLPatcher behavior, and installation/resource discovery;
 - public API behavior for common utilities, path handling, stream handling, and model helpers;
 - UI functional behavior such as file selection, navigation, signals, keyboard access, and task execution.
 
 De-prioritize these categories:
+
 - exact pixel sizes, exact Fluent color values, and OS-theme rendering details;
 - trivial wrappers around Python builtins when dozens of nearly identical tests say the same thing;
 - tests that are permanently skipped, unfinished, or known broken;
 - duplicate internal-helper tests that are already covered through higher-value CLI or integration coverage.
 
 ## Executive Summary
+
 The suite currently collects about 2599 tests across 115 test modules. The biggest problems are concentration and duplication rather than total count alone.
 
 The highest-value areas are:
+
 - `resource/formats/test_ncs.py`, `resource/formats/test_bwm.py`, `resource/formats/test_mdl_ascii.py`, `resource/formats/test_wav.py`
 - `resource/generics/test_dlg.py` and the better generic round-trip tests
 - CLI workflow coverage in `cli/test_json_commands.py`, `cli/test_walkmesh_rebuild.py`, `cli/test_indoor_roundtrip.py`
@@ -31,6 +38,7 @@ The highest-value areas are:
 - filesystem/task/dialog behavior in `test_utility/test_qfiledialog.py`, `test_utility/test_qfiledialog2.py`, `test_utility/test_filesystem_components.py`, `test_utility/test_pyfileinfogatherer.py`, `test_utility/test_tasks.py`
 
 The lowest-value areas are:
+
 - pixel-perfect and exact visual conformance tests
 - duplicate or hidden duplicate diff tests
 - permanently skipped or unfinished path/config tests
@@ -40,6 +48,7 @@ The lowest-value areas are:
 ## Priority Decisions By Area
 
 ### Top-Level and Common
+
 - Keep `test_compile_tool.py`, `resource/test_replace_module_extensions.py`, and `resource/test_resource_from_path.py`.
 - Keep `test_markdown_validation.py`, but treat it as a documentation integrity suite, not product behavior.
 - Rename or move `test_kaitai_generated_parity.py` into an integrity/lint bucket unless true parser parity checks are added.
@@ -49,6 +58,7 @@ The lowest-value areas are:
 - Review and either finish or remove explicitly unfinished path tests in `common/test_get_case_sensitive_path.py`.
 
 ### Extract, Font, GL, and Engine
+
 - Keep the extract suite because it covers real resource-loading workflows, but mark game-installation dependent tests as integration-only.
 - Keep `font/test_txi_tga_font.py`, but leave it outside the fast default suite because it depends on real fonts and file output.
 - Keep `gl/test_texture_loader_core.py`, `gl/test_camera_controller.py`, `gl/test_frustum_culling.py`, `gl/test_mdl_mesh_alpha_modes.py`, and `gl/test_async_loader_texture_txi_none.py` if they validate public rendering logic.
@@ -57,6 +67,7 @@ The lowest-value areas are:
 - Consolidate simple constructor-style engine checks in `test_engine/test_mdl_loader.py`; keep the math-heavy behavior tests.
 
 ### Resource Format Tests
+
 - Keep the format suites for BIF, BWM, DDS, ERF, GFF, KEY, LIP, LYT, MDL, MDL ASCII, NCS, RIM, SSF, TLK, TPC, TwoDA, TXI I/O, VIS, WAV, and WOK.
 - Convert repeated `binary_io`, `xml_io`, `json_io`, and `file_io` variants into parametrized tests where the assertions are materially the same.
 - Keep `test_model_parsers_against_mdlops.py`, but move it into a very-slow integration bucket because it depends on external tooling and real models.
@@ -65,6 +76,7 @@ The lowest-value areas are:
 - Expand `test_txi_data.py` or merge it into broader TXI coverage; as written it is too narrow to justify its own file.
 
 ### Resource Generic Tests
+
 - Keep `test_dlg.py` as a dedicated complex-graph test file.
 - Consolidate the UT* generic files (`utc`, `utd`, `ute`, `uti`, `utp`, `uts`, `utt`, `utw`) into a parametrized template-oriented suite where possible.
 - Group smaller minimal generics such as `are`, `ifo`, `jrl`, and `pth` into shared minimal round-trip coverage if they do not justify separate modules.
@@ -72,6 +84,7 @@ The lowest-value areas are:
 - Remove or fix known-broken generic tests rather than leaving them permanently skipped.
 
 ### CLI
+
 - Keep `cli/test_cli_backwards_compat.py`.
 - Keep `cli/test_json_commands.py`, `cli/test_walkmesh_rebuild.py`, and `cli/test_indoor_roundtrip.py`.
 - Keep `cli/test_indoor_extract_installation_modules.py` only as a slow integration suite.
@@ -79,6 +92,7 @@ The lowest-value areas are:
 - Move tests of private diff helper functions into a clearly labeled internal-only module or remove them if CLI-path coverage already exercises the same behavior.
 
 ### TSLPatcher
+
 - Keep `tslpatcher/test_mods.py`, `tslpatcher/test_reader.py`, and `tslpatcher/test_tslpatcher.py`; they are the core behavior suites.
 - Reduce repetition in `tslpatcher/test_reader.py` by parametrizing the many near-identical 2DA row-operation variants.
 - Split or reduce `tslpatcher/test_config.py`; fix or delete the broken skipped tests instead of carrying them indefinitely.
@@ -87,6 +101,7 @@ The lowest-value areas are:
 - Keep `tslpatcher/diff/test_full_execution.py` only as optional integration coverage.
 
 ### Utility and UI
+
 - Keep the functional UI suites: `test_qfiledialog.py`, `test_qfiledialog2.py`, `test_qfiledialogextended.py`, `test_filesystem_components.py`, `test_file_dialog_components.py`, `test_pyfileinfogatherer.py`, `test_dynamic_view.py`, `test_tasks.py`, `test_actions_dispatcher.py`.
 - Consolidate `test_qfiledialogextended_comprehensive.py` into the main extended-dialog suite unless it contains materially different behavior coverage.
 - Remove `test_pixel_perfect_layout.py` and `test_fluent_design_conformance.py` from the default plan; they mostly test visual constants and are too brittle for their value.
@@ -95,7 +110,9 @@ The lowest-value areas are:
 - Keep the strict-typing micro-tests only if they encode repo policy; otherwise merge them into a smaller policy suite.
 
 ## Recommended Target Layout
+
 A more manageable suite would look like this:
+
 - `tests/fast/format/` for stable codec and public API coverage
 - `tests/fast/common/` for utilities and path/stream behavior
 - `tests/fast/ui/` for dialog/explorer/tasks behavior without pixel fidelity checks
@@ -106,6 +123,7 @@ A more manageable suite would look like this:
 This does not require immediate file movement; the same outcome can start with markers and consolidation inside the current tree.
 
 ## Concrete Consolidation Actions
+
 1. Delete or quarantine low-value visual-conformance files:
    - `test_utility/test_pixel_perfect_layout.py`
    - `test_utility/test_fluent_design_conformance.py`
@@ -133,20 +151,25 @@ This does not require immediate file movement; the same outcome can start with m
 8. Remove zero-test placeholder modules in `tslpatcher/diff` if they remain empty.
 
 ## Expected Outcome
+
 If executed well, this plan should:
+
 - preserve nearly all real regression-detection power;
 - cut substantial maintenance overhead in UI tests;
 - reduce default runtime by moving install-wide and tool-dependent tests out of the fast path;
 - make failures easier to interpret because each remaining test will map more clearly to a behavior the project actually cares about.
 
 ## Full Test Inventory
+
 The list below names every collected test symbol discovered from `test_*.py` files under `Libraries/PyKotor/tests`.
 
 ### Libraries/PyKotor/tests/cli/test_cli_backwards_compat.py (2 tests)
+
 - test_all_commands_have_help
 - test_unknown_command_returns_nonzero
 
 ### Libraries/PyKotor/tests/cli/test_diff_command.py (66 tests)
+
 - TestPathTypeDetection.test_detect_file
 - TestPathTypeDetection.test_detect_folder
 - TestPathTypeDetection.test_detect_installation
@@ -215,6 +238,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestDiffWithTestFiles.test_context_format
 
 ### Libraries/PyKotor/tests/cli/test_diff_comprehensive.py (25 tests)
+
 - TestDiffFileVsFile.test_diff_identical_text_files
 - TestDiffFileVsFile.test_diff_different_text_files
 - TestDiffFileVsFile.test_diff_identical_binary_files
@@ -242,9 +266,11 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestComplexScenarios.test_diff_folder_with_subdirectories
 
 ### Libraries/PyKotor/tests/cli/test_indoor_extract_installation_modules.py (1 tests)
+
 - test_indoor_extract_each_module_matches_modulekit_loadability
 
 ### Libraries/PyKotor/tests/cli/test_indoor_roundtrip.py (17 tests)
+
 - TestIndoorCLIRoundtrip.test_roundtrip_lyt_room_count
 - TestIndoorCLIRoundtrip.test_roundtrip_lyt_room_positions
 - TestIndoorCLIRoundtrip.test_roundtrip_wok_face_count
@@ -264,12 +290,14 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestIndoorCLIRoundtripIndoorMapComparison.test_indoor_map_compare_after_roundtrip
 
 ### Libraries/PyKotor/tests/cli/test_json_commands.py (4 tests)
+
 - test_to_json_and_from_json_roundtrip_tlk
 - test_get_supports_auto_detected_installation_and_json_export
 - test_kotor_paths_can_emit_json
 - test_ssf_json_commands_roundtrip
 
 ### Libraries/PyKotor/tests/cli/test_walkmesh_rebuild.py (7 tests)
+
 - test_walkmesh_rebuild_binary_to_file
 - test_walkmesh_rebuild_overwrite
 - test_walkmesh_rebuild_ascii_input_to_wok
@@ -279,6 +307,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - test_render_bwm_to_pngs_writes_four_views
 
 ### Libraries/PyKotor/tests/common/test_case_aware_path.py (19 tests)
+
 - TestCaseAwarePath.test_new_valid_str_argument
 - TestCaseAwarePath.test_hashing
 - TestCaseAwarePath.test_valid_name_property
@@ -300,6 +329,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestIsRelativeTo.test_same_path
 
 ### Libraries/PyKotor/tests/common/test_caseawarepath_globber_bug.py (12 tests)
+
 - TestGlobberBug.test_rglob_simple_pattern
 - TestGlobberBug.test_rglob_recursive_pattern
 - TestGlobberBug.test_rglob_file_extension
@@ -314,6 +344,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestGlobberBug.test_installation_load_override_scenario
 
 ### Libraries/PyKotor/tests/common/test_consumer_manager.py (13 tests)
+
 - TestConsumerManagerMainThreadAsync.test_singleton_behavior
 - TestConsumerManagerMainThreadAsync.test_initialization
 - TestConsumerManagerMainThreadAsync.test_add_task
@@ -329,6 +360,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestConsumerManagerMainThreadAsync.test_async_get_results
 
 ### Libraries/PyKotor/tests/common/test_decode_fallbacks.py (15 tests)
+
 - TestDecodeBytes.test_basic
 - TestDecodeBytes.test_non_ascii
 - TestDecodeBytes.test_unknown_encoding
@@ -346,6 +378,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestDecodeBytes.test_no_valid_encoding_found_strict_errors
 
 ### Libraries/PyKotor/tests/common/test_geometry.py (16 tests)
+
 - TestVector2.test_unpacking
 - TestVector2.test_from_vector2
 - TestVector2.test_from_vector3
@@ -364,6 +397,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestPolygon2.test_area
 
 ### Libraries/PyKotor/tests/common/test_get_case_sensitive_path.py (20 tests)
+
 - TestCaseAwarePath.test_join_with_nonexistent_path
 - TestCaseAwarePath.test_truediv_equivalent_to_joinpath
 - TestCaseAwarePath.test_rtruediv
@@ -386,6 +420,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestCaseAwarePath.test_hardlink_to
 
 ### Libraries/PyKotor/tests/common/test_path_isinstance.py (23 tests)
+
 - TestPathInheritance.test_nt_case_hashing
 - TestPathInheritance.test_path_attributes
 - TestPathInheritance.test_path_hashing
@@ -411,6 +446,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestPathInheritance.test_pathlib_purepath_not_isinstance_path
 
 ### Libraries/PyKotor/tests/common/test_path_mixed_slash_handling.py (19 tests)
+
 - TestPathlibMixedSlashes.test_low_granular_path_usage
 - TestPathlibMixedSlashes.test_posix_exists_alternatives
 - TestPathlibMixedSlashes.test_posix_case_hashing_custom_posix_path
@@ -432,6 +468,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestPathlibMixedSlashes.test_custom_path_edge_cases_os_specific_custom_pure_path
 
 ### Libraries/PyKotor/tests/common/test_stream.py (23 tests)
+
 - TestBinaryReader.test_read
 - TestBinaryReader.test_size
 - TestBinaryReader.test_true_size
@@ -457,6 +494,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestBinaryWriter.test_write_to_big_endian_stream
 
 ### Libraries/PyKotor/tests/common/test_wrapped_case_insens_str.py (47 tests)
+
 - TestCaseInsensImmutableStr.test_capitalize
 - TestCaseInsensImmutableStr.test_casefold
 - TestCaseInsensImmutableStr.test_center
@@ -506,6 +544,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestCaseInsensImmutableStr.test_zfill
 
 ### Libraries/PyKotor/tests/common/test_wrapped_str.py (73 tests)
+
 - TestMutableStr.test_init
 - TestMutableStr.test_str
 - TestMutableStr.test_repr
@@ -581,6 +620,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestMutableStr.test_subclasshook
 
 ### Libraries/PyKotor/tests/common/test_wrapped_str2.py (15 tests)
+
 - TestCaseInsensImmutableStr.test_coerce_str
 - TestCaseInsensImmutableStr.test_init
 - TestCaseInsensImmutableStr.test_contains
@@ -598,14 +638,17 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestCaseInsensImmutableStr.test_split_by_indices
 
 ### Libraries/PyKotor/tests/extract/test_capsule.py (2 tests)
+
 - TestCapsule.test_add_to_capsule_file
 - TestCapsule.test_existing_capsule_contents
 
 ### Libraries/PyKotor/tests/extract/test_chitin.py (2 tests)
+
 - TestChitin.test_k1_chitin
 - TestChitin.test_k2_chitin
 
 ### Libraries/PyKotor/tests/extract/test_installation.py (12 tests)
+
 - TestInstallation.test_resource
 - TestInstallation.test_resources
 - TestInstallation.test_location
@@ -620,6 +663,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestInstallation.test_multiple_unpickle
 
 ### Libraries/PyKotor/tests/extract/test_nested_capsule.py (12 tests)
+
 - TestFindRealFilesystemPath.test_existing_file_returns_path_no_parts
 - TestFindRealFilesystemPath.test_nested_path_returns_real_path_and_parts
 - TestFindRealFilesystemPath.test_nonexistent_path_returns_none
@@ -634,6 +678,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestResourceIdentifierFromPath.test_capsule_path_parses_correctly
 
 ### Libraries/PyKotor/tests/extract/test_save_load_flow_k1.py (16 tests)
+
 - TestSaveLoadFlowK1.test_get_free_disk_space_k1_returns_positive
 - TestSaveLoadFlowK1.test_create_directory_k1_creates_and_exists_ok
 - TestSaveLoadFlowK1.test_get_directory_size_k1_empty_is_zero
@@ -652,10 +697,12 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestSaveLoadFlowK1.test_run_save_flow_k2_path_uses_tsl_flow
 
 ### Libraries/PyKotor/tests/extract/test_talktable.py (2 tests)
+
 - TestTalkTable.test_basic_accessors
 - TestTalkTable.test_batch
 
 ### Libraries/PyKotor/tests/font/test_txi_tga_font.py (6 tests)
+
 - TestWriteBitmapFont.test_bitmap_font
 - TestWriteBitmapFont.test_bitmap_font_thai
 - TestWriteBitmapFont.test_valid_inputs
@@ -664,10 +711,12 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestWriteBitmapFont.test_invalid_resolution
 
 ### Libraries/PyKotor/tests/gl/test_async_loader_texture_txi_none.py (2 tests)
+
 - test_parse_texture_data_tpc_without_txi_does_not_error
 - test_parse_texture_data_dxt1_cutout_without_txi_preserves_alpha
 
 ### Libraries/PyKotor/tests/gl/test_camera_controller.py (28 tests)
+
 - TestInputState.test_default_values
 - TestCameraControllerSettings.test_default_values
 - TestCameraControllerSettings.test_custom_settings
@@ -698,6 +747,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestCameraModeEnum.test_modes_are_distinct
 
 ### Libraries/PyKotor/tests/gl/test_frustum_culling.py (33 tests)
+
 - TestCameraMatrixCaching.test_view_matrix_caching
 - TestCameraMatrixCaching.test_view_matrix_invalidation_on_position_change
 - TestCameraMatrixCaching.test_view_matrix_invalidation_on_rotation
@@ -733,6 +783,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestPerformanceOptimizations.test_sphere_culling_performance
 
 ### Libraries/PyKotor/tests/gl/test_gl_accel.py (29 tests)
+
 - TestExtractFrustumPlanes.test_identity_matrix
 - TestExtractFrustumPlanes.test_planes_are_normalized
 - TestExtractFrustumPlanes.test_rejects_wrong_size
@@ -764,10 +815,12 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestBatchVerticesInRect.test_early_termination
 
 ### Libraries/PyKotor/tests/gl/test_mdl_mesh_alpha_modes.py (2 tests)
+
 - test_default_alpha_texture_renders_opaque
 - test_cutout_texture_disables_regular_blending
 
 ### Libraries/PyKotor/tests/gl/test_texture_loader_core.py (6 tests)
+
 - TestMipmapSerialization.test_serialize_deserialize_rgba
 - TestMipmapSerialization.test_serialize_deserialize_rgb
 - TestMipmapSerialization.test_serialize_deserialize_greyscale
@@ -776,10 +829,12 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestQueueCommunication.test_queue_multiple_items
 
 ### Libraries/PyKotor/tests/resource/formats/ncs/test_do_types_strict_typing.py (2 tests)
+
 - TestDoTypesStrictTyping.test_assert_stack_calls_print_state_directly
 - TestDoTypesStrictTyping.test_subroutine_state_has_print_state_method
 
 ### Libraries/PyKotor/tests/resource/formats/test_base_comparable_strict_typing.py (5 tests)
+
 - TestComparableMixinStrictTyping.test_compare_uses_class_variable_directly
 - TestComparableMixinStrictTyping.test_compare_uses_getattr_for_field_values
 - TestComparableMixinStrictTyping.test_compare_sequence_fields
@@ -787,6 +842,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestComparableMixinStrictTyping.test_compare_missing_field_handles_gracefully
 
 ### Libraries/PyKotor/tests/resource/formats/test_bif.py (8 tests)
+
 - TestBIFFormats.test_bif_from_plaintext_json
 - TestBIFFormats.test_bzf_read
 - TestBIFFormats.test_bif_write
@@ -797,6 +853,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestBIFFormats.test_bif_composite_id_nonzero_bif_index
 
 ### Libraries/PyKotor/tests/resource/formats/test_bwm.py (125 tests)
+
 - TestBWMFormatDetection.test_read_bwm_binary_magic_uses_binary
 - TestBWMFormatDetection.test_read_bwm_ascii_detection
 - TestBWMFormatDetection.test_write_bwm_ascii_roundtrip
@@ -924,6 +981,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestBWMSerializeStrictTyping.test_serialize_complete_bwm_structure
 
 ### Libraries/PyKotor/tests/resource/formats/test_dds.py (20 tests)
+
 - TestDDSParsing.test_standard_dds_dxt1_roundtrip
 - TestDDSParsing.test_bioware_dds_multiple_mips
 - TestDDSParsing.test_bioware_dds_requires_power_of_two
@@ -946,12 +1004,14 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestDDSParsing.test_writer_converts_rgba_to_bgra_for_dds
 
 ### Libraries/PyKotor/tests/resource/formats/test_erf.py (4 tests)
+
 - TestERF.test_binary_io
 - TestERF.test_file_io
 - TestERF.test_read_raises
 - TestERF.test_write_raises
 
 ### Libraries/PyKotor/tests/resource/formats/test_gff.py (8 tests)
+
 - TestGFF.test_binary_io
 - TestGFF.test_file_io
 - TestGFF.test_xml_io
@@ -962,9 +1022,11 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestGFF.test_write_raises
 
 ### Libraries/PyKotor/tests/resource/formats/test_gff_list_compare.py (1 tests)
+
 - test_gfflist_compare_handles_vector_values_without_type_error
 
 ### Libraries/PyKotor/tests/resource/formats/test_key.py (12 tests)
+
 - TestKEY.test_write_key
 - TestKEY.test_key_multiple_resources
 - TestKEY.test_key_v1_write
@@ -979,6 +1041,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestKEY.test_key_v1_read
 
 ### Libraries/PyKotor/tests/resource/formats/test_lip.py (5 tests)
+
 - TestLIP.test_binary_io
 - TestLIP.test_file_io
 - TestLIP.test_xml_io
@@ -986,12 +1049,14 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestLIP.test_write_raises
 
 ### Libraries/PyKotor/tests/resource/formats/test_lyt.py (4 tests)
+
 - TestLYT.test_binary_io
 - TestLYT.test_file_io
 - TestLYT.test_read_raises
 - TestLYT.test_write_raises
 
 ### Libraries/PyKotor/tests/resource/formats/test_mdl.py (33 tests)
+
 - TestMDLBinaryIO.test_read_mdl_basic
 - TestMDLBinaryIO.test_read_mdl_fast
 - TestMDLBinaryIO.test_read_mdl_fast_vs_full
@@ -1027,6 +1092,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestMDLCrossModelRoundTrip.test_all_models_binary_to_ascii_preserve_structure
 
 ### Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py (77 tests)
+
 - TestMDLAsciiDetection.test_detect_ascii_format
 - TestMDLAsciiDetection.test_detect_binary_format
 - TestMDLAsciiDetection.test_detect_from_bytes
@@ -1106,10 +1172,12 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - test_models_bif_roundtrip_eq_hash_pytest
 
 ### Libraries/PyKotor/tests/resource/formats/test_model_parsers_against_mdlops.py (2 tests)
+
 - test_k1_models_random_sample
 - test_k2_models_random_sample
 
 ### Libraries/PyKotor/tests/resource/formats/test_ncs.py (214 tests)
+
 - TestNCSBinaryIO.test_binary_io
 - TestNCSCompiler.test_enginecall
 - TestNCSCompiler.test_enginecall_return_value
@@ -1326,6 +1394,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - test_compile_all_tsl_scripts_batch
 
 ### Libraries/PyKotor/tests/resource/formats/test_rim.py (5 tests)
+
 - TestRIM.test_binary_io
 - TestRIM.test_file_io
 - TestRIM.test_read_raises
@@ -1333,6 +1402,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestRIM.test_malformed_header
 
 ### Libraries/PyKotor/tests/resource/formats/test_ssf.py (6 tests)
+
 - TestSSF.test_binary_io
 - TestSSF.test_file_io
 - TestSSF.test_xml_io
@@ -1341,6 +1411,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestSSF.test_write_raises
 
 ### Libraries/PyKotor/tests/resource/formats/test_tlk.py (6 tests)
+
 - TestTLK.test_resize
 - TestTLK.test_binary_io
 - TestTLK.test_xml_io
@@ -1349,6 +1420,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestTLK.test_write_raises
 
 ### Libraries/PyKotor/tests/resource/formats/test_tpc.py (6 tests)
+
 - TestTPCData.test_dxt1_decompression_accuracy
 - TestTPCData.test_dxt1_gradient_compression
 - TestTPCData.test_rgb_to_rgba_precision
@@ -1357,6 +1429,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestTPCData.test_tpc_convert_dxt1_to_rgba_preserves_transparency
 
 ### Libraries/PyKotor/tests/resource/formats/test_twoda.py (6 tests)
+
 - TestTwoDA.test_binary_io
 - TestTwoDA.test_csv_io
 - TestTwoDA.test_json_io
@@ -1365,6 +1438,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestTwoDA.test_row_max
 
 ### Libraries/PyKotor/tests/resource/formats/test_txi_data.py (5 tests)
+
 - TestTXI.test_parse_blending_default
 - TestTXI.test_parse_blending_additive
 - TestTXI.test_parse_blending_punchthrough
@@ -1372,20 +1446,24 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestTXI.test_parse_blending_case_insensitive
 
 ### Libraries/PyKotor/tests/resource/formats/test_txi_io.py (3 tests)
+
 - test_read_txi
 - test_write_txi
 - test_bytes_txi
 
 ### Libraries/PyKotor/tests/resource/formats/test_utm.py (1 tests)
+
 - TestUTM.test_io
 
 ### Libraries/PyKotor/tests/resource/formats/test_vis.py (4 tests)
+
 - TestVIS.test_binary_io
 - TestVIS.test_file_io
 - TestVIS.test_read_raises
 - TestVIS.test_write_raises
 
 ### Libraries/PyKotor/tests/resource/formats/test_wav.py (42 tests)
+
 - TestWAVData.test_wav_creation_defaults
 - TestWAVData.test_wav_creation_custom
 - TestWAVData.test_wav_equality
@@ -1430,14 +1508,17 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestWAVEdgeCases.test_wav_with_various_sample_rates
 
 ### Libraries/PyKotor/tests/resource/formats/test_wok.py (1 tests)
+
 - TestBWM.test_binary_io
 
 ### Libraries/PyKotor/tests/resource/generics/test_are.py (3 tests)
+
 - TestARE.test_io_construct
 - TestARE.test_io_reconstruct
 - TestARE.test_file_io
 
 ### Libraries/PyKotor/tests/resource/generics/test_dlg.py (43 tests)
+
 - TestDLG.test_k1_reconstruct
 - TestDLG.test_k1_reconstruct_from_reconstruct
 - TestDLG.test_k1_serialization
@@ -1483,6 +1564,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - test_shared_node_identity_survives_link_roundtrip
 
 ### Libraries/PyKotor/tests/resource/generics/test_dlg_twine.py (12 tests)
+
 - test_write_read_json
 - test_write_read_html
 - test_metadata_preservation
@@ -1497,6 +1579,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - test_metadata_comment_roundtrip_for_tag_colors_and_zoom
 
 ### Libraries/PyKotor/tests/resource/generics/test_fac.py (8 tests)
+
 - TestFAC.test_gff_reconstruct
 - TestFAC.test_io_construct
 - TestFAC.test_io_reconstruct
@@ -1507,6 +1590,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestFAC.test_empty_lists_roundtrip
 
 ### Libraries/PyKotor/tests/resource/generics/test_git.py (10 tests)
+
 - TestGIT.test_k1_io_construct
 - TestGIT.test_k2_io_construct
 - TestGIT.test_k2_io_reconstruct
@@ -1519,12 +1603,14 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestGITSerializeStrictTyping.test_git_empty_roundtrip
 
 ### Libraries/PyKotor/tests/resource/generics/test_gui.py (4 tests)
+
 - TestGUI.test_io_construct
 - TestGUI.test_io_reconstruct
 - TestGUI.test_gui_missing_extent_and_controls_defaults
 - TestGUI.test_gui_minimal_roundtrip
 
 ### Libraries/PyKotor/tests/resource/generics/test_ifo.py (5 tests)
+
 - TestIFO.test_gff_reconstruct
 - TestIFO.test_io_construct
 - TestIFO.test_io_reconstruct
@@ -1532,6 +1618,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestIFO.test_ifo_empty_roundtrip
 
 ### Libraries/PyKotor/tests/resource/generics/test_jrl.py (5 tests)
+
 - TestJRL.test_gff_reconstruct
 - TestJRL.test_io_construct
 - TestJRL.test_io_reconstruct
@@ -1539,6 +1626,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestJRL.test_jrl_empty_roundtrip
 
 ### Libraries/PyKotor/tests/resource/generics/test_pth.py (5 tests)
+
 - TestPTH.test_gff_reconstruct
 - TestPTH.test_io_construct
 - TestPTH.test_io_reconstruct
@@ -1546,6 +1634,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestPTH.test_pth_empty_roundtrip
 
 ### Libraries/PyKotor/tests/resource/generics/test_utc.py (5 tests)
+
 - TestUTC.test_io_construct
 - TestUTC.test_io_reconstruct
 - TestUTC.test_file_io
@@ -1553,47 +1642,56 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestUTC.test_utc_empty_roundtrip
 
 ### Libraries/PyKotor/tests/resource/generics/test_utd.py (4 tests)
+
 - TestUTD.test_gff_reconstruct
 - TestUTD.test_io_construct
 - TestUTD.test_io_reconstruct
 - TestUTD.test_file_io
 
 ### Libraries/PyKotor/tests/resource/generics/test_ute.py (3 tests)
+
 - TestUTE.test_gff_reconstruct
 - TestUTE.test_io_construct
 - TestUTE.test_io_reconstruct
 
 ### Libraries/PyKotor/tests/resource/generics/test_uti.py (3 tests)
+
 - TestUTI.test_gff_reconstruct
 - TestUTI.test_io_construct
 - TestUTI.test_io_reconstruct
 
 ### Libraries/PyKotor/tests/resource/generics/test_utp.py (4 tests)
+
 - Test.test_gff_reconstruct
 - Test.test_io_construct
 - Test.test_io_reconstruct
 - Test.test_file_io
 
 ### Libraries/PyKotor/tests/resource/generics/test_uts.py (4 tests)
+
 - TestUTS.test_gff_reconstruct
 - TestUTS.test_k1_gff_reconstruct
 - TestUTS.test_io_construct
 - TestUTS.test_io_reconstruct
 
 ### Libraries/PyKotor/tests/resource/generics/test_utt.py (3 tests)
+
 - TestUTT.test_gff_reconstruct
 - TestUTT.test_io_construct
 - TestUTT.test_io_reconstruct
 
 ### Libraries/PyKotor/tests/resource/generics/test_utw.py (3 tests)
+
 - TestUTW.test_gff_reconstruct
 - TestUTW.test_io_construct
 - TestUTW.test_io_reconstruct
 
 ### Libraries/PyKotor/tests/resource/test_replace_module_extensions.py (1 tests)
+
 - TestReplaceModuleExtensions.test_replace_module_extensions
 
 ### Libraries/PyKotor/tests/resource/test_resource_from_path.py (16 tests)
+
 - TestResourceType.test_resource_type_hashing
 - TestResourceType.test_from_extension
 - TestResourceType.test_from_id
@@ -1612,6 +1710,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestResourceIdentifier.test_from_path_trailing_dot
 
 ### Libraries/PyKotor/tests/test_compile_tool.py (24 tests)
+
 - TestDetectOS.test_detect_os_windows
 - TestDetectOS.test_detect_os_mac
 - TestDetectOS.test_detect_os_linux
@@ -1638,6 +1737,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestToolSpecificCompilation.test_tool_entrypoints
 
 ### Libraries/PyKotor/tests/test_engine/test_mdl_loader.py (11 tests)
+
 - TestMDLDataStructures.test_mdl_creation
 - TestMDLDataStructures.test_mdl_node_creation
 - TestMDLDataStructures.test_mdl_mesh_creation
@@ -1651,15 +1751,18 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestAnimationControllers.test_position_controller
 
 ### Libraries/PyKotor/tests/test_finder.py (3 tests)
+
 - test_canonical_search_order
 - test_find_result_identifier
 - test_find_resource_no_query_returns_empty
 
 ### Libraries/PyKotor/tests/test_kaitai_generated_parity.py (2 tests)
+
 - test_all_kaitai_generated_modules_import
 - test_kaitai_generated_sources_have_no_http_urls
 
 ### Libraries/PyKotor/tests/test_markdown_validation.py (6 tests)
+
 - test_markdownlint_compliance
 - test_wiki_files_exist
 - test_markdown_links_valid
@@ -1668,6 +1771,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - test_no_self_referential_links
 
 ### Libraries/PyKotor/tests/test_utility/test_actions_dispatcher.py (11 tests)
+
 - test_declarative_action_definitions
 - test_actions_dispatcher_initialization
 - test_declarative_action_execution
@@ -1681,12 +1785,14 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - test_full_integration_workflow
 
 ### Libraries/PyKotor/tests/test_utility/test_actions_executor_strict_typing.py (4 tests)
+
 - TestActionsExecutorStrictTyping.test_execute_task_with_existing_operation
 - TestActionsExecutorStrictTyping.test_execute_task_with_nonexistent_operation
 - TestActionsExecutorStrictTyping.test_file_operations_has_attributes
 - TestActionsExecutorStrictTyping.test_execute_task_uses_getattr_not_object_getattribute
 
 ### Libraries/PyKotor/tests/test_utility/test_drag_drop_conformance.py (19 tests)
+
 - TestFileDialogDragInitiation.test_drag_enabled_on_file_list
 - TestFileDialogDragInitiation.test_selection_mode_allows_drag
 - TestFileDialogDragInitiation.test_drag_drop_mode_set
@@ -1708,6 +1814,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestDragScrollBehavior.test_scroll_bars_present
 
 ### Libraries/PyKotor/tests/test_utility/test_dynamic_view.py (29 tests)
+
 - TestDynamicStackedView.test_init_default_widgets
 - TestDynamicStackedView.test_init_custom_widgets
 - TestDynamicStackedView.test_set_widgets
@@ -1739,6 +1846,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestDynamicStackedView.test_wheel_event_with_ctrl
 
 ### Libraries/PyKotor/tests/test_utility/test_explorer_widget_components.py (57 tests)
+
 - TestExplorerMainWindowStructure.test_explorer_is_main_window
 - TestExplorerMainWindowStructure.test_explorer_has_menu_bar
 - TestExplorerMainWindowStructure.test_explorer_has_status_bar
@@ -1798,6 +1906,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestExplorerSelection.test_click_selects_item
 
 ### Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py (42 tests)
+
 - TestAddressBarStructure.test_address_bar_exists
 - TestAddressBarStructure.test_address_bar_is_visible
 - TestAddressBarStructure.test_address_bar_height
@@ -1842,6 +1951,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestBottomControlsBehavior.test_can_type_filename
 
 ### Libraries/PyKotor/tests/test_utility/test_filesystem_components.py (110 tests)
+
 - TestPyQExtendedInformation.test_extended_information_constructor_default
 - TestPyQExtendedInformation.test_extended_information_constructor_with_fileinfo
 - TestPyQExtendedInformation.test_extended_information_directory
@@ -1954,6 +2064,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestComponentBehavior.test_model_filter_combinations
 
 ### Libraries/PyKotor/tests/test_utility/test_fluent_design_conformance.py (19 tests)
+
 - TestRibbonVisualConformance.test_ribbon_tab_widget_exists
 - TestRibbonVisualConformance.test_ribbon_tab_count
 - TestRibbonVisualConformance.test_ribbon_tab_names
@@ -1975,6 +2086,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestScrollbarConformance.test_scrollbar_width
 
 ### Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py (26 tests)
+
 - TestFileDialogTabNavigation.test_tab_moves_focus
 - TestFileDialogTabNavigation.test_shift_tab_moves_focus_backward
 - TestFileDialogTabNavigation.test_all_interactive_elements_focusable
@@ -2003,12 +2115,14 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestMinimumTargetSize.test_toolbar_buttons_meet_minimum_size
 
 ### Libraries/PyKotor/tests/test_utility/test_mutable_str_strict_typing.py (4 tests)
+
 - TestMutableStrStrictTyping.test_attribute_forwarding_uses_getattr
 - TestMutableStrStrictTyping.test_hasattr_checks_for_compatibility_methods
 - TestMutableStrStrictTyping.test_removeprefix_if_not_available
 - TestMutableStrStrictTyping.test_removesuffix_if_not_available
 
 ### Libraries/PyKotor/tests/test_utility/test_pixel_perfect_layout.py (20 tests)
+
 - TestFileDialogNavigationLayout.test_navigation_bar_height
 - TestFileDialogNavigationLayout.test_navigation_button_size
 - TestFileDialogAddressBarLayout.test_address_bar_height
@@ -2031,6 +2145,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestResponsiveExplorerLayout.test_content_area_grows_with_window
 
 ### Libraries/PyKotor/tests/test_utility/test_pyfileinfogatherer.py (15 tests)
+
 - test_set_resolve_symlinks
 - test_run_abort
 - test_drive_added
@@ -2048,6 +2163,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - test_get_file_infos
 
 ### Libraries/PyKotor/tests/test_utility/test_qfiledialog.py (92 tests)
+
 - test_constructor_default
 - test_constructor_with_parent
 - test_constructor_with_caption
@@ -2142,6 +2258,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - test_static_method_parameter_combinations
 
 ### Libraries/PyKotor/tests/test_utility/test_qfiledialog2.py (34 tests)
+
 - TestQFileDialog2.test_listRoot
 - TestQFileDialog2.test_heapCorruption
 - TestQFileDialog2.test_deleteDirAndFiles
@@ -2178,6 +2295,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestQFileDialog2.test_nameFilterParsing_data
 
 ### Libraries/PyKotor/tests/test_utility/test_qfiledialogextended.py (11 tests)
+
 - TestQFileDialogExtended.test_extended_rows_inserted
 - TestQFileDialogExtended.test_address_bar_syncs_directory
 - TestQFileDialogExtended.test_search_filter_updates_proxy
@@ -2191,6 +2309,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestQFileDialogExtended.test_address_bar_path_changed_signal
 
 ### Libraries/PyKotor/tests/test_utility/test_qfiledialogextended_comprehensive.py (112 tests)
+
 - TestQFileDialogExtendedComprehensive.test_constructor_default
 - TestQFileDialogExtendedComprehensive.test_constructor_with_parent
 - TestQFileDialogExtendedComprehensive.test_constructor_with_caption
@@ -2305,18 +2424,21 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestQFileDialogExtendedComprehensive.test_windows11_styling_applied
 
 ### Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py (4 tests)
+
 - TestRegistryStrictTyping.test_resolve_reg_key_with_valid_root
 - TestRegistryStrictTyping.test_resolve_reg_key_with_invalid_root
 - TestRegistryStrictTyping.test_resolve_registry_key_uses_getattr
 - TestRegistryStrictTyping.test_winreg_has_standard_roots
 
 ### Libraries/PyKotor/tests/test_utility/test_string_util_strict_typing.py (4 tests)
+
 - TestStringUtilStrictTyping.test_setattr_prevents_modifying_existing_attribute
 - TestStringUtilStrictTyping.test_setattr_allows_setting_new_attribute
 - TestStringUtilStrictTyping.test_setattr_uses_hasattr_for_immutability_check
 - TestStringUtilStrictTyping.test_immutability_check_works_with_slots
 
 ### Libraries/PyKotor/tests/test_utility/test_sys_attributes_strict_typing.py (6 tests)
+
 - TestSysAttributesStrictTyping.test_is_frozen_uses_getattr
 - TestSysAttributesStrictTyping.test_is_frozen_app_process_uses_getattr
 - TestSysAttributesStrictTyping.test_is_frozen_tkinter_uses_getattr
@@ -2325,6 +2447,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestSysAttributesStrictTyping.test_sys_meipass_attribute_check
 
 ### Libraries/PyKotor/tests/test_utility/test_tasks.py (24 tests)
+
 - TestFileActionsExecutor.test_queue_task_with_custom_function
 - TestFileActionsExecutor.test_cancel_task
 - TestFileActionsExecutor.test_pause_resume_task
@@ -2351,6 +2474,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestFileActionsExecutor.test_task_retry
 
 ### Libraries/PyKotor/tests/test_utility/test_visual_layout_conformance.py (78 tests)
+
 - TestQFileDialogExtendedLayout.test_main_layout_is_grid
 - TestQFileDialogExtendedLayout.test_grid_has_minimum_rows
 - TestQFileDialogExtendedLayout.test_ribbon_position_in_grid
@@ -2431,6 +2555,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestLayoutConformanceIntegration.test_widgets_share_similar_structure
 
 ### Libraries/PyKotor/tests/test_utility/test_windows_explorer_conformance.py (102 tests)
+
 - TestExplorerWindowStructure.test_is_main_window
 - TestExplorerWindowStructure.test_has_central_widget
 - TestExplorerWindowStructure.test_has_status_bar
@@ -2535,6 +2660,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestExplorerSelection.test_invert_selection_action
 
 ### Libraries/PyKotor/tests/test_utility/test_windows_file_dialog_conformance.py (97 tests)
+
 - TestFileDialogLayoutStructure.test_main_layout_type
 - TestFileDialogLayoutStructure.test_grid_layout_minimum_dimensions
 - TestFileDialogLayoutStructure.test_ribbons_widget_position
@@ -2634,6 +2760,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestFileDialogOptions.test_dont_resolve_symlinks_option
 
 ### Libraries/PyKotor/tests/tslpatcher/diff/test_diff_2damemory_generation.py (6 tests)
+
 - TestDiff2DAMemoryGeneration.test_gff_references_new_2da_row
 - TestDiff2DAMemoryGeneration.test_gff_references_modified_2da_row
 - TestDiff2DAMemoryGeneration.test_multiple_gff_files_reference_same_2da_row
@@ -2642,6 +2769,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestDiff2DAMemoryGeneration.test_multiple_repair_rows_share_token
 
 ### Libraries/PyKotor/tests/tslpatcher/diff/test_diff_comprehensive.py (31 tests)
+
 - Test2DAMemory.test_addrow_stores_row_index
 - Test2DAMemory.test_changerow_stores_row_index
 - Test2DAMemory.test_2damemory_cross_reference_chain
@@ -2675,6 +2803,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestPerformance.test_many_gff_files
 
 ### Libraries/PyKotor/tests/tslpatcher/diff/test_diff_tslpatcher.py (9 tests)
+
 - TestTSLPatcherFromDiff.test_merge_tslpatcher_generates_changes_ini_for_dlg
 - TestTSLPatcherFromDiff.test_merge_tslpatcher_detects_conflicting_dlg_edits
 - TestTSLPatcherFromDiff.test_change_existing_rowindex
@@ -2686,12 +2815,14 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestTSLPatcherFromDiff.test_ssf_set
 
 ### Libraries/PyKotor/tests/tslpatcher/diff/test_full_execution.py (4 tests)
+
 - TestKotorDiffFullExecution.test_01_step1_generate_patch
 - TestKotorDiffFullExecution.test_02_step2_install_patch
 - TestKotorDiffFullExecution.test_03_step3_verify_installation
 - TestKotorDiffFullExecution.test_04_step4_uninstall_patch
 
 ### Libraries/PyKotor/tests/tslpatcher/diff/test_twoda.py (6 tests)
+
 - TestVendorTwoDAComparison.test_column_count_mismatch
 - TestVendorTwoDAComparison.test_row_count_mismatch
 - TestVendorTwoDAComparison.test_cell_mismatch
@@ -2700,6 +2831,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestVendorTwoDADiffAnalyzer.test_find_new_row
 
 ### Libraries/PyKotor/tests/tslpatcher/mods/test_vendor_twoda_mods.py (11 tests)
+
 - TestVendorAddColumnModifier.test_correct_column_header
 - TestVendorAddColumnModifier.test_correct_default_value
 - TestVendorAddRowModifier.test_not_exclusive_no_row_label_no_store
@@ -2713,6 +2845,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestVendorEditRowModifier.test_store_value
 
 ### Libraries/PyKotor/tests/tslpatcher/test_config.py (23 tests)
+
 - TestLookupResourceFunction.test_lookup_resource_replace_file_true
 - TestLookupResourceFunction.test_lookup_resource_capsule_exists_true
 - TestLookupResourceFunction.test_lookup_resource_no_capsule_exists_true
@@ -2738,6 +2871,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestShouldPatchFunction.test_default_behavior
 
 ### Libraries/PyKotor/tests/tslpatcher/test_mods.py (66 tests)
+
 - TestManipulateTLK.test_apply_append
 - TestManipulateTLK.test_apply_replace
 - TestManipulate2DA.test_change_existing_rowindex
@@ -2806,6 +2940,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestManipulateSSF.test_assign_tlktoken
 
 ### Libraries/PyKotor/tests/tslpatcher/test_reader.py (46 tests)
+
 - TestConfigReader.test_tlk_appendfile_functionality
 - TestConfigReader.test_tlk_strref_default_functionality
 - TestConfigReader.test_tlk_complex_changes
@@ -2854,6 +2989,7 @@ The list below names every collected test symbol discovered from `test_*.py` fil
 - TestConfigReader.test_gff_add_inside_list
 
 ### Libraries/PyKotor/tests/tslpatcher/test_tslpatcher.py (116 tests)
+
 - TestTSLPatcher.test_change_existing_rowindex
 - TestTSLPatcher.test_change_existing_rowlabel
 - TestTSLPatcher.test_gff_add_inside_struct
