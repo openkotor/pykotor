@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Any, Callable, TextIO
 from pykotor.common.misc import Game
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats import gff
+from pykotor.resource.type import ResourceType
 from pykotor.tools.reference_cache import StrRefReferenceCache
 from pykotor.tslpatcher.diff.engine import (
     diff_data,
@@ -58,6 +59,11 @@ class DiffConfig:
     logging_enabled: bool = True
     use_incremental_writer: bool = False
     ui_log_func: Callable[..., Any] | None = None
+    merge_installation_path: Path | None = None
+    merge_resource_name: str | None = None
+    merge_resource_type: ResourceType | None = None
+    merge_module_root: str | None = None
+    merge_modded_paths: list[Path] | None = None
 
 
 gff_types: list[str] = list(gff.GFFContent.get_extensions())
@@ -608,6 +614,11 @@ def run_application(config: DiffConfig) -> int:
 
     # Log configuration
     _log_configuration(config)
+
+    if config.merge_installation_path and config.merge_resource_name and config.merge_modded_paths:
+        from pykotor.diff_tool.merge import run_merge_tslpatcher_workflow
+
+        return run_merge_tslpatcher_workflow(config, run_application)
 
     # Run with optional profiler
     profiler: cProfile.Profile | None = None

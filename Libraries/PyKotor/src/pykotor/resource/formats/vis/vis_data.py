@@ -38,14 +38,14 @@ from __future__ import annotations
 from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any
 
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 
 
-class VIS(ComparableMixin):
+class VIS(BiowareResource):
     """Represents a VIS (Visibility) file defining room visibility relationships.
 
     VIS files optimize rendering by specifying which rooms are visible from each

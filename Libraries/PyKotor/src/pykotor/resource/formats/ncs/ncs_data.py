@@ -248,7 +248,7 @@ class NCSInstructionType(Enum):
     NOP2 = NCSInstructionTypeValue(NCSByteCode.NOP2, 0x00)
 
 
-class NCS(ComparableMixin):
+class NCS(BiowareResource):
     """Represents a compiled NWScript bytecode program.
 
     NCS contains a sequence of bytecode instructions that implement NWScript logic.

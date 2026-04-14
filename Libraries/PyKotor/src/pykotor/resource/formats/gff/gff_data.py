@@ -251,7 +251,7 @@ def _normalize_string_for_compare(value: object) -> str:
 
 
 @dataclass
-class GFFListSemanticConfig:
+class GFFListSemanticConfig(ComparableMixin):
     """Configuration for semantic identity matching of GFF list elements.
 
     Used to correctly detect modified entries (same logical item, different fields)
@@ -413,7 +413,7 @@ class GFFFieldType(IntEnum):
 
 
 @dataclass(frozen=True)
-class GFFFieldView:
+class GFFFieldView(ComparableMixin):
     """Lightweight view over a GFF field (label, type, value).
 
     Returns immutable tuples instead of exposing internal storage directly.
@@ -424,7 +424,7 @@ class GFFFieldView:
     value: Any
 
 
-class Difference:
+class Difference(ComparableMixin):
     def __init__(
         self,
         path: PureWindowsPath | str,
@@ -449,7 +449,7 @@ class Difference:
         )
 
 
-class GFFComparisonResult:
+class GFFComparisonResult(ComparableMixin):
     """Class to store comprehensive results of a GFF comparison."""
 
     def __init__(self):

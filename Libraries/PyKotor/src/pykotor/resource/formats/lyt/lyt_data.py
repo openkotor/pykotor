@@ -43,14 +43,14 @@ from typing import TYPE_CHECKING, Any, Generator
 
 from pykotor.common.misc import ResRef
 from pykotor.extract.file import ResourceIdentifier
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from utility.common.geometry import Vector3, Vector4
 
 
-class LYT(ComparableMixin):
+class LYT(BiowareResource):
     """Represents a LYT (Layout) file defining area spatial structure.
 
     LYT files specify how area geometry is assembled from room models and where

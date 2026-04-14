@@ -6,6 +6,7 @@ import sys
 import tempfile
 import textwrap
 import unittest
+from copy import deepcopy
 
 from configparser import ConfigParser
 from pathlib import Path
@@ -33,6 +34,7 @@ if KOTORDIFF_PATH.joinpath("kotordiff").exists():
 
 
 from pykotor.common.misc import Game
+from pykotor.common.language import LocalizedString
 from pykotor.diff_tool.app import DiffConfig, run_application
 from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
 from pykotor.resource.formats.gff.gff_data import GFFContent
@@ -41,8 +43,10 @@ from pykotor.resource.formats.ssf.ssf_auto import read_ssf, write_ssf
 from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk
 from pykotor.resource.formats.twoda.twoda_auto import bytes_2da, read_2da, write_2da
 from pykotor.resource.formats.twoda.twoda_data import TwoDA
+from pykotor.resource.generics.dlg import DLG, DLGEntry, DLGReply, DLGLink, write_dlg
 from pykotor.resource.type import ResourceType
 from pykotor.tslpatcher.config import PatcherConfig
+from pykotor.diff_tool.merge import MergeConflictError
 from pykotor.tslpatcher.logger import PatchLogger
 from pykotor.tslpatcher.memory import PatcherMemory
 from pykotor.tslpatcher.mods.twoda import (
@@ -57,6 +61,26 @@ from pykotor.tslpatcher.reader import ConfigReader
 
 
 class TestTSLPatcherFromDiff(unittest.TestCase):
+    def _create_test_installation(self, base_dlg: DLG, filename: str = "unk41_mission.dlg") -> Path:
+        install_dir = Path(self.temp_dir) / "fake_install"
+        override_dir = install_dir / "Override"
+        override_dir.mkdir(parents=True, exist_ok=True)
+        install_dir.joinpath("chitin.key").write_bytes(b"")
+        install_dir.joinpath("swkotor.exe").write_bytes(b"")
+        write_dlg(base_dlg, override_dir / filename, Game.K1, ResourceType.DLG)
+        return install_dir
+
+    def _create_simple_dlg(self) -> DLG:
+        dlg = DLG()
+        entry = DLGEntry()
+        entry.speaker = "Mission"
+        entry.text = LocalizedString.from_english("Base entry")
+        reply = DLGReply()
+        reply.text = LocalizedString.from_english("Base reply")
+        entry.links = [DLGLink(reply, 0)]
+        dlg.starters = [DLGLink(entry, 0)]
+        return dlg
+
     def _generate_ini_from_diff(
         self,
         vanilla_files: dict[str, tuple[str, ResourceType]],
@@ -225,6 +249,69 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
     def tearDown(self):
         if hasattr(self, "temp_dir"):
             shutil.rmtree(self.temp_dir, ignore_errors=True)
+
+    def test_merge_tslpatcher_generates_changes_ini_for_dlg(self):
+        base_dlg = self._create_simple_dlg()
+        installation_dir = self._create_test_installation(base_dlg)
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].comment = "mod_a_entry_comment"
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_replies(as_sorted=True)[0].comment = "mod_b_reply_comment"
+
+        mod_a_path = Path(self.temp_dir) / "mod_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "mod_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        tslpatchdata_path = Path(self.temp_dir) / "merged_tslpatchdata"
+        exit_code = run_application(
+            DiffConfig(
+                paths=[],
+                tslpatchdata_path=tslpatchdata_path,
+                ini_filename="changes.ini",
+                logging_enabled=False,
+                output_mode="quiet",
+                merge_installation_path=installation_dir,
+                merge_resource_name="unk41_mission.dlg",
+                merge_modded_paths=[mod_a_path, mod_b_path],
+            )
+        )
+
+        self.assertEqual(exit_code, 0)
+        ini_path = tslpatchdata_path / "changes.ini"
+        self.assertTrue(ini_path.is_file())
+        ini_text = ini_path.read_text(encoding="utf-8")
+        self.assertIn("[GFFList]", ini_text)
+        self.assertIn("unk41_mission.dlg", ini_text)
+
+    def test_merge_tslpatcher_detects_conflicting_dlg_edits(self):
+        base_dlg = self._create_simple_dlg()
+        installation_dir = self._create_test_installation(base_dlg)
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].comment = "conflict_a"
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_entries(as_sorted=True)[0].comment = "conflict_b"
+
+        mod_a_path = Path(self.temp_dir) / "conflict_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "conflict_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        with self.assertRaises(MergeConflictError):
+            run_application(
+                DiffConfig(
+                    paths=[],
+                    tslpatchdata_path=Path(self.temp_dir) / "conflict_tslpatchdata",
+                    ini_filename="changes.ini",
+                    logging_enabled=False,
+                    output_mode="quiet",
+                    merge_installation_path=installation_dir,
+                    merge_resource_name="unk41_mission.dlg",
+                    merge_modded_paths=[mod_a_path, mod_b_path],
+                )
+            )
 
     def create_test_tlk(self, data: dict[int, dict[str, str]]) -> TLK:
         tlk = TLK()

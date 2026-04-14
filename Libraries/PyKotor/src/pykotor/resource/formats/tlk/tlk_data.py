@@ -37,14 +37,14 @@ from typing import TYPE_CHECKING, Callable
 
 from pykotor.common.language import Language
 from pykotor.common.misc import ResRef
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from typing import Any
 
 
-class TLK(ComparableMixin):
+class TLK(BiowareResource):
     """Talk Table containing localized strings and voice-over references.
 
     The TLK file is the central localization mechanism for KotOR, mapping string reference

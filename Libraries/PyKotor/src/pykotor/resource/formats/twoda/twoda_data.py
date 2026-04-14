@@ -55,7 +55,7 @@ from contextlib import contextmanager, suppress
 from copy import copy
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
@@ -65,7 +65,7 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 
-class TwoDA(ComparableMixin):
+class TwoDA(BiowareResource):
     """Two-Dimensional Array table for game configuration data.
 
     2DA files store tabular data used throughout the game engine. Each file contains

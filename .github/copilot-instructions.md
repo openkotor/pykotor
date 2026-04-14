@@ -74,10 +74,10 @@ git add file1.cs file2.cs && git commit -m "refactor(scope): simplify logic"
 **Dual-format rule**: Always show two command variants — one from the **repo root** (`C:\GitHub\PyKotor`) and one from the **nearest subtool/library directory** (e.g. `Tools/HolocronToolset`, `Libraries/PyKotor`). Example:
 ```
 # From repo root:
-PS C:\GitHub\PyKotor> git add Tools/HolocronToolset/src/toolset/gui/editors/tpc.py; git commit -m "fix(toolset): add tpc editor import fallback"
+git add Tools/HolocronToolset/src/toolset/gui/editors/tpc.py; git commit -m "fix(toolset): add tpc editor import fallback"
 
 # From subtool directory:
-PS C:\GitHub\PyKotor> cd Tools/HolocronToolset; git add src/toolset/gui/editors/tpc.py; git commit -m "fix(toolset): add tpc editor import fallback"
+cd Tools/HolocronToolset; git add src/toolset/gui/editors/tpc.py; git commit -m "fix(toolset): add tpc editor import fallback"
 ```
 
 ## 3. Static Type Checking

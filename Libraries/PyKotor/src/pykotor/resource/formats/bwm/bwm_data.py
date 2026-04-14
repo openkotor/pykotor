@@ -84,7 +84,7 @@ from copy import copy
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any
 
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from utility.common.geometry import Face, SurfaceMaterial, Vector3
 
 if TYPE_CHECKING:
@@ -117,7 +117,7 @@ class BWMType(IntEnum):
     AreaModel = 1
 
 
-class BWM(ComparableMixin):
+class BWM(BiowareResource):
     """In-memory walkmesh model (faces, hooks, helpers).
 
     Walkmeshes define collision geometry for areas and objects. They consist of triangular

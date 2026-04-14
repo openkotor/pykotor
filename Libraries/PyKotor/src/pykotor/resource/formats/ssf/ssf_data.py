@@ -16,11 +16,11 @@ from __future__ import annotations
 
 from enum import IntEnum
 
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource
 from pykotor.resource.type import ResourceType
 
 
-class SSF(ComparableMixin):
+class SSF(BiowareResource):
     """Represents a SSF (Sound Set File) containing creature sound event mappings.
 
     SSF files map 28 predefined sound event types to string references (StrRefs) in the

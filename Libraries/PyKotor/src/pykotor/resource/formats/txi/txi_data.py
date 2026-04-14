@@ -360,7 +360,7 @@ class TXI(BiowareResource):
         return "\n".join(lines)
 
 
-class TXIFeatures(BiowareResource):
+class TXIFeatures(ComparableMixin):
     """Stores texture features parsed from TXI file.
 
     TXIFeatures contains all properties that can be specified in a TXI file, including

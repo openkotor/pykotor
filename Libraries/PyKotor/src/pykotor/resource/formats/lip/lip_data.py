@@ -37,7 +37,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
@@ -179,7 +179,7 @@ class LIPShape(IntEnum):
         return mapping.get(phoneme, cls.NEUTRAL)
 
 
-class LIP(ComparableMixin):
+class LIP(BiowareResource):
     """Represents a LIP (Lip Sync) file containing mouth animation data.
 
     LIP files synchronize character mouth movements with voice-over audio during dialogue.
