@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 
 from typing import TYPE_CHECKING, Any, cast
@@ -239,6 +240,8 @@ class GFFJSONWriter(ResourceWriter):
             return self._serialize_list(cast("GFFList", field_value))
         if field_type.value == GFF_FIELD_TYPE_LOCSTRING:
             return self._serialize_locstring(cast("LocalizedString", field_value))
+        if isinstance(field_value, bytes):
+            return base64.b64encode(field_value).decode("ascii")
         return field_value
 
     def _serialize_list(

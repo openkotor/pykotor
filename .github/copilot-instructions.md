@@ -69,7 +69,16 @@ git add file1.cs file2.cs && git commit -m "refactor(scope): simplify logic"
 
 **INCORRECT**: `git add .`, `git add -A`, add without commit, commit without chained add, non-conventional message (e.g. "Update file.md").
 
-**MANDATORY**: After any file change, end with a fenced "Proposed Git Commands" block (exact chained command) then: `Git commits: Issued per rules ✅`. If no changes: `Git commits: No changes made ✅`. Never skip.
+**MANDATORY**: After any file change, end with a fenced "Proposed Git Commands" block showing **both** formats below, then: `Git commits: Issued per rules ✅`. If no changes: `Git commits: No changes made ✅`. Never skip.
+
+**Dual-format rule**: Always show two command variants — one from the **repo root** (`C:\GitHub\PyKotor`) and one from the **nearest subtool/library directory** (e.g. `Tools/HolocronToolset`, `Libraries/PyKotor`). Example:
+```
+# From repo root:
+PS C:\GitHub\PyKotor> git add Tools/HolocronToolset/src/toolset/gui/editors/tpc.py; git commit -m "fix(toolset): add tpc editor import fallback"
+
+# From subtool directory:
+PS C:\GitHub\PyKotor> cd Tools/HolocronToolset; git add src/toolset/gui/editors/tpc.py; git commit -m "fix(toolset): add tpc editor import fallback"
+```
 
 ## 3. Static Type Checking
 

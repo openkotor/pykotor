@@ -30,7 +30,7 @@ from pykotor.resource.formats.ssf import read_ssf, write_ssf
 from pykotor.resource.formats.tlk import read_tlk, write_tlk
 from pykotor.resource.formats.twoda import read_2da, write_2da
 from pykotor.resource.type import ResourceType
-from pykotor.tools.misc import is_bif_file, is_erf_file, is_rim_file
+from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_rim_file
 
 # All GFF subtypes serialize to GFF-JSON; non-GFF structured types follow below.
 _RESOURCE_PLAINTEXT_FORMAT: dict[ResourceType, ResourceType] = {
@@ -50,32 +50,32 @@ def _resource_bytes_to_plaintext(
     if text_format is None:
         return None
     try:
-        buf = BytesIO(data)
         if text_format == ResourceType.GFF_JSON:
-            gff = read_gff(buf, file_format=ResourceType.GFF_JSON)
-            out = BytesIO()
+            gff = read_gff(data)
+            out = bytearray()
             write_gff(gff, out, file_format=ResourceType.GFF_JSON)
-            return ("gff_json", json.loads(out.getvalue().decode("utf-8")))
+            return ("gff_json", json.loads(bytes(out).decode("utf-8")))
         if text_format == ResourceType.TLK_JSON:
-            tlk = read_tlk(buf, file_format=ResourceType.TLK_JSON)
-            out = BytesIO()
+            tlk = read_tlk(data)
+            out = bytearray()
             write_tlk(tlk, out, file_format=ResourceType.TLK_JSON)
-            return ("tlk_json", json.loads(out.getvalue().decode("utf-8")))
+            return ("tlk_json", json.loads(bytes(out).decode("utf-8")))
         if text_format == ResourceType.TwoDA_JSON:
-            twoda = read_2da(buf, file_format=ResourceType.TwoDA_JSON)
-            out = BytesIO()
+            twoda = read_2da(data)
+            out = bytearray()
             write_2da(twoda, out, file_format=ResourceType.TwoDA_JSON)
-            return ("2da_json", json.loads(out.getvalue().decode("utf-8")))
+            return ("2da_json", json.loads(bytes(out).decode("utf-8")))
         if text_format == ResourceType.LIP_JSON:
-            lip = read_lip(buf, file_format=ResourceType.LIP_JSON)
-            out = BytesIO()
+            lip = read_lip(data)
+            out = bytearray()
             write_lip(lip, out, file_format=ResourceType.LIP_JSON)
-            return ("lip_json", json.loads(out.getvalue().decode("utf-8")))
+            return ("lip_json", json.loads(bytes(out).decode("utf-8")))
         if text_format == ResourceType.SSF_XML:
+            buf = BytesIO(data)
             ssf = read_ssf(buf, file_format=ResourceType.SSF_XML)
-            out = BytesIO()
+            out = bytearray()
             write_ssf(ssf, out, file_format=ResourceType.SSF_XML)
-            return ("ssf_xml", out.getvalue().decode("utf-8"))
+            return ("ssf_xml", bytes(out).decode("utf-8"))
     except Exception:
         pass
     return None
@@ -142,7 +142,7 @@ def archive_to_dict(
         path = Path(source)
         data = path.read_bytes()
 
-    if path and is_erf_file(path):
+    if path and is_any_erf_type_file(path):
         return _erf_to_dict(data, embed_plaintext=embed_plaintext)
     if path and is_rim_file(path):
         return _rim_to_dict(data, embed_plaintext=embed_plaintext)
