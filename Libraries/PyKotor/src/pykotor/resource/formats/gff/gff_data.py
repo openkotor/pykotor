@@ -251,7 +251,7 @@ def _normalize_string_for_compare(value: object) -> str:
 
 
 @dataclass
-class GFFListSemanticConfig(BiowareResource):
+class GFFListSemanticConfig:
     """Configuration for semantic identity matching of GFF list elements.
 
     Used to correctly detect modified entries (same logical item, different fields)
@@ -413,7 +413,7 @@ class GFFFieldType(IntEnum):
 
 
 @dataclass(frozen=True)
-class GFFFieldView(BiowareResource):
+class GFFFieldView:
     """Lightweight view over a GFF field (label, type, value).
 
     Returns immutable tuples instead of exposing internal storage directly.
@@ -424,7 +424,7 @@ class GFFFieldView(BiowareResource):
     value: Any
 
 
-class Difference(BiowareResource):
+class Difference:
     def __init__(
         self,
         path: PureWindowsPath | str,
@@ -449,7 +449,7 @@ class Difference(BiowareResource):
         )
 
 
-class GFFComparisonResult(BiowareResource):
+class GFFComparisonResult:
     """Class to store comprehensive results of a GFF comparison."""
 
     def __init__(self):
@@ -515,7 +515,7 @@ class GFFComparisonResult(BiowareResource):
         self.value_mismatches.append((path, field_type, source_val, target_val))
 
 
-class GFF(ComparableMixin):
+class GFF(BiowareResource):
     """Represents the data of a GFF file."""
 
     BINARY_TYPE: ResourceType = ResourceType.GFF
