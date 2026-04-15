@@ -10,7 +10,7 @@ Example pyproject.toml configuration:
 console = false          # or true
 windowed = true          # or false
 hidden-imports = ["module1", "module2"]
-exclude-modules = ["PyQt5", "torch"]
+exclude-modules = ["PyQt5"]
 icon = "resources/icons/app.ico"
 add-data = ["wiki:wiki", "vendor:vendor"]
 upx-exclude = ["_uuid.pyd"]
@@ -393,7 +393,7 @@ Example pyproject.toml:
     console = false
     windowed = true
     hidden-imports = ["module1", "module2"]
-    exclude-modules = ["PyQt5", "torch"]
+    exclude-modules = ["PyQt5"]
     icon = "resources/icons/app.ico"
     add-data = ["wiki:wiki", "vendor:vendor"]
     upx-exclude = ["_uuid.pyd"]
