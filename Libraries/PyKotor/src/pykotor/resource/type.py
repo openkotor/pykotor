@@ -2012,7 +2012,9 @@ class ToolsetFormat(Enum):
     def target_type(self) -> ResourceType:
         resolved = _resolve_resource_target_member(self.target_member)
         if resolved is None:
-            msg = f"Unknown target resource type for toolset format {self.name}: {self.target_member}"
+            msg = (
+                f"Unknown target resource type for toolset format {self.name}: {self.target_member}"
+            )
             raise ValueError(msg)
         return resolved
 

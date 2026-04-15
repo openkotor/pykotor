@@ -344,16 +344,23 @@ def cmd_diff(
         if merge_resource_type_arg:
             merge_resource_type = ResourceType.from_extension(str(merge_resource_type_arg))
             if merge_resource_type.is_invalid:
-                print(f"Error: Unsupported --merge-resource-type value: {merge_resource_type_arg}", file=sys.stderr)
+                print(
+                    f"Error: Unsupported --merge-resource-type value: {merge_resource_type_arg}",
+                    file=sys.stderr,
+                )
                 return 1
 
         tslpatchdata_arg = getattr(args, "tslpatchdata", None)
         output_log_arg = getattr(args, "output_log", None)
         output_mode_raw = getattr(args, "output_mode", "full")
-        merge_output_mode = OutputMode(output_mode_raw) if isinstance(output_mode_raw, str) else output_mode_raw
+        merge_output_mode = (
+            OutputMode(output_mode_raw) if isinstance(output_mode_raw, str) else output_mode_raw
+        )
         config = DiffConfig(
             paths=[],
-            tslpatchdata_path=Path(normalize_path_arg(tslpatchdata_arg)) if tslpatchdata_arg else None,
+            tslpatchdata_path=Path(normalize_path_arg(tslpatchdata_arg))
+            if tslpatchdata_arg
+            else None,
             ini_filename=getattr(args, "ini", "changes.ini"),
             output_log_path=Path(normalize_path_arg(output_log_arg)) if output_log_arg else None,
             log_level=getattr(args, "log_level", "info"),
@@ -529,7 +536,11 @@ def cmd_diff(
         ini_filename = getattr(args, "ini", "changes.ini")
 
         gen_output_mode_raw = getattr(args, "output_mode", "full")
-        gen_output_mode = OutputMode(gen_output_mode_raw.lower()) if isinstance(gen_output_mode_raw, str) else gen_output_mode_raw
+        gen_output_mode = (
+            OutputMode(gen_output_mode_raw.lower())
+            if isinstance(gen_output_mode_raw, str)
+            else gen_output_mode_raw
+        )
         config = DiffConfig(
             paths=paths_for_tslpatcher,
             output_mode=gen_output_mode,

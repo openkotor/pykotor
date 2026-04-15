@@ -115,11 +115,7 @@ class TestGFFDispatch(unittest.TestCase):
         self.assertIsNone(rebuilt)
 
     def test_all_gff_resource_types_are_accounted_for(self) -> None:
-        all_gff_types = {
-            restype
-            for restype in ResourceType
-            if is_gff_resource_type(restype)
-        }
+        all_gff_types = {restype for restype in ResourceType if is_gff_resource_type(restype)}
 
         self.assertEqual(
             SUPPORTED_GFF_RESOURCE_TYPES | UNSUPPORTED_GFF_RESOURCE_TYPES,

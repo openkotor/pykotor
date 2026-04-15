@@ -65,16 +65,21 @@ def test_get_supports_auto_detected_installation_and_json_export(
     monkeypatch.setattr("pykotor.cli.commands.get_cmd.Installation", FakeInstallation)
 
     output_path = Path("dialog.auto.json").resolve()
-    assert cli_main([
-        "get",
-        "dialog.tlk",
-        "--game",
-        "k1",
-        "--format",
-        "json",
-        "--output",
-        str(output_path),
-    ]) == 0
+    assert (
+        cli_main(
+            [
+                "get",
+                "dialog.tlk",
+                "--game",
+                "k1",
+                "--format",
+                "json",
+                "--output",
+                str(output_path),
+            ]
+        )
+        == 0
+    )
 
     assert captured_path == [tmp_path]
     payload = json.loads(output_path.read_text(encoding="utf-8"))
@@ -82,7 +87,9 @@ def test_get_supports_auto_detected_installation_and_json_export(
     output_path.unlink()
 
 
-def test_kotor_paths_can_emit_json(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+def test_kotor_paths_can_emit_json(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     monkeypatch.setattr(
         "pykotor.cli.commands.kotor_paths.get_kotor_paths_from_default",
         lambda: {Game.K1: [tmp_path / "K1A", tmp_path / "K1B"], Game.K2: [tmp_path / "K2"]},
@@ -142,20 +149,27 @@ def test_installation_to_json_exports_supported_and_fallback_resources(tmp_path:
     (install_path / "StreamMusic" / "intro.wav").write_bytes(b"RIFFdemo")
 
     output_path = tmp_path / "json-export"
-    assert cli_main([
-        "installation-to-json",
-        "--path",
-        str(install_path),
-        "--output",
-        str(output_path),
-    ]) == 0
+    assert (
+        cli_main(
+            [
+                "installation-to-json",
+                "--path",
+                str(install_path),
+                "--output",
+                str(output_path),
+            ]
+        )
+        == 0
+    )
 
     tlk_payload = json.loads((output_path / "dialog.tlk.json").read_text(encoding="utf-8"))
     assert tlk_payload["strings"][0]["text"] == "install root text"
 
     assert (output_path / "Modules" / "testmod_s.rim" / "testdlg.dlg.json").is_file()
 
-    wav_payload = json.loads((output_path / "StreamMusic" / "intro.wav.json").read_text(encoding="utf-8"))
+    wav_payload = json.loads(
+        (output_path / "StreamMusic" / "intro.wav.json").read_text(encoding="utf-8")
+    )
     assert wav_payload["encoding"] == "base64"
     assert wav_payload["extension"] == "wav"
 
@@ -187,13 +201,33 @@ def test_installation_to_json_can_export_all_detected_installations(
     )
 
     output_path = tmp_path / "json-export-all"
-    assert cli_main([
-        "installation-to-json",
-        "--all-detected",
-        "--output",
-        str(output_path),
-    ]) == 0
+    assert (
+        cli_main(
+            [
+                "installation-to-json",
+                "--all-detected",
+                "--output",
+                str(output_path),
+            ]
+        )
+        == 0
+    )
 
-    assert json.loads((output_path / "k1" / "0" / "dialog.tlk.json").read_text(encoding="utf-8"))["strings"][0]["text"] == "k1 first"
-    assert json.loads((output_path / "k1" / "1" / "dialog.tlk.json").read_text(encoding="utf-8"))["strings"][0]["text"] == "k1 second"
-    assert json.loads((output_path / "k2" / "0" / "dialog.tlk.json").read_text(encoding="utf-8"))["strings"][0]["text"] == "k2 only"
+    assert (
+        json.loads((output_path / "k1" / "0" / "dialog.tlk.json").read_text(encoding="utf-8"))[
+            "strings"
+        ][0]["text"]
+        == "k1 first"
+    )
+    assert (
+        json.loads((output_path / "k1" / "1" / "dialog.tlk.json").read_text(encoding="utf-8"))[
+            "strings"
+        ][0]["text"]
+        == "k1 second"
+    )
+    assert (
+        json.loads((output_path / "k2" / "0" / "dialog.tlk.json").read_text(encoding="utf-8"))[
+            "strings"
+        ][0]["text"]
+        == "k2 only"
+    )

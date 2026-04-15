@@ -103,16 +103,16 @@ class TLK(BiowareResource):
     def from_json(cls, data: dict) -> TLK:
         """Hydrate a TLK object from a JSON dictionary."""
         instance = cls()
-        
+
         strings = data.get("strings", [])
         if strings:
             instance.resize(max(int(s.get("_index", 0)) for s in strings) + 1)
-        
+
         for string_data in strings:
             index = int(string_data["_index"])
             instance.entries[index].text = string_data["text"]
             instance.entries[index].voiceover = ResRef(string_data["soundResRef"])
-            
+
         return instance
 
     def __getitem__(

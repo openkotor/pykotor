@@ -36,10 +36,14 @@ def cmd_kotor_paths(args: Namespace, logger: Logger) -> int:
         return 1
 
     paths = get_kotor_paths_from_default()
-    items = [(game, found_paths) for game, found_paths in paths.items() if game_filter in (None, game)]
+    items = [
+        (game, found_paths) for game, found_paths in paths.items() if game_filter in (None, game)
+    ]
 
     if getattr(args, "json", False):
-        payload = {game.name.lower(): [str(path) for path in found_paths] for game, found_paths in items}
+        payload = {
+            game.name.lower(): [str(path) for path in found_paths] for game, found_paths in items
+        }
         sys.stdout.write(json.dumps(payload, indent=4) + "\n")
         return 0
 

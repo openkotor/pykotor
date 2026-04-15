@@ -100,6 +100,7 @@ def read_lip(
         return LIPXMLReader(source, offset, size or 0).load()
     if file_format == ToolsetFormat.LIP_JSON:
         from pykotor.resource.formats.lip.lip_data import LIP
+
         with BinaryReader.from_auto(source, offset) as reader:
             raw = reader.read_all()
         decoded = decode_bytes_with_fallbacks(raw)
@@ -135,6 +136,7 @@ def write_lip(
     elif file_format == ToolsetFormat.LIP_JSON:
         json_dump = json.dumps(lip, cls=BiowareEncoder, indent=4)
         from pykotor.common.stream import BinaryWriter
+
         with BinaryWriter.to_auto(target) as writer:
             writer.write_bytes(json_dump.encode())
     else:

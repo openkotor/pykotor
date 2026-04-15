@@ -410,7 +410,9 @@ class Scene(SceneBase):
                 if isinstance(exc, GLError):
                     from loggerplus import RobustLogger
 
-                    RobustLogger().debug("Scene.render: OpenGL error during render; skipping frame", exc_info=True)
+                    RobustLogger().debug(
+                        "Scene.render: OpenGL error during render; skipping frame", exc_info=True
+                    )
                     return
             except Exception:  # noqa: BLE001
                 # If OpenGL isn't importable for some reason, just re-raise the original error.

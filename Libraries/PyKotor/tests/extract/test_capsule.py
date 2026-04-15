@@ -32,7 +32,9 @@ TEST_RIM_FILE = "Libraries/PyKotor/tests/test_files/capsule.rim"
 
 
 class TestCapsule(TestCase):
-    def _assert_existing_resources(self, capsule: Capsule, resources: list[tuple[str, ResourceType, int]]):
+    def _assert_existing_resources(
+        self, capsule: Capsule, resources: list[tuple[str, ResourceType, int]]
+    ):
         for resource_name, resource_type, expected_length in resources:
             with self.subTest(resource_name=resource_name, resource_type=resource_type.name):
                 assert capsule.contains(resource_name, resource_type, reload=True)

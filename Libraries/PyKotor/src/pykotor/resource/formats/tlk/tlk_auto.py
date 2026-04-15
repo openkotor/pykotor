@@ -125,6 +125,7 @@ def read_tlk(
         return TLKXMLReader(normalized_source, offset, size or 0).load()
     if file_format == ToolsetFormat.TLK_JSON:
         from pykotor.resource.formats.tlk.tlk_data import TLK
+
         with BinaryReader.from_auto(normalized_source, offset) as reader:
             raw = reader.read_all()
         decoded = decode_bytes_with_fallbacks(raw)
@@ -159,6 +160,7 @@ def write_tlk(
     elif file_format == ToolsetFormat.TLK_JSON:
         json_dump = json.dumps(tlk, cls=BiowareEncoder, indent=4)
         from pykotor.common.stream import BinaryWriter
+
         with BinaryWriter.to_auto(target) as writer:
             writer.write_bytes(json_dump.encode())
     else:

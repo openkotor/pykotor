@@ -37,8 +37,14 @@ class TestMutableStr(unittest.TestCase):
 
         self.assertEqual(wrapped[0], WrappedStr("t"))
         self.assertEqual(wrapped[1:3], WrappedStr("es"))
-        self.assertEqual(list(iter(wrapped)), [WrappedStr("t"), WrappedStr("e"), WrappedStr("s"), WrappedStr("t")])
-        self.assertEqual(list(reversed(wrapped)), [WrappedStr("t"), WrappedStr("s"), WrappedStr("e"), WrappedStr("t")])
+        self.assertEqual(
+            list(iter(wrapped)),
+            [WrappedStr("t"), WrappedStr("e"), WrappedStr("s"), WrappedStr("t")],
+        )
+        self.assertEqual(
+            list(reversed(wrapped)),
+            [WrappedStr("t"), WrappedStr("s"), WrappedStr("e"), WrappedStr("t")],
+        )
         self.assertEqual(len(wrapped), 4)
         self.assertIn("e", wrapped)
         self.assertNotIn("E", wrapped)
@@ -92,8 +98,12 @@ class TestMutableStr(unittest.TestCase):
             wrapped.rpartition("t"),
             (WrappedStr("test test tes"), WrappedStr("t"), WrappedStr("")),
         )
-        self.assertEqual(wrapped.split(), [WrappedStr("test"), WrappedStr("test"), WrappedStr("test")])
-        self.assertEqual(wrapped.rsplit(), [WrappedStr("test"), WrappedStr("test"), WrappedStr("test")])
+        self.assertEqual(
+            wrapped.split(), [WrappedStr("test"), WrappedStr("test"), WrappedStr("test")]
+        )
+        self.assertEqual(
+            wrapped.rsplit(), [WrappedStr("test"), WrappedStr("test"), WrappedStr("test")]
+        )
         self.assertEqual(WrappedStr(",").join(["a", "b", "c"]), WrappedStr("a,b,c"))
 
     def test_formatting_helpers_and_pickling_protocol(self):
@@ -125,8 +135,13 @@ class TestMutableStr(unittest.TestCase):
         self.assertFalse(WrappedStr("Test 123").isalnum())
         self.assertTrue(WrappedStr("Test Title").istitle())
         self.assertFalse(WrappedStr("Test title").istitle())
-        self.assertEqual(WrappedStr("test\ntest\rtest").splitlines(), [WrappedStr("test"), WrappedStr("test"), WrappedStr("test")])
-        self.assertEqual(WrappedStr("test").translate(str.maketrans("tes", "123")), WrappedStr("1231"))
+        self.assertEqual(
+            WrappedStr("test\ntest\rtest").splitlines(),
+            [WrappedStr("test"), WrappedStr("test"), WrappedStr("test")],
+        )
+        self.assertEqual(
+            WrappedStr("test").translate(str.maketrans("tes", "123")), WrappedStr("1231")
+        )
         self.assertIn("lower", dir(wrapped))
         self.assertIn("upper", dir(wrapped))
         self.assertIn("_content", dir(wrapped))

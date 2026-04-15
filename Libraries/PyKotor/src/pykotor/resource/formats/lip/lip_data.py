@@ -409,7 +409,7 @@ class LIP(BiowareResource):
     def from_json(cls, data: dict[str, Any]) -> LIP:
         """Create a LIP object from a JSON dictionary."""
         instance = cls()
-        
+
         # Support legacy io_lip_json reader format that wrapped it in "lip":{"elements":[]}
         if "lip" in data and "elements" in data["lip"]:
             instance.length = float(data["lip"].get("duration", 0.0))
@@ -425,7 +425,7 @@ class LIP(BiowareResource):
             time = float(keyframe_dict["time"])
             shape = LIPShape(int(keyframe_dict["shape"]))
             instance.add(time, shape)
-        
+
         return instance
 
 

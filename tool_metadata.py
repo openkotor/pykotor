@@ -91,7 +91,9 @@ def _discover_entrypoint(src_dir: Path) -> str | None:
     return None
 
 
-def _detect_qt(project_table: dict[str, Any], tool_table: dict[str, Any]) -> tuple[bool, str | None]:
+def _detect_qt(
+    project_table: dict[str, Any], tool_table: dict[str, Any]
+) -> tuple[bool, str | None]:
     qt_api: str | None = None
     requires_qt = False
     for dependency in project_table.get("dependencies", []):
@@ -203,7 +205,9 @@ def discover_tools(repo_root: Path | None = None) -> list[ToolMetadata]:
         requires_qt, qt_api = _detect_qt(project_table, tool_table)
         tests_dir = tool_root / "tests"
         requirements_file = tool_root / "requirements.txt"
-        version_file, version_key, tag_suffix = _infer_version_info(tool_root, package_name, tool_table)
+        version_file, version_key, tag_suffix = _infer_version_info(
+            tool_root, package_name, tool_table
+        )
 
         discovered.append(
             ToolMetadata(
@@ -215,8 +219,14 @@ def discover_tools(repo_root: Path | None = None) -> list[ToolMetadata]:
                 entrypoint=str(entrypoint),
                 module_name=module_name,
                 src_path=(tool_root / "src").relative_to(repo_root).as_posix(),
-                tests_path=tests_dir.relative_to(repo_root).as_posix() if tests_dir.exists() else None,
-                requirements_path=(requirements_file.relative_to(repo_root).as_posix() if requirements_file.exists() else None),
+                tests_path=tests_dir.relative_to(repo_root).as_posix()
+                if tests_dir.exists()
+                else None,
+                requirements_path=(
+                    requirements_file.relative_to(repo_root).as_posix()
+                    if requirements_file.exists()
+                    else None
+                ),
                 requires_qt=requires_qt,
                 qt_api=qt_api,
                 console=pyinstaller_table.get("console"),

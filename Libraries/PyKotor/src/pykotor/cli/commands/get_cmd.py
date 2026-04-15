@@ -51,7 +51,9 @@ def _resolve_installation_path(args: Namespace, logger: Logger) -> pathlib.Path 
 
     game = _parse_game_arg(getattr(args, "game", None))
     if game is None:
-        logger.error("No installation path. Use --path or --game to auto-detect a default installation.")
+        logger.error(
+            "No installation path. Use --path or --game to auto-detect a default installation."
+        )
         return None
 
     discovered_paths = get_kotor_paths_from_default().get(game, [])
@@ -149,12 +151,20 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
     output = getattr(args, "output", None) or "."
     export_format = getattr(args, "format", "binary")
     output_path = pathlib.Path(output).resolve()
-    default_name = f"{resname}.{restype.extension}.json" if export_format == "json" else f"{resname}.{restype.extension}"
+    default_name = (
+        f"{resname}.{restype.extension}.json"
+        if export_format == "json"
+        else f"{resname}.{restype.extension}"
+    )
     if output_path.is_dir() or (not output_path.exists() and not output_path.suffix):
         output_path = output_path / default_name
     elif export_format == "json":
         if output_path.suffix.lower() != ".json":
-            output_path = output_path.with_suffix(f"{output_path.suffix}.json") if output_path.suffix else output_path.with_suffix(".json")
+            output_path = (
+                output_path.with_suffix(f"{output_path.suffix}.json")
+                if output_path.suffix
+                else output_path.with_suffix(".json")
+            )
     elif output_path.suffix.lower() != f".{restype.extension}":
         output_path = output_path.parent / f"{output_path.stem}.{restype.extension}"
 

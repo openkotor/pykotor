@@ -149,7 +149,12 @@ def sync_pyproject() -> None:
     )
 
     text = _replace_section(text, "[tool.uv.sources]", "[tool.uv.workspace]", uv_sources)
-    text = _replace_section(text, "[tool.uv.workspace]", "########################################################", workspace_block)
+    text = _replace_section(
+        text,
+        "[tool.uv.workspace]",
+        "########################################################",
+        workspace_block,
+    )
     text = _replace_section(text, "[tool.mypy]", "[tool.pylintrc]", mypy_block)
     text = _replace_section(text, "[tool.pyright]", "[tool.pyright.defineConstant]", pyright_block)
     text = _replace_section(text, "[tool.pytest.ini_options]", "[tool.ruff]", pytest_block)
@@ -177,8 +182,13 @@ def sync_env() -> None:
 
 def sync_vscode_settings() -> None:
     tools = discover_tools(REPO_ROOT)
-    extra_paths = [f"${{workspaceFolder}}/{path}" for path in LIBRARY_SOURCE_PATHS + [tool.src_path for tool in tools]]
-    pytest_args = LIBRARY_TEST_PATHS + [tool.tests_path for tool in tools if tool.tests_path] + ["-v"]
+    extra_paths = [
+        f"${{workspaceFolder}}/{path}"
+        for path in LIBRARY_SOURCE_PATHS + [tool.src_path for tool in tools]
+    ]
+    pytest_args = (
+        LIBRARY_TEST_PATHS + [tool.tests_path for tool in tools if tool.tests_path] + ["-v"]
+    )
     settings = {
         "[json]": {"editor.tabSize": 2},
         "[jsonc]": {"editor.tabSize": 2},
@@ -296,7 +306,9 @@ def sync_vscode_launch() -> None:
             "autoReload": {"enable": True},
         },
     ]
-    extra_pythonpath = ";".join(["${workspaceFolder}", "${workspaceFolder}/Libraries/PyKotor/src", "${env:PYTHONPATH}"])
+    extra_pythonpath = ";".join(
+        ["${workspaceFolder}", "${workspaceFolder}/Libraries/PyKotor/src", "${env:PYTHONPATH}"]
+    )
     for tool in tools:
         configurations.append(
             {

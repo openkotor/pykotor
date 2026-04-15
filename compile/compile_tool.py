@@ -406,8 +406,12 @@ Example pyproject.toml:
 """,
     )
 
-    parser.add_argument("--tool", help="Tool selector (directory, package, project, or Tools/... path)")
-    parser.add_argument("--tool-path", help="Explicit path to tool directory (e.g., Tools/HolocronToolset)")
+    parser.add_argument(
+        "--tool", help="Tool selector (directory, package, project, or Tools/... path)"
+    )
+    parser.add_argument(
+        "--tool-path", help="Explicit path to tool directory (e.g., Tools/HolocronToolset)"
+    )
 
     # Optional overrides
     default_python = os.environ.get("pythonExePath") or sys.executable

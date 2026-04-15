@@ -44,7 +44,8 @@ if TYPE_CHECKING:
 class DiffConfig:
     """Configuration for diff operations."""
 
-    paths: list[Path | Installation] = field(default_factory=list)  # List of paths to compare (files, folders, installations, or archives)
+    # List of paths to compare (files, folders, installations, or archives)
+    paths: list[Path | Installation] = field(default_factory=list)
     generate_tslpatcher_config: bool = False
     tslpatchdata_path: Path | None = None
     ini_filename: str = "changes.ini"
@@ -116,7 +117,9 @@ def log_output(*args, **kwargs):
     import logging
 
     output_mode = (
-        _global_config.config.output_mode if _global_config.config is not None else OutputMode.NORMAL
+        _global_config.config.output_mode
+        if _global_config.config is not None
+        else OutputMode.NORMAL
     )
     if output_mode != OutputMode.QUIET and msg.strip():
         logger = logging.getLogger(__name__)

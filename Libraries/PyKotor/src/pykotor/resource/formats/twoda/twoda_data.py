@@ -152,7 +152,7 @@ class TwoDA(BiowareResource):
     def from_json(cls, data: dict) -> TwoDA:
         """Hydrate a TwoDA object from a JSON dictionary."""
         instance = cls()
-        
+
         # Support both legacy format (rows with "_id" and header keys) and the
         # newer format (top-level "headers" list and rows containing "label" and "cells").
         if isinstance(data, dict) and "headers" in data and "rows" in data:

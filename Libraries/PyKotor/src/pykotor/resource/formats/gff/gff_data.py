@@ -759,6 +759,7 @@ class GFF(BiowareResource):
     def _parse_locstring_static(data: dict[str, Any]) -> LocalizedString:
         """Parse a JSON object into a LocalizedString."""
         from pykotor.common.localization import LocalizedString
+
         return LocalizedString.from_dict(data)
 
 

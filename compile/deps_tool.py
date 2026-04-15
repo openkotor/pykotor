@@ -416,8 +416,12 @@ Configuration can be added to pyproject.toml [tool.dependencies]:
 """,
     )
 
-    parser.add_argument("--tool", help="Tool selector (directory, package, project, or Tools/... path)")
-    parser.add_argument("--tool-path", help="Explicit path to tool directory (e.g., Tools/HolocronToolset)")
+    parser.add_argument(
+        "--tool", help="Tool selector (directory, package, project, or Tools/... path)"
+    )
+    parser.add_argument(
+        "--tool-path", help="Explicit path to tool directory (e.g., Tools/HolocronToolset)"
+    )
 
     # Venv options
     parser.add_argument("--venv-name", default=".venv", help="Virtual environment name")

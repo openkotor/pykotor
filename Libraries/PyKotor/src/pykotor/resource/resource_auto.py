@@ -245,7 +245,9 @@ def read_unknown_resource(  # noqa: PLR0911
     raise ValueError(msg)
 
 
-GFF_GENERICS = Union[ARE, DLG, FAC, GIT, GUI, IFO, JRL, PTH, UTC, UTD, UTE, UTI, UTM, UTP, UTS, UTT, UTW]
+GFF_GENERICS = Union[
+    ARE, DLG, FAC, GIT, GUI, IFO, JRL, PTH, UTC, UTD, UTE, UTI, UTM, UTP, UTS, UTT, UTW
+]
 
 
 def dismantle_generic(  # noqa: PLR0911, C901, PLR0912, ANN201

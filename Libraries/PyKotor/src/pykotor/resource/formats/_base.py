@@ -276,7 +276,9 @@ class BiowareResource(ComparableMixin):
     def __json__(self) -> dict[str, Any]:
         """Serialize the object fields to a dictionary utilizing the ComparableMixin lists."""
         data: dict[str, Any] = {}
-        for field in self.COMPARABLE_FIELDS + self.COMPARABLE_SEQUENCE_FIELDS + self.COMPARABLE_SET_FIELDS:
+        for field in (
+            self.COMPARABLE_FIELDS + self.COMPARABLE_SEQUENCE_FIELDS + self.COMPARABLE_SET_FIELDS
+        ):
             val = getattr(self, field)
             data[field] = val
         return data

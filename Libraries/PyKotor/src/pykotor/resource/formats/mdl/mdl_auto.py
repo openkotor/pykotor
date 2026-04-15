@@ -16,8 +16,6 @@ from pykotor.resource.formats.mdl.io_mdl_ascii import MDLAsciiReader, MDLAsciiWr
 from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, ToolsetFormat
 
 if TYPE_CHECKING:
-    from typing_extensions import Literal
-
     from pykotor.resource.formats.mdl.mdl_data import MDL
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 

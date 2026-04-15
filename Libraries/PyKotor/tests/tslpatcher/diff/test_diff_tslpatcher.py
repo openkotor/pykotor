@@ -87,7 +87,9 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
         install_dir.joinpath("swkotor.exe").write_bytes(b"")
 
         module_piece = RIM()
-        module_piece.set_data(Path(filename).stem, ResourceType.DLG, bytes_dlg(base_dlg, Game.K1, ResourceType.DLG))
+        module_piece.set_data(
+            Path(filename).stem, ResourceType.DLG, bytes_dlg(base_dlg, Game.K1, ResourceType.DLG)
+        )
         write_rim(module_piece, modules_dir / f"{module_root}_s.rim")
         return install_dir
 

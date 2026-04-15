@@ -1,19 +1,9 @@
-"""Archive ↔ JSON serialization with plaintext resource embedding.
-
-Converts ERF, RIM, MOD, SAV, and BIF to a JSON-serializable dict (and back) so that:
-- Archive structure and metadata are preserved.
-- Resources that have a plaintext format (GFF→JSON, TLK→JSON, 2DA→JSON, etc.) are
-  embedded as that format; others are base64.
-
-CLI: use capsule2json and json2capsule commands.
-"""
+"""Archive ↔ JSON serialization with readable resource embedding."""
 
 from __future__ import annotations
 
-import base64
 import json
 
-from io import BytesIO
 from pathlib import Path
 from typing import Any
 
@@ -22,106 +12,14 @@ from pykotor.resource.formats.bif import read_bif, write_bif
 from pykotor.resource.formats.bif.bif_data import BIF, BIFType
 from pykotor.resource.formats.erf import read_erf, write_erf
 from pykotor.resource.formats.erf.erf_data import ERF, ERFType
-from pykotor.resource.formats.gff import read_gff, write_gff
-from pykotor.resource.formats.lip import read_lip, write_lip
 from pykotor.resource.formats.rim import read_rim, write_rim
 from pykotor.resource.formats.rim.rim_data import RIM
-from pykotor.resource.formats.ssf import read_ssf, write_ssf
-from pykotor.resource.formats.tlk import read_tlk, write_tlk
-from pykotor.resource.formats.twoda import read_2da, write_2da
-from pykotor.resource.type import ResourceType, ToolsetFormat
+from pykotor.resource.type import ResourceType
 from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_rim_file
-
-# All GFF subtypes serialize to GFF-JSON; non-GFF structured types follow below.
-_RESOURCE_PLAINTEXT_FORMAT: dict[ResourceType, ToolsetFormat] = {
-    **{rt: ToolsetFormat.GFF_JSON for rt in ResourceType if rt.is_gff()},
-    ResourceType.TLK: ToolsetFormat.TLK_JSON,
-    ResourceType.TwoDA: ToolsetFormat.TwoDA_JSON,
-    ResourceType.LIP: ToolsetFormat.LIP_JSON,
-    ResourceType.SSF: ToolsetFormat.SSF_XML,
-}
-
-
-def _resource_bytes_to_plaintext(
-    data: bytes, restype: ResourceType
-) -> tuple[str, str | dict[str, Any]] | None:
-    """Convert resource bytes to (format_name, plaintext_data). Returns None to use base64."""
-    text_format = _RESOURCE_PLAINTEXT_FORMAT.get(restype)
-    if text_format is None:
-        return None
-    try:
-        if text_format == ToolsetFormat.GFF_JSON:
-            gff = read_gff(data)
-            out = bytearray()
-            write_gff(gff, out, file_format=ToolsetFormat.GFF_JSON)
-            return ("gff_json", json.loads(bytes(out).decode("utf-8")))
-        if text_format == ToolsetFormat.TLK_JSON:
-            tlk = read_tlk(data)
-            out = bytearray()
-            write_tlk(tlk, out, file_format=ToolsetFormat.TLK_JSON)
-            return ("tlk_json", json.loads(bytes(out).decode("utf-8")))
-        if text_format == ToolsetFormat.TwoDA_JSON:
-            twoda = read_2da(data)
-            out = bytearray()
-            write_2da(twoda, out, file_format=ToolsetFormat.TwoDA_JSON)
-            return ("2da_json", json.loads(bytes(out).decode("utf-8")))
-        if text_format == ToolsetFormat.LIP_JSON:
-            lip = read_lip(data)
-            out = bytearray()
-            write_lip(lip, out, file_format=ToolsetFormat.LIP_JSON)
-            return ("lip_json", json.loads(bytes(out).decode("utf-8")))
-        if text_format == ToolsetFormat.SSF_XML:
-            buf = BytesIO(data)
-            ssf = read_ssf(buf, file_format=ToolsetFormat.SSF_XML)
-            out = bytearray()
-            write_ssf(ssf, out, file_format=ToolsetFormat.SSF_XML)
-            return ("ssf_xml", bytes(out).decode("utf-8"))
-    except Exception:
-        pass
-    return None
-
-
-def _plaintext_to_resource_bytes(
-    encoding: str, payload: str | dict[str, Any], restype: ResourceType
-) -> bytes:
-    """Convert (encoding, payload) back to resource bytes."""
-    if encoding == "base64":
-        return base64.b64decode(json.dumps(payload) if isinstance(payload, dict) else payload)
-    buf_out = BytesIO()
-    if encoding == "gff_json":
-        gff = read_gff(
-            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ToolsetFormat.GFF_JSON
-        )
-        write_gff(gff, buf_out, file_format=ResourceType.GFF)
-        return buf_out.getvalue()
-    if encoding == "tlk_json":
-        tlk = read_tlk(
-            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ToolsetFormat.TLK_JSON
-        )
-        write_tlk(tlk, buf_out, file_format=ResourceType.TLK)
-        return buf_out.getvalue()
-    if encoding == "2da_json":
-        twoda = read_2da(
-            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ToolsetFormat.TwoDA_JSON
-        )
-        write_2da(twoda, buf_out, file_format=ResourceType.TwoDA)
-        return buf_out.getvalue()
-    if encoding == "lip_json":
-        lip = read_lip(
-            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ToolsetFormat.LIP_JSON
-        )
-        write_lip(lip, buf_out, file_format=ResourceType.LIP)
-        return buf_out.getvalue()
-    if encoding == "ssf_xml":
-        ssf = read_ssf(
-            BytesIO(
-                (json.dumps(payload) if isinstance(payload, dict) else payload).encode("utf-8")
-            ),
-            file_format=ToolsetFormat.SSF_XML,
-        )
-        write_ssf(ssf, buf_out, file_format=ResourceType.SSF)
-        return buf_out.getvalue()
-    raise ValueError(f"Unknown encoding: {encoding}")
+from pykotor.tools.resource_json import (
+    deserialize_embedded_resource_payload,
+    serialize_resource_payload,
+)
 
 
 def archive_to_dict(
@@ -167,18 +65,19 @@ def _erf_to_dict(data: bytes, *, embed_plaintext: bool) -> dict[str, Any]:
         resref = str(res.resref) if res.resref else ""
         restype = res.restype
         raw = res.data
-        encoding = "base64"
-        payload: str | dict[str, Any] = base64.b64encode(raw).decode("ascii")
-        if embed_plaintext:
-            plain = _resource_bytes_to_plaintext(raw, restype)
-            if plain is not None:
-                encoding, payload = plain[0], plain[1]
+        serialized = (
+            serialize_resource_payload(raw, restype, mode="embedded")
+            if embed_plaintext
+            else serialize_resource_payload(raw, restype, mode="embedded")
+        )
+        if not embed_plaintext:
+            serialized = serialize_resource_payload(raw, ResourceType.INVALID, mode="embedded")
         resources.append(
             {
                 "resref": resref,
                 "restype": restype.extension,
-                "data_encoding": encoding,
-                "data": payload,
+                "data_encoding": serialized.encoding,
+                "data": serialized.payload,
             },
         )
     return {
@@ -195,18 +94,17 @@ def _rim_to_dict(data: bytes, *, embed_plaintext: bool) -> dict[str, Any]:
         resref = str(res.resref) if res.resref else ""
         restype = res.restype
         raw = res.data
-        encoding = "base64"
-        payload = base64.b64encode(raw).decode("ascii")
-        if embed_plaintext:
-            plain = _resource_bytes_to_plaintext(raw, restype)
-            if plain is not None:
-                encoding, payload = plain[0], plain[1]
+        serialized = (
+            serialize_resource_payload(raw, restype, mode="embedded")
+            if embed_plaintext
+            else serialize_resource_payload(raw, ResourceType.INVALID, mode="embedded")
+        )
         resources.append(
             {
                 "resref": resref,
                 "restype": restype.extension,
-                "data_encoding": encoding,
-                "data": payload,
+                "data_encoding": serialized.encoding,
+                "data": serialized.payload,
             },
         )
     return {
@@ -227,19 +125,18 @@ def _bif_to_dict(
         resref = str(res.resref) if res.resref else ""
         restype = res.restype
         raw = res.data
-        encoding = "base64"
-        payload = base64.b64encode(raw).decode("ascii")
-        if embed_plaintext:
-            plain = _resource_bytes_to_plaintext(raw, restype)
-            if plain is not None:
-                encoding, payload = plain[0], plain[1]
+        serialized = (
+            serialize_resource_payload(raw, restype, mode="embedded")
+            if embed_plaintext
+            else serialize_resource_payload(raw, ResourceType.INVALID, mode="embedded")
+        )
         resources.append(
             {
                 "resref": resref,
                 "restype": restype.extension,
                 "resname_key_index": res.resname_key_index,
-                "data_encoding": encoding,
-                "data": payload,
+                "data_encoding": serialized.encoding,
+                "data": serialized.payload,
             },
         )
     return {
@@ -270,7 +167,7 @@ def _dict_to_erf(data: dict[str, Any]) -> bytes:
         restype = ResourceType.from_extension(r["restype"])
         enc = r.get("data_encoding", "base64")
         payload = r["data"]
-        raw = _plaintext_to_resource_bytes(enc, payload, restype)
+        raw = deserialize_embedded_resource_payload(enc, payload, restype)
         erf.set_data(ResRef(resref), restype, raw)
     out = BytesIO()
     write_erf(erf, out)
@@ -284,7 +181,7 @@ def _dict_to_rim(data: dict[str, Any]) -> bytes:
         restype = ResourceType.from_extension(r["restype"])
         enc = r.get("data_encoding", "base64")
         payload = r["data"]
-        raw = _plaintext_to_resource_bytes(enc, payload, restype)
+        raw = deserialize_embedded_resource_payload(enc, payload, restype)
         rim.set_data(ResRef(resref), restype, raw)
     out = BytesIO()
     write_rim(rim, out)
@@ -301,7 +198,7 @@ def _dict_to_bif(data: dict[str, Any]) -> bytes:
         res_id = r.get("resname_key_index")
         enc = r.get("data_encoding", "base64")
         payload = r["data"]
-        raw = _plaintext_to_resource_bytes(enc, payload, restype)
+        raw = deserialize_embedded_resource_payload(enc, payload, restype)
         bif.set_data(ResRef(resref), restype, raw, res_id=res_id)
     out: bytearray = bytearray()
     write_bif(bif, out)

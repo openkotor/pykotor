@@ -107,6 +107,7 @@ def read_2da(
         return TwoDACSVReader(source, offset, size or 0).load()
     if file_format == ToolsetFormat.TwoDA_JSON:
         from pykotor.resource.formats.twoda.twoda_data import TwoDA
+
         with BinaryReader.from_auto(source, offset) as reader:
             raw = reader.read_all()
         decoded = decode_bytes_with_fallbacks(raw)
@@ -143,6 +144,7 @@ def write_2da(
     elif file_format == ToolsetFormat.TwoDA_JSON:
         json_dump = json.dumps(twoda, cls=BiowareEncoder, indent=4)
         from pykotor.common.stream import BinaryWriter
+
         with BinaryWriter.to_auto(target) as writer:
             writer.write_bytes(json_dump.encode())
     else:

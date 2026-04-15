@@ -19,7 +19,7 @@ from pykotor.cli.cfg_parser import load_config
 from pykotor.resource.formats.erf import read_erf
 from pykotor.resource.formats.gff import read_gff, write_gff
 from pykotor.resource.formats.rim import read_rim
-from pykotor.resource.type import ResourceType, ToolsetFormat
+from pykotor.resource.type import ToolsetFormat
 
 
 def compute_file_hash(file_path: Path) -> str:

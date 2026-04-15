@@ -988,8 +988,15 @@ Compare two paths and show differences. Supports any combination of:
   {prog} diff --generate-ini installation1 installation2
 """,
     )
-    diff_parser.add_argument("path1", nargs="?", default=None, help="First path (file, folder, installation, or archive)")
-    diff_parser.add_argument("path2", nargs="?", default=None, help="Second path (file, folder, installation, or archive)")
+    diff_parser.add_argument(
+        "path1", nargs="?", default=None, help="First path (file, folder, installation, or archive)"
+    )
+    diff_parser.add_argument(
+        "path2",
+        nargs="?",
+        default=None,
+        help="Second path (file, folder, installation, or archive)",
+    )
     diff_parser.add_argument(
         "--format",
         choices=["unified", "context", "side_by_side"],

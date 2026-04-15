@@ -210,7 +210,9 @@ def execute_cli(cmdline_args: Namespace | Any | object):
     from pykotor.extract.installation import Installation
 
     output_mode_str = getattr(cmdline_args, "output_mode", "normal")
-    output_mode = OutputMode(output_mode_str) if isinstance(output_mode_str, str) else output_mode_str
+    output_mode = (
+        OutputMode(output_mode_str) if isinstance(output_mode_str, str) else output_mode_str
+    )
     log_level_arg = getattr(cmdline_args, "log_level", None)
 
     # Determine log level based on output_mode or explicit log_level
@@ -277,14 +279,14 @@ def execute_cli(cmdline_args: Namespace | Any | object):
         if merge_resource_type_arg:
             merge_resource_type = ResourceType.from_extension(str(merge_resource_type_arg))
             if merge_resource_type.is_invalid:
-                logging.error(
-                    f"Unsupported --merge-resource-type value: {merge_resource_type_arg}"
-                )
+                logging.error(f"Unsupported --merge-resource-type value: {merge_resource_type_arg}")
                 sys.exit(1)
 
         config = DiffConfig(
             paths=[],
-            tslpatchdata_path=Path(cmdline_args.tslpatchdata) if cmdline_args.tslpatchdata else None,
+            tslpatchdata_path=Path(cmdline_args.tslpatchdata)
+            if cmdline_args.tslpatchdata
+            else None,
             ini_filename=getattr(cmdline_args, "ini", "changes.ini"),
             output_log_path=Path(cmdline_args.output_log) if cmdline_args.output_log else None,
             log_level=getattr(cmdline_args, "log_level", "info"),

@@ -11,15 +11,10 @@ import pathlib
 
 from typing import TYPE_CHECKING, Callable
 
-from pykotor.resource.formats.gff import read_gff, write_gff
-from pykotor.resource.formats.lip import read_lip, write_lip
-from pykotor.resource.formats.ssf import read_ssf, write_ssf
-from pykotor.resource.formats.tlk import read_tlk, write_tlk
-from pykotor.resource.formats.twoda import read_2da, write_2da
-from pykotor.resource.type import ResourceType, ToolsetFormat
+from pykotor.resource.type import ResourceType
 from pykotor.tools.conversions import (
-    convert_2da_to_json,
     convert_2da_to_csv,
+    convert_2da_to_json,
     convert_csv_to_2da,
     convert_gff_to_json,
     convert_gff_to_xml,
@@ -29,13 +24,18 @@ from pykotor.tools.conversions import (
     convert_json_to_ssf,
     convert_json_to_tlk,
     convert_lip_to_json,
-    convert_ssf_to_xml,
     convert_ssf_to_json,
+    convert_ssf_to_xml,
     convert_tlk_to_json,
     convert_tlk_to_xml,
     convert_xml_to_gff,
     convert_xml_to_ssf,
     convert_xml_to_tlk,
+)
+from pykotor.tools.resource_json import (
+    direct_json_document_to_resource_bytes,
+    export_path_tree_to_json,
+    resource_source_to_json_bytes,
 )
 
 if TYPE_CHECKING:
@@ -70,6 +70,10 @@ def _default_json_output_path(input_path: pathlib.Path) -> pathlib.Path:
     return input_path.with_suffix(".json")
 
 
+def _default_json_tree_output_path(input_path: pathlib.Path) -> pathlib.Path:
+    return input_path.with_name(f"{input_path.name}-json")
+
+
 def _infer_default_output_type(input_path: pathlib.Path, type_hint: str | None) -> ResourceType:
     explicit_type = _resource_type_from_hint(type_hint)
     if not explicit_type.is_invalid:
@@ -83,7 +87,9 @@ def _infer_default_output_type(input_path: pathlib.Path, type_hint: str | None) 
     return ResourceType.INVALID
 
 
-def _default_binary_output_path(input_path: pathlib.Path, target_type: ResourceType) -> pathlib.Path:
+def _default_binary_output_path(
+    input_path: pathlib.Path, target_type: ResourceType
+) -> pathlib.Path:
     if input_path.suffix.lower() == ".json":
         base_path = input_path.with_suffix("")
         if base_path.suffix and base_path.suffix.lower() == f".{target_type.extension}":
@@ -93,33 +99,8 @@ def _default_binary_output_path(input_path: pathlib.Path, target_type: ResourceT
 
 
 def resource_data_to_json_bytes(data: bytes, restype: ResourceType) -> bytes:
-    """Convert raw resource bytes into their JSON representation for supported formats."""
-    output = bytearray()
-    target_type = restype.target_type()
-
-    if target_type.is_gff():
-        resource = read_gff(data)
-        write_gff(resource, output, file_format=ToolsetFormat.GFF_JSON)
-        return bytes(output)
-    if target_type == ResourceType.TLK:
-        resource = read_tlk(data)
-        write_tlk(resource, output, file_format=ToolsetFormat.TLK_JSON)
-        return bytes(output)
-    if target_type == ResourceType.TwoDA:
-        resource = read_2da(data)
-        write_2da(resource, output, file_format=ToolsetFormat.TwoDA_JSON)
-        return bytes(output)
-    if target_type == ResourceType.LIP:
-        resource = read_lip(data)
-        write_lip(resource, output, file_format=ToolsetFormat.LIP_JSON)
-        return bytes(output)
-    if target_type == ResourceType.SSF:
-        resource = read_ssf(data)
-        write_ssf(resource, output, file_format=ToolsetFormat.SSF_JSON)
-        return bytes(output)
-
-    msg = f"JSON export is not supported for {target_type.extension or target_type.name.lower()}."
-    raise ValueError(msg)
+    """Convert raw resource bytes into their JSON representation."""
+    return resource_source_to_json_bytes(data, restype, mode="direct")
 
 
 def _run_to_json_conversion(
@@ -135,16 +116,6 @@ def _run_to_json_conversion(
         logger.error("Could not determine input type for %s. Use --type to specify it.", input_path)
         return 1
 
-    if restype.target_type().is_gff():
-        return _run_conversion(input_path, output_path, convert_gff_to_json, logger)
-    if restype == ResourceType.TLK:
-        return _run_conversion(input_path, output_path, convert_tlk_to_json, logger)
-    if restype == ResourceType.TwoDA:
-        return _run_conversion(input_path, output_path, convert_2da_to_json, logger)
-    if restype == ResourceType.LIP:
-        return _run_conversion(input_path, output_path, convert_lip_to_json, logger)
-    if restype == ResourceType.SSF:
-        return _run_conversion(input_path, output_path, convert_ssf_to_json, logger)
     if restype in _ARCHIVE_RESOURCE_TYPES:
         archive_args = type(
             "ArchiveArgs",
@@ -158,8 +129,14 @@ def _run_to_json_conversion(
         )()
         return cmd_archive_to_json(archive_args, logger)
 
-    logger.error("JSON export is not supported for .%s files.", restype.extension)
-    return 1
+    try:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_bytes(resource_source_to_json_bytes(input_path, restype, mode="direct"))
+        logger.info("Converted %s to %s", input_path.name, output_path.name)
+    except Exception:
+        logger.exception("Failed to convert %s", input_path)  # noqa: G004
+        return 1
+    return 0
 
 
 def _run_from_json_conversion(
@@ -191,6 +168,18 @@ def _run_from_json_conversion(
             {"input": str(input_path), "output": str(output_path)},
         )()
         return cmd_json_to_archive(archive_args, logger)
+
+    try:
+        document = json.loads(input_path.read_text(encoding="utf-8"))
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_bytes(direct_json_document_to_resource_bytes(document, restype))
+        logger.info("Converted %s to %s", input_path.name, output_path.name)
+        return 0
+    except ValueError:
+        pass
+    except Exception:
+        logger.exception("Failed to convert %s", input_path)  # noqa: G004
+        return 1
 
     logger.error("JSON import is not supported for .%s files.", restype.extension)
     return 1
@@ -288,7 +277,9 @@ def cmd_csv22da(args: Namespace, logger: Logger) -> int:
 def cmd_2da2json(args: Namespace, logger: Logger) -> int:
     """Convert 2DA file to JSON format."""
     input_path = pathlib.Path(args.input)
-    output_path = pathlib.Path(args.output) if args.output else _default_json_output_path(input_path)
+    output_path = (
+        pathlib.Path(args.output) if args.output else _default_json_output_path(input_path)
+    )
     return _run_conversion(input_path, output_path, convert_2da_to_json, logger)
 
 
@@ -310,56 +301,86 @@ def cmd_json2gff(args: Namespace, logger: Logger) -> int:
 def cmd_tlk2json(args: Namespace, logger: Logger) -> int:
     """Convert TLK file to JSON format."""
     input_path = pathlib.Path(args.input)
-    output_path = pathlib.Path(args.output) if args.output else _default_json_output_path(input_path)
+    output_path = (
+        pathlib.Path(args.output) if args.output else _default_json_output_path(input_path)
+    )
     return _run_conversion(input_path, output_path, convert_tlk_to_json, logger)
 
 
 def cmd_json2tlk(args: Namespace, logger: Logger) -> int:
     """Convert JSON file to TLK format."""
     input_path = pathlib.Path(args.input)
-    output_path = pathlib.Path(args.output) if args.output else _default_binary_output_path(input_path, ResourceType.TLK)
+    output_path = (
+        pathlib.Path(args.output)
+        if args.output
+        else _default_binary_output_path(input_path, ResourceType.TLK)
+    )
     return _run_conversion(input_path, output_path, convert_json_to_tlk, logger)
 
 
 def cmd_lip2json(args: Namespace, logger: Logger) -> int:
     """Convert LIP file to JSON format."""
     input_path = pathlib.Path(args.input)
-    output_path = pathlib.Path(args.output) if args.output else _default_json_output_path(input_path)
+    output_path = (
+        pathlib.Path(args.output) if args.output else _default_json_output_path(input_path)
+    )
     return _run_conversion(input_path, output_path, convert_lip_to_json, logger)
 
 
 def cmd_json2lip(args: Namespace, logger: Logger) -> int:
     """Convert JSON file to LIP format."""
     input_path = pathlib.Path(args.input)
-    output_path = pathlib.Path(args.output) if args.output else _default_binary_output_path(input_path, ResourceType.LIP)
+    output_path = (
+        pathlib.Path(args.output)
+        if args.output
+        else _default_binary_output_path(input_path, ResourceType.LIP)
+    )
     return _run_conversion(input_path, output_path, convert_json_to_lip, logger)
 
 
 def cmd_ssf2json(args: Namespace, logger: Logger) -> int:
     """Convert SSF file to JSON format."""
     input_path = pathlib.Path(args.input)
-    output_path = pathlib.Path(args.output) if args.output else _default_json_output_path(input_path)
+    output_path = (
+        pathlib.Path(args.output) if args.output else _default_json_output_path(input_path)
+    )
     return _run_conversion(input_path, output_path, convert_ssf_to_json, logger)
 
 
 def cmd_json2ssf(args: Namespace, logger: Logger) -> int:
     """Convert JSON file to SSF format."""
     input_path = pathlib.Path(args.input)
-    output_path = pathlib.Path(args.output) if args.output else _default_binary_output_path(input_path, ResourceType.SSF)
+    output_path = (
+        pathlib.Path(args.output)
+        if args.output
+        else _default_binary_output_path(input_path, ResourceType.SSF)
+    )
     return _run_conversion(input_path, output_path, convert_json_to_ssf, logger)
 
 
 def cmd_json22da(args: Namespace, logger: Logger) -> int:
     """Convert JSON file to 2DA format."""
     input_path = pathlib.Path(args.input)
-    output_path = pathlib.Path(args.output) if args.output else _default_binary_output_path(input_path, ResourceType.TwoDA)
+    output_path = (
+        pathlib.Path(args.output)
+        if args.output
+        else _default_binary_output_path(input_path, ResourceType.TwoDA)
+    )
     return _run_conversion(input_path, output_path, convert_json_to_2da, logger)
 
 
 def cmd_to_json(args: Namespace, logger: Logger) -> int:
     """Convert a supported resource file to its JSON representation."""
     input_path = pathlib.Path(args.input)
-    output_path = pathlib.Path(args.output) if args.output else _default_json_output_path(input_path)
+    if input_path.is_dir():
+        output_path = (
+            pathlib.Path(args.output) if args.output else _default_json_tree_output_path(input_path)
+        )
+        return export_path_tree_to_json(input_path, output_path, logger)
+
+    output_path = (
+        pathlib.Path(args.output) if args.output else _default_json_output_path(input_path)
+    )
     restype = _resource_type_from_hint(getattr(args, "type", None))
     if restype.is_invalid:
         restype = _resource_type_from_path(input_path)

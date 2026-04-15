@@ -105,6 +105,7 @@ def read_ssf(
         return SSFXMLReader(source, offset, size or 0).load()
     if file_format == ToolsetFormat.SSF_JSON:
         from pykotor.resource.formats.ssf.ssf_data import SSF
+
         with BinaryReader.from_auto(source, offset) as reader:
             raw = reader.read_all()
         decoded = decode_bytes_with_fallbacks(raw)
@@ -139,6 +140,7 @@ def write_ssf(
     elif file_format == ToolsetFormat.SSF_JSON:
         json_dump = json.dumps(ssf, cls=BiowareEncoder, indent=4)
         from pykotor.common.stream import BinaryWriter
+
         with BinaryWriter.to_auto(target) as writer:
             writer.write_bytes(json_dump.encode())
     else:
