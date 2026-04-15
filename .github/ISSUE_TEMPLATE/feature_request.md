@@ -32,10 +32,7 @@ Describe the use case for this feature. Who would benefit from it?
 Which package(s) would this affect?
 
 - [ ] PyKotor (core library)
-- [ ] HolocronToolset
-- [ ] HoloPatcher
-- [ ] BatchPatcher
-- [ ] KotorDiff
+- [ ] One or more tools under `Tools/`
 
 ## Implementation Details
 

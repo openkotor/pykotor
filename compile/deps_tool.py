@@ -21,6 +21,12 @@ import sys
 from pathlib import Path
 from typing import Any, Iterable
 
+repo_root = Path(__file__).resolve().parent.parent
+if str(repo_root) not in sys.path:
+    sys.path.insert(0, str(repo_root))
+
+from tool_metadata import discover_tools, resolve_tool
+
 try:
     import tomllib
 except ImportError:
@@ -410,10 +416,8 @@ Configuration can be added to pyproject.toml [tool.dependencies]:
 """,
     )
 
-    # Required
-    parser.add_argument(
-        "--tool-path", required=True, help="Path to tool directory (e.g., Tools/HolocronToolset)"
-    )
+    parser.add_argument("--tool", help="Tool selector (directory, package, project, or Tools/... path)")
+    parser.add_argument("--tool-path", help="Explicit path to tool directory (e.g., Tools/HolocronToolset)")
 
     # Venv options
     parser.add_argument("--venv-name", default=".venv", help="Virtual environment name")
@@ -467,10 +471,16 @@ Configuration can be added to pyproject.toml [tool.dependencies]:
 
     args = parser.parse_args()
 
-    # Resolve tool path
-    tool_path = Path(args.tool_path)
-    if not tool_path.is_absolute():
-        tool_path = (repo_root / tool_path).resolve()
+    if not args.tool and not args.tool_path:
+        available = ", ".join(tool.relative_path for tool in discover_tools(repo_root))
+        raise SystemExit(f"One of --tool or --tool-path is required. Available tools: {available}")
+
+    if args.tool:
+        tool_path = repo_root / resolve_tool(args.tool, repo_root).relative_path
+    else:
+        tool_path = Path(args.tool_path)
+        if not tool_path.is_absolute():
+            tool_path = (repo_root / tool_path).resolve()
 
     if not tool_path.exists():
         raise SystemExit(f"Tool directory not found: {tool_path}")

@@ -1,5 +1,5 @@
-# Script to create TEST workflow from production workflow
-# Usage: .\create_test_workflow.ps1 -ToolName "kotordiff"
+# Script to create a TEST workflow from a production workflow
+# Usage: .\create_test_workflow.ps1 -ToolName "<build-name>"
 
 param(
     [Parameter(Mandatory=$true)]
