@@ -8,7 +8,7 @@ import json
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Iterator, Literal, cast
+from typing import TYPE_CHECKING, Callable, Dict, Iterable, Iterator, List, Literal, Union, cast
 
 from pykotor.extract.file import FileResource, clear_file_data_cache
 from pykotor.extract.installation import Installation
@@ -46,8 +46,8 @@ if TYPE_CHECKING:
     from utility.common.geometry import Vector2, Vector3, Vector4
 
 
-JsonScalar = None | bool | int | float | str
-JsonValue = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
+JsonScalar = Union[None, bool, int, float, str]
+JsonValue = Union[JsonScalar, List["JsonValue"], Dict[str, "JsonValue"]]
 SerializationMode = Literal["direct", "embedded"]
 
 
@@ -142,6 +142,10 @@ def _decode_plain_text(data: bytes) -> str | None:
     if printable_count / len(text) < 0.95:
         return None
     return text
+
+
+def _base64_payload(source: bytes | bytearray | Path) -> SerializedResourcePayload:
+    return SerializedResourcePayload("base64", base64.b64encode(_source_bytes(source)).decode("ascii"))
 
 
 def _vector2(value: Vector2) -> list[JsonValue]:
@@ -568,14 +572,26 @@ def serialize_resource_payload(
         if target_type == ResourceType.LYT:
             return SerializedResourcePayload("text", _writer_text(source, read_lyt, write_lyt))
         if target_type == ResourceType.VIS:
-            return SerializedResourcePayload("text", _writer_text(source, read_vis, write_vis))
+            try:
+                return SerializedResourcePayload("text", _writer_text(source, read_vis, write_vis))
+            except Exception:
+                text = _decode_plain_text(_source_bytes(source))
+                if text is not None:
+                    return SerializedResourcePayload("text", text)
+                return _base64_payload(source)
     if target_type in {ResourceType.TPC, ResourceType.TGA, ResourceType.DDS}:
-        tpc = read_tpc(source)
+        try:
+            tpc = read_tpc(source)
+        except Exception:
+            return _base64_payload(source)
         return SerializedResourcePayload("tpc_json", _serialize_tpc_json(tpc, target_type))
     if target_type == ResourceType.MDL:
         mdl_path = _source_path(source)
         mdx_source = _paired_path(mdl_path, ".mdx") if mdl_path is not None else None
-        mdl = read_mdl(source, source_ext=mdx_source)
+        try:
+            mdl = read_mdl(source, source_ext=mdx_source)
+        except Exception:
+            return _base64_payload(source)
         if mode == "embedded":
             return SerializedResourcePayload(
                 "mdl_ascii",
@@ -770,7 +786,7 @@ def _iter_installation_resources(installation: Installation, logger: Logger):
             if resource is not None:
                 yield resource
 
-    iterators: tuple[tuple[str, Callable[[], Iterator[FileResource]]], ...] = (
+    iterators: tuple[tuple[str, Callable[[], Iterable[FileResource]]], ...] = (
         ("override resources", installation.override_resources),
         (
             "module resources",
@@ -868,7 +884,11 @@ def _export_file_resources(
         try:
             data: bytes = resource.data()
             source: bytes | Path = Path(resource.filepath()) if not (resource.inside_capsule or resource.inside_bif) and Path(resource.filepath()).is_file() else data
-            serialized: SerializedResourcePayload = serialize_resource_payload(source, resource.restype(), mode="direct")
+            serialized: SerializedResourcePayload = serialize_resource_payload(
+                source,
+                cast(ResourceType, resource.restype()),
+                mode="direct",
+            )
             if serialized.encoding == "base64":
                 fallback_count += 1
             else:
@@ -876,7 +896,7 @@ def _export_file_resources(
             destination.write_bytes(_json_dumps_bytes(_build_embedded_document(base_path, resource, data, serialized)))
         except Exception as exc:
             error_count += 1
-            error_payload = {
+            error_payload: dict[str, JsonValue] = {
                 "resource": resource.filename(),
                 "source_path": str(resource.filepath()),
                 "error": f"{exc.__class__.__name__}: {exc}",

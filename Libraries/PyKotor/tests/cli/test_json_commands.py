@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 
 from argparse import Namespace
@@ -16,12 +17,12 @@ from pykotor.cli.dispatch import cli_main
 from pykotor.common.language import Language
 from pykotor.common.misc import Game
 from pykotor.resource.formats.rim import RIM, write_rim
-from pykotor.resource.formats.mdl.mdl_data import MDLFace
+from pykotor.resource.formats.mdl import MDLFace
 from pykotor.resource.formats.ssf import SSF, SSFSound, read_ssf
 from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk
 from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, bytes_tpc, read_tpc
 from pykotor.resource.type import ResourceType
-from pykotor.tools.resource_json import _serialize_mdl_face
+from pykotor.tools.resource_json import _serialize_mdl_face, serialize_resource_payload
 
 
 def test_to_json_and_from_json_roundtrip_tlk(tmp_path: Path) -> None:
@@ -519,6 +520,48 @@ def test_parser_accepts_game_root_command_renames_and_legacy_aliases() -> None:
     assert create_args.path == "C:/game"
     assert scaffold_args.path == "C:/game"
     assert create_alias_args.path == "C:/game"
+
+
+def test_serialize_resource_payload_falls_back_to_text_for_invalid_vis(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def broken_read_vis(_data: bytes) -> None:
+        raise ValueError("bad vis")
+
+    monkeypatch.setattr("pykotor.tools.resource_json.read_vis", broken_read_vis)
+
+    payload = serialize_resource_payload(b"room0\n  room1\n", ResourceType.VIS, mode="direct")
+
+    assert payload.encoding == "text"
+    assert payload.payload == "room0\n  room1\n"
+
+
+def test_serialize_resource_payload_falls_back_to_base64_for_invalid_tpc(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def broken_read_tpc(_data: bytes) -> None:
+        raise ValueError("bad tpc")
+
+    monkeypatch.setattr("pykotor.tools.resource_json.read_tpc", broken_read_tpc)
+
+    payload = serialize_resource_payload(b"not-a-tpc", ResourceType.TPC, mode="direct")
+
+    assert payload.encoding == "base64"
+    assert payload.payload == base64.b64encode(b"not-a-tpc").decode("ascii")
+
+
+def test_serialize_resource_payload_falls_back_to_base64_for_invalid_mdl(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def broken_read_mdl(_data: bytes, source_ext=None) -> None:
+        raise ValueError("bad mdl")
+
+    monkeypatch.setattr("pykotor.tools.resource_json.read_mdl", broken_read_mdl)
+
+    payload = serialize_resource_payload(b"not-a-mdl", ResourceType.MDL, mode="direct")
+
+    assert payload.encoding == "base64"
+    assert payload.payload == base64.b64encode(b"not-a-mdl").decode("ascii")
 
 
 def test_diff_installation_forwards_merge_flags(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
