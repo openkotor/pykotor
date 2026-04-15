@@ -16,7 +16,7 @@ from pykotor.resource.formats.lip import read_lip, write_lip
 from pykotor.resource.formats.ssf import read_ssf, write_ssf
 from pykotor.resource.formats.tlk import read_tlk, write_tlk
 from pykotor.resource.formats.twoda import read_2da, write_2da
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import ResourceType, ToolsetFormat
 from pykotor.tools.conversions import (
     convert_2da_to_json,
     convert_2da_to_csv,
@@ -99,23 +99,23 @@ def resource_data_to_json_bytes(data: bytes, restype: ResourceType) -> bytes:
 
     if target_type.is_gff():
         resource = read_gff(data)
-        write_gff(resource, output, file_format=ResourceType.GFF_JSON)
+        write_gff(resource, output, file_format=ToolsetFormat.GFF_JSON)
         return bytes(output)
     if target_type == ResourceType.TLK:
         resource = read_tlk(data)
-        write_tlk(resource, output, file_format=ResourceType.TLK_JSON)
+        write_tlk(resource, output, file_format=ToolsetFormat.TLK_JSON)
         return bytes(output)
     if target_type == ResourceType.TwoDA:
         resource = read_2da(data)
-        write_2da(resource, output, file_format=ResourceType.TwoDA_JSON)
+        write_2da(resource, output, file_format=ToolsetFormat.TwoDA_JSON)
         return bytes(output)
     if target_type == ResourceType.LIP:
         resource = read_lip(data)
-        write_lip(resource, output, file_format=ResourceType.LIP_JSON)
+        write_lip(resource, output, file_format=ToolsetFormat.LIP_JSON)
         return bytes(output)
     if target_type == ResourceType.SSF:
         resource = read_ssf(data)
-        write_ssf(resource, output, file_format=ResourceType.SSF_JSON)
+        write_ssf(resource, output, file_format=ToolsetFormat.SSF_JSON)
         return bytes(output)
 
     msg = f"JSON export is not supported for {target_type.extension or target_type.name.lower()}."

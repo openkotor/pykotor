@@ -38,6 +38,7 @@ from pykotor.resource.formats.gff import (
     write_gff,
 )
 from pykotor.resource.formats.lip import read_lip, write_lip
+from pykotor.resource.type import ToolsetFormat
 from pykotor.resource.formats.ssf import SSFSound, read_ssf, write_ssf
 from pykotor.resource.formats.tlk import (
     TLK,  # noqa: PLC0415
@@ -2268,8 +2269,8 @@ class IncrementalTSLPatchDataWriter:
                 file_format: ResourceType = detect_gff(source_data)
                 if file_format not in {
                     ResourceType.GFF,
-                    ResourceType.GFF_XML,
-                    ResourceType.GFF_JSON,
+                    ToolsetFormat.GFF_XML,
+                    ToolsetFormat.GFF_JSON,
                 }:
                     file_format = ResourceType.GFF
 

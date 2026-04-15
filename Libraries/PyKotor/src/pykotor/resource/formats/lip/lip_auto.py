@@ -9,7 +9,7 @@ from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats._base import BiowareEncoder
 from pykotor.resource.formats.lip.io_lip import LIPBinaryReader, LIPBinaryWriter
 from pykotor.resource.formats.lip.io_lip_xml import LIPXMLReader, LIPXMLWriter
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, ToolsetFormat
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
 
 if TYPE_CHECKING:
@@ -41,18 +41,18 @@ def detect_lip(
         The format of the LIP data.
     """
 
-    def check(first4):
+    def check(first4) -> RESOURCE_FORMAT:
         if first4 == "LIP ":
             return ResourceType.LIP
         if "<" in first4:
-            return ResourceType.LIP_XML
+            return ToolsetFormat.LIP_XML
         if "{" in first4:
-            return ResourceType.LIP_JSON
+            return ToolsetFormat.LIP_JSON
         # if "," in first4:
         #    return ResourceType.LIP_CSV
         return ResourceType.INVALID
 
-    file_format: ResourceType
+    file_format: RESOURCE_FORMAT
     try:
         with BinaryReader.from_auto(source, offset) as reader:
             file_format = check(reader.read_string(4))
@@ -68,7 +68,7 @@ def read_lip(
     source: SOURCE_TYPES,
     offset: int = 0,
     size: int | None = None,
-    file_format: ResourceType | None = None,
+    file_format: RESOURCE_FORMAT | None = None,
 ) -> LIP:
     """Returns an LIP instance from the source.
 
@@ -96,9 +96,9 @@ def read_lip(
 
     if file_format == ResourceType.LIP:
         return LIPBinaryReader(source, offset, size or 0).load()
-    if file_format == ResourceType.LIP_XML:
+    if file_format == ToolsetFormat.LIP_XML:
         return LIPXMLReader(source, offset, size or 0).load()
-    if file_format == ResourceType.LIP_JSON:
+    if file_format == ToolsetFormat.LIP_JSON:
         from pykotor.resource.formats.lip.lip_data import LIP
         with BinaryReader.from_auto(source, offset) as reader:
             raw = reader.read_all()
@@ -112,7 +112,7 @@ def read_lip(
 def write_lip(
     lip: LIP,
     target: TARGET_TYPES,
-    file_format: ResourceType = ResourceType.LIP,
+    file_format: RESOURCE_FORMAT = ResourceType.LIP,
 ):
     """Writes the LIP data to the target location with the specified format (LIP or LIP_XML).
 
@@ -130,9 +130,9 @@ def write_lip(
     """
     if file_format == ResourceType.LIP:
         LIPBinaryWriter(lip, target).write()
-    elif file_format == ResourceType.LIP_XML:
+    elif file_format == ToolsetFormat.LIP_XML:
         LIPXMLWriter(lip, target).write()
-    elif file_format == ResourceType.LIP_JSON:
+    elif file_format == ToolsetFormat.LIP_JSON:
         json_dump = json.dumps(lip, cls=BiowareEncoder, indent=4)
         from pykotor.common.stream import BinaryWriter
         with BinaryWriter.to_auto(target) as writer:
@@ -144,7 +144,7 @@ def write_lip(
 
 def bytes_lip(
     lip: LIP,
-    file_format: ResourceType = ResourceType.LIP,
+    file_format: RESOURCE_FORMAT = ResourceType.LIP,
 ) -> bytes:
     """Returns the LIP data in the specified format (LIP or LIP_XML) as a bytes object.
 
@@ -165,4 +165,4 @@ def bytes_lip(
     """
     data = bytearray()
     write_lip(lip, data, file_format)
-    return data
+    return bytes(data)

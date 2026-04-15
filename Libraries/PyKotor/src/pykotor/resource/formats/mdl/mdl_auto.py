@@ -13,9 +13,11 @@ from typing import TYPE_CHECKING
 from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.mdl.io_mdl import MDLBinaryReader, MDLBinaryWriter
 from pykotor.resource.formats.mdl.io_mdl_ascii import MDLAsciiReader, MDLAsciiWriter
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, ToolsetFormat
 
 if TYPE_CHECKING:
+    from typing_extensions import Literal
+
     from pykotor.resource.formats.mdl.mdl_data import MDL
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
@@ -131,7 +133,7 @@ def _force_write_io_mdl_disk(path: Path, text: str) -> bool:
             except OSError:
                 pass
             tmp = p.parent / f".{p.name}.aabb_new"
-            tmp.write_text(text, encoding="utf-8", newline="\n")
+            tmp.write_bytes(text.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8"))
             os.replace(tmp, p)
             return True
         except OSError:
@@ -224,10 +226,10 @@ def detect_mdl(
         The format of the MDL data.
     """
 
-    def check(first4):
+    def check(first4) -> RESOURCE_FORMAT | Literal[ResourceType.INVALID]:
         if first4 == b"\x00\x00\x00\x00":
             return ResourceType.MDL
-        return ResourceType.MDL_ASCII
+        return ToolsetFormat.MDL_ASCII
         # if "<" in first4:
         #    return ResourceType.MDL_XML
         # if "{" in first4:
@@ -236,7 +238,7 @@ def detect_mdl(
         #    return ResourceType.MDL_CSV
         # return ResourceType.INVALID
 
-    file_format: ResourceType
+    file_format: RESOURCE_FORMAT
     try:
         with BinaryReader.from_auto(source, offset) as reader:
             file_format = check(reader.read_bytes(4))
@@ -255,7 +257,7 @@ def read_mdl(
     source_ext: SOURCE_TYPES | None = None,
     offset_ext: int = 0,
     size_ext: int = 0,
-    file_format: ResourceType | None = None,
+    file_format: RESOURCE_FORMAT | None = None,
 ) -> MDL:
     """Returns an MDL instance from the source.
 
@@ -269,7 +271,7 @@ def read_mdl(
         source_ext: Source of the MDX data, if available.
         offset_ext: Offset into the source_ext data.
         size_ext: The number of bytes to read from the MDX source.
-        file_format: The file format to use (ResourceType.MDL or ResourceType.MDL_ASCII). If not specified, it will be detected automatically.
+        file_format: The file format to use (ResourceType.MDL or ToolsetFormat.MDL_ASCII). If not specified, it will be detected automatically.
 
     Raises:
     ------
@@ -316,7 +318,7 @@ def read_mdl(
                 ).load()
             except TypeError:
                 raise e from None
-    if file_format == ResourceType.MDL_ASCII:
+    if file_format == ToolsetFormat.MDL_ASCII:
         return MDLAsciiReader(source, offset, size or 0).load()
 
     msg = "Failed to determine the format of the MDL file."
@@ -422,7 +424,7 @@ def read_mdl_fast(
         finally:
             if was_enabled:
                 gc.enable()
-    if file_format == ResourceType.MDL_ASCII:
+    if file_format == ToolsetFormat.MDL_ASCII:
         # ASCII doesn't support fast loading, fall back to regular loading
         return MDLAsciiReader(source, offset, size or 0).load()
     msg = "Failed to determine the format of the MDL file."
@@ -432,7 +434,7 @@ def read_mdl_fast(
 def write_mdl(
     mdl: MDL,
     target: TARGET_TYPES,
-    file_format: ResourceType = ResourceType.MDL,
+    file_format: RESOURCE_FORMAT = ResourceType.MDL,
     target_ext: TARGET_TYPES | None = None,
 ):
     """Writes the MDL data to the target location with the specified format (MDL or MDL_ASCII).
@@ -454,7 +456,7 @@ def write_mdl(
         # Only write MDX if an explicit target is provided.
         # Writing MDX into the same target as MDL corrupts in-memory callers (e.g., bytearray buffers).
         MDLBinaryWriter(mdl, target, target_ext).write()
-    elif file_format == ResourceType.MDL_ASCII:
+    elif file_format == ToolsetFormat.MDL_ASCII:
         MDLAsciiWriter(mdl, target).write()
     else:
         msg = "Unsupported format specified; use MDL or MDL_ASCII."
@@ -463,7 +465,7 @@ def write_mdl(
 
 def bytes_mdl(
     mdl: MDL,
-    file_format: ResourceType = ResourceType.MDL,
+    file_format: RESOURCE_FORMAT = ResourceType.MDL,
 ) -> bytes:
     """Returns the MDL data in the specified format (MDL or MDL_ASCII) as a bytes object.
 

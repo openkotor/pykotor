@@ -14,7 +14,7 @@ from pykotor.resource.formats.lip.lip_auto import read_lip, write_lip
 from pykotor.resource.formats.ssf.ssf_auto import read_ssf, write_ssf
 from pykotor.resource.formats.tlk.tlk_auto import read_tlk, write_tlk
 from pykotor.resource.formats.twoda.twoda_auto import read_2da, write_2da
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, ToolsetFormat
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -28,8 +28,8 @@ def _convert_resource(
     reader: Callable[..., Any],
     writer: Callable[..., None],
     *,
-    read_format: ResourceType | None = None,
-    write_format: ResourceType | None = None,
+    read_format: RESOURCE_FORMAT | None = None,
+    write_format: RESOURCE_FORMAT | None = None,
     **reader_kwargs: Any,
 ) -> None:
     """Convert a resource by reading then writing with optional explicit formats."""
@@ -48,8 +48,8 @@ def _convert_resource(
 def _create_conversion_function(
     reader: Callable[..., Any],
     writer: Callable[..., None],
-    read_format: ResourceType | None = None,
-    write_format: ResourceType | None = None,
+    read_format: RESOURCE_FORMAT | None = None,
+    write_format: RESOURCE_FORMAT | None = None,
     **default_kwargs: Any,
 ) -> Callable[..., None]:
     """Factory to create conversion functions with consistent patterns."""
@@ -78,7 +78,7 @@ def convert_gff_to_xml(input_path: Path, output_path: Path) -> None:
         output_path: Path to write the output XML file
     """
     _convert_resource(
-        input_path, output_path, read_gff, write_gff, write_format=ResourceType.GFF_XML
+        input_path, output_path, read_gff, write_gff, write_format=ToolsetFormat.GFF_XML
     )
 
 
@@ -98,7 +98,7 @@ def convert_xml_to_gff(
         output_path,
         read_gff,
         write_gff,
-        read_format=ResourceType.GFF_XML,
+        read_format=ToolsetFormat.GFF_XML,
         write_format=ResourceType.GFF,
     )
 
@@ -112,7 +112,7 @@ def convert_tlk_to_xml(input_path: Path, output_path: Path) -> None:
         output_path: Path to write the output XML file
     """
     _convert_resource(
-        input_path, output_path, read_tlk, write_tlk, write_format=ResourceType.TLK_XML
+        input_path, output_path, read_tlk, write_tlk, write_format=ToolsetFormat.TLK_XML
     )
 
 
@@ -132,7 +132,7 @@ def convert_xml_to_tlk(
         output_path,
         read_tlk,
         write_tlk,
-        read_format=ResourceType.TLK_XML,
+        read_format=ToolsetFormat.TLK_XML,
         write_format=ResourceType.TLK,
         language=language,
     )
@@ -147,7 +147,7 @@ def convert_ssf_to_xml(input_path: Path, output_path: Path) -> None:
         output_path: Path to write the output XML file
     """
     _convert_resource(
-        input_path, output_path, read_ssf, write_ssf, write_format=ResourceType.SSF_XML
+        input_path, output_path, read_ssf, write_ssf, write_format=ToolsetFormat.SSF_XML
     )
 
 
@@ -164,7 +164,7 @@ def convert_xml_to_ssf(input_path: Path, output_path: Path) -> None:
         output_path,
         read_ssf,
         write_ssf,
-        read_format=ResourceType.SSF_XML,
+        read_format=ToolsetFormat.SSF_XML,
         write_format=ResourceType.SSF,
     )
 
@@ -179,7 +179,7 @@ def convert_2da_to_csv(input_path: Path, output_path: Path, *, delimiter: str = 
         delimiter: CSV delimiter character (default: comma)
     """
     _convert_resource(
-        input_path, output_path, read_2da, write_2da, write_format=ResourceType.TwoDA_CSV
+        input_path, output_path, read_2da, write_2da, write_format=ToolsetFormat.TwoDA_CSV
     )
 
 
@@ -197,7 +197,7 @@ def convert_csv_to_2da(input_path: Path, output_path: Path, *, delimiter: str = 
         output_path,
         read_2da,
         write_2da,
-        read_format=ResourceType.TwoDA_CSV,
+        read_format=ToolsetFormat.TwoDA_CSV,
         write_format=ResourceType.TwoDA,
     )
 
@@ -205,7 +205,7 @@ def convert_csv_to_2da(input_path: Path, output_path: Path, *, delimiter: str = 
 def convert_2da_to_json(input_path: Path, output_path: Path) -> None:
     """Convert a 2DA file to JSON format."""
     _convert_resource(
-        input_path, output_path, read_2da, write_2da, write_format=ResourceType.TwoDA_JSON
+        input_path, output_path, read_2da, write_2da, write_format=ToolsetFormat.TwoDA_JSON
     )
 
 
@@ -216,7 +216,7 @@ def convert_json_to_2da(input_path: Path, output_path: Path) -> None:
         output_path,
         read_2da,
         write_2da,
-        read_format=ResourceType.TwoDA_JSON,
+        read_format=ToolsetFormat.TwoDA_JSON,
         write_format=ResourceType.TwoDA,
     )
 
@@ -230,7 +230,7 @@ def convert_gff_to_json(input_path: Path, output_path: Path) -> None:
         output_path: Path to write the output JSON file
     """
     _convert_resource(
-        input_path, output_path, read_gff, write_gff, write_format=ResourceType.GFF_JSON
+        input_path, output_path, read_gff, write_gff, write_format=ToolsetFormat.GFF_JSON
     )
 
 
@@ -250,7 +250,7 @@ def convert_json_to_gff(
         output_path,
         read_gff,
         write_gff,
-        read_format=ResourceType.GFF_JSON,
+        read_format=ToolsetFormat.GFF_JSON,
         write_format=ResourceType.GFF,
     )
 
@@ -264,7 +264,7 @@ def convert_tlk_to_json(input_path: Path, output_path: Path) -> None:
         output_path: Path to write the output JSON file
     """
     _convert_resource(
-        input_path, output_path, read_tlk, write_tlk, write_format=ResourceType.TLK_JSON
+        input_path, output_path, read_tlk, write_tlk, write_format=ToolsetFormat.TLK_JSON
     )
 
 
@@ -281,7 +281,7 @@ def convert_json_to_tlk(input_path: Path, output_path: Path) -> None:
         output_path,
         read_tlk,
         write_tlk,
-        read_format=ResourceType.TLK_JSON,
+        read_format=ToolsetFormat.TLK_JSON,
         write_format=ResourceType.TLK,
     )
 
@@ -289,7 +289,7 @@ def convert_json_to_tlk(input_path: Path, output_path: Path) -> None:
 def convert_lip_to_json(input_path: Path, output_path: Path) -> None:
     """Convert a LIP file to JSON format."""
     _convert_resource(
-        input_path, output_path, read_lip, write_lip, write_format=ResourceType.LIP_JSON
+        input_path, output_path, read_lip, write_lip, write_format=ToolsetFormat.LIP_JSON
     )
 
 
@@ -300,7 +300,7 @@ def convert_json_to_lip(input_path: Path, output_path: Path) -> None:
         output_path,
         read_lip,
         write_lip,
-        read_format=ResourceType.LIP_JSON,
+        read_format=ToolsetFormat.LIP_JSON,
         write_format=ResourceType.LIP,
     )
 
@@ -308,7 +308,7 @@ def convert_json_to_lip(input_path: Path, output_path: Path) -> None:
 def convert_ssf_to_json(input_path: Path, output_path: Path) -> None:
     """Convert a SSF file to JSON format."""
     _convert_resource(
-        input_path, output_path, read_ssf, write_ssf, write_format=ResourceType.SSF_JSON
+        input_path, output_path, read_ssf, write_ssf, write_format=ToolsetFormat.SSF_JSON
     )
 
 
@@ -319,6 +319,6 @@ def convert_json_to_ssf(input_path: Path, output_path: Path) -> None:
         output_path,
         read_ssf,
         write_ssf,
-        read_format=ResourceType.SSF_JSON,
+        read_format=ToolsetFormat.SSF_JSON,
         write_format=ResourceType.SSF,
     )

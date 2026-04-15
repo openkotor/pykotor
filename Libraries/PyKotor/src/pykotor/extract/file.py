@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator
 from loggerplus import (
     RobustLogger,  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
 )
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, iter_resource_formats
 from pykotor.tools.path import CaseAwarePath
 
 # Removed unused imports: is_bif_file, is_capsule_file (now using direct string operations)
@@ -37,10 +37,10 @@ _ALL_ARCHIVE_EXTENSIONS: tuple[str, ...] = (".erf", ".mod", ".rim", ".sav", ".ha
 
 # Cache valid ResourceTypes sorted by extension length (longest first) for efficient matching
 # This avoids iterating through all ResourceTypes for every file (massive performance improvement)
-_RESOURCE_TYPE_CACHE: list[tuple[ResourceType, str]] | None = None
+_RESOURCE_TYPE_CACHE: list[tuple[RESOURCE_FORMAT, str]] | None = None
 
 
-def _get_cached_resource_types() -> list[tuple[ResourceType, str]]:
+def _get_cached_resource_types() -> list[tuple[RESOURCE_FORMAT, str]]:
     """Get cached list of valid ResourceTypes with extensions, sorted by extension length (longest first).
 
     This cache is computed once and reused for all file parsing operations.
@@ -48,11 +48,7 @@ def _get_cached_resource_types() -> list[tuple[ResourceType, str]]:
     global _RESOURCE_TYPE_CACHE  # noqa: PLW0603
     if _RESOURCE_TYPE_CACHE is None:
         _RESOURCE_TYPE_CACHE = sorted(
-            [
-                (rt, f".{rt.extension}")
-                for rt in ResourceType.__members__.values()
-                if not rt.is_invalid and rt.extension
-            ],
+            [(rt, f".{rt.extension}") for rt in iter_resource_formats() if not rt.is_invalid and rt.extension],
             key=lambda x: len(x[1]),
             reverse=True,  # Longest extensions first (handles multi-part extensions like "res.xml")
         )
@@ -176,9 +172,7 @@ def _extract_from_nested_capsules(
             import errno
 
             msg = f"Resource '{part}' not found in nested capsule"
-            raise FileNotFoundError(
-                errno.ENOENT, msg, str(real_path / "/".join(nested_parts[: i + 1]))
-            )
+            raise FileNotFoundError(errno.ENOENT, msg, str(real_path / "/".join(nested_parts[: i + 1])))
 
         res_offset, res_size = target_resource
 
@@ -189,9 +183,7 @@ def _extract_from_nested_capsules(
     return current_data
 
 
-def _read_erf_resources(
-    reader: BinaryReader, capsule_data: bytes
-) -> list[tuple[str, ResourceType, int, int]]:
+def _read_erf_resources(reader: BinaryReader, capsule_data: bytes) -> list[tuple[str, ResourceType, int, int]]:
     """Read resource entries from ERF capsule data.
 
     Args:
@@ -232,9 +224,7 @@ def _read_erf_resources(
     return resources
 
 
-def _read_rim_resources(
-    reader: BinaryReader, capsule_data: bytes
-) -> list[tuple[str, ResourceType, int, int]]:
+def _read_rim_resources(reader: BinaryReader, capsule_data: bytes) -> list[tuple[str, ResourceType, int, int]]:
     """Read resource entries from RIM capsule data.
 
     Args:
@@ -288,7 +278,7 @@ class FileResource:
     def __init__(
         self,
         resname: str,
-        restype: ResourceType,
+        restype: RESOURCE_FORMAT,
         size: int,
         offset: int,
         filepath: os.PathLike | str,
@@ -296,13 +286,11 @@ class FileResource:
         # This assert sometimes fails when reading dbcs or other weird encoding.
         # for example attempting to read japanese filenames got me 'resource name '?????? (??2Quad) ' cannot start/end with a whitespace'
         # I don't understand what the point of high-level unicode python strings if I can't even work through the issue?
-        assert resname == resname.strip(), (
-            f"FileResource cannot be constructed, resource name '{resname}' cannot start/end with whitespace."
-        )
+        assert resname == resname.strip(), f"FileResource cannot be constructed, resource name '{resname}' cannot start/end with whitespace."
         self._identifier: ResourceIdentifier = ResourceIdentifier(resname, restype)
 
         self._resname: str = resname
-        self._restype: ResourceType = restype
+        self._restype: RESOURCE_FORMAT = restype
         self._size: int = size
         self._offset: int = offset
         self._filepath: CaseAwarePath = CaseAwarePath(filepath)
@@ -313,11 +301,7 @@ class FileResource:
         self.inside_capsule: bool = filepath_str.endswith(_CAPSULE_EXTENSIONS)
         self.inside_bif: bool = filepath_str.endswith(".bif")
 
-        self._path_ident_obj: CaseAwarePath = CaseAwarePath(
-            self._filepath / str(self._identifier)
-            if self.inside_capsule or self.inside_bif
-            else self._filepath
-        )
+        self._path_ident_obj: CaseAwarePath = CaseAwarePath(self._filepath / str(self._identifier) if self.inside_capsule or self.inside_bif else self._filepath)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(resname='{self._resname}', restype={self._restype!r}, size={self._size}, offset={self._offset}, filepath={self._filepath!r})"
@@ -343,11 +327,11 @@ class FileResource:
     @classmethod
     def from_path(cls, path: os.PathLike | str) -> Self:
         path_obj: CaseAwarePath = CaseAwarePath(path)
-        resname, restype = path_obj.stem, ResourceType.from_extension(path_obj.suffix)
+        identifier = ResourceIdentifier.from_path(path_obj)
 
         return cls(
-            resname=resname,
-            restype=restype,
+            resname=identifier.resname,
+            restype=identifier.restype,
             size=path_obj.stat().st_size,
             offset=0,
             filepath=path_obj,
@@ -366,7 +350,7 @@ class FileResource:
 
         return ResRef(self._resname)
 
-    def restype(self) -> ResourceType:
+    def restype(self) -> RESOURCE_FORMAT:
         return self._restype
 
     def size(self) -> int:
@@ -577,14 +561,16 @@ class FileResource:
 @dataclass(frozen=True)
 class ResourceResult:
     resname: str
-    restype: ResourceType
+    restype: RESOURCE_FORMAT
     filepath: Path
     data: bytes
     _resource: FileResource | None = field(
-        repr=False, default=None, init=False
+        repr=False,
+        default=None,
+        init=False,
     )  # Metadata is hidden in the representation
 
-    def __iter__(self) -> Iterator[str | ResourceType | Path | bytes]:
+    def __iter__(self) -> Iterator[str | RESOURCE_FORMAT | Path | bytes]:
         """This method enables unpacking like tuple behavior."""
         return iter((self.resname, self.restype, self.filepath, self.data))
 
@@ -598,18 +584,13 @@ class ResourceResult:
         if self is other:
             return True
         if isinstance(other, ResourceResult):
-            return (
-                self.filepath == other.filepath
-                and self.resname == other.resname
-                and self.restype == other.restype
-                and self.data == other.data
-            )
+            return self.filepath == other.filepath and self.resname == other.resname and self.restype == other.restype and self.data == other.data
         return NotImplemented  # type: ignore[no-any-return]
 
     def __len__(self) -> Literal[4]:
         return 4
 
-    def __getitem__(self, key: int) -> str | ResourceType | Path | bytes:
+    def __getitem__(self, key: int) -> str | RESOURCE_FORMAT | Path | bytes:
         if key == 0:
             return self.resname
         if key == 1:
@@ -650,7 +631,7 @@ class ResourceResult:
         from pykotor.resource.decoders import get_decoder
 
         restype = as_type if as_type is not None else self.restype
-        decoder: Callable[[bytes], Any] | None = get_decoder(restype)
+        decoder: Callable[[bytes], Any] | None = get_decoder(restype.target_type())
         if decoder is None:
             return self.data.decode()
         return str(decoder(self.data))
@@ -661,9 +642,7 @@ class LocationResult:
     filepath: Path
     offset: int
     size: int
-    _resource: FileResource | None = field(
-        repr=False, default=None, init=False
-    )  # Metadata is hidden in the representation
+    _resource: FileResource | None = field(repr=False, default=None, init=False)  # Metadata is hidden in the representation
 
     def __iter__(self) -> Iterator[Path | int]:
         """This method enables unpacking like tuple behavior."""
@@ -679,11 +658,7 @@ class LocationResult:
         if self is other:
             return True
         if isinstance(other, LocationResult):
-            return (
-                self.filepath == other.filepath
-                and self.size == other.size
-                and self.offset == other.offset
-            )
+            return self.filepath == other.filepath and self.size == other.size and self.offset == other.offset
         return NotImplemented  # type: ignore[no-any-return]
 
     def __len__(self) -> Literal[3]:
@@ -722,7 +697,7 @@ class ResourceIdentifier:
     """Class for storing resource name and type, facilitating case-insensitive object comparisons and hashing equal to their string representations."""
 
     resname: str = field(default_factory=str)
-    restype: ResourceType = field(default=ResourceType.INVALID)
+    restype: RESOURCE_FORMAT = field(default=ResourceType.INVALID)
     _cached_filename_str: str = field(default=None, init=False, repr=False)  # pyright: ignore[reportArgumentType]  # type: ignore[assignment]
     _lower_resname_str: str = field(default=None, init=False, repr=False)  # pyright: ignore[reportArgumentType]  # type: ignore[assignment]
     _cached_hash: int = field(default=None, init=False, repr=False)  # pyright: ignore[reportArgumentType]  # type: ignore[assignment]
@@ -751,7 +726,7 @@ class ResourceIdentifier:
     def __str__(self) -> str:
         return self._cached_filename_str
 
-    def __getitem__(self, key: int) -> str | ResourceType:
+    def __getitem__(self, key: int) -> str | RESOURCE_FORMAT:
         if key == 0:
             return self.resname
         if key == 1:
@@ -778,7 +753,7 @@ class ResourceIdentifier:
     def resref(self) -> ResRef:
         return self._resref
 
-    def unpack(self) -> tuple[str, ResourceType]:
+    def unpack(self) -> tuple[str, RESOURCE_FORMAT]:
         return self.resname, self.restype
 
     def validate(self) -> Self:
@@ -822,12 +797,12 @@ class ResourceIdentifier:
             path_obj = PurePath(file_path)
             filename = path_obj.name
 
-        def _split_resource_filename(fname: str) -> tuple[str, ResourceType]:
+        def _split_resource_filename(fname: str) -> tuple[str, RESOURCE_FORMAT]:
             lower_filename = fname.lower()
 
             # Use cached ResourceTypes sorted by extension length (longest first)
             # This is much faster than iterating through all ResourceType.__members__.values() every time
-            chosen_restype: ResourceType | None = None
+            chosen_restype: RESOURCE_FORMAT | None = None
             chosen_suffix_length = 0
             for candidate, suffix in _get_cached_resource_types():
                 # Early exit optimization: if suffix is longer than filename, skip
@@ -882,7 +857,7 @@ class ResourceQuery:
     """
 
     resref: str | ResRef
-    restype: ResourceType
+    restype: RESOURCE_FORMAT
 
     def to_identifier(self) -> ResourceIdentifier:
         """Return a ResourceIdentifier for this query."""

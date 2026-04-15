@@ -14,7 +14,7 @@ from pykotor.resource.formats._base import BiowareEncoder
 from pykotor.resource.formats.gff.gff_data import GFFContent
 from pykotor.resource.formats.gff.io_gff import GFFBinaryReader, GFFBinaryWriter
 from pykotor.resource.formats.gff.io_gff_xml import GFFXMLReader, GFFXMLWriter
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, ToolsetFormat
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
 
 if TYPE_CHECKING:
@@ -210,7 +210,7 @@ def _locate_binary_gff_header(peek: bytes, *, max_scan: int = 64) -> int | None:
     return None
 
 
-def _classify_gff_peek(peek: bytes) -> ResourceType:
+def _classify_gff_peek(peek: bytes) -> RESOURCE_FORMAT:
     """Infer GFF container format from the first bytes (handles UTF-8 BOM and leading whitespace)."""
     if len(peek) < 4:
         return ResourceType.INVALID
@@ -225,16 +225,16 @@ def _classify_gff_peek(peek: bytes) -> ResourceType:
     if not stripped:
         return ResourceType.INVALID
     if stripped[:1] == b"<":
-        return ResourceType.GFF_XML
+        return ToolsetFormat.GFF_XML
     if stripped[:1] == b"{":
-        return ResourceType.GFF_JSON
+        return ToolsetFormat.GFF_JSON
     return ResourceType.INVALID
 
 
 def detect_gff(
     source: SOURCE_TYPES,
     offset: int = 0,
-) -> ResourceType:
+) -> RESOURCE_FORMAT:
     """Returns what format the GFF data is believed to be in.
 
     This function performs a basic check and does not guarantee accuracy of the result or integrity of the data.
@@ -254,7 +254,7 @@ def detect_gff(
     -------
         The format of the GFF data.
     """
-    file_format: ResourceType
+    file_format: RESOURCE_FORMAT
     try:
         with BinaryReader.from_auto(source, offset) as reader:
             remain = reader.remaining()
@@ -280,7 +280,7 @@ def read_gff(
     source: SOURCE_TYPES,
     offset: int = 0,
     size: int | None = None,
-    file_format: ResourceType | None = None,
+    file_format: RESOURCE_FORMAT | None = None,
 ) -> GFF:
     """Returns an GFF instance from the source.
 
@@ -291,7 +291,7 @@ def read_gff(
         source: The source of the data.
         offset: The byte offset of the file inside the data.
         size: Number of bytes to allowed to read from the stream. If not specified, uses the whole stream.
-        file_format: The file format to use (ResourceType.GFF or ResourceType.GFF_XML or ResourceType.GFF_JSON). If not specified, it will be detected automatically.
+        file_format: The file format to use (ResourceType.GFF or ToolsetFormat.*_XML or ToolsetFormat.*_JSON). If not specified, it will be detected automatically.
 
     Raises:
     ------
@@ -336,9 +336,9 @@ def read_gff(
 
     if file_format == ResourceType.GFF:
         return GFFBinaryReader(source, offset, size or 0).load()
-    if file_format == ResourceType.GFF_XML:
+    if file_format.name.endswith("_XML") and file_format.target_type().is_gff():
         return GFFXMLReader(source, offset, size or 0).load()
-    if file_format == ResourceType.GFF_JSON:
+    if file_format.name.endswith("_JSON") and file_format.target_type().is_gff():
         from pykotor.resource.formats.gff.gff_data import GFF
         with BinaryReader.from_auto(source, offset) as reader:
             raw = reader.read_all()
@@ -353,7 +353,7 @@ def read_gff(
 def write_gff(
     gff: GFF,
     target: TARGET_TYPES,
-    file_format: ResourceType = ResourceType.GFF,
+    file_format: RESOURCE_FORMAT = ResourceType.GFF,
 ):
     """Writes the GFF data to the target location with the specified format (GFF or GFF_XML).
 
@@ -369,7 +369,7 @@ def write_gff(
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
     """
-    if file_format.is_gff():
+    if file_format == ResourceType.GFF:
         GFFBinaryWriter(gff, target).write()
     elif file_format.name.endswith("_XML") and file_format.target_type().is_gff():
         GFFXMLWriter(gff, target).write()
@@ -385,7 +385,7 @@ def write_gff(
 
 def bytes_gff(
     gff: GFF,
-    file_format: ResourceType = ResourceType.GFF,
+    file_format: RESOURCE_FORMAT = ResourceType.GFF,
 ) -> bytes:
     """Returns the GFF data in the specified format (GFF or GFF_XML) as a bytes object.
 

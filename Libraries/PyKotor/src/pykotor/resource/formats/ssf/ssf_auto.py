@@ -9,7 +9,7 @@ from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats._base import BiowareEncoder
 from pykotor.resource.formats.ssf.io_ssf import SSFBinaryReader, SSFBinaryWriter
 from pykotor.resource.formats.ssf.io_ssf_xml import SSFXMLReader, SSFXMLWriter
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, ToolsetFormat
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
 
 if TYPE_CHECKING:
@@ -41,18 +41,18 @@ def detect_ssf(
         The format of the SSF data.
     """
 
-    def check(first4: str) -> ResourceType:
+    def check(first4: str) -> RESOURCE_FORMAT:
         if first4 == "SSF ":
             return ResourceType.SSF
         if "<" in first4:
-            return ResourceType.SSF_XML
+            return ToolsetFormat.SSF_XML
         if "{" in first4:
-            return ResourceType.SSF_JSON
+            return ToolsetFormat.SSF_JSON
         # if "," in first4:
         #    return ResourceType.SSF_CSV
         return ResourceType.INVALID
 
-    file_format: ResourceType
+    file_format: RESOURCE_FORMAT
     try:
         with BinaryReader.from_auto(source, offset) as reader:
             file_format = check(reader.read_string(4))
@@ -68,7 +68,7 @@ def read_ssf(
     source: SOURCE_TYPES,
     offset: int = 0,
     size: int | None = None,
-    file_format: ResourceType | None = None,
+    file_format: RESOURCE_FORMAT | None = None,
 ) -> SSF:
     """Returns an SSF instance from the source.
 
@@ -79,7 +79,7 @@ def read_ssf(
         source: The source of the data.
         offset: The byte offset of the file inside the data.
         size: Number of bytes to allowed to read from the stream. If not specified, uses the whole stream.
-        file_format: The file format to use (ResourceType.SSF, ResourceType.SSF_XML, ResourceType.SSF_JSON). If not specified, it will be detected automatically.
+        file_format: The file format to use (ResourceType.SSF, ToolsetFormat.SSF_XML, ToolsetFormat.SSF_JSON). If not specified, it will be detected automatically.
 
     Raises:
     ------
@@ -101,9 +101,9 @@ def read_ssf(
 
     if file_format == ResourceType.SSF:
         return SSFBinaryReader(source, offset, size or 0).load()
-    if file_format == ResourceType.SSF_XML:
+    if file_format == ToolsetFormat.SSF_XML:
         return SSFXMLReader(source, offset, size or 0).load()
-    if file_format == ResourceType.SSF_JSON:
+    if file_format == ToolsetFormat.SSF_JSON:
         from pykotor.resource.formats.ssf.ssf_data import SSF
         with BinaryReader.from_auto(source, offset) as reader:
             raw = reader.read_all()
@@ -116,7 +116,7 @@ def read_ssf(
 def write_ssf(
     ssf: SSF,
     target: TARGET_TYPES,
-    file_format: ResourceType = ResourceType.SSF,
+    file_format: RESOURCE_FORMAT = ResourceType.SSF,
 ):
     """Writes the SSF data to the target location with the specified format.
 
@@ -134,9 +134,9 @@ def write_ssf(
     """
     if file_format == ResourceType.SSF:
         SSFBinaryWriter(ssf, target).write()
-    elif file_format == ResourceType.SSF_XML:
+    elif file_format == ToolsetFormat.SSF_XML:
         SSFXMLWriter(ssf, target).write()
-    elif file_format == ResourceType.SSF_JSON:
+    elif file_format == ToolsetFormat.SSF_JSON:
         json_dump = json.dumps(ssf, cls=BiowareEncoder, indent=4)
         from pykotor.common.stream import BinaryWriter
         with BinaryWriter.to_auto(target) as writer:
@@ -148,7 +148,7 @@ def write_ssf(
 
 def bytes_ssf(
     ssf: SSF,
-    file_format: ResourceType = ResourceType.SSF,
+    file_format: RESOURCE_FORMAT = ResourceType.SSF,
 ) -> bytes:
     """Returns the SSF data in the specified format as a bytes object.
 

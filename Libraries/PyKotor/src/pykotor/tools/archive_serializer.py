@@ -29,16 +29,16 @@ from pykotor.resource.formats.rim.rim_data import RIM
 from pykotor.resource.formats.ssf import read_ssf, write_ssf
 from pykotor.resource.formats.tlk import read_tlk, write_tlk
 from pykotor.resource.formats.twoda import read_2da, write_2da
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import ResourceType, ToolsetFormat
 from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_rim_file
 
 # All GFF subtypes serialize to GFF-JSON; non-GFF structured types follow below.
-_RESOURCE_PLAINTEXT_FORMAT: dict[ResourceType, ResourceType] = {
-    **{rt: ResourceType.GFF_JSON for rt in ResourceType if rt.is_gff()},
-    ResourceType.TLK: ResourceType.TLK_JSON,
-    ResourceType.TwoDA: ResourceType.TwoDA_JSON,
-    ResourceType.LIP: ResourceType.LIP_JSON,
-    ResourceType.SSF: ResourceType.SSF_XML,
+_RESOURCE_PLAINTEXT_FORMAT: dict[ResourceType, ToolsetFormat] = {
+    **{rt: ToolsetFormat.GFF_JSON for rt in ResourceType if rt.is_gff()},
+    ResourceType.TLK: ToolsetFormat.TLK_JSON,
+    ResourceType.TwoDA: ToolsetFormat.TwoDA_JSON,
+    ResourceType.LIP: ToolsetFormat.LIP_JSON,
+    ResourceType.SSF: ToolsetFormat.SSF_XML,
 }
 
 
@@ -50,31 +50,31 @@ def _resource_bytes_to_plaintext(
     if text_format is None:
         return None
     try:
-        if text_format == ResourceType.GFF_JSON:
+        if text_format == ToolsetFormat.GFF_JSON:
             gff = read_gff(data)
             out = bytearray()
-            write_gff(gff, out, file_format=ResourceType.GFF_JSON)
+            write_gff(gff, out, file_format=ToolsetFormat.GFF_JSON)
             return ("gff_json", json.loads(bytes(out).decode("utf-8")))
-        if text_format == ResourceType.TLK_JSON:
+        if text_format == ToolsetFormat.TLK_JSON:
             tlk = read_tlk(data)
             out = bytearray()
-            write_tlk(tlk, out, file_format=ResourceType.TLK_JSON)
+            write_tlk(tlk, out, file_format=ToolsetFormat.TLK_JSON)
             return ("tlk_json", json.loads(bytes(out).decode("utf-8")))
-        if text_format == ResourceType.TwoDA_JSON:
+        if text_format == ToolsetFormat.TwoDA_JSON:
             twoda = read_2da(data)
             out = bytearray()
-            write_2da(twoda, out, file_format=ResourceType.TwoDA_JSON)
+            write_2da(twoda, out, file_format=ToolsetFormat.TwoDA_JSON)
             return ("2da_json", json.loads(bytes(out).decode("utf-8")))
-        if text_format == ResourceType.LIP_JSON:
+        if text_format == ToolsetFormat.LIP_JSON:
             lip = read_lip(data)
             out = bytearray()
-            write_lip(lip, out, file_format=ResourceType.LIP_JSON)
+            write_lip(lip, out, file_format=ToolsetFormat.LIP_JSON)
             return ("lip_json", json.loads(bytes(out).decode("utf-8")))
-        if text_format == ResourceType.SSF_XML:
+        if text_format == ToolsetFormat.SSF_XML:
             buf = BytesIO(data)
-            ssf = read_ssf(buf, file_format=ResourceType.SSF_XML)
+            ssf = read_ssf(buf, file_format=ToolsetFormat.SSF_XML)
             out = bytearray()
-            write_ssf(ssf, out, file_format=ResourceType.SSF_XML)
+            write_ssf(ssf, out, file_format=ToolsetFormat.SSF_XML)
             return ("ssf_xml", bytes(out).decode("utf-8"))
     except Exception:
         pass
@@ -90,25 +90,25 @@ def _plaintext_to_resource_bytes(
     buf_out = BytesIO()
     if encoding == "gff_json":
         gff = read_gff(
-            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.GFF_JSON
+            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ToolsetFormat.GFF_JSON
         )
         write_gff(gff, buf_out, file_format=ResourceType.GFF)
         return buf_out.getvalue()
     if encoding == "tlk_json":
         tlk = read_tlk(
-            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.TLK_JSON
+            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ToolsetFormat.TLK_JSON
         )
         write_tlk(tlk, buf_out, file_format=ResourceType.TLK)
         return buf_out.getvalue()
     if encoding == "2da_json":
         twoda = read_2da(
-            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.TwoDA_JSON
+            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ToolsetFormat.TwoDA_JSON
         )
         write_2da(twoda, buf_out, file_format=ResourceType.TwoDA)
         return buf_out.getvalue()
     if encoding == "lip_json":
         lip = read_lip(
-            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.LIP_JSON
+            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ToolsetFormat.LIP_JSON
         )
         write_lip(lip, buf_out, file_format=ResourceType.LIP)
         return buf_out.getvalue()
@@ -117,7 +117,7 @@ def _plaintext_to_resource_bytes(
             BytesIO(
                 (json.dumps(payload) if isinstance(payload, dict) else payload).encode("utf-8")
             ),
-            file_format=ResourceType.SSF_XML,
+            file_format=ToolsetFormat.SSF_XML,
         )
         write_ssf(ssf, buf_out, file_format=ResourceType.SSF)
         return buf_out.getvalue()

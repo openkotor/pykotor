@@ -32,7 +32,7 @@ import uuid
 from enum import Enum
 from functools import lru_cache
 from io import BytesIO
-from typing import TYPE_CHECKING, NamedTuple, TypeVar, Union
+from typing import TYPE_CHECKING, NamedTuple, TypeVar, Union, cast
 from xml.etree.ElementTree import ParseError
 
 from pykotor.common.stream import BinaryReader, BinaryWriter
@@ -265,6 +265,23 @@ class ResourceTuple(NamedTuple):
     supported_engines: tuple[
         BiowareEngine, ...
     ] = ()  # Empty tuple as default, use tuple for immutability
+
+
+def _resolve_resource_target_member(target_member: str | None) -> ResourceType | None:
+    if target_member is None:
+        return None
+
+    members = ResourceType.__members__
+    if target_member in members:
+        return members[target_member]
+
+    legacy_aliases = {
+        "2DA": "TwoDA",
+    }
+    resolved_member = legacy_aliases.get(target_member)
+    if resolved_member is not None and resolved_member in members:
+        return members[resolved_member]
+    return None
 
 
 class ResourceType(Enum):
@@ -1754,245 +1771,7 @@ class ResourceType(Enum):
         "binary",
         supported_engines=(),
     )
-    WAV_DEOB = ResourceTuple(  # pyright: ignore[reportCallIssue]  # Deobfuscated WAV (type_id 4 is obfuscated), toolset only
-        50000,
-        "wav",
-        "Audio",
-        "binary",
-    )
-    TLK_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # TLK as XML, toolset only
-        50001,
-        "tlk.xml",
-        "Talk Tables",
-        "plaintext",
-        supported_engines=(),
-        target_member="TLK",
-    )
-    MDL_ASCII = ResourceTuple(  # pyright: ignore[reportCallIssue]  # MDL as ASCII text, toolset only
-        50002,
-        "mdl.ascii",
-        "Models",
-        "plaintext",
-        supported_engines=(),
-        target_member="MDL",
-    )
-    TwoDA_CSV = ResourceTuple(  # pyright: ignore[reportCallIssue]  # 2DA as CSV, toolset only
-        50003,
-        "2da.csv",
-        "2D Arrays",
-        "plaintext",
-        supported_engines=(),
-        target_member="2DA",
-    )
-    GFF_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # GFF as XML, toolset only
-        50004,
-        "gff.xml",
-        "Other",
-        "plaintext",
-        supported_engines=(),
-        target_member="GFF",
-    )
-    GFF_JSON = ResourceTuple(  # pyright: ignore[reportCallIssue]  # GFF as JSON, toolset only
-        50005,
-        "gff.json",
-        "Other",
-        "plaintext",
-        supported_engines=(),
-        target_member="GFF",
-    )
-    IFO_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # IFO as XML, toolset only
-        50006,
-        "ifo.xml",
-        "Module Data",
-        "plaintext",
-        supported_engines=(),
-        target_member="IFO",
-    )
-    GIT_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # GIT as XML, toolset only
-        50007,
-        "git.xml",
-        "Module Data",
-        "plaintext",
-        supported_engines=(),
-        target_member="GIT",
-    )
-    UTI_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # UTI as XML, toolset only
-        50008,
-        "uti.xml",
-        "Items",
-        "plaintext",
-        supported_engines=(),
-        target_member="UTI",
-    )
-    UTC_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # UTC as XML, toolset only
-        50009,
-        "utc.xml",
-        "Creatures",
-        "plaintext",
-        supported_engines=(),
-        target_member="UTC",
-    )
-    DLG_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # DLG as XML, toolset only
-        50010,
-        "dlg.xml",
-        "Dialogs",
-        "plaintext",
-        supported_engines=(),
-        target_member="DLG",
-    )
-    # Type ID 50011 is reserved/unused
-    UTT_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # UTT as XML, toolset only
-        50012,
-        "utt.xml",
-        "Triggers",
-        "plaintext",
-        supported_engines=(),
-        target_member="UTT",
-    )
-    UTS_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # UTS as XML, toolset only
-        50013,
-        "uts.xml",
-        "Sounds",
-        "plaintext",
-        supported_engines=(),
-        target_member="UTS",
-    )
-    FAC_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # FAC as XML, toolset only
-        50014,
-        "fac.xml",
-        "Factions",
-        "plaintext",
-        supported_engines=(),
-        target_member="FAC",
-    )
-    UTE_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # UTE as XML, toolset only
-        50015,
-        "ute.xml",
-        "Encounters",
-        "plaintext",
-        supported_engines=(),
-        target_member="UTE",
-    )
-    UTD_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # UTD as XML, toolset only
-        50016,
-        "utd.xml",
-        "Doors",
-        "plaintext",
-        supported_engines=(),
-        target_member="UTD",
-    )
-    UTP_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # UTP as XML, toolset only
-        50017,
-        "utp.xml",
-        "Placeables",
-        "plaintext",
-        supported_engines=(),
-        target_member="UTP",
-    )
-    GUI_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # GUI as XML, toolset only
-        50018,
-        "gui.xml",
-        "GUIs",
-        "plaintext",
-        supported_engines=(),
-        target_member="GUI",
-    )
-    UTM_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # UTM as XML, toolset only
-        50019,
-        "utm.xml",
-        "Merchants",
-        "plaintext",
-        supported_engines=(),
-        target_member="UTM",
-    )
-    JRL_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # JRL as XML, toolset only
-        50020,
-        "jrl.xml",
-        "Journals",
-        "plaintext",
-        supported_engines=(),
-        target_member="JRL",
-    )
-    UTW_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # UTW as XML, toolset only
-        50021,
-        "utw.xml",
-        "Waypoints",
-        "plaintext",
-        supported_engines=(),
-        target_member="UTW",
-    )
-    PTH_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # PTH as XML, toolset only
-        50022,
-        "pth.xml",
-        "Paths",
-        "plaintext",
-        supported_engines=(),
-        target_member="PTH",
-    )
-    LIP_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # LIP as XML, toolset only
-        50023,
-        "lip.xml",
-        "Lips",
-        "plaintext",
-        supported_engines=(),
-        target_member="LIP",
-    )
-    SSF_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # SSF as XML, toolset only
-        50024,
-        "ssf.xml",
-        "Soundsets",
-        "plaintext",
-        supported_engines=(),
-        target_member="SSF",
-    )
-    ARE_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # ARE as XML, toolset only
-        50025,
-        "are.xml",
-        "Module Data",
-        "plaintext",
-        supported_engines=(),
-        target_member="ARE",
-    )
-    TwoDA_JSON = ResourceTuple(  # pyright: ignore[reportCallIssue]  # 2DA as JSON, toolset only
-        50026,
-        "2da.json",
-        "2D Arrays",
-        "plaintext",
-        supported_engines=(),
-        target_member="2DA",
-    )
-    TLK_JSON = ResourceTuple(  # pyright: ignore[reportCallIssue]  # TLK as JSON, toolset only
-        50027,
-        "tlk.json",
-        "Talk Tables",
-        "plaintext",
-        supported_engines=(),
-        target_member="TLK",
-    )
-    LIP_JSON = ResourceTuple(  # pyright: ignore[reportCallIssue]  # LIP as JSON, toolset only
-        50028,
-        "lip.json",
-        "Lips",
-        "plaintext",
-        supported_engines=(),
-        target_member="LIP",
-    )
-    RES_XML = ResourceTuple(  # pyright: ignore[reportCallIssue]  # RES as XML, toolset only
-        50029,
-        "res.xml",
-        "Save Data",
-        "plaintext",
-        supported_engines=(),
-        target_member="RES",
-    )
-    SSF_JSON = ResourceTuple(  # pyright: ignore[reportCallIssue]  # SSF as JSON, toolset only
-        50030,
-        "ssf.json",
-        "Soundsets",
-        "plaintext",
-        supported_engines=(),
-        target_member="SSF",
-    )
+    # Toolset serialization variants now live in ToolsetFormat. Keep 50011 reserved/unused.
 
     def __init__(  # noqa: PLR0913
         self,
@@ -2017,20 +1796,8 @@ class ResourceType(Enum):
         return self.contents == "gff"
 
     def target_type(self) -> Self:
-        if self.target_member is None:
-            return self
-
-        members = self.__class__.__members__
-        if self.target_member in members:
-            return members[self.target_member]
-
-        legacy_aliases = {
-            "2DA": "TwoDA",
-        }
-        resolved_member = legacy_aliases.get(self.target_member)
-        if resolved_member is not None and resolved_member in members:
-            return members[resolved_member]
-        return self
+        resolved = _resolve_resource_target_member(self.target_member)
+        return self if resolved is None else cast(Self, resolved)
 
     @classmethod
     @lru_cache(maxsize=0xFFFF)
@@ -2076,7 +1843,7 @@ class ResourceType(Enum):
         lower_ext: str = extension.lower()
         if lower_ext.startswith("."):
             lower_ext = lower_ext[1:]
-        return next(
+        resource_type = next(
             (
                 restype
                 for restype in ResourceType.__members__.values()
@@ -2084,6 +1851,11 @@ class ResourceType(Enum):
             ),
             ResourceType.from_invalid(extension=lower_ext),
         )
+        if resource_type.is_invalid:
+            toolset_format = ToolsetFormat.from_extension(lower_ext)
+            if toolset_format is not None:
+                return cast(ResourceType, toolset_format)
+        return resource_type
 
     @classmethod
     def from_invalid(
@@ -2172,3 +1944,127 @@ class ResourceType(Enum):
 
     def is_valid(self) -> bool:
         return not self.is_invalid
+
+
+class ToolsetFormat(Enum):
+    """Non-engine serialization and editor-only resource formats.
+
+    These are intentionally not members of ResourceType because they are not real
+    BioWare on-disk type ids. They describe alternate representations layered on top
+    of canonical ResourceType values.
+    """
+
+    WAV_DEOB = (50000, "wav", "Audio", "binary", "WAV")
+    TLK_XML = (50001, "tlk.xml", "Talk Tables", "plaintext", "TLK")
+    MDL_ASCII = (50002, "mdl.ascii", "Models", "plaintext", "MDL")
+    TwoDA_CSV = (50003, "2da.csv", "2D Arrays", "plaintext", "2DA")
+    GFF_XML = (50004, "gff.xml", "Other", "plaintext", "GFF")
+    GFF_JSON = (50005, "gff.json", "Other", "plaintext", "GFF")
+    IFO_XML = (50006, "ifo.xml", "Module Data", "plaintext", "IFO")
+    GIT_XML = (50007, "git.xml", "Module Data", "plaintext", "GIT")
+    UTI_XML = (50008, "uti.xml", "Items", "plaintext", "UTI")
+    UTC_XML = (50009, "utc.xml", "Creatures", "plaintext", "UTC")
+    DLG_XML = (50010, "dlg.xml", "Dialogs", "plaintext", "DLG")
+    UTT_XML = (50012, "utt.xml", "Triggers", "plaintext", "UTT")
+    UTS_XML = (50013, "uts.xml", "Sounds", "plaintext", "UTS")
+    FAC_XML = (50014, "fac.xml", "Factions", "plaintext", "FAC")
+    UTE_XML = (50015, "ute.xml", "Encounters", "plaintext", "UTE")
+    UTD_XML = (50016, "utd.xml", "Doors", "plaintext", "UTD")
+    UTP_XML = (50017, "utp.xml", "Placeables", "plaintext", "UTP")
+    GUI_XML = (50018, "gui.xml", "GUIs", "plaintext", "GUI")
+    UTM_XML = (50019, "utm.xml", "Merchants", "plaintext", "UTM")
+    JRL_XML = (50020, "jrl.xml", "Journals", "plaintext", "JRL")
+    UTW_XML = (50021, "utw.xml", "Waypoints", "plaintext", "UTW")
+    PTH_XML = (50022, "pth.xml", "Paths", "plaintext", "PTH")
+    LIP_XML = (50023, "lip.xml", "Lips", "plaintext", "LIP")
+    SSF_XML = (50024, "ssf.xml", "Soundsets", "plaintext", "SSF")
+    ARE_XML = (50025, "are.xml", "Module Data", "plaintext", "ARE")
+    TwoDA_JSON = (50026, "2da.json", "2D Arrays", "plaintext", "2DA")
+    TLK_JSON = (50027, "tlk.json", "Talk Tables", "plaintext", "TLK")
+    LIP_JSON = (50028, "lip.json", "Lips", "plaintext", "LIP")
+    RES_XML = (50029, "res.xml", "Save Data", "plaintext", "RES")
+    SSF_JSON = (50030, "ssf.json", "Soundsets", "plaintext", "SSF")
+
+    def __init__(
+        self,
+        legacy_id: int,
+        extension: str,
+        category: str,
+        contents: str,
+        target_member: str,
+    ):
+        self.legacy_id: int = legacy_id
+        self.extension: str = extension.strip().lower()
+        self.category: str = category
+        self.contents: str = contents
+        self.target_member: str = target_member
+        self.supported_engines: tuple[BiowareEngine, ...] = ()
+        self.is_invalid: bool = False
+
+    @classmethod
+    @lru_cache(maxsize=0xFF)
+    def from_extension(cls, extension: str) -> ToolsetFormat | None:
+        lower_ext = extension.lower()
+        if lower_ext.startswith("."):
+            lower_ext = lower_ext[1:]
+        return next((fmt for fmt in cls if fmt.extension == lower_ext), None)
+
+    def target_type(self) -> ResourceType:
+        resolved = _resolve_resource_target_member(self.target_member)
+        if resolved is None:
+            msg = f"Unknown target resource type for toolset format {self.name}: {self.target_member}"
+            raise ValueError(msg)
+        return resolved
+
+    def is_gff(self) -> bool:
+        return self.target_type().is_gff()
+
+    def validate(self) -> ToolsetFormat:
+        return self
+
+    def is_valid(self) -> bool:
+        return True
+
+    def __bool__(self) -> bool:
+        return True
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}.{self.name}"
+
+    def __str__(self) -> str:
+        return str(self.extension.upper())
+
+    def __eq__(self, other: object):
+        if self is other:
+            return True
+        if isinstance(other, ToolsetFormat):
+            return self.name == other.name
+        if isinstance(other, (str, WrappedStr)):
+            return self.extension == other.lower()
+        return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self):
+        return hash(self.extension)
+
+
+RESOURCE_FORMAT = Union[ResourceType, ToolsetFormat]
+
+
+def get_toolset_format(ident: str | ToolsetFormat | None) -> ToolsetFormat | None:
+    if ident is None:
+        return None
+    if isinstance(ident, ToolsetFormat):
+        return ident
+    return ToolsetFormat.from_extension(ident)
+
+
+def get_toolset_formats_for_type(restype: ResourceType) -> tuple[ToolsetFormat, ...]:
+    return tuple(fmt for fmt in ToolsetFormat if fmt.target_type() == restype)
+
+
+def iter_resource_formats() -> tuple[RESOURCE_FORMAT, ...]:
+    return (*tuple(ResourceType), *tuple(ToolsetFormat))
+
+
+for _toolset_format in ToolsetFormat:
+    setattr(ResourceType, _toolset_format.name, _toolset_format)
