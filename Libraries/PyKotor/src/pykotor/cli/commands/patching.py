@@ -4,7 +4,7 @@ This module provides CLI commands for batch patching operations:
 - Converting GFF files between K1 and TSL
 - Converting TGA/TPC textures
 - Setting dialogs as unskippable
-- Batch patching installations, folders, and files
+- Batch patching game roots, folders, and files
 
 Batch patch flows use ``pykotor.tools.patching`` (originating from Tools/BatchPatcher).
 Former module **References** (retail executable names and GFF/DLG loader notes with addresses)
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 
 def cmd_batch_patch(args: Namespace, logger: Logger) -> int:
-    """Batch patch files, folders, or installations.
+    """Batch patch files, folders, archives, or game roots.
 
     Usage:
         pykotorcli batch-patch --path "C:/Games/KOTOR" --set-unskippable

@@ -1002,29 +1002,29 @@ Extract files from Bioware archive formats including:
     # Utility commands
     diff_parser = subparsers.add_parser(
         "diff",
-        help="Compare files, folders, or KOTOR installations",
+        help="Compare files, folders, or KotOR game roots",
         description=f"""
 Compare two paths and show differences. Supports any combination of:
 • Individual files (GFF, 2DA, TLK, etc.)
 • Folders containing game assets
-• Complete KOTOR installations
+    • Complete KotOR game roots
 • Bioware archives (.mod, .sav, .erf, .rim)
 
 \033[1;36mExamples:\033[0m
   {prog} diff module1.mod module2.mod
   {prog} diff /path/to/kotor1 /path/to/kotor2 --output-mode normal
   {prog} diff file1.gff file2.gff --format side_by_side
-  {prog} diff --generate-ini installation1 installation2
+  {prog} diff --generate-ini game_root1 game_root2
 """,
     )
     diff_parser.add_argument(
-        "path1", nargs="?", default=None, help="First path (file, folder, installation, or archive)"
+        "path1", nargs="?", default=None, help="First path (file, folder, game root, or archive)"
     )
     diff_parser.add_argument(
         "path2",
         nargs="?",
         default=None,
-        help="Second path (file, folder, installation, or archive)",
+        help="Second path (file, folder, game root, or archive)",
     )
     diff_parser.add_argument(
         "--format",
@@ -1199,7 +1199,7 @@ Compare two paths and show differences. Supports any combination of:
     )
 
     check_2da_parser = subparsers.add_parser(
-        "check-2da", help="Check if a 2DA file exists in installation"
+        "check-2da", help="Check if a 2DA file exists in a game root"
     )
     check_2da_parser.add_argument(
         "--2da", dest="two_da_name", required=True, help="2DA file name (without extension)"
@@ -1510,10 +1510,10 @@ Compare two paths and show differences. Supports any combination of:
 
     # Batch patching commands
     batch_patch_parser = subparsers.add_parser(
-        "batch-patch", help="Batch patch files, folders, or installations"
+        "batch-patch", help="Batch patch files, folders, archives, or game roots"
     )
     batch_patch_parser.add_argument(
-        "--path", "-p", required=True, help="Path to file, folder, or installation"
+        "--path", "-p", required=True, help="Path to a file, folder, archive, or game root"
     )
     batch_patch_parser.add_argument(
         "--set-unskippable", action="store_true", help="Set dialogs as unskippable"

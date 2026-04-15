@@ -1,6 +1,6 @@
 """Validation and investigation command implementations for Pykotorcli.
 
-Commands cover TXI / 2DA checks, installation validation, module structure inspection,
+Commands cover TXI / 2DA checks, game-root validation, module structure inspection,
 and missing-resource reports. Former **References** that named retail resource-manager
 symbols are migrated to ``wiki/reverse_engineering_findings.md`` (*cli/commands/validation.py*).
 
@@ -73,7 +73,7 @@ def cmd_check_txi(args: Namespace, logger: Logger) -> int:
 
 
 def cmd_check_2da(args: Namespace, logger: Logger) -> int:
-    """Check if a 2DA file exists in installation.
+    """Check if a 2DA file exists in a game root.
 
     Usage:
         pykotorcli check-2da --2da genericdoors --path "C:/Games/KOTOR"
@@ -114,7 +114,7 @@ def cmd_validate_installation(args: Namespace, logger: Logger) -> int:
     ok, _fail = ok_fail_symbols()
 
     if summary["valid"]:
-        logger.info(f"{ok} Installation is valid")  # noqa: G004
+        logger.info(f"{ok} Game root is valid")  # noqa: G004
         if summary.get("game"):
             logger.info(f"  Game: {summary['game']}")  # noqa: G004
         if args.verbose:
