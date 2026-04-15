@@ -12,10 +12,12 @@ from pykotor.cli.dispatch import cli_main
 from pykotor.common.language import Language
 from pykotor.common.misc import Game
 from pykotor.resource.formats.rim import RIM, write_rim
+from pykotor.resource.formats.mdl.mdl_data import MDLFace
 from pykotor.resource.formats.ssf import SSF, SSFSound, read_ssf
 from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk
 from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, bytes_tpc, read_tpc
 from pykotor.resource.type import ResourceType
+from pykotor.tools.resource_json import _serialize_mdl_face
 
 
 def test_to_json_and_from_json_roundtrip_tlk(tmp_path: Path) -> None:
@@ -117,11 +119,26 @@ def test_ssf_json_commands_roundtrip(tmp_path: Path) -> None:
 
     assert cli_main(["ssf2json", str(input_path), "--output", str(json_path)]) == 0
     assert json.loads(json_path.read_text(encoding="utf-8"))["sounds"][0]["strref"] == "123"
-
     assert cli_main(["json2ssf", str(json_path), "--output", str(output_path)]) == 0
     roundtrip = read_ssf(output_path)
     assert roundtrip.get(SSFSound.BATTLE_CRY_1) == 123
     assert roundtrip.get(SSFSound.DEAD) == 456
+
+
+def test_serialize_mdl_face_uses_smoothgroup_field() -> None:
+    face = MDLFace()
+    face.v1 = 1
+    face.v2 = 2
+    face.v3 = 3
+    face.t1 = 4
+    face.t2 = 5
+    face.t3 = 6
+    face.smoothgroup = 7
+
+    payload = _serialize_mdl_face(face)
+
+    assert payload["verts"] == [1, 2, 3]
+    assert payload["smoothgroup"] == 7
 
 
 def test_to_json_exports_installation_resources_with_readable_wrappers(tmp_path: Path) -> None:

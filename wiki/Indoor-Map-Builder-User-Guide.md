@@ -121,21 +121,21 @@ You can combine 2 or more rooms into a single merged room:
 2. **Right-click** on the selection → **Merge Rooms**
 3. The selected rooms will be replaced with a single new room at their average position
 
-**What happens when you merge:**
+When you merge rooms:
 
-- **Walkmeshes combined**: All room walkmeshes are merged into a single walkmesh (collision + pathfinding)
-- **Internal hooks removed**: Hooks that connected the merged rooms to each other are removed (no longer needed)
-- **External hooks preserved**: Hooks that connected to other rooms outside the merge are kept
-- **Visual model**: The first room's MDL/MDX model is used for rendering. The merged walkmesh (BWM) correctly combines all collision geometry from all rooms.
-- **Undo/Redo supported**: You can undo/redo the merge operation without data loss
+- All room walkmeshes are merged into a single walkmesh for collision and pathfinding.
+- Hooks that connected the merged rooms to each other are removed because they are no longer needed.
+- Hooks that connected to other rooms outside the merge are preserved.
+- The first room's MDL/MDX model is used for rendering, while the merged walkmesh (BWM) correctly combines all collision geometry from all rooms.
+- The operation supports undo and redo without data loss.
 
-**When to use merging:**
+Use merging when you want to:
 
 - Simplify complex layouts by combining multiple small rooms into one large room
 - Reduce room count for performance (fewer rooms = less overhead)
 - Create custom room shapes not available in existing kits
 
-**Technical note**: Merged rooms are stored as "embedded components" in the `.indoor` file, which means they persist correctly when you save and reload your map.
+Merged rooms are stored as "embedded components" in the `.indoor` file, which means they persist correctly when you save and reload your map.
 
 ## Camera Controls
 

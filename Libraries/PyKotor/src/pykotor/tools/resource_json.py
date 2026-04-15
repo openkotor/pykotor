@@ -193,16 +193,20 @@ def _serialize_mdl_controller(controller: MDLController) -> dict[str, JsonValue]
 
 
 def _serialize_mdl_face(face: MDLFace) -> dict[str, JsonValue]:
+    smoothgroup = getattr(face, "smoothgroup", getattr(face, "smoothing_group", 0))
+    coefficient = getattr(face, "coefficient", getattr(face, "coeff", 0))
+    material = getattr(face, "material", 0)
+    adjacent_faces = getattr(face, "adjacent_faces", (getattr(face, "a1", 0), getattr(face, "a2", 0), getattr(face, "a3", 0)))
     return {
         "verts": [face.v1, face.v2, face.v3],
-        "smoothgroup": face.smoothing_group,
+        "smoothgroup": smoothgroup,
         "texture_vertices": [face.t1, face.t2, face.t3],
-        "material": face.material,
-        "coeff": face.coeff,
+        "material": material,
+        "coeff": coefficient,
         "normal": [face.normal.x, face.normal.y, face.normal.z],
-        "plane_distance": face.plane_distance,
-        "surface": face.surface,
-        "adjacent_faces": list(face.adjacent_faces),
+        "plane_distance": coefficient,
+        "surface": material,
+        "adjacent_faces": list(adjacent_faces),
     }
 
 

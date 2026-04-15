@@ -187,7 +187,10 @@ class TXI(BiowareResource):
                     self.features.defaultwidth = int(args)
                     self._empty = False
                 elif command == TXICommand.DISTORT:
-                    self.features.distort = bool(int(args))
+                    try:
+                        self.features.distort = bool(int(args))
+                    except ValueError:
+                        self.features.distort = float(args)
                     self._empty = False
                 elif command == TXICommand.DISTORTANGLE:
                     self.features.distortangle = float(args)
@@ -578,7 +581,7 @@ class TXIFeatures(ComparableMixin):
         self.defaultbpp: int | None = None
         self.defaultheight: int | None = None
         self.defaultwidth: int | None = None
-        self.distort: bool | None = None
+        self.distort: bool | float | None = None
         self.distortangle: float | None = None
         self.distortionamplitude: float | None = None
         self.downsamplefactor: float | None = None
