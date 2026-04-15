@@ -33,9 +33,11 @@ if KOTORDIFF_PATH.joinpath("kotordiff").exists():
     add_sys_path(KOTORDIFF_PATH)
 
 
+from pykotor.cli.logger import OutputMode
 from pykotor.common.misc import Game
 from pykotor.common.language import LocalizedString
 from pykotor.diff_tool.app import DiffConfig, run_application
+from pykotor.resource.formats.rim import RIM, write_rim
 from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
 from pykotor.resource.formats.gff.gff_data import GFFContent
 from pykotor.resource.formats.ssf import SSF, SSFSound, bytes_ssf
@@ -43,10 +45,9 @@ from pykotor.resource.formats.ssf.ssf_auto import read_ssf, write_ssf
 from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk
 from pykotor.resource.formats.twoda.twoda_auto import bytes_2da, read_2da, write_2da
 from pykotor.resource.formats.twoda.twoda_data import TwoDA
-from pykotor.resource.generics.dlg import DLG, DLGEntry, DLGReply, DLGLink, write_dlg
+from pykotor.resource.generics.dlg import DLG, DLGEntry, DLGReply, DLGLink, bytes_dlg, write_dlg
 from pykotor.resource.type import ResourceType
 from pykotor.tslpatcher.config import PatcherConfig
-from pykotor.diff_tool.merge import MergeConflictError
 from pykotor.tslpatcher.logger import PatchLogger
 from pykotor.tslpatcher.memory import PatcherMemory
 from pykotor.tslpatcher.mods.twoda import (
@@ -68,6 +69,24 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
         install_dir.joinpath("chitin.key").write_bytes(b"")
         install_dir.joinpath("swkotor.exe").write_bytes(b"")
         write_dlg(base_dlg, override_dir / filename, Game.K1, ResourceType.DLG)
+        return install_dir
+
+    def _create_test_module_installation(
+        self,
+        base_dlg: DLG,
+        filename: str = "unk41_mission.dlg",
+        module_root: str = "unk_m41aa",
+    ) -> Path:
+        install_dir = Path(self.temp_dir) / "fake_install_module"
+        modules_dir = install_dir / "Modules"
+        modules_dir.mkdir(parents=True, exist_ok=True)
+        install_dir.joinpath("Override").mkdir(parents=True, exist_ok=True)
+        install_dir.joinpath("chitin.key").write_bytes(b"")
+        install_dir.joinpath("swkotor.exe").write_bytes(b"")
+
+        module_piece = RIM()
+        module_piece.set_data(Path(filename).stem, ResourceType.DLG, bytes_dlg(base_dlg, Game.K1, ResourceType.DLG))
+        write_rim(module_piece, modules_dir / f"{module_root}_s.rim")
         return install_dir
 
     def _create_simple_dlg(self) -> DLG:
@@ -271,7 +290,7 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
                 tslpatchdata_path=tslpatchdata_path,
                 ini_filename="changes.ini",
                 logging_enabled=False,
-                output_mode="quiet",
+                output_mode=OutputMode.QUIET,
                 merge_installation_path=installation_dir,
                 merge_resource_name="unk41_mission.dlg",
                 merge_modded_paths=[mod_a_path, mod_b_path],
@@ -286,6 +305,7 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
         self.assertIn("unk41_mission.dlg", ini_text)
 
     def test_merge_tslpatcher_detects_conflicting_dlg_edits(self):
+        """Conflicting edits produce a warning and prefer mod_a (first --merge-path)."""
         base_dlg = self._create_simple_dlg()
         installation_dir = self._create_test_installation(base_dlg)
 
@@ -299,19 +319,62 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
         write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
         write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
 
-        with self.assertRaises(MergeConflictError):
-            run_application(
-                DiffConfig(
-                    paths=[],
-                    tslpatchdata_path=Path(self.temp_dir) / "conflict_tslpatchdata",
-                    ini_filename="changes.ini",
-                    logging_enabled=False,
-                    output_mode="quiet",
-                    merge_installation_path=installation_dir,
-                    merge_resource_name="unk41_mission.dlg",
-                    merge_modded_paths=[mod_a_path, mod_b_path],
-                )
+        tslpatchdata_path = Path(self.temp_dir) / "conflict_tslpatchdata"
+        exit_code = run_application(
+            DiffConfig(
+                paths=[],
+                tslpatchdata_path=tslpatchdata_path,
+                ini_filename="changes.ini",
+                logging_enabled=False,
+                output_mode=OutputMode.QUIET,
+                merge_installation_path=installation_dir,
+                merge_resource_name="unk41_mission.dlg",
+                merge_modded_paths=[mod_a_path, mod_b_path],
             )
+        )
+
+        # Conflicting edits succeed (mod_a wins) instead of raising an error
+        self.assertEqual(exit_code, 0)
+        ini_path = tslpatchdata_path / "changes.ini"
+        self.assertTrue(ini_path.is_file())
+        ini_text = ini_path.read_text(encoding="utf-8")
+        self.assertIn("[GFFList]", ini_text)
+        # mod_a's value should be present since it wins conflicts
+        self.assertIn("conflict_a", ini_text)
+
+    def test_merge_tslpatcher_resolves_module_piece_with_merge_module(self):
+        base_dlg = self._create_simple_dlg()
+        installation_dir = self._create_test_module_installation(base_dlg)
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].comment = "module_piece_mod_a"
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_replies(as_sorted=True)[0].comment = "module_piece_mod_b"
+
+        mod_a_path = Path(self.temp_dir) / "module_piece_mod_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "module_piece_mod_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        tslpatchdata_path = Path(self.temp_dir) / "module_piece_tslpatchdata"
+        exit_code = run_application(
+            DiffConfig(
+                paths=[],
+                tslpatchdata_path=tslpatchdata_path,
+                ini_filename="changes.ini",
+                logging_enabled=False,
+                output_mode=OutputMode.QUIET,
+                merge_installation_path=installation_dir,
+                merge_resource_name="unk41_mission.dlg",
+                merge_module_root="unk_m41aa",
+                merge_modded_paths=[mod_a_path, mod_b_path],
+            )
+        )
+
+        self.assertEqual(exit_code, 0)
+        ini_text = (tslpatchdata_path / "changes.ini").read_text(encoding="utf-8")
+        self.assertIn("[GFFList]", ini_text)
+        self.assertIn("unk41_mission.dlg", ini_text)
 
     def create_test_tlk(self, data: dict[int, dict[str, str]]) -> TLK:
         tlk = TLK()

@@ -24,7 +24,7 @@ from pykotor.resource.generics.dlg.stunts import DLGStunt
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Sequence
+    from collections.abc import Callable, Mapping, Sequence
 
 
 class MergeConflictError(RuntimeError):
@@ -56,6 +56,8 @@ def run_merge_tslpatcher_workflow(
         raise MergeConflictError("--merge-tslpatcher requires --tslpatchdata.")
     if not config.merge_modded_paths or len(config.merge_modded_paths) != 2:  # noqa: PLR2004
         raise MergeConflictError("Exactly two modified resource paths are required.")
+    if config.merge_installation_path is None or config.merge_resource_name is None:
+        raise MergeConflictError("--merge-tslpatcher requires both --merge-installation and --merge-resource.")
 
     installation = Installation(config.merge_installation_path)
     resolved_base = _resolve_base_resource(
@@ -145,7 +147,7 @@ def _resolve_base_resource(
             if candidate.is_file():
                 resource = Capsule(candidate).resource(resname, restype)
                 if resource is not None:
-                    return _ResolvedResource(query, candidate, resource.data)
+                    return _ResolvedResource(query, candidate, resource)
 
     search_order = [SearchLocation.OVERRIDE, SearchLocation.MODULES, SearchLocation.CHITIN]
     locations = installation.locations([query], order=search_order, module_root=module_root).get(query, [])
@@ -447,7 +449,7 @@ def _merge_links_for_nodes(
     target_key_by_a: dict[int, str],
     target_key_by_b: dict[int, str],
     merged_source_nodes: dict[str, TNode],
-    merged_target_nodes: dict[str, DLGNode],
+    merged_target_nodes: Mapping[str, DLGNode],
     *,
     label: str,
 ) -> None:
@@ -479,7 +481,7 @@ def _merge_link_sequence(
     target_key_by_base: dict[int, str],
     target_key_by_a: dict[int, str],
     target_key_by_b: dict[int, str],
-    merged_target_nodes: dict[str, DLGNode],
+    merged_target_nodes: Mapping[str, DLGNode],
     *,
     label: str,
     parent_label: str,

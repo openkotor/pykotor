@@ -641,6 +641,126 @@ class GFF(BiowareResource):
         """Return a human-readable string representation of the GFF."""
         return str(self.root)
 
+    def __json__(self) -> dict[str, Any]:
+        """Serialize the GFF to a JSON-compatible dictionary.
+
+        Returns:
+        -------
+            A JSON-compatible dictionary representing the GFF structure.
+        """
+        return self._serialize_struct(self.root)
+
+    @classmethod
+    def from_json(cls, data: dict[str, Any]) -> Self:
+        """Create a GFF instance from a JSON-compatible dictionary.
+
+        Args:
+        ----
+            data: A JSON-compatible dictionary representing GFF structure.
+
+        Returns:
+        -------
+            A new GFF instance.
+        """
+        gff = cls()
+        gff.root = cls._parse_struct_static(data)
+        return gff
+
+    def _serialize_struct(self, struct: GFFStruct) -> dict[str, Any]:
+        """Serialize a GFFStruct to a JSON object."""
+        result: dict[str, Any] = {"struct_id": struct.struct_id, "fields": {}}
+        for field_name, field in struct._fields.items():
+            result["fields"][field_name] = {
+                "type": field.field_type().value,
+                "value": self._serialize_field_value(field=field),
+            }
+        return result
+
+    def _serialize_field_value(self, field: _GFFField) -> Any:
+        """Serialize a field value based on its type."""
+        import base64
+        from typing import cast as _cast
+
+        from utility.common.geometry import Vector3, Vector4
+
+        field_type = field.field_type()
+        field_value = field.value()
+        if field_type.value == 14:  # GFF_FIELD_TYPE_STRUCT
+            return self._serialize_struct(_cast(GFFStruct, field_value))
+        if field_type.value == 15:  # GFF_FIELD_TYPE_LIST
+            return self._serialize_list(_cast(GFFList, field_value))
+        if field_type.value == 12:  # GFF_FIELD_TYPE_LOCSTRING
+            return self._serialize_locstring(_cast(LocalizedString, field_value))
+        if isinstance(field_value, bytes):
+            return base64.b64encode(field_value).decode("ascii")
+        if isinstance(field_value, (Vector3, Vector4)):
+            return list(field_value)
+        return field_value
+
+    def _serialize_list(self, gff_list: GFFList) -> list[dict[str, Any]]:
+        """Serialize a GFFList to a JSON array."""
+        return list(self._serialize_struct(struct) for struct in gff_list._structs)
+
+    def _serialize_locstring(self, locstring: LocalizedString) -> dict[str, Any]:
+        """Serialize a LocalizedString to a JSON object."""
+        return locstring.to_dict()
+
+    @staticmethod
+    def _parse_struct_static(data: dict[str, Any]) -> GFFStruct:
+        """Parse a JSON object into a GFFStruct."""
+        struct = GFFStruct()
+        struct.struct_id = data.get("struct_id", 0)
+
+        for field_name, field_data in data.get("fields", {}).items():
+            field_type = GFFFieldType(field_data.get("type", 0))
+            field_value = GFF._parse_field_value_static(
+                field_type=field_type, value=field_data.get("value")
+            )
+            struct._fields[field_name] = _GFFField(field_type, field_value)
+
+        return struct
+
+    @staticmethod
+    def _parse_field_value_static(
+        field_type: GFFFieldType,
+        value: Any,
+    ) -> Any:
+        """Parse a field value based on its type."""
+        import base64
+
+        if field_type.value == 14:  # GFF_FIELD_TYPE_STRUCT
+            return GFF._parse_struct_static(value)
+        if field_type.value == 15:  # GFF_FIELD_TYPE_LIST
+            return GFF._parse_list_static(value)
+        if field_type.value == 12:  # GFF_FIELD_TYPE_LOCSTRING
+            return GFF._parse_locstring_static(value)
+        # Handle base64-encoded bytes
+        if isinstance(value, str) and field_type in (
+            GFFFieldType.Data,
+            GFFFieldType.ExoString,
+            GFFFieldType.ResRef,
+        ):
+            try:
+                return base64.b64decode(value)
+            except Exception:
+                return value
+        return value
+
+    @staticmethod
+    def _parse_list_static(data: list[dict[str, Any]]) -> GFFList:
+        """Parse a JSON array into a GFFList."""
+        gff_list = GFFList()
+        for item in data:
+            struct = GFF._parse_struct_static(item)
+            gff_list._structs.append(struct)
+        return gff_list
+
+    @staticmethod
+    def _parse_locstring_static(data: dict[str, Any]) -> LocalizedString:
+        """Parse a JSON object into a LocalizedString."""
+        from pykotor.common.localization import LocalizedString
+        return LocalizedString.from_dict(data)
+
 
 class _GFFField:
     """Read-only data structure for items stored in GFFStruct."""

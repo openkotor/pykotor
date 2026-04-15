@@ -169,6 +169,7 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
             "json2capsule",
             "to-json",
             "from-json",
+            "installation-to-json",
         ],
         "Script Tools": ["decompile", "disassemble", "assemble", "nwnnsscomp"],
         "Resource Tools": ["texture-convert", "sound-convert", "model-convert", "walkmesh-convert"],
@@ -1252,6 +1253,42 @@ Compare two paths and show differences. Supports any combination of:
         "-s",
         dest="source",
         help="Extract only from this location (e.g. OVERRIDE, CHITIN, MODULES). Takes precedence over --order",
+    )
+
+    installation_to_json_parser = subparsers.add_parser(
+        "installation-to-json",
+        aliases=["export-installation-json"],
+        help="Export every discovered installation resource to JSON files",
+    )
+    installation_to_json_parser.add_argument(
+        "--path",
+        "-p",
+        "--installation",
+        "-i",
+        dest="path",
+        help="Path to KOTOR installation. If omitted, use --game to auto-detect a default install.",
+    )
+    installation_to_json_parser.add_argument(
+        "--game",
+        choices=["k1", "kotor", "kotor1", "k2", "tsl", "kotor2"],
+        help="Auto-detect a default installation for this game when --path is omitted",
+    )
+    installation_to_json_parser.add_argument(
+        "--path-index",
+        type=int,
+        default=0,
+        help="Which auto-detected installation to use when multiple are found (default: 0)",
+    )
+    installation_to_json_parser.add_argument(
+        "--output",
+        "-o",
+        required=True,
+        help="Output directory for the exported JSON files",
+    )
+    installation_to_json_parser.add_argument(
+        "--clean",
+        action="store_true",
+        help="Delete the output directory before exporting",
     )
 
     validate_installation_parser = subparsers.add_parser(
