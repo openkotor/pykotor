@@ -42,20 +42,7 @@ from pykotor.resource.formats.tpc.io_tga import TPCTGAReader, TPCTGAWriter
 from pykotor.resource.formats.tpc.io_tpc import TPCBinaryReader, TPCBinaryWriter
 from pykotor.resource.formats.tpc.tpc_auto import bytes_tpc
 from pykotor.resource.formats.tpc.tpc_data import TPC
-from pykotor.resource.generics.are import read_are, write_are
-from pykotor.resource.generics.dlg import read_dlg, write_dlg
-from pykotor.resource.generics.git import read_git, write_git
-from pykotor.resource.generics.jrl import read_jrl, write_jrl
-from pykotor.resource.generics.pth import read_pth, write_pth
-from pykotor.resource.generics.utc import read_utc, write_utc
-from pykotor.resource.generics.utd import read_utd, write_utd
-from pykotor.resource.generics.ute import read_ute, write_ute
-from pykotor.resource.generics.uti import read_uti, write_uti
-from pykotor.resource.generics.utm import read_utm, write_utm
-from pykotor.resource.generics.utp import read_utp, write_utp
-from pykotor.resource.generics.uts import read_uts, write_uts
-from pykotor.resource.generics.utt import read_utt, write_utt
-from pykotor.resource.generics.utw import read_utw, write_utw
+from pykotor.resource.gff_dispatch import get_gff_resource_pipeline
 from pykotor.resource.salvage import validate_capsule
 from pykotor.resource.type import ResourceType
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
@@ -245,29 +232,11 @@ def convert_gff_game(
     )
     generic: Any
     try:
-        # Mapping of ResourceType to (read_func, write_func) pairs for GFF conversion
-        gff_converters = {
-            ResourceType.ARE: (read_are, write_are),
-            ResourceType.DLG: (read_dlg, write_dlg),
-            ResourceType.GIT: (read_git, write_git),
-            ResourceType.JRL: (read_jrl, write_jrl),
-            ResourceType.PTH: (read_pth, write_pth),
-            ResourceType.UTC: (read_utc, write_utc),
-            ResourceType.UTD: (read_utd, write_utd),
-            ResourceType.UTE: (read_ute, write_ute),
-            ResourceType.UTI: (read_uti, write_uti),
-            ResourceType.UTM: (read_utm, write_utm),
-            ResourceType.UTP: (read_utp, write_utp),
-            ResourceType.UTS: (read_uts, write_uts),
-            ResourceType.UTT: (read_utt, write_utt),
-            ResourceType.UTW: (read_utw, write_utw),
-        }
-
         restype = resource.restype()
-        if restype in gff_converters:
-            read_func, write_func = gff_converters[restype]
-            generic = read_func(resource.data(), offset=0, size=resource.size())
-            write_func(generic, converted_data, to_game)
+        pipeline = get_gff_resource_pipeline(restype)
+        if pipeline is not None:
+            generic = pipeline.read(resource.data(), offset=0, size=resource.size())
+            pipeline.write(generic, converted_data, to_game)
         else:
             log_message(config, f"Unsupported gff: {resource.identifier()}")
     except (OSError, ValueError):
