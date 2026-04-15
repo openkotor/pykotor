@@ -28,9 +28,9 @@ uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::Test2DAMemoryCom
 ```
 
 **What this tests**: The real-world pattern from dm_qrts mod where:
-- weaponsounds.2da AddRow → stores index in 2DAMEMORY1
-- baseitems.2da AddRow → uses 2DAMEMORY1 for weaponmattype column, stores own index in 2DAMEMORY2  
-- item.uti GFF → uses 2DAMEMORY2 for BaseItem field
+- weaponsounds.2da AddRow -> stores index in 2DAMEMORY1
+- baseitems.2da AddRow -> uses 2DAMEMORY1 for weaponmattype column, stores own index in 2DAMEMORY2  
+- item.uti GFF -> uses 2DAMEMORY2 for BaseItem field
 
 **Expected output**: Chain of 2DAMEMORY tokens linking three files together.
 

@@ -519,7 +519,7 @@ class TestGITSerializeStrictTyping(unittest.TestCase):
         self.assertEqual(result["linked_to_flags"], GITModuleLink.ToDoor.value)
 
     def test_git_missing_area_properties_and_empty_lists(self):
-        """AreaProperties omit → defaults (0); lists omit → empty. K1 LoadGIT 0x0050dd80, LoadProperties 0x00507490."""
+        """AreaProperties omit -> defaults (0); lists omit -> empty. K1 LoadGIT 0x0050dd80, LoadProperties 0x00507490."""
         minimal_xml = (
             """<gff3><struct id="-1"><byte label="UseTemplates">1</byte></struct></gff3>"""
         )

@@ -399,7 +399,7 @@ class TestGUI(TestCase):
                     )
 
     def test_gui_missing_extent_and_controls_defaults(self):
-        """EXTENT omit → (0,0,0,0). CONTROLS omit → empty. K1 CSWGuiExtent::Load 0x00409dc0; TSL FUN_0090c850."""
+        """EXTENT omit -> (0,0,0,0). CONTROLS omit -> empty. K1 CSWGuiExtent::Load 0x00409dc0; TSL FUN_0090c850."""
         minimal_xml = """<gff3>
           <struct id="-1">
             <sint32 label="CONTROLTYPE">2</sint32>

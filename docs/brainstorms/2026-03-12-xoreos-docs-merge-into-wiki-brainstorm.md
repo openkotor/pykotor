@@ -32,7 +32,7 @@ Bring all **Odyssey / KotOR / Jade Empire**–relevant information from the loca
 
 **Description:** Audit xoreos-docs for Odyssey/KotOR/Jade material that is **missing or only linked** in the wiki. Add that content into existing format pages or new wiki pages (e.g. Torlack tables/sections not yet merged, KotOR-specific notes from basics.html, any Torlack spec that has no wiki equivalent). Keep xoreos-docs as submodule for PDFs and binary templates; links to GitHub xoreos-docs remain for attribution.
 
-**Pros:** Minimal duplication; builds on existing “cite + integrate where needed” pattern; avoids large HTML→Markdown conversions; YAGNI-friendly.
+**Pros:** Minimal duplication; builds on existing “cite + integrate where needed” pattern; avoids large HTML->Markdown conversions; YAGNI-friendly.
 
 **Cons:** Some readers may still open xoreos-docs HTML for raw specs; requires a one-time audit to find gaps.
 
@@ -56,7 +56,7 @@ Bring all **Odyssey / KotOR / Jade Empire**–relevant information from the loca
 
 **Description:** Copy (or move) the relevant xoreos-docs **files** into a path under `wiki/` (e.g. `wiki/xoreos-docs/` or `wiki/vendor/xoreos-docs/`), preserving HTML (and .bt). Help and links then point to the wiki tree; the submodule is no longer required for those files. Optionally add a minimal index page in the wiki that links to these files.
 
-**Pros:** Single tree for help; no HTML→Markdown conversion; files stay in their original format.
+**Pros:** Single tree for help; no HTML->Markdown conversion; files stay in their original format.
 
 **Cons:** Wiki would contain non-Markdown (HTML, .bt); less consistent with the rest of the wiki; duplicate of upstream if submodule is kept.
 

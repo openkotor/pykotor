@@ -154,8 +154,8 @@ StrRef0=0                              ; Map token 0 to dialog entry 0
 StrRef1=1                              ; Map token 1 to dialog entry 1
 
 [append.tlk]
-25859=0                                ; Old StrRef 25859 → new token 0
-25860=1                                ; Old StrRef 25860 → new token 1
+25859=0                                ; Old StrRef 25859 -> new token 0
+25860=1                                ; Old StrRef 25860 -> new token 1
 
 [2DAList]                              ; "Here are 2DA changes"
 Table0=spells.2da                      ; File to modify
@@ -184,11 +184,11 @@ ClassList\0\KnownList0\1\Spell=2DAMEMORY0    ; Use 2DA token 0
 
 Step 1: 2DA stores its new row index
 [spells.2da AddRow]
-→ 2DAMEMORY0=RowIndex  (store row 1001 in token 0)
+-> 2DAMEMORY0=RowIndex  (store row 1001 in token 0)
 
 Step 2: GFF references that token
 [creature.utc ModifyField]
-→ Spell=2DAMEMORY0  (use token 0, will be row 1001)
+-> Spell=2DAMEMORY0  (use token 0, will be row 1001)
 
 Step 3: TSLPatcher resolves at runtime
 

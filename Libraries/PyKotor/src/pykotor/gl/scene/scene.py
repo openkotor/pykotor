@@ -172,7 +172,7 @@ class Scene(SceneBase):
 
         special_models: frozenset[str] = frozenset(self.SPECIAL_MODELS)
 
-        # Build type→hide_attr mapping for precomputation
+        # Build type->hide_attr mapping for precomputation
         hide_attr_map: dict[type, str] = {t: a for t, a in self._HIDE_TYPE_MAP}
 
         regular: list[RenderObject] = []

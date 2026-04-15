@@ -14,7 +14,7 @@ if (-not (Test-Path $ProductionFile)) {
     exit 1
 }
 
-Write-Host "Creating TEST workflow from $ProductionFile → $TestFile"
+Write-Host "Creating TEST workflow from $ProductionFile -> $TestFile"
 
 # Read production workflow
 $content = Get-Content $ProductionFile -Raw

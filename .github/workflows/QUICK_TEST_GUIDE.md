@@ -28,7 +28,7 @@ git push origin test-toolset-build
 
 For more thorough pre-release testing:
 
-1. Go to **Actions** → **Release Readiness Check**
+1. Go to **Actions** -> **Release Readiness Check**
 2. Click **Run workflow**
 3. Fill in:
    - **Tool**: Select the tool (e.g., `toolset`)
@@ -179,7 +179,7 @@ git push origin update-build-scripts
 # Just create a PR!
 
 # Test release readiness (manual)
-# Go to Actions → Release Readiness Check → Run workflow
+# Go to Actions -> Release Readiness Check -> Run workflow
 
 # Test release workflow
 git tag test-v99.0.0-toolset

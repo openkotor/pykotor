@@ -16,7 +16,7 @@ def _load_dotenv_if_present() -> None:
 
     We intentionally avoid external deps (python-dotenv) in the test runner.
     """
-    # This conftest lives at Libraries/PyKotor/tests/cli/ → repo root is 4 parents up.
+    # This conftest lives at Libraries/PyKotor/tests/cli/ -> repo root is 4 parents up.
     env_path = Path(__file__).resolve().parents[4] / ".env"
     if not env_path.exists() or not env_path.is_file():
         return
@@ -189,7 +189,7 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
         ids.append(f"k2:{root}")
 
     # Stunt/cutscene modules ship LYT placeholder model names (e.g. "****") that are not valid
-    # ResRefs; ERF/MOD cannot store resources under those names, so indoor extract→build
+    # ResRefs; ERF/MOD cannot store resources under those names, so indoor extract->build
     # roundtrips are excluded here. Set PYKOTOR_INDOOR_ROUNDTRIP_INCLUDE_STUNT=1 to keep them.
     if (
         metafunc.definition.path.name == "test_indoor_roundtrip.py"

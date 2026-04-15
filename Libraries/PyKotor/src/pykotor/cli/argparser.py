@@ -1215,7 +1215,7 @@ Compare two paths and show differences. Supports any combination of:
 
     find_parser = subparsers.add_parser(
         "find",
-        help="Find resource(s) in a source path (resolution order for game roots: Override → MOD → Chitin)",
+        help="Find resource(s) in a source path (resolution order for game roots: Override -> MOD -> Chitin)",
     )
     find_parser.add_argument(
         "resref",
@@ -1275,7 +1275,7 @@ Compare two paths and show differences. Supports any combination of:
 
     get_parser = subparsers.add_parser(
         "get",
-        help="Extract a resource by name from a source path (resolution order for game roots: Override → MOD → Chitin)",
+        help="Extract a resource by name from a source path (resolution order for game roots: Override -> MOD -> Chitin)",
     )
     get_parser.add_argument("resref", help="Resource name with extension (e.g. 203tell.wok)")
     get_parser.add_argument(

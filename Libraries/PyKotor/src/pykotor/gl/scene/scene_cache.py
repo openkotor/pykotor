@@ -70,7 +70,7 @@ class SceneCache:
         git = scene.git
         objects_get = scene.objects.get
 
-        # Bearing-based types: position + bearing → (0, 0, bearing)
+        # Bearing-based types: position + bearing -> (0, 0, bearing)
         for instance in git.doors:
             obj = objects_get(instance)
             if obj is None:
@@ -128,7 +128,7 @@ class SceneCache:
             obj.set_position(instance.position.x, instance.position.y, instance.position.z)
             obj.set_rotation(0, 0, 0)
 
-        # Camera special case: height offset + quaternion→euler
+        # Camera special case: height offset + quaternion->euler
         for camera in git.cameras:
             obj = objects_get(camera)
             if obj is None:

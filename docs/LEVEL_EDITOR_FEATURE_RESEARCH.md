@@ -517,9 +517,9 @@ KotOR uses a modular approach to level data with specialized formats for differe
 │  └─ Static: Lighting, fog, weather, scripts, music, minimap
 │
 ├─ LYT (Layout)
-│  ├─ Rooms → MDL/MDX (geometry)
-│  │         → WOK (collision/pathfinding)
-│  ├─ Door Hooks → Link to GIT doors
+│  ├─ Rooms -> MDL/MDX (geometry)
+│  │         -> WOK (collision/pathfinding)
+│  ├─ Door Hooks -> Link to GIT doors
 │  ├─ Tracks (K2 racing only)
 │  └─ Obstacles (K2 racing only)
 │
@@ -727,7 +727,7 @@ This checklist defines the "all-in-one" module designer feature scope based on i
 ### B. VIS (Visibility) Editor
 - [ ] Visual graph editor for room visibility:
   - [ ] Show rooms as nodes
-  - [ ] Draw directed edges (parent → visible children)
+  - [ ] Draw directed edges (parent -> visible children)
   - [ ] Add/remove visibility links
   - [ ] Validate consistency (no orphaned rooms)
 - [ ] Text editor view:
@@ -802,7 +802,7 @@ This checklist defines the "all-in-one" module designer feature scope based on i
 
 ### H. Door/Transition Setup
 - [ ] Visual door linking:
-  - [ ] Click door → target door link
+  - [ ] Click door -> target door link
   - [ ] Show which rooms doors connect
   - [ ] Highlight transition path in viewport
 - [ ] Transition properties:
@@ -882,7 +882,7 @@ This checklist defines the "all-in-one" module designer feature scope based on i
   - [ ] Warn on circular transitions
   - [ ] Detect missing door hooks for GIT doors
 - [ ] Compilation hints:
-  - [ ] Test compile module → report errors
+  - [ ] Test compile module -> report errors
   - [ ] Validate GFF data integrity
 
 ### F. Batch Operations
@@ -929,7 +929,7 @@ This checklist defines the "all-in-one" module designer feature scope based on i
 
 ### B. Measurement & Debugging Tools
 - [ ] Distance measurement tool:
-  - [ ] Click two points → show distance
+  - [ ] Click two points -> show distance
   - [ ] Useful for level layout planning
 - [ ] Angle measurement
 - [ ] Area calculation (for encounter zones, etc.)
@@ -937,7 +937,7 @@ This checklist defines the "all-in-one" module designer feature scope based on i
 
 ### C. Documentation & Help
 - [ ] Context-sensitive help:
-  - [ ] Hover on fields → tooltip
+  - [ ] Hover on fields -> tooltip
   - [ ] Help panel explaining each property
 - [ ] Tutorial mode:
   - [ ] Step-by-step guide for new users

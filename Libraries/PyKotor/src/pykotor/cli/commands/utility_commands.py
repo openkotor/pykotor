@@ -284,7 +284,7 @@ def _resolve_path(
         temp_file = Path(temp_dir) / resource_ref
         temp_file.write_bytes(data)
         if verbose:
-            Logger().debug(f"Extracted '{resource_ref}' from '{container_path}' → {temp_file}")
+            Logger().debug(f"Extracted '{resource_ref}' from '{container_path}' -> {temp_file}")
         return temp_file
 
     path = Path(path_str)

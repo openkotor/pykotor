@@ -1,4 +1,4 @@
-# Assembly / Binary → Code Transpile Parity Skill
+# Assembly / Binary -> Code Transpile Parity Skill
 
 ## When to use
 

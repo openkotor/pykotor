@@ -22,7 +22,11 @@ from pykotor.resource.formats.ssf import SSF, SSFSound, read_ssf
 from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk
 from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, bytes_tpc, read_tpc
 from pykotor.resource.type import ResourceType
-from pykotor.tools.resource_json import _serialize_mdl_face, serialize_resource_payload
+from pykotor.tools.resource_json import (
+    _serialize_mdl_face,
+    export_installation_to_json_tree,
+    serialize_resource_payload,
+)
 
 
 def test_to_json_and_from_json_roundtrip_tlk(tmp_path: Path) -> None:
@@ -273,6 +277,46 @@ def test_to_json_exports_installation_resources_with_readable_wrappers(tmp_path:
     assert wav_payload["extension"] == "wav"
     assert "data_base64" in wav_payload
     assert "data" not in wav_payload
+
+
+def test_export_installation_to_json_tree_logs_percentage_progress(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    install_path = tmp_path / "K1"
+    install_path.mkdir()
+    (install_path / "Override").mkdir()
+    (install_path / "Modules").mkdir()
+    (install_path / "StreamMusic").mkdir()
+    (install_path / "chitin.key").write_bytes(b"")
+    (install_path / "swkotor.exe").write_bytes(b"")
+
+    tlk = TLK(Language.ENGLISH)
+    tlk.add("install root text", "root_vo")
+    write_tlk(tlk, install_path / "dialog.tlk", ResourceType.TLK)
+
+    (install_path / "Override" / "hello.nss").write_text("void main() {}\n", encoding="utf-8")
+
+    rim = RIM()
+    rim.set_data("notes", ResourceType.TXT, b"module notes")
+    write_rim(rim, install_path / "Modules" / "testmod_s.rim")
+
+    (install_path / "StreamMusic" / "intro.wav").write_bytes(b"RIFFdemo")
+
+    output_path = tmp_path / "json-export"
+    caplog.clear()
+
+    assert export_installation_to_json_tree(install_path, output_path, RobustLogger()) == 0
+    messages = [record.getMessage() for record in caplog.records]
+
+    assert any(message == "Discovered 4 resources to export" for message in messages)
+    assert any("25.00% Writing dialog.tlk" in message for message in messages)
+    assert any("50.00% Writing Override/hello.nss" in message for message in messages)
+    assert any("75.00% Writing Modules/testmod_s.rim/notes.txt" in message for message in messages)
+    assert any("100.00% Writing streammusic/intro.wav" in message for message in messages)
+    assert any(
+        message == "Processed 4 resources (3 readable, 1 binary, 0 errors)"
+        for message in messages
+    )
 
 
 def test_to_json_can_export_all_detected_installations(

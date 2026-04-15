@@ -6,7 +6,7 @@ are handled by ``SaveFolderEntry`` when the game is K2.
 
 Internal engine labels, structure offsets, and the disassembly-derived load sequence
 previously referenced in this module are **migrated** to ``wiki/reverse_engineering_findings.md``
-under *PyKotor package: migrated library notes* → ``extract/save_load_flow_tsl.py``.
+under *PyKotor package: migrated library notes* -> ``extract/save_load_flow_tsl.py``.
 
 Use ``run_tsl_save_flow`` and ``run_tsl_load_flow`` from ``run_save_flow`` / ``run_load_flow``
 when ``determine_game`` selects K2.

@@ -10,9 +10,9 @@ The most impactful recent additions to the Holocron Toolset are listed below. Ea
 
 This feature jumps directly to any bookmarked resource with one click.
 
-1. Bookmark resources (Ctrl+B or right-click → Add to Favorites)
+1. Bookmark resources (Ctrl+B or right-click -> Add to Favorites)
 2. Open Favorites (Ctrl+Shift+B)
-3. Select a favorite → Click "Go To"
+3. Select a favorite -> Click "Go To"
 4. Instantly navigates to that resource in the file browser
 
 It removes the need to search through thousands of files to find frequently used resources.
@@ -45,9 +45,9 @@ For example, you can rename `my_texture.tpc` to `character_head.tpc` in seconds.
 This feature moves resources between folders using familiar Cut/Paste behavior.
 
 1. Select resource(s) in Override
-2. Cut (Ctrl+X or right-click → Cut)
+2. Cut (Ctrl+X or right-click -> Cut)
 3. Navigate to destination folder
-4. Paste (Ctrl+V or right-click → Paste)
+4. Paste (Ctrl+V or right-click -> Paste)
 5. Resources moved, model updated automatically
 
 For example, you can organize your Override folder by moving all textures into a `textures/` subfolder.
@@ -59,7 +59,7 @@ For example, you can organize your Override folder by moving all textures into a
 Batch operations process dozens or hundreds of files at once with progress tracking.
 
 1. Select multiple resources (Shift+Click or Ctrl+Click)
-2. Right-click → "Batch Operations..." (or Ctrl+Shift+O)
+2. Right-click -> "Batch Operations..." (or Ctrl+Shift+O)
 3. Choose an operation:
    - Extract All -- Save all to a folder
    - Duplicate All to Override -- Copy all to Override
@@ -77,7 +77,7 @@ For example, you can extract 100 texture files to a backup folder in under 10 se
 This feature renames multiple files using wildcard patterns.
 
 1. Select files to rename
-2. Batch Operations → "Rename with Pattern"
+2. Batch Operations -> "Rename with Pattern"
 3. Enter find pattern: `old_*.tpc` (use * for any text)
 4. Enter replace pattern: `new_*.tpc`
 5. Preview: "15 files will be renamed"
@@ -86,9 +86,9 @@ This feature renames multiple files using wildcard patterns.
 
 Examples:
 
-- `texture_*` → `char_*` renames `texture_001.tpc` to `char_001.tpc`
-- `temp_*` → `*` removes "temp_" prefix from all files
-- `*_old` → `*` removes "_old" suffix
+- `texture_*` -> `char_*` renames `texture_001.tpc` to `char_001.tpc`
+- `temp_*` -> `*` removes "temp_" prefix from all files
+- `*_old` -> `*` removes "_old" suffix
 
 ---
 
@@ -112,7 +112,7 @@ Supported editors include Dialog Editor, Creature Editor, Placeable Editor, Door
 
 This feature creates new resources from templates with one dialog.
 
-1. Right-click on any folder OR File → New
+1. Right-click on any folder OR File -> New
 2. Select "New Resource..."
 3. Choose resource type (2DA Table, Script Source, Creatures, Placeables, Items, Triggers, Dialogs, Journals, etc.)
 4. Enter resource name

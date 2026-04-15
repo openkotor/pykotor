@@ -2,13 +2,13 @@
 
 The Map Builder creates new playable indoor areas from existing room models, without requiring Blender or any other external 3D modeling tool. Use it when you want to build a new interior area — a Sith tomb, a space station corridor, a cantina back room — by snapping together pre-made room pieces from the game's own model library.
 
-Open it from the Main Window via **Tools** → **Indoor Map Builder**.
+Open it from the Main Window via **Tools** -> **Indoor Map Builder**.
 
-The typical workflow is to select a kit, meaning a set of room models from a specific game area, place rooms on the canvas, snap connections between them as shown by green lines, and then use **File** → **Build** to output a ready-to-play module to the game's `Modules/` folder.
+The typical workflow is to select a kit, meaning a set of room models from a specific game area, place rooms on the canvas, snap connections between them as shown by green lines, and then use **File** -> **Build** to output a ready-to-play module to the game's `Modules/` folder.
 
 ## Kits
 
-Kits are collections of room models extracted from specific game areas. The toolset does not ship with kits; download them when first prompted (or via **File** → **Download Kits**). See [Kit Structure Documentation](Kit-Structure-Documentation) for the file format details.
+Kits are collections of room models extracted from specific game areas. The toolset does not ship with kits; download them when first prompted (or via **File** -> **Download Kits**). See [Kit Structure Documentation](Kit-Structure-Documentation) for the file format details.
 
 ## Controls
 

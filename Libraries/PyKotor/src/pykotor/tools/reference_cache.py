@@ -374,7 +374,7 @@ class StrRefReferenceCache:
         # Initialize dict for this StrRef if needed
         if strref not in self._cache:
             self._cache[strref] = {}
-            _log_verbose(f"  → Cached new StrRef {strref} from '{filename}' at '{location}'")
+            _log_verbose(f"  -> Cached new StrRef {strref} from '{filename}' at '{location}'")
 
         # O(1) dictionary lookup instead of O(n) linear search
         if identifier in self._cache[strref]:

@@ -188,7 +188,7 @@ function Invoke-Step {
         [switch]$Critical
     )
     
-    Write-Host "→ $Description" -ForegroundColor Green
+    Write-Host "-> $Description" -ForegroundColor Green
     
     if ($DryRun) {
         Write-Host "  [DRY RUN] Would execute: $($Action.ToString().Trim())" -ForegroundColor DarkGray

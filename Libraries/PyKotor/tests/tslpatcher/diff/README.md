@@ -10,7 +10,7 @@ Tests for 2DA memory token generation and usage:
 
 - ✅ `test_addrow_stores_row_index` - AddRow2DA stores row index in 2DAMEMORY token
 - ✅ `test_changerow_stores_row_index` - ChangeRow2DA stores row index
-- ✅ `test_2damemory_cross_reference_chain` - Chained 2DAMEMORY references across multiple 2DA files (weaponsounds → baseitems → GFF pattern)
+- ✅ `test_2damemory_cross_reference_chain` - Chained 2DAMEMORY references across multiple 2DA files (weaponsounds -> baseitems -> GFF pattern)
 - ✅ `test_addcolumn_with_2damemory_storage` - AddColumn with specific cell value storage
 - ✅ `test_multiple_gff_files_use_same_2damemory_token` - Multiple GFF files referencing same token
 - ⏸️ `test_2damemory_row_label_storage` - Storing row label (not index) in token

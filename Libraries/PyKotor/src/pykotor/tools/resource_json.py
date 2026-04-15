@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import base64
 import json
+import sys
 
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Dict, Iterable, Iterator, List, Literal, Union, cast
+from typing import TYPE_CHECKING, Callable, Dict, Iterable, Iterator, List, Literal, TextIO, Union, cast
 
 from pykotor.extract.file import FileResource, clear_file_data_cache
 from pykotor.extract.installation import Installation
@@ -84,6 +85,9 @@ _PLAIN_TEXT_TYPES: frozenset[ResourceType] = frozenset(
     }
 )
 
+_PROGRESS_BAR_WIDTH = 24
+_LIVE_PROGRESS_PERCENT_STEP = 0.1
+
 
 def _json_dumps_bytes(document: JsonValue) -> bytes:
     return json.dumps(document, ensure_ascii=False, separators=(",", ":")).encode("utf-8") + b"\n"
@@ -123,6 +127,12 @@ def _writer_text(data: bytes | bytearray | Path, reader, writer) -> str:
 
 
 def _decode_plain_text(data: bytes) -> str | None:
+    def is_printable_enough(text: str) -> bool:
+        if not text:
+            return True
+        printable_count = sum(char.isprintable() or char in "\r\n\t" for char in text)
+        return printable_count / len(text) >= 0.95
+
     if not data:
         return ""
 
@@ -130,22 +140,90 @@ def _decode_plain_text(data: bytes) -> str | None:
     if b"\x00" in sample:
         return None
 
+    for encoding in ("utf-8", "windows-1252"):
+        try:
+            text = data.decode(encoding, errors="strict")
+        except UnicodeDecodeError:
+            continue
+        if is_printable_enough(text):
+            return text
+
     try:
         text = decode_bytes_with_fallbacks(data, errors="strict")
     except UnicodeDecodeError:
         return None
 
-    if not text:
-        return ""
-
-    printable_count = sum(char.isprintable() or char in "\r\n\t" for char in text)
-    if printable_count / len(text) < 0.95:
-        return None
-    return text
+    return text if is_printable_enough(text) else None
 
 
 def _base64_payload(source: bytes | bytearray | Path) -> SerializedResourcePayload:
     return SerializedResourcePayload("base64", base64.b64encode(_source_bytes(source)).decode("ascii"))
+
+
+def _resource_dedup_key(resource: FileResource) -> tuple[str, int, int, str, str]:
+    restype = cast(ResourceType, resource.restype())
+    extension = restype.extension.lower() if restype.extension else restype.name.lower()
+    return (
+        str(resource.filepath()),
+        resource.offset(),
+        resource.size(),
+        resource.resname().lower(),
+        extension,
+    )
+
+
+def _format_progress_bar(percent: float) -> str:
+    clamped = max(0.0, min(percent, 100.0))
+    filled = min(_PROGRESS_BAR_WIDTH, int((clamped / 100.0) * _PROGRESS_BAR_WIDTH))
+    return f"{'#' * filled}{'-' * (_PROGRESS_BAR_WIDTH - filled)}"
+
+
+def _supports_live_progress(stream: TextIO) -> bool:
+    isatty = getattr(stream, "isatty", None)
+    return bool(callable(isatty) and isatty())
+
+
+@dataclass
+class _ExportProgressReporter:
+    logger: Logger
+    total_resources: int
+    stream: TextIO = sys.stderr
+    _last_percent_logged: int = -1
+    _last_render_width: int = 0
+    _last_live_percent: float = -1.0
+
+    @property
+    def enabled(self) -> bool:
+        return self.total_resources > 0
+
+    @property
+    def live_updates(self) -> bool:
+        return self.enabled and _supports_live_progress(self.stream)
+
+    def update(self, current: int, resource_label: str) -> None:
+        if not self.enabled:
+            return
+        percent = min((current / self.total_resources) * 100.0, 100.0)
+        message = f"[{_format_progress_bar(percent)}] {percent:6.2f}% Writing {resource_label}"
+        if self.live_updates:
+            if current != self.total_resources and self._last_live_percent >= 0 and percent - self._last_live_percent < _LIVE_PROGRESS_PERCENT_STEP:
+                return
+            render = message.ljust(self._last_render_width)
+            self.stream.write(f"\r{render}")
+            self.stream.flush()
+            self._last_render_width = len(render)
+            self._last_live_percent = percent
+            return
+
+        percent_bucket = min(int(percent), 100)
+        if current == self.total_resources or percent_bucket != self._last_percent_logged:
+            self.logger.info("%s", message)
+            self._last_percent_logged = percent_bucket
+
+    def finish(self) -> None:
+        if self.live_updates and self._last_render_width:
+            self.stream.write("\r" + (" " * self._last_render_width) + "\r")
+            self.stream.flush()
 
 
 def _vector2(value: Vector2) -> list[JsonValue]:
@@ -763,30 +841,19 @@ def _iter_stream_resources(installation: Installation):
                 yield FileResource.from_path(file_path)
 
 
-def _iter_installation_resources(installation: Installation, logger: Logger):
-    seen: set[tuple[str, int, int, str, str]] = set()
-
-    def add(resource: FileResource) -> FileResource | None:
-        key = (
-            str(resource.filepath()),
-            resource.offset(),
-            resource.size(),
-            resource.resname().lower(),
-            resource.restype().extension.lower() if resource.restype().extension else resource.restype().name.lower(),
-        )
-        if key in seen:
-            return None
-        seen.add(key)
-        return resource
-
-    for talktable_name in ("dialog.tlk", "dialogf.tlk"):
-        talktable_path = installation.path() / talktable_name
-        if talktable_path.is_file():
-            resource = add(FileResource.from_path(talktable_path))
-            if resource is not None:
-                yield resource
-
-    iterators: tuple[tuple[str, Callable[[], Iterable[FileResource]]], ...] = (
+def _installation_resource_iterators(
+    installation: Installation,
+) -> tuple[tuple[str, Callable[[], Iterable[FileResource]]], ...]:
+    installation_path = installation.path()
+    return (
+        (
+            "talktable resources",
+            lambda: (
+                FileResource.from_path(installation_path / talktable_name)
+                for talktable_name in ("dialog.tlk", "dialogf.tlk")
+                if (installation_path / talktable_name).is_file()
+            ),
+        ),
         ("override resources", installation.override_resources),
         (
             "module resources",
@@ -804,20 +871,41 @@ def _iter_installation_resources(installation: Installation, logger: Logger):
         ("stream resources", lambda: _iter_stream_resources(installation)),
     )
 
+
+def _iter_unique_resources(
+    iterators: Iterable[tuple[str, Callable[[], Iterable[FileResource]]]],
+    logger: Logger,
+) -> Iterator[FileResource]:
+    seen: set[tuple[str, int, int, str, str]] = set()
+
     for label, iterator in iterators:
         try:
             for resource in iterator():
-                deduped = add(resource)
-                if deduped is not None:
-                    yield deduped
+                key = _resource_dedup_key(resource)
+                if key in seen:
+                    continue
+                seen.add(key)
+                yield resource
         except Exception as exc:
             logger.warning("Skipping %s: %s: %s", label, exc.__class__.__name__, exc)
+
+
+def _iter_installation_resources(installation: Installation, logger: Logger) -> Iterator[FileResource]:
+    yield from _iter_unique_resources(_installation_resource_iterators(installation), logger)
+
+
+def _count_installation_resources(installation: Installation, logger: Logger) -> int:
+    return sum(1 for _ in _iter_unique_resources(_installation_resource_iterators(installation), logger))
 
 
 def _iter_directory_resources(root: Path):
     for file_path in root.rglob("*"):
         if file_path.is_file():
             yield FileResource.from_path(file_path)
+
+
+def _count_directory_resources(root: Path) -> int:
+    return sum(1 for file_path in root.rglob("*") if file_path.is_file())
 
 
 def _resource_relative_source(base_path: Path, resource: FileResource) -> Path:
@@ -828,19 +916,23 @@ def _resource_relative_source(base_path: Path, resource: FileResource) -> Path:
         return Path(filepath.name)
 
 
-def _resource_output_path(output_root: Path, base_path: Path, resource: FileResource) -> Path:
-    relative_source = _resource_relative_source(base_path, resource)
+def _resource_output_path(output_root: Path, relative_source: Path, resource: FileResource) -> Path:
     target_path = relative_source / resource.filename() if (resource.inside_capsule or resource.inside_bif) else relative_source
     return output_root / target_path.with_suffix(f"{target_path.suffix}.json" if target_path.suffix else ".json")
 
 
+def _resource_progress_label(relative_source: Path, resource: FileResource) -> str:
+    if resource.inside_capsule or resource.inside_bif:
+        return (relative_source / resource.filename()).as_posix()
+    return relative_source.as_posix()
+
+
 def _build_embedded_document(
-    base_path: Path,
+    relative_source: Path,
     resource: FileResource,
     data: bytes,
     serialized: SerializedResourcePayload,
 ) -> dict[str, JsonValue]:
-    relative_source = _resource_relative_source(base_path, resource)
     payload: dict[str, JsonValue] = {
         "resource": resource.filename(),
         "resname": resource.resname(),
@@ -865,6 +957,7 @@ def _export_file_resources(
     base_path: Path,
     output_root: Path,
     logger: Logger,
+    total_resources: int = 0,
 ) -> int:
     output_root.mkdir(parents=True, exist_ok=True)
 
@@ -873,17 +966,27 @@ def _export_file_resources(
     error_count: int = 0
     processed_count: int = 0
     created_directories: set[Path] = set()
+    progress = _ExportProgressReporter(logger, total_resources)
 
     for index, resource in enumerate(resources, start=1):
         processed_count: int = index
-        destination: Path = _resource_output_path(output_root, base_path, resource)
+        relative_source = _resource_relative_source(base_path, resource)
+        progress.update(index, _resource_progress_label(relative_source, resource))
+        destination: Path = _resource_output_path(output_root, relative_source, resource)
         if destination.parent not in created_directories:
             destination.parent.mkdir(parents=True, exist_ok=True)
             created_directories.add(destination.parent)
 
         try:
             data: bytes = resource.data()
-            source: bytes | Path = Path(resource.filepath()) if not (resource.inside_capsule or resource.inside_bif) and Path(resource.filepath()).is_file() else data
+            resource_path = Path(resource.filepath())
+            source: bytes | Path = (
+                resource_path
+                if not (resource.inside_capsule or resource.inside_bif)
+                and cast(ResourceType, resource.restype()) == ResourceType.MDL
+                and resource_path.is_file()
+                else data
+            )
             serialized: SerializedResourcePayload = serialize_resource_payload(
                 source,
                 cast(ResourceType, resource.restype()),
@@ -893,27 +996,19 @@ def _export_file_resources(
                 fallback_count += 1
             else:
                 supported_count += 1
-            destination.write_bytes(_json_dumps_bytes(_build_embedded_document(base_path, resource, data, serialized)))
+            destination.write_bytes(_json_dumps_bytes(_build_embedded_document(relative_source, resource, data, serialized)))
         except Exception as exc:
             error_count += 1
             error_payload: dict[str, JsonValue] = {
                 "resource": resource.filename(),
-                "source_path": str(resource.filepath()),
+                "source_path": relative_source.as_posix(),
                 "error": f"{exc.__class__.__name__}: {exc}",
             }
             destination.write_bytes(_json_dumps_bytes(error_payload))
-
-        if index % 500 == 0:
-            logger.info(
-                "Processed %s resources (%s readable, %s binary, %s errors)",
-                index,
-                supported_count,
-                fallback_count,
-                error_count,
-            )
         if index % 1000 == 0:
             clear_file_data_cache()
 
+    progress.finish()
     clear_file_data_cache()
     logger.info(
         "Processed %s resources (%s readable, %s binary, %s errors)",
@@ -932,22 +1027,28 @@ def export_installation_to_json_tree(installation_path: Path, output_root: Path,
         logger.exception("Invalid installation path: %s", installation_path)
         return 1
 
+    total_resources = _count_installation_resources(installation, logger)
     logger.info("Exporting resources from %s to %s", installation_path, output_root)
+    logger.info("Discovered %s resources to export", total_resources)
     return _export_file_resources(
         _iter_installation_resources(installation, logger),
         base_path=installation_path,
         output_root=output_root,
         logger=logger,
+        total_resources=total_resources,
     )
 
 
 def export_directory_to_json_tree(directory_path: Path, output_root: Path, logger: Logger) -> int:
+    total_resources = _count_directory_resources(directory_path)
     logger.info("Exporting resources from %s to %s", directory_path, output_root)
+    logger.info("Discovered %s resources to export", total_resources)
     return _export_file_resources(
         _iter_directory_resources(directory_path),
         base_path=directory_path,
         output_root=output_root,
         logger=logger,
+        total_resources=total_resources,
     )
 
 
