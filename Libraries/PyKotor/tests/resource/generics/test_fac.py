@@ -310,7 +310,7 @@ class TestFAC(TestCase):
         assert friendly_rep is not None and friendly_rep.reputation == 95
 
     def test_missing_field_defaults(self) -> None:
-        """Test defaults when fields are omitted (REVA: engine uses ""/0/0xFFFFFFFF/0/0/50 or 0 for FactionRep)."""
+        """Test defaults when fields are omitted (engine uses ""/0/0xFFFFFFFF/0/0/50 or 0 for FactionRep)."""
         # Minimal GFF: one faction struct with only FactionName set; others omitted → our defaults
         minimal_fac_xml = """<gff3>
           <struct id="-1">

@@ -153,10 +153,6 @@ python Tools\KotorDiff\src\__main__.py
 - Build Model ASCII Compiler — one-file console binary via PyInstaller.
 - Build Toolset - PyInstaller — bundled GUI build.
 
-**REVA Project Path**
-- Default `.gpr`: `%USERPROFILE%\Odyssey.gpr` (Windows).
-- Use: `open-project %USERPROFILE%\Odyssey.gpr` before game engine analyses.
-
 **Read First**
 - CONVENTIONS.md – root coding conventions and typing/performance rules.
 - README.md – overview, features, quick install.

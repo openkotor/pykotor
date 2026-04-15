@@ -459,7 +459,7 @@ Doors have 3 [walkmesh](Level-Layout-Formats#bwm) states that define pathfinding
 
 This DWK lookup and extraction sequence is implemented in the door walkmesh path in the kit toolchain ([`kit.py` L1090-L1174](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1090-L1174)).
 
-For a game-engine reference, see [`door.cpp` L80–L94](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/door.cpp#L80-L94) in reone, which attaches closed and open [DWK](Level-Layout-Formats#bwm) walkmeshes to the door model scene node.
+**Game Engine Reference (reone):** [`door.cpp` L80–L94](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/door.cpp#L80-L94) — attaches closed/open [DWK](Level-Layout-Formats#bwm) walkmeshes to the door model scene node
 
 ---
 
@@ -493,7 +493,7 @@ Placeables have [walkmeshes](Level-Layout-Formats#bwm) that define their collisi
 
 These PWK resolution rules are implemented in the same placeable walkmesh extraction routine ([`kit.py` L1176-L1251](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/tools/kit.py#L1176-L1251)).
 
-For a game-engine reference, see [`placeable.cpp` L77–L80](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/placeable.cpp#L77-L80) in reone, which loads [PWK](Level-Layout-Formats#bwm) for the resolved placeable model (`ResType::Pwk`).
+**Game Engine Reference (reone):** [`placeable.cpp` L77–L80](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/placeable.cpp#L77-L80) — loads [PWK](Level-Layout-Formats#bwm) for the resolved placeable model (`ResType::Pwk`)
 
 ---
 
