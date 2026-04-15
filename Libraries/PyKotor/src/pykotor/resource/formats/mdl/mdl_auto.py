@@ -205,7 +205,7 @@ def _is_mdl_aabb_seek_oserror(exc: OSError) -> bool:
 def detect_mdl(
     source: SOURCE_TYPES,
     offset: int = 0,
-) -> ResourceType:
+) -> ResourceType | ToolsetFormat:
     """Returns what format the MDL data is believed to be in.
 
     This function performs a basic check and does not guarantee accuracy of the result or integrity of the data.
@@ -226,7 +226,7 @@ def detect_mdl(
         The format of the MDL data.
     """
 
-    def check(first4) -> RESOURCE_FORMAT | Literal[ResourceType.INVALID]:
+    def check(first4) -> RESOURCE_FORMAT:
         if first4 == b"\x00\x00\x00\x00":
             return ResourceType.MDL
         return ToolsetFormat.MDL_ASCII
