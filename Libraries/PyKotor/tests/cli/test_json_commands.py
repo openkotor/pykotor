@@ -18,7 +18,8 @@ from pykotor.common.language import Language
 from pykotor.common.misc import Game
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats.rim import RIM, write_rim
-from pykotor.resource.formats.mdl import MDLFace
+from pykotor.extract.file import FileResource
+from pykotor.resource.formats.mdl import MDL, MDLFace, write_mdl
 from pykotor.resource.formats.ssf import SSF, SSFSound, read_ssf
 from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk
 from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, bytes_tpc, read_tpc
@@ -27,6 +28,7 @@ from pykotor.tools.resource_json import (
     _serialize_mdl_face,
     export_installation_to_json_tree,
     iter_installation_resource_documents,
+    serialize_file_resource_document,
     serialize_resource_payload,
 )
 
@@ -654,6 +656,47 @@ def test_serialize_resource_payload_falls_back_to_base64_for_invalid_mdl(
 
     assert payload.encoding == "base64"
     assert payload.payload == base64.b64encode(b"not-a-mdl").decode("ascii")
+
+
+def test_serialize_file_resource_document_uses_mdl_path_for_read_mdl(tmp_path: Path) -> None:
+    """Loose .mdl on disk must be serialized via Path so paired .mdx is discovered."""
+    model_dir = tmp_path / "models"
+    model_dir.mkdir()
+    mdl_obj = MDL()
+    mdl_obj.name = "plane"
+    mdl_path = model_dir / "plane.mdl"
+    mdx_path = model_dir / "plane.mdx"
+    write_mdl(mdl_obj, mdl_path, ResourceType.MDL, target_ext=mdx_path)
+
+    resource = FileResource.from_path(mdl_path)
+    result = serialize_file_resource_document(resource, base_path=tmp_path)
+
+    assert result.relative_path.replace("\\", "/") == "models/plane.mdl.json"
+    assert result.document.get("encoding") == "mdl_json"
+    data = result.document.get("data")
+    assert isinstance(data, dict)
+    assert data.get("format") == "mdl_json"
+    assert data.get("newmodel") == "plane"
+
+
+def test_serialize_file_resource_document_surfaces_payload_errors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    nss_path = tmp_path / "sample.nss"
+    nss_path.write_text("void main() {}\n", encoding="utf-8")
+    resource = FileResource.from_path(nss_path)
+
+    def boom(*_args: object, **_kwargs: object) -> None:
+        raise ValueError("serialization failed")
+
+    monkeypatch.setattr("pykotor.tools.resource_json.serialize_resource_payload", boom)
+
+    result = serialize_file_resource_document(resource, base_path=tmp_path)
+
+    assert "error" in result.document
+    err = str(result.document["error"])
+    assert "ValueError" in err
+    assert "serialization failed" in err
 
 
 def test_diff_installation_forwards_merge_flags(
