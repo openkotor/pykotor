@@ -349,11 +349,12 @@ class TestDiffCommand:
             merge_paths=[str(tmp_path / "mod_a.dlg"), str(tmp_path / "mod_b.dlg")],
             merge_resource_type=None,
             tslpatchdata=str(tmp_path / "tslpatchdata"),
+            merge_conflict_output=str(tmp_path / "conflicts"),
             output_log=None,
             output_mode="full",
             log_level="info",
             merge_module="unk_m41aa",
-            merge_conflict_policy="fail",
+            merge_conflict_policy="artifact",
         )
 
         logger = RobustLogger()
@@ -363,7 +364,8 @@ class TestDiffCommand:
 
         assert result == 0
         assert captured_config is not None
-        assert captured_config.merge_conflict_policy == "fail"
+        assert captured_config.merge_conflict_policy == "artifact"
+        assert captured_config.merge_conflict_output_path == tmp_path / "conflicts"
         assert captured_config.merge_source_path == tmp_path
 
 
@@ -841,11 +843,12 @@ def test_cmd_diff_merge_tslpatcher_passes_conflict_policy(tmp_path: Path):
         merge_paths=[str(tmp_path / "mod_a.dlg"), str(tmp_path / "mod_b.dlg")],
         merge_resource_type=None,
         tslpatchdata=str(tmp_path / "tslpatchdata"),
+        merge_conflict_output=str(tmp_path / "conflicts"),
         output_log=None,
         output_mode="full",
         log_level="info",
         merge_module="unk_m41aa",
-        merge_conflict_policy="fail",
+        merge_conflict_policy="artifact",
     )
 
     logger = RobustLogger()
@@ -855,7 +858,8 @@ def test_cmd_diff_merge_tslpatcher_passes_conflict_policy(tmp_path: Path):
 
     assert result == 0
     assert captured_config is not None
-    assert captured_config.merge_conflict_policy == "fail"
+    assert captured_config.merge_conflict_policy == "artifact"
+    assert captured_config.merge_conflict_output_path == tmp_path / "conflicts"
 
 
 class TestCompositeModules:

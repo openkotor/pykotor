@@ -377,6 +377,11 @@ def cmd_diff(
             merge_module_root=getattr(args, "merge_module", None),
             merge_modded_paths=[Path(normalize_path_arg(p)) for p in merge_paths_raw],
             merge_conflict_policy=str(getattr(args, "merge_conflict_policy", "mod-a")),
+            merge_conflict_output_path=Path(
+                normalize_path_arg(getattr(args, "merge_conflict_output"))
+            )
+            if getattr(args, "merge_conflict_output", None)
+            else None,
         )
         return run_application(config)
 

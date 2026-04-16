@@ -1089,9 +1089,14 @@ Compare two paths and show differences. Supports any combination of:
     )
     diff_parser.add_argument(
         "--merge-conflict-policy",
-        choices=["mod-a", "mod-b", "fail"],
+        choices=["mod-a", "mod-b", "fail", "artifact"],
         default="mod-a",
-        help="Conflict resolution policy for --merge-tslpatcher (default: mod-a).",
+        help="Conflict resolution policy for --merge-tslpatcher: prefer mod-a, prefer mod-b, fail, or emit git-style conflict artifacts (default: mod-a).",
+    )
+    diff_parser.add_argument(
+        "--merge-conflict-output",
+        type=str,
+        help="Optional output folder for git-style conflict artifacts. Defaults to <tslpatchdata>/merge_conflicts.",
     )
     diff_parser.add_argument(
         "--tslpatchdata",

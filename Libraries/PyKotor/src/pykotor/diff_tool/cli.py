@@ -161,8 +161,13 @@ def add_kotordiff_arguments(parser: ArgumentParser) -> None:
         "--merge-conflict-policy",
         type=str,
         default="mod-a",
-        choices=["mod-a", "mod-b", "fail"],
-        help="Conflict resolution policy for --merge-tslpatcher: prefer the first merge path, prefer the second, or fail (default: mod-a).",
+        choices=["mod-a", "mod-b", "fail", "artifact"],
+        help="Conflict resolution policy for --merge-tslpatcher: prefer the first merge path, prefer the second, fail immediately, or emit git-style conflict artifacts (default: mod-a).",
+    )
+    parser.add_argument(
+        "--merge-conflict-output",
+        type=str,
+        help="Optional output folder for git-style conflict artifacts. Defaults to <tslpatchdata>/merge_conflicts.",
     )
 
     # GUI/Console options
@@ -302,6 +307,9 @@ def execute_cli(cmdline_args: Namespace | Any | object):
             merge_module_root=getattr(cmdline_args, "merge_module", None),
             merge_modded_paths=[Path(normalize_path_arg(path)) for path in merge_paths_raw],
             merge_conflict_policy=str(getattr(cmdline_args, "merge_conflict_policy", "mod-a")),
+            merge_conflict_output_path=Path(normalize_path_arg(getattr(cmdline_args, "merge_conflict_output")))
+            if getattr(cmdline_args, "merge_conflict_output", None)
+            else None,
         )
         exit_code = run_application(config)
         sys.exit(exit_code)

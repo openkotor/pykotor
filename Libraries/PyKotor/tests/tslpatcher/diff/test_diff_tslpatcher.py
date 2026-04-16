@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pathlib
+import re
 import shutil
 import sys
 import tempfile
@@ -41,7 +42,7 @@ from pykotor.diff_tool.app import DiffConfig, run_application
 from pykotor.diff_tool.merge import MergeConflictError, _align_node_sequence
 from pykotor.resource.formats.rim import RIM, write_rim
 from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
-from pykotor.resource.formats.gff.gff_data import GFFContent
+from pykotor.resource.formats.gff.gff_data import GFFContent, GFFFieldType
 from pykotor.resource.formats.ssf import SSF, SSFSound, bytes_ssf
 from pykotor.resource.formats.ssf.ssf_auto import read_ssf, write_ssf
 from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk
@@ -52,6 +53,7 @@ from pykotor.resource.type import ResourceType
 from pykotor.tslpatcher.config import PatcherConfig
 from pykotor.tslpatcher.logger import PatchLogger
 from pykotor.tslpatcher.memory import PatcherMemory
+from pykotor.tslpatcher.mods.gff import AddFieldGFF, FieldValueConstant, ModificationsGFF
 from pykotor.tslpatcher.mods.twoda import (
     AddColumn2DA,
     ChangeRow2DA,
@@ -61,6 +63,7 @@ from pykotor.tslpatcher.mods.twoda import (
     TargetType,
 )
 from pykotor.tslpatcher.reader import ConfigReader
+from pykotor.tslpatcher.writer import ModificationsByType, TSLPatcherINISerializer
 
 
 class TestTSLPatcherFromDiff(unittest.TestCase):
@@ -407,6 +410,83 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
                     merge_conflict_policy="fail",
                 )
             )
+
+    def test_merge_tslpatcher_can_emit_conflict_artifacts(self):
+        base_dlg = self._create_simple_dlg()
+        installation_dir = self._create_test_installation(base_dlg)
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].comment = "conflict_a"
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_entries(as_sorted=True)[0].comment = "conflict_b"
+
+        mod_a_path = Path(self.temp_dir) / "artifact_conflict_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "artifact_conflict_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        tslpatchdata_path = Path(self.temp_dir) / "artifact_conflict_tslpatchdata"
+        conflict_output_path = tslpatchdata_path / "custom_conflicts"
+        exit_code = run_application(
+            DiffConfig(
+                paths=[],
+                tslpatchdata_path=tslpatchdata_path,
+                ini_filename="changes.ini",
+                logging_enabled=False,
+                output_mode=OutputMode.QUIET,
+                merge_source_path=installation_dir,
+                merge_resource_name="unk41_mission.dlg",
+                merge_modded_paths=[mod_a_path, mod_b_path],
+                merge_conflict_policy="artifact",
+                merge_conflict_output_path=conflict_output_path,
+            )
+        )
+
+        self.assertEqual(exit_code, 1)
+        self.assertFalse((tslpatchdata_path / "changes.ini").exists())
+        self.assertTrue((conflict_output_path / "README.txt").is_file())
+        self.assertTrue((conflict_output_path / "conflicts.json").is_file())
+        self.assertTrue((conflict_output_path / "base_unk41_mission.dlg").is_file())
+        self.assertTrue((conflict_output_path / "mod_a_unk41_mission.dlg").is_file())
+        self.assertTrue((conflict_output_path / "mod_b_unk41_mission.dlg").is_file())
+
+    def test_serializer_uniquifies_duplicate_gff_section_names(self):
+        serializer = TSLPatcherINISerializer()
+        modifications = ModificationsByType.create_empty()
+        modifications.gff = [
+            ModificationsGFF(
+                "duplicate_test.dlg",
+                replace=False,
+                modifiers=[
+                    AddFieldGFF(
+                        "duplicate_section",
+                        "CameraID",
+                        GFFFieldType.Int32,
+                        FieldValueConstant(1),
+                        "",
+                    ),
+                    AddFieldGFF(
+                        "duplicate_section",
+                        "SoundExists",
+                        GFFFieldType.UInt8,
+                        FieldValueConstant(1),
+                        "",
+                    ),
+                ],
+            )
+        ]
+
+        ini_text = serializer.serialize(
+            modifications,
+            include_header=True,
+            include_settings=True,
+            verbose=False,
+        )
+
+        section_names = re.findall(r"^\[(.+?)\]$", ini_text, flags=re.MULTILINE)
+        self.assertEqual(len(section_names), len(set(section_names)))
+        self.assertIn("[duplicate_section]", ini_text)
+        self.assertIn("[duplicate_section_1]", ini_text)
 
     def test_merge_tslpatcher_treats_blank_localizedstring_variants_as_equal(self):
         base_dlg = self._create_simple_dlg()

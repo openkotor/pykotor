@@ -192,6 +192,11 @@ class IniGenerationConfig:
 class TSLPatcherINISerializer:
     """Serializes PatcherModifications objects to exact TSLPatcher INI format."""
 
+    def __init__(self) -> None:
+        self._pending_localized_string_subsections: list[tuple[str, LocalizedStringDelta]] = []
+        self._reserved_section_names: set[str] = set()
+        self._section_name_counts: dict[str, int] = {}
+
     @staticmethod
     def _format_ini_value(value: str | int | object) -> str:
         """Format an INI file value, wrapping in double quotes if it contains a single quote.
@@ -245,6 +250,10 @@ class TSLPatcherINISerializer:
                 f"{len(modifications_by_type.install)} install files",
             )
 
+            self._pending_localized_string_subsections.clear()
+            self._reserved_section_names.clear()
+            self._section_name_counts.clear()
+
         lines: list[str] = []
 
         # Add header comment
@@ -288,6 +297,17 @@ class TSLPatcherINISerializer:
         if verbose:
             print(f"Serialization complete: {len(lines)} total lines")
         return "\n".join(lines)
+
+    def _reserve_section_name(self, preferred_name: str) -> str:
+        normalized = preferred_name or "section"
+        count = self._section_name_counts.get(normalized, 0)
+        while True:
+            candidate = normalized if count == 0 else f"{normalized}_{count}"
+            if candidate not in self._reserved_section_names:
+                self._reserved_section_names.add(candidate)
+                self._section_name_counts[normalized] = count + 1
+                return candidate
+            count += 1
 
     def _generate_header(self) -> list[str]:
         """Generate INI file header comment."""
@@ -656,11 +676,9 @@ class TSLPatcherINISerializer:
                     # For LocalizedString fields with LocalizedStringDelta, serialize inline using subsection reference
                     # Generate a unique section name based on the path
                     sanitized_path = path_str.replace("\\", "_").replace("[", "_").replace("]", "_")
-                    section_name = f"{mod_gff.sourcefile}_{sanitized_path}"
+                    section_name = self._reserve_section_name(f"{mod_gff.sourcefile}_{sanitized_path}")
                     lines.append(f"{path_str}=<{section_name}>")
                     # Store for serialization after main section
-                    if not hasattr(self, "_pending_localized_string_subsections"):
-                        self._pending_localized_string_subsections = []
                     self._pending_localized_string_subsections.append(
                         (section_name, loc_string_delta)
                     )
@@ -683,23 +701,21 @@ class TSLPatcherINISerializer:
                 addfield_modifiers.append(gff_modifier)
 
         # Add AddField# references
+        addfield_section_names: list[str] = []
         for idx, gff_modifier in enumerate(addfield_modifiers):
-            section_name = gff_modifier.identifier or f"addfield_{idx}"
+            section_name = self._reserve_section_name(gff_modifier.identifier or f"addfield_{idx}")
+            addfield_section_names.append(section_name)
             # Section name references must match section headers exactly (no quotes)
             lines.append(f"AddField{idx}={section_name}")
 
         lines.append("")
 
         # Generate AddField subsections after the main file section
-        for idx, gff_modifier in enumerate(addfield_modifiers):
-            section_name = gff_modifier.identifier or f"addfield_{idx}"
+        for gff_modifier, section_name in zip(addfield_modifiers, addfield_section_names):
             lines.extend(self._serialize_addfield_section(gff_modifier, section_name))
 
         # Generate LocalizedString subsections (for inline LocalizedStringDelta fields)
-        if (
-            hasattr(self, "_pending_localized_string_subsections")
-            and self._pending_localized_string_subsections
-        ):
+        if self._pending_localized_string_subsections:
             for section_name, loc_string_delta in self._pending_localized_string_subsections:
                 lines.append("")
                 lines.append(f"[{section_name}]")
@@ -796,6 +812,7 @@ class TSLPatcherINISerializer:
         if gff_modifier.modifiers:
             # Count AddField modifiers and Memory2DAModifierGFF separately
             addfield_count = 0
+            nested_section_names: list[tuple[AddFieldGFF | AddStructToListGFF, str]] = []
             for nested_mod in gff_modifier.modifiers:
                 if isinstance(nested_mod, Memory2DAModifierGFF):
                     # Memory assignment in nested context
@@ -808,9 +825,10 @@ class TSLPatcherINISerializer:
                             f"2DAMEMORY{nested_mod.dest_token_id}=2DAMEMORY{nested_mod.src_token_id}"
                         )
                 elif isinstance(nested_mod, (AddFieldGFF, AddStructToListGFF)):
-                    nested_section = (
+                    nested_section = self._reserve_section_name(
                         nested_mod.identifier or f"{section_name}_nested_{addfield_count}"
                     )
+                    nested_section_names.append((nested_mod, nested_section))
                     # Section name references must match section headers exactly (no quotes)
                     lines.append(f"AddField{addfield_count}={nested_section}")
                     addfield_count += 1
@@ -819,10 +837,8 @@ class TSLPatcherINISerializer:
 
         # Recursively generate nested AddField/AddStructToListGFF sections
         if gff_modifier.modifiers:
-            for nested_idx, nested_mod in enumerate(gff_modifier.modifiers):
-                if isinstance(nested_mod, (AddFieldGFF, AddStructToListGFF)):
-                    nested_section = nested_mod.identifier or f"{section_name}_nested_{nested_idx}"
-                    lines.extend(self._serialize_addfield_section(nested_mod, nested_section))
+            for nested_mod, nested_section in nested_section_names:
+                lines.extend(self._serialize_addfield_section(nested_mod, nested_section))
 
         return lines
 

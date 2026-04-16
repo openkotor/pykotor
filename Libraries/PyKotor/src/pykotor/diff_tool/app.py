@@ -65,6 +65,7 @@ class DiffConfig:
     merge_module_root: str | None = None
     merge_modded_paths: list[Path] | None = None
     merge_conflict_policy: str = "mod-a"
+    merge_conflict_output_path: Path | None = None
 
 
 gff_types: list[str] = list(gff.GFFContent.get_extensions())
