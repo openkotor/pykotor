@@ -39,7 +39,7 @@ from pykotor.common.language import Language
 from pykotor.common.misc import Game, ResRef
 from pykotor.common.language import LocalizedString
 from pykotor.diff_tool.app import DiffConfig, run_application
-from pykotor.diff_tool.merge import MergeConflictError, _align_node_sequence
+from pykotor.diff_tool.merge import MergeConflictError, _align_node_sequence, _normalize_merge_conflict_policy
 from pykotor.resource.formats.rim import RIM, write_rim
 from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
 from pykotor.resource.formats.gff.gff_data import GFFContent, GFFFieldType
@@ -449,6 +449,89 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
         self.assertTrue((conflict_output_path / "base_unk41_mission.dlg").is_file())
         self.assertTrue((conflict_output_path / "mod_a_unk41_mission.dlg").is_file())
         self.assertTrue((conflict_output_path / "mod_b_unk41_mission.dlg").is_file())
+
+    def test_merge_tslpatcher_artifact_writes_to_default_merge_conflicts_dir(self):
+        """When --merge-conflict-output is omitted, artifacts go under tslpatchdata/merge_conflicts."""
+        base_dlg = self._create_simple_dlg()
+        installation_dir = self._create_test_installation(base_dlg)
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].comment = "conflict_a"
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_entries(as_sorted=True)[0].comment = "conflict_b"
+
+        mod_a_path = Path(self.temp_dir) / "default_artifact_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "default_artifact_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        tslpatchdata_path = Path(self.temp_dir) / "default_artifact_tslpatchdata"
+        expected_dir = tslpatchdata_path / "merge_conflicts"
+        exit_code = run_application(
+            DiffConfig(
+                paths=[],
+                tslpatchdata_path=tslpatchdata_path,
+                ini_filename="changes.ini",
+                logging_enabled=False,
+                output_mode=OutputMode.QUIET,
+                merge_source_path=installation_dir,
+                merge_resource_name="unk41_mission.dlg",
+                merge_modded_paths=[mod_a_path, mod_b_path],
+                merge_conflict_policy="artifact",
+            )
+        )
+
+        self.assertEqual(exit_code, 1)
+        self.assertFalse((tslpatchdata_path / "changes.ini").exists())
+        self.assertTrue((expected_dir / "README.txt").is_file())
+        self.assertTrue((expected_dir / "conflicts.json").is_file())
+
+    def test_merge_tslpatcher_raises_when_base_resolution_is_ambiguous(self):
+        """Two copies of the same resname in a folder source must not pick a silent winner."""
+        base_dlg = self._create_simple_dlg()
+        install_dir = Path(self.temp_dir) / "ambig_folder_install"
+        sub_a = install_dir / "a"
+        sub_b = install_dir / "b"
+        sub_a.mkdir(parents=True)
+        sub_b.mkdir(parents=True)
+        write_dlg(base_dlg, sub_a / "unk41_mission.dlg", Game.K1, ResourceType.DLG)
+        write_dlg(base_dlg, sub_b / "unk41_mission.dlg", Game.K1, ResourceType.DLG)
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].comment = "mod_a_only"
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_replies(as_sorted=True)[0].comment = "mod_b_only"
+
+        mod_a_path = Path(self.temp_dir) / "ambig_mod_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "ambig_mod_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        with self.assertRaises(MergeConflictError) as ctx:
+            run_application(
+                DiffConfig(
+                    paths=[],
+                    tslpatchdata_path=Path(self.temp_dir) / "ambig_tslpatchdata",
+                    ini_filename="changes.ini",
+                    logging_enabled=False,
+                    output_mode=OutputMode.QUIET,
+                    merge_source_path=install_dir,
+                    merge_resource_name="unk41_mission.dlg",
+                    merge_modded_paths=[mod_a_path, mod_b_path],
+                )
+            )
+        self.assertIn("ambiguous", str(ctx.exception).lower())
+
+    def test_normalize_merge_conflict_policy_accepts_known_values(self):
+        self.assertEqual(_normalize_merge_conflict_policy("mod-a"), "mod-a")
+        self.assertEqual(_normalize_merge_conflict_policy("mod-b"), "mod-b")
+        self.assertEqual(_normalize_merge_conflict_policy("fail"), "fail")
+        self.assertEqual(_normalize_merge_conflict_policy("artifact"), "artifact")
+
+    def test_normalize_merge_conflict_policy_defaults_unknown(self):
+        self.assertEqual(_normalize_merge_conflict_policy(None), "mod-a")
+        self.assertEqual(_normalize_merge_conflict_policy(""), "mod-a")
+        self.assertEqual(_normalize_merge_conflict_policy("typo"), "mod-a")
 
     def test_serializer_uniquifies_duplicate_gff_section_names(self):
         serializer = TSLPatcherINISerializer()
