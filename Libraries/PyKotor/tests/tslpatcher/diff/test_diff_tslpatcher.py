@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import pathlib
 import re
 import shutil
@@ -39,7 +40,11 @@ from pykotor.common.language import Language
 from pykotor.common.misc import Game, ResRef
 from pykotor.common.language import LocalizedString
 from pykotor.diff_tool.app import DiffConfig, run_application
-from pykotor.diff_tool.merge import MergeConflictError, _align_node_sequence
+from pykotor.diff_tool.merge import (
+    MergeConflictError,
+    _align_node_sequence,
+    _normalize_merge_conflict_policy,
+)
 from pykotor.resource.formats.rim import RIM, write_rim
 from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
 from pykotor.resource.formats.gff.gff_data import GFFContent, GFFFieldType
@@ -449,6 +454,84 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
         self.assertTrue((conflict_output_path / "base_unk41_mission.dlg").is_file())
         self.assertTrue((conflict_output_path / "mod_a_unk41_mission.dlg").is_file())
         self.assertTrue((conflict_output_path / "mod_b_unk41_mission.dlg").is_file())
+
+    def test_merge_tslpatcher_artifact_writes_default_merge_conflicts_dir(self):
+        """Without --merge-conflict-output, artifacts land under tslpatchdata/merge_conflicts."""
+        base_dlg = self._create_simple_dlg()
+        installation_dir = self._create_test_installation(base_dlg)
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].comment = "conflict_a"
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_entries(as_sorted=True)[0].comment = "conflict_b"
+
+        mod_a_path = Path(self.temp_dir) / "default_artifact_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "default_artifact_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        tslpatchdata_path = Path(self.temp_dir) / "default_artifact_tslpatchdata"
+        exit_code = run_application(
+            DiffConfig(
+                paths=[],
+                tslpatchdata_path=tslpatchdata_path,
+                ini_filename="changes.ini",
+                logging_enabled=False,
+                output_mode=OutputMode.QUIET,
+                merge_source_path=installation_dir,
+                merge_resource_name="unk41_mission.dlg",
+                merge_modded_paths=[mod_a_path, mod_b_path],
+                merge_conflict_policy="artifact",
+            )
+        )
+
+        self.assertEqual(exit_code, 1)
+        default_dir = tslpatchdata_path / "merge_conflicts"
+        self.assertTrue((default_dir / "README.txt").is_file())
+        self.assertTrue((default_dir / "conflicts.json").is_file())
+
+    def test_merge_tslpatcher_artifact_conflicts_json_records_conflict_details(self):
+        base_dlg = self._create_simple_dlg()
+        installation_dir = self._create_test_installation(base_dlg)
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].comment = "json_conflict_a"
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_entries(as_sorted=True)[0].comment = "json_conflict_b"
+
+        mod_a_path = Path(self.temp_dir) / "json_artifact_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "json_artifact_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        tslpatchdata_path = Path(self.temp_dir) / "json_artifact_tslpatchdata"
+        conflict_output_path = tslpatchdata_path / "json_conflicts"
+        exit_code = run_application(
+            DiffConfig(
+                paths=[],
+                tslpatchdata_path=tslpatchdata_path,
+                ini_filename="changes.ini",
+                logging_enabled=False,
+                output_mode=OutputMode.QUIET,
+                merge_source_path=installation_dir,
+                merge_resource_name="unk41_mission.dlg",
+                merge_modded_paths=[mod_a_path, mod_b_path],
+                merge_conflict_policy="artifact",
+                merge_conflict_output_path=conflict_output_path,
+            )
+        )
+
+        self.assertEqual(exit_code, 1)
+        report = json.loads((conflict_output_path / "conflicts.json").read_text(encoding="utf-8"))
+        self.assertEqual(report["resource"], "unk41_mission.dlg")
+        self.assertEqual(report["conflict_policy"], "artifact")
+        self.assertGreater(len(report["conflicts"]), 0)
+        for item in report["conflicts"]:
+            self.assertIn("context", item)
+            self.assertIn("message", item)
+        self.assertIn("base", report["artifacts"])
+        self.assertIn("mod_a", report["artifacts"])
+        self.assertIn("mod_b", report["artifacts"])
 
     def test_serializer_uniquifies_duplicate_gff_section_names(self):
         serializer = TSLPatcherINISerializer()
@@ -1271,6 +1354,16 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
         self._assert_generated_ini_equals(generated_ini, expected_ini)
 
     # endregion
+
+
+class TestMergeConflictPolicyNormalization(unittest.TestCase):
+    def test_known_policies_return_unchanged(self) -> None:
+        for policy in ("mod-a", "mod-b", "fail", "artifact"):
+            self.assertEqual(_normalize_merge_conflict_policy(policy), policy)
+
+    def test_unknown_or_missing_policy_defaults_to_mod_a(self) -> None:
+        self.assertEqual(_normalize_merge_conflict_policy(None), "mod-a")
+        self.assertEqual(_normalize_merge_conflict_policy("not-a-policy"), "mod-a")
 
 
 if __name__ == "__main__":
