@@ -213,6 +213,7 @@ All script hooks store a ResRef to an NCS file; leave blank for no script. The t
   - [feat](2DA-File-Format#feat2da)
   - [racialtypes](2DA-File-Format#racialtypes2da)
 - [Bioware Aurora Creature Format](Bioware-Aurora-Creature) - Official creature specification
+- [How to Avoid Killing Mission After Joining the Dark Side](how-to-avoid-killing-mission-after-joining-the-dark-side) — practical example of party-member UTC preparation (equipment, levels, implants) for a K1 dark-side ending
 
 
 ---

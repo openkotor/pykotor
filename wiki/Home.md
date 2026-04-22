@@ -61,6 +61,10 @@ This wiki is part of the shipped Holocron Toolset help payload rather than websi
 - [TSLPatcher GFF syntax](TSLPatcher-GFF-Syntax)
 - [TSLPatcher install and hack syntax](TSLPatcher-Install-and-Hack-Syntax)
 
+## Community guides
+
+- [How to Avoid Killing Mission After Joining the Dark Side](how-to-avoid-killing-mission-after-joining-the-dark-side) — step-by-step K1 gameplay guide covering companion UTC preparation, party management, and dark-side-ending edge cases
+
 ## Preserved source documents
 
 - **Bioware Aurora**: [Core Formats](Bioware-Aurora-Core-Formats), [Module & Area](Bioware-Aurora-Module-and-Area), [Creature](Bioware-Aurora-Creature), [Items, Economy & Narrative](Bioware-Aurora-Items-Economy-and-Narrative), [Spatial & Interactive](Bioware-Aurora-Spatial-and-Interactive), [Conversation](Bioware-Aurora-Conversation)
