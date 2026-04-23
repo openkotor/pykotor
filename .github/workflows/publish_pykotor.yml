@@ -726,7 +726,7 @@ jobs:
       filesToArchive: ${{ steps.set-matrix.outputs.matrixJson }}
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: published_workflow_builds/
           pattern: publish_*
@@ -890,7 +890,7 @@ jobs:
     steps:
       - name: Download repackages from package job
         if: ${{ success() || failure() }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: all_tool_dists_onearchive
           pattern: all_tool_dists*
