@@ -62,6 +62,7 @@ def sync_pyproject() -> None:
             ),
             "pykotorcli = { workspace = true }",
             "pykotor = { workspace = true }",
+            "bioware-kaitai-formats = { workspace = true }",
         ]
     )
     workspace_block = "\n".join(
