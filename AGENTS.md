@@ -47,6 +47,5 @@ This works after a successful `uv sync --all-packages --all-extras`. **Python 3.
 ### Git commits
 
 - Proposed git commands must be copy-paste-ready **single-line** commands only. Do not include comments, shell prompts, or wrapped multi-line blocks.
-- Use the normal PyKotor root add/commit command by default.
-- Never suggest `git add Tools/<Submodule>/...` from the PyKotor root for files that live inside a submodule.
-- Only use a submodule `cd` sequence when a submodule was actually edited; then commit inside the submodule first, return to the PyKotor root, and commit the updated submodule gitlink there together with any root-level file changes.
+- Use the normal PyKotor root add/commit command when only root-level files changed.
+- If a submodule was updated, recommend a single one-line command that commits the PyKotor root changes including the submodule gitlink, then `cd`s into the submodule, runs `git add .`, commits with the same message, pushes when required, and `cd`s back to the PyKotor root.
