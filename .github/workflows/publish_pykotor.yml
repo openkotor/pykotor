@@ -576,7 +576,7 @@ jobs:
       - name: Upload compiled binaries attempt 1
         if: ${{ (success() || failure()) && !env.ACT }}
         id: upload_attempt_1
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: publish_${{ matrix.tool.build_name }}_${{ matrix.os }}_${{ matrix.python-version }}_${{ matrix.architecture }}
           path: ./dist/**
@@ -586,7 +586,7 @@ jobs:
       - name: Upload compiled binaries attempt 2
         id: upload_attempt_2
         if: ${{ (success() || failure()) && !env.ACT && steps.upload_attempt_1.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: publish_${{ matrix.tool.build_name }}_${{ matrix.os }}_${{ matrix.python-version }}_${{ matrix.architecture }}
           path: ./dist/**
@@ -596,7 +596,7 @@ jobs:
       - name: Upload compiled binaries attempt 3
         id: upload_attempt_3
         if: ${{ (success() || failure()) && !env.ACT && steps.upload_attempt_2.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: publish_${{ matrix.tool.build_name }}_${{ matrix.os }}_${{ matrix.python-version }}_${{ matrix.architecture }}
           path: ./dist/**
@@ -606,7 +606,7 @@ jobs:
       - name: Upload compiled binaries attempt 4
         id: upload_attempt_4
         if: ${{ (success() || failure()) && !env.ACT && steps.upload_attempt_3.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: publish_${{ matrix.tool.build_name }}_${{ matrix.os }}_${{ matrix.python-version }}_${{ matrix.architecture }}
           path: ./dist/**
@@ -616,7 +616,7 @@ jobs:
       - name: Upload compiled binaries attempt 5
         id: upload_attempt_5
         if: ${{ (success() || failure()) && !env.ACT && steps.upload_attempt_4.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: publish_${{ matrix.tool.build_name }}_${{ matrix.os }}_${{ matrix.python-version }}_${{ matrix.architecture }}
           path: ./dist/**
@@ -872,7 +872,7 @@ jobs:
 
       - name: Upload all repackages for next job
         if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: all_tool_dists_onearchive
           path: packaged_artifacts/**
@@ -897,7 +897,7 @@ jobs:
 
       - name: Upload re-packaged artifact
         if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifactb }}
           path: all_tool_dists_onearchive/all_tool_dists_onearchive/${{ matrix.artifactb }}
