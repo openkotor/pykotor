@@ -277,7 +277,7 @@ def _load_kits_internal(
         else:
             try:
                 kit_json = json.loads(BinaryReader.load_file(file))
-            except Exception:
+            except (OSError, ValueError, UnicodeDecodeError):
                 continue
             fmt2 = kit_json.get("format")
             is_net_v01_b = isinstance(fmt2, str) and fmt2.strip() == "0.1"
