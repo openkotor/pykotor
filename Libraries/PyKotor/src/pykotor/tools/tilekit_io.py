@@ -210,11 +210,11 @@ def _load_template_entry(
     mdl_path = base_path / f"{resref}.mdl"
     mdx_path = base_path / f"{resref}.mdx"
     wok: BWM | None = None
-    wok_bytes = _load_binary(wok_path, kit_name=kit_name, kind="walkmesh", missing_files=None)
+    wok_bytes = _load_binary(wok_path, kit_name=kit_name, kind="walkmesh", missing_files=missing_files)
     if wok_bytes:
         wok = read_bwm(wok_bytes)
-    mdl = _load_binary(mdl_path, kit_name=kit_name, kind="model", missing_files=None) or b""
-    mdx = _load_binary(mdx_path, kit_name=kit_name, kind="mdx", missing_files=None) or b""
+    mdl = _load_binary(mdl_path, kit_name=kit_name, kind="model", missing_files=missing_files) or b""
+    mdx = _load_binary(mdx_path, kit_name=kit_name, kind="mdx", missing_files=missing_files) or b""
     th = _parse_doorhooks(data.get("doorhooks", []), doors)
     df_hooks_raw = data.get("hooks") or []
     df_hooks: list[DoorframeHookTemplate] = []

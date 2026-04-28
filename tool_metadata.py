@@ -51,6 +51,7 @@ class ToolInfo:
             "module_name": self.module_name,
             "requires_qt": self.requires_qt,
             "is_cli": self.is_cli,
+            "tests_path": self.tests_path,
         }
 
 
@@ -59,7 +60,8 @@ def _read_pyproject_data(tool_dir: Path) -> dict[str, object]:
     if not pyproject.is_file() or tomllib is None:
         return {}
     try:
-        return tomllib.load(pyproject.read_bytes())  # type: ignore[no-untyped-call]
+        with pyproject.open("rb") as f:
+            return tomllib.load(f)  # type: ignore[no-untyped-call]
     except (OSError, TypeError, ValueError, UnicodeError):
         return {}
 
