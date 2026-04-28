@@ -248,7 +248,7 @@ def _get_area_pth_payload(
 
 
 class TestIndoorCLIRoundtrip:
-    """Roundtrip tests for CLI: Extract → Build → Compare."""
+    """Roundtrip tests for CLI: Extract -> Build -> Compare."""
 
     def test_roundtrip_lyt_room_count(
         self,
@@ -257,7 +257,7 @@ class TestIndoorCLIRoundtrip:
         k2_installation: Installation,
         tmp_path: Path,
     ):
-        """Test: LYT room count preserved through extract → build roundtrip."""
+        """Test: LYT room count preserved through extract -> build roundtrip."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
 
@@ -836,7 +836,7 @@ class TestIndoorCLIRoundtripIndoorMapComparison:
         k2_installation: Installation,
         tmp_path: Path,
     ):
-        """Test: IndoorMap.compare() shows no differences after extract → build → extract."""
+        """Test: IndoorMap.compare() shows no differences after extract -> build -> extract."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
 

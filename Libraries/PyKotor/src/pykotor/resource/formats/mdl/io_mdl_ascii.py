@@ -367,7 +367,7 @@ class MDLAsciiWriter(ResourceWriter):
         self.write_line(1, f"bmax {mdl.bmax.x} {mdl.bmax.y} {mdl.bmax.z}")
         self.write_line(1, f"radius {mdl.radius}")
         self.write_line(0, "")
-        # Serialize the real root node as a node entry (as in binary MDL), so Binary→ASCII→Binary
+        # Serialize the real root node as a node entry (as in binary MDL), so Binary->ASCII->Binary
         # roundtrips preserve the full node set (including the model-name root).
         self._write_node(1, mdl.root, None)
         self.write_line(0, "")
@@ -877,7 +877,7 @@ class MDLAsciiWriter(ResourceWriter):
 
         self.write_line(indent, controller_name)
         for row in controller.rows:
-            # Preserve exact float32-derived values across Binary→ASCII→Binary roundtrips.
+            # Preserve exact float32-derived values across Binary->ASCII->Binary roundtrips.
             # Using str() can shorten/round values, which breaks canonicalized equality on animations.
             t_str = repr(float(row.time))
             data = list(row.data or [])
@@ -894,8 +894,8 @@ class MDLAsciiWriter(ResourceWriter):
         """Write animation data."""
         self.write_line(0, "")
         self.write_line(0, f"newanim {anim.name} {model_name}")
-        # Preserve exact float values across Binary→ASCII→Binary roundtrips.
-        # Using general-format precision (e.g., .7g) will round float32-derived values like 1.899999976 → 1.9,
+        # Preserve exact float values across Binary->ASCII->Binary roundtrips.
+        # Using general-format precision (e.g., .7g) will round float32-derived values like 1.899999976 -> 1.9,
         # which breaks strict equality tests.
         self.write_line(1, f"length {float(anim.anim_length)!r}")
         self.write_line(1, f"transtime {float(anim.transition_length)!r}")
@@ -1510,7 +1510,7 @@ class MDLAsciiReader(ResourceReader):
         # Some binary models encode "light-ness"/"emitter-ness" purely via controller blocks
         # (e.g. colorkey/radiuskey/multiplierkey) without any explicit node-type token or
         # payload section. If we gate controller parsing on attached payload objects/flags,
-        # we'll drop those controllers on ASCII read, breaking Binary→ASCII equality.
+        # we'll drop those controllers on ASCII read, breaking Binary->ASCII equality.
         #
         # Controller *IDs* overlap between node types, but controller *names* are distinct in
         # MDLOps ASCII. So it's safe to detect by name regardless of node flags.

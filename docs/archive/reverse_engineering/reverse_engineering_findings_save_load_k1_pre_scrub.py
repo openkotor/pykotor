@@ -154,7 +154,7 @@ def cstr_from_path_k1(path: Path) -> str:
 def build_full_save_path_k1(save_root: Path, save_name: str) -> Path:
     """Step 4: Build full path. GetAliasPath 005e6890, Format 005e5680, operator+ 005e5d10.
 
-    Sequence: GetAliasPath(K1_ALIAS_SAVE_PATH) → base; Format(K1_FORMAT_PATH, base, save_name)
+    Sequence: GetAliasPath(K1_ALIAS_SAVE_PATH) -> base; Format(K1_FORMAT_PATH, base, save_name)
     with CURRENTGAME 0x73d8f4 and MODULES; operator+ for path segments. Returns full save path.
     """
     alias_path = get_alias_path_k1(K1_ALIAS_SAVE_PATH, save_root)
@@ -302,19 +302,19 @@ def run_k1_save_flow(
     # Step 6: SendServerToPlayerLoadBar_StartStallEvent(2) @ 0056c8b0
     send_server_to_player_load_bar_start_stall_event_k1(2)
 
-    # Step 7: GetAliasPath @ 005e6890; operator!= @ 005e5390 (path K1_PATH_SKIP_SCREENSHOT_CMP 0x73d71c) → skip screenshot if path matches
+    # Step 7: GetAliasPath @ 005e6890; operator!= @ 005e5390 (path K1_PATH_SKIP_SCREENSHOT_CMP 0x73d71c) -> skip screenshot if path matches
     skip_screenshot = (
         skip_screenshot_if_path_equal is not None
         and path_obj.resolve().as_posix()
         == Path(skip_screenshot_if_path_equal).resolve().as_posix()
     )
 
-    # Steps 8–9: GetModule @ 005ed530, SetCameraForScreenShot @ 00638e80 no-op. DoSaveGameScreenShot @ 00401080 → AurSaveGameSnapshot 00420f20
+    # Steps 8–9: GetModule @ 005ed530, SetCameraForScreenShot @ 00638e80 no-op. DoSaveGameScreenShot @ 00401080 -> AurSaveGameSnapshot 00420f20
     if not skip_screenshot:
         screenshot_path = path_obj / entry.SCREENSHOT_NAME.resname
         _do_save_game_screenshot_k1(screenshot_path, entry.screenshot)
 
-    # Step 10: param_1 != 0 → Draw, UpdateScreen no-op. Step 11: [this+0x1b930], [this+0x1b938] no-op.
+    # Step 10: param_1 != 0 -> Draw, UpdateScreen no-op. Step 11: [this+0x1b930], [this+0x1b938] no-op.
 
     # Step 12: Write components in engine order (SAVENFO, PARTYTABLE, GLOBALVARS, SAVEGAME.sav)
     if write_components:
@@ -341,7 +341,7 @@ def run_k1_load_flow(entry: SaveFolderEntry) -> Any:
 
     3. SetLoadStep @ 005edfd0: (0xa,0), (0x14,1), (0x17,2), (0x17,3), (0x17,4) — no-op in Python.
 
-    4. Build path: param_1 != -1 → Format 0x7455ac else operator=; alias 0x745174, operator+ — we use entry.save_path.
+    4. Build path: param_1 != -1 -> Format 0x7455ac else operator=; alias 0x745174, operator+ — we use entry.save_path.
 
     5. AddResourceDirectory @ 00408800(path) — in Python we open files from path.
 

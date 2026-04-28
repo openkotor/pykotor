@@ -15,9 +15,9 @@ Comprehensive feature roadmap for transforming the Module Designer into a Unity/
 | Capability to Steal | Why It Matters in Our UI | Implement In Module Designer |
 |---|---|---|
 | **Explicit tool/mode state** (select / transform / place / walkmesh edit) | Our interaction is currently implicit and hard to reason about | Add a small tool palette/toolbar in the UI; add a state machine in `module_designer.py` that routes mouse events differently by mode |
-| **Transform gizmos** (translate/rotate/scale + axis lock) | Dragging without gizmos is imprecise; no discoverable affordance | Render gizmos in `mainRenderer`; connect gizmo drag → `MoveCommand`/`RotateCommand` and update Blender sync |
+| **Transform gizmos** (translate/rotate/scale + axis lock) | Dragging without gizmos is imprecise; no discoverable affordance | Render gizmos in `mainRenderer`; connect gizmo drag -> `MoveCommand`/`RotateCommand` and update Blender sync |
 | **Inspector dock** (inline property editing for selection) | Right now properties live in separate dialogs; slow for iteration | Add a dock/panel that populates from selected `GITInstance` (and from selected walkmesh face when in Walkmesh Mode) |
-| **Hierarchy + search + grouping** (rooms → instances, folders/layers) | `instanceList` doesn’t scale; no structure; no search | Replace `instanceList` with a tree view grouped by room + type; add search filter; add user-defined groups (visgroups/layers) |
+| **Hierarchy + search + grouping** (rooms -> instances, folders/layers) | `instanceList` doesn’t scale; no structure; no search | Replace `instanceList` with a tree view grouped by room + type; add search filter; add user-defined groups (visgroups/layers) |
 | **Drag-and-drop placement from resources** | Resource tree is browse-only; placement is friction | Enable `resourceTree` drag; accept drops in `mainRenderer`; create a ghost preview and place via walkmesh raycast |
 | **Surface/grid/angle snapping** (editor-side helpers) | We place/drag with no snap; alignment is painful | Add snap settings + indicators; apply snapping inside the 3D controls when moving/placing instances |
 | **Walkmesh edit in the 3D viewport** (vertex/edge/face selection) | We can render walkmesh but can’t edit it in-place | Add Walkmesh Mode that switches raycast targets to BWM geometry; add selection highlights + edit operations |
@@ -157,9 +157,9 @@ Comprehensive feature roadmap for transforming the Module Designer into a Unity/
 
 ### Cross-Editor Workflow
 - [ ] **Double-click object**: Opens blueprint in dedicated editor (UTC/UTD/etc.)
-- [ ] **Script editor integration**: Right-click script field → "Edit in NSS Editor"
-- [ ] **Dialog editor link**: Right-click creature → "Edit Dialog"
-- [ ] **2DA editor link**: Right-click dropdown → "Edit 2DA Entry"
+- [ ] **Script editor integration**: Right-click script field -> "Edit in NSS Editor"
+- [ ] **Dialog editor link**: Right-click creature -> "Edit Dialog"
+- [ ] **2DA editor link**: Right-click dropdown -> "Edit 2DA Entry"
 
 ### Data Synchronization
 - [ ] **Live blueprint updates**: When blueprint edited externally, refresh in viewport
@@ -260,12 +260,12 @@ Comprehensive feature roadmap for transforming the Module Designer into a Unity/
 
 ## 🚀 Next-Gen Features (Long-Term Vision)
 
-- [ ] **AI-assisted placement**: "Place 5 enemies in this room" → Auto-distributes
+- [ ] **AI-assisted placement**: "Place 5 enemies in this room" -> Auto-distributes
 - [ ] **Procedural generation**: Randomize room layouts from seed
 - [ ] **Blender bridge**: Live-sync with Blender for advanced modeling
 - [ ] **VR editing**: Edit levels in VR headset (à la Unreal VR Mode)
 - [ ] **Cloud rendering**: Offload lightmap baking to remote server
-- [ ] **Voice commands**: "Add a door here" → Hands-free editing
+- [ ] **Voice commands**: "Add a door here" -> Hands-free editing
 
 ---
 
@@ -304,17 +304,17 @@ Based on the Forge merge plan, these are the **critical path** items to implemen
 | `module_designer.py` | Port indoor file I/O (`_indoor_new`, `_indoor_open`, `_indoor_save`, `_indoor_save_as`) | ✅ Done |
 | `module_designer.py` | Moved `PaintWalkmeshCommand` and `ZOOM_WHEEL_SENSITIVITY` from TYPE_CHECKING to runtime imports | ✅ Done |
 | `module_designer.py` | Connected `sig_mouse_double_clicked` in `_setup_indoor_signals` for connected selection | ✅ Done |
-| `module_designer.py` | Added `_on_indoor_mouse_double_clicked` handler (double-click room → add connected rooms to selection) | ✅ Done |
-| `module_designer.ui` | Replaced `QListWidget instanceList` with `QWidget instancePanel` → `QVBoxLayout` → `QLineEdit instanceSearchEdit` + `QTreeWidget instanceTree` | ✅ Done |
+| `module_designer.py` | Added `_on_indoor_mouse_double_clicked` handler (double-click room -> add connected rooms to selection) | ✅ Done |
+| `module_designer.ui` | Replaced `QListWidget instanceList` with `QWidget instancePanel` -> `QVBoxLayout` -> `QLineEdit instanceSearchEdit` + `QTreeWidget instanceTree` | ✅ Done |
 | `uic/module_designer.py` | Updated UIC Python file to match: `instancePanel`, `instanceSearchEdit` (placeholder + clear), `instanceTree` (headerHidden, ExtendedSelection, CustomContextMenu) | ✅ Done |
 | `module_designer.py` | Rewrote `rebuild_instance_list` to build hierarchical QTreeWidget grouped by GIT type (Creatures, Placeables, Doors, etc.) with item counts | ✅ Done |
 | `module_designer.py` | Added `_filter_instance_tree(text)` — live search filter that shows/hides tree items and groups | ✅ Done |
-| `module_designer.py` | Updated `select_instance_items_on_list` to iterate QTreeWidget (group → child traversal) | ✅ Done |
+| `module_designer.py` | Updated `select_instance_items_on_list` to iterate QTreeWidget (group -> child traversal) | ✅ Done |
 | `module_designer.py` | Updated `on_instance_list_single_clicked` / `double_clicked` / `get_git_instance_from_highlighted_list_item` / `on_instance_list_right_clicked` for QTreeWidgetItem API | ✅ Done |
 | `module_designer.py` | Updated signal connections: `instanceTree.clicked/doubleClicked/customContextMenuRequested` + `instanceSearchEdit.textChanged` | ✅ Done |
 | `module_designer.py` | Updated `_apply_mode_visibility` to use `instancePanel.setVisible` | ✅ Done |
-| `designer_controls.py` | Added 2D→3D camera sync: `snap_camera_to_selected` in 2D controls also snaps 3D `mainRenderer` camera | ✅ Done |
-| `designer_controls.py` | Added 3D→2D camera sync: `move_camera_to_selected` in 3D controls also snaps 2D `flatRenderer` camera | ✅ Done |
+| `designer_controls.py` | Added 2D->3D camera sync: `snap_camera_to_selected` in 2D controls also snaps 3D `mainRenderer` camera | ✅ Done |
+| `designer_controls.py` | Added 3D->2D camera sync: `move_camera_to_selected` in 3D controls also snaps 2D `flatRenderer` camera | ✅ Done |
 
 ### Implementation Log (Phase 2+ UX — Session 6)
 
@@ -322,7 +322,7 @@ Based on the Forge merge plan, these are the **critical path** items to implemen
 |---|---|---|
 | `module_designer.ui` | Added `resourceSearchEdit` QLineEdit above `resourceTree` in `resourceTabLayout` (DA Toolset-style filter) | ✅ Done |
 | `uic/module_designer.py` | Added matching `resourceSearchEdit` with placeholder text and clear button | ✅ Done |
-| `module_designer.py` | Connected `resourceSearchEdit.textChanged` → `_filter_resource_tree`; added `_filter_resource_tree(text)` for live resource tree filtering | ✅ Done |
+| `module_designer.py` | Connected `resourceSearchEdit.textChanged` -> `_filter_resource_tree`; added `_filter_resource_tree(text)` for live resource tree filtering | ✅ Done |
 | `module_designer.py` | Added `EditorTool` enum (SELECT=0, MOVE=1, ROTATE=2) after `EditorMode` | ✅ Done |
 | `module_designer.ui` | Added checkable tool QPushButtons (`toolSelectBtn`/`toolMoveBtn`/`toolRotateBtn`) + `toolSeparator` in toolbar | ✅ Done |
 | `uic/module_designer.py` | Added matching 3 tool QPushButtons (checkable, Select checked by default) + VLine separator | ✅ Done |
@@ -330,8 +330,8 @@ Based on the Forge merge plan, these are the **critical path** items to implemen
 | `module_designer.py` | Added `_set_active_tool(tool)` — switches active tool, updates button checked state, shows status message | ✅ Done |
 | `module_designer.py` | Added `_active_tool` state in `__init__`, tool visibility toggle in `_apply_mode_visibility` (hidden in Layout mode) | ✅ Done |
 | `module_designer.py` | Added `_handle_object_mode_key_press(e)` — handles keyboard shortcuts for Object/Walkmesh modes | ✅ Done |
-| `module_designer.py` | Q/W/E hotkeys → switch to Select/Move/Rotate tool, F → focus selected, Z → cycle viewport shading | ✅ Done |
-| `module_designer.py` | Delete/Backspace → delete selected instances in Object mode | ✅ Done |
+| `module_designer.py` | Q/W/E hotkeys -> switch to Select/Move/Rotate tool, F -> focus selected, Z -> cycle viewport shading | ✅ Done |
+| `module_designer.py` | Delete/Backspace -> delete selected instances in Object mode | ✅ Done |
 | `module_designer.py` | Camera bookmarks: Ctrl+1..9 saves, 1..9 recalls (stores x,y,z,pitch,yaw,distance) with 2D sync | ✅ Done |
 | `module_designer.py` | Added `_cycle_viewport_shading()` — toggles lightmapCheck between Lightmapped/Solid + status message | ✅ Done |
 | `module_designer.py` | Added `_save_camera_bookmark(slot)` / `_recall_camera_bookmark(slot)` with 2D flatRenderer sync | ✅ Done |
@@ -358,7 +358,7 @@ Based on the Forge merge plan, these are the **critical path** items to implemen
 | `module_designer.py` | Added `_on_inspector_open_blueprint()` — calls `edit_instance()` for selected instance from inspector "Open Blueprint" button | ✅ Done |
 | `module_designer.py` | Called `_update_properties_panel()` at end of `set_selection()` so inspector auto-syncs on every selection change | ✅ Done |
 | `module_designer.py` | Fixed `on_instance_list_double_clicked` to also call `edit_instance(instance)`, opening the blueprint editor on double-click (previously only focused/selected) | ✅ Done |
-| `module_designer.py` | Added `_RESTYPE_TO_GIT_CLASS` module-level dict mapping `ResourceType.UTC/UTP/UTD/UTW/UTS/UTE/UTT/UTM` → GIT instance classes | ✅ Done |
+| `module_designer.py` | Added `_RESTYPE_TO_GIT_CLASS` module-level dict mapping `ResourceType.UTC/UTP/UTD/UTW/UTS/UTE/UTT/UTM` -> GIT instance classes | ✅ Done |
 | `module_designer.py` | Added `_setup_resource_dnd()` — enables `resourceTree.setDragEnabled(True)` + `DragOnly`, sets `mainRenderer.setAcceptDrops(True)`, installs self as event filter | ✅ Done |
 | `module_designer.py` | Added `eventFilter(obj, event)` — handles `DragEnter`/`DragMove`/`Drop`/`DragLeave` events on `mainRenderer`; accepts drop when `_dragged_resource` is set | ✅ Done |
 | `module_designer.py` | Added `_handle_resource_drop(resource, screen_pos)` — maps resource type to GIT class, resolves world position via `screen_to_world_from_depth_buffer` (with cursor fallback), pre-sets resref, calls `add_instance()` | ✅ Done |
@@ -368,10 +368,10 @@ Based on the Forge merge plan, these are the **critical path** items to implemen
 
 | Area | Behavior |
 |---|---|
-| **Mode combobox** | `modeSelector` is synced with `_editor_mode`; `_apply_mode_visibility(mode)` runs on startup and after module load so tabs and renderers match the current mode. Layout → lytTab + layoutTab, indoorRenderer + _lyt_renderer visible; Walkmesh → walkmeshTab. |
+| **Mode combobox** | `modeSelector` is synced with `_editor_mode`; `_apply_mode_visibility(mode)` runs on startup and after module load so tabs and renderers match the current mode. Layout -> lytTab + layoutTab, indoorRenderer + _lyt_renderer visible; Walkmesh -> walkmeshTab. |
 | **Layout tab population** | **Modules**: `_module_kit_manager` is created when an installation is set; `_setup_indoor_modules()` populates `moduleKitSelect`; when no installation, shows "(Select an installation for module kits)". **Kits**: `get_kits_path()` points to `Tools/HolocronToolset/kits` (repo root); `_setup_indoor_kits()` loads from that path. Create a `kits` folder with README if missing. |
 | **Snap scope** | **Toolbar** (Object/Walkmesh only): `snapCheck` / `snapSizeSpin` = grid snap for move/place; `rotSnapCheck` / `rotSnapDegreeSpin` = rotation snap. Applied in gizmo drag, move_selected, rotate_selected, inspector position/bearing, resource drop, add-at-cursor, duplicate. **Layout tab**: indoor renderer uses its own snap (snapToGridCheck, gridSizeSpin, rotSnapSpin) for room placement only. |
-| **Drag-drop** | **Resources**: drag from resource tree → drop on **3D** (mainRenderer) or **2D** (flatRenderer); world position from depth/cursor (3D) or flatRenderer.to_world_coords (2D); walkmesh snap for creatures/waypoints. **Room pieces**: select component in Layout tab → click on **indoor 2D** or **3D** view to place; placement updates LYT and invalidates rooms; LYT/walkmesh generation on build. |
+| **Drag-drop** | **Resources**: drag from resource tree -> drop on **3D** (mainRenderer) or **2D** (flatRenderer); world position from depth/cursor (3D) or flatRenderer.to_world_coords (2D); walkmesh snap for creatures/waypoints. **Room pieces**: select component in Layout tab -> click on **indoor 2D** or **3D** view to place; placement updates LYT and invalidates rooms; LYT/walkmesh generation on build. |
 | **Visibility vs pickability** | Type toggles (Creatures, Doors, etc.) control **visibility** only. **Pick hidden** checkbox (Object mode): when on, 3D picker and 2D `_instances_under_mouse` include hidden types so they can be selected. When off, only visible types are pickable. |
 | **Camera / render loop** | Single update path: renderer `loop()` calls `_loop_callback(delta_time)` (CameraController.update with accumulated mouse deltas) then `update()`. Delta time from elapsed time; vsync via `QSurfaceFormat.setSwapInterval(1)` (module designer process). `SceneCache.build_cache()` runs every frame in the render path; dead-object removal is conditional to reduce allocations when nothing was removed. |
 
@@ -429,7 +429,7 @@ The Module Designer will be considered "complete" when:
 3. ✅ All **Forge walkmesh editing** features work in Walkmesh Mode with Creation Kit-level precision
 4. ✅ The **scene hierarchy** mirrors Unity's clarity (expand/collapse, search/filter, visibility toggles)
 5. ✅ **4-panel orthographic view** matches Hammer/Radiant workflows for precise 3D alignment
-6. ✅ **Walkmesh vertex editing** is as intuitive as Blender's (click vertex → drag gizmo → update mesh)
+6. ✅ **Walkmesh vertex editing** is as intuitive as Blender's (click vertex -> drag gizmo -> update mesh)
 7. ✅ **Build + Launch** compiles a playable `.mod` and boots the game in < 30 seconds
 8. ✅ **Undo/redo** works flawlessly for every operation (room placement, object transforms, walkmesh edits, VIS changes)
 9. ✅ The UI is **intuitive enough** that a Unity/UE5/Creation Kit user can start editing with zero training
@@ -449,12 +449,12 @@ The Module Designer will be considered "complete" when:
 | What It Does | We Don't Have This | Implement As |
 |---|---|---|
 | **Navmesh Mode toggle** — same viewport, different interaction layer | No walkmesh vertex editing at all in 3D view | Walkmesh Mode button in toolbar; switch raycast target from GIT objects to BWM vertices |
-| **Generate Navmesh** — auto-triangulates walkable area from room geometry | `on_generate_walkmesh` exists but no face editing after | Right-click walkmesh → auto-fill gaps, merge islands |
+| **Generate Navmesh** — auto-triangulates walkable area from room geometry | `on_generate_walkmesh` exists but no face editing after | Right-click walkmesh -> auto-fill gaps, merge islands |
 | **Finalize Navmesh** — computes edge adjacency/portals in one click | Adjacency must be hand-authored or left broken | One-click "Finalize" rebuilds all edge/transition links from current geometry |
 | **Reference Browser** — filterable table of all placed objects (type, position, tag, resref) | `instanceList` is a flat unsorted list with no search | Replace with `QTreeView` grouped by type; add search bar above it |
-| **Layer system** — Architecture/Props/Lighting layers; toggle at layer level | Visibility is global per-type only | Named layers: group instances → toggle whole layer in/out |
+| **Layer system** — Architecture/Props/Lighting layers; toggle at layer level | Visibility is global per-type only | Named layers: group instances -> toggle whole layer in/out |
 | **Camera bookmarks** — Ctrl+1–9 saves camera view, 1–9 recalls | None | `QAction` array; save/restore camera matrix per slot |
-| **Double-click opens editor** — double-click object → properties dialog | Works (opens resource editor dialog) | ✅ Already have this — extend to show inline inspector instead |
+| **Double-click opens editor** — double-click object -> properties dialog | Works (opens resource editor dialog) | ✅ Already have this — extend to show inline inspector instead |
 | **Audio emitter preview** — wireframe sphere showing UTS max distance | Sound objects show as icons, no radius visualization | Draw sphere overlay when UTS selected using `maxDistance` field |
 | **Edge portal marking** — mark walkmesh edges as doorway transitions | Door transitions are implicit; no visual indication | Highlight transition edges in walkmesh view; allow marking them |
 
@@ -465,11 +465,11 @@ The Module Designer will be considered "complete" when:
 
 | What It Does | We Don't Have This | Implement As |
 |---|---|---|
-| **Synchronized 2D+3D views** — select in 2D map → 3D view jumps to it | 2D and 3D are independent; selecting in one doesn't update other | Emit selection signal from `flatRenderer` → camera/selection sync in `mainRenderer` |
-| **Drag blueprint from library into viewport** — drag UTC/UTP directly into 3D view | Resource tree is browse-only; no drag-and-drop into viewport | Make `resourceTree` source of `QDrag`; `mainRenderer` accepts drops → raycast spawn position |
+| **Synchronized 2D+3D views** — select in 2D map -> 3D view jumps to it | 2D and 3D are independent; selecting in one doesn't update other | Emit selection signal from `flatRenderer` -> camera/selection sync in `mainRenderer` |
+| **Drag blueprint from library into viewport** — drag UTC/UTP directly into 3D view | Resource tree is browse-only; no drag-and-drop into viewport | Make `resourceTree` source of `QDrag`; `mainRenderer` accepts drops -> raycast spawn position |
 | **Waypoint network visualization** — lines connecting waypoint objects | Waypoints show as dots, no connections shown | Draw lines between waypoints that share the same tag/patrol route |
-| **Trigger polygon drawing** — draw freeform 2D polygon → creates trigger/encounter | Triggers placed as single point; polygon shape must be edited in separate dialog | In 2D view: polygon drawing tool for triggers and encounter geometry |
-| **Resource browser search** — type partial name → instant filter | `resourceTree` has no search bar | Add `QLineEdit` filter above `resourceTree`; hide non-matching items |
+| **Trigger polygon drawing** — draw freeform 2D polygon -> creates trigger/encounter | Triggers placed as single point; polygon shape must be edited in separate dialog | In 2D view: polygon drawing tool for triggers and encounter geometry |
+| **Resource browser search** — type partial name -> instant filter | `resourceTree` has no search bar | Add `QLineEdit` filter above `resourceTree`; hide non-matching items |
 | **Area properties panel** — music, ambient sound, minimap, fog in one place | ARE properties only accessible through the ARE editor (separate window) | Add an "Area" tab to the left panel showing ARE key fields inline |
 | **Lighting presets** — one-click mood (Interior/Dawn/Dusk) | Lightmap toggle (on/off) only | Preset buttons that set ambient light color + fog to common moods for quick preview |
 
@@ -483,11 +483,11 @@ The Module Designer will be considered "complete" when:
 | **Transform gizmo (W/E/R)** — color-coded XYZ handles for move/rotate/scale | Objects drag freely; no axis-locked handles | Render OpenGL gizmo handles on selected instance; W/E/R keys switch mode |
 | **Inspector panel** — all properties of selection in scrollable side panel (no modal) | Properties only shown in separate dialog windows | Add right-side dock `QWidget` that populates with GIT struct fields on selection change |
 | **Hierarchy with search** — tree of all scene objects, type icons, search filter | Flat `QListWidget`, no tree, no search | Replace `instanceList` with `QTreeWidget` grouped by GIT type; add search `QLineEdit` |
-| **Multi-select** — Ctrl+Click or drag-box → batch transform, batch property edit | Single selection only | Track `selected_instances: list` → already exists; expose to viewport for drag-box selection |
+| **Multi-select** — Ctrl+Click or drag-box -> batch transform, batch property edit | Single selection only | Track `selected_instances: list` -> already exists; expose to viewport for drag-box selection |
 | **Vertex snapping (V key)** — snap object origin to nearest vertex on any mesh | No snapping at all when dragging | While dragging, if V held: find nearest walkmesh vertex; snap placement to it |
 | **Surface snapping** — drop object onto walkmesh surface below cursor | Objects placed at flat Z; no auto-ground | Raycast downward from cursor on drop/move; set object Z to hit point |
-| **Focus Selected (F key)** — camera frames selection tightly | No focus shortcut | `F` key → compute bounding box of selected instances → set camera position/target |
-| **Frame All (A key)** — camera frames entire scene | No frame-all | `A` key → bounding box of all loaded instances → set camera |
+| **Focus Selected (F key)** — camera frames selection tightly | No focus shortcut | `F` key -> compute bounding box of selected instances -> set camera position/target |
+| **Frame All (A key)** — camera frames entire scene | No frame-all | `A` key -> bounding box of all loaded instances -> set camera |
 | **Gizmo visibility toggles** — show/hide sound spheres, trigger boxes, camera frustums | No per-gizmo overlay toggles | Add overlay checkboxes: Show Sound Radii / Show Trigger Shapes / Show Camera FOV |
 | **Coordinate space (World/Local)** — toggle whether gizmo axes align to world or object | Always world-space | Button in toolbar; affects how rotate/scale gizmo axes are oriented |
 
@@ -499,10 +499,10 @@ The Module Designer will be considered "complete" when:
 | What It Does | We Don't Have This | Implement As |
 |---|---|---|
 | **WASD fly camera with mouse look** | Alt+drag orbit only; no WASD flythrough | Right-click + drag in 3D view activates mouse look; WASD moves camera while held |
-| **Camera speed slider** — scroll wheel adjusts fly speed in real-time | Fixed camera speed | Scroll wheel while in fly mode → adjust `camera_move_speed`; show current speed in status bar |
-| **Outliner folders** — drag objects into named folders; toggle folder visibility | No grouping at all in instance list | Folders in `QTreeWidget`: right-click → "New Group"; drag instances between groups |
-| **Details panel search filter** — type property name → scroll to matching field | No inspector panel at all | When inspector is added, put a `QLineEdit` at top that filters/highlights matching fields |
-| **Right-click context menu in viewport** — place object, frame selection, hide, etc. | No context menu on 3D viewport right-click | Connect `customContextMenuRequested` on `mainRenderer` → build context-sensitive `QMenu` |
+| **Camera speed slider** — scroll wheel adjusts fly speed in real-time | Fixed camera speed | Scroll wheel while in fly mode -> adjust `camera_move_speed`; show current speed in status bar |
+| **Outliner folders** — drag objects into named folders; toggle folder visibility | No grouping at all in instance list | Folders in `QTreeWidget`: right-click -> "New Group"; drag instances between groups |
+| **Details panel search filter** — type property name -> scroll to matching field | No inspector panel at all | When inspector is added, put a `QLineEdit` at top that filters/highlights matching fields |
+| **Right-click context menu in viewport** — place object, frame selection, hide, etc. | No context menu on 3D viewport right-click | Connect `customContextMenuRequested` on `mainRenderer` -> build context-sensitive `QMenu` |
 | **Viewport toolbar mode buttons** — visual icon buttons for Select/Move/Rotate/Scale | No mode buttons; interaction mode is implicit | Add toolbar row above 3D viewport: Select / Move / Rotate / Scale icon buttons |
 
 ---
@@ -513,11 +513,11 @@ The Module Designer will be considered "complete" when:
 | What It Does | We Don't Have This | Implement As |
 |---|---|---|
 | **4-panel layout** — Top/Front/Side/Perspective simultaneously | One 3D + one 2D stacked vertically; can't see all axes at once | `QSplitter` with 4 panes: 3D perspective + 3 orthographic (XY top-down, XZ front, YZ side) |
-| **Maximize active view** — double-click panel to fill the window | Fixed split only | Double-click on any sub-renderer → reparent to fill main area; double-click again to restore |
+| **Maximize active view** — double-click panel to fill the window | Fixed split only | Double-click on any sub-renderer -> reparent to fill main area; double-click again to restore |
 | **Grid size hotkeys ([ and ])** — increase/decrease snap grid in 2 keystrokes | No grid snapping at all | `[` / `]` keys cycle snap grid size (0.1 / 0.5 / 1.0 / 2.0 units); show current in status bar |
 | **Visgroups** — named groups with per-group visibility toggle | Type-level visibility checkboxes only | Named Visgroups in left panel; drag objects in; one toggle per group |
-| **Error checker** — "Check for Problems" scans for missing textures, broken refs | No validation tools | Menu item → scan module for broken resrefs, missing models, degenerate walkmesh faces |
-| **Compile pipeline** — one-click Build → launches game | Save GIT only; no build+launch | Add "Build & Launch" action that calls `build_mod_from_indoor_file()` → game spawn warp |
+| **Error checker** — "Check for Problems" scans for missing textures, broken refs | No validation tools | Menu item -> scan module for broken resrefs, missing models, degenerate walkmesh faces |
+| **Compile pipeline** — one-click Build -> launches game | Save GIT only; no build+launch | Add "Build & Launch" action that calls `build_mod_from_indoor_file()` -> game spawn warp |
 
 ---
 
@@ -528,11 +528,11 @@ The Module Designer will be considered "complete" when:
 |---|---|---|
 | **Edit Mode vs Object Mode** — Tab key toggles; completely different interaction in same viewport | No walkmesh editing in 3D view at all | Tab or toolbar button: Object Mode (GIT instances) ↔ Walkmesh Mode (BWM vertices/faces) |
 | **Vertex / Edge / Face select modes (1/2/3)** — granular selection within mesh | N/A — no mesh editing | In Walkmesh Mode: 1=vertex select, 2=edge select, 3=face select; highlight accordingly |
-| **Merge Vertices (M)** — weld nearby/overlapping vertices | No geometry cleanup tools | In Walkmesh Mode: M key → merge dialog (at cursor / at center / by distance) |
+| **Merge Vertices (M)** — weld nearby/overlapping vertices | No geometry cleanup tools | In Walkmesh Mode: M key -> merge dialog (at cursor / at center / by distance) |
 | **Snap modes (Shift+Tab)** — cycle vertex/edge/face/grid snapping | No snap at all | Snap pie menu cycling through modes; sticky state shown in status bar |
-| **Properties panel** — context-sensitive; shows face material when face selected | No per-element property view | When walkmesh face selected → show surfacemat dropdown + walk/walkCheck/lineOfSight booleans in inspector |
+| **Properties panel** — context-sensitive; shows face material when face selected | No per-element property view | When walkmesh face selected -> show surfacemat dropdown + walk/walkCheck/lineOfSight booleans in inspector |
 | **Viewport shading (Z key)** — Wireframe/Solid/Material toggle | Lightmap checkbox (on/off) only | Z key cycles 3D viewport shading: Wireframe / Solid / Lightmapped |
-| **Box select (B key)** — drag rectangle to select multiple vertices/objects | No box select | B key → drag selection rectangle in 3D viewport; add all intersecting objects/vertices to selection |
+| **Box select (B key)** — drag rectangle to select multiple vertices/objects | No box select | B key -> drag selection rectangle in 3D viewport; add all intersecting objects/vertices to selection |
 
 ---
 
@@ -541,10 +541,10 @@ The Module Designer will be considered "complete" when:
 
 | What It Does | We Don't Have This | Implement As |
 |---|---|---|
-| **Surface Inspector** — per-selected-face numeric fields (no dialog close required) | No per-face editing; surfacemat not editable | `walkmeshTab` dock: when face selected → show surfacemat dropdown + flags inline |
+| **Surface Inspector** — per-selected-face numeric fields (no dialog close required) | No per-face editing; surfacemat not editable | `walkmeshTab` dock: when face selected -> show surfacemat dropdown + flags inline |
 | **Entity key-value editor** — raw struct fields visible as editable key-value table | GIT struct editing only via full resource editor window | In inspector panel: show GIT instance fields as editable `QTableWidget` rows (key / value) |
 | **Free camera WASD** | Orbit-only; WASD not usable for flythrough | Right-click-held activates free look; WASD moves; right-click-release returns to orbit |
-| **Group system** — Ctrl+G groups brushes; move as unit | No grouping | Multi-select → right-click → "Group" → assigned Visgroup |
+| **Group system** — Ctrl+G groups brushes; move as unit | No grouping | Multi-select -> right-click -> "Group" -> assigned Visgroup |
 
 ---
 

@@ -19,7 +19,7 @@
    - If the wiki or Home references a th3w1zard1 fork that does not exist: use `gh repo fork ORIGINAL_OWNER/REPO --remote` (or equivalent) to create the fork under th3w1zard1, then document. (Requires `gh` auth and fork permissions.)
 
 4. **Fixes**
-   - NCS-File-Format: fix broken URLs that point into `th3w1zard1/xoreos/.../xoreos-tools/...` → correct to `th3w1zard1/xoreos-tools`.
+   - NCS-File-Format: fix broken URLs that point into `th3w1zard1/xoreos/.../xoreos-tools/...` -> correct to `th3w1zard1/xoreos-tools`.
    - BIF-File-Format: one link uses `xoreos/xoreos`; align with policy (original first + mirror).
    - GFF-GUI: add mirror for KobaltBlu/KotOR.js (or original for th3w1zard1 link).
    - GFF-UTP, GFF-IFO, GFF-DLG, GFF-UTC, GFF-UTD, GFF-JRL: optional — replace plain-text "reone/xoreos" with bullet links using the same pattern.

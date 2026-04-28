@@ -42,11 +42,11 @@ import random
 import secrets
 import string
 
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.type import ResourceType
 
 
-class LTR(ComparableMixin):
+class LTR(BiowareResource):
     """Represents a LTR (Letter) file containing Markov chain name generation data.
 
     LTR files use 3rd-order Markov chains to generate random names. The probability

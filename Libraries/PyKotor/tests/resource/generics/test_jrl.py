@@ -161,7 +161,7 @@ class TestJRL(unittest.TestCase):
         self.assertAlmostEqual(ent.xp_percentage, 0.0, places=5)
 
     def test_jrl_empty_roundtrip(self) -> None:
-        """Empty/minimal root struct: no Categories → empty quests; round-trip preserves empty."""
+        """Empty/minimal root struct: no Categories -> empty quests; round-trip preserves empty."""
         empty_xml = """<gff3><struct id="-1"></struct></gff3>"""
         gff = read_gff(empty_xml.encode(), file_format=ResourceType.GFF_XML)
         jrl = construct_jrl(gff)

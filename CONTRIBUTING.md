@@ -328,7 +328,7 @@ Place tests in the `tests/` directory following these conventions:
 
 **File naming:**
 - `test_*.py` for test files
-- Match the module being tested: `pykotor/module.py` → `tests/test_module.py`
+- Match the module being tested: `pykotor/module.py` -> `tests/test_module.py`
 
 **Test naming:**
 - Use descriptive names: `test_function_name_with_valid_input()`

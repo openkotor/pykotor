@@ -120,7 +120,7 @@ The workflow supports **two authentication methods** for PyPI:
 
 2. **Add as GitHub Secret:**
    - Go to your repository on GitHub
-   - Navigate to **Settings** → **Secrets and variables** → **Actions**
+   - Navigate to **Settings** -> **Secrets and variables** -> **Actions**
    - Click **New repository secret**
    - Name: `PYPI_API_TOKEN`
    - Value: Paste your PyPI API token (the `pypi-...` token)
@@ -142,7 +142,7 @@ If you prefer OIDC (no long-lived secrets), configure trusted publishing:
    - Click "Add"
 
 2. **On GitHub:**
-   - Go to repository **Settings** → **Environments**
+   - Go to repository **Settings** -> **Environments**
    - Create or edit the `pypi` environment
    - Ensure "Required reviewers" is disabled (or add yourself)
    - No secrets needed for OIDC
@@ -171,7 +171,7 @@ If using API tokens, the environment is optional but recommended for organizatio
 
 The workflow can be manually triggered on **any branch or tag**:
 
-1. Go to **Actions** → **Auto-Publish to PyPI**
+1. Go to **Actions** -> **Auto-Publish to PyPI**
 2. Click **Run workflow**
 3. Select the branch or tag you want to publish from
 4. The workflow will discover and publish packages with newer versions
@@ -272,8 +272,8 @@ Detailed logs show:
 1. Push to default branch (e.g., main)
 2. Workflow detects default branch: main ✓
 3. Discovers packages:
-   - pykotor: 2.0.1 (PyPI: 2.0.0) → Publish ✓
-   - holocrontoolset: 4.0.0a7 (PyPI: 4.0.0a6) → Publish ✓
+   - pykotor: 2.0.1 (PyPI: 2.0.0) -> Publish ✓
+   - holocrontoolset: 4.0.0a7 (PyPI: 4.0.0a6) -> Publish ✓
 4. Builds pykotor and holocrontoolset
 5. Publishes both to PyPI
 6. Summary shows published packages

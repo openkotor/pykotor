@@ -8,11 +8,11 @@
 
 **Tech Stack:** Python 3.8+, setuptools, PyInstaller (compile), ElementTree, pathlib.
 
-**Context:** Brainstorm: `docs/brainstorms/2026-03-12-toolset-wiki-as-help-brainstorm.md`. Repo research: help loaded in `help_paths.py`, `help_content.py`, `help.py`, `help_window.py`, `editor_help.py`, `help_updater.py`; `generate_help_contents.py` in `helper_scripts/wiki_scripts/` builds XML from `wiki/`; setup.py copies repo `wiki/` → `src/toolset/wiki`; compile_tool.py adds `wiki` via `--include-wiki-if-present`.
+**Context:** Brainstorm: `docs/brainstorms/2026-03-12-toolset-wiki-as-help-brainstorm.md`. Repo research: help loaded in `help_paths.py`, `help_content.py`, `help.py`, `help_window.py`, `editor_help.py`, `help_updater.py`; `generate_help_contents.py` in `helper_scripts/wiki_scripts/` builds XML from `wiki/`; setup.py copies repo `wiki/` -> `src/toolset/wiki`; compile_tool.py adds `wiki` via `--include-wiki-if-present`.
 
 ---
 
-## Task 1: Add in-toolset contents generator (wiki → XML)
+## Task 1: Add in-toolset contents generator (wiki -> XML)
 
 **Files:**
 - Create: `Tools/HolocronToolset/src/toolset/help_contents.py`
@@ -26,11 +26,11 @@
 - Exposes `generate_contents_tree(wiki_base: Path, xoreos_base: Path | None = None) -> ET.Element` and optionally `write_contents_xml(path: Path, ...)` for tests.
 
 Map Introduction entries to wiki filenames:
-- Getting Started → `Holocron-Toolset-Getting-Started.md`
-- Core Tab → `Holocron-Toolset-Core-Resources.md`
-- Modules Tab → `Holocron-Toolset-Module-Resources.md`
-- Override Tab → `Holocron-Toolset-Override-Resources.md`
-Tools: Module Editor → `Holocron-Toolset-Module-Editor.md`, Map Builder → `Holocron-Toolset-Map-Builder.md`. Tutorials: Custom Robes → `Tutorial-Creating-Custom-Robes.md`, New Store → `Tutorial-Creating-a-New-Store.md`, Area Transitions → `Tutorial-Area-Transitions.md`, DLG Static Cameras → `Tutorial-Creating-Static-Cameras.md`. New Features Quick Guide → `Holocron-Toolset-New-Features-Guide.md` (in Introduction or Other). Only include documents whose file exists under `wiki_base` (or xoreos_base).
+- Getting Started -> `Holocron-Toolset-Getting-Started.md`
+- Core Tab -> `Holocron-Toolset-Core-Resources.md`
+- Modules Tab -> `Holocron-Toolset-Module-Resources.md`
+- Override Tab -> `Holocron-Toolset-Override-Resources.md`
+Tools: Module Editor -> `Holocron-Toolset-Module-Editor.md`, Map Builder -> `Holocron-Toolset-Map-Builder.md`. Tutorials: Custom Robes -> `Tutorial-Creating-Custom-Robes.md`, New Store -> `Tutorial-Creating-a-New-Store.md`, Area Transitions -> `Tutorial-Area-Transitions.md`, DLG Static Cameras -> `Tutorial-Creating-Static-Cameras.md`. New Features Quick Guide -> `Holocron-Toolset-New-Features-Guide.md` (in Introduction or Other). Only include documents whose file exists under `wiki_base` (or xoreos_base).
 
 **Step 2:** Add a simple test in `Tools/HolocronToolset/tests/test_help_contents.py` that, given a temp dir with a few .md files, calls `generate_contents_tree` and asserts root.tag == "Contents", root.get("version") == "5", and at least one Folder exists. (Skip if tests dir structure doesn’t exist.)
 

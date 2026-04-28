@@ -620,7 +620,7 @@ class K2Columns2DA:
 class TwoDARegistry:
     """Single place to hang 2DA facts PyKotor cares about.
 
-    Canonical filenames, StrRef/ResRef column maps, and a handful of GFF → sheet bridges.
+    Canonical filenames, StrRef/ResRef column maps, and a handful of GFF -> sheet bridges.
     The encyclopedic "this loader touches that table" inventory used to live here; if you
     still want that level of detail, keep it in the wiki instead of bloating import-time docs.
     """

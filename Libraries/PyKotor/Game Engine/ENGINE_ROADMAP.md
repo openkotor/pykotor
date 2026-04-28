@@ -161,24 +161,24 @@ This document tracks the implementation progress of PyKotorEngine, a Panda3D-bas
 
 ### reone (C++)
 
-- `src/libs/scene/graph.cpp` → Scene graph management
-- `src/libs/scene/node/model.cpp` → Model loading and node hierarchy
-- `src/libs/scene/node/mesh.cpp` → Mesh conversion
-- `src/libs/scene/node/light.cpp` → Light nodes
-- `src/libs/scene/node/emitter.cpp` → Particle emitters
-- `src/libs/scene/animation/` → Animation system
-- `src/libs/graphics/mesh.cpp` → Geometry processing
+- `src/libs/scene/graph.cpp` -> Scene graph management
+- `src/libs/scene/node/model.cpp` -> Model loading and node hierarchy
+- `src/libs/scene/node/mesh.cpp` -> Mesh conversion
+- `src/libs/scene/node/light.cpp` -> Light nodes
+- `src/libs/scene/node/emitter.cpp` -> Particle emitters
+- `src/libs/scene/animation/` -> Animation system
+- `src/libs/graphics/mesh.cpp` -> Geometry processing
 
 ### kotor.js (TypeScript/Three.js)
 
-- `src/three/odyssey/OdysseyModel3D.ts` → Model loading
-- `src/odyssey/controllers/` → Animation controllers
-- `src/odyssey/OdysseyModelAnimation.ts` → Animation state
+- `src/three/odyssey/OdysseyModel3D.ts` -> Model loading
+- `src/odyssey/controllers/` -> Animation controllers
+- `src/odyssey/OdysseyModelAnimation.ts` -> Animation state
 
 ### xoreos (C++)
 
-- `src/graphics/mesh.cpp` → Mesh conversion
-- `src/graphics/windowman.cpp` → Window management
+- `src/graphics/mesh.cpp` -> Mesh conversion
+- `src/graphics/windowman.cpp` -> Window management
 
 ## File Structure
 

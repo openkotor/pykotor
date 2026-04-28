@@ -1021,8 +1021,8 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
                     context=context,
                     incremental_writer=incremental_writer,
                 )
-                log_func(f"  → [InstallList] destination: {destination}")
-                log_func("  → File will be INSTALLED, then PATCHED")
+                log_func(f"  -> [InstallList] destination: {destination}")
+                log_func("  -> File will be INSTALLED, then PATCHED")
                 # Write immediately if using incremental writer
                 if incremental_writer is not None:
                     # Get the source file from target installation
@@ -1048,7 +1048,7 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
             log_func(f"\n[RESOURCE IN INSTALL0 ONLY] {identifier}")
             log_func(f"  Source (install0 - {install1_name}): {resolved1.source_location}")
             log_func(f"  Missing from install1 ({install2_name})")
-            log_func("  → Creating patch from install0's version")
+            log_func("  -> Creating patch from install0's version")
 
             # Add to InstallList and create patch modifications
             if modifications_by_type is not None:
@@ -1080,8 +1080,8 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
                     context=context,
                     incremental_writer=incremental_writer,
                 )
-                log_func(f"  → [InstallList] destination: {destination}")
-                log_func("  → File will be INSTALLED from install0")
+                log_func(f"  -> [InstallList] destination: {destination}")
+                log_func("  -> File will be INSTALLED from install0")
 
                 # Write immediately if using incremental writer
                 if incremental_writer is not None:
@@ -1205,16 +1205,16 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
             if resolved1.location_type != resolved2.location_type:
                 priority1 = get_location_display_name(resolved1.location_type)
                 priority2 = get_location_display_name(resolved2.location_type)
-                log_func(f"  Priority changed: {priority1} → {priority2}")
+                log_func(f"  Priority changed: {priority1} -> {priority2}")
 
                 if resolved2.location_type == "Override folder":
-                    log_func(f"  → Resource moved to Override (will override base {priority1})")
+                    log_func(f"  -> Resource moved to Override (will override base {priority1})")
                 elif (
                     resolved1.location_type == "Chitin BIFs"
                     and resolved2.location_type
                     and "Modules" in resolved2.location_type
                 ):
-                    log_func("  → Resource moved from BIF to Modules (now modifiable)")
+                    log_func("  -> Resource moved from BIF to Modules (now modifiable)")
 
             # Validate TSLPatcher destination was set correctly (now set directly in engine.py)
             if modifications_by_type is not None:
@@ -1355,11 +1355,11 @@ def explain_resolution_order(
     for idx, (resolved, name) in enumerate(zip(all_resolved, install_names)):
         log_func(f"  Installation {idx} ({name}):")
         if resolved.data is None:
-            log_func("    → Resource NOT FOUND")
+            log_func("    -> Resource NOT FOUND")
         else:
             priority = get_location_display_name(resolved.location_type)
-            log_func(f"    → Found in: {priority}")
-            log_func(f"    → Path: {resolved.source_location}")
+            log_func(f"    -> Found in: {priority}")
+            log_func(f"    -> Path: {resolved.source_location}")
         log_func("")
 
     # Explain what this means for modding (compare base vs target)
@@ -1382,6 +1382,6 @@ def explain_resolution_order(
         else:
             loc1_name = get_location_display_name(install1_resolved.location_type)
             loc2_name = get_location_display_name(install2_resolved.location_type)
-            log_func(f"    → Priority changed from {loc1_name} to {loc2_name}")
+            log_func(f"    -> Priority changed from {loc1_name} to {loc2_name}")
 
     log_func("")

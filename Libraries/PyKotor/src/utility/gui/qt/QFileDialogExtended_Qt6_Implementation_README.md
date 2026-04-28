@@ -171,7 +171,7 @@ Located in `Libraries/PyKotor/src/utility/gui/qt/relevant_qt_src/`
 - **UI Libraries**: Consistent theming and styling
 
 ### Component Interactions:
-- QFileDialogExtended → AdapterQFileDialog → PyFileSystemModel
+- QFileDialogExtended -> AdapterQFileDialog -> PyFileSystemModel
 - ActionsDispatcher ↔ FileActionsExecutor
 - RibbonsWidget ↔ ActionsDispatcher
 - AddressBar ↔ QFileDialogExtended

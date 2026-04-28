@@ -3,7 +3,7 @@ description: 'Reusable action to build a PyKotor tool with PyInstaller'
 
 inputs:
   tool_path:
-    description: 'Path to the tool directory (e.g., Tools/HolocronToolset)'
+    description: 'Path to a tool directory under Tools/'
     required: true
   tool_display_name:
     description: 'Display name for artifacts (defaults to tool directory name)'
