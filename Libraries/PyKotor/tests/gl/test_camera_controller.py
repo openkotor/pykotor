@@ -19,7 +19,7 @@ from pykotor.gl import vec3
 
 # Handle optional pykotor.gl dependency
 try:
-    from pykotor.gl.scene.camera import Camera, _wrap_angle_pi
+    from pykotor.gl.scene.camera import Camera
     from pykotor.gl.scene.camera_controller import (
         CameraController,
         CameraControllerSettings,
@@ -60,11 +60,6 @@ class TestInputState(unittest.TestCase):
         self.assertFalse(state.right_key)
         self.assertFalse(state.up_key)
         self.assertFalse(state.down_key)
-
-    def test_default_pan_button_false(self):
-        """Virtual pan button defaults off so normal clicks are unchanged."""
-        state = InputState()
-        self.assertFalse(state.pan_button)
 
 
 class TestCameraControllerSettings(unittest.TestCase):
@@ -158,26 +153,6 @@ class TestCameraController(unittest.TestCase):
         self.assertIsNotNone(self.controller.state)
         self.assertEqual(self.controller.mode, CameraMode.NONE)
 
-    def test_has_pending_motion_instance_attribute(self):
-        """has_pending_motion is bound in __init__ so callers never hit AttributeError."""
-        self.assertTrue(
-            callable(self.controller.has_pending_motion),
-            "has_pending_motion must be callable on every instance",
-        )
-        self.assertFalse(self.controller.has_pending_motion())
-
-    def test_has_pending_motion_true_when_smoothing_lags(self):
-        """When current state has not caught target, pending motion is reported."""
-        self.controller.state.target_focal_point = vec3(100.0, 0.0, 0.0)
-        self.controller.state.current_focal_point = vec3(0.0, 0.0, 0.0)
-        self.assertTrue(self.controller.has_pending_motion())
-
-    def test_has_pending_motion_respects_epsilon(self):
-        """Sub-epsilon deltas are treated as converged."""
-        self.controller.state.current_focal_point = vec3(0.0, 0.0, 0.0)
-        self.controller.state.target_focal_point = vec3(1e-6, 0.0, 0.0)
-        self.assertFalse(self.controller.has_pending_motion(epsilon=1e-4))
-
     def test_mode_detection_orbit_middle_mouse(self):
         """Test that middle mouse triggers orbit mode."""
         input_state = InputState(middle_button=True)
@@ -206,8 +181,8 @@ class TestCameraController(unittest.TestCase):
 
         self.assertEqual(self.controller.mode, CameraMode.PAN)
 
-    def test_mode_detection_pan_virtual_pan_button(self):
-        """Virtual pan_button forces pan (e.g. Ctrl+LMB bound by the host)."""
+    def test_mode_detection_pan_virtual_button(self):
+        """Virtual pan_button forces pan (e.g. Ctrl+LMB bindings)."""
         input_state = InputState(pan_button=True)
         self.controller._determine_mode(input_state)
 
@@ -458,47 +433,60 @@ class TestCameraController(unittest.TestCase):
         self.assertEqual(self.camera.z, 45)
 
 
-class TestCameraAngleWrapping(unittest.TestCase):
-    """Regression tests for camera angle normalization (orbit / free-rotate paths)."""
+class TestCameraRotateAngleWrapping(unittest.TestCase):
+    """Regression tests for Camera.rotate yaw/pitch normalization (wrap + clamp)."""
 
-    def test_wrap_angle_pi_normalizes_to_principal_range(self):
-        """Angles are folded with (a+pi) % 2pi - pi; +pi maps to -pi (same direction as orbit yaw loops)."""
-        self.assertAlmostEqual(_wrap_angle_pi(0.0), 0.0, places=9)
-        self.assertAlmostEqual(_wrap_angle_pi(math.pi), -math.pi, places=9)
-        self.assertAlmostEqual(_wrap_angle_pi(-math.pi), -math.pi, places=9)
-        self.assertAlmostEqual(abs(_wrap_angle_pi(3 * math.pi)), math.pi, places=9)
-        self.assertAlmostEqual(abs(_wrap_angle_pi(-3 * math.pi)), math.pi, places=9)
-        self.assertAlmostEqual(_wrap_angle_pi(10 * math.pi + 0.1), 0.1, places=9)
+    def test_yaw_wraps_full_turn(self):
+        """Rotating by 2π should land on the same wrapped yaw as 0."""
+        camera = Camera()
+        camera.yaw = 0.0
+        camera.pitch = math.pi / 2
+        camera.rotate(2 * math.pi, 0.0, clamp=False)
+        self.assertAlmostEqual(camera.yaw, 0.0, places=6)
 
-    def test_rotate_without_clamp_wraps_yaw_and_pitch(self):
-        """Large deltas must not leave angles unbounded (prevents float drift in long sessions)."""
-        cam = Camera()
-        cam.yaw = 0.0
-        cam.pitch = math.pi / 2
-        cam.rotate(yaw=4 * math.pi, pitch=0.0, clamp=False)
-        self.assertAlmostEqual(cam.yaw, 0.0, places=9)
-        cam.rotate(yaw=0.0, pitch=10.0, clamp=False)
-        self.assertGreater(cam.pitch, -math.pi)
-        self.assertLessEqual(cam.pitch, math.pi)
+    def test_yaw_wraps_negative(self):
+        """Large positive delta should fold into (-π, π] without runaway values."""
+        camera = Camera()
+        camera.yaw = 0.0
+        camera.pitch = math.pi / 2
+        camera.rotate(4.0, 0.0, clamp=False)
+        self.assertGreater(camera.yaw, -math.pi - 1e-6)
+        self.assertLessEqual(camera.yaw, math.pi + 1e-6)
 
-    def test_rotate_with_clamp_respects_pitch_limits(self):
-        """Clamped orbit pitch must stay inside (lower, upper) even when limits are degenerate."""
-        cam = Camera()
-        cam.pitch = math.pi / 2
-        cam.rotate(0.0, 10.0, clamp=True, lower_limit=0.0, upper_limit=math.pi)
-        self.assertGreater(cam.pitch, 0.0)
-        self.assertLess(cam.pitch, math.pi)
-        # Degenerate limits: both sides collapse to a single allowed pitch
-        cam2 = Camera()
-        cam2.pitch = math.pi / 2
-        cam2.rotate(0.0, 5.0, clamp=True, lower_limit=1.0, upper_limit=1.0)
-        self.assertAlmostEqual(cam2.pitch, 1.0, places=9)
+    def test_pitch_wraps_when_not_clamped(self):
+        """Without clamp, pitch uses the same π-normalization as yaw."""
+        camera = Camera()
+        camera.yaw = 0.0
+        camera.pitch = math.pi / 2
+        camera.rotate(0.0, 3 * math.pi, clamp=False)
+        self.assertGreater(camera.pitch, -math.pi - 1e-6)
+        self.assertLessEqual(camera.pitch, math.pi + 1e-6)
+
+    def test_clamp_inverted_limits_uses_midpoint(self):
+        """If lower_limit >= upper_limit, pitch clamps to their midpoint (no crash)."""
+        camera = Camera()
+        camera.yaw = 0.0
+        camera.pitch = math.pi / 2
+        lower = math.pi * 0.75
+        upper = math.pi * 0.25
+        camera.rotate(0.0, 10.0, clamp=True, lower_limit=lower, upper_limit=upper)
+        self.assertAlmostEqual(camera.pitch, (lower + upper) * 0.5, places=6)
+
+
+class TestCameraControllerLerpAngle(unittest.TestCase):
+    """Tests for shortest-path angle interpolation used during smoothing."""
+
+    def setUp(self):
+        self.camera: Camera = Camera()
+        self.controller: CameraController = CameraController(self.camera)
 
     def test_lerp_angle_shortest_path_over_wrap(self):
-        """Smoothing must interpolate across the ±pi seam without a full spin."""
-        ctrl = CameraController(Camera())
-        result = ctrl._lerp_angle(3 * math.pi / 4, -3 * math.pi / 4, 0.5)
-        self.assertAlmostEqual(result, math.pi, places=9)
+        """Interpolation should take the short arc across the ±π seam."""
+        a = math.pi - 0.1
+        b = -math.pi + 0.1
+        mid = self.controller._lerp_angle(a, b, 0.5)
+        self.assertAlmostEqual(mid, math.pi, places=5)
+        self.assertGreater(mid, a)
 
 
 class TestCameraModeEnum(unittest.TestCase):

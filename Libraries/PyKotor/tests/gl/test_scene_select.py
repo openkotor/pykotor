@@ -1,62 +1,64 @@
-"""Tests for Scene.select GITObject resolution (editor selection path)."""
+"""Tests for Scene.select: GITObject resolution and selection list behavior."""
 
 from __future__ import annotations
 
 import unittest
-from unittest.mock import patch
+from types import MethodType
 
 try:
-    from pykotor.gl.scene import RenderObject, Scene
-    from pykotor.gl.scene.scene_cache import SceneCache
-    from pykotor.resource.generics.git import GIT, GITWaypoint
+    from pykotor.gl.scene import RenderObject
+    from pykotor.gl.scene.scene import Scene
+    from pykotor.resource.generics.git import GITWaypoint
 except ImportError:
     import pytest
 
-    pytest.skip("pykotor.gl.scene.Scene not available", allow_module_level=True)
+    pytest.skip("pykotor.gl.scene or git generics not available", allow_module_level=True)
+
+
+class _SceneSelectStub:
+    """Minimal scene stand-in: ``Scene()`` compiles shaders and needs a GL context.
+
+    Binding the real ``Scene.select`` implementation exercises production logic
+    (GITObject → RenderObject resolution) without headless shader validation failures.
+    """
+
+    def __init__(self) -> None:
+        self.objects: dict[object, RenderObject] = {}
+        self.selection: list[RenderObject] = []
+        self._module = None  # SceneCache.build_cache returns immediately
 
 
 class TestSceneSelect(unittest.TestCase):
-    """Regression: select() must accept any GITObject subtype (e.g. GITWaypoint), not only GITInstance."""
+    """Regression: select() accepts GITObject and resolves to the matching RenderObject."""
 
-    def setUp(self) -> None:
-        # Avoid full module/layout resolution; we only test selection ↔ RenderObject.data matching.
-        self._cache_patcher = patch.object(
-            SceneCache,
-            "build_cache",
-            staticmethod(lambda _scene, **_kwargs: None),
-        )
-        self._cache_patcher.start()
-        self.addCleanup(self._cache_patcher.stop)
+    def setUp(self):
+        self.stub = _SceneSelectStub()
+        self._select = MethodType(Scene.select, self.stub)
+        self.waypoint_git = GITWaypoint(1.0, 2.0, 3.0)
+        self.ro = RenderObject("waypoint", data=self.waypoint_git)
+        self.stub.objects[self.waypoint_git] = self.ro
 
-        self.scene: Scene = Scene()
-        self.scene.git = GIT()
-        self.waypoint: GITWaypoint = GITWaypoint(1.0, 2.0, 3.0)
-        self.scene.git.waypoints.append(self.waypoint)
-        self.ro: RenderObject = RenderObject("waypoint", data=self.waypoint)
-        self.scene.objects[self.waypoint] = self.ro
+    def test_select_git_object_resolves_render_object(self):
+        self.stub.selection.append(RenderObject("cursor"))
+        self._select(self.waypoint_git, clear_existing=True)
 
-    def test_select_git_waypoint_resolves_to_render_object(self) -> None:
-        self.scene.select(self.waypoint, clear_existing=True)
-        self.assertEqual(len(self.scene.selection), 1)
-        self.assertIs(self.scene.selection[0], self.ro)
+        self.assertEqual(len(self.stub.selection), 1)
+        self.assertIs(self.stub.selection[0], self.ro)
 
-    def test_select_render_object_direct(self) -> None:
-        self.scene.select(self.ro, clear_existing=True)
-        self.assertEqual(len(self.scene.selection), 1)
-        self.assertIs(self.scene.selection[0], self.ro)
+    def test_select_render_object_without_clear_appends(self):
+        self._select(self.ro, clear_existing=True)
+        other = RenderObject("waypoint")
+        self._select(other, clear_existing=False)
 
-    def test_select_unknown_git_object_leaves_selection_empty(self) -> None:
-        orphan: GITWaypoint = GITWaypoint(0.0, 0.0, 0.0)
-        self.scene.select(orphan, clear_existing=True)
-        self.assertEqual(self.scene.selection, [])
+        self.assertEqual(len(self.stub.selection), 2)
+        self.assertIn(self.ro, self.stub.selection)
+        self.assertIn(other, self.stub.selection)
 
-    def test_select_clear_existing_false_appends(self) -> None:
-        other = RenderObject("empty", data=None)
-        self.scene.selection.append(other)
-        self.scene.select(self.waypoint, clear_existing=False)
-        self.assertEqual(len(self.scene.selection), 2)
-        self.assertIs(self.scene.selection[0], other)
-        self.assertIs(self.scene.selection[1], self.ro)
+    def test_select_unknown_git_leaves_selection_empty_when_clearing(self):
+        orphan = GITWaypoint(9.0, 9.0, 9.0)
+        self._select(orphan, clear_existing=True)
+
+        self.assertEqual(len(self.stub.selection), 0)
 
 
 if __name__ == "__main__":
