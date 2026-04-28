@@ -1,0 +1,336 @@
+From 2f557bde476407f2de70e2efebd1ba0c78368d78 Mon Sep 17 00:00:00 2001
+From: Cursor Agent <cursoragent@cursor.com>
+Date: Tue, 28 Apr 2026 03:20:02 +0000
+Subject: [PATCH] feat(indoor-builder): real opengl tile preview with area
+ layout sync
+
+---
+ .../gui/windows/indoor_builder/builder.py     |  19 +-
+ .../windows/indoor_builder/tile_editor_3d.py  | 209 ++++++++++++++----
+ 2 files changed, 187 insertions(+), 41 deletions(-)
+
+diff --git a/src/toolset/gui/windows/indoor_builder/builder.py b/src/toolset/gui/windows/indoor_builder/builder.py
+index b2c1294..60a4845 100644
+--- a/src/toolset/gui/windows/indoor_builder/builder.py
++++ b/src/toolset/gui/windows/indoor_builder/builder.py
+@@ -218,6 +218,7 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
+         self._installation: HTInstallation | None = installation
+         self._kits: list[Kit] = []
+         self._tile_kits: list[TileKit] = []
++        self._tile_gl = None  # IndoorTileGridRenderer | None (optional 3D preview)
+         self._map: IndoorMap = IndoorMap()
+         # Synthetic components (e.g. merged rooms) are stored in an embedded kit so they
+         # can be serialized into `.indoor` and restored on load.
+@@ -244,15 +245,20 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
+         self.ui: Ui_MainWindow = Ui_MainWindow()
+         self.ui.setupUi(self)
+         from toolset.gui.windows.indoor_builder.tile_editor_3d import (  # noqa: PLC0415
++            IndoorTileGridRenderer,
+             setup_indoor_builder_tile_3d,
+         )
+ 
+-        setup_indoor_builder_tile_3d(
++        self._tile_gl = setup_indoor_builder_tile_3d(
+             main_splitter=self.ui.mainViewSplitter,
+             host=self.ui.tileGrid3DHost,
+             host_layout=self.ui.tileGrid3DHostLayout,
+             fallback_label=self.ui.tileGrid3DFallbackLabel,
++            installation=self._installation,
+         )
++        if isinstance(self._tile_gl, IndoorTileGridRenderer):
++            self._undo_stack.cleanChanged.connect(self._refresh_tile_gl_view)
++            self._undo_stack.indexChanged.connect(self._refresh_tile_gl_view)
+ 
+         # Add a missing "Open .mod" action at runtime (UI code is generated; do not edit it).
+         self._action_open_mod: QAction = QAction(tr("Open .mod..."), self)
+@@ -343,6 +349,9 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
+     def _on_installation_changed(self, installation: HTInstallation | None) -> None:
+         # self._installation is already set by Editor._handle_installation_changed before this call.
+         self._module_kit_manager = None if installation is None else ModuleKitManager(installation)
++        gl = getattr(self, "_tile_gl", None)
++        if gl is not None and hasattr(gl, "set_installation"):
++            gl.set_installation(installation)
+         try:
+             self._setup_settings_toolbar()
+             self._setup_modules()
+@@ -810,6 +819,13 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
+         self.ui.mapRenderer.invalidate_rooms(rooms)
+         self._refresh_status_bar()
+ 
++    def _refresh_tile_gl_view(self, *_args: object) -> None:
++        """Sync optional 3D preview with map + tile kits (AreaDesigner / tile_layout)."""
++        gl = getattr(self, "_tile_gl", None)
++        if gl is None or not hasattr(gl, "refresh_from_map"):
++            return
++        gl.refresh_from_map(self._map, self._tile_kits)
++
+     def _kits_for_build(self) -> list[Kit]:
+         """K1 room kits plus v2 tile kit shells (textures/skyboxes) for `IndoorMap.build`."""
+         out: list[Kit] = list(self._kits)
+@@ -832,6 +848,7 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
+             self.ui.kitSelect.addItem(kit.name, kit)
+         # v2 tile kits are loaded into `_tile_kits` for tile-layout / 3D workflows; the v1
+         # component listbox remains for classic room components only.
++        self._refresh_tile_gl_view()
+ 
+     def _show_no_kits_dialog(self):
+         """Show dialog asking if user wants to open kit downloader.
+diff --git a/src/toolset/gui/windows/indoor_builder/tile_editor_3d.py b/src/toolset/gui/windows/indoor_builder/tile_editor_3d.py
+index 28a0f72..6bb8183 100644
+--- a/src/toolset/gui/windows/indoor_builder/tile_editor_3d.py
++++ b/src/toolset/gui/windows/indoor_builder/tile_editor_3d.py
+@@ -1,19 +1,33 @@
+-"""Optional 3D tile-grid preview for Indoor Map Builder (PyQt + OpenGL).
++"""3D tile / area preview for Indoor Map Builder (PyQt + PyKotor GL).
+ 
+-When ``INDOOR_BUILDER_DISABLE_3D`` is set, or PyOpenGL is unavailable, the UI keeps the
+-fallback label from ``indoor_builder.ui``.
++Replaces the solid-color placeholder with a real `OpenGLSceneRenderer` that mirrors Kotor.NET's
++``GLEngine.Render`` → mesh draws for placed tiles (see ``AreaEntity.GetMeshDescriptors``).
+ """
+ 
+ from __future__ import annotations
+ 
+ import os
+-from typing import TYPE_CHECKING
++from typing import TYPE_CHECKING, Any
+ 
+-from qtpy.QtCore import Qt
++from qtpy.QtCore import QTimer
++from qtpy.QtGui import QCloseEvent, QOpenGLContext
+ from qtpy.QtWidgets import QLabel, QVBoxLayout, QWidget
+ 
++from loggerplus import RobustLogger
++from pykotor.common.indoormap import IndoorMap
++from pykotor.common.tilekit import TileKit
++from pykotor.gl.scene.scene import Scene
++from pykotor.tools.tilekit_preview import (
++    populate_scene_from_area_designer_v01,
++    populate_scene_tile_grid_floor_preview,
++    upload_tile_kit_assets,
++)
++from pykotor.tools.tilemap_compile import TileLayout
++from toolset.gui.widgets.renderer.base import OpenGLSceneRenderer
++from toolset.gui.widgets.settings.widgets.module_designer import get_renderer_loop_interval_ms
++
+ if TYPE_CHECKING:
+-    from qtpy.QtWidgets import QSplitter
++    from toolset.data.installation import HTInstallation
+ 
+ 
+ def indoor_builder_3d_enabled() -> bool:
+@@ -24,62 +38,177 @@ def indoor_builder_3d_enabled() -> bool:
+     )
+ 
+ 
+-class _MinimalTileGridGL(QWidget):
+-    """Clears a color buffer; placeholder for a full tile-mesh + grid renderer."""
++class IndoorTileGridRenderer(OpenGLSceneRenderer):
++    """OpenGL preview: AreaDesigner JSON and/or PyKotor ``tile_layout`` on the current map."""
+ 
+-    def __init__(self, parent: QWidget | None = None) -> None:
+-        super().__init__(parent)
+-        from qtpy.QtWidgets import QOpenGLWidget  # noqa: PLC0415
++    def __init__(self, parent: QWidget) -> None:
++        super().__init__(parent, loop_interval_ms=get_renderer_loop_interval_ms())
++        self._installation: HTInstallation | None = None
++        self._last_map_id: int | None = None
++        self._kits_signature: tuple[str, ...] = ()
++        self._uploaded_for_kits: set[str] = set()
++        self._map_ref: IndoorMap | None = None
++        self._tile_kits_ref: list[TileKit] = []
+ 
+-        self._gl: object | None = None
+-        try:
+-            from OpenGL.GL import (  # noqa: PLC0415
+-                GL_COLOR_BUFFER_BIT,
+-                GL_DEPTH_BUFFER_BIT,
+-                glClear,
+-                glClearColor,
+-            )
++        self.loop_timer.timeout.disconnect()
++        self.loop_timer.timeout.connect(self._on_loop_timer_timeout)
+ 
+-            class _V(QOpenGLWidget):
+-                def initializeGL(self) -> None:
+-                    glClearColor(0.12, 0.12, 0.14, 1.0)
++    def _on_loop_timer_timeout(self) -> None:
++        if self.isVisible():
++            self.update()
+ 
+-                def paintGL(self) -> None:
+-                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
++    def set_installation(self, installation: HTInstallation | None) -> None:
++        self._installation = installation
++        self._uploaded_for_kits.clear()
+ 
+-            self._gl = _V(self)
+-            layout = QVBoxLayout(self)
+-            layout.setContentsMargins(0, 0, 0, 0)
+-            layout.addWidget(self._gl)
+-        except Exception:
+-            lab = QLabel(self)
+-            lab.setAlignment(Qt.AlignmentFlag.AlignCenter)
+-            lab.setText(
+-                "3D view: PyOpenGL not available. Use 2D map or install PyOpenGL.",
++    def shutdown_renderer(self) -> None:
++        super().shutdown_renderer()
++        self._uploaded_for_kits.clear()
++
++    def closeEvent(self, event: QCloseEvent) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
++        self.shutdown_renderer()
++        super().closeEvent(event)
++
++    def initializeGL(self) -> None:
++        self.makeCurrent()
++        try:
++            from pykotor.gl.compat import HAS_PYOPENGL  # noqa: PLC0415
++        except ImportError:
++            HAS_PYOPENGL = False  # noqa: N806
++        if not HAS_PYOPENGL:
++            RobustLogger().warning("IndoorTileGridRenderer: PyOpenGL missing; 3D preview disabled.")
++            return
++
++        self.scene = Scene(installation=self._installation)
++        self.scene.enable_frustum_culling = False
++        self.scene.camera.distance = 25.0
++        self.scene.camera.x = 0.0
++        self.scene.camera.y = 0.0
++        self.scene.camera.z = 12.0
++        self.scene.show_focus_point_gizmo = False
++        self.scene.show_cursor = False
++        self._sync_camera_drawable_size()
++        self.loop_timer.start()
++
++    def resizeGL(self, width: int, height: int) -> None:  # noqa: ARG002
++        self._sync_camera_drawable_size()
++
++    def refresh_from_map(self, indoor_map: IndoorMap, tile_kits: list[TileKit]) -> None:
++        """Rebuild GPU scene from map state (call after map / kits change)."""
++        self._map_ref = indoor_map
++        self._tile_kits_ref = tile_kits
++        self.update()
++
++    def paintGL(self) -> None:
++        if self.scene is None:
++            return
++        ctx: QOpenGLContext | None = self.context()
++        if ctx is None or not ctx.isValid():
++            return
++        self.makeCurrent()
++        self._sync_camera_drawable_size()
++
++        indoor_map = self._map_ref
++        tile_kits = self._tile_kits_ref
++        if indoor_map is None:
++            try:
++                self.scene.render()
++            except Exception:  # noqa: BLE001
++                RobustLogger().exception("IndoorTileGridRenderer.render failed.")
++            return
++
++        kits_by_id: dict[str, TileKit] = {tk.kit_id: tk for tk in tile_kits}
++        sig = tuple(sorted(kits_by_id.keys()))
++        mid = id(indoor_map)
++        if sig != self._kits_signature or mid != self._last_map_id:
++            self._uploaded_for_kits.clear()
++            self._kits_signature = sig
++            self._last_map_id = mid
++
++        for kid, tk in kits_by_id.items():
++            if kid not in self._uploaded_for_kits:
++                upload_tile_kit_assets(self.scene, tk)
++                self._uploaded_for_kits.add(kid)
++
++        area_payload = getattr(indoor_map, "area_designer_v01", None)
++        if isinstance(area_payload, dict) and area_payload.get("format") == "0.1":
++            populate_scene_from_area_designer_v01(
++                self.scene,
++                area_payload,
++                kits_by_id,
++                show_walls=True,
++                show_doors=True,
++                show_corners=True,
++                show_ceilings=False,
+             )
+-            layout = QVBoxLayout(self)
+-            layout.addWidget(lab)
++        else:
++            tl = getattr(indoor_map, "tile_layout", None)
++            if isinstance(tl, dict) and tl.get("kit_id"):
++                kit_id = str(tl["kit_id"])
++                tk = kits_by_id.get(kit_id)
++                if tk is not None:
++                    layout = TileLayout(
++                        format_version=int(tl.get("format_version", 1)),
++                        kit_id=kit_id,
++                        cell_size=float(tl.get("cell_size", 4.0)),
++                        grid_w=int(tl.get("grid_w", 0)),
++                        grid_h=int(tl.get("grid_h", 0)),
++                        floor_cells=list(tl.get("floor_cells") or []),
++                    )
++                    populate_scene_tile_grid_floor_preview(self.scene, tk, layout)
++                else:
++                    self.scene.objects.clear()
++                    self.scene.invalidate_render_cache()
++            else:
++                self.scene.objects.clear()
++                self.scene.invalidate_render_cache()
++
++        try:
++            self.scene.render()
++        except Exception:  # noqa: BLE001
++            RobustLogger().exception("IndoorTileGridRenderer.render failed.")
+ 
+ 
+ def setup_indoor_builder_tile_3d(
+     *,
+-    main_splitter: QSplitter,
++    main_splitter: Any,
+     host: QWidget,
+     host_layout: QVBoxLayout,
+     fallback_label: QLabel,
+-) -> None:
+-    """Replace the fallback label with a minimal GL widget when 3D is allowed."""
++    installation: HTInstallation | None = None,
++) -> IndoorTileGridRenderer | None:
++    """Replace the fallback label with the GL renderer when 3D is allowed."""
+     if not indoor_builder_3d_enabled():
+         fallback_label.setText("3D tile view disabled (INDOOR_BUILDER_DISABLE_3D).")
+         try:
+             main_splitter.setSizes([480, 0])
+         except Exception:
+             pass
+-        return
++        return None
++
++    try:
++        from pykotor.gl.compat import HAS_PYOPENGL  # noqa: PLC0415
++    except ImportError:
++        HAS_PYOPENGL = False  # noqa: N806
++
++    if not HAS_PYOPENGL:
++        fallback_label.setText(
++            "3D view: PyOpenGL not available. Use 2D map or install PyOpenGL.",
++        )
++        try:
++            main_splitter.setSizes([480, 0])
++        except Exception:
++            pass
++        return None
++
+     host_layout.removeWidget(fallback_label)
+     fallback_label.hide()
+-    host_layout.addWidget(_MinimalTileGridGL(host))
++    gl_widget = IndoorTileGridRenderer(host)
++    gl_widget.set_installation(installation)
++    host_layout.addWidget(gl_widget)
+     try:
+         main_splitter.setSizes([400, 200])
+     except Exception:
+         pass
++    QTimer.singleShot(0, gl_widget.update)
++    return gl_widget
+-- 
+2.43.0
+
