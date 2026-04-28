@@ -28,11 +28,25 @@ def test_load_minimal_v2_tile_kit() -> None:
     assert not missing  # no door assets required
 
 
+def test_load_kotor_net_format_0_1_tile_kit() -> None:
+    json_path = FIXTURES / "minimal_kotor_net.json"
+    tk, missing = load_tile_kit_v2(json_path, record_missing=True)
+    assert tk.kit_id == "minimal_kotor_net"
+    assert tk.kotor_net_format_id == "0.1"
+    assert len(tk.floors) == 1
+    assert tk.floors[0].resref == "floor_plain"
+    assert len(tk.tiles) == 1
+    assert tk.tiles[0].tile_id == "cell_a"
+    assert tk.tiles[0].default_floor_id == "floor_plain"
+    assert not missing
+
+
 def test_load_kits_unified_picks_v2() -> None:
     kits, tile_kits = load_kits_unified(FIXTURES)
     assert isinstance(kits, list)
     assert len(tile_kits) >= 1
     assert any(tk.kit_id == "minimal_tiles" for tk in tile_kits)
+    assert any(tk.kit_id == "minimal_kotor_net" for tk in tile_kits)
 
 
 def test_tile_layout_merged_bwm_2x2() -> None:
