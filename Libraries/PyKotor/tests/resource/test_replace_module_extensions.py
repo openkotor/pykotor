@@ -24,7 +24,7 @@ from pykotor.extract.installation import Installation
 
 
 class TestReplaceModuleExtensions(unittest.TestCase):
-    def testreplace_module_extensions(self):
+    def test_replace_module_extensions(self):
         # Happy path tests
         assert Installation.get_module_root("module.mod") == "module"
         assert Installation.get_module_root("module.erf") == "module"

@@ -21,7 +21,7 @@ Implementation in [kotor_filesystem_model.py](../Tools/HolocronToolset/src/tools
 
 #### Core Model Functionality
 - **Multi-root architecture**: `RootItem` holds multiple `InstallationItem` children
-- **Hierarchical structure**: `TreeItem` → `DirItem` → `FileItem` / `CapsuleItem` → `NestedCapsuleItem`
+- **Hierarchical structure**: `TreeItem` -> `DirItem` -> `FileItem` / `CapsuleItem` -> `NestedCapsuleItem`
 - **Lazy loading**: Children loaded on-demand via `loadChildren()` with `_children_loaded` tracking
 - **Archive expansion**: BIF/ERF/RIM/MOD files expanded as folder nodes with contents browsable
 
@@ -38,11 +38,11 @@ Implementation in [main.py](../Tools/HolocronToolset/src/toolset/gui/windows/mai
 
 - **`_apply_tree_selection_to_tabs()`**: Automatically switches tabs based on tree selection
 - **Path-aware navigation**:
-  - Installation root → **Core** tab
-  - Modules folder/file → **Modules** tab (auto-loads module if capsule selected)
-  - Override folder/file → **Override** tab (sets subfolder context)
-  - Texturepacks folder/file → **Textures** tab (loads texturepack if selected)
-  - Save locations → **Saves** tab
+  - Installation root -> **Core** tab
+  - Modules folder/file -> **Modules** tab (auto-loads module if capsule selected)
+  - Override folder/file -> **Override** tab (sets subfolder context)
+  - Texturepacks folder/file -> **Textures** tab (loads texturepack if selected)
+  - Save locations -> **Saves** tab
 
 - **Selection handler**: `change_active_installation()` connected to tree's `currentChanged` signal ([line 543](../Tools/HolocronToolset/src/toolset/gui/windows/main.py#L543))
 
@@ -103,9 +103,9 @@ installationTree.currentChanged signal
   ↓
 change_active_installation(current, previous)
   ↓
-installation_from_index() → get InstallationItem
+installation_from_index() -> get InstallationItem
   ↓
-_load_installation() → HTInstallation async load
+_load_installation() -> HTInstallation async load
   ↓
 _finalize_installation_setup()
   ↓

@@ -16,11 +16,11 @@ from __future__ import annotations
 
 from enum import IntEnum
 
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource
 from pykotor.resource.type import ResourceType
 
 
-class SSF(ComparableMixin):
+class SSF(BiowareResource):
     """Represents a SSF (Sound Set File) containing creature sound event mappings.
 
     SSF files map 28 predefined sound event types to string references (StrRefs) in the
@@ -63,6 +63,35 @@ class SSF(ComparableMixin):
         if not isinstance(item, SSFSound):
             return NotImplemented  # type: ignore[no-any-return]
         return self._sounds[item]
+
+    def __json__(self) -> dict[str, list[dict[str, str]]]:
+        """Serialize the SSF object to a JSON-compatible dictionary."""
+        json_data: dict[str, list[dict[str, str]]] = {"sounds": []}
+        for sound_name, sound in SSFSound.__members__.items():
+            json_data["sounds"].append(
+                {
+                    "id": str(sound.value),
+                    "label": sound_name,
+                    "strref": str(self.get(sound)),
+                }
+            )
+        return json_data
+
+    @classmethod
+    def from_json(cls, data: dict) -> SSF:
+        """Hydrate an SSF object from a JSON dictionary."""
+        instance = cls()
+        sounds = data.get("sounds")
+        if not isinstance(sounds, list):
+            msg = "The JSON file that was loaded was not a valid SSF."
+            raise ValueError(msg)
+
+        for sound_entry in sounds:
+            sound = SSFSound(int(sound_entry["id"]))
+            stringref = int(sound_entry["strref"])
+            instance.set_data(sound, stringref)
+
+        return instance
 
     def reset(self):
         """Sets all the sound stringrefs to -1."""

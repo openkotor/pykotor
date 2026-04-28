@@ -27,7 +27,6 @@ from pykotor.resource.formats.tlk import (
     TLK,
     TLKBinaryReader,
     TLKEntry,
-    TLKJSONReader,
     TLKXMLReader,
     bytes_tlk,
     detect_tlk,
@@ -82,7 +81,7 @@ class TestTLK(unittest.TestCase):
     def test_json_io(self):
         self.assertEqual(detect_tlk(JSON_TEST_DATA.encode("utf-8")), ResourceType.TLK_JSON)
 
-        tlk: TLK = TLKJSONReader(JSON_TEST_DATA.encode("utf-8")).load()
+        tlk: TLK = read_tlk(JSON_TEST_DATA.encode("utf-8"))
         self.validate_io(tlk)
 
         data = bytearray()
@@ -105,7 +104,7 @@ class TestTLK(unittest.TestCase):
         self.assertRaises(FileNotFoundError, read_tlk, DOES_NOT_EXIST_FILE)
         self.assertRaises(ValueError, read_tlk, CORRUPT_BINARY_TEST_DATA)
         self.assertRaises(ValueError, read_tlk, CORRUPT_XML_TEST_DATA)
-        self.assertRaises(ValueError, read_tlk, CORRUPT_JSON_TEST_DATA)
+        self.assertRaises(ValueError, read_tlk, CORRUPT_JSON_TEST_DATA.encode("utf-8"))
 
     def test_write_raises(self):
         if os.name == "nt":

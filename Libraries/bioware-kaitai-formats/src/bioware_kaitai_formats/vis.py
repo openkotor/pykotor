@@ -60,10 +60,10 @@ class Vis(KaitaiStruct):
     - Too permissive VIS: Wastes GPU resources rendering unseen geometry
 
     Common Issues:
-    - Missing Room: Room not in any VIS list → never renders → appears invisible
-    - One-way Visibility: Room A lists B, but B doesn't list A → asymmetric rendering
-    - Performance Problems: All rooms list each other → defeats purpose of VIS optimization
-    - Doorway Artifacts: Door rooms not mutually visible → walls clip during door animations
+    - Missing Room: Room not in any VIS list -> never renders -> appears invisible
+    - One-way Visibility: Room A lists B, but B doesn't list A -> asymmetric rendering
+    - Performance Problems: All rooms list each other -> defeats purpose of VIS optimization
+    - Doorway Artifacts: Door rooms not mutually visible -> walls clip during door animations
 
     """
 

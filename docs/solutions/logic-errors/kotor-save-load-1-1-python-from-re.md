@@ -8,9 +8,9 @@ symptoms: |
   available for key functions.
 root_cause: |
   PyKotor save/load logic did not follow the exact order of operations used by the
-  K1 and TSL binaries. The engine uses a fixed sequence (e.g. disk check → create
-  dir → screenshot → SAVENFO/PARTYTABLE/GLOBALVARS/SAVEGAME.sav on save; on load:
-  LoadTableInfo → Load → LoadModule). Deviating from that order can affect
+  K1 and TSL binaries. The engine uses a fixed sequence (e.g. disk check -> create
+  dir -> screenshot -> SAVENFO/PARTYTABLE/GLOBALVARS/SAVEGAME.sav on save; on load:
+  LoadTableInfo -> Load -> LoadModule). Deviating from that order can affect
   compatibility. The fix was to implement dedicated flows that mirror the engine
   step-by-step using reverse-engineering as the source of truth.
 solution: |
@@ -37,7 +37,7 @@ Reverse-engineered K1 and TSL save/load from game binaries (`k1_win_gog_swkotor.
 
 ## Root cause
 
-PyKotor's save/load logic did not follow the exact order of operations used by the K1 and TSL binaries. The engine uses a fixed sequence (e.g. disk check → create dir → screenshot → SAVENFO/PARTYTABLE/GLOBALVARS/SAVEGAME.sav on save; on load: LoadTableInfo → Load → LoadModule). Deviating from that order can affect compatibility and behavior. The fix was to implement dedicated flows that mirror the engine step-by-step, using reverse-engineering as the source of truth.
+PyKotor's save/load logic did not follow the exact order of operations used by the K1 and TSL binaries. The engine uses a fixed sequence (e.g. disk check -> create dir -> screenshot -> SAVENFO/PARTYTABLE/GLOBALVARS/SAVEGAME.sav on save; on load: LoadTableInfo -> Load -> LoadModule). Deviating from that order can affect compatibility and behavior. The fix was to implement dedicated flows that mirror the engine step-by-step, using reverse-engineering as the source of truth.
 
 ---
 
@@ -92,7 +92,7 @@ Expect: All tests in `test_save_load_flow_k1.py` pass (disk helpers, directory h
 - **docs/reva_roadmap/KOTOR_SAVE_LOAD_RE_AGENT_NATIVE_AUDIT.md** — Agent-native audit of save/load RE plan and workflow.
 - **docs/reva_roadmap/SAVE_LOAD_ENGINE_BEHAVIOR.md** — K1/TSL save/load engine behavior spec (1:1).
 - **.cursor/plans/kotor_save_load_re_via_agdec_mcp_b9f4946a.plan.md** — Phased save/load RE plan (phases 1–11).
-- **.cursor/skills/assembly-transpile-parity/SKILL.md** — Skill for decompile/transpile parity using subagents (disassembly → Python/C with comparison).
+- **.cursor/skills/assembly-transpile-parity/SKILL.md** — Skill for decompile/transpile parity using subagents (disassembly -> Python/C with comparison).
 - **wiki/reverse_engineering_findings.md** — RE findings; engine architecture, agdec-http usage.
 
 ---

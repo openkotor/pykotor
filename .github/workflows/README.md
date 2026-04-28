@@ -28,9 +28,9 @@ Automated release and validation workflows for all PyKotor tools.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  DEVELOPMENT: Create PR → Build validation runs automatically   │
+│  DEVELOPMENT: Create PR -> Build validation runs automatically   │
 │  PRE-RELEASE: Run Release Readiness Check (optional)            │
-│  RELEASE: Bump version → Create pre-release → Automatic builds  │
+│  RELEASE: Bump version -> Create pre-release -> Automatic builds  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -38,7 +38,7 @@ Automated release and validation workflows for all PyKotor tools.
 
 ### Option 1: One-Click Release (Easiest)
 
-1. Go to **Actions** → **Create Release**
+1. Go to **Actions** -> **Create Release**
 2. Select tool, enter version
 3. Click **Run workflow**
 4. Done! Everything is automatic.
@@ -108,7 +108,7 @@ The `.github/actions/build-tool` action provides reusable build functionality:
 
 ### Method 1: PR Build Validation (Automatic)
 
-Create a PR that touches tool files → Build validation runs automatically:
+Create a PR that touches tool files -> Build validation runs automatically:
 
 - Detects affected tools
 - Validates version config files
@@ -117,7 +117,7 @@ Create a PR that touches tool files → Build validation runs automatically:
 
 ### Method 2: Release Readiness Check (Manual)
 
-1. Go to **Actions** → **Release Readiness Check**
+1. Go to **Actions** -> **Release Readiness Check**
 2. Select tool and version
 3. Optionally enable full builds
 4. Review the summary
@@ -192,8 +192,8 @@ Each release includes platform-specific builds. Minimum Python version is 3.8.
 
 1. Check the Actions tab for detailed logs
 2. Common issues:
-   - Import errors → Check dependencies
-   - Missing files → Check paths in changes
+   - Import errors -> Check dependencies
+   - Missing files -> Check paths in changes
 3. Fix issues and push to PR
 
 ### Release Workflow Doesn't Trigger

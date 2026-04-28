@@ -107,7 +107,7 @@ def construct_fac(
 
     root = gff.root
 
-    # FactionList: omit or empty → no factions loaded (observed retail).
+    # FactionList: omit or empty -> no factions loaded (observed retail).
     faction_list: GFFList = root.acquire("FactionList", GFFList())
     for i, faction_struct in enumerate(faction_list):
         faction = FACFaction()
@@ -124,7 +124,7 @@ def construct_fac(
             faction.parent_id = parent_id_val
         fac.factions.append(faction)
 
-    # RepList: omit or empty → reputations filled from module defaults when loading (observed retail).
+    # RepList: omit or empty -> reputations filled from module defaults when loading (observed retail).
     rep_list: GFFList = root.acquire("RepList", GFFList())
     for i, rep_struct in enumerate(rep_list):
         reputation = FACReputation()

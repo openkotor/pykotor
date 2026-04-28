@@ -30,12 +30,12 @@ Improvements to the **ASCII validation output** produced when `pykotor walkmesh-
 ### 2. Map readability: reduce symbol overlap and add orientation
 
 - **Layering order:** Draw in a fixed order (e.g. walkable fill first, then perimeter outline, then unwalkable, then arrows) so that the most important validation cue (arrows) is not overwritten by dots/pluses. Prefer reserving a dedicated character for "cell has transition arrow" so arrows are never hidden (e.g. arrow character wins over `+` in that cell).
-- **Orientation:** Add a one-line hint above or below the grid: e.g. "X → (columns), Y ↑ (rows)" or a tiny compass (N/S/E/W) if we add axis labels. Optionally label the first/last column or row with approximate world X or Y (e.g. "X -20" and "X 81" at the sides).
+- **Orientation:** Add a one-line hint above or below the grid: e.g. "X -> (columns), Y ↑ (rows)" or a tiny compass (N/S/E/W) if we add axis labels. Optionally label the first/last column or row with approximate world X or Y (e.g. "X -20" and "X 81" at the sides).
 - **Scale (optional):** A short scale bar in the legend (e.g. "1 cell ≈ N units") so users can relate the map to the bbox.
 
 ### 3. Transitions: list and validate
 
-- **Transition list:** After the map, list each transition arrow with a short line (e.g. index, approximate XY, direction). Format: e.g. `  [1] (x, y) inward →` so users can correlate with the map and with LYT/door hooks.
+- **Transition list:** After the map, list each transition arrow with a short line (e.g. index, approximate XY, direction). Format: e.g. `  [1] (x, y) inward ->` so users can correlate with the map and with LYT/door hooks.
 - **Validation hint:** One line summarizing what "good" looks like (e.g. "All transitions on perimeter; arrows point inward. Expect 7 door/area links.") so users can quickly confirm the rebuild is consistent.
 
 ### 4. Tone and brevity
@@ -58,5 +58,5 @@ Improvements to the **ASCII validation output** produced when `pykotor walkmesh-
 
 ## Next steps
 
-→ Implement in `walkmesh_render_ascii.py`: restructure output into sections, multi-line summary, legend-before-map, transition list, and optional scale/orientation.  
-→ No CLI contract change: still one line per list item from `render_bwm_to_ascii_diagrams`; content of those lines changes only.
+-> Implement in `walkmesh_render_ascii.py`: restructure output into sections, multi-line summary, legend-before-map, transition list, and optional scale/orientation.  
+-> No CLI contract change: still one line per list item from `render_bwm_to_ascii_diagrams`; content of those lines changes only.

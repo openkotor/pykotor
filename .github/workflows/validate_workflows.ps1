@@ -7,62 +7,34 @@ Write-Host ""
 $errors = @()
 $warnings = @()
 
-# Helpers
-function Get-BuildName([string]$toolDirName) {
-    $lower = $toolDirName.ToLowerInvariant()
-    switch ($lower) {
-        "holocrontoolset" { return "toolset" }
-        default { return $lower }
-    }
-}
-
-function Find-ConfigFile([string]$toolDirPath, [string]$toolLower) {
-    $candidates = @(
-        "src/$toolLower/config.py",
-        "src/$toolLower/config/config_info.py",
-        "src/$toolLower/__main__.py",
-        "src/$toolLower/__init__.py"
-    )
-    foreach ($rel in $candidates) {
-        $candidate = Join-Path $toolDirPath $rel
-        if (Test-Path $candidate) { return (Resolve-Path $candidate) }
-    }
-    return $null
-}
-
 # Discover tools dynamically
 Write-Host "Detecting tools..." -ForegroundColor Yellow
 $tools = @()
-$toolsRoot = Resolve-Path "../../Tools" -ErrorAction SilentlyContinue
-if ($toolsRoot) {
-    Get-ChildItem -Path $toolsRoot -Directory | ForEach-Object {
-        if ($_.Name.StartsWith(".")) { return }
-        $build = Get-BuildName $_.Name
-        $config = Find-ConfigFile $_.FullName ($_.Name.ToLowerInvariant())
-        $tools += [PSCustomObject]@{
-            ToolDir    = $_.Name
-            BuildName  = $build
-            ConfigPath = $config
-        }
+$discoverScript = Resolve-Path "../scripts/discover_tools.py" -ErrorAction SilentlyContinue
+if ($discoverScript) {
+    $pythonExe = if ($env:pythonExePath) { $env:pythonExePath } elseif (Test-Path "../../.venv/Scripts/python.exe") { (Resolve-Path "../../.venv/Scripts/python.exe") } else { "python" }
+    $rawTools = & $pythonExe $discoverScript --format json
+    if ($LASTEXITCODE -eq 0 -and $rawTools) {
+        $tools = $rawTools | ConvertFrom-Json
     }
     if ($tools.Count -eq 0) {
-        $errors += "No tools detected under $toolsRoot"
+        $errors += "No tools detected from shared discovery metadata"
     } else {
         foreach ($t in $tools) {
-            $cfgMsg = if ($t.ConfigPath) { $t.ConfigPath } else { "no config file" }
-            Write-Host "  • $($t.ToolDir) (build: $($t.BuildName)) -> $cfgMsg" -ForegroundColor Green
+            $cfgMsg = if ($t.version_file) { $t.version_file } else { "no config file" }
+            Write-Host "  • $($t.directory) (build: $($t.build_name)) -> $cfgMsg" -ForegroundColor Green
         }
     }
 } else {
-    $errors += "Tools directory not found at ../../Tools"
+    $errors += "Shared discovery script not found at ../scripts/discover_tools.py"
 }
 
 # Build workflow lists dynamically
 $requiredWorkflows = @()
 $testWorkflows = @()
 foreach ($t in $tools) {
-    $requiredWorkflows += "release_$($t.BuildName).yml"
-    $testWorkflows += "TEST_release_$($t.BuildName).yml"
+    $requiredWorkflows += "release_$($t.build_name).yml"
+    $testWorkflows += "TEST_release_$($t.build_name).yml"
 }
 
 # Check workflow files exist
@@ -144,10 +116,10 @@ Write-Host ""
 # Check version files exist
 Write-Host "Checking version files..." -ForegroundColor Yellow
 foreach ($t in $tools) {
-    $file = $t.ConfigPath
-    $toolLabel = $t.BuildName
+    $file = if ($t.version_file) { Resolve-Path (Join-Path "../../$($t.relative_path)" $t.version_file) -ErrorAction SilentlyContinue } else { $null }
+    $toolLabel = $t.build_name
     if ($null -eq $file) {
-        $warnings += "$($t.ToolDir): version/config file not found"
+        $warnings += "$($t.directory): version/config file not found"
         Write-Host "  ⚠️  $toolLabel version file missing" -ForegroundColor Yellow
         continue
     }
@@ -212,7 +184,7 @@ if ($errors.Count -eq 0 -and $warnings.Count -eq 0) {
     Write-Host "Your release workflows are properly configured." -ForegroundColor Green
     Write-Host ""
     Write-Host "Next steps:" -ForegroundColor Cyan
-    Write-Host "  1. Test with: git tag test-v3.1.99-toolset && gh release create test-v3.1.99-toolset --prerelease" -ForegroundColor White
+    Write-Host "  1. Test with a test tag for one discovered build name, then create a matching prerelease" -ForegroundColor White
     Write-Host "  2. Read QUICK_TEST_GUIDE.md for detailed testing" -ForegroundColor White
     Write-Host "  3. When ready, create production release (no test- prefix)" -ForegroundColor White
     Write-Host ""

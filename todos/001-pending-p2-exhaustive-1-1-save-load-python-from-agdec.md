@@ -10,7 +10,7 @@ dependencies: []
 
 ## Problem Statement
 
-Deliver 1:1 exhaustive and complete Python code that matches K1 and TSL save/load behavior with **zero discrepancies** from what AgentDecompile (user-agdec-http) can provide. Current flow modules (`save_load_flow_k1.py`, `save_load_flow_tsl.py`) implement the high-level sequence and K1 disk threshold; gaps remain: (1) no byte-level or golden-SAV verification; (2) SaveGame uses GetDirectorySize comparison (path + existing dir size) not only free space; (3) error-path behavior (CreateDirectory2 failure → CleanDirectory retry, then SendServerToPlayerSaveLoad_Status failure) not mirrored; (4) TSL StallEventSaveGame full disassembly not yet mapped to Python; (5) LoadGame/LoadModule callees (LoadTableInfo 00565d20, Load 0052ade0) internal order and struct layout not exhaustively documented.
+Deliver 1:1 exhaustive and complete Python code that matches K1 and TSL save/load behavior with **zero discrepancies** from what AgentDecompile (user-agdec-http) can provide. Current flow modules (`save_load_flow_k1.py`, `save_load_flow_tsl.py`) implement the high-level sequence and K1 disk threshold; gaps remain: (1) no byte-level or golden-SAV verification; (2) SaveGame uses GetDirectorySize comparison (path + existing dir size) not only free space; (3) error-path behavior (CreateDirectory2 failure -> CleanDirectory retry, then SendServerToPlayerSaveLoad_Status failure) not mirrored; (4) TSL StallEventSaveGame full disassembly not yet mapped to Python; (5) LoadGame/LoadModule callees (LoadTableInfo 00565d20, Load 0052ade0) internal order and struct layout not exhaustively documented.
 
 ## Findings
 

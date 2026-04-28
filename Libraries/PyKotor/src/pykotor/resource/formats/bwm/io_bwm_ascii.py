@@ -65,8 +65,8 @@ class BWMAsciiReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> BWM:  # noqa: FBT001, FBT002, ARG002
         """Read the whole buffer, chew it line by line, return a filled :class:`BWM`.
 
-        Rough flow: slurp bytes → walk keywords only inside ``node aabb`` → pull verts/faces/AABB
-        chunks → rebuild :class:`BWMFace` rows with walkable geometry first. Anything that
+        Rough flow: slurp bytes -> walk keywords only inside ``node aabb`` -> pull verts/faces/AABB
+        chunks -> rebuild :class:`BWMFace` rows with walkable geometry first. Anything that
         violates the counts or indexes blows up with :class:`ValueError` so you fail loud
         instead of shipping a half-baked mesh.
         """

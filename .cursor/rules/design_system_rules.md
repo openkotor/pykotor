@@ -308,7 +308,7 @@ class DLGEditor(Editor):
    - Organize with frames/sections
 
 2. **Generate UI Code**
-   - Use Figma → Qt Designer export (if available)
+   - Use Figma -> Qt Designer export (if available)
    - Or manually recreate in Qt Designer
    - Save as `.ui` files
 
@@ -512,7 +512,7 @@ All architectural diagrams are documented in [FIGMA_DIAGRAMS.md](../../FIGMA_DIA
 class DLGEditor(Editor):
     """Dialog editor implementing the node management workflow.
     
-    Flow: Load DLG → Tree View → Select Node → Edit Properties → Save
+    Flow: Load DLG -> Tree View -> Select Node -> Edit Properties -> Save
     See architectural diagram for complete sequence.
     """
 ```
@@ -544,6 +544,6 @@ class DLGEditor(Editor):
 
 ## Summary
 
-The PyKotor project uses **QtPy/PyQt6** for UI with a **custom widget library** built on top of Qt. There's no formal design token system yet, but one is recommended. Integration with Figma should follow the **Design → Qt Designer → PyUIC → Python** workflow, with manual styling via QSS to match Figma designs.
+The PyKotor project uses **QtPy/PyQt6** for UI with a **custom widget library** built on top of Qt. There's no formal design token system yet, but one is recommended. Integration with Figma should follow the **Design -> Qt Designer -> PyUIC -> Python** workflow, with manual styling via QSS to match Figma designs.
 
 For any new components, create reusable widgets in `utility/gui/qt/widgets/` and document them with docstrings and type hints. Reference the comprehensive FigJam diagrams in `FIGMA_DIAGRAMS.md` for architectural guidance.

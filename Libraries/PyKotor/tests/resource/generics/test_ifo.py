@@ -176,7 +176,7 @@ class TestIFO(TestCase):
         self.assertEqual(ifo.on_heartbeat, "")
         self.assertEqual(ifo.on_load, "")
         self.assertEqual(ifo.area_name, "")
-        # Mod_Area_list omitted → empty list, so area_name stays blank
+        # Mod_Area_list omitted -> empty list, so area_name stays blank
         gff_empty_list = read_gff(
             """<gff3><struct id="-1"><list label="Mod_Area_list" /></struct></gff3>""".encode(),
             file_format=ResourceType.GFF_XML,
@@ -185,7 +185,7 @@ class TestIFO(TestCase):
         self.assertEqual(ifo2.area_name, "")
 
     def test_ifo_empty_roundtrip(self) -> None:
-        """Empty/minimal root struct round-trip: construct_ifo → dismantle_ifo → construct_ifo."""
+        """Empty/minimal root struct round-trip: construct_ifo -> dismantle_ifo -> construct_ifo."""
         empty_xml = """<gff3><struct id="-1"></struct></gff3>"""
         gff = read_gff(empty_xml.encode(), file_format=ResourceType.GFF_XML)
         ifo = construct_ifo(gff)

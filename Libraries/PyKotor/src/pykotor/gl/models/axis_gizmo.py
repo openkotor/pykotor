@@ -90,7 +90,7 @@ GIZMO_LINE_WIDTH: float = 3.0
 # Base axis length in world units. Actual length is scaled by camera distance.
 _BASE_AXIS_LENGTH: float = 1.0
 
-# Unit-length axis vertices: origin→X, origin→Y, origin→Z  (6 verts = 3 lines).
+# Unit-length axis vertices: origin->X, origin->Y, origin->Z  (6 verts = 3 lines).
 # The model matrix will handle positioning + scaling.
 _AXIS_VERTICES: np.ndarray = np.array(
     [

@@ -208,7 +208,10 @@ class TXIBinaryReader(ResourceReader):
                     self._txi.features.defaultwidth = int(args)
                     self._empty = False
                 elif command == TXICommand.DISTORT:
-                    self._txi.features.distort = bool(int(args))
+                    try:
+                        self._txi.features.distort = bool(int(args))
+                    except ValueError:
+                        self._txi.features.distort = float(args)
                     self._empty = False
                 elif command == TXICommand.DISTORTANGLE:
                     self._txi.features.distortangle = float(args)

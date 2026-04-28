@@ -28,8 +28,6 @@ $argsList = @(
     "--onefile"
     "--noconfirm"
     "--clean"
-    "--exclude-module", "dl_translate"
-    "--exclude-module", "torch"
     "--exclude-module=PyQt5",
     "--exclude-module=PyQt5-Qt5",
     "--exclude-module=PyQt5-sip",

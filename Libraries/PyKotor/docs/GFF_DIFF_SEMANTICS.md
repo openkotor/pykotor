@@ -20,7 +20,7 @@ When comparing GFF lists, the diff tool uses **semantic identity** for known lis
 
 ### Registry: `_GFF_LIST_SEMANTIC_REGISTRY`
 
-Located in `gff_data.py`. Maps `(GFFContent, list_field_name)` → `GFFListSemanticConfig`:
+Located in `gff_data.py`. Maps `(GFFContent, list_field_name)` -> `GFFListSemanticConfig`:
 
 | GFF Type | List Field   | Identity Fields                         | Default When Absent   | Ignorable When Value |
 |----------|--------------|-----------------------------------------|------------------------|----------------------|
@@ -28,7 +28,7 @@ Located in `gff_data.py`. Maps `(GFFContent, list_field_name)` → `GFFListSeman
 
 ### Registry: `_GFF_IGNORABLE_FIELD_VALUES`
 
-Maps `GFFContent` → `{field_name: {value1, value2, ...}}`. Fields added/removed with these values are not reported (engine default when absent).
+Maps `GFFContent` -> `{field_name: {value1, value2, ...}}`. Fields added/removed with these values are not reported (engine default when absent).
 
 | GFF Type | Field            | Ignorable Values | Engine Note                    |
 |----------|------------------|------------------|--------------------------------|
