@@ -13,7 +13,7 @@ For hyperlink quality and relevance warnings across repo markdown, also run:
 | Class                         | Description                                                                 |
 | ----------------------------- | --------------------------------------------------------------------------- |
 | **Internal / same-file**      | `validate_markdown_links.py` matches `test_markdown_validation.py`: markdown headings **and** explicit `<a id="…">` anchors (used heavily in `2DA-File-Format.md` for TOC targets). |
-| **Fixed in baseline pass**    | HoloPatcher filename (`..md` → `.md`) + inbound links; NSS module/area SSOT + redirect stub; Home UTC + VFX slug encoding; BWM cross-links retargeted to current heading slugs; RIM → ERF subsection; KEY `### File Header`; ERF HAK + RIM sections; NSS→NCS engine-call anchor; Blender/MDL/UTC editor links; `reverse_engineering_findings` tone; Wiki-Conventions false positives. |
+| **Fixed in baseline pass**    | HoloPatcher filename (`..md` -> `.md`) + inbound links; NSS module/area SSOT + redirect stub; Home UTC + VFX slug encoding; BWM cross-links retargeted to current heading slugs; RIM -> ERF subsection; KEY `### File Header`; ERF HAK + RIM sections; NSS->NCS engine-call anchor; Blender/MDL/UTC editor links; `reverse_engineering_findings` tone; Wiki-Conventions false positives. |
 | **External**                  | Not covered by `validate_markdown_links.py`; use `check-broken-links` workflow + manual spot checks. |
 | **Relevance / context**       | `audit_markdown_link_relevance.py` flags vague external link labels and list links that do not explain why the target matters. |
 

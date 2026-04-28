@@ -26,6 +26,9 @@ def _get_registered_commands() -> list[str]:
 
 def test_all_commands_have_help() -> None:
     """Every registered subcommand must accept --help without error."""
+    top_level_result = cli_main(["--help"])
+    assert top_level_result == 0
+
     commands = _get_registered_commands()
     assert commands, "No subcommands registered"
     for name in commands:
@@ -35,12 +38,6 @@ def test_all_commands_have_help() -> None:
         except SystemExit as e:
             exit_code = e.code if e.code is not None else 1
         assert exit_code == 0, f"Command '{name}' --help should exit 0, got {exit_code}"
-
-
-def test_main_help_exits_zero() -> None:
-    """Top-level --help exits 0."""
-    result = cli_main(["--help"])
-    assert result == 0
 
 
 def test_unknown_command_returns_nonzero() -> None:

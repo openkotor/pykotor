@@ -66,8 +66,8 @@ uniform mat4 projection;
 void main()
 {
     gl_Position = projection * view * model * vec4(position, 1.0);
-    diffuse_uv = vec2(uv.x, uv.y);
-    lightmap_uv = vec2(uv2.x, uv2.y);
+    diffuse_uv = vec2(uv.x, 1.0 - uv.y);
+    lightmap_uv = vec2(uv2.x, 1.0 - uv2.y);
 }
 """
 

@@ -84,7 +84,7 @@ from copy import copy
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any
 
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from utility.common.geometry import Face, SurfaceMaterial, Vector3
 
 if TYPE_CHECKING:
@@ -117,7 +117,7 @@ class BWMType(IntEnum):
     AreaModel = 1
 
 
-class BWM(ComparableMixin):
+class BWM(BiowareResource):
     """In-memory walkmesh model (faces, hooks, helpers).
 
     Walkmeshes define collision geometry for areas and objects. They consist of triangular
@@ -1312,6 +1312,20 @@ class BWM(ComparableMixin):
         -------
             BWMFace object or None.
         """
+        # Try C-accelerated path first
+        try:
+            from pykotor.gl.native.render2d_accel import batch_face_at_direct, is_available
+
+            if is_available() and self.faces:
+                face_verts_flat = self._get_face_verts_flat()
+                idx = batch_face_at_direct(face_verts_flat, x, y)
+                if idx >= 0 and idx < len(self.faces):
+                    return self.faces[idx]
+                return None
+        except Exception:  # noqa: BLE001
+            pass
+
+        # Pure-Python fallback
         for face in self.faces:
             v1 = face.v1
             v2 = face.v2
@@ -1325,6 +1339,32 @@ class BWM(ComparableMixin):
             if (c1 < 0 and c2 < 0 and c3 < 0) or (c1 > 0 and c2 > 0 and c3 > 0):
                 return face
         return None
+
+    def _get_face_verts_flat(self) -> bytes:
+        """Get or build cached flat vertex array for C-accelerated faceAt.
+
+        Returns bytes of N×6 floats: (v1x, v1y, v2x, v2y, v3x, v3y) per face.
+        """
+        cached = getattr(self, "_face_verts_flat_cache", None)
+        if cached is not None:
+            return cached
+        import array as _array
+
+        arr = _array.array("f")
+        for face in self.faces:
+            arr.append(face.v1.x)
+            arr.append(face.v1.y)
+            arr.append(face.v2.x)
+            arr.append(face.v2.y)
+            arr.append(face.v3.x)
+            arr.append(face.v3.y)
+        result = arr.tobytes()
+        self._face_verts_flat_cache: bytes | None = result
+        return result
+
+    def _invalidate_face_cache(self):
+        """Invalidate the cached flat vertex array (call after modifying faces/vertices)."""
+        self._face_verts_flat_cache = None
 
     def translate(
         self,
@@ -1344,6 +1384,7 @@ class BWM(ComparableMixin):
             vertex.x += x
             vertex.y += y
             vertex.z += z
+        self._invalidate_face_cache()
 
     def rotate(
         self,
@@ -1363,6 +1404,7 @@ class BWM(ComparableMixin):
             x, y = vertex.x, vertex.y
             vertex.x = x * cos - y * sin
             vertex.y = x * sin + y * cos
+        self._invalidate_face_cache()
 
     def change_lyt_indexes(
         self,

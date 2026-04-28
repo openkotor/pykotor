@@ -232,7 +232,7 @@ def build_const_section_content(consts: list[ScriptConstant]) -> str:
 
 # ─── BUILD ALL SECTION CONTENT ────────────────────────────────────────────────
 
-# H2 heading → context key
+# H2 heading -> context key
 H2_TO_CONTEXT: dict[str, str] = {
     "## Shared Functions (K1 & TSL)": "shared_functions",
     "## K1-Only Functions": "k1_only_functions",

@@ -121,11 +121,11 @@ When you create a PR that touches tool files, the **PR Build Validation** workfl
 
 The workflow triggers on changes to:
 
-- `Tools/HolocronToolset/**` → Tests toolset
-- `Tools/HoloPatcher/**` → Tests holopatcher
-- `Tools/KotorDiff/**` → Tests kotordiff
-- `Libraries/**` → Tests ALL tools (shared code)
-- `compile/**` → Tests ALL tools (build scripts)
+- `Tools/HolocronToolset/**` -> Tests toolset
+- `Tools/HoloPatcher/**` -> Tests holopatcher
+- `Tools/KotorDiff/**` -> Tests kotordiff
+- `Libraries/**` -> Tests ALL tools (shared code)
+- `compile/**` -> Tests ALL tools (build scripts)
 
 ### What Happens
 
@@ -143,7 +143,7 @@ The workflow triggers on changes to:
 
 Run this workflow before releasing to validate everything is ready:
 
-1. Go to **Actions** → **Release Readiness Check**
+1. Go to **Actions** -> **Release Readiness Check**
 2. Click **Run workflow**
 3. Select tool and enter version
 4. Optionally enable full builds
@@ -219,9 +219,9 @@ Use the `TEST_release_toolset.yml` workflow:
 
 1. Check the **Actions** tab for detailed logs
 2. Common issues:
-   - Import errors → Check dependencies in `requirements.txt`
-   - PyInstaller errors → Check spec file or `compile/` scripts
-   - Missing files → Check paths in your changes
+   - Import errors -> Check dependencies in `requirements.txt`
+   - PyInstaller errors -> Check spec file or `compile/` scripts
+   - Missing files -> Check paths in your changes
 
 ### Release Workflow Fails
 

@@ -13,12 +13,13 @@ import traceback
 
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from argparse import Namespace
 
 from pykotor.cli.version import VERSION
+from pykotor.resource.type import ResourceType
 
 CURRENT_VERSION = VERSION
 
@@ -125,6 +126,49 @@ def add_kotordiff_arguments(parser: ArgumentParser) -> None:
         default=False,
         help="Write TSLPatcher data incrementally",
     )
+    parser.add_argument(
+        "--merge-tslpatcher",
+        action="store_true",
+        help="Resolve a base resource from a game root, folder, archive, or module path, merge two modified resources onto it, and generate tslpatchdata.",
+    )
+    parser.add_argument(
+        "--merge-source",
+        type=str,
+        help="Source path used to resolve the base resource for --merge-tslpatcher.",
+    )
+    parser.add_argument(
+        "--merge-resource",
+        type=str,
+        help="Base resource to resolve from the source path, for example unk41_mission.dlg.",
+    )
+    parser.add_argument(
+        "--merge-resource-type",
+        type=str,
+        help="Optional resource type/extension for --merge-resource when the name does not include an extension.",
+    )
+    parser.add_argument(
+        "--merge-module",
+        type=str,
+        help="Optional module root to constrain installation lookup, for example unk_m41aa.",
+    )
+    parser.add_argument(
+        "--merge-path",
+        action="append",
+        dest="merge_paths",
+        help="One of exactly two modified resource paths to merge onto the resolved base resource.",
+    )
+    parser.add_argument(
+        "--merge-conflict-policy",
+        type=str,
+        default="mod-a",
+        choices=["mod-a", "mod-b", "fail", "artifact"],
+        help="Conflict resolution policy for --merge-tslpatcher: prefer the first merge path, prefer the second, fail immediately, or emit git-style conflict artifacts (default: mod-a).",
+    )
+    parser.add_argument(
+        "--merge-conflict-output",
+        type=str,
+        help="Optional output folder for git-style conflict artifacts. Defaults to <tslpatchdata>/merge_conflicts.",
+    )
 
     # GUI/Console options
     parser.add_argument(
@@ -157,7 +201,7 @@ def normalize_path_arg(arg: str) -> str:
     return arg
 
 
-def execute_cli(cmdline_args: Namespace):
+def execute_cli(cmdline_args: Namespace | Any | object):
     """Execute CLI mode with the provided arguments.
 
     Args:
@@ -166,10 +210,14 @@ def execute_cli(cmdline_args: Namespace):
     # Set up logging ONCE at the CLI level
     import logging
 
+    from pykotor.cli.logger import OutputMode
     from pykotor.diff_tool.app import DiffConfig, run_application
     from pykotor.extract.installation import Installation
 
-    output_mode = getattr(cmdline_args, "output_mode", "normal")
+    output_mode_str = getattr(cmdline_args, "output_mode", "normal")
+    output_mode = (
+        OutputMode(output_mode_str) if isinstance(output_mode_str, str) else output_mode_str
+    )
     log_level_arg = getattr(cmdline_args, "log_level", None)
 
     # Determine log level based on output_mode or explicit log_level
@@ -185,9 +233,9 @@ def execute_cli(cmdline_args: Namespace):
     else:
         # Default log levels based on output mode
         log_level = {
-            "full": logging.DEBUG,
-            "normal": logging.INFO,
-            "quiet": logging.ERROR,
+            OutputMode.FULL: logging.DEBUG,
+            OutputMode.NORMAL: logging.INFO,
+            OutputMode.QUIET: logging.ERROR,
         }.get(output_mode, logging.INFO)
 
     # Configure logging once - all code uses standard logging calls
@@ -217,6 +265,54 @@ def execute_cli(cmdline_args: Namespace):
             logging.exception(traceback.format_exc())
 
     logging.info(f"diff operations version {CURRENT_VERSION}")
+
+    merge_mode = bool(getattr(cmdline_args, "merge_tslpatcher", False))
+
+    if merge_mode:
+        merge_source = getattr(cmdline_args, "merge_source", None)
+        merge_resource = getattr(cmdline_args, "merge_resource", None)
+        merge_paths_raw = getattr(cmdline_args, "merge_paths", None) or []
+
+        if not merge_source or not merge_resource or len(merge_paths_raw) != 2:  # noqa: PLR2004
+            logging.error(
+                "--merge-tslpatcher requires --merge-source, --merge-resource, and exactly two --merge-path arguments."
+            )
+            sys.exit(1)
+
+        merge_resource_type_arg = getattr(cmdline_args, "merge_resource_type", None)
+        merge_resource_type = None
+        if merge_resource_type_arg:
+            merge_resource_type = ResourceType.from_extension(str(merge_resource_type_arg))
+            if merge_resource_type.is_invalid:
+                logging.error(f"Unsupported --merge-resource-type value: {merge_resource_type_arg}")
+                sys.exit(1)
+
+        config = DiffConfig(
+            paths=[],
+            tslpatchdata_path=Path(cmdline_args.tslpatchdata)
+            if cmdline_args.tslpatchdata
+            else None,
+            ini_filename=getattr(cmdline_args, "ini", "changes.ini"),
+            output_log_path=Path(cmdline_args.output_log) if cmdline_args.output_log else None,
+            log_level=getattr(cmdline_args, "log_level", "info"),
+            output_mode=output_mode,
+            use_colors=not getattr(cmdline_args, "no_color", False),
+            compare_hashes=not bool(cmdline_args.compare_hashes),
+            use_profiler=bool(cmdline_args.use_profiler),
+            filters=getattr(cmdline_args, "filter", None),
+            logging_enabled=bool(cmdline_args.logging is None or cmdline_args.logging),
+            merge_source_path=Path(normalize_path_arg(merge_source)),
+            merge_resource_name=str(merge_resource),
+            merge_resource_type=merge_resource_type,
+            merge_module_root=getattr(cmdline_args, "merge_module", None),
+            merge_modded_paths=[Path(normalize_path_arg(path)) for path in merge_paths_raw],
+            merge_conflict_policy=str(getattr(cmdline_args, "merge_conflict_policy", "mod-a")),
+            merge_conflict_output_path=Path(normalize_path_arg(getattr(cmdline_args, "merge_conflict_output")))
+            if getattr(cmdline_args, "merge_conflict_output", None)
+            else None,
+        )
+        exit_code = run_application(config)
+        sys.exit(exit_code)
 
     # Gather all path inputs
     raw_path_inputs: list[str] = []
@@ -252,7 +348,7 @@ def execute_cli(cmdline_args: Namespace):
     if (
         len(resolved_paths) == 2
         and all(isinstance(path, Path) and path.is_file() for path in resolved_paths)
-        and output_mode == "normal"
+        and output_mode == OutputMode.NORMAL
     ):
         # Use direct file-to-file diff for unified output
         from pykotor.tslpatcher.diff.engine import DiffContext, diff_data
@@ -312,12 +408,12 @@ def execute_cli(cmdline_args: Namespace):
     # Create configuration object
     config = DiffConfig(
         paths=resolved_paths,
-        generate_tslpatcher_config=bool(cmdline_args.generate_ini),
+        generate_tslpatcher_config=bool(cmdline_args.tslpatchdata),
         tslpatchdata_path=Path(cmdline_args.tslpatchdata) if cmdline_args.tslpatchdata else None,
         ini_filename=getattr(cmdline_args, "ini", "changes.ini"),
         output_log_path=Path(cmdline_args.output_log) if cmdline_args.output_log else None,
         log_level=getattr(cmdline_args, "log_level", "info"),
-        output_mode=getattr(cmdline_args, "output_mode", "full"),
+        output_mode=output_mode,
         use_colors=not getattr(cmdline_args, "no_color", False),
         compare_hashes=not bool(cmdline_args.compare_hashes),  # NOTE: inverted logic from original
         use_profiler=bool(cmdline_args.use_profiler),

@@ -48,7 +48,7 @@ jobs:
         python-version: ['3.8', '3.10', '3.12']
     steps:
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -115,7 +115,7 @@ jobs:
         python-version: ['3.10', '3.11']
     steps:
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -164,10 +164,17 @@ jobs:
       matrix:
         python-version: ['3.10', '3.11']
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Discover published CLI tools
+        run: |
+          python .github/scripts/discover_tools.py --cli-only --format json > cli-tools.json
 
       - name: Install tools
         run: |
@@ -177,19 +184,40 @@ jobs:
             INDEX_ARGS="--index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/"
           fi
 
-          # Install available tools
-          pip install holopatcher $INDEX_ARGS || echo "holopatcher not available"
-          pip install kotordiff $INDEX_ARGS || echo "kotordiff not available"
+          python - "$INDEX_ARGS" <<'PY'
+          import json
+          import shlex
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          index_args = shlex.split(sys.argv[1]) if len(sys.argv) > 1 else []
+          tools = json.loads(Path("cli-tools.json").read_text(encoding="utf-8"))
+          for tool in tools:
+              package = tool["project_name"]
+              print(f"Installing {package}...")
+              result = subprocess.run([sys.executable, "-m", "pip", "install", package, *index_args])
+              if result.returncode != 0:
+                  print(f"SKIP: {package} not available")
+          PY
         shell: bash
 
-      - name: Test holopatcher CLI
+      - name: Test discovered CLI entrypoints
         run: |
-          python -m holopatcher --help 2>&1 || echo "holopatcher help not available"
-        continue-on-error: true
+          python <<'PY'
+          import json
+          import subprocess
+          import sys
+          from pathlib import Path
 
-      - name: Test kotordiff CLI
-        run: |
-          python -m kotordiff --help 2>&1 || echo "kotordiff help not available"
+          tools = json.loads(Path("cli-tools.json").read_text(encoding="utf-8"))
+          for tool in tools:
+              module_name = tool["package_name"]
+              print(f"Testing {module_name} --help")
+              result = subprocess.run([sys.executable, "-m", module_name, "--help"])
+              if result.returncode != 0:
+                  print(f"SKIP: {module_name} help not available")
+          PY
         continue-on-error: true
 
       - name: Test pykotor CLI

@@ -12,7 +12,7 @@ A clear workflow for when and how to use **best-practices-researcher**, **repo-r
 ## Why this approach
 
 - **Vendor permalinks:** Wiki links to GitHub (OpenKotOR/PyKotor, th3w1zard1/reone, xoreos, KotOR.js, xoreos-docs, etc.). Validating with GitHub MCP (`get_file_contents`, `get_repository_tree`, `list_branches`) avoids broken links and confirms branch/path without bulk HTTP fetches.
-- **Research tools:** Each tool has a distinct role; combining them in a plan-first flow (repo → best-practices → plan → implement) keeps wiki and code in sync and avoids duplicate or conflicting guidance.
+- **Research tools:** Each tool has a distinct role; combining them in a plan-first flow (repo -> best-practices -> plan -> implement) keeps wiki and code in sync and avoids duplicate or conflicting guidance.
 - **agdec-http first:** Reverse engineering the game binaries (K1/TSL) yields the most authoritative behavior and format insights; use it in most cases before relying only on vendor code or external docs.
 
 ## Key decisions
@@ -20,7 +20,7 @@ A clear workflow for when and how to use **best-practices-researcher**, **repo-r
 - **Permalink validation:** Use GitHub MCP (user-github-code-research-read) to verify vendor and PyKotor paths and default branch (master vs main). Do not rely on bulk web fetch of blob URLs (rate limits). Optional: periodic or CI check that reports broken links.
 - **When to use which researcher:**
   - **best-practices-researcher:** Before locking in doc structure, format-page template, or conventions; when external standards (Diátaxis, format-doc patterns) are needed.
-  - **repo-research-analyst:** Before writing or restructure; to map format → code (PyKotor + vendor), list files with .md links, and audit See Also / Implementation sections.
+  - **repo-research-analyst:** Before writing or restructure; to map format -> code (PyKotor + vendor), list files with .md links, and audit See Also / Implementation sections.
   - **parallel-web-search:** Default for lookups, fact-check, “research X”; every claim cited inline; mandatory Sources section.
   - **parallel-deep-research:** Only when user explicitly asks for deep/exhaustive/comprehensive research; output to dated files; in wiki use summary + link only.
 - **Wiki reference pattern:** PyKotor: `[path](https://github.com/OpenKotOR/PyKotor/blob/master/path#Lx-Ly)`. Vendor: `https://github.com/th3w1zard1/<repo>/blob/master/...`. Add Implementation/Reference sections where missing (e.g. BWM-File-Format, DDS-File-Format, empty References in 2DA/GFF/LYT/ERF).
@@ -51,6 +51,6 @@ Recommendation: when adding new vendor links, confirm branch and path with GitHu
 
 ## Next steps
 
-→ Use this doc when planning wiki edits or research tasks.  
-→ Run repo-research-analyst before new format pages or restructure; best-practices-researcher when defining conventions.  
-→ Validate new vendor permalinks with GitHub MCP before adding to wiki.
+-> Use this doc when planning wiki edits or research tasks.  
+-> Run repo-research-analyst before new format pages or restructure; best-practices-researcher when defining conventions.  
+-> Validate new vendor permalinks with GitHub MCP before adding to wiki.

@@ -12,7 +12,7 @@ Usage:
     write_wav(wav, "output.wav", ResourceType.WAV)
 
     # Writing (clean for media players):
-    write_wav(wav, "output.wav", ResourceType.WAV_DEOB)
+    write_wav(wav, "output.wav", ToolsetFormat.WAV_DEOB)
 
     # Get playable bytes (for Qt media player, etc.):
     playable_bytes = get_playable_bytes(wav)
@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING
 from pykotor.resource.formats.wav.io_wav import WAVBinaryReader, WAVBinaryWriter
 from pykotor.resource.formats.wav.io_wav_standard import WAVStandardWriter
 from pykotor.resource.formats.wav.wav_data import AudioFormat
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, ToolsetFormat
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.wav.wav_data import WAV
@@ -71,14 +71,14 @@ def read_wav(
 def write_wav(
     wav: WAV,
     target: TARGET_TYPES,
-    file_format: ResourceType = ResourceType.WAV,
+    file_format: RESOURCE_FORMAT = ResourceType.WAV,
 ):
     """Writes the WAV data to the target location.
 
     If file_format == ResourceType.WAV, the data will be obfuscated based on
     the WAV's type (SFX adds header, VO is unchanged) for game compatibility.
 
-    If file_format == ResourceType.WAV_DEOB, writes clean RIFF/WAVE format
+    If file_format == ToolsetFormat.WAV_DEOB, writes clean RIFF/WAVE format
     playable by standard media players.
 
     Args:
@@ -98,12 +98,12 @@ def write_wav(
 
 def bytes_wav(
     wav: WAV,
-    file_format: ResourceType = ResourceType.WAV,
+    file_format: RESOURCE_FORMAT = ResourceType.WAV,
 ) -> bytes:
     """Returns the WAV data as a bytes object.
 
     If file_format == ResourceType.WAV, returns obfuscated format for game use.
-    If file_format == ResourceType.WAV_DEOB, returns clean playable format.
+    If file_format == ToolsetFormat.WAV_DEOB, returns clean playable format.
 
     Args:
         wav: The target WAV object.
@@ -134,7 +134,7 @@ def get_playable_bytes(wav: WAV) -> bytes:
 
     References:
     """
-    return bytes_wav(wav, ResourceType.WAV_DEOB)
+    return bytes_wav(wav, ToolsetFormat.WAV_DEOB)
 
 
 def detect_audio_type(wav: WAV) -> str:

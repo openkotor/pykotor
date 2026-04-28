@@ -262,7 +262,7 @@ def find_vendor_references(
         # It will automatically respect each vendor submodule's .gitignore file
         cmd: list[str] = ["rg", "-n", "-i", "-w", "-F", name, str(vendor_dir)]
         if verbose:
-            print(f"    → Searching for: {name}")
+            print(f"    -> Searching for: {name}")
 
         # Use errors='replace' to handle encoding issues gracefully
         result: subprocess.CompletedProcess[str] | None = None

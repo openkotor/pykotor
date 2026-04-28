@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import sys
 
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from argparse import SUPPRESS, ArgumentParser, RawDescriptionHelpFormatter
 from typing import TYPE_CHECKING, Any
 
 from pykotor.cli.version import VERSION
@@ -154,12 +154,21 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
             "tlk2xml",
             "xml2tlk",
             "tlk2json",
+            "json2tlk",
             "ssf2xml",
+            "ssf2json",
             "xml2ssf",
             "2da2csv",
+            "2da2json",
             "csv22da",
+            "json22da",
+            "lip2json",
+            "json2lip",
+            "json2ssf",
             "capsule2json",
             "json2capsule",
+            "to-json",
+            "from-json",
         ],
         "Script Tools": ["decompile", "disassemble", "assemble", "nwnnsscomp"],
         "Resource Tools": ["texture-convert", "sound-convert", "model-convert", "walkmesh-convert"],
@@ -178,10 +187,11 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
         "Analysis & Utilities": ["diff", "grep", "stats", "validate", "merge", "config"],
         "Validation & Investigation": [
             "find",
+            "kotor-paths",
             "get",
             "check-txi",
             "check-2da",
-            "validate-installation",
+            "validate-game-root",
             "investigate-module",
             "check-missing-resources",
             "module-resources",
@@ -196,7 +206,7 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
             "indoor-extract",
             "indoormap-extract",
         ],
-        "Patching": ["batch-patch", "patch-file", "patch-folder", "patch-installation"],
+        "Patching": ["batch-patch", "patch-file", "patch-folder", "patch-game-root"],
     }
     return categories
 
@@ -633,13 +643,13 @@ Extract files from Bioware archive formats including:
         "--filter", help="Filter files by pattern (supports wildcards)"
     )
 
-    # create-installation command
+    # create-game-root command
     create_install_parser = subparsers.add_parser(
-        "create-installation",
-        aliases=["scaffold-installation"],
-        help="Scaffold a minimal KotOR installation layout (empty but structurally valid)",
+        "create-game-root",
+        aliases=["scaffold-game-root", "create-installation", "scaffold-installation"],
+        help="Scaffold a minimal KotOR game-root layout (empty but structurally valid)",
     )
-    create_install_parser.add_argument("path", help="Destination directory for the installation")
+    create_install_parser.add_argument("path", help="Destination directory for the game root")
     create_install_parser.add_argument(
         "--game",
         "-g",
@@ -650,7 +660,7 @@ Extract files from Bioware archive formats including:
     create_install_parser.add_argument(
         "--force",
         action="store_true",
-        help="Remove and recreate the destination if it already contains an installation",
+        help="Remove and recreate the destination if it already contains a game root",
     )
 
     # Format conversion commands
@@ -698,6 +708,10 @@ Extract files from Bioware archive formats including:
         "--compact", action="store_true", help="Compact output (no pretty-printing)"
     )
 
+    json2tlk_parser = subparsers.add_parser("json2tlk", help="Convert JSON to TLK")
+    json2tlk_parser.add_argument("input", help="Input JSON file")
+    json2tlk_parser.add_argument("--output", "-o", dest="output", help="Output TLK file")
+
     ssf2xml_parser = subparsers.add_parser("ssf2xml", help="Convert SSF to XML")
     ssf2xml_parser.add_argument("input", help="Input SSF file")
     ssf2xml_parser.add_argument("--output", "-o", dest="output", help="Output XML file")
@@ -705,9 +719,17 @@ Extract files from Bioware archive formats including:
         "--compact", action="store_true", help="Compact output (no pretty-printing)"
     )
 
+    ssf2json_parser = subparsers.add_parser("ssf2json", help="Convert SSF to JSON")
+    ssf2json_parser.add_argument("input", help="Input SSF file")
+    ssf2json_parser.add_argument("--output", "-o", dest="output", help="Output JSON file")
+
     xml2ssf_parser = subparsers.add_parser("xml2ssf", help="Convert XML to SSF")
     xml2ssf_parser.add_argument("input", help="Input XML file")
     xml2ssf_parser.add_argument("--output", "-o", dest="output", help="Output SSF file")
+
+    json2ssf_parser = subparsers.add_parser("json2ssf", help="Convert JSON to SSF")
+    json2ssf_parser.add_argument("input", help="Input JSON file")
+    json2ssf_parser.add_argument("--output", "-o", dest="output", help="Output SSF file")
 
     da2csv_parser = subparsers.add_parser("2da2csv", help="Convert 2DA to CSV")
     da2csv_parser.add_argument("input", help="Input 2DA file")
@@ -724,6 +746,22 @@ Extract files from Bioware archive formats including:
     csv2da_parser.add_argument(
         "--headers", action="store_true", default=True, help="CSV has headers"
     )
+
+    da2json_parser = subparsers.add_parser("2da2json", help="Convert 2DA to JSON")
+    da2json_parser.add_argument("input", help="Input 2DA file")
+    da2json_parser.add_argument("--output", "-o", dest="output", help="Output JSON file")
+
+    json2da_parser = subparsers.add_parser("json22da", help="Convert JSON to 2DA")
+    json2da_parser.add_argument("input", help="Input JSON file")
+    json2da_parser.add_argument("--output", "-o", dest="output", help="Output 2DA file")
+
+    lip2json_parser = subparsers.add_parser("lip2json", help="Convert LIP to JSON")
+    lip2json_parser.add_argument("input", help="Input LIP file")
+    lip2json_parser.add_argument("--output", "-o", dest="output", help="Output JSON file")
+
+    json2lip_parser = subparsers.add_parser("json2lip", help="Convert JSON to LIP")
+    json2lip_parser.add_argument("input", help="Input JSON file")
+    json2lip_parser.add_argument("--output", "-o", dest="output", help="Output LIP file")
 
     capsule2json_parser = subparsers.add_parser(
         "capsule2json",
@@ -743,11 +781,71 @@ Extract files from Bioware archive formats including:
     )
 
     json2capsule_parser = subparsers.add_parser(
-        "json2capsule", help="Convert JSON from capsule2json back to binary (ERF/RIM/BIF)"
+        "json2capsule", help="Convert JSON from capsule2json back to binary (BIF/ERF/MOD/RIM/SAV)"
     )
     json2capsule_parser.add_argument("input", help="Input JSON file")
     json2capsule_parser.add_argument(
         "--output", "-o", dest="output", required=True, help="Output capsule file"
+    )
+
+    to_json_parser = subparsers.add_parser(
+        "to-json",
+        help="Convert a supported resource file, directory, or game root to JSON",
+    )
+    to_json_parser.add_argument(
+        "input",
+        nargs="?",
+        help="Input resource file, directory, or game root. Omit with --game or --all-detected.",
+    )
+    to_json_parser.add_argument(
+        "--output",
+        "-o",
+        dest="output",
+        help="Output JSON file or directory",
+    )
+    to_json_parser.add_argument(
+        "--type",
+        help="Optional input type override (for example utc, tlk, 2da, lip, ssf, mod, rim, bif)",
+    )
+    to_json_parser.add_argument(
+        "--game",
+        choices=["k1", "kotor", "kotor1", "k2", "tsl", "kotor2"],
+        help="Auto-detect a default game root for this game when no input path is provided",
+    )
+    to_json_parser.add_argument(
+        "--path-index",
+        type=int,
+        default=0,
+        help="Which auto-detected game root to use when multiple are found (default: 0)",
+    )
+    to_json_parser.add_argument(
+        "--key-file", help="KEY file for BIF input (default: chitin.key beside BIF)"
+    )
+    to_json_parser.add_argument(
+        "--no-plaintext",
+        action="store_true",
+        help="For capsule input, embed all resources as base64 instead of JSON/XML/plaintext",
+    )
+    to_json_parser.add_argument(
+        "--clean",
+        action="store_true",
+        help="Delete the output directory before exporting a directory or game root",
+    )
+    to_json_parser.add_argument(
+        "--all-detected",
+        action="store_true",
+        help="Export every auto-detected game root into per-game subfolders under the output directory.",
+    )
+
+    from_json_parser = subparsers.add_parser(
+        "from-json",
+        help="Convert JSON produced by PyKotor back to a supported resource format",
+    )
+    from_json_parser.add_argument("input", help="Input JSON file")
+    from_json_parser.add_argument("--output", "-o", dest="output", help="Output resource file")
+    from_json_parser.add_argument(
+        "--type",
+        help="Optional output type override when it cannot be inferred (for example utc, tlk, 2da, lip, ssf, mod)",
     )
 
     # Script tools
@@ -904,23 +1002,30 @@ Extract files from Bioware archive formats including:
     # Utility commands
     diff_parser = subparsers.add_parser(
         "diff",
-        help="Compare files, folders, or KOTOR installations",
+        help="Compare files, folders, or KotOR game roots",
         description=f"""
 Compare two paths and show differences. Supports any combination of:
 • Individual files (GFF, 2DA, TLK, etc.)
 • Folders containing game assets
-• Complete KOTOR installations
+    • Complete KotOR game roots
 • Bioware archives (.mod, .sav, .erf, .rim)
 
 \033[1;36mExamples:\033[0m
   {prog} diff module1.mod module2.mod
   {prog} diff /path/to/kotor1 /path/to/kotor2 --output-mode normal
   {prog} diff file1.gff file2.gff --format side_by_side
-  {prog} diff --generate-ini installation1 installation2
+  {prog} diff --generate-ini game_root1 game_root2
 """,
     )
-    diff_parser.add_argument("path1", help="First path (file, folder, installation, or archive)")
-    diff_parser.add_argument("path2", help="Second path (file, folder, installation, or archive)")
+    diff_parser.add_argument(
+        "path1", nargs="?", default=None, help="First path (file, folder, game root, or archive)"
+    )
+    diff_parser.add_argument(
+        "path2",
+        nargs="?",
+        default=None,
+        help="Second path (file, folder, game root, or archive)",
+    )
     diff_parser.add_argument(
         "--format",
         choices=["unified", "context", "side_by_side"],
@@ -941,6 +1046,75 @@ Compare two paths and show differences. Supports any combination of:
     diff_parser.add_argument("--output", "-o", dest="output", help="Write diff output to file")
     diff_parser.add_argument(
         "--context", "-C", type=int, default=3, help="Lines of context around changes (default: 3)"
+    )
+
+    # Merge-tslpatcher flags (three-way DLG merge workflow)
+    diff_parser.add_argument(
+        "--merge-tslpatcher",
+        action="store_true",
+        help="Resolve a base resource from a source path, merge two modified resources onto it, and generate tslpatchdata.",
+    )
+    diff_parser.add_argument(
+        "--merge-source",
+        dest="merge_source",
+        type=str,
+        help="Source path used to resolve the base resource for --merge-tslpatcher.",
+    )
+    diff_parser.add_argument(
+        "--merge-installation",
+        dest="merge_source",
+        type=str,
+        help=SUPPRESS,
+    )
+    diff_parser.add_argument(
+        "--merge-resource",
+        type=str,
+        help="Base resource to resolve from the source path, e.g. unk41_mission.dlg.",
+    )
+    diff_parser.add_argument(
+        "--merge-resource-type",
+        type=str,
+        help="Optional resource type/extension for --merge-resource when the name does not include an extension.",
+    )
+    diff_parser.add_argument(
+        "--merge-module",
+        type=str,
+        help="Optional module root to constrain game-root lookup, e.g. unk_m41aa.",
+    )
+    diff_parser.add_argument(
+        "--merge-path",
+        action="append",
+        dest="merge_paths",
+        help="One of exactly two modified resource paths to merge onto the resolved base resource.",
+    )
+    diff_parser.add_argument(
+        "--merge-conflict-policy",
+        choices=["mod-a", "mod-b", "fail", "artifact"],
+        default="mod-a",
+        help="Conflict resolution policy for --merge-tslpatcher: prefer mod-a, prefer mod-b, fail, or emit git-style conflict artifacts (default: mod-a).",
+    )
+    diff_parser.add_argument(
+        "--merge-conflict-output",
+        type=str,
+        help="Optional output folder for git-style conflict artifacts. Defaults to <tslpatchdata>/merge_conflicts.",
+    )
+    diff_parser.add_argument(
+        "--tslpatchdata",
+        type=str,
+        help="Path where tslpatchdata folder should be created.",
+    )
+    diff_parser.add_argument(
+        "--ini",
+        type=str,
+        default="changes.ini",
+        help="Filename for changes.ini (default: changes.ini).",
+    )
+    diff_parser.add_argument(
+        "--log-level",
+        type=str,
+        default="info",
+        choices=["debug", "info", "warning", "error", "critical"],
+        help="Logging level (default: info)",
     )
 
     grep_parser = subparsers.add_parser("grep", help="Search for patterns in files")
@@ -1016,9 +1190,11 @@ Compare two paths and show differences. Supports any combination of:
     check_txi_parser = subparsers.add_parser(
         "check-txi", help="Check if TXI files exist for specific textures"
     )
-    check_txi_parser.add_argument(
-        "--installation", "-i", required=True, help="Path to KOTOR installation"
+    check_txi_path_group = check_txi_parser.add_mutually_exclusive_group(required=True)
+    check_txi_path_group.add_argument(
+        "--path", "-p", dest="path", help="Path to a game root"
     )
+    check_txi_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     check_txi_parser.add_argument(
         "--textures",
         "-t",
@@ -1028,22 +1204,23 @@ Compare two paths and show differences. Supports any combination of:
     )
 
     check_2da_parser = subparsers.add_parser(
-        "check-2da", help="Check if a 2DA file exists in installation"
+        "check-2da", help="Check if a 2DA file exists in a game root"
     )
     check_2da_parser.add_argument(
         "--2da", dest="two_da_name", required=True, help="2DA file name (without extension)"
     )
-    check_2da_parser.add_argument(
-        "--installation",
-        "-i",
-        dest="two_da_installation",
-        required=True,
-        help="Path to KOTOR installation",
+    check_2da_path_group = check_2da_parser.add_mutually_exclusive_group(required=True)
+    check_2da_path_group.add_argument(
+        "--path",
+        "-p",
+        dest="path",
+        help="Path to a game root",
     )
+    check_2da_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
 
     find_parser = subparsers.add_parser(
         "find",
-        help="Find resource(s) in a KOTOR installation (resolution order: Override → MOD → Chitin)",
+        help="Find resource(s) in a source path (resolution order for game roots: Override -> MOD -> Chitin)",
     )
     find_parser.add_argument(
         "resref",
@@ -1052,11 +1229,25 @@ Compare two paths and show differences. Supports any combination of:
     find_parser.add_argument(
         "--path",
         "-p",
+        dest="path",
+        help="Path to a game root, folder, archive, or module piece. Omit with --game to auto-detect a default game root.",
+    )
+    find_parser.add_argument(
         "--installation",
         "-i",
         dest="path",
-        required=True,
-        help="Path to KOTOR installation",
+        help=SUPPRESS,
+    )
+    find_parser.add_argument(
+        "--game",
+        choices=["k1", "kotor", "kotor1", "k2", "tsl", "kotor2"],
+        help="Auto-detect a default game root for this game when --path is omitted",
+    )
+    find_parser.add_argument(
+        "--path-index",
+        type=int,
+        default=0,
+        help="Which auto-detected game root to use when multiple are found (default: 0)",
     )
     find_parser.add_argument(
         "--type", "-t", dest="resource_type", help="Resource type (default: from extension)"
@@ -1071,19 +1262,49 @@ Compare two paths and show differences. Supports any combination of:
         help="List all locations in priority order (default: show only selected)",
     )
 
+    kotor_paths_parser = subparsers.add_parser(
+        "kotor-paths",
+        aliases=["find-game-roots", "find-installations"],
+        help="List default KotOR game-root paths detected on this machine",
+    )
+    kotor_paths_parser.add_argument(
+        "--game",
+        choices=["k1", "kotor", "kotor1", "k2", "tsl", "kotor2"],
+        help="Filter to a single game",
+    )
+    kotor_paths_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Write machine-readable JSON to stdout instead of log-formatted text",
+    )
+
     get_parser = subparsers.add_parser(
         "get",
-        help="Extract resource by name from installation (resolution order: Override → MOD → Chitin)",
+        help="Extract a resource by name from a source path (resolution order for game roots: Override -> MOD -> Chitin)",
     )
     get_parser.add_argument("resref", help="Resource name with extension (e.g. 203tell.wok)")
     get_parser.add_argument(
         "--path",
         "-p",
+        dest="path",
+        help="Path to a game root, folder, archive, or module piece. If omitted, use --game to auto-detect a default game root.",
+    )
+    get_parser.add_argument(
         "--installation",
         "-i",
         dest="path",
-        required=True,
-        help="Path to KOTOR installation",
+        help=SUPPRESS,
+    )
+    get_parser.add_argument(
+        "--game",
+        choices=["k1", "kotor", "kotor1", "k2", "tsl", "kotor2"],
+        help="Auto-detect a default game root for this game when --path is omitted",
+    )
+    get_parser.add_argument(
+        "--path-index",
+        type=int,
+        default=0,
+        help="Which auto-detected game root to use when multiple are found (default: 0)",
     )
     get_parser.add_argument(
         "--output",
@@ -1091,6 +1312,12 @@ Compare two paths and show differences. Supports any combination of:
         dest="output",
         default=".",
         help="Output path or directory (default: current directory)",
+    )
+    get_parser.add_argument(
+        "--format",
+        choices=["binary", "json"],
+        default="binary",
+        help="Write the raw resource or its JSON representation (default: binary)",
     )
     get_parser.add_argument(
         "--order",
@@ -1104,11 +1331,13 @@ Compare two paths and show differences. Supports any combination of:
     )
 
     validate_installation_parser = subparsers.add_parser(
-        "validate-installation", help="Validate a KOTOR installation"
+        "validate-game-root", aliases=["validate-installation"], help="Validate a KotOR game root"
     )
-    validate_installation_parser.add_argument(
-        "--installation", "-i", required=True, help="Path to KOTOR installation"
+    validate_installation_path_group = validate_installation_parser.add_mutually_exclusive_group(required=True)
+    validate_installation_path_group.add_argument(
+        "--path", "-p", dest="path", help="Path to a game root"
     )
+    validate_installation_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     validate_installation_parser.add_argument(
         "--check-essential",
         action="store_true",
@@ -1122,9 +1351,11 @@ Compare two paths and show differences. Supports any combination of:
     investigate_module_parser.add_argument(
         "--module", "-m", required=True, help="Module name to investigate"
     )
-    investigate_module_parser.add_argument(
-        "--installation", "-i", required=True, help="Path to KOTOR installation"
+    investigate_module_path_group = investigate_module_parser.add_mutually_exclusive_group(required=True)
+    investigate_module_path_group.add_argument(
+        "--path", "-p", dest="path", help="Path to a game root"
     )
+    investigate_module_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     investigate_module_parser.add_argument("--json", help="Output results as JSON to file")
     investigate_module_parser.add_argument(
         "--verbose", "-v", action="store_true", help="Show detailed information"
@@ -1136,9 +1367,11 @@ Compare two paths and show differences. Supports any combination of:
     check_missing_resources_parser.add_argument(
         "--module", "-m", required=True, help="Module name to check"
     )
-    check_missing_resources_parser.add_argument(
-        "--installation", "-i", required=True, help="Path to KOTOR installation"
+    check_missing_resources_path_group = check_missing_resources_parser.add_mutually_exclusive_group(required=True)
+    check_missing_resources_path_group.add_argument(
+        "--path", "-p", dest="path", help="Path to a game root"
     )
+    check_missing_resources_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     check_missing_resources_parser.add_argument(
         "--textures", "-t", nargs="+", help="Texture names to check"
     )
@@ -1150,9 +1383,11 @@ Compare two paths and show differences. Supports any combination of:
         "module-resources", help="Get all resources referenced by a module's models"
     )
     module_resources_parser.add_argument("--module", "-m", required=True, help="Module name")
-    module_resources_parser.add_argument(
-        "--installation", "-i", required=True, help="Path to KOTOR installation"
+    module_resources_path_group = module_resources_parser.add_mutually_exclusive_group(required=True)
+    module_resources_path_group.add_argument(
+        "--path", "-p", dest="path", help="Path to a game root"
     )
+    module_resources_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     module_resources_parser.add_argument("--output", "-o", help="Output JSON file")
     module_resources_parser.add_argument(
         "--verbose", "-v", action="store_true", help="Show detailed information"
@@ -1161,7 +1396,8 @@ Compare two paths and show differences. Supports any combination of:
     kit_generate_parser = subparsers.add_parser(
         "kit-generate", aliases=["kit"], help="Generate a Holocron-compatible kit from a module"
     )
-    kit_generate_parser.add_argument("--installation", "-i", help="Path to KOTOR installation")
+    kit_generate_parser.add_argument("--path", "-p", dest="path", help="Path to a game root")
+    kit_generate_parser.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     kit_generate_parser.add_argument("--module", "-m", help="Module name (e.g., danm13)")
     kit_generate_parser.add_argument("--output", "-o", help="Output directory for generated kit")
     kit_generate_parser.add_argument("--kit-id", help="Optional kit id (defaults to module name)")
@@ -1200,9 +1436,9 @@ Compare two paths and show differences. Supports any combination of:
     )
     indoor_build_parser.add_argument("--input", "-i", required=True, help="Input .indoor file")
     indoor_build_parser.add_argument("--output", "-o", required=True, help="Output .mod file")
-    indoor_build_parser.add_argument(
-        "--installation", required=True, help="Path to KOTOR installation"
-    )
+    indoor_build_path_group = indoor_build_parser.add_mutually_exclusive_group(required=True)
+    indoor_build_path_group.add_argument("--path", "-p", dest="path", help="Path to a game root")
+    indoor_build_path_group.add_argument("--installation", dest="path", help=SUPPRESS)
     indoor_build_parser.add_argument(
         "--implicit-kit",
         action="store_true",
@@ -1218,7 +1454,7 @@ Compare two paths and show differences. Supports any combination of:
         "--game",
         "-g",
         choices=["k1", "k2", "kotor1", "kotor2", "tsl"],
-        help="Target game version (default: auto-detect from installation)",
+        help="Target game version (default: auto-detect from game root)",
     )
     indoor_build_parser.add_argument(
         "--module-filename", help="Module filename (overrides .indoor module_id)"
@@ -1250,9 +1486,9 @@ Compare two paths and show differences. Supports any combination of:
         help="Extract an indoor map from a specific module container file (.mod/.rim/.erf/.sav).",
     )
     indoor_extract_parser.add_argument("--output", "-o", required=True, help="Output .indoor file")
-    indoor_extract_parser.add_argument(
-        "--installation", required=True, help="Path to KOTOR installation"
-    )
+    indoor_extract_path_group = indoor_extract_parser.add_mutually_exclusive_group(required=True)
+    indoor_extract_path_group.add_argument("--path", "-p", dest="path", help="Path to a game root")
+    indoor_extract_path_group.add_argument("--installation", dest="path", help=SUPPRESS)
     indoor_extract_parser.add_argument(
         "--implicit-kit",
         action="store_true",
@@ -1268,7 +1504,7 @@ Compare two paths and show differences. Supports any combination of:
         "--game",
         "-g",
         choices=["k1", "k2", "kotor1", "kotor2", "tsl"],
-        help="Target game version (default: auto-detect from installation)",
+        help="Target game version (default: auto-detect from game root)",
     )
     indoor_extract_parser.add_argument(
         "--log-level",
@@ -1279,16 +1515,11 @@ Compare two paths and show differences. Supports any combination of:
 
     # Batch patching commands
     batch_patch_parser = subparsers.add_parser(
-        "batch-patch", help="Batch patch files, folders, or installations"
+        "batch-patch", help="Batch patch files, folders, archives, or game roots"
     )
     batch_patch_parser.add_argument(
-        "--path", "-p", required=True, help="Path to file, folder, or installation"
+        "--path", "-p", required=True, help="Path to a file, folder, archive, or game root"
     )
-    batch_patch_parser.add_argument("--translate", action="store_true", help="Enable translation")
-    batch_patch_parser.add_argument(
-        "--to-lang", help="Target language for translation (e.g., French, German)"
-    )
-    batch_patch_parser.add_argument("--translation-option", help="Translation service to use")
     batch_patch_parser.add_argument(
         "--set-unskippable", action="store_true", help="Set dialogs as unskippable"
     )
@@ -1305,13 +1536,11 @@ Compare two paths and show differences. Supports any combination of:
         "--always-backup", action="store_true", default=True, help="Always create backups"
     )
     batch_patch_parser.add_argument(
-        "--max-threads", type=int, default=2, help="Maximum translation threads"
+        "--max-threads", type=int, default=2, help="Maximum worker threads"
     )
 
     patch_file_parser = subparsers.add_parser("patch-file", help="Patch a single file")
     patch_file_parser.add_argument("--file", "-f", required=True, help="File to patch")
-    patch_file_parser.add_argument("--translate", action="store_true", help="Enable translation")
-    patch_file_parser.add_argument("--to-lang", help="Target language for translation")
     patch_file_parser.add_argument(
         "--set-unskippable", action="store_true", help="Set dialogs as unskippable"
     )
@@ -1332,8 +1561,6 @@ Compare two paths and show differences. Supports any combination of:
         "patch-folder", help="Patch all files in a folder recursively"
     )
     patch_folder_parser.add_argument("--folder", "-f", required=True, help="Folder to patch")
-    patch_folder_parser.add_argument("--translate", action="store_true", help="Enable translation")
-    patch_folder_parser.add_argument("--to-lang", help="Target language for translation")
     patch_folder_parser.add_argument(
         "--set-unskippable", action="store_true", help="Set dialogs as unskippable"
     )
@@ -1350,19 +1577,17 @@ Compare two paths and show differences. Supports any combination of:
         "--always-backup", action="store_true", default=True, help="Always create backups"
     )
     patch_folder_parser.add_argument(
-        "--max-threads", type=int, default=2, help="Maximum translation threads"
+        "--max-threads", type=int, default=2, help="Maximum worker threads"
     )
 
     patch_installation_parser = subparsers.add_parser(
-        "patch-installation", help="Patch a KOTOR installation"
+        "patch-game-root", aliases=["patch-installation"], help="Patch a KotOR game root"
     )
-    patch_installation_parser.add_argument(
-        "--installation", "-i", required=True, help="Path to KOTOR installation"
+    patch_installation_path_group = patch_installation_parser.add_mutually_exclusive_group(required=True)
+    patch_installation_path_group.add_argument(
+        "--path", "-p", dest="path", help="Path to a game root"
     )
-    patch_installation_parser.add_argument(
-        "--translate", action="store_true", help="Enable translation"
-    )
-    patch_installation_parser.add_argument("--to-lang", help="Target language for translation")
+    patch_installation_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     patch_installation_parser.add_argument(
         "--set-unskippable", action="store_true", help="Set dialogs as unskippable"
     )
@@ -1379,7 +1604,7 @@ Compare two paths and show differences. Supports any combination of:
         "--always-backup", action="store_true", default=True, help="Always create backups"
     )
     patch_installation_parser.add_argument(
-        "--max-threads", type=int, default=2, help="Maximum translation threads"
+        "--max-threads", type=int, default=2, help="Maximum worker threads"
     )
 
     return parser

@@ -7,7 +7,7 @@ The `tslpatchdata` folder contains the actual resource files and INI configurati
 ## Architecture
 
 ```bash
-Vanilla Files → Diff Engine → ModificationsByType → Writer → tslpatchdata/
+Vanilla Files -> Diff Engine -> ModificationsByType -> Writer -> tslpatchdata/
                                                               ├── changes.ini
                                                               ├── spells.2da
                                                               ├── appearance.2da
@@ -392,7 +392,7 @@ tslpatchdata/
 
 **Key Point**: NO subdirectories. Everything is in the root. The destination folder is specified in the INI.
 
-## How Diff Results → tslpatchdata
+## How Diff Results -> tslpatchdata
 
 1. **Diff Engine** runs and produces:
    - `Modifications2DA` objects with AddRow/ChangeRow/AddColumn data
@@ -437,7 +437,7 @@ Modifications2DA(
 
 ### Writer Process
 
-1. Reads vanilla spells.2da from installation → 1,000 rows
+1. Reads vanilla spells.2da from installation -> 1,000 rows
 2. Writes vanilla spells.2da to tslpatchdata/spells.2da
 3. Generates INI section:
 

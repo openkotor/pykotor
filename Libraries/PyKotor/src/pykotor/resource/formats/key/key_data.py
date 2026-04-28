@@ -53,11 +53,11 @@ from __future__ import annotations
 from typing import ClassVar
 
 from pykotor.common.misc import ResRef
-from pykotor.resource.formats._base import BiowareResource
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.type import ResourceType
 
 
-class BifEntry(BiowareResource):
+class BifEntry(ComparableMixin):
     """Represents a BIF file entry in the KEY file's file table.
 
     Each BIF entry contains the filename and metadata for a single BIF archive. The KEY file
@@ -123,7 +123,7 @@ class BifEntry(BiowareResource):
         return f"{self.filename}({self.filesize} bytes)"
 
 
-class KeyEntry(BiowareResource):
+class KeyEntry(ComparableMixin):
     """Represents a resource entry in the KEY file's key table.
 
     Each key entry maps a resource name (ResRef) and type to a specific location within a BIF file.

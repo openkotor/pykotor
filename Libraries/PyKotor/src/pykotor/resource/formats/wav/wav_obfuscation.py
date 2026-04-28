@@ -22,8 +22,8 @@ References:
         Retail SFX streams often prefix a 470-byte obfuscated header (magic bytes ``FF F3 60 C4``)
         before a normal RIFF/WAVE payload; some music uses a short RIFF wrapper around raw MP3
         when the declared RIFF size is 50.
-        - fakeHeaderTest = [0xFF, 0xF3, 0x60, 0xC4] → skip 470 bytes
-        - riffSize == 50 → skip 58 bytes → MP3
+        - fakeHeaderTest = [0xFF, 0xF3, 0x60, 0xC4] -> skip 470 bytes
+        - riffSize == 50 -> skip 58 bytes -> MP3
 """
 
 from __future__ import annotations
@@ -98,7 +98,7 @@ def detect_audio_format(data: bytes) -> tuple[DeobfuscationResult, int]:
         # Read the riffSize (bytes 4-8)
         riff_size = struct.unpack("<I", data[4:8])[0]
 
-        # if(riffSize == 50) → MP3 wrapped in WAV
+        # if(riffSize == 50) -> MP3 wrapped in WAV
         if riff_size == MP3_IN_WAV_RIFF_SIZE:
             return DeobfuscationResult.MP3_IN_WAV, MP3_IN_WAV_HEADER_SIZE
 
@@ -122,8 +122,8 @@ def deobfuscate_audio(data: bytes) -> bytes:
         Cleaned audio data bytes (RIFF/WAVE or raw MP3)
 
     Processing Logic:
-        1. Check for SFX header (0xFF 0xF3 0x60 0xC4) → skip 470 bytes
-        2. Check for MP3-in-WAV (RIFF with size 50) → skip 58 bytes (returns MP3!)
+        1. Check for SFX header (0xFF 0xF3 0x60 0xC4) -> skip 470 bytes
+        2. Check for MP3-in-WAV (RIFF with size 50) -> skip 58 bytes (returns MP3!)
         3. Otherwise return unchanged (standard WAV)
 
     References:

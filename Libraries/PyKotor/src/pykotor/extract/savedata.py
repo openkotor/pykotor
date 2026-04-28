@@ -416,7 +416,7 @@ class PartyTable:
     - **UI State:** Last panel, messages, tutorial windows shown
     - **AI State:** Follow mode, AI enabled, solo mode
     - **K2-Specific:** Influence values per companion
-    - **additional_fields:** Raw GFF fields preserved verbatim (label → (GFFFieldType, value)) for 100% fidelity editing
+    - **additional_fields:** Raw GFF fields preserved verbatim (label -> (GFFFieldType, value)) for 100% fidelity editing
 
     FILE FORMAT: GFF with GFFContent.PT type
     SIZE: Typically 20-50 KB depending on journal entries
@@ -1158,7 +1158,7 @@ class GlobalVars:
         -------
             Boolean value, or None if not found
 
-        Example: get_boolean("DAN_MYSTERY_BOX_OPENED") → True
+        Example: get_boolean("DAN_MYSTERY_BOX_OPENED") -> True
         """
         for var_name, value in self.global_bools:
             if var_name.lower() == name.lower():
@@ -1194,7 +1194,7 @@ class GlobalVars:
         -------
             Integer value (0-255), or None if not found
 
-        Example: get_number("DAN_BASTILA_INFLUENCE") → 75
+        Example: get_number("DAN_BASTILA_INFLUENCE") -> 75
         """
         for var_name, value in self.global_numbers:
             if var_name.lower() == name.lower():
@@ -1231,7 +1231,7 @@ class GlobalVars:
         -------
             String value, or None if not found
 
-        Example: get_string("DAN_CUSTOM_NPC_NAME") → "John"
+        Example: get_string("DAN_CUSTOM_NPC_NAME") -> "John"
         """
         for var_name, value in self.global_strings:
             if var_name.lower() == name.lower():
@@ -1268,7 +1268,7 @@ class GlobalVars:
             Vector4 (x, y, z, ori_x), or None if not found
         Note: ori_y and ori_z are lost in current implementation
 
-        Example: get_location("DAN_SPAWN_POINT") → Vector4(10.0, 20.0, 0.5, 0.0)
+        Example: get_location("DAN_SPAWN_POINT") -> Vector4(10.0, 20.0, 0.5, 0.0)
         """
         for var_name, value in self.global_locs:
             if var_name.lower() == name.lower():
@@ -1306,7 +1306,7 @@ class SaveNestedCapsule:
        - Previously visited areas with full state preserved
        - Example: "danm13.sav", "ebo_m12aa.sav"
        - Each contains: module.ifo, creatures, placeables, triggers, etc.
-       - **COMMON ISSUE:** EventQueue in module.ifo can corrupt → save won't load
+       - **COMMON ISSUE:** EventQueue in module.ifo can corrupt -> save won't load
        - **FIX:** Clear EventQueue GFF list from each cached module's IFO
        - Cross-ref (wiki savedata archive): KSE notes EventQueue corruption in multiple places
 

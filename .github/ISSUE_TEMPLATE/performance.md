@@ -33,10 +33,7 @@ What performance level would be acceptable?
 Which package(s) are affected?
 
 - [ ] PyKotor (core library)
-- [ ] HolocronToolset
-- [ ] HoloPatcher
-- [ ] BatchPatcher
-- [ ] KotorDiff
+- [ ] One or more tools under `Tools/`
 
 ## Code Example
 
