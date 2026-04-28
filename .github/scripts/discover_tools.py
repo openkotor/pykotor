@@ -32,8 +32,12 @@ def main() -> None:
         tools = [tool for tool in tools if tool.is_cli]
 
     if not tools:
-        print("Error: No tools discovered", file=sys.stderr)
-        sys.exit(1)
+        if args.format == "json":
+            print("[]")
+        else:
+            print("tools_matrix=[]")
+            print("Discovered 0 tools (workspace may lack vendored Tools/* checkouts)", file=sys.stderr)
+        return
 
     payload = [tool.to_dict() for tool in tools]
     if args.format == "json":
