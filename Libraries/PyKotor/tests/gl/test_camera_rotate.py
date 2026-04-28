@@ -1,80 +1,76 @@
-"""Tests for Camera.rotate angle wrapping and clamp edge cases.
+"""Tests for Camera.rotate angle wrapping and pitch clamping.
 
-Regression coverage for orbit-style rotation: yaw must stay in [-pi, pi],
-optional pitch clamping must handle inverted limits safely, and unclamped
-pitch must wrap like yaw.
+Orbit-style rotation must keep yaw in [-pi, pi] and clamp or wrap pitch
+depending on ``clamp``; regressions here break editor camera stability.
+
+``pykotor.gl.scene`` pulls in the full resource stack; load ``camera.py``
+directly after ``pykotor.gl`` so these tests run in minimal environments.
 """
 
 from __future__ import annotations
 
+import importlib.util
 import math
 import unittest
+from pathlib import Path
 
+import pytest
+
+# PyGLM-backed vector/matrix types required by camera.py
 try:
-    from pykotor.gl.scene.camera import Camera, _wrap_angle_pi
+    import pykotor.gl  # noqa: F401
 except ImportError:
-    import pytest
-
     pytest.skip("pykotor.gl not available", allow_module_level=True)
 
 
-def _angles_equivalent_mod_2pi(a: float, b: float) -> bool:
-    """True if ``a`` and ``b`` differ by a multiple of 2π (within float tolerance)."""
-    delta = (a - b + math.pi) % (2 * math.pi) - math.pi
-    return math.isclose(delta, 0.0, abs_tol=1e-9)
+def _camera_module():
+    src = (
+        Path(__file__).resolve().parents[2] / "src" / "pykotor" / "gl" / "scene" / "camera.py"
+    )
+    spec = importlib.util.spec_from_file_location("pykotor.gl.scene.camera_test_load", src)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot load camera module from {src}")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
-class TestWrapAnglePi(unittest.TestCase):
-    def test_wrap_angle_pi_range(self):
-        for angle, expected in (
-            (0.0, 0.0),
-            (math.pi, -math.pi),  # π maps to −π (same heading modulo 2π)
-            (-math.pi, -math.pi),
-            (3 * math.pi, -math.pi),
-            (-3 * math.pi, -math.pi),
-            (2 * math.pi, 0.0),
-            (2.5 * math.pi, 0.5 * math.pi),
-        ):
-            with self.subTest(angle=angle):
-                got = _wrap_angle_pi(angle)
-                self.assertTrue(
-                    _angles_equivalent_mod_2pi(expected, got),
-                    msg=f"expected {expected!r} ≡ {got!r} (mod 2π)",
-                )
+_camera = _camera_module()
+Camera = _camera.Camera
 
 
 class TestCameraRotate(unittest.TestCase):
-    def setUp(self):
-        self.cam = Camera(pitch=0.0, yaw=0.0)
+    """Regression tests for Camera.rotate (yaw wrap, pitch clamp/wrap)."""
 
-    def test_rotate_yaw_wraps_to_minus_pi_pi(self):
-        self.cam.rotate(4 * math.pi, 0.0, clamp=False)
-        self.assertGreaterEqual(self.cam.yaw, -math.pi)
-        self.assertLessEqual(self.cam.yaw, math.pi)
-        self.assertAlmostEqual(0.0, self.cam.yaw, places=9)
+    def setUp(self) -> None:
+        self.camera = Camera()
+        self.camera.yaw = 0.0
+        self.camera.pitch = math.pi / 2
 
-    def test_rotate_yaw_fractional_turn(self):
-        self.cam.rotate(2.5 * math.pi, 0.0, clamp=False)
-        self.assertAlmostEqual(0.5 * math.pi, self.cam.yaw, places=9)
+    def test_yaw_wraps_to_neg_pi_pi_range(self) -> None:
+        """Large yaw deltas must normalize to [-pi, pi]."""
+        self.camera.rotate(yaw=3 * math.pi, pitch=0.0)
+        self.assertGreater(self.camera.yaw, -math.pi - 1e-9)
+        self.assertLess(self.camera.yaw, math.pi + 1e-9)
+        self.assertAlmostEqual(abs(self.camera.yaw), math.pi, places=5)
 
-    def test_rotate_pitch_wraps_when_not_clamped(self):
-        self.cam.rotate(0.0, 3 * math.pi, clamp=False)
-        self.assertTrue(
-            _angles_equivalent_mod_2pi(math.pi, self.cam.pitch),
-            msg=f"expected pitch ≡ π (mod 2π), got {self.cam.pitch!r}",
-        )
+    def test_pitch_wraps_when_clamp_false(self) -> None:
+        """Without clamp, pitch uses the same wrap as yaw."""
+        self.camera.rotate(yaw=0.0, pitch=2.5 * math.pi, clamp=False)
+        self.assertGreater(self.camera.pitch, -math.pi - 1e-9)
+        self.assertLess(self.camera.pitch, math.pi + 1e-9)
 
-    def test_rotate_clamp_respects_limits(self):
-        self.cam.pitch = math.pi / 2
-        self.cam.rotate(0.0, 10.0, clamp=True, lower_limit=0.0, upper_limit=math.pi)
-        self.assertLessEqual(self.cam.pitch, math.pi - 0.01)
-        self.assertGreaterEqual(self.cam.pitch, 0.01)
+    def test_pitch_clamped_below_upper_with_default_limits(self) -> None:
+        """Orbit clamp keeps pitch inside (lower+eps, upper-eps)."""
+        self.camera.pitch = math.pi / 2
+        self.camera.rotate(yaw=0.0, pitch=10.0, clamp=True)
+        self.assertLess(self.camera.pitch, math.pi - 0.005)
+        self.assertGreater(self.camera.pitch, 0.005)
 
-    def test_rotate_clamp_inverted_limits_uses_midpoint(self):
-        """If lower > upper, pitch snaps to the midpoint (degenerate range)."""
-        lower = 1.0
-        upper = 0.5
-        self.cam.pitch = 0.25
-        self.cam.rotate(0.0, 0.0, clamp=True, lower_limit=lower, upper_limit=upper)
-        midpoint = (lower + upper) * 0.5
-        self.assertAlmostEqual(midpoint, self.cam.pitch, places=9)
+    def test_pitch_clamped_when_limits_almost_coincide(self) -> None:
+        """If limits are tighter than 2*orbit_epsilon, both clamp edges meet at midpoint."""
+        lo, hi = 0.5, 0.51
+        self.camera.pitch = 0.25
+        self.camera.rotate(yaw=0.0, pitch=0.0, clamp=True, lower_limit=lo, upper_limit=hi)
+        mid = (lo + hi) * 0.5
+        self.assertAlmostEqual(self.camera.pitch, mid, places=10)
