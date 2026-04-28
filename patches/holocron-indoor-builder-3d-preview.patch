@@ -1,14 +1,3 @@
-From 2f557bde476407f2de70e2efebd1ba0c78368d78 Mon Sep 17 00:00:00 2001
-From: Cursor Agent <cursoragent@cursor.com>
-Date: Tue, 28 Apr 2026 03:20:02 +0000
-Subject: [PATCH] feat(indoor-builder): real opengl tile preview with area
- layout sync
-
----
- .../gui/windows/indoor_builder/builder.py     |  19 +-
- .../windows/indoor_builder/tile_editor_3d.py  | 209 ++++++++++++++----
- 2 files changed, 187 insertions(+), 41 deletions(-)
-
 diff --git a/src/toolset/gui/windows/indoor_builder/builder.py b/src/toolset/gui/windows/indoor_builder/builder.py
 index b2c1294..60a4845 100644
 --- a/src/toolset/gui/windows/indoor_builder/builder.py
@@ -331,6 +320,3 @@ index 28a0f72..6bb8183 100644
          pass
 +    QTimer.singleShot(0, gl_widget.update)
 +    return gl_widget
--- 
-2.43.0
-
