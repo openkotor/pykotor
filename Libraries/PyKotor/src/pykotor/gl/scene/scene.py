@@ -161,6 +161,10 @@ class Scene(SceneBase):
         self._cached_encounter_objects = None
         self._cached_trigger_objects = None
 
+    def invalidate_render_cache(self) -> None:
+        """Public alias for `_invalidate_object_cache` (e.g. tile kit preview repopulating `objects`)."""
+        self._invalidate_object_cache()
+
     def _rebuild_object_caches(self):
         """Rebuild cached object lists for efficient iteration.
 
