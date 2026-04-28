@@ -21,7 +21,6 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures" / "kits_v2"
 def test_load_minimal_v2_tile_kit() -> None:
     json_path = FIXTURES / "minimal_tiles.json"
     tk, missing = load_tile_kit_v2(json_path, record_missing=True)
-    assert isinstance(tk, object)
     assert tk.kit_id == "minimal_tiles"
     assert len(tk.floors) == 1
     assert tk.floors[0].template_id == "floor_plain"
