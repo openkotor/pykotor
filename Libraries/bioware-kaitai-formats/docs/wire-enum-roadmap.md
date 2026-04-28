@@ -15,7 +15,7 @@
 
 When PyKotor must keep a rich enum, add a small function:
 
-``kaitai_int → PyKotorEnum`` with explicit handling for unknown values (tooling tolerance).
+``kaitai_int -> PyKotorEnum`` with explicit handling for unknown values (tooling tolerance).
 
 ## Documentation
 

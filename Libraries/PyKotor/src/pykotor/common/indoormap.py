@@ -204,7 +204,7 @@ class IndoorMap(ComparableMixin):
         self.git: GIT | None = None
 
         self._preserve_extracted_metadata: bool = False
-        # Implicit-kit extract → build: preserve retail LYT/VIS/GIT/PTH when sourced from a Module.
+        # Implicit-kit extract -> build: preserve retail LYT/VIS/GIT/PTH when sourced from a Module.
         self._preserve_extracted_git: bool = False
         self._preserve_extracted_layout: bool = False
         self._source_module: Module | None = None

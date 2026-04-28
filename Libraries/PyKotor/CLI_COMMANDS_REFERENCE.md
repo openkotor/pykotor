@@ -30,8 +30,8 @@ Extract/convert KOTOR format files.
 - Extract KEY/BIF archives
 - Extract RIM archives
 - Extract ERF archives
-- Convert TPC→TGA textures
-- Convert SSF→WAV sounds
+- Convert TPC->TGA textures
+- Convert SSF->WAV sounds
 - Convert LIP files
 - Model operations (MDL/MDX)
 
@@ -1138,7 +1138,7 @@ uvx --with-editable Libraries/PyKotor --from . pykotor diff "path/to/original.wo
 
 ### Phase 3: Script Tools
 
-1. Decompile NCS→NSS
+1. Decompile NCS->NSS
 2. Disassemble NCS
 3. Script utilities
 

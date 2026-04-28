@@ -18,10 +18,7 @@
 <!-- Mark all that apply -->
 
 - [ ] PyKotor (core library)
-- [ ] HolocronToolset
-- [ ] HoloPatcher
-- [ ] BatchPatcher
-- [ ] KotorDiff
+- [ ] One or more tools under `Tools/`
 - [ ] Documentation
 - [ ] CI/CD
 - [ ] Other: ___________

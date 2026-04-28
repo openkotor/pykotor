@@ -2827,9 +2827,9 @@ def diff_installs_with_objects(
       4. Override (HIGHEST - always wins)
 
     InstallList Logic (2-way comparison):
-      - File exists in installation2 but NOT in installation1 → [InstallList]
-      - File exists in both → [GFFList]/[2DAList]/[SSFList]/[HACKList]
-      - File exists in installation1 but NOT in installation2 → Removed (no action)
+      - File exists in installation2 but NOT in installation1 -> [InstallList]
+      - File exists in both -> [GFFList]/[2DAList]/[SSFList]/[HACKList]
+      - File exists in installation1 but NOT in installation2 -> Removed (no action)
 
     Mapping to CLI arguments:
       - installation1 corresponds to --mine (vanilla/base)

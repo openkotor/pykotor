@@ -39,8 +39,6 @@ $argsList = @(
     "--hidden-import", "utility.system"
     "--hidden-import", "utility.gui"
     "--hidden-import", "utility.updater"
-    "--exclude-module", "dl_translate"
-    "--exclude-module", "torch"
     "--include-wiki-if-present"
     "--add-data-if-exists", "$repoRootPath/vendor/kotorblender/io_scene_kotor${dataSeparator}kotorblender/io_scene_kotor"
     "--venv-name", $venv_name

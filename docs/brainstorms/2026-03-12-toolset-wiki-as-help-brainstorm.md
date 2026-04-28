@@ -25,7 +25,7 @@ topic: toolset-wiki-as-help
 - **contents.xml:** Generated at startup (in-memory or temp file) from the resolved wiki base path(s); structure mirrors existing `generate_help_contents.py` but references only wiki filenames (e.g. `Holocron-Toolset-Getting-Started.md`, `Tutorial-Creating-Custom-Robes.md`) and vendor paths.
 - **Path resolution:** `help_paths.py` and editor help use only **wiki** (and vendor) bases; remove all `toolset/help` references. Dev: repo root `wiki/` or package `toolset/wiki`; frozen: exe-relative `wiki/`.
 - **Help updater:** Change download source to OpenKotOR/PyKotor (URL/artifact to be chosen: e.g. wiki repo tarball or CI-built zip of repo `wiki/`).
-- **Build/packaging:** setup.py already copies repo `wiki/` → `src/toolset/wiki`; compile_toolset.ps1 already uses `--include-wiki-if-present` (repo root `wiki/`). No packaging of `help/`.
+- **Build/packaging:** setup.py already copies repo `wiki/` -> `src/toolset/wiki`; compile_toolset.ps1 already uses `--include-wiki-if-present` (repo root `wiki/`). No packaging of `help/`.
 
 ## Resolved / recommendation
 
@@ -33,4 +33,4 @@ topic: toolset-wiki-as-help
 
 ## Next steps
 
-→ Implementation plan: generate contents on startup, remove help folder, switch path resolution and updater, then verify local + compile + tests.
+-> Implementation plan: generate contents on startup, remove help folder, switch path resolution and updater, then verify local + compile + tests.

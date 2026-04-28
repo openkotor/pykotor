@@ -172,15 +172,15 @@ These scripts have been refactored to accept command-line arguments and are now 
 
 **KOTOR Scripts (`kotor/`):**
 
-1. **`kotor/check_txi_files.py`** → Accepts `--installation` and `--textures` arguments
-2. **`kotor/check_missing_resources.py`** → Accepts `--installation`, `--module`, `--lightmaps`, `--textures`
-3. **`kotor/check_genericdoors.py`** → Accepts `--installation` and `--2da` arguments
-4. **`kotor/check_door_dims.py`** → Accepts `--file`, `--default-width`, `--default-height`
+1. **`kotor/check_txi_files.py`** -> Accepts `--installation` and `--textures` arguments
+2. **`kotor/check_missing_resources.py`** -> Accepts `--installation`, `--module`, `--lightmaps`, `--textures`
+3. **`kotor/check_genericdoors.py`** -> Accepts `--installation` and `--2da` arguments
+4. **`kotor/check_door_dims.py`** -> Accepts `--file`, `--default-width`, `--default-height`
 
 **General Scripts:**
-5. **`verify_toc.py`** → Accepts `--file` argument
-6. **`verify_anchors.py`** → Accepts `--file` argument
-7. **`find_localization_strings.py`** → Accepts `--directory` argument
+5. **`verify_toc.py`** -> Accepts `--file` argument
+6. **`verify_anchors.py`** -> Accepts `--file` argument
+7. **`find_localization_strings.py`** -> Accepts `--directory` argument
 
 ### ✅ Keep As-Is (Already Well-Designed)
 

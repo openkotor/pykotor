@@ -35,9 +35,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
@@ -179,7 +179,7 @@ class LIPShape(IntEnum):
         return mapping.get(phoneme, cls.NEUTRAL)
 
 
-class LIP(ComparableMixin):
+class LIP(BiowareResource):
     """Represents a LIP (Lip Sync) file containing mouth animation data.
 
     LIP files synchronize character mouth movements with voice-over audio during dialogue.
@@ -391,6 +391,42 @@ class LIP(ComparableMixin):
             )
 
         return errors
+
+    def __json__(self) -> dict[str, Any]:
+        """Serialize the LIP object to a JSON-compatible dictionary."""
+        return {
+            "duration": str(self.length),
+            "keyframes": [
+                {
+                    "time": str(frame.time),
+                    "shape": str(frame.shape.value),
+                }
+                for frame in self.frames
+            ],
+        }
+
+    @classmethod
+    def from_json(cls, data: dict[str, Any]) -> LIP:
+        """Create a LIP object from a JSON dictionary."""
+        instance = cls()
+
+        # Support legacy io_lip_json reader format that wrapped it in "lip":{"elements":[]}
+        if "lip" in data and "elements" in data["lip"]:
+            instance.length = float(data["lip"].get("duration", 0.0))
+            for keyframe_dict in data["lip"]["elements"]:
+                time = float(keyframe_dict["time"])
+                shape = LIPShape(int(keyframe_dict["shape"]))
+                instance.add(time, shape)
+            return instance
+
+        # Support the standard un-nested "keyframes" layout
+        instance.length = float(data.get("duration", 0.0))
+        for keyframe_dict in data.get("keyframes", []):
+            time = float(keyframe_dict["time"])
+            shape = LIPShape(int(keyframe_dict["shape"]))
+            instance.add(time, shape)
+
+        return instance
 
 
 @dataclass

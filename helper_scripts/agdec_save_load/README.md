@@ -1,6 +1,6 @@
 # RE cache + codegen pipeline (save/load)
 
-Proves the **~5 minute** path: load cache → generate Python → run tests. Full RE (get-function batch or execute-script) is done once; after that, codegen + verify takes under a minute.
+Proves the **~5 minute** path: load cache -> generate Python -> run tests. Full RE (get-function batch or execute-script) is done once; after that, codegen + verify takes under a minute.
 
 ## Quick run
 

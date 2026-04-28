@@ -310,8 +310,8 @@ class TestFAC(TestCase):
         assert friendly_rep is not None and friendly_rep.reputation == 95
 
     def test_missing_field_defaults(self) -> None:
-        """Test defaults when fields are omitted (REVA: engine uses ""/0/0xFFFFFFFF/0/0/50 or 0 for FactionRep)."""
-        # Minimal GFF: one faction struct with only FactionName set; others omitted → our defaults
+        """Test defaults when fields are omitted (engine uses ""/0/0xFFFFFFFF/0/0/50 or 0 for FactionRep)."""
+        # Minimal GFF: one faction struct with only FactionName set; others omitted -> our defaults
         minimal_fac_xml = """<gff3>
           <struct id="-1">
             <list label="FactionList">
@@ -332,18 +332,18 @@ class TestFAC(TestCase):
         fac = construct_fac(gff)
         self.assertEqual(len(fac.factions), 1)
         self.assertEqual(fac.factions[0].name, "OnlyName")
-        # FactionGlobal omitted → we default 0 (engine would use 1 when field missing)
+        # FactionGlobal omitted -> we default 0 (engine would use 1 when field missing)
         self.assertFalse(fac.factions[0].global_effect)
-        # FactionParentID omitted → we default 0xFFFFFFFF (engine read default is 0)
+        # FactionParentID omitted -> we default 0xFFFFFFFF (engine read default is 0)
         self.assertEqual(fac.factions[0].parent_id, 0xFFFFFFFF)
         self.assertEqual(len(fac.reputations), 1)
         self.assertEqual(fac.reputations[0].faction_id1, 0)
         self.assertEqual(fac.reputations[0].faction_id2, 0)
-        # FactionRep omitted → we default 50 (neutral); engine default is 0
+        # FactionRep omitted -> we default 50 (neutral); engine default is 0
         self.assertEqual(fac.reputations[0].reputation, 50)
 
     def test_empty_lists_roundtrip(self) -> None:
-        """FactionList/RepList omitted → empty list; round-trip preserves empty."""
+        """FactionList/RepList omitted -> empty list; round-trip preserves empty."""
         empty_xml = """<gff3><struct id="-1"></struct></gff3>"""
         gff = read_gff(empty_xml.encode(), file_format=ResourceType.GFF_XML)
         fac = construct_fac(gff)

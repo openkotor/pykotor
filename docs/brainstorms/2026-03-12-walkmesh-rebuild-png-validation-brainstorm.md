@@ -33,7 +33,7 @@ Build the mesh from BWM (vertices, faces), draw it in `mpl_toolkits.mplot3d` or 
 Build a `trimesh.Trimesh` from BWM vertices/faces; add arrow and normal geometry as line sets or small cones; use trimesh’s scene or pyglet/moderngl to render; capture to PNG. Same view variety as A.
 
 - **Pros:** Proper 3D mesh handling; better rendering quality; trimesh already appears in repo (helper_scripts).
-- **Cons:** New dependency for the CLI; slightly more code to wire BWM → trimesh and arrows/normals.
+- **Cons:** New dependency for the CLI; slightly more code to wire BWM -> trimesh and arrows/normals.
 - **Best when:** We want better image quality and are okay adding an optional dependency.
 
 ### Approach C: Offscreen Qt/OpenGL or reuse WalkmeshRenderer
@@ -91,4 +91,4 @@ Drive the existing HolocronToolset WalkmeshRenderer (or OpenGL boundary code) in
 
 ## Next steps
 
-→ Run `/workflows:plan` to implement: CLI flag, geometry build from BWM, wireframe-over-translucent-faces, arrows/grid/gizmo, four views, PNG write at 300 DPI, optional dependency handling.
+-> Run `/workflows:plan` to implement: CLI flag, geometry build from BWM, wireframe-over-translucent-faces, arrows/grid/gizmo, four views, PNG write at 300 DPI, optional dependency handling.

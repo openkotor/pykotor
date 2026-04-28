@@ -581,7 +581,7 @@ gl_accel_compute_node_world_transforms(PyObject *self, PyObject *args) {
  * batch_transform_vertices_2d(vertices_xy, n_verts, cos_r, sin_r,
  *                             flip_x, flip_y, tx, ty)
  *
- * Applies flip → rotate → translate to N 2D vertices in one C pass.
+ * Applies flip -> rotate -> translate to N 2D vertices in one C pass.
  * Used by indoor builder for room label bounds and marquee selection.
  *
  * vertices_xy: bytes of N×2 floats (x, y pairs in local space)
@@ -760,7 +760,7 @@ gl_accel_batch_hook_snap_distances(PyObject *self, PyObject *args) {
  *                        flip_x, flip_y, tx, ty,
  *                        rect_min_x, rect_min_y, rect_max_x, rect_max_y)
  *
- * Transforms N local-space 2D vertices via flip→rotate→translate and
+ * Transforms N local-space 2D vertices via flip->rotate->translate and
  * returns 1 if ANY vertex falls inside the given axis-aligned rect.
  * Early-terminates on first hit.  Used for marquee room selection.
  *

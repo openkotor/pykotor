@@ -23,10 +23,7 @@ Describe what you've already tried or researched.
 Which package(s) is your question about?
 
 - [ ] PyKotor (core library)
-- [ ] HolocronToolset
-- [ ] HoloPatcher
-- [ ] BatchPatcher
-- [ ] KotorDiff
+- [ ] One or more tools under `Tools/`
 
 ## Environment
 

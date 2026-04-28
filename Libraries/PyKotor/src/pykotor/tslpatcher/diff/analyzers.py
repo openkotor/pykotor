@@ -1240,7 +1240,7 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
                 restype = resource.restype()
 
                 print(
-                    f"  [{idx}/{len(found_resources)}] Patching {filename} (StrRef {old_strref} → StrRef{token_id})"
+                    f"  [{idx}/{len(found_resources)}] Patching {filename} (StrRef {old_strref} -> StrRef{token_id})"
                 )
 
                 # Handle 2DA files
