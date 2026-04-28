@@ -38,6 +38,7 @@ Run `export_save_load_functions.py` via `execute-script` with `program_path: "/K
 
 ## See also
 
+- [AGENTS.md — Reverse engineering (agdec-http)](../../AGENTS.md#reverse-engineering-agdec-http--agentdecompile) — full MCP tool list and `execute-script` / `program_path` rules
 - `docs/brainstorms/2026-03-12-agdec-re-to-python-5min-brainstorm.md`
 - `docs/reva_roadmap/SAVE_LOAD_ENGINE_BEHAVIOR.md`
 - `.cursor/skills/assembly-transpile-parity/SKILL.md`

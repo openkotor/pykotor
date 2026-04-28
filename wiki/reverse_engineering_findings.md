@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document summarizes engine-level findings from reverse engineering the KotOR I and II game executables (e.g. with Ghidra). It is meant to inform PyKotor and toolset work at a conceptual level: class names, control flow, and subsystem roles—not step-by-step tool transcripts or raw dumps. For continued analysis, use your usual RE workflow on a loaded game binary and cross-check with vendor and community references; see [Community sources and archives](Home#community-sources-and-archives). Walkmesh / BWM / AABB engine behavior is documented under [BWM / walkmesh / AABB (engine implementation analysis)](reverse_engineering_findings#bwm-walkmesh-aabb-engine-implementation-analysis) below. Repository automation guidance for agents is in [AGENTS.md](https://github.com/OpenKotOR/PyKotor/blob/master/AGENTS.md) (conceptual wiki policy).
+This document summarizes engine-level findings from reverse engineering the KotOR I and II game executables (e.g. with Ghidra). It is meant to inform PyKotor and toolset work at a conceptual level: class names, control flow, and subsystem roles—not step-by-step tool transcripts or raw dumps. **Star Wars: Knights of the Old Republic I and II use BioWare’s Odyssey engine** (older docs sometimes conflate this with the Aurora family; for KotOR behavior, treat the engine as **Odyssey**). For continued analysis, use your usual RE workflow on a loaded game binary and cross-check with vendor and community references; see [Community sources and archives](Home#community-sources-and-archives). Walkmesh / BWM / AABB engine behavior is documented under [BWM / walkmesh / AABB (engine implementation analysis)](reverse_engineering_findings#bwm-walkmesh-aabb-engine-implementation-analysis) below. Full **agdec-http (AgentDecompile) MCP** tool names, `program_path` rules, and repo-side K1/TSL address mapping are in [AGENTS.md — Reverse engineering (agdec-http / AgentDecompile)](https://github.com/OpenKotOR/PyKotor/blob/master/AGENTS.md#reverse-engineering-agdec-http--agentdecompile) and the `bridgeWorkflow` section of [`vendor/sotor/core/assets/reverse_engineering/k1_tsl_import_map.json`](https://github.com/OpenKotOR/PyKotor/blob/master/vendor/sotor/core/assets/reverse_engineering/k1_tsl_import_map.json).
 
 ## Table of Contents
 
@@ -49,7 +49,8 @@ This document summarizes engine-level findings from reverse engineering the KotO
       - [*Perimeter* Format](#perimeter-format)
     - [Implementation Recommendations](#implementation-recommendations)
     - [References](#references)
-  - [Using agdec for further analysis](#using-agdec-for-further-analysis)
+  - [Using agdec-http for further analysis](#using-agdec-http-for-further-analysis)
+  - [Second binary (follow-on)](#second-binary-follow-on)
   - [Tools Used](#tools-used)
   - [See Also](#see-also)
   - [References](#references-1)
@@ -1124,23 +1125,30 @@ Based on this analysis, our *PyKotor/HolocronToolset* implementation **MUST**:
 - *`swkotor.c`* / *`swkotor.h`* — Decompiled engine source/headers used alongside local RE work (not part of the PyKotor distribution)
 - [Level-Layout-Formats#bwm](Level-Layout-Formats#bwm) — **Format specification** (binary layout, header, vertices, faces, AABB, adjacency, edges, perimeters). This section covers engine-side behavior only; the BWM wiki is the canonical format reference.
 
-## Using agdec for further analysis
+## Using agdec-http for further analysis
 
-To extend these findings or verify behavior against a specific binary:
+To extend these findings or verify behavior against a **program opened in a Ghidra project** (via the AgentDecompile / **agdec-http** MCP, not as a raw file path in this repo):
 
-1. **Open a game binary in Ghidra:** Load `/K1/k1_win_gog_swkotor.exe`, `/TSL/k2_win_gog_aspyr_swkotor2.exe` into a Ghidra project. Ensure the program is **loaded and analyzed** (e.g. Auto Analysis complete); agdec tools require an open program to query.
-2. **Use the agdec MCP server:** With the binary loaded, tools such as `list-functions`, `search-strings`, `list-exports`, and `list-cross-references` can map entry points, locate format-related strings (e.g. "KEY ", "GFF ", "NCS "), and trace call graphs. This is useful for confirming which functions read KEY/BIF, parse GFF or 2DA, or execute NCS.
-3. **Match findings to format docs:** Cross-reference addresses and function names with vendor implementations (e.g. reone, xoreos) and with this wiki’s format pages. Document engine-specific quirks (e.g. alignment, field order) in the relevant format page; for geometry/walkmesh, align with [BWM / walkmesh / AABB](reverse_engineering_findings#bwm-walkmesh-aabb-engine-implementation-analysis) and [Level-Layout-Formats#bwm](Level-Layout-Formats#bwm).
-4. **Community and archives:** For historical RE notes and tool discussions, see [Community sources and archives](Home#community-sources-and-archives) (DeadlyStream, LucasForums archives). Wiki content stays conceptual; do not paste raw RE dumps or tool names into format pages—link to this document (especially [Resource Management System](reverse_engineering_findings#resource-management-system)) for engine-level detail.
+1. **Open or import the game programs** so they appear as logical `program_path` values (e.g. `/K1/k1_win_gog_swkotor.exe`, `/TSL/k2_win_gog_aspyr_swkotor2.exe`—use the same spellings as your project). Ensure analysis has run; see [AGENTS.md](https://github.com/OpenKotOR/PyKotor/blob/master/AGENTS.md#reverse-engineering-agdec-http--agentdecompile) for the full **tool list and rules** (never treat those paths as on-disk PyKotor files).
+2. **Discovery and tracing** use tools such as **`search-everything`**, **`search-strings`**, **`get-references`** (cross-references and related modes; replace legacy “list-cross-refs” expectations), **`get-function`**, **`decompile-function`**, and **`get-call-graph`**. This is how you confirm which subsystems read KEY/BIF, parse GFF/2DA, or run the NCS VM. **`export`** can produce `.gzf` or C-like summaries for offline review.
+3. **K1 ↔ TSL porting of names and metadata:** The MCP’s **`manage-function`** tool supports **propagation** to another program (see AGENTS.md). The prompt text “match-function” in some Cursor bundles refers to that workflow, not a separate tool name. For bulk work, **`execute-script`** runs Jython in Ghidra; return data via the global `__result__` (see `helper_scripts/agdec_save_load/README.md`).
+4. **Repo-side map:** The K1/TSL import and anchor data in **`vendor/sotor/core/assets/reverse_engineering/k1_tsl_import_map.json`** now includes a **`bridgeWorkflow`** section (phased subsystems and notes). Keep high-confidence address pairs there as the Git mirror of your Ghidra bookmarks.
+5. **Match findings to format docs:** Cross-reference addresses and roles with vendor implementations (e.g. reone, xoreos) and with this wiki’s format pages. Document engine-specific quirks in the relevant format page; for geometry/walkmesh, align with [BWM / walkmesh / AABB](reverse_engineering_findings#bwm-walkmesh-aabb-engine-implementation-analysis) and [Level-Layout-Formats#bwm](Level-Layout-Formats#bwm).
+6. **Community and archives:** For historical RE notes, see [Community sources and archives](Home#community-sources-and-archives) (DeadlyStream, LucasForums archives). This wiki stays conceptual: **no** pasted decompilations; link here for engine-level discussion.
+
+## Second binary (follow-on)
+
+After the main `swkotor.exe` / `swkotor2.exe` work is in good shape, pick **another** loaded image in the same Ghidra project (e.g. a companion DLL) using **`list-project-files`** or the Ghidra UI. Reuse the same workflow: establish anchors, **`get-references`** / **`get-function`**, then mirror any shared naming to a second build only where correspondence is proven. Track results in a small, dedicated subsection or a separate hand-maintained list—scope is intentionally narrow.
 
 ## Tools Used
 
-- **RE / agdec:** Ghidra integration for reverse engineering (list-functions, search-strings, list-exports, list-cross-references)
-- **Ghidra:** Binary analysis and decompilation
-- **Function Analysis:** Cross-referencing and call graph analysis
+- **agdec-http (MCP):** `search-everything`, `search-strings`, `get-references`, `get-function`, `decompile-function`, `get-call-graph`, `manage-function` (including propagate), `export`, and others per [AGENTS.md](https://github.com/OpenKotOR/PyKotor/blob/master/AGENTS.md#reverse-engineering-agdec-http--agentdecompile)
+- **Ghidra:** Binary analysis and decompilation (backing store for the MCP)
+- **Cross-reference and call graph work:** Prefer `get-references` and `get-call-graph` over ad hoc naming from outdated “list-*” tool labels
 
 ## See Also
 
+- [AGENTS.md — agdec-http](https://github.com/OpenKotOR/PyKotor/blob/master/AGENTS.md#reverse-engineering-agdec-http--agentdecompile) -- MCP tool list, `program_path` rules, K1↔TSL propagation
 - [Level-Layout-Formats#bwm](Level-Layout-Formats#bwm) -- BWM binary layout (canonical format)
 - [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Walkmesh extraction
 - [Kit-Structure-Documentation](Kit-Structure-Documentation) -- Walkmesh extraction
@@ -1157,6 +1165,6 @@ To extend these findings or verify behavior against a specific binary:
 
 ## References
 
-- Original game executables: `/K1/k1_win_gog_swkotor.exe`, `/TSL/k2_win_gog_aspyr_swkotor2.exe`
-- Analysis conducted using RE tools in Ghidra
+- **Ghidra `program_path` names** (not paths in this repository): e.g. `/K1/k1_win_gog_swkotor.exe`, `/TSL/k2_win_gog_aspyr_swkotor2.exe` — see [AGENTS.md](https://github.com/OpenKotOR/PyKotor/blob/master/AGENTS.md#reverse-engineering-agdec-http--agentdecompile)
+- Analysis conducted in Ghidra and via agdec-http MCP where applicable
 - Findings validated against PyKotor library implementation
