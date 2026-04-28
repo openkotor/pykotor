@@ -259,7 +259,9 @@ def _load_kits_internal(
                 continue
             if not isinstance(kit_json_raw, dict):
                 continue
-            if kit_json_raw.get("format_version") == 2:
+            fmt = kit_json_raw.get("format")
+            is_net_v01 = isinstance(fmt, str) and fmt.strip() == "0.1"
+            if kit_json_raw.get("format_version") == 2 or is_net_v01:
                 try:
                     tk, tmiss = load_tile_kit_v2(file, record_missing=record_missing)
                 except (OSError, ValueError, TypeError, KeyError):
@@ -274,7 +276,9 @@ def _load_kits_internal(
             kit_name = str(kit_json["name"])
         else:
             kit_json = json.loads(BinaryReader.load_file(file))
-            if kit_json.get("format_version") == 2:
+            fmt2 = kit_json.get("format")
+            is_net_v01_b = isinstance(fmt2, str) and fmt2.strip() == "0.1"
+            if kit_json.get("format_version") == 2 or is_net_v01_b:
                 try:
                     tk, _ = load_tile_kit_v2(file, record_missing=False)
                 except (OSError, ValueError, TypeError, KeyError):
