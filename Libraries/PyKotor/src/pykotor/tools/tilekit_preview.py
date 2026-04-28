@@ -7,9 +7,9 @@ same categories (ceilings commented out in .NET).
 Doorframe world pose matches `DoorFrame` in `Room.cs`: ``LocalTransform`` uses **only the last**
 template hook (`Template.Hooks.Last()`).
 
-Saved JSON does not encode wall-link visibility; we draw wall meshes whenever template refs exist.
-Outer-corner visibility in .NET depends on adjacency + links; preview draws kit hooks unless we add
-a future visibility pass.
+When ``respect_adjacency_visibility`` is set (Toolset default), wall pairing follows ``Room.FixWalls``
+(interior walls hidden), ``InnerCorner.Visible`` / ``OuterCorner.Visible`` from ``Room.cs`` (via
+``area_designer_runtime``).
 
 Also supports PyKotor `TileLayout` (floors only) for `.indoor` `tile_layout`.
 """
@@ -26,8 +26,9 @@ from pykotor.common.tilekit import (
     TileKit,
     TileTemplate,
 )
-from pykotor.gl import eulerAngles, mat4, mat4_cast, quat, translate, vec3
+from pykotor.gl import eulerAngles, mat4_cast, quat, translate, vec3
 from pykotor.gl.models.read_mdl import gl_load_stitched_model
+from pykotor.tools.area_designer_runtime import build_runtime_from_v01, iter_render_instances
 from pykotor.gl.scene.render_object import RenderObject
 from pykotor.gl.scene.scene import Scene
 from pykotor.gl.shader import Texture
@@ -151,19 +152,21 @@ def populate_scene_from_area_designer_v01(
     show_doors: bool = True,
     show_corners: bool = True,
     show_ceilings: bool = False,
+    show_objects: bool = True,
+    respect_adjacency_visibility: bool = True,
 ) -> None:
     """Populate `scene.objects` like `AreaEntity.GetMeshDescriptors` (Kotor.NET).
 
     Expects `area` JSON with ``format: \"0.1\"`` and ``rooms[]`` as saved by `AreaSerializer_V0_1`.
+
+    Delegates to :func:`build_runtime_from_v01` and :func:`iter_render_instances` so preview matches
+    the Area Designer runtime (``Room.FixWalls``, wall/corner visibility).
     """
     scene.objects.clear()
     scene.selection.clear()
     scene.invalidate_render_cache()
 
-    rooms = area.get("rooms")
-    if not isinstance(rooms, list):
-        scene.invalidate_render_cache()
-        return
+    runtime = build_runtime_from_v01(area, kits_by_id)
 
     def add_model(resref: str, world: Any) -> None:
         if not resref:
@@ -172,126 +175,16 @@ def populate_scene_from_area_designer_v01(
         ro.set_transform(world)
         scene.objects[ro] = ro
 
-    for room_data in rooms:
-        if not isinstance(room_data, dict):
-            continue
-        pos_l = room_data.get("position") or [0.0, 0.0, 0.0]
-        if len(pos_l) < 3:
-            pos_l = [0.0, 0.0, 0.0]
-        room_pos = Vector3(float(pos_l[0]), float(pos_l[1]), float(pos_l[2]))
-        q_room = _quat_from_net_xyzw(room_data.get("orientation"))
-        m_room = _mat_rt(q_room, room_pos)
-
-        tiles = room_data.get("tiles")
-        if not isinstance(tiles, list):
-            continue
-
-        for tile_data in tiles:
-            if not isinstance(tile_data, dict):
-                continue
-            kit_id = str(tile_data.get("kitID", ""))
-            template_id = str(tile_data.get("templateID", ""))
-            kit = kits_by_id.get(kit_id)
-            if kit is None:
-                continue
-
-            pos_l = tile_data.get("position") or [0.0, 0.0, 0.0]
-            if len(pos_l) < 3:
-                pos_l = [0.0, 0.0, 0.0]
-            tile_pos = Vector3(float(pos_l[0]), float(pos_l[1]), float(pos_l[2]))
-            q_tile = _quat_from_net_xyzw(tile_data.get("orientation"))
-            m_tile_local = _mat_rt(q_tile, tile_pos)
-            # Column vectors: world = parent * local (matches C# child * parent multiply order).
-            m_tile = _multiply(m_room, m_tile_local)
-
-            kt = _kit_tile_record(kit, template_id)
-
-            floor_block = tile_data.get("floor")
-            if isinstance(floor_block, dict):
-                fk = str(floor_block.get("kitID", kit_id))
-                ftid = str(floor_block.get("templateID", ""))
-                fkit = kits_by_id.get(fk) or kit
-                ftpl = _template_for_resref(fkit, ftid)
-                if ftpl is not None and ftpl.resref:
-                    add_model(ftpl.resref, m_tile)
-
-            if show_ceilings and isinstance(tile_data.get("ceiling"), dict):
-                ck = str(tile_data["ceiling"].get("kitID", ""))
-                ctid = str(tile_data["ceiling"].get("templateID", ""))
-                if ck and ctid:
-                    ckit = kits_by_id.get(ck) or kit
-                    ctpl = _template_for_resref(ckit, ctid)
-                    if ctpl is not None and ctpl.resref:
-                        add_model(ctpl.resref, m_tile)
-
-            walls_saved = tile_data.get("walls")
-            if show_walls and isinstance(walls_saved, list) and kt is not None:
-                for i, wall_block in enumerate(walls_saved):
-                    if not isinstance(wall_block, dict):
-                        continue
-                    wk = str(wall_block.get("kitID", kit_id))
-                    wtid = str(wall_block.get("templateID", ""))
-                    wkit = kits_by_id.get(wk) or kit
-                    wtpl = _template_for_resref(wkit, wtid)
-                    if wtpl is None or not wtpl.resref:
-                        continue
-                    if i >= len(kt.wall_hooks):
-                        continue
-                    hook = kt.wall_hooks[i]
-                    q_h = _quat_from_py_wxyz(hook.orientation)
-                    m_hook = _mat_rt(q_h, hook.position)
-                    m_wall = _multiply(m_tile, m_hook)
-                    add_model(wtpl.resref, m_wall)
-                    # DoorFrame.Transform uses the last hook on the doorframe template (Room.cs).
-                    if (
-                        show_doors
-                        and wtpl.doorframe_id
-                        and wtpl.doorframe_hooks
-                        and (df := _template_for_resref(wkit, wtpl.doorframe_id)) is not None
-                    ):
-                        dh = wtpl.doorframe_hooks[-1]
-                        q_df = _quat_from_py_wxyz(dh.orientation)
-                        m_df_loc = _mat_rt(q_df, dh.position)
-                        m_df = _multiply(m_wall, m_df_loc)
-                        add_model(df.resref, m_df)
-
-            if show_corners and kt is not None:
-                for ic in kt.inner_corner_hooks:
-                    itpl = _template_for_resref(kit, ic.default_corner_id)
-                    if itpl is None or not itpl.resref:
-                        continue
-                    q_h = _quat_from_py_wxyz(ic.orientation)
-                    m_h = _multiply(m_tile, _mat_rt(q_h, ic.position))
-                    add_model(itpl.resref, m_h)
-                for oc in kt.outer_corner_hooks:
-                    otpl = _template_for_resref(kit, oc.default_corner_id)
-                    if otpl is None or not otpl.resref:
-                        continue
-                    q_h = _quat_from_py_wxyz(oc.orientation)
-                    m_h = _multiply(m_tile, _mat_rt(q_h, oc.position))
-                    add_model(otpl.resref, m_h)
-
-        # Room-scoped props (`Room.Objects`; exporter adds once per tile iteration — same transforms).
-        objects_l = room_data.get("objects")
-        if isinstance(objects_l, list):
-            for od in objects_l:
-                if not isinstance(od, dict):
-                    continue
-                ok = str(od.get("kitID", ""))
-                otid = str(od.get("templateID", ""))
-                okit = kits_by_id.get(ok)
-                if okit is None:
-                    continue
-                otpl = _template_for_resref(okit, otid)
-                if otpl is None or not otpl.resref:
-                    continue
-                opos_l = od.get("position") or [0.0, 0.0, 0.0]
-                if len(opos_l) < 3:
-                    opos_l = [0.0, 0.0, 0.0]
-                o_pos = Vector3(float(opos_l[0]), float(opos_l[1]), float(opos_l[2]))
-                q_o = _quat_from_net_xyzw(od.get("orientation"))
-                m_obj_local = _mat_rt(q_o, o_pos)
-                m_obj = _multiply(m_room, m_obj_local)
-                add_model(otpl.resref, m_obj)
+    for resref, world in iter_render_instances(
+        runtime,
+        kits_by_id,
+        show_walls=show_walls,
+        show_doors=show_doors,
+        show_corners=show_corners,
+        show_ceilings=show_ceilings,
+        show_objects=show_objects,
+        respect_adjacency_visibility=respect_adjacency_visibility,
+    ):
+        add_model(resref, world)
 
     scene.invalidate_render_cache()
