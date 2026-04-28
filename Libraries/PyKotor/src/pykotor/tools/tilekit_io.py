@@ -125,7 +125,7 @@ def _load_doors_tilekit(
         try:
             utd_k1_path = base_path / f"{door_json['utd_k1']}.utd"
             utd_k2_path = base_path / f"{door_json['utd_k2']}.utd"
-        except Exception:
+        except (KeyError, TypeError, ValueError):
             continue
         try:
             utd_k1 = read_utd(utd_k1_path)
@@ -153,7 +153,7 @@ def _parse_doorhooks(
             if di < 0 or di >= len(doors):
                 continue
             hooks.append(KitComponentHook(pos, rot, edge, doors[di]))
-        except Exception:
+        except (KeyError, TypeError, ValueError, IndexError):
             continue
     return hooks
 

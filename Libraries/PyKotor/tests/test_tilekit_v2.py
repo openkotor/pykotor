@@ -6,7 +6,6 @@ from pathlib import Path
 
 from pykotor.common.indoorkit import Kit
 from pykotor.common.indoormap import EmbeddedKit, IndoorMap
-from pykotor.common.tilekit import TileKit
 from pykotor.resource.formats.bwm.bwm_data import BWM
 from pykotor.tools.indoorkit import load_kits_unified, load_tile_kit_v2
 from pykotor.tools.tile_bwm import merge_translated_bwms

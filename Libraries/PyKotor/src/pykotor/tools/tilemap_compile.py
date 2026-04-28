@@ -2,18 +2,51 @@
 
 from __future__ import annotations
 
+import math
 from copy import deepcopy
 from dataclasses import dataclass, field
 
 from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook, KitDoor
 from pykotor.common.indoormap import IndoorMap, IndoorMapRoom, _ensure_embedded_kit
-from pykotor.common.tilekit import TileKit
+from pykotor.common.tilekit import QuaternionWXYZ, TileKit
 from pykotor.resource.formats.bwm.bwm_data import BWM
 from pykotor.resource.generics.utd import UTD
 from pykotor.tools.tile_bwm import generate_flat_floor_quad, merge_translated_bwms
 from utility.common.geometry import Vector3
 
+_EM_EPS = 1e-6
+
 _EMBEDDED_TILE = "__tile_compiled__"
+
+
+def _is_identity_quaternion(q: QuaternionWXYZ) -> bool:
+    return (
+        abs(q.w - 1.0) < _EM_EPS
+        and abs(q.x) < _EM_EPS
+        and abs(q.y) < _EM_EPS
+        and abs(q.z) < _EM_EPS
+    )
+
+
+def _apply_quaternion_wxyz_to_bwm(bwm: BWM, q: QuaternionWXYZ) -> None:
+    """Rotate BWM vertex positions in-place with unit quaternion (w, x, y, z)."""
+    if _is_identity_quaternion(q):
+        return
+    w, x, y, z = q.w, q.x, q.y, q.z
+    inv_len = 1.0 / math.sqrt(w * w + x * x + y * y + z * z)
+    w, x, y, z = w * inv_len, x * inv_len, y * inv_len, z * inv_len
+    xx, yy, zz = x * x, y * y, z * z
+    xy, xz, yz = x * y, x * z, y * z
+    wx, wy, wz = w * x, w * y, w * z
+    m00, m01, m02 = 1.0 - 2.0 * (yy + zz), 2.0 * (xy - wz), 2.0 * (xz + wy)
+    m10, m11, m12 = 2.0 * (xy + wz), 1.0 - 2.0 * (xx + zz), 2.0 * (yz - wx)
+    m20, m21, m22 = 2.0 * (xz - wy), 2.0 * (yz + wx), 1.0 - 2.0 * (xx + yy)
+    for vertex in bwm.vertices():
+        ox, oy, oz = vertex.x, vertex.y, vertex.z
+        vertex.x = m00 * ox + m01 * oy + m02 * oz
+        vertex.y = m10 * ox + m11 * oy + m12 * oz
+        vertex.z = m20 * ox + m21 * oy + m22 * oz
+    bwm._invalidate_face_cache()  # noqa: SLF001
 
 
 @dataclass
@@ -62,11 +95,13 @@ def tile_layout_to_merged_bwm(
                 continue
             wx = float(ix) * cell
             wy = float(iy) * cell
+            ox = tpl.offset.x
+            oy = tpl.offset.y
+            oz = tpl.offset.z
             if tpl.wok and tpl.wok.faces:
                 b = deepcopy(tpl.wok)
-                parts.append(
-                    (b, wx + tpl.offset.x, wy + tpl.offset.y, z + tpl.offset.z),
-                )
+                _apply_quaternion_wxyz_to_bwm(b, tpl.rotation)
+                parts.append((b, wx + ox, wy + oy, z + oz))
             else:
                 b = generate_flat_floor_quad(
                     min_x=0.0,
@@ -75,7 +110,8 @@ def tile_layout_to_merged_bwm(
                     size_y=cell,
                     z=0.0,
                 )
-                parts.append((b, wx, wy, z + tpl.offset.z))
+                _apply_quaternion_wxyz_to_bwm(b, tpl.rotation)
+                parts.append((b, wx + ox, wy + oy, z + oz))
     if not parts:
         return BWM()
     return merge_translated_bwms(parts)
