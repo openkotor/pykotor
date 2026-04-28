@@ -275,7 +275,10 @@ def _load_kits_internal(
             kit_id = str(kit_json.get("id") or file.stem)
             kit_name = str(kit_json["name"])
         else:
-            kit_json = json.loads(BinaryReader.load_file(file))
+            try:
+                kit_json = json.loads(BinaryReader.load_file(file))
+            except Exception:
+                continue
             fmt2 = kit_json.get("format")
             is_net_v01_b = isinstance(fmt2, str) and fmt2.strip() == "0.1"
             if kit_json.get("format_version") == 2 or is_net_v01_b:
