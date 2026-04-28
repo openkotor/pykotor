@@ -1,5 +1,5 @@
 diff --git a/src/toolset/gui/windows/indoor_builder/builder.py b/src/toolset/gui/windows/indoor_builder/builder.py
-index b2c1294..60a4845 100644
+index b2c1294..dbe7446 100644
 --- a/src/toolset/gui/windows/indoor_builder/builder.py
 +++ b/src/toolset/gui/windows/indoor_builder/builder.py
 @@ -218,6 +218,7 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
@@ -32,7 +32,15 @@ index b2c1294..60a4845 100644
  
          # Add a missing "Open .mod" action at runtime (UI code is generated; do not edit it).
          self._action_open_mod: QAction = QAction(tr("Open .mod..."), self)
-@@ -343,6 +349,9 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
+@@ -316,6 +322,7 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
+         self.ui.mapRenderer.set_map(self._map)
+         self.ui.mapRenderer.set_undo_stack(self._undo_stack)
+         self.ui.mapRenderer.set_status_callback(self._refresh_status_bar)
++        self._refresh_tile_gl_view()
+         self._nav_helper = Viewport2DNavigationHelper(
+             self.ui.mapRenderer,
+             get_content_bounds=self._content_bounds,
+@@ -343,6 +350,9 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
      def _on_installation_changed(self, installation: HTInstallation | None) -> None:
          # self._installation is already set by Editor._handle_installation_changed before this call.
          self._module_kit_manager = None if installation is None else ModuleKitManager(installation)
@@ -42,7 +50,7 @@ index b2c1294..60a4845 100644
          try:
              self._setup_settings_toolbar()
              self._setup_modules()
-@@ -810,6 +819,13 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
+@@ -810,6 +820,13 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
          self.ui.mapRenderer.invalidate_rooms(rooms)
          self._refresh_status_bar()
  
@@ -56,7 +64,7 @@ index b2c1294..60a4845 100644
      def _kits_for_build(self) -> list[Kit]:
          """K1 room kits plus v2 tile kit shells (textures/skyboxes) for `IndoorMap.build`."""
          out: list[Kit] = list(self._kits)
-@@ -832,6 +848,7 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
+@@ -832,6 +849,7 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
              self.ui.kitSelect.addItem(kit.name, kit)
          # v2 tile kits are loaded into `_tile_kits` for tile-layout / 3D workflows; the v1
          # component listbox remains for classic room components only.
@@ -64,6 +72,30 @@ index b2c1294..60a4845 100644
  
      def _show_no_kits_dialog(self):
          """Show dialog asking if user wants to open kit downloader.
+@@ -1631,6 +1649,7 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
+         self._undo_stack.setClean()  # Mark as clean for new file
+         self._update_settings_ui()
+         self._refresh_window_title()
++        self._refresh_tile_gl_view()
+ 
+     def open(self):
+         if not self._undo_stack.isClean():
+@@ -1663,6 +1682,7 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
+                 self._update_settings_ui()
+                 self._sync_module_combo_to_current_map()
+                 self._refresh_window_title()
++                self._refresh_tile_gl_view()
+ 
+                 if missing_rooms:
+                     self._show_missing_rooms_dialog(missing_rooms)
+@@ -1921,6 +1941,7 @@ class IndoorMapBuilder(Editor, BlenderEditorMixin):
+             self._update_settings_ui()
+             self._sync_module_combo_to_current_map()
+             self._refresh_window_title()
++            self._refresh_tile_gl_view()
+ 
+             return True
+ 
 diff --git a/src/toolset/gui/windows/indoor_builder/tile_editor_3d.py b/src/toolset/gui/windows/indoor_builder/tile_editor_3d.py
 index 28a0f72..6bb8183 100644
 --- a/src/toolset/gui/windows/indoor_builder/tile_editor_3d.py
