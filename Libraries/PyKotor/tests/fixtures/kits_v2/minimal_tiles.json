@@ -1,0 +1,21 @@
+{
+  "format_version": 2,
+  "serializer": "Kotor.NET KitSerializer_V0_1",
+  "name": "Minimal Tile Fixture",
+  "id": "minimal_tiles",
+  "doors": [],
+  "templates": {
+    "floors": [
+      {
+        "id": "floor_plain",
+        "resref": "floor_plain",
+        "offset": [0, 0, 0],
+        "rotation": [1, 0, 0, 0]
+      }
+    ],
+    "ceilings": [],
+    "walls": [],
+    "corners": [],
+    "doorframes": []
+  }
+}

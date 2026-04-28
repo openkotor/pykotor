@@ -18,8 +18,10 @@ from typing import TYPE_CHECKING
 
 from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook, KitDoor, MDLMDXTuple
 from pykotor.common.stream import BinaryReader
+from pykotor.common.tilekit import TileKit
 from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.generics.utd import read_utd
+from pykotor.tools.tilekit_io import load_tile_kit_v2
 from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
@@ -239,8 +241,9 @@ def _load_kits_internal(
     path: os.PathLike | str,
     *,
     record_missing: bool,
-) -> tuple[list[Kit], list[MissingFileInfo]]:
+) -> tuple[list[Kit], list[TileKit], list[MissingFileInfo]]:
     kits: list[Kit] = []
+    tile_kits: list[TileKit] = []
     missing_files: list[MissingFileInfo] = []
     missing_ref: list[MissingFileInfo] | None = missing_files if record_missing else None
 
@@ -254,13 +257,30 @@ def _load_kits_internal(
                 kit_json_raw = json.loads(BinaryReader.load_file(file))
             except Exception:
                 continue
-            if not isinstance(kit_json_raw, dict) or "name" not in kit_json_raw:
+            if not isinstance(kit_json_raw, dict):
+                continue
+            if kit_json_raw.get("format_version") == 2:
+                try:
+                    tk, tmiss = load_tile_kit_v2(file, record_missing=record_missing)
+                except (OSError, ValueError, TypeError, KeyError):
+                    continue
+                tile_kits.append(tk)
+                missing_files.extend(tmiss)
+                continue
+            if "name" not in kit_json_raw:
                 continue
             kit_json = kit_json_raw
             kit_id = str(kit_json.get("id") or file.stem)
             kit_name = str(kit_json["name"])
         else:
             kit_json = json.loads(BinaryReader.load_file(file))
+            if kit_json.get("format_version") == 2:
+                try:
+                    tk, _ = load_tile_kit_v2(file, record_missing=False)
+                except (OSError, ValueError, TypeError, KeyError):
+                    continue
+                tile_kits.append(tk)
+                continue
             kit_id = kit_json.get("id") or file.stem
             kit_name = kit_json["name"]
 
@@ -311,7 +331,22 @@ def _load_kits_internal(
 
         kits.append(kit)
 
-    return kits, missing_files
+    return kits, tile_kits, missing_files
+
+
+def load_kits_unified(
+    path: os.PathLike | str,
+) -> tuple[list[Kit], list[TileKit]]:
+    """Load v1 Holocron `Kit`s and v2 Kotor.NET-style `TileKit`s from the same directory."""
+    kits, tile_kits, _ = _load_kits_internal(path, record_missing=False)
+    return kits, tile_kits
+
+
+def load_kits_unified_with_missing(
+    path: os.PathLike | str,
+) -> tuple[list[Kit], list[TileKit], list[tuple[str, Path, str]]]:
+    """Like `load_kits_unified` but also return missing v1/v2 asset paths."""
+    return _load_kits_internal(path, record_missing=True)
 
 
 def load_kits(path: os.PathLike | str) -> list[Kit]:
@@ -320,8 +355,10 @@ def load_kits(path: os.PathLike | str) -> list[Kit]:
     Expected layout matches Holocron Toolset kits:
     - `<kits>/<kit_id>.json`
     - `<kits>/<kit_id>/...` (folders with resources)
+
+    Files with ``format_version: 2`` are v2 tile kits; use `load_kits_unified` to load them.
     """
-    kits, _missing = _load_kits_internal(path, record_missing=False)
+    kits, _tk, _missing = _load_kits_internal(path, record_missing=False)
     return kits
 
 
@@ -333,4 +370,5 @@ def load_kits_with_missing_files(
     This mirrors the Toolset's historical `load_kits()` behavior (minus Qt preview loading),
     so Toolset UI can report missing resources while keeping all non-Qt logic in PyKotor.
     """
-    return _load_kits_internal(path, record_missing=True)
+    kits, _tk, missing = _load_kits_internal(path, record_missing=True)
+    return kits, missing
