@@ -19,10 +19,6 @@ LIBRARY_SOURCE_PATHS: list[str] = [
     "Libraries/PyKotor/src",
     "Libraries/bioware-kaitai-formats",
 ]
-LIBRARY_TEST_PATHS: list[str] = [
-    "Libraries/PyKotor/tests",
-    "Libraries/bioware-kaitai-formats",
-]
 
 
 @dataclass
