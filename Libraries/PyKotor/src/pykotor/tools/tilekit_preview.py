@@ -1,13 +1,17 @@
 """Bridge Kotor.NET AreaDesigner scene graph to `pykotor.gl.scene.Scene`.
 
-`RoomEntity` / `AreaEntity` in Kotor.NET gather mesh descriptors per tile (floor), wall,
-doorframe, corners, and objects with transforms (`Transform = Local * Parent` chain).
+`AreaEntity.GetMeshDescriptors` draws **floors, walls, doorframes, inner corners, outer corners**
+(per tile), then **objects** at room scope (`Room.Objects`). `AreaExporter.RoomToMDL` stitches the
+same categories (ceilings commented out in .NET).
 
-PyKotor matches that draw order by placing `RenderObject`s with `set_transform(mat4)` built from
-the same quaternion × translation factors as `Matrix4x4.CreateFromQuaternion *
-Matrix4x4.CreateTranslation` in C# (rotation × translation in GLM).
+Doorframe world pose matches `DoorFrame` in `Room.cs`: ``LocalTransform`` uses **only the last**
+template hook (`Template.Hooks.Last()`).
 
-Also supports the simpler PyKotor `TileLayout` grid (floors only) for `.indoor` `tile_layout`.
+Saved JSON does not encode wall-link visibility; we draw wall meshes whenever template refs exist.
+Outer-corner visibility in .NET depends on adjacency + links; preview draws kit hooks unless we add
+a future visibility pass.
+
+Also supports PyKotor `TileLayout` (floors only) for `.indoor` `tile_layout`.
 """
 
 from __future__ import annotations
@@ -238,17 +242,18 @@ def populate_scene_from_area_designer_v01(
                     m_hook = _mat_rt(q_h, hook.position)
                     m_wall = _multiply(m_tile, m_hook)
                     add_model(wtpl.resref, m_wall)
+                    # DoorFrame.Transform uses the last hook on the doorframe template (Room.cs).
                     if (
                         show_doors
                         and wtpl.doorframe_id
                         and wtpl.doorframe_hooks
                         and (df := _template_for_resref(wkit, wtpl.doorframe_id)) is not None
                     ):
-                        for dh in wtpl.doorframe_hooks:
-                            q_df = _quat_from_py_wxyz(dh.orientation)
-                            m_df_loc = _mat_rt(q_df, dh.position)
-                            m_df = _multiply(m_wall, m_df_loc)
-                            add_model(df.resref, m_df)
+                        dh = wtpl.doorframe_hooks[-1]
+                        q_df = _quat_from_py_wxyz(dh.orientation)
+                        m_df_loc = _mat_rt(q_df, dh.position)
+                        m_df = _multiply(m_wall, m_df_loc)
+                        add_model(df.resref, m_df)
 
             if show_corners and kt is not None:
                 for ic in kt.inner_corner_hooks:
@@ -266,6 +271,7 @@ def populate_scene_from_area_designer_v01(
                     m_h = _multiply(m_tile, _mat_rt(q_h, oc.position))
                     add_model(otpl.resref, m_h)
 
+        # Room-scoped props (`Room.Objects`; exporter adds once per tile iteration — same transforms).
         objects_l = room_data.get("objects")
         if isinstance(objects_l, list):
             for od in objects_l:
