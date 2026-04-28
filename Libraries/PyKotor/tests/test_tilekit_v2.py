@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from pykotor.common.indoorkit import Kit
 from pykotor.common.indoormap import EmbeddedKit, IndoorMap
 from pykotor.common.tilekit import TileKit

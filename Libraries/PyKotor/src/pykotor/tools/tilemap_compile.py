@@ -4,18 +4,14 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
 
 from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook, KitDoor
-from pykotor.common.indoormap import EmbeddedKit, IndoorMap, IndoorMapRoom, _ensure_embedded_kit
+from pykotor.common.indoormap import IndoorMap, IndoorMapRoom, _ensure_embedded_kit
 from pykotor.common.tilekit import TileKit
 from pykotor.resource.formats.bwm.bwm_data import BWM
 from pykotor.resource.generics.utd import UTD
 from pykotor.tools.tile_bwm import generate_flat_floor_quad, merge_translated_bwms
 from utility.common.geometry import Vector3
-
-if TYPE_CHECKING:
-    pass
 
 _EMBEDDED_TILE = "__tile_compiled__"
 
