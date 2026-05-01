@@ -14,7 +14,7 @@
 
 [submodule "Tools/HolocronToolset"]
 	path = Tools/HolocronToolset
-	url = https://github.com/OldRepublicDevs/HolocronToolset.git
+	url = https://github.com/OpenKotOR/HolocronToolset.git
 	branch = cursor/indoor-builder-tilekit-v2
 [submodule "Tools/HoloPatcher"]
 	path = Tools/HoloPatcher
