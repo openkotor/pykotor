@@ -121,8 +121,8 @@ class IndoorMapDataDictBase(TypedDict):
 class IndoorMapDataDict(IndoorMapDataDictBase, total=False):
     target_game_type: bool
     embedded_components: list[EmbeddedComponentDataDict]
-    tile_layout: dict[str, Any]
     indoor_map_version: int
+    tile_layout: dict[str, Any]
     area_designer_v01: dict[str, Any]
 
 
@@ -225,6 +225,10 @@ class IndoorMap(ComparableMixin):
         # Optional Kotor.NET AreaDesigner JSON (`format: "0.1"`); see `pykotor.tools.area_designer_io`.
         self.area_designer_v01: dict[str, Any] | None = None
         self.indoor_map_version: int = 1
+
+        # v2 tile grid state (optional JSON block); see pykotor.tools.tilemap_compile
+        self.indoor_map_version: int = 1
+        self.tile_layout: dict[str, Any] | None = None
 
     def rebuild_room_connections(self):
         for room in self.rooms:
@@ -823,6 +827,11 @@ class IndoorMap(ComparableMixin):
         if self.area_designer_v01:
             data["area_designer_v01"] = self.area_designer_v01
 
+        if self.indoor_map_version and self.indoor_map_version > 1:
+            data["indoor_map_version"] = self.indoor_map_version
+        if self.tile_layout:
+            data["tile_layout"] = self.tile_layout
+
         return json.dumps(data).encode("utf-8")
 
     def load(
@@ -855,7 +864,8 @@ class IndoorMap(ComparableMixin):
         self.skybox = data.get("skybox", "")
         self.target_game_type = data.get("target_game_type", None)
         self.indoor_map_version = int(data.get("indoor_map_version", 1) or 1)
-        self.tile_layout = data.get("tile_layout")
+        tl = data.get("tile_layout")
+        self.tile_layout = tl if isinstance(tl, dict) else None
         self.area_designer_v01 = data.get("area_designer_v01")
 
         # Load any embedded components first, so room references can resolve.
@@ -1093,9 +1103,9 @@ class IndoorMap(ComparableMixin):
         self._source_module = None
         self._source_lyt_for_preserve = None
         self._source_vis_for_preserve = None
+        self.indoor_map_version = 1
         self.tile_layout = None
         self.area_designer_v01 = None
-        self.indoor_map_version = 1
 
 
 class IndoorMapRoom(ComparableMixin):

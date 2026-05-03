@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook, KitDoor, MDLMDXTuple
+from pykotor.common.tilekit import TileKit
 from pykotor.common.stream import BinaryReader
 from pykotor.common.tilekit import TileKit
 from pykotor.resource.formats.bwm import read_bwm
@@ -291,6 +292,9 @@ def _load_kits_internal(
             kit_id = kit_json.get("id") or file.stem
             kit_name = kit_json["name"]
 
+        if kit_json.get("format_version") == 2:
+            continue
+
         kit = Kit(kit_name, kit_id)
         base_path = kits_path / kit_id
 
@@ -379,3 +383,8 @@ def load_kits_with_missing_files(
     """
     kits, _tk, missing = _load_kits_internal(path, record_missing=True)
     return kits, missing
+
+
+def kits_for_indoor_build(kits: list[Kit], tile_kits: list[TileKit]) -> list[Kit]:
+    """Merge legacy kits with tile-kit shells for texture/skybox resolution during build."""
+    return [*kits, *(tk.as_runtime_kit() for tk in tile_kits)]

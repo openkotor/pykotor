@@ -34,9 +34,6 @@
 # Vendor
 # ===============================
 
-[submodule "vendor/KotOR.js"]
-	path = vendor/KotOR.js
-	url = https://github.com/KobaltBlu/KotOR.js
 [submodule "vendor/kotorblender"]
 	path = vendor/kotorblender
 	url = https://github.com/OpenKotOR/kotorblender
