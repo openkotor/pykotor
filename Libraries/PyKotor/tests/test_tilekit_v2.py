@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -12,7 +13,7 @@ from pykotor.common.tilekit import QuaternionWXYZ, TileKit, TileTemplate, TileTe
 from pykotor.resource.formats.bwm.bwm_data import BWM, BWMFace, BWMType
 from pykotor.tools.indoor_kit_migrate import migrate_kit_json_v1_to_v2
 from pykotor.tools.indoorkit import kits_for_indoor_build, load_kits_unified
-from pykotor.tools.tilekit_io import load_tile_kit_v2_json_file
+from pykotor.tools.tilekit_io import load_tile_kit_v2_from_dict, load_tile_kit_v2_json_file
 from pykotor.tools.tile_mdl import quaternion_yaw_degrees, tile_layout_to_merged_mdl_mdx
 from pykotor.tools.tilemap_compile import (
     TileLayout,
@@ -195,6 +196,89 @@ def test_migrate_kit_json_v1_to_v2():
 def test_migrate_kit_json_rejects_v2():
     with pytest.raises(ValueError, match="already format_version 2"):
         migrate_kit_json_v1_to_v2({"format_version": 2, "name": "x", "id": "y"})
+
+
+def test_migrate_kit_json_v1_rejects_non_object():
+    with pytest.raises(ValueError, match="must be an object"):
+        migrate_kit_json_v1_to_v2(cast(dict, []))
+
+
+def test_migrate_kit_json_v1_rejects_empty_kit_id():
+    with pytest.raises(ValueError, match="non-empty 'id'"):
+        migrate_kit_json_v1_to_v2({"name": "NoId", "doors": [], "components": []})
+
+
+def test_load_tile_kit_v2_from_dict_wrong_format_returns_none(tmp_path: Path):
+    doc = {"format_version": 1, "name": "Legacy", "id": "legacy", "doors": [], "components": []}
+    tk = load_tile_kit_v2_from_dict(doc, base_path=tmp_path, kit_name="Legacy")
+    assert tk is None
+
+
+def test_load_tile_kit_v2_json_file_missing_door_utd_records_and_skips(tmp_path: Path):
+    """When missing_files is provided, absent door UTDs must not abort the whole kit load."""
+    kit_id = "doorless_kit"
+    kit_dir = tmp_path / kit_id
+    kit_dir.mkdir(parents=True, exist_ok=True)
+    doc = {
+        "format_version": 2,
+        "name": "Doorless",
+        "id": kit_id,
+        "doors": [
+            {
+                "utd_k1": "missing_door",
+                "utd_k2": "missing_door",
+                "width": 2.0,
+                "height": 2.0,
+            }
+        ],
+        "templates": {
+            "floors": [],
+            "ceilings": [],
+            "walls": [],
+            "corners": [],
+            "doorframes": [],
+        },
+    }
+    json_path = tmp_path / f"{kit_id}.json"
+    json_path.write_text(json.dumps(doc), encoding="utf-8")
+    missing: list[tuple[str, Path, str]] = []
+    tk = load_tile_kit_v2_json_file(json_path, missing_files=missing)
+    assert tk is not None
+    assert tk.doors == []
+    assert any(kind == "door utd" for _k, _p, kind in missing)
+
+
+def test_tile_layout_from_dict_invalid_returns_none():
+    assert tile_layout_from_dict({}) is None
+    assert tile_layout_from_dict({"kit_id": "k"}) is None
+
+
+def test_tile_layout_from_dict_pads_short_floor_cells():
+    layout = tile_layout_from_dict(
+        {
+            "kit_id": "k",
+            "cell_size": 2.0,
+            "grid_w": 2,
+            "grid_h": 2,
+            "floor_cells": ["floor_a"],
+        }
+    )
+    assert layout is not None
+    assert layout.floor_cells == ["floor_a", None, None, None]
+
+
+def test_tile_layout_from_dict_truncates_long_floor_cells():
+    layout = tile_layout_from_dict(
+        {
+            "kit_id": "k",
+            "cell_size": 1.0,
+            "grid_w": 1,
+            "grid_h": 1,
+            "floor_cells": ["only", "extra", "ignored"],
+        }
+    )
+    assert layout is not None
+    assert layout.floor_cells == ["only"]
 
 
 def test_tile_layout_to_merged_mdl_empty_without_geometry():
