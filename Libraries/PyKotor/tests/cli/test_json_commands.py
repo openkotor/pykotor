@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 
 from argparse import Namespace
 from pathlib import Path
@@ -12,6 +13,7 @@ from loggerplus import RobustLogger
 from pykotor.cli.argparser import create_parser
 from pykotor.cli.commands.find_cmd import cmd_find
 from pykotor.cli.commands.get_cmd import cmd_get
+from pykotor.cli.commands.installation_to_json import cmd_installation_to_json
 from pykotor.cli.commands.diff_installation import cmd_diff_installation
 from pykotor.cli.dispatch import cli_main
 from pykotor.common.language import Language
@@ -416,6 +418,177 @@ def test_to_json_can_export_all_detected_installations(
         ]["strings"][0]["text"]
         == "k2 only"
     )
+
+
+def test_to_json_all_detected_rejects_positional_input_with_install_path(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Regression: --all-detected must not run batch export when a path was given (ambiguous)."""
+    install = tmp_path / "K1"
+    install.mkdir()
+    (install / "chitin.key").write_bytes(b"")
+    (install / "swkotor.exe").write_bytes(b"")
+
+    out = tmp_path / "out"
+    assert (
+        cli_main(["to-json", str(install), "--all-detected", "--output", str(out)])
+        == 1
+    )
+    captured = capsys.readouterr()
+    combined = captured.out + captured.err
+    assert "cannot be combined" in combined
+
+
+def test_cmd_installation_to_json_all_detected_rejects_path_flag(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    logger = RobustLogger()
+    args = Namespace(
+        all_detected=True,
+        path=str(tmp_path),
+        game=None,
+        clean=False,
+        output=str(tmp_path / "out"),
+    )
+    with caplog.at_level(logging.ERROR):
+        assert cmd_installation_to_json(args, logger) == 1
+    assert "cannot be combined" in caplog.text
+
+
+def test_cmd_installation_to_json_all_detected_unknown_game_errors(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    logger = RobustLogger()
+    args = Namespace(
+        all_detected=True,
+        path=None,
+        game="not-a-game",
+        clean=False,
+        output=str(tmp_path / "out"),
+    )
+    with caplog.at_level(logging.ERROR):
+        assert cmd_installation_to_json(args, logger) == 1
+    assert "Unknown game" in caplog.text
+
+
+def test_cmd_installation_to_json_all_detected_no_installs_errors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setattr(
+        "pykotor.cli.commands.installation_to_json.get_kotor_paths_from_default",
+        lambda: {Game.K1: [], Game.K2: []},
+    )
+    logger = RobustLogger()
+    args = Namespace(
+        all_detected=True,
+        path=None,
+        game=None,
+        clean=False,
+        output=str(tmp_path / "out"),
+    )
+    with caplog.at_level(logging.ERROR):
+        assert cmd_installation_to_json(args, logger) == 1
+    assert "No default installations were found" in caplog.text
+
+
+def test_to_json_all_detected_filters_by_game_k1_only(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def create_install(install_path: Path, dialog_text: str, executable_name: str) -> None:
+        install_path.mkdir()
+        (install_path / "Override").mkdir()
+        (install_path / "Modules").mkdir()
+        (install_path / "chitin.key").write_bytes(b"")
+        (install_path / executable_name).write_bytes(b"")
+
+        tlk = TLK(Language.ENGLISH)
+        tlk.add(dialog_text, "voice")
+        write_tlk(tlk, install_path / "dialog.tlk", ResourceType.TLK)
+
+    k1_install = tmp_path / "K1only"
+    k2_install = tmp_path / "K2only"
+    create_install(k1_install, "k1 dialog", "swkotor.exe")
+    create_install(k2_install, "k2 dialog", "swkotor2.exe")
+
+    monkeypatch.setattr(
+        "pykotor.cli.commands.installation_to_json.get_kotor_paths_from_default",
+        lambda: {Game.K1: [k1_install], Game.K2: [k2_install]},
+    )
+
+    output_path = tmp_path / "json-export-k1-filter"
+    assert (
+        cli_main(
+            [
+                "to-json",
+                "--all-detected",
+                "--game",
+                "k1",
+                "--output",
+                str(output_path),
+            ]
+        )
+        == 0
+    )
+
+    assert (output_path / "k1" / "0" / "dialog.tlk.json").is_file()
+    assert not (output_path / "k2").exists()
+    payload = json.loads(
+        (output_path / "k1" / "0" / "dialog.tlk.json").read_text(encoding="utf-8")
+    )
+    assert payload["data"]["strings"][0]["text"] == "k1 dialog"
+
+
+def test_cmd_installation_to_json_all_detected_returns_2_when_any_export_has_errors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Batch export propagates code 2 when any installation hit non-fatal serialize errors."""
+
+    def create_install(install_path: Path, label: str) -> None:
+        install_path.mkdir()
+        (install_path / "Override").mkdir()
+        (install_path / "Modules").mkdir()
+        (install_path / "chitin.key").write_bytes(b"")
+        (install_path / "swkotor.exe").write_bytes(b"")
+
+        tlk = TLK(Language.ENGLISH)
+        tlk.add(label, "voice")
+        write_tlk(tlk, install_path / "dialog.tlk", ResourceType.TLK)
+
+    first = tmp_path / "K1A"
+    second = tmp_path / "K1B"
+    create_install(first, "ok")
+    create_install(second, "ok")
+
+    monkeypatch.setattr(
+        "pykotor.cli.commands.installation_to_json.get_kotor_paths_from_default",
+        lambda: {Game.K1: [first, second], Game.K2: []},
+    )
+
+    calls: list[Path] = []
+
+    def fake_export(
+        installation_path: Path, install_output_root: Path, logger: RobustLogger
+    ) -> int:
+        calls.append(installation_path)
+        if installation_path == first:
+            return 0
+        return 2
+
+    monkeypatch.setattr(
+        "pykotor.cli.commands.installation_to_json.export_installation_to_json_tree",
+        fake_export,
+    )
+
+    logger = _CaptureLogger()
+    args = Namespace(
+        all_detected=True,
+        path=None,
+        game=None,
+        clean=False,
+        output=str(tmp_path / "batch-out"),
+    )
+    assert cmd_installation_to_json(args, logger) == 2
+    assert calls == [first, second]
 
 
 def test_to_json_roundtrips_tpc_without_base64_payload(tmp_path: Path) -> None:
