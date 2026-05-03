@@ -17,7 +17,7 @@ from pykotor.cli.indoor_builder import resolve_game_argument
 from pykotor.common.indoormap import IndoorMap
 from pykotor.common.modulekit import ModuleKitManager
 from pykotor.extract.installation import Installation
-from pykotor.tools.indoorkit import load_kits
+from pykotor.tools.indoorkit import kits_for_indoor_build, load_kits_unified
 from pykotor.tools.indoormap import (
     build_mod_from_indoor_file_modulekit,
     extract_indoor_from_module_as_modulekit,
@@ -280,8 +280,15 @@ def _resolve_context(args: Namespace, logger: RobustLogger):
         msg = f"Kits directory does not exist: {kits_path}"
         raise ValueError(msg)
 
-    kits = load_kits(kits_path)
-    logger.debug("Loaded %d kit(s) from '%s'", len(kits), kits_path)
+    kits_v1, tile_kits = load_kits_unified(kits_path)
+    kits = kits_for_indoor_build(kits_v1, tile_kits)
+    logger.debug(
+        "Loaded %d kit(s) (%d v1 + %d v2 tile shells) from '%s'",
+        len(kits),
+        len(kits_v1),
+        len(tile_kits),
+        kits_path,
+    )
     return _ResolvedContext(
         game=game,
         installation_path=installation_path,

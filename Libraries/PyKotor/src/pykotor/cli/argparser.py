@@ -59,7 +59,7 @@ class PyKotorHelpFormatter(RawDescriptionHelpFormatter):
 
     def start_section(
         self,
-        heading: str,
+        heading: str | None,
     ) -> None:
         """Start a new section with proper formatting."""
         if heading:
@@ -71,8 +71,8 @@ class PyKotorHelpFormatter(RawDescriptionHelpFormatter):
     def _format_usage(
         self,
         usage: str | None,
-        actions: list[Any],
-        groups: list[Any],
+        actions: list[Action],
+        groups,
         prefix: str | None = None,
     ) -> str:
         """Format usage string with better styling."""
