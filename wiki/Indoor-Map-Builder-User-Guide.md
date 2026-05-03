@@ -2,19 +2,19 @@
 
 ## Overview
 
-The Indoor Map Builder is a visual editor for creating indoor modules (areas) for Knights of the Old Republic. It allows you to place room components, connect them with doors, and build complete playable modules without manually editing game files.
+The Indoor Map Builder is the **Layout** workflow inside **Module Designer**: a visual editor for creating indoor modules (areas) for Knights of the Old Republic. You place room components, connect them with doors, and build playable modules without manually editing game files. The main window action is labeled **Layout Editor...**; it opens the same tools as the dedicated **Level Builder** button when a module is selected.
 
 ## Getting Started
 
 ### Opening the Editor
 
 1. Launch Holocron Toolset
-2. Navigate to **Tools** -> **Indoor Map Builder**
+2. Navigate to **Tools** → **Layout Editor...** (or use **Level Builder** on the toolbar after choosing a module)
 3. Select your game installation when prompted
 
 ### Creating a New Map
 
-1. Click **file** -> **New** (or press `Ctrl+N`)
+1. In Module Designer Layout mode, click **Indoor** → **New Indoor Map** (or press `Ctrl+N` when focused)
 2. Configure your module settings:
    - **Module ID**: The warp code used in-game (e.g., `test01`)
    - **Name**: Display name for the module
@@ -24,7 +24,7 @@ The Indoor Map Builder is a visual editor for creating indoor modules (areas) fo
 
 ### Opening an Existing Map
 
-1. Click **file** -> **Open** (or press `Ctrl+O`)
+1. Click **Indoor** → **Open Indoor Map...** (or press `Ctrl+O` when focused)
 2. Select a `.indoor` file
 3. The map will load with all rooms and connections
 
@@ -250,7 +250,7 @@ Hooks are connection points between rooms. You can edit them:
 
 Once your map is complete:
 
-1. Click **file** -> **Build Module** (or press `Ctrl+B`)
+1. Click **Indoor** → **Build Module...** (or press `Ctrl+B` when focused)
 2. Wait for the build process to complete
 3. The module will be saved to your installation's modules folder
 4. You can warp to it in-game using: `warp <module_id>`

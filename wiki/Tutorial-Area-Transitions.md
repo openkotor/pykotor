@@ -11,11 +11,11 @@ This tutorial shows how to link two modules with area transitions. You will:
 
 ## 1. Create a module with the Map Builder
 
-Open **File** -> **Indoor Map Builder**. Download the **Enclave Surface** kit if needed (**File** -> **Download Kits**). Create a simple layout.
+Open **Tools** → **Layout Editor...**. Download the **Enclave Surface** kit if needed (**Indoor** → **Download Kits...** or **Download/Update Kits...** on the layout toolbar). Create a simple layout.
 
 ![Layout](https://raw.githubusercontent.com/OpenKotOR/HolocronToolset/refs/heads/master/src/toolset/help/tutorials/3a.png)
 
-Open **File** -> **Settings** and set the warp code (e.g. **nthenc**). Build via **File** -> **Build**. Test in-game with **warp nthenc**.
+Set the warp code and module options from the Layout editor’s indoor/module fields (e.g. **nthenc**). Use **File** → **Settings** on the main window only for Holocron paths and global options. Build via **Indoor** → **Build Module...**. Test in-game with **warp nthenc**.
 
 ![Settings](https://raw.githubusercontent.com/OpenKotOR/HolocronToolset/refs/heads/master/src/toolset/help/tutorials/3b.png)
 ![Build](https://raw.githubusercontent.com/OpenKotOR/HolocronToolset/refs/heads/master/src/toolset/help/tutorials/3c.png)
