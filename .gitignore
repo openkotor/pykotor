@@ -152,3 +152,4 @@ cli_test_output.txt
 vendor/KotOR.js/vendor/PyKotor/
 .tmp_whl/
 
+tmpinstallation-json-all/

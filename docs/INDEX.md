@@ -102,31 +102,31 @@
 
 ### "I want to understand how tslpatchdata works"
 
-→ Read [HOW_TSLPATCHDATA_WORKS.md](HOW_TSLPATCHDATA_WORKS.md)
+-> Read [HOW_TSLPATCHDATA_WORKS.md](HOW_TSLPATCHDATA_WORKS.md)
 
 ### "I want to see code explanations"
 
-→ Read [TSLPATCHDATA_GENERATION_EXPLAINED.md](TSLPATCHDATA_GENERATION_EXPLAINED.md)
+-> Read [TSLPATCHDATA_GENERATION_EXPLAINED.md](TSLPATCHDATA_GENERATION_EXPLAINED.md)
 
 ### "I want visual flowcharts"
 
-→ Read [TSLPATCHDATA_FLOW_DIAGRAM.md](TSLPATCHDATA_FLOW_DIAGRAM.md)
+-> Read [TSLPATCHDATA_FLOW_DIAGRAM.md](TSLPATCHDATA_FLOW_DIAGRAM.md)
 
 ### "I want to run tests"
 
-→ Read [QUICK_START.md](QUICK_START.md)
+-> Read [QUICK_START.md](QUICK_START.md)
 
 ### "I want complete test documentation"
 
-→ Read [README_COMPREHENSIVE_TESTS.md](README_COMPREHENSIVE_TESTS.md)
+-> Read [README_COMPREHENSIVE_TESTS.md](README_COMPREHENSIVE_TESTS.md)
 
 ### "I want to see code patterns"
 
-→ See [example_patterns.py](example_patterns.py)
+-> See [example_patterns.py](example_patterns.py)
 
 ### "I want implementation details"
 
-→ Read [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
+-> Read [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
 
 ## 📊 File Statistics
 

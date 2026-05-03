@@ -359,7 +359,7 @@ def construct_gui(gff: GFF) -> GUI:
     gui = GUI()
 
     def read_text(struct: GFFStruct) -> GUIText | None:
-        """Read TEXT substruct: blank FONT, ALIGNMENT 0, STRREF 0xFFFFFFFF when absent. Omit TEXT → None."""
+        """Read TEXT substruct: blank FONT, ALIGNMENT 0, STRREF 0xFFFFFFFF when absent. Omit TEXT -> None."""
         text_struct: GFFStruct | None = struct.get_struct("TEXT", None)
         if text_struct is None:
             return None
@@ -379,7 +379,7 @@ def construct_gui(gff: GFF) -> GUI:
         return text
 
     def read_moveto(struct: GFFStruct) -> GUIMoveTo | None:
-        """Read MOVETO: UP/DOWN/LEFT/RIGHT INT32 default -1. Omit MOVETO → None."""
+        """Read MOVETO: UP/DOWN/LEFT/RIGHT INT32 default -1. Omit MOVETO -> None."""
         moveto_struct: GFFStruct | None = struct.get_struct("MOVETO", None)
         if moveto_struct is None:
             return None
@@ -392,7 +392,7 @@ def construct_gui(gff: GFF) -> GUI:
         return moveto
 
     def read_hilight(struct: GFFStruct) -> GUIBorder | None:
-        """Read HILIGHT: CORNER/EDGE/FILL blank, DIMENSION 0, FILLSTYLE 0, INNEROFFSET 0. Omit → None."""
+        """Read HILIGHT: CORNER/EDGE/FILL blank, DIMENSION 0, FILLSTYLE 0, INNEROFFSET 0. Omit -> None."""
         hilight_struct: GFFStruct | None = struct.get_struct("HILIGHT", None)
         if hilight_struct is None:
             return None
@@ -438,7 +438,7 @@ def construct_gui(gff: GFF) -> GUI:
         return GUIControl()
 
     def read_extent(struct: GFFStruct) -> tuple[int, int, int, int]:
-        """Read EXTENT: LEFT/TOP/WIDTH/HEIGHT default 0. Omit EXTENT → (0, 0, 0, 0)."""
+        """Read EXTENT: LEFT/TOP/WIDTH/HEIGHT default 0. Omit EXTENT -> (0, 0, 0, 0)."""
         extent: GFFStruct | None = struct.get_struct("EXTENT", None)
         if extent is None:
             return 0, 0, 0, 0
@@ -450,7 +450,7 @@ def construct_gui(gff: GFF) -> GUI:
         )
 
     def read_border(struct: GFFStruct) -> GUIBorder | None:
-        """Read BORDER: CORNER/EDGE/FILL blank, DIMENSION 0, FILLSTYLE 2 when omitted. Omit BORDER → None."""
+        """Read BORDER: CORNER/EDGE/FILL blank, DIMENSION 0, FILLSTYLE 2 when omitted. Omit BORDER -> None."""
         border_struct: GFFStruct | None = struct.get_struct("BORDER", None)
         if border_struct is None:
             return None
@@ -475,7 +475,7 @@ def construct_gui(gff: GFF) -> GUI:
         struct: GFFStruct,
         control_type: type[T],
     ) -> T | None:
-        """Read THUMB/DIR: IMAGE blank, ALIGNMENT 18. Omit → None."""
+        """Read THUMB/DIR: IMAGE blank, ALIGNMENT 18. Omit -> None."""
         field_name: Literal["THUMB", "DIR"] = (
             "THUMB" if control_type == GUIScrollbarThumb else "DIR"
         )
@@ -494,7 +494,7 @@ def construct_gui(gff: GFF) -> GUI:
         struct: GFFStruct,
         parent: GUIControl,
     ) -> GUIProtoItem | None:
-        """Read PROTOITEM: FONT blank, zero extent when EXTENT omitted, BORDER/HILIGHT optional. Omit → None."""
+        """Read PROTOITEM: FONT blank, zero extent when EXTENT omitted, BORDER/HILIGHT optional. Omit -> None."""
         proto_struct: GFFStruct | None = struct.get_struct("PROTOITEM", None)
         if proto_struct is None:
             return None
@@ -528,7 +528,7 @@ def construct_gui(gff: GFF) -> GUI:
         struct: GFFStruct,
         parent: GUIControl,
     ) -> GUIScrollbar | None:
-        """Read SCROLLBAR: MAXVALUE 99, VISIBLEVALUE 1, CURVALUE optional. Omit → None."""
+        """Read SCROLLBAR: MAXVALUE 99, VISIBLEVALUE 1, CURVALUE optional. Omit -> None."""
         scroll_struct: GFFStruct | None = struct.get_struct("SCROLLBAR", None)
         if scroll_struct is None:
             return None
@@ -567,7 +567,7 @@ def construct_gui(gff: GFF) -> GUI:
         return scroll
 
     def read_border_like(struct: GFFStruct, field_name: str) -> GUIBorder | GUISelected | None:
-        """Read BORDER/HILIGHT/SELECTED: CORNER/EDGE/FILL blank, DIMENSION 0, FILLSTYLE 2. Omit → None."""
+        """Read BORDER/HILIGHT/SELECTED: CORNER/EDGE/FILL blank, DIMENSION 0, FILLSTYLE 2. Omit -> None."""
         border_struct: GFFStruct | None = struct.get_struct(field_name, None)
         if border_struct is None:
             return None
@@ -589,7 +589,7 @@ def construct_gui(gff: GFF) -> GUI:
         return border
 
     def read_hilight_selected(struct: GFFStruct) -> GUIHilightSelected | None:
-        """Read HILIGHTSELECTED (checkbox): same defaults as HILIGHT; FILLSTYLE 2. Omit → None."""
+        """Read HILIGHTSELECTED (checkbox): same defaults as HILIGHT; FILLSTYLE 2. Omit -> None."""
         hilight_struct: GFFStruct | None = struct.get_struct("HILIGHTSELECTED", None)
         if hilight_struct is None:
             return None

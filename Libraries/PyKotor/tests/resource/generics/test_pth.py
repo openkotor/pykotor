@@ -156,7 +156,7 @@ class TestPTH(unittest.TestCase):
         self.assertEqual(pt.x, 2.5)
         self.assertEqual(pt.y, 0.0)
         self.assertEqual(len(pth.outgoing(0)), 0)
-        # One point with one connection; Destination omitted → default 0
+        # One point with one connection; Destination omitted -> default 0
         one_conn_xml = """<gff3>
           <struct id="-1">
             <list label="Path_Points">
@@ -180,7 +180,7 @@ class TestPTH(unittest.TestCase):
         self.assertEqual(pth2.outgoing(0)[0].target, 0)
 
     def test_pth_empty_roundtrip(self) -> None:
-        """Empty root struct: no Path_Points/Path_Conections → 0 points; round-trip preserves empty."""
+        """Empty root struct: no Path_Points/Path_Conections -> 0 points; round-trip preserves empty."""
         empty_xml = """<gff3><struct id="-1"></struct></gff3>"""
         gff = read_gff(empty_xml.encode(), file_format=ResourceType.GFF_XML)
         pth = construct_pth(gff)

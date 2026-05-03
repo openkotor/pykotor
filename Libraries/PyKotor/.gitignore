@@ -1,4 +1,4 @@
 src/utility/gui/qt/adapters/filesystem/qfiledialog/__pycache__/qfiledialog.cpython-313.pyc
 
-# Local setuptools / build output for optional native GL acceleration
+# C extension build outputs (sources live alongside as *.c)
 src/pykotor/gl/native/*.so

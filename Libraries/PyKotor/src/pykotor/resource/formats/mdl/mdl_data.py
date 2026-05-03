@@ -1735,7 +1735,7 @@ def _mdl_deep_hash(
         _visited.discard(vid)
 
 
-class MDL(ComparableMixin):
+class MDL(BiowareResource):
     """Represents a MDL/MDX file.
 
     MDL files store hierarchical node structures with geometry, animations, lights, emitters,
@@ -3271,7 +3271,7 @@ class MDLDangly(MDLMesh):
 
 
 @dataclass
-class MDLAABBNode(BiowareResource):
+class MDLAABBNode(ComparableMixin):
     """A single node in the AABB tree structure.
 
     Each AABB node represents a bounding volume in the collision detection tree.

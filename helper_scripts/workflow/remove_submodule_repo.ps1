@@ -207,7 +207,7 @@ function Invoke-Step {
         [switch]$IgnoreError
     )
     
-    Write-Host "→ $Description" -ForegroundColor Green
+    Write-Host "-> $Description" -ForegroundColor Green
     
     if ($DryRun) {
         Write-Host "  [DRY RUN] Would execute action" -ForegroundColor DarkGray
@@ -253,7 +253,7 @@ if (Test-Path $modulesPath) {
         Remove-Item -Recurse -Force $modulesPath
     }
 } else {
-    Write-Host "→ No cached submodule data found in .git/modules/" -ForegroundColor DarkGray
+    Write-Host "-> No cached submodule data found in .git/modules/" -ForegroundColor DarkGray
 }
 
 # Step 4: Remove .git from submodule directory

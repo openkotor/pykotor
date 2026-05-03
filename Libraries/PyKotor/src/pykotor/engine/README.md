@@ -38,7 +38,7 @@ src/
 ├── engine/
 │   ├── engine.py          # Main engine class (ShowBase wrapper)
 │   ├── loaders/           # Resource loaders
-│   │   └── mdl_loader.py  # MDL → Panda3D converter
+│   │   └── mdl_loader.py  # MDL -> Panda3D converter
 │   ├── scene/             # Scene graph (TODO)
 │   ├── animation/         # Controller evaluation (TODO)
 │   ├── materials/         # Shader system (TODO)
@@ -147,9 +147,9 @@ This implementation follows patterns from:
 
 ### Coordinate System
 
-**KotOR → Panda3D Conversions:**
+**KotOR -> Panda3D Conversions:**
 
-- Winding order: Reverse (clockwise → counter-clockwise)
+- Winding order: Reverse (clockwise -> counter-clockwise)
 - Tangent space: KotOR uses non-right-handed system
 - Bone transforms: Applied via bone lookup tables
 

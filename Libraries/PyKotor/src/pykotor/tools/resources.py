@@ -20,7 +20,7 @@ from pykotor.resource.formats.bwm.bwm_auto import read_bwm, write_bwm, write_bwm
 from pykotor.resource.formats.mdl.mdl_auto import read_mdl, write_mdl
 from pykotor.resource.formats.tpc.tpc_auto import read_tpc, write_tpc
 from pykotor.resource.formats.wav.wav_auto import read_wav, write_wav
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import ResourceType, ToolsetFormat
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -147,7 +147,7 @@ def convert_wav_to_clean(
 
 
     """
-    _read_write_wav(input_path, output_path, file_format=ResourceType.WAV_DEOB)
+    _read_write_wav(input_path, output_path, file_format=ToolsetFormat.WAV_DEOB)
 
 
 def convert_clean_to_wav(
@@ -204,7 +204,7 @@ def convert_mdl_to_ascii(
         mdx_path = None
 
     mdl = read_mdl(input_path, source_ext=mdx_path if mdx_path else None)
-    write_mdl(mdl, output_path, file_format=ResourceType.MDL_ASCII)
+    write_mdl(mdl, output_path, file_format=ToolsetFormat.MDL_ASCII)
 
 
 def convert_ascii_to_mdl(

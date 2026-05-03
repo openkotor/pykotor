@@ -36,10 +36,7 @@ A clear and concise description of what actually happened.
 Which package(s) are affected?
 
 - [ ] PyKotor (core library)
-- [ ] HolocronToolset
-- [ ] HoloPatcher
-- [ ] BatchPatcher
-- [ ] KotorDiff
+- [ ] One or more tools under `Tools/`
 
 ## Error Message/Stack Trace
 

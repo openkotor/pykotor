@@ -4,6 +4,11 @@ from pykotor.resource.formats.txi.txi_data import TXI
 
 
 class TestTXI(unittest.TestCase):
+    def test_parse_distort_decimal(self):
+        txi = TXI()
+        txi.load("distort 0.1")
+        self.assertEqual(txi.features.distort, 0.1)
+
     def test_parse_blending_default(self):
         self.assertEqual(TXI.parse_blending("default"), 0)
         self.assertEqual(TXI.parse_blending("DEFAULT"), 0)

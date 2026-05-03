@@ -31,7 +31,7 @@ from pykotor.extract.talktable import TalkTable
 from pykotor.resource.formats.gff import GFFFieldType, read_gff
 from pykotor.resource.formats.tpc import read_tpc
 from pykotor.resource.formats.wav import bytes_wav, read_wav
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import ResourceType, ToolsetFormat
 from pykotor.tools.misc import is_capsule_file, is_erf_file, is_mod_file
 from pykotor.tools.path import CaseAwarePath
 from utility.common.more_collections import CaseInsensitiveDict
@@ -2554,7 +2554,7 @@ class Installation:
 
                 try:
                     wav = read_wav(BytesIO(sound_data))
-                    sounds[resource.resname()] = bytes_wav(wav, ResourceType.WAV_DEOB)
+                    sounds[resource.resname()] = bytes_wav(wav, ToolsetFormat.WAV_DEOB)
                 except (ValueError, OSError) as e:
                     RobustLogger().warning(
                         "Failed to load WAV file '%s': %s. Returning raw bytes as fallback.",
@@ -2584,7 +2584,7 @@ class Installation:
 
                     try:
                         wav = read_wav(BytesIO(sound_data))
-                        sounds[case_resname] = bytes_wav(wav, ResourceType.WAV_DEOB)
+                        sounds[case_resname] = bytes_wav(wav, ToolsetFormat.WAV_DEOB)
                     except (ValueError, OSError) as e:
                         RobustLogger().warning(
                             "Failed to load WAV file from capsule '%s': %s. Returning raw bytes as fallback.",
@@ -2614,7 +2614,7 @@ class Installation:
 
                 try:
                     wav = read_wav(BytesIO(sound_data))
-                    sounds[sound_file.stem] = bytes_wav(wav, ResourceType.WAV_DEOB)
+                    sounds[sound_file.stem] = bytes_wav(wav, ToolsetFormat.WAV_DEOB)
                 except (ValueError, OSError) as e:
                     RobustLogger().warning(
                         "Failed to load WAV file '%s': %s. Returning raw bytes as fallback.",

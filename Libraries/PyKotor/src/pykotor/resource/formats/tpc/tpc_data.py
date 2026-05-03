@@ -215,7 +215,7 @@ class TPCTextureFormat(IntEnum):
 
 
 @dataclass
-class TPCMipmap(BiowareResource):
+class TPCMipmap(ComparableMixin):
     """A single mipmap level in a TPC texture."""
 
     width: int
@@ -411,7 +411,7 @@ class TPCMipmap(BiowareResource):
 
 
 @dataclass
-class TPCLayer(BiowareResource):
+class TPCLayer(ComparableMixin):
     """A layer in a TPC texture, containing mipmaps."""
 
     mipmaps: list[TPCMipmap] = field(default_factory=list)
@@ -496,7 +496,7 @@ class TPCLayer(BiowareResource):
         return self.__class__([mipmap.copy() for mipmap in self.mipmaps])
 
 
-class TPC(ComparableMixin):
+class TPC(BiowareResource):
     """BioWare's TPC texture format used in Knights of the Old Republic."""
 
     BINARY_TYPE = ResourceType.TPC

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from pykotor.cli.argparser import create_parser
 from pykotor.cli.commands import (
     cmd_2da2csv,
+    cmd_2da2json,
     cmd_archive_to_json,
     cmd_assemble,
     cmd_batch_patch,
@@ -25,6 +26,7 @@ from pykotor.cli.commands import (
     cmd_disassemble,
     cmd_extract,
     cmd_find,
+    cmd_from_json,
     cmd_get,
     cmd_gff2json,
     cmd_gff2xml,
@@ -33,10 +35,15 @@ from pykotor.cli.commands import (
     cmd_init,
     cmd_install,
     cmd_investigate_module,
+    cmd_json22da,
     cmd_json2gff,
+    cmd_json2lip,
+    cmd_json2ssf,
+    cmd_json2tlk,
     cmd_json_to_archive,
     cmd_key_pack,
     cmd_kit_generate,
+    cmd_kotor_paths,
     cmd_launch,
     cmd_list,
     cmd_list_archive,
@@ -50,9 +57,11 @@ from pykotor.cli.commands import (
     cmd_patch_installation,
     cmd_search_archive,
     cmd_sound_convert,
+    cmd_ssf2json,
     cmd_ssf2xml,
     cmd_stats,
     cmd_texture_convert,
+    cmd_to_json,
     cmd_tlk2json,
     cmd_tlk2xml,
     cmd_unpack,
@@ -65,6 +74,7 @@ from pykotor.cli.commands import (
     cmd_xml2tlk,
 )
 from pykotor.cli.commands.indoor_builder import cmd_indoor_build, cmd_indoor_extract
+from pykotor.cli.commands.indoor_kit_migrate import cmd_indoor_kit_migrate_v1_to_v2
 from pykotor.cli.logger import setup_logger
 
 if TYPE_CHECKING:
@@ -111,13 +121,20 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_extract(args, logger)
         if args.command == "find":
             return cmd_find(args, logger)
+        if args.command in ("kotor-paths", "find-game-roots", "find-installations"):
+            return cmd_kotor_paths(args, logger)
         if args.command == "get":
             return cmd_get(args, logger)
         if args.command in ("list-archive", "ls-archive"):
             return cmd_list_archive(args, logger)
         if args.command in ("create-archive", "pack-archive"):
             return cmd_create_archive(args, logger)
-        if args.command in ("create-installation", "scaffold-installation"):
+        if args.command in (
+            "create-game-root",
+            "scaffold-game-root",
+            "create-installation",
+            "scaffold-installation",
+        ):
             return cmd_create_installation(args, logger)
         # Format conversions
         if args.command == "gff2xml":
@@ -134,18 +151,36 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_xml2tlk(args, logger)
         if args.command == "tlk2json":
             return cmd_tlk2json(args, logger)
+        if args.command == "json2tlk":
+            return cmd_json2tlk(args, logger)
         if args.command == "ssf2xml":
             return cmd_ssf2xml(args, logger)
+        if args.command == "ssf2json":
+            return cmd_ssf2json(args, logger)
         if args.command == "xml2ssf":
             return cmd_xml2ssf(args, logger)
         if args.command == "2da2csv":
             return cmd_2da2csv(args, logger)
+        if args.command == "2da2json":
+            return cmd_2da2json(args, logger)
         if args.command == "csv22da":
             return cmd_csv22da(args, logger)
+        if args.command == "json22da":
+            return cmd_json22da(args, logger)
+        if args.command == "lip2json":
+            return cmd_lip2json(args, logger)
+        if args.command == "json2lip":
+            return cmd_json2lip(args, logger)
+        if args.command == "json2ssf":
+            return cmd_json2ssf(args, logger)
         if args.command == "capsule2json":
             return cmd_archive_to_json(args, logger)
         if args.command == "json2capsule":
             return cmd_json_to_archive(args, logger)
+        if args.command == "to-json":
+            return cmd_to_json(args, logger)
+        if args.command == "from-json":
+            return cmd_from_json(args, logger)
         # Script tools
         if args.command == "decompile":
             return cmd_decompile(args, logger)
@@ -189,7 +224,7 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_check_txi(args, logger)
         if args.command == "check-2da":
             return cmd_check_2da(args, logger)
-        if args.command == "validate-installation":
+        if args.command in ("validate-game-root", "validate-installation"):
             return cmd_validate_installation(args, logger)
         if args.command == "investigate-module":
             return cmd_investigate_module(args, logger)
@@ -206,6 +241,8 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_indoor_build(args, logger)
         if args.command in ("indoor-extract", "indoormap-extract"):
             return cmd_indoor_extract(args, logger)
+        if args.command == "indoor-kit-migrate-v1-to-v2":
+            return cmd_indoor_kit_migrate_v1_to_v2(args, logger)
         # Patching commands
         if args.command == "batch-patch":
             return cmd_batch_patch(args, logger)
@@ -213,7 +250,7 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_patch_file(args, logger)
         if args.command == "patch-folder":
             return cmd_patch_folder(args, logger)
-        if args.command == "patch-installation":
+        if args.command in ("patch-game-root", "patch-installation"):
             return cmd_patch_installation(args, logger)
     except KeyboardInterrupt:
         logger.info("Operation cancelled by user")

@@ -333,6 +333,41 @@ class TestDiffCommand:
         assert result == 1
         assert "--generate-ini is only supported for installation-wide comparisons" in output
 
+    def test_merge_tslpatcher_passes_conflict_policy(self, tmp_path: Path):
+        """Test that merge-tslpatcher CLI plumbing forwards the conflict policy."""
+        captured_config = None
+
+        def fake_run_application(config):
+            nonlocal captured_config
+            captured_config = config
+            return 0
+
+        args = Namespace(
+            merge_tslpatcher=True,
+            merge_source=str(tmp_path),
+            merge_resource="unk41_mission.dlg",
+            merge_paths=[str(tmp_path / "mod_a.dlg"), str(tmp_path / "mod_b.dlg")],
+            merge_resource_type=None,
+            tslpatchdata=str(tmp_path / "tslpatchdata"),
+            merge_conflict_output=str(tmp_path / "conflicts"),
+            output_log=None,
+            output_mode="full",
+            log_level="info",
+            merge_module="unk_m41aa",
+            merge_conflict_policy="artifact",
+        )
+
+        logger = RobustLogger()
+
+        with patch("pykotor.diff_tool.app.run_application", side_effect=fake_run_application):
+            result = cmd_diff(args, logger)
+
+        assert result == 0
+        assert captured_config is not None
+        assert captured_config.merge_conflict_policy == "artifact"
+        assert captured_config.merge_conflict_output_path == tmp_path / "conflicts"
+        assert captured_config.merge_source_path == tmp_path
+
 
 class TestDiffFormats:
     """Tests for different diff output formats."""
@@ -567,6 +602,42 @@ class TestPathResolution:
         # CaseAwarePath resolves case-insensitively on POSIX.
         assert CaseAwarePath("a/b").exists() is True
 
+    def test_resolve_container_resource_syntax(self, tmp_path: Path):
+        """Test resolution of container::resource syntax extracts from capsule."""
+        from pykotor.resource.type import ResourceType
+
+        rim_file = tmp_path / "test.rim"
+        rim = RIM()
+        gff = GFF()
+        from pykotor.resource.formats.gff.gff_auto import bytes_gff
+
+        gff_bytes = bytes_gff(gff)
+        rim.set_data("test_res", ResourceType.UTC, gff_bytes)
+        write_rim(rim, rim_file)
+
+        resolved = _resolve_path(f"{rim_file}::test_res.utc")
+        assert isinstance(resolved, Path)
+        assert resolved.name == "test_res.utc"
+        assert resolved.is_file()
+
+        # Extracted content should match original
+        extracted = resolved.read_bytes()
+        assert extracted == gff_bytes
+
+    def test_resolve_container_resource_not_found(self, tmp_path: Path):
+        """Test that missing resource in container raises ValueError."""
+        rim_file = tmp_path / "test.rim"
+        rim = RIM()
+        write_rim(rim, rim_file)
+
+        with pytest.raises(ValueError, match="not found"):
+            _resolve_path(f"{rim_file}::nonexistent.utc")
+
+    def test_resolve_container_not_found(self, tmp_path: Path):
+        """Test that missing container file raises FileNotFoundError."""
+        with pytest.raises(FileNotFoundError):
+            _resolve_path(f"{tmp_path / 'missing.rim'}::test.utc")
+
 
 class TestDiffCommand:
     """Tests for the diff command implementation."""
@@ -754,6 +825,41 @@ class TestDiffCommand:
         # Output file should be created
         assert output_file.exists()
         assert output_file.exists()
+
+
+def test_cmd_diff_merge_tslpatcher_passes_conflict_policy(tmp_path: Path):
+    """Test that merge-tslpatcher CLI plumbing forwards the conflict policy."""
+    captured_config = None
+
+    def fake_run_application(config):
+        nonlocal captured_config
+        captured_config = config
+        return 0
+
+    args = Namespace(
+        merge_tslpatcher=True,
+        merge_source=str(tmp_path),
+        merge_resource="unk41_mission.dlg",
+        merge_paths=[str(tmp_path / "mod_a.dlg"), str(tmp_path / "mod_b.dlg")],
+        merge_resource_type=None,
+        tslpatchdata=str(tmp_path / "tslpatchdata"),
+        merge_conflict_output=str(tmp_path / "conflicts"),
+        output_log=None,
+        output_mode="full",
+        log_level="info",
+        merge_module="unk_m41aa",
+        merge_conflict_policy="artifact",
+    )
+
+    logger = RobustLogger()
+
+    with patch("pykotor.diff_tool.app.run_application", side_effect=fake_run_application):
+        result = cmd_diff(args, logger)
+
+    assert result == 0
+    assert captured_config is not None
+    assert captured_config.merge_conflict_policy == "artifact"
+    assert captured_config.merge_conflict_output_path == tmp_path / "conflicts"
 
 
 class TestCompositeModules:

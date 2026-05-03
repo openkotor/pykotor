@@ -28,9 +28,6 @@ $excludes = @(
     "arabic-reshaper",
     "beautifulsoup4",
     "cssselect",
-    "deep_translator",
-    "deepl-cli",
-    "dl_translate",
     "greenlet",
     "install_playwright",
     "isort",
@@ -60,7 +57,6 @@ $excludes = @(
     "PySide6",
     "ruff",
     "setuptools",
-    "torch",
     "watchdog",
     "wheel"
 )

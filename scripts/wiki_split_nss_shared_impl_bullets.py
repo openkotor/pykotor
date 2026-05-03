@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 WIKI = ROOT / "wiki"
 
-# `- **reone:** body` → bold text includes the colon (`**reone:**`).
+# `- **reone:** body` -> bold text includes the colon (`**reone:**`).
 HUB = re.compile(r"^(- \*\*[^*]+:\*\*)( .+)$")
 # Exactly one level of indent under a hub (not `    -`).
 PEER = re.compile(r"^(  - )(.+)$")

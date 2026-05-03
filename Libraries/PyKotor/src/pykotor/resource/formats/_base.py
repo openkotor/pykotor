@@ -1,7 +1,8 @@
-"""Resource format base: ComparableMixin and path setup for format I/O modules."""
+"""Resource format base: ComparableMixin, BiowareResource, and path setup for format I/O modules."""
 
 from __future__ import annotations
 
+import json
 import logging
 import pathlib
 import sys
@@ -30,21 +31,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class BiowareResource:
-    """Base type for BioWare on-disk / parsed resource objects under ``resource.formats``.
-
-    Subclasses include format payloads (GFF, MDL, …), binary readers/writers
-    (via :class:`pykotor.resource.type.ResourceReader` / ``ResourceWriter``),
-    and archives (via :class:`pykotor.resource.bioware_archive.BiowareArchive` /
-    :class:`pykotor.resource.bioware_archive.ArchiveResource`). Use for
-    ``isinstance`` / grouping; keep cooperative multiple inheritance in mind when
-    adding shared behavior.
-    """
-
-    __slots__ = ()
-
-
-class ComparableMixin(BiowareResource):
+class ComparableMixin:
     """Mixin that provides a dynamic, field-driven compare() implementation.
 
     Subclasses should define class variables to describe which attributes are
@@ -262,3 +249,45 @@ class ComparableMixin(BiowareResource):
             return log_func(f"{prefix}{msg}")
 
         return _inner
+
+
+class BiowareEncoder(json.JSONEncoder):
+    """JSON Encoder for BioWare resources that intercepts __json__ methods."""
+
+    def default(self, o: Any) -> Any:
+        if hasattr(o, "__json__") and callable(o.__json__):
+            return o.__json__()
+        return super().default(o)
+
+
+class BiowareResource(ComparableMixin):
+    """Base type for BioWare on-disk / parsed resource objects under ``resource.formats``.
+
+    Subclasses include format payloads (GFF, MDL, …), binary readers/writers
+    (via :class:`pykotor.resource.type.ResourceReader` / ``ResourceWriter``),
+    and archives (via :class:`pykotor.resource.bioware_archive.BiowareArchive` /
+    :class:`pykotor.resource.bioware_archive.ArchiveResource`). Use for
+    ``isinstance`` / grouping; keep cooperative multiple inheritance in mind when
+    adding shared behavior.
+    """
+
+    __slots__ = ()
+
+    def __json__(self) -> dict[str, Any]:
+        """Serialize the object fields to a dictionary utilizing the ComparableMixin lists."""
+        data: dict[str, Any] = {}
+        for field in (
+            self.COMPARABLE_FIELDS + self.COMPARABLE_SEQUENCE_FIELDS + self.COMPARABLE_SET_FIELDS
+        ):
+            val = getattr(self, field)
+            data[field] = val
+        return data
+
+    @classmethod
+    def from_json(cls, data: dict[str, Any]) -> Self:
+        """Create an object from a dictionary, mapping to ComparableMixin schema."""
+        instance = cls()
+        for key, value in data.items():
+            if hasattr(instance, key):
+                setattr(instance, key, value)
+        return instance

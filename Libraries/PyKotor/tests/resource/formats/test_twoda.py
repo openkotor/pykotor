@@ -30,7 +30,7 @@ from pykotor.resource.formats.twoda import (
     read_2da,
     write_2da,
 )
-from pykotor.resource.formats.twoda.io_twoda_json import TwoDAJSONReader
+
 from pykotor.resource.type import ResourceType
 
 CSV_TEST_DATA = ",col1,col2,col3\n10,abc,def,ghi\n1,def,ghi,123\n2,123,,abc"
@@ -96,7 +96,7 @@ class TestTwoDA(unittest.TestCase):
     def test_json_io(self):
         self.assertEqual(detect_2da(JSON_ROUNDTRIP_DATA), ResourceType.TwoDA_JSON)
 
-        twoda = TwoDAJSONReader(JSON_TEST_DATA.encode("utf-8")).load()
+        twoda = read_2da(JSON_TEST_DATA.encode("utf-8"))
         self.validate_io(twoda)
 
         data = bytearray()
