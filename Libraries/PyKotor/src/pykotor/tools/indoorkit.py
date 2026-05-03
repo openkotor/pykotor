@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook, KitDoor, MDLMDXTuple
+from pykotor.common.tilekit import TileKit
 from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.generics.utd import read_utd
@@ -264,6 +265,9 @@ def _load_kits_internal(
             kit_id = kit_json.get("id") or file.stem
             kit_name = kit_json["name"]
 
+        if kit_json.get("format_version") == 2:
+            continue
+
         kit = Kit(kit_name, kit_id)
         base_path = kits_path / kit_id
 
@@ -334,3 +338,29 @@ def load_kits_with_missing_files(
     so Toolset UI can report missing resources while keeping all non-Qt logic in PyKotor.
     """
     return _load_kits_internal(path, record_missing=True)
+
+
+def load_kits_unified(path: os.PathLike | str) -> tuple[list[Kit], list[TileKit]]:
+    """Load v1 component kits and v2 tile kits from the same directory."""
+    from pykotor.tools.tilekit_io import load_tile_kits_v2_from_folder
+
+    kits, _missing = _load_kits_internal(path, record_missing=False)
+    tile_kits = load_tile_kits_v2_from_folder(path, missing_files=None)
+    return kits, tile_kits
+
+
+def load_kits_unified_with_missing(
+    path: os.PathLike | str,
+) -> tuple[list[Kit], list[TileKit], list[tuple[str, Path, str]]]:
+    """Like :func:`load_kits_unified` but merges missing-file lists from both loaders."""
+    from pykotor.tools.tilekit_io import load_tile_kits_v2_from_folder
+
+    kits, missing_v1 = _load_kits_internal(path, record_missing=True)
+    missing_v2: list[tuple[str, Path, str]] = []
+    tile_kits = load_tile_kits_v2_from_folder(path, missing_files=missing_v2)
+    return kits, tile_kits, missing_v1 + missing_v2
+
+
+def kits_for_indoor_build(kits: list[Kit], tile_kits: list[TileKit]) -> list[Kit]:
+    """Merge legacy kits with tile-kit shells for texture/skybox resolution during build."""
+    return [*kits, *(tk.as_runtime_kit() for tk in tile_kits)]
