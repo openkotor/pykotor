@@ -23,7 +23,7 @@ from pykotor.resource.formats.tpc.convert.dxt.compress_dxt_ndix import (
 )
 from pykotor.resource.formats.tpc.manipulate.mipmap_ndix import _js_round, downsample_rgba_ndix
 from pykotor.resource.formats.tpc.tpc_auto import bytes_tpc
-from pykotor.resource.formats.tpc.tga2tpc import build_tpc_from_tga_bytes
+from pykotor.resource.formats.tpc.tpc_auto import build_tpc_from_tga_bytes
 from pykotor.resource.type import ResourceType
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCMipmap, TPCTextureFormat
 
@@ -250,9 +250,9 @@ class TestTPCData(unittest.TestCase):
 
 
 class TestTga2tpcNdixHeadlessParity(unittest.TestCase):
-    """Byte-for-byte parity: PyKotor ``tga2tpc`` pipeline vs ndixUR ``headless_export.cjs`` (same ``tpc.js`` rules).
+    """Byte-for-byte parity: PyKotor ``build_tpc_from_tga_bytes`` pipeline vs ndixUR ``headless_export.cjs``.
 
-    PyKotor side: :func:`~pykotor.resource.formats.tpc.tga2tpc.build_tpc_from_tga_bytes` applies the same
+    PyKotor side: :func:`~pykotor.resource.formats.tpc.tpc_auto.build_tpc_from_tga_bytes` applies the same
     auto compression and ndix-style RGBA mips as ``vendor/ref-tga2tpc/tpc.js`` ``prepare()`` / ``generateDetailLevel``;
     DXT mip payloads use ``PYKOTOR_DXT_COMPRESSOR=ndix`` (``ndix_compress_cli.cjs``, same Compressonator defaults as the tool).
 
@@ -283,7 +283,7 @@ class TestTga2tpcNdixHeadlessParity(unittest.TestCase):
         self.assertEqual(
             hashlib.sha256(ref).digest(),
             hashlib.sha256(py).digest(),
-            "SHA256 mismatch between headless ndix TPC and PyKotor tga2tpc (ndix DXT)",
+            "SHA256 mismatch between headless ndix TPC and PyKotor TGA→TPC build (ndix DXT)",
         )
         self.assertEqual(ref, py, "TPC payloads differ after matching hash (unexpected)")
 

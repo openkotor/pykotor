@@ -106,13 +106,13 @@ def convert_tga_to_tpc(
     """Convert a TGA image file to TPC format.
 
     When ``target_format`` is ``None`` (the default for ``pykotorcli texture-convert``),
-    conversion matches ``python -m pykotor.resource.formats.tpc.tga2tpc`` defaults:
+    conversion matches ``python -m pykotor.resource.formats.tpc`` (TGA→TPC CLI) defaults:
     :func:`read_tga` on the file, optional ``.txi`` sidecar, mipmaps on,
     ``compression=auto`` (8bpp → greyscale, 24bpp → DXT1, 32bpp → DXT5 to match ndixUR
     ``tga2tpc`` / xoreos-style tools, including fully opaque 32-bit TGAs). For byte-identical
     DXT blocks vs ndixUR Electron ``tga2tpc`` (Compressonator), set ``PYKOTOR_DXT_COMPRESSOR=ndix``
-    and install ``node`` on ``PATH`` (see ``compress_dxt_ndix``).
-    and ``alpha_test=1.0`` in the TPC header.
+    and install ``node`` on ``PATH`` (see ``compress_dxt_ndix``), with ``alpha_test=1.0`` in the
+    TPC header.
 
     When ``target_format`` is set, the file is loaded with :func:`read_tpc` then
     :meth:`TPC.convert` is applied before writing.
@@ -122,7 +122,7 @@ def convert_tga_to_tpc(
         input_path: Path to the input TGA file
         output_path: Path to write the output TPC file
         txi_input_path: Optional path to TXI file to merge into texture
-        target_format: Optional target texture format (``None`` = tga2tpc-compatible auto)
+        target_format: Optional target texture format (``None`` = Holocron / ndix-style auto)
 
     References:
     ----------
@@ -131,7 +131,7 @@ def convert_tga_to_tpc(
 
     """
     if target_format is None:
-        from pykotor.resource.formats.tpc.tga2tpc import build_tpc_from_tga_path
+        from pykotor.resource.formats.tpc.tpc_auto import build_tpc_from_tga_path
 
         txi_arg = Path(txi_input_path) if txi_input_path is not None else None
         tpc = build_tpc_from_tga_path(

@@ -39,7 +39,7 @@ from pykotor.resource.formats.gff.gff_auto import bytes_gff
 from pykotor.resource.formats.rim.rim_auto import write_rim
 from pykotor.resource.formats.rim.rim_data import RIM
 from pykotor.resource.formats.tpc.io_tga import TPCTGAWriter
-from pykotor.resource.formats.tpc.tga2tpc import build_tpc_from_tga_bytes
+from pykotor.resource.formats.tpc.tpc_auto import build_tpc_from_tga_bytes
 from pykotor.resource.formats.tpc.io_tpc import TPCBinaryReader, TPCBinaryWriter
 from pykotor.resource.formats.tpc.tpc_auto import bytes_tpc
 from pykotor.resource.formats.tpc.tpc_data import TPC

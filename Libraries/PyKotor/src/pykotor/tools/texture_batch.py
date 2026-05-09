@@ -16,7 +16,7 @@ from typing import List, Union
 from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.tpc import TPC, read_tpc, write_tpc
 from pykotor.resource.formats.tpc.io_tga import TPCTGAReader
-from pykotor.resource.formats.tpc.tga2tpc import build_tpc_from_tga_path
+from pykotor.resource.formats.tpc.tpc_auto import build_tpc_from_tga_path
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath
 

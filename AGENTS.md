@@ -57,6 +57,7 @@ This works after a successful `uv sync --all-packages --all-extras`. **Python 3.
 - Preserve broad compatibility for PyKotor and Holocron changes: Python 3.8 minimum plus Windows 7-11, macOS, Linux, and arm64 where practical.
 - For wiki and reverse-engineering documentation, prefer comprehensive, authoritative coverage grounded in game behavior and external/source evidence over PyKotor-specific implementation notes.
 - Give guidance and next steps to the person in this thread; avoid hypothetical third-party phrasing when they are the same audience you are replying to.
+- When the user expects an outcome to be finished in-session, run the repo’s commands and iterate until it works yourself rather than instructing them to perform the steps manually.
 
 ## Learned Workspace Facts
 
@@ -64,3 +65,4 @@ This works after a successful `uv sync --all-packages --all-extras`. **Python 3.
 - Installation and resource lookup tools must treat resource resolution order as a core invariant and expose priority behavior clearly when users need control.
 - For wiki pages that enumerate references, vendors, or implementations, use normal markdown list syntax with one entry per line instead of comma-joined run-on lines.
 - Holocron indoor-builder and Module Designer should converge on one editor surface over time; avoid treating IndoorMapBuilder and Module Designer as a permanent legacy versus modern split.
+- For TGA to TPC in PyKotor, prefer the shared `read_tga` / `write_tpc` pipeline as the canonical API surface instead of parallel conversion helpers or duplicate entry points.

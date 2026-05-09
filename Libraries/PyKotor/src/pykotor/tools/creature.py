@@ -117,6 +117,7 @@ def get_body_model(  # noqa: C901, PLR0912, PLR0915
         return ("unknown", None)
     body_model: str | None = None
     override_texture: str | None = None
+    invalid_model_tokens = {"", "****"}
 
     # Determine body model and texture based on modeltype
     modeltype: str = utc_appearance_row.get_string(
@@ -217,11 +218,43 @@ def get_body_model(  # noqa: C901, PLR0912, PLR0915
         )
 
     # Fallback to 'race' column if body_model is empty or invalid
-    if not body_model or not body_model.strip() or body_model == "****":
+    if not body_model or body_model.strip() in invalid_model_tokens:
         body_model = utc_appearance_row.get_string(
             "race", context=f"Fetching 'race' column{context_base}"
         )
         log.debug("body model name (from appearance.2da's 'race' column): '%s'", body_model)
+
+    if not body_model or body_model.strip() in invalid_model_tokens:
+        fallback_model, fallback_texture, model_column, tex_column = _get_default_body_values(
+            utc, utc_appearance_row, context_base
+        )
+        if fallback_model and fallback_model.strip() not in invalid_model_tokens:
+            body_model = fallback_model
+            log.debug(
+                "body model fallback from appearance.2da '%s' column%s: '%s'",
+                model_column,
+                context_base,
+                body_model,
+            )
+        if (
+            (not override_texture or override_texture.strip() in invalid_model_tokens)
+            and fallback_texture
+            and fallback_texture.strip() not in invalid_model_tokens
+        ):
+            override_texture = fallback_texture
+            log.debug(
+                "override texture fallback from appearance.2da '%s' column%s: '%s'",
+                tex_column,
+                context_base,
+                override_texture,
+            )
+
+    if not body_model or body_model.strip() in invalid_model_tokens:
+        log.warning(
+            "Could not resolve a valid body model%s. Falling back to 'unknown'.",
+            context_base,
+        )
+        body_model = "unknown"
 
     normalized_model = body_model.strip() if body_model and body_model.strip() else None
     normalized_texture = (
