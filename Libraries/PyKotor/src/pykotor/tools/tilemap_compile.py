@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import logging
+from copy import deepcopy
 from dataclasses import dataclass
 
+from pykotor.common.arealayout import AreaLayout, AreaRoom, AreaTile
 from pykotor.common.indoorkit import KitComponent
 from pykotor.common.indoormap import EmbeddedKit, IndoorMap, IndoorMapRoom, _ensure_embedded_kit
 from pykotor.common.tilekit import TileKit
+from pykotor.resource.formats.bwm.bwm_data import BWM
 from pykotor.tools.tile_bwm import generate_flat_floor_quad, merge_translated_bwms, rotate_bwm_at_origin
 
 from utility.common.geometry import Vector3
@@ -91,6 +94,154 @@ def tile_layout_to_merged_bwm(tile_kit: TileKit, layout: TileLayout):
     if not pieces:
         return generate_flat_floor_quad(min_x=0.0, min_y=0.0, size_x=1.0, size_y=1.0, z=0.0)
     return merge_translated_bwms(pieces)
+
+
+def _transform_bwm(
+    bwm: BWM,
+    *,
+    room: AreaRoom,
+    tile: AreaTile,
+) -> BWM:
+    out = deepcopy(bwm)
+    for face in out.faces:
+        for attr in ("v1", "v2", "v3"):
+            vertex = getattr(face, attr)
+            tile_space = tile.local_orientation.rotate_vector(vertex)
+            tile_space = Vector3(
+                tile_space.x + tile.local_position.x,
+                tile_space.y + tile.local_position.y,
+                tile_space.z + tile.local_position.z,
+            )
+            world = room.orientation.rotate_vector(tile_space)
+            setattr(
+                face,
+                attr,
+                Vector3(world.x + room.position.x, world.y + room.position.y, world.z + room.position.z),
+            )
+    return out
+
+
+def _tile_floor_bounds(tile: AreaTile, *, default_tile_size: float = 10.0) -> tuple[float, float, float, float]:
+    points = [wall.local_position for wall in tile.walls]
+    points.extend(corner.local_position for corner in tile.inner_corners)
+    points.extend(corner.local_position for corner in tile.outer_corners)
+    if not points:
+        half = default_tile_size * 0.5
+        return -half, -half, default_tile_size, default_tile_size
+
+    min_x = min(point.x for point in points)
+    max_x = max(point.x for point in points)
+    min_y = min(point.y for point in points)
+    max_y = max(point.y for point in points)
+    if abs(max_x - min_x) < 1e-6:
+        min_x = -default_tile_size * 0.5
+        max_x = default_tile_size * 0.5
+    if abs(max_y - min_y) < 1e-6:
+        min_y = -default_tile_size * 0.5
+        max_y = default_tile_size * 0.5
+    return min_x, min_y, max_x - min_x, max_y - min_y
+
+
+def area_layout_to_merged_bwm(layout: AreaLayout, tile_kits: dict[str, TileKit]) -> BWM:
+    """Generate/merge a playable BWM from Kotor.NET-style layout floor geometry."""
+
+    pieces: list[tuple[BWM, float, float, float]] = []
+    for room in layout.rooms:
+        for tile in room.tiles:
+            kit = tile_kits.get(tile.kit_id)
+            if kit is None:
+                continue
+            floor = kit.template_by_id(tile.floor_template_id)
+            if floor is not None and floor.wok is not None and floor.wok.faces:
+                local = rotate_bwm_at_origin(floor.wok, floor.rotation)
+            else:
+                min_x, min_y, size_x, size_y = _tile_floor_bounds(tile)
+                local = generate_flat_floor_quad(min_x=min_x, min_y=min_y, size_x=size_x, size_y=size_y)
+            pieces.append((_transform_bwm(local, room=room, tile=tile), 0.0, 0.0, 0.0))
+    if not pieces:
+        return generate_flat_floor_quad(min_x=0.0, min_y=0.0, size_x=1.0, size_y=1.0)
+    return merge_translated_bwms(pieces)
+
+
+def _embedded_area_component(
+    embedded_kit: EmbeddedKit,
+    layout: AreaLayout,
+    tile_kits: dict[str, TileKit],
+    *,
+    room_name: str,
+) -> KitComponent:
+    from pykotor.tools.area_mdl import area_layout_to_merged_mdl_mdx
+
+    merged_bwm = area_layout_to_merged_bwm(layout, tile_kits)
+    mdl, mdx = area_layout_to_merged_mdl_mdx(layout, tile_kits)
+    return KitComponent(
+        embedded_kit,
+        name=room_name,
+        component_id="__area_layout__",
+        bwm=merged_bwm,
+        mdl=mdl,
+        mdx=mdx,
+    )
+
+
+def apply_area_layout_to_map(
+    indoor: IndoorMap,
+    layout: AreaLayout,
+    tile_kits: dict[str, TileKit],
+    kits: list,
+    *,
+    replace_existing_area_room: bool = True,
+) -> None:
+    """Compile a Kotor.NET-style area layout into one embedded room for playable builds."""
+
+    from pykotor.tools.area_layout_io import area_layout_to_dict
+
+    ek = _ensure_embedded_kit(kits)
+    comp = _embedded_area_component(ek, layout, tile_kits, room_name="Area layout")
+
+    if replace_existing_area_room:
+        indoor.rooms = [room for room in indoor.rooms if room.component.id != "__area_layout__"]
+
+    room = IndoorMapRoom(
+        comp,
+        Vector3.from_null(),
+        0.0,
+        flip_x=False,
+        flip_y=False,
+    )
+    indoor.rooms.insert(0, room)
+    indoor.area_layout = area_layout_to_dict(layout)
+    indoor.indoor_map_version = max(indoor.indoor_map_version, 3)
+
+
+def reconcile_area_layout_for_build(
+    indoor: IndoorMap,
+    *,
+    tile_kits: list[TileKit],
+    kits: list,
+    logger: logging.Logger | None = None,
+) -> bool:
+    """Compile persisted ``area_layout`` metadata into an embedded room if needed."""
+
+    if not getattr(indoor, "area_layout", None):
+        return False
+    if any(room.component.id == "__area_layout__" for room in indoor.rooms):
+        return False
+
+    from pykotor.tools.area_layout_io import area_layout_from_dict
+
+    tile_kit_lookup = {tile_kit.kit_id: tile_kit for tile_kit in tile_kits}
+    try:
+        layout = area_layout_from_dict(indoor.area_layout, tile_kit_lookup)
+    except ValueError as exc:
+        if logger is not None:
+            logger.warning("area_layout present but invalid; skipping reconcile: %s", exc)
+        return False
+
+    apply_area_layout_to_map(indoor, layout, tile_kit_lookup, kits)
+    if logger is not None:
+        logger.info("Reconciled area_layout into embedded __area_layout__ room.")
+    return True
 
 
 def _embedded_floor_component(

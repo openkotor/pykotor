@@ -1,54 +1,109 @@
-# Indoor kit format v2 (Kotor.NET `KitSerializer_V0_1` semantic parity)
+# Indoor kit format v2 (Kotor.NET `KitSerializer_V0_1` parity)
 
-PyKotor `format_version: 2` JSON matches the **on-disk contract** used by Kotor.NET area-designer kit serialization (v0.1). This document is the compatibility reference; it does **not** require checking out or modifying the Kotor.NET `rework-area-designer` branch.
+PyKotor v2 tile kits now use the same JSON shape as Kotor.NET Area Designer `KitSerializer_V0_1` (`format: "0.1"`). The vendored Kotor.NET checkout is reference-only and must not be modified for PyKotor kit loading.
 
 ## Top-level object
 
 | Field | Type | Required | Notes |
 |------|------|----------|--------|
-| `format_version` | `integer` | Yes | Must be `2` for this spec. |
-| `serializer` | `string` | No | e.g. `"Kotor.NET KitSerializer_V0_1"` (metadata only). |
+| `id` | `string` | Yes | Must match the `.kit` filename stem, matching Kotor.NET validation. |
+| `version` | `integer` | Yes | Kit authoring version. |
 | `name` | `string` | Yes | Human-readable kit name. |
-| `id` | `string` | Yes | Directory name under `kits/` (same as v1). |
-| `doors` | `array` | No | Same as v1: `utd_k1`, `utd_k2`, `width`, `height`. |
-| `templates` | `object` | Yes | Categorized **tile** templates (not prebuilt rooms). |
+| `format` | `string` | Yes | Kotor.NET v0.1 uses `"0.1"`. |
+| `tiles` | `array` | Yes | Tile blueprints composed from floors, ceilings, wall hooks, and corner hooks. |
+| `floors` | `array` | Yes | Floor model templates. |
+| `ceilings` | `array` | Yes | Ceiling model templates. |
+| `doorframes` | `array` | Yes | Doorframe model templates and door hooks. |
+| `walls` | `array` | Yes | Wall model templates, optionally doorframe-capable. |
+| `innerCorners` | `array` | Yes | Inner-corner model templates. |
+| `outerCorners` | `array` | Yes | Outer-corner model templates. |
+| `objects` | `array` | Yes | Object model templates. |
 
-## `templates` categories
+This replaces the earlier provisional PyKotor `format_version: 2` / `templates` grouping. The loader still accepts older checked-in fixtures where needed, but new authored kits should use this Kotor.NET-compatible shape.
 
-| Category key | Role |
-|-------------|------|
-| `floors` | Walkable horizontal tiles. |
-| `ceilings` | Ceiling geometry. |
-| `walls` | Wall segments. |
-| `corners` | Corner pieces. |
-| `doorframes` | Doorway framing. |
+## Quaternion Order
 
-## Template object
+Kotor.NET uses `System.Numerics.Quaternion` and serializes `ToFloatArray()` as:
+
+```json
+[x, y, z, w]
+```
+
+PyKotor converts this at the boundary into its internal `QuaternionWXYZ` model. Do not write `[w, x, y, z]` in Kotor.NET v0.1 kit JSON.
+
+## Tile Objects
+
+Each `tiles[]` entry describes a tile blueprint, not a prebuilt room:
 
 | Field | Type | Required | Notes |
 |------|------|----------|--------|
-| `id` | `string` | Yes | Unique within the kit. |
-| `resref` | `string` | No | If omitted, `id` is used to resolve `resref.mdl` / `resref.mdx` / optional `resref.wok`. |
-| `offset` | `[x, y, z]` | No | Local origin (float), default `[0,0,0]`. |
-| `rotation` | `[w, x, y, z]` | No | **Unit quaternion** (float). Default identity `[1, 0, 0, 0]`. |
-| `doorhooks` | `array` | No | Optional; same as v1 `doorhooks` (`x`,`y`,`z`,`rotation`,`door` index, `edge`). |
+| `id` | `string` | Yes | Tile template id. |
+| `name` | `string` | Yes | Display name. |
+| `defaultFloorID` | `string` | Yes | Template id in `floors`. |
+| `defaultCeilingID` | `string` | No | Template id in `ceilings`; empty is allowed. |
+| `wallHooks` | `array` | Yes | Wall hook transforms and default wall ids. |
+| `innerCornerHooks` | `array` | Yes | Inner-corner hook transforms and adjacency wall indexes. |
+| `outerCornerHooks` | `array` | Yes | Outer-corner hook transforms and adjacency wall indexes. |
 
-On-disk: `templates` do **not** require `.wok` (Kotor.NET v0.1 may be MDL-only). PyKotor may **merge** per-piece WOKs when present, or **generate** walkable BWM at build from floor geometry.
+Wall hook object:
 
-- **Template `.wok` + `rotation`:** merged walkmesh vertices are rotated about the origin by the template quaternion, then translated to the cell position (plus template `offset`).
-- **Flat floor fallback** (no per-piece WOK): proc-gen quads lie in X/Y at fixed Z; template **rotation is not applied** to that fallback (documented limitation).
+```json
+{
+  "defaultWallID": "wall_a",
+  "position": [1.0, 0.0, 0.0],
+  "orientation": [0.0, 0.0, 0.0, 1.0]
+}
+```
 
-**Build MDL:** For `__tile_floor__`, PyKotor composes each placed floor template’s MDL/MDX via `pykotor.tools.tile_mdl.tile_layout_to_merged_mdl_mdx`: per-cell `model.transform` (world XY + offset + Z yaw from quaternion), then attaches subtrees under one root for binary emit. On failure or missing geometry it falls back to the first floor template’s MDL as before.
+Corner hook object:
 
-## v1 → v2 migration (CLI)
+```json
+{
+  "defaultInnerCornerID": "inner_a",
+  "position": [1.0, 1.0, 0.0],
+  "orientation": [0.0, 0.0, 0.0, 1.0],
+  "adjacencies": [0, 1]
+}
+```
 
-Lossy conversion for authoring: `pykotor indoor-kit-migrate-v1-to-v2 --input <v1.json> --output <v2.json>` maps each v1 `components[]` entry to a **floor** template (`id` / `resref` = component `id`). Ceilings/walls/corners/doorframes are left empty; door definitions are copied when present.
+Use `defaultOuterCornerID` for outer-corner hooks.
 
-## `.indoor` map: `tile_layout` (PyKotor extension)
+## Model Templates
 
-Optional: `format_version`, `kit_id`, `cell_size`, `grid_w`, `grid_h`, `floor_cells` (row-major, `template_id` or `null`).
+Floor, ceiling, wall, inner corner, outer corner, and object templates share:
 
-## v1 vs v2
+| Field | Type | Required |
+|------|------|----------|
+| `id` | `string` | Yes |
+| `name` | `string` | Yes |
+| `model` | `string` | Yes |
 
-- **v1** Holocron: `components[]` with required `.wok` per component.
-- **v2** tile: `format_version: 2` and `templates` for grid-based design.
+Wall templates additionally support:
+
+| Field | Type | Notes |
+|------|------|-------|
+| `doorframeID` | `string` or `null` | Empty or null means the wall is not door-capable. |
+
+Doorframe templates additionally support:
+
+```json
+{
+  "id": "doorframe_a",
+  "name": "Doorframe A",
+  "model": "doorframe_a",
+  "hooks": [
+    {
+      "position": [0.0, 0.0, 0.0],
+      "orientation": [0.0, 0.0, 0.0, 1.0]
+    }
+  ]
+}
+```
+
+## Walkmesh and Build Behavior
+
+Kotor.NET v0.1 kits do not require WOK/BWM assets and Kotor.NET export is MDL-only. PyKotor keeps builds playable by generating area BWM from composed floor tile geometry when per-piece walkmesh data is absent. If per-piece walkmeshes are present, PyKotor can merge them; otherwise it emits flat floor quads from tile hook extents.
+
+## Area Layout
+
+Area placement state is separate from kit serialization. See `docs/specs/area_layout_kotor_net_v0_1.md`.

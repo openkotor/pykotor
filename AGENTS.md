@@ -49,3 +49,20 @@ This works after a successful `uv sync --all-packages --all-extras`. **Python 3.
 - Proposed git commands must be copy-paste-ready **single-line** commands only. Do not include comments, shell prompts, or wrapped multi-line blocks.
 - Use the normal PyKotor root add/commit command when only root-level files changed.
 - If a submodule was updated, recommend a single one-line command that commits the PyKotor root changes including the submodule gitlink, then `cd`s into the submodule, runs `git add .`, commits with the same message, pushes when required, and `cd`s back to the PyKotor root.
+
+## Learned User Preferences
+
+- When implementing an existing plan, do not edit the plan file unless asked; mark the existing plan todos as work progresses instead of recreating them.
+- For Holocron Toolset UI work, keep layouts and controls in `.ui` files, compile with `convertui.py`, and avoid building replacement UI directly in Python.
+- Preserve broad compatibility for PyKotor and Holocron changes: Python 3.8 minimum plus Windows 7-11, macOS, Linux, and arm64 where practical.
+- For wiki and reverse-engineering documentation, prefer comprehensive, authoritative coverage grounded in game behavior and external/source evidence over PyKotor-specific implementation notes.
+- Give guidance and next steps to the person in this thread; avoid hypothetical third-party phrasing when they are the same audience you are replying to.
+- When the user expects an outcome to be finished in-session, run the repo’s commands and iterate until it works yourself rather than instructing them to perform the steps manually.
+
+## Learned Workspace Facts
+
+- Wiki resource-format pages should separate binary/game behavior from toolset implementation details; BWM documentation should stay focused on BWM/WOK/PWK/DWK rather than LYT, MDL, or tooling material.
+- Installation and resource lookup tools must treat resource resolution order as a core invariant and expose priority behavior clearly when users need control.
+- For wiki pages that enumerate references, vendors, or implementations, use normal markdown list syntax with one entry per line instead of comma-joined run-on lines.
+- Holocron indoor-builder and Module Designer should converge on one editor surface over time; avoid treating IndoorMapBuilder and Module Designer as a permanent legacy versus modern split.
+- For TGA to TPC in PyKotor, prefer the shared `read_tga` / `write_tpc` pipeline as the canonical API surface instead of parallel conversion helpers or duplicate entry points.
