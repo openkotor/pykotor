@@ -123,7 +123,7 @@ class IndoorMapDataDict(IndoorMapDataDictBase, total=False):
     embedded_components: list[EmbeddedComponentDataDict]
     indoor_map_version: int
     tile_layout: dict[str, Any]
-    area_designer_v01: dict[str, Any]
+    area_layout: dict[str, Any]
 
 
 _EMBEDDED_KIT_ID = "__embedded__"
@@ -220,15 +220,11 @@ class IndoorMap(ComparableMixin):
         self.used_rooms: set[KitComponent] = set()
         self.used_kits: set[Kit] = set()
         self.scan_mdls: set[bytes] = set()
-        # Optional v2 tile-grid state (Kotor.NET-style `tile_layout`); see `pykotor.tools.tilemap_compile`.
-        self.tile_layout: dict[str, Any] | None = None
-        # Optional Kotor.NET AreaDesigner JSON (`format: "0.1"`); see `pykotor.tools.area_designer_io`.
-        self.area_designer_v01: dict[str, Any] | None = None
-        self.indoor_map_version: int = 1
 
         # v2 tile grid state (optional JSON block); see pykotor.tools.tilemap_compile
         self.indoor_map_version: int = 1
         self.tile_layout: dict[str, Any] | None = None
+        self.area_layout: dict[str, Any] | None = None
 
     def rebuild_room_connections(self):
         for room in self.rooms:
@@ -820,17 +816,13 @@ class IndoorMap(ComparableMixin):
         if embedded_components:
             # JSON-friendly list form for stable ordering.
             data["embedded_components"] = list(embedded_components.values())
-        if self.indoor_map_version and self.indoor_map_version != 1:
-            data["indoor_map_version"] = self.indoor_map_version
-        if self.tile_layout:
-            data["tile_layout"] = self.tile_layout
-        if self.area_designer_v01:
-            data["area_designer_v01"] = self.area_designer_v01
 
         if self.indoor_map_version and self.indoor_map_version > 1:
             data["indoor_map_version"] = self.indoor_map_version
         if self.tile_layout:
             data["tile_layout"] = self.tile_layout
+        if self.area_layout:
+            data["area_layout"] = self.area_layout
 
         return json.dumps(data).encode("utf-8")
 
@@ -863,10 +855,11 @@ class IndoorMap(ComparableMixin):
         self.module_id = data.get("warp", data.get("module_id", "test01"))
         self.skybox = data.get("skybox", "")
         self.target_game_type = data.get("target_game_type", None)
-        self.indoor_map_version = int(data.get("indoor_map_version", 1) or 1)
+        self.indoor_map_version = int(data.get("indoor_map_version") or 1)
         tl = data.get("tile_layout")
         self.tile_layout = tl if isinstance(tl, dict) else None
-        self.area_designer_v01 = data.get("area_designer_v01")
+        al = data.get("area_layout")
+        self.area_layout = al if isinstance(al, dict) else None
 
         # Load any embedded components first, so room references can resolve.
         self._load_embedded_components(data.get("embedded_components") or [], kits, logger)
@@ -1105,7 +1098,7 @@ class IndoorMap(ComparableMixin):
         self._source_vis_for_preserve = None
         self.indoor_map_version = 1
         self.tile_layout = None
-        self.area_designer_v01 = None
+        self.area_layout = None
 
 
 class IndoorMapRoom(ComparableMixin):
