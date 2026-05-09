@@ -3,11 +3,12 @@
   "serializer": "Kotor.NET KitSerializer_V0_1",
   "name": "Minimal Tile Fixture",
   "id": "minimal_tiles",
+  "doors": [],
   "templates": {
     "floors": [
       {
-        "id": "floor_a",
-        "resref": "floor_a",
+        "id": "floor_plain",
+        "resref": "floor_plain",
         "offset": [0, 0, 0],
         "rotation": [1, 0, 0, 0]
       }

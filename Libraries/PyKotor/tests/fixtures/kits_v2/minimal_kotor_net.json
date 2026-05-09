@@ -1,0 +1,31 @@
+{
+  "format": "0.1",
+  "version": 1,
+  "name": "Minimal Kotor.NET-shaped fixture",
+  "id": "minimal_kotor_net",
+  "doors": [],
+  "tiles": [
+    {
+      "id": "cell_a",
+      "name": "Cell A",
+      "defaultFloorID": "floor_plain",
+      "defaultCeilingID": "",
+      "wallHooks": [],
+      "innerCornerHooks": [],
+      "outerCornerHooks": []
+    }
+  ],
+  "floors": [
+    {
+      "id": "floor_plain",
+      "name": "Plain",
+      "model": "floor_plain"
+    }
+  ],
+  "ceilings": [],
+  "doorframes": [],
+  "walls": [],
+  "innerCorners": [],
+  "outerCorners": [],
+  "objects": []
+}

@@ -4,25 +4,16 @@ from __future__ import annotations
 
 from copy import deepcopy
 
-from pykotor.common.tilekit import QuaternionWXYZ
 from pykotor.resource.formats.bwm.bwm_data import BWM, BWMFace, BWMType
 from utility.common.geometry import SurfaceMaterial, Vector3
 
 
-def rotate_bwm_at_origin(bwm: BWM, rotation: QuaternionWXYZ) -> BWM:
-    """Deep-copy *bwm* and rotate all face vertices about the origin by *rotation*."""
-    out = deepcopy(bwm)
-    if not out.faces:
-        return out
-    for face in out.faces:
-        face.v1 = rotation.rotate_vector(face.v1)
-        face.v2 = rotation.rotate_vector(face.v2)
-        face.v3 = rotation.rotate_vector(face.v3)
-    return out
-
-
 def merge_translated_bwms(sources: list[tuple[BWM, float, float, float]]) -> BWM:
-    """Merge BWMs into one area walkmesh; each piece translated by (tx, ty, tz)."""
+    """Merge multiple BWMs into one area walkmesh, each translated by (tx, ty, tz) in world space.
+
+    Vertices are copied per face to avoid shared-mutation issues. Empty input yields an empty
+    area BWM (caller may substitute a generated floor).
+    """
     out = BWM()
     out.walkmesh_type = BWMType.AreaModel
     for bwm, tx, ty, tz in sources:
@@ -43,7 +34,11 @@ def generate_flat_floor_quad(
     z: float = 0.0,
     material: SurfaceMaterial = SurfaceMaterial.STONE,
 ) -> BWM:
-    """Two walkable triangles on the X/Y plane at fixed Z (no template WOK fallback)."""
+    """Two walkable triangles covering an axis-aligned rectangle in the X/Y plane at fixed Z.
+
+    Used when a floor tile has no WOK; coarse stand-in for procedural walkmesh. KotOR area
+    walkmeshes are consumed in world space; match your tile compiler's placement convention.
+    """
     b = BWM()
     b.walkmesh_type = BWMType.AreaModel
     v0 = Vector3(min_x, min_y, z)

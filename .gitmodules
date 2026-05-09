@@ -14,7 +14,8 @@
 
 [submodule "Tools/HolocronToolset"]
 	path = Tools/HolocronToolset
-	url = https://github.com/OldRepublicDevs/HolocronToolset.git
+	url = https://github.com/OpenKotOR/HolocronToolset.git
+	branch = cursor/indoor-builder-tilekit-v2
 [submodule "Tools/HoloPatcher"]
 	path = Tools/HoloPatcher
 	url = https://github.com/OldRepublicDevs/HoloPatcher.git
@@ -33,9 +34,6 @@
 # Vendor
 # ===============================
 
-[submodule "vendor/KotOR.js"]
-	path = vendor/KotOR.js
-	url = https://github.com/KobaltBlu/KotOR.js
 [submodule "vendor/kotorblender"]
 	path = vendor/kotorblender
 	url = https://github.com/OpenKotOR/kotorblender

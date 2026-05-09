@@ -2903,7 +2903,7 @@ wheels = [
 
 [[package]]
 name = "pykotor"
-version = "2.3.12"
+version = "2.3.13"
 source = { editable = "Libraries/PyKotor" }
 dependencies = [
     { name = "bioware-kaitai-formats" },
@@ -3093,7 +3093,7 @@ provides-extras = ["all", "dev", "encodings", "exp", "extra", "font", "gl", "gl-
 
 [[package]]
 name = "pykotor-workspace"
-version = "2.3.12"
+version = "2.3.13"
 source = { editable = "." }
 dependencies = [
     { name = "holocrontoolset" },

@@ -1,0 +1,244 @@
+﻿using System;
+using System.Dynamic;
+using System.IO;
+using System.Linq;
+using System.Numerics;
+using Kotor.NET.Graphics.Extensions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+namespace Kotor.DevelopmentKit.AreaDesigner.relocate.KitSerialization;
+
+public class KitSerializer_V0_1
+{
+    public const string FormatID = "0.1";
+
+    public static Kit Load(string filepath)
+    {
+        var json = File.ReadAllText(filepath);
+        dynamic data = JsonConvert.DeserializeObject(json);
+
+        string kitName = data.name.Value;
+        string kitID = data.id.Value;
+        int kitVersion = (int)data.version.Value;
+
+        if (kitID != Path.GetFileNameWithoutExtension(filepath))
+            throw new ArgumentException($"Kit ID {kitID} does not match filename {Path.GetFileName(filepath)}.");
+
+        var kit = new Kit(filepath, kitID, kitVersion, kitName);
+
+        foreach (var floor in data.floors)
+        {
+            kit.Floors.Add(new FloorTemplate
+            {
+                KitID = kitID,
+                ID = floor.id.Value,
+                Name = floor.name.Value,
+                Model = floor.model.Value,
+            });
+        }
+
+        foreach (var ceiling in data.ceilings)
+        {
+            kit.Ceilings.Add(new CeilingTemplate
+            {
+                KitID = kitID,
+                ID = ceiling.id.Value,
+                Name = ceiling.name.Value,
+                Model = ceiling.model.Value,
+            });
+        }
+
+        foreach (var door in data.doorframes)
+        {
+            kit.DoorFrames.Add(new DoorFrameTemplate
+            {
+                KitID = kitID,
+                ID = door.id.Value,
+                Name = door.name.Value,
+                Model = door.model.Value,
+                Hooks = ((JArray)door.hooks).Select(x => (dynamic)x).Select(hook => new DoorFrameHookTemplate
+                {
+                    Position = new Vector3(hook.position.ToObject<float[]>()),
+                    Orientation = ((float[])hook.orientation.ToObject<float[]>()).ToQuaternion()
+                }).ToArray()
+            });
+        }
+
+        foreach (var wall in data.walls)
+        {
+            kit.Walls.Add(new WallTemplate
+            {
+                KitID = kitID,
+                ID = wall.id.Value,
+                Name = wall.name.Value,
+                Model = wall.model.Value,
+                DoorFrameID = wall.doorframeID?.Value,
+            });
+        }
+
+        foreach (var tile in data.tiles)
+        {
+            kit.Tiles.Add(new TileTemplate
+            {
+                KitID = kitID,
+                ID = tile.id.Value,
+                Name = tile.name.Value,
+                DefaultFloorID = tile.defaultFloorID.Value,
+                DefaultCeilingID = tile.defaultCeilingID?.Value ?? "",
+                Walls = ((JArray)tile.wallHooks).Select(x => (dynamic)x).Select(hook => new WallHookTemplate
+                {
+                    DefaultWallID = hook.defaultWallID,
+                    LocalPosition = new Vector3(hook.position.ToObject<float[]>()),
+                    LocalOrientation = ((float[])hook.orientation.ToObject<float[]>()).ToQuaternion()
+                }).ToArray(),
+                InnerCorners = ((JArray)tile.innerCornerHooks).Select(x => (dynamic)x).Select(hook => new InnerCornerHookTemplate
+                {
+                    DefaultCornerID = hook.defaultInnerCornerID.Value,
+                    Adjacent = hook.adjacencies?.ToObject<int[]>() ?? new int[0],
+                    LocalPosition = new Vector3(hook.position.ToObject<float[]>()),
+                    LocalOrientation = ((float[])hook.orientation.ToObject<float[]>()).ToQuaternion()
+                }).ToArray(),
+                OuterCorners = ((JArray)tile.outerCornerHooks).Select(x => (dynamic)x).Select(hook => new OuterCornerHookTemplate
+                {
+                    DefaultCornerID = hook.defaultOuterCornerID.Value,
+                    Adjacent = hook.adjacencies?.ToObject<int[]>() ?? new int[0],
+                    LocalPosition = new Vector3(hook.position.ToObject<float[]>()),
+                    LocalOrientation = ((float[])hook.orientation.ToObject<float[]>()).ToQuaternion()
+                }).ToArray(),
+                CeilingHooks = []
+            });
+        }
+
+        foreach (var innerCorner in data.innerCorners)
+        {
+            kit.InnerCorners.Add(new InnerCornerTemplate
+            {
+                KitID = kitID,
+                ID = innerCorner.id.Value,
+                Name = innerCorner.name.Value,
+                Model = innerCorner.model.Value,
+            });
+        }
+
+        foreach (var outerCorner in data.outerCorners)
+        {
+            kit.OuterCorners.Add(new OuterCornerTemplate
+            {
+                KitID = kitID,
+                ID = outerCorner.id.Value,
+                Name = outerCorner.name.Value,
+                Model = outerCorner.model.Value,
+            });
+        }
+
+        foreach (var @object in data.objects)
+        {
+            kit.Objects.Add(new ObjectTemplate
+            {
+                KitID = kitID,
+                ID = @object.id.Value,
+                Name = @object.name.Value,
+                Model = @object.model.Value,
+            });
+        }
+
+        return kit;
+    }
+
+    public static void Save(string filepath, Kit kit)
+    {
+        dynamic data = new ExpandoObject();
+
+        data.id = kit.ID;
+        data.version = kit.Version;
+        data.name = kit.Name;
+        data.format = FormatID;
+
+        data.tiles = kit.Tiles.Select(tile => new
+        {
+            id = tile.ID,
+            name = tile.Name,
+            defaultFloorID = tile.DefaultFloorID,
+            defaultCeilingID = tile.DefaultCeilingID,
+            wallHooks = tile.Walls.Select(x => new
+            {
+                defaultWallID = x.DefaultWallID,
+                position = x.LocalPosition.ToFloatArray(),
+                orientation = x.LocalOrientation.ToFloatArray(),
+            }),
+            innerCornerHooks = tile.InnerCorners.Select(x => new
+            {
+                defaultInnerCornerID = x.DefaultCornerID,
+                position = x.LocalPosition.ToFloatArray(),
+                orientation = x.LocalOrientation.ToFloatArray(),
+                adjacencies = x.Adjacent,
+            }),
+            outerCornerHooks = tile.OuterCorners.Select(x => new
+            {
+                defaultOuterCornerID = x.DefaultCornerID,
+                position = x.LocalPosition.ToFloatArray(),
+                orientation = x.LocalOrientation.ToFloatArray(),
+                adjacencies = x.Adjacent,
+            }),
+        });
+
+        data.floors = kit.Floors.Select(floor => new
+        {
+            id = floor.ID,
+            name = floor.Name,
+            model = floor.Model,
+        });
+
+        data.ceilings = kit.Ceilings.Select(ceiling => new
+        {
+            id = ceiling.ID,
+            name = ceiling.Name,
+            model = ceiling.Model,
+        });
+
+        data.doorframes = kit.DoorFrames.Select(doorframe => new
+        {
+            id = doorframe.ID,
+            name = doorframe.Name,
+            model = doorframe.Model,
+            hooks = doorframe.Hooks.Select(hook => new
+            {
+                position = hook.Position.ToFloatArray(),
+                orientation = hook.Orientation.ToFloatArray(),
+            })
+        });
+
+        data.walls = kit.Walls.Select(wall => new
+        {
+            id = wall.ID,
+            name = wall.Name,
+            model = wall.Model,
+            doorframeID = wall.DoorFrameID,
+        });
+
+        data.innerCorners = kit.InnerCorners.Select(obj => new
+        {
+            id = obj.ID,
+            name = obj.Name,
+            model = obj.Model,
+        });
+
+        data.outerCorners = kit.OuterCorners.Select(obj => new
+        {
+            id = obj.ID,
+            name = obj.Name,
+            model = obj.Model,
+        });
+
+        data.objects = kit.Objects.Select(obj => new
+        {
+            id = obj.ID,
+            name = obj.Name,
+            model = obj.Model,
+        });
+
+        var json = JsonConvert.SerializeObject(data, Formatting.Indented);
+        File.WriteAllText(filepath, json);
+    }
+}
