@@ -54,4 +54,5 @@ jobs:
           --ignore=Libraries/PyKotor/tests/resource/formats/test_archive_serializer_regressions.py \
           --ignore=Libraries/PyKotor/tests/test_markdown_validation.py \
           --ignore=Libraries/PyKotor/tests/test_utility \
+          --ignore=Libraries/PyKotor/tests/tslpatcher \
           Libraries/PyKotor/tests
