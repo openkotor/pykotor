@@ -123,6 +123,7 @@ class IndoorMapDataDict(IndoorMapDataDictBase, total=False):
     embedded_components: list[EmbeddedComponentDataDict]
     indoor_map_version: int
     tile_layout: dict[str, Any]
+    area_layout: dict[str, Any]
 
 
 _EMBEDDED_KIT_ID = "__embedded__"
@@ -223,6 +224,7 @@ class IndoorMap(ComparableMixin):
         # v2 tile grid state (optional JSON block); see pykotor.tools.tilemap_compile
         self.indoor_map_version: int = 1
         self.tile_layout: dict[str, Any] | None = None
+        self.area_layout: dict[str, Any] | None = None
 
     def rebuild_room_connections(self):
         for room in self.rooms:
@@ -819,6 +821,8 @@ class IndoorMap(ComparableMixin):
             data["indoor_map_version"] = self.indoor_map_version
         if self.tile_layout:
             data["tile_layout"] = self.tile_layout
+        if self.area_layout:
+            data["area_layout"] = self.area_layout
 
         return json.dumps(data).encode("utf-8")
 
@@ -854,6 +858,8 @@ class IndoorMap(ComparableMixin):
         self.indoor_map_version = int(data.get("indoor_map_version") or 1)
         tl = data.get("tile_layout")
         self.tile_layout = tl if isinstance(tl, dict) else None
+        al = data.get("area_layout")
+        self.area_layout = al if isinstance(al, dict) else None
 
         # Load any embedded components first, so room references can resolve.
         self._load_embedded_components(data.get("embedded_components") or [], kits, logger)
@@ -1092,6 +1098,7 @@ class IndoorMap(ComparableMixin):
         self._source_vis_for_preserve = None
         self.indoor_map_version = 1
         self.tile_layout = None
+        self.area_layout = None
 
 
 class IndoorMapRoom(ComparableMixin):
