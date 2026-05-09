@@ -7,7 +7,16 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.common.stream import BinaryReader
-from pykotor.common.tilekit import QuaternionWXYZ, TileKit, TileTemplate, TileTemplateKind
+from pykotor.common.tilekit import (
+    CornerHookTemplate,
+    DoorFrameHookTemplate,
+    QuaternionWXYZ,
+    TileCellTemplate,
+    TileKit,
+    TileTemplate,
+    TileTemplateKind,
+    WallHookTemplate,
+)
 from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.generics.utd import read_utd
 
@@ -43,6 +52,163 @@ def _optional_wok(path: Path, *, kit_name: str, missing: list[MissingFileInfo] |
         return None
 
 
+def _vector3_from_json(data: list[float] | tuple[float, ...] | None) -> Vector3:
+    if not data or len(data) < 3:
+        return Vector3.from_null()
+    return Vector3(float(data[0]), float(data[1]), float(data[2]))
+
+
+def _model_resref(model: str, fallback: str) -> str:
+    if not model:
+        return fallback
+    path = Path(model)
+    return path.with_suffix("").as_posix()
+
+
+def _template_from_kotor_net_json(
+    data: dict,
+    *,
+    kind: TileTemplateKind,
+    base_path: Path,
+    kit_name: str,
+    missing_files: list[MissingFileInfo] | None,
+) -> TileTemplate | None:
+    template_id = str(data.get("id") or "")
+    if not template_id:
+        return None
+    name = str(data.get("name") or template_id)
+    model = str(data.get("model") or template_id)
+    resref = _model_resref(model, template_id)
+    mdl = _optional_binary(base_path / f"{resref}.mdl", kit_name=kit_name, kind="tile mdl", missing=missing_files)
+    mdx = _optional_binary(base_path / f"{resref}.mdx", kit_name=kit_name, kind="tile mdx", missing=missing_files)
+    wok = _optional_wok(base_path / f"{resref}.wok", kit_name=kit_name, missing=missing_files)
+
+    hooks = [
+        DoorFrameHookTemplate(
+            position=_vector3_from_json(hook.get("position")),
+            orientation=QuaternionWXYZ.from_xyzw_json(hook.get("orientation")),
+        )
+        for hook in data.get("hooks", []) or []
+        if isinstance(hook, dict)
+    ]
+    return TileTemplate(
+        kind=kind,
+        template_id=template_id,
+        resref=resref,
+        mdl=mdl,
+        mdx=mdx,
+        wok=wok,
+        name=name,
+        model=model,
+        doorframe_id=str(data.get("doorframeID") or ""),
+        hooks=hooks,
+    )
+
+
+def _parse_wall_hooks(data: list[dict]) -> list[WallHookTemplate]:
+    hooks: list[WallHookTemplate] = []
+    for hook in data or []:
+        if not isinstance(hook, dict):
+            continue
+        default_wall_id = str(hook.get("defaultWallID") or "")
+        if not default_wall_id:
+            continue
+        hooks.append(
+            WallHookTemplate(
+                default_wall_id=default_wall_id,
+                position=_vector3_from_json(hook.get("position")),
+                orientation=QuaternionWXYZ.from_xyzw_json(hook.get("orientation")),
+                adjacent_walls=[int(value) for value in hook.get("adjacencies", []) or []],
+            )
+        )
+    return hooks
+
+
+def _parse_corner_hooks(data: list[dict], *, id_key: str) -> list[CornerHookTemplate]:
+    hooks: list[CornerHookTemplate] = []
+    for hook in data or []:
+        if not isinstance(hook, dict):
+            continue
+        default_corner_id = str(hook.get(id_key) or "")
+        if not default_corner_id:
+            continue
+        hooks.append(
+            CornerHookTemplate(
+                default_corner_id=default_corner_id,
+                position=_vector3_from_json(hook.get("position")),
+                orientation=QuaternionWXYZ.from_xyzw_json(hook.get("orientation")),
+                adjacent=[int(value) for value in hook.get("adjacencies", []) or []],
+            )
+        )
+    return hooks
+
+
+def load_kotor_net_kit_v0_1_from_dict(
+    kit_json: dict,
+    *,
+    base_path: Path,
+    kit_name: str,
+    missing_files: list[MissingFileInfo] | None = None,
+) -> TileKit:
+    kit_id = str(kit_json["id"])
+    tk = TileKit(
+        name=str(kit_json["name"]),
+        kit_id=kit_id,
+        version=int(kit_json.get("version") or 0),
+        formats_serializer="Kotor.NET KitSerializer_V0_1",
+        format_id=str(kit_json.get("format") or "0.1"),
+    )
+
+    for tile_json in kit_json.get("tiles", []) or []:
+        if not isinstance(tile_json, dict):
+            continue
+        template_id = str(tile_json.get("id") or "")
+        if not template_id:
+            continue
+        tk.tiles.append(
+            TileCellTemplate(
+                template_id=template_id,
+                name=str(tile_json.get("name") or template_id),
+                default_floor_id=str(tile_json.get("defaultFloorID") or ""),
+                default_ceiling_id=str(tile_json.get("defaultCeilingID") or ""),
+                wall_hooks=_parse_wall_hooks(tile_json.get("wallHooks", []) or []),
+                inner_corner_hooks=_parse_corner_hooks(
+                    tile_json.get("innerCornerHooks", []) or [],
+                    id_key="defaultInnerCornerID",
+                ),
+                outer_corner_hooks=_parse_corner_hooks(
+                    tile_json.get("outerCornerHooks", []) or [],
+                    id_key="defaultOuterCornerID",
+                ),
+            )
+        )
+
+    template_groups: list[tuple[str, TileTemplateKind, list[TileTemplate]]] = [
+        ("floors", TileTemplateKind.FLOOR, tk.floors),
+        ("ceilings", TileTemplateKind.CEILING, tk.ceilings),
+        ("walls", TileTemplateKind.WALL, tk.walls),
+        ("doorframes", TileTemplateKind.DOORFRAME, tk.doorframes),
+        ("innerCorners", TileTemplateKind.INNER_CORNER, tk.inner_corners),
+        ("outerCorners", TileTemplateKind.OUTER_CORNER, tk.outer_corners),
+        ("objects", TileTemplateKind.OBJECT, tk.objects),
+    ]
+    for key, kind, target in template_groups:
+        for item_json in kit_json.get(key, []) or []:
+            if not isinstance(item_json, dict):
+                continue
+            template = _template_from_kotor_net_json(
+                item_json,
+                kind=kind,
+                base_path=base_path,
+                kit_name=kit_name,
+                missing_files=missing_files,
+            )
+            if template is not None:
+                target.append(template)
+
+    return tk
+
+
 def _parse_hooks(
     kit: TileKit,
     hook_jsons: list[dict],
@@ -67,6 +233,14 @@ def load_tile_kit_v2_from_dict(
     kit_name: str,
     missing_files: list[MissingFileInfo] | None = None,
 ) -> TileKit | None:
+    if str(kit_json.get("format") or "") == "0.1" and "tiles" in kit_json:
+        return load_kotor_net_kit_v0_1_from_dict(
+            kit_json,
+            base_path=base_path,
+            kit_name=kit_name,
+            missing_files=missing_files,
+        )
+
     fmt = kit_json.get("format_version")
     if fmt != 2:
         return None
@@ -159,6 +333,9 @@ def load_tile_kit_v2_json_file(
     if not isinstance(kit_json, dict):
         return None
     kit_id = str(kit_json.get("id") or json_path.stem)
+    if str(kit_json.get("format") or "") == "0.1" and kit_id != json_path.stem:
+        msg = f"Kit ID {kit_id} does not match filename {json_path.name}."
+        raise ValueError(msg)
     base_path = json_path.parent / kit_id
     kit_name = str(kit_json.get("name") or kit_id)
     return load_tile_kit_v2_from_dict(
@@ -175,8 +352,84 @@ def load_tile_kits_v2_from_folder(
     out: list[TileKit] = []
     if not kits_path.is_dir():
         return out
-    for file in sorted(f for f in kits_path.iterdir() if f.suffix.lower() == ".json"):
+    for file in sorted(f for f in kits_path.iterdir() if f.suffix.lower() in {".json", ".kit"}):
         tk = load_tile_kit_v2_json_file(file, missing_files=missing_files)
         if tk is not None:
             out.append(tk)
     return out
+
+
+def _vector3_to_json(value: Vector3) -> list[float]:
+    return [value.x, value.y, value.z]
+
+
+def _template_to_kotor_net_json(template: TileTemplate) -> dict:
+    data = {
+        "id": template.template_id,
+        "name": template.name or template.template_id,
+        "model": template.model or template.resref,
+    }
+    if template.kind == TileTemplateKind.WALL:
+        data["doorframeID"] = template.doorframe_id
+    if template.kind == TileTemplateKind.DOORFRAME:
+        data["hooks"] = [
+            {
+                "position": _vector3_to_json(hook.position),
+                "orientation": hook.orientation.to_xyzw_json(),
+            }
+            for hook in template.hooks
+        ]
+    return data
+
+
+def tile_kit_v2_to_kotor_net_dict(tile_kit: TileKit) -> dict:
+    """Serialize the headless kit model using Kotor.NET KitSerializer_V0_1 keys."""
+
+    return {
+        "id": tile_kit.kit_id,
+        "version": tile_kit.version,
+        "name": tile_kit.name,
+        "format": tile_kit.format_id or "0.1",
+        "tiles": [
+            {
+                "id": tile.template_id,
+                "name": tile.name or tile.template_id,
+                "defaultFloorID": tile.default_floor_id,
+                "defaultCeilingID": tile.default_ceiling_id,
+                "wallHooks": [
+                    {
+                        "defaultWallID": hook.default_wall_id,
+                        "position": _vector3_to_json(hook.position),
+                        "orientation": hook.orientation.to_xyzw_json(),
+                    }
+                    for hook in tile.wall_hooks
+                ],
+                "innerCornerHooks": [
+                    {
+                        "defaultInnerCornerID": hook.default_corner_id,
+                        "position": _vector3_to_json(hook.position),
+                        "orientation": hook.orientation.to_xyzw_json(),
+                        "adjacencies": hook.adjacent,
+                    }
+                    for hook in tile.inner_corner_hooks
+                ],
+                "outerCornerHooks": [
+                    {
+                        "defaultOuterCornerID": hook.default_corner_id,
+                        "position": _vector3_to_json(hook.position),
+                        "orientation": hook.orientation.to_xyzw_json(),
+                        "adjacencies": hook.adjacent,
+                    }
+                    for hook in tile.outer_corner_hooks
+                ],
+            }
+            for tile in tile_kit.tiles
+        ],
+        "floors": [_template_to_kotor_net_json(template) for template in tile_kit.floors],
+        "ceilings": [_template_to_kotor_net_json(template) for template in tile_kit.ceilings],
+        "doorframes": [_template_to_kotor_net_json(template) for template in tile_kit.doorframes],
+        "walls": [_template_to_kotor_net_json(template) for template in tile_kit.walls],
+        "innerCorners": [_template_to_kotor_net_json(template) for template in tile_kit.inner_corners],
+        "outerCorners": [_template_to_kotor_net_json(template) for template in tile_kit.outer_corners],
+        "objects": [_template_to_kotor_net_json(template) for template in tile_kit.objects],
+    }
