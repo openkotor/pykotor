@@ -22,8 +22,9 @@ from pykotor.resource.formats.tpc.convert.dxt.compress_dxt_ndix import (
     ndix_compressor_available,
 )
 from pykotor.resource.formats.tpc.manipulate.mipmap_ndix import _js_round, downsample_rgba_ndix
-from pykotor.resource.formats.tpc.io_tpc import TPCBinaryWriter
+from pykotor.resource.formats.tpc.tpc_auto import bytes_tpc
 from pykotor.resource.formats.tpc.tga2tpc import build_tpc_from_tga_bytes
+from pykotor.resource.type import ResourceType
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCMipmap, TPCTextureFormat
 
 # ``N_BelHd.tga`` (512×512 retail-style head texture): vendored under ``fixtures/`` for ndix vs PyKotor parity.
@@ -70,16 +71,13 @@ def _run_headless_ndix_tpc(tga_bytes: bytes, script: Path) -> bytes:
 
 
 def _pykotor_tpc_bytes_from_tga_ndix(raw_tga: bytes) -> bytes:
-    """``tga2tpc.build_tpc_from_tga_bytes`` + ``TPCBinaryWriter`` with ndix DXT blocks (``PYKOTOR_DXT_COMPRESSOR=ndix``)."""
-    with tempfile.TemporaryDirectory() as tmp:
-        out = Path(tmp) / "out.tpc"
-        os.environ["PYKOTOR_DXT_COMPRESSOR"] = "ndix"
-        try:
-            tpc = build_tpc_from_tga_bytes(raw_tga, compression="auto", generate_mipmaps=True)
-            TPCBinaryWriter(tpc, out).write()
-        finally:
-            os.environ.pop("PYKOTOR_DXT_COMPRESSOR", None)
-        return out.read_bytes()
+    """``read_tga`` → ``build_tpc_from_tga_bytes`` pipeline + ``write_tpc`` via ``bytes_tpc`` (ndix DXT when set)."""
+    os.environ["PYKOTOR_DXT_COMPRESSOR"] = "ndix"
+    try:
+        tpc = build_tpc_from_tga_bytes(raw_tga, compression="auto", generate_mipmaps=True)
+        return bytes_tpc(tpc, ResourceType.TPC)
+    finally:
+        os.environ.pop("PYKOTOR_DXT_COMPRESSOR", None)
 
 
 def _minimal_uncompressed_tga(width: int, height: int, pixel_depth: int) -> bytes:

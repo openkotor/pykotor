@@ -39,9 +39,10 @@ import sys
 from pathlib import Path
 from typing import Iterable, Sequence
 
-from pykotor.resource.formats.tpc.io_tpc import TPCBinaryWriter
 from pykotor.resource.formats.tpc.tga import TGAImage, read_tga
+from pykotor.resource.formats.tpc.tpc_auto import write_tpc
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCMipmap, TPCTextureFormat
+from pykotor.resource.type import ResourceType
 
 
 def _has_alpha_channel(frame: TGAImage) -> bool:
@@ -413,7 +414,7 @@ def run_cli(argv: Iterable[str]) -> int:
         alpha_test=args.alpha_test,
     )
 
-    TPCBinaryWriter(texture, args.output).write()
+    write_tpc(texture, args.output, ResourceType.TPC)
 
     if args.emit_txi:
         txi_path = args.output.with_suffix(".txi")
