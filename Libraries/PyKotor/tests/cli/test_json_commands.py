@@ -3,9 +3,11 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import sys
 
 from argparse import Namespace
 from pathlib import Path
+from typing import TextIO, cast
 
 import pytest
 from loggerplus import RobustLogger
@@ -28,6 +30,7 @@ from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, bytes_tpc, read_
 from pykotor.resource.type import ResourceType
 from pykotor.tools.resource_json import (
     _serialize_mdl_face,
+    _supports_live_progress,
     export_installation_to_json_tree,
     iter_installation_resource_documents,
     serialize_file_resource_document,
@@ -325,6 +328,85 @@ def test_export_installation_to_json_tree_logs_percentage_progress(
     )
     assert any(
         message == "Processed 4 resources (3 readable, 1 binary, 0 errors)" for message in messages
+    )
+
+
+class _FakeTTYTextStream:
+    """Minimal TextIO with isatty() True for exercising live-progress detection."""
+
+    def isatty(self) -> bool:
+        return True
+
+    def write(self, _s: str) -> int:
+        return 0
+
+    def flush(self) -> None:
+        return None
+
+
+def test_supports_live_progress_is_false_when_ci_env_set(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CI", "true")
+    assert _supports_live_progress(sys.stderr) is False
+
+
+def test_supports_live_progress_is_false_when_github_actions_set(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.setenv("GITHUB_ACTIONS", "1")
+    assert _supports_live_progress(sys.stderr) is False
+
+
+def test_supports_live_progress_is_true_for_tty_like_stream(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+    assert _supports_live_progress(cast(TextIO, _FakeTTYTextStream())) is True
+
+
+def test_export_installation_to_json_tree_logs_percentage_when_ci_disables_live_progress(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """When CI is set, progress must use logger lines (not only TTY \\r updates)."""
+    monkeypatch.setenv("CI", "true")
+
+    install_path = tmp_path / "K1"
+    install_path.mkdir()
+    (install_path / "Override").mkdir()
+    (install_path / "Modules").mkdir()
+    (install_path / "StreamMusic").mkdir()
+    (install_path / "chitin.key").write_bytes(b"")
+    (install_path / "swkotor.exe").write_bytes(b"")
+
+    tlk = TLK(Language.ENGLISH)
+    tlk.add("install root text", "root_vo")
+    write_tlk(tlk, install_path / "dialog.tlk", ResourceType.TLK)
+
+    (install_path / "Override" / "hello.nss").write_text("void main() {}\n", encoding="utf-8")
+
+    rim = RIM()
+    rim.set_data("notes", ResourceType.TXT, b"module notes")
+    write_rim(rim, install_path / "Modules" / "testmod_s.rim")
+
+    (install_path / "StreamMusic" / "intro.wav").write_bytes(b"RIFFdemo")
+
+    output_path = tmp_path / "json-export-ci"
+    caplog.clear()
+
+    assert export_installation_to_json_tree(install_path, output_path, RobustLogger()) == 0
+    messages = [record.getMessage() for record in caplog.records]
+
+    assert _supports_live_progress(sys.stderr) is False
+    assert any("25.00% Writing dialog.tlk" in message for message in messages)
+    assert any(
+        "100.00% Writing" in message
+        and message.casefold().endswith("streammusic/intro.wav".casefold())
+        for message in messages
     )
 
 
