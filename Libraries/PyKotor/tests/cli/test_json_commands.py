@@ -28,6 +28,7 @@ from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, bytes_tpc, read_
 from pykotor.resource.type import ResourceType
 from pykotor.tools.resource_json import (
     _serialize_mdl_face,
+    _supports_live_progress,
     export_installation_to_json_tree,
     iter_installation_resource_documents,
     serialize_file_resource_document,
@@ -283,6 +284,51 @@ def test_to_json_exports_installation_resources_with_readable_wrappers(tmp_path:
     assert wav_payload["extension"] == "wav"
     assert "data_base64" in wav_payload
     assert "data" not in wav_payload
+
+
+def test_supports_live_progress_false_in_ci_even_when_stream_is_tty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Live \\r progress bypasses logging; force logger path when CI env is set."""
+
+    class FakeTTY:
+        def isatty(self) -> bool:
+            return True
+
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+    assert _supports_live_progress(FakeTTY()) is True
+
+    monkeypatch.setenv("CI", "true")
+    assert _supports_live_progress(FakeTTY()) is False
+
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.setenv("GITHUB_ACTIONS", "1")
+    assert _supports_live_progress(FakeTTY()) is False
+
+
+def test_supports_live_progress_ci_env_values_are_case_and_whitespace_tolerant(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeTTY:
+        def isatty(self) -> bool:
+            return True
+
+    monkeypatch.setenv("CI", " YES ")
+    assert _supports_live_progress(FakeTTY()) is False
+
+
+def test_supports_live_progress_false_when_stream_not_tty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("CI", raising=False)
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+
+    class FakePipe:
+        def isatty(self) -> bool:
+            return False
+
+    assert _supports_live_progress(FakePipe()) is False
 
 
 def test_export_installation_to_json_tree_logs_percentage_progress(
