@@ -81,6 +81,19 @@ Master merge commit `01edca184` triggered `Forward Commits to Bleeding-Edge` run
 
 ---
 
+## Verification (closeout)
+
+| Check | Evidence | Result |
+|-------|----------|--------|
+| R1–R3: `.gitmodules` valid on `bleeding-edge` | `f15e4769d` on `origin/bleeding-edge`; `git config -f .gitmodules --list` parse OK; no `<<<<<<<` / `>>>>>>>` markers | ✅ pass (2026-05-24) |
+| R4: remote `bleeding-edge` updated | `git rev-parse origin/bleeding-edge` = `f15e4769d` | ✅ pushed |
+| Forward Commits re-run after #268 | [run 26361732290](https://github.com/OpenKotOR/PyKotor/actions/runs/26361732290) | ⏳ queued (post-fix) |
+| PR #269 (docs closeout) | `fix/bleeding-edge-gitmodules` → `master` | ✅ open for plan traceability |
+
+**Note:** The `.gitmodules` fix lands on branch `bleeding-edge` only (not via PR #269 diff to `master`). PR #269 documents the incident and closeout; `master` `.gitmodules` was already clean.
+
+---
+
 ## Sources & References
 
 - Failed run: https://github.com/OpenKotOR/PyKotor/actions/runs/26361732290
