@@ -40,8 +40,8 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 | Stale branch cleanup | `fix/pypi-verify-regression-concurrency` deleted (merged #275, stray docs) | ✅ plan 026 |
 | Local CLI PyPI parity (plan 042) | holopatcher/kotormcp install from PyPI; kotordiff not on PyPI; `--help` rc=1 (workflow continue-on-error) | ✅ pass (parity with CI skip semantics; py3.14 local) |
 | Local PyPI parity (plan 041) | ephemeral venv `pip install pykotor[all]` + workflow import scripts | ✅ pass (Linux/py3; CI matrix still queued) |
-| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364992933 | ⏳ queued — **Check trigger** on `4881930aa` (plan 050; cancelled stale 26364756399) |
-| Forward Commits (post-#300) | https://github.com/OpenKotOR/PyKotor/actions/runs/26365113919 | ⏳ queued — merge on `4a4bd4e09` (plan 052; superseded 26364956110 cancelled) |
+| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26365458400 | ⏳ queued — **Check trigger** on `9facd78fd` (plan 055; cancelled stale 26364992933) |
+| Forward Commits (post-#303) | https://github.com/OpenKotOR/PyKotor/actions/runs/26365415666 | ⏳ queued — merge on `9facd78fd` (plan 055) |
 | Local FC dry-run (plan 051) | cherry-pick `49da28057`→bleeding-edge + workflow restore | ✅ pass (`d8dc53968`; docs conflict auto-resolved) |
 | Solution doc (plan 050) | `docs/solutions/testing/verify-pypi-regression-closeout.md` | ✅ prefer/defer/avoid + local command |
 | Local verify script (plan 048) | `python3 .github/scripts/local_verify_pypi_slice.py` | ✅ pass (replaces manual plan 047 slice) |
@@ -60,9 +60,9 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 **Local PyPI parity:** Plans 041–042 confirm published packages match workflow scripts locally (core/format imports; CLI discover→install with documented skips).
 
-**Track status (plan 051):** **Monitoring-only.** Code and local parity complete (#268–#300, plans 019–052). Await CI green on [26364992933](https://github.com/OpenKotOR/PyKotor/actions/runs/26364992933) and FC [26365113919](https://github.com/OpenKotOR/PyKotor/actions/runs/26365113919); no further workflow changes unless CI reports new failures.
+**Track status (plan 051):** **Monitoring-only.** Code and local parity complete (#268–#303, plans 019–055). Await CI green on [26365458400](https://github.com/OpenKotOR/PyKotor/actions/runs/26365458400) and FC [26365415666](https://github.com/OpenKotOR/PyKotor/actions/runs/26365415666); no further workflow changes unless CI reports new failures.
 
-**Plans:** 019–051 document the closeout track; authoritative learning in `docs/solutions/testing/verify-pypi-regression-closeout.md`.
+**Plans:** 019–055 document the closeout track; authoritative learning in `docs/solutions/testing/verify-pypi-regression-closeout.md`.
 
 ---
 
