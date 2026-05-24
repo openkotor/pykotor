@@ -145,6 +145,8 @@ jobs:
                   "display_name": tool.get("display_name") or tool_dir_name,
                   "path": tool_path,
                   "requires_qt": tool.get("requires_qt", False),
+                  "min_python": tool.get("min_python", "3.8"),
+                  "validate_py38": tool.get("validate_py38", True),
                   "changed": tool_changed,
                   "has_config": find_config_file(tool_dir, tool_name_lower) is not None,
               }
@@ -180,6 +182,8 @@ jobs:
                   "path": t["path"],
                   "requires_qt": t["requires_qt"],
                   "has_config": t["has_config"],
+                  "min_python": t.get("min_python", "3.8"),
+                  "validate_py38": t.get("validate_py38", True),
               }
               for t in changed_tools
           ]
@@ -365,7 +369,13 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: Skip Py3.8 validation (requires Python ${{ matrix.tool.min_python }}+)
+        if: matrix.tool.validate_py38 != true
+        run: |
+          echo "Skipping Py3.8 dry-run: ${{ matrix.tool.display_name }} requires Python ${{ matrix.tool.min_python }}+"
+
       - name: Build ${{ matrix.tool.display_name }} (validation)
+        if: matrix.tool.validate_py38 == true
         uses: ./.github/actions/build-tool
         with:
           tool_path: ${{ matrix.tool.path }}
