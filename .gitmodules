@@ -53,7 +53,6 @@
 # Engines Rewrites
 # ===============================
 
-<<<<<<< HEAD
 ## Engine Reimplementations
 [submodule "vendor/xoreos"]
 	path = vendor/xoreos
@@ -330,5 +329,3 @@
 #[submodule "vendor/Pazaak-Handensaken"]
 #	path = vendor/Pazaak-Handensaken
 #	url = https://github.com/th3w1zard1/Pazaak-Handensaken.git
-=======
->>>>>>> b18669b96 (test)
