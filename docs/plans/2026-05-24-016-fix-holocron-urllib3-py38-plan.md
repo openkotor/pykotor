@@ -1,7 +1,7 @@
 ---
 title: "fix: holocron toolset urllib3/requests pins for python 3.8 ci"
 type: fix
-status: active
+status: completed
 date: 2026-05-24
 origin: lfg-pr266-follow-up
 strategy_track: test-signal-quality
