@@ -39,7 +39,7 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 | Master track (2026-05-24) | #273/#270/#277 merged; forward-commits repaired in #277 | ✅ closed on `35b01ca9b` |
 | Stale branch cleanup | `fix/pypi-verify-regression-concurrency` deleted (merged #275, stray docs) | ✅ plan 026 |
 | Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26363420578 | ⏳ queued — **Check trigger** scheduled (fresh dispatch; plan 036; stale 26363187827 cancelled) |
-| Forward Commits (post-#283) | plan 037 adds `workflow_dispatch`; post-merge push retriggers FC | ⏳ pending #286 merge (stale 26363271048 queued) |
+| Forward Commits (post-#286) | push [26363511361](https://github.com/OpenKotOR/PyKotor/actions/runs/26363511361), dispatch [26363563890](https://github.com/OpenKotOR/PyKotor/actions/runs/26363563890) | ⏳ queued — merge job scheduled; stale 26363271048 cancelled (plan 038) |
 | Docs-only CI fan-out | #283 `paths-ignore: docs/**` on FC + Auto-Publish | ✅ merged `f8e9de37f`; stale docs-era FC runs cancelled (plan 035) |
 
 ---
