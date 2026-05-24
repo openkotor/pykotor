@@ -55,16 +55,11 @@ jobs:
         git config --system core.longpaths true
     # Windows Bandit hangs on full-repo scan (vendor submodules / path depth).
     # Python coverage: standalone bandit.yml + MSDO ubuntu matrix job.
-    - name: Run Microsoft Security DevOps (Windows)
-      if: runner.os == 'Windows'
+    - name: Run Microsoft Security DevOps
       uses: microsoft/security-devops-action@v1.12.0
       id: msdo
       with:
-        tools: antimalware,binskim,checkov,eslint,templateanalyzer
-    - name: Run Microsoft Security DevOps (Linux)
-      if: runner.os != 'Windows'
-      uses: microsoft/security-devops-action@v1.12.0
-      id: msdo
+        tools: ${{ matrix.os == 'windows-latest' && 'antimalware,binskim,checkov,eslint,templateanalyzer' || 'bandit,antimalware,binskim,checkov,eslint,templateanalyzer' }}
     - name: Upload results to Security tab
       uses: github/codeql-action/upload-sarif@v4
       with:
