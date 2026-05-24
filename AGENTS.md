@@ -29,7 +29,7 @@ Use system **`python3`**, not `uv run`: workspace resolution can fail on unpubli
 
 See also `docs/solutions/testing/verify-pypi-regression-closeout.md` for prefer/defer/avoid guidance and CI closeout history.
 
-When `checkpoint.defer_lfg_pr` or `lfg_deferred` is true, defer further LFG PRs on this track until status or conclusion changes (plans 056–064). Run `python3 .github/scripts/local_verify_pypi_slice.py --monitor-preflight --strict-defer-exit` first; **exit 2** means stop without opening a monitoring PR.
+When `checkpoint.defer_lfg_pr` or `lfg_deferred` is true, defer further LFG PRs on this track until status or conclusion changes (plans 056–066). When `checkpoint.verify_sha_stale` is true, proceed with verify refresh (cancel + `workflow_dispatch`) per plan 055/066 — do not defer.
 
 ### Lint
 

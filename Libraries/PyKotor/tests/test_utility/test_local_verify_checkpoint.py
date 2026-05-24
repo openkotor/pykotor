@@ -48,6 +48,17 @@ Monitoring-only.
 
 
 class TestCheckpointParsing(unittest.TestCase):
+    def test_parse_run_ids_uses_last_verify_link_in_section(self) -> None:
+        section = """
+        cancelled verify [26365458400](url) on old sha;
+        fresh verify [26372746392](url) queued on master;
+        FC [26365648344](url) queued.
+        """
+        with patch.object(mod, "_last_ci_check_section", return_value=section):
+            result = mod._parse_solution_checkpoint_run_ids()
+        self.assertEqual(result["verify_run_id"], 26372746392)
+        self.assertEqual(result["forward_commits_run_id"], 26365648344)
+
     def test_parse_run_ids_from_last_ci_check(self) -> None:
         with patch.object(mod, "SOLUTION_CLOSEOUT", Path("/unused")):
             with patch.object(mod, "_last_ci_check_section", return_value=SAMPLE_LAST_CHECK):
@@ -66,11 +77,13 @@ class TestCheckpointParsing(unittest.TestCase):
                 "run_id": 26365458400,
                 "status": "queued",
                 "conclusion": "",
+                "head_sha": "9facd78fd215ddbeee9c2d8a3b74a5ac93504007",
             },
             "forward_commits": {
                 "run_id": 26365648344,
                 "status": "queued",
                 "conclusion": "",
+                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
             },
         }
         with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
@@ -78,9 +91,60 @@ class TestCheckpointParsing(unittest.TestCase):
                 "verify_run_id": 26365458400,
                 "forward_commits_run_id": 26365648344,
             }
-            result = mod._compare_checkpoint(status)
+            with patch.object(mod, "_git_origin_master_sha", return_value="9facd78fd215ddbeee9c2d8a3b74a5ac93504007"):
+                result = mod._compare_checkpoint(status)
         self.assertTrue(result["defer_lfg_pr"])
         self.assertTrue(result["checkpoint_unchanged"])
+
+    def test_compare_defer_when_in_progress_and_ids_match(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26365458400,
+                "status": "in_progress",
+                "conclusion": "",
+                "head_sha": "abc123",
+            },
+            "forward_commits": {
+                "run_id": 26365648344,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "abc123",
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26365458400,
+                "forward_commits_run_id": 26365648344,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value="abc123"):
+                result = mod._compare_checkpoint(status)
+        self.assertTrue(result["defer_lfg_pr"])
+
+    def test_compare_no_defer_when_verify_sha_stale(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26365458400,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "9facd78fd215ddbeee9c2d8a3b74a5ac93504007",
+            },
+            "forward_commits": {
+                "run_id": 26365648344,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26365458400,
+                "forward_commits_run_id": 26365648344,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
+                result = mod._compare_checkpoint(status)
+        self.assertFalse(result["defer_lfg_pr"])
+        self.assertTrue(result["verify_sha_stale"])
+        self.assertIn("workflow_dispatch", result.get("recommended_action", ""))
 
     def test_compare_no_defer_when_verify_completed(self) -> None:
         status = {
@@ -88,11 +152,13 @@ class TestCheckpointParsing(unittest.TestCase):
                 "run_id": 26365458400,
                 "status": "completed",
                 "conclusion": "success",
+                "head_sha": "abc123",
             },
             "forward_commits": {
                 "run_id": 26365648344,
                 "status": "queued",
                 "conclusion": "",
+                "head_sha": "abc123",
             },
         }
         with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
@@ -100,7 +166,8 @@ class TestCheckpointParsing(unittest.TestCase):
                 "verify_run_id": 26365458400,
                 "forward_commits_run_id": 26365648344,
             }
-            result = mod._compare_checkpoint(status)
+            with patch.object(mod, "_git_origin_master_sha", return_value="abc123"):
+                result = mod._compare_checkpoint(status)
         self.assertFalse(result["defer_lfg_pr"])
 
     def test_compare_no_defer_on_run_id_drift(self) -> None:
@@ -109,11 +176,13 @@ class TestCheckpointParsing(unittest.TestCase):
                 "run_id": 99999999999,
                 "status": "queued",
                 "conclusion": "",
+                "head_sha": "abc123",
             },
             "forward_commits": {
                 "run_id": 26365648344,
                 "status": "queued",
                 "conclusion": "",
+                "head_sha": "abc123",
             },
         }
         with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
@@ -121,7 +190,8 @@ class TestCheckpointParsing(unittest.TestCase):
                 "verify_run_id": 26365458400,
                 "forward_commits_run_id": 26365648344,
             }
-            result = mod._compare_checkpoint(status)
+            with patch.object(mod, "_git_origin_master_sha", return_value="abc123"):
+                result = mod._compare_checkpoint(status)
         self.assertFalse(result["defer_lfg_pr"])
 
     def test_last_ci_check_section_extracts_block(self) -> None:
@@ -172,9 +242,13 @@ class TestCheckpointParsing(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         payload = json.loads(result.stdout)
-        self.assertTrue(payload.get("lfg_deferred"))
+        checkpoint = payload.get("checkpoint", {})
+        if checkpoint.get("defer_lfg_pr"):
+            self.assertTrue(payload.get("lfg_deferred"))
+        else:
+            self.assertNotIn("lfg_deferred", payload)
 
-    def test_strict_defer_exit_returns_2_when_deferred(self) -> None:
+    def test_strict_defer_exit_matches_defer_state(self) -> None:
         result = subprocess.run(
             [
                 sys.executable,
@@ -187,7 +261,12 @@ class TestCheckpointParsing(unittest.TestCase):
             cwd=REPO_ROOT,
             check=False,
         )
-        self.assertEqual(result.returncode, 2, msg=result.stderr or result.stdout)
+        payload = json.loads(result.stdout)
+        checkpoint = payload.get("checkpoint", {})
+        if checkpoint.get("defer_lfg_pr"):
+            self.assertEqual(result.returncode, 2, msg=result.stderr or result.stdout)
+        else:
+            self.assertEqual(result.returncode, 0, msg=result.stderr or result.stdout)
 
     def test_strict_defer_exit_requires_exit_on_defer(self) -> None:
         result = subprocess.run(

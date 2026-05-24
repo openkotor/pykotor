@@ -38,7 +38,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 ## Prefer
 
 - **`python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json`** for fast CI monitoring without a PyPI venv.
-- **`--compare-checkpoint --exit-on-defer`** to detect unchanged monitoring checkpoint and emit `lfg_deferred: true` (plans 059–061; PR #308).
+- **`--compare-checkpoint --exit-on-defer`** — detects unchanged checkpoint; **`verify_sha_stale`** when verify dispatch SHA lags `origin/master` (plan 065).
 - **Gate job (`Check trigger`)** before verify matrix jobs — never schedule matrix on empty/cancelled runs.
 - **`workflow_dispatch` + weekly cron** as verify triggers; **publish→verify dispatch** (#293) after Auto-Publish with packages.
 - **`paths-ignore: docs/**`** on Forward Commits and Auto-Publish.
@@ -81,17 +81,17 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 | Workflow | Run | Notes |
 |----------|-----|-------|
-| Verify PyPI | [26365458400](https://github.com/OpenKotOR/PyKotor/actions/runs/26365458400) | Check trigger queued on `9facd78fd` (plan 055) |
+| Verify PyPI | [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) | Check trigger queued on `8916e2ffe` (plan 066; cancelled 26365458400) |
 | Forward Commits | [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) | merge queued on `3b6b74640` (plan 058) |
 
 ## Plans index
 
-Plans **019–062** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–066** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
-## Last CI check (plan 058)
+## Last CI check (plan 066)
 
-**2026-05-24:** `--ci-status-only --json` — verify [26365458400](https://github.com/OpenKotOR/PyKotor/actions/runs/26365458400) still **queued** on `9facd78fd`; FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) **queued** on `3b6b74640` (superseded 26365415666 after #306). No verify re-dispatch.
+**2026-05-24:** Fresh verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) **queued** on `8916e2ffe`; cancelled stale [26365458400](https://github.com/OpenKotOR/PyKotor/actions/runs/26365458400). FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) **queued** on `3b6b74640`.
 
 ## Track status (plan 051)
 
-**Monitoring-only.** No further workflow YAML changes unless CI reports new failures after runs [26365458400](https://github.com/OpenKotOR/PyKotor/actions/runs/26365458400) and [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) complete.
+**Monitoring-only.** No further workflow YAML changes unless CI reports new failures after runs [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) complete.

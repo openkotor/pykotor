@@ -24,6 +24,19 @@ SOLUTION_CLOSEOUT = (
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
 FC_WORKFLOW = "commit-all-to-bleeding-edge.yml"
 
+_TERMINAL_CONCLUSIONS = frozenset(
+    {
+        "success",
+        "failure",
+        "cancelled",
+        "skipped",
+        "timed_out",
+        "action_required",
+        "stale",
+    }
+)
+_ACTIVE_STATUSES = frozenset({"queued", "in_progress", "pending", "waiting", "requested"})
+
 CORE_CHECK = """
 import pykotor
 print('OK: pykotor imported')
@@ -176,6 +189,32 @@ def _latest_workflow_run(workflow_file: str) -> dict[str, Any]:
     }
 
 
+def _git_origin_master_sha() -> str | None:
+    result = subprocess.run(
+        ["git", "rev-parse", "origin/master"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    sha = result.stdout.strip()
+    return sha or None
+
+
+def _is_active_run(run: dict[str, Any]) -> bool:
+    if "error" in run:
+        return False
+    conclusion = run.get("conclusion")
+    if conclusion and conclusion in _TERMINAL_CONCLUSIONS:
+        return False
+    status = run.get("status")
+    if status in _ACTIVE_STATUSES:
+        return True
+    return not conclusion
+
+
 def _last_ci_check_section() -> str:
     if not SOLUTION_CLOSEOUT.is_file():
         return ""
@@ -188,13 +227,13 @@ def _parse_solution_checkpoint_run_ids() -> dict[str, Any]:
     section = _last_ci_check_section()
     if not section:
         return {"error": "Last CI check section not found in solution doc"}
-    verify_match = re.search(r"verify[^\[]*\[(\d+)\]", section, re.I)
-    fc_match = re.search(r"FC[^\[]*\[(\d+)\]", section, re.I)
-    if not verify_match or not fc_match:
+    verify_ids = [int(match) for match in re.findall(r"verify[^\[]*\[(\d+)\]", section, re.I)]
+    fc_ids = [int(match) for match in re.findall(r"FC[^\[]*\[(\d+)\]", section, re.I)]
+    if not verify_ids or not fc_ids:
         return {"error": "could not parse verify/FC run IDs from Last CI check"}
     return {
-        "verify_run_id": int(verify_match.group(1)),
-        "forward_commits_run_id": int(fc_match.group(1)),
+        "verify_run_id": verify_ids[-1],
+        "forward_commits_run_id": fc_ids[-1],
     }
 
 
@@ -205,6 +244,7 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
             "checkpoint_unchanged": False,
             "defer_lfg_pr": False,
             "checkpoint_error": checkpoint["error"],
+            "defer_reason": checkpoint["error"],
         }
 
     verify = status["verify_pypi"]
@@ -214,26 +254,79 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
             "checkpoint_unchanged": False,
             "defer_lfg_pr": False,
             "checkpoint_error": "gh run lookup failed",
+            "defer_reason": "gh run lookup failed",
         }
 
+    master_sha = _git_origin_master_sha()
     verify_id = verify.get("run_id")
     fc_id = forward_commits.get("run_id")
+    verify_head = verify.get("head_sha") or ""
+    fc_head = forward_commits.get("head_sha") or ""
     ids_match = (
         verify_id == checkpoint["verify_run_id"]
         and fc_id == checkpoint["forward_commits_run_id"]
     )
-    still_queued = (
-        verify.get("status") == "queued"
-        and forward_commits.get("status") == "queued"
-        and not verify.get("conclusion")
-        and not forward_commits.get("conclusion")
-    )
-    return {
-        "checkpoint_unchanged": ids_match and still_queued,
-        "defer_lfg_pr": ids_match and still_queued,
+    verify_active = _is_active_run(verify)
+    fc_active = _is_active_run(forward_commits)
+    runs_active = verify_active and fc_active
+    verify_sha_stale = bool(master_sha and verify_head and verify_head != master_sha)
+    fc_sha_stale = bool(master_sha and fc_head and fc_head != master_sha)
+
+    result: dict[str, Any] = {
         "checkpoint_verify_run_id": checkpoint["verify_run_id"],
         "checkpoint_forward_commits_run_id": checkpoint["forward_commits_run_id"],
+        "master_sha": master_sha,
+        "verify_sha_stale": verify_sha_stale,
+        "fc_sha_stale": fc_sha_stale,
     }
+
+    if verify_sha_stale:
+        result.update(
+            {
+                "checkpoint_unchanged": False,
+                "defer_lfg_pr": False,
+                "defer_reason": "verify dispatch SHA behind origin/master",
+                "recommended_action": (
+                    "Cancel stale verify if needed; workflow_dispatch verify-pypi-regression on master"
+                ),
+            }
+        )
+        return result
+
+    if not ids_match:
+        result.update(
+            {
+                "checkpoint_unchanged": False,
+                "defer_lfg_pr": False,
+                "defer_reason": "canonical run IDs differ from solution doc Last CI check",
+                "recommended_action": "Update Last CI check or investigate new CI runs",
+            }
+        )
+        return result
+
+    if not runs_active:
+        result.update(
+            {
+                "checkpoint_unchanged": False,
+                "defer_lfg_pr": False,
+                "defer_reason": "verify or FC run reached terminal status",
+                "recommended_action": "Record conclusions in plan 020 and solution doc Last CI check",
+            }
+        )
+        return result
+
+    result.update(
+        {
+            "checkpoint_unchanged": True,
+            "defer_lfg_pr": True,
+            "defer_reason": "same canonical runs still active on unchanged checkpoint",
+        }
+    )
+    if fc_sha_stale:
+        result["fc_sha_stale_note"] = (
+            "FC run SHA behind master but canonical run ID unchanged; monitoring defer still applies"
+        )
+    return result
 
 
 def _ci_status(*, compare_checkpoint: bool = False) -> dict[str, Any]:
@@ -266,9 +359,13 @@ def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
             f"sha={run.get('head_sha')} "
             f"{run.get('url')}",
         )
-    checkpoint = status.get("checkpoint")
     if isinstance(checkpoint, dict) and checkpoint.get("defer_lfg_pr"):
         print("Checkpoint: unchanged (defer_lfg_pr)")
+    elif isinstance(checkpoint, dict) and checkpoint.get("defer_reason"):
+        print(f"Checkpoint: {checkpoint['defer_reason']}")
+        action = checkpoint.get("recommended_action")
+        if action:
+            print(f"Recommended: {action}")
 
 
 def _apply_lfg_defer(status: dict[str, Any], *, exit_on_defer: bool) -> bool:
