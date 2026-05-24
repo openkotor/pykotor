@@ -160,6 +160,10 @@ runs:
             )
           }
 
+          # tool_metadata.py and deps_tool.py require tomli on Python < 3.11 (CI uses 3.8).
+          python -m pip install --disable-pip-version-check tomli
+          if ($LASTEXITCODE -ne 0) { throw "pip install tomli failed with exit code $LASTEXITCODE" }
+
           Write-Host "Installing dependencies via compile/deps_tool.ps1: $($depsArgs -join ' ')"
           & ./compile/deps_tool.ps1 @depsArgs
           if ($LASTEXITCODE -ne 0) { throw "deps_tool.ps1 failed with exit code $LASTEXITCODE" }
