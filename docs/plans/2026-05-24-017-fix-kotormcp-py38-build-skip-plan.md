@@ -1,7 +1,7 @@
 ---
 title: "fix: skip kotormcp py3.8 pr build validation"
 type: fix
-status: active
+status: completed
 date: 2026-05-24
 origin: lfg-pr266-follow-up
 strategy_track: test-signal-quality
