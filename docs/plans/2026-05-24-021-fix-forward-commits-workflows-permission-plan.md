@@ -44,7 +44,20 @@ Bleeding-edge `.gitmodules` is fixed (`f15e4769d`); checkout succeeds. Push is b
 **Approach:** Extend top-level `permissions` with `workflows: write`.
 
 **Verification:**
-- YAML valid; next forward-commits run can push workflow file changes to `bleeding-edge`.
+- YAML change: `permissions.workflows: write` added alongside `contents: write`. ✅
+- PR: https://github.com/OpenKotOR/PyKotor/pull/273 (open, ready for review)
+- Post-merge: re-run Forward Commits after merge; confirm push succeeds when cherry-pick touches `.github/workflows/*`.
+
+---
+
+## Verification (closeout)
+
+| Check | Evidence | Result |
+|-------|----------|--------|
+| R1 workflows permission | `.github/workflows/commit-all-to-bleeding-edge.yml` diff | ✅ landed on branch |
+| R2 contents permission | unchanged `contents: write` | ✅ |
+| R3 cherry-pick logic | no script changes | ✅ |
+| Forward Commits re-test | pending merge of PR #273 | ⏳ post-merge |
 
 ---
 
