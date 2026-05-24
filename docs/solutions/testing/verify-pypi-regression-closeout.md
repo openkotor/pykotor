@@ -65,12 +65,12 @@ python3 .github/scripts/local_verify_pypi_slice.py
 | Workflow | Run | Notes |
 |----------|-----|-------|
 | Verify PyPI | [26364992933](https://github.com/OpenKotOR/PyKotor/actions/runs/26364992933) | Check trigger queued on `4881930aa` (plan 050) |
-| Forward Commits | [26364956110](https://github.com/OpenKotOR/PyKotor/actions/runs/26364956110) | merge queued on `4881930aa` |
+| Forward Commits | [26365113919](https://github.com/OpenKotOR/PyKotor/actions/runs/26365113919) | merge queued on `4a4bd4e09` (plan 052) |
 
 ## Plans index
 
-Plans **019–051** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–052** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Track status (plan 051)
 
-**Monitoring-only.** No further workflow YAML changes unless CI reports new failures after runs [26364992933](https://github.com/OpenKotOR/PyKotor/actions/runs/26364992933) and [26364956110](https://github.com/OpenKotOR/PyKotor/actions/runs/26364956110) complete. Local FC dry-run on `49da28057` succeeded (`d8dc53968`).
+**Monitoring-only.** No further workflow YAML changes unless CI reports new failures after runs [26364992933](https://github.com/OpenKotOR/PyKotor/actions/runs/26364992933) and [26365113919](https://github.com/OpenKotOR/PyKotor/actions/runs/26365113919) complete. Local FC dry-run on `49da28057` succeeded (`d8dc53968`).
