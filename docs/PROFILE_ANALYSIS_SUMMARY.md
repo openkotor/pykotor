@@ -10,12 +10,7 @@
 
 [`resolve_resource_in_installation`](Libraries/PyKotor/src/pykotor/tslpatcher/diff/resolution.py#L86) - Resource Resolution
 
-<<<<<<< Current (Your changes)
-**Location:** [`resolution.py`](Libraries/PyKotor/src/pykotor/tslpatcher/diff/resolution.py):87  
-=======
-
 **Location:** [`resolution.py:87`](Libraries/PyKotor/src/pykotor/tslpatcher/diff/resolution.py#L87)  
->>>>>>> Incoming (Background Agent changes)
 **Self Time:** 11.822 seconds  
 **Cumulative Time:** 477.135 seconds (110% of total - includes subcalls)  
 **Call Count:** 3,034 calls
