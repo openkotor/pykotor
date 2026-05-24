@@ -266,6 +266,23 @@ def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
             f"sha={run.get('head_sha')} "
             f"{run.get('url')}",
         )
+    checkpoint = status.get("checkpoint")
+    if isinstance(checkpoint, dict) and checkpoint.get("defer_lfg_pr"):
+        print("Checkpoint: unchanged (defer_lfg_pr)")
+
+
+def _apply_lfg_defer(status: dict[str, Any], *, exit_on_defer: bool) -> bool:
+    if not exit_on_defer:
+        return False
+    checkpoint = status.get("checkpoint")
+    if not isinstance(checkpoint, dict) or not checkpoint.get("defer_lfg_pr"):
+        return False
+    status["lfg_deferred"] = True
+    print(
+        "LFG deferred: monitoring checkpoint unchanged (see AGENTS.md).",
+        file=sys.stderr,
+    )
+    return True
 
 
 def main() -> None:
@@ -287,12 +304,21 @@ def main() -> None:
     parser.add_argument(
         "--compare-checkpoint",
         action="store_true",
-        help="With --ci-status-only --json, compare runs to solution doc Last CI check",
+        help="With --ci-status-only, compare runs to solution doc Last CI check",
+    )
+    parser.add_argument(
+        "--exit-on-defer",
+        action="store_true",
+        help="With --ci-status-only --compare-checkpoint, emit lfg_deferred when checkpoint unchanged",
     )
     args = parser.parse_args()
 
+    if args.exit_on_defer and not (args.ci_status_only and args.compare_checkpoint):
+        parser.error("--exit-on-defer requires --ci-status-only and --compare-checkpoint")
+
     if args.ci_status_only:
         status = _ci_status(compare_checkpoint=args.compare_checkpoint)
+        _apply_lfg_defer(status, exit_on_defer=args.exit_on_defer)
         _print_ci_status(status, as_json=args.json)
         sys.exit(0 if status["gh_ok"] else 1)
 

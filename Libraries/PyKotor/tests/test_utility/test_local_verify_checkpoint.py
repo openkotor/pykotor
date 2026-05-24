@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import importlib.util
+import io
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -129,6 +131,35 @@ class TestCheckpointParsing(unittest.TestCase):
             section = mod._last_ci_check_section()
         self.assertIn("26365458400", section)
         self.assertIn("26365648344", section)
+
+    def test_apply_lfg_defer_sets_flag_and_stderr(self) -> None:
+        status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True}, "gh_ok": True}
+        with patch("sys.stderr", new_callable=io.StringIO) as err:
+            deferred = mod._apply_lfg_defer(status, exit_on_defer=True)
+        self.assertTrue(deferred)
+        self.assertTrue(status["lfg_deferred"])
+        self.assertIn("LFG deferred", err.getvalue())
+
+    def test_apply_lfg_defer_skipped_when_disabled(self) -> None:
+        status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True}}
+        self.assertFalse(mod._apply_lfg_defer(status, exit_on_defer=False))
+        self.assertNotIn("lfg_deferred", status)
+
+    def test_exit_on_defer_requires_compare_checkpoint(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT_PATH),
+                "--ci-status-only",
+                "--exit-on-defer",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--exit-on-defer requires", result.stderr)
 
 
 if __name__ == "__main__":
