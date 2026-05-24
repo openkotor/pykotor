@@ -71,7 +71,11 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–055** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–056** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+
+## Last CI check (plan 056)
+
+**2026-05-24:** `--ci-status-only --json` — verify [26365458400](https://github.com/OpenKotOR/PyKotor/actions/runs/26365458400) and FC [26365415666](https://github.com/OpenKotOR/PyKotor/actions/runs/26365415666) still **queued** on `9facd78fd` (unchanged since plan 055). No re-dispatch.
 
 ## Track status (plan 051)
 

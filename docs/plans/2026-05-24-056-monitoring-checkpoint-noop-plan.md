@@ -30,10 +30,11 @@ Repeated `/lfg` without CI movement should not cancel/dispatch or add features. 
 
 ## Verification
 
-| Check | Expected |
-|-------|----------|
-| ci-status-only | same run IDs, queued |
-| No re-dispatch | unchanged |
+| Check | Expected | Result |
+|-------|----------|--------|
+| ci-status-only | same run IDs, queued | ✅ 26365458400 / 26365415666 queued |
+| No re-dispatch | unchanged | ✅ no gh cancel/dispatch |
+| Checkpoint docs | last_ci_check added | ✅ plan 020 + solution doc |
 
 ## Scope Boundaries
 
