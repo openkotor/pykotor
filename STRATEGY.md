@@ -21,7 +21,7 @@ Build one typed, cross-platform Python toolchain anchored on reverse-engineered 
 
 ## Key metrics
 
-- **TSLPatcher install parity** — mods install identically to classic TSLPatcher; tracked via [`Libraries/PyKotor/tests/tslpatcher/parity/`](Libraries/PyKotor/tests/tslpatcher/parity/) (manifest + parametrized pytest), HoloPatcher regression tests when submodules are initialized, and open parity issues (#83, #67, #59)
+- **TSLPatcher install parity** — mods install identically to classic TSLPatcher; tracked via [`Libraries/PyKotor/tests/tslpatcher/parity/`](Libraries/PyKotor/tests/tslpatcher/parity/) (manifest + parametrized pytest), [`docs/solutions/testing/tslpatcher-parity-harness-mvp.md`](docs/solutions/testing/tslpatcher-parity-harness-mvp.md) (prefer/defer/avoid), HoloPatcher regression tests when submodules are initialized, and open parity issues (#83, #67, #59)
 - **Format round-trip fidelity** — read→write→read produces game-compatible output; tracked via scoped pytest in `Libraries/PyKotor/tests`
 - **Cross-platform install success** — HoloPatcher runs on Windows, macOS, Linux, and Steam Deck; tracked via CI matrix and platform issue resolution (#54, #77)
 - **Module Designer performance** — ≥120 FPS (≤8.33 ms frame budget); tracked via GL performance benchmarks and `docs/plans/2026-03-12-feat-module-designer-performance-bottleneck-plan.md`

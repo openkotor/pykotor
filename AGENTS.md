@@ -6,7 +6,7 @@
 
 PyKotor is a pure-Python monorepo for modding Knights of the Old Republic I & II. It uses **uv** as the package manager with a workspace defined in the root `pyproject.toml`. Minimum supported Python is 3.8; local development may use 3.13 (per `.python-version`). See `README.md` and `CONTRIBUTING.md` for standard commands.
 
-**Knowledgebase map:** `STRATEGY.md` (product intent and metrics) → `docs/plans/` (active execution plans) → `docs/solutions/` (validated learnings with YAML frontmatter: `title`, `component`, `problem_type`, `doc_status`, `last_verified`, plus optional `symptoms`, `root_cause`, `solution`, `prevention`, `related_docs`, `category`) → `wiki/` (public format and RE specs) → `docs/` (implementation deep dives). Relevant when implementing or debugging in documented areas.
+**Knowledgebase map:** `STRATEGY.md` (product intent and metrics) → `docs/plans/` (active execution plans) → `docs/solutions/` (validated learnings with YAML frontmatter: `title`, `component`, `problem_type`, `doc_status`, `last_verified`, plus optional `symptoms`, `root_cause`, `solution`, `prevention`, `related_docs`, `category`) → `wiki/` (public format and RE specs) → `docs/` (implementation deep dives). Solution categories today: `docs/solutions/documentation/` (e.g. BWM authority), `docs/solutions/logic-errors/` (e.g. save/load parity), `docs/solutions/testing/` (e.g. TSLPatcher parity harness). Relevant when implementing or debugging in documented areas.
 
 ### Running commands
 
