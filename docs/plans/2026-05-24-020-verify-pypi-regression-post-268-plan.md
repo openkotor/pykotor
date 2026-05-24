@@ -38,9 +38,21 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 | Verify PyPI Regression CI | https://github.com/OpenKotOR/PyKotor/actions/runs/26362044155 | ⚠️ cancelled (concurrency; fixed in PR #275) |
 | Master track (2026-05-24) | #273/#270/#277 merged; forward-commits repaired in #277 | ✅ closed on `35b01ca9b` |
 | Stale branch cleanup | `fix/pypi-verify-regression-concurrency` deleted (merged #275, stray docs) | ✅ plan 026 |
-| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26363420578 | ⏳ queued — **Check trigger** scheduled (fresh dispatch; plan 036; stale 26363187827 cancelled) |
-| Forward Commits (post-#286) | dispatch [26363563890](https://github.com/OpenKotOR/PyKotor/actions/runs/26363563890); plan 039 adds concurrency | ⏳ queued — duplicate push 26363511361 cancelled |
+| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364391944 | ⏳ queued — **Check trigger** scheduled (plan 040; stale 26363420578 cancelled) |
+| Forward Commits (post-#288) | https://github.com/OpenKotOR/PyKotor/actions/runs/26363668835 | ⏳ queued — merge job scheduled; superseded dispatch 26363563890 cancelled (plan 040) |
 | Docs-only CI fan-out | #283 `paths-ignore: docs/**` on FC + Auto-Publish | ✅ merged `f8e9de37f`; stale docs-era FC runs cancelled (plan 035) |
+
+---
+
+## Track closeout (2026-05-24)
+
+**Code landed:** #268 (test-cli-tools), #275/#280 (verify concurrency + gate), #277 (FC repair), #283 (docs paths-ignore), #286 (FC workflow_dispatch), #288 (FC concurrency).
+
+**Scheduling validated:** Verify PyPI gate job and FC merge job appear on all post-fix dispatches (not empty-cancelled).
+
+**External blocker:** GitHub Actions runner backlog prevents full matrix / FC cherry-pick completion; local smoke (discovery + core imports) passes on every LFG slice.
+
+**Plans:** 019–040 document the closeout track; no further workflow changes required unless CI reveals new failures.
 
 ---
 
