@@ -160,21 +160,34 @@ runs:
             )
           }
 
-          # tool_metadata.py and deps_tool.py require tomli on Python < 3.11 (CI uses 3.8).
-          python -m pip install --disable-pip-version-check tomli
-          if ($LASTEXITCODE -ne 0) { throw "pip install tomli failed with exit code $LASTEXITCODE" }
-
-          Write-Host "Installing dependencies via compile/deps_tool.ps1: $($depsArgs -join ' ')"
-          & ./compile/deps_tool.ps1 @depsArgs
-          if ($LASTEXITCODE -ne 0) { throw "deps_tool.ps1 failed with exit code $LASTEXITCODE" }
-
-          # Compute venv Python path (used in later steps)
           $repoRoot = (Get-Location).Path
           $venvPython = if ("${{ runner.os }}" -eq "Windows") {
             Join-Path $repoRoot "$venvName/Scripts/python.exe"
           } else {
             Join-Path $repoRoot "$venvName/bin/python"
           }
+
+          # tool_metadata.py and deps_tool.py require tomli on Python < 3.11 (CI uses 3.8).
+          python -m pip install --disable-pip-version-check tomli
+          if ($LASTEXITCODE -ne 0) { throw "pip install tomli failed with exit code $LASTEXITCODE" }
+
+          # In CI, setup-python already provisioned Python; avoid install_python_venv.ps1 downloads.
+          if ($env:GITHUB_ACTIONS -eq "true") {
+            if (-not (Test-Path -LiteralPath $venvPython)) {
+              python -m venv $venvName
+              if ($LASTEXITCODE -ne 0) { throw "python -m venv failed with exit code $LASTEXITCODE" }
+            }
+            if (-not (Test-Path -LiteralPath $venvPython)) {
+              throw "Venv python not found at $venvPython after python -m venv"
+            }
+            $env:pythonExePath = $venvPython
+            Write-Host "Using Actions-hosted Python venv: $venvPython"
+          }
+
+          Write-Host "Installing dependencies via compile/deps_tool.ps1: $($depsArgs -join ' ')"
+          & ./compile/deps_tool.ps1 @depsArgs
+          if ($LASTEXITCODE -ne 0) { throw "deps_tool.ps1 failed with exit code $LASTEXITCODE" }
+
           if (-not (Test-Path -LiteralPath $venvPython)) {
             throw "Venv python not found at $venvPython"
           }
