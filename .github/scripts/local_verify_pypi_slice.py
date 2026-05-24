@@ -109,6 +109,8 @@ def _cli_slice(venv_python: Path) -> bool:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Local verify-pypi regression slice (published packages)",
+        epilog="Example: python3 .github/scripts/local_verify_pypi_slice.py",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.parse_args()
 

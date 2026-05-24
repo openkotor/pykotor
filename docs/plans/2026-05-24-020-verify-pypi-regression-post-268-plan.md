@@ -40,8 +40,8 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 | Stale branch cleanup | `fix/pypi-verify-regression-concurrency` deleted (merged #275, stray docs) | ✅ plan 026 |
 | Local CLI PyPI parity (plan 042) | holopatcher/kotormcp install from PyPI; kotordiff not on PyPI; `--help` rc=1 (workflow continue-on-error) | ✅ pass (parity with CI skip semantics; py3.14 local) |
 | Local PyPI parity (plan 041) | ephemeral venv `pip install pykotor[all]` + workflow import scripts | ✅ pass (Linux/py3; CI matrix still queued) |
-| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364756399 | ⏳ queued — **Check trigger** on master `2946d823e` (plan 046; cancelled stale 26364391944) |
-| Forward Commits (post-#293) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364669571 | ⏳ pending — merge job queued (runner backlog; plan 045) |
+| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364756399 | ⏳ queued — **Check trigger** on `2946d823e` (plan 046) |
+| Forward Commits (post-#297) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364901538 | ⏳ queued — merge on `b05826167` (plan 048 script; plan 049) |
 | Local verify script (plan 048) | `python3 .github/scripts/local_verify_pypi_slice.py` | ✅ pass (replaces manual plan 047 slice) |
 | Publish→verify dispatch (#293) | `publish-pypi-auto.yml` `trigger-verify-pypi` job | ✅ code on master; awaits next Auto-Publish with packages (plan 044) |
 | Docs-only CI fan-out | #283 `paths-ignore: docs/**` on FC + Auto-Publish | ✅ merged `f8e9de37f`; stale docs-era FC runs cancelled (plan 035) |
@@ -58,9 +58,9 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 **Local PyPI parity:** Plans 041–042 confirm published packages match workflow scripts locally (core/format imports; CLI discover→install with documented skips).
 
-**Plans:** 019–048 document the closeout track; plan 048 adds `local_verify_pypi_slice.py` for one-command local parity.
+**Plans:** 019–049 document the closeout track; plan 049 wires local verify script into AGENTS.md and workflow header.
 
-**CI monitoring:** Verify [26364756399](https://github.com/OpenKotOR/PyKotor/actions/runs/26364756399) and FC [26364669571](https://github.com/OpenKotOR/PyKotor/actions/runs/26364669571) still queued (runner backlog); no re-dispatch in plan 047.
+**CI monitoring:** Verify [26364756399](https://github.com/OpenKotOR/PyKotor/actions/runs/26364756399) and FC [26364901538](https://github.com/OpenKotOR/PyKotor/actions/runs/26364901538) queued (runner backlog).
 
 ---
 

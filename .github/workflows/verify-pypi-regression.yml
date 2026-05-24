@@ -2,6 +2,9 @@
 # This workflow runs regression tests against published PyPI packages
 # to ensure they remain functional over time.
 #
+# Local parity (ephemeral venv, no GitHub Actions):
+#   python3 .github/scripts/local_verify_pypi_slice.py
+#
 # Runs on:
 # - Manual dispatch
 # - Weekly schedule

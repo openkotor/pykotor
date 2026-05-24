@@ -12,6 +12,16 @@ PyKotor is a pure-Python monorepo for modding Knights of the Old Republic I & II
 
 Always use `uv run` to execute commands (per `.cursorrules`), e.g. `uv run pytest`, `uv run ruff check .`, `uv run pykotor --help`.
 
+### PyPI verify local parity
+
+When validating published PyPI packages (same checks as `.github/workflows/verify-pypi-regression.yml`) without waiting on CI:
+
+```bash
+python3 .github/scripts/local_verify_pypi_slice.py
+```
+
+Use system **`python3`**, not `uv run`: workspace resolution can fail on unpublished packages (e.g. kotordiff). The script uses an ephemeral venv and installs `pykotor[all]` from PyPI. Documented CLI skips (kotordiff not on PyPI; `--help` rc≠0) match CI `continue-on-error` behavior.
+
 ### Lint
 
 ```
