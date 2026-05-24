@@ -58,6 +58,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 
 ```bash
 python3 .github/scripts/local_verify_pypi_slice.py
+python3 .github/scripts/local_verify_pypi_slice.py --json
 ```
 
 ## CI canonical runs (2026-05-24)
