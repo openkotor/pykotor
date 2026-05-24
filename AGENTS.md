@@ -26,6 +26,8 @@ Use system **`python3`**, not `uv run`: workspace resolution can fail on unpubli
 
 See also `docs/solutions/testing/verify-pypi-regression-closeout.md` for prefer/defer/avoid guidance and CI closeout history.
 
+If `--ci-status-only --json` reports the same queued run IDs as the solution doc **Last CI check**, defer further LFG PRs on this track until status or conclusion changes (plan 056).
+
 ### Lint
 
 ```
