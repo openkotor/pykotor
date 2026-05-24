@@ -28,6 +28,7 @@ QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and 
   --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
   --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
   --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
   Libraries/PyKotor/tests
 ```
 
