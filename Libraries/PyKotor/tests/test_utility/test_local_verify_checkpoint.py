@@ -174,6 +174,37 @@ class TestCheckpointParsing(unittest.TestCase):
         payload = json.loads(result.stdout)
         self.assertTrue(payload.get("lfg_deferred"))
 
+    def test_strict_defer_exit_returns_2_when_deferred(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT_PATH),
+                "--monitor-preflight",
+                "--strict-defer-exit",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 2, msg=result.stderr or result.stdout)
+
+    def test_strict_defer_exit_requires_exit_on_defer(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT_PATH),
+                "--ci-status-only",
+                "--strict-defer-exit",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--strict-defer-exit requires", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

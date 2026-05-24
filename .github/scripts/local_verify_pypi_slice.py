@@ -320,6 +320,11 @@ def main() -> None:
         action="store_true",
         help="Shorthand for --ci-status-only --json --compare-checkpoint --exit-on-defer",
     )
+    parser.add_argument(
+        "--strict-defer-exit",
+        action="store_true",
+        help="With --exit-on-defer, exit 2 when lfg_deferred (0=proceed, 1=gh error)",
+    )
     args = parser.parse_args()
 
     if args.monitor_preflight:
@@ -331,11 +336,18 @@ def main() -> None:
     if args.exit_on_defer and not (args.ci_status_only and args.compare_checkpoint):
         parser.error("--exit-on-defer requires --ci-status-only and --compare-checkpoint")
 
+    if args.strict_defer_exit and not args.exit_on_defer:
+        parser.error("--strict-defer-exit requires --exit-on-defer or --monitor-preflight")
+
     if args.ci_status_only:
         status = _ci_status(compare_checkpoint=args.compare_checkpoint)
-        _apply_lfg_defer(status, exit_on_defer=args.exit_on_defer)
+        deferred = _apply_lfg_defer(status, exit_on_defer=args.exit_on_defer)
         _print_ci_status(status, as_json=args.json)
-        sys.exit(0 if status["gh_ok"] else 1)
+        if not status["gh_ok"]:
+            sys.exit(1)
+        if deferred and args.strict_defer_exit:
+            sys.exit(2)
+        sys.exit(0)
 
     quiet = args.json
     checks: list[dict[str, Any]] = []
