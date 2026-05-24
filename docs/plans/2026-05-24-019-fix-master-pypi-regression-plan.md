@@ -1,7 +1,7 @@
 ---
 title: "fix: master Verify PyPI Regression workflow"
 type: fix
-status: in_progress
+status: completed
 date: 2026-05-24
 origin: lfg-master-pypi-blocker
 strategy_track: test-signal-quality
