@@ -57,7 +57,7 @@ Bleeding-edge `.gitmodules` is fixed (`f15e4769d`); checkout succeeds. Push is b
 | R1 workflows permission | `.github/workflows/commit-all-to-bleeding-edge.yml` diff | ✅ landed on branch |
 | R2 contents permission | unchanged `contents: write` | ✅ |
 | R3 cherry-pick logic | no script changes | ✅ |
-| Forward Commits re-test | pending merge of PR #273 | ⏳ post-merge |
+| Forward Commits re-test | run 26362844673 after #273 merge | ❌ invalid `workflows:` permission key — superseded by plan 028 |
 
 ---
 

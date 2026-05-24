@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: write
-  workflows: write
 
 jobs:
   merge:
@@ -29,11 +28,19 @@ jobs:
     - name: Cherry-Pick to Bleeding-Edge
       run: |
         git checkout bleeding-edge
-        # Attempt to cherry-pick and resolve conflicts by favoring incoming changes
-        git cherry-pick ${{ github.sha }} || true
-        # If there were conflicts, add all and continue
-        if git status | grep -q 'Unmerged paths'; then
-          git add .
-          git cherry-pick --continue
+        before_sha="$(git rev-parse HEAD)"
+        if ! git cherry-pick "${{ github.sha }}"; then
+          if git status | grep -q 'Unmerged paths'; then
+            git add .
+            git cherry-pick --continue
+          else
+            exit 1
+          fi
+        fi
+        # GITHUB_TOKEN cannot update workflow files on push; keep bleeding-edge copies.
+        git checkout "${before_sha}" -- .github/workflows
+        if ! git diff --quiet -- .github/workflows; then
+          git add .github/workflows
+          git commit -m "chore(ci): retain bleeding-edge workflow files [skip-edge]"
         fi
         git push origin bleeding-edge
