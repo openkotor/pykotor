@@ -33,7 +33,22 @@ Post-PR #268 merge, run [26362044155](https://github.com/OpenKotOR/PyKotor/actio
 **Approach:** Set `cancel-in-progress: false` (matches `publish-pypi-auto.yml` pattern for post-publish verification).
 
 **Verification:**
-- Next master trigger completes without concurrency cancellation; plan 020 CI row can record green run URL.
+- `cancel-in-progress: false` in `.github/workflows/verify-pypi-regression.yml`. ✅
+- PR: https://github.com/OpenKotOR/PyKotor/pull/274 (open, mergeable)
+- Post-merge: confirm next Verify PyPI Regression run on master reaches `completed` (not cancelled).
+
+---
+
+## Verification (closeout)
+
+| Check | Evidence | Result |
+|-------|----------|--------|
+| R1 no cancel | workflow diff | ✅ |
+| R2 group retained | `verify-pypi-${{ github.ref }}` unchanged | ✅ |
+| R3 matrix unchanged | no job step edits | ✅ |
+| Master CI re-test | pending merge of PR #274 | ⏳ |
+
+**Suggested merge stack:** #273 (forward-commits permissions) → #274 (this) → #270 (verify docs).
 
 ---
 
