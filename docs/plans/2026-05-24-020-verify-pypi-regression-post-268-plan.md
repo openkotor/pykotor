@@ -42,6 +42,7 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 | Local PyPI parity (plan 041) | ephemeral venv `pip install pykotor[all]` + workflow import scripts | ✅ pass (Linux/py3; CI matrix still queued) |
 | Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364992933 | ⏳ queued — **Check trigger** on `4881930aa` (plan 050; cancelled stale 26364756399) |
 | Forward Commits (post-#298) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364956110 | ⏳ queued — merge on `4881930aa` (plan 049) |
+| Local FC dry-run (plan 051) | cherry-pick `49da28057`→bleeding-edge + workflow restore | ✅ pass (`d8dc53968`; docs conflict auto-resolved) |
 | Solution doc (plan 050) | `docs/solutions/testing/verify-pypi-regression-closeout.md` | ✅ prefer/defer/avoid + local command |
 | Local verify script (plan 048) | `python3 .github/scripts/local_verify_pypi_slice.py` | ✅ pass (replaces manual plan 047 slice) |
 | Publish→verify dispatch (#293) | `publish-pypi-auto.yml` `trigger-verify-pypi` job | ✅ code on master; awaits next Auto-Publish with packages (plan 044) |
@@ -59,9 +60,9 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 **Local PyPI parity:** Plans 041–042 confirm published packages match workflow scripts locally (core/format imports; CLI discover→install with documented skips).
 
-**Plans:** 019–050 document the closeout track; plan 050 adds `docs/solutions/testing/verify-pypi-regression-closeout.md`.
+**Track status (plan 051):** **Monitoring-only.** Code and local parity complete (#268–#299, plans 019–051). Await CI green on [26364992933](https://github.com/OpenKotOR/PyKotor/actions/runs/26364992933) and FC [26364956110](https://github.com/OpenKotOR/PyKotor/actions/runs/26364956110); no further workflow changes unless CI reports new failures.
 
-**CI monitoring:** Verify [26364992933](https://github.com/OpenKotOR/PyKotor/actions/runs/26364992933) and FC [26364956110](https://github.com/OpenKotOR/PyKotor/actions/runs/26364956110) queued (runner backlog).
+**Plans:** 019–051 document the closeout track; authoritative learning in `docs/solutions/testing/verify-pypi-regression-closeout.md`.
 
 ---
 

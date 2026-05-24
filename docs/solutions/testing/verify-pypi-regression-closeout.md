@@ -69,4 +69,8 @@ python3 .github/scripts/local_verify_pypi_slice.py
 
 ## Plans index
 
-Plans **019–050** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–051** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+
+## Track status (plan 051)
+
+**Monitoring-only.** No further workflow YAML changes unless CI reports new failures after runs [26364992933](https://github.com/OpenKotOR/PyKotor/actions/runs/26364992933) and [26364956110](https://github.com/OpenKotOR/PyKotor/actions/runs/26364956110) complete. Local FC dry-run on `49da28057` succeeded (`d8dc53968`).
