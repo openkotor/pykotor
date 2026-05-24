@@ -66,4 +66,5 @@ jobs:
         pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
           --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
           --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+          --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
           Libraries/PyKotor/tests

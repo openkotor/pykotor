@@ -76,3 +76,6 @@
 	path = vendor/Kotor.NET
 	url = https://github.com/NickHugi/Kotor.NET
 	branch = rework-area-designer
+[submodule "vendor/ref-tga2tpc"]
+	path = vendor/ref-tga2tpc
+	url = https://github.com/ndixUR/tga2tpc.git
