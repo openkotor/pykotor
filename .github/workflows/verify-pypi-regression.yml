@@ -29,7 +29,7 @@ on:
 
 concurrency:
   group: verify-pypi-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false  # Let post-publish workflow_run triggers finish; avoid master cancel storm
 
 env:
   PYPI_SOURCE: ${{ inputs.pypi_source || 'pypi' }}
