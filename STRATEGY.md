@@ -21,11 +21,12 @@ Build one typed, cross-platform Python toolchain anchored on reverse-engineered 
 
 ## Key metrics
 
-- **TSLPatcher install parity** — mods install identically to classic TSLPatcher; tracked via HoloPatcher regression tests and open parity issues (#83, #67, #59)
+- **TSLPatcher install parity** — mods install identically to classic TSLPatcher; tracked via [`Libraries/PyKotor/tests/tslpatcher/parity/`](Libraries/PyKotor/tests/tslpatcher/parity/) (manifest + parametrized pytest), HoloPatcher regression tests when submodules are initialized, and open parity issues (#83, #67, #59)
 - **Format round-trip fidelity** — read→write→read produces game-compatible output; tracked via scoped pytest in `Libraries/PyKotor/tests`
 - **Cross-platform install success** — HoloPatcher runs on Windows, macOS, Linux, and Steam Deck; tracked via CI matrix and platform issue resolution (#54, #77)
-- **Module Designer usability** — self-contained level design at ≥120 FPS (≤8.33 ms frame budget); tracked via GL performance benchmarks and LEVEL_EDITOR_CHECKLIST criteria
-- **Test signal quality** — high-value regression coverage without ~2600-test noise; tracked via test consolidation plan and CI green on master (Python 3.9–3.11)
+- **Module Designer performance** — ≥120 FPS (≤8.33 ms frame budget); tracked via GL performance benchmarks and `docs/plans/2026-03-12-feat-module-designer-performance-bottleneck-plan.md`
+- **Module Designer self-contained workflow** — level design without external tools; tracked via `docs/LEVEL_EDITOR_CHECKLIST.md` success criteria
+- **Test signal quality** — high-value regression coverage without ~2600-test noise; tracked via [`docs/plans/pykotor-test-suite-consolidation-plan.md`](docs/plans/pykotor-test-suite-consolidation-plan.md) and CI green on master via [`.github/workflows/python-package.yml`](.github/workflows/python-package.yml) (Python 3.9–3.11 primary gate; Python 3.8 minimum supported per AGENTS.md)
 
 ## Tracks
 
@@ -43,13 +44,13 @@ _Why it serves the approach:_ The product wins when a mod author completes the f
 
 ### Module Designer convergence
 
-Merge Indoor Builder and Module Designer into one editor surface; close LEVEL_EDITOR_CHECKLIST gaps (transform gizmos, walkmesh editing, inspector).
+**Current:** Indoor Map Builder (Layout workflow) runs inside Module Designer. **Target:** one editor surface with contextual modes (Layout, walkmesh, module editing) per `docs/LEVEL_EDITOR_CHECKLIST.md`; close gaps (transform gizmos, walkmesh editing, inspector).
 
 _Why it serves the approach:_ Duplicate editor surfaces drain maintenance and block the north-star level-design UX.
 
 ### Agent-native tooling
 
-KotorMCP plus CLI action parity so every Toolset workflow is reachable by agents and automation.
+KotorMCP (emerging; submodule/PyPI packaging in progress) plus CLI action parity so every Toolset workflow is reachable by agents and automation.
 
 _Why it serves the approach:_ Differentiates PyKotor from xoreos, reone, and Kotor.NET in the emerging AI-assisted modding lane.
 

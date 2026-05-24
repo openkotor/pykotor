@@ -44,7 +44,7 @@ STRATEGY metric: **TSLPatcher install parity** — mods install identically to c
 
 1. **Library-first runner** — Use `PatcherConfig` + `ModificationsNCS.apply` directly; no HoloPatcher submodule dependency (empty in many clones).
 2. **Synthetic fixtures** — Minimal NCS byte buffers in-repo; no copyrighted mod assets.
-3. **YAML manifest** — Human-editable; one file `manifest.yaml` co-located with fixtures.
+3. **JSON manifest** — Human-editable; one file `manifest.json` co-located with fixtures (stdlib `json`; no PyYAML dependency).
 4. **pytest parametrize** — Single test module discovers cases at collection time.
 
 ## Implementation units
@@ -53,9 +53,9 @@ STRATEGY metric: **TSLPatcher install parity** — mods install identically to c
 
 **Files:**
 
-- `Libraries/PyKotor/tests/tslpatcher/parity/manifest.yaml`
+- `Libraries/PyKotor/tests/tslpatcher/parity/manifest.json`
 - `Libraries/PyKotor/tests/tslpatcher/parity/fixtures/hacklist_uint32/changes.ini`
-- `Libraries/PyKotor/tests/tslpatcher/parity/fixtures/hacklist_uint32/tslpatchdata/test.ncs`
+- `Libraries/PyKotor/tests/tslpatcher/parity/fixtures/hacklist_uint32/patchdata/test.ncs` (renamed to `tslpatchdata/` at runtime; root `.gitignore` blocks committed `tslpatchdata/` paths)
 
 **Test scenarios:**
 

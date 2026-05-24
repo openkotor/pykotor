@@ -33,7 +33,7 @@ mode: repo-grounded
 
 **Complexity:** High
 
-**Status:** Unexplored
+**Status:** Partially landed — MVP harness at `Libraries/PyKotor/tests/tslpatcher/parity/` ([plan](../plans/2026-05-23-feat-tslpatcher-parity-harness-mvp-plan.md), PR #266). Corpus expansion (#55, #53, HoloPatcher headless CI) remains open.
 
 ---
 
