@@ -10,6 +10,10 @@ on:
   workflow_dispatch:
     # Manual recovery when push-triggered runs stall in the runner queue.
 
+concurrency:
+  group: forward-commits-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
