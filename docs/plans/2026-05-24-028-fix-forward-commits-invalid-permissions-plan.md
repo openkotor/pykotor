@@ -30,11 +30,13 @@ Run [26362844673](https://github.com/OpenKotOR/PyKotor/actions/runs/26362844673)
 
 ## Verification
 
-| Check | Expected |
-|-------|----------|
-| Workflow YAML valid | no `workflows:` permission key |
-| Forward Commits run | success on push |
-| bleeding-edge | receives master commits minus workflow file drift |
+| Check | Evidence | Result |
+|-------|----------|--------|
+| Workflow YAML valid | no `workflows:` permission key on master | ✅ pass |
+| Forward Commits run | [26362905607](https://github.com/OpenKotOR/PyKotor/actions/runs/26362905607) | ⏳ queued (2026-05-24) |
+| Verify PyPI Regression | [26362906590](https://github.com/OpenKotOR/PyKotor/actions/runs/26362906590) | ⏳ pending (2026-05-24) |
+| Local CLI discovery | holopatcher, kotordiff, kotormcp | ✅ pass |
+| bleeding-edge | receives master commits minus workflow file drift | ⏳ pending FC run |
 
 ## Scope Boundaries
 
