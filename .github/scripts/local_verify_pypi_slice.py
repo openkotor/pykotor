@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DISCOVER_SCRIPT = REPO_ROOT / ".github" / "scripts" / "discover_tools.py"
@@ -45,27 +46,44 @@ print('All resource format tests passed!')
 """
 
 
-def _run(venv_python: Path, code: str, label: str) -> bool:
-    print(f"=== {label} ===")
-    result = subprocess.run([str(venv_python), "-c", code], cwd=REPO_ROOT)
+def _log(message: str, *, quiet: bool) -> None:
+    if not quiet:
+        print(message)
+
+
+def _record(checks: list[dict[str, Any]], name: str, status: str, detail: str = "") -> None:
+    entry: dict[str, Any] = {"name": name, "status": status}
+    if detail:
+        entry["detail"] = detail
+    checks.append(entry)
+
+
+def _run(venv_python: Path, code: str, label: str, *, quiet: bool, checks: list[dict[str, Any]]) -> bool:
+    _log(f"=== {label} ===", quiet=quiet)
+    result = subprocess.run([str(venv_python), "-c", code], cwd=REPO_ROOT, stdout=subprocess.DEVNULL if quiet else None, stderr=subprocess.DEVNULL if quiet else None)
     if result.returncode != 0:
-        print(f"FAIL: {label}", file=sys.stderr)
+        _log(f"FAIL: {label}", quiet=quiet)
+        _record(checks, label.lower(), "fail")
         return False
+    _record(checks, label.lower(), "pass")
     return True
 
 
-def _pip_install(venv_python: Path, *args: str) -> bool:
+def _pip_install(venv_python: Path, *args: str, quiet: bool = False) -> bool:
     result = subprocess.run(
         [str(venv_python), "-m", "pip", "install", "--upgrade", "pip", *args],
         cwd=REPO_ROOT,
+        stdout=subprocess.DEVNULL if quiet else None,
+        stderr=subprocess.DEVNULL if quiet else None,
     )
     return result.returncode == 0
 
 
-def _cli_slice(venv_python: Path) -> bool:
-    print("=== CLI ===")
+def _cli_slice(venv_python: Path, *, quiet: bool, checks: list[dict[str, Any]]) -> bool:
+    _log("=== CLI ===", quiet=quiet)
     if not DISCOVER_SCRIPT.is_file():
-        print(f"FAIL: missing {DISCOVER_SCRIPT}", file=sys.stderr)
+        _log(f"FAIL: missing {DISCOVER_SCRIPT}", quiet=quiet)
+        _record(checks, "cli_discover", "fail", f"missing {DISCOVER_SCRIPT}")
         return False
 
     discover = subprocess.run(
@@ -76,33 +94,47 @@ def _cli_slice(venv_python: Path) -> bool:
         check=False,
     )
     if discover.returncode != 0:
-        print(discover.stderr, file=sys.stderr)
-        print("FAIL: discover_tools", file=sys.stderr)
+        if not quiet:
+            print(discover.stderr, file=sys.stderr)
+        _record(checks, "cli_discover", "fail", discover.stderr.strip())
         return False
+    _record(checks, "cli_discover", "pass")
 
     tools = json.loads(discover.stdout)
     for tool in tools:
         package = tool["project_name"]
-        print(f"Installing {package}...")
+        module_name = tool["package_name"]
+        _log(f"Installing {package}...", quiet=quiet)
         install = subprocess.run(
             [str(venv_python), "-m", "pip", "install", package],
             cwd=REPO_ROOT,
             capture_output=True,
         )
         if install.returncode != 0:
-            print(f"  SKIP: {package} not available on PyPI")
+            _log(f"  SKIP: {package} not available on PyPI", quiet=quiet)
+            _record(checks, f"cli_install_{package}", "skip", "not on PyPI")
             continue
-        module_name = tool["package_name"]
-        print(f"Testing {module_name} --help")
+        _record(checks, f"cli_install_{package}", "pass")
+        _log(f"Testing {module_name} --help", quiet=quiet)
         help_result = subprocess.run(
             [str(venv_python), "-m", module_name, "--help"],
             cwd=REPO_ROOT,
             capture_output=True,
         )
         if help_result.returncode != 0:
-            print(f"  SKIP: {module_name} help not available (rc={help_result.returncode})")
+            _log(
+                f"  SKIP: {module_name} help not available (rc={help_result.returncode})",
+                quiet=quiet,
+            )
+            _record(
+                checks,
+                f"cli_help_{module_name}",
+                "skip",
+                f"rc={help_result.returncode}",
+            )
         else:
-            print(f"  OK: {module_name} --help")
+            _log(f"  OK: {module_name} --help", quiet=quiet)
+            _record(checks, f"cli_help_{module_name}", "pass")
     return True
 
 
@@ -112,7 +144,14 @@ def main() -> None:
         epilog="Example: python3 .github/scripts/local_verify_pypi_slice.py",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.parse_args()
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print machine-readable summary JSON to stdout (suppresses progress logs)",
+    )
+    args = parser.parse_args()
+    quiet = args.json
+    checks: list[dict[str, Any]] = []
 
     with tempfile.TemporaryDirectory(prefix="pypi-verify-") as tmp:
         venv_dir = Path(tmp) / "venv"
@@ -121,19 +160,29 @@ def main() -> None:
         if not venv_python.is_file():
             venv_python = venv_dir / "Scripts" / "python.exe"
 
-        print("=== SETUP ===")
-        if not _pip_install(venv_python, "pykotor[all]"):
-            print("FAIL: pip install pykotor[all]", file=sys.stderr)
+        _log("=== SETUP ===", quiet=quiet)
+        if not _pip_install(venv_python, "pykotor[all]", quiet=quiet):
+            _record(checks, "pypi_install", "fail", "pip install pykotor[all]")
+            summary = {"status": "fail", "checks": checks}
+            if args.json:
+                print(json.dumps(summary, indent=2))
+            else:
+                print("FAIL: pip install pykotor[all]", file=sys.stderr)
             sys.exit(1)
+        _record(checks, "pypi_install", "pass")
 
-        ok = _run(venv_python, CORE_CHECK, "CORE")
-        ok = _run(venv_python, FORMAT_CHECK, "FORMATS") and ok
-        ok = _cli_slice(venv_python) and ok
+        ok = _run(venv_python, CORE_CHECK, "CORE", quiet=quiet, checks=checks)
+        ok = _run(venv_python, FORMAT_CHECK, "FORMATS", quiet=quiet, checks=checks) and ok
+        ok = _cli_slice(venv_python, quiet=quiet, checks=checks) and ok
 
+        summary = {"status": "pass" if ok else "fail", "checks": checks}
+        if args.json:
+            print(json.dumps(summary, indent=2))
+        elif ok:
+            print("=== DONE ===")
+            print("Local verify-pypi slice passed (with documented CLI skips).")
         if not ok:
             sys.exit(1)
-        print("=== DONE ===")
-        print("Local verify-pypi slice passed (with documented CLI skips).")
 
 
 if __name__ == "__main__":
