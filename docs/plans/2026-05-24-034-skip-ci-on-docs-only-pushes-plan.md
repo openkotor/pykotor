@@ -30,11 +30,11 @@ Three+ Forward Commits runs stuck **queued** from consecutive plan-doc squash me
 
 ## Verification
 
-| Check | Expected |
-|-------|----------|
-| Docs-only push | FC + Auto-Publish not triggered |
-| `.github/workflows` push | still triggers |
-| Local discovery | unchanged |
+| Check | Evidence | Result |
+|-------|----------|--------|
+| Docs-only push | #283 merged; pre-#283 docs FC runs cancelled (26363209835, 26363169705, 26363111619, 26363039605, 26362988041) | ✅ pass |
+| `.github/workflows` push | FC run [26363271048](https://github.com/OpenKotOR/PyKotor/actions/runs/26363271048) queued on #283 merge | ✅ pass |
+| Local discovery | holopatcher, kotordiff, kotormcp (plan 035) | ✅ pass |
 
 ## Scope Boundaries
 
