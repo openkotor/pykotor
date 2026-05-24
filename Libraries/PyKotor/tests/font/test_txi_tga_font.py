@@ -55,6 +55,7 @@ class TestWriteBitmapFont(unittest.TestCase):
             onerror=lambda *args: warnings.warn(f"Error removing directory: {args}"),
         )
 
+    @unittest.skipIf(os.name != "nt", "Requires Windows Inkfree.ttf")
     def test_bitmap_font(self):
         write_bitmap_fonts(
             self.test_dir,
