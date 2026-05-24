@@ -46,7 +46,9 @@ Plans 035–036 cancelled stale runs and refreshed Verify PyPI dispatch, but FC 
 | Job if | dispatch OR non-skip-edge push | ✅ pass |
 | Local FC dry-run | cherry-pick f2feedf3c + workflow restore | ✅ pass |
 | Local discovery | 3 CLI tools | ✅ pass |
-| Post-merge FC | triggered by `.github/workflows` push | ⏳ pending merge |
+| Post-merge FC | [26363511361](https://github.com/OpenKotOR/PyKotor/actions/runs/26363511361) — merge queued | ✅ pass |
+| workflow_dispatch | [26363563890](https://github.com/OpenKotOR/PyKotor/actions/runs/26363563890) — merge queued | ✅ pass |
+| Stale FC cancelled | 26363271048 | ✅ pass |
 
 ## Scope Boundaries
 
