@@ -23,7 +23,8 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "072"
+PLAN_TRACK_CAP = "073"
+_AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
 FC_WORKFLOW = "commit-all-to-bleeding-edge.yml"
 
@@ -877,6 +878,40 @@ def _apply_lfg_defer(status: dict[str, Any], *, exit_on_defer: bool) -> bool:
     return True
 
 
+def _apply_lfg_proceed(status: dict[str, Any]) -> None:
+    checkpoint = status.get("checkpoint")
+    if not isinstance(checkpoint, dict) or checkpoint.get("defer_lfg_pr"):
+        return
+    proceed_reason = checkpoint.get("proceed_reason")
+    if not proceed_reason:
+        return
+    status["lfg_proceed"] = True
+    status["lfg_proceed_reason"] = proceed_reason
+
+
+def _maybe_auto_apply_on_proceed(
+    status: dict[str, Any],
+    *,
+    write: bool,
+    targets: list[str],
+) -> dict[str, Any] | None:
+    checkpoint = status.get("checkpoint")
+    if not isinstance(checkpoint, dict) or checkpoint.get("defer_lfg_pr"):
+        return None
+    proceed_reason = checkpoint.get("proceed_reason")
+    if proceed_reason not in _AUTO_APPLY_PROCEED_REASONS:
+        return None
+    apply_result = _apply_checkpoint_snippet(
+        status,
+        write=write,
+        force=False,
+        targets=targets,
+    )
+    if apply_result.get("written"):
+        status["doc_validation"] = _validate_checkpoint_doc(status)
+    return apply_result
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Local verify-pypi regression slice (published packages)",
@@ -952,6 +987,11 @@ def main() -> None:
         default="solution,plan020",
         help="Comma-separated apply targets: solution, plan020",
     )
+    parser.add_argument(
+        "--auto-apply-on-proceed",
+        action="store_true",
+        help="With --compare-checkpoint, dry-run or write doc_apply when proceed_reason allows",
+    )
     args = parser.parse_args()
 
     if args.monitor_preflight:
@@ -979,20 +1019,27 @@ def main() -> None:
     if args.apply_checkpoint_snippet and not (args.ci_status_only and args.compare_checkpoint):
         parser.error("--apply-checkpoint-snippet requires --ci-status-only and --compare-checkpoint")
 
-    if args.write and not args.apply_checkpoint_snippet:
-        parser.error("--write requires --apply-checkpoint-snippet")
+    if args.write and not (args.apply_checkpoint_snippet or args.auto_apply_on_proceed):
+        parser.error("--write requires --apply-checkpoint-snippet or --auto-apply-on-proceed")
 
     if args.force and not args.apply_checkpoint_snippet:
         parser.error("--force requires --apply-checkpoint-snippet")
 
+    if args.auto_apply_on_proceed and not args.compare_checkpoint:
+        parser.error("--auto-apply-on-proceed requires --compare-checkpoint")
+
     if args.ci_status_only:
-        include_snippet = args.include_checkpoint_snippet or args.apply_checkpoint_snippet
+        include_snippet = (
+            args.include_checkpoint_snippet
+            or args.apply_checkpoint_snippet
+            or args.auto_apply_on_proceed
+        )
         status = _ci_status(
             compare_checkpoint=args.compare_checkpoint,
             include_checkpoint_snippet=include_snippet,
         )
+        targets = [part.strip() for part in args.apply_targets.split(",") if part.strip()]
         if args.apply_checkpoint_snippet:
-            targets = [part.strip() for part in args.apply_targets.split(",") if part.strip()]
             apply_result = _apply_checkpoint_snippet(
                 status,
                 write=args.write,
@@ -1011,6 +1058,17 @@ def main() -> None:
                 sys.exit(2)
             sys.exit(0)
         deferred = _apply_lfg_defer(status, exit_on_defer=args.exit_on_defer)
+        _apply_lfg_proceed(status)
+        if args.auto_apply_on_proceed:
+            doc_apply = _maybe_auto_apply_on_proceed(status, write=args.write, targets=targets)
+            if doc_apply is not None:
+                status["doc_apply"] = doc_apply
+                if doc_apply.get("written"):
+                    status["lfg_doc_applied"] = True
+                    print(
+                        "LFG doc apply: monitoring docs updated from live gh.",
+                        file=sys.stderr,
+                    )
         if args.validate_checkpoint_doc:
             validation = status.get("doc_validation") or _validate_checkpoint_doc(status)
             if args.json:

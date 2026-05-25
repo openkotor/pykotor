@@ -434,7 +434,87 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–072", patched)
+        self.assertIn("019–073", patched)
+
+    def test_apply_lfg_proceed_sets_fields(self) -> None:
+        status: dict[str, Any] = {
+            "checkpoint": {
+                "defer_lfg_pr": False,
+                "proceed_reason": "update_monitoring_docs",
+            }
+        }
+        mod._apply_lfg_proceed(status)
+        self.assertTrue(status["lfg_proceed"])
+        self.assertEqual(status["lfg_proceed_reason"], "update_monitoring_docs")
+
+    def test_apply_lfg_proceed_skipped_when_deferred(self) -> None:
+        status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True, "proceed_reason": "x"}}
+        mod._apply_lfg_proceed(status)
+        self.assertNotIn("lfg_proceed", status)
+
+    def test_maybe_auto_apply_skips_when_deferred(self) -> None:
+        status: dict[str, Any] = {
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "proceed_reason": "update_monitoring_docs",
+            }
+        }
+        result = mod._maybe_auto_apply_on_proceed(status, write=False, targets=["solution"])
+        self.assertIsNone(result)
+
+    def test_maybe_auto_apply_on_terminal_proceed(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 10,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": "abc1234567890",
+                "url": "https://example.com/10",
+            },
+            "forward_commits": {
+                "run_id": 20,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": "def1234567890",
+                "url": "https://example.com/20",
+            },
+            "checkpoint_snippet": "**2026-05-24:** verify [10](u) **success** on `abc1234`; FC [20](u) **success** on `def1234`.",
+            "checkpoint": {
+                "defer_lfg_pr": False,
+                "proceed_reason": "update_monitoring_docs",
+                "doc_update_recommended": True,
+            },
+            "doc_validation": {"doc_valid": False, "drift": [], "status_drift": [{"field": "verify_status"}]},
+        }
+        doc = """---
+title: Verify PyPI Regression Closeout
+last_verified: 2026-01-01
+---
+
+## CI canonical runs
+
+| Workflow | Run | Notes |
+|----------|-----|-------|
+| Verify PyPI | [1](https://example.com/1) | old |
+| Forward Commits | [2](https://example.com/2) | old |
+
+## Last CI check (plan 066)
+
+**old snippet**
+
+## Track status
+"""
+        with patch.object(mod, "SOLUTION_CLOSEOUT") as mock_path:
+            mock_path.is_file.return_value = True
+            mock_path.read_text.return_value = doc
+            mock_path.relative_to.return_value = Path("docs/solutions/testing/verify-pypi-regression-closeout.md")
+            with patch.object(mod, "PLAN_020") as mock_plan:
+                mock_plan.is_file.return_value = False
+                result = mod._maybe_auto_apply_on_proceed(status, write=False, targets=["solution"])
+        self.assertIsNotNone(result)
+        assert result is not None
+        self.assertTrue(result["allowed"])
+        self.assertTrue(result["dry_run"])
 
     def test_patch_solution_closeout_updates_last_verified(self) -> None:
         doc = """---
