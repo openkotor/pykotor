@@ -22,6 +22,7 @@ DISCOVER_SCRIPT = REPO_ROOT / ".github" / "scripts" / "discover_tools.py"
 SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
+PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
 FC_WORKFLOW = "commit-all-to-bleeding-edge.yml"
 
@@ -562,6 +563,167 @@ def _format_checkpoint_snippet(status: dict[str, Any]) -> str:
     )
 
 
+def _format_canonical_table_notes(status: dict[str, Any]) -> tuple[str, str]:
+    verify = status["verify_pypi"]
+    forward_commits = status["forward_commits"]
+    verify_sha = (verify.get("head_sha") or "")[:7]
+    fc_sha = (forward_commits.get("head_sha") or "")[:7]
+    verify_label = _run_display_label(verify)
+    fc_label = _run_display_label(forward_commits)
+    verify_note = f"Check trigger {verify_label} on `{verify_sha}`"
+    fc_note = f"merge {fc_label} on `{fc_sha}`"
+    return verify_note, fc_note
+
+
+def _format_plan020_last_ci_line(status: dict[str, Any]) -> str:
+    verify = status["verify_pypi"]
+    forward_commits = status["forward_commits"]
+    verify_id = verify.get("run_id", "?")
+    fc_id = forward_commits.get("run_id", "?")
+    verify_sha = (verify.get("head_sha") or "")[:7]
+    fc_sha = (forward_commits.get("head_sha") or "")[:7]
+    verify_url = verify.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{verify_id}"
+    fc_url = forward_commits.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{fc_id}"
+    verify_label = _run_display_label(verify)
+    fc_label = _run_display_label(forward_commits)
+    return (
+        f"**Last CI check (plan 071):** {date.today().isoformat()} — verify [{verify_id}]({verify_url}) "
+        f"{verify_label} on `{verify_sha}`; FC [{fc_id}]({fc_url}) {fc_label} on `{fc_sha}`."
+    )
+
+
+def _replace_last_ci_check_section(text: str, snippet: str) -> tuple[str, bool]:
+    match = re.search(r"(## Last CI check[^\n]*\n\n)(.*?)(\n## |\Z)", text, re.S)
+    if not match:
+        return text, False
+    old_body = match.group(2).strip()
+    new_body = snippet.strip()
+    if old_body == new_body:
+        return text, False
+    replacement = f"{match.group(1)}{new_body}\n{match.group(3)}"
+    return text[: match.start()] + replacement + text[match.end() :], True
+
+
+def _replace_canonical_table_row(
+    text: str,
+    workflow_label: str,
+    run_id: int | str,
+    url: str,
+    notes: str,
+) -> tuple[str, bool]:
+    pattern = rf"(\| {re.escape(workflow_label)} \| )\[(\d+)\]\([^)]+\)( \| )[^|]+(\|)"
+    replacement = rf"\1[{run_id}]({url})\3 {notes}\4"
+    new_text, count = re.subn(pattern, replacement, text, count=1)
+    return new_text, count == 1
+
+
+def _replace_plan020_last_ci_line(text: str, new_line: str) -> tuple[str, bool]:
+    pattern = r"^\*\*Last CI check \(plan \d+\):\*\*.*$"
+    new_text, count = re.subn(pattern, new_line, text, count=1, flags=re.M)
+    return new_text, count == 1
+
+
+def _patch_solution_closeout(text: str, status: dict[str, Any], snippet: str) -> tuple[str, dict[str, bool]]:
+    changes: dict[str, bool] = {
+        "last_ci_check": False,
+        "verify_table_row": False,
+        "forward_commits_table_row": False,
+    }
+    new_text, changes["last_ci_check"] = _replace_last_ci_check_section(text, snippet)
+    verify = status["verify_pypi"]
+    forward_commits = status["forward_commits"]
+    verify_note, fc_note = _format_canonical_table_notes(status)
+    verify_id = verify.get("run_id")
+    fc_id = forward_commits.get("run_id")
+    verify_url = verify.get("url") or ""
+    fc_url = forward_commits.get("url") or ""
+    if verify_id is not None:
+        new_text, changes["verify_table_row"] = _replace_canonical_table_row(
+            new_text,
+            "Verify PyPI",
+            verify_id,
+            verify_url,
+            verify_note,
+        )
+    if fc_id is not None:
+        new_text, changes["forward_commits_table_row"] = _replace_canonical_table_row(
+            new_text,
+            "Forward Commits",
+            fc_id,
+            fc_url,
+            fc_note,
+        )
+    return new_text, changes
+
+
+def _apply_checkpoint_allowed(status: dict[str, Any], *, force: bool) -> tuple[bool, str]:
+    if force:
+        return True, "forced"
+    checkpoint = status.get("checkpoint")
+    if isinstance(checkpoint, dict) and checkpoint.get("doc_update_recommended"):
+        return True, "doc_update_recommended"
+    doc_validation = status.get("doc_validation")
+    if isinstance(doc_validation, dict) and not doc_validation.get("doc_valid", True):
+        return True, "doc_validation_drift"
+    if isinstance(checkpoint, dict) and checkpoint.get("defer_lfg_pr"):
+        return False, "lfg_deferred with doc_valid; use --force to refresh unchanged checkpoint"
+    return False, "doc already matches live state; use --force"
+
+
+def _apply_checkpoint_snippet(
+    status: dict[str, Any],
+    *,
+    write: bool,
+    force: bool,
+    targets: list[str],
+) -> dict[str, Any]:
+    allowed, allow_reason = _apply_checkpoint_allowed(status, force=force)
+    snippet = status.get("checkpoint_snippet") or _format_checkpoint_snippet(status)
+    result: dict[str, Any] = {
+        "dry_run": not write,
+        "allowed": allowed,
+        "allow_reason": allow_reason,
+        "snippet": snippet,
+        "files": [],
+    }
+    if not allowed:
+        return result
+
+    target_files: list[tuple[str, Path, str]] = []
+    if "solution" in targets:
+        target_files.append(("solution", SOLUTION_CLOSEOUT, "solution_closeout"))
+    if "plan020" in targets:
+        target_files.append(("plan020", PLAN_020, "plan_020"))
+
+    any_change = False
+    for target_name, path, kind in target_files:
+        file_result: dict[str, Any] = {"target": target_name, "path": str(path.relative_to(REPO_ROOT))}
+        if not path.is_file():
+            file_result["error"] = "file not found"
+            result["files"].append(file_result)
+            continue
+        original = path.read_text(encoding="utf-8")
+        if kind == "solution_closeout":
+            patched, changes = _patch_solution_closeout(original, status, snippet)
+            file_result["changes"] = changes
+        else:
+            plan_line = _format_plan020_last_ci_line(status)
+            patched, line_changed = _replace_plan020_last_ci_line(original, plan_line)
+            file_result["changes"] = {"last_ci_check_line": line_changed}
+            changes = file_result["changes"]
+        changed = patched != original
+        file_result["would_change"] = changed
+        any_change = any_change or changed
+        if changed and write:
+            path.write_text(patched, encoding="utf-8")
+            file_result["written"] = True
+        result["files"].append(file_result)
+
+    result["would_write"] = any_change
+    result["written"] = write and any_change
+    return result
+
+
 def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
     if as_json:
         print(json.dumps(status, indent=2))
@@ -670,6 +832,26 @@ def main() -> None:
         action="store_true",
         help="With --compare-checkpoint, add checkpoint_snippet to JSON output",
     )
+    parser.add_argument(
+        "--apply-checkpoint-snippet",
+        action="store_true",
+        help="With --ci-status-only --compare-checkpoint, preview or write doc checkpoint updates",
+    )
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help="With --apply-checkpoint-snippet, persist doc changes (default dry-run)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="With --apply-checkpoint-snippet, apply even when doc_valid and deferred",
+    )
+    parser.add_argument(
+        "--apply-targets",
+        default="solution,plan020",
+        help="Comma-separated apply targets: solution, plan020",
+    )
     args = parser.parse_args()
 
     if args.monitor_preflight:
@@ -694,11 +876,40 @@ def main() -> None:
     if args.include_checkpoint_snippet and not args.compare_checkpoint:
         parser.error("--include-checkpoint-snippet requires --compare-checkpoint")
 
+    if args.apply_checkpoint_snippet and not (args.ci_status_only and args.compare_checkpoint):
+        parser.error("--apply-checkpoint-snippet requires --ci-status-only and --compare-checkpoint")
+
+    if args.write and not args.apply_checkpoint_snippet:
+        parser.error("--write requires --apply-checkpoint-snippet")
+
+    if args.force and not args.apply_checkpoint_snippet:
+        parser.error("--force requires --apply-checkpoint-snippet")
+
     if args.ci_status_only:
+        include_snippet = args.include_checkpoint_snippet or args.apply_checkpoint_snippet
         status = _ci_status(
             compare_checkpoint=args.compare_checkpoint,
-            include_checkpoint_snippet=args.include_checkpoint_snippet,
+            include_checkpoint_snippet=include_snippet,
         )
+        if args.apply_checkpoint_snippet:
+            targets = [part.strip() for part in args.apply_targets.split(",") if part.strip()]
+            apply_result = _apply_checkpoint_snippet(
+                status,
+                write=args.write,
+                force=args.force,
+                targets=targets,
+            )
+            if args.json:
+                print(json.dumps(apply_result, indent=2))
+            else:
+                print(f"Apply allowed: {apply_result['allowed']} ({apply_result['allow_reason']})")
+                for file_info in apply_result.get("files", []):
+                    print(f"  {file_info.get('path')}: would_change={file_info.get('would_change')}")
+            if not status["gh_ok"]:
+                sys.exit(1)
+            if not apply_result["allowed"]:
+                sys.exit(2)
+            sys.exit(0)
         deferred = _apply_lfg_defer(status, exit_on_defer=args.exit_on_defer)
         if args.validate_checkpoint_doc:
             validation = status.get("doc_validation") or _validate_checkpoint_doc(status)

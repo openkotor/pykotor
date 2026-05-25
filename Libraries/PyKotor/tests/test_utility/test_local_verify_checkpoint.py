@@ -182,6 +182,145 @@ class TestCheckpointParsing(unittest.TestCase):
         payload = json.loads(result.stdout)
         self.assertIn("doc_validation", payload)
 
+    def test_replace_last_ci_check_section(self) -> None:
+        doc = """# Closeout
+
+## Last CI check (plan 066)
+
+**old line**
+
+## Track status
+
+Monitoring.
+"""
+        new_text, changed = mod._replace_last_ci_check_section(doc, "**2026-05-24:** verify [1](u) **queued** on `abc`.")
+        self.assertTrue(changed)
+        self.assertIn("verify [1]", new_text)
+        self.assertNotIn("**old line**", new_text)
+
+    def test_replace_canonical_table_row(self) -> None:
+        doc = "| Verify PyPI | [1](https://old) | old note |\n"
+        new_text, changed = mod._replace_canonical_table_row(
+            doc,
+            "Verify PyPI",
+            99,
+            "https://new",
+            "Check trigger queued on `abc1234`",
+        )
+        self.assertTrue(changed)
+        self.assertIn("[99](https://new)", new_text)
+        self.assertIn("Check trigger queued", new_text)
+
+    def test_apply_checkpoint_allowed_blocks_deferred_doc_valid(self) -> None:
+        status = {
+            "checkpoint": {"defer_lfg_pr": True},
+            "doc_validation": {"doc_valid": True},
+        }
+        allowed, reason = mod._apply_checkpoint_allowed(status, force=False)
+        self.assertFalse(allowed)
+        self.assertIn("lfg_deferred", reason)
+
+    def test_apply_checkpoint_allowed_on_doc_update_recommended(self) -> None:
+        status = {"checkpoint": {"doc_update_recommended": True}}
+        allowed, _reason = mod._apply_checkpoint_allowed(status, force=False)
+        self.assertTrue(allowed)
+
+    def test_patch_solution_closeout_updates_table_and_section(self) -> None:
+        doc = """## CI canonical runs
+
+| Workflow | Run | Notes |
+|----------|-----|-------|
+| Verify PyPI | [1](https://example.com/1) | old |
+| Forward Commits | [2](https://example.com/2) | old |
+
+## Last CI check (plan 066)
+
+**old snippet**
+
+## Track status
+"""
+        status = {
+            "verify_pypi": {
+                "run_id": 10,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "abc1234567890",
+                "url": "https://example.com/10",
+            },
+            "forward_commits": {
+                "run_id": 20,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "def1234567890",
+                "url": "https://example.com/20",
+            },
+        }
+        snippet = mod._format_checkpoint_snippet(status)
+        patched, changes = mod._patch_solution_closeout(doc, status, snippet)
+        self.assertTrue(changes["last_ci_check"])
+        self.assertTrue(changes["verify_table_row"])
+        self.assertTrue(changes["forward_commits_table_row"])
+        self.assertIn("[10](https://example.com/10)", patched)
+
+    def test_apply_checkpoint_snippet_dry_run_with_force(self) -> None:
+        status = {
+            "gh_ok": True,
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "url": "https://example.com/verify",
+            },
+            "forward_commits": {
+                "run_id": 26365648344,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+                "url": "https://example.com/fc",
+            },
+            "checkpoint_snippet": "**2026-05-24:** verify [26372746392](u) **queued** on `8916e2f`; FC [26365648344](u) **queued** on `3b6b746`.",
+            "checkpoint": {"defer_lfg_pr": True},
+            "doc_validation": {"doc_valid": True},
+        }
+        with patch.object(mod, "SOLUTION_CLOSEOUT") as mock_path:
+            mock_path.is_file.return_value = True
+            mock_path.read_text.return_value = (
+                "## Last CI check (plan 066)\n\n**old**\n\n## Track\n\n"
+                "| Verify PyPI | [1](u) | old |\n| Forward Commits | [2](u) | old |\n"
+            )
+            mock_path.relative_to.return_value = Path("docs/solutions/testing/verify-pypi-regression-closeout.md")
+            with patch.object(mod, "PLAN_020") as mock_plan:
+                mock_plan.is_file.return_value = False
+                result = mod._apply_checkpoint_snippet(
+                    status,
+                    write=False,
+                    force=True,
+                    targets=["solution"],
+                )
+        self.assertTrue(result["allowed"])
+        self.assertTrue(result["dry_run"])
+        mock_path.write_text.assert_not_called()
+
+    def test_apply_checkpoint_snippet_cli_blocked_without_force(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT_PATH),
+                "--ci-status-only",
+                "--json",
+                "--compare-checkpoint",
+                "--apply-checkpoint-snippet",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 2, msg=result.stderr or result.stdout)
+        payload = json.loads(result.stdout)
+        self.assertFalse(payload["allowed"])
+
     def test_hours_since_iso_parses_utc(self) -> None:
         hours = mod._hours_since_iso("2026-05-24T21:05:17Z")
         self.assertIsNotNone(hours)
