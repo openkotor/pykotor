@@ -42,7 +42,8 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - **`--validate-checkpoint-doc`** and embedded **`doc_validation`** in monitor preflight JSON — run ID and status word drift vs Last CI check (plans 068–069).
 - **`--monitor-preflight`** — one-shot gate JSON with `checkpoint`, `doc_validation`, and `checkpoint_snippet` (plans 063–070).
 - Run objects include **`queued_hours`** when active; checkpoint may include **`queue_backlog_note`** after 4h (plan 070).
-- **`--apply-checkpoint-snippet`** — dry-run (default) or **`--write`** to update solution doc + plan 020 Last CI check from live gh (plan 071). Requires **`--force`** while `lfg_deferred` and doc still valid.
+- Terminal runs set **`doc_update_recommended`** and **`proceed_reason: update_monitoring_docs`** on checkpoint (plans 070–072).
+- **`--apply-checkpoint-snippet`** — dry-run or **`--write`** to sync solution doc + plan 020 verification table from live gh (plans 071–072).
 - **Gate job (`Check trigger`)** before verify matrix jobs — never schedule matrix on empty/cancelled runs.
 - **`workflow_dispatch` + weekly cron** as verify triggers; **publish→verify dispatch** (#293) after Auto-Publish with packages.
 - **`paths-ignore: docs/**`** on Forward Commits and Auto-Publish.
@@ -90,7 +91,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–071** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–072** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Last CI check (plan 066)
 

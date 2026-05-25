@@ -396,6 +396,84 @@ Monitoring.
             with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
                 result = mod._compare_checkpoint(status)
         self.assertTrue(result.get("doc_update_recommended"))
+        self.assertEqual(result.get("proceed_reason"), "update_monitoring_docs")
+
+    def test_replace_frontmatter_field(self) -> None:
+        doc = "---\ntitle: Test\nlast_verified: 2026-01-01\n---\n\nBody"
+        new_text, changed = mod._replace_frontmatter_field(doc, "last_verified", "2026-05-24")
+        self.assertTrue(changed)
+        self.assertIn("last_verified: 2026-05-24", new_text)
+        self.assertNotIn("2026-01-01", new_text)
+
+    def test_patch_plan020_updates_verification_rows(self) -> None:
+        doc = """| Verify PyPI CI (post-#277) | https://old/1 | ⏳ old |
+| Forward Commits (post-#306) | https://old/2 | ⏳ old |
+
+**Plans:** 019–066 document the closeout track; authoritative learning in `docs/solutions/testing/verify-pypi-regression-closeout.md`.
+
+**Last CI check (plan 066):** old
+"""
+        status = {
+            "verify_pypi": {
+                "run_id": 10,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "abc1234567890",
+                "url": "https://example.com/10",
+            },
+            "forward_commits": {
+                "run_id": 20,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "def1234567890",
+                "url": "https://example.com/20",
+            },
+        }
+        patched, changes = mod._patch_plan020(doc, status)
+        self.assertTrue(changes["verify_ci_row"])
+        self.assertTrue(changes["forward_commits_row"])
+        self.assertTrue(changes["plans_index"])
+        self.assertIn("https://example.com/10", patched)
+        self.assertIn("019–072", patched)
+
+    def test_patch_solution_closeout_updates_last_verified(self) -> None:
+        doc = """---
+title: Verify PyPI Regression Closeout
+last_verified: 2026-01-01
+---
+
+## CI canonical runs
+
+| Workflow | Run | Notes |
+|----------|-----|-------|
+| Verify PyPI | [1](https://example.com/1) | old |
+| Forward Commits | [2](https://example.com/2) | old |
+
+## Last CI check (plan 066)
+
+**old snippet**
+
+## Track status
+"""
+        status = {
+            "verify_pypi": {
+                "run_id": 10,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "abc1234567890",
+                "url": "https://example.com/10",
+            },
+            "forward_commits": {
+                "run_id": 20,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "def1234567890",
+                "url": "https://example.com/20",
+            },
+        }
+        snippet = mod._format_checkpoint_snippet(status)
+        _patched, changes = mod._patch_solution_closeout(doc, status, snippet)
+        self.assertTrue(changes["last_verified"])
 
     def test_compare_queue_backlog_note(self) -> None:
         status = {

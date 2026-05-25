@@ -23,6 +23,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
+PLAN_TRACK_CAP = "072"
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
 FC_WORKFLOW = "commit-all-to-bleeding-edge.yml"
 
@@ -315,6 +316,7 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
             "defer_lfg_pr": False,
             "checkpoint_error": checkpoint["error"],
             "defer_reason": checkpoint["error"],
+            "proceed_reason": "fix_checkpoint_error",
         }
 
     verify = status["verify_pypi"]
@@ -325,6 +327,7 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
             "defer_lfg_pr": False,
             "checkpoint_error": "gh run lookup failed",
             "defer_reason": "gh run lookup failed",
+            "proceed_reason": "fix_gh_lookup",
         }
 
     master_sha = _git_origin_master_sha()
@@ -363,6 +366,7 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                 "recommended_action": (
                     "Cancel stale verify if needed; workflow_dispatch verify-pypi-regression on master"
                 ),
+                "proceed_reason": "refresh_verify_dispatch",
             }
         )
         return result
@@ -376,6 +380,7 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                 "recommended_action": (
                     "Ensure git history is available locally; re-run or workflow_dispatch FC"
                 ),
+                "proceed_reason": "classify_fc_stale_gap",
             }
         )
         return result
@@ -389,6 +394,7 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                 "recommended_action": (
                     "workflow_dispatch commit-all-to-bleeding-edge on master or await new FC run"
                 ),
+                "proceed_reason": "refresh_fc_dispatch",
             }
         )
         return result
@@ -400,6 +406,7 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                 "defer_lfg_pr": False,
                 "defer_reason": "canonical run IDs differ from solution doc Last CI check",
                 "recommended_action": "Update Last CI check or investigate new CI runs",
+                "proceed_reason": "investigate_ci_drift",
             }
         )
         return result
@@ -412,6 +419,7 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                 "defer_reason": "verify or FC run reached terminal status",
                 "recommended_action": "Record conclusions in plan 020 and solution doc Last CI check",
                 "doc_update_recommended": True,
+                "proceed_reason": "update_monitoring_docs",
             }
         )
         return result
@@ -587,9 +595,94 @@ def _format_plan020_last_ci_line(status: dict[str, Any]) -> str:
     verify_label = _run_display_label(verify)
     fc_label = _run_display_label(forward_commits)
     return (
-        f"**Last CI check (plan 071):** {date.today().isoformat()} — verify [{verify_id}]({verify_url}) "
+        f"**Last CI check (plan {PLAN_TRACK_CAP}):** {date.today().isoformat()} — verify [{verify_id}]({verify_url}) "
         f"{verify_label} on `{verify_sha}`; FC [{fc_id}]({fc_url}) {fc_label} on `{fc_sha}`."
     )
+
+
+def _result_prefix(run: dict[str, Any]) -> str:
+    conclusion = run.get("conclusion") or ""
+    if conclusion == "success":
+        return "✅ success"
+    if conclusion in {"failure", "cancelled", "timed_out"}:
+        return f"❌ {conclusion}"
+    return f"⏳ {_run_display_label(run)}"
+
+
+def _format_plan020_verify_row_detail(status: dict[str, Any]) -> str:
+    verify = status["verify_pypi"]
+    verify_sha = (verify.get("head_sha") or "")[:7]
+    return f"{_result_prefix(verify)} — **Check trigger** on `{verify_sha}`"
+
+
+def _format_plan020_fc_row_detail(status: dict[str, Any]) -> str:
+    forward_commits = status["forward_commits"]
+    fc_sha = (forward_commits.get("head_sha") or "")[:7]
+    return f"{_result_prefix(forward_commits)} — merge on `{fc_sha}`"
+
+
+def _replace_frontmatter_field(text: str, field: str, value: str) -> tuple[str, bool]:
+    match = re.match(r"---\n(.*?)\n---", text, re.S)
+    if not match:
+        return text, False
+    frontmatter = match.group(1)
+    pattern = rf"^{re.escape(field)}: .*$"
+    new_frontmatter, count = re.subn(pattern, f"{field}: {value}", frontmatter, count=1, flags=re.M)
+    if count == 0:
+        return text, False
+    new_text = text[: match.start(1)] + new_frontmatter + text[match.end(1) :]
+    return new_text, True
+
+
+def _replace_plan020_verification_row(
+    text: str,
+    row_label: str,
+    url: str,
+    result_cell: str,
+) -> tuple[str, bool]:
+    pattern = rf"(\| {re.escape(row_label)} \| )[^\|]+( \| )[^\|]+(\|)"
+    replacement = rf"\1{url}\2 {result_cell}\3"
+    new_text, count = re.subn(pattern, replacement, text, count=1)
+    return new_text, count == 1
+
+
+def _replace_plan020_plans_index(text: str) -> tuple[str, bool]:
+    new_line = (
+        f"**Plans:** 019–{PLAN_TRACK_CAP} document the closeout track; "
+        "authoritative learning in `docs/solutions/testing/verify-pypi-regression-closeout.md`."
+    )
+    pattern = r"^\*\*Plans:\*\* 019–\d+ document the closeout track;.*$"
+    new_text, count = re.subn(pattern, new_line, text, count=1, flags=re.M)
+    return new_text, count == 1
+
+
+def _patch_plan020(text: str, status: dict[str, Any]) -> tuple[str, dict[str, bool]]:
+    changes: dict[str, bool] = {
+        "last_ci_check_line": False,
+        "verify_ci_row": False,
+        "forward_commits_row": False,
+        "plans_index": False,
+    }
+    plan_line = _format_plan020_last_ci_line(status)
+    new_text, changes["last_ci_check_line"] = _replace_plan020_last_ci_line(text, plan_line)
+    verify = status["verify_pypi"]
+    forward_commits = status["forward_commits"]
+    verify_url = verify.get("url") or ""
+    fc_url = forward_commits.get("url") or ""
+    new_text, changes["verify_ci_row"] = _replace_plan020_verification_row(
+        new_text,
+        "Verify PyPI CI (post-#277)",
+        verify_url,
+        _format_plan020_verify_row_detail(status),
+    )
+    new_text, changes["forward_commits_row"] = _replace_plan020_verification_row(
+        new_text,
+        "Forward Commits (post-#306)",
+        fc_url,
+        _format_plan020_fc_row_detail(status),
+    )
+    new_text, changes["plans_index"] = _replace_plan020_plans_index(new_text)
+    return new_text, changes
 
 
 def _replace_last_ci_check_section(text: str, snippet: str) -> tuple[str, bool]:
@@ -628,8 +721,14 @@ def _patch_solution_closeout(text: str, status: dict[str, Any], snippet: str) ->
         "last_ci_check": False,
         "verify_table_row": False,
         "forward_commits_table_row": False,
+        "last_verified": False,
     }
     new_text, changes["last_ci_check"] = _replace_last_ci_check_section(text, snippet)
+    new_text, changes["last_verified"] = _replace_frontmatter_field(
+        new_text,
+        "last_verified",
+        date.today().isoformat(),
+    )
     verify = status["verify_pypi"]
     forward_commits = status["forward_commits"]
     verify_note, fc_note = _format_canonical_table_notes(status)
@@ -707,10 +806,8 @@ def _apply_checkpoint_snippet(
             patched, changes = _patch_solution_closeout(original, status, snippet)
             file_result["changes"] = changes
         else:
-            plan_line = _format_plan020_last_ci_line(status)
-            patched, line_changed = _replace_plan020_last_ci_line(original, plan_line)
-            file_result["changes"] = {"last_ci_check_line": line_changed}
-            changes = file_result["changes"]
+            patched, changes = _patch_plan020(original, status)
+            file_result["changes"] = changes
         changed = patched != original
         file_result["would_change"] = changed
         any_change = any_change or changed
@@ -745,6 +842,9 @@ def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
         print("Checkpoint: unchanged (defer_lfg_pr)")
     elif isinstance(checkpoint, dict) and checkpoint.get("defer_reason"):
         print(f"Checkpoint: {checkpoint['defer_reason']}")
+        proceed = checkpoint.get("proceed_reason")
+        if proceed:
+            print(f"Proceed: {proceed}")
         action = checkpoint.get("recommended_action")
         if action:
             print(f"Recommended: {action}")
