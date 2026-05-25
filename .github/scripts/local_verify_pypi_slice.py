@@ -13,6 +13,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -190,17 +191,52 @@ def _latest_workflow_run(workflow_file: str) -> dict[str, Any]:
 
 
 def _git_origin_master_sha() -> str | None:
-    result = subprocess.run(
-        ["git", "rev-parse", "origin/master"],
+    for ref in ("origin/master", "master"):
+        result = subprocess.run(
+            ["git", "rev-parse", ref],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode == 0:
+            sha = result.stdout.strip()
+            if sha:
+                return sha
+    return None
+
+
+def _commits_since_are_docs_only(base_sha: str, head_sha: str) -> bool | None:
+    if not base_sha or not head_sha:
+        return None
+    if base_sha == head_sha:
+        return True
+    rev = subprocess.run(
+        ["git", "rev-list", "--reverse", f"{base_sha}..{head_sha}"],
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
         check=False,
     )
-    if result.returncode != 0:
+    if rev.returncode != 0:
         return None
-    sha = result.stdout.strip()
-    return sha or None
+    shas = [line for line in rev.stdout.splitlines() if line.strip()]
+    if not shas:
+        return True
+    for sha in shas:
+        diff = subprocess.run(
+            ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", sha],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if diff.returncode != 0:
+            return None
+        paths = [path for path in diff.stdout.splitlines() if path.strip()]
+        if paths and any(not path.startswith("docs/") for path in paths):
+            return False
+    return True
 
 
 def _is_active_run(run: dict[str, Any]) -> bool:
@@ -284,6 +320,9 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
     runs_active = verify_active and fc_active
     verify_sha_stale = bool(master_sha and verify_head and verify_head != master_sha)
     fc_sha_stale = bool(master_sha and fc_head and fc_head != master_sha)
+    fc_sha_stale_benign: bool | None = None
+    if fc_sha_stale and master_sha and fc_head:
+        fc_sha_stale_benign = _commits_since_are_docs_only(fc_head, master_sha)
 
     result: dict[str, Any] = {
         "checkpoint_verify_run_id": checkpoint["verify_run_id"],
@@ -291,6 +330,7 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
         "master_sha": master_sha,
         "verify_sha_stale": verify_sha_stale,
         "fc_sha_stale": fc_sha_stale,
+        "fc_sha_stale_benign": fc_sha_stale_benign,
     }
 
     if verify_sha_stale:
@@ -301,6 +341,19 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                 "defer_reason": "verify dispatch SHA behind origin/master",
                 "recommended_action": (
                     "Cancel stale verify if needed; workflow_dispatch verify-pypi-regression on master"
+                ),
+            }
+        )
+        return result
+
+    if fc_sha_stale and fc_sha_stale_benign is False:
+        result.update(
+            {
+                "checkpoint_unchanged": False,
+                "defer_lfg_pr": False,
+                "defer_reason": "FC run SHA behind master with non-docs commits",
+                "recommended_action": (
+                    "workflow_dispatch commit-all-to-bleeding-edge on master or await new FC run"
                 ),
             }
         )
@@ -336,10 +389,43 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
         }
     )
     if fc_sha_stale:
-        result["fc_sha_stale_note"] = (
-            "FC run SHA behind master but canonical run ID unchanged; monitoring defer still applies"
-        )
+        if fc_sha_stale_benign:
+            result["fc_sha_stale_note"] = (
+                "FC run SHA behind master but intervening commits are docs-only; "
+                "FC paths-ignore means no new dispatch needed"
+            )
+        else:
+            result["fc_sha_stale_note"] = (
+                "FC run SHA behind master; consider workflow_dispatch FC when non-docs commits landed"
+            )
     return result
+
+
+def _validate_checkpoint_doc(status: dict[str, Any]) -> dict[str, Any]:
+    parsed = _parse_solution_checkpoint_run_ids()
+    if "error" in parsed:
+        return {"doc_valid": False, "error": parsed["error"]}
+    verify = status["verify_pypi"]
+    forward_commits = status["forward_commits"]
+    if "error" in verify or "error" in forward_commits:
+        return {"doc_valid": False, "error": "gh run lookup failed"}
+    live_verify = verify.get("run_id")
+    live_fc = forward_commits.get("run_id")
+    doc_verify = parsed["verify_run_id"]
+    doc_fc = parsed["forward_commits_run_id"]
+    drift: list[dict[str, Any]] = []
+    if live_verify != doc_verify:
+        drift.append({"field": "verify_run_id", "doc": doc_verify, "live": live_verify})
+    if live_fc != doc_fc:
+        drift.append({"field": "forward_commits_run_id", "doc": doc_fc, "live": live_fc})
+    return {
+        "doc_valid": not drift,
+        "drift": drift,
+        "doc_verify_run_id": doc_verify,
+        "doc_forward_commits_run_id": doc_fc,
+        "live_verify_run_id": live_verify,
+        "live_forward_commits_run_id": live_fc,
+    }
 
 
 def _ci_status(*, compare_checkpoint: bool = False) -> dict[str, Any]:
@@ -368,7 +454,7 @@ def _format_checkpoint_snippet(status: dict[str, Any]) -> str:
     verify_url = verify.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{verify_id}"
     fc_url = forward_commits.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{fc_id}"
     return (
-        f"**2026-05-24:** verify [{verify_id}]({verify_url}) **{verify_status}** on `{verify_sha}`; "
+        f"**{date.today().isoformat()}:** verify [{verify_id}]({verify_url}) **{verify_status}** on `{verify_sha}`; "
         f"FC [{fc_id}]({fc_url}) **{fc_status}** on `{fc_sha}`."
     )
 
@@ -461,6 +547,11 @@ def main() -> None:
         action="store_true",
         help="With --ci-status-only, print Last CI check markdown snippet to stdout",
     )
+    parser.add_argument(
+        "--validate-checkpoint-doc",
+        action="store_true",
+        help="With --ci-status-only, report solution doc vs live gh run ID drift",
+    )
     args = parser.parse_args()
 
     if args.monitor_preflight:
@@ -478,9 +569,24 @@ def main() -> None:
     if args.emit_checkpoint_snippet and not args.ci_status_only:
         parser.error("--emit-checkpoint-snippet requires --ci-status-only")
 
+    if args.validate_checkpoint_doc and not args.ci_status_only:
+        parser.error("--validate-checkpoint-doc requires --ci-status-only")
+
     if args.ci_status_only:
         status = _ci_status(compare_checkpoint=args.compare_checkpoint)
         deferred = _apply_lfg_defer(status, exit_on_defer=args.exit_on_defer)
+        if args.validate_checkpoint_doc:
+            validation = _validate_checkpoint_doc(status)
+            if args.json:
+                print(json.dumps(validation, indent=2))
+            else:
+                if validation.get("doc_valid"):
+                    print("Checkpoint doc: matches live gh run IDs")
+                else:
+                    print(f"Checkpoint doc: drift detected — {validation}")
+            if not status["gh_ok"]:
+                sys.exit(1)
+            sys.exit(0 if validation.get("doc_valid") else 2)
         if args.emit_checkpoint_snippet:
             print(_format_checkpoint_snippet(status))
         else:

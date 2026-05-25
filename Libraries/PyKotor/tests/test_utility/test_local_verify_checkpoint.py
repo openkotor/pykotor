@@ -8,6 +8,7 @@ import json
 import subprocess
 import sys
 import unittest
+from datetime import date
 from pathlib import Path
 from typing import Any
 from unittest import mock
@@ -97,6 +98,138 @@ class TestCheckpointParsing(unittest.TestCase):
         self.assertIn("26372746392", snippet)
         self.assertIn("26365648344", snippet)
         self.assertIn("8916e2f", snippet)
+        self.assertIn(date.today().isoformat(), snippet)
+
+    def test_commits_since_are_docs_only_same_sha(self) -> None:
+        self.assertTrue(mod._commits_since_are_docs_only("abc", "abc"))
+
+    def test_commits_since_are_docs_only_docs_paths(self) -> None:
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = [
+                mock.MagicMock(returncode=0, stdout="sha1\nsha2\n"),
+                mock.MagicMock(returncode=0, stdout="docs/plans/foo.md\n"),
+                mock.MagicMock(returncode=0, stdout="docs/solutions/bar.md\n"),
+            ]
+            result = mod._commits_since_are_docs_only("base", "head")
+        self.assertTrue(result)
+
+    def test_commits_since_are_docs_only_non_docs_path(self) -> None:
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = [
+                mock.MagicMock(returncode=0, stdout="sha1\n"),
+                mock.MagicMock(returncode=0, stdout="Libraries/PyKotor/src/foo.py\n"),
+            ]
+            result = mod._commits_since_are_docs_only("base", "head")
+        self.assertFalse(result)
+
+    def test_compare_fc_sha_stale_benign_when_docs_only(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+            },
+            "forward_commits": {
+                "run_id": 26365648344,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26365648344,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
+                with patch.object(mod, "_commits_since_are_docs_only", return_value=True):
+                    result = mod._compare_checkpoint(status)
+        self.assertTrue(result["defer_lfg_pr"])
+        self.assertTrue(result["fc_sha_stale"])
+        self.assertTrue(result["fc_sha_stale_benign"])
+        self.assertIn("docs-only", result.get("fc_sha_stale_note", ""))
+
+    def test_compare_no_defer_when_fc_non_docs_stale(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+            },
+            "forward_commits": {
+                "run_id": 26365648344,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26365648344,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
+                with patch.object(mod, "_commits_since_are_docs_only", return_value=False):
+                    result = mod._compare_checkpoint(status)
+        self.assertFalse(result["defer_lfg_pr"])
+        self.assertIn("non-docs", result.get("defer_reason", ""))
+
+    def test_validate_checkpoint_doc_no_drift(self) -> None:
+        status = {
+            "verify_pypi": {"run_id": 26372746392},
+            "forward_commits": {"run_id": 26365648344},
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26365648344,
+            }
+            result = mod._validate_checkpoint_doc(status)
+        self.assertTrue(result["doc_valid"])
+        self.assertEqual(result["drift"], [])
+
+    def test_validate_checkpoint_doc_detects_drift(self) -> None:
+        status = {
+            "verify_pypi": {"run_id": 999},
+            "forward_commits": {"run_id": 26365648344},
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26365648344,
+            }
+            result = mod._validate_checkpoint_doc(status)
+        self.assertFalse(result["doc_valid"])
+        self.assertEqual(len(result["drift"]), 1)
+
+    def test_git_origin_master_sha_falls_back_to_local_master(self) -> None:
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = [
+                mock.MagicMock(returncode=1, stdout=""),
+                mock.MagicMock(returncode=0, stdout="localmaster\n"),
+            ]
+            result = mod._git_origin_master_sha()
+        self.assertEqual(result, "localmaster")
+
+    def test_validate_checkpoint_doc_cli(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT_PATH),
+                "--ci-status-only",
+                "--validate-checkpoint-doc",
+                "--json",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertIn(result.returncode, (0, 2), msg=result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertIn("doc_valid", payload)
 
     def test_ci_status_human_output_does_not_crash(self) -> None:
         result = subprocess.run(
