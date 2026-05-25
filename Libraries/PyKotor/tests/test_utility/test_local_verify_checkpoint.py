@@ -79,6 +79,109 @@ class TestCheckpointParsing(unittest.TestCase):
         self.assertEqual(result["verify_run_id"], 26372746392)
         self.assertEqual(result["forward_commits_run_id"], 26365648344)
 
+    def test_format_checkpoint_snippet_uses_conclusion_when_terminal(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": "abc1234567890",
+                "url": "https://example.com/verify",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "def1234567890",
+                "url": "https://example.com/fc",
+            },
+        }
+        snippet = mod._format_checkpoint_snippet(status)
+        self.assertIn("**success**", snippet)
+        self.assertIn("**queued**", snippet)
+
+    def test_validate_checkpoint_doc_status_drift(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 26365648344,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26365648344,
+            }
+            with patch.object(
+                mod,
+                "_parse_last_ci_check_status_words",
+                return_value={"verify_status_word": "queued", "fc_status_word": "queued"},
+            ):
+                result = mod._validate_checkpoint_doc(status)
+        self.assertFalse(result["doc_valid"])
+        self.assertEqual(len(result["status_drift"]), 1)
+        self.assertEqual(result["status_drift"][0]["field"], "verify_status")
+
+    def test_ci_status_includes_doc_validation_with_compare(self) -> None:
+        status = {
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": ""},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": ""},
+        }
+        with patch.object(mod, "_latest_workflow_run", side_effect=[status["verify_pypi"], status["forward_commits"]]):
+            with patch.object(mod, "_compare_checkpoint", return_value={"defer_lfg_pr": True}):
+                with patch.object(mod, "_validate_checkpoint_doc", return_value={"doc_valid": True, "drift": []}):
+                    result = mod._ci_status(compare_checkpoint=True)
+        self.assertIn("doc_validation", result)
+        self.assertTrue(result["doc_validation"]["doc_valid"])
+
+    def test_ci_status_include_checkpoint_snippet(self) -> None:
+        runs = (
+            {"run_id": 1, "status": "queued", "conclusion": "", "head_sha": "abc", "url": "u1"},
+            {"run_id": 2, "status": "queued", "conclusion": "", "head_sha": "def", "url": "u2"},
+        )
+        with patch.object(mod, "_latest_workflow_run", side_effect=list(runs)):
+            result = mod._ci_status(include_checkpoint_snippet=True)
+        self.assertIn("checkpoint_snippet", result)
+        self.assertIn("verify [1]", result["checkpoint_snippet"])
+
+    def test_include_checkpoint_snippet_cli(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT_PATH),
+                "--ci-status-only",
+                "--json",
+                "--compare-checkpoint",
+                "--include-checkpoint-snippet",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertIn("checkpoint_snippet", payload)
+        self.assertIn("doc_validation", payload)
+
+    def test_monitor_preflight_includes_doc_validation(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), "--monitor-preflight"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertIn("doc_validation", payload)
+
     def test_format_checkpoint_snippet(self) -> None:
         status = {
             "verify_pypi": {
@@ -178,17 +281,23 @@ class TestCheckpointParsing(unittest.TestCase):
 
     def test_validate_checkpoint_doc_no_drift(self) -> None:
         status = {
-            "verify_pypi": {"run_id": 26372746392},
-            "forward_commits": {"run_id": 26365648344},
+            "verify_pypi": {"run_id": 26372746392, "status": "queued", "conclusion": ""},
+            "forward_commits": {"run_id": 26365648344, "status": "queued", "conclusion": ""},
         }
         with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
             mock_parse.return_value = {
                 "verify_run_id": 26372746392,
                 "forward_commits_run_id": 26365648344,
             }
-            result = mod._validate_checkpoint_doc(status)
+            with patch.object(
+                mod,
+                "_parse_last_ci_check_status_words",
+                return_value={"verify_status_word": "queued", "fc_status_word": "queued"},
+            ):
+                result = mod._validate_checkpoint_doc(status)
         self.assertTrue(result["doc_valid"])
         self.assertEqual(result["drift"], [])
+        self.assertEqual(result["status_drift"], [])
 
     def test_validate_checkpoint_doc_detects_drift(self) -> None:
         status = {

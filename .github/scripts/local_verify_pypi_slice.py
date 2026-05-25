@@ -401,6 +401,46 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+def _run_display_label(run: dict[str, Any]) -> str:
+    conclusion = run.get("conclusion") or ""
+    if conclusion and conclusion in _TERMINAL_CONCLUSIONS:
+        return str(conclusion)
+    return str(run.get("status") or "unknown")
+
+
+def _parse_last_ci_check_status_words() -> dict[str, str | None]:
+    section = _last_ci_check_section()
+    if not section:
+        return {"verify_status_word": None, "fc_status_word": None}
+    verify_match = re.search(r"verify[^\[]*\[[^\]]+\][^\*]*\*\*(\w+)\*\*", section, re.I)
+    fc_match = re.search(r"FC[^\[]*\[[^\]]+\][^\*]*\*\*(\w+)\*\*", section, re.I)
+    return {
+        "verify_status_word": verify_match.group(1).lower() if verify_match else None,
+        "fc_status_word": fc_match.group(1).lower() if fc_match else None,
+    }
+
+
+def _live_run_category(run: dict[str, Any]) -> str:
+    conclusion = run.get("conclusion") or ""
+    if conclusion and conclusion in _TERMINAL_CONCLUSIONS:
+        return str(conclusion).lower()
+    status = run.get("status") or ""
+    if status:
+        return str(status).lower()
+    return "unknown"
+
+
+def _status_word_matches_doc(doc_word: str | None, live_category: str) -> bool:
+    if not doc_word:
+        return True
+    if doc_word == live_category:
+        return True
+    active_words = {"queued", "in_progress", "pending", "waiting", "requested"}
+    if doc_word in active_words and live_category in active_words:
+        return True
+    return False
+
+
 def _validate_checkpoint_doc(status: dict[str, Any]) -> dict[str, Any]:
     parsed = _parse_solution_checkpoint_run_ids()
     if "error" in parsed:
@@ -418,9 +458,23 @@ def _validate_checkpoint_doc(status: dict[str, Any]) -> dict[str, Any]:
         drift.append({"field": "verify_run_id", "doc": doc_verify, "live": live_verify})
     if live_fc != doc_fc:
         drift.append({"field": "forward_commits_run_id", "doc": doc_fc, "live": live_fc})
+
+    status_words = _parse_last_ci_check_status_words()
+    status_drift: list[dict[str, Any]] = []
+    for field, run_key, doc_key in (
+        ("verify_status", "verify_pypi", "verify_status_word"),
+        ("forward_commits_status", "forward_commits", "fc_status_word"),
+    ):
+        doc_word = status_words.get(doc_key)
+        live_category = _live_run_category(status[run_key])
+        if not _status_word_matches_doc(doc_word, live_category):
+            status_drift.append({"field": field, "doc": doc_word, "live": live_category})
+
+    doc_valid = not drift and not status_drift
     return {
-        "doc_valid": not drift,
+        "doc_valid": doc_valid,
         "drift": drift,
+        "status_drift": status_drift,
         "doc_verify_run_id": doc_verify,
         "doc_forward_commits_run_id": doc_fc,
         "live_verify_run_id": live_verify,
@@ -428,7 +482,11 @@ def _validate_checkpoint_doc(status: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _ci_status(*, compare_checkpoint: bool = False) -> dict[str, Any]:
+def _ci_status(
+    *,
+    compare_checkpoint: bool = False,
+    include_checkpoint_snippet: bool = False,
+) -> dict[str, Any]:
     verify = _latest_workflow_run(VERIFY_WORKFLOW)
     forward_commits = _latest_workflow_run(FC_WORKFLOW)
     gh_ok = "error" not in verify and "error" not in forward_commits
@@ -439,6 +497,9 @@ def _ci_status(*, compare_checkpoint: bool = False) -> dict[str, Any]:
     }
     if compare_checkpoint:
         result["checkpoint"] = _compare_checkpoint(result)
+        result["doc_validation"] = _validate_checkpoint_doc(result)
+    if include_checkpoint_snippet:
+        result["checkpoint_snippet"] = _format_checkpoint_snippet(result)
     return result
 
 
@@ -449,13 +510,13 @@ def _format_checkpoint_snippet(status: dict[str, Any]) -> str:
     fc_id = forward_commits.get("run_id", "?")
     verify_sha = (verify.get("head_sha") or "")[:7]
     fc_sha = (forward_commits.get("head_sha") or "")[:7]
-    verify_status = verify.get("status") or "unknown"
-    fc_status = forward_commits.get("status") or "unknown"
+    verify_label = _run_display_label(verify)
+    fc_label = _run_display_label(forward_commits)
     verify_url = verify.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{verify_id}"
     fc_url = forward_commits.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{fc_id}"
     return (
-        f"**{date.today().isoformat()}:** verify [{verify_id}]({verify_url}) **{verify_status}** on `{verify_sha}`; "
-        f"FC [{fc_id}]({fc_url}) **{fc_status}** on `{fc_sha}`."
+        f"**{date.today().isoformat()}:** verify [{verify_id}]({verify_url}) **{verify_label}** on `{verify_sha}`; "
+        f"FC [{fc_id}]({fc_url}) **{fc_label}** on `{fc_sha}`."
     )
 
 
@@ -486,6 +547,11 @@ def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
         note = checkpoint.get("fc_sha_stale_note")
         if note:
             print(f"Note: {note}")
+        if checkpoint.get("fc_sha_stale") and checkpoint.get("fc_sha_stale_benign") is not None:
+            print(f"fc_sha_stale_benign: {checkpoint['fc_sha_stale_benign']}")
+    doc_validation = status.get("doc_validation")
+    if isinstance(doc_validation, dict) and not doc_validation.get("doc_valid", True):
+        print(f"Doc validation: stale — {doc_validation.get('drift') or doc_validation.get('status_drift')}")
 
 
 def _apply_lfg_defer(status: dict[str, Any], *, exit_on_defer: bool) -> bool:
@@ -552,6 +618,11 @@ def main() -> None:
         action="store_true",
         help="With --ci-status-only, report solution doc vs live gh run ID drift",
     )
+    parser.add_argument(
+        "--include-checkpoint-snippet",
+        action="store_true",
+        help="With --compare-checkpoint, add checkpoint_snippet to JSON output",
+    )
     args = parser.parse_args()
 
     if args.monitor_preflight:
@@ -572,16 +643,22 @@ def main() -> None:
     if args.validate_checkpoint_doc and not args.ci_status_only:
         parser.error("--validate-checkpoint-doc requires --ci-status-only")
 
+    if args.include_checkpoint_snippet and not args.compare_checkpoint:
+        parser.error("--include-checkpoint-snippet requires --compare-checkpoint")
+
     if args.ci_status_only:
-        status = _ci_status(compare_checkpoint=args.compare_checkpoint)
+        status = _ci_status(
+            compare_checkpoint=args.compare_checkpoint,
+            include_checkpoint_snippet=args.include_checkpoint_snippet,
+        )
         deferred = _apply_lfg_defer(status, exit_on_defer=args.exit_on_defer)
         if args.validate_checkpoint_doc:
-            validation = _validate_checkpoint_doc(status)
+            validation = status.get("doc_validation") or _validate_checkpoint_doc(status)
             if args.json:
                 print(json.dumps(validation, indent=2))
             else:
                 if validation.get("doc_valid"):
-                    print("Checkpoint doc: matches live gh run IDs")
+                    print("Checkpoint doc: matches live gh runs")
                 else:
                     print(f"Checkpoint doc: drift detected — {validation}")
             if not status["gh_ok"]:
