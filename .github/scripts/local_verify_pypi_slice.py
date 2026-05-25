@@ -23,7 +23,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "074"
+PLAN_TRACK_CAP = "075"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -774,6 +774,8 @@ def _patch_solution_closeout(text: str, status: dict[str, Any], snippet: str) ->
 def _apply_checkpoint_allowed(status: dict[str, Any], *, force: bool) -> tuple[bool, str]:
     if force:
         return True, "forced"
+    if status.get("post_dispatch_run_changed"):
+        return True, "post_dispatch_run_refresh"
     checkpoint = status.get("checkpoint")
     if isinstance(checkpoint, dict) and checkpoint.get("doc_update_recommended"):
         return True, "doc_update_recommended"
@@ -1035,6 +1037,68 @@ def _maybe_dispatch_on_proceed(
     return plan
 
 
+def _refresh_runs_after_dispatch(
+    status: dict[str, Any],
+    dispatch_result: dict[str, Any],
+) -> dict[str, Any] | None:
+    if not dispatch_result.get("executed") or not dispatch_result.get("ok"):
+        return None
+    refreshed: dict[str, Any] = {}
+    for step in dispatch_result.get("steps", []):
+        if step.get("action") != "workflow_dispatch":
+            continue
+        workflow = step.get("workflow")
+        if workflow == VERIFY_WORKFLOW:
+            previous_run_id = (status.get("verify_pypi") or {}).get("run_id")
+            new_run = _latest_workflow_run(VERIFY_WORKFLOW)
+            status["verify_pypi"] = new_run
+            refreshed["verify_pypi"] = {"previous_run_id": previous_run_id, "run": new_run}
+        elif workflow == FC_WORKFLOW:
+            previous_run_id = (status.get("forward_commits") or {}).get("run_id")
+            new_run = _latest_workflow_run(FC_WORKFLOW)
+            status["forward_commits"] = new_run
+            refreshed["forward_commits"] = {"previous_run_id": previous_run_id, "run": new_run}
+    if not refreshed:
+        return None
+    if "checkpoint" in status:
+        status["checkpoint"] = _compare_checkpoint(status)
+        status["doc_validation"] = _validate_checkpoint_doc(status)
+        if status.get("checkpoint_snippet") is not None:
+            status["checkpoint_snippet"] = _format_checkpoint_snippet(status)
+    run_id_changed = False
+    for entry in refreshed.values():
+        previous_run_id = entry.get("previous_run_id")
+        new_run_id = (entry.get("run") or {}).get("run_id")
+        if previous_run_id is not None and new_run_id is not None and previous_run_id != new_run_id:
+            run_id_changed = True
+            break
+    status["post_dispatch_run_changed"] = run_id_changed
+    return {"refreshed": refreshed, "run_id_changed": run_id_changed}
+
+
+def _maybe_sync_docs_after_dispatch(
+    status: dict[str, Any],
+    dispatch_result: dict[str, Any],
+    *,
+    write: bool,
+    targets: list[str],
+) -> dict[str, Any] | None:
+    refresh = _refresh_runs_after_dispatch(status, dispatch_result)
+    if refresh is None:
+        return None
+    if not refresh.get("run_id_changed"):
+        return {
+            "skipped": True,
+            "reason": "run_id unchanged after dispatch (gh may still be indexing)",
+            "post_dispatch_refresh": refresh,
+        }
+    apply_result = _apply_checkpoint_snippet(status, write=write, force=False, targets=targets)
+    apply_result["post_dispatch_refresh"] = refresh
+    if apply_result.get("written"):
+        status["doc_validation"] = _validate_checkpoint_doc(status)
+    return apply_result
+
+
 def _maybe_auto_apply_on_proceed(
     status: dict[str, Any],
     *,
@@ -1153,7 +1217,20 @@ def main() -> None:
         action="store_true",
         help="With --dispatch-on-proceed --execute, cancel stale active run before dispatch",
     )
+    parser.add_argument(
+        "--include-proceed-actions",
+        action="store_true",
+        help="With --compare-checkpoint, embed doc_apply and dispatch_on_proceed dry-runs when eligible",
+    )
+    parser.add_argument(
+        "--sync-docs-after-dispatch",
+        action="store_true",
+        help="With --dispatch-on-proceed --execute, re-fetch gh runs and apply doc updates when run ID changes",
+    )
     args = parser.parse_args()
+
+    if args.include_proceed_actions and not args.compare_checkpoint:
+        parser.error("--include-proceed-actions requires --compare-checkpoint")
 
     if args.monitor_preflight:
         args.ci_status_only = True
@@ -1161,6 +1238,10 @@ def main() -> None:
         args.compare_checkpoint = True
         args.exit_on_defer = True
         args.include_checkpoint_snippet = True
+
+    if args.include_proceed_actions:
+        args.auto_apply_on_proceed = True
+        args.dispatch_on_proceed = True
 
     if args.exit_on_defer and not (args.ci_status_only and args.compare_checkpoint):
         parser.error("--exit-on-defer requires --ci-status-only and --compare-checkpoint")
@@ -1180,8 +1261,12 @@ def main() -> None:
     if args.apply_checkpoint_snippet and not (args.ci_status_only and args.compare_checkpoint):
         parser.error("--apply-checkpoint-snippet requires --ci-status-only and --compare-checkpoint")
 
-    if args.write and not (args.apply_checkpoint_snippet or args.auto_apply_on_proceed):
-        parser.error("--write requires --apply-checkpoint-snippet or --auto-apply-on-proceed")
+    if args.write and not (
+        args.apply_checkpoint_snippet or args.auto_apply_on_proceed or args.sync_docs_after_dispatch
+    ):
+        parser.error(
+            "--write requires --apply-checkpoint-snippet, --auto-apply-on-proceed, or --sync-docs-after-dispatch"
+        )
 
     if args.force and not args.apply_checkpoint_snippet:
         parser.error("--force requires --apply-checkpoint-snippet")
@@ -1198,11 +1283,18 @@ def main() -> None:
     if args.cancel_stale and not args.dispatch_on_proceed:
         parser.error("--cancel-stale requires --dispatch-on-proceed")
 
+    if args.sync_docs_after_dispatch and not args.dispatch_on_proceed:
+        parser.error("--sync-docs-after-dispatch requires --dispatch-on-proceed")
+
+    if args.sync_docs_after_dispatch and not args.execute:
+        parser.error("--sync-docs-after-dispatch requires --execute")
+
     if args.ci_status_only:
         include_snippet = (
             args.include_checkpoint_snippet
             or args.apply_checkpoint_snippet
             or args.auto_apply_on_proceed
+            or args.sync_docs_after_dispatch
         )
         status = _ci_status(
             compare_checkpoint=args.compare_checkpoint,
@@ -1258,6 +1350,26 @@ def main() -> None:
                             "LFG dispatch: one or more gh steps failed (see dispatch_on_proceed.steps).",
                             file=sys.stderr,
                         )
+                if args.sync_docs_after_dispatch and dispatch_result.get("executed"):
+                    sync_result = _maybe_sync_docs_after_dispatch(
+                        status,
+                        dispatch_result,
+                        write=args.write,
+                        targets=targets,
+                    )
+                    if sync_result is not None:
+                        status["post_dispatch_doc_sync"] = sync_result
+                        if sync_result.get("written"):
+                            status["lfg_doc_applied"] = True
+                            print(
+                                "LFG doc sync: monitoring docs updated after dispatch refresh.",
+                                file=sys.stderr,
+                            )
+                        elif sync_result.get("skipped"):
+                            print(
+                                f"LFG doc sync skipped: {sync_result.get('reason')}",
+                                file=sys.stderr,
+                            )
         if args.validate_checkpoint_doc:
             validation = status.get("doc_validation") or _validate_checkpoint_doc(status)
             if args.json:
@@ -1282,6 +1394,10 @@ def main() -> None:
             dispatch = status.get("dispatch_on_proceed") or {}
             if dispatch.get("executed") and not dispatch.get("ok"):
                 sys.exit(2)
+            sync = status.get("post_dispatch_doc_sync") or {}
+            if args.sync_docs_after_dispatch and sync.get("skipped") is not True:
+                if sync and not sync.get("allowed", True) and args.write:
+                    sys.exit(2)
         sys.exit(0)
 
     quiet = args.json

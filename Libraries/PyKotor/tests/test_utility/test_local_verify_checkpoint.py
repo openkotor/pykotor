@@ -434,7 +434,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–074", patched)
+        self.assertIn("019–075", patched)
 
     def test_apply_lfg_proceed_sets_fields(self) -> None:
         status: dict[str, Any] = {
@@ -1108,6 +1108,75 @@ last_verified: 2026-01-01
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("--execute requires --dispatch-on-proceed", result.stderr)
+
+    def test_apply_allowed_post_dispatch_run_refresh(self) -> None:
+        status: dict[str, Any] = {
+            "post_dispatch_run_changed": True,
+            "checkpoint": {"defer_lfg_pr": True},
+        }
+        allowed, reason = mod._apply_checkpoint_allowed(status, force=False)
+        self.assertTrue(allowed)
+        self.assertEqual(reason, "post_dispatch_run_refresh")
+
+    def test_refresh_runs_after_dispatch_detects_run_change(self) -> None:
+        status: dict[str, Any] = {
+            "verify_pypi": {"run_id": 100, "status": "queued", "conclusion": ""},
+            "forward_commits": {"run_id": 200, "status": "completed", "conclusion": "success"},
+            "checkpoint": {"defer_lfg_pr": False},
+            "checkpoint_snippet": "old",
+        }
+        dispatch_result = {
+            "executed": True,
+            "ok": True,
+            "steps": [{"action": "workflow_dispatch", "workflow": mod.VERIFY_WORKFLOW}],
+        }
+        with patch.object(mod, "_latest_workflow_run", return_value={"run_id": 101, "status": "queued"}):
+            with patch.object(mod, "_compare_checkpoint", return_value={"defer_lfg_pr": False}):
+                with patch.object(mod, "_validate_checkpoint_doc", return_value={"doc_valid": False}):
+                    refresh = mod._refresh_runs_after_dispatch(status, dispatch_result)
+        self.assertIsNotNone(refresh)
+        assert refresh is not None
+        self.assertTrue(refresh["run_id_changed"])
+        self.assertEqual(status["verify_pypi"]["run_id"], 101)
+        self.assertTrue(status["post_dispatch_run_changed"])
+
+    def test_maybe_sync_docs_skips_when_run_unchanged(self) -> None:
+        status: dict[str, Any] = {
+            "verify_pypi": {"run_id": 100, "status": "queued", "conclusion": ""},
+            "forward_commits": {"run_id": 200, "status": "completed", "conclusion": "success"},
+            "checkpoint": {"defer_lfg_pr": False},
+        }
+        dispatch_result = {"executed": True, "ok": True, "steps": []}
+        with patch.object(
+            mod,
+            "_refresh_runs_after_dispatch",
+            return_value={"refreshed": {}, "run_id_changed": False},
+        ):
+            result = mod._maybe_sync_docs_after_dispatch(
+                status,
+                dispatch_result,
+                write=False,
+                targets=["solution"],
+            )
+        self.assertIsNotNone(result)
+        assert result is not None
+        self.assertTrue(result["skipped"])
+
+    def test_include_proceed_actions_requires_compare(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT_PATH),
+                "--ci-status-only",
+                "--include-proceed-actions",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--include-proceed-actions requires --compare-checkpoint", result.stderr)
 
 
 if __name__ == "__main__":
