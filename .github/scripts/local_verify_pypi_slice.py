@@ -13,7 +13,7 @@ import re
 import subprocess
 import sys
 import tempfile
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -37,6 +37,7 @@ _TERMINAL_CONCLUSIONS = frozenset(
     }
 )
 _ACTIVE_STATUSES = frozenset({"queued", "in_progress", "pending", "waiting", "requested"})
+_QUEUE_BACKLOG_HOURS = 4.0
 
 CORE_CHECK = """
 import pykotor
@@ -158,6 +159,15 @@ def _cli_slice(venv_python: Path, *, quiet: bool, checks: list[dict[str, Any]]) 
     return True
 
 
+def _hours_since_iso(iso_timestamp: str) -> float | None:
+    try:
+        created = datetime.fromisoformat(iso_timestamp.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    elapsed = datetime.now(timezone.utc) - created
+    return elapsed.total_seconds() / 3600.0
+
+
 def _latest_workflow_run(workflow_file: str) -> dict[str, Any]:
     result = subprocess.run(
         [
@@ -168,7 +178,7 @@ def _latest_workflow_run(workflow_file: str) -> dict[str, Any]:
             "--limit",
             "1",
             "--json",
-            "databaseId,status,conclusion,headSha,url",
+            "databaseId,status,conclusion,headSha,url,createdAt,updatedAt",
         ],
         cwd=REPO_ROOT,
         capture_output=True,
@@ -181,13 +191,23 @@ def _latest_workflow_run(workflow_file: str) -> dict[str, Any]:
     if not runs:
         return {"error": "no runs found"}
     run = runs[0]
-    return {
+    created_at = run.get("createdAt") or ""
+    updated_at = run.get("updatedAt") or ""
+    status = run.get("status") or ""
+    payload: dict[str, Any] = {
         "run_id": run.get("databaseId"),
-        "status": run.get("status"),
+        "status": status,
         "conclusion": run.get("conclusion"),
         "head_sha": run.get("headSha"),
         "url": run.get("url"),
+        "created_at": created_at,
+        "updated_at": updated_at,
     }
+    if status in _ACTIVE_STATUSES and created_at:
+        queued_hours = _hours_since_iso(created_at)
+        if queued_hours is not None:
+            payload["queued_hours"] = round(queued_hours, 2)
+    return payload
 
 
 def _git_origin_master_sha() -> str | None:
@@ -346,6 +366,19 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
         )
         return result
 
+    if fc_sha_stale and fc_sha_stale_benign is None:
+        result.update(
+            {
+                "checkpoint_unchanged": False,
+                "defer_lfg_pr": False,
+                "defer_reason": "fc_sha_stale but docs-only gap could not be classified",
+                "recommended_action": (
+                    "Ensure git history is available locally; re-run or workflow_dispatch FC"
+                ),
+            }
+        )
+        return result
+
     if fc_sha_stale and fc_sha_stale_benign is False:
         result.update(
             {
@@ -377,9 +410,18 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                 "defer_lfg_pr": False,
                 "defer_reason": "verify or FC run reached terminal status",
                 "recommended_action": "Record conclusions in plan 020 and solution doc Last CI check",
+                "doc_update_recommended": True,
             }
         )
         return result
+
+    backlog_notes: list[str] = []
+    for label, run in (("verify", verify), ("FC", forward_commits)):
+        queued_hours = run.get("queued_hours")
+        if isinstance(queued_hours, (int, float)) and queued_hours >= _QUEUE_BACKLOG_HOURS:
+            backlog_notes.append(f"{label} queued {queued_hours:.1f}h (external runner backlog)")
+    if backlog_notes:
+        result["queue_backlog_note"] = "; ".join(backlog_notes)
 
     result.update(
         {
@@ -549,6 +591,11 @@ def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
             print(f"Note: {note}")
         if checkpoint.get("fc_sha_stale") and checkpoint.get("fc_sha_stale_benign") is not None:
             print(f"fc_sha_stale_benign: {checkpoint['fc_sha_stale_benign']}")
+        backlog = checkpoint.get("queue_backlog_note")
+        if backlog:
+            print(f"Queue: {backlog}")
+        if checkpoint.get("doc_update_recommended"):
+            print("Doc update recommended: refresh Last CI check in plan 020 and solution doc")
     doc_validation = status.get("doc_validation")
     if isinstance(doc_validation, dict) and not doc_validation.get("doc_valid", True):
         print(f"Doc validation: stale — {doc_validation.get('drift') or doc_validation.get('status_drift')}")
@@ -601,7 +648,7 @@ def main() -> None:
     parser.add_argument(
         "--monitor-preflight",
         action="store_true",
-        help="Shorthand for --ci-status-only --json --compare-checkpoint --exit-on-defer",
+        help="Shorthand for --ci-status-only --json --compare-checkpoint --exit-on-defer --include-checkpoint-snippet",
     )
     parser.add_argument(
         "--strict-defer-exit",
@@ -630,6 +677,7 @@ def main() -> None:
         args.json = True
         args.compare_checkpoint = True
         args.exit_on_defer = True
+        args.include_checkpoint_snippet = True
 
     if args.exit_on_defer and not (args.ci_status_only and args.compare_checkpoint):
         parser.error("--exit-on-defer requires --ci-status-only and --compare-checkpoint")

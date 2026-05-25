@@ -182,6 +182,123 @@ class TestCheckpointParsing(unittest.TestCase):
         payload = json.loads(result.stdout)
         self.assertIn("doc_validation", payload)
 
+    def test_hours_since_iso_parses_utc(self) -> None:
+        hours = mod._hours_since_iso("2026-05-24T21:05:17Z")
+        self.assertIsNotNone(hours)
+        assert hours is not None
+        self.assertGreater(hours, 0)
+
+    def test_latest_workflow_run_includes_queued_hours(self) -> None:
+        gh_payload = json.dumps(
+            [
+                {
+                    "databaseId": 1,
+                    "status": "queued",
+                    "conclusion": "",
+                    "headSha": "abc",
+                    "url": "https://example.com/run/1",
+                    "createdAt": "2026-05-24T21:05:17Z",
+                    "updatedAt": "2026-05-24T21:05:17Z",
+                }
+            ]
+        )
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = mock.MagicMock(returncode=0, stdout=gh_payload)
+            result = mod._latest_workflow_run("verify-pypi-regression.yml")
+        self.assertIn("queued_hours", result)
+        self.assertIn("created_at", result)
+
+    def test_compare_no_defer_when_fc_benign_unknown(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+            },
+            "forward_commits": {
+                "run_id": 26365648344,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26365648344,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
+                with patch.object(mod, "_commits_since_are_docs_only", return_value=None):
+                    result = mod._compare_checkpoint(status)
+        self.assertFalse(result["defer_lfg_pr"])
+        self.assertIn("could not be classified", result.get("defer_reason", ""))
+
+    def test_compare_doc_update_recommended_when_terminal(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+            },
+            "forward_commits": {
+                "run_id": 26365648344,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26365648344,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
+                result = mod._compare_checkpoint(status)
+        self.assertTrue(result.get("doc_update_recommended"))
+
+    def test_compare_queue_backlog_note(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "queued_hours": 5.5,
+            },
+            "forward_commits": {
+                "run_id": 26365648344,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "queued_hours": 1.0,
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26365648344,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
+                with patch.object(mod, "_commits_since_are_docs_only", return_value=True):
+                    result = mod._compare_checkpoint(status)
+        self.assertTrue(result["defer_lfg_pr"])
+        self.assertIn("queue_backlog_note", result)
+        self.assertIn("verify queued", result["queue_backlog_note"])
+
+    def test_monitor_preflight_includes_snippet_by_default(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), "--monitor-preflight"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertIn("checkpoint_snippet", payload)
+
     def test_format_checkpoint_snippet(self) -> None:
         status = {
             "verify_pypi": {
