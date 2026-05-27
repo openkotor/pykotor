@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "101"
+PLAN_TRACK_CAP = "102"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1116,6 +1116,30 @@ def _fetch_pr_checks_crosscheck(pr_number: int, rollup_total: int) -> dict[str, 
     }
 
 
+def _build_pr_checks_crosscheck_note(
+    crosscheck: dict[str, Any],
+    *,
+    queue_backlog: bool,
+) -> str:
+    if not crosscheck.get("ok"):
+        return ""
+    delta = crosscheck.get("rollup_vs_gh_delta")
+    if not isinstance(delta, int) or delta == 0:
+        return ""
+    rollup_total = crosscheck.get("rollup_checks_total")
+    gh_total = crosscheck.get("gh_checks_total")
+    note = (
+        f"PR check rollup ({rollup_total}) vs gh pr checks ({gh_total}), "
+        f"delta {delta:+d}"
+    )
+    if queue_backlog:
+        gh_counts = crosscheck.get("gh_state_counts") or {}
+        queued = gh_counts.get("QUEUED")
+        if isinstance(queued, int):
+            note += f"; gh reports {queued} QUEUED"
+    return note
+
+
 def _build_pr_ci_bottlenecks(pr_status: dict[str, Any]) -> dict[str, Any]:
     in_progress = sorted(
         list(pr_status.get("in_progress_check_details") or []),
@@ -1400,6 +1424,18 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
         status["pr_queue_backlog_note"] = backlog_note
     else:
         status.pop("pr_queue_backlog_note", None)
+    crosscheck = status.get("pr_checks_crosscheck") or {}
+    crosscheck_note = _build_pr_checks_crosscheck_note(
+        crosscheck,
+        queue_backlog=bool(bottlenecks.get("queue_backlog")),
+    )
+    if crosscheck_note:
+        status["pr_checks_crosscheck_note"] = crosscheck_note
+        merge_hint = status.get("merge_hint")
+        if merge_hint:
+            status["merge_hint"] = f"{merge_hint} — {crosscheck_note}"
+    else:
+        status.pop("pr_checks_crosscheck_note", None)
 
 
 def _format_watch_poll_line(pr_status: dict[str, Any]) -> str:
@@ -1775,6 +1811,9 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
     command = rec.get("command")
     if command:
         line = f"{line} command={command}"
+    crosscheck_note = status.get("pr_checks_crosscheck_note")
+    if crosscheck_note:
+        line = f"{line} crosscheck={crosscheck_note}"
     print(line, file=sys.stderr)
 
 
