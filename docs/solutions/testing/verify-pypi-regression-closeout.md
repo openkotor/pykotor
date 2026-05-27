@@ -52,7 +52,8 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - **`--lfg-merge-gate`** — same as **`--lfg-gate --strict-pr-ci-exit`**; exit **3** while PR CI blocks merge (plan 085).
 - **`--lfg-merge-watch`** — same as **`--lfg-merge-gate --lfg-pr-watch`**; poll with stderr progress (plan 086).
 - **`--lfg-pr-watch`** — poll **`pr_merge_status`** until ready, failed, or timeout (plan 085).
-- **`pending_check_details`** / **`failed_check_details`** — job URLs and workflow names in rollup JSON (plan 086).
+- **`lfg_exit_code`** in JSON when strict defer/PR exit flags active (plan 087).
+- **`pr_merge_conflicts`** when `mergeable: CONFLICTING` (plan 087).
 - **`--lfg-closeout`** — same as **`--lfg-refresh --write`**; apply monitoring doc updates when CI is terminal (plan 080).
 - **`lfg_mode`** in JSON — `gate`, `merge_gate`, `pr_watch`, `preflight`, `refresh`, or `closeout` for agent routing (plans 080, 085).
 - **`lfg_track_complete`** — docs synced and terminal CI recorded; no closeout PR needed (plan 082).
@@ -90,7 +91,7 @@ Or explicitly:
 python3 .github/scripts/local_verify_pypi_slice.py --monitor-preflight --strict-defer-exit
 ```
 
-Exit codes: **2** = deferred (stop `/lfg` on monitoring); **3** = PR CI pending/failed when **`--strict-pr-ci-exit`** or **`--lfg-merge-gate`**; **0** = proceed or merge-ready; **1** = `gh` error.
+Exit codes: **2** = deferred (stop `/lfg` on monitoring); **3** = PR CI pending/failed/conflicts when **`--strict-pr-ci-exit`** or **`--lfg-merge-gate`**; **0** = proceed or merge-ready; **1** = `gh` error. JSON may include **`lfg_exit_code`** when strict flags are set (plan 087).
 
 Equivalent to `--ci-status-only --json --compare-checkpoint --exit-on-defer` (plans 061–063).
 
@@ -132,12 +133,12 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–086** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–087** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
-## Last CI check (plan 086)
+## Last CI check (plan 087)
 
 **2026-05-27:** verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) **success** on `8916e2f`; FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) **success** on `3b6b746`.
 
-## Track status (plan 086)
+## Track status (plan 087)
 
-**Monitoring-only (plan 086).** Canonical runs verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) completed **success**. No workflow YAML changes on this track unless new CI failures appear.
+**Monitoring-only (plan 087).** Canonical runs verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) completed **success**. No workflow YAML changes on this track unless new CI failures appear.
