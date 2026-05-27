@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "086"
+PLAN_TRACK_CAP = "087"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -1037,7 +1037,7 @@ def _fetch_pr_merge_status() -> dict[str, Any]:
     payload = json.loads(result.stdout)
     checks = payload.get("statusCheckRollup") or []
     summary = _summarize_pr_checks(checks)
-    return {
+    result: dict[str, Any] = {
         "ok": True,
         "number": payload.get("number"),
         "url": payload.get("url"),
@@ -1045,6 +1045,10 @@ def _fetch_pr_merge_status() -> dict[str, Any]:
         "mergeable": payload.get("mergeable"),
         **summary,
     }
+    if payload.get("mergeable") == "CONFLICTING":
+        result["pr_merge_ready"] = False
+        result["lfg_merge_blocked"] = "pr_merge_conflicts"
+    return result
 
 
 def _apply_pr_merge_status(status: dict[str, Any]) -> None:
@@ -1057,7 +1061,9 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
         return
     url = pr_status.get("url") or ""
     number = pr_status.get("number")
-    if pr_status.get("lfg_merge_blocked") == "pr_checks_failed":
+    if pr_status.get("lfg_merge_blocked") == "pr_merge_conflicts":
+        status["merge_hint"] = f"Resolve PR merge conflicts before merge: {url}"
+    elif pr_status.get("lfg_merge_blocked") == "pr_checks_failed":
         names = _format_check_list(list(pr_status.get("failed_checks") or []))
         detail = f" ({names})" if names else ""
         failed_cmd = f"gh pr checks {number} --failed" if number else "gh pr checks --failed"
@@ -1065,7 +1071,10 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
     elif pr_status.get("lfg_merge_blocked") == "pr_checks_pending":
         names = _format_check_list(list(pr_status.get("pending_checks") or []))
         detail = f" ({names})" if names else ""
-        status["merge_hint"] = f"Monitoring complete; wait for PR checks{detail}: {url}"
+        watch_cmd = f"gh pr checks {number} --watch" if number else "gh pr checks --watch"
+        status["merge_hint"] = (
+            f"Monitoring complete; wait for PR checks{detail}: {url} — run: {watch_cmd}"
+        )
     elif pr_status.get("pr_merge_ready"):
         merge_cmd = f"gh pr merge {number} --squash --auto" if number else "gh pr merge --squash --auto"
         status["merge_hint"] = f"Monitoring complete; PR ready to merge: {url} ({merge_cmd})"
@@ -1122,6 +1131,39 @@ def _watch_pr_merge_status(
                 status["proceed_hint"] = status["merge_hint"]
             return
         time.sleep(max(0.0, interval_sec))
+
+
+def _compute_lfg_exit_code(
+    status: dict[str, Any],
+    *,
+    deferred: bool,
+    strict_defer_exit: bool,
+    strict_pr_ci_exit: bool,
+    dispatch_on_proceed: bool,
+    execute: bool,
+    sync_docs_after_dispatch: bool,
+    write: bool,
+    lfg_refresh: bool,
+) -> int:
+    if not status.get("gh_ok"):
+        return 1
+    if deferred and strict_defer_exit:
+        return 2
+    if strict_pr_ci_exit and status.get("lfg_track_complete"):
+        pr_status = status.get("pr_merge_status") or {}
+        if pr_status.get("ok") and not pr_status.get("pr_merge_ready"):
+            return 3
+    if dispatch_on_proceed and execute:
+        dispatch = status.get("dispatch_on_proceed") or {}
+        if dispatch.get("executed") and not dispatch.get("ok"):
+            return 2
+        sync = status.get("post_dispatch_doc_sync") or {}
+        if sync_docs_after_dispatch and sync.get("skipped") is not True:
+            if sync and not sync.get("allowed", True) and write:
+                return 2
+        if lfg_refresh and dispatch.get("executed") and sync.get("skipped"):
+            return 2
+    return 0
 
 
 def _emit_track_complete_stderr(status: dict[str, Any]) -> None:
@@ -2027,6 +2069,18 @@ def main() -> None:
         if args.emit_checkpoint_snippet:
             print(_format_checkpoint_snippet(status))
         else:
+            if args.strict_defer_exit or args.strict_pr_ci_exit:
+                status["lfg_exit_code"] = _compute_lfg_exit_code(
+                    status,
+                    deferred=deferred,
+                    strict_defer_exit=args.strict_defer_exit,
+                    strict_pr_ci_exit=args.strict_pr_ci_exit,
+                    dispatch_on_proceed=args.dispatch_on_proceed,
+                    execute=args.execute,
+                    sync_docs_after_dispatch=args.sync_docs_after_dispatch,
+                    write=args.write,
+                    lfg_refresh=args.lfg_refresh,
+                )
             _print_ci_status(status, as_json=args.json)
         if not status["gh_ok"]:
             sys.exit(1)

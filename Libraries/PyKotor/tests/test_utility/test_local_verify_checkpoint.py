@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–086", patched)
+        self.assertIn("019–087", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -539,6 +539,75 @@ Monitoring.
         self.assertIn("Check File Sizes", status["merge_hint"])
         self.assertIn("gh pr checks 308 --failed", status["merge_hint"])
         self.assertEqual(status["lfg_merge_blocked"], "pr_checks_failed")
+
+    def test_fetch_pr_merge_status_conflicts(self) -> None:
+        payload = {
+            "number": 308,
+            "url": "https://example.com/pr/308",
+            "state": "OPEN",
+            "mergeable": "CONFLICTING",
+            "statusCheckRollup": [
+                {"name": "build", "conclusion": "SUCCESS", "status": "COMPLETED"},
+            ],
+        }
+        with patch.object(
+            mod.subprocess,
+            "run",
+            return_value=mock.Mock(returncode=0, stdout=json.dumps(payload), stderr=""),
+        ):
+            result = mod._fetch_pr_merge_status()
+        self.assertFalse(result["pr_merge_ready"])
+        self.assertEqual(result["lfg_merge_blocked"], "pr_merge_conflicts")
+
+    def test_apply_pr_merge_status_pending_watch_cmd(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        with patch.object(
+            mod,
+            "_fetch_pr_merge_status",
+            return_value={
+                "ok": True,
+                "number": 308,
+                "url": "https://example.com/pr/308",
+                "lfg_merge_blocked": "pr_checks_pending",
+                "pending_checks": ["build"],
+                "pr_merge_ready": False,
+            },
+        ):
+            mod._apply_pr_merge_status(status)
+        self.assertIn("gh pr checks 308 --watch", status["merge_hint"])
+
+    def test_apply_pr_merge_status_conflicts_hint(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        with patch.object(
+            mod,
+            "_fetch_pr_merge_status",
+            return_value={
+                "ok": True,
+                "url": "https://example.com/pr/308",
+                "lfg_merge_blocked": "pr_merge_conflicts",
+                "pr_merge_ready": False,
+            },
+        ):
+            mod._apply_pr_merge_status(status)
+        self.assertIn("merge conflicts", status["merge_hint"])
+
+    def test_compute_lfg_exit_code_pr_pending(self) -> None:
+        code = mod._compute_lfg_exit_code(
+            {
+                "gh_ok": True,
+                "lfg_track_complete": True,
+                "pr_merge_status": {"ok": True, "pr_merge_ready": False},
+            },
+            deferred=False,
+            strict_defer_exit=False,
+            strict_pr_ci_exit=True,
+            dispatch_on_proceed=False,
+            execute=False,
+            sync_docs_after_dispatch=False,
+            write=False,
+            lfg_refresh=False,
+        )
+        self.assertEqual(code, 3)
 
     def test_recompare_checkpoint_status(self) -> None:
         status: dict[str, Any] = {
