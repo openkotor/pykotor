@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–095", patched)
+        self.assertIn("019–096", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -908,6 +908,44 @@ Monitoring.
         self.assertEqual(stall["lfg_pr_watch_result"], "stalled")
         self.assertIn("job hang", stall["merge_hint"])
 
+    def test_resolve_merge_watch_default_timeout(self) -> None:
+        self.assertEqual(
+            mod._resolve_watch_timeout_seconds(None, lfg_merge_watch=True),
+            7200.0,
+        )
+        self.assertEqual(
+            mod._resolve_watch_timeout_seconds(None, lfg_merge_watch=False),
+            1800.0,
+        )
+        self.assertEqual(
+            mod._resolve_watch_timeout_seconds(900.0, lfg_merge_watch=True),
+            900.0,
+        )
+
+    def test_build_pr_watch_summary(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_pr_watch_result": "ready",
+            "pr_watch_history": [
+                {
+                    "completion_percent": 4,
+                    "checks_pending": 26,
+                    "checks_queued": 26,
+                },
+                {
+                    "completion_percent": 100,
+                    "checks_pending": 0,
+                    "checks_queued": 0,
+                },
+            ],
+            "pr_queue_stall_events": [{"poll": 1, "hint": "backlog"}],
+            "pr_watch_started_monotonic": mod.time.monotonic() - 60.0,
+        }
+        summary = mod._build_pr_watch_summary(status)
+        self.assertEqual(summary["completion_percent_delta"], 96)
+        self.assertEqual(summary["checks_pending_delta"], -26)
+        self.assertEqual(summary["queue_stall_events"], 1)
+        self.assertEqual(summary["lfg_pr_watch_result"], "ready")
+
     def test_watch_pr_merge_status_queue_stall_exits_when_flagged(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
         queue_progress = {
@@ -1138,6 +1176,9 @@ Monitoring.
         self.assertEqual(status["lfg_pr_watch_result"], "ready")
         self.assertEqual(status["pr_watch_polls"], 2)
         self.assertEqual(len(status["pr_watch_history"]), 2)
+        summary = status.get("pr_watch_summary") or {}
+        self.assertEqual(summary.get("lfg_pr_watch_result"), "ready")
+        self.assertEqual(summary.get("polls"), 2)
         self.assertIn("PR watch poll 1:", err.getvalue())
         self.assertIn("next=build", err.getvalue())
 
