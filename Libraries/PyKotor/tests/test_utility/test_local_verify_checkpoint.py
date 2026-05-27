@@ -446,7 +446,72 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–081", patched)
+        self.assertIn("019–082", patched)
+
+    def test_refine_lfg_checkpoint_monitoring_complete(self) -> None:
+        status: dict[str, Any] = {
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": "abc1234567890",
+                "url": "https://example.com/1",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": "def1234567890",
+                "url": "https://example.com/2",
+            },
+            "checkpoint": {
+                "defer_lfg_pr": False,
+                "proceed_reason": "update_monitoring_docs",
+                "doc_update_recommended": True,
+            },
+            "doc_validation": {"doc_valid": True, "drift": [], "status_drift": []},
+        }
+        with patch.object(mod, "_doc_patch_would_change", return_value=False):
+            mod._refine_lfg_checkpoint(status, targets=["solution", "plan020"])
+        self.assertEqual(status["checkpoint"]["proceed_reason"], "monitoring_complete")
+        self.assertFalse(status["checkpoint"]["doc_update_recommended"])
+
+    def test_apply_lfg_track_complete(self) -> None:
+        status: dict[str, Any] = {
+            "checkpoint": {"proceed_reason": "monitoring_complete"},
+        }
+        mod._apply_lfg_track_complete(status)
+        self.assertTrue(status["lfg_track_complete"])
+
+    def test_apply_lfg_proceed_skips_monitoring_complete(self) -> None:
+        status: dict[str, Any] = {
+            "checkpoint": {
+                "defer_lfg_pr": False,
+                "proceed_reason": "monitoring_complete",
+            }
+        }
+        mod._apply_lfg_proceed(status)
+        self.assertNotIn("lfg_proceed", status)
+
+    def test_build_proceed_hint_monitoring_complete(self) -> None:
+        hint = mod._build_proceed_hint(
+            {"checkpoint": {"proceed_reason": "monitoring_complete"}},
+            blocked=None,
+        )
+        self.assertIn("track complete", hint)
+        self.assertNotIn("--lfg-closeout", hint)
+
+    def test_git_prefetch_origin_master(self) -> None:
+        with patch.object(mod.subprocess, "run") as mock_run:
+            mock_run.return_value = subprocess.CompletedProcess(
+                args=["git", "fetch"],
+                returncode=0,
+                stdout="",
+                stderr="",
+            )
+            result = mod._git_prefetch_origin_master()
+        self.assertTrue(result["ok"])
+        mock_run.assert_called_once()
 
     def test_apply_lfg_proceed_sets_fields(self) -> None:
         status: dict[str, Any] = {

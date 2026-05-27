@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "081"
+PLAN_TRACK_CAP = "082"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -233,6 +233,22 @@ def _latest_workflow_run(workflow_file: str) -> dict[str, Any]:
         if queued_hours is not None:
             payload["queued_hours"] = round(queued_hours, 2)
     return payload
+
+
+def _git_prefetch_origin_master() -> dict[str, Any]:
+    result = subprocess.run(
+        ["git", "fetch", "origin", "master"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return {
+        "ok": result.returncode == 0,
+        "command": "git fetch origin master",
+        "stdout": result.stdout.strip(),
+        "stderr": result.stderr.strip(),
+    }
 
 
 def _git_origin_master_sha() -> str | None:
@@ -885,6 +901,29 @@ def _apply_checkpoint_snippet(
     return result
 
 
+def _doc_patch_would_change(status: dict[str, Any], targets: list[str]) -> bool:
+    preview = _apply_checkpoint_snippet(status, write=False, force=False, targets=targets)
+    return bool(preview.get("would_write"))
+
+
+def _refine_lfg_checkpoint(status: dict[str, Any], *, targets: list[str]) -> None:
+    checkpoint = status.get("checkpoint")
+    doc_validation = status.get("doc_validation")
+    if not isinstance(checkpoint, dict):
+        return
+    if checkpoint.get("proceed_reason") != "update_monitoring_docs":
+        return
+    if not isinstance(doc_validation, dict) or not doc_validation.get("doc_valid"):
+        return
+    if _doc_patch_would_change(status, targets):
+        return
+    checkpoint["doc_update_recommended"] = False
+    checkpoint["proceed_reason"] = "monitoring_complete"
+    checkpoint["recommended_action"] = (
+        "Monitoring docs match live gh; no closeout PR needed on this track"
+    )
+
+
 def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
     if as_json:
         print(json.dumps(status, indent=2))
@@ -946,10 +985,18 @@ def _apply_lfg_proceed(status: dict[str, Any]) -> None:
     if not isinstance(checkpoint, dict) or checkpoint.get("defer_lfg_pr"):
         return
     proceed_reason = checkpoint.get("proceed_reason")
-    if not proceed_reason:
+    if not proceed_reason or proceed_reason == "monitoring_complete":
         return
     status["lfg_proceed"] = True
     status["lfg_proceed_reason"] = proceed_reason
+
+
+def _apply_lfg_track_complete(status: dict[str, Any]) -> None:
+    checkpoint = status.get("checkpoint")
+    if not isinstance(checkpoint, dict):
+        return
+    if checkpoint.get("proceed_reason") == "monitoring_complete":
+        status["lfg_track_complete"] = True
 
 
 def _format_dispatch_command(config: dict[str, Any]) -> str:
@@ -1244,6 +1291,8 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
     proceed_reason = checkpoint.get("proceed_reason") if isinstance(checkpoint, dict) else None
     if proceed_reason == "update_monitoring_docs":
         return f"{script} --lfg-closeout"
+    if proceed_reason == "monitoring_complete":
+        return f"{script} --lfg-gate  # monitoring docs synced; track complete"
     if proceed_reason == "investigate_ci_drift":
         return f"{script} --lfg-refresh --dry-run"
     if proceed_reason in _DISPATCH_PROCEED_REASONS:
@@ -1307,6 +1356,11 @@ def main() -> None:
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-closeout"
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--prefetch-git",
+        action="store_true",
+        help="Run git fetch origin master before CI checkpoint compare (helps classify_fc_stale_gap)",
     )
     parser.add_argument(
         "--json",
@@ -1546,12 +1600,20 @@ def main() -> None:
             or args.auto_apply_on_proceed
             or args.sync_docs_after_dispatch
             or args.lfg_refresh
+            or args.compare_checkpoint
         )
+        prefetch_result = None
+        if args.prefetch_git and args.compare_checkpoint:
+            prefetch_result = _git_prefetch_origin_master()
         status = _ci_status(
             compare_checkpoint=args.compare_checkpoint,
             include_checkpoint_snippet=include_snippet,
         )
         targets = [part.strip() for part in args.apply_targets.split(",") if part.strip()]
+        if prefetch_result is not None:
+            status["git_prefetch"] = prefetch_result
+        if args.compare_checkpoint:
+            _refine_lfg_checkpoint(status, targets=targets)
         if args.apply_checkpoint_snippet:
             apply_result = _apply_checkpoint_snippet(
                 status,
@@ -1595,6 +1657,7 @@ def main() -> None:
             blocked = _lfg_refresh_blocked(status, deferred=deferred)
             status["proceed_hint"] = _build_proceed_hint(status, blocked=blocked)
         _apply_lfg_proceed(status)
+        _apply_lfg_track_complete(status)
         lfg_mode = _resolve_lfg_mode(
             lfg_closeout=args.lfg_closeout,
             lfg_gate=args.lfg_gate,
