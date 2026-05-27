@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–087", patched)
+        self.assertIn("019–088", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -498,6 +498,21 @@ Monitoring.
         self.assertEqual(summary["pending_check_details"][0]["details_url"], "https://example.com/job/1")
         self.assertEqual(len(summary["failed_check_details"]), 1)
         self.assertEqual(summary["failed_check_details"][0]["workflow"], "Lint")
+
+    def test_summarize_pr_checks_ci_progress(self) -> None:
+        summary = mod._summarize_pr_checks(
+            [
+                {"name": "a", "conclusion": "SUCCESS", "status": "COMPLETED"},
+                {"name": "b", "conclusion": "SKIPPED", "status": "COMPLETED"},
+                {"name": "c", "conclusion": "", "status": "QUEUED"},
+                {"name": "d", "conclusion": "FAILURE", "status": "COMPLETED"},
+            ]
+        )
+        progress = summary["pr_ci_progress"]
+        self.assertEqual(progress["total"], 4)
+        self.assertEqual(progress["terminal"], 3)
+        self.assertEqual(progress["remaining"], 1)
+        self.assertEqual(progress["completion_percent"], 75)
 
     def test_summarize_pr_checks_skipped_not_pending(self) -> None:
         summary = mod._summarize_pr_checks(
@@ -608,6 +623,32 @@ Monitoring.
             lfg_refresh=False,
         )
         self.assertEqual(code, 3)
+
+    def test_compute_lfg_exit_reason_pr_pending(self) -> None:
+        reason = mod._compute_lfg_exit_reason(
+            {
+                "lfg_merge_blocked": "pr_checks_pending",
+                "pr_merge_status": {"lfg_merge_blocked": "pr_checks_pending"},
+            },
+            3,
+            deferred=False,
+        )
+        self.assertEqual(reason, "pr_checks_pending")
+
+    def test_watch_pr_merge_status_conflicts(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        with patch.object(
+            mod,
+            "_fetch_pr_merge_status",
+            return_value={
+                "ok": True,
+                "url": "https://example.com/pr/308",
+                "lfg_merge_blocked": "pr_merge_conflicts",
+                "pr_merge_ready": False,
+            },
+        ):
+            mod._watch_pr_merge_status(status, interval_sec=0.0, timeout_sec=60.0)
+        self.assertEqual(status["lfg_pr_watch_result"], "conflicts")
 
     def test_recompare_checkpoint_status(self) -> None:
         status: dict[str, Any] = {

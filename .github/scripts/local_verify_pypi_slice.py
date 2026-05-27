@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "087"
+PLAN_TRACK_CAP = "088"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -998,18 +998,30 @@ def _summarize_pr_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
     failed_checks = _dedupe_preserve_order(failed_checks)
     pending_check_details = _dedupe_check_details(pending_check_details)
     failed_check_details = _dedupe_check_details(failed_check_details)
+    terminal = success + failed + skipped
+    total = len(checks)
+    remaining = pending
+    completion_percent = round(100 * terminal / total) if total else 100
     return {
-        "checks_total": len(checks),
+        "checks_total": total,
         "checks_pending": pending,
         "checks_in_progress": in_progress,
         "checks_queued": queued,
         "checks_failed": failed,
         "checks_success": success,
         "checks_skipped": skipped,
+        "checks_terminal": terminal,
+        "checks_remaining": remaining,
         "pending_checks": pending_checks,
         "failed_checks": failed_checks,
         "pending_check_details": pending_check_details,
         "failed_check_details": failed_check_details,
+        "pr_ci_progress": {
+            "terminal": terminal,
+            "remaining": remaining,
+            "total": total,
+            "completion_percent": completion_percent,
+        },
         "pr_merge_ready": merge_ready,
         "lfg_merge_blocked": merge_blocked,
     }
@@ -1119,6 +1131,11 @@ def _watch_pr_merge_status(
             if status.get("merge_hint"):
                 status["proceed_hint"] = status["merge_hint"]
             return
+        if pr_status.get("lfg_merge_blocked") == "pr_merge_conflicts":
+            status["lfg_pr_watch_result"] = "conflicts"
+            if status.get("merge_hint"):
+                status["proceed_hint"] = status["merge_hint"]
+            return
         if pr_status.get("lfg_merge_blocked") == "pr_checks_failed":
             status["lfg_pr_watch_result"] = "failed"
             if status.get("merge_hint"):
@@ -1164,6 +1181,29 @@ def _compute_lfg_exit_code(
         if lfg_refresh and dispatch.get("executed") and sync.get("skipped"):
             return 2
     return 0
+
+
+def _compute_lfg_exit_reason(
+    status: dict[str, Any],
+    exit_code: int,
+    *,
+    deferred: bool,
+) -> str:
+    if exit_code == 0:
+        return "proceed"
+    if exit_code == 1:
+        return "gh_error"
+    if exit_code == 2:
+        if deferred:
+            return "deferred"
+        return "dispatch_or_sync_failed"
+    if exit_code == 3:
+        blocked = status.get("lfg_merge_blocked")
+        if not blocked:
+            pr_status = status.get("pr_merge_status") or {}
+            blocked = pr_status.get("lfg_merge_blocked")
+        return str(blocked or "pr_not_ready")
+    return "unknown"
 
 
 def _emit_track_complete_stderr(status: dict[str, Any]) -> None:
@@ -2070,7 +2110,7 @@ def main() -> None:
             print(_format_checkpoint_snippet(status))
         else:
             if args.strict_defer_exit or args.strict_pr_ci_exit:
-                status["lfg_exit_code"] = _compute_lfg_exit_code(
+                exit_code = _compute_lfg_exit_code(
                     status,
                     deferred=deferred,
                     strict_defer_exit=args.strict_defer_exit,
@@ -2080,6 +2120,12 @@ def main() -> None:
                     sync_docs_after_dispatch=args.sync_docs_after_dispatch,
                     write=args.write,
                     lfg_refresh=args.lfg_refresh,
+                )
+                status["lfg_exit_code"] = exit_code
+                status["lfg_exit_reason"] = _compute_lfg_exit_reason(
+                    status,
+                    exit_code,
+                    deferred=deferred,
                 )
             _print_ci_status(status, as_json=args.json)
         if not status["gh_ok"]:
