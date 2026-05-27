@@ -446,7 +446,40 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–082", patched)
+        self.assertIn("019–083", patched)
+
+    def test_recompare_checkpoint_status(self) -> None:
+        status: dict[str, Any] = {
+            "verify_pypi": {"run_id": 1, "status": "completed", "conclusion": "success", "head_sha": "a"},
+            "forward_commits": {"run_id": 2, "status": "completed", "conclusion": "success", "head_sha": "b"},
+        }
+        with patch.object(mod, "_compare_checkpoint", return_value={"proceed_reason": "update_monitoring_docs"}):
+            with patch.object(mod, "_validate_checkpoint_doc", return_value={"doc_valid": True}):
+                with patch.object(mod, "_refine_lfg_checkpoint") as mock_refine:
+                    mod._recompare_checkpoint_status(status, targets=["solution"])
+        self.assertIn("checkpoint", status)
+        mock_refine.assert_called_once()
+
+    def test_build_proceed_hint_classify_fc_prefetch(self) -> None:
+        hint = mod._build_proceed_hint({"checkpoint": {}}, blocked="classify_fc_stale_gap")
+        self.assertIn("--prefetch-git", hint)
+        self.assertIn("--lfg-gate", hint)
+
+    def test_apply_pr_merge_status_when_track_complete(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        with patch.object(
+            mod,
+            "_fetch_pr_merge_status",
+            return_value={
+                "ok": True,
+                "url": "https://github.com/example/pr/308",
+                "checks_failed": 0,
+                "checks_pending": 1,
+            },
+        ):
+            mod._apply_pr_merge_status(status)
+        self.assertIn("pr_merge_status", status)
+        self.assertIn("wait for PR checks", status["merge_hint"])
 
     def test_refine_lfg_checkpoint_monitoring_complete(self) -> None:
         status: dict[str, Any] = {
@@ -1375,7 +1408,7 @@ last_verified: 2026-01-01
 
     def test_build_proceed_hint_classify_fc_blocked(self) -> None:
         hint = mod._build_proceed_hint({"checkpoint": {}}, blocked="classify_fc_stale_gap")
-        self.assertIn("git fetch origin master", hint)
+        self.assertIn("--prefetch-git", hint)
 
     def test_replace_canonical_table_row_idempotent(self) -> None:
         row = "| Verify PyPI | [99](https://new) | Check trigger success on `abc1234` |\n"

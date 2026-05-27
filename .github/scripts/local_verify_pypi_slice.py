@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "082"
+PLAN_TRACK_CAP = "083"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -906,6 +906,74 @@ def _doc_patch_would_change(status: dict[str, Any], targets: list[str]) -> bool:
     return bool(preview.get("would_write"))
 
 
+def _recompare_checkpoint_status(status: dict[str, Any], *, targets: list[str]) -> None:
+    status["checkpoint"] = _compare_checkpoint(status)
+    status["doc_validation"] = _validate_checkpoint_doc(status)
+    _refine_lfg_checkpoint(status, targets=targets)
+
+
+def _fetch_pr_merge_status() -> dict[str, Any]:
+    result = subprocess.run(
+        ["gh", "pr", "view", "--json", "number,url,state,mergeable,statusCheckRollup"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        err = result.stderr.strip() or result.stdout.strip() or "no open PR for branch"
+        return {"ok": False, "error": err}
+    payload = json.loads(result.stdout)
+    checks = payload.get("statusCheckRollup") or []
+    pending = 0
+    failed = 0
+    success = 0
+    for check in checks:
+        conclusion = (check.get("conclusion") or "").lower()
+        check_status = (check.get("status") or "").lower()
+        if conclusion == "success":
+            success += 1
+        elif conclusion in {"failure", "cancelled", "timed_out", "action_required"}:
+            failed += 1
+        elif check_status in {"queued", "in_progress", "pending", "waiting"} or not conclusion:
+            pending += 1
+    return {
+        "ok": True,
+        "number": payload.get("number"),
+        "url": payload.get("url"),
+        "state": payload.get("state"),
+        "mergeable": payload.get("mergeable"),
+        "checks_total": len(checks),
+        "checks_pending": pending,
+        "checks_failed": failed,
+        "checks_success": success,
+    }
+
+
+def _apply_pr_merge_status(status: dict[str, Any]) -> None:
+    if not status.get("lfg_track_complete"):
+        return
+    pr_status = _fetch_pr_merge_status()
+    status["pr_merge_status"] = pr_status
+    if not pr_status.get("ok"):
+        status["merge_hint"] = "Monitoring complete; no open PR on this branch"
+        return
+    url = pr_status.get("url") or ""
+    if pr_status.get("checks_failed", 0) > 0:
+        status["merge_hint"] = f"Fix failing PR checks before merge: {url}"
+    elif pr_status.get("checks_pending", 0) > 0:
+        status["merge_hint"] = f"Monitoring complete; wait for PR checks then merge: {url}"
+    else:
+        status["merge_hint"] = f"Monitoring complete; PR ready to merge: {url}"
+
+
+def _emit_track_complete_stderr(status: dict[str, Any]) -> None:
+    if not status.get("lfg_track_complete"):
+        return
+    merge_hint = status.get("merge_hint") or "Monitoring track complete."
+    print(f"LFG track complete: {merge_hint}", file=sys.stderr)
+
+
 def _refine_lfg_checkpoint(status: dict[str, Any], *, targets: list[str]) -> None:
     checkpoint = status.get("checkpoint")
     doc_validation = status.get("doc_validation")
@@ -1281,10 +1349,7 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
     if blocked == "deferred":
         return f"{script} --lfg-gate"
     if blocked == "classify_fc_stale_gap":
-        return (
-            f"{script} --monitor-preflight --include-proceed-actions "
-            "# git fetch origin master first"
-        )
+        return f"{script} --prefetch-git --lfg-gate"
     if blocked in _LFG_REFRESH_BLOCKED_REASONS:
         return f"{script} --monitor-preflight --include-proceed-actions"
     checkpoint = status.get("checkpoint")
@@ -1353,7 +1418,8 @@ def main() -> None:
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run\n"
-            "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-closeout"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-closeout\n"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --prefetch-git --lfg-gate"
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -1613,7 +1679,10 @@ def main() -> None:
         if prefetch_result is not None:
             status["git_prefetch"] = prefetch_result
         if args.compare_checkpoint:
-            _refine_lfg_checkpoint(status, targets=targets)
+            if prefetch_result is not None and prefetch_result.get("ok"):
+                _recompare_checkpoint_status(status, targets=targets)
+            else:
+                _refine_lfg_checkpoint(status, targets=targets)
         if args.apply_checkpoint_snippet:
             apply_result = _apply_checkpoint_snippet(
                 status,
@@ -1658,6 +1727,10 @@ def main() -> None:
             status["proceed_hint"] = _build_proceed_hint(status, blocked=blocked)
         _apply_lfg_proceed(status)
         _apply_lfg_track_complete(status)
+        _apply_pr_merge_status(status)
+        if status.get("lfg_track_complete") and status.get("merge_hint"):
+            status["proceed_hint"] = status["merge_hint"]
+        _emit_track_complete_stderr(status)
         lfg_mode = _resolve_lfg_mode(
             lfg_closeout=args.lfg_closeout,
             lfg_gate=args.lfg_gate,
