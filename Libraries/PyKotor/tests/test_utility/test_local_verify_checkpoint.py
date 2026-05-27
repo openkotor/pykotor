@@ -447,7 +447,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–107", patched)
+        self.assertIn("019–108", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2338,13 +2338,18 @@ last_verified: 2026-01-01
         briefing = mod._build_lfg_agent_briefing(
             {
                 "lfg_deferred": True,
-                "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate",
+                "lfg_defer_reason": "fc_active_pending",
+                "proceed_hint": (
+                    "python3 .github/scripts/local_verify_pypi_slice.py "
+                    "--lfg-preflight  # re-check when FC run reaches terminal"
+                ),
                 "checkpoint": {
                     "fc_stale_gap_pending_note": "FC queued on def1234 vs master abc1234",
                 },
             }
         )
         self.assertEqual(briefing["action"], "defer")
+        self.assertEqual(briefing["reason"], "fc_active_pending")
         self.assertIn("FC queued", briefing["notes"][0])
 
     def test_last_ci_check_section_extracts_block(self) -> None:
@@ -2357,12 +2362,71 @@ last_verified: 2026-01-01
         self.assertIn("26365648344", section)
 
     def test_apply_lfg_defer_sets_flag_and_stderr(self) -> None:
-        status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True}, "gh_ok": True}
+        status: dict[str, Any] = {
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "gh_ok": True,
+        }
         with patch("sys.stderr", new_callable=io.StringIO) as err:
             deferred = mod._apply_lfg_defer(status, exit_on_defer=True)
         self.assertTrue(deferred)
         self.assertTrue(status["lfg_deferred"])
-        self.assertIn("LFG deferred", err.getvalue())
+        self.assertEqual(status["lfg_defer_reason"], "unchanged_active_runs")
+        self.assertIn("LFG deferred:", err.getvalue())
+        self.assertIn("same canonical runs", err.getvalue())
+
+    def test_resolve_lfg_defer_reason_fc_active_pending(self) -> None:
+        checkpoint = {
+            "defer_lfg_pr": True,
+            "defer_reason": "FC run still active; classify SHA gap after terminal",
+        }
+        self.assertEqual(mod._resolve_lfg_defer_reason(checkpoint), "fc_active_pending")
+
+    def test_compare_pending_note_includes_queued_hours(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": _MASTER_SHA,
+            },
+            "forward_commits": {
+                "run_id": 26543899770,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": _FC_SHA,
+                "queued_hours": 2.5,
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26543899770,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
+                with patch.object(mod, "_commits_since_are_docs_only", return_value=None):
+                    result = mod._compare_checkpoint(status)
+        self.assertIn("queued 2.5h", result.get("fc_stale_gap_pending_note", ""))
+
+    def test_compute_lfg_exit_reason_deferred_fc_active(self) -> None:
+        status = {"lfg_defer_reason": "fc_active_pending"}
+        reason = mod._compute_lfg_exit_reason(status, 2, deferred=True)
+        self.assertEqual(reason, "deferred:fc_active_pending")
+
+    def test_build_proceed_hint_fc_active_pending(self) -> None:
+        hint = mod._build_proceed_hint(
+            {
+                "checkpoint": {
+                    "defer_lfg_pr": True,
+                    "defer_reason": "FC run still active; classify SHA gap after terminal",
+                }
+            },
+            blocked="deferred",
+        )
+        self.assertIn("--lfg-preflight", hint)
+        self.assertIn("terminal", hint)
 
     def test_apply_lfg_defer_skipped_when_disabled(self) -> None:
         status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True}}

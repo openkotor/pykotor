@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "107"
+PLAN_TRACK_CAP = "108"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -439,6 +439,10 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
 
     if fc_sha_stale and fc_sha_stale_benign is None and fc_active:
         fc_status = _run_display_label(forward_commits)
+        queued_hours = forward_commits.get("queued_hours")
+        queue_suffix = ""
+        if isinstance(queued_hours, (int, float)):
+            queue_suffix = f"; queued {queued_hours:.1f}h"
         result.update(
             {
                 "checkpoint_unchanged": True,
@@ -446,7 +450,7 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                 "defer_reason": "FC run still active; classify SHA gap after terminal",
                 "fc_stale_gap_pending_note": (
                     f"FC {fc_status} on {fc_head[:7] if fc_head else '?'} "
-                    f"vs master {master_sha[:7] if master_sha else '?'}"
+                    f"vs master {master_sha[:7] if master_sha else '?'}{queue_suffix}"
                 ),
             }
         )
@@ -1836,6 +1840,9 @@ def _compute_lfg_exit_reason(
         return "gh_error"
     if exit_code == 2:
         if deferred:
+            defer_reason = status.get("lfg_defer_reason")
+            if defer_reason and defer_reason != "deferred":
+                return f"deferred:{defer_reason}"
             return "deferred"
         return "dispatch_or_sync_failed"
     if exit_code == 3:
@@ -1930,7 +1937,7 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
         return {
             "action": "defer",
             "command": proceed_hint,
-            "reason": "deferred",
+            "reason": str(status.get("lfg_defer_reason") or "deferred"),
             "notes": extra_notes,
             "merge_ready": False,
             "blocked": "deferred",
@@ -2065,6 +2072,23 @@ def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
         print(f"Doc validation: stale — {doc_validation.get('drift') or doc_validation.get('status_drift')}")
 
 
+def _resolve_lfg_defer_reason(checkpoint: dict[str, Any] | None) -> str | None:
+    if not isinstance(checkpoint, dict) or not checkpoint.get("defer_lfg_pr"):
+        return None
+    defer_reason = str(checkpoint.get("defer_reason") or "")
+    if defer_reason.startswith("FC run still active"):
+        return "fc_active_pending"
+    if defer_reason == "same canonical runs still active on unchanged checkpoint":
+        return "unchanged_active_runs"
+    return "deferred"
+
+
+def _apply_lfg_defer_metadata(status: dict[str, Any]) -> None:
+    defer_reason = _resolve_lfg_defer_reason(status.get("checkpoint"))
+    if defer_reason:
+        status["lfg_defer_reason"] = defer_reason
+
+
 def _apply_lfg_defer(status: dict[str, Any], *, exit_on_defer: bool) -> bool:
     if not exit_on_defer:
         return False
@@ -2072,8 +2096,10 @@ def _apply_lfg_defer(status: dict[str, Any], *, exit_on_defer: bool) -> bool:
     if not isinstance(checkpoint, dict) or not checkpoint.get("defer_lfg_pr"):
         return False
     status["lfg_deferred"] = True
+    _apply_lfg_defer_metadata(status)
+    defer_detail = checkpoint.get("defer_reason") or "monitoring checkpoint unchanged"
     print(
-        "LFG deferred: monitoring checkpoint unchanged (see AGENTS.md).",
+        f"LFG deferred: {defer_detail} (see AGENTS.md).",
         file=sys.stderr,
     )
     return True
@@ -2378,6 +2404,9 @@ def _build_lfg_refresh_plan(status: dict[str, Any]) -> dict[str, Any]:
 def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
     if blocked == "deferred":
+        defer_reason = _resolve_lfg_defer_reason(status.get("checkpoint"))
+        if defer_reason == "fc_active_pending":
+            return f"{script} --lfg-preflight  # re-check when FC run reaches terminal"
         return f"{script} --lfg-gate"
     if blocked == "classify_fc_stale_gap":
         return f"{script} --prefetch-git --lfg-gate"
@@ -2811,6 +2840,7 @@ def main() -> None:
                 sys.exit(2)
             sys.exit(0)
         deferred = _apply_lfg_defer(status, exit_on_defer=args.exit_on_defer)
+        _apply_lfg_defer_metadata(status)
         if args.lfg_refresh:
             blocked = _lfg_refresh_blocked(status, deferred=deferred)
             if blocked:
