@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–101", patched)
+        self.assertIn("019–102", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1022,6 +1022,38 @@ Monitoring.
         self.assertEqual(cross["rollup_vs_gh_delta"], 25)
         self.assertEqual(cross["gh_state_counts"]["QUEUED"], 1)
 
+    def test_build_pr_checks_crosscheck_note(self) -> None:
+        note = mod._build_pr_checks_crosscheck_note(
+            {
+                "ok": True,
+                "rollup_checks_total": 28,
+                "gh_checks_total": 26,
+                "rollup_vs_gh_delta": 2,
+                "gh_state_counts": {"QUEUED": 25, "SKIPPED": 1},
+            },
+            queue_backlog=True,
+        )
+        self.assertIn("delta +2", note)
+        self.assertIn("gh reports 25 QUEUED", note)
+        self.assertEqual(
+            mod._build_pr_checks_crosscheck_note(
+                {"ok": True, "rollup_vs_gh_delta": 0},
+                queue_backlog=False,
+            ),
+            "",
+        )
+
+    def test_emit_lfg_strict_exit_stderr_crosscheck(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "pr_checks_pending:watch_queue",
+            "pr_ci_recommendation": {"command": "watch-cmd"},
+            "pr_checks_crosscheck_note": "delta +2",
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 3)
+        output = err.getvalue()
+        self.assertIn("crosscheck=delta +2", output)
+
     def test_apply_pr_merge_status_queue_backlog_hint(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
         with patch.object(
@@ -1065,6 +1097,9 @@ Monitoring.
         rec = status.get("pr_ci_recommendation") or {}
         self.assertEqual(rec.get("action"), "watch_queue")
         self.assertIn("pr_queue_backlog_note", status)
+        self.assertIn("pr_checks_crosscheck_note", status)
+        self.assertIn("delta +2", status["merge_hint"])
+        self.assertIn("gh reports 24 QUEUED", status["pr_checks_crosscheck_note"])
 
     def test_pr_ci_recommendation_merge_ready(self) -> None:
         status: dict[str, Any] = {
