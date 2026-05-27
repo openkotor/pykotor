@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–104", patched)
+        self.assertIn("019–105", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1198,6 +1198,33 @@ Monitoring.
         self.assertEqual(briefing["action"], "merge")
         self.assertTrue(briefing["merge_ready"])
         self.assertIn("gh pr merge", briefing["command"])
+
+    def test_build_lfg_agent_briefing_blocked_refresh(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_refresh_blocked": "classify_fc_stale_gap",
+            "proceed_hint": (
+                "python3 .github/scripts/local_verify_pypi_slice.py "
+                "--prefetch-git --lfg-gate"
+            ),
+        }
+        briefing = mod._build_lfg_agent_briefing(status)
+        self.assertEqual(briefing["action"], "blocked_refresh")
+        self.assertIn("--prefetch-git", briefing["command"])
+        self.assertEqual(briefing["reason"], "classify_fc_stale_gap")
+
+    def test_should_emit_lfg_agent_briefing_stderr(self) -> None:
+        self.assertTrue(
+            mod._should_emit_lfg_agent_briefing_stderr(
+                {"action": "blocked_refresh"},
+                0,
+            )
+        )
+        self.assertFalse(
+            mod._should_emit_lfg_agent_briefing_stderr(
+                {"action": "merge"},
+                0,
+            )
+        )
 
     def test_emit_lfg_agent_briefing_stderr(self) -> None:
         with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
