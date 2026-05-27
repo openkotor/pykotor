@@ -317,9 +317,16 @@ Monitoring.
             cwd=REPO_ROOT,
             check=False,
         )
-        self.assertEqual(result.returncode, 2, msg=result.stderr or result.stdout)
         payload = json.loads(result.stdout)
-        self.assertFalse(payload["allowed"])
+        if payload["allowed"]:
+            self.assertEqual(result.returncode, 0, msg=result.stderr or result.stdout)
+            self.assertIn(
+                payload["allow_reason"],
+                ("doc_update_recommended", "doc_validation_drift", "post_dispatch_run_refresh"),
+            )
+        else:
+            self.assertEqual(result.returncode, 2, msg=result.stderr or result.stdout)
+            self.assertFalse(payload["allowed"])
 
     def test_hours_since_iso_parses_utc(self) -> None:
         hours = mod._hours_since_iso("2026-05-24T21:05:17Z")
@@ -434,7 +441,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–075", patched)
+        self.assertIn("019–076", patched)
 
     def test_apply_lfg_proceed_sets_fields(self) -> None:
         status: dict[str, Any] = {
@@ -1157,6 +1164,8 @@ last_verified: 2026-01-01
                 dispatch_result,
                 write=False,
                 targets=["solution"],
+                poll_attempts=1,
+                poll_interval_sec=0.0,
             )
         self.assertIsNotNone(result)
         assert result is not None
@@ -1177,6 +1186,70 @@ last_verified: 2026-01-01
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("--include-proceed-actions requires --compare-checkpoint", result.stderr)
+
+    def test_fetch_workflow_run_with_poll_finds_new_on_second_attempt(self) -> None:
+        runs = [
+            {"run_id": 100, "status": "queued"},
+            {"run_id": 101, "status": "queued"},
+        ]
+
+        def side_effect(_workflow: str) -> dict[str, Any]:
+            return runs.pop(0) if runs else {"run_id": 101, "status": "queued"}
+
+        with patch.object(mod, "_latest_workflow_run", side_effect=side_effect):
+            with patch.object(mod.time, "sleep") as mock_sleep:
+                run, attempts_used, found_new = mod._fetch_workflow_run_with_poll(
+                    mod.VERIFY_WORKFLOW,
+                    100,
+                    poll_attempts=3,
+                    poll_interval_sec=2.0,
+                )
+        self.assertEqual(run["run_id"], 101)
+        self.assertEqual(attempts_used, 2)
+        self.assertTrue(found_new)
+        mock_sleep.assert_called_once()
+
+    def test_lfg_refresh_blocked_when_deferred(self) -> None:
+        status: dict[str, Any] = {
+            "checkpoint": {"defer_lfg_pr": True, "proceed_reason": "update_monitoring_docs"},
+        }
+        self.assertEqual(mod._lfg_refresh_blocked(status, deferred=True), "deferred")
+
+    def test_lfg_refresh_blocked_on_fix_checkpoint_error(self) -> None:
+        status: dict[str, Any] = {
+            "checkpoint": {"defer_lfg_pr": False, "proceed_reason": "fix_checkpoint_error"},
+        }
+        self.assertEqual(mod._lfg_refresh_blocked(status, deferred=False), "fix_checkpoint_error")
+
+    def test_refresh_runs_after_dispatch_uses_poll_metadata(self) -> None:
+        status: dict[str, Any] = {
+            "verify_pypi": {"run_id": 100, "status": "queued", "conclusion": ""},
+            "forward_commits": {"run_id": 200, "status": "completed", "conclusion": "success"},
+            "checkpoint": {"defer_lfg_pr": False},
+            "checkpoint_snippet": "old",
+        }
+        dispatch_result = {
+            "executed": True,
+            "ok": True,
+            "steps": [{"action": "workflow_dispatch", "workflow": mod.VERIFY_WORKFLOW}],
+        }
+        with patch.object(
+            mod,
+            "_fetch_workflow_run_with_poll",
+            return_value=({"run_id": 101, "status": "queued"}, 2, True),
+        ):
+            with patch.object(mod, "_compare_checkpoint", return_value={"defer_lfg_pr": False}):
+                with patch.object(mod, "_validate_checkpoint_doc", return_value={"doc_valid": False}):
+                    refresh = mod._refresh_runs_after_dispatch(
+                        status,
+                        dispatch_result,
+                        poll_attempts=3,
+                        poll_interval_sec=2.0,
+                    )
+        self.assertIsNotNone(refresh)
+        assert refresh is not None
+        self.assertIn("poll", refresh)
+        self.assertTrue(refresh["run_id_changed"])
 
 
 if __name__ == "__main__":

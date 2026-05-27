@@ -13,6 +13,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -23,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "075"
+PLAN_TRACK_CAP = "076"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -42,6 +43,10 @@ _DISPATCH_PROCEED_CONFIG: dict[str, dict[str, Any]] = {
         "cancel_run_key": "forward_commits",
     },
 }
+
+_LFG_REFRESH_BLOCKED_REASONS = frozenset({"fix_checkpoint_error", "fix_gh_lookup"})
+_DEFAULT_DISPATCH_POLL_ATTEMPTS = 3
+_DEFAULT_DISPATCH_POLL_INTERVAL_SEC = 2.0
 
 _TERMINAL_CONCLUSIONS = frozenset(
     {
@@ -1037,27 +1042,68 @@ def _maybe_dispatch_on_proceed(
     return plan
 
 
+def _fetch_workflow_run_with_poll(
+    workflow_file: str,
+    previous_run_id: int | str | None,
+    *,
+    poll_attempts: int,
+    poll_interval_sec: float,
+) -> tuple[dict[str, Any], int, bool]:
+    attempts = max(1, poll_attempts)
+    last_run: dict[str, Any] = {}
+    for attempt in range(attempts):
+        last_run = _latest_workflow_run(workflow_file)
+        new_run_id = last_run.get("run_id")
+        if previous_run_id is None or (new_run_id is not None and new_run_id != previous_run_id):
+            return last_run, attempt + 1, True
+        if attempt < attempts - 1 and poll_interval_sec > 0:
+            time.sleep(poll_interval_sec)
+    return last_run, attempts, False
+
+
 def _refresh_runs_after_dispatch(
     status: dict[str, Any],
     dispatch_result: dict[str, Any],
+    *,
+    poll_attempts: int = 1,
+    poll_interval_sec: float = 0.0,
 ) -> dict[str, Any] | None:
     if not dispatch_result.get("executed") or not dispatch_result.get("ok"):
         return None
     refreshed: dict[str, Any] = {}
+    poll_meta: dict[str, Any] = {}
     for step in dispatch_result.get("steps", []):
         if step.get("action") != "workflow_dispatch":
             continue
         workflow = step.get("workflow")
         if workflow == VERIFY_WORKFLOW:
             previous_run_id = (status.get("verify_pypi") or {}).get("run_id")
-            new_run = _latest_workflow_run(VERIFY_WORKFLOW)
+            new_run, attempts_used, found_new = _fetch_workflow_run_with_poll(
+                VERIFY_WORKFLOW,
+                previous_run_id,
+                poll_attempts=poll_attempts,
+                poll_interval_sec=poll_interval_sec,
+            )
             status["verify_pypi"] = new_run
             refreshed["verify_pypi"] = {"previous_run_id": previous_run_id, "run": new_run}
+            poll_meta["verify_pypi"] = {
+                "attempts_used": attempts_used,
+                "found_new_run_id": found_new,
+            }
         elif workflow == FC_WORKFLOW:
             previous_run_id = (status.get("forward_commits") or {}).get("run_id")
-            new_run = _latest_workflow_run(FC_WORKFLOW)
+            new_run, attempts_used, found_new = _fetch_workflow_run_with_poll(
+                FC_WORKFLOW,
+                previous_run_id,
+                poll_attempts=poll_attempts,
+                poll_interval_sec=poll_interval_sec,
+            )
             status["forward_commits"] = new_run
             refreshed["forward_commits"] = {"previous_run_id": previous_run_id, "run": new_run}
+            poll_meta["forward_commits"] = {
+                "attempts_used": attempts_used,
+                "found_new_run_id": found_new,
+            }
     if not refreshed:
         return None
     if "checkpoint" in status:
@@ -1073,7 +1119,12 @@ def _refresh_runs_after_dispatch(
             run_id_changed = True
             break
     status["post_dispatch_run_changed"] = run_id_changed
-    return {"refreshed": refreshed, "run_id_changed": run_id_changed}
+    return {
+        "refreshed": refreshed,
+        "run_id_changed": run_id_changed,
+        "poll": poll_meta,
+        "poll_exhausted": not run_id_changed,
+    }
 
 
 def _maybe_sync_docs_after_dispatch(
@@ -1082,14 +1133,27 @@ def _maybe_sync_docs_after_dispatch(
     *,
     write: bool,
     targets: list[str],
+    poll_attempts: int,
+    poll_interval_sec: float,
 ) -> dict[str, Any] | None:
-    refresh = _refresh_runs_after_dispatch(status, dispatch_result)
+    refresh = _refresh_runs_after_dispatch(
+        status,
+        dispatch_result,
+        poll_attempts=poll_attempts,
+        poll_interval_sec=poll_interval_sec,
+    )
     if refresh is None:
         return None
     if not refresh.get("run_id_changed"):
+        reason = "run_id unchanged after dispatch"
+        if refresh.get("poll_exhausted"):
+            reason = (
+                f"run_id unchanged after {poll_attempts} poll attempt(s) "
+                f"(gh may still be indexing)"
+            )
         return {
             "skipped": True,
-            "reason": "run_id unchanged after dispatch (gh may still be indexing)",
+            "reason": reason,
             "post_dispatch_refresh": refresh,
         }
     apply_result = _apply_checkpoint_snippet(status, write=write, force=False, targets=targets)
@@ -1097,6 +1161,17 @@ def _maybe_sync_docs_after_dispatch(
     if apply_result.get("written"):
         status["doc_validation"] = _validate_checkpoint_doc(status)
     return apply_result
+
+
+def _lfg_refresh_blocked(status: dict[str, Any], *, deferred: bool) -> str | None:
+    checkpoint = status.get("checkpoint")
+    if deferred or (isinstance(checkpoint, dict) and checkpoint.get("defer_lfg_pr")):
+        return "deferred"
+    if isinstance(checkpoint, dict):
+        proceed_reason = checkpoint.get("proceed_reason")
+        if proceed_reason in _LFG_REFRESH_BLOCKED_REASONS:
+            return str(proceed_reason)
+    return None
 
 
 def _maybe_auto_apply_on_proceed(
@@ -1227,7 +1302,35 @@ def main() -> None:
         action="store_true",
         help="With --dispatch-on-proceed --execute, re-fetch gh runs and apply doc updates when run ID changes",
     )
+    parser.add_argument(
+        "--lfg-refresh",
+        action="store_true",
+        help="One-shot refresh: compare checkpoint, apply docs, dispatch, cancel stale, sync docs (blocked when deferred)",
+    )
+    parser.add_argument(
+        "--dispatch-poll-attempts",
+        type=int,
+        default=0,
+        help="Poll gh for new run ID after dispatch (0=default 3 when --sync-docs-after-dispatch)",
+    )
+    parser.add_argument(
+        "--dispatch-poll-interval",
+        type=float,
+        default=_DEFAULT_DISPATCH_POLL_INTERVAL_SEC,
+        help="Seconds between dispatch poll attempts",
+    )
     args = parser.parse_args()
+
+    if args.lfg_refresh:
+        args.ci_status_only = True
+        args.compare_checkpoint = True
+        args.json = True
+        args.include_checkpoint_snippet = True
+        args.include_proceed_actions = True
+        args.write = True
+        args.execute = True
+        args.cancel_stale = True
+        args.sync_docs_after_dispatch = True
 
     if args.include_proceed_actions and not args.compare_checkpoint:
         parser.error("--include-proceed-actions requires --compare-checkpoint")
@@ -1262,10 +1365,14 @@ def main() -> None:
         parser.error("--apply-checkpoint-snippet requires --ci-status-only and --compare-checkpoint")
 
     if args.write and not (
-        args.apply_checkpoint_snippet or args.auto_apply_on_proceed or args.sync_docs_after_dispatch
+        args.apply_checkpoint_snippet
+        or args.auto_apply_on_proceed
+        or args.sync_docs_after_dispatch
+        or args.lfg_refresh
     ):
         parser.error(
-            "--write requires --apply-checkpoint-snippet, --auto-apply-on-proceed, or --sync-docs-after-dispatch"
+            "--write requires --apply-checkpoint-snippet, --auto-apply-on-proceed, "
+            "--sync-docs-after-dispatch, or --lfg-refresh"
         )
 
     if args.force and not args.apply_checkpoint_snippet:
@@ -1289,12 +1396,18 @@ def main() -> None:
     if args.sync_docs_after_dispatch and not args.execute:
         parser.error("--sync-docs-after-dispatch requires --execute")
 
+    poll_attempts = args.dispatch_poll_attempts
+    if args.sync_docs_after_dispatch and poll_attempts <= 0:
+        poll_attempts = _DEFAULT_DISPATCH_POLL_ATTEMPTS
+    poll_interval_sec = max(0.0, args.dispatch_poll_interval)
+
     if args.ci_status_only:
         include_snippet = (
             args.include_checkpoint_snippet
             or args.apply_checkpoint_snippet
             or args.auto_apply_on_proceed
             or args.sync_docs_after_dispatch
+            or args.lfg_refresh
         )
         status = _ci_status(
             compare_checkpoint=args.compare_checkpoint,
@@ -1320,6 +1433,19 @@ def main() -> None:
                 sys.exit(2)
             sys.exit(0)
         deferred = _apply_lfg_defer(status, exit_on_defer=args.exit_on_defer)
+        if args.lfg_refresh:
+            blocked = _lfg_refresh_blocked(status, deferred=deferred)
+            if blocked:
+                status["lfg_refresh_blocked"] = blocked
+                print(
+                    f"LFG refresh blocked: {blocked} (see AGENTS.md).",
+                    file=sys.stderr,
+                )
+                _print_ci_status(status, as_json=args.json)
+                if not status["gh_ok"]:
+                    sys.exit(1)
+                sys.exit(2)
+            status["lfg_refresh"] = True
         _apply_lfg_proceed(status)
         if args.auto_apply_on_proceed:
             doc_apply = _maybe_auto_apply_on_proceed(status, write=args.write, targets=targets)
@@ -1356,6 +1482,8 @@ def main() -> None:
                         dispatch_result,
                         write=args.write,
                         targets=targets,
+                        poll_attempts=poll_attempts,
+                        poll_interval_sec=poll_interval_sec,
                     )
                     if sync_result is not None:
                         status["post_dispatch_doc_sync"] = sync_result
@@ -1398,6 +1526,8 @@ def main() -> None:
             if args.sync_docs_after_dispatch and sync.get("skipped") is not True:
                 if sync and not sync.get("allowed", True) and args.write:
                     sys.exit(2)
+            if args.lfg_refresh and dispatch.get("executed") and sync.get("skipped"):
+                sys.exit(2)
         sys.exit(0)
 
     quiet = args.json
