@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–096", patched)
+        self.assertIn("019–097", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -858,6 +858,86 @@ Monitoring.
         }
         bottlenecks = mod._build_pr_ci_bottlenecks(pr_status)
         self.assertTrue(bottlenecks["queue_backlog"])
+        self.assertIsNone(bottlenecks["oldest_queued_age_hours"])
+
+    def test_oldest_started_at_hours(self) -> None:
+        details = [
+            {"started_at": "2026-05-27T20:00:00Z"},
+            {"started_at": "2026-05-27T18:00:00Z"},
+        ]
+        oldest_at, hours = mod._oldest_started_at_hours(details)
+        self.assertEqual(oldest_at, "2026-05-27T18:00:00Z")
+        self.assertIsNotNone(hours)
+
+    def test_build_pr_ci_bottlenecks_oldest_age(self) -> None:
+        pr_status = {
+            "checks_pending": 2,
+            "checks_in_progress": 0,
+            "in_progress_check_details": [],
+            "pending_check_details": [
+                {"name": "new", "started_at": "2026-05-27T22:00:00Z", "workflow": "CI"},
+                {"name": "old", "started_at": "2026-05-27T20:00:00Z", "workflow": "CI"},
+            ],
+        }
+        bottlenecks = mod._build_pr_ci_bottlenecks(pr_status)
+        self.assertEqual(bottlenecks["oldest_queued_started_at"], "2026-05-27T20:00:00Z")
+        self.assertIsNotNone(bottlenecks["oldest_queued_age_hours"])
+
+    def test_fetch_pr_checks_crosscheck(self) -> None:
+        payload = [{"name": "build", "state": "QUEUED"}, {"name": "lint", "state": "SUCCESS"}]
+        with patch.object(mod.subprocess, "run") as mock_run:
+            mock_run.return_value = subprocess.CompletedProcess(
+                args=["gh", "pr", "checks"],
+                returncode=0,
+                stdout=json.dumps(payload),
+                stderr="",
+            )
+            cross = mod._fetch_pr_checks_crosscheck(308, 27)
+        self.assertTrue(cross["ok"])
+        self.assertEqual(cross["gh_checks_total"], 2)
+        self.assertEqual(cross["rollup_vs_gh_delta"], 25)
+        self.assertEqual(cross["gh_state_counts"]["QUEUED"], 1)
+
+    def test_apply_pr_merge_status_queue_backlog_hint(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        with patch.object(
+            mod,
+            "_fetch_pr_merge_status",
+            return_value={
+                "ok": True,
+                "number": 308,
+                "url": "https://github.com/example/pr/308",
+                "lfg_merge_blocked": "pr_checks_pending",
+                "checks_pending": 26,
+                "checks_in_progress": 0,
+                "checks_total": 27,
+                "pending_checks": ["label"],
+                "pending_check_details": [
+                    {
+                        "name": "label",
+                        "started_at": "2026-05-27T18:00:00Z",
+                        "workflow": "CI",
+                        "details_url": "",
+                    },
+                ],
+                "pr_merge_ready": False,
+            },
+        ):
+            with patch.object(
+                mod,
+                "_fetch_pr_checks_crosscheck",
+                return_value={
+                    "ok": True,
+                    "gh_checks_total": 25,
+                    "rollup_checks_total": 27,
+                    "rollup_vs_gh_delta": 2,
+                    "gh_state_counts": {"QUEUED": 24},
+                },
+            ):
+                mod._apply_pr_merge_status(status)
+        self.assertIn("runner backlog", status["merge_hint"])
+        self.assertIn("oldest ~", status["merge_hint"])
+        self.assertIn("pr_checks_crosscheck", status)
 
     def test_evaluate_pr_watch_stall_queue(self) -> None:
         recent = [
