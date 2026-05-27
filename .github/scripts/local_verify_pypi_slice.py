@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "105"
+PLAN_TRACK_CAP = "106"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -421,6 +421,22 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
         )
         return result
 
+    if not ids_match:
+        result.update(
+            {
+                "checkpoint_unchanged": False,
+                "defer_lfg_pr": False,
+                "defer_reason": "canonical run IDs differ from solution doc Last CI check",
+                "recommended_action": "Update Last CI check or investigate new CI runs",
+                "proceed_reason": "investigate_ci_drift",
+                "ci_drift_note": (
+                    f"verify run {verify_id} vs doc {checkpoint['verify_run_id']}; "
+                    f"FC run {fc_id} vs doc {checkpoint['forward_commits_run_id']}"
+                ),
+            }
+        )
+        return result
+
     if fc_sha_stale and fc_sha_stale_benign is None:
         result.update(
             {
@@ -431,6 +447,10 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                     "Ensure git history is available locally; re-run or workflow_dispatch FC"
                 ),
                 "proceed_reason": "classify_fc_stale_gap",
+                "fc_stale_gap_note": (
+                    f"fc_head={fc_head[:7] if fc_head else '?'} "
+                    f"master={master_sha[:7] if master_sha else '?'}"
+                ),
             }
         )
         return result
@@ -445,18 +465,6 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                     "workflow_dispatch commit-all-to-bleeding-edge on master or await new FC run"
                 ),
                 "proceed_reason": "refresh_fc_dispatch",
-            }
-        )
-        return result
-
-    if not ids_match:
-        result.update(
-            {
-                "checkpoint_unchanged": False,
-                "defer_lfg_pr": False,
-                "defer_reason": "canonical run IDs differ from solution doc Last CI check",
-                "recommended_action": "Update Last CI check or investigate new CI runs",
-                "proceed_reason": "investigate_ci_drift",
             }
         )
         return result
@@ -1896,12 +1904,19 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
             briefing["exit_reason"] = status["lfg_exit_reason"]
         return briefing
     proceed_hint = str(status.get("proceed_hint") or "")
+    checkpoint = status.get("checkpoint") or {}
+    extra_notes: list[str] = []
+    if isinstance(checkpoint, dict):
+        for key in ("ci_drift_note", "fc_stale_gap_note"):
+            note = checkpoint.get(key)
+            if isinstance(note, str) and note:
+                extra_notes.append(note)
     if status.get("lfg_deferred"):
         return {
             "action": "defer",
             "command": proceed_hint,
             "reason": "deferred",
-            "notes": [],
+            "notes": extra_notes,
             "merge_ready": False,
             "blocked": "deferred",
         }
@@ -1911,9 +1926,19 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
             "action": "blocked_refresh",
             "command": proceed_hint,
             "reason": str(blocked_refresh),
-            "notes": [],
+            "notes": extra_notes,
             "merge_ready": False,
             "blocked": str(blocked_refresh),
+        }
+    proceed_reason = checkpoint.get("proceed_reason") if isinstance(checkpoint, dict) else None
+    if proceed_reason == "investigate_ci_drift":
+        return {
+            "action": "investigate_ci_drift",
+            "command": proceed_hint,
+            "reason": "investigate_ci_drift",
+            "notes": extra_notes,
+            "merge_ready": False,
+            "blocked": None,
         }
     return {}
 
@@ -1945,7 +1970,7 @@ def _should_emit_lfg_agent_briefing_stderr(
 ) -> bool:
     if exit_code != 0:
         return True
-    return briefing.get("action") in {"defer", "blocked_refresh"}
+    return briefing.get("action") in {"defer", "blocked_refresh", "investigate_ci_drift"}
 
 
 def _emit_track_complete_stderr(status: dict[str, Any]) -> None:

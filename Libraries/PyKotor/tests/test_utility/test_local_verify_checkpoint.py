@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–105", patched)
+        self.assertIn("019–106", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1225,6 +1225,24 @@ Monitoring.
                 0,
             )
         )
+        self.assertTrue(
+            mod._should_emit_lfg_agent_briefing_stderr(
+                {"action": "investigate_ci_drift"},
+                0,
+            )
+        )
+
+    def test_build_lfg_agent_briefing_investigate_drift(self) -> None:
+        status: dict[str, Any] = {
+            "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run",
+            "checkpoint": {
+                "proceed_reason": "investigate_ci_drift",
+                "ci_drift_note": "FC run 26543899770 vs doc 26365648344",
+            },
+        }
+        briefing = mod._build_lfg_agent_briefing(status)
+        self.assertEqual(briefing["action"], "investigate_ci_drift")
+        self.assertIn("26543899770", briefing["notes"][0])
 
     def test_emit_lfg_agent_briefing_stderr(self) -> None:
         with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
@@ -2231,6 +2249,34 @@ last_verified: 2026-01-01
             with patch.object(mod, "_git_origin_master_sha", return_value="abc123"):
                 result = mod._compare_checkpoint(status)
         self.assertFalse(result["defer_lfg_pr"])
+        self.assertEqual(result.get("proceed_reason"), "investigate_ci_drift")
+        self.assertIn("ci_drift_note", result)
+
+    def test_compare_investigate_drift_before_fc_classify_gap(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": _MASTER_SHA,
+            },
+            "forward_commits": {
+                "run_id": 26543899770,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": _FC_SHA,
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26365648344,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
+                with patch.object(mod, "_commits_since_are_docs_only", return_value=None):
+                    result = mod._compare_checkpoint(status)
+        self.assertEqual(result.get("proceed_reason"), "investigate_ci_drift")
+        self.assertIn("26543899770", result.get("ci_drift_note", ""))
 
     def test_last_ci_check_section_extracts_block(self) -> None:
         mock_path = mock.MagicMock()
