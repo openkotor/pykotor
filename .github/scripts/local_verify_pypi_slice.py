@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "097"
+PLAN_TRACK_CAP = "098"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1129,12 +1129,18 @@ def _build_pr_ci_bottlenecks(pr_status: dict[str, Any]) -> dict[str, Any]:
     in_progress_count = int(pr_status.get("checks_in_progress") or 0)
     queue_backlog = pending_count > 0 and in_progress_count == 0
     oldest_at, oldest_hours = _oldest_started_at_hours(queued)
+    queue_backlog_severe = (
+        queue_backlog
+        and isinstance(oldest_hours, (int, float))
+        and oldest_hours >= _QUEUE_BACKLOG_HOURS
+    )
     result: dict[str, Any] = {
         "in_progress": in_progress,
         "queued_longest_wait": queued[:8],
         "in_progress_count": len(in_progress),
         "queued_count": len(queued),
         "queue_backlog": queue_backlog,
+        "queue_backlog_severe": queue_backlog_severe,
         "oldest_queued_started_at": oldest_at,
         "oldest_queued_age_hours": round(oldest_hours, 2) if oldest_hours is not None else None,
     }
@@ -1281,8 +1287,9 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
             pending_n = pr_status.get("checks_pending", 0)
             age = bottlenecks.get("oldest_queued_age_hours")
             if isinstance(age, (int, float)):
+                severe = " severe" if bottlenecks.get("queue_backlog_severe") else ""
                 backlog_note = (
-                    f" — runner backlog ({pending_n} queued, 0 running; oldest ~{age:.1f}h)"
+                    f" — runner backlog ({pending_n} queued, 0 running; oldest ~{age:.1f}h{severe})"
                 )
             else:
                 backlog_note = f" — runner backlog ({pending_n} queued, 0 running)"
@@ -1352,6 +1359,8 @@ def _build_pr_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
     duration_sec: float | None = None
     if isinstance(started, (int, float)):
         duration_sec = round(max(0.0, time.monotonic() - float(started)), 1)
+    bottlenecks = status.get("pr_ci_bottlenecks") or {}
+    crosscheck = status.get("pr_checks_crosscheck") or {}
     return {
         "polls": len(history),
         "lfg_pr_watch_result": status.get("lfg_pr_watch_result"),
@@ -1363,6 +1372,9 @@ def _build_pr_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
         "checks_pending_delta": pending_delta,
         "queue_stall_events": len(list(status.get("pr_queue_stall_events") or [])),
         "watch_duration_sec": duration_sec,
+        "end_oldest_queued_age_hours": bottlenecks.get("oldest_queued_age_hours"),
+        "queue_backlog_severe": bottlenecks.get("queue_backlog_severe"),
+        "rollup_vs_gh_delta": crosscheck.get("rollup_vs_gh_delta"),
     }
 
 
@@ -1374,9 +1386,16 @@ def _format_pr_watch_summary_line(summary: dict[str, Any]) -> str:
     queue_events = summary.get("queue_stall_events", 0)
     duration = summary.get("watch_duration_sec")
     duration_text = f"{duration:.0f}s" if isinstance(duration, (int, float)) else "n/a"
+    severe = summary.get("queue_backlog_severe")
+    cross_delta = summary.get("rollup_vs_gh_delta")
+    extra = ""
+    if severe:
+        extra = f" severe_backlog=true"
+    if isinstance(cross_delta, int):
+        extra = f"{extra} rollup_delta={cross_delta:+d}"
     return (
         f"result={result} polls={polls} percent_delta={delta_text} "
-        f"queue_events={queue_events} duration={duration_text}"
+        f"queue_events={queue_events} duration={duration_text}{extra}"
     )
 
 
@@ -1454,16 +1473,24 @@ def _watch_pr_merge_status(
                 if stall is not None:
                     if stall["lfg_pr_watch_result"] == "queue_stalled":
                         status["pr_queue_stalled"] = True
-                        status.setdefault("pr_queue_stall_events", []).append(
-                            {
-                                "poll": polls,
-                                "hint": stall["merge_hint"],
-                            }
+                        pending_val = pr_status.get("checks_pending")
+                        prior_events = list(status.get("pr_queue_stall_events") or [])
+                        last_pending = (
+                            prior_events[-1].get("checks_pending") if prior_events else None
                         )
-                        print(
-                            f"PR queue backlog (continuing watch): {stall['merge_hint']}",
-                            file=sys.stderr,
-                        )
+                        should_record = last_pending != pending_val
+                        if should_record:
+                            status.setdefault("pr_queue_stall_events", []).append(
+                                {
+                                    "poll": polls,
+                                    "hint": stall["merge_hint"],
+                                    "checks_pending": pending_val,
+                                }
+                            )
+                            print(
+                                f"PR queue backlog (continuing watch): {stall['merge_hint']}",
+                                file=sys.stderr,
+                            )
                         if exit_on_queue_stall:
                             status["pr_watch_stalled"] = True
                             status["lfg_pr_watch_result"] = stall["lfg_pr_watch_result"]
@@ -1591,8 +1618,14 @@ def _emit_track_complete_stderr(status: dict[str, Any]) -> None:
     merge_hint = status.get("merge_hint") or "Monitoring track complete."
     progress = (status.get("pr_merge_status") or {}).get("pr_ci_progress") or {}
     percent = progress.get("completion_percent")
+    bottlenecks = status.get("pr_ci_bottlenecks") or {}
     if percent is not None and status.get("lfg_merge_blocked") == "pr_checks_pending":
         merge_hint = f"{merge_hint} [{percent}% CI complete]"
+    if bottlenecks.get("queue_backlog"):
+        age = bottlenecks.get("oldest_queued_age_hours")
+        if isinstance(age, (int, float)):
+            severe = " severe" if bottlenecks.get("queue_backlog_severe") else ""
+            merge_hint = f"{merge_hint} [queue ~{age:.1f}h{severe}]"
     print(f"LFG track complete: {merge_hint}", file=sys.stderr)
 
 
