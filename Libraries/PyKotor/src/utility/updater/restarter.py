@@ -10,8 +10,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 from loggerplus import RobustLogger
-from utility.system.os_helper import is_frozen, requires_admin
 from utility.misc import ensure_directory_exists
+from utility.system.os_helper import is_frozen, requires_admin
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -21,7 +21,9 @@ class UpdateStrategy(Enum):  # pragma: no cover
     """Enum representing the update strategies available."""
 
     OVERWRITE = "overwrite"  # Overwrites the binary in place
-    RENAME = "rename"  # Renames the binary.  Only available for Windows single file bundled executables
+    RENAME = (
+        "rename"  # Renames the binary.  Only available for Windows single file bundled executables
+    )
 
 
 class RestartStrategy(Enum):
@@ -82,12 +84,11 @@ class Restarter:
                 self._win_overwrite()
             else:
                 self._win_rename_restart()
+        # macOS and Linux
+        elif self.u_strategy == UpdateStrategy.OVERWRITE:
+            self._unix_overwrite()
         else:
-            # macOS and Linux
-            if self.u_strategy == UpdateStrategy.OVERWRITE:
-                self._unix_overwrite()
-            else:
-                self._unix_join()
+            self._unix_join()
 
     def _win_simple_restart(self):
         """Simple restart without file operations - just launch the app and exit."""
@@ -114,7 +115,9 @@ class Restarter:
 
         is_folder = self.updated_app.is_dir()
         if is_folder:
-            needs_admin = requires_admin(self.updated_app) or requires_admin(self.current_app.parent)
+            needs_admin = requires_admin(self.updated_app) or requires_admin(
+                self.current_app.parent
+            )
         else:
             needs_admin = requires_admin(self.current_app.parent)
 
@@ -359,9 +362,7 @@ class Restarter:
         if needs_admin:
             # For admin, we need to use Start-Process with -Verb RunAs
             # This will show a UAC prompt
-            inner_command = (
-                f"Start-Process PowerShell.exe -ArgumentList '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"{script_path}\"' -Verb RunAs -WindowStyle Hidden"
-            )
+            inner_command = f"Start-Process PowerShell.exe -ArgumentList '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"{script_path}\"' -Verb RunAs -WindowStyle Hidden"
             ps_args = [
                 "PowerShell.exe",
                 "-NoProfile",
@@ -389,7 +390,11 @@ class Restarter:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 close_fds=True,
-                creationflags=(subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW),
+                creationflags=(
+                    subprocess.DETACHED_PROCESS
+                    | subprocess.CREATE_NEW_PROCESS_GROUP
+                    | subprocess.CREATE_NO_WINDOW
+                ),
                 startupinfo=startupinfo,
             )
             self.log.debug("PowerShell update script launched successfully.")

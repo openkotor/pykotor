@@ -5,8 +5,7 @@ defined in pykotor.engine.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         Libraries/PyKotor/src/pykotor/engine - Abstract interfaces
 
 
@@ -32,18 +31,18 @@ from pykotor.engine.panda3d.materials import Panda3DMaterial, Panda3DMaterialMan
 
 __all__ = [
     "KotorEngine",
-    "create_engine",
-    "Panda3DSceneGraph",
-    "Panda3DAnimationController",
-    "Panda3DPositionController",
-    "Panda3DOrientationController",
-    "Panda3DScaleController",
-    "Panda3DColorController",
-    "Panda3DAlphaController",
-    "Panda3DAnimationState",
-    "Panda3DAnimationManager",
-    "create_panda3d_controller",
     "MDLLoader",
+    "Panda3DAlphaController",
+    "Panda3DAnimationController",
+    "Panda3DAnimationManager",
+    "Panda3DAnimationState",
+    "Panda3DColorController",
     "Panda3DMaterial",
     "Panda3DMaterialManager",
+    "Panda3DOrientationController",
+    "Panda3DPositionController",
+    "Panda3DScaleController",
+    "Panda3DSceneGraph",
+    "create_engine",
+    "create_panda3d_controller",
 ]

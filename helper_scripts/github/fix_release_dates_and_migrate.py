@@ -16,15 +16,27 @@ import time
 from typing import Any
 
 
-def run_gh_api(endpoint: str, method: str = "GET", data: dict[str, Any] | None = None) -> dict[str, Any] | None:
+def run_gh_api(
+    endpoint: str, method: str = "GET", data: dict[str, Any] | None = None
+) -> dict[str, Any] | None:
     """Run a GitHub API command and return JSON result."""
     cmd = ["gh", "api", endpoint, "--method", method]
     if data:
         cmd.extend(["--input", "-"])
         json_data = json.dumps(data)
-        result = subprocess.run(cmd, check=False, input=json_data, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(
+            cmd,
+            check=False,
+            input=json_data,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
     else:
-        result = subprocess.run(cmd, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(
+            cmd, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace"
+        )
 
     if result.returncode != 0:
         if result.stderr and "rate limit" not in result.stderr.lower():
@@ -77,7 +89,7 @@ def create_release(target_repo: str, release_data: dict[str, Any]) -> bool:
 
 def main():
     source_repo = "NickHugi/PyKotor"
-    target_repo = "OldRepublicDevs/PyKotor"
+    target_repo = "OpenKotOR/PyKotor"
 
     print("=" * 70)
     print("FIXING MISSING RELEASES AND DATE ISSUES")
@@ -153,7 +165,7 @@ def main():
         print("\nTo fix dates, you must:")
         print("  1. Use GitHub's web interface to edit each release")
         print("  2. Or use GitHub's release API with proper authentication")
-        print("  3. Or manually edit via: https://github.com/OldRepublicDevs/PyKotor/releases")
+        print("  3. Or manually edit via: https://github.com/OpenKotOR/PyKotor/releases")
         print("\nReleases with date issues:")
         for tag, source_date, target_date in date_issues[:10]:  # Show first 10
             print(f"  - {tag}: {source_date} -> {target_date}")

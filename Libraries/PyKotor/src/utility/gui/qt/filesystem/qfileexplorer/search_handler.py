@@ -41,7 +41,7 @@ class SearchHandler(QObject):
             "Regex Examples:\n"
             "  .*\\.txt$ - Find all .txt files\n"
             "  ^[A-Z] - Items starting with capital letter\n"
-            "  \\d{4} - Items containing 4 digits"
+            "  \\d{4} - Items containing 4 digits",
         )
 
     def validate_regex(
@@ -55,7 +55,7 @@ class SearchHandler(QObject):
             re.compile(pattern)
             return True, ""
         except re.error as e:
-            return False, f"Invalid regex pattern: {str(e)}"
+            return False, f"Invalid regex pattern: {e!s}"
 
     def apply_filter(
         self,

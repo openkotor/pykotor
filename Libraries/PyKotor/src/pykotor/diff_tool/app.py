@@ -10,14 +10,16 @@ from __future__ import annotations
 import cProfile
 import traceback
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from io import StringIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, TextIO
 
+from pykotor.cli.logger import OutputMode
 from pykotor.common.misc import Game
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats import gff
+from pykotor.resource.type import ResourceType
 from pykotor.tools.reference_cache import StrRefReferenceCache
 from pykotor.tslpatcher.diff.engine import (
     diff_data,
@@ -27,11 +29,13 @@ from pykotor.tslpatcher.diff.generator import (
     TSLPatchDataGenerator,
     determine_install_folders,
 )
-from pykotor.tslpatcher.writer import IncrementalTSLPatchDataWriter, ModificationsByType, TSLPatcherINISerializer
+from pykotor.tslpatcher.writer import (
+    IncrementalTSLPatchDataWriter,
+    ModificationsByType,
+    TSLPatcherINISerializer,
+)
 
 if TYPE_CHECKING:
-    from typing_extensions import Literal
-
     from pykotor.tools.reference_cache import TwoDAMemoryReferenceCache
     from pykotor.tslpatcher.diff.engine import DiffContext
 
@@ -40,13 +44,14 @@ if TYPE_CHECKING:
 class DiffConfig:
     """Configuration for diff operations."""
 
-    paths: list[Path | Installation]
+    # List of paths to compare (files, folders, installations, or archives)
+    paths: list[Path | Installation] = field(default_factory=list)
     generate_tslpatcher_config: bool = False
     tslpatchdata_path: Path | None = None
     ini_filename: str = "changes.ini"
     output_log_path: Path | None = None
     log_level: str = "info"
-    output_mode: Literal["full", "normal", "quiet"] = "normal"
+    output_mode: OutputMode = OutputMode.NORMAL
     use_colors: bool = True
     compare_hashes: bool = True
     use_profiler: bool = False
@@ -54,6 +59,13 @@ class DiffConfig:
     logging_enabled: bool = True
     use_incremental_writer: bool = False
     ui_log_func: Callable[..., Any] | None = None
+    merge_source_path: Path | None = None
+    merge_resource_name: str | None = None
+    merge_resource_type: ResourceType | None = None
+    merge_module_root: str | None = None
+    merge_modded_paths: list[Path] | None = None
+    merge_conflict_policy: str = "mod-a"
+    merge_conflict_output_path: Path | None = None
 
 
 gff_types: list[str] = list(gff.GFFContent.get_extensions())
@@ -105,8 +117,12 @@ def log_output(*args, **kwargs):
     # Use logging for other messages (skip INFO in quiet mode)
     import logging
 
-    output_mode = _global_config.config.output_mode if _global_config.config is not None else "normal"
-    if output_mode != "quiet" and msg.strip():
+    output_mode = (
+        _global_config.config.output_mode
+        if _global_config.config is not None
+        else OutputMode.NORMAL
+    )
+    if output_mode != OutputMode.QUIET and msg.strip():
         logger = logging.getLogger(__name__)
         logger.info(msg.strip())
 
@@ -122,7 +138,11 @@ def log_output(*args, **kwargs):
         assert _global_config.output_log is not None, "Output log cannot be None"
         if not _global_config.output_log.parent.is_dir():
             while True:
-                chosen_log_file_path = str(_global_config.config.output_log_path or input("Filepath of the desired output logfile: ").strip() or "log_install_differ.log")
+                chosen_log_file_path = str(
+                    _global_config.config.output_log_path
+                    or input("Filepath of the desired output logfile: ").strip()
+                    or "log_install_differ.log"
+                )
                 _global_config.output_log = Path(chosen_log_file_path).resolve()
                 assert _global_config.output_log is not None, "Output log cannot be None"
                 if _global_config.output_log.parent.is_dir():
@@ -210,16 +230,22 @@ def _setup_logging(config: DiffConfig) -> None:
     """
     import logging
 
-    from pykotor.cli.logger import LogLevel, OutputMode
+    from pykotor.cli.logger import LogLevel
     from pykotor.diff_tool.logger import setup_logger
 
     log_level = getattr(LogLevel, config.log_level.upper())
-    output_mode = getattr(OutputMode, config.output_mode.upper())
+    output_mode = config.output_mode
     use_colors = config.use_colors
 
     # In quiet mode, suppress INFO/DEBUG from all pykotor loggers and root
     if output_mode == OutputMode.QUIET:
-        for logger_name in ("pykotor", "pykotor.diff_tool", "pykotor.tslpatcher", "pykotor.extract", "root"):
+        for logger_name in (
+            "pykotor",
+            "pykotor.diff_tool",
+            "pykotor.tslpatcher",
+            "pykotor.extract",
+            "root",
+        ):
             logging.getLogger(logger_name).setLevel(logging.ERROR)
 
     # Set up output file if specified
@@ -302,7 +328,9 @@ def generate_tslpatcher_data(
     # Analyze TLK StrRef references and create linking patches BEFORE generating files
     if modifications.tlk and base_data_path:
         log_output("\n=== Analyzing StrRef References ===")
-        log_output("Searching entire installation/folder for files that reference modified StrRefs...")
+        log_output(
+            "Searching entire installation/folder for files that reference modified StrRefs..."
+        )
 
         for tlk_mod in modifications.tlk:
             from pykotor.tslpatcher.diff.analyzers import analyze_tlk_strref_references
@@ -321,7 +349,9 @@ def generate_tslpatcher_data(
                     modifications.ncs,
                 )
             except Exception as e:  # noqa: BLE001, PERF203
-                log_output(f"[Warning] StrRef analysis failed for tlk_mod={tlk_mod}: {e.__class__.__name__}: {e}")
+                log_output(
+                    f"[Warning] StrRef analysis failed for tlk_mod={tlk_mod}: {e.__class__.__name__}: {e}"
+                )
                 log_output(f"Full traceback (tlk_mod={tlk_mod}):")
                 for line in traceback.format_exc().splitlines():
                     log_output(f"  {line}")
@@ -488,15 +518,21 @@ def handle_diff(config: DiffConfig) -> tuple[bool | None, int | None]:
                 log_output(f"  Location: {config.tslpatchdata_path}")
                 log_output(f"  INI file: {config.ini_filename}")
                 log_output(f"  TLK modifications: {len(incremental_writer.all_modifications.tlk)}")
-                log_output(f"  2DA modifications: {len(incremental_writer.all_modifications.twoda)}")
+                log_output(
+                    f"  2DA modifications: {len(incremental_writer.all_modifications.twoda)}"
+                )
                 log_output(f"  GFF modifications: {len(incremental_writer.all_modifications.gff)}")
                 log_output(f"  SSF modifications: {len(incremental_writer.all_modifications.ssf)}")
                 log_output(f"  NCS modifications: {len(incremental_writer.all_modifications.ncs)}")
-                total_install_files: int = sum(len(files) for files in incremental_writer.install_folders.values())
+                total_install_files: int = sum(
+                    len(files) for files in incremental_writer.install_folders.values()
+                )
                 log_output(f"  Install files: {total_install_files}")
                 log_output(f"  Install folders: {len(incremental_writer.install_folders)}")
             except Exception as gen_error:  # noqa: BLE001
-                log_output(f"[Error] Failed to finalize TSLPatcher data: {(gen_error.__class__.__name__, str(gen_error))}")
+                log_output(
+                    f"[Error] Failed to finalize TSLPatcher data: {(gen_error.__class__.__name__, str(gen_error))}"
+                )
                 log_output("Full traceback:")
                 for line in traceback.format_exc().splitlines():
                     log_output(f"  {line}")
@@ -582,6 +618,11 @@ def run_application(config: DiffConfig) -> int:
 
     # Log configuration
     _log_configuration(config)
+
+    if config.merge_source_path and config.merge_resource_name and config.merge_modded_paths:
+        from pykotor.diff_tool.merge import run_merge_tslpatcher_workflow
+
+        return run_merge_tslpatcher_workflow(config, run_application)
 
     # Run with optional profiler
     profiler: cProfile.Profile | None = None

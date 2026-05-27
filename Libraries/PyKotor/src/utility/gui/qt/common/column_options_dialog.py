@@ -3,7 +3,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from qtpy.QtCore import QTimer, Qt
-from qtpy.QtWidgets import QAbstractItemView, QComboBox, QDialog, QDialogButtonBox, QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QVBoxLayout
+from qtpy.QtWidgets import (
+    QAbstractItemView,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QVBoxLayout,
+)
 
 if TYPE_CHECKING:
     from qtpy.QtWidgets import QWidget
@@ -102,7 +112,9 @@ class SetDefaultColumnsDialog(QDialog):
         for column in columns:
             item = QListWidgetItem(column, self.columns_list, QListWidgetItem.ItemType.UserType)
             item.setCheckState(Qt.CheckState.Unchecked)
-            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsDragEnabled)
+            item.setFlags(
+                item.flags() | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsDragEnabled
+            )
             self.columns_list.addItem(item)
 
     def update_description(self, item: QListWidgetItem):

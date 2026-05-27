@@ -1,17 +1,11 @@
 """Texture loading utilities for Panda3D.
 
-This module provides TPC texture loading functionality for the Panda3D engine.
+Loads KotOR ``TPC`` resources into Panda3D ``Texture`` objects (format conversion,
+mipmap handling). Retail TPC constructor / attribute layout notes previously cited
+here are migrated to ``wiki/reverse_engineering_findings.md`` (*engine/panda3d —
+TPC loading*).
 
-References:
-----------
-        Based on swkotor.exe TPC structure:
-        - CResTPC::CResTPC @ 0x00712ea0 - TPC resource constructor
-        - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
-        - TPC texture loading and format conversion functions
-
-        Libraries/PyKotor/src/pykotor/resource/formats/tpc - TPC format
-
-
+See ``pykotor.resource.formats.tpc`` for the on-disk TPC model.
 """
 
 from __future__ import annotations
@@ -37,15 +31,6 @@ def load_tpc(tpc: TPC) -> Texture:
     -------
         Panda3D Texture object
 
-    References:
-    ----------
-        Based on swkotor.exe TPC structure:
-        - CResTPC::CResTPC @ 0x00712ea0 - TPC resource constructor
-        - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
-        - TPC texture loading and format conversion functions
-
-        Libraries/PyKotor/src/pykotor/resource/formats/tpc - TPC format
-
     """
     mipmap = tpc.get(0, 0)
     tpc_format = tpc.format()
@@ -55,7 +40,9 @@ def load_tpc(tpc: TPC) -> Texture:
 
     # Convert compressed formats to uncompressed
     if tpc_format in {TPCTextureFormat.DXT1, TPCTextureFormat.DXT3, TPCTextureFormat.DXT5}:
-        target_format = TPCTextureFormat.RGB if tpc_format == TPCTextureFormat.DXT1 else TPCTextureFormat.RGBA
+        target_format = (
+            TPCTextureFormat.RGB if tpc_format == TPCTextureFormat.DXT1 else TPCTextureFormat.RGBA
+        )
         tpc.convert(target_format)
         mipmap = tpc.get(0, 0)
         tpc_format = target_format
@@ -64,19 +51,25 @@ def load_tpc(tpc: TPC) -> Texture:
     if tpc_format == TPCTextureFormat.RGB:
         expected_size = mipmap.width * mipmap.height * 3
         if len(mipmap.data) != expected_size:
-            raise ValueError(f"Invalid RGB image data size. Expected {expected_size}, got {len(mipmap.data)}")
+            raise ValueError(
+                f"Invalid RGB image data size. Expected {expected_size}, got {len(mipmap.data)}"
+            )
         texture.setup2dTexture(mipmap.width, mipmap.height, Texture.T_unsigned_byte, Texture.F_rgb)
         texture.setRamImage(mipmap.data)
     elif tpc_format == TPCTextureFormat.RGBA:
         expected_size = mipmap.width * mipmap.height * 4
         if len(mipmap.data) != expected_size:
-            raise ValueError(f"Invalid RGBA image data size. Expected {expected_size}, got {len(mipmap.data)}")
+            raise ValueError(
+                f"Invalid RGBA image data size. Expected {expected_size}, got {len(mipmap.data)}"
+            )
         texture.setup2dTexture(mipmap.width, mipmap.height, Texture.T_unsigned_byte, Texture.F_rgba)
         texture.setRamImage(mipmap.data)
     elif tpc_format == TPCTextureFormat.BGR:
         expected_size = mipmap.width * mipmap.height * 3
         if len(mipmap.data) != expected_size:
-            raise ValueError(f"Invalid BGR image data size. Expected {expected_size}, got {len(mipmap.data)}")
+            raise ValueError(
+                f"Invalid BGR image data size. Expected {expected_size}, got {len(mipmap.data)}"
+            )
         texture.setup2dTexture(mipmap.width, mipmap.height, Texture.T_unsigned_byte, Texture.F_rgb)
         # Convert BGR to RGB
         converted = bytearray()
@@ -87,7 +80,9 @@ def load_tpc(tpc: TPC) -> Texture:
     elif tpc_format == TPCTextureFormat.BGRA:
         expected_size = mipmap.width * mipmap.height * 4
         if len(mipmap.data) != expected_size:
-            raise ValueError(f"Invalid BGRA image data size. Expected {expected_size}, got {len(mipmap.data)}")
+            raise ValueError(
+                f"Invalid BGRA image data size. Expected {expected_size}, got {len(mipmap.data)}"
+            )
         texture.setup2dTexture(mipmap.width, mipmap.height, Texture.T_unsigned_byte, Texture.F_rgba)
         # Convert BGRA to RGBA
         converted = bytearray()
@@ -99,8 +94,12 @@ def load_tpc(tpc: TPC) -> Texture:
     elif tpc_format == TPCTextureFormat.Greyscale:
         expected_size = mipmap.width * mipmap.height
         if len(mipmap.data) != expected_size:
-            raise ValueError(f"Invalid Greyscale image data size. Expected {expected_size}, got {len(mipmap.data)}")
-        texture.setup2dTexture(mipmap.width, mipmap.height, Texture.T_unsigned_byte, Texture.F_luminance)
+            raise ValueError(
+                f"Invalid Greyscale image data size. Expected {expected_size}, got {len(mipmap.data)}"
+            )
+        texture.setup2dTexture(
+            mipmap.width, mipmap.height, Texture.T_unsigned_byte, Texture.F_luminance
+        )
         texture.setRamImage(mipmap.data)
     else:
         # Default to RGBA

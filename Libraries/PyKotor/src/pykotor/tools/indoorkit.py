@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook, KitDoor, MDLMDXTuple
+from pykotor.common.tilekit import TileKit
 from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.generics.utd import read_utd
@@ -68,7 +69,9 @@ def _load_always_folder(
         return
 
     for always_file in always_path.iterdir():
-        raw = _load_binary_file(always_file, kit_name=kit_name, kind="always file", missing_files=missing_files)
+        raw = _load_binary_file(
+            always_file, kit_name=kit_name, kind="always file", missing_files=missing_files
+        )
         if raw is not None:
             kit.always[always_file] = raw
 
@@ -88,7 +91,9 @@ def _load_texture_folder(
 
     for tga_file in (f for f in folder_path.iterdir() if f.suffix.lower() == ".tga"):
         resref = tga_file.stem.upper()
-        raw_tga = _load_binary_file(tga_file, kit_name=kit_name, kind=kind, missing_files=missing_files)
+        raw_tga = _load_binary_file(
+            tga_file, kit_name=kit_name, kind=kind, missing_files=missing_files
+        )
         if raw_tga is not None:
             target[resref] = raw_tga
 
@@ -107,12 +112,18 @@ def _load_skyboxes(
     if not skyboxes_path.is_dir():
         return
 
-    for skybox_resref_str in (f.stem.upper() for f in skyboxes_path.iterdir() if f.suffix.lower() == ".mdl"):
+    for skybox_resref_str in (
+        f.stem.upper() for f in skyboxes_path.iterdir() if f.suffix.lower() == ".mdl"
+    ):
         mdl_path = skyboxes_path / f"{skybox_resref_str}.mdl"
         mdx_path = skyboxes_path / f"{skybox_resref_str}.mdx"
 
-        mdl = _load_binary_file(mdl_path, kit_name=kit_name, kind="skybox model", missing_files=missing_files)
-        mdx = _load_binary_file(mdx_path, kit_name=kit_name, kind="skybox model", missing_files=missing_files)
+        mdl = _load_binary_file(
+            mdl_path, kit_name=kit_name, kind="skybox model", missing_files=missing_files
+        )
+        mdx = _load_binary_file(
+            mdx_path, kit_name=kit_name, kind="skybox model", missing_files=missing_files
+        )
         if mdl is None or mdx is None:
             continue
 
@@ -132,8 +143,12 @@ def _load_doorway_padding(
     for padding_id in (f.stem for f in doorway_path.iterdir() if f.suffix.lower() == ".mdl"):
         mdl_path = doorway_path / f"{padding_id}.mdl"
         mdx_path = doorway_path / f"{padding_id}.mdx"
-        mdl = _load_binary_file(mdl_path, kit_name=kit_name, kind="doorway padding", missing_files=missing_files)
-        mdx = _load_binary_file(mdx_path, kit_name=kit_name, kind="doorway padding", missing_files=missing_files)
+        mdl = _load_binary_file(
+            mdl_path, kit_name=kit_name, kind="doorway padding", missing_files=missing_files
+        )
+        mdx = _load_binary_file(
+            mdx_path, kit_name=kit_name, kind="doorway padding", missing_files=missing_files
+        )
         if mdl is None or mdx is None:
             continue
 
@@ -251,10 +266,15 @@ def _load_kits_internal(
             kit_id = kit_json.get("id") or file.stem
             kit_name = kit_json["name"]
 
+        if kit_json.get("format_version") == 2:
+            continue
+
         kit = Kit(kit_name, kit_id)
         base_path = kits_path / kit_id
 
-        _load_always_folder(kit, always_path=base_path / "always", kit_name=kit_name, missing_files=missing_ref)
+        _load_always_folder(
+            kit, always_path=base_path / "always", kit_name=kit_name, missing_files=missing_ref
+        )
         _load_texture_folder(
             folder_path=base_path / "textures",
             target=kit.textures,
@@ -273,17 +293,33 @@ def _load_kits_internal(
             kind="lightmap",
             use_upper_txi_name=False,
         )
-        _load_skyboxes(kit, skyboxes_path=base_path / "skyboxes", kit_name=kit_name, missing_files=missing_ref)
-        _load_doorway_padding(kit, doorway_path=base_path / "doorway", kit_name=kit_name, missing_files=missing_ref)
-        _load_doors(kit, kit_json.get("doors", []), base_path=base_path, kit_name=kit_name, missing_files=missing_ref)
-        _load_components(kit, kit_json.get("components", []), base_path=base_path, kit_name=kit_name, missing_files=missing_ref)
+        _load_skyboxes(
+            kit, skyboxes_path=base_path / "skyboxes", kit_name=kit_name, missing_files=missing_ref
+        )
+        _load_doorway_padding(
+            kit, doorway_path=base_path / "doorway", kit_name=kit_name, missing_files=missing_ref
+        )
+        _load_doors(
+            kit,
+            kit_json.get("doors", []),
+            base_path=base_path,
+            kit_name=kit_name,
+            missing_files=missing_ref,
+        )
+        _load_components(
+            kit,
+            kit_json.get("components", []),
+            base_path=base_path,
+            kit_name=kit_name,
+            missing_files=missing_ref,
+        )
 
         kits.append(kit)
 
     return kits, missing_files
 
 
-def load_kits(path: "os.PathLike | str") -> list[Kit]:
+def load_kits(path: os.PathLike | str) -> list[Kit]:
     """Load Holocron indoor kits from disk (headless).
 
     Expected layout matches Holocron Toolset kits:
@@ -303,3 +339,29 @@ def load_kits_with_missing_files(
     so Toolset UI can report missing resources while keeping all non-Qt logic in PyKotor.
     """
     return _load_kits_internal(path, record_missing=True)
+
+
+def load_kits_unified(path: os.PathLike | str) -> tuple[list[Kit], list[TileKit]]:
+    """Load v1 component kits and v2 tile kits from the same directory."""
+    from pykotor.tools.tilekit_io import load_tile_kits_v2_from_folder
+
+    kits, _missing = _load_kits_internal(path, record_missing=False)
+    tile_kits = load_tile_kits_v2_from_folder(path, missing_files=None)
+    return kits, tile_kits
+
+
+def load_kits_unified_with_missing(
+    path: os.PathLike | str,
+) -> tuple[list[Kit], list[TileKit], list[tuple[str, Path, str]]]:
+    """Like :func:`load_kits_unified` but merges missing-file lists from both loaders."""
+    from pykotor.tools.tilekit_io import load_tile_kits_v2_from_folder
+
+    kits, missing_v1 = _load_kits_internal(path, record_missing=True)
+    missing_v2: list[tuple[str, Path, str]] = []
+    tile_kits = load_tile_kits_v2_from_folder(path, missing_files=missing_v2)
+    return kits, tile_kits, missing_v1 + missing_v2
+
+
+def kits_for_indoor_build(kits: list[Kit], tile_kits: list[TileKit]) -> list[Kit]:
+    """Merge legacy kits with tile-kit shells for texture/skybox resolution during build."""
+    return [*kits, *(tk.as_runtime_kit() for tk in tile_kits)]

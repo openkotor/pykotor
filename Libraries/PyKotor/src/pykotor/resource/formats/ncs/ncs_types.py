@@ -9,6 +9,8 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
+from pykotor.resource.formats._base import ComparableMixin
+
 if TYPE_CHECKING:
     from typing_extensions import Self
 
@@ -56,7 +58,7 @@ class NCSTypeCode(IntEnum):
     INVALID = 0xFF  # -1 in signed byte
 
 
-class NCSType:
+class NCSType(ComparableMixin):
     """Represents a type in the NCS type system.
 
     Provides type information, size calculations, and type conversion utilities.
@@ -266,7 +268,11 @@ class NCSType:
         """
         if self._type_code in {NCSTypeCode.INTINT, NCSTypeCode.INTFLOAT}:
             return NCSTypeCode.INTEGER
-        if self._type_code in {NCSTypeCode.FLOATFLOAT, NCSTypeCode.FLOATINT, NCSTypeCode.FLOATVECTOR}:
+        if self._type_code in {
+            NCSTypeCode.FLOATFLOAT,
+            NCSTypeCode.FLOATINT,
+            NCSTypeCode.FLOATVECTOR,
+        }:
             return NCSTypeCode.FLOAT
         if self._type_code in {NCSTypeCode.STRINGSTRING}:
             return NCSTypeCode.STRING
@@ -285,7 +291,11 @@ class NCSType:
         """
         if self._type_code in {NCSTypeCode.INTINT, NCSTypeCode.INTFLOAT}:
             return NCSTypeCode.INTEGER
-        if self._type_code in {NCSTypeCode.FLOATFLOAT, NCSTypeCode.FLOATINT, NCSTypeCode.FLOATVECTOR}:
+        if self._type_code in {
+            NCSTypeCode.FLOATFLOAT,
+            NCSTypeCode.FLOATINT,
+            NCSTypeCode.FLOATVECTOR,
+        }:
             return NCSTypeCode.FLOAT
         if self._type_code in {NCSTypeCode.STRINGSTRING}:
             return NCSTypeCode.STRING
@@ -314,7 +324,11 @@ class NCSType:
         """
         if self._type_code in {NCSTypeCode.INTINT, NCSTypeCode.FLOATINT}:
             return NCSTypeCode.INTEGER
-        if self._type_code in {NCSTypeCode.FLOATFLOAT, NCSTypeCode.INTFLOAT, NCSTypeCode.VECTORFLOAT}:
+        if self._type_code in {
+            NCSTypeCode.FLOATFLOAT,
+            NCSTypeCode.INTFLOAT,
+            NCSTypeCode.VECTORFLOAT,
+        }:
             return NCSTypeCode.FLOAT
         if self._type_code in {NCSTypeCode.STRINGSTRING}:
             return NCSTypeCode.STRING

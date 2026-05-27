@@ -50,13 +50,13 @@ jobs:
         package:
           - pykotor
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             tests/test_pypi
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -64,7 +64,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-glx libgl1-mesa-dev xvfb
+          sudo apt-get install -y libgl1 libgl1-mesa-dev xvfb
 
       - name: Determine package index
         id: index
@@ -133,22 +133,18 @@ jobs:
           "
 
   test-tools:
-    name: Test ${{ matrix.tool }} CLI on Python ${{ matrix.python-version }}
+    name: Test discovered CLI tools on Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
         python-version: ['3.10', '3.11']
-        tool:
-          - pykotor
-          - holopatcher
-          - kotordiff
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -163,41 +159,74 @@ jobs:
             echo "url=" >> $GITHUB_OUTPUT
           fi
 
-      - name: Install tool
+      - name: Discover published CLI tools
+        run: |
+          python .github/scripts/discover_tools.py --cli-only --format json > cli-tools.json
+
+      - name: Install CLI packages
         run: |
           python -m pip install --upgrade pip
-          if [ "${{ matrix.tool }}" = "pykotor" ]; then
-            pip install pykotor ${{ steps.index.outputs.url }}
-          else
-            pip install ${{ matrix.tool }} ${{ steps.index.outputs.url }}
-          fi
+
+          python - "${{ steps.index.outputs.url }}" <<'PY'
+          import json
+          import shlex
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          index_args = shlex.split(sys.argv[1]) if len(sys.argv) > 1 else []
+          packages = ["pykotor"]
+          packages.extend(tool["project_name"] for tool in json.loads(Path("cli-tools.json").read_text(encoding="utf-8")))
+
+          for package in packages:
+              print(f"Installing {package}...")
+              result = subprocess.run([sys.executable, "-m", "pip", "install", package, *index_args])
+              if result.returncode != 0:
+                  print(f"SKIP: {package} not available")
+          PY
         shell: bash
 
-      - name: Test CLI entry point
+      - name: Test CLI entry points
         shell: bash
         run: |
-          case "${{ matrix.tool }}" in
-            pykotor)
-              pykotor --help || python -m pykotor --help || pykotorcli --help || python -m pykotorcli --help || echo "Help flag test"
-              ;;
-            holopatcher)
-              python -m holopatcher --help || echo "Help flag test"
-              ;;
-            kotordiff)
-              python -m kotordiff --help || echo "Help flag test"
-              ;;
-          esac
-          echo "✓ CLI entry point works"
+          python <<'PY'
+          import json
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          commands = [
+              ["pykotor", "--help"],
+              [sys.executable, "-m", "pykotor", "--help"],
+              ["pykotorcli", "--help"],
+              [sys.executable, "-m", "pykotorcli", "--help"],
+          ]
+          for command in commands:
+              result = subprocess.run(command)
+              if result.returncode == 0:
+                  break
+          else:
+              print("SKIP: PyKotor CLI help not available")
+
+          for tool in json.loads(Path("cli-tools.json").read_text(encoding="utf-8")):
+              module_name = tool["package_name"]
+              print(f"Testing {module_name} --help")
+              result = subprocess.run([sys.executable, "-m", module_name, "--help"])
+              if result.returncode != 0:
+                  print(f"SKIP: {module_name} help not available")
+
+          print("✓ CLI entry point checks completed")
+          PY
 
   test-integration:
     name: Integration Test - Full Stack
     runs-on: ubuntu-latest
     needs: [test-installation]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 

@@ -1,7 +1,8 @@
-"""Resource format base: ComparableMixin and path setup for format I/O modules."""
+"""Resource format base: ComparableMixin, BiowareResource, and path setup for format I/O modules."""
 
 from __future__ import annotations
 
+import json
 import logging
 import pathlib
 import sys
@@ -18,7 +19,10 @@ for lib_path in (PYKOTOR_LIB, UTILITY_LIB):
     if lib_path.exists() and lib_str not in sys.path:
         sys.path.append(lib_str)
 
-from utility.string_util import compare_and_format, format_text  # type: ignore[attr-defined]  # noqa: E402
+from utility.string_util import (  # type: ignore[attr-defined]  # noqa: E402
+    compare_and_format,
+    format_text,
+)
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -73,7 +77,9 @@ class ComparableMixin:
             log_func = self._prefixed_logger(log_func, prefix)
 
         if not isinstance(other, self.__class__):
-            log_func(f"Type mismatch: '{self.__class__.__name__}' vs '{other.__class__.__name__ if isinstance(other, object) else type(other)}'")
+            log_func(
+                f"Type mismatch: '{self.__class__.__name__}' vs '{other.__class__.__name__ if isinstance(other, object) else type(other)}'"
+            )
             return False
 
         is_same: bool = True
@@ -97,12 +103,14 @@ class ComparableMixin:
 
         # Compare set-like fields (unordered)
         comparable_set_fields = type(self).COMPARABLE_SET_FIELDS
-        for set_name in comparable_set_fields:  # sourcery skip: for-append-to-extend
+        for set_name in comparable_set_fields:
             try:
                 old_set_raw = getattr(self, set_name)
                 new_set_raw = getattr(other, set_name)
             except AttributeError as e:
-                log_func(f"Missing set attribute '{set_name}' on one of the objects: {e.__class__.__name__}: {e}")
+                log_func(
+                    f"Missing set attribute '{set_name}' on one of the objects: {e.__class__.__name__}: {e}"
+                )
                 is_same = False
                 continue
 
@@ -143,10 +151,14 @@ class ComparableMixin:
                 continue
 
             if len(old_seq) != len(new_seq):
-                log_func(f"List '{seq_name}' length mismatch. Old: {len(old_seq)}, New: {len(new_seq)}")
+                log_func(
+                    f"List '{seq_name}' length mismatch. Old: {len(old_seq)}, New: {len(new_seq)}"
+                )
                 is_same = False
 
-            for index, (old_item, new_item) in enumerate(zip_longest(old_seq, new_seq, fillvalue=None)):
+            for index, (old_item, new_item) in enumerate(
+                zip_longest(old_seq, new_seq, fillvalue=None)
+            ):
                 if old_item is None and new_item is None:
                     continue
                 if old_item is None:
@@ -237,3 +249,45 @@ class ComparableMixin:
             return log_func(f"{prefix}{msg}")
 
         return _inner
+
+
+class BiowareEncoder(json.JSONEncoder):
+    """JSON Encoder for BioWare resources that intercepts __json__ methods."""
+
+    def default(self, o: Any) -> Any:
+        if hasattr(o, "__json__") and callable(o.__json__):
+            return o.__json__()
+        return super().default(o)
+
+
+class BiowareResource(ComparableMixin):
+    """Base type for BioWare on-disk / parsed resource objects under ``resource.formats``.
+
+    Subclasses include format payloads (GFF, MDL, …), binary readers/writers
+    (via :class:`pykotor.resource.type.ResourceReader` / ``ResourceWriter``),
+    and archives (via :class:`pykotor.resource.bioware_archive.BiowareArchive` /
+    :class:`pykotor.resource.bioware_archive.ArchiveResource`). Use for
+    ``isinstance`` / grouping; keep cooperative multiple inheritance in mind when
+    adding shared behavior.
+    """
+
+    __slots__ = ()
+
+    def __json__(self) -> dict[str, Any]:
+        """Serialize the object fields to a dictionary utilizing the ComparableMixin lists."""
+        data: dict[str, Any] = {}
+        for field in (
+            self.COMPARABLE_FIELDS + self.COMPARABLE_SEQUENCE_FIELDS + self.COMPARABLE_SET_FIELDS
+        ):
+            val = getattr(self, field)
+            data[field] = val
+        return data
+
+    @classmethod
+    def from_json(cls, data: dict[str, Any]) -> Self:
+        """Create an object from a dictionary, mapping to ComparableMixin schema."""
+        instance = cls()
+        for key, value in data.items():
+            if hasattr(instance, key):
+                setattr(instance, key, value)
+        return instance

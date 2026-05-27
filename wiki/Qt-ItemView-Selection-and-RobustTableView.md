@@ -3,7 +3,7 @@
 ## Key concepts (Qt)
 
 - **Selection is managed by `QItemSelectionModel`** (not by the view itself). See `QItemSelectionModel` docs: `https://doc.qt.io/qt-6/qitemselectionmodel.html`.
-- **"Current index” and "selected indexes” are different things**:
+- **"Current index" and "selected indexes" are different things**:
   - `QAbstractItemView::clearSelection()` **deselects items but does not change the current index** (so keyboard/shift-range "anchor" behavior can still reference the previous current index). See `QAbstractItemView` docs: `https://doc.qt.io/qt-6/qabstractitemview.html`.
   - `QItemSelectionModel` explicitly describes a "two layer" approach (committed selection + current interactive selection), and exposes APIs like `setCurrentIndex()`, `clearCurrentIndex()`, `clearSelection()`, and selection flag combinations like `ClearAndSelect`. See `https://doc.qt.io/qt-6/qitemselectionmodel.html`.
 
@@ -23,5 +23,13 @@ To keep Qt’s selection model behavior correct, `RobustTableView` must:
 
 - **Delegate to Qt** (`QTableView`/`QAbstractItemView`) for the normal "all columns selectable" behavior.
 - Only apply the custom restriction logic in the "first column only" mode.
+
+### See also
+
+- [Wiki-Conventions](Wiki-Conventions) -- Wiki structure
+- [HolocronToolset](Home) -- Toolset overview
+- Qt docs:
+  - [QItemSelectionModel](https://doc.qt.io/qt-6/qitemselectionmodel.html)
+  - [QAbstractItemView](https://doc.qt.io/qt-6/qabstractitemview.html)
 
 

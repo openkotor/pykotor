@@ -9,11 +9,6 @@ should be handled in the respective backend modules.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:150-400
         Libraries/PyKotor/src/pykotor/common/geometry_utils.py - Geometry utilities
 
 """
@@ -23,7 +18,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pykotor.resource.formats.mdl.mdl_data import MDLMesh, MDLNode  # pyright: ignore[reportMissingImports]
+    from pykotor.resource.formats.mdl.mdl_data import (  # pyright: ignore[reportMissingImports]
+        MDLMesh,
+        MDLNode,
+    )
 
 
 class VertexFormatRequirements:
@@ -80,7 +78,7 @@ class VertexFormatRequirements:
         )
 
 
-def get_node_type_priority(mdl_node: "MDLNode") -> int:
+def get_node_type_priority(mdl_node: MDLNode) -> int:
     """Get node type priority for conversion order.
 
     Some node types (like skin, dangly, saber) also have mesh data, so we need
@@ -96,12 +94,6 @@ def get_node_type_priority(mdl_node: "MDLNode") -> int:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:987-1004
-
 
     """
     # Priority order (higher = checked first):
@@ -125,7 +117,7 @@ def get_node_type_priority(mdl_node: "MDLNode") -> int:
     return 0  # Dummy node
 
 
-def get_node_converter_type(mdl_node: "MDLNode") -> str:
+def get_node_converter_type(mdl_node: MDLNode) -> str:
     """Get the converter type string for an MDL node.
 
     Args:
@@ -139,8 +131,7 @@ def get_node_converter_type(mdl_node: "MDLNode") -> str:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
     """
@@ -179,12 +170,6 @@ def should_reverse_winding_order(backend: str = "opengl") -> bool:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1169 (Three.js handles it)
-
 
     """
     # Backend-specific winding order requirements

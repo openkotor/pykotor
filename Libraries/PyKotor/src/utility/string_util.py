@@ -8,7 +8,11 @@ from typing import TYPE_CHECKING, Any, TypeVar
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from typing_extensions import LiteralString, Self, SupportsIndex  # pyright: ignore[reportMissingModuleSource]
+    from typing_extensions import (  # pyright: ignore[reportMissingModuleSource]
+        LiteralString,
+        Self,
+        SupportsIndex,
+    )
 
 
 def insert_newlines(
@@ -186,7 +190,10 @@ def striprtf(text: str) -> str:  # noqa: C901, PLR0915, PLR0912
         3. Ignoring certain tags and characters inside tags marked as "ignorable"
         4. Appending/joining resulting text pieces to output.
     """
-    pattern: re.Pattern[str] = re.compile(r"\\([a-z]{1,32})(-?\d{1,10})?[ ]?|\\'([0-9a-f]{2})|\\([^a-z])|([{}])|[\r\n]+|(.)", re.IGNORECASE)
+    pattern: re.Pattern[str] = re.compile(
+        r"\\([a-z]{1,32})(-?\d{1,10})?[ ]?|\\'([0-9a-f]{2})|\\([^a-z])|([{}])|[\r\n]+|(.)",
+        re.IGNORECASE,
+    )
     # control words which specify a "destination".
     destinations = frozenset(
         (
@@ -484,7 +491,7 @@ def striprtf(text: str) -> str:  # noqa: C901, PLR0915, PLR0912
             "xmlname",
             "xmlnstbl",
             "xmlopen",
-        )
+        ),
     )
     # Translation of some special characters.
     specialchars: dict[str, str] = {
@@ -559,7 +566,7 @@ def striprtf(text: str) -> str:  # noqa: C901, PLR0915, PLR0912
     return "".join(out)
 
 
-def is_string_like(obj: Any) -> bool:  # sourcery skip: use-fstring-for-concatenation
+def is_string_like(obj: Any) -> bool:
     try:
         _ = obj + ""
     except Exception:  # pylint: disable=W0718  # noqa: BLE001
@@ -569,15 +576,15 @@ def is_string_like(obj: Any) -> bool:  # sourcery skip: use-fstring-for-concaten
 
 
 class StrType(type):
-    def __instancecheck__(cls, instance):  # sourcery skip: instance-method-first-arg-name
-        instance_type = instance.__class__
-        mro = instance_type.__mro__
+    def __instancecheck__(cls, instance: object) -> bool:
+        instance_type: type = instance.__class__
+        mro: tuple[type, ...] = instance_type.__mro__
         if cls in {str, WrappedStr}:
             return instance_type in {WrappedStr, str} or WrappedStr in mro or str in mro
         return cls in mro
 
-    def __subclasscheck__(cls, subclass):  # sourcery skip: instance-method-first-arg-name
-        mro = subclass.__mro__
+    def __subclasscheck__(cls, subclass: type) -> bool:
+        mro: tuple[type, ...] = subclass.__mro__
         if cls in {str, WrappedStr}:
             return subclass in {WrappedStr, str} or WrappedStr in mro or str in mro
         return cls in mro
@@ -587,13 +594,13 @@ StrictStr = TypeVar("StrictStr", bound=str)
 
 
 class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
-    __slots__: tuple[str, ...] = ("_content",)
+    __slots__: tuple[str, ...] = ("__dict__", "_content")
 
     @classmethod
     def _assert_str_type(
         cls: type[Self],
         var: object,
-    ) -> str:  # sourcery skip: remove-unnecessary-cast
+    ) -> str:
         if var is None:
             return None  # type: ignore[return-value]
         if not isinstance(var, (cls, str)):
@@ -627,7 +634,9 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
         __z: Self | str,
         /,
     ) -> dict[int, int | None]:
-        return super().maketrans(cls._assert_str_type(__x), cls._assert_str_type(__y), cls._assert_str_type(__z))
+        return super().maketrans(
+            cls._assert_str_type(__x), cls._assert_str_type(__y), cls._assert_str_type(__z)
+        )
 
     def __setattr__(
         self,
@@ -714,10 +723,19 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
 
     def __mod__(
         self,
-        __value: LiteralString | str | WrappedStr | tuple[LiteralString, ...] | tuple[str, ...] | tuple[WrappedStr, ...],
+        __value: LiteralString
+        | str
+        | WrappedStr
+        | tuple[LiteralString, ...]
+        | tuple[str, ...]
+        | tuple[WrappedStr, ...],
         /,
     ):
-        parsed_value: tuple[str, ...] | str = tuple(self._assert_str_type(s) for s in __value) if isinstance(__value, tuple) else self._assert_str_type(__value)
+        parsed_value: tuple[str, ...] | str = (
+            tuple(self._assert_str_type(s) for s in __value)
+            if isinstance(__value, tuple)
+            else self._assert_str_type(__value)
+        )
         return self.__class__(self._content % parsed_value)
 
     def __mul__(
@@ -826,7 +844,11 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
 
         Return True if S ends with the specified suffix, False otherwise. With optional start, test S beginning at that position. With optional end, stop comparing S at that position. suffix can also be a tuple of strings to try.
         """  # noqa: D415, D400, D402, E501, W505
-        parsed_suffix: tuple[str, ...] | str = tuple(self._assert_str_type(s) for s in __suffix) if isinstance(__suffix, tuple) else self._assert_str_type(__suffix)
+        parsed_suffix: tuple[str, ...] | str = (
+            tuple(self._assert_str_type(s) for s in __suffix)
+            if isinstance(__suffix, tuple)
+            else self._assert_str_type(__suffix)
+        )
         return self._content.endswith(parsed_suffix, __start, __end)
 
     def expandtabs(  # type: ignore[override]
@@ -1147,7 +1169,9 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
         Splits are done starting at the end of the string and working to the front.
         """
         cls: type[Self] = self.__class__
-        return [cls(s) for s in self._content.rsplit(self._assert_str_type(__sep or ""), __maxsplit)]
+        return [
+            cls(s) for s in self._content.rsplit(self._assert_str_type(__sep or ""), __maxsplit)
+        ]
 
     def rstrip(
         self,
@@ -1173,7 +1197,10 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
         maxsplit
           Maximum number of splits to do. -1 (the default value) means no limit.
         """
-        return [self.__class__(s) for s in self._content.split(self._assert_str_type(sep or ""), maxsplit)]
+        return [
+            self.__class__(s)
+            for s in self._content.split(self._assert_str_type(sep or ""), maxsplit)
+        ]
 
     def splitlines(  # type: ignore[override]
         self,
@@ -1268,7 +1295,7 @@ class CaseInsensitiveWrappedStr(WrappedStr):
     def _coerce_str(
         cls,
         item: Any,
-    ) -> str:  # sourcery skip: assign-if-exp, reintroduce-else
+    ) -> str:
         if isinstance(item, WrappedStr):
             return str(item._content).casefold()  # noqa: SLF001
         if isinstance(item, str):
@@ -1379,7 +1406,7 @@ class CaseInsensitiveWrappedStr(WrappedStr):
         __start=None,
         __end=None,
         /,
-    ):  # sourcery skip: remove-unnecessary-cast
+    ):
         return self._lower_content.rfind(self._coerce_str(__sub), __start, __end)
 
     def rsplit(

@@ -31,7 +31,6 @@ import tempfile
 import unittest
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from qtpy.QtCore import QCoreApplication, Qt
 from qtpy.QtTest import QTest
@@ -641,7 +640,9 @@ class TestFileSystemExplorerWidgetLayout(unittest.TestCase):
         """Verify dynamic view expands to fill space."""
         view = self.explorer.ui.dynamicView
         policy = view.sizePolicy()
-        self.assertIn(policy.horizontalPolicy(), [QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred])
+        self.assertIn(
+            policy.horizontalPolicy(), [QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred]
+        )
 
     # ========================================================================
     # MODEL TESTS

@@ -32,9 +32,8 @@ Usage:
 
 References:
 ----------
-        Based on swkotor.exe NWScript structure:
-        - NCS (NWScript Compiled Script) bytecode format
-        - Language Server Protocol specification
+        Targets the NWScript language and NCS bytecode layout used by retail KotOR builds,
+        plus the Language Server Protocol for editor integration.
 
         Note: This is a language server for NSS (NWScript Source) files, providing
         diagnostics, completions, and hover information. NSS compiles to NCS bytecode
@@ -54,6 +53,7 @@ from typing import TYPE_CHECKING, Any
 
 from ply import yacc
 
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs.compiler.classes import (
     CompileError,
     FunctionDefinition,
@@ -82,7 +82,7 @@ class DiagnosticSeverity(IntEnum):
 
 
 @dataclass
-class Position:
+class Position(ComparableMixin):
     """A position in a text document (0-indexed)."""
 
     line: int
@@ -90,7 +90,7 @@ class Position:
 
 
 @dataclass
-class Range:
+class Range(ComparableMixin):
     """A range in a text document."""
 
     start: Position
@@ -98,7 +98,7 @@ class Range:
 
 
 @dataclass
-class Diagnostic:
+class Diagnostic(ComparableMixin):
     """A diagnostic (error, warning, etc.) in a document."""
 
     range: Range
@@ -110,7 +110,7 @@ class Diagnostic:
 
 
 @dataclass
-class DocumentSymbol:
+class DocumentSymbol(ComparableMixin):
     """A symbol in a document (function, struct, variable, etc.)."""
 
     name: str
@@ -122,7 +122,7 @@ class DocumentSymbol:
 
 
 @dataclass
-class CompletionItem:
+class CompletionItem(ComparableMixin):
     """An auto-completion suggestion."""
 
     label: str
@@ -134,7 +134,7 @@ class CompletionItem:
 
 
 @dataclass
-class HoverInfo:
+class HoverInfo(ComparableMixin):
     """Hover information for a symbol."""
 
     contents: str  # Markdown-formatted content
@@ -142,7 +142,7 @@ class HoverInfo:
 
 
 @dataclass
-class AnalysisResult:
+class AnalysisResult(ComparableMixin):
     """Complete analysis result for a document."""
 
     diagnostics: list[Diagnostic] = field(default_factory=list)
@@ -151,7 +151,7 @@ class AnalysisResult:
     ast: CodeRoot | None = None
 
 
-class NSSLanguageServer:
+class NSSLanguageServer(ComparableMixin):
     """Language server for NSS scripts.
 
     Provides diagnostics, completions, hover, and document symbols.
@@ -196,7 +196,10 @@ class NSSLanguageServer:
 
     def _ensure_parser_initialized(self):
         """Ensure parser is initialized (only once per process)."""
-        if NSSLanguageServer._parser is None or NSSLanguageServer._initialized_for_tsl != self.is_tsl:
+        if (
+            NSSLanguageServer._parser is None
+            or NSSLanguageServer._initialized_for_tsl != self.is_tsl
+        ):
             # Create parser with error suppression
             NSSLanguageServer._parser = NssParser(
                 functions=self.functions,
@@ -397,7 +400,7 @@ class NSSLanguageServer:
                         message="Redundant semicolon",
                         severity=DiagnosticSeverity.WARNING,
                         code="redundant-semicolon",
-                    )
+                    ),
                 )
 
             # Check for common typos
@@ -414,7 +417,7 @@ class NSSLanguageServer:
                             severity=DiagnosticSeverity.ERROR,
                             code="unknown-type",
                             suggestions=["void"],
-                        )
+                        ),
                     )
 
         # Check for unbalanced braces
@@ -428,7 +431,7 @@ class NSSLanguageServer:
                     message=f"Missing {brace_balance} closing brace(s) '}}'",
                     severity=DiagnosticSeverity.ERROR,
                     code="unbalanced-braces",
-                )
+                ),
             )
         elif brace_balance < 0:
             diagnostics.append(
@@ -440,7 +443,7 @@ class NSSLanguageServer:
                     message=f"Extra {-brace_balance} closing brace(s) '}}'",
                     severity=DiagnosticSeverity.ERROR,
                     code="unbalanced-braces",
-                )
+                ),
             )
 
         return diagnostics
@@ -482,7 +485,7 @@ class NSSLanguageServer:
                         "Add void main() { } for executable scripts",
                         "Add int StartingConditional() { return TRUE; } for conditional scripts",
                     ],
-                )
+                ),
             )
 
         return diagnostics
@@ -498,8 +501,7 @@ class NSSLanguageServer:
 
         for obj in ast.objects:
             line_num = getattr(obj, "line_num", 1) - 1  # Convert to 0-indexed
-            if line_num < 0:
-                line_num = 0
+            line_num = max(line_num, 0)
 
             if isinstance(obj, FunctionDefinition):
                 # Get function details
@@ -526,11 +528,17 @@ class NSSLanguageServer:
                     kind="function",
                     range=Range(
                         start=Position(line=line_num, character=0),
-                        end=Position(line=end_line, character=len(lines[end_line]) if end_line < len(lines) else 0),
+                        end=Position(
+                            line=end_line,
+                            character=len(lines[end_line]) if end_line < len(lines) else 0,
+                        ),
                     ),
                     selection_range=Range(
                         start=Position(line=line_num, character=0),
-                        end=Position(line=line_num, character=len(lines[line_num]) if line_num < len(lines) else 0),
+                        end=Position(
+                            line=line_num,
+                            character=len(lines[line_num]) if line_num < len(lines) else 0,
+                        ),
                     ),
                     detail=f"{return_type} {obj.identifier.identifier}({param_str})",
                     children=[],
@@ -554,7 +562,7 @@ class NSSLanguageServer:
                                 end=Position(line=line_num, character=0),
                             ),
                             detail=param_type,
-                        )
+                        ),
                     )
 
                 symbols.append(func_symbol)
@@ -595,7 +603,7 @@ class NSSLanguageServer:
                                 end=Position(line=line_num, character=0),
                             ),
                             detail=member_type,
-                        )
+                        ),
                     )
 
                 symbols.append(struct_symbol)
@@ -618,7 +626,7 @@ class NSSLanguageServer:
                             end=Position(line=line_num, character=0),
                         ),
                         detail=var_type,
-                    )
+                    ),
                 )
 
         return symbols
@@ -649,7 +657,9 @@ class NSSLanguageServer:
         current_line = lines[line]
         # Find word start
         word_start = character
-        while word_start > 0 and (current_line[word_start - 1].isalnum() or current_line[word_start - 1] == "_"):
+        while word_start > 0 and (
+            current_line[word_start - 1].isalnum() or current_line[word_start - 1] == "_"
+        ):
             word_start -= 1
 
         prefix = current_line[word_start:character].lower() if character > word_start else ""
@@ -659,7 +669,9 @@ class NSSLanguageServer:
             if not prefix or func.name.lower().startswith(prefix):
                 return_type = getattr(func, "return_type", "void")
                 params = getattr(func, "parameters", [])
-                param_str = ", ".join(f"{getattr(p, 'type', '?')} {getattr(p, 'name', 'arg')}" for p in params[:3])
+                param_str = ", ".join(
+                    f"{getattr(p, 'type', '?')} {getattr(p, 'name', 'arg')}" for p in params[:3]
+                )
                 if len(params) > 3:
                     param_str += ", ..."
 
@@ -671,7 +683,7 @@ class NSSLanguageServer:
                         documentation=getattr(func, "description", "") or "",
                         insert_text=f"{func.name}($0)",
                         sort_text=f"0_{func.name}",  # Functions first
-                    )
+                    ),
                 )
 
         # Add constants
@@ -688,7 +700,7 @@ class NSSLanguageServer:
                         documentation=getattr(const, "description", "") or "",
                         insert_text=const.name,
                         sort_text=f"1_{const.name}",  # Constants second
-                    )
+                    ),
                 )
 
         # Add keywords
@@ -733,7 +745,7 @@ class NSSLanguageServer:
                         detail="keyword",
                         insert_text=kw,
                         sort_text=f"2_{kw}",  # Keywords last
-                    )
+                    ),
                 )
 
         return completions
@@ -764,9 +776,13 @@ class NSSLanguageServer:
         word_start = character
         word_end = character
 
-        while word_start > 0 and (current_line[word_start - 1].isalnum() or current_line[word_start - 1] == "_"):
+        while word_start > 0 and (
+            current_line[word_start - 1].isalnum() or current_line[word_start - 1] == "_"
+        ):
             word_start -= 1
-        while word_end < len(current_line) and (current_line[word_end].isalnum() or current_line[word_end] == "_"):
+        while word_end < len(current_line) and (
+            current_line[word_end].isalnum() or current_line[word_end] == "_"
+        ):
             word_end += 1
 
         word = current_line[word_start:word_end]
@@ -780,7 +796,9 @@ class NSSLanguageServer:
             if func.name.lower() == word_lower:
                 return_type = getattr(func, "return_type", "void")
                 params = getattr(func, "parameters", [])
-                param_str = ", ".join(f"{getattr(p, 'type', '?')} {getattr(p, 'name', 'arg')}" for p in params)
+                param_str = ", ".join(
+                    f"{getattr(p, 'type', '?')} {getattr(p, 'name', 'arg')}" for p in params
+                )
                 description = getattr(func, "description", "") or ""
 
                 content = f"```nwscript\n{return_type} {func.name}({param_str})\n```"
@@ -855,7 +873,7 @@ class NSSLanguageServer:
                     "error": None,
                 }
 
-            elif method == "completions":
+            if method == "completions":
                 completions = self.get_completions(
                     text=params.get("text", ""),
                     line=params.get("line", 0),
@@ -867,7 +885,7 @@ class NSSLanguageServer:
                     "error": None,
                 }
 
-            elif method == "hover":
+            if method == "hover":
                 hover = self.get_hover(
                     text=params.get("text", ""),
                     line=params.get("line", 0),
@@ -879,14 +897,14 @@ class NSSLanguageServer:
                     "error": None,
                 }
 
-            elif method == "shutdown":
+            if method == "shutdown":
                 return {
                     "id": request_id,
                     "result": {"status": "shutdown"},
                     "error": None,
                 }
 
-            elif method == "update_config":
+            if method == "update_config":
                 # Update functions/constants/library
                 if "functions" in params:
                     self.functions = params["functions"]
@@ -905,12 +923,11 @@ class NSSLanguageServer:
                     "error": None,
                 }
 
-            else:
-                return {
-                    "id": request_id,
-                    "result": None,
-                    "error": {"code": -32601, "message": f"Unknown method: {method}"},
-                }
+            return {
+                "id": request_id,
+                "result": None,
+                "error": {"code": -32601, "message": f"Unknown method: {method}"},
+            }
 
         except Exception as e:
             return {
@@ -931,8 +948,14 @@ class NSSLanguageServer:
         """Convert Diagnostic to dictionary."""
         return {
             "range": {
-                "start": {"line": diagnostic.range.start.line, "character": diagnostic.range.start.character},
-                "end": {"line": diagnostic.range.end.line, "character": diagnostic.range.end.character},
+                "start": {
+                    "line": diagnostic.range.start.line,
+                    "character": diagnostic.range.start.character,
+                },
+                "end": {
+                    "line": diagnostic.range.end.line,
+                    "character": diagnostic.range.end.character,
+                },
             },
             "message": diagnostic.message,
             "severity": int(diagnostic.severity),
@@ -947,12 +970,21 @@ class NSSLanguageServer:
             "name": symbol.name,
             "kind": symbol.kind,
             "range": {
-                "start": {"line": symbol.range.start.line, "character": symbol.range.start.character},
+                "start": {
+                    "line": symbol.range.start.line,
+                    "character": symbol.range.start.character,
+                },
                 "end": {"line": symbol.range.end.line, "character": symbol.range.end.character},
             },
             "selection_range": {
-                "start": {"line": symbol.selection_range.start.line, "character": symbol.selection_range.start.character},
-                "end": {"line": symbol.selection_range.end.line, "character": symbol.selection_range.end.character},
+                "start": {
+                    "line": symbol.selection_range.start.line,
+                    "character": symbol.selection_range.start.character,
+                },
+                "end": {
+                    "line": symbol.selection_range.end.line,
+                    "character": symbol.selection_range.end.character,
+                },
             },
             "detail": symbol.detail,
             "children": [self._symbol_to_dict(c) for c in symbol.children],
@@ -1004,7 +1036,12 @@ class NSSLanguageServer:
         # Load default functions/constants if not provided
         if functions is None or constants is None or library is None:
             # Import here to avoid circular imports and speed up initial import
-            from pykotor.common.scriptdefs import KOTOR_CONSTANTS, KOTOR_FUNCTIONS, TSL_CONSTANTS, TSL_FUNCTIONS
+            from pykotor.common.scriptdefs import (
+                KOTOR_CONSTANTS,
+                KOTOR_FUNCTIONS,
+                TSL_CONSTANTS,
+                TSL_FUNCTIONS,
+            )
             from pykotor.common.scriptlib import KOTOR_LIBRARY, TSL_LIBRARY
 
             if is_tsl:
@@ -1030,7 +1067,7 @@ class NSSLanguageServer:
                 "id": None,
                 "result": {"status": "ready"},
                 "error": None,
-            }
+            },
         )
 
         # Process requests

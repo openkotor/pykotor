@@ -2,10 +2,8 @@
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptDefK1.ts (K1 script definitions)
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptDefK2.ts (K2 script definitions)
 
@@ -115,5 +113,7 @@ class DataType(Enum):
         if self == DataType.VECTOR:
             return 12
         if self == DataType.STRUCT:
-            raise ValueError("Structs are variable size")  # TODO(th3w1zard1): something needs to be done here
+            raise ValueError(
+                "Structs are variable size"
+            )  # TODO(th3w1zard1): something needs to be done here
         return 4

@@ -18,14 +18,6 @@ class Language(IntEnum):
     Note: Official releases support English, French, German, Italian, Spanish, Polish
             Custom language support added for localization beyond official releases
 
-    References:
-    ----------
-        See pykotor.resource.formats.tlk.tlk_data for engine addresses (K1 + TSL TODO). CTlkTable::AddFile (K1: 0x0041d920), CTlkFile::CTlkFile (K1: 0x0041d810).
-
-    Derivations and Other Implementations:
-    ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/ResourceTypes.ts (Language enum)
-        https://github.com/th3w1zard1/KotOR-dotNET/tree/master/AuroraFile.cs (Language enum)
     """
 
     # UNSET = 0x7FFFFFFF  # noqa: ERA001
@@ -443,6 +435,8 @@ class Language(IntEnum):
             return "cp936"
         if self == Language.JAPANESE:
             return "cp932"
+        if self == Language.UNSET:
+            return None
         msg = f"No encoding defined for language: {self.name}"
         raise ValueError(msg)
 
@@ -644,7 +638,9 @@ class LocalizedString:
         substrings: dict[int, str] | None = None,
     ):
         self.stringref: int = stringref
-        self._substrings_internal: IntKeyDict = IntKeyDict() if substrings is None else IntKeyDict(substrings)
+        self._substrings_internal: IntKeyDict = (
+            IntKeyDict() if substrings is None else IntKeyDict(substrings)
+        )
 
     @property
     def _substrings(self) -> dict[int, str]:
@@ -830,7 +826,9 @@ class LocalizedString:
         self.set_data(language, gender, string)
 
     @overload
-    def get(self, language: Language, gender: Gender, *, use_fallback: bool = False) -> str | None: ...
+    def get(
+        self, language: Language, gender: Gender, *, use_fallback: bool = False
+    ) -> str | None: ...
     @overload
     def get(self, language: int, gender: int, *, use_fallback: bool = False) -> str | None: ...
     @overload
@@ -875,7 +873,9 @@ class LocalizedString:
             gender_enum = gender
 
         substring_id: int = LocalizedString.substring_id(language_enum, gender_enum)
-        return self._substrings.get(substring_id, next(iter(self._substrings.values()), None) if use_fallback else None)
+        return self._substrings.get(
+            substring_id, next(iter(self._substrings.values()), None) if use_fallback else None
+        )
 
     @overload
     def remove(self, language: Language, gender: Gender) -> None: ...

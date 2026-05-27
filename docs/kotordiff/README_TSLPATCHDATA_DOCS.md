@@ -37,7 +37,7 @@ Complete documentation explaining how the diff engine generates `tslpatchdata` f
 
 Visual representations of:
 
-- Overall data flow (vanilla → diff → writer → tslpatchdata → TSLPatcher)
+- Overall data flow (vanilla -> diff -> writer -> tslpatchdata -> TSLPatcher)
 - Writer type dispatch
 - Internal state machine
 - 2DA modification sequence
@@ -53,7 +53,7 @@ Visual representations of:
 Diff Engine              Writer                    TSLPatcher
 ┌─────────────┐    ┌───────────────┐           ┌──────────────┐
 │  Vanilla    │    │ Modification  │           │   Reads      │
-│     vs      ├───→│  objects  (2DA,├──────────→│ tslpatchdata/│
+│     vs      ├───->│  objects  (2DA,├──────────->│ tslpatchdata/│
 │  Modded     │    │    GFF, TLK)  │           │ and applies  │
 │   Files     │    │               │           │    changes   │
 └─────────────┘    │ Allocate      │           └──────────────┘

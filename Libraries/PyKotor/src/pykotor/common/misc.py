@@ -37,21 +37,6 @@ class ResRef(str):
         - GFF field values (ResRef field type)
         - Resource lookups and references throughout the engine
 
-    References:
-    ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-
-    Derivations and Other Implementations:
-    ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Common/Data/ResRef.cs:9-72 (ResRef class, max length 16)
-        https://github.com/th3w1zard1/HoloPatcher.NET/tree/master/src/TSLPatcher.Core/Common/ResRef.cs:12-132 (ResRef class with validation)
-        https://github.com/th3w1zard1/HoloPatcher.NET/tree/master/src/TSLPatcher.Core/Common/ResRef.cs:15 (MaxLength constant = 16)
-        https://github.com/th3w1zard1/HoloPatcher.NET/tree/master/src/TSLPatcher.Core/Common/ResRef.cs:15 (InvalidCharacters constant)
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File (ResRef GFF field type)
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/ResourceTypes.ts (Resource type definitions)
-        https://github.com/th3w1zard1/KotOR-dotNET/tree/master/AuroraFile.cs (ResRef in C#)
-
     Restrictions:
     ------------
         - ResRefs must be in ASCII format (non-ASCII characters are invalid)
@@ -61,13 +46,6 @@ class ResRef(str):
         - (recommended) Stored as case-sensitive text for cross-platform compatibility
         - ResRefs are trimmed of whitespace (leading/trailing spaces removed)
 
-    Discrepancies:
-    -------------
-        - reone lowercases ResRefs automatically (resref.h:37: boost::to_lower(_value))
-        - PyKotor preserves case but uses casefold() for comparisons (case-insensitive equality)
-        - HoloPatcher.NET preserves case but uses case-insensitive comparison (StringComparison.OrdinalIgnoreCase)
-        - Kotor.NET preserves case without automatic lowercasing
-        - Original engine: Windows case-insensitive filesystem, ResRefs stored as-is but matched case-insensitively
     """
 
     __slots__: ClassVar[tuple[str, ...]] = ("_value",)
@@ -89,7 +67,11 @@ class ResRef(str):
         """ResRefs must conform to Windows filename requirements."""
 
         def __init__(self, bad_text: str):
-            invalid_chars: list[tuple[str, int]] = [(char, pos) for pos, char in enumerate(bad_text) if char in ResRef.INVALID_CHARACTERS]
+            invalid_chars: list[tuple[str, int]] = [
+                (char, pos)
+                for pos, char in enumerate(bad_text)
+                if char in ResRef.INVALID_CHARACTERS
+            ]
             details: str = ", ".join(f"'{char}' at position {pos}" for char, pos in invalid_chars)
             message: str = f"String '{bad_text}' contains invalid characters: {details}. Full list of invalid characters: '{ResRef.INVALID_CHARACTERS}'"
             super().__init__(message)
@@ -112,7 +94,9 @@ class ResRef(str):
         """ResRefs cannot be converted to a different case."""
 
         def __init__(self, resref: ResRef, func_name: str, *args, **kwargs):
-            super().__init__(f"ResRef's must be case-insensitive, attempted {resref!r}.{func_name}({args, kwargs})")
+            super().__init__(
+                f"ResRef's must be case-insensitive, attempted {resref!r}.{func_name}({args, kwargs})"
+            )
 
     def __new__(cls, text: str) -> Self:
         # Create the instance
@@ -121,10 +105,14 @@ class ResRef(str):
         return instance
 
     def __len__(self):
-        return len(self._value.strip())  # should already be stripped, leave here for clarity (it is a fast operation)
+        return len(
+            self._value.strip()
+        )  # should already be stripped, leave here for clarity (it is a fast operation)
 
     def __bool__(self):
-        return bool(self._value.strip())  # should already be stripped, leave here for clarity (it is a fast operation)
+        return bool(
+            self._value.strip()
+        )  # should already be stripped, leave here for clarity (it is a fast operation)
 
     def __eq__(
         self,
@@ -575,7 +563,9 @@ class InventoryItem:
         if self is other:
             return True
         if isinstance(other, InventoryItem):
-            return self.resref == other.resref and self.droppable == other.droppable  # and self.infinite == other.infinite
+            return (
+                self.resref == other.resref and self.droppable == other.droppable
+            )  # and self.infinite == other.infinite
         return NotImplemented  # type: ignore[no-any-return]
 
     def __hash__(self):
@@ -676,7 +666,9 @@ class CaseInsensitiveHashSet(set, Generic[T]):
         def _sort_key(x: Any) -> str:
             return x if isinstance(x, str) else str(x)
 
-        normalized_items = tuple(sorted((self._normalize_key(item) for item in self), key=_sort_key))
+        normalized_items = tuple(
+            sorted((self._normalize_key(item) for item in self), key=_sort_key)
+        )
         return hash(normalized_items)
 
     def __ne__(self, other):

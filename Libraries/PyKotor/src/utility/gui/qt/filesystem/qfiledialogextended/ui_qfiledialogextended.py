@@ -26,7 +26,9 @@ if TYPE_CHECKING:
     )
     from typing_extensions import Self
 
-    from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import QFileDialogExtended
+    from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import (
+        QFileDialogExtended,
+    )
 
 
 class Ui_QFileDialogExtended(QFileDialog):  # noqa: N801
@@ -114,7 +116,9 @@ class Ui_QFileDialogExtended(QFileDialog):  # noqa: N801
         assert isinstance(file_name_label, QLabel)
         self.fileNameLabel: QLabel = file_name_label
 
-        file_name_edit: QLineEdit | None = dialog.findChild(QLineEdit, "fileNameEdit")  # QFileDialogLineEdit
+        file_name_edit: QLineEdit | None = dialog.findChild(
+            QLineEdit, "fileNameEdit"
+        )  # QFileDialogLineEdit
         assert isinstance(file_name_edit, QLineEdit)
         self.fileNameEdit: QLineEdit = file_name_edit
 

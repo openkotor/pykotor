@@ -2,7 +2,14 @@
 
 from __future__ import annotations
 
-from pykotor.resource.formats.bwm.bwm_auto import bytes_bwm, read_bwm, write_bwm
+from pykotor.resource.formats.bwm.bwm_auto import (
+    BWM_VALIDATION_DIAGRAM_MAGIC,
+    bytes_bwm,
+    read_bwm,
+    write_bwm,
+    write_bwm_ascii,
+    write_bwm_validation_diagram,
+)
 from pykotor.resource.formats.bwm.bwm_data import (
     BWM,
     BWMAdjacency,
@@ -17,6 +24,7 @@ from pykotor.resource.formats.bwm.io_bwm import (
 
 __all__ = [
     "BWM",
+    "BWM_VALIDATION_DIAGRAM_MAGIC",
     "BWMAdjacency",
     "BWMBinaryReader",
     "BWMBinaryWriter",
@@ -26,4 +34,6 @@ __all__ = [
     "bytes_bwm",
     "read_bwm",
     "write_bwm",
+    "write_bwm_ascii",
+    "write_bwm_validation_diagram",
 ]

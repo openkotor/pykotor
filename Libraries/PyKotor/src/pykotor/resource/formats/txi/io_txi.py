@@ -5,6 +5,10 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from bioware_kaitai_formats.txi import Txi
+
 from loggerplus import RobustLogger
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
@@ -29,7 +33,8 @@ class TXIBinaryReader(ResourceReader):
 
     References:
     ----------
-        See txi_data module docstring for engine addresses (K1 + TSL TODO). GetTXIInternal, ReleaseTXIInternal, CAuroraTXI, CResTXI, SetTxiData, GetTxiData, ".txi", "txi", "TXI".
+        Retail builds parse TXI text through the same Aurora texture-info path as other Odyssey
+        titles.
 
     """
 
@@ -48,8 +53,12 @@ class TXIBinaryReader(ResourceReader):
         mode: TXIReaderMode = TXIReaderMode.NORMAL
         cur_coords: int = 0
         txi_bytes: bytes = self._reader.read_all()
+        try:
+            txi_text = Txi.from_bytes(txi_bytes).content
+        except (kaitaistruct.KaitaiStructError, UnicodeDecodeError):
+            txi_text = txi_bytes.decode("ascii", errors="ignore")
 
-        for line in txi_bytes.decode("ascii", errors="ignore").splitlines():
+        for line in txi_text.splitlines():
             try:
                 parsed_line: str = line.strip()
                 if not parsed_line:
@@ -82,10 +91,14 @@ class TXIBinaryReader(ResourceReader):
                                 float(parts[1].strip()),
                                 int(parts[2].strip()),
                             )
-                            if self._txi.features.upperleftcoords is not None and cur_coords < len(self._txi.features.upperleftcoords):
+                            if self._txi.features.upperleftcoords is not None and cur_coords < len(
+                                self._txi.features.upperleftcoords
+                            ):
                                 self._txi.features.upperleftcoords[cur_coords] = coords
                             cur_coords += 1
-                            if self._txi.features.upperleftcoords is not None and cur_coords >= len(self._txi.features.upperleftcoords):
+                            if self._txi.features.upperleftcoords is not None and cur_coords >= len(
+                                self._txi.features.upperleftcoords
+                            ):
                                 mode = TXIReaderMode.NORMAL
                             continue
                         except (ValueError, IndexError):
@@ -106,10 +119,15 @@ class TXIBinaryReader(ResourceReader):
                                 float(parts[1].strip()),
                                 int(parts[2].strip()),
                             )
-                            if self._txi.features.lowerrightcoords is not None and cur_coords < len(self._txi.features.lowerrightcoords):
+                            if self._txi.features.lowerrightcoords is not None and cur_coords < len(
+                                self._txi.features.lowerrightcoords
+                            ):
                                 self._txi.features.lowerrightcoords[cur_coords] = coords
                             cur_coords += 1
-                            if self._txi.features.lowerrightcoords is not None and cur_coords >= len(self._txi.features.lowerrightcoords):
+                            if (
+                                self._txi.features.lowerrightcoords is not None
+                                and cur_coords >= len(self._txi.features.lowerrightcoords)
+                            ):
                                 mode = TXIReaderMode.NORMAL
                             continue
                         except (ValueError, IndexError):
@@ -190,7 +208,10 @@ class TXIBinaryReader(ResourceReader):
                     self._txi.features.defaultwidth = int(args)
                     self._empty = False
                 elif command == TXICommand.DISTORT:
-                    self._txi.features.distort = bool(int(args))
+                    try:
+                        self._txi.features.distort = bool(int(args))
+                    except ValueError:
+                        self._txi.features.distort = float(args)
                     self._empty = False
                 elif command == TXICommand.DISTORTANGLE:
                     self._txi.features.distortangle = float(args)

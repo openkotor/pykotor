@@ -394,6 +394,10 @@ class Vector2(vec2):
         """
         return math.atan2(self.y, self.x)
 
+    def copy(self) -> Self:
+        """Return a shallow copy of this vector."""
+        return self.__class__.from_vector2(self)
+
 
 class Vector3(vec3):
     """Represents a 3 dimensional vector.
@@ -542,7 +546,7 @@ class Vector3(vec3):
 
     def __truediv__(
         self,
-        other: int | float,
+        other: float,
     ):
         """Performs element-wise true division of vector by scalar value."""
         if isinstance(other, (int, float)):
@@ -771,6 +775,10 @@ class Vector3(vec3):
         """
         return {"x": float(self.x), "y": float(self.y), "z": float(self.z)}
 
+    def copy(self) -> Self:
+        """Return a shallow copy of this vector."""
+        return self.__class__.from_vector3(self)
+
 
 class Vector4(vec4):
     """Represents a 4 dimensional vector.
@@ -945,7 +953,7 @@ class Vector4(vec4):
 
     def __mul__(
         self,
-        other: int | float | Vector4,
+        other: float | Vector4,
     ):
         """Multiplies the components by a scalar or element-wise with another Vector4."""
         if isinstance(other, (int, float)):
@@ -966,7 +974,7 @@ class Vector4(vec4):
 
     def __rmul__(
         self,
-        other: int | float,
+        other: float,
     ):
         """Right multiplication: scalar * Vector4."""
         if isinstance(other, (int, float)):
@@ -980,7 +988,7 @@ class Vector4(vec4):
 
     def __truediv__(
         self,
-        other: int | float,
+        other: float,
     ):
         """Performs element-wise true division of vector by scalar value."""
         if isinstance(other, (int, float)):
@@ -1088,17 +1096,6 @@ class Vector4(vec4):
         -------
             Vector4: Decompressed quaternion (x, y, z, w)
 
-        References:
-        ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - Vector3/Vector4 structures used in GFF fields
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:850-868
-
-
             Formula: X uses bits 0-10 (11 bits), Y uses bits 11-21 (11 bits),
                      Z uses bits 22-31 (10 bits), W computed from magnitude
         """
@@ -1149,10 +1146,18 @@ class Vector4(vec4):
         pitch: float = y
         yaw: float = z
 
-        qx: float = math.sin(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) - math.cos(roll / 2) * math.sin(pitch / 2) * math.sin(yaw / 2)
-        qy: float = math.cos(roll / 2) * math.sin(pitch / 2) * math.cos(yaw / 2) + math.sin(roll / 2) * math.cos(pitch / 2) * math.sin(yaw / 2)
-        qz: float = math.cos(roll / 2) * math.cos(pitch / 2) * math.sin(yaw / 2) - math.sin(roll / 2) * math.sin(pitch / 2) * math.cos(yaw / 2)
-        qw: float = math.cos(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) + math.sin(roll / 2) * math.sin(pitch / 2) * math.sin(yaw / 2)
+        qx: float = math.sin(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) - math.cos(
+            roll / 2
+        ) * math.sin(pitch / 2) * math.sin(yaw / 2)
+        qy: float = math.cos(roll / 2) * math.sin(pitch / 2) * math.cos(yaw / 2) + math.sin(
+            roll / 2
+        ) * math.cos(pitch / 2) * math.sin(yaw / 2)
+        qz: float = math.cos(roll / 2) * math.cos(pitch / 2) * math.sin(yaw / 2) - math.sin(
+            roll / 2
+        ) * math.sin(pitch / 2) * math.cos(yaw / 2)
+        qw: float = math.cos(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) + math.sin(
+            roll / 2
+        ) * math.sin(pitch / 2) * math.sin(yaw / 2)
 
         return cls(qx, qy, qz, qw)
 
@@ -1166,18 +1171,6 @@ class Vector4(vec4):
         Returns:
         -------
             int: 32-bit packed quaternion value
-
-        References:
-        ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - Vector3/Vector4 structures used in GFF fields
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:850-868 (decompression)
-        Inverse operation derived from decompression algorithm
-
 
         Notes:
         -----
@@ -1293,6 +1286,10 @@ class Vector4(vec4):
         """
         return {"x": float(self.x), "y": float(self.y), "z": float(self.z), "w": float(self.w)}
 
+    def copy(self) -> Self:
+        """Return a shallow copy of this vector."""
+        return self.__class__.from_vector4(self)
+
 
 class AxisAngle:
     """Represents a rotation in 3D space.
@@ -1355,6 +1352,10 @@ class AxisAngle:
             A new AxisAngle instance.
         """
         return cls(Vector3.from_null(), 0.0)
+
+    def copy(self) -> Self:
+        """Return a copy of this axis-angle rotation."""
+        return self.__class__(self.axis.copy(), self.angle)
 
 
 class SurfaceMaterial(IntEnum):
@@ -1447,18 +1448,22 @@ class Face:
         """
         if not isinstance(other, Face):
             return NotImplemented  # type: ignore[no-any-return]
-        return self.v1 == other.v1 and self.v2 == other.v2 and self.v3 == other.v3 and self.material == other.material
+        return (
+            self.v1 == other.v1
+            and self.v2 == other.v2
+            and self.v3 == other.v3
+            and self.material == other.material
+        )
 
     def __hash__(self) -> int:
         """Hash based on vertices and material for use in sets/dicts."""
         return hash((self.v1, self.v2, self.v3, self.material))
 
     def normal(self) -> Vector3:
-        """Returns the normal for the face.
+        """Returns the normal for the face (cross product of edges, normalized).
 
-        Returns:
-        -------
-            A new Vector3 instance representing the face normal.
+        Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:741-746 (rebuild: cb = v3-v2, ab = v1-v2, normal = cb.cross(ab)).
+        Equivalent: (v2-v1)×(v3-v2) = (v3-v2)×(v1-v2).
         """
         u: Vector3 = self.v2 - self.v1
         v: Vector3 = self.v3 - self.v2
@@ -1478,6 +1483,9 @@ class Face:
         return 0.25 * math.sqrt((a + b + c) * (-a + b + c) * (a - b + c) * (a + b - c))
 
     def planar_distance(self) -> float:
+        """Plane coefficient d for plane equation n·x + d = 0 (n = normal, v1 on plane).
+        Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:749 (rebuild: coeff = -dot(v1, normal)).
+        """
         return -1.0 * (self.normal().dot(self.v1))
 
     def centre(self) -> Vector3:
@@ -1515,6 +1523,10 @@ class Face:
         nx = (dx1 * dy2 - dy1 * dx2) / scale
         ny = (dy1 * dx3 - dx1 * dy3) / scale
         return self.v1.z + ny * (self.v2.z - self.v1.z) + nx * (self.v3.z - self.v1.z)
+
+    def copy(self) -> Face:
+        """Return a copy of this face and its vertices."""
+        return self.__class__(self.v1.copy(), self.v2.copy(), self.v3.copy(), self.material)
 
 
 class Polygon2:
@@ -1639,7 +1651,9 @@ class Polygon2:
         n: int = len(self.points)
         area: float = 0.0
         for i in range(n - 1):
-            area += -self.points[i].y * self.points[i + 1].x + self.points[i].x * self.points[i + 1].y
+            area += (
+                -self.points[i].y * self.points[i + 1].x + self.points[i].x * self.points[i + 1].y
+            )
         area += -self.points[n - 1].y * self.points[0].x + self.points[n - 1].x * self.points[0].y
         return 0.5 * math.fabs(area)
 
@@ -1666,6 +1680,10 @@ class Polygon2:
         point: Vector2,
     ) -> int:
         return self.points.index(point)
+
+    def copy(self) -> Polygon2:
+        """Return a copy of this polygon and its points."""
+        return self.__class__([point.copy() for point in self.points])
 
 
 class Polygon3:
@@ -1739,7 +1757,11 @@ class Polygon3:
         """
         x, y, z = origin
         height = size * (3**0.5) / 2
-        self.points = [Vector3(x, y, z), Vector3(x + size, y, z), Vector3(x + size / 2, y + height, z)]
+        self.points = [
+            Vector3(x, y, z),
+            Vector3(x + size, y, z),
+            Vector3(x + size / 2, y + height, z),
+        ]
 
     def default_square(
         self,
@@ -1756,7 +1778,12 @@ class Polygon3:
         This method modifies the instance by adding four Vector3 points defining the square.
         """
         x, y, z = origin
-        self.points = [Vector3(x, y, z), Vector3(x + size, y, z), Vector3(x + size, y + size, z), Vector3(x, y + size, z)]
+        self.points = [
+            Vector3(x, y, z),
+            Vector3(x + size, y, z),
+            Vector3(x + size, y + size, z),
+            Vector3(x, y + size, z),
+        ]
 
     def append(
         self,
@@ -1781,6 +1808,10 @@ class Polygon3:
         point: Vector3,
     ) -> int:
         return self.points.index(point)
+
+    def copy(self) -> Polygon3:
+        """Return a copy of this polygon and its points."""
+        return self.__class__([point.copy() for point in self.points])
 
 
 class Matrix4(mat4):
@@ -1958,3 +1989,7 @@ class Matrix4(mat4):
             A new Matrix4 instance.
         """
         return cls(other)
+
+    def copy(self) -> Self:
+        """Return a copy of this matrix."""
+        return self.__class__.from_matrix4(self)

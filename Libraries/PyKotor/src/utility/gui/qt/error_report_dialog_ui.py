@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'c:\GitHub\PyKotor\Libraries\PyKotor\src\utility\gui\qt\error_report_dialog.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
@@ -72,7 +70,9 @@ class Ui_Dialog:
     def retranslateUi(self, Dialog: QDialog):
         _translate = QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Error handler"))
-        self.additionalLabel.setText(_translate("Dialog", "Provide additional information (optional)"))
+        self.additionalLabel.setText(
+            _translate("Dialog", "Provide additional information (optional)")
+        )
         self.attachmentsLabel.setText(_translate("Dialog", "Select attachments (optional)"))
         self.includeLogsCheckbox.setText(_translate("Dialog", "Log Files"))
         self.contactLabel.setText(
@@ -80,6 +80,6 @@ class Ui_Dialog:
                 "Dialog",
                 "How can we contact you (optional, only if you want to get a response). Your report is\n"
                 "       anonymous by default, so you can provide contact info like an email address here.",
-            )
+            ),
         )
         self.sendButton.setText(_translate("Dialog", "Send report"))

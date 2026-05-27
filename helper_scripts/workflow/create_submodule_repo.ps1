@@ -110,11 +110,11 @@ if (-not (Test-Path (Join-Path $repoRoot ".git"))) {
 if ($Tool) {
     $category = "Tools"
     $name = $Tool
-    $localPath = Join-Path $repoRoot "Tools" $Tool
+    $localPath = Join-Path (Join-Path $repoRoot "Tools") $Tool
 } else {
     $category = "Libraries"
     $name = $Library
-    $localPath = Join-Path $repoRoot "Libraries" $Library
+    $localPath = Join-Path (Join-Path $repoRoot "Libraries") $Library
 }
 
 # Validate the local path exists
@@ -188,7 +188,7 @@ function Invoke-Step {
         [switch]$Critical
     )
     
-    Write-Host "→ $Description" -ForegroundColor Green
+    Write-Host "-> $Description" -ForegroundColor Green
     
     if ($DryRun) {
         Write-Host "  [DRY RUN] Would execute: $($Action.ToString().Trim())" -ForegroundColor DarkGray
@@ -345,7 +345,7 @@ if (Test-Path $pyprojectPath) {
         Write-Host "  For uvx compatibility, you may need to:" -ForegroundColor Cyan
         Write-Host "    1. Create a local README.md in the repo" -ForegroundColor Cyan
         Write-Host "    2. Update pykotor dependency to:" -ForegroundColor Cyan
-        Write-Host '       pykotor = { git = "https://github.com/OldRepublicDevs/PyKotor-lib.git" }' -ForegroundColor Cyan
+        Write-Host '       pykotor = { git = "https://github.com/OpenKotOR/PyKotor-lib.git" }' -ForegroundColor Cyan
     }
 }
 

@@ -5,8 +5,7 @@ the engine in a backend-agnostic manner.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
 """
@@ -52,7 +51,7 @@ class IMaterialManager(ABC):
     """Abstract material manager responsible for creating and applying materials."""
 
     @abstractmethod
-    def create_material_from_mesh(self, mesh: "MDLMesh") -> IMaterial:
+    def create_material_from_mesh(self, mesh: MDLMesh) -> IMaterial:
         """Create a material definition from an MDL mesh."""
 
     @abstractmethod

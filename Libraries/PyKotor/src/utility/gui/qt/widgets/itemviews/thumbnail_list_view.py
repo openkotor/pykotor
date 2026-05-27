@@ -53,7 +53,17 @@ class ThumbnailCache:
     MAX_CACHE_SIZE: ClassVar[int] = 500
 
     # Supported image formats for thumbnails
-    THUMBNAIL_FORMATS: ClassVar[set[str]] = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico", ".webp", ".tiff", ".tif"}
+    THUMBNAIL_FORMATS: ClassVar[set[str]] = {
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".bmp",
+        ".ico",
+        ".webp",
+        ".tiff",
+        ".tif",
+    }
 
     def __init__(self):
         self._cache: dict[tuple[str, int], QPixmap] = {}
@@ -271,12 +281,11 @@ class ThumbnailIconDelegate(QStyledItemDelegate):
                 self._icon_size + 16,
                 self._icon_size + text_height + 16,
             )
-        else:
-            # List/details view: icon beside text
-            return QSize(
-                self._icon_size + 200,
-                max(self._icon_size + 4, text_height + 4),
-            )
+        # List/details view: icon beside text
+        return QSize(
+            self._icon_size + 200,
+            max(self._icon_size + 4, text_height + 4),
+        )
 
 
 class ThumbnailListView(QListView):
@@ -374,7 +383,14 @@ class ThumbnailListView(QListView):
 if __name__ == "__main__":
     import sys
 
-    from qtpy.QtWidgets import QApplication, QHBoxLayout, QMainWindow, QPushButton, QVBoxLayout, QWidget
+    from qtpy.QtWidgets import (
+        QApplication,
+        QHBoxLayout,
+        QMainWindow,
+        QPushButton,
+        QVBoxLayout,
+        QWidget,
+    )
 
     app = QApplication(sys.argv)
 

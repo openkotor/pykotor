@@ -302,7 +302,12 @@ class FormatConverter:
                     # Parse string format "r g b a" back to Color object
                     components = color_value.split()
                     if len(components) == 4:
-                        r, g, b, a = float(components[0]), float(components[1]), float(components[2]), float(components[3])
+                        r, g, b, a = (
+                            float(components[0]),
+                            float(components[1]),
+                            float(components[2]),
+                            float(components[3]),
+                        )
                         tag_colors_restored[tag_name] = Color(r, g, b, a)
                     elif len(components) == 3:
                         r, g, b = float(components[0]), float(components[1]), float(components[2])
@@ -323,12 +328,12 @@ class FormatConverter:
 
     # Convenience wrappers so callers/tests can use the converter instance directly.
     # These delegate to the module-level converters to keep a single implementation.
-    def _story_to_dlg(self, story: "TwineStory") -> DLG:
+    def _story_to_dlg(self, story: TwineStory) -> DLG:
         from .twine import _story_to_dlg as _story_to_dlg_fn  # local import to avoid cycles
 
         return _story_to_dlg_fn(story)
 
-    def _dlg_to_story(self, dlg: DLG, metadata: dict[str, Any] | None = None) -> "TwineStory":
+    def _dlg_to_story(self, dlg: DLG, metadata: dict[str, Any] | None = None) -> TwineStory:
         from .twine import _dlg_to_story as _dlg_to_story_fn  # local import to avoid cycles
 
         return _dlg_to_story_fn(dlg, metadata)

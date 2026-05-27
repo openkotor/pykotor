@@ -18,7 +18,6 @@ def process_events_if_safe() -> None:
 
     This helper intentionally becomes a no-op under pytest.
     """
-
     if running_under_pytest():
         return
 

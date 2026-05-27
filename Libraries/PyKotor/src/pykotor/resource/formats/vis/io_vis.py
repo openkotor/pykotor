@@ -6,6 +6,11 @@ import os
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from bioware_kaitai_formats.vis import Vis
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.vis.vis_data import VIS
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
@@ -19,20 +24,12 @@ class VISAsciiReader(ResourceReader):
     VIS files define which rooms are visible from other rooms, used for occlusion culling
     and level-of-detail management in KotOR modules.
 
-    References:
+    Observed retail behavior:
     ----------
-        Based on swkotor.exe VIS structure:
-        - LoadVisibility @ 0x004568d0 - Loads VIS file for visibility culling
-          * Parses ASCII format
-          * Reads parent room names and child room counts
-          * Builds visibility graph for occlusion culling
-        - "%s/%s.VIS" file path format - Used by engine to locate VIS files
-        - ".vis" file extension - VIS file extension
-        - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
-        Note: VIS files define which rooms are visible from other rooms, used for occlusion culling
-        and level-of-detail management in KotOR modules. VIS files are ASCII text files with the
-        following format: parent room names followed by indented child room names.
+        KotOR loads ASCII ``.vis`` files alongside rooms; each parent line lists how many
+        children follow, and indented lines name mutually visible rooms for occlusion culling.
 
+        Note: VIS files are ASCII text: parent room names followed by indented child room names.
 
     """
 
@@ -44,7 +41,12 @@ class VISAsciiReader(ResourceReader):
     @autoclose
     def load(self, *, auto_close: bool = True) -> VIS:  # noqa: FBT001, FBT002, ARG002
         self._vis = VIS()
-        self._lines = self._reader.read_string(self._reader.size()).splitlines()
+        data = self._reader.read_all()
+        try:
+            raw = Vis.from_bytes(data).raw_content
+        except (kaitaistruct.KaitaiStructError, UnicodeDecodeError):
+            raw = BinaryReader.from_bytes(data, 0).read_string(len(data))
+        self._lines = raw.splitlines()
 
         pairs = []
 
@@ -57,9 +59,13 @@ class VISAsciiReader(ResourceReader):
                 continue
 
             # Use a named constant for the magic value 2
-            VERSION_HEADER_TOKEN_INDEX = 1  # Index in VIS ASCII lines where a version string may appear
+            VERSION_HEADER_TOKEN_INDEX = (
+                1  # Index in VIS ASCII lines where a version string may appear
+            )
             # Check if this is a version header line (e.g., "room V3.28")
-            if len(tokens) >= VERSION_HEADER_TOKEN_INDEX + 1 and tokens[VERSION_HEADER_TOKEN_INDEX].startswith("V"):
+            if len(tokens) >= VERSION_HEADER_TOKEN_INDEX + 1 and tokens[
+                VERSION_HEADER_TOKEN_INDEX
+            ].startswith("V"):
                 # This is a version header, skip it
                 # Format appears to be: roomname Version
                 continue

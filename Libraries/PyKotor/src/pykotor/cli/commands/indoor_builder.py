@@ -17,9 +17,8 @@ from pykotor.cli.indoor_builder import resolve_game_argument
 from pykotor.common.indoormap import IndoorMap
 from pykotor.common.modulekit import ModuleKitManager
 from pykotor.extract.installation import Installation
-from pykotor.tools.indoorkit import load_kits
-from utility.misc import ensure_directory_exists
-from utility.string_util import normalize_string
+from pykotor.common.tilekit import TileKit
+from pykotor.tools.indoorkit import kits_for_indoor_build, load_kits_unified
 from pykotor.tools.indoormap import (
     build_mod_from_indoor_file_modulekit,
     extract_indoor_from_module_as_modulekit,
@@ -27,6 +26,9 @@ from pykotor.tools.indoormap import (
     extract_indoor_from_module_name,
 )
 from pykotor.tools.path import CaseAwarePath
+from pykotor.tools.tilemap_compile import reconcile_tile_layout_for_build
+from utility.misc import ensure_directory_exists
+from utility.string_util import normalize_string
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -52,6 +54,7 @@ class _ResolvedContext:
     kits_path: Path | None
     installation: Installation
     kits: list[Kit]
+    tile_kits: list[TileKit]
 
 
 def _apply_log_level(args: Namespace, logger: RobustLogger) -> None:
@@ -83,7 +86,9 @@ def _report_command_exception(*, logger: RobustLogger, prefix: str, exc: Excepti
     return 1
 
 
-def _validate_extract_module_args(args: Namespace, module_file_arg: str | None, logger: RobustLogger) -> bool:
+def _validate_extract_module_args(
+    args: Namespace, module_file_arg: str | None, logger: RobustLogger
+) -> bool:
     if args.module or module_file_arg:
         return True
     logger.error("No module specified. Use --module <name> or --module-file <path>")
@@ -111,12 +116,16 @@ def _log_missing_rooms(logger: RobustLogger, missing: list[MissingRoomInfo]) -> 
         return
     logger.warning("Some rooms could not be loaded: %d missing", len(missing))
     for item in missing[:25]:
-        logger.warning("  - Kit '%s', Component '%s': %s", item.kit_name, item.component_name, item.reason)
+        logger.warning(
+            "  - Kit '%s', Component '%s': %s", item.kit_name, item.component_name, item.reason
+        )
     if len(missing) > 25:
         logger.warning("  - ... and %d more", len(missing) - 25)
 
 
-def _write_indoor_output(indoor: IndoorMap, output_path: Path, *, logger: RobustLogger, mode_label: str) -> None:
+def _write_indoor_output(
+    indoor: IndoorMap, output_path: Path, *, logger: RobustLogger, mode_label: str
+) -> None:
     """Persist extracted indoor payload and emit standard success logs."""
     output_path.write_bytes(indoor.write())
     logger.info("Extracted indoor map via %s to: %s", mode_label, output_path)
@@ -137,7 +146,9 @@ def _extract_indoor_via_modulekit(
     """Run implicit-kit extraction path for module-name or module-file inputs."""
     if module_file_arg:
         if not module_name:
-            logger.error("When using --implicit-kit with --module-file, you must also pass --module <module_root> to specify which ModuleKit to match against.")
+            logger.error(
+                "When using --implicit-kit with --module-file, you must also pass --module <module_root> to specify which ModuleKit to match against."
+            )
             return None
         return extract_indoor_from_module_file_against_modulekit(
             candidate_files[0],
@@ -220,16 +231,16 @@ def _log_indoor_context(
 def _resolve_context(args: Namespace, logger: RobustLogger):
     """Shared setup for indoor-build and indoor-extract.
 
-    Validates installation/kits paths, resolves the game, and returns (game, installation, kits).
+    Validates game-root/kits paths, resolves the game, and returns (game, installation, kits).
     """
-    installation_path = Path(args.installation) if args.installation else None
+    installation_path = Path(args.path) if args.path else None
     kits_path = Path(args.kits) if args.kits else None
 
     if installation_path is None:
-        msg = "No installation path specified. Use --installation <path>"
+        msg = "No game-root path specified. Use --path <path>"
         raise ValueError(msg)
     if not installation_path.exists():
-        msg = f"Installation path does not exist: {installation_path}"
+        msg = f"Game-root path does not exist: {installation_path}"
         raise ValueError(msg)
 
     game = resolve_game_argument(args.game, installation_path)
@@ -251,13 +262,20 @@ def _resolve_context(args: Namespace, logger: RobustLogger):
             injected_installation = None
         else:
             if injected_root != cli_root:
-                msg = f"Injected Installation root does not match --installation: {injected_installation.path()} != {installation_path}"
+                msg = f"Injected Installation root does not match --path: {injected_installation.path()} != {installation_path}"
                 raise ValueError(msg)
 
     installation = injected_installation or Installation(CaseAwarePath(installation_path))
     if args.implicit_kit:
         logger.debug("Implicit-kit mode enabled (ModuleKit). External kits will not be loaded.")
-        return _ResolvedContext(game=game, installation_path=installation_path, kits_path=kits_path, installation=installation, kits=[])
+        return _ResolvedContext(
+            game=game,
+            installation_path=installation_path,
+            kits_path=kits_path,
+            installation=installation,
+            kits=[],
+            tile_kits=[],
+        )
 
     if kits_path is None:
         msg = "No kits directory specified. Use --kits <path> (or pass --implicit-kit)"
@@ -266,9 +284,23 @@ def _resolve_context(args: Namespace, logger: RobustLogger):
         msg = f"Kits directory does not exist: {kits_path}"
         raise ValueError(msg)
 
-    kits = load_kits(kits_path)
-    logger.debug("Loaded %d kit(s) from '%s'", len(kits), kits_path)
-    return _ResolvedContext(game=game, installation_path=installation_path, kits_path=kits_path, installation=installation, kits=kits)
+    kits_v1, tile_kits = load_kits_unified(kits_path)
+    kits = kits_for_indoor_build(kits_v1, tile_kits)
+    logger.debug(
+        "Loaded %d kit(s) (%d v1 + %d v2 tile shells) from '%s'",
+        len(kits),
+        len(kits_v1),
+        len(tile_kits),
+        kits_path,
+    )
+    return _ResolvedContext(
+        game=game,
+        installation_path=installation_path,
+        kits_path=kits_path,
+        installation=installation,
+        kits=kits,
+        tile_kits=tile_kits,
+    )
 
 
 def cmd_indoor_build(args: Namespace, logger: RobustLogger) -> int:  # noqa: PLR0911, PLR0912, PLR0915
@@ -293,7 +325,7 @@ def cmd_indoor_build(args: Namespace, logger: RobustLogger) -> int:  # noqa: PLR
         [
             (args.input, "No input .indoor file specified. Use --input <path>"),
             (args.output, "No output .mod file specified. Use --output <path>"),
-            (args.installation, "No installation path specified. Use --installation <path>"),
+            (args.path, "No game-root path specified. Use --path <path>"),
         ],
         logger=logger,
     ):
@@ -304,7 +336,7 @@ def cmd_indoor_build(args: Namespace, logger: RobustLogger) -> int:  # noqa: PLR
 
     input_path = Path(args.input)
     output_path = Path(args.output)
-    installation_path = Path(args.installation)
+    installation_path = Path(args.path)
     kits_path = Path(args.kits) if args.kits else None
 
     # Validate paths exist
@@ -353,12 +385,24 @@ def cmd_indoor_build(args: Namespace, logger: RobustLogger) -> int:  # noqa: PLR
             indoor = IndoorMap()
             missing = indoor.load(input_path.read_bytes(), kits)
             _log_missing_rooms(logger, missing)
+            reconcile_tile_layout_for_build(
+                indoor,
+                tile_kits=context.tile_kits,
+                kits=kits,
+                logger=logger,
+            )
 
             if args.module_filename:
                 indoor.module_id = normalize_string(args.module_filename)
                 logger.info("Module ID set to: %s", indoor.module_id)
 
-            indoor.build(installation, kits, output_path, game_override=game, loadscreen_path=args.loading_screen)
+            indoor.build(
+                installation,
+                kits,
+                output_path,
+                game_override=game,
+                loadscreen_path=args.loading_screen,
+            )
 
     except Exception as exc:
         return _report_command_exception(logger=logger, prefix="Indoor map build failed", exc=exc)
@@ -371,8 +415,8 @@ def cmd_indoor_extract(args: Namespace, logger: RobustLogger) -> int:  # noqa: P
     """Extract a .indoor file from a composite module.
 
     This command extracts module data from composite files (_s.rim/.rim/_dlg.erf)
-    and converts it to a .indoor JSON file. This is a complex reverse-engineering
-    process that attempts to match module rooms back to their source kits.
+    and converts it to a .indoor JSON file. It is a messy, heuristic reconstruction:
+    walkmeshes get matched back to kit pieces by geometry fit, not by a neat table in the data.
 
     Args:
     ----
@@ -392,7 +436,7 @@ def cmd_indoor_extract(args: Namespace, logger: RobustLogger) -> int:  # noqa: P
     if not _require_cli_values(
         [
             (args.output, "No output .indoor file specified. Use --output <path>"),
-            (args.installation, "No installation path specified. Use --installation <path>"),
+            (args.path, "No game-root path specified. Use --path <path>"),
         ],
         logger=logger,
     ):
@@ -401,7 +445,7 @@ def cmd_indoor_extract(args: Namespace, logger: RobustLogger) -> int:  # noqa: P
 
     module_name = normalize_string(args.module) if args.module else ""
     output_path = Path(args.output)
-    installation_path = Path(args.installation)
+    installation_path = Path(args.path)
     kits_path = Path(args.kits) if args.kits else None
 
     try:
@@ -472,5 +516,7 @@ def cmd_indoor_extract(args: Namespace, logger: RobustLogger) -> int:  # noqa: P
         )
         _write_indoor_output(indoor, output_path, logger=logger, mode_label="reverse-extraction")
     except Exception as exc:
-        return _report_command_exception(logger=logger, prefix="Indoor map extraction failed", exc=exc)
+        return _report_command_exception(
+            logger=logger, prefix="Indoor map extraction failed", exc=exc
+        )
     return 0

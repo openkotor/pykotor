@@ -36,12 +36,11 @@ def format_file_size(size_bytes: int) -> str:
         return ""
     if size_bytes < 1024:
         return f"{size_bytes} bytes"
-    elif size_bytes < 1024 * 1024:
+    if size_bytes < 1024 * 1024:
         return f"{size_bytes / 1024:.1f} KB"
-    elif size_bytes < 1024 * 1024 * 1024:
+    if size_bytes < 1024 * 1024 * 1024:
         return f"{size_bytes / (1024 * 1024):.1f} MB"
-    else:
-        return f"{size_bytes / (1024 * 1024 * 1024):.2f} GB"
+    return f"{size_bytes / (1024 * 1024 * 1024):.2f} GB"
 
 
 def get_size_color(size_bytes: int, is_dark_mode: bool = False) -> QColor | None:
@@ -68,23 +67,22 @@ def get_size_color(size_bytes: int, is_dark_mode: bool = False) -> QColor | None
     if is_dark_mode:
         if size_bytes >= HUGE_THRESHOLD:
             return QColor("#FF6B6B")  # Bright red
-        elif size_bytes >= VERY_LARGE_THRESHOLD:
+        if size_bytes >= VERY_LARGE_THRESHOLD:
             return QColor("#FF8E72")  # Red-orange
-        elif size_bytes >= LARGE_THRESHOLD:
+        if size_bytes >= LARGE_THRESHOLD:
             return QColor("#FFA94D")  # Orange
-        elif size_bytes >= MEDIUM_THRESHOLD:
+        if size_bytes >= MEDIUM_THRESHOLD:
             return QColor("#FFD43B")  # Yellow-orange
         return None  # Default color for small files
-    else:
-        if size_bytes >= HUGE_THRESHOLD:
-            return QColor("#C92A2A")  # Dark red
-        elif size_bytes >= VERY_LARGE_THRESHOLD:
-            return QColor("#E03131")  # Red
-        elif size_bytes >= LARGE_THRESHOLD:
-            return QColor("#F76707")  # Orange
-        elif size_bytes >= MEDIUM_THRESHOLD:
-            return QColor("#E67700")  # Dark orange
-        return None  # Default color for small files
+    if size_bytes >= HUGE_THRESHOLD:
+        return QColor("#C92A2A")  # Dark red
+    if size_bytes >= VERY_LARGE_THRESHOLD:
+        return QColor("#E03131")  # Red
+    if size_bytes >= LARGE_THRESHOLD:
+        return QColor("#F76707")  # Orange
+    if size_bytes >= MEDIUM_THRESHOLD:
+        return QColor("#E67700")  # Dark orange
+    return None  # Default color for small files
 
 
 def highlight_text_matches(
@@ -315,14 +313,14 @@ class FileSizeAwareDelegate(QStyledItemDelegate):
                     option.palette.color(
                         QPalette.ColorGroup.Active,  # pyright: ignore[reportArgumentType]
                         QPalette.ColorRole.HighlightedText,  # pyright: ignore[reportArgumentType]
-                    )
+                    ),
                 )
             else:
                 painter.setPen(
                     option.palette.color(
                         QPalette.ColorGroup.Active,  # pyright: ignore[reportArgumentType]
                         QPalette.ColorRole.Text,  # pyright: ignore[reportArgumentType]
-                    )
+                    ),
                 )
 
         # Draw text
@@ -436,12 +434,16 @@ class Windows11ItemDelegate(QStyledItemDelegate):
         # Delegate to size-aware painting for size column
         column = index.column()
         if column == self.SIZE_COLUMN:
-            self._size_delegate._paint_size_column(painter, option, index, self._get_source_model(index))
+            self._size_delegate._paint_size_column(
+                painter, option, index, self._get_source_model(index)
+            )
             return
 
         # Use default painting for other columns but without the default selection
         opt = QStyleOptionViewItem(option)
-        opt.state &= ~QStyle.StateFlag.State_Selected  # Remove selection flag to prevent double-drawing
+        opt.state &= (
+            ~QStyle.StateFlag.State_Selected
+        )  # Remove selection flag to prevent double-drawing
         opt.state &= ~QStyle.StateFlag.State_MouseOver  # Remove hover flag
         super().paint(painter, opt, index)
 

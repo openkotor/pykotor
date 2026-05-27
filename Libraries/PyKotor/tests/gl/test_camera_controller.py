@@ -15,7 +15,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from pykotor.gl.glm_compat import vec3
+from pykotor.gl import vec3
 
 # Handle optional pykotor.gl dependency
 try:
@@ -136,7 +136,7 @@ class TestCameraController(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.camera = Camera()
+        self.camera: Camera = Camera()
         self.camera.x = 0.0
         self.camera.y = 0.0
         self.camera.z = 0.0
@@ -144,7 +144,7 @@ class TestCameraController(unittest.TestCase):
         self.camera.pitch = math.pi / 2
         self.camera.distance = 10.0
 
-        self.controller = CameraController(self.camera)
+        self.controller: CameraController = CameraController(self.camera)
 
     def test_initialization(self):
         """Test that controller initializes correctly."""
@@ -161,11 +161,11 @@ class TestCameraController(unittest.TestCase):
         self.assertEqual(self.controller.mode, CameraMode.ORBIT)
 
     def test_mode_detection_orbit_left_mouse(self):
-        """Test that left mouse triggers orbit mode."""
+        """Test that plain left mouse does NOT trigger orbit (freed for selection)."""
         input_state = InputState(left_button=True)
         self.controller._determine_mode(input_state)
 
-        self.assertEqual(self.controller.mode, CameraMode.ORBIT)
+        self.assertEqual(self.controller.mode, CameraMode.NONE)
 
     def test_mode_detection_orbit_alt_left(self):
         """Test that Alt+Left mouse triggers orbit mode."""
@@ -181,12 +181,33 @@ class TestCameraController(unittest.TestCase):
 
         self.assertEqual(self.controller.mode, CameraMode.PAN)
 
-    def test_mode_detection_pan_ctrl_left(self):
-        """Test that Ctrl+Left mouse triggers pan mode."""
-        input_state = InputState(ctrl_held=True, left_button=True)
+    def test_mode_detection_pan_alt_middle(self):
+        """Alt+MMB pan matches Unity-style binding (same plane as Shift+MMB)."""
+        input_state = InputState(middle_button=True, alt_held=True)
         self.controller._determine_mode(input_state)
 
         self.assertEqual(self.controller.mode, CameraMode.PAN)
+
+    def test_mode_detection_zoom_ctrl_middle(self):
+        """Ctrl+MMB selects zoom-drag mode (Blender dolly), not orbit."""
+        input_state = InputState(middle_button=True, ctrl_held=True)
+        self.controller._determine_mode(input_state)
+
+        self.assertEqual(self.controller.mode, CameraMode.ZOOM)
+
+    def test_mode_detection_pan_virtual_button(self):
+        """Virtual pan_button forces pan (e.g. Ctrl+LMB bindings)."""
+        input_state = InputState(pan_button=True)
+        self.controller._determine_mode(input_state)
+
+        self.assertEqual(self.controller.mode, CameraMode.PAN)
+
+    def test_mode_detection_pan_ctrl_left(self):
+        """Test that Ctrl+Left mouse does NOT trigger pan (Blender scheme uses Ctrl+MMB for zoom)."""
+        input_state = InputState(ctrl_held=True, left_button=True)
+        self.controller._determine_mode(input_state)
+
+        self.assertEqual(self.controller.mode, CameraMode.NONE)
 
     def test_mode_detection_zoom_right_mouse(self):
         """Test that right mouse triggers zoom mode."""
@@ -194,6 +215,13 @@ class TestCameraController(unittest.TestCase):
         self.controller._determine_mode(input_state)
 
         self.assertEqual(self.controller.mode, CameraMode.ZOOM)
+
+    def test_mode_detection_right_shift_not_zoom(self):
+        """RMB+Shift must not enter zoom-drag (avoids conflicting with other bindings)."""
+        input_state = InputState(right_button=True, shift_held=True)
+        self.controller._determine_mode(input_state)
+
+        self.assertEqual(self.controller.mode, CameraMode.NONE)
 
     def test_mode_detection_none(self):
         """Test that no input results in NONE mode."""
@@ -220,6 +248,30 @@ class TestCameraController(unittest.TestCase):
         self.assertNotEqual(self.controller.state.target_yaw, initial_yaw)
         self.assertNotEqual(self.controller.state.target_pitch, initial_pitch)
 
+    def test_orbit_drag_right_matches_rotate_right_direction(self):
+        """Dragging right should yaw right, matching the keyboard rotation path."""
+        input_state = InputState(
+            middle_button=True,
+            mouse_delta_x=50.0,
+            mouse_delta_y=0.0,
+        )
+
+        self.controller.update(input_state, delta_time=0.016)
+
+        self.assertLess(self.controller.state.target_yaw, 0.0)
+
+    def test_orbit_drag_up_moves_toward_top_view(self):
+        """Dragging upward should increase pitch toward a top-down view."""
+        input_state = InputState(
+            middle_button=True,
+            mouse_delta_x=0.0,
+            mouse_delta_y=-50.0,
+        )
+
+        self.controller.update(input_state, delta_time=0.016)
+
+        self.assertGreater(self.controller.state.target_pitch, math.pi / 2)
+
     def test_pan_changes_position(self):
         """Test that pan mode changes camera position."""
         initial_focal = vec3(
@@ -240,7 +292,11 @@ class TestCameraController(unittest.TestCase):
 
         # Position should have changed
         final_focal = self.controller.state.target_focal_point
-        position_changed = final_focal.x != initial_focal.x or final_focal.y != initial_focal.y or final_focal.z != initial_focal.z
+        position_changed = (
+            final_focal.x != initial_focal.x
+            or final_focal.y != initial_focal.y
+            or final_focal.z != initial_focal.z
+        )
         self.assertTrue(position_changed, "Pan should change focal point")
 
     def test_zoom_scroll_changes_distance(self):
@@ -253,7 +309,9 @@ class TestCameraController(unittest.TestCase):
         self.controller.update(input_state, delta_time=0.016)
 
         # Distance should have changed
-        self.assertNotEqual(self.controller.state.target_distance, initial_distance, "Scroll should change distance")
+        self.assertNotEqual(
+            self.controller.state.target_distance, initial_distance, "Scroll should change distance"
+        )
 
     def test_zoom_clamps_to_limits(self):
         """Test that zoom respects min/max distance limits."""
@@ -284,8 +342,9 @@ class TestCameraController(unittest.TestCase):
         )
         self.controller.update(input_state, delta_time=0.016)
 
-        # Pitch should be clamped near 0 (but not exactly 0)
-        self.assertGreater(self.controller.state.target_pitch, 0.001)
+        # Pitch should be clamped near pi (but not exactly pi)
+        self.assertLess(self.controller.state.target_pitch, math.pi - 0.001)
+        self.assertGreater(self.controller.state.target_pitch, math.pi / 2)
 
         # Try extreme downward rotation
         input_state = InputState(
@@ -294,8 +353,9 @@ class TestCameraController(unittest.TestCase):
         )
         self.controller.update(input_state, delta_time=0.016)
 
-        # Pitch should be clamped near pi (but not exactly pi)
-        self.assertLess(self.controller.state.target_pitch, math.pi - 0.001)
+        # Pitch should be clamped near 0 (but not exactly 0)
+        self.assertGreater(self.controller.state.target_pitch, 0.001)
+        self.assertLess(self.controller.state.target_pitch, math.pi / 2)
 
     def test_smoothing_interpolates_values(self):
         """Test that smoothing creates gradual transitions."""
@@ -392,6 +452,118 @@ class TestCameraController(unittest.TestCase):
         self.assertEqual(self.camera.x, 25)
         self.assertEqual(self.camera.y, 35)
         self.assertEqual(self.camera.z, 45)
+
+    def test_sync_from_camera_picks_up_external_camera_mutation(self):
+        """After code snaps the Camera directly, sync_from_camera refreshes controller state."""
+        self.controller.settings.enable_smoothing = False
+        self.camera.x = 1.0
+        self.camera.y = 2.0
+        self.camera.z = 3.0
+        self.camera.yaw = 0.7
+        self.camera.pitch = 1.1
+        self.camera.distance = 22.0
+
+        self.controller.sync_from_camera()
+
+        self.assertAlmostEqual(self.controller.state.target_focal_point.x, 1.0)
+        self.assertAlmostEqual(self.controller.state.target_focal_point.y, 2.0)
+        self.assertAlmostEqual(self.controller.state.target_focal_point.z, 3.0)
+        self.assertAlmostEqual(self.controller.state.target_yaw, 0.7)
+        self.assertAlmostEqual(self.controller.state.target_pitch, 1.1)
+        self.assertAlmostEqual(self.controller.state.target_distance, 22.0)
+
+    def test_has_pending_motion_false_when_targets_match(self):
+        """Smoothing idle: current and target state aligned -> no pending motion."""
+        self.controller.settings.enable_smoothing = False
+        self.controller.update(InputState(), delta_time=0.016)
+        self.assertFalse(self.controller.has_pending_motion())
+
+    def test_has_pending_motion_true_when_smoothing_lags(self):
+        """When targets differ from current, editor can wait on smoothing to finish."""
+        self.controller.settings.enable_smoothing = True
+        self.controller.state.current_focal_point = vec3(0.0, 0.0, 0.0)
+        self.controller.state.target_focal_point = vec3(10.0, 0.0, 0.0)
+        self.assertTrue(self.controller.has_pending_motion())
+
+    def test_zoom_scroll_with_zoom_to_cursor_offsets_focal_point(self):
+        """Off-center cursor + zoom-to-cursor should move focal point, not only distance."""
+        self.controller.settings.enable_smoothing = False
+        self.controller.settings.zoom_to_cursor = True
+        focal_before = (
+            self.controller.state.target_focal_point.x,
+            self.controller.state.target_focal_point.y,
+            self.controller.state.target_focal_point.z,
+        )
+        input_state = InputState(
+            scroll_delta=50.0,
+            viewport_width=800.0,
+            viewport_height=600.0,
+            mouse_x=700.0,
+            mouse_y=100.0,
+        )
+        self.controller.update(input_state, delta_time=0.016)
+        focal_after = (
+            self.controller.state.target_focal_point.x,
+            self.controller.state.target_focal_point.y,
+            self.controller.state.target_focal_point.z,
+        )
+        self.assertNotEqual(focal_before, focal_after)
+
+
+class TestCameraRotateAngleWrapping(unittest.TestCase):
+    """Regression tests for Camera.rotate yaw/pitch normalization (wrap + clamp)."""
+
+    def test_yaw_wraps_full_turn(self):
+        """Rotating by 2π should land on the same wrapped yaw as 0."""
+        camera = Camera()
+        camera.yaw = 0.0
+        camera.pitch = math.pi / 2
+        camera.rotate(2 * math.pi, 0.0, clamp=False)
+        self.assertAlmostEqual(camera.yaw, 0.0, places=6)
+
+    def test_yaw_wraps_negative(self):
+        """Large positive delta should fold into (-π, π] without runaway values."""
+        camera = Camera()
+        camera.yaw = 0.0
+        camera.pitch = math.pi / 2
+        camera.rotate(4.0, 0.0, clamp=False)
+        self.assertGreater(camera.yaw, -math.pi - 1e-6)
+        self.assertLessEqual(camera.yaw, math.pi + 1e-6)
+
+    def test_pitch_wraps_when_not_clamped(self):
+        """Without clamp, pitch uses the same π-normalization as yaw."""
+        camera = Camera()
+        camera.yaw = 0.0
+        camera.pitch = math.pi / 2
+        camera.rotate(0.0, 3 * math.pi, clamp=False)
+        self.assertGreater(camera.pitch, -math.pi - 1e-6)
+        self.assertLessEqual(camera.pitch, math.pi + 1e-6)
+
+    def test_clamp_inverted_limits_uses_midpoint(self):
+        """If lower_limit >= upper_limit, pitch clamps to their midpoint (no crash)."""
+        camera = Camera()
+        camera.yaw = 0.0
+        camera.pitch = math.pi / 2
+        lower = math.pi * 0.75
+        upper = math.pi * 0.25
+        camera.rotate(0.0, 10.0, clamp=True, lower_limit=lower, upper_limit=upper)
+        self.assertAlmostEqual(camera.pitch, (lower + upper) * 0.5, places=6)
+
+
+class TestCameraControllerLerpAngle(unittest.TestCase):
+    """Tests for shortest-path angle interpolation used during smoothing."""
+
+    def setUp(self):
+        self.camera: Camera = Camera()
+        self.controller: CameraController = CameraController(self.camera)
+
+    def test_lerp_angle_shortest_path_over_wrap(self):
+        """Interpolation should take the short arc across the ±π seam."""
+        a = math.pi - 0.1
+        b = -math.pi + 0.1
+        mid = self.controller._lerp_angle(a, b, 0.5)
+        self.assertAlmostEqual(mid, math.pi, places=5)
+        self.assertGreater(mid, a)
 
 
 class TestCameraModeEnum(unittest.TestCase):

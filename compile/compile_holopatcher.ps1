@@ -45,10 +45,6 @@ $argsList = @(
   "--exclude-module=PySide6",
   "--exclude-module", "PyOpenGL"
   "--exclude-module", "PyGLM"
-  "--exclude-module", "dl_translate"
-  "--exclude-module", "torch"
-  "--exclude-module", "deep_translator"
-  "--exclude-module", "cefpython3"
   "--upx-exclude", "_uuid.pyd"
   "--upx-exclude", "api-ms-win-crt-environment-l1-1-0.dll"
   "--upx-exclude", "api-ms-win-crt-string-l1-1-0.dll"

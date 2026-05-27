@@ -1,7 +1,10 @@
 
 __pycache__
-.*
 .history
+.venv*/
+.firecrawl/
+.*_cache/
+venv*/
 *.cpuprofile
 *.egg-info*
 *.exe.manifest
@@ -126,14 +129,12 @@ Tools/*/.github/
 !.vscode
 !.pre-commit-config.yaml
 _tmp*
-vendor/**/
 test_output.txt
 .cursor/plans/*.md
 Tools/HolocronToolset/src/ui/**/*_ui.py
 Tools/tests/
 Tools/HolocronToolset/src/toolset/wiki/
 docs/reva_roadmap/
-vendor/kotor_re_things/
 vendor/kotor_re_things/
 agentdecompile_projects/my_project.gpr
 agentdecompile_projects/my_project.lock
@@ -145,3 +146,11 @@ agentdecompile_projects/my_project.rep/versioned/~index.dat
 Libraries/PyKotor/pytest_result.txt
 tmp_danm13_rebuilt*.mod
 *.prompt.md
+.cursor/hooks/state/*.json
+tmp/
+cli_test_output.txt
+vendor/KotOR.js/vendor/PyKotor/
+.tmp_whl/
+
+tmpinstallation-json-all/
+.compound-engineering/*.local.yaml

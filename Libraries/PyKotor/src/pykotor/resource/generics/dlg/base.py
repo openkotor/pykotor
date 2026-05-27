@@ -41,51 +41,12 @@ class DLG:
     entries (NPC lines) and replies (player options) are connected via links with
     conditional logic.
 
-    References:
-    ----------
-        KotOR I (swkotor.exe):
-            - 0x005a2ae0 - CSWSDialog::LoadDialog (2900 bytes, 400 lines)
-                - Main DLG GFF parser entry point
-                - Loads dialog from GFF structure
-                - Function signature: LoadDialog(CSWSDialog* this, CResGFF* param_1, int param_2)
-                - Called from StartDialog (0x004cf490) and RunDialogOneLiner (0x004cb220)
-            - 0x0059f5f0 - CSWSDialog::LoadDialogBase (1385 bytes, 204 lines)
-                - Loads base dialog node fields (entries/replies)
-                - Function signature: LoadDialogBase(CSWSDialog* this, CSWSDialogBase* param_1, CResGFF* param_2, CResStruct* param_3, ulong* param_4, int* param_5)
-                - Called from LoadDialog for each entry/reply
-            - 0x0059ec10 - CSWSDialog::LoadDialogLinkedNode (115 bytes, 24 lines)
-                - Loads dialog link entry fields
-                - Function signature: LoadDialogLinkedNode(CSWSDialog* this, CSWSDialogLinkEntry* param_1, CResGFF* param_2, CResStruct* param_3, int* param_4, ulong param_5)
-                - Called from LoadDialog for each link in RepliesList
-            - Reads top-level fields:
-                - CameraModel (CResRef), DelayEntry (DWORD), DelayReply (DWORD)
-                - EndConversation (CResRef), EndConverAbort (CResRef)
-                - Skippable (BYTE), ConversationType (INT), ComputerType (BYTE)
-                - AmbientTrack (CResRef), UnequipItems (BYTE), UnequipHItem (BYTE)
-                - AnimatedCut (BYTE), OldHitCheck (BYTE)
-            - Reads EntryList (GFFList) - dialog entries
-            - Reads ReplyList (GFFList) - dialog replies
-            - Reads StartingList (GFFList) - starting entries (Active, Index)
-            - Reads StuntList (GFFList) - stunt models
-            - Base node fields (via LoadDialogBase):
-                - Text (CExoLocString), Script (CResRef), Speaker (CExoString)
-                - WaitFlags (DWORD), Quest (CExoString), QuestEntry (DWORD)
-                - PlotIndex (INT), PlotXPPercentage (FLOAT), Delay (DWORD)
-                - FadeType (BYTE), FadeColor (Vector), FadeDelay (FLOAT), FadeLength (FLOAT)
-                - Sound (CResRef), VO_ResRef (CResRef), SoundExists (BYTE)
-                - AnimList (GFFList) - animations (Participant, Animation)
-            - Link fields (via LoadDialogLinkedNode):
-                - Active (CResRef), Index (DWORD), DisplayInactive (BYTE)
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally identical to K1 implementation
-            - Same GFF structure and parsing logic
-
-    Derivations and Other Implementations:
-    ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/DLGObject.ts (DLG loading and dialog tree structure)
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/DLGNode.ts (DLG node structure)
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorDLG/DLG.cs (DLG structure)
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorDLG/DLGDecompiler.cs (DLG parsing)
+    DLG is a GFF graph: root metadata, ``EntryList`` / ``ReplyList`` / ``StartingList`` /
+    ``StuntList``, per-node text (localized), scripts (ResRef), speaker string, fades, sounds,
+    animations, and per-link script/indices. It has been observed that KotOR I and TSL share
+    the same on-disk layout for these structures. Loader notes and third-party DLG
+    implementations (KotOR.js, Kotor.NET, including DLGDecompiler.cs) are migrated to
+    ``wiki/reverse_engineering_findings.md`` (*resource/generics/dlg/base.py*).
 
     Attributes:
     ----------
@@ -188,7 +149,9 @@ class DLG:
         if isinstance(target, DLGLink):
             parent_node: DLGEntry | DLGReply | DLG | None = self.get_link_parent(target)
             if parent_node is None:
-                raise ValueError(f"Target {target.__class__.__name__} doesn't have a parent, and also not found in starters.")
+                raise ValueError(
+                    f"Target {target.__class__.__name__} doesn't have a parent, and also not found in starters."
+                )
             if isinstance(parent_node, DLG):
                 paths.append(PureWindowsPath("StartingList", str(target.list_index)))
             else:
@@ -347,7 +310,11 @@ class DLG:
             seen_entries.add(entry)
             for reply_link in entry.links:
                 reply: DLGNode = reply_link.node
-                entries.extend(self._all_entries(cast("Sequence[DLGLink[DLGEntry]]", reply.links), seen_entries))
+                entries.extend(
+                    self._all_entries(
+                        cast("Sequence[DLGLink[DLGEntry]]", reply.links), seen_entries
+                    )
+                )
 
         return entries
 
@@ -385,7 +352,11 @@ class DLG:
         """
         replies: list[DLGReply] = []
 
-        links = [_ for link in self.starters if link.node is not None for _ in link.node.links] if links is None else links
+        links = (
+            [_ for link in self.starters if link.node is not None for _ in link.node.links]
+            if links is None
+            else links
+        )
         seen_replies = [] if seen_replies is None else seen_replies
 
         for link in links:
@@ -400,6 +371,8 @@ class DLG:
                 entry: DLGNode | None = entry_link.node
                 if entry is None:
                     continue
-                replies.extend(self._all_replies(cast("Sequence[DLGLink]", entry.links), seen_replies))
+                replies.extend(
+                    self._all_replies(cast("Sequence[DLGLink]", entry.links), seen_replies)
+                )
 
         return replies

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, NoReturn, Sequence, cast
 
 from ply import yacc
 
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs.compiler.classes import (
     AdditionAssignment,
     Assignment,
@@ -76,7 +77,7 @@ else:
     from pykotor.common.script import DataType
 
 
-class NssParser:
+class NssParser(ComparableMixin):
     """NSS (NWScript Source) parser.
 
     Parses tokenized NSS source code into an abstract syntax tree (AST) using
@@ -85,11 +86,7 @@ class NssParser:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (Parser integration)
+        Observed in retail KotOR I and TSL.
         PLY (Python Lex-Yacc) library for parser generation
 
     """
@@ -164,7 +161,12 @@ class NssParser:
             code_root.objects.append(p[2])
             p[0] = code_root
         else:
-            p[0] = CodeRoot(constants=self.constants, functions=self.functions, library_lookup=self.library_lookup, library=self.library)
+            p[0] = CodeRoot(
+                constants=self.constants,
+                functions=self.functions,
+                library_lookup=self.library_lookup,
+                library=self.library,
+            )
 
     def p_code_root_object(self, p):
         """
@@ -630,7 +632,9 @@ class NssParser:
         args: list[Expression] = p[3]
 
         # identifier is an Identifier object, need to get its label for comparison
-        identifier_label = identifier.label if isinstance(identifier, Identifier) else str(identifier)
+        identifier_label = (
+            identifier.label if isinstance(identifier, Identifier) else str(identifier)
+        )
         # Single pass: get (index, function) to avoid separate index() call
         routine_id, engine_function = next(
             ((i, x) for i, x in enumerate(self.functions) if x.name == identifier_label),

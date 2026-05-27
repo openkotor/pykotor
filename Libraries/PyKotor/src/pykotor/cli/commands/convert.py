@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 from pykotor.cli.cfg_parser import load_config
 from pykotor.resource.formats.gff import read_gff, write_gff
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import ResourceType, ToolsetFormat
 
 
 def cmd_convert(args: Namespace, logger: Logger) -> int:
@@ -110,19 +110,21 @@ def cmd_convert(args: Namespace, logger: Logger) -> int:
 
                 # Get ResourceType from extension
                 try:
-                    resource_type = ResourceType.from_extension(ext)
+                    ResourceType.from_extension(ext)
                 except ValueError:
                     logger.warning(f"Unknown resource type for {json_path.name}, skipping")
                     continue
 
                 # Read JSON using PyKotor's JSON reader
-                gff = read_gff(json_path, file_format=ResourceType.GFF_JSON)
+                gff = read_gff(json_path, file_format=ToolsetFormat.GFF_JSON)
 
                 # Write to cache as binary GFF
                 cache_file = cache_dir / gff_filename
                 write_gff(gff, cache_file, file_format=ResourceType.GFF)
 
-                logger.debug(f"Converted: {json_path.relative_to(config.root_dir)} -> {cache_file.relative_to(config.root_dir)}")
+                logger.debug(
+                    f"Converted: {json_path.relative_to(config.root_dir)} -> {cache_file.relative_to(config.root_dir)}"
+                )
                 converted_count += 1
 
             except Exception as e:

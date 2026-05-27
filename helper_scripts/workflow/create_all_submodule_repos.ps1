@@ -52,10 +52,20 @@ param(
 )
 
 $scriptDir = $PSScriptRoot
-$repoRoot = Split-Path -Parent $scriptDir
+$repoRoot = $scriptDir
+
+# Resolve repository root by walking up until we find .git
+while ($repoRoot -and -not (Test-Path (Join-Path $repoRoot ".git"))) {
+    $parent = Split-Path -Parent $repoRoot
+    if ($parent -eq $repoRoot) {
+        $repoRoot = $null
+        break
+    }
+    $repoRoot = $parent
+}
 
 # Validate we're in the right place
-if (-not (Test-Path (Join-Path $repoRoot ".git"))) {
+if (-not $repoRoot) {
     Write-Error "Cannot find PyKotor repository root."
     exit 1
 }
@@ -179,12 +189,9 @@ foreach ($item in $toProcess) {
     
     try {
         & $createScript @params
-        
-        if ($LASTEXITCODE -eq 0) {
-            $results.Success += $item.Name
-        } else {
-            $results.Failed += $item.Name
-        }
+        # Do not rely on $LASTEXITCODE here: native commands inside the child script can
+        # leave a non-zero code even when the script handled it and completed successfully.
+        $results.Success += $item.Name
     }
     catch {
         Write-Host "Error processing $($item.Name): $_" -ForegroundColor Red

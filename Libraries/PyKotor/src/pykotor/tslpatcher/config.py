@@ -90,7 +90,9 @@ class PatcherConfig:
             - Set the ConfigParser to use case-insensitive keys. Ini is inherently case-insensitive by default.
             - Call the load method on the ConfigReader, passing self to populate the configuration instance.
         """
-        from pykotor.tslpatcher.reader import ConfigReader  # noqa: PLC0415  Prevent circular imports.
+        from pykotor.tslpatcher.reader import (
+            ConfigReader,  # noqa: PLC0415  Prevent circular imports.
+        )
 
         ini = ConfigParser(
             delimiters=("="),
@@ -129,13 +131,19 @@ class PatcherConfig:
             - Sets the ini_filename, info_filename and name attributes from the config
             - Returns the populated PatcherNamespace
         """
-        from pykotor.tslpatcher.reader import ConfigReader  # noqa: PLC0415  Prevent circular imports.
+        from pykotor.tslpatcher.reader import (
+            ConfigReader,  # noqa: PLC0415  Prevent circular imports.
+        )
 
         reader: ConfigReader = ConfigReader.from_filepath(filepath)
         reader.load_settings()
 
         namespace: PatcherNamespace = PatcherNamespace.from_default()
-        namespace.name = reader.config.window_title or filepath.parents[1].name.strip() or "<< Untitled Mod Loaded >>"
+        namespace.name = (
+            reader.config.window_title
+            or filepath.parents[1].name.strip()
+            or "<< Untitled Mod Loaded >>"
+        )
 
         return namespace
 
@@ -176,4 +184,12 @@ class PatcherConfig:
         num_nss_patches: int = len(self.patches_nss)
         num_ncs_patches: int = len(self.patches_ncs)
 
-        return num_2da_patches + num_gff_patches + num_ssf_patches + num_tlk_patches + num_install_list_patches + num_nss_patches + num_ncs_patches
+        return (
+            num_2da_patches
+            + num_gff_patches
+            + num_ssf_patches
+            + num_tlk_patches
+            + num_install_list_patches
+            + num_nss_patches
+            + num_ncs_patches
+        )

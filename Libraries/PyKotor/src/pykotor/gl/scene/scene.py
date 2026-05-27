@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeVar, cast
+import os
+import time
+
+from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from pykotor.extract.installation import SearchLocation
+from pykotor.gl import mat4, unProject, vec3, vec4
 from pykotor.gl.compat import (
     GL_BGRA,
     GL_BLEND,
@@ -13,23 +17,34 @@ from pykotor.gl.compat import (
     GL_DEPTH_BUFFER_BIT,
     GL_DEPTH_COMPONENT,
     GL_DEPTH_TEST,
+    GL_FALSE,
+    GL_FILL,
     GL_FLOAT,
+    GL_FRONT_AND_BACK,
     GL_LEQUAL,
+    GL_LINE,
     GL_ONE_MINUS_SRC_ALPHA,
     GL_SRC_ALPHA,
+    GL_TRUE,
     GL_UNSIGNED_INT_8_8_8_8,
     HAS_PYOPENGL,
     glBlendFunc,
     glClear,
     glClearColor,
     glDepthFunc,
+    glDepthMask,
     glDisable,
     glEnable,
+    glPolygonMode,
     glReadPixels,
 )
-from pykotor.gl.glm_compat import Vector3 as GlmVector3, Vector4, mat4, unProject
 from pykotor.gl.models.axis_gizmo import AxisGizmo
+from pykotor.gl.models.mdl import Mesh as _Mesh
+from pykotor.gl.native.gl_accel import (
+    frustum_cull_objects as _batch_frustum_cull,
+)
 from pykotor.gl.scene.frustum import CullingStats, Frustum
+from pykotor.gl.scene.render_object import RenderObject
 from pykotor.gl.scene.scene_base import SceneBase
 from pykotor.gl.scene.scene_cache import SceneCache
 from pykotor.gl.shader import (
@@ -47,7 +62,7 @@ from pykotor.resource.generics.git import (
     GITCreature,
     GITDoor,
     GITEncounter,
-    GITInstance,
+    GITObject,
     GITPlaceable,
     GITSound,
     GITStore,
@@ -60,7 +75,6 @@ if TYPE_CHECKING:
     from pykotor.common.module import Module
     from pykotor.extract.installation import Installation
     from pykotor.gl.models.mdl import Model
-    from pykotor.gl.scene.scene_base import RenderObject
 
 T = TypeVar("T")
 SEARCH_ORDER_2DA: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN]
@@ -77,9 +91,8 @@ class Scene(SceneBase):
     - Incremental cache building (only rebuilds when dirty)
     - Cached camera focus gizmo placement
 
-    Reference implementations:
-    - reone: src/graphics/renderpipeline.cpp
-    - kotor.js: src/engine/renderer.ts
+    Prior third-party source paths for the render loop were listed here; see
+    ``wiki/reverse_engineering_findings.md`` (*PyKotor GL — reference implementation paths*).
     """
 
     def __init__(
@@ -136,6 +149,9 @@ class Scene(SceneBase):
         self._cached_view: mat4 | None = None
         self._cached_projection: mat4 | None = None
 
+        # Per-frame profile timings (TOOLSET_MODULE_DESIGNER_PROFILE): (cache_ms, draw_ms) per frame
+        self._profile_frame_times: list[tuple[float, float]] = []
+
     def _invalidate_object_cache(self):
         """Mark object caches as dirty. Call when objects are added/removed."""
         self._objects_dirty = True
@@ -146,11 +162,18 @@ class Scene(SceneBase):
         self._cached_trigger_objects = None
 
     def _rebuild_object_caches(self):
-        """Rebuild cached object lists for efficient iteration."""
+        """Rebuild cached object lists for efficient iteration.
+
+        Also precomputes _hide_attr on each RenderObject so that
+        should_hide_obj() becomes O(1) instead of O(9 isinstance).
+        """
         if not self._objects_dirty and len(self.objects) == self._last_objects_count:
             return
 
         special_models: frozenset[str] = frozenset(self.SPECIAL_MODELS)
+
+        # Build type->hide_attr mapping for precomputation
+        hide_attr_map: dict[type, str] = {t: a for t, a in self._HIDE_TYPE_MAP}
 
         regular: list[RenderObject] = []
         special: list[RenderObject] = []
@@ -159,6 +182,14 @@ class Scene(SceneBase):
         triggers: list[RenderObject] = []
 
         for obj in self.objects.values():
+            # Precompute hide_attr (avoids 9 isinstance checks per frame per object)
+            data = obj.data
+            hide_attr = ""
+            if data is not None:
+                data_type = type(data)
+                hide_attr = hide_attr_map.get(data_type, "")
+            obj._hide_attr = hide_attr
+
             model = obj.model
             if model in special_models:
                 special.append(obj)
@@ -201,16 +232,27 @@ class Scene(SceneBase):
         if self.is_shutdown:
             return
 
+        _profile = os.environ.get("TOOLSET_MODULE_DESIGNER_PROFILE", "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        )
+        _t0 = time.perf_counter() if _profile else None
+
         try:
             # Poll for completed async resources (non-blocking) - MAIN PROCESS ONLY
             self.poll_async_resources()
 
-            # ALWAYS build cache - it updates object positions for existing objects!
-            # SceneCache.build_cache updates positions (set_position/set_rotation)
-            # even for objects already in scene.objects. Skipping this causes:
-            # 1. Objects not moving when dragged
-            # 2. Camera snapping not working until rotation
+            # Build/sync scene cache.
+            # Fast path: when all objects exist and no invalidations, only syncs
+            # positions (set_position/set_rotation have identity-check early returns).
+            # Full rebuild only runs when object counts differ or caches are cleared.
             SceneCache.build_cache(self)
+
+            if _profile and _t0 is not None:
+                _t1 = time.perf_counter()
+                _cache_ms = (_t1 - _t0) * 1000
 
             # Rebuild object lists if objects changed (cheap check)
             if self._objects_dirty or len(self.objects) != self._last_objects_count:
@@ -230,15 +272,36 @@ class Scene(SceneBase):
             self._prepare_gl_and_shader_optimized()
             self.shader.set_bool("enableLightmap", self.use_lightmap)
 
+            # Reset per-frame state tracking for optimized draw calls
+            _Mesh.reset_draw_state(getattr(self.textures, "_generation", -1))
+            Shader._active_id = -1
+
             # Render regular objects (models)
             assert self._cached_regular_objects is not None
             identity = mat4()  # Create once, reuse
-            for obj in self._cached_regular_objects:
-                if self.enable_frustum_culling and not self._is_object_visible(obj):
-                    self.culling_stats.record_object(visible=False)
-                    continue
-                self.culling_stats.record_object(visible=True)
-                self._render_object(self.shader, obj, identity)
+            if self.use_wireframe:
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+            try:
+                if self.enable_frustum_culling:
+                    # Batch frustum cull: test all objects at once (C extension when available)
+                    visibility = _batch_frustum_cull(
+                        self.frustum,
+                        self._cached_regular_objects,
+                        self,
+                        self.default_cull_radius,
+                    )
+                    for i, obj in enumerate(self._cached_regular_objects):
+                        if not visibility[i]:
+                            self.culling_stats.record_object(visible=False)
+                            continue
+                        self.culling_stats.record_object(visible=True)
+                        self._render_object(self.shader, obj, identity)
+                else:
+                    for obj in self._cached_regular_objects:
+                        self._render_object(self.shader, obj, identity)
+            finally:
+                if self.use_wireframe:
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
             # Setup plain shader for special objects (once)
             glEnable(GL_BLEND)
@@ -246,27 +309,47 @@ class Scene(SceneBase):
             assert self._cached_view is not None and self._cached_projection is not None
             self.plain_shader.set_matrix4("view", self._cached_view)
             self.plain_shader.set_matrix4("projection", self._cached_projection)
-            self.plain_shader.set_vector4("color", Vector4(0.0, 0.0, 1.0, 0.4))
+            self.plain_shader.set_vector4("color", vec4(0.0, 0.0, 1.0, 0.4))
 
             # Render special objects (icons)
             assert self._cached_special_objects is not None
-            for obj in self._cached_special_objects:
-                if self.enable_frustum_culling and not self._is_object_visible(obj):
-                    self.culling_stats.record_object(visible=False)
-                    continue
-                self.culling_stats.record_object(visible=True)
-                self._render_object(self.plain_shader, obj, identity)
+            if self.enable_frustum_culling:
+                special_visibility = _batch_frustum_cull(
+                    self.frustum,
+                    self._cached_special_objects,
+                    self,
+                    self.default_cull_radius,
+                )
+                for i, obj in enumerate(self._cached_special_objects):
+                    if not special_visibility[i]:
+                        self.culling_stats.record_object(visible=False)
+                        continue
+                    self.culling_stats.record_object(visible=True)
+                    self._render_object(self.plain_shader, obj, identity)
+            else:
+                for obj in self._cached_special_objects:
+                    self._render_object(self.plain_shader, obj, identity)
 
-            # Draw bounding box for selected objects
-            self.plain_shader.set_vector4("color", Vector4(1.0, 0.0, 0.0, 0.4))
+            # Draw bounding box for selected objects (only RenderObjects have cube/boundary)
+            # The model surfaces are already in the depth buffer, so the cube faces fail the
+            # depth test at pixels occupied by the model (nearly all of them).  Disable depth
+            # test so the selection indicator always renders visibly on top.
+            glDisable(GL_DEPTH_TEST)
+            glDepthMask(GL_FALSE)  # type: ignore[arg-type]
+            glDisable(GL_CULL_FACE)  # Draw both inner and outer faces for a solid-filled look
+            self.plain_shader.set_vector4("color", vec4(1.0, 0.0, 0.0, 0.4))
             for obj in self.selection:
-                obj.cube(self).draw(self.plain_shader, obj.transform())
+                if isinstance(obj, RenderObject):
+                    obj.cube(self).draw(self.plain_shader, obj.transform())
+            glEnable(GL_DEPTH_TEST)
+            glDepthMask(GL_TRUE)  # type: ignore[arg-type]
 
             # Draw boundary for selected objects
             glDisable(GL_CULL_FACE)
-            self.plain_shader.set_vector4("color", Vector4(0.0, 1.0, 0.0, 0.8))
+            self.plain_shader.set_vector4("color", vec4(0.0, 1.0, 0.0, 0.8))
             for obj in self.selection:
-                obj.boundary(self).draw(self.plain_shader, obj.transform())
+                if isinstance(obj, RenderObject):
+                    obj.boundary(self).draw(self.plain_shader, obj.transform())
 
             # Draw non-selected boundaries (only if visible and enabled)
             if not self.hide_sound_boundaries:
@@ -293,9 +376,28 @@ class Scene(SceneBase):
                 focus_point = self.camera_focal_point()
                 self._axis_gizmo.draw(
                     self.plain_shader,
-                    GlmVector3(focus_point.x, focus_point.y, focus_point.z),
+                    vec3(focus_point.x, focus_point.y, focus_point.z),
                     self.camera.distance,
                 )
+
+            if _profile and _t0 is not None:
+                _t2 = time.perf_counter()
+                _draw_ms = (_t2 - _t1) * 1000  # noqa: F821
+                self._profile_frame_times.append((_cache_ms, _draw_ms))  # noqa: F821
+                if len(self._profile_frame_times) >= 200:
+                    n = len(self._profile_frame_times)
+                    mean_cache = sum(p[0] for p in self._profile_frame_times) / n
+                    mean_draw = sum(p[1] for p in self._profile_frame_times) / n
+                    from loggerplus import RobustLogger
+
+                    RobustLogger().info(
+                        "[MODULE_DESIGNER_PROFILE] per-frame (n=%d): mean cache=%.2f ms, mean draw=%.2f ms, mean total=%.2f ms",
+                        n,
+                        mean_cache,
+                        mean_draw,
+                        mean_cache + mean_draw,
+                    )
+                    self._profile_frame_times.clear()
 
             # End frame statistics
             if self.enable_frustum_culling:
@@ -308,7 +410,9 @@ class Scene(SceneBase):
                 if isinstance(exc, GLError):
                     from loggerplus import RobustLogger
 
-                    RobustLogger().debug("Scene.render: OpenGL error during render; skipping frame", exc_info=True)
+                    RobustLogger().debug(
+                        "Scene.render: OpenGL error during render; skipping frame", exc_info=True
+                    )
                     return
             except Exception:  # noqa: BLE001
                 # If OpenGL isn't importable for some reason, just re-raise the original error.
@@ -362,11 +466,11 @@ class Scene(SceneBase):
         if float(zpos) >= self._FAR_PLANE_DEPTH_THRESHOLD:
             return self.camera_focal_point()
 
-        cursor_glm: GlmVector3 = unProject(
-            GlmVector3(float(x), float(self.camera.height - y), float(zpos)),
+        cursor_glm: vec3 = unProject(
+            vec3(float(x), float(self.camera.height - y), float(zpos)),
             view,
             projection,
-            Vector4(0, 0, self.camera.width, self.camera.height),
+            vec4(0, 0, self.camera.width, self.camera.height),
         )
         return GeomVector3(cursor_glm.x, cursor_glm.y, cursor_glm.z)
 
@@ -410,26 +514,25 @@ class Scene(SceneBase):
         center, radius = obj.bounding_sphere(self, self.default_cull_radius)
         return self.frustum.sphere_in_frustum(center, radius)
 
+    # Class-level type map for should_hide_obj (avoids dict creation per call)
+    _HIDE_TYPE_MAP: ClassVar[tuple[tuple[type, str], ...]] = (
+        (GITCreature, "hide_creatures"),
+        (GITPlaceable, "hide_placeables"),
+        (GITDoor, "hide_doors"),
+        (GITTrigger, "hide_triggers"),
+        (GITEncounter, "hide_encounters"),
+        (GITWaypoint, "hide_waypoints"),
+        (GITSound, "hide_sounds"),
+        (GITStore, "hide_sounds"),
+        (GITCamera, "hide_cameras"),
+    )
+
     def should_hide_obj(
         self,
         obj: RenderObject,
     ) -> bool:
-        type_to_hide_attr = {
-            GITCreature: "hide_creatures",
-            GITPlaceable: "hide_placeables",
-            GITDoor: "hide_doors",
-            GITTrigger: "hide_triggers",
-            GITEncounter: "hide_encounters",
-            GITWaypoint: "hide_waypoints",
-            GITSound: "hide_sounds",
-            GITStore: "hide_sounds",
-            GITCamera: "hide_cameras",
-        }
-
-        for obj_type, hide_attr in type_to_hide_attr.items():
-            if isinstance(obj.data, obj_type):
-                return bool(getattr(self, hide_attr, False))
-        return False
+        hide_attr = obj._hide_attr
+        return bool(hide_attr and getattr(self, hide_attr, False))
 
     def _object_list_snapshot(self) -> list[RenderObject]:
         """Return a stable snapshot of objects for index-based rendering workflows."""
@@ -441,11 +544,15 @@ class Scene(SceneBase):
         obj: RenderObject,
         transform: mat4,
     ):
-        if self.should_hide_obj(obj):
+        # Inline hide check to avoid method call overhead on hot path.
+        _hide = obj._hide_attr  # noqa: SLF001
+        if _hide and getattr(self, _hide, False):
             return
 
-        model: Model = self.model(obj.model)
-        next_transform = cast("mat4", transform * obj.transform())
+        model: Model = obj.resolve_model(self)
+        # Avoid cast() call — pure overhead at runtime (typing.cast is a no-op).
+        # Access _transform directly to skip method call overhead.
+        next_transform: mat4 = transform * obj._transform  # type: ignore[assignment]  # noqa: SLF001
         model.draw(shader, next_transform, override_texture=obj.override_texture)
 
         for child in obj.children:
@@ -484,18 +591,19 @@ class Scene(SceneBase):
             r: int = idx & 0xFF
             g: int = (idx >> 8) & 0xFF
             b: int = (idx >> 16) & 0xFF
-            color = GlmVector3(r / 0xFF, g / 0xFF, b / 0xFF)
+            color = vec3(r / 0xFF, g / 0xFF, b / 0xFF)
             self.picker_shader.set_vector3("colorId", color)
             self._picker_render_object(obj, identity)
 
     def _picker_render_object(self, obj: RenderObject, transform: mat4):
-        if self.should_hide_obj(obj):
+        if self.should_hide_obj(obj) and not self.pick_include_hidden:
             return
 
-        model: Model = self.model(obj.model)
-        model.draw(self.picker_shader, cast("mat4", transform * obj.transform()))
+        world_transform = transform * obj._transform  # noqa: SLF001
+        model: Model = obj.resolve_model(self)
+        model.draw(self.picker_shader, world_transform)  # type: ignore[arg-type]
         for child in obj.children:
-            self._picker_render_object(child, obj.transform())
+            self._picker_render_object(child, world_transform)  # noqa: SLF001
 
     def pick(
         self,
@@ -509,7 +617,7 @@ class Scene(SceneBase):
 
     def select(
         self,
-        target: RenderObject | GITInstance,
+        target: RenderObject | GITObject,
         *,
         clear_existing: bool = True,
     ):
@@ -518,7 +626,7 @@ class Scene(SceneBase):
 
         SceneCache.build_cache(self)
         actual_target: RenderObject | None = None
-        if isinstance(target, GITInstance):
+        if isinstance(target, GITObject):
             for obj in self.objects.values():
                 if obj.data is target:
                     actual_target = obj
@@ -580,11 +688,11 @@ class Scene(SceneBase):
             GL_FLOAT,
         )[0][0]  # type: ignore[]
 
-        cursor_glm: GlmVector3 = unProject(
-            GlmVector3(float(x), float(self.camera.height - y), float(zpos)),
+        cursor_glm: vec3 = unProject(
+            vec3(float(x), float(self.camera.height - y), float(zpos)),
             view,
             projection,
-            Vector4(0, 0, self.camera.width, self.camera.height),
+            vec4(0, 0, self.camera.width, self.camera.height),
         )
         return GeomVector3(cursor_glm.x, cursor_glm.y, cursor_glm.z)
 

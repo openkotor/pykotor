@@ -5,7 +5,7 @@ from __future__ import annotations
 # Try to import defusedxml, fallback to ET if not available
 from xml.etree import ElementTree as ET
 
-try:  # sourcery skip: remove-redundant-exception, simplify-single-exception-tuple
+try:
     from defusedxml.ElementTree import fromstring as _fromstring
 
     ET.fromstring = _fromstring
@@ -13,6 +13,10 @@ except (ImportError, ModuleNotFoundError):
     print("warning: defusedxml is not available but recommended for security")
 
 from typing import TYPE_CHECKING
+
+import kaitaistruct
+
+from bioware_kaitai_formats.tlk_xml import TlkXml
 
 from pykotor.common.language import Language
 from pykotor.common.misc import ResRef
@@ -30,16 +34,7 @@ class TLKXMLReader(ResourceReader):
 
     XML is a human-readable format for easier editing of talk tables.
 
-    References:
-    ----------
-        Based on swkotor.exe TLK structure:
-        - CTlkTable::CTlkTable @ 0x0041d8d0 - Constructor for talk table manager
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table (loads .tlk and .tlkf files)
-        - CTlkFile::CTlkFile @ 0x0041d810 - Constructor for TLK file reader
-        - TLK resource type "TLK " @ 0x0073ecb0 - Resource type identifier
-        - "tlk" extension string @ 0x0074dd40 - File extension identifier
-
-        Note: XML format is PyKotor-specific conversion format, not a standard game format.
+    Note: XML format is PyKotor-specific conversion format, not a standard game format.
         The engine uses binary TLK format exclusively. XML conversion allows easier editing
         and integration with external tools.
     """
@@ -57,12 +52,19 @@ class TLKXMLReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> TLK:  # noqa: FBT001, FBT002, ARG002
         self._tlk = TLK()
 
-        data = decode_bytes_with_fallbacks(self._reader.read_bytes(self._reader.size()))
+        raw = self._reader.read_all()
+        try:
+            TlkXml.from_bytes(raw)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        data = decode_bytes_with_fallbacks(raw)
         xml = ET.fromstring(data)  # noqa: S314
 
         language = xml.get("language")
         if language is None:
-            raise ValueError("The 'language' attribute is missing from the root element of the TLK XML. This attribute is required to specify the language of the TLK file.")
+            raise ValueError(
+                "The 'language' attribute is missing from the root element of the TLK XML. This attribute is required to specify the language of the TLK file."
+            )
         self._tlk.language = Language(int(language))
         self._tlk.resize(len(xml))
         for string in xml:
@@ -70,20 +72,17 @@ class TLKXMLReader(ResourceReader):
             if id_str is None:
                 raise ValueError(
                     "The 'id' attribute is missing for a string element in the TLK XML. Each <string>"
-                    f" element must have an 'id' attribute to specify its index in the TLK file. Problematic element: {ET.tostring(string, encoding='unicode')}"
+                    f" element must have an 'id' attribute to specify its index in the TLK file. Problematic element: {ET.tostring(string, encoding='unicode')}",
                 )
             index = int(id_str)
 
-            text = string.text
-            if text is None:
-                raise ValueError(
-                    "The text content is missing for a string element in the TLK XML. Each <string>"
-                    f" element must contain text content. Problematic element with id '{id_str}': {ET.tostring(string, encoding='unicode')}"
-                )
+            text = string.text if string.text is not None else ""
             self._tlk.entries[index].text = text
 
             sound = string.get("sound")
-            self._tlk.entries[index].voiceover = ResRef(sound) if sound is not None else ResRef.from_blank()
+            self._tlk.entries[index].voiceover = (
+                ResRef(sound) if sound is not None else ResRef.from_blank()
+            )
 
         return self._tlk
 

@@ -43,97 +43,84 @@ class TestCapsule(TestCase):
             rim_capsule = Capsule(pathlib.Path(tmpdirname).joinpath("mixedcase", "capsule.rim"))
             assert len(rim_capsule) == 3
 
-    def test_add_to_rim_file(self):
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            temp_rim_path = pathlib.Path(tmpdirname).joinpath("capsule.rim")
-            shutil.copy(TEST_RIM_FILE, temp_rim_path)
-            resource_name = "image"
-            resource_type = ResourceType.PNG
-            resource_data = b"image data"
+    def _assert_existing_resources(
+        self, capsule: Capsule, resources: list[tuple[str, ResourceType, int]]
+    ):
+        for resource_name, resource_type, expected_length in resources:
+            with self.subTest(resource_name=resource_name, resource_type=resource_type.name):
+                assert capsule.contains(resource_name, resource_type, reload=True)
+                resource = capsule.resource(resource_name, resource_type)
+                assert len(resource) == expected_length
+                assert resource[:4].decode() == f"{resource_type.extension.upper():<4}"[:4]
 
-            rim_capsule = Capsule(temp_rim_path)
-            rim_capsule.add(resource_name, resource_type, resource_data)
+    def test_add_to_capsule_file(self):
+        cases = [
+            (
+                TEST_RIM_FILE,
+                "capsule.rim",
+                "image",
+                ResourceType.PNG,
+                b"image data",
+                [
+                    ("m13aa", ResourceType.ARE, 4096),
+                    ("m13aa", ResourceType.GIT, 51747),
+                    ("module", ResourceType.IFO, 1655),
+                ],
+            ),
+            (
+                TEST_ERF_FILE,
+                "capsule.mod",
+                "sound",
+                ResourceType.WAV,
+                b"sound data",
+                [
+                    ("001ebo", ResourceType.ARE, 4865),
+                    ("001ebo", ResourceType.GIT, 42565),
+                    ("001ebo", ResourceType.PTH, 19788),
+                ],
+            ),
+        ]
 
-            assert len(rim_capsule) == 4
+        for source_path, temp_name, resource_name, resource_type, resource_data, resources in cases:
+            with self.subTest(source_path=source_path, resource_type=resource_type.name):
+                with tempfile.TemporaryDirectory() as tmpdirname:
+                    temp_capsule_path = pathlib.Path(tmpdirname).joinpath(temp_name)
+                    shutil.copy(source_path, temp_capsule_path)
 
-            assert rim_capsule.contains("m13aa", ResourceType.ARE)
-            assert len(rim_capsule.resource("m13aa", ResourceType.ARE)) == 4096
-            assert rim_capsule.resource("m13aa", ResourceType.ARE)[:4].decode() == "ARE "
+                    capsule = Capsule(temp_capsule_path)
+                    capsule.add(resource_name, resource_type, resource_data)
 
-            assert rim_capsule.info("m13aa", ResourceType.GIT)
-            assert len(rim_capsule.resource("m13aa", ResourceType.GIT)) == 51747
-            assert rim_capsule.resource("m13aa", ResourceType.GIT)[:4].decode() == "GIT "
+                    assert len(capsule) == 4
+                    self._assert_existing_resources(capsule, resources)
 
-            assert rim_capsule.contains("module", ResourceType.IFO, reload=True)
-            assert len(rim_capsule.resource("module", ResourceType.IFO)) == 1655
-            assert rim_capsule.resource("module", ResourceType.IFO)[:4].decode() == "IFO "
+                    assert capsule.contains(resource_name, resource_type, reload=True)
+                    assert capsule.resource(resource_name, resource_type) == resource_data
 
-            assert rim_capsule.contains(resource_name, resource_type, reload=True)
-            assert len(rim_capsule.resource(resource_name, resource_type)) == 10
-            assert resource_data == rim_capsule.resource(resource_name, resource_type)
+    def test_existing_capsule_contents(self):
+        cases = [
+            (
+                TEST_ERF_FILE,
+                [
+                    ("001ebo", ResourceType.ARE, 4865),
+                    ("001ebo", ResourceType.GIT, 42565),
+                    ("001ebo", ResourceType.PTH, 19788),
+                ],
+            ),
+            (
+                TEST_RIM_FILE,
+                [
+                    ("m13aa", ResourceType.ARE, 4096),
+                    ("m13aa", ResourceType.GIT, 51747),
+                    ("module", ResourceType.IFO, 1655),
+                ],
+            ),
+        ]
 
-    def test_add_to_erf_file(self):
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            temp_erf_path = pathlib.Path(tmpdirname).joinpath("capsule.rim")
-            shutil.copy(TEST_ERF_FILE, temp_erf_path)
-            resource_name = "sound"
-            resource_type = ResourceType.WAV
-            resource_data = b"sound data"
-
-            erf_capsule = Capsule(temp_erf_path)
-            erf_capsule.add(resource_name, resource_type, resource_data)
-
-            assert len(erf_capsule) == 4
-
-            assert erf_capsule.contains("001ebo", ResourceType.ARE)
-            assert len(erf_capsule.resource("001ebo", ResourceType.ARE)) == 4865
-            assert erf_capsule.resource("001ebo", ResourceType.ARE)[:4].decode() == "ARE "
-
-            assert erf_capsule.info("001ebo", ResourceType.GIT)
-            assert len(erf_capsule.resource("001ebo", ResourceType.GIT)) == 42565
-            assert erf_capsule.resource("001ebo", ResourceType.GIT)[:4].decode() == "GIT "
-
-            assert erf_capsule.info("001ebo", ResourceType.PTH, reload=True)
-            assert len(erf_capsule.resource("001ebo", ResourceType.PTH)) == 19788
-            assert erf_capsule.resource("001ebo", ResourceType.PTH)[:4].decode() == "PTH "
-
-            assert erf_capsule.contains(resource_name, resource_type, reload=True)
-            assert len(erf_capsule.resource(resource_name, resource_type)) == 10
-            assert resource_data == erf_capsule.resource(resource_name, resource_type)
-
-    def test_erf_capsule(self):
-        erf_capsule = Capsule(TEST_ERF_FILE)
-
-        assert len(erf_capsule) == 3
-
-        assert erf_capsule.contains("001ebo", ResourceType.ARE)
-        assert len(erf_capsule.resource("001ebo", ResourceType.ARE)) == 4865
-        assert erf_capsule.resource("001ebo", ResourceType.ARE)[:4].decode() == "ARE "
-
-        assert erf_capsule.info("001ebo", ResourceType.GIT)
-        assert len(erf_capsule.resource("001ebo", ResourceType.GIT)) == 42565
-        assert erf_capsule.resource("001ebo", ResourceType.GIT)[:4].decode() == "GIT "
-
-        assert erf_capsule.info("001ebo", ResourceType.PTH, reload=True)
-        assert len(erf_capsule.resource("001ebo", ResourceType.PTH)) == 19788
-        assert erf_capsule.resource("001ebo", ResourceType.PTH)[:4].decode() == "PTH "
-
-    def test_rim_capsule(self):
-        rim_capsule = Capsule(TEST_RIM_FILE)
-
-        assert len(rim_capsule) == 3
-
-        assert rim_capsule.contains("m13aa", ResourceType.ARE)
-        assert len(rim_capsule.resource("m13aa", ResourceType.ARE)) == 4096
-        assert rim_capsule.resource("m13aa", ResourceType.ARE)[:4].decode() == "ARE "
-
-        assert rim_capsule.info("m13aa", ResourceType.GIT)
-        assert len(rim_capsule.resource("m13aa", ResourceType.GIT)) == 51747
-        assert rim_capsule.resource("m13aa", ResourceType.GIT)[:4].decode() == "GIT "
-
-        assert rim_capsule.contains("module", ResourceType.IFO, reload=True)
-        assert len(rim_capsule.resource("module", ResourceType.IFO)) == 1655
-        assert rim_capsule.resource("module", ResourceType.IFO)[:4].decode() == "IFO "
+        for source_path, resources in cases:
+            with self.subTest(source_path=source_path):
+                capsule = Capsule(source_path)
+                assert len(capsule) == 3
+                self._assert_existing_resources(capsule, resources)
 
 
 if __name__ == "__main__":

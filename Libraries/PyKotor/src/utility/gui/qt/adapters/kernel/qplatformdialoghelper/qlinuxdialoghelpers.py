@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from qtpy.QtWidgets import QFileDialog
 
-from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper import QFileDialogPlatformHelper
+from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper import (
+    QFileDialogPlatformHelper,
+)
 
 
 class LinuxFileDialogHelper(QFileDialogPlatformHelper):
@@ -19,7 +21,9 @@ class LinuxFileDialogHelper(QFileDialogPlatformHelper):
         if self._options.acceptMode() == QFileDialog.AcceptMode.AcceptOpen:
             dialog = Gtk.FileChooserDialog(
                 title="Open File",
-                action=Gtk.FileChooserAction.OPEN if self._options.fileMode() != QFileDialog.FileMode.Directory else Gtk.FileChooserAction.SELECT_FOLDER,
+                action=Gtk.FileChooserAction.OPEN
+                if self._options.fileMode() != QFileDialog.FileMode.Directory
+                else Gtk.FileChooserAction.SELECT_FOLDER,
             )
             dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
             dialog.add_button(Gtk.STOCK_OPEN, Gtk.ResponseType.OK)

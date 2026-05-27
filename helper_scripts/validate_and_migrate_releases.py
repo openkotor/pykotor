@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Validate and migrate releases from NickHugi/PyKotor to OldRepublicDevs/PyKotor.
+Validate and migrate releases from NickHugi/PyKotor to OpenKotOR/PyKotor.
 Ensures 100% accuracy with full metadata preservation.
 """
 
@@ -15,15 +15,27 @@ import time
 from typing import Any
 
 
-def run_gh_api(endpoint: str, method: str = "GET", data: dict[str, Any] | None = None) -> dict[str, Any] | None:
+def run_gh_api(
+    endpoint: str, method: str = "GET", data: dict[str, Any] | None = None
+) -> dict[str, Any] | None:
     """Run a GitHub API command and return JSON result."""
     cmd = ["gh", "api", endpoint, "--method", method]
     if data:
         cmd.extend(["--input", "-"])
         json_data = json.dumps(data)
-        result = subprocess.run(cmd, check=False, input=json_data, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(
+            cmd,
+            check=False,
+            input=json_data,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
     else:
-        result = subprocess.run(cmd, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(
+            cmd, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace"
+        )
 
     if result.returncode != 0:
         if result.stderr and "rate limit" not in result.stderr.lower():
@@ -70,7 +82,9 @@ def compare_releases(source: dict[str, Any], target: dict[str, Any]) -> tuple[bo
         differences.append(f"name: '{source.get('name')}' != '{target.get('name')}'")
 
     if source.get("body") != target.get("body"):
-        differences.append(f"body: length {len(source.get('body', ''))} != {len(target.get('body', ''))}")
+        differences.append(
+            f"body: length {len(source.get('body', ''))} != {len(target.get('body', ''))}"
+        )
 
     if source.get("draft", False) != target.get("draft", False):
         differences.append(f"draft: {source.get('draft')} != {target.get('draft')}")
@@ -113,7 +127,7 @@ def update_release(target_repo: str, release_id: int, release_data: dict[str, An
 
 def main():
     source_repo = "NickHugi/PyKotor"
-    target_repo = "OldRepublicDevs/PyKotor"
+    target_repo = "OpenKotOR/PyKotor"
 
     print("=" * 70)
     print("VALIDATING AND MIGRATING RELEASES - 100% ACCURACY CHECK")
@@ -234,7 +248,9 @@ def main():
                 print(f"  ERROR: {tag_name} still missing!")
                 all_correct = False
             else:
-                matches, differences = compare_releases(source_release, final_target_by_tag[tag_name])
+                matches, differences = compare_releases(
+                    source_release, final_target_by_tag[tag_name]
+                )
                 if not matches:
                     print(f"  ERROR: {tag_name} still mismatched!")
                     for diff in differences:

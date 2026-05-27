@@ -48,7 +48,6 @@ class StructuredDiffEngine:
         right_id: str,
     ) -> TwoDADiffResult:
         """Compare two 2DA files and return structured diff."""
-
         try:
             left_2da = read_2da(left_data)
             right_2da = read_2da(right_data)
@@ -116,7 +115,7 @@ class StructuredDiffEngine:
                         diff_type=diff_type,
                         left_header=left_header,
                         right_header=right_header,
-                    )
+                    ),
                 )
 
         return header_diffs
@@ -142,7 +141,7 @@ class StructuredDiffEngine:
                     column_index=right_header_to_index[col_name],
                     column_name=col_name,
                     diff_type=DiffType.ADDED,
-                )
+                ),
             )
 
         # Removed columns
@@ -152,7 +151,7 @@ class StructuredDiffEngine:
                     column_index=left_header_to_index[col_name],
                     column_name=col_name,
                     diff_type=DiffType.REMOVED,
-                )
+                ),
             )
 
         return column_diffs
@@ -174,7 +173,9 @@ class StructuredDiffEngine:
         left_height = left_2da.get_height()
         right_height = right_2da.get_height()
 
-        common_headers: list[str] = [h for h in left_2da.get_headers() if h in right_2da.get_headers()]
+        common_headers: list[str] = [
+            h for h in left_2da.get_headers() if h in right_2da.get_headers()
+        ]
 
         # Check existing rows
         for row_idx in range(min(left_height, right_height)):
@@ -193,7 +194,7 @@ class StructuredDiffEngine:
                             diff_type=DiffType.MODIFIED,
                             left_value=left_value,
                             right_value=right_value,
-                        )
+                        ),
                     )
 
             if cell_diffs:
@@ -202,7 +203,7 @@ class StructuredDiffEngine:
                         row_index=row_idx,
                         diff_type=DiffType.MODIFIED,
                         cell_diffs=cell_diffs,
-                    )
+                    ),
                 )
 
         # Added rows
@@ -220,7 +221,7 @@ class StructuredDiffEngine:
                             diff_type=DiffType.ADDED,
                             left_value=None,
                             right_value=cell_value,
-                        )
+                        ),
                     )
 
                 row_diffs.append(
@@ -228,12 +229,15 @@ class StructuredDiffEngine:
                         row_index=row_idx,
                         diff_type=DiffType.ADDED,
                         cell_diffs=cell_diffs,
-                    )
+                    ),
                 )
 
         # Removed rows
         if left_height > right_height:
-            row_diffs.extend(RowDiff(row_index=row_idx, diff_type=DiffType.REMOVED, cell_diffs=[]) for row_idx in range(right_height, left_height))
+            row_diffs.extend(
+                RowDiff(row_index=row_idx, diff_type=DiffType.REMOVED, cell_diffs=[])
+                for row_idx in range(right_height, left_height)
+            )
 
         return row_diffs
 
@@ -349,9 +353,11 @@ class StructuredDiffEngine:
                         field_path=field_path,
                         diff_type=DiffType.ADDED,
                         left_value=None,
-                        right_value=self._get_gff_field_value(right_struct, field_label, field_type),
+                        right_value=self._get_gff_field_value(
+                            right_struct, field_label, field_type
+                        ),
                         field_type=field_type.name,
-                    )
+                    ),
                 )
             except (ValueError, KeyError):  # noqa: BLE001
                 print("Full traceback:")
@@ -378,7 +384,7 @@ class StructuredDiffEngine:
                         left_value=self._get_gff_field_value(left_struct, field_label, field_type),
                         right_value=None,
                         field_type=field_type.name,
-                    )
+                    ),
                 )
             except (ValueError, KeyError):  # noqa: S112
                 continue
@@ -451,11 +457,39 @@ class StructuredDiffEngine:
                 )
 
         # Scalar comparison
-        left_value: int | float | str | ResRef | LocalizedString | Vector3 | Vector4 | GFFStruct | GFFList | bytes | None = self._get_gff_field_value(
-            left_struct, field_label, left_field_type
+        left_value: (
+            int
+            | float
+            | str
+            | ResRef
+            | LocalizedString
+            | Vector3
+            | Vector4
+            | GFFStruct
+            | GFFList
+            | bytes
+            | None
+        ) = self._get_gff_field_value(
+            left_struct,
+            field_label,
+            left_field_type,
         )  # noqa: E501
-        right_value: int | float | str | ResRef | LocalizedString | Vector3 | Vector4 | GFFStruct | GFFList | bytes | None = self._get_gff_field_value(
-            right_struct, field_label, right_field_type
+        right_value: (
+            int
+            | float
+            | str
+            | ResRef
+            | LocalizedString
+            | Vector3
+            | Vector4
+            | GFFStruct
+            | GFFList
+            | bytes
+            | None
+        ) = self._get_gff_field_value(
+            right_struct,
+            field_label,
+            right_field_type,
         )  # noqa: E501
 
         if not self._gff_values_equal(left_value, right_value):
@@ -474,7 +508,19 @@ class StructuredDiffEngine:
         struct: GFFStruct,
         field_label: str,
         field_type: GFFFieldType,
-    ) -> int | float | str | ResRef | LocalizedString | Vector3 | Vector4 | GFFStruct | GFFList | bytes | None:
+    ) -> (
+        int
+        | float
+        | str
+        | ResRef
+        | LocalizedString
+        | Vector3
+        | Vector4
+        | GFFStruct
+        | GFFList
+        | bytes
+        | None
+    ):
         """Get GFF field value."""
         type_getters = {
             GFFFieldType.UInt8: struct.get_uint8,
@@ -547,7 +593,9 @@ class StructuredDiffEngine:
             if left_entry is None or right_entry is None:
                 continue
 
-            if left_entry.text != right_entry.text or str(left_entry.voiceover) != str(right_entry.voiceover):
+            if left_entry.text != right_entry.text or str(left_entry.voiceover) != str(
+                right_entry.voiceover
+            ):
                 entry_diffs.append(
                     TLKEntryDiff(
                         entry_id=idx,
@@ -556,7 +604,7 @@ class StructuredDiffEngine:
                         right_text=right_entry.text,
                         left_voiceover=str(left_entry.voiceover),
                         right_voiceover=str(right_entry.voiceover),
-                    )
+                    ),
                 )
 
         # Added entries
@@ -573,7 +621,7 @@ class StructuredDiffEngine:
                         right_text=right_entry.text,
                         left_voiceover=None,
                         right_voiceover=str(right_entry.voiceover),
-                    )
+                    ),
                 )
 
         # Removed entries
@@ -590,7 +638,7 @@ class StructuredDiffEngine:
                         right_text=None,
                         left_voiceover=str(left_entry.voiceover),
                         right_voiceover=None,
-                    )
+                    ),
                 )
 
         # Determine overall diff type

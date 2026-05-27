@@ -6,6 +6,10 @@ import io
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from bioware_kaitai_formats.tga import Tga
+
 from pykotor.resource.formats.tpc.tga import read_tga
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCTextureFormat
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
@@ -88,7 +92,7 @@ class TPCTGAReader(ResourceReader):
 
     References:
     ----------
-        See tpc_data module docstring for engine addresses (K1 + TSL TODO). Standard TGA specification for header format.
+        Standard TGA header layout (Truevision specification).
 
     """
 
@@ -152,7 +156,11 @@ class TPCTGAReader(ResourceReader):
                             self._reader.read_uint8(),
                             self._reader.read_uint8(),
                         )
-                        pixel = [r, g, b, self._reader.read_uint8()] if bits_per_pixel == 32 else [r, g, b, 255]
+                        pixel = (
+                            [r, g, b, self._reader.read_uint8()]
+                            if bits_per_pixel == 32
+                            else [r, g, b, 255]
+                        )
                     elif color_map:
                         index = self._reader.read_uint8()
                         color = list(color_map[index])
@@ -170,7 +178,11 @@ class TPCTGAReader(ResourceReader):
                         self._reader.read_uint8(),
                         self._reader.read_uint8(),
                     )
-                    pixel = [r, g, b, self._reader.read_uint8()] if bits_per_pixel == 32 else [r, g, b, 255]
+                    pixel = (
+                        [r, g, b, self._reader.read_uint8()]
+                        if bits_per_pixel == 32
+                        else [r, g, b, 255]
+                    )
                 elif color_map:
                     index = self._reader.read_uint8()
                     color = list(color_map[index])
@@ -202,6 +214,10 @@ class TPCTGAReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> TPC:  # noqa: FBT001, FBT002, ARG002
         self._tpc = TPC()
         raw = self._reader.read_all()
+        try:
+            Tga.from_bytes(raw)
+        except kaitaistruct.KaitaiStructError:
+            pass
         image = read_tga(io.BytesIO(raw))
 
         width, height = image.width, image.height
@@ -227,7 +243,9 @@ class TPCTGAReader(ResourceReader):
             for row in range(face_height):
                 src_offset = ((face * face_height) + row) * width * 4
                 dst_offset = row * width * 4
-                slice_rgba[dst_offset : dst_offset + width * 4] = rgba[src_offset : src_offset + width * 4]
+                slice_rgba[dst_offset : dst_offset + width * 4] = rgba[
+                    src_offset : src_offset + width * 4
+                ]
             layer.set_single(width, face_height, slice_rgba, TPCTextureFormat.RGBA)
             self._tpc.layers.append(layer)
 
@@ -246,7 +264,7 @@ class TPCTGAWriter(ResourceWriter):
 
     References:
     ----------
-        See tpc_data module docstring for engine addresses (K1 + TSL TODO). Standard TGA specification for header format.
+        Standard TGA header layout (Truevision specification).
 
     """
 

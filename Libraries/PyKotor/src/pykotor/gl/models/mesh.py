@@ -6,13 +6,14 @@ import ctypes
 
 from typing import TYPE_CHECKING
 
+from pykotor.gl import mat4, value_ptr
 from pykotor.gl.compat import (
     has_pyopengl,
     missing_constant,
     missing_gl_func,
     safe_gl_error_module,
 )
-from pykotor.gl.glm_compat import Vector3, Vector4, mat4, value_ptr
+from utility.common.geometry import Vector3, Vector4
 
 HAS_PYOPENGL = has_pyopengl()
 gl_error = safe_gl_error_module()
@@ -25,7 +26,13 @@ if HAS_PYOPENGL:
     from OpenGL.raw.GL.VERSION.GL_1_0 import GL_UNSIGNED_SHORT
     from OpenGL.raw.GL.VERSION.GL_1_1 import glDrawElements
     from OpenGL.raw.GL.VERSION.GL_1_3 import GL_TEXTURE0, GL_TEXTURE1, glActiveTexture
-    from OpenGL.raw.GL.VERSION.GL_1_5 import GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, glBindBuffer, glBufferData
+    from OpenGL.raw.GL.VERSION.GL_1_5 import (
+        GL_ARRAY_BUFFER,
+        GL_ELEMENT_ARRAY_BUFFER,
+        GL_STATIC_DRAW,
+        glBindBuffer,
+        glBufferData,
+    )
     from OpenGL.raw.GL.VERSION.GL_2_0 import glEnableVertexAttribArray
     from OpenGL.raw.GL.VERSION.GL_3_0 import glBindVertexArray
 else:
@@ -49,12 +56,17 @@ else:
     GL_STATIC_DRAW = missing_constant("GL_STATIC_DRAW")
 
 from pykotor.gl.native import fastmath
+from pykotor.gl.native.gl_accel import (
+    c_available as _gl_accel_c_available,
+    transform_bounds as _c_transform_bounds,
+)
 
 if TYPE_CHECKING:
-    from pykotor.gl.glm_compat import mat4
+    from pykotor.gl import mat4
     from pykotor.gl.models.node import Node
     from pykotor.gl.scene import Scene
     from pykotor.gl.shader import Shader
+    from pykotor.gl.shader.texture import Texture
 
 
 class Mesh:
@@ -63,30 +75,31 @@ class Mesh:
     Performance notes:
     - Uses __slots__ to reduce memory and improve attribute access speed
     - VAO/VBO/EBO are created once and reused
-    - Texture lookups go through scene.texture() which has its own caching
-
-    Note: We intentionally do NOT cache texture references at the mesh level because:
-    1. Textures can be loaded asynchronously and replaced
-    2. Scene.texture() already provides O(1) dict lookup
-    3. Caching stale texture references causes rendering bugs (wrong textures)
+    - Texture references are cached at the mesh level after initial resolution.
+      Each frame we check if the scene's texture dict entry still matches our
+      cached object; if not (e.g. async load completed), we re-resolve.
     """
 
     __slots__ = (
-        "_scene",
-        "_node",
-        "texture",
-        "lightmap",
-        "vertex_data",
-        "mdx_size",
-        "mdx_vertex",
-        "mdx_texture",
-        "mdx_lightmap",
-        "_index_data",
-        "_vao",
-        "_vbo",
+        "_cached_lightmap",
+        "_cached_lightmap_name",
+        "_cached_texture",
+        "_cached_texture_name",
         "_ebo",
         "_face_count",
+        "_index_data",
+        "_node",
+        "_scene",
+        "_vao",
+        "_vbo",
         "_vertex_blob_cache",
+        "lightmap",
+        "mdx_lightmap",
+        "mdx_size",
+        "mdx_texture",
+        "mdx_vertex",
+        "texture",
+        "vertex_data",
     )
 
     def __init__(
@@ -109,6 +122,12 @@ class Mesh:
 
         self.texture: str = "NULL"
         self.lightmap: str = "NULL"
+
+        # Cached texture references (invalidated when scene replaces texture entry)
+        self._cached_texture: Texture | None = None
+        self._cached_texture_name: str = ""
+        self._cached_lightmap: Texture | None = None
+        self._cached_lightmap_name: str = ""
 
         self.vertex_data: bytearray = vertex_data
         self.mdx_size: int = block_size
@@ -137,26 +156,60 @@ class Mesh:
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._ebo)
             # Convert element_data bytearray to MemoryView
             element_data_mv = memoryview(element_data)
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, len(element_data), element_data_mv, GL_STATIC_DRAW)
+            glBufferData(
+                GL_ELEMENT_ARRAY_BUFFER, len(element_data), element_data_mv, GL_STATIC_DRAW
+            )
 
             if data_bitflags & 0x0001:
                 glEnableVertexAttribArray(1)
-                glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, block_size, ctypes.c_void_p(vertex_offset))
+                glVertexAttribPointer(
+                    1, 3, GL_FLOAT, GL_FALSE, block_size, ctypes.c_void_p(vertex_offset)
+                )
 
             if data_bitflags & 0x0020 and texture and texture != "NULL":
                 glEnableVertexAttribArray(3)
-                glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, block_size, ctypes.c_void_p(texture_offset))
+                glVertexAttribPointer(
+                    3, 2, GL_FLOAT, GL_FALSE, block_size, ctypes.c_void_p(texture_offset)
+                )
                 self.texture = texture
 
             if data_bitflags & 0x0004 and lightmap and lightmap != "NULL":
                 glEnableVertexAttribArray(4)
-                glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, block_size, ctypes.c_void_p(lightmap_offset))
+                glVertexAttribPointer(
+                    4, 2, GL_FLOAT, GL_FALSE, block_size, ctypes.c_void_p(lightmap_offset)
+                )
                 self.lightmap = lightmap
 
             glBindBuffer(GL_ARRAY_BUFFER, 0)
             glBindVertexArray(0)
 
         self._face_count: int = len(element_data) // 2
+
+    def _resolve_texture(self, tex_name: str, *, lightmap: bool = False) -> Texture:
+        """Resolve a texture by name, using a per-mesh cache to avoid repeated dict lookups.
+
+        The cache is invalidated when the scene's texture dict entry changes
+        (e.g. async texture load completes and replaces the placeholder).
+        """
+        if lightmap:
+            if self._cached_lightmap is not None and self._cached_lightmap_name == tex_name:
+                # Verify scene hasn't replaced this entry (async load completed)
+                scene_tex = self._scene.textures.get(tex_name)
+                if scene_tex is self._cached_lightmap:
+                    return self._cached_lightmap
+            resolved = self._scene.texture(tex_name, lightmap=True)
+            self._cached_lightmap = resolved
+            self._cached_lightmap_name = tex_name
+            return resolved
+        else:
+            if self._cached_texture is not None and self._cached_texture_name == tex_name:
+                scene_tex = self._scene.textures.get(tex_name)
+                if scene_tex is self._cached_texture:
+                    return self._cached_texture
+            resolved = self._scene.texture(tex_name)
+            self._cached_texture = resolved
+            self._cached_texture_name = tex_name
+            return resolved
 
     def draw(
         self,
@@ -176,10 +229,10 @@ class Mesh:
 
         shader.set_matrix4("model", transform)
 
-        # Get textures from scene (scene.texture() has O(1) dict lookup + caching)
+        # Use cached texture references (re-resolves if scene replaced the entry)
         tex_name = override_texture if override_texture else self.texture
-        texture = self._scene.texture(tex_name)
-        lightmap = self._scene.texture(self.lightmap, lightmap=True)
+        texture = self._resolve_texture(tex_name)
+        lightmap = self._resolve_texture(self.lightmap, lightmap=True)
 
         glActiveTexture(GL_TEXTURE0)
         texture.use()
@@ -194,14 +247,34 @@ class Mesh:
         self,
         transform: mat4,
     ) -> tuple[Vector3, Vector3] | None:
-        if not fastmath.available() or self.mdx_size <= 0:
+        if self.mdx_size <= 0:
             return None
         vertex_count = len(self.vertex_data) // self.mdx_size
         if vertex_count == 0:
             return None
+
+        # Prefer compiled C extension (no CFFI runtime overhead)
+        if _gl_accel_c_available():
+            import struct
+
+            mat_bytes = struct.pack("16f", *[value_ptr(transform)[i] for i in range(16)])
+            bounds_min, bounds_max = _c_transform_bounds(
+                bytes(self.vertex_data),
+                vertex_count,
+                self.mdx_size,
+                self.mdx_vertex,
+                mat_bytes,
+            )
+            return Vector3(*bounds_min), Vector3(*bounds_max)
+
+        # Fall back to CFFI version
+        if not fastmath.available():
+            return None
         mv = memoryview(self.vertex_data)
         matrix_values = [value_ptr(transform)[i] for i in range(16)]
-        bounds_min, bounds_max = fastmath.transform_bounds(mv, vertex_count, self.mdx_size, self.mdx_vertex, matrix_values)
+        bounds_min, bounds_max = fastmath.transform_bounds(
+            mv, vertex_count, self.mdx_size, self.mdx_vertex, matrix_values
+        )
         return Vector3(*bounds_min), Vector3(*bounds_max)
 
     def bounds(

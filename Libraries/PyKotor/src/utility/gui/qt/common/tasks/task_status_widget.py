@@ -3,7 +3,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 
 from qtpy.QtCore import QTimer, Qt, Signal
-from qtpy.QtWidgets import QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QProgressBar, QPushButton, QVBoxLayout, QWidget
+from qtpy.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QProgressBar,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from utility.gui.qt.common.tasks.actions_executor import TaskStatus
 
@@ -95,7 +104,7 @@ class TaskStatusWidget(QWidget):
                 width: 10px;
                 margin: 0.5px;
             }
-            """
+            """,
         )
         return progress_bar
 
@@ -118,7 +127,7 @@ class TaskStatusWidget(QWidget):
                 background-color: #3498db;
                 color: white;
             }
-            """
+            """,
         )
         return task_list
 
@@ -226,7 +235,7 @@ class TaskStatusWidget(QWidget):
                 width: 5px;
                 margin: 0.5px;
             }
-            """
+            """,
         )
         return progress_bar
 
@@ -234,19 +243,27 @@ class TaskStatusWidget(QWidget):
         """Create a layout with buttons for controlling a task."""
         button_layout = QHBoxLayout()
 
-        cancel_button = self._create_button("Cancel", "#e74c3c", "#c0392b", self._create_cancel_callback(task.id))
+        cancel_button = self._create_button(
+            "Cancel", "#e74c3c", "#c0392b", self._create_cancel_callback(task.id)
+        )
         button_layout.addWidget(cancel_button)
 
-        pause_resume_button = self._create_button("Pause", "#f39c12", "#d35400", self._create_pause_resume_callback(task.id))
+        pause_resume_button = self._create_button(
+            "Pause", "#f39c12", "#d35400", self._create_pause_resume_callback(task.id)
+        )
         button_layout.addWidget(pause_resume_button)
 
-        retry_button = self._create_button("Retry", "#3498db", "#2980b9", self._create_retry_callback(task.id))
+        retry_button = self._create_button(
+            "Retry", "#3498db", "#2980b9", self._create_retry_callback(task.id)
+        )
         retry_button.setVisible(False)
         button_layout.addWidget(retry_button)
 
         return button_layout
 
-    def _create_button(self, text: str, bg_color: str, hover_color: str, on_click: Callable[[], None]) -> QPushButton:
+    def _create_button(
+        self, text: str, bg_color: str, hover_color: str, on_click: Callable[[], None]
+    ) -> QPushButton:
         """Create and style a button with the given parameters."""
         button = QPushButton(text)
         button.clicked.connect(on_click)
@@ -262,7 +279,7 @@ class TaskStatusWidget(QWidget):
             QPushButton:hover {{
                 background-color: {hover_color};
             }}
-            """
+            """,
         )
         return button
 
@@ -328,7 +345,10 @@ class TaskStatusWidget(QWidget):
         pause_resume_button = task_widget.widget.findChild(QPushButton, "Pause")
         retry_button = task_widget.widget.findChild(QPushButton, "Retry")
 
-        if not all(isinstance(button, QPushButton) for button in (cancel_button, pause_resume_button, retry_button)):
+        if not all(
+            isinstance(button, QPushButton)
+            for button in (cancel_button, pause_resume_button, retry_button)
+        ):
             raise TypeError("Expected QPushButton for all buttons")
 
         task_widget.progress_bar.setValue(int(task.progress * 100))
@@ -392,7 +412,7 @@ class TaskStatusWidget(QWidget):
             QProgressBar::chunk {
                 background-color: #27ae60;
             }
-            """
+            """,
         )
 
     def _update_failed_task_widget(
@@ -413,7 +433,7 @@ class TaskStatusWidget(QWidget):
             QProgressBar::chunk {
                 background-color: #e74c3c;
             }
-            """
+            """,
         )
 
     def _update_cancelled_task_widget(
@@ -434,7 +454,7 @@ class TaskStatusWidget(QWidget):
             QProgressBar::chunk {
                 background-color: #f39c12;
             }
-            """
+            """,
         )
 
     def _update_paused_task_widget(
@@ -455,7 +475,7 @@ class TaskStatusWidget(QWidget):
             QProgressBar::chunk {
                 background-color: #3498db;
             }
-            """
+            """,
         )
 
     def _update_active_task_widget(
@@ -477,11 +497,15 @@ class TaskStatusWidget(QWidget):
             QProgressBar::chunk {
                 background-color: #2ecc71;
             }
-            """
+            """,
         )
 
     def clear_completed_tasks(self):
-        completed_tasks = [task_id for task_id, task in self.dispatcher.get_all_tasks() if task.status == TaskStatus.COMPLETED]
+        completed_tasks = [
+            task_id
+            for task_id, task in self.dispatcher.get_all_tasks()
+            if task.status == TaskStatus.COMPLETED
+        ]
         for task_id in completed_tasks:
             self.remove_task(task_id)
 

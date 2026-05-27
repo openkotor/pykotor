@@ -26,7 +26,13 @@ from typing import TYPE_CHECKING, cast
 from pykotor.common.language import Gender, Language, LocalizedString
 from pykotor.common.misc import Color, ResRef
 from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.generics.git import GITDoor, GITModuleLink, GITTrigger, construct_git, dismantle_git
+from pykotor.resource.generics.git import (
+    GITDoor,
+    GITModuleLink,
+    GITTrigger,
+    construct_git,
+    dismantle_git,
+)
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
@@ -513,8 +519,10 @@ class TestGITSerializeStrictTyping(unittest.TestCase):
         self.assertEqual(result["linked_to_flags"], GITModuleLink.ToDoor.value)
 
     def test_git_missing_area_properties_and_empty_lists(self):
-        """AreaProperties omit → defaults (0); lists omit → empty. K1 LoadGIT 0x0050dd80, LoadProperties 0x00507490."""
-        minimal_xml = """<gff3><struct id="-1"><byte label="UseTemplates">1</byte></struct></gff3>"""
+        """AreaProperties omit -> defaults (0); lists omit -> empty. K1 LoadGIT 0x0050dd80, LoadProperties 0x00507490."""
+        minimal_xml = (
+            """<gff3><struct id="-1"><byte label="UseTemplates">1</byte></struct></gff3>"""
+        )
         gff = read_gff(minimal_xml.encode(), file_format=ResourceType.GFF_XML)
         git = construct_git(gff)
         self.assertEqual(git.ambient_volume, 0)

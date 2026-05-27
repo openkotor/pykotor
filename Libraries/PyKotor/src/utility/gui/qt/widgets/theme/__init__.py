@@ -13,14 +13,14 @@ from utility.gui.qt.widgets.theme.theme_selector_dialog import ThemeSelectorDial
 from utility.gui.qt.widgets.theme.theme_types import ThemeConfig, ThemeSources
 
 __all__ = [
-    "ThemeManager",
+    "ThemeConfig",
     "ThemeDialog",
+    "ThemeManager",
     "ThemeSelectorDialog",
     "ThemeSources",
-    "ThemeConfig",
-    "build_builtin_theme_configs",
     "apply_style",
-    "get_original_style",
     "apply_tooltip_style_to_app",
+    "build_builtin_theme_configs",
+    "get_original_style",
     "get_tooltip_stylesheet",
 ]

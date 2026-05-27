@@ -4,7 +4,15 @@ from typing import TYPE_CHECKING, Any
 
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QColor
-from qtpy.QtWidgets import QApplication, QComboBox, QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
+from qtpy.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QDialog,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+)
 
 from utility.gui.qt.widgets.theme.theme_apply import apply_style, get_original_style
 from utility.gui.qt.widgets.theme.theme_manager import ThemeManager
@@ -49,8 +57,7 @@ class ThemeDialog(QDialog):
         saturation: int = 100,
         hue_shift: int = 0,
     ) -> QColor:
-        """
-        Adjusts the color's lightness, saturation, and hue.
+        """Adjusts the color's lightness, saturation, and hue.
 
         Args:
             color: Input color to adjust.
@@ -114,11 +121,15 @@ class ThemeDialog(QDialog):
         sel_lower = selection.lower()
         if sel_lower in self._theme_names:
             style_name = self._manager.get_original_style()
-            self._manager.apply_theme_and_style(selection, style_name, fallback_theme="sourcegraph-dark", fallback_style="Fusion")
+            self._manager.apply_theme_and_style(
+                selection, style_name, fallback_theme="sourcegraph-dark", fallback_style="Fusion"
+            )
         elif sel_lower in self._style_names:
             themes = self._manager.get_available_themes()
             theme_name = themes[0] if themes else "sourcegraph-dark"
-            self._manager.apply_theme_and_style(theme_name, selection, fallback_theme="sourcegraph-dark", fallback_style="Fusion")
+            self._manager.apply_theme_and_style(
+                theme_name, selection, fallback_theme="sourcegraph-dark", fallback_style="Fusion"
+            )
 
     @classmethod
     def apply_style(
@@ -132,8 +143,7 @@ class ThemeDialog(QDialog):
         apply_style(app, sheet=sheet, style=style, palette=palette)
 
     def get_theme(self) -> str:
-        """
-        Get the selected theme.
+        """Get the selected theme.
 
         Returns:
             The name of the selected theme.

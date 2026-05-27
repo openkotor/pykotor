@@ -38,7 +38,6 @@ from pykotor.extract.installation import SearchLocation
 from pykotor.resource.formats.bwm import bytes_bwm, read_bwm
 from pykotor.resource.formats.erf import read_erf
 from pykotor.resource.formats.rim import read_rim
-from utility.misc import is_valid_path
 from pykotor.resource.formats.tpc import read_tpc, write_tpc
 from pykotor.resource.generics.utd import read_utd
 from pykotor.resource.type import ResourceType
@@ -46,6 +45,7 @@ from pykotor.tools import door as door_tools
 from pykotor.tools.model import iterate_lightmaps, iterate_textures
 from pykotor.tools.module import get_resource_priority
 from utility.common.geometry import Vector2, Vector3
+from utility.misc import is_valid_path
 
 # Qt imports for minimap generation
 # Set offscreen mode by default to avoid display issues in headless environments
@@ -134,7 +134,9 @@ def _resolve_resource_with_priority(
     priority = get_resource_priority(best_location, installation)
     priority_names = ["Override", "Modules (.mod)", "Modules (.rim)", "Chitin"]
     if logger and len(location_list) > 1:
-        logger.debug(f"Found {len(location_list)} locations for {resname}.{restype.extension}, using {priority_names[priority]} (highest priority)")
+        logger.debug(
+            f"Found {len(location_list)} locations for {resname}.{restype.extension}, using {priority_names[priority]} (highest priority)"
+        )
 
     # Read the resource data
     try:
@@ -143,7 +145,9 @@ def _resolve_resource_with_priority(
             data = f.read(best_location.size)
         return data
     except Exception as e:  # noqa: BLE001
-        logger.warning(f"Failed to read resource {resname}.{restype.extension} from {best_location.filepath}: {e}")
+        logger.warning(
+            f"Failed to read resource {resname}.{restype.extension} from {best_location.filepath}: {e}"
+        )
         return None
 
 
@@ -253,13 +257,17 @@ def _get_component_name_mapping(kit_id: str | None, model_names: list[str]) -> d
             if model_lower in sithbase_mapping:
                 mapping[model_lower] = sithbase_mapping[model_lower]
             else:
-                mapping[model_lower] = _component_name_for_model(model_name, force_component_prefix=True)
+                mapping[model_lower] = _component_name_for_model(
+                    model_name, force_component_prefix=True
+                )
 
     # Default: use model names as-is (sanitized)
     if not mapping:
         for model_name in model_names:
             model_lower = model_name.lower()
-            mapping[model_lower] = _component_name_for_model(model_name, force_component_prefix=False)
+            mapping[model_lower] = _component_name_for_model(
+                model_name, force_component_prefix=False
+            )
 
     return mapping
 
@@ -317,15 +325,7 @@ def extract_kit(
 
     References:
     ----------
-        Based on swkotor.exe ERF structure:
-        - See pykotor.resource.formats.erf.erf_data for addresses (K1 + TSL TODO). CExoEncapsulatedFile, AddEncapsulatedContents.
-        Original BioWare engine binaries
-
-    Derivations and Other Implementations:
-    ----------
-    https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleRoom.ts:331-342
-    https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleDoor.ts:992
-    https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModulePlaceable.ts:684
+        Observed retail KotOR ERF/RIM module packaging (see ``pykotor.resource.formats.erf``).
 
     Raises:
     ------
@@ -357,7 +357,9 @@ def extract_kit(
 
     main_archive: RIM | ERF | None = None
     data_archive: RIM | ERF | None = None
-    using_dot_mod: bool = False  # Track if we're using a .mod file (affects Module class initialization)
+    using_dot_mod: bool = (
+        False  # Track if we're using a .mod file (affects Module class initialization)
+    )
 
     if is_erf:
         # ERF file specified - try to load it directly or search for it
@@ -369,7 +371,9 @@ def extract_kit(
             erf_path = module_path
         else:
             # Search in modules directory - prioritize .mod files (they override .rim files)
-            erf_path = _find_existing_with_extensions(modules_path, module_name_clean, [".mod", ".erf", ".hak", ".sav"])
+            erf_path = _find_existing_with_extensions(
+                modules_path, module_name_clean, [".mod", ".erf", ".hak", ".sav"]
+            )
             if erf_path is not None and erf_path.suffix.lower() == ".mod":
                 using_dot_mod = True
                 logger.info(f"Found .mod file: {erf_path} - will use .mod format")
@@ -397,7 +401,9 @@ def extract_kit(
         if module_path.is_absolute() or module_path.exists():
             rim_path = module_path
         else:
-            rim_path = _find_first_existing_candidate([rims_path, modules_path], f"{module_name_clean}.rim")
+            rim_path = _find_first_existing_candidate(
+                [rims_path, modules_path], f"{module_name_clean}.rim"
+            )
 
         if rim_path and rim_path.exists():
             logger.info(f"Loading RIM file: {rim_path}")
@@ -416,7 +422,9 @@ def extract_kit(
 
         # FIRST: Check for .mod file (highest priority - .mod files override .rim files)
         erf_path = None
-        erf_path = _find_existing_with_extensions(modules_path, module_name_clean, [".mod", ".erf", ".hak", ".sav"])
+        erf_path = _find_existing_with_extensions(
+            modules_path, module_name_clean, [".mod", ".erf", ".hak", ".sav"]
+        )
         if erf_path is not None and erf_path.suffix.lower() == ".mod":
             using_dot_mod = True
             logger.info(f"Found .mod file: {erf_path} (using .mod format, will ignore .rim files)")
@@ -443,8 +451,12 @@ def extract_kit(
             data_rim_path = None
 
             for search_path in [rims_path, modules_path]:
-                main_candidate = _find_first_existing_candidate([search_path], f"{module_name_clean}.rim")
-                data_candidate = _find_first_existing_candidate([search_path], f"{module_name_clean}_s.rim")
+                main_candidate = _find_first_existing_candidate(
+                    [search_path], f"{module_name_clean}.rim"
+                )
+                data_candidate = _find_first_existing_candidate(
+                    [search_path], f"{module_name_clean}_s.rim"
+                )
                 if main_candidate is not None:
                     main_rim_path = main_candidate
                 if data_candidate is not None:
@@ -510,7 +522,9 @@ def extract_kit(
     placeables: dict[str, bytes] = {}  # placeable_name -> utp_data
     placeable_walkmeshes: dict[str, bytes] = {}  # placeable_model_name -> pwk_data
     skyboxes: dict[str, dict[str, bytes]] = {}  # skybox_name -> {mdl, mdx}
-    all_models: dict[str, dict[str, bytes]] = {}  # model_name -> {mdl, mdx} (all models, not just components)
+    all_models: dict[
+        str, dict[str, bytes]
+    ] = {}  # model_name -> {mdl, mdx} (all models, not just components)
 
     # Create a Module instance to access all module resources (including from chitin)
     # This is needed to get LYT room models and GIT placeables/doors
@@ -523,7 +537,6 @@ def extract_kit(
 
     # Get LYT to find all room models (which have WOK files)
     #
-    # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleRoom.ts:331-342 (loadWalkmesh)
     lyt_resource = module.layout()
     lyt_room_models: set[str] = set()  # Store lowercase room model names
     lyt_room_model_names: list[str] = []  # Store original room model names (for resource lookup)
@@ -538,7 +551,10 @@ def extract_kit(
             # Extract WOK files for all LYT room models (even if not in RIM)
             # Batch lookup to avoid repeated installation.locations() calls (performance optimization)
             # Reference: LYT.iter_resource_identifiers() yields WOK for each room
-            wok_identifiers = [ResourceIdentifier(resname=room_model, restype=ResourceType.WOK) for room_model in lyt_room_model_names]
+            wok_identifiers = [
+                ResourceIdentifier(resname=room_model, restype=ResourceType.WOK)
+                for room_model in lyt_room_model_names
+            ]
             if wok_identifiers:
                 wok_locations = installation.locations(
                     wok_identifiers,
@@ -569,16 +585,24 @@ def extract_kit(
 
     # Identify components (MDL files that have corresponding WOK files)
     # Components are room models from LYT that have WOK walkmeshes
-    logger.info(f"Found {len(lyt_room_models)} room models in LYT: {sorted(list(lyt_room_models))[:10]}...")
+    logger.info(
+        f"Found {len(lyt_room_models)} room models in LYT: {sorted(list(lyt_room_models))[:10]}..."
+    )
 
     # First, identify components directly from LYT room models
     # Batch lookup MDL/MDX/WOK for all room models to avoid repeated installation.locations() calls (performance optimization)
     # Use installation-wide resolution to respect priority order: Override > Modules (.mod) > Modules (.rim) > Chitin
     component_resource_identifiers: list[ResourceIdentifier] = []
     for room_model in lyt_room_model_names:
-        component_resource_identifiers.append(ResourceIdentifier(resname=room_model, restype=ResourceType.MDL))
-        component_resource_identifiers.append(ResourceIdentifier(resname=room_model, restype=ResourceType.MDX))
-        component_resource_identifiers.append(ResourceIdentifier(resname=room_model, restype=ResourceType.WOK))
+        component_resource_identifiers.append(
+            ResourceIdentifier(resname=room_model, restype=ResourceType.MDL)
+        )
+        component_resource_identifiers.append(
+            ResourceIdentifier(resname=room_model, restype=ResourceType.MDX)
+        )
+        component_resource_identifiers.append(
+            ResourceIdentifier(resname=room_model, restype=ResourceType.WOK)
+        )
 
     # Batch lookup all component resources
     component_locations: dict[ResourceIdentifier, list[LocationResult]] = {}
@@ -653,7 +677,9 @@ def extract_kit(
             if wok_key not in all_resources:
                 all_resources[wok_key] = wok_data
 
-            logger.debug(f"Identified component: {room_model_lower} (room model with WOK, resolved with priority)")
+            logger.debug(
+                f"Identified component: {room_model_lower} (room model with WOK, resolved with priority)"
+            )
         else:
             logger.debug(f"Skipping room model {room_model_lower}: MDL or WOK resource not found")
 
@@ -682,7 +708,9 @@ def extract_kit(
                     "mdx": all_resources.get(mdx_key, b""),
                     "wok": all_resources[wok_key],
                 }
-                logger.debug(f"Identified component: {resname_lower} (room model with WOK from RIM)")
+                logger.debug(
+                    f"Identified component: {resname_lower} (room model with WOK from RIM)"
+                )
         elif restype == ResourceType.UTD:
             doors[resname] = data
         elif restype == ResourceType.UTP:
@@ -705,7 +733,9 @@ def extract_kit(
                     "mdx": data,
                 }
 
-    logger.info(f"Identified {len(components)} components: {sorted(list(components.keys()))[:10]}...")
+    logger.info(
+        f"Identified {len(components)} components: {sorted(list(components.keys()))[:10]}..."
+    )
 
     # Map component model names to friendly component IDs
     component_name_mapping = _get_component_name_mapping(kit_id, list(components.keys()))
@@ -742,14 +772,7 @@ def extract_kit(
     # Also extract all TPC/TGA files from RIM that might be textures/lightmaps
     # Some kits (like jedienclave) only have textures/lightmaps without components
     for (resname, restype), data in all_resources.items():
-        if restype == ResourceType.TPC:
-            # Determine if it's a texture or lightmap based on naming
-            resname_lower = resname.lower()
-            if "_lm" in resname_lower or resname_lower.endswith("_lm"):
-                all_lightmap_names.add(resname)
-            else:
-                all_texture_names.add(resname)
-        elif restype == ResourceType.TGA:
+        if restype == ResourceType.TPC or restype == ResourceType.TGA:
             # Determine if it's a texture or lightmap based on naming
             resname_lower = resname.lower()
             if "_lm" in resname_lower or resname_lower.endswith("_lm"):
@@ -762,7 +785,11 @@ def extract_kit(
     for res_ident, loc_list in module.resources.items():
         if res_ident.restype in (ResourceType.TPC, ResourceType.TGA):
             resname_lower = res_ident.resname.lower()
-            if "_lm" in resname_lower or resname_lower.endswith("_lm") or resname_lower.startswith("l_"):
+            if (
+                "_lm" in resname_lower
+                or resname_lower.endswith("_lm")
+                or resname_lower.startswith("l_")
+            ):
                 all_lightmap_names.add(res_ident.resname)
             else:
                 all_texture_names.add(res_ident.resname)
@@ -793,7 +820,9 @@ def extract_kit(
             SearchLocation.CHITIN,
         ],
     )
-    logger.info(f"Found locations for {len([r for r in batch_location_results.values() if r])} resources")
+    logger.info(
+        f"Found locations for {len([r for r in batch_location_results.values() if r])} resources"
+    )
 
     # Pre-sort all location lists by priority once to avoid repeated sorting
     # This is a major performance optimization - sort once instead of sorting every time we access a location
@@ -814,19 +843,23 @@ def extract_kit(
         all_txi_identifiers.append(ResourceIdentifier(resname=name, restype=ResourceType.TXI))
 
     logger.info(f"Batch looking up {len(all_txi_identifiers)} TXI resources...")
-    batch_txi_location_results: dict[ResourceIdentifier, list[LocationResult]] = installation.locations(
-        all_txi_identifiers,
-        [
-            SearchLocation.OVERRIDE,
-            SearchLocation.MODULES,  # Check modules (.mod/.rim) before texture packs
-            SearchLocation.TEXTURES_TPA,
-            SearchLocation.TEXTURES_TPB,
-            SearchLocation.TEXTURES_TPC,
-            SearchLocation.TEXTURES_GUI,
-            SearchLocation.CHITIN,
-        ],
+    batch_txi_location_results: dict[ResourceIdentifier, list[LocationResult]] = (
+        installation.locations(
+            all_txi_identifiers,
+            [
+                SearchLocation.OVERRIDE,
+                SearchLocation.MODULES,  # Check modules (.mod/.rim) before texture packs
+                SearchLocation.TEXTURES_TPA,
+                SearchLocation.TEXTURES_TPB,
+                SearchLocation.TEXTURES_TPC,
+                SearchLocation.TEXTURES_GUI,
+                SearchLocation.CHITIN,
+            ],
+        )
     )
-    logger.info(f"Found locations for {len([r for r in batch_txi_location_results.values() if r])} TXI resources")
+    logger.info(
+        f"Found locations for {len([r for r in batch_txi_location_results.values() if r])} TXI resources"
+    )
 
     # Pre-sort all TXI location lists by priority once to avoid repeated sorting
     for res_ident, loc_list in batch_txi_location_results.items():
@@ -873,7 +906,9 @@ def extract_kit(
     tpc_files: dict[Path, list[tuple[str, bool, LocationResult]]] = {}
     tga_files: dict[Path, list[tuple[str, bool, LocationResult]]] = {}
 
-    for name, is_lightmap, res_ident, location in texture_extraction_queue + lightmap_extraction_queue:
+    for name, is_lightmap, res_ident, location in (
+        texture_extraction_queue + lightmap_extraction_queue
+    ):
         if res_ident.restype == ResourceType.TPC:
             if location.filepath not in tpc_files:
                 tpc_files[location.filepath] = []
@@ -971,11 +1006,11 @@ def extract_kit(
 
     # Create empty TXI placeholders for textures/lightmaps that don't have TXI files
     # This matches the expected kit structure where textures have corresponding TXI files
-    for texture_name_lower in textures.keys():
+    for texture_name_lower in textures:
         if texture_name_lower not in texture_txis:
             texture_txis[texture_name_lower] = b""
 
-    for lightmap_name_lower in lightmaps.keys():
+    for lightmap_name_lower in lightmaps:
         if lightmap_name_lower not in lightmap_txis:
             lightmap_txis[lightmap_name_lower] = b""
 
@@ -1024,7 +1059,7 @@ def extract_kit(
                 "id": component_id,
                 "native": 1,
                 "doorhooks": doorhooks,
-            }
+            },
         )
 
     # Write texture files
@@ -1061,7 +1096,9 @@ def extract_kit(
         try:
             utd = read_utd(door_data)
             if genericdoors_2da_for_dwk:
-                door_model_name = door_tools.get_model(utd, installation, genericdoors=genericdoors_2da_for_dwk)
+                door_model_name = door_tools.get_model(
+                    utd, installation, genericdoors=genericdoors_2da_for_dwk
+                )
                 if door_model_name:
                     door_model_names.append(door_model_name)
                     door_model_map[door_model_name] = door_name
@@ -1071,7 +1108,9 @@ def extract_kit(
     # Batch lookup all DWK files (3 states per door: 0, 1, 2)
     dwk_suffixes: tuple[str, ...] = ("0", "1", "2")
     dwk_identifiers: list[ResourceIdentifier] = []
-    dwk_model_map: dict[ResourceIdentifier, tuple[str, str]] = {}  # identifier -> (model_name, door_name)
+    dwk_model_map: dict[
+        ResourceIdentifier, tuple[str, str]
+    ] = {}  # identifier -> (model_name, door_name)
     for model_name in door_model_names:
         for suffix in dwk_suffixes:
             dwk_resname = f"{model_name}{suffix}"
@@ -1097,7 +1136,9 @@ def extract_kit(
             utd = read_utd(door_data)
             if not genericdoors_2da_for_dwk:
                 continue
-            door_model_name = door_tools.get_model(utd, installation, genericdoors=genericdoors_2da_for_dwk)
+            door_model_name = door_tools.get_model(
+                utd, installation, genericdoors=genericdoors_2da_for_dwk
+            )
             if not door_model_name:
                 continue
 
@@ -1114,7 +1155,9 @@ def extract_kit(
                         dwk_data = dwk_resource.data()
                         if dwk_data is not None:
                             door_walkmeshes[door_name][dwk_key] = dwk_data
-                            logger.debug(f"Found DWK '{dwk_resname}' (state: {dwk_key}) from module")
+                            logger.debug(
+                                f"Found DWK '{dwk_resname}' (state: {dwk_key}) from module"
+                            )
                             dwk_found = True
 
                 # Try batched installation locations if not found in module
@@ -1125,7 +1168,9 @@ def extract_kit(
                         dwk_data = _read_location_bytes(dwk_loc_list[0])
                         if dwk_data is not None:
                             door_walkmeshes[door_name][dwk_key] = dwk_data
-                            logger.debug(f"Found DWK '{dwk_resname}' (state: {dwk_key}) from installation")
+                            logger.debug(
+                                f"Found DWK '{dwk_resname}' (state: {dwk_key}) from installation"
+                            )
         except Exception:  # noqa: BLE001
             continue
 
@@ -1157,7 +1202,10 @@ def extract_kit(
             continue
 
     # Batch lookup all PWK files at once
-    pwk_identifiers = [ResourceIdentifier(resname=model_name, restype=ResourceType.PWK) for model_name in placeable_model_names]
+    pwk_identifiers = [
+        ResourceIdentifier(resname=model_name, restype=ResourceType.PWK)
+        for model_name in placeable_model_names
+    ]
     pwk_locations: dict[ResourceIdentifier, list[LocationResult]] = {}
     if pwk_identifiers:
         pwk_locations = installation.locations(
@@ -1184,12 +1232,16 @@ def extract_kit(
 
             # Try module first (fastest)
             if module is not None:
-                pwk_resource = module.resource(resname=placeable_model_name, restype=ResourceType.PWK)
+                pwk_resource = module.resource(
+                    resname=placeable_model_name, restype=ResourceType.PWK
+                )
                 if pwk_resource is not None:
                     pwk_data = pwk_resource.data()
                     if pwk_data is not None:
                         placeable_walkmeshes[placeable_model_name] = pwk_data
-                        logger.debug(f"Found PWK '{placeable_model_name}' for placeable '{placeable_name}' from module")
+                        logger.debug(
+                            f"Found PWK '{placeable_model_name}' for placeable '{placeable_name}' from module"
+                        )
                         continue
 
             # Try batched installation locations
@@ -1199,7 +1251,9 @@ def extract_kit(
                 pwk_data = _read_location_bytes(pwk_loc_list[0])
                 if pwk_data is not None:
                     placeable_walkmeshes[placeable_model_name] = pwk_data
-                    logger.debug(f"Found PWK '{placeable_model_name}' for placeable '{placeable_name}' from installation")
+                    logger.debug(
+                        f"Found PWK '{placeable_model_name}' for placeable '{placeable_name}' from installation"
+                    )
         except Exception:  # noqa: BLE001
             continue
 
@@ -1230,13 +1284,17 @@ def extract_kit(
                 try:
                     utd = read_utd(door_data)
                     if genericdoors_2da:
-                        door_model_name = door_tools.get_model(utd, installation, genericdoors=genericdoors_2da)
+                        door_model_name = door_tools.get_model(
+                            utd, installation, genericdoors=genericdoors_2da
+                        )
                         if door_model_name:
                             # Map dwk_key (dwk0, dwk1, dwk2) to filename suffix (0, 1, 2)
                             dwk_suffix = dwk_key.replace("dwk", "")
                             dwk_filename = f"{door_model_name}{dwk_suffix}.dwk"
                             (kit_dir / dwk_filename).write_bytes(dwk_data)
-                            logger.debug(f"Wrote door walkmesh '{dwk_filename}' for door '{door_id}' (resname: '{door_name}')")
+                            logger.debug(
+                                f"Wrote door walkmesh '{dwk_filename}' for door '{door_id}' (resname: '{door_name}')"
+                            )
                 except Exception:  # noqa: BLE001
                     # Skip if we can't determine model name
                     pass
@@ -1253,7 +1311,7 @@ def extract_kit(
                 "utd_k2": f"{door_id}_k2",
                 "width": door_width,
                 "height": door_height,
-            }
+            },
         )
 
     # Write placeable walkmeshes (PWK files)
@@ -1322,11 +1380,14 @@ def _generate_component_minimap(bwm: BWM):  # type: ignore[return-value]
             image = QImage(256, 256, QImage.Format.Format_RGB888)  # type: ignore[misc, call-overload]
             image.fill(QColor(0, 0, 0))  # type: ignore[misc, call-overload]
             return image
-        else:
-            return Image.new("RGB", (256, 256), (0, 0, 0))  # type: ignore[misc, call-overload]
+        return Image.new("RGB", (256, 256), (0, 0, 0))  # type: ignore[misc, call-overload]
 
-    bbmin: Vector3 = Vector3(min(v.x for v in vertices), min(v.y for v in vertices), min(v.z for v in vertices))
-    bbmax: Vector3 = Vector3(max(v.x for v in vertices), max(v.y for v in vertices), max(v.z for v in vertices))
+    bbmin: Vector3 = Vector3(
+        min(v.x for v in vertices), min(v.y for v in vertices), min(v.z for v in vertices)
+    )
+    bbmax: Vector3 = Vector3(
+        max(v.x for v in vertices), max(v.y for v in vertices), max(v.z for v in vertices)
+    )
 
     # Add padding
     padding: float = 5.0
@@ -1362,7 +1423,24 @@ def _generate_component_minimap(bwm: BWM):  # type: ignore[return-value]
         # Draw walkable faces in white, non-walkable in gray
         for face in bwm.faces:
             # Determine if face is walkable based on material
-            is_walkable = face.material.value in (1, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 16, 18, 20, 21, 22)
+            is_walkable = face.material.value in (
+                1,
+                3,
+                4,
+                5,
+                6,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                16,
+                18,
+                20,
+                21,
+                22,
+            )
             color = QColor(255, 255, 255) if is_walkable else QColor(128, 128, 128)  # type: ignore[misc, call-overload]
 
             painter.setBrush(QColor(color))
@@ -1389,7 +1467,7 @@ def _generate_component_minimap(bwm: BWM):  # type: ignore[return-value]
         return q_image
 
     # Fallback to Pillow
-    elif importlib.util.find_spec("PIL") is not None:
+    if importlib.util.find_spec("PIL") is not None:
         # Create image
         pil_image = Image.new("RGB", (width, height), (0, 0, 0))
         draw = ImageDraw.Draw(pil_image)
@@ -1397,7 +1475,24 @@ def _generate_component_minimap(bwm: BWM):  # type: ignore[return-value]
         # Draw walkable faces in white, non-walkable in gray
         for face in bwm.faces:
             # Determine if face is walkable based on material
-            is_walkable = face.material.value in (1, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 16, 18, 20, 21, 22)
+            is_walkable = face.material.value in (
+                1,
+                3,
+                4,
+                5,
+                6,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                16,
+                18,
+                20,
+                21,
+                22,
+            )
             color = (255, 255, 255) if is_walkable else (128, 128, 128)
 
             # Get face vertices
@@ -1482,7 +1577,7 @@ def _extract_doorhooks_from_bwm(bwm: BWM, num_doors: int) -> list[dict[str, floa
                 "rotation": rotation,
                 "door": door_index,
                 "edge": edge.index,  # Global edge index
-            }
+            },
         )
 
     return doorhooks

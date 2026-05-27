@@ -19,13 +19,12 @@
   "cursorpyright.analysis.autoImportCompletions": true,
   "cursorpyright.analysis.extraPaths": [
     "${workspaceFolder}/Libraries/PyKotor/src",
-    "${workspaceFolder}/Tools/BatchPatcher/src",
-    "${workspaceFolder}/Tools/HolocronAI/src",
+    "${workspaceFolder}/Libraries/bioware-kaitai-formats/src",
     "${workspaceFolder}/Tools/HolocronToolset/src",
     "${workspaceFolder}/Tools/HoloPatcher/src",
     "${workspaceFolder}/Tools/HoloPazaak/src",
-    "${workspaceFolder}/Tools/KotorMCP/src",
-    "${workspaceFolder}/Tools/KotorDiff/src"
+    "${workspaceFolder}/Tools/KotorDiff/src",
+    "${workspaceFolder}/Tools/KotorMCP/src"
   ],
   "cursorpyright.analysis.typeCheckingMode": "basic",
   "dotnet.defaultSolution": "disable",
@@ -83,13 +82,12 @@
   "python.analysis.enablePytestSupport": true,
   "python.analysis.extraPaths": [
     "${workspaceFolder}/Libraries/PyKotor/src",
-    "${workspaceFolder}/Tools/BatchPatcher/src",
-    "${workspaceFolder}/Tools/HolocronAI/src",
+    "${workspaceFolder}/Libraries/bioware-kaitai-formats/src",
     "${workspaceFolder}/Tools/HolocronToolset/src",
     "${workspaceFolder}/Tools/HoloPatcher/src",
     "${workspaceFolder}/Tools/HoloPazaak/src",
-    "${workspaceFolder}/Tools/KotorMCP/src",
-    "${workspaceFolder}/Tools/KotorDiff/src"
+    "${workspaceFolder}/Tools/KotorDiff/src",
+    "${workspaceFolder}/Tools/KotorMCP/src"
   ],
   "python.analysis.findRefsInBackgroundThread": true,
   "python.analysis.typeCheckingMode": "basic",
@@ -98,16 +96,18 @@
   "python.analysis.typeEvaluation.strictSetInference": true,
   "python.autoComplete.extraPaths": [
     "${workspaceFolder}/Libraries/PyKotor/src",
-    "${workspaceFolder}/Tools/BatchPatcher/src",
-    "${workspaceFolder}/Tools/HolocronAI/src",
+    "${workspaceFolder}/Libraries/bioware-kaitai-formats/src",
     "${workspaceFolder}/Tools/HolocronToolset/src",
     "${workspaceFolder}/Tools/HoloPatcher/src",
     "${workspaceFolder}/Tools/HoloPazaak/src",
-    "${workspaceFolder}/Tools/KotorMCP/src",
-    "${workspaceFolder}/Tools/KotorDiff/src"
+    "${workspaceFolder}/Tools/KotorDiff/src",
+    "${workspaceFolder}/Tools/KotorMCP/src"
   ],
   "python.envFile": "${workspaceFolder}/.env",
+  "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
   "python.languageServer": "None",
+  "python.locator": "js",
+  "python.useEnvironmentsExtension": false,
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": false,
   "python.testing.pytestArgs": [

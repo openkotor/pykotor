@@ -32,7 +32,6 @@ import tempfile
 
 from io import StringIO
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 
@@ -49,21 +48,10 @@ from pykotor.cli.commands.utility_commands import (
     _detect_path_type,
     cmd_diff,
 )
-from pykotor.common.language import Language
-from pykotor.common.misc import ResRef
-from pykotor.resource.formats.bif.bif_auto import write_bif
-from pykotor.resource.formats.bif.bif_data import BIF
-from pykotor.resource.formats.erf.erf_auto import write_erf
-from pykotor.resource.formats.erf.erf_data import ERF, ERFType
+from pykotor.common.misc import Game
 from pykotor.resource.formats.key.key_auto import write_key
 from pykotor.resource.formats.key.key_data import KEY
-from pykotor.resource.formats.rim.rim_auto import write_rim
-from pykotor.resource.formats.rim.rim_data import RIM
-from pykotor.resource.formats.tlk.tlk_auto import write_tlk
-from pykotor.resource.formats.tlk.tlk_data import TLK
-from pykotor.resource.formats.tpc.tpc_auto import bytes_tpc
-from pykotor.resource.formats.tpc.tpc_data import TPC
-from pykotor.resource.type import ResourceType
+from pykotor.tools.create_installation import create_installation
 
 # ============================================================================
 # HELPER UTILITIES FOR TEST DATA CREATION
@@ -128,12 +116,6 @@ class DiffTestDataHelper:
         return file_path
 
     @staticmethod
-    def _create_valid_tpc_bytes() -> bytes:
-        """Create minimal valid TPC file bytes."""
-        tpc = TPC.from_blank()
-        return bytes_tpc(tpc, ResourceType.TPC)
-
-    @staticmethod
     def create_installation(
         install_path: Path,
         with_override: bool = True,
@@ -150,365 +132,24 @@ class DiffTestDataHelper:
         texture_gui_resources: dict[str, bytes] | None = None,
         dialog_tlk_data: bytes | None = None,
     ) -> Path:
-        """Create a fully comprehensive mock KOTOR installation with valid KEY and BIF files.
-
-        This creates a complete installation structure suitable for exhaustive testing:
-        - Creates proper chitin.key file with BIF references
-        - Creates actual BIF files with resources in Data folder
-        - Populates Override folder with resources (highest priority in resolution order)
-        - Populates Modules folder with resources
-        - Populates all standard resource directories (Voice, Music, Sound, Lips, Textures)
-        - Sets up complete directory structure matching real KOTOR installations
-        - Creates dialog.tlk file if provided
-
-        The installation uses proper PyKotor serialization for KEY and BIF files,
-        making it fully compatible with Installation class for real testing scenarios.
-
-        Args:
-            install_path: Path to create installation at
-            with_override: Whether to create Override folder
-            bif_resources: Dict mapping BIF filenames to {resname: data} dicts
-                          Example: {"data.bif": {"c_bantha.utc": b"UTC_DATA", "model.mdl": b"MDL_DATA"}}
-                          Resources in BIFs have lowest priority (after Override and Modules)
-            override_resources: Dict of resource names to data for Override folder
-                               Example: {"p_bastila.utc": b"UTC_DATA"}
-                               Resources here have highest priority (first in resolution order)
-            modules_resources: Dict mapping module filenames to {resname: data} dicts
-                              Example: {"m01aa.rim": {"m01aa.are": b"ARE_DATA"}, "danm13.rim": {"m13aa.are": b"ARE_DATA"}}
-                              Resources are stored in RIM/ERF files in Modules folder
-                              Resources here have medium priority (after Override, before BIF)
-            voice_resources: Dict of resource names to data for Voice folder
-                            Example: {"NM03ABCITI06004_.wav": b"WAV_DATA"}
-            music_resources: Dict of resource names to data for StreamMusic folder
-                           Example: {"mus_theme_carth.wav": b"WAV_DATA"}
-            sound_resources: Dict of resource names to data for StreamSounds folder
-                           Example: {"P_hk47_POIS.wav": b"WAV_DATA"}
-            lips_resources: Dict mapping MOD filenames to {resname: data} dicts
-                          Example: {"n_gendro_coms1.mod": {"n_gendro_coms1.lip": b"LIP_DATA"}}
-                          Resources are stored in MOD files in Lips folder
-            texture_tpa_resources: Dict of resource names to data for swpc_tex_tpa.erf ERF file
-                                  Example: {"blood.tpc": b"TPC_DATA"}
-                                  Resources are stored in TexturePacks/swpc_tex_tpa.erf
-            texture_tpb_resources: Dict of resource names to data for swpc_tex_tpb.erf ERF file
-                                  Example: {"blood.tpc": b"TPC_DATA"}
-                                  Resources are stored in TexturePacks/swpc_tex_tpb.erf
-            texture_tpc_resources: Dict of resource names to data for swpc_tex_tpc.erf ERF file
-                                  Example: {"blood.tpc": b"TPC_DATA"}
-                                  Resources are stored in TexturePacks/swpc_tex_tpc.erf
-            texture_gui_resources: Dict of resource names to data for swpc_tex_gui.erf ERF file
-                                  Example: {"PO_PCarth.tpc": b"TPC_DATA"}
-                                  Resources are stored in TexturePacks/swpc_tex_gui.erf
-            dialog_tlk_data: Binary data for dialog.tlk file (optional)
-                            If not provided, creates minimal valid TLK files for both dialog.tlk and dialogf.tlk
-
-        Returns:
-            Path to the installation directory
-
-        Example:
-            >>> install_dir = tmp_path / "my_install"
-            >>> DiffTestDataHelper.create_installation(
-            ...     install_dir,
-            ...     bif_resources={
-            ...         "data.bif": {
-            ...             "c_bantha.utc": b"BIF_UTC_DATA",
-            ...             "model.mdl": b"BIF_MDL_DATA"
-            ...         }
-            ...     },
-            ...     override_resources={"p_bastila.utc": b"OVERRIDE_UTC_DATA"},
-            ...     modules_resources={"m01aa.are": b"ARE_DATA"},
-            ...     voice_resources={"NM03ABCITI06004_.wav": b"WAV_DATA"},
-            ...     music_resources={"mus_theme_carth.wav": b"MUSIC_DATA"}
-            ... )
-            >>> # Now install_dir has a fully functional installation structure
-            >>> # Resolution order: Override > Modules > BIF
-        """
-        install_path.mkdir(parents=True, exist_ok=True)
-
-        # Create complete standard directory structure
-        (install_path / "Data").mkdir(exist_ok=True)
-        (install_path / "Modules").mkdir(exist_ok=True)
-        (install_path / "StreamMusic").mkdir(exist_ok=True)
-        (install_path / "StreamSounds").mkdir(exist_ok=True)
-        (install_path / "StreamWaves").mkdir(exist_ok=True)  # Voice resources (can also be StreamVoice)
-        (install_path / "TexturePacks").mkdir(exist_ok=True)
-        (install_path / "Lips").mkdir(exist_ok=True)
-
-        # Texture packs are ERF files, not directories - will be created below if resources provided
-
-        if with_override:
-            (install_path / "Override").mkdir(exist_ok=True)
-
-        # Create BIF files and build KEY file entries
-        key = KEY()
-        bif_entries: list[tuple[str, int, dict[str, bytes]]] = []  # (bif_filename, bif_index, resources)
-
-        if bif_resources:
-            for bif_index, (bif_filename, resources) in enumerate(bif_resources.items()):
-                # Create BIF file
-                bif = BIF()
-
-                # Add all resources to BIF
-                for res_index, (res_name, res_data) in enumerate(resources.items()):
-                    # Parse resource name to get ResRef and type
-                    if "." in res_name:
-                        res_ref_str, ext = res_name.rsplit(".", 1)
-                    else:
-                        res_ref_str = res_name
-                        ext = "utc"  # Default to UTC if no extension
-
-                    # Get ResourceType from extension
-                    try:
-                        res_type = ResourceType[ext.upper()]
-                    except KeyError:
-                        res_type = ResourceType.UTC  # Default fallback
-
-                    # For TPC resources, ensure we have valid TPC data
-                    if res_type == ResourceType.TPC and not res_data.startswith(b"TPC V1.1"):
-                        # Create valid TPC if dummy data provided
-                        res_data = DiffTestDataHelper._create_valid_tpc_bytes()
-
-                    # Add resource to BIF
-                    resref = ResRef(res_ref_str)
-                    bif.set_data(resref, res_type, res_data, res_id=res_index)
-
-                # Write BIF file to Data folder
-                bif_path = install_path / "Data" / bif_filename
-                write_bif(bif, bif_path)
-
-                # Track BIF entry for KEY file
-                bif_entries.append((bif_filename, bif_index, resources))
-
-                # Add BIF entry to KEY file
-                key.add_bif(f"data/{bif_filename}", filesize=bif_path.stat().st_size if bif_path.exists() else 0)
-
-        # Add KEY entries for all BIF resources
-        for bif_index, (bif_filename, _, resources) in enumerate(bif_entries):
-            for res_index, (res_name, _) in enumerate(resources.items()):
-                # Parse resource name
-                if "." in res_name:
-                    res_ref_str, ext = res_name.rsplit(".", 1)
-                else:
-                    res_ref_str = res_name
-                    ext = "utc"
-
-                # Get ResourceType
-                try:
-                    res_type = ResourceType[ext.upper()]
-                except KeyError:
-                    res_type = ResourceType.UTC
-
-                # Add KEY entry linking ResRef to BIF location
-                key.add_key_entry(ResRef(res_ref_str), res_type, bif_index, res_index)
-
-        # Write KEY file
-        key_path = install_path / "chitin.key"
-        write_key(key, key_path)
-
-        # Add Override resources (highest priority in resolution order)
-        if with_override and override_resources:
-            override_dir = install_path / "Override"
-            for res_name, res_data in override_resources.items():
-                res_path = override_dir / res_name
-                res_path.parent.mkdir(parents=True, exist_ok=True)
-                res_path.write_bytes(res_data)
-
-        # Add Modules resources (medium priority, after Override)
-        # Modules expects capsule files (RIM/ERF), so create RIM files
-        if modules_resources:
-            modules_dir = install_path / "Modules"
-            for module_filename, resources in modules_resources.items():
-                # Determine if it should be RIM or ERF based on extension
-                if module_filename.lower().endswith(".rim"):
-                    module_archive = RIM()
-                elif module_filename.lower().endswith((".erf", ".mod")):
-                    module_archive = ERF(erf_type=ERFType.MOD if module_filename.lower().endswith(".mod") else ERFType.ERF)
-                else:
-                    # Default to RIM
-                    if not module_filename.endswith(".rim"):
-                        module_filename = f"{module_filename}.rim"
-                    module_archive = RIM()
-
-                # Add all resources to the module archive
-                for res_name, res_data in resources.items():
-                    if "." in res_name:
-                        res_ref_str, ext = res_name.rsplit(".", 1)
-                    else:
-                        res_ref_str = res_name
-                        ext = "are"  # Default to ARE for modules
-                    try:
-                        res_type = ResourceType[ext.upper()]
-                    except KeyError:
-                        res_type = ResourceType.ARE
-                    module_archive.set_data(res_ref_str, res_type, res_data)
-
-                # Write module file
-                module_path = modules_dir / module_filename
-                if isinstance(module_archive, RIM):
-                    write_rim(module_archive, module_path)
-                else:
-                    write_erf(module_archive, module_path, file_format=ResourceType.MOD if module_filename.lower().endswith(".mod") else ResourceType.ERF)
-
-        # Add Voice resources (in StreamWaves directory)
-        if voice_resources:
-            voice_dir = install_path / "StreamWaves"
-            for res_name, res_data in voice_resources.items():
-                res_path = voice_dir / res_name
-                res_path.parent.mkdir(parents=True, exist_ok=True)
-                res_path.write_bytes(res_data)
-
-        # Add Music resources
-        if music_resources:
-            music_dir = install_path / "StreamMusic"
-            for res_name, res_data in music_resources.items():
-                res_path = music_dir / res_name
-                res_path.parent.mkdir(parents=True, exist_ok=True)
-                res_path.write_bytes(res_data)
-
-        # Add Sound resources
-        if sound_resources:
-            sound_dir = install_path / "StreamSounds"
-            for res_name, res_data in sound_resources.items():
-                res_path = sound_dir / res_name
-                res_path.parent.mkdir(parents=True, exist_ok=True)
-                res_path.write_bytes(res_data)
-
-        # Add Lips resources (in MOD files)
-        # Lips expects MOD files, so create MOD files
-        if lips_resources:
-            lips_dir = install_path / "Lips"
-            for mod_filename, resources in lips_resources.items():
-                # Ensure .mod extension
-                if not mod_filename.lower().endswith(".mod"):
-                    mod_filename = f"{mod_filename}.mod"
-
-                # Create MOD file (MOD is ERF with MOD type)
-                mod_archive = ERF(erf_type=ERFType.MOD)
-
-                # Add all resources to the MOD file
-                for res_name, res_data in resources.items():
-                    if "." in res_name:
-                        res_ref_str, ext = res_name.rsplit(".", 1)
-                    else:
-                        res_ref_str = res_name
-                        ext = "lip"  # Default to LIP for lips
-                    try:
-                        res_type = ResourceType[ext.upper()]
-                    except KeyError:
-                        res_type = ResourceType.LIP
-                    mod_archive.set_data(res_ref_str, res_type, res_data)
-
-                # Write MOD file
-                mod_path = lips_dir / mod_filename
-                write_erf(mod_archive, mod_path, file_format=ResourceType.MOD)
-
-        # Add Texture TPA resources (in swpc_tex_tpa.erf ERF file)
-        if texture_tpa_resources:
-            tpa_erf = ERF()
-            for res_name, res_data in texture_tpa_resources.items():
-                if "." in res_name:
-                    res_ref_str, ext = res_name.rsplit(".", 1)
-                else:
-                    res_ref_str = res_name
-                    ext = "tpc"
-                try:
-                    res_type = ResourceType[ext.upper()]
-                except KeyError:
-                    res_type = ResourceType.TPC
-                # Ensure valid TPC data
-                if res_type == ResourceType.TPC and not res_data.startswith(b"TPC V1.1"):
-                    res_data = DiffTestDataHelper._create_valid_tpc_bytes()
-                tpa_erf.set_data(res_ref_str, res_type, res_data)
-            tpa_erf_path = install_path / "TexturePacks" / "swpc_tex_tpa.erf"
-            write_erf(tpa_erf, tpa_erf_path)
-
-        # Add Texture TPB resources (in swpc_tex_tpb.erf ERF file)
-        if texture_tpb_resources:
-            tpb_erf = ERF()
-            for res_name, res_data in texture_tpb_resources.items():
-                if "." in res_name:
-                    res_ref_str, ext = res_name.rsplit(".", 1)
-                else:
-                    res_ref_str = res_name
-                    ext = "tpc"
-                try:
-                    res_type = ResourceType[ext.upper()]
-                except KeyError:
-                    res_type = ResourceType.TPC
-                # Ensure valid TPC data
-                if res_type == ResourceType.TPC and not res_data.startswith(b"TPC V1.1"):
-                    res_data = DiffTestDataHelper._create_valid_tpc_bytes()
-                tpb_erf.set_data(res_ref_str, res_type, res_data)
-            tpb_erf_path = install_path / "TexturePacks" / "swpc_tex_tpb.erf"
-            write_erf(tpb_erf, tpb_erf_path)
-
-        # Add Texture TPC resources (in swpc_tex_tpc.erf ERF file)
-        if texture_tpc_resources:
-            tpc_erf = ERF()
-            for res_name, res_data in texture_tpc_resources.items():
-                if "." in res_name:
-                    res_ref_str, ext = res_name.rsplit(".", 1)
-                else:
-                    res_ref_str = res_name
-                    ext = "tpc"
-                try:
-                    res_type = ResourceType[ext.upper()]
-                except KeyError:
-                    res_type = ResourceType.TPC
-                # Ensure valid TPC data
-                if res_type == ResourceType.TPC and not res_data.startswith(b"TPC V1.1"):
-                    res_data = DiffTestDataHelper._create_valid_tpc_bytes()
-                tpc_erf.set_data(res_ref_str, res_type, res_data)
-            tpc_erf_path = install_path / "TexturePacks" / "swpc_tex_tpc.erf"
-            write_erf(tpc_erf, tpc_erf_path)
-
-        # Add Texture GUI resources (in swpc_tex_gui.erf ERF file)
-        if texture_gui_resources:
-            gui_erf = ERF()
-            for res_name, res_data in texture_gui_resources.items():
-                if "." in res_name:
-                    res_ref_str, ext = res_name.rsplit(".", 1)
-                else:
-                    res_ref_str = res_name
-                    ext = "tpc"
-                try:
-                    res_type = ResourceType[ext.upper()]
-                except KeyError:
-                    res_type = ResourceType.TPC
-                # Ensure valid TPC data
-                if res_type == ResourceType.TPC and not res_data.startswith(b"TPC V1.1"):
-                    res_data = DiffTestDataHelper._create_valid_tpc_bytes()
-                gui_erf.set_data(res_ref_str, res_type, res_data)
-            gui_erf_path = install_path / "TexturePacks" / "swpc_tex_gui.erf"
-            write_erf(gui_erf, gui_erf_path)
-
-        # Create dialog.tlk and dialogf.tlk files (required by Installation class)
-        # If dialog_tlk_data is provided, use it; otherwise create minimal valid TLK
-        if dialog_tlk_data:
-            tlk_path = install_path / "dialog.tlk"
-            tlk_path.write_bytes(dialog_tlk_data)
-            # Use same data for dialogf.tlk if not explicitly provided
-            dialogf_path = install_path / "dialogf.tlk"
-            dialogf_path.write_bytes(dialog_tlk_data)
-        else:
-            # Create minimal valid TLK files with enough entries for common tests
-            # Add at least 3 entries (0, 1, 2) to support common stringref tests
-            dialog_tlk = TLK(language=Language.ENGLISH)
-            dialogf_tlk = TLK(language=Language.ENGLISH)
-
-            # Add entries for common stringrefs used in tests
-            dialog_tlk.add("", "")  # StrRef 0
-            dialog_tlk.add("", "")  # StrRef 1
-            dialog_tlk.add("ERROR: FATAL COMPILER ERROR", "")  # StrRef 2 (common test case)
-            dialogf_tlk.add("", "")  # StrRef 0
-            dialogf_tlk.add("", "")  # StrRef 1
-            dialogf_tlk.add("ERROR: FATAL COMPILER ERROR", "")  # StrRef 2
-
-            tlk_path = install_path / "dialog.tlk"
-            dialogf_path = install_path / "dialogf.tlk"
-            write_tlk(dialog_tlk, tlk_path)
-            write_tlk(dialogf_tlk, dialogf_path)
-
-        return install_path
+        """Create a fully comprehensive mock KOTOR installation for diff tests."""
+        return create_installation(
+            install_path,
+            Game.K1,
+            with_override=with_override,
+            bif_resources=bif_resources,
+            override_resources=override_resources,
+            modules_resources=modules_resources,
+            voice_resources=voice_resources,
+            music_resources=music_resources,
+            sound_resources=sound_resources,
+            lips_resources=lips_resources,
+            texture_tpa_resources=texture_tpa_resources,
+            texture_tpb_resources=texture_tpb_resources,
+            texture_tpc_resources=texture_tpc_resources,
+            texture_gui_resources=texture_gui_resources,
+            dialog_tlk_data=dialog_tlk_data,
+        )
 
 
 # ============================================================================
@@ -906,7 +547,9 @@ class TestOutputModes:
         try:
             # Create different files
             file1 = DiffTestDataHelper.create_text_file(path1, "test.txt", "Line 1\nLine 2\nLine 3")
-            file2 = DiffTestDataHelper.create_text_file(path2, "test.txt", "Line 1\nModified\nLine 3")
+            file2 = DiffTestDataHelper.create_text_file(
+                path2, "test.txt", "Line 1\nModified\nLine 3"
+            )
 
             args = Namespace(
                 path1=str(file1),

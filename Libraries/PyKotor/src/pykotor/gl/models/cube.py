@@ -8,22 +8,40 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from pykotor.gl import vec3
 from pykotor.gl.compat import has_pyopengl, missing_constant, missing_gl_func, safe_gl_error_module
-from pykotor.gl.glm_compat import vec3
 
 HAS_PYOPENGL = has_pyopengl()
 gl_error = safe_gl_error_module()
 
 if HAS_PYOPENGL:
-    from OpenGL.GL import glGenBuffers, glGenVertexArrays, glVertexAttribPointer  # pyright: ignore[reportMissingImports]
+    from OpenGL.GL import (  # pyright: ignore[reportMissingImports]
+        glGenBuffers,
+        glGenVertexArrays,
+        glVertexAttribPointer,
+    )
     from OpenGL.GL.shaders import GL_FALSE  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.ARB.tessellation_shader import GL_TRIANGLES  # pyright: ignore[reportMissingImports]
+    from OpenGL.raw.GL.ARB.tessellation_shader import (
+        GL_TRIANGLES,  # pyright: ignore[reportMissingImports]
+    )
     from OpenGL.raw.GL.ARB.vertex_shader import GL_FLOAT  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_1_0 import GL_UNSIGNED_SHORT  # pyright: ignore[reportMissingImports]
+    from OpenGL.raw.GL.VERSION.GL_1_0 import (
+        GL_UNSIGNED_SHORT,  # pyright: ignore[reportMissingImports]
+    )
     from OpenGL.raw.GL.VERSION.GL_1_1 import glDrawElements  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_1_5 import GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, glBindBuffer, glBufferData  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_2_0 import glEnableVertexAttribArray  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_3_0 import glBindVertexArray  # pyright: ignore[reportMissingImports]
+    from OpenGL.raw.GL.VERSION.GL_1_5 import (  # pyright: ignore[reportMissingImports]
+        GL_ARRAY_BUFFER,
+        GL_ELEMENT_ARRAY_BUFFER,
+        GL_STATIC_DRAW,
+        glBindBuffer,
+        glBufferData,
+    )
+    from OpenGL.raw.GL.VERSION.GL_2_0 import (
+        glEnableVertexAttribArray,  # pyright: ignore[reportMissingImports]
+    )
+    from OpenGL.raw.GL.VERSION.GL_3_0 import (
+        glBindVertexArray,  # pyright: ignore[reportMissingImports]
+    )
 else:
     glGenBuffers = missing_gl_func("glGenBuffers")
     glGenVertexArrays = missing_gl_func("glGenVertexArrays")
@@ -42,7 +60,7 @@ else:
     GL_STATIC_DRAW = missing_constant("GL_STATIC_DRAW")
 
 if TYPE_CHECKING:
-    from pykotor.gl.glm_compat import mat4
+    from pykotor.gl import mat4
     from pykotor.gl.scene import Scene
     from pykotor.gl.shader import Shader
 
@@ -90,7 +108,44 @@ class Cube:
         )
 
         elements = np.array(
-            [0, 1, 2, 2, 3, 0, 1, 5, 6, 6, 2, 1, 7, 6, 5, 5, 4, 7, 4, 0, 3, 3, 7, 4, 4, 5, 1, 1, 0, 4, 3, 2, 6, 6, 7, 3],
+            [
+                0,
+                1,
+                2,
+                2,
+                3,
+                0,
+                1,
+                5,
+                6,
+                6,
+                2,
+                1,
+                7,
+                6,
+                5,
+                5,
+                4,
+                7,
+                4,
+                0,
+                3,
+                3,
+                7,
+                4,
+                4,
+                5,
+                1,
+                1,
+                0,
+                4,
+                3,
+                2,
+                6,
+                6,
+                7,
+                3,
+            ],
             dtype="int16",
         )
 

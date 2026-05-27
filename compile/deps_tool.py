@@ -21,6 +21,12 @@ import sys
 from pathlib import Path
 from typing import Any, Iterable
 
+repo_root = Path(__file__).resolve().parent.parent
+if str(repo_root) not in sys.path:
+    sys.path.insert(0, str(repo_root))
+
+from tool_metadata import discover_tools, resolve_tool
+
 try:
     import tomllib
 except ImportError:
@@ -410,40 +416,75 @@ Configuration can be added to pyproject.toml [tool.dependencies]:
 """,
     )
 
-    # Required
-    parser.add_argument("--tool-path", required=True, help="Path to tool directory (e.g., Tools/HolocronToolset)")
+    parser.add_argument(
+        "--tool", help="Tool selector (directory, package, project, or Tools/... path)"
+    )
+    parser.add_argument(
+        "--tool-path", help="Explicit path to tool directory (e.g., Tools/HolocronToolset)"
+    )
 
     # Venv options
     parser.add_argument("--venv-name", default=".venv", help="Virtual environment name")
-    parser.add_argument("--skip-venv", action="store_true", help="Skip venv creation (use existing)")
+    parser.add_argument(
+        "--skip-venv", action="store_true", help="Skip venv creation (use existing)"
+    )
     parser.add_argument("--noprompt", action="store_true", help="Skip prompts in venv creation")
     parser.add_argument("--force-python-version", help="Force Python version for venv")
-    parser.add_argument("--python-exe", default=os.environ.get("pythonExePath", "python"), help="Python executable")
+    parser.add_argument(
+        "--python-exe", default=os.environ.get("pythonExePath", "python"), help="Python executable"
+    )
 
     # Pip options
     parser.add_argument("--pip-upgrade", action="store_true", default=True, help="Upgrade pip")
     parser.add_argument("--no-pip-upgrade", dest="pip_upgrade", action="store_false")
-    parser.add_argument("--pip-install-pyinstaller", default="pyinstaller", help="PyInstaller package spec")
-    parser.add_argument("--no-pip-install-pyinstaller", dest="pip_install_pyinstaller", action="store_const", const="")
+    parser.add_argument(
+        "--pip-install-pyinstaller", default="pyinstaller", help="PyInstaller package spec"
+    )
+    parser.add_argument(
+        "--no-pip-install-pyinstaller",
+        dest="pip_install_pyinstaller",
+        action="store_const",
+        const="",
+    )
 
     # Override options (append to auto-detected)
-    parser.add_argument("--pip-requirements", action="append", default=[], help="Additional requirements files")
-    parser.add_argument("--pip-package", action="append", default=[], help="Additional pip packages")
-    parser.add_argument("--linux-package-profile", action="append", default=[], help="Additional Linux profiles")
-    parser.add_argument("--brew-package", action="append", default=[], help="Additional Homebrew packages")
-    parser.add_argument("--windows-extra-pip", action="append", default=[], help="Additional Windows packages")
+    parser.add_argument(
+        "--pip-requirements", action="append", default=[], help="Additional requirements files"
+    )
+    parser.add_argument(
+        "--pip-package", action="append", default=[], help="Additional pip packages"
+    )
+    parser.add_argument(
+        "--linux-package-profile", action="append", default=[], help="Additional Linux profiles"
+    )
+    parser.add_argument(
+        "--brew-package", action="append", default=[], help="Additional Homebrew packages"
+    )
+    parser.add_argument(
+        "--windows-extra-pip", action="append", default=[], help="Additional Windows packages"
+    )
 
     # Qt/Playwright
     parser.add_argument("--qt-api", help="Qt binding to install (overrides auto-detect)")
-    parser.add_argument("--qt-install-using-brew", action="store_true", help="Install Qt via Homebrew on macOS")
-    parser.add_argument("--playwright-browser", action="append", default=[], help="Playwright browsers to install")
+    parser.add_argument(
+        "--qt-install-using-brew", action="store_true", help="Install Qt via Homebrew on macOS"
+    )
+    parser.add_argument(
+        "--playwright-browser", action="append", default=[], help="Playwright browsers to install"
+    )
 
     args = parser.parse_args()
 
-    # Resolve tool path
-    tool_path = Path(args.tool_path)
-    if not tool_path.is_absolute():
-        tool_path = (repo_root / tool_path).resolve()
+    if not args.tool and not args.tool_path:
+        available = ", ".join(tool.relative_path for tool in discover_tools(repo_root))
+        raise SystemExit(f"One of --tool or --tool-path is required. Available tools: {available}")
+
+    if args.tool:
+        tool_path = repo_root / resolve_tool(args.tool, repo_root).relative_path
+    else:
+        tool_path = Path(args.tool_path)
+        if not tool_path.is_absolute():
+            tool_path = (repo_root / tool_path).resolve()
 
     if not tool_path.exists():
         raise SystemExit(f"Tool directory not found: {tool_path}")
@@ -487,7 +528,14 @@ Configuration can be added to pyproject.toml [tool.dependencies]:
             python_exe = str(venv_python)
         else:
             # Fallback to versioned venvs
-            for alt_venv in [".venv_3.13", ".venv_3.12", ".venv_3.11", ".venv_3.10", ".venv_3.9", ".venv_3.8"]:
+            for alt_venv in [
+                ".venv_3.13",
+                ".venv_3.12",
+                ".venv_3.11",
+                ".venv_3.10",
+                ".venv_3.9",
+                ".venv_3.8",
+            ]:
                 alt_python = venv_python_executable(repo_root, alt_venv, os_name)
                 if alt_python.exists():
                     python_exe = str(alt_python)
@@ -505,30 +553,101 @@ Configuration can be added to pyproject.toml [tool.dependencies]:
     # Upgrade pip
     if args.pip_upgrade:
         print("Upgrading pip...")
-        run([python_exe, "-m", "pip", "install", "--upgrade", "pip", "--prefer-binary", "--progress-bar", "on"])
+        run(
+            [
+                python_exe,
+                "-m",
+                "pip",
+                "install",
+                "--upgrade",
+                "pip",
+                "--prefer-binary",
+                "--progress-bar",
+                "on",
+            ]
+        )
 
     # Install PyInstaller
     if args.pip_install_pyinstaller:
         print(f"Installing {args.pip_install_pyinstaller}...")
-        run([python_exe, "-m", "pip", "install", args.pip_install_pyinstaller, "--prefer-binary", "--progress-bar", "on"])
+        run(
+            [
+                python_exe,
+                "-m",
+                "pip",
+                "install",
+                args.pip_install_pyinstaller,
+                "--prefer-binary",
+                "--progress-bar",
+                "on",
+            ]
+        )
 
     # Install from requirements files
     requirements = analysis["requirements_files"] + args.pip_requirements
     for req_file in requirements:
         print(f"Installing from: {req_file}")
-        run([python_exe, "-m", "pip", "install", "-r", req_file, "--prefer-binary", "--compile", "--progress-bar", "on"])
+        run(
+            [
+                python_exe,
+                "-m",
+                "pip",
+                "install",
+                "-r",
+                req_file,
+                "--prefer-binary",
+                "--compile",
+                "--progress-bar",
+                "on",
+            ]
+        )
 
     # Install additional pip packages
     if args.pip_package:
         print(f"Installing additional packages: {', '.join(args.pip_package)}")
-        run([python_exe, "-m", "pip", "install", *args.pip_package, "--prefer-binary", "--progress-bar", "on"])
+        run(
+            [
+                python_exe,
+                "-m",
+                "pip",
+                "install",
+                *args.pip_package,
+                "--prefer-binary",
+                "--progress-bar",
+                "on",
+            ]
+        )
 
     # Install Qt binding
     qt_api = args.qt_api or analysis["qt_api"]
     if qt_api:
         print(f"Installing Qt binding: {qt_api}")
-        run([python_exe, "-m", "pip", "install", "-U", qt_api, "--prefer-binary", "--progress-bar", "on"])
-        run([python_exe, "-m", "pip", "install", "-U", "qtpy", "--prefer-binary", "--progress-bar", "on"])
+        run(
+            [
+                python_exe,
+                "-m",
+                "pip",
+                "install",
+                "-U",
+                qt_api,
+                "--prefer-binary",
+                "--progress-bar",
+                "on",
+            ]
+        )
+        run(
+            [
+                python_exe,
+                "-m",
+                "pip",
+                "install",
+                "-U",
+                "qtpy",
+                "--prefer-binary",
+                "--progress-bar",
+                "on",
+            ]
+        )
 
     # OS-specific packages
     if os_name == "Mac":
@@ -559,7 +678,18 @@ Configuration can be added to pyproject.toml [tool.dependencies]:
 
         if win_packages:
             print(f"Installing Windows packages: {', '.join(win_packages)}")
-            run([python_exe, "-m", "pip", "install", *win_packages, "--prefer-binary", "--progress-bar", "on"])
+            run(
+                [
+                    python_exe,
+                    "-m",
+                    "pip",
+                    "install",
+                    *win_packages,
+                    "--prefer-binary",
+                    "--progress-bar",
+                    "on",
+                ]
+            )
 
     # Install Playwright browsers
     if analysis["requires_playwright"] or args.playwright_browser:

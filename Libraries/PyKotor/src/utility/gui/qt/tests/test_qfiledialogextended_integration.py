@@ -12,7 +12,7 @@ import tempfile
 import time
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Generator
+from typing import TYPE_CHECKING, Generator
 
 import pytest
 
@@ -33,12 +33,12 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture(scope="session")
-def qapp() -> Generator[QApplication | QCoreApplication, Any, None]:
+def qapp() -> QApplication | QCoreApplication:
     """Create QApplication for tests."""
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
-    yield app
+    return app
 
 
 @pytest.fixture

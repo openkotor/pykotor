@@ -10,6 +10,7 @@ from pathlib import Path  # pyright: ignore[reportMissingImports]
 from typing import TYPE_CHECKING, NamedTuple
 
 from pykotor.common.misc import Game
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs.compiler.classes import EntryPointError
 from pykotor.resource.formats.ncs.ncs_auto import compile_nss, write_ncs
 from pykotor.resource.formats.ncs.ncs_data import NCSCompiler
@@ -37,13 +38,7 @@ class InbuiltNCSCompiler(NCSCompiler):
 
     References:
     ----------
-        See ncs_data module docstring for engine addresses (K1 + TSL TODO). CResNCS::CResNCS (K1: 0x005d4c30),
-        ReadScriptFile (K1: 0x005d2260), InitializeScript (K1: 0x005d461b, TSL: TODO). CVirtualMachineInternal — NWScript VM.
-        Note: PyKotor NSS compiler produces NCS bytecode compatible with the engine VM.
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (NSS compilation reference)
-
+        PyKotor's native compiler targets the same NWScript bytecode layout retail KotOR executes.
 
     """
 
@@ -62,7 +57,9 @@ class InbuiltNCSCompiler(NCSCompiler):
         source_filepath: Path = Path(source_file)
         nss_data: bytes = source_filepath.read_bytes()
         nss_contents: str = decode_bytes_with_fallbacks(nss_data)
-        ncs: NCS = compile_nss(nss_contents, game, optimizers, library_lookup=[source_filepath.parent], debug=debug)
+        ncs: NCS = compile_nss(
+            nss_contents, game, optimizers, library_lookup=[source_filepath.parent], debug=debug
+        )
         write_ncs(ncs, output_file)
         return "", ""
 
@@ -80,13 +77,6 @@ class KnownExternalCompilers(Enum):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/TSLPatcher/tree/master/TSLPatcher.pl (unfinished perl rewrite of TSLPatcher)
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET.Patcher/
-
 
     """
 
@@ -106,8 +96,26 @@ class KnownExternalCompilers(Enum):
         release_date=date(2005, 1, 1),
         author="Fred Tetra",
         commandline={
-            "compile": ["-c", "--outputdir", "{output_dir}", "-o", "{output_name}", "-g", "{game_value}", "{source}"],
-            "decompile": ["-d", "--outputdir", "{output_dir}", "-o", "{output_name}", "-g", "{game_value}", "{source}"],
+            "compile": [
+                "-c",
+                "--outputdir",
+                "{output_dir}",
+                "-o",
+                "{output_name}",
+                "-g",
+                "{game_value}",
+                "{source}",
+            ],
+            "decompile": [
+                "-d",
+                "--outputdir",
+                "{output_dir}",
+                "-o",
+                "{output_name}",
+                "-g",
+                "{game_value}",
+                "{source}",
+            ],
         },
     )
     V1 = ExternalCompilerConfig(
@@ -126,8 +134,26 @@ class KnownExternalCompilers(Enum):
         release_date=date(2016, 5, 18),
         author="James Goad",  # TODO: double check
         commandline={
-            "compile": ["-c", "--outputdir", "{output_dir}", "-o", "{output_name}", "-g", "{game_value}", "{source}"],
-            "decompile": ["-d", "--outputdir", "{output_dir}", "-o", "{output_name}", "-g", "{game_value}", "{source}"],
+            "compile": [
+                "-c",
+                "--outputdir",
+                "{output_dir}",
+                "-o",
+                "{output_name}",
+                "-g",
+                "{game_value}",
+                "{source}",
+            ],
+            "decompile": [
+                "-d",
+                "--outputdir",
+                "{output_dir}",
+                "-o",
+                "{output_name}",
+                "-g",
+                "{game_value}",
+                "{source}",
+            ],
         },
     )
     DENCS = ExternalCompilerConfig(
@@ -142,7 +168,7 @@ class KnownExternalCompilers(Enum):
         name="Xoreos Tools",
         release_date=date(2016, 1, 1),  # Approximate based on project history
         author="Xoreos Team",
-        commandline={},  # Xoreos tools are primarily for engine reimplementation
+        commandline={},  # Placeholder registry entry; no bundled NSS CLI from this stack
     )
     KNSSCOMP = ExternalCompilerConfig(
         # knsscomp is Nick Hugi's modern NSS compiler
@@ -168,7 +194,7 @@ class KnownExternalCompilers(Enum):
         raise ValueError(msg)
 
 
-class NwnnsscompConfig:
+class NwnnsscompConfig(ComparableMixin):
     """Unifies the arguments passed to each different version of nwnnsscomp, since no versions offer backwards-compatibility with each other."""
 
     def __init__(
@@ -185,7 +211,9 @@ class NwnnsscompConfig:
         self.output_name: str = outputfile.name
         self.game: Game = game
 
-        self.chosen_compiler: KnownExternalCompilers = KnownExternalCompilers.from_sha256(self.sha256_hash)
+        self.chosen_compiler: KnownExternalCompilers = KnownExternalCompilers.from_sha256(
+            self.sha256_hash
+        )
 
     def get_compile_args(self, executable: str) -> list[str]:
         return self._format_args(self.chosen_compiler.value.commandline["compile"], executable)
@@ -320,7 +348,9 @@ class ExternalNCSCompiler(NCSCompiler):
 
         # Check for known error conditions
         if "File is an include file, ignored" in stdout:
-            msg = "This file has no entry point and cannot be compiled (Most likely an include file)."
+            msg = (
+                "This file has no entry point and cannot be compiled (Most likely an include file)."
+            )
             raise EntryPointError(msg)
 
         if result.returncode != 0 and stderr:

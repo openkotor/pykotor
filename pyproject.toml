@@ -6,9 +6,64 @@ requires = [
 ]
 
 [dependency-groups]
+# Mirrors Libraries/PyKotor/pyproject.toml [tool.poetry.group.dev.dependencies]
+# plus workspace-level GUI/test tooling so `uv sync` at the root installs
+# every dev dependency previously only available from the PyKotor sub-project.
 dev = [
-    "pytest-qt>=4.4.0",
+    "pytest-qt>=4.4.0,<4.5.0; python_version < \"3.9\"",
+    "pytest-qt>=4.5.0; python_version >= \"3.9\"",
     "pytest-timeout>=2.4.0",
+    "astroid>=3.2.0,<3.5.0; python_version<\"3.9\"",
+    "astroid>=3.2.0; python_version>=\"3.9\"",
+    "autoflake>=2.3.1",
+    "mypy-extensions>=1.1.0; python_version>=\"3.8\"",
+    "mypy>=1.0.0,<1.10.0; python_version<\"3.9\"",
+    "mypy>=1.19.1; python_version>=\"3.9\"",
+    "pyflakes>=2.0.0,<3.4.0; python_version<\"3.9\"",
+    "pylint>=2.0.0,<3.3.9; python_version<\"3.9\"",
+    "pytest-cov>=4.0.0",
+    "pytest-html>=3.0.0,<4.0.0; python_version<\"3.9\"",
+    "pytest-html>=4.2.0; python_version>=\"3.9\"",
+    "pytest-json-report>=1.5.0",
+    "pytest-metadata>=2.0.0,<3.0.0; python_version<\"3.9\"",
+    "pytest-metadata>=3.1.1; python_version>=\"3.9\"",
+    "pytest-xdist>=2.0.0,<3.8.0; python_version<\"3.9\"",
+    "pytest-xdist>=3.8.0; python_version>=\"3.9\"",
+    "pytest-asyncio>=0.23.0,<0.25.0; python_version<\"3.9\"",
+    "pytest-asyncio>=0.25.2; python_version>=\"3.9\"",
+    "pytest>=7.0.0; python_version>=\"3.9\"",
+    "pytest>=7.0.0,<8.0.0; python_version<\"3.9\"",
+    "python-dateutil>=2.9.0.post0",
+    "python-dotenv; python_version<\"3.9\"",
+    "python-dotenv>=1.2.1; python_version>=\"3.9\"",
+    "python-multipart>=0.0.9,<0.0.21; python_version < \"3.10\"",
+    "python-multipart>=0.0.22; python_version >= \"3.10\"",
+    "ruff>=0.5.3,<0.6.0; python_version < \"3.9\"",
+    "ruff>=0.5.3; python_version >= \"3.9\"",
+    "snakeviz; python_version<\"3.9\"",
+    "snakeviz>=2.2.2; python_version>=\"3.9\"",
+    "tomli-w>=1.2.0; python_version>\"3.11\"",
+    "tomli>=2.4.0; python_version>\"3.11\"",
+    "tomli>=2.4.0; python_version<\"3.11\"",
+    "types-cffi>=1.17.0.20250915; python_version>=\"3.9\"",
+    "types-colorama>=0.4.15.20250801; python_version>=\"3.9\"",
+    "types-defusedxml>=0.7.0.20250822; python_version>=\"3.9\"",
+    "types-pillow>=10.2.0.20240822; python_version>=\"3.9\"",
+    "types-psutil>=7.2.2.20260130; python_version>=\"3.9\"",
+    "types-pywin32>=38; python_version>=\"3.9\" and sys_platform == \"win32\"",
+    "types-pyyaml>=6.0.12.20250915; python_version>=\"3.9\"",
+    "types-requests>=2.32.4.20260107; python_version>=\"3.9\"",
+    "types-send2trash>=2.1.0.20260117; python_version>=\"3.9\"",
+    "types-setuptools>=80.10.0.20260124; python_version>=\"3.9\"",
+    "typing-extensions>=4.5.0,<4.9.0; python_version<\"3.9\"",
+    "typing-extensions>=4.15.0; python_version>=\"3.9\"",
+    "typing-inspection>=0.4.2; python_version>=\"3.9\"",
+]
+
+# Pin PyQt5-Qt5 to a version that has Windows wheels (5.15.11+ dropped win). Required for Python 3.8.
+[tool.uv]
+override-dependencies = [
+  "pyqt5-qt5>=5.15.2,<5.15.11",
 ]
 
 [project]
@@ -16,14 +71,42 @@ name = "pykotor-workspace"
 authors = [{ name = "Nick Hugi" }, { name = "th3w1zard1" }]
 maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
 dependencies = [
-  "pykotor>=2.3.0"
+  "pykotor[render]>=2.3.12",
+  "holocrontoolset>=4.0.0b31",
+  "holopatcher>=2.0.0a3",
+  "holopazaak>=2.0.0",
+  "kotordiff>=1.0.1",
+  "numpy>=1.24.4",
+  "matplotlib>=3.7.5,<3.9.4; python_version < \"3.9\"",
+  "matplotlib>=3.9.4; python_version >= \"3.9\"",
 ]
 description = "PyKotor workspace - meta-package for PyKotor ecosystem"
 keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", "toolset", "tslpatcher"]
 license = {text = "LGPL-3.0-or-later License"}
 readme = {content-type = "text/markdown", file = "README.md"}
 requires-python = ">=3.8"
-version = "2.3.0"
+version = "2.3.12"
+
+# Re-export every optional-dependency set from Libraries/PyKotor/pyproject.toml so
+# that anything previously installable as `pykotor[<extra>]` is also reachable via
+# `pykotor-workspace[<extra>]` from this root project. Each entry forwards to the
+# corresponding pykotor extra; the actual dependency specifiers live in the
+# PyKotor sub-project so we never drift from its pinning logic.
+[project.optional-dependencies]
+all = ["pykotor[encodings,exp,extra,font,gl,updater,render]>=2.3.12"]
+encodings = ["pykotor[encodings]>=2.3.12"]
+exp = ["pykotor[exp]>=2.3.12"]
+extra = ["pykotor[extra]>=2.3.12"]
+font = ["pykotor[font]>=2.3.12"]
+gl = ["pykotor[gl]>=2.3.12"]
+gl_exp = ["pykotor[gl_exp]>=2.3.12"]
+updater = ["pykotor[updater]>=2.3.12"]
+render = ["pykotor[render]>=2.3.12"]
+# Surface pykotor's own dev extra too, for parity with the sub-project.
+dev = ["pykotor[dev]>=2.3.12"]
+
+[tool.setuptools]
+packages = []
 
 [project.scripts]
 batch_patcher = "batchpatcher.__main__:main"
@@ -47,49 +130,136 @@ holocron-toolset = "toolset.__main__:main"
 toolset = "toolset.__main__:main"
 kotor-editor = "toolset.gui.editors.standalone:main"
 kotor-module-designer = "toolset.gui.editors.standalone:launch_module_designer"
+module-designer = "toolset.gui.editors.standalone:launch_module_designer"
+module_designer = "toolset.gui.editors.standalone:launch_module_designer"
+moduledesigner = "toolset.gui.editors.standalone:launch_module_designer"
 kotor-indoor-builder = "toolset.gui.editors.standalone:launch_indoor_builder"
+indoor-builder = "toolset.gui.editors.standalone:launch_indoor_builder"
+indoor_builder = "toolset.gui.editors.standalone:launch_indoor_builder"
+indoorbuilder = "toolset.gui.editors.standalone:launch_indoor_builder"
 kotor-2da-editor = "toolset.gui.editors.standalone:launch_twoda"
 kotor-are-editor = "toolset.gui.editors.standalone:launch_are"
+are-editor = "toolset.gui.editors.standalone:launch_are"
+are_editor = "toolset.gui.editors.standalone:launch_are"
+areeditor = "toolset.gui.editors.standalone:launch_are"
 kotor-bwm-editor = "toolset.gui.editors.standalone:launch_bwm"
+bwm-editor = "toolset.gui.editors.standalone:launch_bwm"
+bwm_editor = "toolset.gui.editors.standalone:launch_bwm"
+bwmeditor = "toolset.gui.editors.standalone:launch_bwm"
 kotor-dlg-editor = "toolset.gui.editors.standalone:launch_dlg"
+dlg-editor = "toolset.gui.editors.standalone:launch_dlg"
+dlg_editor = "toolset.gui.editors.standalone:launch_dlg"
+dlgeditor = "toolset.gui.editors.standalone:launch_dlg"
 kotor-erf-editor = "toolset.gui.editors.standalone:launch_erf"
+erf-editor = "toolset.gui.editors.standalone:launch_erf"
+erf_editor = "toolset.gui.editors.standalone:launch_erf"
+erfeditor = "toolset.gui.editors.standalone:launch_erf"
 kotor-gff-editor = "toolset.gui.editors.standalone:launch_gff"
+gff-editor = "toolset.gui.editors.standalone:launch_gff"
+gff_editor = "toolset.gui.editors.standalone:launch_gff"
+gffeditor = "toolset.gui.editors.standalone:launch_gff"
 kotor-git-editor = "toolset.gui.editors.standalone:launch_git"
+git-editor = "toolset.gui.editors.standalone:launch_git"
+git_editor = "toolset.gui.editors.standalone:launch_git"
+giteditor = "toolset.gui.editors.standalone:launch_git"
 kotor-ifo-editor = "toolset.gui.editors.standalone:launch_ifo"
+ifo-editor = "toolset.gui.editors.standalone:launch_ifo"
+ifo_editor = "toolset.gui.editors.standalone:launch_ifo"
+ifoeditor = "toolset.gui.editors.standalone:launch_ifo"
 kotor-jrl-editor = "toolset.gui.editors.standalone:launch_jrl"
+jrl-editor = "toolset.gui.editors.standalone:launch_jrl"
+jrl_editor = "toolset.gui.editors.standalone:launch_jrl"
+jrleditor = "toolset.gui.editors.standalone:launch_jrl"
 kotor-lip-editor = "toolset.gui.editors.standalone:launch_lip"
+lip-editor = "toolset.gui.editors.standalone:launch_lip"
+lip_editor = "toolset.gui.editors.standalone:launch_lip"
+lipeditor = "toolset.gui.editors.standalone:launch_lip"
 kotor-mdl-editor = "toolset.gui.editors.standalone:launch_mdl"
+mdl-editor = "toolset.gui.editors.standalone:launch_mdl"
+mdl_editor = "toolset.gui.editors.standalone:launch_mdl"
+mdleditor = "toolset.gui.editors.standalone:launch_mdl"
 kotor-nss-editor = "toolset.gui.editors.standalone:launch_nss"
+nss-editor = "toolset.gui.editors.standalone:launch_nss"
+nss_editor = "toolset.gui.editors.standalone:launch_nss"
+nsseditor = "toolset.gui.editors.standalone:launch_nss"
 kotor-pth-editor = "toolset.gui.editors.standalone:launch_pth"
+pth-editor = "toolset.gui.editors.standalone:launch_pth"
+pth_editor = "toolset.gui.editors.standalone:launch_pth"
+ptheditor = "toolset.gui.editors.standalone:launch_pth"
 kotor-savegame-editor = "toolset.gui.editors.standalone:launch_savegame"
+savegame-editor = "toolset.gui.editors.standalone:launch_savegame"
+savegame_editor = "toolset.gui.editors.standalone:launch_savegame"
+savegameeditor = "toolset.gui.editors.standalone:launch_savegame"
 kotor-ssf-editor = "toolset.gui.editors.standalone:launch_ssf"
+ssf-editor = "toolset.gui.editors.standalone:launch_ssf"
+ssf_editor = "toolset.gui.editors.standalone:launch_ssf"
+ssfeditor = "toolset.gui.editors.standalone:launch_ssf"
 kotor-tlk-editor = "toolset.gui.editors.standalone:launch_tlk"
+tlk-editor = "toolset.gui.editors.standalone:launch_tlk"
+tlk_editor = "toolset.gui.editors.standalone:launch_tlk"
+tlkeditor = "toolset.gui.editors.standalone:launch_tlk"
 kotor-tpc-editor = "toolset.gui.editors.standalone:launch_tpc"
+tpc-editor = "toolset.gui.editors.standalone:launch_tpc"
+tpc_editor = "toolset.gui.editors.standalone:launch_tpc"
+tpceditor = "toolset.gui.editors.standalone:launch_tpc"
 kotor-txt-editor = "toolset.gui.editors.standalone:launch_txt"
+txt-editor = "toolset.gui.editors.standalone:launch_txt"
+txt_editor = "toolset.gui.editors.standalone:launch_txt"
+txteditor = "toolset.gui.editors.standalone:launch_txt"
 kotor-utc-editor = "toolset.gui.editors.standalone:launch_utc"
+utc-editor = "toolset.gui.editors.standalone:launch_utc"
+utc_editor = "toolset.gui.editors.standalone:launch_utc"
+utceditor = "toolset.gui.editors.standalone:launch_utc"
 kotor-utd-editor = "toolset.gui.editors.standalone:launch_utd"
+utd-editor = "toolset.gui.editors.standalone:launch_utd"
+utd_editor = "toolset.gui.editors.standalone:launch_utd"
+utdeditor = "toolset.gui.editors.standalone:launch_utd"
 kotor-ute-editor = "toolset.gui.editors.standalone:launch_ute"
+ute-editor = "toolset.gui.editors.standalone:launch_ute"
+ute_editor = "toolset.gui.editors.standalone:launch_ute"
+uteeditor = "toolset.gui.editors.standalone:launch_ute"
 kotor-uti-editor = "toolset.gui.editors.standalone:launch_uti"
+uti-editor = "toolset.gui.editors.standalone:launch_uti"
+uti_editor = "toolset.gui.editors.standalone:launch_uti"
+utieditor = "toolset.gui.editors.standalone:launch_uti"
 kotor-utm-editor = "toolset.gui.editors.standalone:launch_utm"
+utm-editor = "toolset.gui.editors.standalone:launch_utm"
+utm_editor = "toolset.gui.editors.standalone:launch_utm"
+utmeditor = "toolset.gui.editors.standalone:launch_utm"
 kotor-utp-editor = "toolset.gui.editors.standalone:launch_utp"
+utp-editor = "toolset.gui.editors.standalone:launch_utp"
+utp_editor = "toolset.gui.editors.standalone:launch_utp"
+utpeditor = "toolset.gui.editors.standalone:launch_utp"
 kotor-uts-editor = "toolset.gui.editors.standalone:launch_uts"
+uts-editor = "toolset.gui.editors.standalone:launch_uts"
+uts_editor = "toolset.gui.editors.standalone:launch_uts"
+utseditor = "toolset.gui.editors.standalone:launch_uts"
 kotor-utt-editor = "toolset.gui.editors.standalone:launch_utt"
+utt-editor = "toolset.gui.editors.standalone:launch_utt"
+utt_editor = "toolset.gui.editors.standalone:launch_utt"
+utteditor = "toolset.gui.editors.standalone:launch_utt"
 kotor-utw-editor = "toolset.gui.editors.standalone:launch_utw"
+utw-editor = "toolset.gui.editors.standalone:launch_utw"
+utw_editor = "toolset.gui.editors.standalone:launch_utw"
+utweditor = "toolset.gui.editors.standalone:launch_utw"
 kotor-wav-editor = "toolset.gui.editors.standalone:launch_wav"
+wav-editor = "toolset.gui.editors.standalone:launch_wav"
+wav_editor = "toolset.gui.editors.standalone:launch_wav"
+waveditor = "toolset.gui.editors.standalone:launch_wav"
 pykotor = "pykotor.cli.__main__:main"
 pykotorcli = "pykotor.cli.__main__:main"
 
 
 [project.urls]
-documentation = "https://github.com/OldRepublicDevs/PyKotor/blob/master/README.md"
-homepage = "https://github.com/OldRepublicDevs/PyKotor"
-issues = "https://github.com/OldRepublicDevs/PyKotor/issues"
-repository = "https://github.com/OldRepublicDevs/PyKotor.git"
-#Changelog = "https://github.com/OldRepublicDevs/PyKotor/blob/master/CHANGELOG.md"
+documentation = "https://github.com/OpenKotOR/PyKotor/blob/master/README.md"
+homepage = "https://github.com/OpenKotOR/PyKotor"
+issues = "https://github.com/OpenKotOR/PyKotor/issues"
+repository = "https://github.com/OpenKotOR/PyKotor.git"
+#Changelog = "https://github.com/OpenKotOR/PyKotor/blob/master/CHANGELOG.md"
 
 [tool.poetry]
 name = "pykotor-workspace"
-version = "2.1.1"
+version = "2.3.5"
 description = "PyKotor workspace - meta-package for PyKotor ecosystem"
 authors = ["Nick Hugi", "th3w1zard1 <boden.crouch@gmail.com>"]
 maintainers = ["th3w1zard1 <boden.crouch@gmail.com>"]
@@ -99,7 +269,11 @@ keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", 
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pykotor = "^2.3.0"
+pykotor = "^2.3.12"
+holocrontoolset = ">=4.0.0b31"
+holopatcher = ">=2.0.0a3"
+holopazaak = ">=2.0.0"
+kotordiff = ">=1.0.1"
 
 [tool.poetry.scripts]
 batch_patcher = "batchpatcher.__main__:main"
@@ -123,64 +297,130 @@ holocron-toolset = "toolset.__main__:main"
 toolset = "toolset.__main__:main"
 kotor-editor = "toolset.gui.editors.standalone:main"
 kotor-module-designer = "toolset.gui.editors.standalone:launch_module_designer"
+module-designer = "toolset.gui.editors.standalone:launch_module_designer"
+module_designer = "toolset.gui.editors.standalone:launch_module_designer"
+moduledesigner = "toolset.gui.editors.standalone:launch_module_designer"
 kotor-indoor-builder = "toolset.gui.editors.standalone:launch_indoor_builder"
+indoor-builder = "toolset.gui.editors.standalone:launch_indoor_builder"
+indoor_builder = "toolset.gui.editors.standalone:launch_indoor_builder"
+indoorbuilder = "toolset.gui.editors.standalone:launch_indoor_builder"
 kotor-2da-editor = "toolset.gui.editors.standalone:launch_twoda"
 kotor-are-editor = "toolset.gui.editors.standalone:launch_are"
+are-editor = "toolset.gui.editors.standalone:launch_are"
+are_editor = "toolset.gui.editors.standalone:launch_are"
+areeditor = "toolset.gui.editors.standalone:launch_are"
 kotor-bwm-editor = "toolset.gui.editors.standalone:launch_bwm"
+bwm-editor = "toolset.gui.editors.standalone:launch_bwm"
+bwm_editor = "toolset.gui.editors.standalone:launch_bwm"
+bwmeditor = "toolset.gui.editors.standalone:launch_bwm"
 kotor-dlg-editor = "toolset.gui.editors.standalone:launch_dlg"
+dlg-editor = "toolset.gui.editors.standalone:launch_dlg"
+dlg_editor = "toolset.gui.editors.standalone:launch_dlg"
+dlgeditor = "toolset.gui.editors.standalone:launch_dlg"
 kotor-erf-editor = "toolset.gui.editors.standalone:launch_erf"
+erf-editor = "toolset.gui.editors.standalone:launch_erf"
+erf_editor = "toolset.gui.editors.standalone:launch_erf"
+erfeditor = "toolset.gui.editors.standalone:launch_erf"
 kotor-gff-editor = "toolset.gui.editors.standalone:launch_gff"
+gff-editor = "toolset.gui.editors.standalone:launch_gff"
+gff_editor = "toolset.gui.editors.standalone:launch_gff"
+gffeditor = "toolset.gui.editors.standalone:launch_gff"
 kotor-git-editor = "toolset.gui.editors.standalone:launch_git"
+git-editor = "toolset.gui.editors.standalone:launch_git"
+git_editor = "toolset.gui.editors.standalone:launch_git"
+giteditor = "toolset.gui.editors.standalone:launch_git"
 kotor-ifo-editor = "toolset.gui.editors.standalone:launch_ifo"
+ifo-editor = "toolset.gui.editors.standalone:launch_ifo"
+ifo_editor = "toolset.gui.editors.standalone:launch_ifo"
+ifoeditor = "toolset.gui.editors.standalone:launch_ifo"
 kotor-jrl-editor = "toolset.gui.editors.standalone:launch_jrl"
+jrl-editor = "toolset.gui.editors.standalone:launch_jrl"
+jrl_editor = "toolset.gui.editors.standalone:launch_jrl"
+jrleditor = "toolset.gui.editors.standalone:launch_jrl"
 kotor-lip-editor = "toolset.gui.editors.standalone:launch_lip"
+lip-editor = "toolset.gui.editors.standalone:launch_lip"
+lip_editor = "toolset.gui.editors.standalone:launch_lip"
+lipeditor = "toolset.gui.editors.standalone:launch_lip"
 kotor-mdl-editor = "toolset.gui.editors.standalone:launch_mdl"
+mdl-editor = "toolset.gui.editors.standalone:launch_mdl"
+mdl_editor = "toolset.gui.editors.standalone:launch_mdl"
+mdleditor = "toolset.gui.editors.standalone:launch_mdl"
 kotor-nss-editor = "toolset.gui.editors.standalone:launch_nss"
+nss-editor = "toolset.gui.editors.standalone:launch_nss"
+nss_editor = "toolset.gui.editors.standalone:launch_nss"
+nsseditor = "toolset.gui.editors.standalone:launch_nss"
 kotor-pth-editor = "toolset.gui.editors.standalone:launch_pth"
+pth-editor = "toolset.gui.editors.standalone:launch_pth"
+pth_editor = "toolset.gui.editors.standalone:launch_pth"
+ptheditor = "toolset.gui.editors.standalone:launch_pth"
 kotor-savegame-editor = "toolset.gui.editors.standalone:launch_savegame"
+savegame-editor = "toolset.gui.editors.standalone:launch_savegame"
+savegame_editor = "toolset.gui.editors.standalone:launch_savegame"
+savegameeditor = "toolset.gui.editors.standalone:launch_savegame"
 kotor-ssf-editor = "toolset.gui.editors.standalone:launch_ssf"
+ssf-editor = "toolset.gui.editors.standalone:launch_ssf"
+ssf_editor = "toolset.gui.editors.standalone:launch_ssf"
+ssfeditor = "toolset.gui.editors.standalone:launch_ssf"
 kotor-tlk-editor = "toolset.gui.editors.standalone:launch_tlk"
+tlk-editor = "toolset.gui.editors.standalone:launch_tlk"
+tlk_editor = "toolset.gui.editors.standalone:launch_tlk"
+tlkeditor = "toolset.gui.editors.standalone:launch_tlk"
 kotor-tpc-editor = "toolset.gui.editors.standalone:launch_tpc"
+tpc-editor = "toolset.gui.editors.standalone:launch_tpc"
+tpc_editor = "toolset.gui.editors.standalone:launch_tpc"
+tpceditor = "toolset.gui.editors.standalone:launch_tpc"
 kotor-txt-editor = "toolset.gui.editors.standalone:launch_txt"
+txt-editor = "toolset.gui.editors.standalone:launch_txt"
+txt_editor = "toolset.gui.editors.standalone:launch_txt"
+txteditor = "toolset.gui.editors.standalone:launch_txt"
 kotor-utc-editor = "toolset.gui.editors.standalone:launch_utc"
+utc-editor = "toolset.gui.editors.standalone:launch_utc"
+utc_editor = "toolset.gui.editors.standalone:launch_utc"
+utceditor = "toolset.gui.editors.standalone:launch_utc"
 kotor-utd-editor = "toolset.gui.editors.standalone:launch_utd"
+utd-editor = "toolset.gui.editors.standalone:launch_utd"
+utd_editor = "toolset.gui.editors.standalone:launch_utd"
+utdeditor = "toolset.gui.editors.standalone:launch_utd"
 kotor-ute-editor = "toolset.gui.editors.standalone:launch_ute"
+ute-editor = "toolset.gui.editors.standalone:launch_ute"
+ute_editor = "toolset.gui.editors.standalone:launch_ute"
+uteeditor = "toolset.gui.editors.standalone:launch_ute"
 kotor-uti-editor = "toolset.gui.editors.standalone:launch_uti"
+uti-editor = "toolset.gui.editors.standalone:launch_uti"
+uti_editor = "toolset.gui.editors.standalone:launch_uti"
+utieditor = "toolset.gui.editors.standalone:launch_uti"
 kotor-utm-editor = "toolset.gui.editors.standalone:launch_utm"
+utm-editor = "toolset.gui.editors.standalone:launch_utm"
+utm_editor = "toolset.gui.editors.standalone:launch_utm"
+utmeditor = "toolset.gui.editors.standalone:launch_utm"
 kotor-utp-editor = "toolset.gui.editors.standalone:launch_utp"
+utp-editor = "toolset.gui.editors.standalone:launch_utp"
+utp_editor = "toolset.gui.editors.standalone:launch_utp"
+utpeditor = "toolset.gui.editors.standalone:launch_utp"
 kotor-uts-editor = "toolset.gui.editors.standalone:launch_uts"
+uts-editor = "toolset.gui.editors.standalone:launch_uts"
+uts_editor = "toolset.gui.editors.standalone:launch_uts"
+utseditor = "toolset.gui.editors.standalone:launch_uts"
 kotor-utt-editor = "toolset.gui.editors.standalone:launch_utt"
+utt-editor = "toolset.gui.editors.standalone:launch_utt"
+utt_editor = "toolset.gui.editors.standalone:launch_utt"
+utteditor = "toolset.gui.editors.standalone:launch_utt"
 kotor-utw-editor = "toolset.gui.editors.standalone:launch_utw"
+utw-editor = "toolset.gui.editors.standalone:launch_utw"
+utw_editor = "toolset.gui.editors.standalone:launch_utw"
+utweditor = "toolset.gui.editors.standalone:launch_utw"
 kotor-wav-editor = "toolset.gui.editors.standalone:launch_wav"
+wav-editor = "toolset.gui.editors.standalone:launch_wav"
+wav_editor = "toolset.gui.editors.standalone:launch_wav"
+waveditor = "toolset.gui.editors.standalone:launch_wav"
 pykotor = "pykotor.cli.__main__:main"
 pykotorcli = "pykotor.cli.__main__:main"
 
 [tool.poetry.urls]
-Documentation = "https://github.com/OldRepublicDevs/PyKotor/blob/master/README.md"
-Homepage = "https://github.com/OldRepublicDevs/PyKotor"
-Repository = "https://github.com/OldRepublicDevs/PyKotor.git"
-Issues = "https://github.com/OldRepublicDevs/PyKotor/issues"
-
-[tool.uv.sources]
-# Use workspace members instead of PyPI
-batchpatcher = {workspace = true}
-holocrontoolset = {workspace = true}
-holopatcher = {workspace = true}
-holopazaak = {workspace = true}
-kotordiff = {workspace = true}
-pykotor = {workspace = true}
-pykotorcli = {workspace = true}
-
-[tool.uv.workspace]
-members = [
-  "Libraries/PyKotor",
-  "Tools/BatchPatcher",
-  "Tools/HoloPatcher",
-  "Tools/HoloPazaak",
-  "Tools/HolocronToolset",
-  "Tools/KotorDiff"
-]
-
+Documentation = "https://github.com/OpenKotOR/PyKotor/blob/master/README.md"
+Homepage = "https://github.com/OpenKotOR/PyKotor"
+Repository = "https://github.com/OpenKotOR/PyKotor.git"
+Issues = "https://github.com/OpenKotOR/PyKotor/issues"
 
 ########################################################
 ## define only linter configurations below this point ##
@@ -217,13 +457,13 @@ exclude = '''
 )/
 '''
 include = '\.pyi?$'
-line-length = 175
+line-length = 100
 skip-magic-trailing-comma = false
 target-version = ['py38']
 
 [tool.isort]
 atomic = true
-line_length = 175
+line_length = 100
 multi_line_output = 3
 profile = "black"
 skip_gitignore = true
@@ -235,8 +475,8 @@ max-complexity = 25
 check_untyped_defs = true
 disallow_untyped_defs = false
 exclude = [
-  "\\.mypy_cache",
-  "\\.venv",
+  '\.mypy_cache',
+  '\.venv',
   "__pycache__",
   "build",
   "dist",
@@ -246,21 +486,35 @@ exclude = [
 explicit_package_bases = true
 mypy_path = [
   "Libraries/PyKotor/src",
-  "Tools/BatchPatcher/src",
+  "Libraries/bioware-kaitai-formats/src",
+  "Tools/HolocronToolset/src",
   "Tools/HoloPatcher/src",
   "Tools/HoloPazaak/src",
-  "Tools/HolocronToolset/src",
   "Tools/KotorDiff/src",
-  "tests"
+  "Tools/KotorMCP/src",
+  "tests",
 ]
 namespace_packages = true
 no_implicit_optional = true
-python_version = "3.9"
+python_version = "3.9"  # must be set to the minimum supported python version
 warn_return_any = true
 warn_unused_configs = true
 
 [tool.pylintrc]
-max-line-length = 200
+max-line-length = 100
+
+[tool.pylint.MASTER]
+ignore-paths = [
+  "^\\.venv/.*$",
+  "^vendor/.*$",
+  "^Tools/.*/src/toolset/uic/.*$",
+]
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+  "duplicate-code",
+]
+max-line-length = 100
 
 [tool.pyright]
 analyzeUnannotatedFunctions = true
@@ -277,11 +531,12 @@ exclude = [
 ]
 extraPaths = [
   "Libraries/PyKotor/src",
-  "Tools/BatchPatcher/src",
+  "Libraries/bioware-kaitai-formats/src",
+  "Tools/HolocronToolset/src",
   "Tools/HoloPatcher/src",
   "Tools/HoloPazaak/src",
-  "Tools/HolocronToolset/src",
-  "Tools/KotorDiff/src"
+  "Tools/KotorDiff/src",
+  "Tools/KotorMCP/src",
 ]
 include = ["*.py"]
 pythonVersion = "3.8"
@@ -296,7 +551,7 @@ PYSIDE2 = false
 PYSIDE6 = false
 
 [tool.pytest.ini_options]
-addopts = "-ra -q -m \"not slow\""
+addopts = '-ra -q -m "not slow"'
 log_cli = true
 log_cli_format = "%(message)s"
 log_cli_level = "CRITICAL"
@@ -311,33 +566,27 @@ markers = [
 qt_api = "pyqt6" # Default, can be overridden by PYTEST_QT_API environment variable (moved to conftest.py)
 testpaths = [
   "Libraries/PyKotor/tests",
-  "Tools/BatchPatcher/tests",
-  "Tools/HoloPatcher/tests",
-  "Tools/HoloPazaak/tests",
   "Tools/HolocronToolset/tests",
-  "Tools/KotorDiff/tests",
-  "tests"
+  "tests",
 ]
-# Timeout configuration (pytest-timeout)
 timeout = 120 # 2 minutes per test
 timeout_method = "thread" # Use thread-based timeout (works on Windows)
 
 [tool.ruff]
 fix = true
 force-exclude = true
-line-length = 175
+line-length = 100
 output-format = "grouped" # Group violations by containing file.
-# Enable preview features.
 preview = false
 respect-gitignore = false
 show-fixes = true
 src = [
   "Libraries/PyKotor/src",
-  "Tools/BatchPatcher/src",
+  "Tools/HolocronToolset/src",
   "Tools/HoloPatcher/src",
   "Tools/HoloPazaak/src",
-  "Tools/HolocronToolset/src",
-  "Tools/KotorDiff/src"
+  "Tools/KotorDiff/src",
+  "Tools/KotorMCP/src",
 ]
 
 [tool.ruff.format]
@@ -486,6 +735,7 @@ required-imports = ["from __future__ import annotations"]
   "N806"
 ]
 "Tools/HolocronToolset/src/toolset/uic/*.py" = ["ALL"]
+"Libraries/bioware-kaitai-formats/src/bioware_kaitai_formats/*.py" = ["ALL"]
 "__init__.py" = ["F401", "I001", "I002", "TID252"]
 "globalsettings.py" = ["F401", "I001"]
 "pykotor/resource/formats/ncs/compiler/*.py" = ["ALL"]

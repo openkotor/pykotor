@@ -16,15 +16,27 @@ import time
 from typing import Any
 
 
-def run_gh_api(endpoint: str, method: str = "GET", data: dict[str, Any] | None = None) -> dict[str, Any] | None:
+def run_gh_api(
+    endpoint: str, method: str = "GET", data: dict[str, Any] | None = None
+) -> dict[str, Any] | None:
     """Run a GitHub API command and return JSON result."""
     cmd = ["gh", "api", endpoint, "--method", method]
     if data:
         cmd.extend(["--input", "-"])
         json_data = json.dumps(data)
-        result = subprocess.run(cmd, check=False, input=json_data, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(
+            cmd,
+            check=False,
+            input=json_data,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
     else:
-        result = subprocess.run(cmd, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(
+            cmd, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace"
+        )
 
     if result.returncode != 0:
         if result.stderr and "rate limit" not in result.stderr.lower():
@@ -60,7 +72,9 @@ def get_all_releases(repo: str) -> list[dict[str, Any]]:
     return releases
 
 
-def update_release_with_date(target_repo: str, release_id: int, release_data: dict[str, Any], original_date: str) -> bool:
+def update_release_with_date(
+    target_repo: str, release_id: int, release_data: dict[str, Any], original_date: str
+) -> bool:
     """Attempt to update release - note: published_at cannot be set via REST API."""
     # GitHub REST API doesn't support setting published_at
     # We can only update other fields
@@ -80,7 +94,7 @@ def update_release_with_date(target_repo: str, release_id: int, release_data: di
 
 def main():
     source_repo = "NickHugi/PyKotor"
-    target_repo = "OldRepublicDevs/PyKotor"
+    target_repo = "OpenKotOR/PyKotor"
 
     print("=" * 70)
     print("RELEASE DATE FIX ATTEMPT")
@@ -109,13 +123,15 @@ def main():
             source_date = source_release.get("published_at")
             target_date = target_by_tag[tag_name].get("published_at")
             if source_date != target_date:
-                date_fixes_needed.append((tag_name, target_by_tag[tag_name]["id"], source_release, source_date))
+                date_fixes_needed.append(
+                    (tag_name, target_by_tag[tag_name]["id"], source_release, source_date)
+                )
 
     print(f"\nFound {len(date_fixes_needed)} releases with incorrect dates.")
     print("\nGitHub REST API limitation: published_at cannot be set programmatically.")
     print("\nTo fix dates, you have these options:")
     print("\n1. MANUAL FIX (Recommended):")
-    print("   Visit: https://github.com/OldRepublicDevs/PyKotor/releases")
+    print("   Visit: https://github.com/OpenKotOR/PyKotor/releases")
     print("   Edit each release and set the correct date")
     print("\n2. Create a script using GitHub's web interface automation")
     print("\n3. Contact GitHub Support for bulk date correction")
@@ -131,7 +147,7 @@ def main():
         print(f"\n{tag_name}:")
         print(f"  Original date: {original_date}")
         print(f"  Current date:  {current_date}")
-        print(f"  Edit URL: https://github.com/OldRepublicDevs/PyKotor/releases/edit/{tag_name}")
+        print(f"  Edit URL: https://github.com/OpenKotOR/PyKotor/releases/edit/{tag_name}")
 
     print("\n" + "=" * 70)
     print("NOTE: v1.52-patcher exists but has wrong date")

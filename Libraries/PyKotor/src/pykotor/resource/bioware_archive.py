@@ -9,7 +9,9 @@ from typing import TYPE_CHECKING, TypeVar, cast
 
 from pykotor.common.misc import ResRef  # type: ignore[import-untyped]
 from pykotor.extract.file import ResourceIdentifier  # type: ignore[import-untyped]
-from pykotor.resource.formats._base import ComparableMixin  # type: ignore[import-untyped]
+from pykotor.resource.formats._base import (  # type: ignore[import-untyped]
+    ComparableMixin,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -33,7 +35,7 @@ class HashAlgo(Enum):
     JENKINS = 4
 
 
-class ArchiveResource:
+class ArchiveResource(ComparableMixin):
     """Represents a resource stored within a BioWare archive (ERF, RIM, BIF).
 
     Contains resource reference, type, and data. Used as the base resource type
@@ -41,19 +43,7 @@ class ArchiveResource:
 
     References:
     ----------
-        Based on swkotor.exe archive structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file (123 bytes)
-          * Initializes ERF/RIM archive structure
-          * Sets up resource table and file data storage
-          * Used for MOD, ERF, and RIM file formats
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds encapsulated file contents to key table (1469 bytes, 287 lines)
-          * Registers resources from ERF/RIM archives in the key table
-          * Enables resource lookup by ResRef and type
-          * Used when loading module archives and override files
-          * Handles both NWM (Neverwinter Nights) and MOD (KotOR) formats
-        - CExoKeyTable::LocateBifFile @ 0x0040d200 - Locates BIF file for resource lookup
-        BioWare archive format specification
-
+        Observed retail KotOR archive handling (ERF/RIM/BIF family) and KEY-table registration.
 
     """
 
@@ -79,7 +69,11 @@ class ArchiveResource:
             return True
         if not isinstance(other, ArchiveResource):
             return NotImplemented  # type: ignore[no-any-return]
-        return self.resref == other.resref and self.restype == other.restype and self.data == other.data
+        return (
+            self.resref == other.resref
+            and self.restype == other.restype
+            and self.data == other.data
+        )
 
     def __hash__(self):
         return hash((self.resref, self.restype, self.data))
@@ -109,8 +103,7 @@ class ArchiveResource:
                 text = self.data.decode("utf-8", errors="replace")
                 if self.restype == ResourceType.NSS:
                     return f"NSS Script '{self.resref}':\n{text}"
-                else:
-                    return f"NCS Script '{self.resref}' (compiled, {self.size} bytes)"
+                return f"NCS Script '{self.resref}' (compiled, {self.size} bytes)"
             except UnicodeDecodeError:
                 return f"Script '{self.resref}' ({self.restype.name}, {self.size} bytes, binary)"
 
@@ -127,7 +120,9 @@ class ArchiveResource:
                     gff_str = gff_str[:997] + "..."
                 return f"GFF {self.restype.name} '{self.resref}':\n{gff_str}"
             except Exception as e:
-                return f"GFF {self.restype.name} '{self.resref}' ({self.size} bytes, parse error: {e})"
+                return (
+                    f"GFF {self.restype.name} '{self.resref}' ({self.size} bytes, parse error: {e})"
+                )
 
         # Handle TLK resources
         elif self.restype == ResourceType.TLK:
@@ -150,8 +145,7 @@ class ArchiveResource:
                     width = tpc.layers[0].mipmaps[0].width
                     height = tpc.layers[0].mipmaps[0].height
                     return f"TPC Texture '{self.resref}' ({width}x{height}, {self.size} bytes)"
-                else:
-                    return f"TPC Texture '{self.resref}' ({self.size} bytes)"
+                return f"TPC Texture '{self.resref}' ({self.size} bytes)"
             except Exception:
                 return f"TPC Texture '{self.resref}' ({self.size} bytes, parse error)"
 
@@ -169,15 +163,19 @@ class ArchiveResource:
         elif self.restype in (ResourceType.TGA, ResourceType.TXI):
             if self.restype == ResourceType.TGA:
                 return f"TGA Image '{self.resref}' ({self.size} bytes)"
-            else:
-                try:
-                    text = self.data.decode("utf-8", errors="replace")
-                    return f"TXI Info '{self.resref}':\n{text}"
-                except UnicodeDecodeError:
-                    return f"TXI Info '{self.resref}' ({self.size} bytes, binary)"
+            try:
+                text = self.data.decode("utf-8", errors="replace")
+                return f"TXI Info '{self.resref}':\n{text}"
+            except UnicodeDecodeError:
+                return f"TXI Info '{self.resref}' ({self.size} bytes, binary)"
 
         # Handle sound resources
-        elif self.restype in (ResourceType.WAV, ResourceType.BMU, ResourceType.WMA, ResourceType.WMV):
+        elif self.restype in (
+            ResourceType.WAV,
+            ResourceType.BMU,
+            ResourceType.WMA,
+            ResourceType.WMV,
+        ):
             return f"Audio '{self.resref}' ({self.restype.name}, {self.size} bytes)"
 
         # Handle model resources
@@ -210,18 +208,7 @@ class BiowareArchive(ComparableMixin, ABC):
 
     References:
     ----------
-        Based on swkotor.exe archive structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file (123 bytes)
-          * Initializes ERF/RIM archive structure
-          * Sets up resource table and file data storage
-          * Used for MOD, ERF, and RIM file formats
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds encapsulated file contents to key table (1469 bytes, 287 lines)
-          * Registers resources from ERF/RIM archives in the key table
-          * Enables resource lookup by ResRef and type
-          * Used when loading module archives and override files
-          * Handles both NWM (Neverwinter Nights) and MOD (KotOR) formats
-        - CExoKeyTable::LocateBifFile @ 0x0040d200 - Locates BIF file for resource lookup
-        BioWare archive format specification
+        Observed retail KotOR archive handling (ERF/RIM/BIF family) and KEY-table registration.
     """
 
     BINARY_TYPE: ClassVar[ResourceType]
@@ -283,7 +270,9 @@ class BiowareArchive(ComparableMixin, ABC):
             key = ResourceIdentifier.from_path(key)
         if not isinstance(key, ResourceIdentifier):
             raise TypeError(f"Expected ResourceIdentifier, got {key.__class__.__name__}")
-        self._resources.remove(cast("dict[ResourceIdentifier, ArchiveResource]", self._resource_dict).pop(key))
+        self._resources.remove(
+            cast("dict[ResourceIdentifier, ArchiveResource]", self._resource_dict).pop(key)
+        )
 
     def __add__(
         self,
@@ -310,7 +299,8 @@ class BiowareArchive(ComparableMixin, ABC):
         if not isinstance(other, BiowareArchive):
             return NotImplemented  # type: ignore[no-any-return]
         return (
-            set(self._resources) == set(other._resources) and super().__eq__(other)  # ComparableMixin.__eq__
+            set(self._resources) == set(other._resources)
+            and super().__eq__(other)  # ComparableMixin.__eq__
         )
 
     def set_resource(
@@ -325,27 +315,33 @@ class BiowareArchive(ComparableMixin, ABC):
         self,
         resref: ResRef | str,
         restype: ResourceType,
-        data: bytes,
+        data: bytes | bytearray,
     ) -> None:
         resource: ArchiveResource | None = next(
-            (resource for resource in cast("list[ArchiveResource]", self._resources) if resource.resref == resref and resource.restype == restype),
+            (
+                resource
+                for resource in cast("list[ArchiveResource]", self._resources)
+                if resource.resref == resref and resource.restype == restype
+            ),
             None,
         )
         if resource is None:
-            resource = self.ARCHIVE_TYPE(ResRef(resref), restype, data)
+            resource = self.ARCHIVE_TYPE(ResRef(resref), restype, bytes(data))
             self._resources.append(resource)
             self._resource_dict[resource.identifier()] = resource
         else:
-            resource.data = data
+            resource.data = bytes(data)
 
     def get(
         self,
         resref: ResRef | str,
         restype: ResourceType,
     ) -> bytes | None:
-        resource_dict: dict[ResourceIdentifier, ArchiveResource] = cast("dict[ResourceIdentifier, ArchiveResource]", self._resource_dict)
+        resource_dict: dict[ResourceIdentifier, ArchiveResource] = cast(
+            "dict[ResourceIdentifier, ArchiveResource]", self._resource_dict
+        )
         key = ResourceIdentifier(resref, restype)
-        resource: ArchiveResource | None = resource_dict.get(key, None)
+        resource: ArchiveResource | None = resource_dict.get(key)
         return None if resource is None else resource.data
 
     def get_data(

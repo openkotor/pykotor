@@ -215,10 +215,10 @@ This eliminates the need to manually create TSLPatcher configurations, making mo
 ### Text Conversion
 
 The system converts binary KOTOR formats to text representations for accurate diffing:
-- GFF files → Structured text representation
-- 2DA files → Tab-separated values
-- TLK files → String entries with metadata
-- SSF files → Sound name mappings
-- Binary files → Hash comparison
+- GFF files -> Structured text representation
+- 2DA files -> Tab-separated values
+- TLK files -> String entries with metadata
+- SSF files -> Sound name mappings
+- Binary files -> Hash comparison
 
 This approach ensures that even small changes in binary files are detected and properly converted to HoloPatcher instructions.

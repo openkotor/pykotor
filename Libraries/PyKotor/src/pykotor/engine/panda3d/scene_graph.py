@@ -4,8 +4,7 @@ This module implements the abstract ISceneGraph interface using Panda3D's NodePa
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         Libraries/PyKotor/src/pykotor/engine/scene/base.py - Abstract interface
 
 
@@ -30,8 +29,6 @@ if TYPE_CHECKING:
         NodePath,
     )
 
-    pass
-
 
 class Panda3DSceneGraph(ISceneGraph):
     """Panda3D implementation of KotOR scene graph.
@@ -41,8 +38,7 @@ class Panda3DSceneGraph(ISceneGraph):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         Libraries/PyKotor/src/pykotor/engine/scene/base.py:52-181 - ISceneGraph interface
 
 
@@ -77,7 +73,14 @@ class Panda3DSceneGraph(ISceneGraph):
     def _setup_default_lighting(self) -> None:
         """Set up default ambient lighting."""
         ambient = AmbientLight("ambient")
-        ambient.setColor(Vec4(self._ambient_light_color.x, self._ambient_light_color.y, self._ambient_light_color.z, 1.0))
+        ambient.setColor(
+            Vec4(
+                self._ambient_light_color.x,
+                self._ambient_light_color.y,
+                self._ambient_light_color.z,
+                1.0,
+            )
+        )
         self._ambient_light = self.root.attachNewNode(ambient)
         self.root.setLight(self._ambient_light)
 
@@ -99,7 +102,6 @@ class Panda3DSceneGraph(ISceneGraph):
     def update(self, dt: float) -> None:
         """Update the scene graph for the current frame."""
         # Panda3D handles most updates automatically via task system
-        pass
 
     def add_model_root(self, model_np: NodePath) -> None:
         """Add a model root to the scene."""
@@ -121,7 +123,9 @@ class Panda3DSceneGraph(ISceneGraph):
             if isinstance(light, AmbientLight):
                 light.setColor(Vec4(color[0], color[1], color[2], 1.0))
 
-    def add_directional_light(self, name: str, color: tuple[float, float, float], direction: tuple[float, float, float]) -> NodePath:
+    def add_directional_light(
+        self, name: str, color: tuple[float, float, float], direction: tuple[float, float, float]
+    ) -> NodePath:
         """Add a directional light to the scene."""
         light = DirectionalLight(name)
         light.setColor(Vec4(color[0], color[1], color[2], 1.0))
@@ -134,7 +138,13 @@ class Panda3DSceneGraph(ISceneGraph):
 
         return light_np
 
-    def add_point_light(self, name: str, color: tuple[float, float, float], position: tuple[float, float, float], radius: float) -> NodePath:
+    def add_point_light(
+        self,
+        name: str,
+        color: tuple[float, float, float],
+        position: tuple[float, float, float],
+        radius: float,
+    ) -> NodePath:
         """Add a point light to the scene."""
         light = PointLight(name)
         light.setColor(Vec4(color[0], color[1], color[2], 1.0))
@@ -149,7 +159,13 @@ class Panda3DSceneGraph(ISceneGraph):
 
         return light_np
 
-    def set_fog(self, enabled: bool, color: tuple[float, float, float] | None = None, near: float | None = None, far: float | None = None) -> None:
+    def set_fog(
+        self,
+        enabled: bool,
+        color: tuple[float, float, float] | None = None,
+        near: float | None = None,
+        far: float | None = None,
+    ) -> None:
         """Set fog properties for the scene."""
         self._fog.enabled = enabled
         if color is not None:

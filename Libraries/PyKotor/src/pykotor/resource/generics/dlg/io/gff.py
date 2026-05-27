@@ -34,27 +34,10 @@ def construct_dlg(  # noqa: C901, PLR0915
     Parses DLG (dialog) data from a GFF file, reading all fields including
     entries, replies, links, stunts, and conversation metadata.
 
-    References:
-    ----------
-        KotOR I (swkotor.exe):
-            - 0x005a2ae0 - CSWSDialog::LoadDialog (2900 bytes, 400 lines)
-                - Main DLG GFF parser entry point
-                - Function signature: LoadDialog(CSWSDialog* this, CResGFF* param_1, int param_2)
-                - Called from StartDialog (0x004cf490) and RunDialogOneLiner (0x004cb220)
-            - 0x0059f5f0 - CSWSDialog::LoadDialogBase (1385 bytes, 204 lines)
-                - Loads base dialog node fields (entries/replies)
-                - Function signature: LoadDialogBase(CSWSDialog* this, CSWSDialogBase* param_1, CResGFF* param_2, CResStruct* param_3, ulong* param_4, int* param_5)
-            - 0x0059ec10 - CSWSDialog::LoadDialogLinkedNode (115 bytes, 24 lines)
-                - Loads dialog link entry fields
-                - Function signature: LoadDialogLinkedNode(CSWSDialog* this, CSWSDialogLinkEntry* param_1, CResGFF* param_2, CResStruct* param_3, int* param_4, ulong param_5)
-            - See dlg/base.py for complete field reference
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally identical to K1 implementation
-
-    Derivations and Other Implementations:
-    ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/DLGObject.ts:77-493 (DLG initialization from GFF)
-
+    Field coverage matches the on-disk DLG GFF schema; retail KotOR I and TSL use the same
+    overall structure. Former loader cross-references and inline discrepancy notes are migrated to
+    ``wiki/reverse_engineering_findings.md`` (*resource/generics/dlg/io/gff.py*) and
+    ``dlg/base.py``.
 
     Args:
     ----
@@ -80,7 +63,6 @@ def construct_dlg(  # noqa: C901, PLR0915
         -------
             None - Populates the node in-place
         """
-
         node.text = gff_struct.acquire("Text", LocalizedString.from_invalid())
 
         node.listener = gff_struct.acquire("Listener", "")
@@ -89,7 +71,7 @@ def construct_dlg(  # noqa: C901, PLR0915
 
         node.script1 = gff_struct.acquire("Script", ResRef.from_blank())
 
-        # Discrepancy: PyKotor converts 0xFFFFFFFF to -1, reone stores as-is
+        # Map UINT32 max delay sentinel to -1 (see wiki: DLG GFF field quirks, dlg/io/gff.py).
         delay: int = gff_struct.acquire("Delay", 0)
         node.delay = -1 if delay == 0xFFFFFFFF else delay  # noqa: PLR2004
 
@@ -119,9 +101,10 @@ def construct_dlg(  # noqa: C901, PLR0915
             anim = DLGAnimation()
 
             anim.animation_id = anim_struct.acquire("Animation", 0)
-            # PyKotor-specific hack: Some animation IDs are offset by 10000
-            # Discrepancy: reone doesn't apply this offset, may be KotOR-specific quirk
-            if anim.animation_id > 10000:  # HACK(th3w1zard1): can't remember why this was needed.  # noqa: PLR2004
+            # Subtract 10000 when present (legacy DLG content quirk; see wiki dlg/io/gff.py notes).
+            if (
+                anim.animation_id > 10000
+            ):  # HACK(th3w1zard1): can't remember why this was needed.  # noqa: PLR2004
                 anim.animation_id -= 10000
 
             anim.participant = anim_struct.acquire("Participant", "")
@@ -169,7 +152,9 @@ def construct_dlg(  # noqa: C901, PLR0915
         if gff_struct.exists("TarHeightOffset"):
             node.target_height = gff_struct.acquire("TarHeightOffset", 0.0)
         if gff_struct.exists("FadeColor"):
-            node.fade_color = Color.from_bgr_vector3(gff_struct.acquire("FadeColor", Vector3.from_null()))
+            node.fade_color = Color.from_bgr_vector3(
+                gff_struct.acquire("FadeColor", Vector3.from_null())
+            )
 
     def construct_link(
         gff_struct: GFFStruct,
@@ -208,8 +193,12 @@ def construct_dlg(  # noqa: C901, PLR0915
 
     root: GFFStruct = gff.root
     # K1/TSL dialog load: EntryList/ReplyList lists; NumWords 0, EndConverAbort/EndConversation "", Skippable 0. Omit OK.
-    all_entries: list[DLGEntry] = [DLGEntry() for _ in range(len(root.acquire("EntryList", GFFList())))]
-    all_replies: list[DLGReply] = [DLGReply() for _ in range(len(root.acquire("ReplyList", GFFList())))]
+    all_entries: list[DLGEntry] = [
+        DLGEntry() for _ in range(len(root.acquire("EntryList", GFFList())))
+    ]
+    all_replies: list[DLGReply] = [
+        DLGReply() for _ in range(len(root.acquire("ReplyList", GFFList())))
+    ]
 
     dlg.word_count = root.acquire("NumWords", 0)
 
@@ -257,7 +246,9 @@ def construct_dlg(  # noqa: C901, PLR0915
             starter_node: DLGEntry = all_entries[node_struct_id]
         except IndexError:
             context_link_msg: str = f"(StartingList/{link_list_index})"  # noqa: SLF001
-            RobustLogger().error(f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid ReplyList node, omitting...")
+            RobustLogger().error(
+                f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid ReplyList node, omitting..."
+            )
         else:
             link: DLGLink = DLGLink(starter_node, link_list_index)
             dlg.starters.append(link)
@@ -277,7 +268,9 @@ def construct_dlg(  # noqa: C901, PLR0915
                 reply_node: DLGReply = all_replies[node_struct_id]
             except IndexError:
                 context_link_msg = f"(EntryList/{node_list_index}/RepliesList/{link_list_index})"  # noqa: SLF001
-                RobustLogger().error(f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid ReplyList node, omitting...")
+                RobustLogger().error(
+                    f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid ReplyList node, omitting..."
+                )
             else:
                 link = DLGLink(reply_node, link_list_index)
                 link.is_child = bool(link_struct.acquire("IsChild", default=False))
@@ -299,7 +292,9 @@ def construct_dlg(  # noqa: C901, PLR0915
                 entry_node: DLGEntry = all_entries[node_struct_id]
             except IndexError:
                 context_link_msg = f"(ReplyList/{node_list_index}/EntriesList/{link_list_index})"  # noqa: SLF001
-                RobustLogger().error(f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid EntryList node, omitting...")
+                RobustLogger().error(
+                    f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid EntryList node, omitting..."
+                )
             else:
                 link = DLGLink(entry_node, link_list_index)
                 link.is_child = bool(link_struct.acquire("IsChild", default=False))
@@ -493,7 +488,9 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
 
         link_list: GFFList = gff_struct.set_list(list_name, GFFList())
         # Sort links by link_list_index, treating -1 as the highest value
-        sorted_links: list[DLGLink] = sorted(node.links, key=lambda link: (link.list_index == -1, link.list_index))
+        sorted_links: list[DLGLink] = sorted(
+            node.links, key=lambda link: (link.list_index == -1, link.list_index)
+        )
         for i, link in enumerate(sorted_links):
             link_struct: GFFStruct = link_list.add(i)
             dismantle_link(link_struct, link, nodes, list_name, node_to_index)
@@ -544,7 +541,9 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
         stunt_struct.set_resref("StuntModel", stunt.stunt_model)
 
     starting_list: GFFList = root.set_list("StartingList", GFFList())
-    sorted_links: list[DLGLink] = sorted(dlg.starters, key=lambda link: (link.list_index == -1, link.list_index))
+    sorted_links: list[DLGLink] = sorted(
+        dlg.starters, key=lambda link: (link.list_index == -1, link.list_index)
+    )
     for link_list_index, starter in enumerate(sorted_links):
         starting_struct: GFFStruct = starting_list.add(link_list_index)
         dismantle_link(starting_struct, starter, all_entries, "StartingList", entry_index)

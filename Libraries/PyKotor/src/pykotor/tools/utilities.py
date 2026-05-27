@@ -6,11 +6,7 @@ and can be used by any application that needs these utilities.
 
 References:
 ----------
-        Based on swkotor.exe resource formats:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates new GFF file
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
-        - Load2DArray @ 0x004143b0 - Loads 2DA array data
+        Observed retail KotOR GFF, TLK, and 2DA resource handling.
         Tools/diff operations/ - File diffing implementation
         Libraries/PyKotor/src/pykotor/tslpatcher/diff/ - Structured diff engine
 
@@ -23,7 +19,7 @@ import difflib
 from typing import TYPE_CHECKING, Callable
 
 from pykotor.resource.formats.gff.gff_auto import read_gff
-from pykotor.resource.formats.gff.gff_data import GFFFieldType, GFFList, GFFStruct
+from pykotor.resource.formats.gff.gff_data import GFFContent, GFFFieldType, GFFList, GFFStruct
 from pykotor.resource.formats.tlk.tlk_auto import read_tlk
 from pykotor.resource.formats.twoda.twoda_auto import read_2da
 
@@ -33,7 +29,13 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.gff.gff_data import GFF
 
 
-_GFF_SUFFIXES: tuple[str, ...] = (".gff", ".utc", ".uti", ".dlg", ".are", ".git", ".ifo")
+# Derived from GFFContent to stay in sync with all known GFF subtypes. Excludes
+# ".res" because .res files are save-game containers that can be GFF *or* other
+# formats depending on the resource name; callers that want to include them should
+# add ".res" explicitly.
+_GFF_SUFFIXES: frozenset[str] = frozenset(
+    f".{ext}" for ext in GFFContent.get_extensions() if ext != "res"
+)
 
 
 def _write_output_if_requested(output_path: Path | None, content: str) -> None:
@@ -134,9 +136,7 @@ def diff_files(
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
+        Observed retail KotOR GFF read/write behavior.
         Tools/diff operations/src/kotordiff/differ.py
         Libraries/PyKotor/src/pykotor/tslpatcher/diff/structured.py
 
@@ -162,7 +162,9 @@ def _diff_gff_files(
     context_lines: int,
 ) -> str:
     """Compare two GFF files."""
-    return _diff_structured_files(file1_path, file2_path, output_path, context_lines, read_gff, _gff_to_text)
+    return _diff_structured_files(
+        file1_path, file2_path, output_path, context_lines, read_gff, _gff_to_text
+    )
 
 
 def _diff_2da_files(
@@ -172,7 +174,9 @@ def _diff_2da_files(
     context_lines: int,
 ) -> str:
     """Compare two 2DA files."""
-    return _diff_structured_files(file1_path, file2_path, output_path, context_lines, read_2da, _2da_to_text)
+    return _diff_structured_files(
+        file1_path, file2_path, output_path, context_lines, read_2da, _2da_to_text
+    )
 
 
 def _diff_tlk_files(
@@ -182,7 +186,9 @@ def _diff_tlk_files(
     context_lines: int,
 ) -> str:
     """Compare two TLK files."""
-    return _diff_structured_files(file1_path, file2_path, output_path, context_lines, read_tlk, _tlk_to_text)
+    return _diff_structured_files(
+        file1_path, file2_path, output_path, context_lines, read_tlk, _tlk_to_text
+    )
 
 
 def _diff_binary_files(
@@ -227,9 +233,7 @@ def grep_in_file(
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
+        Observed retail KotOR GFF read/write behavior.
 
 
     """
@@ -265,7 +269,9 @@ def _grep_in_text_file(
     except UnicodeDecodeError:
         # Try binary search
         data = file_path.read_bytes()
-        search_bytes = pattern.encode("utf-8") if case_sensitive else pattern.lower().encode("utf-8")
+        search_bytes = (
+            pattern.encode("utf-8") if case_sensitive else pattern.lower().encode("utf-8")
+        )
         if search_bytes in data:
             matches.append((0, f"Pattern found in binary file: {file_path.name}"))
 
@@ -329,9 +335,7 @@ def get_file_stats(file_path: Path) -> dict[str, int | str]:
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
+        Observed retail KotOR GFF read/write behavior.
 
 
     """
@@ -373,9 +377,7 @@ def validate_file(file_path: Path) -> tuple[bool, str]:
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
+        Observed retail KotOR GFF read/write behavior.
 
 
     """
@@ -385,7 +387,7 @@ def validate_file(file_path: Path) -> tuple[bool, str]:
     suffix = file_path.suffix.lower()
 
     try:
-        if suffix in (".gff", ".utc", ".uti", ".dlg", ".are", ".git", ".ifo"):
+        if suffix in _GFF_SUFFIXES:
             read_gff(file_path)
             return True, "Valid GFF file"
         if suffix == ".2da":
@@ -412,7 +414,7 @@ def validate_file(file_path: Path) -> tuple[bool, str]:
 
         return True, "File exists (format validation not implemented)"
     except Exception as e:
-        return False, f"Validation failed: {str(e)}"
+        return False, f"Validation failed: {e!s}"
 
 
 # Helper functions for text conversion

@@ -5,16 +5,20 @@ on:
   schedule:
     - cron: '0 0 * * 0'  # Weekly on Sunday
 
+permissions:
+  contents: read
+
 jobs:
   sync:
     name: Sync GitHub Labels
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       issues: write
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Sync labels
         uses: actions/label-sync@v2

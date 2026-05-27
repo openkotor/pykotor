@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from utility.gui.qt.kernel.qplatformdialoghelper.qplatformdialoghelper import QFileDialogPlatformHelper
+from utility.gui.qt.kernel.qplatformdialoghelper.qplatformdialoghelper import (
+    QFileDialogPlatformHelper,
+)
 
 
 class MacFileDialogHelper(QFileDialogPlatformHelper):
@@ -16,8 +18,13 @@ class MacFileDialogHelper(QFileDialogPlatformHelper):
         if self._options.acceptMode() == QFileDialog.AcceptMode.AcceptOpen:
             panel = NSOpenPanel.openPanel()
             panel.setCanChooseFiles_(self._options.fileMode() != QFileDialog.FileMode.Directory)
-            panel.setCanChooseDirectories_(self._options.fileMode() in [QFileDialog.FileMode.Directory, QFileDialog.FileMode.ExistingFiles])
-            panel.setAllowsMultipleSelection_(self._options.fileMode() == QFileDialog.FileMode.ExistingFiles)
+            panel.setCanChooseDirectories_(
+                self._options.fileMode()
+                in [QFileDialog.FileMode.Directory, QFileDialog.FileMode.ExistingFiles]
+            )
+            panel.setAllowsMultipleSelection_(
+                self._options.fileMode() == QFileDialog.FileMode.ExistingFiles
+            )
         else:
             panel = NSSavePanel.savePanel()
 

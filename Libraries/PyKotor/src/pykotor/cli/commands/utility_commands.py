@@ -64,7 +64,9 @@ def _diff_archives_or_directories(
                         if file_path.is_file():
                             try:
                                 relative_path = file_path.relative_to(path)
-                                raw_resource_data[str(relative_path).lower()] = file_path.read_bytes()
+                                raw_resource_data[str(relative_path).lower()] = (
+                                    file_path.read_bytes()
+                                )
                             except Exception:
                                 continue
             else:
@@ -118,7 +120,9 @@ def _diff_archives_or_directories(
                 context = DiffContext(Path(resource_key), Path(resource_key), ext)
 
                 # Use the diff_data function to get structured diff
-                result = diff_data(data1, data2, context, log_func=diff_logger.info, compare_hashes=False)
+                result = diff_data(
+                    data1, data2, context, log_func=diff_logger.info, compare_hashes=False
+                )
 
                 if result is False:  # Different
                     differences_found = True
@@ -127,12 +131,25 @@ def _diff_archives_or_directories(
                         try:
                             import difflib
 
-                            lines1 = data1.decode("utf-8", errors="replace").splitlines(keepends=True)
-                            lines2 = data2.decode("utf-8", errors="replace").splitlines(keepends=True)
+                            lines1 = data1.decode("utf-8", errors="replace").splitlines(
+                                keepends=True
+                            )
+                            lines2 = data2.decode("utf-8", errors="replace").splitlines(
+                                keepends=True
+                            )
 
                             fromfile = f"a/{resource_key}"
                             tofile = f"b/{resource_key}"
-                            diff_lines = list(difflib.unified_diff(lines1, lines2, fromfile=fromfile, tofile=tofile, lineterm="", n=getattr(args, "context", 3)))
+                            diff_lines = list(
+                                difflib.unified_diff(
+                                    lines1,
+                                    lines2,
+                                    fromfile=fromfile,
+                                    tofile=tofile,
+                                    lineterm="",
+                                    n=getattr(args, "context", 3),
+                                )
+                            )
 
                             if diff_lines:
                                 print("".join(diff_lines), end="")
@@ -154,12 +171,11 @@ def _diff_archives_or_directories(
             if output_mode == OutputMode.FULL:
                 print(msg)
             return 0
-        else:
-            msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
-            diff_logger.info(msg)
-            if output_mode == OutputMode.FULL:
-                print(msg)
-            return 1
+        msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
+        diff_logger.info(msg)
+        if output_mode == OutputMode.FULL:
+            print(msg)
+        return 1
 
     except Exception:
         Logger().exception("Error comparing archives/directories")
@@ -195,7 +211,12 @@ def _detect_path_type(path: Path) -> str:
             # Check if it's a module piece (composite module component)
             suffix_lower = path.suffix.lower()
             stem_lower = path.stem.lower()
-            if suffix_lower in (".rim", ".erf") and ("_s" in stem_lower or "_dlg" in stem_lower or "_a" in stem_lower or "_adx" in stem_lower):
+            if suffix_lower in (".rim", ".erf") and (
+                "_s" in stem_lower
+                or "_dlg" in stem_lower
+                or "_a" in stem_lower
+                or "_adx" in stem_lower
+            ):
                 return "module_piece"
             return "bioware_archive"
         return "file"
@@ -213,9 +234,12 @@ def _resolve_path(
     This function ensures all paths are returned as Path objects, letting the diff engine
     determine how to handle each path type (file, folder, installation, archive, etc.).
 
+    Supports ``container::resource`` syntax to extract a single resource from an
+    archive (e.g. ``unk_m41aa.rim::unk41_mission.dlg``).
+
     Args:
     ----
-        path_str: Path string to resolve
+        path_str: Path string to resolve.  May use ``archive::resref.ext`` syntax.
         verbose: Whether to output verbose debug information
 
     Returns:
@@ -225,7 +249,44 @@ def _resolve_path(
     Raises:
     ------
         FileNotFoundError: If path doesn't exist and can't be inferred
+        ValueError: If ``::`` resource reference cannot be resolved
     """
+    # Support container::resource syntax (e.g. unk_m41aa.rim::unk41_mission.dlg)
+    if "::" in path_str:
+        container_str, resource_ref = path_str.split("::", 1)
+        container_path = Path(container_str)
+        if not container_path.is_file():
+            raise FileNotFoundError(f"Container file not found: {container_path}")
+        if not is_capsule_file(container_path):
+            raise ValueError(f"Not a recognized archive/capsule: {container_path}")
+
+        from pykotor.extract.capsule import Capsule  # noqa: PLC0415
+        from pykotor.resource.type import ResourceType  # noqa: PLC0415
+
+        capsule = Capsule(container_path)
+        # Parse resref.ext
+        res_path = Path(resource_ref)
+        resname = res_path.stem
+        ext = res_path.suffix.lstrip(".").lower() if res_path.suffix else ""
+        restype = ResourceType.from_extension(ext) if ext else ResourceType.INVALID
+
+        data = capsule.resource(resname, restype) if not restype.is_invalid else None
+        if data is None:
+            raise ValueError(
+                f"Resource '{resource_ref}' not found in {container_path}. "
+                f"Available: {[f'{r.resname()}.{r.restype().extension}' for r in capsule]}"
+            )
+
+        # Write to temp file for the diff engine to consume
+        import tempfile  # noqa: PLC0415
+
+        temp_dir = tempfile.mkdtemp(prefix="pykotor_diff_")
+        temp_file = Path(temp_dir) / resource_ref
+        temp_file.write_bytes(data)
+        if verbose:
+            Logger().debug(f"Extracted '{resource_ref}' from '{container_path}' -> {temp_file}")
+        return temp_file
+
     path = Path(path_str)
 
     if verbose:
@@ -248,6 +309,7 @@ def cmd_diff(
     - KOTOR installations
     - Bioware archives (.sav/.erf/.rim/.mod)
     - Module pieces (composite module components like _s.rim/_a.rim/.rim/_dlg.erf)
+    - Three-way merge via --merge-tslpatcher
 
     Args:
     ----
@@ -258,8 +320,78 @@ def cmd_diff(
     -------
         Exit code (0 for success, non-zero for error)
     """
+    # Detect merge-tslpatcher mode and delegate to the merge workflow
+    if getattr(args, "merge_tslpatcher", False):
+        from pykotor.diff_tool.app import DiffConfig, run_application  # noqa: PLC0415
+        from pykotor.diff_tool.cli import normalize_path_arg  # noqa: PLC0415
+
+        merge_source = getattr(args, "merge_source", None)
+        merge_resource = getattr(args, "merge_resource", None)
+        merge_paths_raw = getattr(args, "merge_paths", None) or []
+
+        if not merge_source or not merge_resource or len(merge_paths_raw) != 2:  # noqa: PLR2004
+            print(
+                "Error: --merge-tslpatcher requires --merge-source, --merge-resource, "
+                "and exactly two --merge-path arguments.",
+                file=sys.stderr,
+            )
+            return 1
+
+        from pykotor.resource.type import ResourceType  # noqa: PLC0415
+
+        merge_resource_type_arg = getattr(args, "merge_resource_type", None)
+        merge_resource_type = None
+        if merge_resource_type_arg:
+            merge_resource_type = ResourceType.from_extension(str(merge_resource_type_arg))
+            if merge_resource_type.is_invalid:
+                print(
+                    f"Error: Unsupported --merge-resource-type value: {merge_resource_type_arg}",
+                    file=sys.stderr,
+                )
+                return 1
+
+        tslpatchdata_arg = getattr(args, "tslpatchdata", None)
+        output_log_arg = getattr(args, "output_log", None)
+        output_mode_raw = getattr(args, "output_mode", "full")
+        merge_output_mode = (
+            OutputMode(output_mode_raw) if isinstance(output_mode_raw, str) else output_mode_raw
+        )
+        tslpatchdata_path = (
+            Path(normalize_path_arg(tslpatchdata_arg))
+            if tslpatchdata_arg
+            else Path.cwd() / "tslpatchdata"
+        )
+        config = DiffConfig(
+            paths=[],
+            tslpatchdata_path=tslpatchdata_path,
+            ini_filename=getattr(args, "ini", "changes.ini"),
+            output_log_path=Path(normalize_path_arg(output_log_arg)) if output_log_arg else None,
+            log_level=getattr(args, "log_level", "info"),
+            output_mode=merge_output_mode,
+            compare_hashes=bool(getattr(args, "compare_hashes", True)),
+            use_profiler=bool(getattr(args, "use_profiler", False)),
+            logging_enabled=bool(getattr(args, "logging", True)),
+            merge_source_path=Path(normalize_path_arg(merge_source)),
+            merge_resource_name=str(merge_resource),
+            merge_resource_type=merge_resource_type,
+            merge_module_root=getattr(args, "merge_module", None),
+            merge_modded_paths=[Path(normalize_path_arg(p)) for p in merge_paths_raw],
+            merge_conflict_policy=str(getattr(args, "merge_conflict_policy", "mod-a")),
+            merge_conflict_output_path=Path(
+                normalize_path_arg(getattr(args, "merge_conflict_output"))
+            )
+            if getattr(args, "merge_conflict_output", None)
+            else None,
+        )
+        return run_application(config)
+
     # Determine verbosity from args
     verbose = getattr(args, "verbose", False) or getattr(args, "debug", False)
+
+    # Non-merge mode requires path1 and path2
+    if not args.path1 or not args.path2:
+        print("Error: path1 and path2 are required for non-merge diff mode.", file=sys.stderr)
+        return 1
 
     # Resolve both paths
     try:
@@ -387,7 +519,7 @@ def cmd_diff(
 
         config = DiffConfig(
             paths=[path1, path2],
-            output_mode=output_mode_str,
+            output_mode=output_mode,
             compare_hashes=True,
             logging_enabled=output_mode != OutputMode.QUIET,
         )
@@ -414,9 +546,15 @@ def cmd_diff(
         tslpatchdata_path = Path.cwd() / "tslpatchdata"
         ini_filename = getattr(args, "ini", "changes.ini")
 
+        gen_output_mode_raw = getattr(args, "output_mode", "full")
+        gen_output_mode = (
+            OutputMode(gen_output_mode_raw.lower())
+            if isinstance(gen_output_mode_raw, str)
+            else gen_output_mode_raw
+        )
         config = DiffConfig(
             paths=paths_for_tslpatcher,
-            output_mode=getattr(args, "output_mode", "full").lower(),
+            output_mode=gen_output_mode,
             use_incremental_writer=True,
             tslpatchdata_path=tslpatchdata_path,
             ini_filename=ini_filename,
@@ -428,7 +566,11 @@ def cmd_diff(
     # For archives and directories, implement proper diff display
     try:
         from pykotor.tslpatcher.diff.engine import DiffContext, diff_data
-        from pykotor.tslpatcher.diff.formatters import ContextFormatter, SideBySideFormatter, UnifiedFormatter
+        from pykotor.tslpatcher.diff.formatters import (
+            ContextFormatter,
+            SideBySideFormatter,
+            UnifiedFormatter,
+        )
 
         # Get format from args (default to unified)
         format_type = getattr(args, "format", "unified").lower()
@@ -464,33 +606,32 @@ def cmd_diff(
                 diff_logger,
                 output_mode,
             )
+        # Both are regular files - direct comparison
+        ext = path1.suffix.casefold()[1:] if path1.suffix else ""
+        context = DiffContext(path1, path2, ext)
+
+        result = diff_data(
+            path1,
+            path2,
+            context,
+            log_func=diff_logger.info,
+            compare_hashes=True,
+            format_type=format_type,
+        )
+
+        # Add summary message in full mode only
+        if result:
+            msg = f"'{args.path1}' MATCHES '{args.path2}'"
+            diff_logger.info(msg)
+            if output_mode == OutputMode.FULL:
+                print(msg)
         else:
-            # Both are regular files - direct comparison
-            ext = path1.suffix.casefold()[1:] if path1.suffix else ""
-            context = DiffContext(path1, path2, ext)
+            msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
+            diff_logger.info(msg)
+            if output_mode == OutputMode.FULL:
+                print(msg)
 
-            result = diff_data(
-                path1,
-                path2,
-                context,
-                log_func=diff_logger.info,
-                compare_hashes=True,
-                format_type=format_type,
-            )
-
-            # Add summary message in full mode only
-            if result:
-                msg = f"'{args.path1}' MATCHES '{args.path2}'"
-                diff_logger.info(msg)
-                if output_mode == OutputMode.FULL:
-                    print(msg)
-            else:
-                msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
-                diff_logger.info(msg)
-                if output_mode == OutputMode.FULL:
-                    print(msg)
-
-            return 0 if result else 1
+        return 0 if result else 1
 
     except Exception as e:
         logger.exception(f"Error generating diff: {e.__class__.__name__}: {e}")
@@ -506,17 +647,9 @@ def cmd_grep(
 ) -> int:
     """Search for patterns in files.
 
-    Supports text files and structured formats (GFF, 2DA, TLK).
-
-    References:
-    ----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - GFF structures are loaded via CResGFF class throughout the engine
-            - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-            - 2DA structures loaded via C2DA class (see 2da/io_2da.py for references)
-            - TLK structures loaded via CTlkTable class (see pykotor.resource.formats.tlk.tlk_data for K1/TSL addresses)
-
-
+    Supports text files and structured formats (GFF, 2DA, TLK). Former **References**
+    naming retail loaders and TLK address stubs: ``wiki/reverse_engineering_findings.md``
+    (*cli/commands/utility_commands.py*).
     """
     file_path = pathlib.Path(args.file)
 
@@ -585,7 +718,9 @@ def cmd_validate(
         logger.error(f"{file_path}: {message}")  # noqa: G004
         return 1
     except Exception as e:
-        logger.exception(f"Failed to validate {file_path}: {e.__class__.__name__}: {e}", exc_info=True)  # noqa: G004
+        logger.exception(
+            f"Failed to validate {file_path}: {e.__class__.__name__}: {e}", exc_info=True
+        )  # noqa: G004
         return 1
 
 
@@ -596,18 +731,7 @@ def cmd_merge(
     """Merge two GFF files.
 
     Merges fields from source file into target file, adding missing fields.
-    Currently only supports GFF files.
-
-    References:
-    ----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - GFF structures are loaded via CResGFF class throughout the engine
-            - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-            - 2DA structures loaded via C2DA class (see 2da/io_2da.py for references)
-            - TLK structures loaded via CTlkTable class (see pykotor.resource.formats.tlk.tlk_data for K1/TSL addresses)
-        Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py - GFFStruct.merge()
-
-
+    Currently only supports GFF files. Uses ``GFFStruct.merge`` from ``gff_data``.
     """
     target_path = pathlib.Path(args.target)
     source_path = pathlib.Path(args.source)
@@ -623,7 +747,9 @@ def cmd_merge(
 
         # Write merged result
         write_gff(target_gff, output_path)
-        logger.info(f"Merged {source_path.name} into {target_path.name}, saved to {output_path.name}")  # noqa: G004
+        logger.info(
+            f"Merged {source_path.name} into {target_path.name}, saved to {output_path.name}"
+        )  # noqa: G004
         return 0
     except Exception as e:
         logger.exception(f"Failed to merge files: {e.__class__.__name__}: {e}", exc_info=True)

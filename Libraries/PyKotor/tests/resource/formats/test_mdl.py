@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import unittest
 
-import pytest
 from pathlib import Path
 
 from pykotor.resource.formats.mdl import (
@@ -55,10 +54,18 @@ def compare_mdl_basic(
 
     test_case.assertEqual(mdl1.name, mdl2.name, f"{msg_prefix}Model names should match")
     test_case.assertEqual(mdl1.supermodel, mdl2.supermodel, f"{msg_prefix}Supermodels should match")
-    test_case.assertEqual(mdl1.classification, mdl2.classification, f"{msg_prefix}Classifications should match")
+    test_case.assertEqual(
+        mdl1.classification, mdl2.classification, f"{msg_prefix}Classifications should match"
+    )
     test_case.assertEqual(mdl1.fog, mdl2.fog, f"{msg_prefix}Fog settings should match")
-    test_case.assertEqual(mdl1.compress_quaternions, mdl2.compress_quaternions, f"{msg_prefix}Quaternion compression should match")
-    test_case.assertEqual(mdl1.animation_scale, mdl2.animation_scale, f"{msg_prefix}Animation scales should match")
+    test_case.assertEqual(
+        mdl1.compress_quaternions,
+        mdl2.compress_quaternions,
+        f"{msg_prefix}Quaternion compression should match",
+    )
+    test_case.assertEqual(
+        mdl1.animation_scale, mdl2.animation_scale, f"{msg_prefix}Animation scales should match"
+    )
 
 
 def compare_mdl_nodes(
@@ -80,7 +87,11 @@ def compare_mdl_nodes(
     nodes1 = mdl1.all_nodes()
     nodes2 = mdl2.all_nodes()
 
-    test_case.assertEqual(len(nodes1), len(nodes2), f"{msg_prefix}Node counts should match (got {len(nodes1)} vs {len(nodes2)})")
+    test_case.assertEqual(
+        len(nodes1),
+        len(nodes2),
+        f"{msg_prefix}Node counts should match (got {len(nodes1)} vs {len(nodes2)})",
+    )
 
     # Build node name maps
     nodes1_by_name = {node.name: node for node in nodes1}
@@ -96,10 +107,16 @@ def compare_mdl_nodes(
         node1 = nodes1_by_name[name]
         node2 = nodes2_by_name[name]
 
-        test_case.assertEqual(node1.node_type, node2.node_type, f"{msg_prefix}Node {name} types should match")
+        test_case.assertEqual(
+            node1.node_type, node2.node_type, f"{msg_prefix}Node {name} types should match"
+        )
 
         # Compare children count (hierarchy structure)
-        test_case.assertEqual(len(node1.children), len(node2.children), f"{msg_prefix}Node {name} child counts should match")
+        test_case.assertEqual(
+            len(node1.children),
+            len(node2.children),
+            f"{msg_prefix}Node {name} child counts should match",
+        )
 
 
 def compare_mdl_animations(
@@ -118,7 +135,9 @@ def compare_mdl_animations(
     """
     msg_prefix = f"{context}: " if context else ""
 
-    test_case.assertEqual(len(mdl1.anims), len(mdl2.anims), f"{msg_prefix}Animation counts should match")
+    test_case.assertEqual(
+        len(mdl1.anims), len(mdl2.anims), f"{msg_prefix}Animation counts should match"
+    )
 
     # Build animation maps by name
     anims1_by_name = {anim.name: anim for anim in mdl1.anims}
@@ -134,9 +153,21 @@ def compare_mdl_animations(
         anim1 = anims1_by_name[name]
         anim2 = anims2_by_name[name]
 
-        test_case.assertEqual(anim1.anim_length, anim2.anim_length, f"{msg_prefix}Animation {name} lengths should match")
-        test_case.assertEqual(anim1.transition_length, anim2.transition_length, f"{msg_prefix}Animation {name} transition lengths should match")
-        test_case.assertEqual(len(anim1.events), len(anim2.events), f"{msg_prefix}Animation {name} event counts should match")
+        test_case.assertEqual(
+            anim1.anim_length,
+            anim2.anim_length,
+            f"{msg_prefix}Animation {name} lengths should match",
+        )
+        test_case.assertEqual(
+            anim1.transition_length,
+            anim2.transition_length,
+            f"{msg_prefix}Animation {name} transition lengths should match",
+        )
+        test_case.assertEqual(
+            len(anim1.events),
+            len(anim2.events),
+            f"{msg_prefix}Animation {name} event counts should match",
+        )
 
 
 # ============================================================================
@@ -575,16 +606,41 @@ class TestMDLEdgeCases(unittest.TestCase):
         with self.assertRaises(ValueError):
             mdl.get_by_node_id(999)
 
+    def test_read_mdl_buffered_slice_matches_standalone_file(self):
+        """Loading from offset/size into a larger buffer must match reading extracted files (e.g. BIF slices)."""
+        test_dir = Path("Libraries/PyKotor/tests/test_files/mdl")
+        mdl_path = test_dir / "c_dewback.mdl"
+        mdx_path = test_dir / "c_dewback.mdx"
+        if not mdl_path.exists():
+            self.skipTest(f"Fixture missing: {mdl_path}")
+
+        raw_mdl = mdl_path.read_bytes()
+        raw_mdx = mdx_path.read_bytes()
+        prefix_len = 8192
+        prefix = b"\xaa" * prefix_len
+        suffix = b"\xbb" * 256
+        buf_mdl = prefix + raw_mdl + suffix
+        buf_mdx = prefix + raw_mdx + suffix
+
+        direct = read_mdl(mdl_path, source_ext=mdx_path)
+        sliced = read_mdl(
+            buf_mdl,
+            offset=prefix_len,
+            size=len(raw_mdl),
+            source_ext=buf_mdx,
+            offset_ext=prefix_len,
+            size_ext=len(raw_mdx),
+        )
+
+        self.assertEqual(direct.name, sliced.name)
+        self.assertEqual(len(direct.all_nodes()), len(sliced.all_nodes()))
+
 
 # ============================================================================
 # Round-Trip Tests: Binary -> ASCII -> Binary
 # ============================================================================
 
 
-@pytest.mark.xfail(
-    reason="MDL binary writer emits misaligned layout; re-reading written binary hits EOF/wrong offsets. Root cause: writer layout must match reader.",
-    strict=False,
-)
 class TestMDLRoundTripBinaryToAsciiToBinary(unittest.TestCase):
     """Test round-trip conversion: Binary -> ASCII -> Binary using diverse models."""
 
@@ -667,7 +723,9 @@ class TestMDLRoundTripBinaryToAsciiToBinary(unittest.TestCase):
         self.assertGreater(len(binary_bytes), 0, "Binary output should not be empty")
 
         # Verify binary header
-        self.assertEqual(binary_bytes[:4], b"\x00\x00\x00\x00", "Binary should start with null header")
+        self.assertEqual(
+            binary_bytes[:4], b"\x00\x00\x00\x00", "Binary should start with null header"
+        )
 
         # Step 8: Read binary back
         mdl_final = read_mdl(binary_bytes, file_format=ResourceType.MDL)
@@ -679,8 +737,14 @@ class TestMDLRoundTripBinaryToAsciiToBinary(unittest.TestCase):
         compare_mdl_animations(mdl_original, mdl_final, self, "Character model: Final Binary")
 
         # Verify counts match
-        self.assertEqual(original_node_count, len(mdl_final.all_nodes()), "Final node count should match original")
-        self.assertEqual(original_anim_count, len(mdl_final.anims), "Final animation count should match original")
+        self.assertEqual(
+            original_node_count,
+            len(mdl_final.all_nodes()),
+            "Final node count should match original",
+        )
+        self.assertEqual(
+            original_anim_count, len(mdl_final.anims), "Final animation count should match original"
+        )
 
     def test_roundtrip_door_model(self):
         """Test Binary -> ASCII -> Binary round-trip with door model."""
@@ -771,7 +835,9 @@ class TestMDLRoundTripBinaryToAsciiToBinary(unittest.TestCase):
         compare_mdl_animations(mdl_original, mdl_final, self, "Animation model: Final Binary")
 
         # Verify animation count
-        self.assertEqual(original_anim_count, len(mdl_final.anims), "Animation count should be preserved")
+        self.assertEqual(
+            original_anim_count, len(mdl_final.anims), "Animation count should be preserved"
+        )
 
     def test_roundtrip_camera_model(self):
         """Test Binary -> ASCII -> Binary round-trip with camera model."""
@@ -819,8 +885,12 @@ class TestMDLRoundTripBinaryToAsciiToBinary(unittest.TestCase):
                 mdl_from_ascii = read_mdl(ascii_bytes, file_format=ResourceType.MDL_ASCII)
 
                 # Compare after first conversion
-                compare_mdl_basic(mdl_original, mdl_from_ascii, self, f"{model_type}: Binary->ASCII")
-                compare_mdl_nodes(mdl_original, mdl_from_ascii, self, f"{model_type}: Binary->ASCII")
+                compare_mdl_basic(
+                    mdl_original, mdl_from_ascii, self, f"{model_type}: Binary->ASCII"
+                )
+                compare_mdl_nodes(
+                    mdl_original, mdl_from_ascii, self, f"{model_type}: Binary->ASCII"
+                )
 
                 # Convert back to binary
                 binary_bytes = bytes_mdl(mdl_from_ascii, ResourceType.MDL)
@@ -836,10 +906,6 @@ class TestMDLRoundTripBinaryToAsciiToBinary(unittest.TestCase):
 # ============================================================================
 
 
-@pytest.mark.xfail(
-    reason="MDL binary writer emits misaligned layout; re-reading written binary fails.",
-    strict=False,
-)
 class TestMDLExtendedRoundTrip(unittest.TestCase):
     """Test extended round-trip conversions (3+ steps) using diverse models."""
 
@@ -932,8 +998,12 @@ class TestMDLExtendedRoundTrip(unittest.TestCase):
                 mdl_final = read_mdl(binary_2, file_format=ResourceType.MDL)
 
                 # Compare final with original
-                compare_mdl_basic(mdl_original, mdl_final, self, f"{model_type}: Multiple round-trips")
-                compare_mdl_nodes(mdl_original, mdl_final, self, f"{model_type}: Multiple round-trips")
+                compare_mdl_basic(
+                    mdl_original, mdl_final, self, f"{model_type}: Multiple round-trips"
+                )
+                compare_mdl_nodes(
+                    mdl_original, mdl_final, self, f"{model_type}: Multiple round-trips"
+                )
 
                 # Verify node count
                 self.assertEqual(original_node_count, len(mdl_final.all_nodes()))
@@ -944,10 +1014,6 @@ class TestMDLExtendedRoundTrip(unittest.TestCase):
 # ============================================================================
 
 
-@pytest.mark.xfail(
-    reason="MDL binary writer emits misaligned layout; re-reading written binary fails.",
-    strict=False,
-)
 class TestMDLCrossModelRoundTrip(unittest.TestCase):
     """Test round-trip conversions comparing different models."""
 
@@ -985,11 +1051,21 @@ class TestMDLCrossModelRoundTrip(unittest.TestCase):
                 mdl_final = read_mdl(binary_bytes, file_format=ResourceType.MDL)
 
                 # Verify structure preservation
-                self.assertEqual(len(mdl_original.all_nodes()), len(mdl_final.all_nodes()), f"{model_type}: Node count should be preserved")
+                self.assertEqual(
+                    len(mdl_original.all_nodes()),
+                    len(mdl_final.all_nodes()),
+                    f"{model_type}: Node count should be preserved",
+                )
 
-                self.assertEqual(mdl_original.name, mdl_final.name, f"{model_type}: Name should be preserved")
+                self.assertEqual(
+                    mdl_original.name, mdl_final.name, f"{model_type}: Name should be preserved"
+                )
 
-                self.assertEqual(mdl_original.classification, mdl_final.classification, f"{model_type}: Classification should be preserved")
+                self.assertEqual(
+                    mdl_original.classification,
+                    mdl_final.classification,
+                    f"{model_type}: Classification should be preserved",
+                )
 
 
 if __name__ == "__main__":

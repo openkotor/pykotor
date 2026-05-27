@@ -25,7 +25,7 @@ if cffi is not None:  # pragma: no branch
             float out_min[3],
             float out_max[3]
         );
-        """
+        """,
     )
     _C_SRC = r"""
     #include <math.h>
@@ -116,7 +116,9 @@ def transform_bounds(
     mat = _ffi.new("float[16]", matrix)
     out_min = _ffi.new("float[3]")
     out_max = _ffi.new("float[3]")
-    _lib.transform_bounds(buf, int(vertex_count), int(stride_bytes), int(position_offset), mat, out_min, out_max)
+    _lib.transform_bounds(
+        buf, int(vertex_count), int(stride_bytes), int(position_offset), mat, out_min, out_max
+    )
     return (
         (out_min[0], out_min[1], out_min[2]),
         (out_max[0], out_max[1], out_max[2]),

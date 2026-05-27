@@ -17,7 +17,7 @@ We actively support the following versions with security updates:
 Instead, please report them via one of the following methods:
 
 ### Preferred Method: GitHub Security Advisories
-1. Go to [Security Advisories](https://github.com/OldRepublicDevs/PyKotor/security/advisories/new)
+1. Go to [Security Advisories](https://github.com/OpenKotOR/PyKotor/security/advisories/new)
 2. Click "New draft security advisory"
 3. Fill out the form with details about the vulnerability
 
@@ -88,7 +88,7 @@ When reporting a vulnerability, please include:
 ## Security Updates
 
 Security updates will be:
-- Released as patch versions (e.g., 2.0.2 → 2.0.3)
+- Released as patch versions (e.g., 2.0.2 -> 2.0.3)
 - Documented in release notes
 - Tagged with security labels on GitHub
 - Announced via GitHub releases

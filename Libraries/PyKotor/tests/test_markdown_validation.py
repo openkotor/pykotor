@@ -11,13 +11,29 @@ import re
 import subprocess
 
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 import pytest
+
+pytestmark = [pytest.mark.slow]
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 WIKI_DIR = REPO_ROOT / "wiki"
 MARKDOWNLINT_CONFIG = REPO_ROOT / ".markdownlint-cli2.jsonc"
+
+
+def _looks_like_markdown_link(url: str) -> bool:
+    """Filter false positives (digits/hex/comma targets are never wiki paths)."""
+    u = url.strip()
+    if not u:
+        return True
+    if u.isdigit():
+        return False
+    if re.match(r"^0x[0-9a-fA-F]+\)?$", u):
+        return False
+    if "," in u:
+        return False
+    return True
 
 
 def extract_links(content: str, file_path: Path) -> list[tuple[str, str, int]]:
@@ -26,13 +42,15 @@ def extract_links(content: str, file_path: Path) -> list[tuple[str, str, int]]:
     Returns: List of (link_text, link_url, line_number) tuples
     """
     links = []
-    # Pattern matches [text](url) and [text](url "title")
-    pattern = r'\[([^\]]+)\]\(([^\)"]+)(?:\s+"[^"]+")?\)'
+    # [text](url) — require `[` not immediately after a word char so `vtable[0](1)` is ignored.
+    pattern = r'(?<![\w/\\])\[([^\]]+)\]\(([^\)"]+)(?:\s+"[^"]+")?\)'
 
     for line_num, line in enumerate(content.splitlines(), 1):
         for match in re.finditer(pattern, line):
             link_text = match.group(1)
             link_url = match.group(2)
+            if not _looks_like_markdown_link(link_url):
+                continue
             links.append((link_text, link_url, line_num))
 
     return links
@@ -77,7 +95,12 @@ def extract_headings(content: str) -> dict[str, int]:
     return headings
 
 
-def validate_link(link_url: str, source_file: Path, all_files: dict[str, Path], all_headings: dict[str, dict[str, int]]) -> tuple[bool, str]:
+def validate_link(
+    link_url: str,
+    source_file: Path,
+    all_files: dict[str, Path],
+    all_headings: dict[str, dict[str, int]],
+) -> tuple[bool, str]:
     """Validate a single link.
 
     Returns: (is_valid, error_message)
@@ -100,18 +123,21 @@ def validate_link(link_url: str, source_file: Path, all_files: dict[str, Path], 
         if file_part.startswith("./"):
             file_part = file_part[2:]
 
+        # Percent-encoded paths (e.g. parentheses in wiki page names)
+        file_part_resolved = unquote(file_part)
+
         target_file = None
         # Try as-is first (already in wiki directory)
-        if (WIKI_DIR / file_part).exists():
-            target_file = WIKI_DIR / file_part
+        if (WIKI_DIR / file_part_resolved).exists():
+            target_file = WIKI_DIR / file_part_resolved
         # Try with .md extension
-        elif (WIKI_DIR / f"{file_part}.md").exists():
-            target_file = WIKI_DIR / f"{file_part}.md"
+        elif (WIKI_DIR / f"{file_part_resolved}.md").exists():
+            target_file = WIKI_DIR / f"{file_part_resolved}.md"
         # Try relative to source file
-        elif (source_file.parent / file_part).exists():
-            target_file = source_file.parent / file_part
-        elif (source_file.parent / f"{file_part}.md").exists():
-            target_file = source_file.parent / f"{file_part}.md"
+        elif (source_file.parent / file_part_resolved).exists():
+            target_file = source_file.parent / file_part_resolved
+        elif (source_file.parent / f"{file_part_resolved}.md").exists():
+            target_file = source_file.parent / f"{file_part_resolved}.md"
 
         if not target_file:
             return False, f"Target file not found: {file_part}"
@@ -128,7 +154,11 @@ def validate_link(link_url: str, source_file: Path, all_files: dict[str, Path], 
         if file_key in all_headings:
             if normalized_anchor not in all_headings[file_key]:
                 # Try to find similar anchors
-                similar = [h for h in all_headings[file_key].keys() if normalized_anchor in h or h in normalized_anchor]
+                similar = [
+                    h
+                    for h in all_headings[file_key].keys()
+                    if normalized_anchor in h or h in normalized_anchor
+                ]
                 if similar:
                     return False, f"Anchor not found (similar: {similar[0]})"
                 return False, f"Anchor not found: #{anchor_part}"
@@ -175,7 +205,9 @@ def test_markdownlint_compliance():
         # Extract error summary
         error_lines = [line for line in result.stdout.splitlines() if "error" in line.lower()]
         error_summary = "\n".join(error_lines[:50])  # Show first 50 errors
-        pytest.fail(f"markdownlint found errors:\n{error_summary}\n\nRun: npx markdownlint-cli2 'wiki/*.md' --fix --config .markdownlint-cli2.jsonc")
+        pytest.fail(
+            f"markdownlint found errors:\n{error_summary}\n\nRun: npx markdownlint-cli2 'wiki/*.md' --fix --config .markdownlint-cli2.jsonc"
+        )
 
 
 def test_wiki_files_exist(wiki_files: dict[str, Path]):
@@ -183,8 +215,12 @@ def test_wiki_files_exist(wiki_files: dict[str, Path]):
     assert len(wiki_files) > 0, "No markdown files found in wiki directory"
 
 
-@pytest.mark.parametrize("md_file", [pytest.param(f, id=f.name) for f in (REPO_ROOT / "wiki").glob("*.md")])
-def test_markdown_links_valid(md_file: Path, wiki_files: dict[str, Path], wiki_headings: dict[str, dict[str, int]]):
+@pytest.mark.parametrize(
+    "md_file", [pytest.param(f, id=f.name) for f in (REPO_ROOT / "wiki").glob("*.md")]
+)
+def test_markdown_links_valid(
+    md_file: Path, wiki_files: dict[str, Path], wiki_headings: dict[str, dict[str, int]]
+):
     """Test that all links in a markdown file are valid.
 
     This test validates:
@@ -224,7 +260,9 @@ def test_all_links_clickable(wiki_files: dict[str, Path], wiki_headings: dict[st
 
             is_valid, error_msg = validate_link(link_url, md_file, wiki_files, wiki_headings)
             if not is_valid:
-                all_errors.append(f"{md_file.name}:{line_num} [{link_text}]({link_url}) - {error_msg}")
+                all_errors.append(
+                    f"{md_file.name}:{line_num} [{link_text}]({link_url}) - {error_msg}"
+                )
 
     if all_errors:
         error_summary = "\n".join(all_errors[:100])  # Show first 100 errors
@@ -475,7 +513,9 @@ def is_legitimate_technical_use(link_text: str, link_url: str, line_content: str
     return False
 
 
-@pytest.mark.parametrize("md_file", [pytest.param(f, id=f.name) for f in (REPO_ROOT / "wiki").glob("*.md")])
+@pytest.mark.parametrize(
+    "md_file", [pytest.param(f, id=f.name) for f in (REPO_ROOT / "wiki").glob("*.md")]
+)
 def test_no_overly_broad_hyperlinks(md_file: Path):
     """Test that overly common words are not incorrectly hyperlinked.
 
@@ -506,7 +546,9 @@ def test_no_overly_broad_hyperlinks(md_file: Path):
                     if re.search(forbidden_url, link_url):
                         # Check if it's a legitimate technical use
                         if not is_legitimate_technical_use(link_text, link_url, line_content):
-                            errors.append(f"Line {line_num}: [{link_text}]({link_url}) - {description}")
+                            errors.append(
+                                f"Line {line_num}: [{link_text}]({link_url}) - {description}"
+                            )
                         break
 
     if errors:
@@ -520,7 +562,9 @@ def test_no_overly_broad_hyperlinks(md_file: Path):
         )
 
 
-@pytest.mark.parametrize("md_file", [pytest.param(f, id=f.name) for f in (REPO_ROOT / "wiki").glob("*.md")])
+@pytest.mark.parametrize(
+    "md_file", [pytest.param(f, id=f.name) for f in (REPO_ROOT / "wiki").glob("*.md")]
+)
 def test_no_self_referential_links(md_file: Path, wiki_headings: dict[str, dict[str, int]]):
     """Test that no markdown file contains links that point to the same section within itself.
 
@@ -583,7 +627,9 @@ def test_no_self_referential_links(md_file: Path, wiki_headings: dict[str, dict[
                     # (within a reasonable range - links should be to different sections)
                     # We'll flag it if the link is within 10 lines of the heading (same section)
                     if abs(link_line - target_line) <= 10:
-                        errors.append(f"Line {line_num}: [{link_text}]({link_url}) - Self-referential link to same section '{anchor_part}' (heading at line {target_line})")
+                        errors.append(
+                            f"Line {line_num}: [{link_text}]({link_url}) - Self-referential link to same section '{anchor_part}' (heading at line {target_line})"
+                        )
 
     if errors:
         error_summary = "\n".join(errors[:50])  # Show first 50 errors per file

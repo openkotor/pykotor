@@ -4,8 +4,7 @@ This module provides the main engine class using Panda3D's ShowBase.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         /panda3d/panda3d-docs/programming/showbase - ShowBase documentation
 
 
@@ -43,14 +42,8 @@ class KotorEngine(ShowBase):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         /panda3d/panda3d-docs/introduction/tutorial/starting-panda3d - ShowBase
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/Game.ts
-
-
 
     Attributes:
     ----------
@@ -65,8 +58,7 @@ class KotorEngine(ShowBase):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         /panda3d/panda3d-docs/programming/configuration/accessing-config-vars - loadPrcFileData
 
 
@@ -108,7 +100,9 @@ class KotorEngine(ShowBase):
 
         # Create scene graph manager
         self.scene_graph: Panda3DSceneGraph = Panda3DSceneGraph("main_scene", self.scene_root)
-        self.material_manager: Panda3DMaterialManager = Panda3DMaterialManager(self.loader, Path.cwd())
+        self.material_manager: Panda3DMaterialManager = Panda3DMaterialManager(
+            self.loader, Path.cwd()
+        )
 
         # Module loader will be initialized when installation is set
         self.module_loader: ModuleLoader | None = None
@@ -135,8 +129,7 @@ class KotorEngine(ShowBase):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         /panda3d/panda3d-docs - AmbientLight, DirectionalLight
 
 
@@ -161,8 +154,7 @@ class KotorEngine(ShowBase):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         /panda3d/panda3d-docs - base.run()
 
 
@@ -180,8 +172,7 @@ def create_engine() -> KotorEngine:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
     """

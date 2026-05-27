@@ -1,6 +1,6 @@
 # TSLPatcher 2DAList Syntax - Complete Guide
 
-This guide explains how to modify [2DA files](2DA-File-Format) using TSLPatcher syntax. For the complete [2DA file](2DA-File-Format) format specification, see [2DA File Format](2DA-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+This guide explains how to modify [2DA files](2DA-File-Format) using TSLPatcher syntax. For the complete [2DA file](2DA-File-Format) format specification, see [2DA File Format](2DA-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 ## Overview
 
@@ -78,27 +78,27 @@ appearance=2DAMEMORY10
 
 - **Modification types**: `ChangeRow#`, `AddRow#`, `CopyRow#`, `AddColumn#`
 - **Row targeting**:
-  - `RowIndex=#` → Target by numeric row index (0-based)
-  - `RowLabel=label` → Target by row label (first column value)
-  - `LabelIndex=value` → Find row where "label" column equals value
+  - `RowIndex=#` --> Target by numeric row index (0-based)
+  - `RowLabel=label` --> Target by row label (first column value)
+  - `LabelIndex=value` --> Find row where "label" column equals value
 - **Cell values**:
-  - `ColumnName=value` → Set cell to constant string
-  - `ColumnName=[StrRef](TLK-File-Format#string-references-strref)#` → Use [TLK](TLK-File-Format) stringref token
-  - `ColumnName=2DAMEMORY#` → Use [2DA](2DA-File-Format) memory token
-  - `ColumnName=high()` → Maximum value in that column
-  - `ColumnName=RowIndex` → Current row's index
-  - `ColumnName=RowLabel` → Current row's label
-  - `ColumnName=RowCell('column')` → value from another cell
-  - `ColumnName=****` → Empty string
+  - `ColumnName=value` --> Set cell to constant string
+  - `ColumnName=[StrRef](Audio-and-Localization-Formats#string-references-strref)#` --> Use [TLK](Audio-and-Localization-Formats#tlk) stringref token
+  - `ColumnName=2DAMEMORY#` --> Use [2DA](2DA-File-Format) memory token
+  - `ColumnName=high()` --> Maximum value in that column
+  - `ColumnName=RowIndex` --> Current row's index
+  - `ColumnName=RowLabel` --> Current row's label
+  - `ColumnName=RowCell('column')` --> value from another cell
+  - `ColumnName=****` --> Empty string
 - **Memory storage**:
-  - `2DAMEMORY#=RowIndex` → Store row index
-  - `2DAMEMORY#=RowLabel` → Store row label
-  - `2DAMEMORY#=ColumnName` → Store cell value from that column
-  - `[StrRef](TLK-File-Format#string-references-strref)#=value` → Store stringref for later use
+  - `2DAMEMORY#=RowIndex` --> Store row index
+  - `2DAMEMORY#=RowLabel` --> Store row label
+  - `2DAMEMORY#=ColumnName` --> Store cell value from that column
+  - `[StrRef](Audio-and-Localization-Formats#string-references-strref)#=value` --> Store stringref for later use
 - **Special row properties**:
-  - `RowLabel=value` → Set row label (for AddRow/CopyRow)
-  - `NewRowLabel=value` → Alternative name for RowLabel
-  - `ExclusiveColumn=name` → Check for existing row by column value (AddRow/CopyRow)
+  - `RowLabel=value` --> Set row label (for AddRow/CopyRow)
+  - `NewRowLabel=value` --> Alternative name for RowLabel
+  - `ExclusiveColumn=name` --> Check for existing row by column value (AddRow/CopyRow)
 
 ## Basic structure
 
@@ -146,7 +146,7 @@ L1=AnotherValue
 
 The `[2DAList]` section declares which [2DA files](2DA-File-Format) you want to modify. Each entry (like `Table0`, `Table1`, etc., or `Replace0`, `Replace1`, etc.) references another section with the same name as the filename.
 
-**Syntax Notes:**
+Syntax notes:
 
 - Use `Table#` to add a new [2DA file](2DA-File-Format) modification (non-replacing)
 - Use `Replace#` to replace an existing [2DA file](2DA-File-Format) before applying modifications
@@ -159,20 +159,20 @@ The `[2DAList]` section declares which [2DA files](2DA-File-Format) you want to 
 In **HoloPatcher**, the 2DAList runs in the following execution order:
 
 1. **[InstallList]** - files are installed first
-2. **[TLKList]** - [TLK](TLK-File-Format) modifications (creates `StrRef#` tokens)
+2. **[TLKList]** - [TLK](Audio-and-Localization-Formats#tlk) modifications (creates `StrRef#` tokens)
 3. **[2DAList]** ← **You are here** - [2DA file](2DA-File-Format) modifications (creates `2DAMEMORY#` tokens)
 4. **[GFFList]** - [GFF file](GFF-File-Format) modifications (can use `StrRef#` and `2DAMEMORY#` tokens)
-5. **[CompileList]** - Script compilation (can use `[StrRef](TLK-File-Format#string-references-strref)#` and `2DAMEMORY#` tokens)
-6. **[HACKList]** - Binary hacking (can use `[StrRef](TLK-File-Format#string-references-strref)#` and `2DAMEMORY#` tokens)
-7. **[SSFList]** - Sound set modifications (can use `[StrRef](TLK-File-Format#string-references-strref)#` and `2DAMEMORY#` tokens)
+5. **[CompileList]** - Script compilation (can use `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` and `2DAMEMORY#` tokens)
+6. **[HACKList]** - Binary hacking (can use `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` and `2DAMEMORY#` tokens)
+7. **[SSFList]** - Sound set modifications (can use `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` and `2DAMEMORY#` tokens)
 
-**Important:** Since 2DAList runs after TLKList, you can use `[StrRef](TLK-File-Format#string-references-strref)#` tokens in your [2DA](2DA-File-Format) modifications. Any `2DAMEMORY#` tokens you create will be available to all subsequent sections (GFFList, CompileList, HACKList, SSFList).
+Important: Since 2DAList runs after TLKList, you can use `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` tokens in your [2DA](2DA-File-Format) modifications. Any `2DAMEMORY#` tokens you create will be available to all subsequent sections (GFFList, CompileList, HACKList, SSFList).
 
 ## file-Level Configuration
 
 ### Top-Level Keys in [2DAList]
 
-| [KEY](KEY-File-Format) | type | Default | Description |
+| Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `!DefaultDestination` | string | `override` | Default destination for all [2DA files](2DA-File-Format) in this section |
 | `!DefaultSourceFolder` | string | `.` | Default source folder for [2DA files](2DA-File-Format). Relative path from `mod_path` (typically the `tslpatchdata` folder, which is the parent directory of `changes.ini` and `namespaces.ini`). When `.`, refers to the `tslpatchdata` folder itself. Path resolution: `mod_path / !DefaultSourceFolder / filename` |
@@ -181,22 +181,22 @@ In **HoloPatcher**, the 2DAList runs in the following execution order:
 
 Each [2DA file](2DA-File-Format) requires its own section (e.g., `[appearance.2da]`).
 
-| Key | type | Default | Description |
+| Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `!Destination` | string | Inherited from `!DefaultDestination` | Where to save the modified file (`override` or `path\to\file.mod`) |
 | `!SourceFolder` | string | Inherited from `!DefaultSourceFolder` | Source folder for the [2DA file](2DA-File-Format). Relative path from `mod_path` (typically the tslpatchdata folder). When `.`, refers to the tslpatchdata folder itself. |
 | `!SourceFile` | string | Same as section name | Alternative source filename (useful for multiple setup options using different source files) |
 | `!ReplaceFile` | 0/1 | 0 | If `1`, overwrite existing file before applying modifications. If `0` (default), modify the existing file in place. |
 | `!SaveAs` | string | Same as section name | Alternative filename to save as (useful for renaming files during installation) |
-| `!OverrideType` | string | `warn` (HoloPatcher) / `ignore` (TSLPatcher) | How to handle existing files in Override when destination is an [ERF](ERF-File-Format)/RIM archive. Valid values: `ignore`, `warn`, `rename` |
+| `!OverrideType` | string | `warn` (HoloPatcher) / `ignore` (TSLPatcher) | How to handle existing files in Override when destination is an [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) container. Valid values: `ignore`, `warn`, `rename` |
 
-**Destination values:**
+Destination values:
 
 - `override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM archive (use backslashes for path separators)
-- Archive paths must be relative to the game folder root
+- `Modules\module.mod`: Insert into a [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) container (use backslashes for path separators)
+- Container paths must be relative to the game folder root
 
-**Syntax Notes:**
+Syntax notes:
 
 - `!DefaultSourceFolder` and `!SourceFolder` default to `.` which refers to the `tslpatchdata` folder itself
 - When specifying paths, use backslashes (`\`) as path separators (TSLPatcher style), though forward slashes (`/`) are also accepted and normalized
@@ -206,21 +206,21 @@ Each [2DA file](2DA-File-Format) requires its own section (e.g., `[appearance.2d
 
 ### ChangeRow - Modify Existing Row
 
-**Syntax:** `ChangeRow#=section_name`
+Syntax: `ChangeRow#=section_name`
 
 Changes an existing row in the [2DA file](2DA-File-Format). You must specify which row to modify using one of the target types (see [Target Types](#target-types)).
 
-**Required Keys:**
+Required keys:
 
 - One of: `RowIndex`, `RowLabel`, or `LabelIndex` (to identify which row to modify)
 
-**Optional Keys:**
+Optional keys:
 
 - Any column name (to modify cell values)
 - `2DAMEMORY#=value` (to store values in memory)
-- `[StrRef](TLK-File-Format#string-references-strref)#=value` (to store stringref values in memory)
+- `[StrRef](Audio-and-Localization-Formats#string-references-strref)#=value` (to store stringref values in memory)
 
-**Example:**
+Example:
 
 ```ini
 [2DAList]
@@ -235,7 +235,7 @@ label=CUSTOM_APPEARANCE
 modeltype=1
 ```
 
-**Example with Memory Storage:**
+Example with memory storage:
 
 ```ini
 [modify_appearance_5]
@@ -248,7 +248,7 @@ modeltype=1
 StrRef20=name             ; Store name stringref in TLK memory token 20
 ```
 
-**Behavior:**
+Behavior:
 
 - If the target row is not found, a warning is logged and the modification is skipped
 - Existing cell values are overwritten with new values
@@ -257,23 +257,23 @@ StrRef20=name             ; Store name stringref in TLK memory token 20
 
 ### AddRow - Add New Row
 
-**Syntax:** `AddRow#=section_name`
+Syntax: `AddRow#=section_name`
 
 Adds a new row to the [2DA file](2DA-File-Format). If `ExclusiveColumn` is specified and a row with that value already exists, the existing row is modified instead of adding a new one.
 
-**Required Keys:**
+Required keys:
 
 - None (empty section creates a row with default/empty values)
 
-**Optional Keys:**
+Optional keys:
 
-- `ExclusiveColumn=column_name` → Check if a row with the same value in this column already exists; if so, modify it instead of adding
-- `RowLabel=value` or `NewRowLabel=value` → Set the row label (defaults to current row count if not specified)
+- `ExclusiveColumn=column_name` --> Check if a row with the same value in this column already exists; if so, modify it instead of adding
+- `RowLabel=value` or `NewRowLabel=value` --> Set the row label (defaults to current row count if not specified)
 - Any column name (to set cell values)
 - `2DAMEMORY#=value` (to store values in memory)
-- `[StrRef](TLK-File-Format#string-references-strref)#=value` (to store stringref values in memory)
+- `[StrRef](Audio-and-Localization-Formats#string-references-strref)#=value` (to store stringref values in memory)
 
-**Example:**
+Example:
 
 ```ini
 [appearance.2da]
@@ -287,7 +287,7 @@ name=StrRef200
 modeltype=2
 ```
 
-**Example with Exclusive Column (Prevent Duplicates):**
+Example with exclusive column (prevent duplicates):
 
 ```ini
 [add_new_appearance]
@@ -298,7 +298,7 @@ name=StrRef200
 
 If a row with `label=MY_NEW_APPEARANCE` already exists, it will be modified. Otherwise, a new row will be added.
 
-**Behavior:**
+Behavior:
 
 - New row is added with the specified cell values
 - If `ExclusiveColumn` is specified and a matching row exists, that row is updated instead
@@ -307,23 +307,23 @@ If a row with `label=MY_NEW_APPEARANCE` already exists, it will be modified. Oth
 
 ### CopyRow - Copy and Conditionally Add Row
 
-**Syntax:** `CopyRow#=section_name`
+Syntax: `CopyRow#=section_name`
 
 Copies an existing row (identified by a target) and optionally adds it as a new row or modifies an existing one if `ExclusiveColumn` matches.
 
-**Required Keys:**
+Required keys:
 
 - One of: `RowIndex`, `RowLabel`, or `LabelIndex` (to identify the source row to copy)
 
-**Optional Keys:**
+Optional keys:
 
-- `ExclusiveColumn=column_name` → If a row with the same value in this column already exists, modify that row instead of adding a new one
-- `RowLabel=value` or `NewRowLabel=value` → Set the new row's label (defaults to current row count if not specified)
+- `ExclusiveColumn=column_name` --> If a row with the same value in this column already exists, modify that row instead of adding a new one
+- `RowLabel=value` or `NewRowLabel=value` --> Set the new row's label (defaults to current row count if not specified)
 - Any column name (to override cell values from the copied row)
 - `2DAMEMORY#=value` (to store values in memory)
-- `[StrRef](TLK-File-Format#string-references-strref)#=value` (to store stringref values in memory)
+- `[StrRef](Audio-and-Localization-Formats#string-references-strref)#=value` (to store stringref values in memory)
 
-**Example:**
+Example:
 
 ```ini
 [appearance.2da]
@@ -337,7 +337,7 @@ label=COPIED_APPEARANCE
 name=StrRef300
 ```
 
-**Example - Copy and Modify:**
+Example: copy and modify
 
 ```ini
 [copy_appearance_1]
@@ -347,7 +347,7 @@ label=MODIFIED_COPY
 modeltype=3
 ```
 
-**Behavior:**
+Behavior:
 
 - The source row (identified by target) is copied
 - All cell values from the source row are preserved unless overridden
@@ -358,25 +358,25 @@ modeltype=3
 
 ### AddColumn - Add New Column
 
-**Syntax:** `AddColumn#=section_name`
+Syntax: `AddColumn#=section_name`
 
 Adds a new column to the [2DA file](2DA-File-Format) with a default value for all rows. Specific rows can be given custom values using index or label-based inserts.
 
-**Required Keys:**
+Required keys:
 
-- `ColumnLabel=column_name` → The name of the new column
-- `DefaultValue=value` → Default value for all rows (use `****` for empty string)
+- `ColumnLabel=column_name` --> The name of the new column
+- `DefaultValue=value` --> Default value for all rows (use `****` for empty string)
 
-**Optional Keys:**
+Optional keys:
 
-- `I#=value` → Set value for row at index `#` (e.g., `I5=CustomValue` sets row index 5)
-- `Llabel=value` → Set value for row with label `label` (e.g., `L1=CustomValue` sets row with label "1")
-- `2DAMEMORY#=I#` or `2DAMEMORY#=Llabel` → Store the cell value from the new column into memory token `#` after the column is created
+- `I#=value` --> Set value for row at index `#` (e.g., `I5=CustomValue` sets row index 5)
+- `Llabel=value` --> Set value for row with label `label` (e.g., `L1=CustomValue` sets row with label "1")
+- `2DAMEMORY#=I#` or `2DAMEMORY#=Llabel` --> Store the cell value from the new column into memory token `#` after the column is created
   - Use `I#` format to reference by row index (e.g., `2DAMEMORY10=I5` stores the value from row index 5 in the new column)
   - Use `Llabel` format to reference by row label (e.g., `2DAMEMORY10=L1` stores the value from the row with label "1" in the new column)
   - Memory storage happens **after** the column is created and all insert values are applied
 
-**Example:**
+Example:
 
 ```ini
 [appearance.2da]
@@ -390,7 +390,7 @@ L1=AnotherValue
 2DAMEMORY10=I5
 ```
 
-**Example with Memory Storage:**
+Example with memory storage:
 
 ```ini
 [add_custom_column]
@@ -403,19 +403,19 @@ L5=ValueForLabel5
 2DAMEMORY21=L5    ; Store value from row label 5 after column is created
 ```
 
-**Behavior:**
+Behavior:
 
 - New column is added to all rows
 - All rows initially receive the `DefaultValue`
 - Rows specified in `I#` or `Llabel` entries get their custom values
 - If a row specified in `I#` doesn't exist, an error is raised
 - If a row specified in `Llabel` doesn't exist, an error is raised
-- **Memory Storage:** Memory tokens specified with `2DAMEMORY#=I#` or `2DAMEMORY#=Llabel` store the cell value from the new column **after** it's created and all insert values are applied
+- Memory storage: Memory tokens specified with `2DAMEMORY#=I#` or `2DAMEMORY#=Llabel` store the cell value from the new column **after** it's created and all insert values are applied
   - `2DAMEMORY#=I5` retrieves the cell value from row index 5 in the newly created column
   - `2DAMEMORY#=L1` retrieves the cell value from the row with label "1" in the newly created column
   - This allows you to capture values from the new column for use in later modifications
 
-**Special value Syntax in AddColumn:**
+Special value syntax in AddColumn:
 
 For `I#` and `Llabel` values (the right side of the assignment), you can use:
 
@@ -423,7 +423,7 @@ For `I#` and `Llabel` values (the right side of the assignment), you can use:
 - Token references: `I5=2DAMEMORY10`, `I5=StrRef20`
 - Special functions (`high()`, `RowIndex`, `RowLabel`) are **not supported** in AddColumn (unlike ChangeRow/AddRow/CopyRow)
 
-**Memory Storage Syntax:**
+Memory storage syntax:
 
 For memory storage (`2DAMEMORY#=`), you must use:
 
@@ -438,11 +438,11 @@ Target types identify which row to modify in ChangeRow and CopyRow operations. O
 
 ### RowIndex
 
-**Syntax:** `RowIndex=integer`
+Syntax: `RowIndex=integer`
 
 Targets a row by its numeric index (0-based).
 
-**Example:**
+Example:
 
 ```ini
 [modify_row]
@@ -450,7 +450,7 @@ RowIndex=5
 label=MODIFIED
 ```
 
-**Behavior:**
+Behavior:
 
 - Directly accesses the row at the specified index
 - If the index is out of bounds, the row is not found and a warning is logged
@@ -459,11 +459,11 @@ label=MODIFIED
 
 ### RowLabel
 
-**Syntax:** `RowLabel=label_string`
+Syntax: `RowLabel=label_string`
 
 Targets a row by its label (the value in the first column, typically named "label").
 
-**Example:**
+Example:
 
 ```ini
 [modify_row]
@@ -471,23 +471,23 @@ RowLabel=1
 label=MODIFIED
 ```
 
-**Behavior:**
+Behavior:
 
 - Searches for a row where the row label matches the specified value
 - Uses string comparison (case-sensitive)
 - If no matching row is found, a warning is logged
 - **Dynamic targeting**: RowLabel can accept token references for dynamic row selection:
   - `RowLabel=2DAMEMORY10` - Uses the value stored in [2DA](2DA-File-Format) memory token 10
-  - `RowLabel=StrRef20` - Uses the stringref value from [TLK](TLK-File-Format) memory token 20 (converted to string)
+  - `RowLabel=StrRef20` - Uses the stringref value from [TLK](Audio-and-Localization-Formats#tlk) memory token 20 (converted to string)
 - This allows you to dynamically determine which row to modify based on previously stored values
 
 ### LabelIndex
 
-**Syntax:** `LabelIndex=value`
+Syntax: `LabelIndex=value`
 
 Targets a row by searching the "label" column for a matching value. This is different from `RowLabel` because it searches within a specific column named "label" rather than using the row's label value.
 
-**Example:**
+Example:
 
 ```ini
 [modify_row]
@@ -495,7 +495,7 @@ LabelIndex=MY_APPEARANCE
 label=MODIFIED
 ```
 
-**Behavior:**
+Behavior:
 
 - Requires the [2DA](2DA-File-Format) to have a column named "label"
 - Searches all rows for a cell in the "label" column that matches the specified value
@@ -503,10 +503,10 @@ label=MODIFIED
 - If no matching row is found, a warning is logged
 - **Dynamic targeting**: LabelIndex can accept token references for dynamic row selection:
   - `LabelIndex=2DAMEMORY10` - Uses the value stored in [2DA](2DA-File-Format) memory token 10
-  - `LabelIndex=StrRef20` - Uses the stringref value from [TLK](TLK-File-Format) memory token 20 (converted to string)
+  - `LabelIndex=StrRef20` - Uses the stringref value from [TLK](Audio-and-Localization-Formats#tlk) memory token 20 (converted to string)
 - This allows you to dynamically search for rows based on previously stored values
 
-**Note:** `RowLabel` and `LabelIndex` may seem similar, but they operate differently:
+Note: `RowLabel` and `LabelIndex` may seem similar, but they operate differently:
 
 - `RowLabel` uses the row's label value (first column's value)
 - `LabelIndex` searches within a column named "label" for a matching value
@@ -517,11 +517,11 @@ When setting cell values in ChangeRow, AddRow, and CopyRow, you can use various 
 
 ### Constant string values
 
-**Syntax:** `ColumnName=any_string`
+Syntax: `ColumnName=any_string`
 
 The simplest value type - a literal string that will be placed in the cell.
 
-**Example:**
+Example:
 
 ```ini
 label=CUSTOM_APPEARANCE
@@ -531,11 +531,11 @@ description=This is a custom appearance
 
 ### Empty string
 
-**Syntax:** `ColumnName=****`
+Syntax: `ColumnName=****`
 
 Use `****` to set a cell to an empty string.
 
-**Example:**
+Example:
 
 ```ini
 comment=****
@@ -544,20 +544,20 @@ notes=****
 
 ### Token References
 
-#### [StrRef](TLK-File-Format#string-references-strref) Tokens
+#### [StrRef](Audio-and-Localization-Formats#string-references-strref) Tokens
 
-**Syntax:** `ColumnName=[StrRef](TLK-File-Format#string-references-strref)#`
+Syntax: `ColumnName=[StrRef](Audio-and-Localization-Formats#string-references-strref)#`
 
-References a stringref token created in the `[TLKList]` section. The token number is extracted and the value is looked up from [TLK](TLK-File-Format) memory.
+References a stringref token created in the `[TLKList]` section. The token number is extracted and the value is looked up from [TLK](Audio-and-Localization-Formats#tlk) memory.
 
-**Example:**
+Example:
 
 ```ini
 name=StrRef50
 description=StrRef100
 ```
 
-**Behavior:**
+Behavior:
 
 - Token must be defined in `[TLKList]` before use
 - value stored in the token is used as the cell value
@@ -565,23 +565,23 @@ description=StrRef100
 
 #### 2DAMEMORY Token References(#2damemory-token-references)
 
-**Syntax:** `ColumnName=2DAMEMORY#`
+Syntax: `ColumnName=2DAMEMORY#`
 
 References a [2DA](2DA-File-Format) memory token created in a previous 2DAList modification. The token number is extracted and the value is looked up from [2DA](2DA-File-Format) memory.
 
-**Example:**
+Example:
 
 ```ini
 appearance=2DAMEMORY10
 model=2DAMEMORY5
 ```
 
-**Behavior:**
+Behavior:
 
 - Token must be defined earlier in the same or a previous [2DA file](2DA-File-Format) modification
 - value stored in the token (as a string) is used as the cell value
 - If token is not found, an error is raised
-- **Important:** `!FieldPath` tokens (used in GFFList) cannot be used here - only string values are supported
+- Important: `!FieldPath` tokens (used in GFFList) cannot be used here - only string values are supported
 - The token value is looked up from `memory.memory_2da[token_id]` at runtime
 - If the token contains a `PureWindowsPath` (from GFFList `!FieldPath`), a `TypeError` will be raised
 
@@ -589,24 +589,24 @@ model=2DAMEMORY5
 
 #### high() - Maximum value
 
-**Syntax:** `ColumnName=high()` or `ColumnName=high(column_name)`
+Syntax: `ColumnName=high()` or `ColumnName=high(column_name)`
 
 Returns the maximum value from a column or the maximum row label.
 
-**Without Column Name:**
+Without column name:
 
 ```ini
 RowLabel=high()    ; Maximum row label (used when setting row label)
 forcehostile=high()  ; Maximum value in the "forcehostile" column
 ```
 
-**With Column Name:**
+With column name:
 
 ```ini
 forcehostile=high(modeltype)  ; Maximum value from "modeltype" column
 ```
 
-**Behavior:**
+Behavior:
 
 - `high()` without column name in `RowLabel` context returns the maximum row label
 - `high()` without column name in a cell context returns the maximum value from that cell's column
@@ -616,17 +616,17 @@ forcehostile=high(modeltype)  ; Maximum value from "modeltype" column
 
 #### RowIndex - Current Row index
 
-**Syntax:** `ColumnName=RowIndex`
+Syntax: `ColumnName=RowIndex`
 
 Returns the numeric index of the current row as a string.
 
-**Example:**
+Example:
 
 ```ini
 index_value=RowIndex
 ```
 
-**Behavior:**
+Behavior:
 
 - Returns the row index (0-based) as a string
 - Only works in ChangeRow, AddRow, and CopyRow cell values
@@ -634,17 +634,17 @@ index_value=RowIndex
 
 #### RowLabel - Current Row Label
 
-**Syntax:** `ColumnName=RowLabel`
+Syntax: `ColumnName=RowLabel`
 
 Returns the label of the current row (value in the first column).
 
-**Example:**
+Example:
 
 ```ini
 label_copy=RowLabel
 ```
 
-**Behavior:**
+Behavior:
 
 - Returns the row's label value as a string
 - Only works in ChangeRow, AddRow, and CopyRow cell values
@@ -652,11 +652,11 @@ label_copy=RowLabel
 
 #### RowCell - value from Another Cell
 
-**Syntax:** `ColumnName=RowCell('column_name')`
+Syntax: `ColumnName=RowCell('column_name')`
 
-**Note:** This syntax is not directly supported in the INI format. In practice, you would reference a column name directly to get its value, or use `2DAMEMORY#` tokens. The `RowCell` type exists internally but is primarily used for memory storage operations.
+Note: This syntax is not directly supported in the INI format. In practice, you would reference a column name directly to get its value, or use `2DAMEMORY#` tokens. The `RowCell` type exists internally but is primarily used for memory storage operations.
 
-**For Memory Storage:**
+For memory storage:
 
 ```ini
 2DAMEMORY10=modeltype  ; Stores value from "modeltype" column (this internally uses RowCell)
@@ -668,23 +668,23 @@ The memory token system allows you to store values from [2DA](2DA-File-Format) m
 
 ### 2DAMEMORY Tokens
 
-**Syntax:** `2DAMEMORY#=value_source`
+Syntax: `2DAMEMORY#=value_source`
 
 Stores a value in [2DA](2DA-File-Format) memory at token `#`. The token number can be any non-negative integer (typically starting from 0 or 1).
 
-**Available value Sources:**
+Available value sources:
 
 | value Source | Description | Example | Internal type |
 |--------------|-------------|---------|---------------|
 | `RowIndex` | Store the row's numeric index (0-based) as string | `2DAMEMORY10=RowIndex` | `RowValueRowIndex()` |
 | `RowLabel` | Store the row's label value (first column) | `2DAMEMORY11=RowLabel` | `RowValueRowLabel()` |
 | `ColumnName` | Store the value from a specific column in the current row | `2DAMEMORY12=modeltype` | `RowValueRowCell(column)` |
-| `StrRef#` | Store the stringref value from a [TLK](TLK-File-Format) token (converted to string) | `2DAMEMORY13=StrRef50` | `RowValueTLKMemory(token_id)` |
+| `StrRef#` | Store the stringref value from a [TLK](Audio-and-Localization-Formats#tlk) token (converted to string) | `2DAMEMORY13=StrRef50` | `RowValueTLKMemory(token_id)` |
 | `2DAMEMORY#` | Copy value from another [2DA](2DA-File-Format) token | `2DAMEMORY14=2DAMEMORY10` | References existing token |
 
-**Note:** The internal types listed above are runtime evaluation objects that compute values when the modification is applied. They are **only used for storage operations** (left side of `2DAMEMORY#=`), not for cell value assignments (right side of `ColumnName=`).
+Note: The internal types listed above are runtime evaluation objects that compute values when the modification is applied. They are **only used for storage operations** (left side of `2DAMEMORY#=`), not for cell value assignments (right side of `ColumnName=`).
 
-**Example - Storing Multiple values:**
+Example: storing multiple values
 
 ```ini
 [modify_appearance]
@@ -696,7 +696,7 @@ modeltype=1
 2DAMEMORY12=modeltype     ; Stores "1"
 ```
 
-**Example - Using Stored values:**
+Example: using stored values
 
 ```ini
 [add_new_appearance]
@@ -705,31 +705,31 @@ modeltype=2DAMEMORY12     ; Use stored modeltype value
 appearance=2DAMEMORY10    ; Use stored row index
 ```
 
-**Behavior:**
+Behavior:
 
 - Tokens are stored as strings in [2DA](2DA-File-Format) memory (`memory.memory_2da[token_id]`)
-- **Evaluation Order:** Memory storage operations (`2DAMEMORY#=...`) are evaluated **after** all cell modifications are applied within the same modification section
+- Evaluation order: Memory storage operations (`2DAMEMORY#=...`) are evaluated **after** all cell modifications are applied within the same modification section
 - This means you cannot use a token in a cell value (`ColumnName=2DAMEMORY#`) and create it (`2DAMEMORY#=...`) in the same section - create tokens in earlier modifications
 - Tokens are available to all subsequent sections (GFFList, CompileList, HACKList, SSFList)
 - Tokens persist across multiple [2DA file](2DA-File-Format) modifications within the same `[2DAList]` section
 - If a token is referenced before being set, a `KeyError` is raised: `"2DAMEMORY{id} was not defined before use"`
-- **Storage type:** values are stored as `str` type (or `PureWindowsPath` for GFFList `!FieldPath`, but those cannot be used in 2DAList)
+- Storage type: values are stored as `str` type (or `PureWindowsPath` for GFFList `!FieldPath`, but those cannot be used in 2DAList)
 
-### [StrRef](TLK-File-Format#string-references-strref) Tokens ([TLK](TLK-File-Format) Memory)
+### [StrRef](Audio-and-Localization-Formats#string-references-strref) Tokens ([TLK](Audio-and-Localization-Formats#tlk) Memory)
 
-**Syntax:** `[StrRef](TLK-File-Format#string-references-strref)#=value_source`
+Syntax: `[StrRef](Audio-and-Localization-Formats#string-references-strref)#=value_source`
 
-Stores a stringref value in [TLK](TLK-File-Format) memory at token `#`. These tokens are primarily created in `[TLKList]`, but can also be set here.
+Stores a stringref value in [TLK](Audio-and-Localization-Formats#tlk) memory at token `#`. These tokens are primarily created in `[TLKList]`, but can also be set here.
 
-**Available value Sources:**
+Available value sources:
 
 | value Source | Description | Example |
 |--------------|-------------|---------|
 | `ColumnName` | Store the stringref from a specific column (value must be convertible to integer) | `StrRef20=name` |
-| `StrRef#` | Copy stringref value from another [TLK](TLK-File-Format) token | `StrRef21=StrRef20` |
+| `StrRef#` | Copy stringref value from another [TLK](Audio-and-Localization-Formats#tlk) token | `StrRef21=StrRef20` |
 | `2DAMEMORY#` | Store stringref from a [2DA](2DA-File-Format) token (value must be convertible to integer) | `StrRef22=2DAMEMORY10` |
 
-**Example:**
+Example:
 
 ```ini
 [modify_appearance]
@@ -739,12 +739,12 @@ StrRef30=name          ; Store stringref 12345 in token 30
 StrRef31=StrRef30      ; Copy token 30 to token 31
 ```
 
-**Behavior:**
+Behavior:
 
-- values are stored as integers in [TLK](TLK-File-Format) memory
+- values are stored as integers in [TLK](Audio-and-Localization-Formats#tlk) memory
 - The source value must be convertible to an integer (stringrefs are integers)
 - Tokens are available to all subsequent sections
-- [StrRef](TLK-File-Format#string-references-strref) tokens are primarily used in GFFList for localized string fields
+- [StrRef](Audio-and-Localization-Formats#string-references-strref) tokens are primarily used in GFFList for localized string fields
 
 ### Token Usage in Other Sections
 
@@ -756,7 +756,7 @@ Once created, `2DAMEMORY#` and `StrRef#` tokens can be used in:
 4. **HACKList** - Use in binary patch values
 5. **SSFList** - Use for sound stringref assignments
 
-**Example Cross-Section Usage:**
+Example cross-section usage:
 
 ```ini
 [2DAList]
@@ -960,16 +960,16 @@ appearance=2DAMEMORY10  ; Use token from previous file modification
 
 ### Row Not Found Errors
 
-**Problem:** "The source row was not found during the search"
+Problem: "The source row was not found during the search"
 
-**Solutions:**
+Solutions:
 
 - Verify the target row exists (check RowIndex is within bounds, RowLabel matches exactly, or LabelIndex value exists in "label" column)
 - Ensure case-sensitivity: `RowLabel=MyLabel` will not match `mylabel`
 - Check that the [2DA file](2DA-File-Format) has been loaded correctly
 - Verify `!SourceFile` is correct if using a custom source file
 
-**Example Fix:**
+Example fix:
 
 ```ini
 ; Before (may fail if row doesn't exist)
@@ -985,16 +985,16 @@ label=MODIFIED
 
 ### Token Not Defined Errors
 
-**Problem:** "2DAMEMORY# was not defined before use" or "[StrRef](TLK-File-Format#string-references-strref)# was not defined before use"
+Problem: "2DAMEMORY# was not defined before use" or "[StrRef](Audio-and-Localization-Formats#string-references-strref)# was not defined before use"
 
-**Solutions:**
+Solutions:
 
 - Ensure the token is created **before** it's used
 - For 2DAMEMORY tokens: Create in an earlier modification in the same file or previous file
-- For [StrRef](TLK-File-Format#string-references-strref) tokens: Ensure they're created in `[TLKList]` or earlier in `[2DAList]`
+- For [StrRef](Audio-and-Localization-Formats#string-references-strref) tokens: Ensure they're created in `[TLKList]` or earlier in `[2DAList]`
 - Check token numbers match exactly (no typos)
 
-**Example Fix:**
+Example fix:
 
 ```ini
 ; Wrong - token used before creation
@@ -1010,9 +1010,9 @@ label=NEW
 appearance=2DAMEMORY10   ; Use after creation
 ```
 
-**Note:** Within the same modification section, memory storage operations (`2DAMEMORY#=...`) are evaluated **after** cell modifications (`ColumnName=...`), so you cannot use a token in a cell value and create it in the same section.
+Note: Within the same modification section, memory storage operations (`2DAMEMORY#=...`) are evaluated **after** cell modifications (`ColumnName=...`), so you cannot use a token in a cell value and create it in the same section.
 
-**Example of the problem:**
+Example of the problem:
 
 ```ini
 ; This will FAIL - token used before it's created
@@ -1022,13 +1022,13 @@ appearance=2DAMEMORY10    ; Tries to use token 10 (not yet created)
 2DAMEMORY10=RowIndex      ; Creates token 10 (too late!)
 ```
 
-**Solution:** Create tokens in earlier modifications, then use them in later ones.
+Solution: Create tokens in earlier modifications, then use them in later ones.
 
 ### Invalid Column Names
 
-**Problem:** Column doesn't exist in the [2DA file](2DA-File-Format)
+Problem: Column doesn't exist in the [2DA file](2DA-File-Format)
 
-**Solutions:**
+Solutions:
 
 - Verify column names match exactly (case-sensitive)
 - Use AddColumn to add the column first if it doesn't exist
@@ -1036,16 +1036,16 @@ appearance=2DAMEMORY10    ; Tries to use token 10 (not yet created)
 
 ### ExclusiveColumn Behavior
 
-**Problem:** Unexpected row modification instead of adding new row (or vice versa)
+Problem: Unexpected row modification instead of adding new row (or vice versa)
 
-**Solutions:**
+Solutions:
 
 - Understand that `ExclusiveColumn` checks if a row with the same value exists
 - If match found: existing row is modified
 - If no match: new row is added
 - Ensure the column specified in `ExclusiveColumn` is included in the cell modifications
 
-**Example:**
+Example:
 
 ```ini
 ; This will modify existing row if label="MY_APPEARANCE" exists
@@ -1057,9 +1057,9 @@ name=StrRef100
 
 ### AddColumn Memory Storage Syntax
 
-**Problem:** Incorrect syntax for storing values from new column
+Problem: Incorrect syntax for storing values from new column
 
-**Solutions:**
+Solutions:
 
 - Use `I#` format for row index: `2DAMEMORY#=I5` (stores value from row index 5 in the new column)
 - Use `Llabel` format for row label: `2DAMEMORY#=L1` (stores value from row with label "1" in the new column)
@@ -1067,7 +1067,7 @@ name=StrRef100
 - Cannot use other RowValue types (like `RowIndex`, `RowLabel`, `ColumnName`, etc.) directly in AddColumn memory storage - only `I#` and `Llabel` formats are supported
 - The `I#` or `Llabel` syntax tells the patcher to retrieve the cell value from that specific row in the newly created column
 
-**Example:**
+Example:
 
 ```ini
 [add_column]
@@ -1080,30 +1080,30 @@ I5=Value
 
 ### Target type Confusion
 
-**Problem:** Confusion between `RowLabel` and `LabelIndex`
+Problem: Confusion between `RowLabel` and `LabelIndex`
 
-**Solutions:**
+Solutions:
 
-- `RowLabel=value` → Uses the row's label (first column value) to find the row
-- `LabelIndex=value` → Searches the "label" column for a matching value
+- `RowLabel=value` --> Uses the row's label (first column value) to find the row
+- `LabelIndex=value` --> Searches the "label" column for a matching value
 - Use `RowLabel` when you know the row label value
 - Use `LabelIndex` when you need to search within a column named "label"
 
 ### Empty string vs Missing values
 
-**Problem:** Confusion about `****` vs omitted keys
+Problem: Confusion about `****` vs omitted keys
 
-**Solutions:**
+Solutions:
 
 - `****` explicitly sets a cell to an empty string
-- Omitting a column [KEY](KEY-File-Format) leaves the cell unchanged (in ChangeRow/CopyRow) or empty (in AddRow)
+- Omitting a column key leaves the cell unchanged (in ChangeRow/CopyRow) or empty (in AddRow)
 - Use `****` when you want to explicitly clear a value
 
 ### Special Functions Not Working
 
-**Problem:** `high()`, `RowIndex`, `RowLabel` not working as expected
+Problem: `high()`, `RowIndex`, `RowLabel` not working as expected
 
-**Solutions:**
+Solutions:
 
 - Special functions only work in ChangeRow, AddRow, and CopyRow cell values
 - They do **not** work in AddColumn inserts or default values
@@ -1112,7 +1112,7 @@ I5=Value
 
 ## Integration with Other Sections
 
-### Using [StrRef](TLK-File-Format#string-references-strref) Tokens from TLKList
+### Using [StrRef](Audio-and-Localization-Formats#string-references-strref) Tokens from TLKList
 
 Since `[2DAList]` runs after `[TLKList]`, you can use `StrRef#` tokens in your [2DA](2DA-File-Format) modifications:
 
@@ -1244,7 +1244,7 @@ Processing order:
 3. All `CopyRow#` modifications (in order)
 4. All `AddColumn#` modifications (in order)
 
-**Important:** Since AddColumn runs last, columns added by AddColumn cannot be used in earlier ChangeRow/AddRow/CopyRow modifications within the same file. However, tokens created in earlier modifications are available for AddColumn.
+Important: Since AddColumn runs last, columns added by AddColumn cannot be used in earlier ChangeRow/AddRow/CopyRow modifications within the same file. However, tokens created in earlier modifications are available for AddColumn.
 
 ### Cross-file Token Availability
 
@@ -1328,9 +1328,9 @@ The `[2DAList]` section provides powerful tools for modifying [2DA files](2DA-Fi
 - **CopyRow**: Copy existing rows with modifications
 - **AddColumn**: Add new columns with default and custom values
 - **Memory Tokens**: Store values for cross-file and cross-section use
-- **Token Integration**: Use [StrRef](TLK-File-Format#string-references-strref) tokens from TLKList and provide 2DAMEMORY tokens to other sections
+- **Token Integration**: Use [StrRef](Audio-and-Localization-Formats#string-references-strref) tokens from TLKList and provide 2DAMEMORY tokens to other sections
 
-[KEY](KEY-File-Format) points to remember:
+Key points to remember:
 
 1. Tokens are evaluated after cell modifications within the same section
 2. Tokens persist across multiple files in the same `[2DAList]` section
@@ -1339,10 +1339,12 @@ The `[2DAList]` section provides powerful tools for modifying [2DA files](2DA-Fi
 5. AddColumn runs last within a file, so new columns can't be used in earlier modifications
 6. All memory tokens are available to subsequent sections (GFFList, CompileList, HACKList, SSFList)
 
-For more information on related sections, see:
+### See also
 
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax.md) - Creating [StrRef](TLK-File-Format#string-references-strref) tokens
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax.md) - Using 2DAMEMORY tokens in [GFF files](GFF-File-Format)
-- [TSLPatcher CompileList Syntax](TSLPatcher's-Official-Readme.md) - Using tokens in script compilation
-- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax.md) - Using tokens in binary patches
-- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax.md) - Using tokens in sound sets
+- [2DA-File-Format](2DA-File-Format) -- 2DA structure and columns
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- Creating [StrRef](Audio-and-Localization-Formats#string-references-strref) tokens
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Using 2DAMEMORY tokens in [GFF files](GFF-File-Format)
+- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) -- Using tokens in binary patches
+- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) -- Using tokens in sound sets
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for 2DA modding examples
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- CompileList and overview

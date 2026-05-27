@@ -23,14 +23,27 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
-from pykotor.common.stream import BinaryReader, BinaryWriter, BinaryWriterBytearray  # noqa: E402  # pyright: ignore[reportMissingImports]
+from pykotor.common.language import (  # noqa: E402  # pyright: ignore[reportMissingImports]
+    Gender,
+    Language,
+    LocalizedString,
+)
+from pykotor.common.stream import (  # noqa: E402  # pyright: ignore[reportMissingImports]
+    BinaryReader,
+    BinaryWriter,
+    BinaryWriterBytearray,
+)
 
 
 class TestBinaryReader(TestCase):
     def setUp(self):
-        self.data1 = b"\x01" + b"\x02\x00" + b"\x03\x00\x00\x00" + b"\x04\x00\x00\x00\x00\x00\x00\x00"
+        self.data1 = (
+            b"\x01" + b"\x02\x00" + b"\x03\x00\x00\x00" + b"\x04\x00\x00\x00\x00\x00\x00\x00"
+        )
         self.data2 = b"helloworld\x00"
-        self.data3 = b"\xff" + b"\xfe\xff" + b"\xfd\xff\xff\xff" + b"\xfc\xff\xff\xff\xff\xff\xff\xff"
+        self.data3 = (
+            b"\xff" + b"\xfe\xff" + b"\xfd\xff\xff\xff" + b"\xfc\xff\xff\xff\xff\xff\xff\xff"
+        )
         self.data4 = b"\x79\xe9\xf6\xc2" + b"\x68\x91\xed\x7c\x3f\xdd\x5e\x40"
 
         self.reader1 = BinaryReader.from_bytes(self.data1)
@@ -143,6 +156,18 @@ class TestBinaryReader(TestCase):
         assert self.reader1b.peek(1) == b"\x04"
 
         assert self.reader1c.peek(1) == b"\x03"
+
+    def test_read_locstring_with_unset_language(self):
+        locstring = LocalizedString.from_invalid()
+        locstring.set_data(Language.UNSET, Gender.MALE, "baragwin")
+
+        writer = BinaryWriterBytearray(bytearray())
+        writer.write_locstring(locstring)
+
+        reader = BinaryReader.from_bytes(writer.data())
+        loaded = reader.read_locstring()
+
+        assert loaded.get(Language.UNSET, Gender.MALE) == "baragwin"
 
 
 class TestBinaryWriterBytearray(TestCase):

@@ -15,24 +15,32 @@ Thank you for your interest in contributing to PyKotor! This guide covers develo
 ## Prerequisites
 
 - **Python 3.8+** (3.9+ recommended for development)
-- **Platforms**: Windows 7–11, macOS, Linux; common architectures (x86, x64, arm64) supported
+- **Platforms**: Windows 7–11, macOS, Linux; common architectures (amd64/arm64) supported
 - **Git** for version control
 - A code editor with Python support (VS Code, PyCharm, etc.)
 
 ## Development Setup
 
-### 1. Fork and Clone
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/PyKotor.git
+git clone https://github.com/OpenKotOR/PyKotor.git
 cd PyKotor
 ```
+
+Initialize the **wiki** submodule when you need the full Markdown corpus under `wiki/` (link checks, Holocron help packaging, bulk doc edits):
+
+```bash
+git submodule update --init wiki
+```
+
+The [GitHub wiki web UI](https://github.com/OpenKotOR/PyKotor/wiki) mirrors that content. If you change `wiki/*.md`, follow the **dual-repository** workflow in [`.github/copilot-instructions.md`](.github/copilot-instructions.md): commit and push to `PyKotor.wiki`, then commit the updated submodule pointer in this repository.
 
 **Faster clone (if full clone is slow or stalls):** The repository is large (~380 MB). If the clone hangs around 8–15%, use a shallow clone:
 
 ```bash
 # Shallow clone: only latest commit (fast, ~50–100 MB)
-git clone --depth 1 https://github.com/YOUR_USERNAME/PyKotor.git
+git clone --depth 1 https://github.com/OpenKotOR/PyKotor.git
 cd PyKotor
 ```
 
@@ -41,7 +49,7 @@ To later fetch full history if needed (e.g. for bisect): `git fetch --unshallow`
 Optional: clone without blob content first, then fetch as needed:
 
 ```bash
-git clone --filter=blob:none --sparse https://github.com/YOUR_USERNAME/PyKotor.git
+git clone --filter=blob:none --sparse https://github.com/OpenKotOR/PyKotor.git
 cd PyKotor
 ```
 
@@ -75,6 +83,9 @@ To install packages in editable mode with uv:
 
 ```bash
 uv pip install -e "Libraries/PyKotor[all,dev]"
+# PyKotor depends on workspace member ``bioware-kaitai-formats`` (import ``bioware_kaitai_formats``).
+# From repo root, ``uv sync`` installs it; for isolated ``pip install -e Libraries/PyKotor``, install
+# ``Libraries/bioware-kaitai-formats`` editable first or use a published ``bioware-kaitai-formats`` wheel on PyPI.
 uv pip install -e "Tools/HolocronToolset"
 uv pip install -e "Tools/HoloPatcher"
 uv pip install -e "Tools/KotorDiff"
@@ -165,14 +176,15 @@ Use meaningful branch names:
 
 ### 3. Test Your Changes
 
-Run the full test suite before committing:
+Run the scoped test suite before committing (see [Testing](#testing) for the full command):
 
 ```bash
-# Run tests
-pytest
-
-# Run with coverage
-pytest --cov=pykotor --cov-report=html
+QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
+  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
+  Libraries/PyKotor/tests
 ```
 
 ### 4. Check Code Quality
@@ -276,48 +288,66 @@ ruff format .
 # Type check
 mypy Libraries/PyKotor/src/pykotor
 
-# Test
-pytest
+# Test (scoped; see Testing section)
+QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
+  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
+  Libraries/PyKotor/tests
 ```
 
 ## Testing
 
 ### Running Tests
 
-**Basic test run:**
+Use the scoped command from [`AGENTS.md`](AGENTS.md#tests) (matches [`.github/workflows/python-package.yml`](.github/workflows/python-package.yml)):
+
 ```bash
-pytest
+QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
+  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
+  Libraries/PyKotor/tests
 ```
+
+**Gotchas:**
+
+- **Scope tests to `Libraries/PyKotor/tests`**. Running pytest from the repo root without that path collects other packages (e.g. Toolset) and often fails during collection.
+- **Linux requires `--import-mode=importlib`**. Without it, pytest fails with `ModuleNotFoundError: No module named 'resource.formats'` because the test directory `Libraries/PyKotor/tests/resource/` collides with Python's stdlib `resource` module.
 
 **With verbose output:**
-```bash
-pytest -v
-```
 
-**With coverage report:**
 ```bash
-pytest --cov=pykotor --cov-report=html
+QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
+  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
+  Libraries/PyKotor/tests -v
 ```
 
 **Run specific tests:**
+
 ```bash
 # Specific file
-pytest tests/test_specific.py
+uv run pytest --import-mode=importlib Libraries/PyKotor/tests/test_specific.py
 
 # Specific test
-pytest tests/test_specific.py::test_function_name
+uv run pytest --import-mode=importlib Libraries/PyKotor/tests/test_specific.py::test_function_name
 
 # Pattern matching
-pytest -k "test_pattern"
+uv run pytest --import-mode=importlib -k "test_pattern" Libraries/PyKotor/tests
 ```
 
 ### Writing Tests
 
-Place tests in the `tests/` directory following these conventions:
+Place tests under `Libraries/PyKotor/tests/` following these conventions:
 
 **File naming:**
 - `test_*.py` for test files
-- Match the module being tested: `pykotor/module.py` → `tests/test_module.py`
+- Match the module being tested: `pykotor/module.py` -> `tests/test_module.py`
 
 **Test naming:**
 - Use descriptive names: `test_function_name_with_valid_input()`
@@ -347,7 +377,7 @@ def test_resource_type_invalid_extension():
 ### Before Submitting
 
 Ensure your changes:
-- [ ] Pass all tests (`pytest`)
+- [ ] Pass all tests (scoped command in [`AGENTS.md`](AGENTS.md#tests))
 - [ ] Pass linting (`ruff check .`)
 - [ ] Are formatted correctly (`ruff format .`)
 - [ ] Include type hints where appropriate
@@ -384,15 +414,16 @@ Ensure your changes:
 - **[Python Style Guide (PEP 8)](https://pep8.org/)** - Python coding conventions
 - **[Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)** - Docstring conventions
 - **[Conventional Commits](https://www.conventionalcommits.org/)** - Commit message format
-- **[Project Wiki](https://github.com/OldRepublicDevs/PyKotor/wiki)** - Additional documentation
-- **[Issue Tracker](https://github.com/OldRepublicDevs/PyKotor/issues)** - Report bugs or request features
+- **[Project Wiki (GitHub UI)](https://github.com/OpenKotOR/PyKotor/wiki)** — browsable docs; source of truth for edits is the `wiki/` **git submodule** (`PyKotor.wiki.git`) after `git submodule update --init wiki`
+- **[Wiki Conventions](https://github.com/OpenKotOR/PyKotor/blob/master/wiki/Wiki-Conventions.md)** — style, link rules, and recommended validation scripts (`helper_scripts/wiki_scripts/`)
+- **[Issue Tracker](https://github.com/OpenKotOR/PyKotor/issues)** - Report bugs or request features
 
 ### Getting Help
 
 If you need help:
-- Check existing [documentation](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/docs)
-- Search [closed issues](https://github.com/OldRepublicDevs/PyKotor/issues?q=is%3Aissue+is%3Aclosed)
-- Open a [new issue](https://github.com/OldRepublicDevs/PyKotor/issues/new) with the question label
+- Check existing [documentation](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/docs)
+- Search [closed issues](https://github.com/OpenKotOR/PyKotor/issues?q=is%3Aissue+is%3Aclosed)
+- Open a [new issue](https://github.com/OpenKotOR/PyKotor/issues/new) with the question label
 - Review similar code in the codebase
 
 Thank you for contributing to PyKotor!

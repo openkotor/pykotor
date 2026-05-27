@@ -43,12 +43,11 @@ def format_file_size(size_bytes: int) -> str:
     """Format file size in human-readable format like Windows Explorer."""
     if size_bytes < 1024:
         return f"{size_bytes} bytes"
-    elif size_bytes < 1024 * 1024:
+    if size_bytes < 1024 * 1024:
         return f"{size_bytes / 1024:.1f} KB"
-    elif size_bytes < 1024 * 1024 * 1024:
+    if size_bytes < 1024 * 1024 * 1024:
         return f"{size_bytes / (1024 * 1024):.1f} MB"
-    else:
-        return f"{size_bytes / (1024 * 1024 * 1024):.2f} GB"
+    return f"{size_bytes / (1024 * 1024 * 1024):.2f} GB"
 
 
 def get_file_type_description(path: Path) -> str:
@@ -140,7 +139,7 @@ class MetadataRow(QWidget):
         self.value_widget.setStyleSheet("color: #202020; font-size: 10pt;")
         if selectable:
             self.value_widget.setTextInteractionFlags(
-                Qt.TextInteractionFlag.TextSelectableByMouse  # pyright: ignore[reportArgumentType]
+                Qt.TextInteractionFlag.TextSelectableByMouse,  # pyright: ignore[reportArgumentType]
             )
 
         layout.addWidget(self.label_widget)
@@ -155,7 +154,17 @@ class EnhancedPreviewPane(QWidget):
     MAX_PREVIEW_HEIGHT: ClassVar[int] = 300
 
     # Supported image extensions
-    IMAGE_EXTENSIONS: ClassVar[set[str]] = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico", ".webp", ".tiff", ".tif"}
+    IMAGE_EXTENSIONS: ClassVar[set[str]] = {
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".bmp",
+        ".ico",
+        ".webp",
+        ".tiff",
+        ".tif",
+    }
 
     # Supported text extensions for preview
     TEXT_EXTENSIONS: ClassVar[set[str]] = {
@@ -255,7 +264,9 @@ class EnhancedPreviewPane(QWidget):
         # Preview section (for images/text)
         self._preview_frame = QFrame()
         self._preview_frame.setFrameShape(QFrame.Shape.StyledPanel)
-        self._preview_frame.setStyleSheet("QFrame { background-color: #F5F5F5; border: 1px solid #E0E0E0; border-radius: 4px; }")
+        self._preview_frame.setStyleSheet(
+            "QFrame { background-color: #F5F5F5; border: 1px solid #E0E0E0; border-radius: 4px; }"
+        )
         preview_layout = QVBoxLayout(self._preview_frame)
         preview_layout.setContentsMargins(8, 8, 8, 8)
 
@@ -267,7 +278,9 @@ class EnhancedPreviewPane(QWidget):
         self._preview_text_edit = QTextEdit()
         self._preview_text_edit.setReadOnly(True)
         self._preview_text_edit.setMaximumHeight(200)
-        self._preview_text_edit.setStyleSheet("QTextEdit { background-color: #FFFFFF; border: none; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 9pt; }")
+        self._preview_text_edit.setStyleSheet(
+            "QTextEdit { background-color: #FFFFFF; border: none; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 9pt; }"
+        )
         self._preview_text_edit.hide()
         preview_layout.addWidget(self._preview_text_edit)
 
@@ -331,7 +344,9 @@ class EnhancedPreviewPane(QWidget):
             """)
             self._filename_label.setStyleSheet("font-size: 14pt; font-weight: 600; color: #E0E0E0;")
             self._filetype_label.setStyleSheet("font-size: 10pt; color: #A0A0A0;")
-            self._preview_frame.setStyleSheet("QFrame { background-color: #353535; border: 1px solid #4D4D4D; border-radius: 4px; }")
+            self._preview_frame.setStyleSheet(
+                "QFrame { background-color: #353535; border: 1px solid #4D4D4D; border-radius: 4px; }"
+            )
         else:
             self.setStyleSheet("""
                 EnhancedPreviewPane {
@@ -446,7 +461,7 @@ class EnhancedPreviewPane(QWidget):
             content = None
             for encoding in ["utf-8", "utf-16", "latin-1", "cp1252"]:
                 try:
-                    with open(path, "r", encoding=encoding) as f:
+                    with open(path, encoding=encoding) as f:
                         lines = []
                         for i, line in enumerate(f):
                             if i >= 50:

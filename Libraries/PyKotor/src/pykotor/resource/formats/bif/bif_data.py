@@ -7,8 +7,7 @@ KEY file. BZF files are LZMA-compressed BIF files used in some game distribution
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed in retail KotOR I and TSL.
         BIF file format specification
         Binary Format:
         -------------
@@ -65,14 +64,7 @@ class BIFType(Enum):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:36
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-
-
+        Observed in retail KotOR I and TSL.
     """
 
     BIF = "BIFF"  # Regular uncompressed BIF file
@@ -101,27 +93,15 @@ class BIFResource(ArchiveResource):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:51-65
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-
-
+        Observed in retail KotOR I and TSL.
 
     Attributes:
     ----------
-        resname_key_index: Resource ID that matches KEY file entries
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:53 (ResourceID property)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:203 (ID field)
-            This is a unique identifier within the BIF file
-            Upper 20 bits encode BIF index, lower 14 bits encode resource index
-            Used to match resources between BIF and KEY files
+        resname_key_index: Composite resource ID that matches KEY file entries (same bit layout as KeyEntry.resource_id)
+            Bits 31-20: BIF index in KEY file table. Bits 19-0: resource index within this BIF.
+            Used to match resources between BIF and KEY files.
 
         _offset: Byte offset to resource data within BIF file
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:54 (Offset property)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:204 (Offset field)
             Points to start of raw resource data in file
             Offsets are absolute from beginning of file
 
@@ -141,13 +121,9 @@ class BIFResource(ArchiveResource):
     ):
         super().__init__(resref=resref, restype=restype, data=data, size=size)
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:53
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/BIF.cs:203
         # Resource ID (matches KEY file, unique within BIF)
         self.resname_key_index: int = 0 if resname_key_index is None else resname_key_index
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:54
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/BIF.cs:204
         # Byte offset to resource data in file
         self._offset: int = 0  # Offset in BIF file
 
@@ -181,7 +157,11 @@ class BIFResource(ArchiveResource):
         """Compare two resources."""
         if not isinstance(other, BIFResource):
             return NotImplemented  # type: ignore[no-any-return]
-        return self.resname_key_index == other.resname_key_index and self.restype == other.restype and self.size == other.size
+        return (
+            self.resname_key_index == other.resname_key_index
+            and self.restype == other.restype
+            and self.size == other.size
+        )
 
     def __hash__(self) -> int:
         """Hash resource."""
@@ -202,42 +182,25 @@ class BIF(BiowareArchive):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:15-32
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/BIFObject.ts:11-152
-
-
+        Observed in retail KotOR I and TSL.
 
     Attributes:
     ----------
         HEADER_SIZE: Size of BIF header in bytes (20 bytes)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:41-47 (header fields)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:46-51 (header parsing)
             Fixed size across all BIF versions
 
         VAR_ENTRY_SIZE: Size of each variable resource entry (16 bytes)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:58-64 (VariableResource reading)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:56 (entry reading loop)
             Each entry: ID(4) + Offset(4) + Size(4) + Type(4)
 
         FIX_ENTRY_SIZE: Size of fixed resource entry (16-20 bytes, unused in KotOR)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:63 (FixedResourceEntry struct)
             Fixed resources not used in KotOR games (always 0 count)
 
         FILE_VERSION: BIF file format version ("V1  ")
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:44 (FileVersion)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:48 (Version field)
 
         bif_type: Whether this is regular BIF or compressed BZF
             Determines compression handling during load/save
 
         _resources: List of all resources in this BIF
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:18 (Resources list)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:96 (VariableResourceTable)
             Ordered list maintained for indexing and iteration
 
         _resource_dict: Fast lookup by ResRef and ResourceType
@@ -267,8 +230,6 @@ class BIF(BiowareArchive):
         # File type (BIF vs BZF determines compression)
         self.bif_type: BIFType = bif_type
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:18
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/BIF.cs:96
         # List of all resources in file (ordered)
         self._resources: list[BIFResource] = []
 
@@ -378,7 +339,9 @@ class BIF(BiowareArchive):
         """Try to get resource by ResRef and type."""
         if isinstance(resref, ResRef):
             resref = str(resref)
-        resource: BIFResource | None = self._resource_dict.get(ResourceIdentifier(resref.lower(), restype))
+        resource: BIFResource | None = self._resource_dict.get(
+            ResourceIdentifier(resref.lower(), restype)
+        )
         return (resource is not None, resource)
 
     def build_lookup_tables(self) -> None:
@@ -386,7 +349,9 @@ class BIF(BiowareArchive):
         self._resource_dict.clear()
         self._id_lookup.clear()
         for resource in self._resources:
-            self._resource_dict[ResourceIdentifier(str(resource.resref), resource.restype)] = resource
+            self._resource_dict[ResourceIdentifier(str(resource.resref), resource.restype)] = (
+                resource
+            )
             self._id_lookup[resource.resname_key_index] = resource
 
     @property
@@ -426,7 +391,7 @@ class BIF(BiowareArchive):
                     resref=resource.resref,
                     restype=resource.restype,
                     resid=resource.resname_key_index,
-                )
+                ),
             )
 
         return key
@@ -455,15 +420,21 @@ class BIF(BiowareArchive):
         for key_res in key_resources:
             bif_res: BIFResource | None = self.get_resource_by_id(key_res.resname_key_index)
             if bif_res is None:
-                errors.append(f"Resource {key_res.resref}:{key_res.restype} from KEY not found in BIF")
+                errors.append(
+                    f"Resource {key_res.resref}:{key_res.restype} from KEY not found in BIF"
+                )
                 continue
 
             if bif_res.restype != key_res.restype:
-                errors.append(f"Resource {key_res.resref} type mismatch: KEY={key_res.restype}, BIF={bif_res.restype}")
+                errors.append(
+                    f"Resource {key_res.resref} type mismatch: KEY={key_res.restype}, BIF={bif_res.restype}"
+                )
 
         # Check all BIF resources exist in KEY
         for bif_res in self._resources:
-            key_res = next((r for r in key_resources if r.resname_key_index == bif_res.resname_key_index), None)
+            key_res = next(
+                (r for r in key_resources if r.resname_key_index == bif_res.resname_key_index), None
+            )
             if key_res is None:
                 errors.append(f"Resource ID {bif_res.resname_key_index} from BIF not found in KEY")
 
@@ -481,7 +452,9 @@ class BIF(BiowareArchive):
             bif_idx: The index of this BIF in the KEY file.
         """
         # Get all KEY resources for this BIF
-        key_resources: dict[int, KeyEntry] = {r.resname_key_index: r for r in key.key_entries if r.bif_index == bif_idx}
+        key_resources: dict[int, KeyEntry] = {
+            r.resname_key_index: r for r in key.key_entries if r.bif_index == bif_idx
+        }
 
         # Update BIF resource names from KEY
         for resource in self._resources:
@@ -511,7 +484,9 @@ class BIF(BiowareArchive):
 
         # Add all resources to the KEY
         for resource in self._resources:
-            key_res = KeyEntry(resref=resource.resref, restype=resource.restype, resid=resource.resname_key_index)
+            key_res = KeyEntry(
+                resref=resource.resref, restype=resource.restype, resid=resource.resname_key_index
+            )
             key.key_entries.append(key_res)
 
         return key
@@ -533,13 +508,17 @@ class BIF(BiowareArchive):
         errors: list[str] = []
 
         # Get all KEY resources for this BIF
-        key_resources: dict[int, KeyEntry] = {r.resname_key_index: r for r in key.key_entries if r.bif_index == bif_idx}
+        key_resources: dict[int, KeyEntry] = {
+            r.resname_key_index: r for r in key.key_entries if r.bif_index == bif_idx
+        }
 
         # Update BIF resource names from KEY
         for resource in self._resources:
             if key_res := key_resources.get(resource.resname_key_index):
                 if resource.restype != key_res.restype:
-                    errors.append(f"Resource type mismatch for ID {resource.resname_key_index}: BIF={resource.restype}, KEY={key_res.restype}")
+                    errors.append(
+                        f"Resource type mismatch for ID {resource.resname_key_index}: BIF={resource.restype}, KEY={key_res.restype}"
+                    )
                 resource.resref = key_res.resref
             else:
                 errors.append(f"Resource ID {resource.resname_key_index} from BIF not found in KEY")
@@ -551,7 +530,7 @@ class BIF(BiowareArchive):
                 f"Resource {key_res.resref}:{key_res.restype} from KEY not found in BIF (ID: {key_res.resname_key_index})"
                 for key_res in key_resources.values()
                 if key_res.resname_key_index not in bif_ids
-            ]
+            ],
         )  # noqa: E501
 
         # Rebuild lookup tables with new names

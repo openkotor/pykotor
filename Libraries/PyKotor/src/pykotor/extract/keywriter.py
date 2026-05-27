@@ -51,14 +51,6 @@ class KEYWriter:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEY.cs (KEY structure)
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/KEYObject.ts (KEY loading)
-
-
         Note: KEY writing is uncommon in vendor implementations; most tools only read KEY files.
         PyKotor's KEYWriter is primarily for modding and tooling purposes.
 
@@ -98,11 +90,6 @@ class KEYWriter:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYReader.cs (KEY reading)
         KEY file format: 8-byte signature, BIF count, resource count, offsets, timestamps
 
         """
@@ -138,7 +125,9 @@ class KEYWriter:
         # Write file table
         filename_offset: int = 64 + len(self._entries) * 12
         for entry in self._entries:
-            write_stream.write(struct.pack("<III", entry.file_size, filename_offset, len(entry.file_name)))
+            write_stream.write(
+                struct.pack("<III", entry.file_size, filename_offset, len(entry.file_name))
+            )
             filename_offset += len(entry.file_name)
 
         # Write file name table
@@ -149,4 +138,10 @@ class KEYWriter:
         for x, entry in enumerate(self._entries):
             for y, file in enumerate(entry.files):
                 write_stream.write(os.path.basename(file).encode("ascii"))  # noqa: PTH119
-                write_stream.write(struct.pack("<HI", ResourceType.from_extension(file.split(".")[-1]).type_id, (x << 20) + y))
+                write_stream.write(
+                    struct.pack(
+                        "<HI",
+                        ResourceType.from_extension(file.split(".")[-1]).type_id,
+                        (x << 20) + y,
+                    )
+                )

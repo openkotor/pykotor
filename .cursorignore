@@ -1,5 +1,4 @@
 _tmp*
-.*
 *.cpuprofile
 *.egg-info*
 *.exe.manifest
@@ -54,26 +53,4 @@ Tree-*.toc
 tslpatchdata/
 typings/*
 vendor/KotOR_IO
-
-!.cursor/
-!.cursorignore
-!.cursorrules
-!.editorconfig
-!.env
-!.github
-!.gitignore
-!.gitmodules
-!.idea
-!.pre-commit-config.yaml
-!**/.venv*/Lib/site-packages/**/*.py
-!**/.venv*/Lib/site-packages/**/*.pyi
-!**/.venv*/**/*.pyi
-!.vscode
-!tslpatchdata/changes.ini
-!tslpatchdata/generated_ini_output.log
-!tslpatchdata/test_kotordiff_profile_summary.txt
-!tslpatchdata/test_kotordiff_profile.prof
-!tslpatchdata/test_step1_generate_patch_profile_summary.txt
-!tslpatchdata/test_step1_generate_patch_profile.prof
-!tslpatchdata/test_step2_install_patch_profile_summary.txt
-!tslpatchdata/test_step2_install_patch_profile.prof */
+vendor/KotOR.js/vendor/PyKotor/

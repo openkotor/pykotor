@@ -19,13 +19,19 @@ from pykotor.common.language import Gender, Language, LocalizedString
 from pykotor.common.misc import Game, ResRef
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.chitin import Chitin
-from pykotor.extract.file import FileResource, LocationResult, ResourceIdentifier, ResourceResult
+from pykotor.extract.file import (
+    FileResource,
+    LocationResult,
+    ResourceIdentifier,
+    ResourceQuery,
+    ResourceResult,
+)
 from pykotor.extract.savedata import SaveFolderEntry
 from pykotor.extract.talktable import TalkTable
 from pykotor.resource.formats.gff import GFFFieldType, read_gff
 from pykotor.resource.formats.tpc import read_tpc
 from pykotor.resource.formats.wav import bytes_wav, read_wav
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import ResourceType, ToolsetFormat
 from pykotor.tools.misc import is_capsule_file, is_erf_file, is_mod_file
 from pykotor.tools.path import CaseAwarePath
 from utility.common.more_collections import CaseInsensitiveDict
@@ -34,7 +40,7 @@ from utility.string_util import is_non_empty_string
 if TYPE_CHECKING:
     import io
 
-    from collections.abc import Generator, Iterable, Sequence
+    from collections.abc import Generator, Iterable
     from logging import Logger
 
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
@@ -52,7 +58,9 @@ class StrRefLocation:
     """Represents a specific location where a StrRef was found."""
 
     resource: FileResource
-    locations: list[str]  # Location strings like "row_12.name", "field.Path.To.Field", "sound_BATTLECRY1", "offset_0x1A4"
+    locations: list[
+        str
+    ]  # Location strings like "row_12.name", "field.Path.To.Field", "sound_BATTLECRY1", "offset_0x1A4"
 
 
 # The SearchLocation class is an enumeration that represents different locations for searching.
@@ -91,13 +99,17 @@ class SearchLocation(IntEnum):
     """Encapsulated resources in the installation's 'lips' directory."""
 
     RIMS = 11
-    """Encapsulated resources in the installation's 'rims' directory. note: these `rims` only exist in the first game and are not used by the vanilla game at all."""
+    """Encapsulated resources in the installation's 'rims' directory. note: these `rims` only exist in the first game and are NOT even used in that game."""
 
     CUSTOM_MODULES = 12
     """Encapsulated resources stored in the capsules specified in method parameters."""
 
     CUSTOM_FOLDERS = 13
     """Resource files stored in the folders specified in the method parameters."""
+
+
+# Explicit search scope: ordered sequence of locations to search (same as legacy "order" parameter).
+SearchScope = Sequence[SearchLocation]
 
 
 class TexturePackNames(Enum):
@@ -152,15 +164,7 @@ class Installation:
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/loaders/ (Resource loading patterns)
-
-
-
+        Observed retail KotOR GFF resource usage during installation scans.
     Note: Installation path detection may differ between platforms (Windows registry vs manual path)
     """  # noqa: E501
 
@@ -174,7 +178,14 @@ class Installation:
         self,
         path: os.PathLike | str,
         *,
-        progress_callback: Callable[[int | str, Literal["set_maximum", "increment", "update_maintask_text", "update_subtask_text"]], Any] | None = None,
+        progress_callback: Callable[
+            [
+                int | str,
+                Literal["set_maximum", "increment", "update_maintask_text", "update_subtask_text"],
+            ],
+            Any,
+        ]
+        | None = None,
     ):
         self._log: Logger = RobustLogger()
         self._path: CaseAwarePath = CaseAwarePath(path)
@@ -196,7 +207,9 @@ class Installation:
         self._modules_data: dict[str, list[FileResource]] = {}
         self._lips_data: dict[str, list[FileResource]] = {}
         self.saves: dict[Path, dict[Path, list[FileResource]]] = {}
-        self.save_folders: dict[Path, SaveFolderEntry] = {}  # Map save folder path to SaveFolderEntry
+        self.save_folders: dict[
+            Path, SaveFolderEntry
+        ] = {}  # Map save folder path to SaveFolderEntry
         self._texturepacks_data: dict[str, list[FileResource]] = {}
 
         self._override_data: dict[str, list[FileResource]] = {}
@@ -213,8 +226,12 @@ class Installation:
         # Performance caches (in-memory only; safe to rebuild anytime)
         # - locations(): per resource_list id -> (lookup_dict, identifier_set)
         # - texture lookups: per resource_list id -> (first_texture_by_name, first_txi_by_name)
-        self._locations_list_cache: dict[int, tuple[dict[ResourceIdentifier, FileResource], set[ResourceIdentifier]]] = {}
-        self._texture_list_cache: dict[int, tuple[dict[str, FileResource], dict[str, FileResource]]] = {}
+        self._locations_list_cache: dict[
+            int, tuple[dict[ResourceIdentifier, FileResource], set[ResourceIdentifier]]
+        ] = {}
+        self._texture_list_cache: dict[
+            int, tuple[dict[str, FileResource], dict[str, FileResource]]
+        ] = {}
 
         # Lazy-loading flags
         self._modules_loaded: bool = False
@@ -229,7 +246,18 @@ class Installation:
         self._streamwaves_loaded: bool = False
 
         self._initialized = False
-        self.progress_callback: Callable[[int | str, Literal["set_maximum", "increment", "update_maintask_text", "update_subtask_text"]], Any] | None = progress_callback
+        self.progress_callback: (
+            Callable[
+                [
+                    int | str,
+                    Literal[
+                        "set_maximum", "increment", "update_maintask_text", "update_subtask_text"
+                    ],
+                ],
+                Any,
+            ]
+            | None
+        ) = progress_callback
 
     def __getstate__(self) -> dict[str, Any]:
         """Prepare Installation for pickling by excluding unpicklable objects."""
@@ -357,15 +385,21 @@ class Installation:
     def _build_single_resource(
         self,
         filepath: Path | str,
+        *,
+        size: int | None = None,
     ) -> FileResource | None:
         resource: FileResource | None = None
         try:
             if self.progress_callback is not None:
-                self.progress_callback(f"Loading '{os.path.relpath(filepath, self._path)}'", "update_subtask_text")
+                self.progress_callback(
+                    f"Loading '{os.path.relpath(filepath, self._path)}'", "update_subtask_text"
+                )
             resname, restype = ResourceIdentifier.from_path(filepath).unpack()
             if restype.is_invalid:
                 return None
-            resource = FileResource(resname, restype, os.path.getsize(filepath), 0, filepath)  # noqa: PTH202
+            if size is None:
+                size = os.path.getsize(filepath)  # noqa: PTH202
+            resource = FileResource(resname, restype, size, 0, filepath)
         except Exception as e:  # noqa: BLE001
             RobustLogger().exception(f"Error loading file '{filepath}'", exc_info=e)
             return None
@@ -381,7 +415,10 @@ class Installation:
             if not capsule_check(filepath):
                 return None
             if self.progress_callback is not None:
-                self.progress_callback(f"Indexing capsule '{os.path.relpath(filepath, self._path)}'", "update_subtask_text")
+                self.progress_callback(
+                    f"Indexing capsule '{os.path.relpath(filepath, self._path)}'",
+                    "update_subtask_text",
+                )
             resource_list = list(Capsule(filepath))
         except Exception as e:  # noqa: BLE001
             RobustLogger().error(f"Error loading file '{filepath}'", exc_info=e)
@@ -410,23 +447,34 @@ class Installation:
         r_path = CaseAwarePath(path)
 
         if not r_path.is_dir():
-            self._log.info("The '%s' folder did not exist when loading the installation at '%s', skipping...", r_path.name, self._path)
+            self._log.info(
+                "The '%s' folder did not exist when loading the installation at '%s', skipping...",
+                r_path.name,
+                self._path,
+            )
             return {}
 
-        str_path = str(r_path)
-        self._log.debug("Loading '%s' resources dict from installation...", os.path.relpath(str_path, self._path))
-        files_iter = r_path.rglob("*") if recurse else r_path.iterdir()
+        str_path: str = str(r_path)
+        self._log.debug(
+            "Loading '%s' resources dict from installation...",
+            os.path.relpath(str_path, self._path),
+        )
+        files_iter: Iterable[Path] = r_path.rglob("*") if recurse else r_path.iterdir()
 
         resources_dict: dict[str, list[FileResource]] = {}
         str_path = str(r_path)
 
         for file in files_iter:
-            resource_list = self._build_resource_list(file, capsule_check)
+            resource_list: list[FileResource] | None = self._build_resource_list(
+                file, capsule_check
+            )
             if resource_list is None:
                 continue
             resources_dict[file.name] = resource_list
         if not resources_dict:
-            RobustLogger().warning(f"No resources found at '{str_path}' when loading the installation, skipping...")
+            self._log.debug(
+                "No resources found at '%s' when loading the installation, skipping...", str_path
+            )
         return resources_dict
 
     def load_resources_list(
@@ -449,29 +497,70 @@ class Installation:
         r_path = CaseAwarePath(path)
 
         if not r_path.is_dir():
-            self._log.info("The '%s' folder did not exist when loading the installation at '%s', skipping...", r_path.name, self._path)
+            self._log.info(
+                "The '%s' folder did not exist when loading the installation at '%s', skipping...",
+                r_path.name,
+                self._path,
+            )
             return []
 
-        resources_list: list[FileResource] = []
         str_path = str(r_path)
-        self._log.debug("Loading '%s' resources list from installation...", os.path.relpath(str_path, self._path))
+        self._log.debug(
+            "Loading '%s' resources list from installation...",
+            os.path.relpath(str_path, self._path),
+        )
+        resources_list: list[FileResource] = []
 
-        try:
-            for entry in os.scandir(str_path):
-                try:
-                    if recurse and entry.is_dir(follow_symlinks=False):
-                        resources_list.extend(self.load_resources_list(entry.path, recurse=True))
-                    elif entry.is_file():
-                        resource: FileResource | None = self._build_single_resource(entry.path)
-                        if resource is not None:
-                            resources_list.append(resource)
-                except Exception as e:  # noqa: PERF203, BLE001
-                    RobustLogger().warning(f"Error processing file '{entry.path}'", exc_info=e)
-        except Exception as e:  # noqa: BLE001
-            RobustLogger().exception(f"Error scanning directory '{str_path}'", exc_info=e)
+        if recurse:
+            # Use an explicit scandir stack instead of recursive calls: eliminates
+            # ~N_dirs Python frames, CaseAwarePath constructions, is_dir() checks,
+            # per-dir logging, and reuses each DirEntry's cached stat for file size.
+            try:
+                stack: list[str] = [str_path]
+                while stack:
+                    current_dir = stack.pop()
+                    try:
+                        with os.scandir(current_dir) as it:
+                            for entry in it:
+                                try:
+                                    if entry.is_dir(follow_symlinks=False):
+                                        stack.append(entry.path)
+                                    elif entry.is_file(follow_symlinks=False):
+                                        resource: FileResource | None = self._build_single_resource(
+                                            entry.path,
+                                            size=entry.stat().st_size,
+                                        )
+                                        if resource is not None:
+                                            resources_list.append(resource)
+                                except Exception as e:  # noqa: PERF203, BLE001
+                                    RobustLogger().warning(
+                                        f"Error processing file '{entry.path}'", exc_info=e
+                                    )
+                    except Exception as e:  # noqa: BLE001
+                        RobustLogger().exception(
+                            f"Error scanning directory '{current_dir}'", exc_info=e
+                        )
+            except Exception as e:  # noqa: BLE001
+                RobustLogger().exception(
+                    f"Error during recursive resource scan of '{str_path}'", exc_info=e
+                )
+        else:
+            try:
+                for entry in os.scandir(str_path):
+                    try:
+                        if entry.is_file():
+                            resource = self._build_single_resource(entry.path)
+                            if resource is not None:
+                                resources_list.append(resource)
+                    except Exception as e:  # noqa: PERF203, BLE001
+                        RobustLogger().warning(f"Error processing file '{entry.path}'", exc_info=e)
+            except Exception as e:  # noqa: BLE001
+                RobustLogger().exception(f"Error scanning directory '{str_path}'", exc_info=e)
 
         if not resources_list:
-            RobustLogger().warning(f"No resources found at '{str_path}' when loading the installation, skipping...")
+            self._log.debug(
+                "No resources found at '%s' when loading the installation, skipping...", str_path
+            )
         return resources_list
 
     def load_chitin(self):
@@ -485,9 +574,14 @@ class Installation:
             self._chitin_data = list(Chitin(key_path=chitin_path))
             self._log.debug("Done loading chitin")
         elif chitin_exists is False:
-            RobustLogger().warning(f"The chitin.key file did not exist at '{self._path}', skipping...")
+            RobustLogger().warning(
+                f"The chitin.key file did not exist at '{self._path}', skipping..."
+            )
         elif chitin_exists is None:
-            self._log.error("No permissions to the chitin.key file at '%s' when loading the installation, skipping...", self._path)
+            self._log.error(
+                "No permissions to the chitin.key file at '%s' when loading the installation, skipping...",
+                self._path,
+            )
         self._chitin_loaded = True
         self._locations_list_cache.clear()
         self._texture_list_cache.clear()
@@ -503,7 +597,9 @@ class Installation:
         """Reloads the list of modules files in the modules folder linked to the Installation."""
         if self._modules_loaded:
             return
-        self._modules_data = self.load_resources_dict(self.module_path(), capsule_check=is_capsule_file)
+        self._modules_data = self.load_resources_dict(
+            self.module_path(), capsule_check=is_capsule_file
+        )
         # Clear derived caches that depend on module contents
         self._module_names_cache = None
         self._locations_list_cache.clear()
@@ -528,7 +624,9 @@ class Installation:
         """Reloads the list of modules files in the texturepacks folder linked to the Installation."""
         if self._texturepacks_loaded:
             return
-        self._texturepacks_data = self.load_resources_dict(self.texturepacks_path(), capsule_check=is_erf_file)
+        self._texturepacks_data = self.load_resources_dict(
+            self.texturepacks_path(), capsule_check=is_erf_file
+        )
         self._texturepacks_loaded = True
         self._locations_list_cache.clear()
         self._texture_list_cache.clear()
@@ -555,7 +653,9 @@ class Installation:
                 # Load file resources for UI display
                 for file in this_save_path.iterdir():
                     res_ident = ResourceIdentifier.from_path(file)
-                    file_res = FileResource(res_ident.resname, res_ident.restype, file.stat().st_size, 0, file)
+                    file_res = FileResource(
+                        res_ident.resname, res_ident.restype, file.stat().st_size, 0, file
+                    )
                     self.saves[save_location][this_save_path].append(file_res)
 
                 # Load SaveFolderEntry for save editing and corruption detection
@@ -564,7 +664,9 @@ class Installation:
                     # Don't fully load the save yet (lazy loading) - just store the path
                     self.save_folders[this_save_path] = save_folder
                 except Exception as e:  # noqa: BLE001
-                    RobustLogger().warning(f"Failed to create SaveFolderEntry for '{this_save_path}': {e}")
+                    RobustLogger().warning(
+                        f"Failed to create SaveFolderEntry for '{this_save_path}': {e}"
+                    )
 
         self._saves_loaded = True
 
@@ -603,11 +705,17 @@ class Installation:
             self._override_data = {}
 
         for folder in target_dirs:
-            try:  # sourcery skip: remove-redundant-exception, simplify-single-exception-tuple
-                relative_folder: str = folder.relative_to(override_path).as_posix()  # '.' if folder is the same as override_path
-                self._override_data[relative_folder] = self.load_resources_list(folder, recurse=True)
+            try:
+                relative_folder: str = folder.relative_to(
+                    override_path
+                ).as_posix()  # '.' if folder is the same as override_path
+                self._override_data[relative_folder] = self.load_resources_list(
+                    folder, recurse=True
+                )
             except Exception:  # noqa: BLE001
-                RobustLogger().exception(f"Failed to get the relative folder of '{folder}' and '{override_path}'")
+                RobustLogger().exception(
+                    f"Failed to get the relative folder of '{folder}' and '{override_path}'"
+                )
 
         if not directory:
             self._override_loaded = True
@@ -637,14 +745,18 @@ class Installation:
     ):
         filepath: CaseAwarePath = CaseAwarePath(file)
         parent_folder = filepath.parent
-        rel_folderpath: str = str(parent_folder.relative_to(self.override_path())) if parent_folder.name else "."
+        rel_folderpath: str = (
+            str(parent_folder.relative_to(self.override_path())) if parent_folder.name else "."
+        )
 
         if rel_folderpath not in self._override_data:
             self.load_override(rel_folderpath)
 
         identifier: ResourceIdentifier = ResourceIdentifier.from_path(filepath)
         if identifier.restype == ResourceType.INVALID:
-            RobustLogger().error(f"Cannot reload override file. Invalid KOTOR resource: {identifier!r}")
+            RobustLogger().error(
+                f"Cannot reload override file. Invalid KOTOR resource: {identifier!r}"
+            )
             return
         resource = FileResource(*identifier.unpack(), filepath.stat().st_size, 0, filepath)
 
@@ -679,7 +791,7 @@ class Installation:
             if not folder_path.is_dir():
                 return files
             stack: list[str] = [str(folder_path)]
-            install_path_str = str(self.path())
+            install_path_str: str = str(self.path())
             file_count = 0
             # Only update progress every 100 files to reduce logging overhead
             PROGRESS_UPDATE_INTERVAL = 100
@@ -692,9 +804,17 @@ class Installation:
                             try:
                                 file_count += 1
                                 # Only update progress callback periodically to reduce overhead
-                                if self.progress_callback and file_count % PROGRESS_UPDATE_INTERVAL == 0:
-                                    relpath = entry.path[len(install_path_str) :].strip("\\").strip("/")
-                                    self.progress_callback(f"(Fast) Loading '{relpath}' resources ({file_count} files)", "update_subtask_text")
+                                if (
+                                    self.progress_callback
+                                    and file_count % PROGRESS_UPDATE_INTERVAL == 0
+                                ):
+                                    relpath = (
+                                        entry.path[len(install_path_str) :].strip("\\").strip("/")
+                                    )
+                                    self.progress_callback(
+                                        f"(Fast) Loading '{relpath}' resources ({file_count} files)",
+                                        "update_subtask_text",
+                                    )
                                 files.append(FileResource.from_path(entry.path))
                             except Exception:  # noqa: BLE001
                                 self._log.exception("Error loading resource:", entry.path)
@@ -708,14 +828,18 @@ class Installation:
         """Reloads the list of resources in the streamwaves folder linked to the Installation."""
         if self._streamwaves_loaded:
             return
-        self._streamwaves_data[:] = self._quicker_load_resources(self._find_resource_folderpath(("streamvoice", "streamwaves")))
+        self._streamwaves_data[:] = self._quicker_load_resources(
+            self._find_resource_folderpath(("streamvoice", "streamwaves"))
+        )
         self._streamwaves_loaded = True
 
     def load_streamvoice(self):
         """Reloads the list of resources in the streamvoice folder linked to the Installation."""
         if self._streamwaves_loaded:
             return
-        self._streamwaves_data[:] = self._quicker_load_resources(self._find_resource_folderpath(("streamwaves", "streamvoice")))
+        self._streamwaves_data[:] = self._quicker_load_resources(
+            self._find_resource_folderpath(("streamwaves", "streamvoice"))
+        )
         self._streamwaves_loaded = True
 
     def _load_patch_erf(self):
@@ -830,7 +954,6 @@ class Installation:
         return self._find_resource_folderpath(("streamvoice", "streamwaves"))
 
     def save_locations(self) -> list[Path]:
-        # sourcery skip: assign-if-exp, extract-method
         """Returns a list of existing save locations (paths where save files can be found)."""
         save_paths: list[Path] = [self._find_resource_folderpath("saves", optional=True)]
         if self.game().is_k2():
@@ -849,7 +972,9 @@ class Installation:
             else:
                 roamingappdata_path = Path(roamingappdata_env)
 
-            game_folder1 = "kotor" if self.game().is_k1() else "kotor2"  # FIXME: k1 is known but k2's 'kotor2' is a guess
+            game_folder1 = (
+                "kotor" if self.game().is_k1() else "kotor2"
+            )  # FIXME: k1 is known but k2's 'kotor2' is a guess
             save_paths.append(roamingappdata_path.joinpath("LucasArts", game_folder1, "saves"))
 
             localappdata_env: str = os.getenv("LOCALAPPDATA", "")
@@ -862,20 +987,36 @@ class Installation:
             game_folder2 = "SWKotOR2" if self.game().is_k2() else "SWKotOR"
             save_paths.extend(
                 (
-                    local_virtual_store.joinpath("Program Files", "LucasArts", game_folder2, "saves"),
-                    local_virtual_store.joinpath("Program Files (x86)", "LucasArts", game_folder2, "saves"),
-                )
+                    local_virtual_store.joinpath(
+                        "Program Files", "LucasArts", game_folder2, "saves"
+                    ),
+                    local_virtual_store.joinpath(
+                        "Program Files (x86)", "LucasArts", game_folder2, "saves"
+                    ),
+                ),
             )
 
         elif system == "Darwin":  # TODO
             home = Path.home()
             save_paths.extend(
                 (
-                    home.joinpath("Library", "Application Support", "Star Wars Knights of the Old Republic II", "saves"),
                     home.joinpath(
-                        "Library", "Containers", "com.aspyr.kotor2.appstore", "Data", "Library", "Application Support", "Star Wars Knights of the Old Republic II", "saves"
+                        "Library",
+                        "Application Support",
+                        "Star Wars Knights of the Old Republic II",
+                        "saves",
                     ),
-                )
+                    home.joinpath(
+                        "Library",
+                        "Containers",
+                        "com.aspyr.kotor2.appstore",
+                        "Data",
+                        "Library",
+                        "Application Support",
+                        "Star Wars Knights of the Old Republic II",
+                        "saves",
+                    ),
+                ),
             )
 
         elif system == "Linux":  # TODO(th3w1zard1): Linux save paths
@@ -883,7 +1024,9 @@ class Installation:
             remaining_path_parts = PurePath("aspyr-media", "kotor2", "saves")
             if xdg_data_home.strip() and CaseAwarePath(xdg_data_home).is_dir():
                 save_paths.append(CaseAwarePath(xdg_data_home, remaining_path_parts))
-            save_paths.append(CaseAwarePath.home().joinpath(".local", "share", remaining_path_parts))
+            save_paths.append(
+                CaseAwarePath.home().joinpath(".local", "share", remaining_path_parts)
+            )
 
         # Filter and return existing paths
         return [path for path in save_paths if path.is_dir()]
@@ -971,7 +1114,9 @@ class Installation:
         yield FileResource("dialog", ResourceType.TLK, tlk_path.stat().st_size, 0, tlk_path)
         female_tlk_path = self._path / "dialogf.tlk"
         if female_tlk_path.is_file():
-            yield FileResource("dialogf", ResourceType.TLK, female_tlk_path.stat().st_size, 0, female_tlk_path)
+            yield FileResource(
+                "dialogf", ResourceType.TLK, female_tlk_path.stat().st_size, 0, female_tlk_path
+            )
 
     def iter_all_resources(self) -> Generator[FileResource, Any, None]:
         """Iterate *all* resources, forcing expensive sources to load first.
@@ -1118,7 +1263,13 @@ class Installation:
             self.load_override()
 
         return (
-            self._override[directory] if directory else [override_resource for ov_subfolder_name in self._override for override_resource in self._override[ov_subfolder_name]]
+            self._override[directory]
+            if directory
+            else [
+                override_resource
+                for ov_subfolder_name in self._override
+                for override_resource in self._override[ov_subfolder_name]
+            ]
         )
 
     # endregion
@@ -1193,6 +1344,145 @@ class Installation:
         """
         return self._female_talktable
 
+    @staticmethod
+    def _normalize_queries(
+        queries: list[ResourceIdentifier]
+        | tuple[Sequence[str], Sequence[ResourceType] | Sequence[ResourceIdentifier]],
+    ) -> list[ResourceIdentifier]:
+        """Normalize polymorphic queries to a list of ResourceIdentifier."""
+        if isinstance(queries, tuple):
+            resnames, restypes = queries
+            result: list[ResourceIdentifier] = []
+            for resname, restype in itertools.product(resnames, restypes):
+                rt = restype if isinstance(restype, ResourceType) else restype.restype
+                result.append(ResourceIdentifier(resname, rt))
+            return result
+        return list(queries)
+
+    def find_one(
+        self,
+        query: ResourceQuery,
+        scope: SearchScope | None = None,
+        *,
+        capsules: Sequence[Capsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> ResourceResult | None:
+        """Find a single resource by explicit query and scope."""
+        ident = query.to_identifier()
+        locs_map = self.find_locations(
+            [query],
+            scope=scope,
+            capsules=capsules,
+            folders=folders,
+            module_root=module_root,
+            logger=logger,
+        )
+        loc_list = locs_map.get(ident, [])
+        if not loc_list:
+            return None
+        loc = loc_list[0]
+        with loc.filepath.open("rb") as fh:
+            fh.seek(loc.offset)
+            data = fh.read(loc.size)
+        result = ResourceResult(
+            ident.resname,
+            ident.restype,
+            loc.filepath,
+            data,
+        )
+        result.set_file_resource(
+            FileResource(ident.resname, ident.restype, loc.size, loc.offset, loc.filepath),
+        )
+        return result
+
+    def find_many(
+        self,
+        queries: Sequence[ResourceQuery],
+        scope: SearchScope | None = None,
+        *,
+        capsules: Sequence[LazyCapsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> dict[ResourceIdentifier, ResourceResult | None]:
+        """Find multiple resources by explicit queries and scope."""
+        idents = [q.to_identifier() for q in queries]
+        return self.resources(
+            idents,
+            order=scope,
+            capsules=capsules,
+            folders=folders,
+            module_root=module_root,
+            logger=logger,
+        )
+
+    def find_locations(
+        self,
+        queries: Sequence[ResourceQuery],
+        scope: SearchScope | None = None,
+        *,
+        capsules: Sequence[LazyCapsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> dict[ResourceIdentifier, list[LocationResult]]:
+        """Find all locations for the given queries and scope."""
+        idents = [q.to_identifier() for q in queries]
+        return self.locations(
+            idents,
+            order=scope,
+            capsules=capsules,
+            folders=folders,
+            module_root=module_root,
+            logger=logger,
+        )
+
+    def get_decoded(
+        self,
+        resref: str | ResRef,
+        restype: ResourceType,
+        scope: SearchScope | None = None,
+        *,
+        capsules: Sequence[Capsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> Any | None:
+        """Find one resource and decode it to the domain object (e.g. UTC, GFF).
+
+        Convenience for find_one(ResourceQuery(...)).decode(). Returns None if not found
+        or if no decoder is registered for the restype.
+        """
+        result = self.find_one(
+            ResourceQuery(resref, restype),
+            scope=scope,
+            capsules=capsules,
+            folders=folders,
+            module_root=module_root,
+            logger=logger,
+        )
+        return result.decode() if result is not None else None
+
+    def get_utc(
+        self,
+        resref: str | ResRef,
+        scope: SearchScope | None = None,
+        **kwargs: Any,
+    ) -> Any | None:
+        """Convenience for get_decoded(resref, ResourceType.UTC, ...). Returns UTC or None."""
+        return self.get_decoded(resref, ResourceType.UTC, scope=scope, **kwargs)
+
+    def get_utp(
+        self,
+        resref: str | ResRef,
+        scope: SearchScope | None = None,
+        **kwargs: Any,
+    ) -> Any | None:
+        """Convenience for get_decoded(resref, ResourceType.UTP, ...). Returns UTP or None."""
+        return self.get_decoded(resref, ResourceType.UTP, scope=scope, **kwargs)
+
     @overload
     def resource(
         self,
@@ -1261,6 +1551,16 @@ class Installation:
             # Sequence[ResourceType]; for unordered containers (set), ordering is arbitrary.
             restypes = list(restype)
 
+        if len(restypes) == 1:
+            return self.find_one(
+                ResourceQuery(resname, restypes[0]),
+                scope=order,
+                capsules=capsules,
+                folders=folders,
+                module_root=module_root,
+                logger=logger,
+            )
+
         queries = [ResourceIdentifier(resname, rt) for rt in restypes]
         batch: dict[ResourceIdentifier, ResourceResult | None] = self.resources(
             queries,
@@ -1314,9 +1614,10 @@ class Installation:
             A dictionary mapping the given items in the queries argument to a list of ResourceResult objects.
         """
         order_list: list[SearchLocation] | None = list(order) if order is not None else None
+        norm_queries: list[ResourceIdentifier] = self._normalize_queries(queries)
         results: dict[ResourceIdentifier, ResourceResult | None] = {}
         locations: dict[ResourceIdentifier, list[LocationResult]] = self.locations(
-            queries,
+            norm_queries,
             order_list,
             capsules=capsules,
             folders=folders,
@@ -1326,7 +1627,7 @@ class Installation:
 
         handles: dict[ResourceIdentifier, io.BufferedReader] = {}
 
-        for query in queries:
+        for query in norm_queries:
             assert isinstance(query, ResourceIdentifier), f"{type(query).__name__}: {query}"
             location_list: list[LocationResult] = locations.get(query, [])
 
@@ -1354,7 +1655,11 @@ class Installation:
                 location.filepath,
                 data,
             )
-            result.set_file_resource(FileResource(query.resname, query.restype, location.size, location.offset, location.filepath))
+            result.set_file_resource(
+                FileResource(
+                    query.resname, query.restype, location.size, location.offset, location.filepath
+                )
+            )
             results[query] = result
 
         # Close all open handles
@@ -1365,11 +1670,23 @@ class Installation:
 
     @overload
     def location(
-        self, file: os.PathLike | str, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None
+        self,
+        file: os.PathLike | str,
+        order: Sequence[SearchLocation] | None = None,
+        /,
+        *,
+        capsules: list[Capsule] | None = None,
+        folders: list[Path] | None = None,
     ) -> list[LocationResult]: ...
     @overload
     def location(
-        self, query: ResourceIdentifier, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None
+        self,
+        query: ResourceIdentifier,
+        order: Sequence[SearchLocation] | None = None,
+        /,
+        *,
+        capsules: list[Capsule] | None = None,
+        folders: list[Path] | None = None,
     ) -> list[LocationResult]: ...
     @overload
     def location(
@@ -1455,13 +1772,17 @@ class Installation:
                 query = resname
             else:
                 raise TypeError(
-                    f"Invalid argument at position 0. Expected filename or filepath (os.PathLike | str), got {resname} ({resname!r}) of type {resname.__class__.__name__}"
+                    f"Invalid argument at position 0. Expected filename or filepath (os.PathLike | str), got {resname} ({resname!r}) of type {resname.__class__.__name__}",
                 )
         elif isinstance(restype, ResourceType):
-            assert isinstance(resname, (str, ResRef)), f"resname must be a string or ResRef, got {resname} ({resname!r}) of type {resname.__class__.__name__}"
+            assert isinstance(resname, (str, ResRef)), (
+                f"resname must be a string or ResRef, got {resname} ({resname!r}) of type {resname.__class__.__name__}"
+            )
             query = ResourceIdentifier(str(resname), restype)
         else:
-            raise TypeError(f"Invalid argument at position 1. Expected ResourceType, got {restype} ({restype!r}) of type {restype.__class__.__name__}")
+            raise TypeError(
+                f"Invalid argument at position 1. Expected ResourceType, got {restype} ({restype!r}) of type {restype.__class__.__name__}"
+            )
 
         return self.locations(
             [query],
@@ -1496,7 +1817,8 @@ class Installation:
     ) -> dict[ResourceIdentifier, list[LocationResult]]: ...
     def locations(
         self,
-        queries: list[ResourceIdentifier] | tuple[Sequence[str], Sequence[ResourceType] | Sequence[ResourceIdentifier]],
+        queries: list[ResourceIdentifier]
+        | tuple[Sequence[str], Sequence[ResourceType] | Sequence[ResourceIdentifier]],
         order: list[SearchLocation] | None = None,
         *,
         capsules: Sequence[LazyCapsule] | None = None,
@@ -1520,13 +1842,9 @@ class Installation:
             A dictionary mapping a resource identifier to a list of locations.
         """
         if order is None:
-            order = [
-                SearchLocation.CUSTOM_FOLDERS,
-                SearchLocation.OVERRIDE,
-                SearchLocation.CUSTOM_MODULES,
-                SearchLocation.MODULES,
-                SearchLocation.CHITIN,
-            ]
+            from pykotor.tools.finder import canonical_search_order
+
+            order = canonical_search_order()
         capsules = [] if capsules is None else capsules
         folders = [] if folders is None else folders
 
@@ -1537,20 +1855,15 @@ class Installation:
                 logger(f"Installation-wide search for '{query}':")
                 logger("  Checking each location:")
 
-        real_queries: set[ResourceIdentifier] = set()
-
-        if isinstance(queries, tuple):
-            resnames, restypes = queries
-            for resname, restype in itertools.product(resnames, restypes):
-                real_queries.add(ResourceIdentifier(resname, restype if isinstance(restype, ResourceType) else restype.restype))
-        else:
-            real_queries.update(queries)
+        real_queries = set(self._normalize_queries(queries))
 
         locations: dict[ResourceIdentifier, list[LocationResult]] = {}
         for qident in real_queries:
             locations[qident] = []
 
-        def check_dict(resource_dict: dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]]):
+        def check_dict(
+            resource_dict: dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]],
+        ):
             for resource_list in resource_dict.values():
                 check_list(resource_list)
 
@@ -1565,7 +1878,9 @@ class Installation:
             if list_id not in _list_cache:
                 # Index resources by identifier once, then check only relevant queries
                 # This is more efficient than iterating through all queries for each resource
-                lookup_dict: dict[ResourceIdentifier, FileResource] = {resource.identifier(): resource for resource in resource_list}
+                lookup_dict: dict[ResourceIdentifier, FileResource] = {
+                    resource.identifier(): resource for resource in resource_list
+                }
 
                 # Only check queries that might be in this resource list (intersection optimization)
                 # Build set of identifiers in this list for fast lookup
@@ -1616,11 +1931,21 @@ class Installation:
                         size=file.stat().st_size,
                     )
 
-                    location.set_file_resource(FileResource(identifier.resname, identifier.restype, location.size, location.offset, location.filepath))
+                    location.set_file_resource(
+                        FileResource(
+                            identifier.resname,
+                            identifier.restype,
+                            location.size,
+                            location.offset,
+                            location.filepath,
+                        )
+                    )
                     locations[identifier].append(location)
 
         # Cache filtered modules to avoid repeated dictionary filtering (performance optimization)
-        _cached_filtered_modules: dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]] | None = None
+        _cached_filtered_modules: (
+            dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]] | None
+        ) = None
         _cached_module_root: str | None = None
 
         def check_modules():
@@ -1631,7 +1956,11 @@ class Installation:
             else:
                 # Use cached filtered modules if available and module_root hasn't changed
                 if _cached_filtered_modules is None or _cached_module_root != module_root.lower():
-                    _cached_filtered_modules = {filename: resources for filename, resources in self._modules.items() if self.get_module_root(filename) == module_root.lower()}
+                    _cached_filtered_modules = {
+                        filename: resources
+                        for filename, resources in self._modules.items()
+                        if self.get_module_root(filename) == module_root.lower()
+                    }
                     _cached_module_root = module_root.lower()
                 check_dict(_cached_filtered_modules)
 
@@ -1640,10 +1969,18 @@ class Installation:
             SearchLocation.MODULES: check_modules,
             SearchLocation.LIPS: lambda: check_dict(self._lips),
             # Texturepacks may not exist in minimal/test installations; treat missing packs as empty.
-            SearchLocation.TEXTURES_TPA: lambda: check_list(self._texturepacks.get(TexturePackNames.TPA.value, [])),
-            SearchLocation.TEXTURES_TPB: lambda: check_list(self._texturepacks.get(TexturePackNames.TPB.value, [])),
-            SearchLocation.TEXTURES_TPC: lambda: check_list(self._texturepacks.get(TexturePackNames.TPC.value, [])),
-            SearchLocation.TEXTURES_GUI: lambda: check_list(self._texturepacks.get(TexturePackNames.GUI.value, [])),
+            SearchLocation.TEXTURES_TPA: lambda: check_list(
+                self._texturepacks.get(TexturePackNames.TPA.value, [])
+            ),
+            SearchLocation.TEXTURES_TPB: lambda: check_list(
+                self._texturepacks.get(TexturePackNames.TPB.value, [])
+            ),
+            SearchLocation.TEXTURES_TPC: lambda: check_list(
+                self._texturepacks.get(TexturePackNames.TPC.value, [])
+            ),
+            SearchLocation.TEXTURES_GUI: lambda: check_list(
+                self._texturepacks.get(TexturePackNames.GUI.value, [])
+            ),
             SearchLocation.CHITIN: lambda: check_list(self._chitin) or check_list(self._patch_erf),
             SearchLocation.MUSIC: lambda: check_list(self._streammusic),
             SearchLocation.SOUND: lambda: check_list(self._streamsounds),
@@ -1751,34 +2088,61 @@ class Installation:
 
         def get_txi_from_list(case_resname: str, resource_list: list[FileResource]) -> str:
             txi_resource: FileResource | None = next(
-                (resource for resource in resource_list if resource.restype() == ResourceType.TXI and resource.identifier().lower_resname == case_resname),
+                (
+                    resource
+                    for resource in resource_list
+                    if resource.restype() == ResourceType.TXI
+                    and resource.identifier().lower_resname == case_resname
+                ),
                 None,
             )
             if txi_resource is not None:
-                RobustLogger().debug("Found txi resource '%s' at %s", txi_resource.identifier(), txi_resource.filepath().relative_to(self._path.parent))
+                RobustLogger().debug(
+                    "Found txi resource '%s' at %s",
+                    txi_resource.identifier(),
+                    txi_resource.filepath().relative_to(self._path.parent),
+                )
                 contents = decode_txi(txi_resource.data())
                 if contents and not contents.isascii():
-                    RobustLogger().warning("Texture TXI '%s' is not ascii! (found at %s)", txi_resource.identifier(), txi_resource.filepath())
+                    RobustLogger().warning(
+                        "Texture TXI '%s' is not ascii! (found at %s)",
+                        txi_resource.identifier(),
+                        txi_resource.filepath(),
+                    )
                 return contents
             RobustLogger().debug("'%s.txi' resource not found during texture lookup.", case_resname)
             return ""
 
         def decode_txi_resource(txi_resource: FileResource | None) -> str:
             if txi_resource is None:
-                RobustLogger().debug("'%s.txi' resource not found during texture lookup.", resname_lower)
+                RobustLogger().debug(
+                    "'%s.txi' resource not found during texture lookup.", resname_lower
+                )
                 return ""
             contents = decode_txi(txi_resource.data())
             if contents and not contents.isascii():
-                RobustLogger().warning("Texture TXI '%s' is not ascii! (found at %s)", txi_resource.identifier(), txi_resource.filepath())
+                RobustLogger().warning(
+                    "Texture TXI '%s' is not ascii! (found at %s)",
+                    txi_resource.identifier(),
+                    txi_resource.filepath(),
+                )
             return contents
 
-        def build_result(resource: FileResource, txi_resource: FileResource | None) -> tuple[ResourceResult, str]:
-            txi_text = decode_txi_resource(txi_resource) if resource.restype() == ResourceType.TGA else ""
-            result = ResourceResult(resource.resname(), resource.restype(), resource.filepath(), resource.data())
+        def build_result(
+            resource: FileResource, txi_resource: FileResource | None
+        ) -> tuple[ResourceResult, str]:
+            txi_text = (
+                decode_txi_resource(txi_resource) if resource.restype() == ResourceType.TGA else ""
+            )
+            result = ResourceResult(
+                resource.resname(), resource.restype(), resource.filepath(), resource.data()
+            )
             result.set_file_resource(resource)
             return result, txi_text
 
-        def check_dict(values: dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]]) -> tuple[ResourceResult | None, str]:
+        def check_dict(
+            values: dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]],
+        ) -> tuple[ResourceResult | None, str]:
             for resources in values.values():
                 result = check_list(resources)
                 if result[0] is not None:
@@ -1816,8 +2180,14 @@ class Installation:
                     data = capsule.resource(resname, tformat)
                     if data is None:
                         data = info.data()
-                    txi_text = get_txi_from_list(resname_lower, capsule_resources) if tformat == ResourceType.TGA else ""
-                    result = ResourceResult(info.resname(), info.restype(), capsule.filepath(), data)
+                    txi_text = (
+                        get_txi_from_list(resname_lower, capsule_resources)
+                        if tformat == ResourceType.TGA
+                        else ""
+                    )
+                    result = ResourceResult(
+                        info.resname(), info.restype(), capsule.filepath(), data
+                    )
                     result.set_file_resource(info)
                     return result, txi_text
             return None, ""
@@ -1848,10 +2218,18 @@ class Installation:
             SearchLocation.OVERRIDE: lambda: check_dict(self._override),
             SearchLocation.MODULES: lambda: check_dict(self._modules),
             # Texturepacks may not exist in minimal/test installations; treat missing packs as empty.
-            SearchLocation.TEXTURES_TPA: lambda: check_list(self._texturepacks.get(TexturePackNames.TPA.value, [])),
-            SearchLocation.TEXTURES_TPB: lambda: check_list(self._texturepacks.get(TexturePackNames.TPB.value, [])),
-            SearchLocation.TEXTURES_TPC: lambda: check_list(self._texturepacks.get(TexturePackNames.TPC.value, [])),
-            SearchLocation.TEXTURES_GUI: lambda: check_list(self._texturepacks.get(TexturePackNames.GUI.value, [])),
+            SearchLocation.TEXTURES_TPA: lambda: check_list(
+                self._texturepacks.get(TexturePackNames.TPA.value, [])
+            ),
+            SearchLocation.TEXTURES_TPB: lambda: check_list(
+                self._texturepacks.get(TexturePackNames.TPB.value, [])
+            ),
+            SearchLocation.TEXTURES_TPC: lambda: check_list(
+                self._texturepacks.get(TexturePackNames.TPC.value, [])
+            ),
+            SearchLocation.TEXTURES_GUI: lambda: check_list(
+                self._texturepacks.get(TexturePackNames.GUI.value, [])
+            ),
             SearchLocation.CHITIN: lambda: check_list(self._chitin) or check_list(self._patch_erf),
             SearchLocation.CUSTOM_MODULES: lambda: check_capsules(capsules),
             SearchLocation.CUSTOM_FOLDERS: lambda: check_folders(folders),
@@ -1862,7 +2240,9 @@ class Installation:
             result, txi_text = function_map.get(item, lambda: (None, ""))()
             if result is not None:
                 if logger:
-                    logger(f"Texture resource '{resname}' located at '{result.filepath}' via {item.name}")
+                    logger(
+                        f"Texture resource '{resname}' located at '{result.filepath}' via {item.name}"
+                    )
                 return result, txi_text
 
         return None, ""
@@ -1879,7 +2259,9 @@ class Installation:
         """Batch variant of texture_resource_result, returning ResourceResult and TXI text per resname."""
         results: CaseInsensitiveDict[tuple[ResourceResult | None, str]] = CaseInsensitiveDict()
         for resname in set(resnames):
-            results[resname] = self.texture_resource_result(resname, order, capsules=capsules, folders=folders, logger=logger)
+            results[resname] = self.texture_resource_result(
+                resname, order, capsules=capsules, folders=folders, logger=logger
+            )
         return results
 
     def texture_resource_locations(
@@ -1908,14 +2290,18 @@ class Installation:
         folders = [] if folders is None else folders
         texture_types: tuple[ResourceType, ...] = (ResourceType.TPC, ResourceType.TGA)
 
-        results: CaseInsensitiveDict[list[LocationResult]] = CaseInsensitiveDict({resname: [] for resname in resnames_set})
+        results: CaseInsensitiveDict[list[LocationResult]] = CaseInsensitiveDict(
+            {resname: [] for resname in resnames_set}
+        )
 
         def add_location(target_resname: str, resource: FileResource):
             location = LocationResult(resource.filepath(), resource.offset(), resource.size())
             location.set_file_resource(resource)
             results[target_resname].append(location)
 
-        def check_dict(values: dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]]):
+        def check_dict(
+            values: dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]],
+        ):
             for resources in values.values():
                 for resource in resources:
                     if resource.restype() not in texture_types:
@@ -1950,11 +2336,21 @@ class Installation:
         function_map: dict[SearchLocation, Callable[[], None]] = {
             SearchLocation.OVERRIDE: lambda: check_dict(self._override),
             SearchLocation.MODULES: lambda: check_dict(self._modules),
-            SearchLocation.TEXTURES_TPA: lambda: check_dict({TexturePackNames.TPA.value: self._texturepacks.get(TexturePackNames.TPA.value, [])}),
-            SearchLocation.TEXTURES_TPB: lambda: check_dict({TexturePackNames.TPB.value: self._texturepacks.get(TexturePackNames.TPB.value, [])}),
-            SearchLocation.TEXTURES_TPC: lambda: check_dict({TexturePackNames.TPC.value: self._texturepacks.get(TexturePackNames.TPC.value, [])}),
-            SearchLocation.TEXTURES_GUI: lambda: check_dict({TexturePackNames.GUI.value: self._texturepacks.get(TexturePackNames.GUI.value, [])}),
-            SearchLocation.CHITIN: lambda: check_dict({"chitin": self._chitin, "patch": self._patch_erf}),
+            SearchLocation.TEXTURES_TPA: lambda: check_dict(
+                {TexturePackNames.TPA.value: self._texturepacks.get(TexturePackNames.TPA.value, [])}
+            ),
+            SearchLocation.TEXTURES_TPB: lambda: check_dict(
+                {TexturePackNames.TPB.value: self._texturepacks.get(TexturePackNames.TPB.value, [])}
+            ),
+            SearchLocation.TEXTURES_TPC: lambda: check_dict(
+                {TexturePackNames.TPC.value: self._texturepacks.get(TexturePackNames.TPC.value, [])}
+            ),
+            SearchLocation.TEXTURES_GUI: lambda: check_dict(
+                {TexturePackNames.GUI.value: self._texturepacks.get(TexturePackNames.GUI.value, [])}
+            ),
+            SearchLocation.CHITIN: lambda: check_dict(
+                {"chitin": self._chitin, "patch": self._patch_erf}
+            ),
             SearchLocation.CUSTOM_MODULES: lambda: check_capsules(capsules),
             SearchLocation.CUSTOM_FOLDERS: lambda: check_folders(folders),
         }
@@ -1974,7 +2370,9 @@ class Installation:
         folders: list[Path] | None = None,
     ) -> list[LocationResult]:
         """Wrapper returning locations for a single texture resname."""
-        return self.texture_resource_locations([resname], order, capsules=capsules, folders=folders).get(resname, [])
+        return self.texture_resource_locations(
+            [resname], order, capsules=capsules, folders=folders
+        ).get(resname, [])
 
     def texture(
         self,
@@ -2052,7 +2450,9 @@ class Installation:
             )
         textures: CaseInsensitiveDict[TPC | None] = CaseInsensitiveDict()
         for resname in set(resnames):
-            result, txi_text = self.texture_resource_result(resname, order, capsules=capsules, folders=folders, logger=logger)
+            result, txi_text = self.texture_resource_result(
+                resname, order, capsules=capsules, folders=folders, logger=logger
+            )
             if result is None:
                 textures[resname] = None
                 continue
@@ -2087,7 +2487,9 @@ class Installation:
         -------
             A bytes object or None.
         """
-        batch: CaseInsensitiveDict[bytes | None] = self.sounds([resname], order, capsules=capsules, folders=folders, logger=logger)
+        batch: CaseInsensitiveDict[bytes | None] = self.sounds(
+            [resname], order, capsules=capsules, folders=folders, logger=logger
+        )
         return batch[resname] if batch else None
 
     def sounds(
@@ -2152,9 +2554,13 @@ class Installation:
 
                 try:
                     wav = read_wav(BytesIO(sound_data))
-                    sounds[resource.resname()] = bytes_wav(wav, ResourceType.WAV_DEOB)
+                    sounds[resource.resname()] = bytes_wav(wav, ToolsetFormat.WAV_DEOB)
                 except (ValueError, OSError) as e:
-                    RobustLogger().warning("Failed to load WAV file '%s': %s. Returning raw bytes as fallback.", resource.filepath(), e)
+                    RobustLogger().warning(
+                        "Failed to load WAV file '%s': %s. Returning raw bytes as fallback.",
+                        resource.filepath(),
+                        e,
+                    )
                     # Return raw bytes as fallback if WAV parsing fails
                     sounds[resource.resname()] = sound_data
 
@@ -2164,19 +2570,27 @@ class Installation:
                     sound_data: bytes | None = None
                     for sformat in sound_formats:
                         sound_data = capsule.resource(case_resname, sformat)
-                        if sound_data is not None:  # Break after first match found. Note that this means any other formats in this list will be ignored
+                        if (
+                            sound_data is not None
+                        ):  # Break after first match found. Note that this means any other formats in this list will be ignored
                             break
                     if sound_data is None:  # No sound data found in this list.
                         continue
-                    RobustLogger().debug("Found sound resource in capsule at '%s'", capsule.filepath())
+                    RobustLogger().debug(
+                        "Found sound resource in capsule at '%s'", capsule.filepath()
+                    )
                     case_resnames.remove(case_resname)
                     from io import BytesIO
 
                     try:
                         wav = read_wav(BytesIO(sound_data))
-                        sounds[case_resname] = bytes_wav(wav, ResourceType.WAV_DEOB)
+                        sounds[case_resname] = bytes_wav(wav, ToolsetFormat.WAV_DEOB)
                     except (ValueError, OSError) as e:
-                        RobustLogger().warning("Failed to load WAV file from capsule '%s': %s. Returning raw bytes as fallback.", capsule.filepath(), e)
+                        RobustLogger().warning(
+                            "Failed to load WAV file from capsule '%s': %s. Returning raw bytes as fallback.",
+                            capsule.filepath(),
+                            e,
+                        )
                         # Return raw bytes as fallback if WAV parsing fails
                         sounds[case_resname] = sound_data
 
@@ -2186,7 +2600,11 @@ class Installation:
                 queried_sound_files.update(
                     file
                     for file in folder.rglob("*")
-                    if (file.stem.casefold() in case_resnames and ResourceType.from_extension(file.suffix) in sound_formats and file.is_file())
+                    if (
+                        file.stem.casefold() in case_resnames
+                        and ResourceType.from_extension(file.suffix) in sound_formats
+                        and file.is_file()
+                    )
                 )
             for sound_file in queried_sound_files:
                 RobustLogger().debug("Found sound file resource at '%s'", sound_file)
@@ -2196,9 +2614,13 @@ class Installation:
 
                 try:
                     wav = read_wav(BytesIO(sound_data))
-                    sounds[sound_file.stem] = bytes_wav(wav, ResourceType.WAV_DEOB)
+                    sounds[sound_file.stem] = bytes_wav(wav, ToolsetFormat.WAV_DEOB)
                 except (ValueError, OSError) as e:
-                    RobustLogger().warning("Failed to load WAV file '%s': %s. Returning raw bytes as fallback.", sound_file, e)
+                    RobustLogger().warning(
+                        "Failed to load WAV file '%s': %s. Returning raw bytes as fallback.",
+                        sound_file,
+                        e,
+                    )
                     # Return raw bytes as fallback if WAV parsing fails
                     sounds[sound_file.stem] = sound_data
 
@@ -2229,7 +2651,9 @@ class Installation:
         logger: Callable[[str], None] | None = None,
     ) -> ResourceResult | None:
         """Locate a sound resource and return the ResourceResult (no WAV deobfuscation)."""
-        results = self.sound_resource_results([resname], order, capsules=capsules, folders=folders, logger=logger)
+        results = self.sound_resource_results(
+            [resname], order, capsules=capsules, folders=folders, logger=logger
+        )
         return results.get(resname)
 
     def sound_resource_results(
@@ -2256,15 +2680,21 @@ class Installation:
         folders = [] if folders is None else folders
         sound_formats: tuple[ResourceType, ...] = (ResourceType.WAV, ResourceType.MP3)
 
-        results: CaseInsensitiveDict[ResourceResult | None] = CaseInsensitiveDict({resname: None for resname in resnames_set})
+        results: CaseInsensitiveDict[ResourceResult | None] = CaseInsensitiveDict(
+            dict.fromkeys(resnames_set)
+        )
         remaining: set[str] = {name.casefold() for name in resnames_set}
 
         def build_result(resource: FileResource) -> ResourceResult:
-            result = ResourceResult(resource.resname(), resource.restype(), resource.filepath(), resource.data())
+            result = ResourceResult(
+                resource.resname(), resource.restype(), resource.filepath(), resource.data()
+            )
             result.set_file_resource(resource)
             return result
 
-        def check_dict(values: dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]]):
+        def check_dict(
+            values: dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]],
+        ):
             for resources in values.values():
                 for resource in resources:
                     if resource.restype() not in sound_formats:
@@ -2284,7 +2714,9 @@ class Installation:
                         data = capsule.resource(target, sformat)
                         if data is None:
                             data = info.data()
-                        result = ResourceResult(info.resname(), info.restype(), capsule.filepath(), data)
+                        result = ResourceResult(
+                            info.resname(), info.restype(), capsule.filepath(), data
+                        )
                         result.set_file_resource(info)
                         results[target] = result
                         remaining.discard(target)
@@ -2308,7 +2740,9 @@ class Installation:
         function_map: dict[SearchLocation, Callable[[], None]] = {
             SearchLocation.OVERRIDE: lambda: check_dict(self._override),
             SearchLocation.MODULES: lambda: check_dict(self._modules),
-            SearchLocation.CHITIN: lambda: check_dict({"chitin": self._chitin, "patch": self._patch_erf}),
+            SearchLocation.CHITIN: lambda: check_dict(
+                {"chitin": self._chitin, "patch": self._patch_erf}
+            ),
             SearchLocation.MUSIC: lambda: check_dict({"streammusic": self._streammusic}),
             SearchLocation.SOUND: lambda: check_dict({"streamsounds": self._streamsounds}),
             SearchLocation.VOICE: lambda: check_dict({"streamwaves": self._streamwaves}),
@@ -2347,14 +2781,18 @@ class Installation:
         folders = [] if folders is None else folders
         sound_formats: tuple[ResourceType, ...] = (ResourceType.WAV, ResourceType.MP3)
 
-        results: CaseInsensitiveDict[list[LocationResult]] = CaseInsensitiveDict({resname: [] for resname in resnames_set})
+        results: CaseInsensitiveDict[list[LocationResult]] = CaseInsensitiveDict(
+            {resname: [] for resname in resnames_set}
+        )
 
         def add_location(target: str, resource: FileResource):
             location = LocationResult(resource.filepath(), resource.offset(), resource.size())
             location.set_file_resource(resource)
             results[target].append(location)
 
-        def check_dict(values: dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]]):
+        def check_dict(
+            values: dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]],
+        ):
             for resources in values.values():
                 for resource in resources:
                     if resource.restype() not in sound_formats:
@@ -2389,7 +2827,9 @@ class Installation:
         function_map: dict[SearchLocation, Callable[[], None]] = {
             SearchLocation.OVERRIDE: lambda: check_dict(self._override),
             SearchLocation.MODULES: lambda: check_dict(self._modules),
-            SearchLocation.CHITIN: lambda: check_dict({"chitin": self._chitin, "patch": self._patch_erf}),
+            SearchLocation.CHITIN: lambda: check_dict(
+                {"chitin": self._chitin, "patch": self._patch_erf}
+            ),
             SearchLocation.MUSIC: lambda: check_dict({"streammusic": self._streammusic}),
             SearchLocation.SOUND: lambda: check_dict({"streamsounds": self._streamsounds}),
             SearchLocation.VOICE: lambda: check_dict({"streamwaves": self._streamwaves}),
@@ -2412,7 +2852,9 @@ class Installation:
         folders: list[Path] | None = None,
     ) -> list[LocationResult]:
         """Wrapper returning locations for a single sound resname."""
-        return self.sound_resource_locations([resname], order, capsules=capsules, folders=folders).get(resname, [])
+        return self.sound_resource_locations(
+            [resname], order, capsules=capsules, folders=folders
+        ).get(resname, [])
 
     def string(
         self,
@@ -2458,7 +2900,11 @@ class Installation:
         stringrefs: list[int] = [locstring.stringref for locstring in queries]
 
         batch: dict[int, StringResult] = self.talktable().batch(stringrefs)
-        female_batch: dict[int, StringResult] = self.female_talktable().batch(stringrefs) if self.female_talktable().path().is_file() else {}
+        female_batch: dict[int, StringResult] = (
+            self.female_talktable().batch(stringrefs)
+            if self.female_talktable().path().is_file()
+            else {}
+        )
 
         results: dict[LocalizedString, str] = {}
         for locstring in queries:
@@ -2534,10 +2980,17 @@ class Installation:
             qualifier = lower_module[len(root) :]
 
             if lower_root not in root_to_extensions:
-                root_to_extensions[lower_root] = {".rim": None, ".mod": None, "_s.rim": None, "_dlg.erf": None}
+                root_to_extensions[lower_root] = {
+                    ".rim": None,
+                    ".mod": None,
+                    "_s.rim": None,
+                    "_dlg.erf": None,
+                }
 
             if qualifier not in root_to_extensions[lower_root]:
-                RobustLogger().warning(f"No area name found for lonewolf capsule 'Modules/{module}'")
+                RobustLogger().warning(
+                    f"No area name found for lonewolf capsule 'Modules/{module}'"
+                )
                 continue
             root_to_extensions[lower_root][qualifier] = module
 
@@ -2580,7 +3033,12 @@ class Installation:
             qualifier = lower_module[len(root) :]
 
             if lower_root not in root_to_extensions:
-                root_to_extensions[lower_root] = {".rim": None, ".mod": None, "_s.rim": None, "_dlg.erf": None}
+                root_to_extensions[lower_root] = {
+                    ".rim": None,
+                    ".mod": None,
+                    "_s.rim": None,
+                    "_dlg.erf": None,
+                }
 
             if qualifier not in root_to_extensions[lower_root]:
                 RobustLogger().warning(f"No id found for lonewolf capsule 'Modules/{module}'")
@@ -2637,7 +3095,9 @@ class Installation:
 
             # Check if file exists before trying to build Capsule (handles deleted files gracefully)
             if not file_path.is_file():
-                RobustLogger().warning(f"Module file does not exist: 'Modules/{module_filename}', returning root name")
+                RobustLogger().warning(
+                    f"Module file does not exist: 'Modules/{module_filename}', returning root name"
+                )
                 return root
 
             relevant_capsule = Capsule(file_path)
@@ -2645,17 +3105,28 @@ class Installation:
             RobustLogger().exception(f"Could not build capsule for 'Modules/{module_filename}'")
             return root
 
-        area_resource: FileResource | None = next((resource for resource in relevant_capsule.resources() if resource.restype() == ResourceType.ARE), None)
+        area_resource: FileResource | None = next(
+            (
+                resource
+                for resource in relevant_capsule.resources()
+                if resource.restype() == ResourceType.ARE
+            ),
+            None,
+        )
         try:
             if area_resource is not None:
                 are: GFF = read_gff(area_resource.data())
                 if are.root.exists("Name"):
                     actual_ftype = are.root.what_type("Name")
                     if actual_ftype != GFFFieldType.LocalizedString:
-                        RobustLogger().warning(f"{area_resource.filename()} has incorrect field 'Name' type '{actual_ftype.name}', expected type 'List'")
+                        RobustLogger().warning(
+                            f"{area_resource.filename()} has incorrect field 'Name' type '{actual_ftype.name}', expected type 'List'"
+                        )
                     locstring: LocalizedString | None = are.root.get_locstring("Name")
                     if locstring is None:
-                        RobustLogger().warning(f"{area_resource.filename()} has incorrect field 'Name' type '{actual_ftype.name}', expected type 'LocalizedString'")
+                        RobustLogger().warning(
+                            f"{area_resource.filename()} has incorrect field 'Name' type '{actual_ftype.name}', expected type 'LocalizedString'"
+                        )
                         return ""
                     if locstring.stringref == -1:
                         return locstring.get(Language.ENGLISH, Gender.MALE) or ""
@@ -2671,7 +3142,7 @@ class Installation:
         *,
         use_hardcoded: bool = True,
         use_alternate: bool = False,
-    ) -> str:  # sourcery skip: assign-if-exp, remove-unreachable-code
+    ) -> str:
         """Returns an identifier for the module that matches the filename/IFO/ARE resname.
 
         NOTE: Since this is only used for sorting currently, does not parse Mod_Area_list or Mod_VO_ID.
@@ -2693,7 +3164,11 @@ class Installation:
             @lru_cache(maxsize=1000)
             def quick_id(filename: str) -> str:
                 base_name: str = filename.rsplit(".")[0]  # Strip extension
-                if len(base_name) >= 6 and base_name[3:4].lower() == "m" and base_name[4:6].isdigit():  # e.g. 'danm13', 'manm26mg'...  # noqa: PLR2004
+                if (
+                    len(base_name) >= 6
+                    and base_name[3:4].lower() == "m"
+                    and base_name[4:6].isdigit()
+                ):  # e.g. 'danm13', 'manm26mg'...  # noqa: PLR2004
                     base_name = f"{base_name[:3]}_{base_name[3:]}"
                 parts: list[str] = base_name.split("_")
 
@@ -2731,9 +3206,22 @@ class Installation:
 
         try:
             return next(
-                (resource.resname() for resource in relevant_capsule.resources() if resource.restype() == ResourceType.GIT),
-                next((resource.resname() for resource in relevant_capsule.resources() if resource.restype() == ResourceType.ARE), quick_id(module_filename)),
+                (
+                    resource.resname()
+                    for resource in relevant_capsule.resources()
+                    if resource.restype() == ResourceType.GIT
+                ),
+                next(
+                    (
+                        resource.resname()
+                        for resource in relevant_capsule.resources()
+                        if resource.restype() == ResourceType.ARE
+                    ),
+                    quick_id(module_filename),
+                ),
             )
         except Exception:  # noqa: BLE001
-            RobustLogger().exception("Error occurred while recursing nested resources in func module_id()")
+            RobustLogger().exception(
+                "Error occurred while recursing nested resources in func module_id()"
+            )
             return root

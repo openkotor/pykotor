@@ -7,9 +7,9 @@ import math
 from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Union
 
-from pykotor.gl.glm_compat import decompose, eulerAngles, mat4, mat4_cast, quat, translate
+from pykotor.gl import decompose, eulerAngles, mat4, mat4_cast, quat, translate, vec3, vec4
 from pykotor.gl.models.mdl import Cube, Empty
-from utility.common.geometry import Vector3, Vector4
+from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
     from pykotor.gl.models.mdl import Boundary
@@ -27,19 +27,22 @@ class RenderObject:
     """
 
     __slots__ = (
-        "model",
-        "children",
-        "_transform",
+        "_boundary",
+        "_bounds_dirty",
+        "_cached_center",
+        "_cached_model",
+        "_cached_model_gen",
+        "_cached_radius",
+        "_cube",
+        "_hide_attr",
         "_position",
         "_rotation",
-        "_cube",
-        "_boundary",
-        "gen_boundary",
+        "_transform",
+        "children",
         "data",
+        "gen_boundary",
+        "model",
         "override_texture",
-        "_cached_radius",
-        "_cached_center",
-        "_bounds_dirty",
     )
 
     def __init__(
@@ -68,7 +71,30 @@ class RenderObject:
         self._cached_center: Vector3 | None = None
         self._bounds_dirty: bool = True
 
+        # Cached Model reference (avoids CaseInsensitiveDict lookup every frame)
+        self._cached_model: Any = None  # Model | None, typed as Any to avoid import cycle
+        self._cached_model_gen: int = -1  # CaseInsensitiveDict._generation when cached
+
+        # Precomputed hide attribute (set by _rebuild_object_caches for O(1) hide checks)
+        self._hide_attr: str = ""  # Empty = never hidden; e.g. "hide_creatures"
+
         self._recalc_transform()
+
+    def resolve_model(self, scene: Scene) -> Any:
+        """Get the Model for this RenderObject, using a per-object cache.
+
+        Uses CaseInsensitiveDict generation counter to detect when the scene
+        has added/replaced model entries (e.g. async load completion), avoiding
+        expensive .lower() dict lookups on every frame.
+        """
+        cached = self._cached_model
+        models_gen = scene.models._generation
+        if cached is not None and self._cached_model_gen == models_gen:
+            return cached
+        resolved = scene.model(self.model)
+        self._cached_model = resolved
+        self._cached_model_gen = models_gen
+        return resolved
 
     def transform(self) -> mat4:
         return self._transform
@@ -79,12 +105,15 @@ class RenderObject:
     ):
         self._transform = transform
         rotation = quat()
-        scale = Vector3()
-        skew = Vector3()
-        perspective = Vector4()
-        decompose(transform, scale, rotation, self._position, skew, perspective)  # pyright: ignore[reportArgumentType, reportCallIssue]
-        self._rotation = eulerAngles(rotation)
-        self._bounds_dirty = True
+        scale = vec3()
+        skew = vec3()
+        persp = vec4()
+        pos = vec3()
+        decompose(transform, scale, rotation, pos, skew, persp)
+        self._position = Vector3(pos.x, pos.y, pos.z)
+        euler = eulerAngles(rotation)
+        self._rotation = Vector3(euler.x, euler.y, euler.z)
+        # NOTE: Do NOT set _bounds_dirty here. Bounds are model-local.
 
     def _recalc_transform(self):
         self._transform = mat4() * translate(self._position)
@@ -104,7 +133,9 @@ class RenderObject:
 
         self._position = Vector3(x, y, z)
         self._recalc_transform()
-        self._bounds_dirty = True
+        # NOTE: Do NOT set _bounds_dirty here. The bounding sphere center is
+        # stored as a model-local offset and position is added dynamically in
+        # bounding_sphere(). Position changes don't affect the model-space AABB.
 
     def rotation(self) -> Vector3:
         return copy(self._rotation)
@@ -120,7 +151,9 @@ class RenderObject:
 
         self._rotation = Vector3(x, y, z)
         self._recalc_transform()
-        self._bounds_dirty = True
+        # NOTE: Do NOT set _bounds_dirty here. cube() computes bounds from
+        # identity transform (model-local space), so rotation doesn't change
+        # the cached bounding sphere radius.
 
     def reset_cube(self):
         self._cube = None

@@ -5,50 +5,35 @@ during character creation. They use a 3rd-order Markov chain model with single-l
 double-letter (bigram), and triple-letter (trigram) probability tables. Each table
 stores probability values for characters appearing at the start, middle, or end of names.
 
-References:
+Observed retail behavior:
 ----------
-    Based on swkotor.exe LTR structure:
-    - LoadLTR - Loads LTR file for name generation
-      * Parses binary LTR format with "LTR V1.0" header
-      * Reads letter count (uint8, typically 28)
-      * Reads single-letter probability arrays (84 bytes: 28 chars * 3 positions * 4 bytes)
-      * Reads double-letter probability arrays (2352 bytes: 28 * 28 * 3 * 4)
-      * Reads triple-letter probability arrays (65856 bytes: 28 * 28 * 28 * 3 * 4)
-      * Builds Markov chain probability tables for random name generation
-    - "LTR " file type identifier - First 4 bytes of LTR files
-    - "V1.0" version identifier - Bytes 4-7 of LTR files
-    - Letter Count field at offset 0x08 (1 byte, uint8) - Number of characters in set (26 or 28)
-    - Single Letters start at offset 0x09 (84 bytes: 28 floats * 3 positions)
-    - Double Letters start at offset 0x5D (2352 bytes: 28 * 28 * 3 * 4)
-    - Triple Letters start at offset 0x965 (65856 bytes: 28 * 28 * 28 * 3 * 4)
-    - ".ltr" extension - LTR file extension
-    - Original BioWare engine binaries (TODO: Verify with REVA when available)
-    https://github.com/mtijanic/nwn-misc/blob/master/nwnltr.c - Original C reference implementation
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:19-210
-        Binary Format:
-        -------------
-        Header (9 bytes):
-        Offset | Size | Type   | Description
-        -------|------|--------|-------------
-        0x00   | 4    | char[] | File Type ("LTR ")
-        0x04   | 4    | char[] | File Version ("V1.0")
-        0x08   | 1    | uint8  | Letter Count (26 or 28)
-        Single Letters (84 bytes = 28 * 3 * 4):
-        Start probabilities: 28 floats (4 bytes each)
-        Middle probabilities: 28 floats (4 bytes each)
-        End probabilities: 28 floats (4 bytes each)
-        Double Letters (2352 bytes = 28 * 28 * 3 * 4):
-        28 LetterSets, each containing:
-        Start probabilities: 28 floats
-        Middle probabilities: 28 floats
-        End probabilities: 28 floats
-        Triple Letters (65856 bytes = 28 * 28 * 28 * 3 * 4):
-        28x28 LetterSets, each containing:
-        Start probabilities: 28 floats
-        Middle probabilities: 28 floats
-        End probabilities: 28 floats
+    Character creation draws random names from ``LTR `` / ``V1.0`` blobs: a letter count plus
+    packed float tables for single-, double-, and triple-letter Markov transitions as laid out
+    below. It has been observed that KotOR ships 28-letter alphabets in practice.
+
+
+Binary Format:
+-------------
+    Header (9 bytes):
+    Offset | Size | Type   | Description
+    -------|------|--------|-------------
+    0x00   | 4    | char[] | File Type ("LTR ")
+    0x04   | 4    | char[] | File Version ("V1.0")
+    0x08   | 1    | uint8  | Letter Count (26 or 28)
+    Single Letters (84 bytes = 28 * 3 * 4):
+    Start probabilities: 28 floats (4 bytes each)
+    Middle probabilities: 28 floats (4 bytes each)
+    End probabilities: 28 floats (4 bytes each)
+    Double Letters (2352 bytes = 28 * 28 * 3 * 4):
+    28 LetterSets, each containing:
+    Start probabilities: 28 floats
+    Middle probabilities: 28 floats
+    End probabilities: 28 floats
+    Triple Letters (65856 bytes = 28 * 28 * 28 * 3 * 4):
+    28x28 LetterSets, each containing:
+    Start probabilities: 28 floats
+    Middle probabilities: 28 floats
+    End probabilities: 28 floats
 """
 
 from __future__ import annotations
@@ -57,50 +42,20 @@ import random
 import secrets
 import string
 
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.type import ResourceType
 
 
-class LTR(ComparableMixin):
+class LTR(BiowareResource):
     """Represents a LTR (Letter) file containing Markov chain name generation data.
 
     LTR files use 3rd-order Markov chains to generate random names. The probability
     tables store likelihood values for characters appearing in different positions
     (start, middle, end) based on previous character context (none, one, or two chars).
 
-    References:
-    ----------
-    Based on swkotor.exe LTR structure:
-    - LoadLTR - Loads LTR file for name generation
-      * Parses binary LTR format with "LTR V1.0" header
-      * Reads letter count (uint8, typically 28 for KotOR)
-      * Reads single-letter probability arrays (84 bytes: 28 chars * 3 positions * 4 bytes per float)
-      * Reads double-letter probability arrays (2352 bytes: 28 * 28 * 3 * 4)
-      * Reads triple-letter probability arrays (65856 bytes: 28 * 28 * 28 * 3 * 4)
-      * Builds 3rd-order Markov chain probability tables for random name generation
-    - "LTR " file type identifier - First 4 bytes of LTR files (offset 0x00)
-    - "V1.0" version identifier - Bytes 4-7 of LTR files (offset 0x04)
-    - Letter Count field at offset 0x08 (1 byte, uint8) - Number of characters in set (26 for NWN, 28 for KotOR)
-    - Single Letters start at offset 0x09 (84 bytes: 28 floats * 3 positions)
-      * Start probabilities: 28 floats (offset 0x09-0x70)
-      * Middle probabilities: 28 floats (offset 0x71-0xD8)
-      * End probabilities: 28 floats (offset 0xD9-0x140)
-    - Double Letters start at offset 0x5D (2352 bytes: 28 * 28 * 3 * 4)
-      * 28 LetterSets, each with start/middle/end probabilities (28 floats each)
-    - Triple Letters start at offset 0x965 (65856 bytes: 28 * 28 * 28 * 3 * 4)
-      * 28x28 LetterSets, each with start/middle/end probabilities (28 floats each)
-    - ".ltr" extension - LTR file extension identifier
-    - Original BioWare engine binaries (TODO: Verify with REVA when available)
-    Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:19-210
-
-
-
     Attributes:
     ----------
         CHARACTER_SET: String of valid characters (28 chars: a-z + apostrophe + hyphen)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LTRObject.ts:23 (CharacterArrays[28])
             KotOR uses 28-character set: "abcdefghijklmnopqrstuvwxyz'-"
             NWN uses 26-character set: "abcdefghijklmnopqrstuvwxyz"
 
@@ -108,17 +63,14 @@ class LTR(ComparableMixin):
             Fixed at 28 for KotOR games
 
         _singles: Single-letter probability block (no context)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LTRObject.ts:31 (singleArray[3][28])
             Contains start/middle/end probabilities for each character
             Used to generate the first character of names
 
         _doubles: Double-letter probability blocks (1-character context)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LTRObject.ts:32 (doubleArray[28][3][28])
             Array of 28 LetterSets, indexed by previous character
             Used to generate second character based on first character
 
         _triples: Triple-letter probability blocks (2-character context)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LTRObject.ts:33 (tripleArray[28][28][3][28])
             28x28 array of LetterSets, indexed by previous two characters
             Used to generate third and subsequent characters based on previous two
     """
@@ -132,30 +84,35 @@ class LTR(ComparableMixin):
     COMPARABLE_FIELDS = ("_singles", "_doubles", "_triples")
 
     def __init__(self):
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:31
-
         # Single-letter probability block (no context, for first character)
         self._singles: LTRBlock = LTRBlock(LTR.NUM_CHARACTERS)
 
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:32
-
         # Double-letter probability blocks (1-character context, for second character)
         # Array of 28 blocks, indexed by previous character
-        self._doubles: list[LTRBlock] = [LTRBlock(LTR.NUM_CHARACTERS) for _ in range(LTR.NUM_CHARACTERS)]
-
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:33
+        self._doubles: list[LTRBlock] = [
+            LTRBlock(LTR.NUM_CHARACTERS) for _ in range(LTR.NUM_CHARACTERS)
+        ]
 
         # Triple-letter probability blocks (2-character context, for third+ characters)
         # 28x28 array of blocks, indexed by previous two characters
-        self._triples: list[list[LTRBlock]] = [[LTRBlock(LTR.NUM_CHARACTERS) for _ in range(LTR.NUM_CHARACTERS)] for _ in range(LTR.NUM_CHARACTERS)]
+        self._triples: list[list[LTRBlock]] = [
+            [LTRBlock(LTR.NUM_CHARACTERS) for _ in range(LTR.NUM_CHARACTERS)]
+            for _ in range(LTR.NUM_CHARACTERS)
+        ]
 
     def __eq__(self, other):
         if not isinstance(other, LTR):
             return NotImplemented  # type: ignore[no-any-return]
-        return self._singles == other._singles and self._doubles == other._doubles and self._triples == other._triples
+        return (
+            self._singles == other._singles
+            and self._doubles == other._doubles
+            and self._triples == other._triples
+        )
 
     def __hash__(self):
-        return hash((self._singles, tuple(self._doubles), tuple(tuple(row) for row in self._triples)))
+        return hash(
+            (self._singles, tuple(self._doubles), tuple(tuple(row) for row in self._triples))
+        )
 
     @staticmethod
     def _chance() -> float:
@@ -178,16 +135,6 @@ class LTR(ComparableMixin):
         with single-letter probabilities, then double-letter (bigram), then triple-letter
         (trigram) probabilities for subsequent characters.
 
-        References:
-        ----------
-        See module docstring for engine addresses (K1 + TSL TODO).
-        https://github.com/mtijanic/nwn-misc/blob/master/nwnltr.c - Original C reference
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:128-210 (getName method)
-
-
-
         Args:
         ----
             seed: Randomness seed for reproducible name generation.
@@ -204,7 +151,6 @@ class LTR(ComparableMixin):
             4. Generate subsequent characters using triple-letter middle probabilities
             5. Terminate when triple-letter end probability is selected or max attempts reached
         """
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:134 (prob = Math.random()) (prob = Math.random()
         # Set random seed for reproducible generation
         random.seed(seed)
 
@@ -214,8 +160,6 @@ class LTR(ComparableMixin):
             attempts = 0
             name: str = ""
 
-            # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:145-152
-
             # Generate first character using single-letter start probabilities
             for char in LTR.CHARACTER_SET:
                 if LTR._chance() < self._singles.get_start(char):
@@ -223,8 +167,6 @@ class LTR(ComparableMixin):
                     break
             else:
                 continue
-
-            # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:154-161
 
             # Generate second character using double-letter start probabilities (indexed by first char)
             for char in LTR.CHARACTER_SET:
@@ -234,8 +176,6 @@ class LTR(ComparableMixin):
                     break
             else:
                 continue
-
-            # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:163-170
 
             # Generate third character using triple-letter start probabilities (indexed by first two chars)
             for char in LTR.CHARACTER_SET:
@@ -247,18 +187,12 @@ class LTR(ComparableMixin):
             else:
                 continue
 
-            # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:173-200
-
             # Generate subsequent characters using triple-letter middle/end probabilities
             while True:
                 prob: float = LTR._chance()
 
-                # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:175 (Math.floor(Math.random() * 2147483647) % 12) (Math.floor(Math.random()
-
                 # Check if name should end (probability increases with name length)
                 if (secrets.randbelow(12) % 12) <= len(name):
-                    # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:176-182
-
                     # Select final character using triple-letter end probabilities
                     for char in LTR.CHARACTER_SET:
                         index1 = LTR._CHAR_INDEX[name[-2]]
@@ -266,8 +200,6 @@ class LTR(ComparableMixin):
                         if prob < self._triples[index1][index2].get_end(char):
                             name += char
                             return name.capitalize()
-
-                # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:190-195
 
                 # Generate next character using triple-letter middle probabilities
                 for char in LTR.CHARACTER_SET:
@@ -277,8 +209,6 @@ class LTR(ComparableMixin):
                         name += char
                         break
                 else:
-                    # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:197-200
-
                     # No valid character found - increment attempts and check termination
                     attempts += 1
                     if len(name) < 4 or attempts > 100:  # noqa: PLR2004
@@ -339,7 +269,9 @@ class LTR(ComparableMixin):
         char: str,
         chance: float,
     ):
-        self._triples[LTR._CHAR_INDEX[previous2]][LTR._CHAR_INDEX[previous1]].set_start(char, chance)
+        self._triples[LTR._CHAR_INDEX[previous2]][LTR._CHAR_INDEX[previous1]].set_start(
+            char, chance
+        )
 
     def set_triples_middle(
         self,
@@ -348,7 +280,9 @@ class LTR(ComparableMixin):
         char: str,
         chance: float,
     ):
-        self._triples[LTR._CHAR_INDEX[previous2]][LTR._CHAR_INDEX[previous1]].set_middle(char, chance)
+        self._triples[LTR._CHAR_INDEX[previous2]][LTR._CHAR_INDEX[previous1]].set_middle(
+            char, chance
+        )
 
     def set_triples_end(
         self,
@@ -363,48 +297,33 @@ class LTR(ComparableMixin):
 class LTRBlock(ComparableMixin):
     """Stores probability values for characters appearing in different name positions.
 
-        Each LTRBlock contains three probability arrays (start, middle, end) that define
-        the likelihood of each character appearing at the start, middle, or end of a name
-        segment. These probabilities are cumulative (values increase monotonically) and
-        are used with random number generation to select characters.
+    Each LTRBlock contains three probability arrays (start, middle, end) that define
+    the likelihood of each character appearing at the start, middle, or end of a name
+    segment. These probabilities are cumulative (values increase monotonically) and
+    are used with random number generation to select characters.
 
-        References:
-        ----------
-        Based on swkotor.exe LTR structure:
-        - Probability block layout (start/middle/end)
-          * Start probabilities: 28 floats (offset 0x09-0x70)
-          * Middle probabilities: 28 floats (offset 0x71-0xD8)
-          * End probabilities: 28 floats (offset 0xD9-0x140)
-        - Binary format (per LetterSet)
-          * Start probabilities: num_characters * 4 bytes (float32 each)
-          * Middle probabilities: num_characters * 4 bytes (float32 each)
-          * End probabilities: num_characters * 4 bytes (float32 each)
-        - Original BioWare engine binaries (TODO: Verify with REVA when available)
-        https://github.com/mtijanic/nwn-misc/blob/master/nwnltr.c - Original C reference implementation
+    On-disk layout:
+    ----------
+    Each letter set stores three parallel float tables (start, middle, end) sized by the
+    file's letter count.
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        - https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:19-210
-        - https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-        - https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorLTR/LTR.cs
-        - https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorLTR/LTRDecompiler.cs
 
-        Attributes:
-        ----------
-            _start: Probability array for characters at start of name segment
-                Array of 28 floats (one per character)
-                Cumulative probabilities (monotonically increasing)
-                Used when generating first character or after name breaks
+    Attributes:
+    ----------
+        _start: Probability array for characters at start of name segment
+            Array of 28 floats (one per character)
+            Cumulative probabilities (monotonically increasing)
+            Used when generating first character or after name breaks
 
-            _middle: Probability array for characters in middle of name segment
-                Array of 28 floats (one per character)
-                Cumulative probabilities (monotonically increasing)
-                Used when generating characters after start but before end
+        _middle: Probability array for characters in middle of name segment
+            Array of 28 floats (one per character)
+            Cumulative probabilities (monotonically increasing)
+            Used when generating characters after start but before end
 
-            _end: Probability array for characters at end of name segment
-                Array of 28 floats (one per character)
-                Cumulative probabilities (monotonically increasing)
-                Used when generating final character of name
+        _end: Probability array for characters at end of name segment
+            Array of 28 floats (one per character)
+            Cumulative probabilities (monotonically increasing)
+            Used when generating final character of name
     """
 
     COMPARABLE_SEQUENCE_FIELDS = ("_start", "_middle", "_end")
@@ -428,7 +347,11 @@ class LTRBlock(ComparableMixin):
     def __eq__(self, other):
         if not isinstance(other, LTRBlock):
             return NotImplemented  # type: ignore[no-any-return]
-        return self._start == other._start and self._middle == other._middle and self._end == other._end
+        return (
+            self._start == other._start
+            and self._middle == other._middle
+            and self._end == other._end
+        )
 
     def __hash__(self):
         return hash((tuple(self._start), tuple(self._middle), tuple(self._end)))

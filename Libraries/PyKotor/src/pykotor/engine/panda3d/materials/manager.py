@@ -1,15 +1,10 @@
-"""Panda3D material manager implementation.
+"""Panda3D material manager: textures, stages, and shader inputs.
 
-References:
-----------
-        Based on swkotor.exe material system:
-        - CResTPC::CResTPC @ 0x00712ea0 - TPC texture resource constructor
-        - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
-        - Material and shader management in game engine
+Wraps Panda3D loading for KotOR-derived assets. Former **References** blocks that
+named retail TPC constructor RVAs are migrated to ``wiki/reverse_engineering_findings.md``
+(*engine/panda3d — TPC loading*).
 
-        Libraries/PyKotor/src/pykotor/engine/materials/base.py - Abstract interfaces
-
-
+See ``pykotor.engine.materials.base`` for abstract interfaces.
 """
 
 from __future__ import annotations
@@ -53,19 +48,8 @@ class Panda3DMaterial(IMaterial):
         self.normal_texture: Texture | None = None
         self.lightmap_texture: Texture | None = None
 
-    def load_resources(self, loader: "Loader", base_path: Path) -> None:
-        """Load textures required by this material.
-
-        References:
-        ----------
-        Based on swkotor.exe texture loading:
-        - CResTPC::CResTPC @ 0x00712ea0 - TPC texture resource constructor
-        - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
-
-        /panda3d/panda3d-docs/programming/texturing/creating-texture - loader.loadTexture()
-
-
-        """
+    def load_resources(self, loader: Loader, base_path: Path) -> None:
+        """Load textures required by this material."""
         if self.diffuse_texture_path:
             tex_file = self._find_texture(base_path, self.diffuse_texture_path)
             if tex_file:
@@ -94,17 +78,8 @@ class Panda3DMaterial(IMaterial):
     def apply(self, node: NodePath) -> None:
         """Apply loaded textures to the provided node.
 
-        References:
-        ----------
-        Based on swkotor.exe material application:
-        - Material and shader management in game engine
-        - Texture stage configuration and shader input setup
-
-        /panda3d/panda3d-docs/programming/shaders/shader-basics.rst - model.setShader()
-        /panda3d/panda3d-docs/programming/texturing/texture-modes.rst - TextureStage.MNormal
-        /panda3d/panda3d-docs/programming/shaders/coordinate-spaces.rst - setShaderInput()
-
-
+        Panda3D: ``loader.loadTexture``, ``setTexture``, ``TextureStage``, ``setShader`` /
+        ``setShaderInput`` (see Panda3D texturing and shader docs).
         """
         if self.diffuse_texture:
             # /panda3d/panda3d-docs/programming/shaders/cg-shader-tutorial/part-1.rst
@@ -138,9 +113,9 @@ class Panda3DMaterial(IMaterial):
 class Panda3DMaterialManager(IMaterialManager):
     """Material manager responsible for compiling shaders and applying materials."""
 
-    def __init__(self, loader: "Loader", texture_base_path: Path | None = None):
+    def __init__(self, loader: Loader, texture_base_path: Path | None = None):
         self.loader = loader
-        self.texture_base_path = texture_base_path or Path(".")
+        self.texture_base_path = texture_base_path or Path()
         self.shader = self._load_shader()
 
     def _load_shader(self) -> Shader:
@@ -153,7 +128,7 @@ class Panda3DMaterialManager(IMaterialManager):
             raise RuntimeError("Failed to load KotOR material shader")
         return shader
 
-    def create_material_from_mesh(self, mesh: "MDLMesh") -> Panda3DMaterial:
+    def create_material_from_mesh(self, mesh: MDLMesh) -> Panda3DMaterial:
         """Create a Panda3DMaterial from MDL mesh data."""
         diffuse = mesh.texture_1 if mesh.texture_1 else None
         lightmap = mesh.texture_2 if mesh.has_lightmap and mesh.texture_2 else None

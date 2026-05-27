@@ -5,17 +5,7 @@ Handles row/column additions, cell modifications, and memory token resolution.
 
 References:
 ----------
-        Based on swkotor.exe 2DA structure:
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
-        - C2DA::Unload2DArray @ 0x004139e0 - Unloads 2DA data
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/TSLPatcher/tree/master/TSLPatcher.pl (unfinished perl rewrite of TSLPatcher)
-        https://github.com/th3w1zard1/HoloPatcher.NET/tree/master/src/TSLPatcher.Core/Mods/2DA/
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET.Patcher/
-
-
+        Observed retail KotOR 2DA load/unload behavior.
 """
 
 from __future__ import annotations
@@ -104,7 +94,11 @@ class Target:
             - For label column, checks for label column, then iterates rows to find match
             - Returns matching row or None.
         """
-        value: str | int = self.value.value(memory, twoda, None) if isinstance(self.value, (RowValueTLKMemory, RowValue2DAMemory)) else self.value
+        value: str | int = (
+            self.value.value(memory, twoda, None)
+            if isinstance(self.value, (RowValueTLKMemory, RowValue2DAMemory))
+            else self.value
+        )
         source_row: TwoDARow | None = None
         if self.target_type == TargetType.ROW_INDEX:
             source_row = twoda.get_row(int(value))
@@ -708,5 +702,5 @@ class Modifications2DA(PatcherModifications):
         rows_added = cur_row_count - twoda_row_limit
         if cur_row_count > twoda_row_limit:
             raise ValueError(
-                f"{self.saveas} has a max row count of {twoda_row_limit}. Adding more will break the game. This mod attempted to add {rows_added} rows and have not been applied."
+                f"{self.saveas} has a max row count of {twoda_row_limit}. Adding more will break the game. This mod attempted to add {rows_added} rows and have not been applied.",
             )

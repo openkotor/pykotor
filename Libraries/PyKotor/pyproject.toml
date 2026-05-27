@@ -4,7 +4,7 @@ requires = ["setuptools>=67.8.0", "wheel"]
 
 [project]
 name = "pykotor"
-version = "2.3.0"
+version = "2.3.12"
 description = "Read, modify and write files used by KotOR's game engine."
 authors = [{ name = "Nick Hugi" }, { name = "th3w1zard1" }]
 maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
@@ -27,7 +27,12 @@ classifiers = [
   "Topic :: File Formats",
   "Typing :: Typed",
 ]
-dependencies = ["defusedxml>=0.7", "ply>=3.11,<4"]
+dependencies = [
+  "bioware-kaitai-formats>=0.1.0",
+  "defusedxml>=0.7",
+  "kaitaistruct>=0.11",
+  "ply>=3.11,<4",
+]
 keywords = [
   "2da",
   "bif",
@@ -75,14 +80,17 @@ dev = [
   "pytest-metadata>=3.1.1; python_version>=\"3.9\"",
   "pytest-xdist>=2.0.0,<3.8.0; python_version<\"3.9\"",
   "pytest-xdist>=3.8.0; python_version>=\"3.9\"",
+  "pytest-asyncio>=0.23.0,<0.25.0; python_version<\"3.9\"",
+  "pytest-asyncio>=0.25.2; python_version>=\"3.9\"",
   "pytest>=7.0.0; python_version>=\"3.9\"",
   "pytest>=7.0.0,<8.0.0; python_version<\"3.9\"",
   "python-dateutil>=2.9.0.post0",
   "python-dotenv; python_version<\"3.9\"",
   "python-dotenv>=1.2.1; python_version>=\"3.9\"",
-  "python-multipart>=0.0.22",
-  "ruff>=0.5.3",
-  "ruff>=0.5.3,<0.6.0; python_version<\"3.9\"",
+  "python-multipart>=0.0.9,<0.0.21; python_version < \"3.10\"",
+  "python-multipart>=0.0.22; python_version >= \"3.10\"",
+  "ruff>=0.5.3,<0.6.0; python_version < \"3.9\"",
+  "ruff>=0.5.3; python_version >= \"3.9\"",
   "snakeviz; python_version<\"3.9\"",
   "snakeviz>=2.2.2; python_version>=\"3.9\"",
   "tomli-w>=1.2.0; python_version>\"3.11\"",
@@ -109,47 +117,52 @@ encodings = [
 exp = ["fusepy>=3.0.1", "pywin32>=38; sys_platform == \"win32\""]
 extra = [
   "PyYAML>=6.0",
+  "Send2Trash>=1.8.0",
   "colorama>=0.4.6",
   "comtypes>=1.4.0; sys_platform == \"win32\"",
   "gputil>=1.4.0",
   "psutil>=7.2.2",
 ]
 font = [
-  "pillow>=12.1.1",
+  "pillow>=10.0.0,<11; python_version < \"3.10\"",
+  "pillow>=12.1.1; python_version >= \"3.10\"",
 ]
 gl = [
-  "PyGLM>=2.0,<2.8; python_implementation == 'CPython'",
+  "PyGLM>=2.0,<2.9",
   "PyOpenGL>=3.1",
-  "numpy>=1.22",
+  "numpy>=1.22,<1.25; python_version < \"3.9\"",
+  "numpy>=1.25; python_version >= \"3.9\"",
 ]
 gl_exp = ["moderngl"]
 updater = [
   "certifi>=2021.10.8",
   "pycryptodome>=3.19.0",
-  "requests>=2.32.4",
+  "requests>=2.23.0,<2.32.5; python_version < \"3.9\"",
+  "requests>=2.32.4; python_version >= \"3.9\"",
 ]
+render = ["matplotlib>=3.5"]
 
 [project.scripts]
 pykotor = "pykotor.cli.__main__:main"
 pykotorcli = "pykotor.cli.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/OldRepublicDevs/PyKotor"
-Changelog = "https://github.com/OldRepublicDevs/PyKotor/releases"
-Documentation = "https://github.com/OldRepublicDevs/PyKotor/wiki"
-Issues = "https://github.com/OldRepublicDevs/PyKotor/issues"
-Repository = "https://github.com/OldRepublicDevs/PyKotor.git"
+Homepage = "https://github.com/OpenKotOR/PyKotor"
+Changelog = "https://github.com/OpenKotOR/PyKotor/releases"
+Documentation = "https://github.com/OpenKotOR/PyKotor/wiki"
+Issues = "https://github.com/OpenKotOR/PyKotor/issues"
+Repository = "https://github.com/OpenKotOR/PyKotor.git"
 
 # Poetry configuration
 [tool.poetry]
 name = "pykotor"
-version = "2.3.0"
+version = "2.3.12"
 description = "Read, modify and write files used by KotOR's game engine."
 authors = ["Nick Hugi", "th3w1zard1 <boden.crouch@gmail.com>"]
 maintainers = ["th3w1zard1 <boden.crouch@gmail.com>"]
 readme = "README.md"
 license = "LGPL-3.0-or-later"
-packages = [{ include = "pykotor*", from = "src" }, { include = "utility*", from = "src" }]
+packages = [{ include = "pykotor*", from = "src" }, { include = "utility*", from = "src" }, { include = "loggerplus*", from = "src" }]
 keywords = [
   "2da", "bif", "bioware", "erf", "game-files", "game-modding", "gff", "holocron",
   "knights-of-the-old-republic", "kotor", "kotor1", "kotor2", "lucasarts", "mdl",
@@ -158,23 +171,35 @@ keywords = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
+bioware-kaitai-formats = ">=0.1.0"
 defusedxml = ">=0.7"
+kaitaistruct = ">=0.11"
 ply = ">=3.11,<4"
 charset-normalizer = { version = ">=2.0", optional = true }
 certifi = { version = ">=2021.10.8", optional = true }
 pycryptodome = { version = ">=3.19.0", optional = true }
-requests = { version = ">=2.32.4", optional = true }
+requests = [
+  { version = ">=2.23.0,<2.32.5", optional = true, markers = "python_version < \"3.9\"" },
+  { version = ">=2.32.4", optional = true, markers = "python_version >= \"3.9\"" },
+]
 fusepy = { version = ">=3.0.1", optional = true }
 pywin32 = { version = ">=38", optional = true }
 PyYAML = { version = ">=6.0", optional = true }
+Send2Trash = { version = ">=1.8.0", optional = true }
 colorama = { version = ">=0.4.6", optional = true }
 comtypes = { version = ">=1.4.0", optional = true }
 gputil = { version = ">=1.4.0", optional = true }
 psutil = { version = ">=7.2.2", optional = true }
-pillow = { version = ">=12.1.1", optional = true }
+pillow = [
+  { version = ">=10.0.0,<11", optional = true, markers = "python_version < \"3.10\"" },
+  { version = ">=12.1.1", optional = true, markers = "python_version >= \"3.10\"" },
+]
 PyGLM = { version = ">=2.0,<2.9", optional = true }
 PyOpenGL = { version = ">=3.1", optional = true }
-numpy = { version = ">=1.22", optional = true }
+numpy = [
+  { version = ">=1.22,<1.25", optional = true, markers = "python_version < \"3.9\"" },
+  { version = ">=1.25", optional = true, markers = "python_version >= \"3.9\"" },
+]
 moderngl = { version = "*", optional = true }
 
 [tool.poetry.scripts]
@@ -182,17 +207,17 @@ pykotor = "pykotor.cli.__main__:main"
 pykotorcli = "pykotor.cli.__main__:main"
 
 [tool.poetry.urls]
-Homepage = "https://github.com/OldRepublicDevs/PyKotor"
-Changelog = "https://github.com/OldRepublicDevs/PyKotor/releases"
-Documentation = "https://github.com/OldRepublicDevs/PyKotor/wiki"
-Issues = "https://github.com/OldRepublicDevs/PyKotor/issues"
-Repository = "https://github.com/OldRepublicDevs/PyKotor.git"
+Homepage = "https://github.com/OpenKotOR/PyKotor"
+Changelog = "https://github.com/OpenKotOR/PyKotor/releases"
+Documentation = "https://github.com/OpenKotOR/PyKotor/wiki"
+Issues = "https://github.com/OpenKotOR/PyKotor/issues"
+Repository = "https://github.com/OpenKotOR/PyKotor.git"
 
 [tool.poetry.extras]
-all = ["charset-normalizer", "fusepy", "pywin32", "PyYAML", "colorama", "comtypes", "gputil", "psutil", "pillow", "PyGLM", "PyOpenGL", "numpy", "certifi", "pycryptodome", "requests"]
+all = ["charset-normalizer", "fusepy", "pywin32", "PyYAML", "Send2Trash", "colorama", "comtypes", "gputil", "psutil", "pillow", "PyGLM", "PyOpenGL", "numpy", "certifi", "pycryptodome", "requests"]
 encodings = ["charset-normalizer"]
 exp = ["fusepy", "pywin32"]
-extra = ["PyYAML", "colorama", "comtypes", "gputil", "psutil"]
+extra = ["PyYAML", "Send2Trash", "colorama", "comtypes", "gputil", "psutil"]
 font = ["pillow"]
 gl = ["PyGLM", "PyOpenGL", "numpy"]
 gl_exp = ["moderngl"]
@@ -225,6 +250,10 @@ pytest-xdist = [
   { version = ">=2.0.0,<3.8.0", markers = "python_version < \"3.9\"" },
   { version = ">=3.8.0", markers = "python_version >= \"3.9\"" },
 ]
+pytest-asyncio = [
+  { version = ">=0.23.0,<0.25.0", markers = "python_version < \"3.9\"" },
+  { version = ">=0.25.2", markers = "python_version >= \"3.9\"" },
+]
 pytest = [
   { version = ">=7.0.0", markers = "python_version >= \"3.9\"" },
   { version = ">=7.0.0,<8.0.0", markers = "python_version < \"3.9\"" },
@@ -235,7 +264,7 @@ python-dotenv = [
   { version = ">=1.2.1", markers = "python_version >= \"3.9\"" },
 ]
 python-multipart = [
-  { version = ">=0.0.22", markers = "python_version < \"3.10\"" },
+  { version = ">=0.0.9,<0.0.21", markers = "python_version < \"3.10\"" },
   { version = ">=0.0.22", markers = "python_version >= \"3.10\"" },
 ]
 ruff = [
@@ -260,4 +289,4 @@ package-dir = { "" = "src" }
 [tool.setuptools.packages.find]
 namespaces = true
 where = ["src"]
-include = ["pykotor*", "utility*"]
+include = ["pykotor*", "utility*", "loggerplus*"]

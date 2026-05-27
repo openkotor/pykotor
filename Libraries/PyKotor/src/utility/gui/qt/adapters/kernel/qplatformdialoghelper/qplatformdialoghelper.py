@@ -12,7 +12,9 @@ from qtpy.QtCore import QObject, QUrl, Qt, Signal  # pyright: ignore[reportPriva
 from qtpy.QtGui import QColor, QFont
 from qtpy.QtWidgets import QFileDialog, QMessageBox
 
-from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qfiledialogoptions import QFileDialogOptions
+from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qfiledialogoptions import (
+    QFileDialogOptions,
+)
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -248,15 +250,21 @@ class QPlatformDialogHelper(QObject):
         new_cls = cls
         if cls is QPlatformDialogHelper:
             if sys.platform in ("win32", "cygwin"):
-                from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qwindowsdialoghelpers import QWindowsDialogHelper
+                from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qwindowsdialoghelpers import (
+                    QWindowsDialogHelper,
+                )
 
                 new_cls = QWindowsDialogHelper
             elif sys.platform == "linux":
-                from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qlinuxdialoghelpers import LinuxFileDialogHelper
+                from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qlinuxdialoghelpers import (
+                    LinuxFileDialogHelper,
+                )
 
                 new_cls = LinuxFileDialogHelper
             elif sys.platform == "darwin":
-                from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qmacdialoghelpers import QMacDialogHelper
+                from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qmacdialoghelpers import (
+                    QMacDialogHelper,
+                )
 
                 new_cls = QMacDialogHelper
             else:
@@ -264,13 +272,15 @@ class QPlatformDialogHelper(QObject):
         return super().__new__(new_cls)
 
     def exec(self) -> DialogCode:
-        raise NotImplementedError()
+        raise NotImplementedError
 
-    def show(self, window_flags: Qt.WindowFlags, window_state: Qt.WindowState, parent: QObject | None):
-        raise NotImplementedError()
+    def show(
+        self, window_flags: Qt.WindowFlags, window_state: Qt.WindowState, parent: QObject | None
+    ):
+        raise NotImplementedError
 
     def hide(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def selectMimeTypeFilter(self, filter: str) -> None:
         self._selected_mime_type_filter = filter
@@ -315,7 +325,10 @@ class QPlatformDialogHelper(QObject):
         return ButtonRole.InvalidRole
 
     @staticmethod
-    def buttonLayout(orientation: Qt.Orientation = Qt.Orientation.Horizontal, policy: ButtonLayout = ButtonLayout.UnknownLayout) -> tuple[ButtonRole, ...]:
+    def buttonLayout(
+        orientation: Qt.Orientation = Qt.Orientation.Horizontal,
+        policy: ButtonLayout = ButtonLayout.UnknownLayout,
+    ) -> tuple[ButtonRole, ...]:
         layout_policy = policy
         if layout_policy == ButtonLayout.UnknownLayout:
             if sys.platform == "darwin":

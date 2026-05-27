@@ -8,8 +8,7 @@ This module provides functions for:
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         scripts/kotor/check_txi_files.py - TXI file checking
         scripts/kotor/check_missing_resources.py - Missing resource checking
         scripts/kotor/investigate_module_structure.py - Module investigation
@@ -38,6 +37,18 @@ class ValidationResult(TypedDict):
     valid: bool
     missing_files: list[str]
     errors: list[str]
+
+
+class InstallationSummary(TypedDict):
+    """Summary of a KOTOR installation for CLI and MCP consumers."""
+
+    path: str
+    game: str | None
+    valid: bool
+    errors: list[str]
+    missing: list[str]
+    module_count: int
+    override_file_count: int
 
 
 DEFAULT_TXI_SEARCH_LOCATIONS: tuple[SearchLocation, ...] = (
@@ -312,7 +323,7 @@ def investigate_module_structure(
                 {
                     "model": model_name,
                     "position": (room.position.x, room.position.y, room.position.z),
-                }
+                },
             )
 
             # Check for MDL/MDX/WOK
@@ -407,4 +418,47 @@ def validate_installation(
         "valid": valid,
         "missing_files": missing_files,
         "errors": errors,
+    }
+
+
+def get_installation_summary(
+    installation: Installation,
+    *,
+    check_essential_files: bool = True,
+) -> InstallationSummary:
+    """Return a summary of the installation (path, game, valid, errors, missing, counts).
+
+    Used by the validate-installation CLI and kotor_installation_info MCP tool.
+    """
+    from pykotor.extract.installation import Installation as InstCls
+
+    path = str(installation.path())
+    game_obj = InstCls.determine_game(installation.path())
+    game = game_obj.name if game_obj is not None else None
+    result = validate_installation(
+        installation,
+        check_essential_files=check_essential_files,
+    )
+    valid = result["valid"]
+    errors = result["errors"]
+    missing = result["missing_files"]
+
+    module_count = 0
+    mp = installation.module_path()
+    if mp.is_dir():
+        module_count = len(list(mp.glob("*.rim")) + list(mp.glob("*.mod")))
+
+    override_file_count = 0
+    op = installation.override_path()
+    if op.is_dir():
+        override_file_count = sum(1 for _ in op.rglob("*") if _.is_file())
+
+    return {
+        "path": path,
+        "game": game,
+        "valid": valid,
+        "errors": errors,
+        "missing": missing,
+        "module_count": module_count,
+        "override_file_count": override_file_count,
     }

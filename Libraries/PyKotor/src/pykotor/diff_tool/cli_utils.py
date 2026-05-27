@@ -25,7 +25,7 @@ def normalize_path_arg(path_str: str | None) -> str | None:
         return None
 
     # Handle Windows PowerShell quote escaping issues where trailing backslash escapes the quote
-    # This manifests as paths like: C:\Program Files (x86)\Steam\steamapps\common\swkotor" C:\Program
+    # This manifests as two absolute paths concatenated without a separator (e.g. Steam common-folder layouts).
     # We need to detect and fix this by finding where the actual path likely ends
 
     # Check if we have what looks like a mangled path (has a quote in the middle followed by space and more path)
@@ -37,7 +37,9 @@ def normalize_path_arg(path_str: str | None) -> str | None:
             path_str = path_str[:quote_space_idx]
 
     # Strip quotes if present (handles both single and double quotes)
-    if (path_str.startswith('"') and path_str.endswith('"')) or (path_str.startswith("'") and path_str.endswith("'")):
+    if (path_str.startswith('"') and path_str.endswith('"')) or (
+        path_str.startswith("'") and path_str.endswith("'")
+    ):
         path_str = path_str[1:-1]
 
     # Remove any remaining quotes that might be embedded

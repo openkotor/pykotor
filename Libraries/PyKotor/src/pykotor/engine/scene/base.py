@@ -5,8 +5,7 @@ implemented by any rendering backend (OpenGL, Qt5 or Qt6, Panda3D, etc.).
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
 """
@@ -26,8 +25,7 @@ class FogProperties:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
 
@@ -53,8 +51,7 @@ class ISceneGraph(ABC):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
 
@@ -80,8 +77,7 @@ class ISceneGraph(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
@@ -97,8 +93,7 @@ class ISceneGraph(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
@@ -114,8 +109,7 @@ class ISceneGraph(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
@@ -131,8 +125,7 @@ class ISceneGraph(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
@@ -148,15 +141,16 @@ class ISceneGraph(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
         ...
 
     @abstractmethod
-    def add_directional_light(self, name: str, color: tuple[float, float, float], direction: tuple[float, float, float]) -> Any:
+    def add_directional_light(
+        self, name: str, color: tuple[float, float, float], direction: tuple[float, float, float]
+    ) -> Any:
         """Add a directional light to the scene.
 
         Args:
@@ -171,15 +165,20 @@ class ISceneGraph(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
         ...
 
     @abstractmethod
-    def add_point_light(self, name: str, color: tuple[float, float, float], position: tuple[float, float, float], radius: float) -> Any:
+    def add_point_light(
+        self,
+        name: str,
+        color: tuple[float, float, float],
+        position: tuple[float, float, float],
+        radius: float,
+    ) -> Any:
         """Add a point light to the scene.
 
         Args:
@@ -195,15 +194,20 @@ class ISceneGraph(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
         ...
 
     @abstractmethod
-    def set_fog(self, enabled: bool, color: tuple[float, float, float] | None = None, near: float | None = None, far: float | None = None) -> None:
+    def set_fog(
+        self,
+        enabled: bool,
+        color: tuple[float, float, float] | None = None,
+        near: float | None = None,
+        far: float | None = None,
+    ) -> None:
         """Set fog properties for the scene.
 
         Args:
@@ -215,8 +219,7 @@ class ISceneGraph(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
@@ -232,8 +235,7 @@ class ISceneGraph(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """

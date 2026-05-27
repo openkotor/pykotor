@@ -5,14 +5,6 @@ Handles byte-level modifications for memory tokens (StrRef, 2DAMemory) in compil
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/TSLPatcher/tree/master/TSLPatcher.pl (unfinished perl rewrite of TSLPatcher) (HACKList)
-        https://github.com/th3w1zard1/HoloPatcher.NET/tree/master/src/TSLPatcher.Core/Mods/NCS/
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET.Patcher/
-
 
 """
 
@@ -141,7 +133,9 @@ class ModifyNCS:
             msg = f"StrRef{self.token_id_or_value} was not defined before use"
             raise KeyError(msg)
         value = memory.memory_str[self.token_id_or_value]
-        logger.add_verbose(f"HACKList {sourcefile}: writing unsigned WORD (16-bit) {value} at offset {self.offset:#X}")
+        logger.add_verbose(
+            f"HACKList {sourcefile}: writing unsigned WORD (16-bit) {value} at offset {self.offset:#X}"
+        )
         writer.write_uint16(value, big=True)
 
     def _write_strref32(
@@ -157,7 +151,9 @@ class ModifyNCS:
             msg = f"StrRef{self.token_id_or_value} was not defined before use"
             raise KeyError(msg)
         value = memory.memory_str[self.token_id_or_value]
-        logger.add_verbose(f"HACKList {sourcefile}: writing signed DWORD (32-bit) {value} at offset {self.offset:#X}")
+        logger.add_verbose(
+            f"HACKList {sourcefile}: writing signed DWORD (32-bit) {value} at offset {self.offset:#X}"
+        )
         writer.write_int32(value, big=True)
 
     def _write_2damemory(
@@ -168,7 +164,9 @@ class ModifyNCS:
         sourcefile: str,
     ):
         """Write a 16-bit unsigned 2DA memory reference."""
-        memory_val: str | PureWindowsPath | None = memory.memory_2da.get(self.token_id_or_value, None)
+        memory_val: str | PureWindowsPath | None = memory.memory_2da.get(
+            self.token_id_or_value, None
+        )
         if memory_val is None:
             msg = f"2DAMEMORY{self.token_id_or_value} was not defined before use"
             raise KeyError(msg)
@@ -176,7 +174,9 @@ class ModifyNCS:
             msg = f"Memory value cannot be !FieldPath in [HACKList] patches, got '{memory_val!r}'"
             raise TypeError(msg)
         value = int(memory_val)
-        logger.add_verbose(f"HACKList {sourcefile}: writing unsigned WORD (16-bit) {value} at offset {self.offset:#X}")
+        logger.add_verbose(
+            f"HACKList {sourcefile}: writing unsigned WORD (16-bit) {value} at offset {self.offset:#X}"
+        )
         writer.write_uint16(value, big=True)
 
     def _write_2damemory32(
@@ -187,7 +187,9 @@ class ModifyNCS:
         sourcefile: str,
     ):
         """Write a 32-bit signed 2DA memory reference (CONSTI instruction)."""
-        memory_val: str | PureWindowsPath | None = memory.memory_2da.get(self.token_id_or_value, None)
+        memory_val: str | PureWindowsPath | None = memory.memory_2da.get(
+            self.token_id_or_value, None
+        )
         if memory_val is None:
             msg = f"2DAMEMORY{self.token_id_or_value} was not defined before use"
             raise KeyError(msg)
@@ -195,7 +197,9 @@ class ModifyNCS:
             msg = f"Memory value cannot be !FieldPath in [HACKList] patches, got '{memory_val!r}'"
             raise TypeError(msg)
         value = int(memory_val)
-        logger.add_verbose(f"HACKList {sourcefile}: writing signed DWORD (32-bit) {value} at offset {self.offset:#X}")
+        logger.add_verbose(
+            f"HACKList {sourcefile}: writing signed DWORD (32-bit) {value} at offset {self.offset:#X}"
+        )
         writer.write_int32(value, big=True)
 
     def _write_uint32(
@@ -206,7 +210,9 @@ class ModifyNCS:
     ):
         """Write a 32-bit unsigned integer literal."""
         value = self.token_id_or_value
-        logger.add_verbose(f"HACKList {sourcefile}: writing unsigned DWORD (32-bit) {value} at offset {self.offset:#X}")
+        logger.add_verbose(
+            f"HACKList {sourcefile}: writing unsigned DWORD (32-bit) {value} at offset {self.offset:#X}"
+        )
         writer.write_uint32(value, big=True)
 
     def _write_uint16(
@@ -217,7 +223,9 @@ class ModifyNCS:
     ):
         """Write a 16-bit unsigned integer literal."""
         value = self.token_id_or_value
-        logger.add_verbose(f"HACKList {sourcefile}: writing unsigned WORD (16-bit) {value} at offset {self.offset:#X}")
+        logger.add_verbose(
+            f"HACKList {sourcefile}: writing unsigned WORD (16-bit) {value} at offset {self.offset:#X}"
+        )
         writer.write_uint16(value, big=True)
 
     def _write_uint8(
@@ -228,7 +236,9 @@ class ModifyNCS:
     ):
         """Write an 8-bit unsigned integer literal."""
         value = self.token_id_or_value
-        logger.add_verbose(f"HACKList {sourcefile}: writing unsigned BYTE (8-bit) {value} at offset {self.offset:#X}")
+        logger.add_verbose(
+            f"HACKList {sourcefile}: writing unsigned BYTE (8-bit) {value} at offset {self.offset:#X}"
+        )
         writer.write_uint8(value)
 
 
@@ -283,4 +293,6 @@ class ModificationsNCS(PatcherModifications):
     ):
         super().pop_tslpatcher_vars(file_section_dict, default_destination, default_sourcefolder)
         replace_file: bool | str = file_section_dict.pop("ReplaceFile", self.replace_file)
-        self.replace_file = bool(int(replace_file))  # NOTE: tslpatcher's hacklist does NOT prefix with an exclamation point.
+        self.replace_file = bool(
+            int(replace_file)
+        )  # NOTE: tslpatcher's hacklist does NOT prefix with an exclamation point.

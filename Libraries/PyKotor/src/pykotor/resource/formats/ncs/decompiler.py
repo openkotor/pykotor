@@ -5,8 +5,7 @@ handling all instruction types, control flow, expressions, and data structures.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed in retail KotOR I and TSL.
         DeNCS - Original NCS decompiler implementation
 
 """
@@ -19,10 +18,15 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from pykotor.common.misc import Game  # pyright: ignore[reportMissingImports]
-from pykotor.resource.formats.ncs.ncs_data import NCSInstructionType  # pyright: ignore[reportMissingImports]
+from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats.ncs.ncs_data import (
+    NCSInstructionType,  # pyright: ignore[reportMissingImports]
+)
 
 try:
-    from utility.error_handling import format_exception_with_variables  # pyright: ignore[reportMissingImports]
+    from utility.error_handling import (
+        format_exception_with_variables,  # pyright: ignore[reportMissingImports]
+    )
 except ImportError:
     # Fallback if utility module not available
     def format_exception_with_variables(exc: BaseException, *args, **kwargs) -> str:
@@ -33,8 +37,14 @@ except ImportError:
 
 if TYPE_CHECKING:
     from pykotor.common.misc import Game  # pyright: ignore[reportMissingImports]
-    from pykotor.common.script import ScriptConstant, ScriptFunction  # pyright: ignore[reportMissingImports]
-    from pykotor.resource.formats.ncs.ncs_data import NCS, NCSInstruction  # pyright: ignore[reportMissingImports]
+    from pykotor.common.script import (  # pyright: ignore[reportMissingImports]
+        ScriptConstant,
+        ScriptFunction,
+    )
+    from pykotor.resource.formats.ncs.ncs_data import (  # pyright: ignore[reportMissingImports]
+        NCS,
+        NCSInstruction,
+    )
 
     KOTOR_CONSTANTS: list[ScriptConstant] = []
     KOTOR_FUNCTIONS: list[ScriptFunction] = []
@@ -70,7 +80,7 @@ class DecompileError(Exception):
 
 
 @dataclass
-class ExpressionNode:
+class ExpressionNode(ComparableMixin):
     """Represents an expression node in the decompiled AST."""
 
     expr_type: str
@@ -97,8 +107,12 @@ class ExpressionNode:
             left = self.children[0].to_string()
             right = self.children[1].to_string()
             op_prec = self._get_operator_precedence(op)
-            left_str = f"({left})" if op_prec > 0 and self.children[0].expr_type == "binary" else left
-            right_str = f"({right})" if op_prec > 0 and self.children[1].expr_type == "binary" else right
+            left_str = (
+                f"({left})" if op_prec > 0 and self.children[0].expr_type == "binary" else left
+            )
+            right_str = (
+                f"({right})" if op_prec > 0 and self.children[1].expr_type == "binary" else right
+            )
             return f"{left_str} {op} {right_str}"
         if self.expr_type == "unary":
             op = self.value or ""
@@ -154,7 +168,7 @@ class ExpressionNode:
 
 
 @dataclass
-class BasicBlock:
+class BasicBlock(ComparableMixin):
     """Represents a basic block in the control flow graph."""
 
     start_index: int
@@ -171,7 +185,7 @@ class BasicBlock:
 
 
 @dataclass
-class ControlStructure:
+class ControlStructure(ComparableMixin):
     """Represents a recovered control structure (if, while, etc.)."""
 
     structure_type: str  # "if", "while", "do_while", "for", "switch"
@@ -183,7 +197,7 @@ class ControlStructure:
     cases: dict = field(default_factory=dict)
 
 
-class NCSDecompiler:
+class NCSDecompiler(ComparableMixin):
     """Decompiles NCS bytecode to NSS source code.
 
     Based on DeNCS implementation, this decompiler reconstructs NSS source
@@ -191,13 +205,18 @@ class NCSDecompiler:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed in retail KotOR I and TSL.
         DeNCS - Original NCS decompiler implementation
 
     """
 
-    def __init__(self, ncs: NCS, game: Game, functions: list[ScriptFunction] | None = None, constants: list[ScriptConstant] | None = None):
+    def __init__(
+        self,
+        ncs: NCS,
+        game: Game,
+        functions: list[ScriptFunction] | None = None,
+        constants: list[ScriptConstant] | None = None,
+    ):
         """Initialize decompiler.
 
         Args:
@@ -215,7 +234,9 @@ class NCSDecompiler:
         self.decompiled_code: list[str] = []
         self.variables: dict[int, str] = {}  # Stack offset -> variable name
         self.var_counter = 0
-        self.stack_tracking: dict[int, list[ExpressionNode]] = {}  # Instruction index -> stack state
+        self.stack_tracking: dict[
+            int, list[ExpressionNode]
+        ] = {}  # Instruction index -> stack state
         self.basic_blocks: list[BasicBlock] = []
         self.control_structures: list[ControlStructure] = []
         self.processed_blocks: set[BasicBlock] = set()
@@ -262,7 +283,9 @@ class NCSDecompiler:
             import io  # noqa: PLC0415
 
             from pykotor.resource.formats.ncs.dencs.actions_data import ActionsData  # noqa: PLC0415
-            from pykotor.resource.formats.ncs.dencs.decompile_ncs import decompile_ncs  # noqa: PLC0415
+            from pykotor.resource.formats.ncs.dencs.decompile_ncs import (
+                decompile_ncs,  # noqa: PLC0415
+            )
 
             # Convert NCS to bytes for Decoder
             from pykotor.resource.formats.ncs.io_ncs import NCSBinaryWriter
@@ -282,7 +305,9 @@ class NCSDecompiler:
             actions_reader.write("// 0\n")
             # Write function definitions in DeNCS format
             for _, func in enumerate(self.functions):
-                params_str = ", ".join(f"{param.datatype.name.lower()} {param.name}" for param in func.params)
+                params_str = ", ".join(
+                    f"{param.datatype.name.lower()} {param.name}" for param in func.params
+                )
                 actions_reader.write(f"{func.returntype.name.lower()} {func.name}({params_str});\n")
             actions_reader.seek(0)
             actions = ActionsData(actions_reader)
@@ -410,10 +435,10 @@ class NCSDecompiler:
             if i + 1 < len(blocks):
                 next_block = blocks[i + 1]
                 # Fall-through if last instruction doesn't branch or is conditional
-                if last_inst and last_inst.ins_type in {NCSInstructionType.JZ, NCSInstructionType.JNZ}:
-                    block.successors.append(next_block)
-                    next_block.predecessors.append(block)
-                elif last_inst and not last_inst.is_control_flow():
+                if (
+                    last_inst
+                    and last_inst.ins_type in {NCSInstructionType.JZ, NCSInstructionType.JNZ}
+                ) or (last_inst and not last_inst.is_control_flow()):
                     block.successors.append(next_block)
                     next_block.predecessors.append(block)
 
@@ -453,10 +478,16 @@ class NCSDecompiler:
                     structure_type="while",  # Default to while, refine later
                     start_block=successor,
                     end_block=block,
-                    body_blocks=[b for b in self.basic_blocks if successor_idx < block_to_index[id(b)] <= succ_idx],
+                    body_blocks=[
+                        b
+                        for b in self.basic_blocks
+                        if successor_idx < block_to_index[id(b)] <= succ_idx
+                    ],
                 )
                 self.control_structures.append(structure)
-                logger.debug(f"Found loop structure from block {block.start_index} to {successor.start_index}")
+                logger.debug(
+                    f"Found loop structure from block {block.start_index} to {successor.start_index}"
+                )
 
         # Identify if/else by pattern: JZ -> if-block -> JMP -> else-block -> end
         for i, block in enumerate(self.basic_blocks):
@@ -479,9 +510,15 @@ class NCSDecompiler:
                                     structure = ControlStructure(
                                         structure_type="if",
                                         start_block=block,
-                                        end_block=self.basic_blocks[self._find_block_index(jmp_target_idx)],
+                                        end_block=self.basic_blocks[
+                                            self._find_block_index(jmp_target_idx)
+                                        ],
                                         body_blocks=self.basic_blocks[i + 1 : j + 1],
-                                        else_blocks=self.basic_blocks[self._find_block_index(jz_target_idx) : self._find_block_index(jmp_target_idx)],
+                                        else_blocks=self.basic_blocks[
+                                            self._find_block_index(
+                                                jz_target_idx
+                                            ) : self._find_block_index(jmp_target_idx)
+                                        ],
                                     )
                                     self.control_structures.append(structure)
                                     break
@@ -538,7 +575,9 @@ class NCSDecompiler:
                 if not in_structure:
                     self._decompile_block(successor, indent)
 
-    def _process_instruction(self, inst: NCSInstruction, stack: list[ExpressionNode], indent: int) -> list[ExpressionNode]:
+    def _process_instruction(
+        self, inst: NCSInstruction, stack: list[ExpressionNode], indent: int
+    ) -> list[ExpressionNode]:
         """Process a single instruction and update stack state.
 
         Args:
@@ -565,7 +604,9 @@ class NCSDecompiler:
             stack.append(ExpressionNode("literal", f'"{value}"'))
         elif inst.ins_type == NCSInstructionType.CONSTO:
             value = inst.args[0] if inst.args else 0
-            stack.append(ExpressionNode("literal", "OBJECT_INVALID" if value == 0 else f"Object({value})"))
+            stack.append(
+                ExpressionNode("literal", "OBJECT_INVALID" if value == 0 else f"Object({value})")
+            )
 
         # Arithmetic operations
         elif inst.ins_type in {
@@ -773,7 +814,12 @@ class NCSDecompiler:
                 stack.pop()
 
         # RSADD instructions (variable declarations)
-        elif inst.ins_type in {NCSInstructionType.RSADDI, NCSInstructionType.RSADDF, NCSInstructionType.RSADDS, NCSInstructionType.RSADDO}:
+        elif inst.ins_type in {
+            NCSInstructionType.RSADDI,
+            NCSInstructionType.RSADDF,
+            NCSInstructionType.RSADDS,
+            NCSInstructionType.RSADDO,
+        }:
             var_name = self._get_variable_name(self.var_counter * 4)
             type_name = {
                 NCSInstructionType.RSADDI: "int",

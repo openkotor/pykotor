@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from qtpy.QtCore import Signal  # pyright: ignore[reportPrivateImportUsage]
 from qtpy.QtGui import QFont, QFontDatabase
 from qtpy.QtWidgets import QHBoxLayout, QLabel, QSizePolicy, QTextEdit, QVBoxLayout, QWidget
@@ -59,7 +57,9 @@ class FontWidget(QWidget):
 
         bottom_widget = QWidget()
         bottom_widget.setLayout(lay)
-        bottom_widget.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred)
+        bottom_widget.setSizePolicy(
+            QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred
+        )
 
         lay = QVBoxLayout()
         lay.addWidget(top_widget)

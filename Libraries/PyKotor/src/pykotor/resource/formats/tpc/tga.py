@@ -5,7 +5,7 @@ true-color and grayscale images. Used for texture conversion to/from TPC format.
 
 References:
 ----------
-        See tpc_data module docstring for engine addresses (K1 + TSL TODO). Standard TGA specification (Truevision TGA File Format Specification)
+        Standard Truevision TGA header/layout (see Truevision TGA specification).
 
 
 """
@@ -18,19 +18,25 @@ import struct
 from dataclasses import dataclass
 from typing import BinaryIO
 
+from pykotor.resource.formats._base import ComparableMixin
+
 TGA_TYPE_TRUE_COLOR = 2
 TGA_TYPE_GRAYSCALE = 3
 TGA_TYPE_RLE_TRUE_COLOR = 10
 
 
 @dataclass
-class TGAImage:
+class TGAImage(ComparableMixin):
     width: int
     height: int
     data: bytes  # RGBA8888, row-major, origin = top-left
+    #: Bits per pixel from the TGA header (8 / 24 / 32). Used for TPC ``auto`` compression
+    #: to match ndixUR ``tga2tpc`` / xoreos-style tools (32-bit sources → DXT5 even when opaque).
+    source_pixel_depth: int = 32
 
     @property
     def pixel_depth(self) -> int:
+        """Effective channel width after decode; data is always expanded to RGBA8."""
         return 32
 
 
@@ -39,7 +45,10 @@ def _flip_vertically(buffer: bytearray, width: int, height: int, bpp: int) -> No
     for row in range(height // 2):
         a = row * stride
         b = (height - row - 1) * stride
-        buffer[a : a + stride], buffer[b : b + stride] = buffer[b : b + stride], buffer[a : a + stride]
+        buffer[a : a + stride], buffer[b : b + stride] = (
+            buffer[b : b + stride],
+            buffer[a : a + stride],
+        )
 
 
 def _read_rle(stream: BinaryIO, width: int, height: int, pixel_depth: int) -> bytes:
@@ -130,7 +139,12 @@ def read_tga(stream: BinaryIO) -> TGAImage:
     if (descriptor & 0x20) == 0:
         _flip_vertically(rgba, width, height, 4)
 
-    return TGAImage(width=width, height=height, data=bytes(rgba))
+    return TGAImage(
+        width=width,
+        height=height,
+        data=bytes(rgba),
+        source_pixel_depth=int(pixel_depth),
+    )
 
 
 def write_tga(image: TGAImage, stream: BinaryIO, rle: bool = False) -> None:
@@ -172,8 +186,7 @@ def write_tga(image: TGAImage, stream: BinaryIO, rle: bool = False) -> None:
         count = len(packet_pixels)
         if raw:
             stream.write(bytes([count - 1]))
-            for px in packet_pixels:
-                stream.write(px)
+            stream.writelines(packet_pixels)
         else:
             stream.write(bytes([0x80 | (count - 1)]))
             stream.write(packet_pixels[0])
@@ -187,7 +200,11 @@ def write_tga(image: TGAImage, stream: BinaryIO, rle: bool = False) -> None:
             # Look ahead for repeated pixels.
             current = scanline[x * 4 : (x + 1) * 4]
             repeat = 1
-            while x + repeat < width and scanline[(x + repeat) * 4 : (x + repeat + 1) * 4] == current and repeat < 128:
+            while (
+                x + repeat < width
+                and scanline[(x + repeat) * 4 : (x + repeat + 1) * 4] == current
+                and repeat < 128
+            ):
                 repeat += 1
 
             if repeat > 1:

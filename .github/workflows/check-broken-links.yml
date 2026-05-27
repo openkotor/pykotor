@@ -15,12 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Validate wiki internal links (extension-less targets)
+        run: python helper_scripts/wiki_scripts/validate_markdown_links.py
 
       - name: Check links in markdown files
         uses: peter-evans/link-checker@v1
         with:
-          args: -r -v -x "https://github.com/OldRepublicDevs/PyKotor" --timeout 30
+          args: -r -v -x "https://github.com/OpenKotOR/PyKotor" --timeout 30
         continue-on-error: true
 
       - name: Check links in documentation

@@ -2,10 +2,12 @@
 # This workflow runs regression tests against published PyPI packages
 # to ensure they remain functional over time.
 #
+# Local parity (ephemeral venv, no GitHub Actions):
+#   python3 .github/scripts/local_verify_pypi_slice.py
+#
 # Runs on:
 # - Manual dispatch
 # - Weekly schedule
-# - After successful "Auto-Publish to PyPI" workflow
 
 name: Verify PyPI Regression
 
@@ -23,13 +25,10 @@ on:
   schedule:
     # Run weekly on Sundays at 00:00 UTC
     - cron: '0 0 * * 0'
-  workflow_run:
-    workflows: ["Auto-Publish to PyPI"]
-    types: [completed]
 
 concurrency:
-  group: verify-pypi-${{ github.ref }}
-  cancel-in-progress: true
+  group: verify-pypi-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   PYPI_SOURCE: ${{ inputs.pypi_source || 'pypi' }}
@@ -38,7 +37,26 @@ permissions:
   contents: read
 
 jobs:
+  gate:
+    name: Check trigger
+    runs-on: ubuntu-latest
+    outputs:
+      run_tests: ${{ steps.check.outputs.run_tests }}
+    steps:
+      - id: check
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "run_tests=true" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.workflow_run.conclusion }}" = "success" ]; then
+            echo "run_tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_tests=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping verify: Auto-Publish conclusion was not success."
+          fi
+
   test-pykotor-core:
+    if: ${{ needs.gate.outputs.run_tests == 'true' }}
+    needs: gate
     name: PyKotor Core - Python ${{ matrix.python-version }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
@@ -48,7 +66,7 @@ jobs:
         python-version: ['3.8', '3.10', '3.12']
     steps:
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -67,27 +85,27 @@ jobs:
           python -c "
           # Test core module imports
           import pykotor
-          print('✓ pykotor imported')
+          print('OK: pykotor imported')
 
           from pykotor.common.language import LocalizedString, Language, Gender
-          print('✓ LocalizedString imported')
+          print('OK: LocalizedString imported')
 
           from pykotor.resource.type import ResourceType
-          print('✓ ResourceType imported')
+          print('OK: ResourceType imported')
 
           from pykotor.extract.installation import Installation
-          print('✓ Installation imported')
+          print('OK: Installation imported')
 
           from pykotor.tslpatcher import patcher
-          print('✓ TSLPatcher imported')
+          print('OK: TSLPatcher imported')
 
           # Test basic functionality
           ls = LocalizedString.from_english('Test')
           assert ls.get(Language.ENGLISH, Gender.MALE) == 'Test'
-          print('✓ LocalizedString works')
+          print('OK: LocalizedString works')
 
           assert ResourceType.UTC.extension == 'utc'
-          print('✓ ResourceType works')
+          print('OK: ResourceType works')
 
           print()
           print('All pykotor core tests passed!')
@@ -97,32 +115,33 @@ jobs:
         run: |
           python -c "
           from pykotor.resource.formats import gff, tlk, twoda, erf, rim, bif
-          print('✓ All format modules imported')
+          print('OK: All format modules imported')
 
           from pykotor.resource.generics import are, git, ifo, utc, uti, utd, dlg
-          print('✓ All generic modules imported')
+          print('OK: All generic modules imported')
 
           print('All resource format tests passed!')
           "
 
   test-pykotor-extensions:
+    if: ${{ needs.gate.outputs.run_tests == 'true' }}
     name: PyKotor Extensions - Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
-    needs: test-pykotor-core
+    needs: [gate, test-pykotor-core]
     strategy:
       fail-fast: false
       matrix:
         python-version: ['3.10', '3.11']
     steps:
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libgl1-mesa-glx xvfb
+          sudo apt-get install -y libgl1 libgl1-mesa-dev xvfb
 
       - name: Install extensions
         run: |
@@ -140,9 +159,9 @@ jobs:
           try:
               from pykotor.gl import scene
               from pykotor.gl.models import mdl
-              print('✓ pykotor.gl imported')
+              print('OK: pykotor.gl imported')
           except ImportError as e:
-              print(f'○ pykotor.gl not available: {e}')
+              print(f'SKIP: pykotor.gl not available: {e}')
           " || true
 
       - name: Test pykotor
@@ -150,24 +169,39 @@ jobs:
           python -c "
           try:
               from pykotor.font import draw
-              print('✓ PyKotor.font imported')
+              print('OK: PyKotor.font imported')
           except ImportError as e:
-              print(f'○ PyKotor.font not available: {e}')
+              print(f'SKIP: PyKotor.font not available: {e}')
           " || true
 
   test-cli-tools:
+    if: ${{ needs.gate.outputs.run_tests == 'true' }}
     name: CLI Tools - Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
-    needs: test-pykotor-core
+    needs: [gate, test-pykotor-core]
     strategy:
       fail-fast: false
       matrix:
         python-version: ['3.10', '3.11']
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Install discovery dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install tomli
+
+      - name: Discover published CLI tools
+        run: |
+          python .github/scripts/discover_tools.py --cli-only --format json > cli-tools.json
 
       - name: Install tools
         run: |
@@ -177,19 +211,40 @@ jobs:
             INDEX_ARGS="--index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/"
           fi
 
-          # Install available tools
-          pip install holopatcher $INDEX_ARGS || echo "holopatcher not available"
-          pip install kotordiff $INDEX_ARGS || echo "kotordiff not available"
+          python - "$INDEX_ARGS" <<'PY'
+          import json
+          import shlex
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          index_args = shlex.split(sys.argv[1]) if len(sys.argv) > 1 else []
+          tools = json.loads(Path("cli-tools.json").read_text(encoding="utf-8"))
+          for tool in tools:
+              package = tool["project_name"]
+              print(f"Installing {package}...")
+              result = subprocess.run([sys.executable, "-m", "pip", "install", package, *index_args])
+              if result.returncode != 0:
+                  print(f"SKIP: {package} not available")
+          PY
         shell: bash
 
-      - name: Test holopatcher CLI
+      - name: Test discovered CLI entrypoints
         run: |
-          python -m holopatcher --help 2>&1 || echo "holopatcher help not available"
-        continue-on-error: true
+          python <<'PY'
+          import json
+          import subprocess
+          import sys
+          from pathlib import Path
 
-      - name: Test kotordiff CLI
-        run: |
-          python -m kotordiff --help 2>&1 || echo "kotordiff help not available"
+          tools = json.loads(Path("cli-tools.json").read_text(encoding="utf-8"))
+          for tool in tools:
+              module_name = tool["package_name"]
+              print(f"Testing {module_name} --help")
+              result = subprocess.run([sys.executable, "-m", module_name, "--help"])
+              if result.returncode != 0:
+                  print(f"SKIP: {module_name} help not available")
+          PY
         continue-on-error: true
 
       - name: Test pykotor CLI
@@ -201,8 +256,8 @@ jobs:
   report:
     name: Generate Report
     runs-on: ubuntu-latest
-    needs: [test-pykotor-core, test-pykotor-extensions, test-cli-tools]
-    if: always()
+    needs: [gate, test-pykotor-core, test-pykotor-extensions, test-cli-tools]
+    if: ${{ always() && needs.gate.outputs.run_tests == 'true' }}
     steps:
       - name: Generate summary
         run: |

@@ -24,8 +24,12 @@ from utility.common.more_collections import CaseInsensitiveDict
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from PIL.Image import Image  # pyright: ignore[reportMissingImports, reportPrivateImportUsage, reportMissingTypeStubs]  # type: ignore[import-not-found, import-untyped]
-    from qtpy.QtGui import QImage  # pyright: ignore[reportMissingImports, reportPrivateImportUsage, reportMissingTypeStubs]  # type: ignore[import-not-found, import-untyped]
+    from PIL.Image import (
+        Image,  # pyright: ignore[reportMissingImports, reportPrivateImportUsage, reportMissingTypeStubs]  # type: ignore[import-not-found, import-untyped]
+    )
+    from qtpy.QtGui import (
+        QImage,  # pyright: ignore[reportMissingImports, reportPrivateImportUsage, reportMissingTypeStubs]  # type: ignore[import-not-found, import-untyped]
+    )
 
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.generics.utd import UTD
@@ -120,19 +124,16 @@ class KitDoor:
     @property
     def utd_k1(self) -> UTD:  # noqa: D401
         """Alias for `utdK1`."""
-
         return self.utdK1
 
     @property
     def utd_k2(self) -> UTD:  # noqa: D401
         """Alias for `utdK2`."""
-
         return self.utdK2
 
     @property
     def utd(self) -> UTD:  # noqa: D401
         """Canonical single-blueprint alias (Toolset compatibility)."""
-
         return self.utdK1
 
 

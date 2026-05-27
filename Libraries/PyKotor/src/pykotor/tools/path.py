@@ -3,6 +3,7 @@
 The module keeps modern `pathlib` behavior where possible, while preserving
 legacy compatibility points that older callers still import from here.
 """
+
 from __future__ import annotations
 
 import os
@@ -14,7 +15,9 @@ import warnings
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
+from loggerplus import (
+    RobustLogger,  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -58,7 +61,9 @@ def is_filesystem_case_sensitive(
             test_file_upper: pathlib.Path = temp_path / "CASE_TEST_FILE"
             return not test_file_upper.exists()
     except Exception:  # noqa: BLE001
-        RobustLogger().debug("Failed to detect filesystem case sensitivity for '%s'.", path, exc_info=True)
+        RobustLogger().debug(
+            "Failed to detect filesystem case sensitivity for '%s'.", path, exc_info=True
+        )
         return None
 
 
@@ -73,7 +78,9 @@ def _get_dir_contents(path_str: str) -> dict[str, list[str]]:
         mtime_ns = getattr(stat, "st_mtime_ns", int(stat.st_mtime * 1_000_000_000))
     except OSError:
         # Directory doesn't exist or is not accessible
-        RobustLogger().debug("Cannot stat directory while building case map: '%s'.", path_str, exc_info=True)
+        RobustLogger().debug(
+            "Cannot stat directory while building case map: '%s'.", path_str, exc_info=True
+        )
         return {}
 
     # Directory-level cache keyed by mtime_ns.
@@ -91,7 +98,9 @@ def _get_dir_contents(path_str: str) -> dict[str, list[str]]:
                     mapping[lower] = []
                 mapping[lower].append(entry.name)
     except OSError:
-        RobustLogger().debug("Cannot scan directory while building case map: '%s'.", path_str, exc_info=True)
+        RobustLogger().debug(
+            "Cannot scan directory while building case map: '%s'.", path_str, exc_info=True
+        )
 
     # Keep cache bounded.
     if path_str not in _DIR_CACHE and len(_DIR_CACHE) >= _DIR_CACHE_MAX_SIZE:
@@ -324,7 +333,9 @@ class CaseAwarePath(pathlib.Path):
         except ValueError:
             return False
 
-    def relative_to(self, other: str | os.PathLike, *other_parts: str | os.PathLike) -> CaseAwarePath:
+    def relative_to(
+        self, other: str | os.PathLike, *other_parts: str | os.PathLike
+    ) -> CaseAwarePath:
         if other_parts:
             _warn_deprecated_endpoint(
                 "CaseAwarePath.relative_to(path, *segments)",
@@ -398,7 +409,9 @@ class CaseAwarePath(pathlib.Path):
         return sum(a == b for a, b in zip(str1, str2)) if str1.lower() == str2.lower() else -1
 
     @staticmethod
-    def extract_absolute_prefix(relative_path: os.PathLike | str, absolute_path: os.PathLike | str) -> tuple[str, ...]:
+    def extract_absolute_prefix(
+        relative_path: os.PathLike | str, absolute_path: os.PathLike | str
+    ) -> tuple[str, ...]:
         _warn_deprecated_endpoint(
             "CaseAwarePath.extract_absolute_prefix()",
             "Use pathlib path decomposition instead.",
@@ -461,12 +474,10 @@ def create_case_insensitive_pathlib_class(cls: type[CaseAwarePath]) -> None:
         "create_case_insensitive_pathlib_class()",
         "CaseAwarePath now manages compatibility behavior internally.",
     )
-    return None
 
 
 def _deprecated_noop(endpoint: str, replacement: str) -> None:
     _warn_deprecated_endpoint(endpoint, replacement)
-    return None
 
 
 def _cleanup_fuse_mounts() -> None:
@@ -486,7 +497,9 @@ def _get_or_create_fuse_mount(root_path: str) -> str | None:
     return None
 
 
-def get_default_paths() -> dict[str, dict[Game, list[str]]]:  # TODO(th3w1zard1): Many of these paths are incomplete and need community input.  # noqa: TD003
+def get_default_paths() -> dict[
+    str, dict[Game, list[str]]
+]:  # TODO(th3w1zard1): Many of these paths are incomplete and need community input.  # noqa: TD003
     from pykotor.common.misc import Game  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
 
     return {
@@ -572,7 +585,11 @@ def find_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
     # Build hardcoded default kotor locations
     raw_locations: dict[str, dict[Game, list[str]]] = get_default_paths()
     locations: dict[Game, set[CaseAwarePath]] = {
-        game: {case_path for case_path in (CaseAwarePath(path).expanduser().resolve() for path in paths) if case_path.exists()}
+        game: {
+            case_path
+            for case_path in (CaseAwarePath(path).expanduser().resolve() for path in paths)
+            if case_path.exists()
+        }
         for game, paths in raw_locations.get(os_str, {}).items()
     }
 
@@ -580,18 +597,28 @@ def find_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
     if os_str == "Windows":
         from pykotor.tools.registry import find_software_key, resolve_reg_key_to_path, winreg_key
 
-        for game, possible_game_paths in ((Game.K1, winreg_key(Game.K1)), (Game.K2, winreg_key(Game.K2))):
+        for game, possible_game_paths in (
+            (Game.K1, winreg_key(Game.K1)),
+            (Game.K2, winreg_key(Game.K2)),
+        ):
             for reg_key, reg_valname in possible_game_paths:
                 path_str = resolve_reg_key_to_path(reg_key, reg_valname)
                 path = CaseAwarePath(path_str).resolve() if path_str else None
                 if path and path.name and path.is_dir():
                     locations[game].add(path)
 
-        amazon_k1_path_str: str | None = find_software_key("AmazonGames/Star Wars - Knights of the Old")
+        amazon_k1_path_str: str | None = find_software_key(
+            "AmazonGames/Star Wars - Knights of the Old"
+        )
         if amazon_k1_path_str is not None and os.path.isdir(amazon_k1_path_str):
             locations[Game.K1].add(CaseAwarePath(amazon_k1_path_str))
 
     return {Game.K1: sorted(list(locations[Game.K1])), Game.K2: sorted(list(locations[Game.K2]))}
+
+
+def get_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
+    """Compatibility alias for find_kotor_paths_from_default()."""
+    return find_kotor_paths_from_default()
 
 
 __all__ = [
@@ -602,6 +629,7 @@ __all__ = [
     "clear_cache",
     "create_case_insensitive_pathlib_class",
     "find_kotor_paths_from_default",
+    "get_kotor_paths_from_default",
     "get_default_paths",
     "is_filesystem_case_sensitive",
     "simple_wrapper",

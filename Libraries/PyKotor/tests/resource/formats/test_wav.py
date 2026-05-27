@@ -300,7 +300,6 @@ class TestWAVIO(unittest.TestCase):
         """Test that reading non-existent file raises FileNotFoundError."""
         self.assertRaises(FileNotFoundError, read_wav, DOES_NOT_EXIST_FILE)
 
-    # sourcery skip: no-conditionals-in-tests
     def test_read_raises_directory_error(self):
         """Test that reading a directory raises appropriate error."""
         if os.name == "nt":
@@ -331,7 +330,14 @@ class TestWAVIO(unittest.TestCase):
     def test_read_raises_missing_data_chunk(self):
         """Test that reading file without data chunk raises ValueError."""
         invalid_data = (
-            b"RIFF" + struct.pack("<I", 36) + b"WAVE" + b"fmt " + struct.pack("<I", 16) + struct.pack("<HHIIHH", 1, 1, 44100, 88200, 2, 16) + b"XXXX" + struct.pack("<I", 0)
+            b"RIFF"
+            + struct.pack("<I", 36)
+            + b"WAVE"
+            + b"fmt "
+            + struct.pack("<I", 16)
+            + struct.pack("<HHIIHH", 1, 1, 44100, 88200, 2, 16)
+            + b"XXXX"
+            + struct.pack("<I", 0)
         )
         self.assertRaises(ValueError, read_wav, invalid_data)
 
@@ -459,7 +465,6 @@ class TestWAVWrite(unittest.TestCase):
         wav_readback = read_wav(BytesIO(data))
         self.assertEqual(wav.sample_rate, wav_readback.sample_rate)
 
-    # sourcery skip: no-conditionals-in-tests
     def test_write_raises_directory_error(self):
         """Test that writing to a directory raises appropriate error."""
         wav = WAV()

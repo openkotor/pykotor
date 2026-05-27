@@ -42,15 +42,76 @@ for path in (PYKOTOR_SRC, UTILITY_SRC):
     if as_posix not in sys.path:
         sys.path.insert(0, as_posix)
 
-from pykotor.resource.formats.bwm import read_bwm  # noqa: E402  # pyright: ignore[reportMissingImports]
-from pykotor.resource.formats.bwm.bwm_auto import BWMBinaryReader, BWMBinaryWriter  # noqa: E402  # pyright: ignore[reportMissingImports]
-from pykotor.resource.formats.bwm.bwm_data import BWM, BWMFace, BWMType  # noqa: E402  # pyright: ignore[reportMissingImports]
+from pykotor.resource.formats.bwm import (
+    read_bwm,  # noqa: E402  # pyright: ignore[reportMissingImports]
+)
+from pykotor.resource.formats.bwm.bwm_auto import (  # noqa: E402  # pyright: ignore[reportMissingImports]
+    BWMBinaryReader,
+    BWMBinaryWriter,
+)
+from pykotor.resource.formats.bwm.bwm_data import (  # noqa: E402  # pyright: ignore[reportMissingImports]
+    BWM,
+    BWMFace,
+    BWMType,
+)
+from pykotor.resource.formats.bwm.io_bwm_ascii import (
+    BWMAsciiWriter,  # noqa: E402  # pyright: ignore[reportMissingImports]
+)
 from utility.common.geometry import SurfaceMaterial, Vector3  # noqa: E402
 
 # Test file paths
 TESTS_DIR = THIS_FILE.parents[2]  # Goes up to 'tests' directory
+REPO_ROOT = THIS_FILE.parents[5]
 TEST_WOK_FILE = TESTS_DIR / "test_files" / "test.wok"
 TEST_TOOLSET_WOK_FILE = TESTS_DIR / "test_files" / "zio006j.wok"
+MODEL_203TELL_WOK = REPO_ROOT / "models" / "203tell.wok"
+ASCII_203TEL = REPO_ROOT / "203tel.wok.ascii"
+
+
+class TestBWMFormatDetection:
+    """Test read_bwm auto-detection of binary vs ASCII format."""
+
+    def test_read_bwm_binary_magic_uses_binary(self):
+        """Bytes starting with 'BWM ' are loaded as binary."""
+        if not TEST_WOK_FILE.exists():
+            pytest.skip(f"Test file not found: {TEST_WOK_FILE}")
+        data = TEST_WOK_FILE.read_bytes()
+        assert data[:4] == b"BWM "
+        loaded = read_bwm(data)
+        assert len(loaded.faces) > 0
+        assert loaded.walkmesh_type in (BWMType.AreaModel, BWMType.PlaceableOrDoor)
+
+    def test_read_bwm_ascii_detection(self):
+        """Bytes starting with 'node' are loaded as ASCII."""
+        ascii_content = (
+            b"node aabb\n"
+            b"    position 0.0 0.0 0.0\n"
+            b"    orientation 0.0 0.0 0.0 1.0\n"
+            b"    verts 3\n"
+            b"        0.0 0.0 0.0\n"
+            b"        1.0 0.0 0.0\n"
+            b"        0.0 1.0 0.0\n"
+            b"    faces 1\n"
+            b"        0 1 2 -1 -1 -1 -1 1\n"
+            b"    aabb\n"
+            b"        0.0 0.0 0.0 1.0 1.0 0.0 0\n"
+            b"endnode\n"
+        )
+        loaded = read_bwm(ascii_content)
+        assert len(loaded.faces) == 1
+        assert loaded.walkmesh_type == BWMType.AreaModel
+
+    def test_write_bwm_ascii_roundtrip(self):
+        """write_bwm_ascii then read_bwm preserves face count."""
+        if not TEST_WOK_FILE.exists():
+            pytest.skip(f"Test file not found: {TEST_WOK_FILE}")
+        data = TEST_WOK_FILE.read_bytes()
+        bwm = read_bwm(data)
+        buf = io.BytesIO()
+        BWMAsciiWriter(bwm, buf).write(auto_close=False)
+        ascii_bytes = buf.getvalue()
+        reloaded = read_bwm(ascii_bytes)
+        assert len(reloaded.faces) == len(bwm.faces)
 
 
 class TestBWMHeaderValidation:
@@ -321,10 +382,14 @@ class TestBWMFaceHandling:
 
         # Check ordering in loaded faces list
         walkable_indices = [i for i, face in enumerate(loaded.faces) if face.material.walkable()]
-        unwalkable_indices = [i for i, face in enumerate(loaded.faces) if not face.material.walkable()]
+        unwalkable_indices = [
+            i for i, face in enumerate(loaded.faces) if not face.material.walkable()
+        ]
 
         if walkable_indices and unwalkable_indices:
-            assert max(walkable_indices) < min(unwalkable_indices), "Walkable faces should come before unwalkable faces"
+            assert max(walkable_indices) < min(unwalkable_indices), (
+                "Walkable faces should come before unwalkable faces"
+            )
 
     def test_face_vertex_indices_bounds_checking(self):
         """Test that face vertex indices are within valid range."""
@@ -552,6 +617,99 @@ class TestBWMTransitions:
         # The shared edge v2-v3 should NOT be a perimeter edge
         assert len(edges) > 0
 
+    def test_perimeter_edge_set(self):
+        """perimeter_edge_set returns (face_index, edge_index) for AreaModel only."""
+        bwm = BWM()
+        bwm.walkmesh_type = BWMType.AreaModel
+        v1, v2, v3 = Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 1, 0)
+        face = BWMFace(v1, v2, v3)
+        face.material = SurfaceMaterial.DIRT
+        bwm.faces = [face]
+        pset = bwm.perimeter_edge_set()
+        assert isinstance(pset, set)
+        assert (0, 0) in pset or (0, 1) in pset or (0, 2) in pset
+        bwm_pwk = BWM()
+        bwm_pwk.walkmesh_type = BWMType.PlaceableOrDoor
+        assert bwm_pwk.perimeter_edge_set() == set()
+
+    def test_enforce_transition_invariant_clears_internal(self):
+        """enforce_transition_invariant clears transitions on non-perimeter edges."""
+        bwm = BWM()
+        bwm.walkmesh_type = BWMType.AreaModel
+        v1 = Vector3(0, 0, 0)
+        v2 = Vector3(1, 0, 0)
+        v3 = Vector3(0, 1, 0)
+        v4 = Vector3(1, 1, 0)
+        f1 = BWMFace(v1, v2, v3)
+        f1.material = SurfaceMaterial.DIRT
+        f1.trans1 = 1
+        f1.trans2 = 2
+        f1.trans3 = 3
+        f2 = BWMFace(v2, v4, v3)
+        f2.material = SurfaceMaterial.DIRT
+        bwm.faces = [f1, f2]
+        cleared = bwm.enforce_transition_invariant()
+        perimeter = bwm.perimeter_edge_set()
+        assert (0, 1) not in perimeter, "Edge 1 (v2-v3) is shared, not perimeter"
+        assert f1.trans2 is None, "Internal edge transition should be cleared"
+        assert cleared >= 1
+
+    def test_assert_transition_arrows_invariant_valid(self):
+        """assert_transition_arrows_invariant does not raise when all transitions are on perimeter."""
+        if not TEST_WOK_FILE.exists():
+            pytest.skip(f"Test file not found: {TEST_WOK_FILE}")
+        bwm = read_bwm(TEST_WOK_FILE.read_bytes())
+        bwm.enforce_transition_invariant()
+        bwm.assert_transition_arrows_invariant()
+
+    def test_assert_transition_arrows_invariant_invalid(self):
+        """assert_transition_arrows_invariant raises when a transition is on non-perimeter edge."""
+        bwm = BWM()
+        bwm.walkmesh_type = BWMType.AreaModel
+        v1, v2, v3 = Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 1, 0)
+        v4 = Vector3(1, 1, 0)
+        f1 = BWMFace(v1, v2, v3)
+        f1.material = SurfaceMaterial.DIRT
+        f2 = BWMFace(v2, v4, v3)
+        f2.material = SurfaceMaterial.DIRT
+        # Shared edge is f2 edge 2 (v3->v1 = (0,1)-(1,0)); put transition there so it's internal
+        f2.trans3 = 5
+        bwm.faces = [f1, f2]
+        with pytest.raises(AssertionError, match="not a perimeter edge"):
+            bwm.assert_transition_arrows_invariant()
+
+    def test_read_bwm_regenerate_derived_true_enforces(self):
+        """read_bwm(..., regenerate_derived=True) leaves only perimeter transitions."""
+        if not TEST_WOK_FILE.exists():
+            pytest.skip(f"Test file not found: {TEST_WOK_FILE}")
+        raw = TEST_WOK_FILE.read_bytes()
+        bwm = read_bwm(raw, regenerate_derived=True)
+        bwm.assert_transition_arrows_invariant()
+
+    def test_read_bwm_regenerate_derived_false_skips_enforce(self):
+        """read_bwm(..., regenerate_derived=False) loads without enforcing (no assert)."""
+        if not TEST_WOK_FILE.exists():
+            pytest.skip(f"Test file not found: {TEST_WOK_FILE}")
+        raw = TEST_WOK_FILE.read_bytes()
+        bwm = read_bwm(raw, regenerate_derived=False)
+        assert len(bwm.faces) > 0
+        # With regenerate_derived=True, invariant is enforced and asserted
+        bwm2 = read_bwm(raw, regenerate_derived=True)
+        bwm2.assert_transition_arrows_invariant()
+
+    def test_edge_inward_direction_xy(self):
+        """edge_inward_direction_xy returns midpoint and normalized direction toward centroid."""
+        v1 = Vector3(0, 0, 0)
+        v2 = Vector3(2, 0, 0)
+        v3 = Vector3(0, 2, 0)
+        face = BWMFace(v1, v2, v3)
+        mid, direction = BWM.edge_inward_direction_xy(face, 0)
+        assert abs(mid.x - 1) < 1e-6 and abs(mid.y) < 1e-6
+        dx = direction.x
+        dy = direction.y
+        assert abs(dx * dx + dy * dy - 1) < 1e-6
+        assert dx < 0 or dy > 0
+
 
 class TestBWMEdges:
     """Test BWM edge/perimeter computation based on vendor implementations.
@@ -669,13 +827,19 @@ class TestBWMWOKvsPWK:
 
         # Engine uses the AABB tree for broad-phase walk/collision queries (see `vendor/swkotor.c`
         # `CSWRoomSurfaceMesh__CheckAABBNode` + `CSWRoomSurfaceMesh__LoadMeshBinary` wiring).
-        assert aabb_count > 0, "Area-model (WOK) must emit an AABB tree for movement/collision queries"
+        assert aabb_count > 0, (
+            "Area-model (WOK) must emit an AABB tree for movement/collision queries"
+        )
         assert 0 <= aabb_root < aabb_count, "AABB root index must be within the AABB array"
         assert aabb_offset != 0, "AABB table offset must be non-zero when AABBs exist"
 
         # Adjacency table is indexed as (walkable_face_count * 3) in the engine pathing codepaths.
-        assert adjacency_count == 1, "Single-face WOK should emit adjacency_count == walkable_face_count (1)"
-        assert adjacency_offset != 0, "Adjacency table offset must be non-zero when adjacencies exist"
+        assert adjacency_count == 1, (
+            "Single-face WOK should emit adjacency_count == walkable_face_count (1)"
+        )
+        assert adjacency_offset != 0, (
+            "Adjacency table offset must be non-zero when adjacencies exist"
+        )
 
         # Edge/perimeter tables are not required for a single isolated triangle but should be coherent.
         assert edges_count >= 0 and perimeter_count >= 0
@@ -738,7 +902,9 @@ class TestBWMWOKvsPWK:
 
         # Check adjacencies are computed
         adj1 = bwm.adjacencies(face1)
-        assert adj1[0] is not None or adj1[1] is not None or adj1[2] is not None, "Adjacent faces should have adjacency data"
+        assert adj1[0] is not None or adj1[1] is not None or adj1[2] is not None, (
+            "Adjacent faces should have adjacency data"
+        )
 
 
 class TestBWMRoundtrip:
@@ -845,7 +1011,11 @@ class TestBWMRoundtrip:
         for orig_face in original.faces:
             # Find matching face in roundtrip
             for new_face in roundtrip.faces:
-                if new_face.v1 == orig_face.v1 and new_face.v2 == orig_face.v2 and new_face.v3 == orig_face.v3:
+                if (
+                    new_face.v1 == orig_face.v1
+                    and new_face.v2 == orig_face.v2
+                    and new_face.v3 == orig_face.v3
+                ):
                     assert new_face.material == orig_face.material
                     break
 
@@ -864,8 +1034,16 @@ class TestBWMRoundtrip:
         roundtrip = read_bwm(buf.read())
 
         # Count faces with transitions
-        orig_trans_count = sum(1 for f in original.faces if f.trans1 is not None or f.trans2 is not None or f.trans3 is not None)
-        new_trans_count = sum(1 for f in roundtrip.faces if f.trans1 is not None or f.trans2 is not None or f.trans3 is not None)
+        orig_trans_count = sum(
+            1
+            for f in original.faces
+            if f.trans1 is not None or f.trans2 is not None or f.trans3 is not None
+        )
+        new_trans_count = sum(
+            1
+            for f in roundtrip.faces
+            if f.trans1 is not None or f.trans2 is not None or f.trans3 is not None
+        )
 
         assert orig_trans_count == new_trans_count, "Transition count should be preserved"
 
@@ -1141,11 +1319,15 @@ class TestBWMEdgeCases:
 
         # Walkable faces should have walkable materials
         for face in wok.walkable_faces():
-            assert face.material.walkable(), f"Face with material {face.material} should be walkable"
+            assert face.material.walkable(), (
+                f"Face with material {face.material} should be walkable"
+            )
 
         # Unwalkable faces should have non-walkable materials
         for face in wok.unwalkable_faces():
-            assert not face.material.walkable(), f"Face with material {face.material} should not be walkable"
+            assert not face.material.walkable(), (
+                f"Face with material {face.material} should not be walkable"
+            )
 
     def test_hook_positions_preserved(self):
         """Test that hook positions are preserved through roundtrip.
@@ -1349,7 +1531,9 @@ class TestBWMEdgeCases:
             buf.seek(0)
             loaded = read_bwm(buf.read())
 
-            assert loaded.walkmesh_type == walkmesh_type, f"Walkmesh type {walkmesh_type} should be preserved"
+            assert loaded.walkmesh_type == walkmesh_type, (
+                f"Walkmesh type {walkmesh_type} should be preserved"
+            )
 
 
 class TestBWMFaceEquality:
@@ -1498,12 +1682,24 @@ class TestBWMFromRealFiles:
     """Test reading and roundtrip of real BWM files from game installations."""
 
     @pytest.mark.skipif(
-        not Path(__file__).parents[5] / "Tools" / "HolocronToolset" / "tests" / "test_files" / "zio006j.wok",
+        not Path(__file__).parents[5]
+        / "Tools"
+        / "HolocronToolset"
+        / "tests"
+        / "test_files"
+        / "zio006j.wok",
         reason="Test file not available",
     )
     def test_read_real_wok_file(self):
         """Test reading a real WOK file from test files."""
-        test_file = Path(__file__).parents[5] / "Tools" / "HolocronToolset" / "tests" / "test_files" / "zio006j.wok"
+        test_file = (
+            Path(__file__).parents[5]
+            / "Tools"
+            / "HolocronToolset"
+            / "tests"
+            / "test_files"
+            / "zio006j.wok"
+        )
         if not test_file.exists():
             pytest.skip("Test file not available")
 
@@ -1515,12 +1711,24 @@ class TestBWMFromRealFiles:
         assert len(bwm.faces) > 0
 
     @pytest.mark.skipif(
-        not Path(__file__).parents[5] / "Tools" / "HolocronToolset" / "tests" / "test_files" / "zio006j.wok",
+        not Path(__file__).parents[5]
+        / "Tools"
+        / "HolocronToolset"
+        / "tests"
+        / "test_files"
+        / "zio006j.wok",
         reason="Test file not available",
     )
     def test_roundtrip_real_wok_file(self):
         """Test roundtrip of real WOK file."""
-        test_file = Path(__file__).parents[5] / "Tools" / "HolocronToolset" / "tests" / "test_files" / "zio006j.wok"
+        test_file = (
+            Path(__file__).parents[5]
+            / "Tools"
+            / "HolocronToolset"
+            / "tests"
+            / "test_files"
+            / "zio006j.wok"
+        )
         if not test_file.exists():
             pytest.skip("Test file not available")
 
@@ -1912,7 +2120,9 @@ class TestBWMBinaryFormat:
         vertex_count = struct.unpack_from("<I", data, 0x48)[0]
         actual_verts = len(wok.vertices())
 
-        assert vertex_count == actual_verts, f"Vertex count mismatch: header={vertex_count}, actual={actual_verts}"
+        assert vertex_count == actual_verts, (
+            f"Vertex count mismatch: header={vertex_count}, actual={actual_verts}"
+        )
 
     def test_face_count_offset(self):
         """Test that face count is at correct byte offset.
@@ -1930,7 +2140,9 @@ class TestBWMBinaryFormat:
 
         face_count = struct.unpack_from("<I", data, 0x50)[0]
 
-        assert face_count == len(wok.faces), f"Face count mismatch: header={face_count}, actual={len(wok.faces)}"
+        assert face_count == len(wok.faces), (
+            f"Face count mismatch: header={face_count}, actual={len(wok.faces)}"
+        )
 
 
 class TestBWMAABBPlanes:
@@ -2245,7 +2457,9 @@ class TestBWMRaycasting:
         assert result is None, "Raycast should miss unwalkable face"
 
         # Should hit when including non-walkable materials
-        result = bwm.raycast(origin, direction, max_distance=20.0, materials={SurfaceMaterial.NON_WALK})
+        result = bwm.raycast(
+            origin, direction, max_distance=20.0, materials={SurfaceMaterial.NON_WALK}
+        )
         assert result is not None, "Raycast should hit when material is included"
 
     def test_raycast_with_pwk_dwk(self):
@@ -2605,7 +2819,9 @@ class TestBWMSerializeStrictTyping:
         """Test serializing multiple faces with different materials."""
         bwm = BWM()
 
-        for i, material in enumerate([SurfaceMaterial.GRASS, SurfaceMaterial.STONE, SurfaceMaterial.WOOD]):
+        for i, material in enumerate(
+            [SurfaceMaterial.GRASS, SurfaceMaterial.STONE, SurfaceMaterial.WOOD]
+        ):
             face = BWMFace(Vector3(i, 0, 0), Vector3(i + 1, 0, 0), Vector3(i, 1, 0))
             face.material = material
             bwm.faces.append(face)
@@ -2614,7 +2830,11 @@ class TestBWMSerializeStrictTyping:
 
         assert len(result["faces"]) == 3
         for i, face_data in enumerate(result["faces"]):
-            expected_material = [SurfaceMaterial.GRASS, SurfaceMaterial.STONE, SurfaceMaterial.WOOD][i]
+            expected_material = [
+                SurfaceMaterial.GRASS,
+                SurfaceMaterial.STONE,
+                SurfaceMaterial.WOOD,
+            ][i]
             assert face_data["material"] == expected_material.value
             assert isinstance(face_data["material"], int)
 

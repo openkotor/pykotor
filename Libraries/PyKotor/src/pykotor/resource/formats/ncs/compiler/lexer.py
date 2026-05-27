@@ -7,6 +7,7 @@ from typing import ClassVar
 from ply import lex
 
 from pykotor.common.script import DataType
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs import NCSInstructionType
 from pykotor.resource.formats.ncs.compiler.classes import (
     BinaryOperatorMapping,
@@ -21,7 +22,7 @@ from pykotor.resource.formats.ncs.compiler.classes import (
 )
 
 
-class NssLexer:
+class NssLexer(ComparableMixin):
     """NSS (NWScript Source) lexer/tokenizer.
 
     Tokenizes NSS source code into tokens for parsing. Handles keywords, operators,
@@ -29,20 +30,14 @@ class NssLexer:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (Token handling)
         PLY (Python Lex-Yacc) library for lexer generation
-
     """
 
     def __init__(
         self,
-        errorlog=lex.NullLogger(),  # noqa: B008
+        errorlog: lex.NullLogger = lex.NullLogger(),  # noqa: B008
         *,
-        nowarn=True,
+        nowarn: bool = True,
     ):
         self.lexer: lex.Lexer = lex.lex(module=self, errorlog=errorlog, nowarn=nowarn)
         self.lexer.begin("INITIAL")
@@ -412,7 +407,9 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.SHLEFTII, DataType.INT, DataType.INT, DataType.INT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.SHLEFTII, DataType.INT, DataType.INT, DataType.INT
+                ),
             ],
         )
         return t
@@ -422,7 +419,9 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.USHRIGHTII, DataType.INT, DataType.INT, DataType.INT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.USHRIGHTII, DataType.INT, DataType.INT, DataType.INT
+                ),
             ],
         )
         return t
@@ -432,7 +431,9 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.SHRIGHTII, DataType.INT, DataType.INT, DataType.INT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.SHRIGHTII, DataType.INT, DataType.INT, DataType.INT
+                ),
             ],
         )
         return t
@@ -442,12 +443,24 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.ADDII, DataType.INT, DataType.INT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.ADDIF, DataType.INT, DataType.INT, DataType.FLOAT),
-                BinaryOperatorMapping(NCSInstructionType.ADDFI, DataType.FLOAT, DataType.FLOAT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.ADDFF, DataType.FLOAT, DataType.FLOAT, DataType.FLOAT),
-                BinaryOperatorMapping(NCSInstructionType.ADDVV, DataType.VECTOR, DataType.VECTOR, DataType.VECTOR),
-                BinaryOperatorMapping(NCSInstructionType.ADDSS, DataType.STRING, DataType.STRING, DataType.STRING),
+                BinaryOperatorMapping(
+                    NCSInstructionType.ADDII, DataType.INT, DataType.INT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.ADDIF, DataType.INT, DataType.INT, DataType.FLOAT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.ADDFI, DataType.FLOAT, DataType.FLOAT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.ADDFF, DataType.FLOAT, DataType.FLOAT, DataType.FLOAT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.ADDVV, DataType.VECTOR, DataType.VECTOR, DataType.VECTOR
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.ADDSS, DataType.STRING, DataType.STRING, DataType.STRING
+                ),
             ],
         )
         return t
@@ -460,11 +473,21 @@ class NssLexer:
                 UnaryOperatorMapping(NCSInstructionType.NEGF, DataType.FLOAT),
             ],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.SUBII, DataType.INT, DataType.INT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.SUBIF, DataType.INT, DataType.INT, DataType.FLOAT),
-                BinaryOperatorMapping(NCSInstructionType.SUBFI, DataType.FLOAT, DataType.FLOAT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.SUBFF, DataType.FLOAT, DataType.FLOAT, DataType.FLOAT),
-                BinaryOperatorMapping(NCSInstructionType.SUBVV, DataType.VECTOR, DataType.VECTOR, DataType.VECTOR),
+                BinaryOperatorMapping(
+                    NCSInstructionType.SUBII, DataType.INT, DataType.INT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.SUBIF, DataType.INT, DataType.INT, DataType.FLOAT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.SUBFI, DataType.FLOAT, DataType.FLOAT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.SUBFF, DataType.FLOAT, DataType.FLOAT, DataType.FLOAT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.SUBVV, DataType.VECTOR, DataType.VECTOR, DataType.VECTOR
+                ),
             ],
         )
         return t
@@ -474,12 +497,24 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.MULII, DataType.INT, DataType.INT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.MULIF, DataType.INT, DataType.INT, DataType.FLOAT),
-                BinaryOperatorMapping(NCSInstructionType.MULFI, DataType.FLOAT, DataType.FLOAT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.MULFF, DataType.FLOAT, DataType.FLOAT, DataType.FLOAT),
-                BinaryOperatorMapping(NCSInstructionType.MULVF, DataType.VECTOR, DataType.VECTOR, DataType.FLOAT),
-                BinaryOperatorMapping(NCSInstructionType.MULFV, DataType.VECTOR, DataType.FLOAT, DataType.VECTOR),
+                BinaryOperatorMapping(
+                    NCSInstructionType.MULII, DataType.INT, DataType.INT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.MULIF, DataType.INT, DataType.INT, DataType.FLOAT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.MULFI, DataType.FLOAT, DataType.FLOAT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.MULFF, DataType.FLOAT, DataType.FLOAT, DataType.FLOAT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.MULVF, DataType.VECTOR, DataType.VECTOR, DataType.FLOAT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.MULFV, DataType.VECTOR, DataType.FLOAT, DataType.VECTOR
+                ),
             ],
         )
         return t
@@ -489,12 +524,24 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.DIVII, DataType.INT, DataType.INT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.DIVIF, DataType.INT, DataType.INT, DataType.FLOAT),
-                BinaryOperatorMapping(NCSInstructionType.DIVFI, DataType.FLOAT, DataType.FLOAT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.DIVFF, DataType.FLOAT, DataType.FLOAT, DataType.FLOAT),
-                BinaryOperatorMapping(NCSInstructionType.DIVVF, DataType.VECTOR, DataType.VECTOR, DataType.FLOAT),
-                BinaryOperatorMapping(NCSInstructionType.DIVFV, DataType.VECTOR, DataType.FLOAT, DataType.VECTOR),
+                BinaryOperatorMapping(
+                    NCSInstructionType.DIVII, DataType.INT, DataType.INT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.DIVIF, DataType.INT, DataType.INT, DataType.FLOAT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.DIVFI, DataType.FLOAT, DataType.FLOAT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.DIVFF, DataType.FLOAT, DataType.FLOAT, DataType.FLOAT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.DIVVF, DataType.VECTOR, DataType.VECTOR, DataType.FLOAT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.DIVFV, DataType.VECTOR, DataType.FLOAT, DataType.VECTOR
+                ),
             ],
         )
         return t
@@ -504,7 +551,9 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.MODII, DataType.INT, DataType.INT, DataType.INT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.MODII, DataType.INT, DataType.INT, DataType.INT
+                ),
             ],
         )
         return t
@@ -514,10 +563,18 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.EQUALII, DataType.INT, DataType.INT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.EQUALFF, DataType.INT, DataType.FLOAT, DataType.FLOAT),
-                BinaryOperatorMapping(NCSInstructionType.EQUALOO, DataType.INT, DataType.OBJECT, DataType.OBJECT),
-                BinaryOperatorMapping(NCSInstructionType.EQUALSS, DataType.INT, DataType.STRING, DataType.STRING),
+                BinaryOperatorMapping(
+                    NCSInstructionType.EQUALII, DataType.INT, DataType.INT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.EQUALFF, DataType.INT, DataType.FLOAT, DataType.FLOAT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.EQUALOO, DataType.INT, DataType.OBJECT, DataType.OBJECT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.EQUALSS, DataType.INT, DataType.STRING, DataType.STRING
+                ),
             ],
         )
         return t
@@ -527,10 +584,18 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.NEQUALII, DataType.INT, DataType.INT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.NEQUALFF, DataType.INT, DataType.FLOAT, DataType.FLOAT),
-                BinaryOperatorMapping(NCSInstructionType.NEQUALOO, DataType.INT, DataType.OBJECT, DataType.OBJECT),
-                BinaryOperatorMapping(NCSInstructionType.NEQUALSS, DataType.INT, DataType.STRING, DataType.STRING),
+                BinaryOperatorMapping(
+                    NCSInstructionType.NEQUALII, DataType.INT, DataType.INT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.NEQUALFF, DataType.INT, DataType.FLOAT, DataType.FLOAT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.NEQUALOO, DataType.INT, DataType.OBJECT, DataType.OBJECT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.NEQUALSS, DataType.INT, DataType.STRING, DataType.STRING
+                ),
             ],
         )
         return t
@@ -540,8 +605,12 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.GEQII, DataType.INT, DataType.INT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.GEQFF, DataType.INT, DataType.FLOAT, DataType.FLOAT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.GEQII, DataType.INT, DataType.INT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.GEQFF, DataType.INT, DataType.FLOAT, DataType.FLOAT
+                ),
             ],
         )
         return t
@@ -551,8 +620,12 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.GTII, DataType.INT, DataType.INT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.GTFF, DataType.INT, DataType.FLOAT, DataType.FLOAT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.GTII, DataType.INT, DataType.INT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.GTFF, DataType.INT, DataType.FLOAT, DataType.FLOAT
+                ),
             ],
         )
         return t
@@ -562,8 +635,12 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.LEQII, DataType.INT, DataType.INT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.LEQFF, DataType.INT, DataType.FLOAT, DataType.FLOAT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.LEQII, DataType.INT, DataType.INT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.LEQFF, DataType.INT, DataType.FLOAT, DataType.FLOAT
+                ),
             ],
         )
         return t
@@ -573,8 +650,12 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.LTII, DataType.INT, DataType.INT, DataType.INT),
-                BinaryOperatorMapping(NCSInstructionType.LTFF, DataType.INT, DataType.FLOAT, DataType.FLOAT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.LTII, DataType.INT, DataType.INT, DataType.INT
+                ),
+                BinaryOperatorMapping(
+                    NCSInstructionType.LTFF, DataType.INT, DataType.FLOAT, DataType.FLOAT
+                ),
             ],
         )
         return t
@@ -584,7 +665,9 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.LOGANDII, DataType.INT, DataType.INT, DataType.INT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.LOGANDII, DataType.INT, DataType.INT, DataType.INT
+                ),
             ],
         )
         return t
@@ -594,7 +677,9 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.LOGORII, DataType.INT, DataType.INT, DataType.INT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.LOGORII, DataType.INT, DataType.INT, DataType.INT
+                ),
             ],
         )
         return t
@@ -614,7 +699,9 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.BOOLANDII, DataType.INT, DataType.INT, DataType.INT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.BOOLANDII, DataType.INT, DataType.INT, DataType.INT
+                ),
             ],
         )
         return t
@@ -624,7 +711,9 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.INCORII, DataType.INT, DataType.INT, DataType.INT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.INCORII, DataType.INT, DataType.INT, DataType.INT
+                ),
             ],
         )
         return t
@@ -634,7 +723,9 @@ class NssLexer:
         t.value = OperatorMapping(
             unary=[],
             binary=[
-                BinaryOperatorMapping(NCSInstructionType.EXCORII, DataType.INT, DataType.INT, DataType.INT),
+                BinaryOperatorMapping(
+                    NCSInstructionType.EXCORII, DataType.INT, DataType.INT, DataType.INT
+                ),
             ],
         )
         return t

@@ -17,7 +17,10 @@ if TYPE_CHECKING:
 
 from pykotor.cli.cfg_parser import load_config
 from pykotor.common.misc import Game
-from pykotor.resource.formats.ncs.compilers import InbuiltNCSCompiler
+from pykotor.resource.formats.ncs.compilers import (
+    ExternalNCSCompiler,
+    InbuiltNCSCompiler,
+)
 
 
 def get_game_from_config() -> Game:
@@ -33,14 +36,6 @@ def find_nss_compiler() -> Path | None:
     Searches for external compilers in this order:
     1. nwnnsscomp (preferred, compatible with both K1 and K2)
     2. nwnsc (legacy, Neverwinter Nights compiler)
-
-    References:
-    ----------
-        Based on swkotor.exe NCS compilation:
-        - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
-        - NWScript compilation and execution within game engine
-
-        Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py - PyKotor compiler implementations
 
     """
     import platform
@@ -79,14 +74,10 @@ def use_builtin_compiler(
     -------
         Tuple of (compiled_count, error_count)
 
-    References:
-    ----------
-        Based on unified K1/TSL NCS. See pykotor.resource.formats.ncs.ncs_data (K1 addrs + TSL TODO).
-        CResNCS::CResNCS (0x005d4c30), HandleBNCSMessage (0x005d5180); NWScript compilation/execution.
-        Derivations and Other Implementations:
-        ----------
-            - https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts
-            - Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/
+    NWScript bytecode generation uses the in-tree compiler under ``resource/formats/ncs/``.
+    Former **References** (retail NCS loader symbol names / RVAs, KotOR.js compiler URL)
+    are migrated to ``wiki/reverse_engineering_findings.md`` (*cli/commands/compile.py —
+    built-in compile path*).
     """
     compiler = InbuiltNCSCompiler()
     compiled_count: int = 0
@@ -211,7 +202,9 @@ def cmd_compile(
                         for exclude_pattern in exclude_patterns:
                             import fnmatch  # noqa: PLC0415
 
-                            if fnmatch.fnmatch(str(match_path), str(config.root_dir / exclude_pattern)):
+                            if fnmatch.fnmatch(
+                                str(match_path), str(config.root_dir / exclude_pattern)
+                            ):
                                 excluded = True
                                 break
 
@@ -235,44 +228,59 @@ def cmd_compile(
 
         # Compile scripts
         if use_external and external_compiler:
-            # Use external compiler
+            # Use external compiler with correct argv for this nwnnsscomp variant (V1, TSLPatcher, KOTOR Tool, etc.)
             compiled_count = 0
             error_count = 0
+            try:
+                compiler = ExternalNCSCompiler(external_compiler)
+                # Verify binary is known (NwnnsscompConfig will raise ValueError if SHA256 not in KnownExternalCompilers)
+                _ = compiler.config(
+                    nss_files[0],
+                    cache_dir / nss_files[0].with_suffix(".ncs").name,
+                    game,
+                )
+            except ValueError as e:
+                logger.warning(
+                    f"External compiler at {external_compiler} is not a recognized nwnnsscomp variant: {e}. "
+                    "Falling back to built-in compiler.",
+                )
+                compiler = None
+                use_external = False
 
-            for nss_path in nss_files:
-                try:
-                    output_file = cache_dir / nss_path.with_suffix(".ncs").name
+            if compiler is not None:
+                for nss_path in nss_files:
+                    try:
+                        output_file = cache_dir / nss_path.with_suffix(".ncs").name
+                        cfg = compiler.config(nss_path, output_file, game)
+                        cmd: list[str] = cfg.get_compile_args(str(compiler.nwnnsscomp_path))
 
-                    # Build compiler command
-                    cmd: list[str] = [
-                        str(external_compiler),
-                        str(nss_path),
-                        "-o",
-                        str(output_file),
-                    ]
+                        result: subprocess.CompletedProcess[str] = subprocess.run(
+                            cmd,
+                            check=False,
+                            capture_output=True,
+                            text=True,
+                            cwd=config.root_dir,
+                        )
 
-                    result: subprocess.CompletedProcess[str] = subprocess.run(
-                        cmd,
-                        check=False,
-                        capture_output=True,
-                        text=True,
-                        cwd=config.root_dir,
-                    )
+                        if result.returncode == 0:
+                            logger.debug(f"Compiled: {nss_path.name} -> {output_file.name}")
+                            compiled_count += 1
+                        else:
+                            logger.error(f"Compilation failed for {nss_path.name}:")
+                            if result.stdout:
+                                logger.error(result.stdout)
+                            if result.stderr:
+                                logger.error(result.stderr)
+                            error_count += 1
 
-                    if result.returncode == 0:
-                        logger.debug(f"Compiled: {nss_path.name} -> {output_file.name}")
-                        compiled_count += 1
-                    else:
-                        logger.error(f"Compilation failed for {nss_path.name}:")
-                        if result.stdout:
-                            logger.error(result.stdout)
-                        if result.stderr:
-                            logger.error(result.stderr)
+                    except Exception as e:
+                        logger.error(f"Failed to compile {nss_path.name}: {e}")
                         error_count += 1
 
-                except Exception as e:
-                    logger.error(f"Failed to compile {nss_path.name}: {e}")
-                    error_count += 1
+            if not use_external or compiler is None:
+                compiled_count, error_count = use_builtin_compiler(
+                    nss_files, cache_dir, game, logger
+                )
         else:
             # Use built-in PyKotor compiler
             compiled_count, error_count = use_builtin_compiler(nss_files, cache_dir, game, logger)

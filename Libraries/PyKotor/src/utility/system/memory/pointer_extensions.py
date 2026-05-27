@@ -57,8 +57,12 @@ def follow_pointer(
         # deref_obj = CPointer.from_address(address.value)
         # dereferenced_address = deref_obj.value
         dereferenced_address = CPointer.from_address(address.value).value
-        print(f"follow_address: Following address {hex(address.value)} to {hex(dereferenced_address or 0)}")
-        assert dereferenced_address is not None, f"Dereferenced address should not be None: {hex(address.value)}"
+        print(
+            f"follow_address: Following address {hex(address.value)} to {hex(dereferenced_address or 0)}"
+        )
+        assert dereferenced_address is not None, (
+            f"Dereferenced address should not be None: {hex(address.value)}"
+        )
         return CPointer(dereferenced_address)
     if mode is PointerHandlerMode.NUMPY:
         import numpy as np
@@ -106,8 +110,6 @@ def adjust_pointer_depth(  # noqa: C901, ANN201
         CPointer: A custom pointer to the object with the specified depth.
             or obj: the real object at the end of the pointer trail.
     """
-    global PREVENT_GC  # noqa: PLW0602
-
     # Step 1: Dereference the pointers to get the actual data.
     actual_obj = obj
     while isinstance(actual_obj, PointerType):
@@ -154,7 +156,11 @@ def adjust_pointer_depth(  # noqa: C901, ANN201
 
     # Adjust pointer based on depth
     for _ in range(depth):
-        current_ptr = create_pointer(current_ptr, mode=mode) if pointer_depth > 0 else follow_pointer(current_ptr, mode=mode)
+        current_ptr = (
+            create_pointer(current_ptr, mode=mode)
+            if pointer_depth > 0
+            else follow_pointer(current_ptr, mode=mode)
+        )
         PREVENT_GC.append(current_ptr)
 
     retptr = CPointer(addressof(current_ptr))
@@ -166,7 +172,9 @@ def adjust_pointer_depth(  # noqa: C901, ANN201
     deref_addr = addressof(deref_obj)
 
     print(f"levels: {pointer_depth}, deref: {hex(deref_addr)}, orig: {hex(orig_addr)}")
-    assert orig_addr == deref_addr, f"Original address DOES NOT match dereferenced address! ({hex(orig_addr)} == {hex(deref_addr)})"
+    assert orig_addr == deref_addr, (
+        f"Original address DOES NOT match dereferenced address! ({hex(orig_addr)} == {hex(deref_addr)})"
+    )
     return retptr
 
 

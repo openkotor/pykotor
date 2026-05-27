@@ -19,7 +19,7 @@ from pykotor.cli.cfg_parser import load_config
 from pykotor.resource.formats.erf import read_erf
 from pykotor.resource.formats.gff import read_gff, write_gff
 from pykotor.resource.formats.rim import read_rim
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import ToolsetFormat
 
 
 def compute_file_hash(file_path: Path) -> str:
@@ -118,7 +118,7 @@ def cmd_unpack(args: Namespace, logger: Logger) -> int:
 
         # Unpack each resource
         for resource in archive:
-            resref = resource.resname
+            resref = str(resource.resref)
             restype = resource.restype
             filename = f"{resref}.{restype.extension}"
 
@@ -168,15 +168,19 @@ def cmd_unpack(args: Namespace, logger: Logger) -> int:
 
                     # Write as JSON
                     json_dest = destination.with_suffix(destination.suffix + ".json")
-                    write_gff(gff, json_dest, file_format=ResourceType.GFF_JSON)
+                    write_gff(gff, json_dest, file_format=ToolsetFormat.GFF_JSON)
 
                     destination = json_dest
-                    logger.debug(f"Converted {filename} to JSON: {destination.relative_to(config.root_dir)}")
+                    logger.debug(
+                        f"Converted {filename} to JSON: {destination.relative_to(config.root_dir)}"
+                    )
                 except Exception as e:
                     logger.warning(f"Failed to convert {filename} to JSON: {e}")
                     # Fall back to binary write
                     destination.write_bytes(resource_data)
-                    logger.debug(f"Extracted {filename} (binary fallback): {destination.relative_to(config.root_dir)}")
+                    logger.debug(
+                        f"Extracted {filename} (binary fallback): {destination.relative_to(config.root_dir)}"
+                    )
             else:
                 # Write binary file for non-GFF resources
                 destination.write_bytes(resource_data)

@@ -17,7 +17,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from pykotor.gl.glm_compat import vec3
+from pykotor.gl import vec3
 
 # Handle optional pykotor.gl dependency
 try:
@@ -70,13 +70,18 @@ class TestCameraMatrixCaching(unittest.TestCase):
         # Cache should be dirty
         self.assertTrue(self.camera._view_dirty)
 
-        # New view should be different
+        # New view should differ somewhere (orbit-style camera: x shifts effective eye;
+        # not every column-3 row matches GLM tutorials — compare full matrix).
         view2 = self.camera.view()
-        self.assertNotEqual(view1[3][0], view2[3][0])
+        any_diff = any(
+            not math.isclose(float(view1[c][r]), float(view2[c][r]), rel_tol=0.0, abs_tol=1e-5)
+            for c in range(4)
+            for r in range(4)
+        )
+        self.assertTrue(any_diff, "view matrix unchanged after position change")
 
     def test_view_matrix_invalidation_on_rotation(self):
         """Test that view matrix is invalidated when rotation changes."""
-        # Get initial view
         view1 = self.camera.view()
 
         # Change rotation
@@ -84,6 +89,14 @@ class TestCameraMatrixCaching(unittest.TestCase):
 
         # Cache should be dirty
         self.assertTrue(self.camera._view_dirty)
+
+        view2 = self.camera.view()
+        any_diff = any(
+            not math.isclose(float(view1[c][r]), float(view2[c][r]), rel_tol=0.0, abs_tol=1e-5)
+            for c in range(4)
+            for r in range(4)
+        )
+        self.assertTrue(any_diff, "view matrix unchanged after rotation")
 
     def test_projection_matrix_caching(self):
         """Test that projection matrix is cached after first call."""
@@ -122,11 +135,19 @@ class TestCameraMatrixCaching(unittest.TestCase):
         # Get initial projection
         proj1 = self.camera.projection()
 
-        # Change resolution
-        self.camera.set_resolution(1280, 720)
+        # Change resolution to a different aspect ratio (16:9 -> 4:3) so projection changes.
+        self.camera.set_resolution(1024, 768)
 
         # Cache should be dirty
         self.assertTrue(self.camera._projection_dirty)
+
+        proj2 = self.camera.projection()
+        any_diff = any(
+            not math.isclose(float(proj1[c][r]), float(proj2[c][r]), rel_tol=0.0, abs_tol=1e-5)
+            for c in range(4)
+            for r in range(4)
+        )
+        self.assertTrue(any_diff, "projection matrix unchanged after aspect ratio change")
 
 
 class TestFrustum(unittest.TestCase):
@@ -163,7 +184,10 @@ class TestFrustum(unittest.TestCase):
             # Allow either normalized plane or fallback plane
             is_normalized = abs(normal_length - 1.0) < 0.01
             is_fallback = normal_length < 0.01 or plane.w > 1e9  # Degenerate fallback
-            self.assertTrue(is_normalized or is_fallback, msg=f"Plane {i} not properly normalized or fallback: length={normal_length}, w={plane.w}")
+            self.assertTrue(
+                is_normalized or is_fallback,
+                msg=f"Plane {i} not properly normalized or fallback: length={normal_length}, w={plane.w}",
+            )
 
     def test_frustum_caching(self):
         """Test that frustum caches view-projection matrix hash."""
@@ -221,7 +245,9 @@ class TestFrustum(unittest.TestCase):
 
         # Point way beyond far plane (5000 units)
         far_point = vec3(10000, 0, 0)
-        self.assertFalse(self.frustum.point_in_frustum(far_point), "Point beyond far plane should be culled")
+        self.assertFalse(
+            self.frustum.point_in_frustum(far_point), "Point beyond far plane should be culled"
+        )
 
     def test_sphere_in_frustum_visible(self):
         """Test that sphere culling returns a boolean result."""
@@ -246,7 +272,10 @@ class TestFrustum(unittest.TestCase):
         # Sphere at edge of frustum with large radius
         # Should still be visible due to partial intersection
         edge_sphere = vec3(0, 50, 0)
-        self.assertTrue(self.frustum.sphere_in_frustum(edge_sphere, 100.0), "Large sphere at edge should be partially visible")
+        self.assertTrue(
+            self.frustum.sphere_in_frustum(edge_sphere, 100.0),
+            "Large sphere at edge should be partially visible",
+        )
 
     def test_sphere_completely_outside(self):
         """Test that spheres completely outside are culled."""
@@ -254,7 +283,10 @@ class TestFrustum(unittest.TestCase):
 
         # Small sphere far to the side
         outside_sphere = vec3(0, 1000, 0)
-        self.assertFalse(self.frustum.sphere_in_frustum(outside_sphere, 1.0), "Small sphere far outside frustum should be culled")
+        self.assertFalse(
+            self.frustum.sphere_in_frustum(outside_sphere, 1.0),
+            "Small sphere far outside frustum should be culled",
+        )
 
     def test_aabb_in_frustum_visible(self):
         """Test that AABB culling returns a boolean result."""
@@ -422,7 +454,9 @@ class TestFrustumIntegration(unittest.TestCase):
             result = self.frustum.sphere_in_frustum(center, radius)
             # NOTE: Due to camera orientation complexity, we just verify the function runs
             # and returns a boolean. Exact culling depends on matrix calculations.
-            self.assertIsInstance(result, bool, f"Sphere culling should return boolean for {description}")
+            self.assertIsInstance(
+                result, bool, f"Sphere culling should return boolean for {description}"
+            )
             self.stats.record_object(visible=result)
 
         # Verify statistics work
@@ -548,7 +582,11 @@ class TestPerformanceOptimizations(unittest.TestCase):
 
         # Should complete in under 100ms for 10000 objects
         # This is a reasonable target for real-time rendering
-        self.assertLess(elapsed_ms, 100.0, f"Sphere culling for {num_objects} objects took {elapsed_ms:.2f}ms (should be < 100ms)")
+        self.assertLess(
+            elapsed_ms,
+            100.0,
+            f"Sphere culling for {num_objects} objects took {elapsed_ms:.2f}ms (should be < 100ms)",
+        )
 
 
 if __name__ == "__main__":

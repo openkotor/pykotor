@@ -307,12 +307,9 @@ class GameObject(ABC):
 
     def _on_position_changed(self) -> None:
         """Called when position changes (override in subclasses)."""
-        pass
 
     def _on_facing_changed(self) -> None:
         """Called when facing changes (override in subclasses)."""
-        pass
 
     def _on_visibility_changed(self) -> None:
         """Called when visibility changes (override in subclasses)."""
-        pass

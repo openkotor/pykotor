@@ -16,7 +16,9 @@ if TYPE_CHECKING:
     from qtpy.QtCore import QTimeZone
     from qtpy.QtGui import QAbstractFileIconProvider
 
-from utility.gui.qt.adapters.filesystem.pyextendedinformation import PyQExtendedInformation  # noqa: E402
+from utility.gui.qt.adapters.filesystem.pyextendedinformation import (
+    PyQExtendedInformation,  # noqa: E402
+)
 
 
 class PyFileSystemNode:
@@ -376,7 +378,6 @@ class PyFileSystemNode:
             }
         }
         """
-
         if iconProvider is None:
             return
 
@@ -415,7 +416,6 @@ class PyFileSystemNode:
             }
         }
         """
-
         if iconProvider is None:
             return
 

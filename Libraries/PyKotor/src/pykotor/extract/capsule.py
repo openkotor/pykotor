@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
     from collections.abc import Iterator
 
-    from typing_extensions import Self
+    from typing_extensions import Self  # pyright: ignore[reportMissingModuleSource]
 
 
 class LazyCapsule(FileResource):
@@ -25,11 +25,6 @@ class LazyCapsule(FileResource):
 
     Resource data is not actually stored in memory by default but is instead loaded up on demand with the
     LazyCapsule.resource() method. Use the Capsule, RIM, or ERF classes if you want to solely work with capsules in memory.
-
-    References:
-    ----------
-        See pykotor.resource.formats.erf.erf_data for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents.
-
 
     """
 
@@ -174,7 +169,7 @@ class LazyCapsule(FileResource):
             next(
                 (resource for resource in self.resources() if resource == query),
                 False,
-            )
+            ),
         )
 
     def info(
@@ -337,7 +332,9 @@ class LazyCapsule(FileResource):
         return rim
 
     def as_cached(self) -> ERF | RIM:
-        return self.as_cached_erf() if is_any_erf_type_file(self._filepath) else self.as_cached_rim()
+        return (
+            self.as_cached_erf() if is_any_erf_type_file(self._filepath) else self.as_cached_rim()
+        )
 
     def _load_erf(
         self,
@@ -361,7 +358,6 @@ class LazyCapsule(FileResource):
             - Seeks to resource data offset table
             - Loops to read offsets and sizes and populate resource objects.
         """
-
         resources: list[FileResource] = []
         reader.skip(8)
         entry_count = reader.read_uint32()
@@ -375,7 +371,7 @@ class LazyCapsule(FileResource):
         reader.seek(offset_to_keys)
 
         for _ in range(entry_count):
-            resref = reader.read_string(16)
+            resref = reader.read_string(16).rstrip("\0")
             resrefs.append(resref)
             resids.append(reader.read_uint32())
             restype = reader.read_uint16()
@@ -386,7 +382,9 @@ class LazyCapsule(FileResource):
         for i in range(entry_count):
             res_offset: int = reader.read_uint32()
             res_size: int = reader.read_uint32()
-            resources.append(FileResource(resrefs[i], restypes[i], res_size, res_offset, self._filepath))
+            resources.append(
+                FileResource(resrefs[i], restypes[i], res_size, res_offset, self._filepath)
+            )
         return resources
 
     def _load_rim(
@@ -416,7 +414,6 @@ class LazyCapsule(FileResource):
                 - Read the 4 byte offset
                 - Read the 4 byte size
         """
-
         resources: list[FileResource] = []
         reader.skip(4)
         entry_count = reader.read_uint32()
@@ -425,7 +422,7 @@ class LazyCapsule(FileResource):
         reader.seek(offset_to_entries)
 
         for _ in range(entry_count):
-            resref = reader.read_string(16)
+            resref = reader.read_string(16).rstrip("\0")
             restype = ResourceType.from_id(reader.read_uint32())
             reader.skip(4)
             offset = reader.read_uint32()

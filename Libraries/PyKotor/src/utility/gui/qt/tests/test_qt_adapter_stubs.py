@@ -9,7 +9,6 @@ from __future__ import annotations
 import tempfile
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 
@@ -28,7 +27,9 @@ from utility.gui.qt.adapters.filesystem.pyfileinfogatherer import PyFileInfoGath
 from utility.gui.qt.adapters.filesystem.pyfilesystemmodel import PyFileSystemModel
 from utility.gui.qt.adapters.filesystem.pyfilesystemmodelsorter import PyFileSystemModelSorter
 from utility.gui.qt.adapters.filesystem.pyfilesystemnode import PyFileSystemNode
-from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as AdapterQFileDialog
+from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import (
+    QFileDialog as AdapterQFileDialog,
+)
 
 
 class TestQtAdapterAPICompatibility:
@@ -40,7 +41,7 @@ class TestQtAdapterAPICompatibility:
         app = QApplication.instance()
         if app is None:
             app = QApplication([])
-        yield app
+        return app
 
     @pytest.fixture
     def temp_dir(self):
