@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–102", patched)
+        self.assertIn("019–103", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1053,6 +1053,88 @@ Monitoring.
             mod._emit_lfg_strict_exit_stderr(status, 3)
         output = err.getvalue()
         self.assertIn("crosscheck=delta +2", output)
+
+    def test_build_lfg_agent_briefing_watch_queue(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_track_complete": True,
+            "lfg_merge_blocked": "pr_checks_pending",
+            "lfg_exit_code": 3,
+            "lfg_exit_reason": "pr_checks_pending:watch_queue",
+            "pr_queue_backlog_note": "runner backlog",
+            "pr_checks_crosscheck_note": "delta +2",
+            "pr_ci_recommendation": {
+                "action": "watch_queue",
+                "reason": "runner queue backlog",
+                "command": "watch-cmd",
+            },
+            "pr_merge_status": {
+                "ok": True,
+                "number": 308,
+                "url": "https://example.com/pr/308",
+                "pr_merge_ready": False,
+                "checks_pending": 27,
+                "checks_in_progress": 0,
+                "pr_ci_progress": {"completion_percent": 4},
+            },
+        }
+        briefing = mod._build_lfg_agent_briefing(status)
+        self.assertEqual(briefing["action"], "watch_queue")
+        self.assertEqual(briefing["exit_code"], 3)
+        self.assertEqual(len(briefing["notes"]), 2)
+        self.assertEqual(briefing["completion_percent"], 4)
+
+    def test_build_lfg_agent_briefing_no_pr(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_track_complete": True,
+            "lfg_merge_blocked": "no_open_pr",
+            "pr_merge_status": {"ok": False},
+            "pr_ci_recommendation": {
+                "action": "no_pr",
+                "reason": "no open PR on branch",
+                "command": "",
+            },
+        }
+        briefing = mod._build_lfg_agent_briefing(status)
+        self.assertEqual(briefing["action"], "no_pr")
+        self.assertEqual(briefing["blocked"], "no_open_pr")
+
+    def test_build_lfg_agent_briefing_merge_ready(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_track_complete": True,
+            "lfg_exit_code": 0,
+            "lfg_exit_reason": "merge_ready",
+            "pr_ci_recommendation": {
+                "action": "merge",
+                "reason": "PR CI complete",
+                "command": "gh pr merge 308 --squash --auto",
+            },
+            "pr_merge_status": {
+                "ok": True,
+                "number": 308,
+                "url": "https://example.com/pr/308",
+                "pr_merge_ready": True,
+                "pr_ci_progress": {"completion_percent": 100},
+            },
+        }
+        briefing = mod._build_lfg_agent_briefing(status)
+        self.assertEqual(briefing["action"], "merge")
+        self.assertTrue(briefing["merge_ready"])
+        self.assertIn("gh pr merge", briefing["command"])
+
+    def test_emit_lfg_agent_briefing_stderr(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "watch_queue",
+                    "exit_code": 3,
+                    "blocked": "pr_checks_pending",
+                    "completion_percent": 4,
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("LFG briefing:", output)
+        self.assertIn("action=watch_queue", output)
+        self.assertIn("complete=4%", output)
 
     def test_apply_pr_merge_status_queue_backlog_hint(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
