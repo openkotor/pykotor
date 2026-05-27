@@ -24,7 +24,13 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "089"
+PLAN_TRACK_CAP = "090"
+LFG_EXIT_CODES: dict[int, str] = {
+    0: "proceed, merge_ready, or monitoring_complete",
+    1: "gh_error",
+    2: "deferred or dispatch_or_sync_failed",
+    3: "pr_checks_pending, pr_checks_failed, pr_merge_conflicts, or no_open_pr",
+}
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -1079,6 +1085,7 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
     status["pr_merge_status"] = pr_status
     if not pr_status.get("ok"):
         status["merge_hint"] = "Monitoring complete; no open PR on this branch"
+        status["lfg_merge_blocked"] = "no_open_pr"
         return
     url = pr_status.get("url") or ""
     number = pr_status.get("number")
@@ -1110,9 +1117,13 @@ def _format_watch_poll_line(pr_status: dict[str, Any]) -> str:
     in_progress = pr_status.get("checks_in_progress", 0)
     failed = pr_status.get("checks_failed", 0)
     success = pr_status.get("checks_success", 0)
+    skipped = pr_status.get("checks_skipped", 0)
     progress = pr_status.get("pr_ci_progress") or {}
     percent = progress.get("completion_percent")
-    base = f"success={success} pending={pending} in_progress={in_progress} failed={failed}"
+    base = (
+        f"success={success} skipped={skipped} pending={pending} "
+        f"in_progress={in_progress} failed={failed}"
+    )
     if percent is not None:
         return f"{base} complete={percent}%"
     return base
@@ -1182,7 +1193,7 @@ def _compute_lfg_exit_code(
         return 2
     if strict_pr_ci_exit and status.get("lfg_track_complete"):
         pr_status = status.get("pr_merge_status") or {}
-        if pr_status.get("ok") and not pr_status.get("pr_merge_ready"):
+        if not pr_status.get("ok") or not pr_status.get("pr_merge_ready"):
             return 3
     if dispatch_on_proceed and execute:
         dispatch = status.get("dispatch_on_proceed") or {}
@@ -2150,6 +2161,7 @@ def main() -> None:
                     exit_code,
                     deferred=deferred,
                 )
+                status["lfg_exit_codes"] = LFG_EXIT_CODES
             _print_ci_status(status, as_json=args.json)
         if not status["gh_ok"]:
             sys.exit(1)

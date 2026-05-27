@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–089", patched)
+        self.assertIn("019–090", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -552,6 +552,36 @@ Monitoring.
             }
         )
         self.assertIn("complete=62%", line)
+        self.assertIn("skipped=", line)
+
+    def test_compute_lfg_exit_code_no_open_pr(self) -> None:
+        code = mod._compute_lfg_exit_code(
+            {
+                "gh_ok": True,
+                "lfg_track_complete": True,
+                "lfg_merge_blocked": "no_open_pr",
+                "pr_merge_status": {"ok": False},
+            },
+            deferred=False,
+            strict_defer_exit=False,
+            strict_pr_ci_exit=True,
+            dispatch_on_proceed=False,
+            execute=False,
+            sync_docs_after_dispatch=False,
+            write=False,
+            lfg_refresh=False,
+        )
+        self.assertEqual(code, 3)
+
+    def test_apply_pr_merge_status_no_open_pr(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        with patch.object(
+            mod,
+            "_fetch_pr_merge_status",
+            return_value={"ok": False, "error": "no open PR"},
+        ):
+            mod._apply_pr_merge_status(status)
+        self.assertEqual(status["lfg_merge_blocked"], "no_open_pr")
 
     def test_compute_lfg_exit_reason_merge_ready(self) -> None:
         reason = mod._compute_lfg_exit_reason(
