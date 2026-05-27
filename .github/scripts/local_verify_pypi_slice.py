@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "088"
+PLAN_TRACK_CAP = "089"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -925,9 +925,10 @@ def _dedupe_preserve_order(names: list[str]) -> list[str]:
 
 def _check_detail_record(check: dict[str, Any]) -> dict[str, str]:
     workflow = check.get("workflowName") or check.get("context") or ""
+    name = str(check.get("name") or check.get("context") or "unknown")
     return {
-        "name": str(check.get("name") or "unknown"),
-        "details_url": str(check.get("detailsUrl") or ""),
+        "name": name,
+        "details_url": str(check.get("detailsUrl") or check.get("targetUrl") or ""),
         "workflow": str(workflow),
     }
 
@@ -956,18 +957,26 @@ def _summarize_pr_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
     pending_check_details: list[dict[str, str]] = []
     failed_check_details: list[dict[str, str]] = []
     for check in checks:
-        name = str(check.get("name") or "unknown")
         detail = _check_detail_record(check)
+        name = detail["name"]
         conclusion = (check.get("conclusion") or "").lower()
         check_status = (check.get("status") or "").lower()
-        if conclusion == "success":
+        state = (check.get("state") or "").lower()
+        if conclusion == "success" or (not conclusion and state == "success"):
             success += 1
-        elif conclusion in {"failure", "cancelled", "timed_out", "action_required"}:
+        elif conclusion in {"failure", "cancelled", "timed_out", "action_required"} or (
+            not conclusion and state in {"failure", "error"}
+        ):
             failed += 1
             failed_checks.append(name)
             failed_check_details.append(detail)
         elif conclusion in {"skipped", "neutral"}:
             skipped += 1
+        elif not conclusion and state in {"pending", "expected"}:
+            pending += 1
+            queued += 1
+            pending_checks.append(name)
+            pending_check_details.append(detail)
         elif check_status == "in_progress":
             pending += 1
             in_progress += 1
@@ -1101,7 +1110,12 @@ def _format_watch_poll_line(pr_status: dict[str, Any]) -> str:
     in_progress = pr_status.get("checks_in_progress", 0)
     failed = pr_status.get("checks_failed", 0)
     success = pr_status.get("checks_success", 0)
-    return f"success={success} pending={pending} in_progress={in_progress} failed={failed}"
+    progress = pr_status.get("pr_ci_progress") or {}
+    percent = progress.get("completion_percent")
+    base = f"success={success} pending={pending} in_progress={in_progress} failed={failed}"
+    if percent is not None:
+        return f"{base} complete={percent}%"
+    return base
 
 
 def _watch_pr_merge_status(
@@ -1190,6 +1204,11 @@ def _compute_lfg_exit_reason(
     deferred: bool,
 ) -> str:
     if exit_code == 0:
+        pr_status = status.get("pr_merge_status") or {}
+        if pr_status.get("pr_merge_ready"):
+            return "merge_ready"
+        if status.get("lfg_track_complete"):
+            return "monitoring_complete"
         return "proceed"
     if exit_code == 1:
         return "gh_error"
@@ -1210,6 +1229,10 @@ def _emit_track_complete_stderr(status: dict[str, Any]) -> None:
     if not status.get("lfg_track_complete"):
         return
     merge_hint = status.get("merge_hint") or "Monitoring track complete."
+    progress = (status.get("pr_merge_status") or {}).get("pr_ci_progress") or {}
+    percent = progress.get("completion_percent")
+    if percent is not None and status.get("lfg_merge_blocked") == "pr_checks_pending":
+        merge_hint = f"{merge_hint} [{percent}% CI complete]"
     print(f"LFG track complete: {merge_hint}", file=sys.stderr)
 
 
@@ -2130,12 +2153,8 @@ def main() -> None:
             _print_ci_status(status, as_json=args.json)
         if not status["gh_ok"]:
             sys.exit(1)
-        if deferred and args.strict_defer_exit:
-            sys.exit(2)
-        if args.strict_pr_ci_exit and status.get("lfg_track_complete"):
-            pr_status = status.get("pr_merge_status") or {}
-            if pr_status.get("ok") and not pr_status.get("pr_merge_ready"):
-                sys.exit(3)
+        if args.strict_defer_exit or args.strict_pr_ci_exit:
+            sys.exit(int(status.get("lfg_exit_code", 0)))
         if args.dispatch_on_proceed and args.execute:
             dispatch = status.get("dispatch_on_proceed") or {}
             if dispatch.get("executed") and not dispatch.get("ok"):

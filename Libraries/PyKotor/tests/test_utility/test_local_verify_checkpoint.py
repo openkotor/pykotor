@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–088", patched)
+        self.assertIn("019–089", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -513,6 +513,61 @@ Monitoring.
         self.assertEqual(progress["terminal"], 3)
         self.assertEqual(progress["remaining"], 1)
         self.assertEqual(progress["completion_percent"], 75)
+
+    def test_summarize_pr_checks_status_context(self) -> None:
+        summary = mod._summarize_pr_checks(
+            [
+                {
+                    "context": "ci/circleci",
+                    "state": "SUCCESS",
+                    "targetUrl": "https://example.com/status/1",
+                },
+                {
+                    "context": "ci/travis",
+                    "state": "PENDING",
+                    "targetUrl": "https://example.com/status/2",
+                },
+            ]
+        )
+        self.assertEqual(summary["checks_success"], 1)
+        self.assertEqual(summary["checks_pending"], 1)
+        self.assertIn("ci/travis", summary["pending_checks"])
+        self.assertFalse(summary["pr_merge_ready"])
+
+    def test_check_detail_record_uses_context(self) -> None:
+        detail = mod._check_detail_record(
+            {"context": "ci/travis", "targetUrl": "https://example.com/t", "state": "PENDING"}
+        )
+        self.assertEqual(detail["name"], "ci/travis")
+        self.assertEqual(detail["details_url"], "https://example.com/t")
+
+    def test_format_watch_poll_line_includes_percent(self) -> None:
+        line = mod._format_watch_poll_line(
+            {
+                "checks_pending": 2,
+                "checks_in_progress": 1,
+                "checks_failed": 0,
+                "checks_success": 5,
+                "pr_ci_progress": {"completion_percent": 62},
+            }
+        )
+        self.assertIn("complete=62%", line)
+
+    def test_compute_lfg_exit_reason_merge_ready(self) -> None:
+        reason = mod._compute_lfg_exit_reason(
+            {"pr_merge_status": {"pr_merge_ready": True}},
+            0,
+            deferred=False,
+        )
+        self.assertEqual(reason, "merge_ready")
+
+    def test_compute_lfg_exit_reason_monitoring_complete(self) -> None:
+        reason = mod._compute_lfg_exit_reason(
+            {"lfg_track_complete": True, "pr_merge_status": {"pr_merge_ready": False}},
+            0,
+            deferred=False,
+        )
+        self.assertEqual(reason, "monitoring_complete")
 
     def test_summarize_pr_checks_skipped_not_pending(self) -> None:
         summary = mod._summarize_pr_checks(
