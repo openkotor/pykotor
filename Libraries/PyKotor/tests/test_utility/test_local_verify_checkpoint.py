@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–076", patched)
+        self.assertIn("019–077", patched)
 
     def test_apply_lfg_proceed_sets_fields(self) -> None:
         status: dict[str, Any] = {
@@ -1225,6 +1225,33 @@ last_verified: 2026-01-01
             "checkpoint": {"defer_lfg_pr": False, "proceed_reason": "fix_checkpoint_error"},
         }
         self.assertEqual(mod._lfg_refresh_blocked(status, deferred=False), "fix_checkpoint_error")
+
+    def test_lfg_refresh_blocked_on_classify_fc_stale_gap(self) -> None:
+        status: dict[str, Any] = {
+            "checkpoint": {"defer_lfg_pr": False, "proceed_reason": "classify_fc_stale_gap"},
+        }
+        self.assertEqual(mod._lfg_refresh_blocked(status, deferred=False), "classify_fc_stale_gap")
+
+    def test_build_lfg_refresh_plan_terminal_and_dispatch(self) -> None:
+        terminal = mod._build_lfg_refresh_plan(
+            {"checkpoint": {"proceed_reason": "update_monitoring_docs"}},
+        )
+        self.assertEqual(terminal["planned_actions"], ["doc_apply"])
+        dispatch = mod._build_lfg_refresh_plan(
+            {"checkpoint": {"proceed_reason": "refresh_verify_dispatch"}},
+        )
+        self.assertEqual(dispatch["planned_actions"], ["dispatch", "sync_docs_after_dispatch"])
+
+    def test_dry_run_requires_lfg_refresh(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), "--dry-run"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--dry-run requires --lfg-refresh", result.stderr)
 
     def test_refresh_runs_after_dispatch_uses_poll_metadata(self) -> None:
         status: dict[str, Any] = {

@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "076"
+PLAN_TRACK_CAP = "077"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -44,7 +44,9 @@ _DISPATCH_PROCEED_CONFIG: dict[str, dict[str, Any]] = {
     },
 }
 
-_LFG_REFRESH_BLOCKED_REASONS = frozenset({"fix_checkpoint_error", "fix_gh_lookup"})
+_LFG_REFRESH_BLOCKED_REASONS = frozenset(
+    {"fix_checkpoint_error", "fix_gh_lookup", "classify_fc_stale_gap"}
+)
 _DEFAULT_DISPATCH_POLL_ATTEMPTS = 3
 _DEFAULT_DISPATCH_POLL_INTERVAL_SEC = 2.0
 
@@ -1174,6 +1176,20 @@ def _lfg_refresh_blocked(status: dict[str, Any], *, deferred: bool) -> str | Non
     return None
 
 
+def _build_lfg_refresh_plan(status: dict[str, Any]) -> dict[str, Any]:
+    checkpoint = status.get("checkpoint")
+    proceed_reason = checkpoint.get("proceed_reason") if isinstance(checkpoint, dict) else None
+    planned_actions: list[str] = []
+    if proceed_reason in _AUTO_APPLY_PROCEED_REASONS:
+        planned_actions.append("doc_apply")
+    if proceed_reason in _DISPATCH_PROCEED_REASONS:
+        planned_actions.extend(["dispatch", "sync_docs_after_dispatch"])
+    return {
+        "proceed_reason": proceed_reason,
+        "planned_actions": planned_actions,
+    }
+
+
 def _maybe_auto_apply_on_proceed(
     status: dict[str, Any],
     *,
@@ -1308,6 +1324,11 @@ def main() -> None:
         help="One-shot refresh: compare checkpoint, apply docs, dispatch, cancel stale, sync docs (blocked when deferred)",
     )
     parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="With --lfg-refresh, preview planned actions without write, execute, or doc sync",
+    )
+    parser.add_argument(
         "--dispatch-poll-attempts",
         type=int,
         default=0,
@@ -1327,10 +1348,14 @@ def main() -> None:
         args.json = True
         args.include_checkpoint_snippet = True
         args.include_proceed_actions = True
-        args.write = True
-        args.execute = True
-        args.cancel_stale = True
-        args.sync_docs_after_dispatch = True
+        if not args.dry_run:
+            args.write = True
+            args.execute = True
+            args.cancel_stale = True
+            args.sync_docs_after_dispatch = True
+
+    if args.dry_run and not args.lfg_refresh:
+        parser.error("--dry-run requires --lfg-refresh")
 
     if args.include_proceed_actions and not args.compare_checkpoint:
         parser.error("--include-proceed-actions requires --compare-checkpoint")
@@ -1446,6 +1471,9 @@ def main() -> None:
                     sys.exit(1)
                 sys.exit(2)
             status["lfg_refresh"] = True
+            status["lfg_refresh_plan"] = _build_lfg_refresh_plan(status)
+            if args.dry_run:
+                status["lfg_refresh_dry_run"] = True
         _apply_lfg_proceed(status)
         if args.auto_apply_on_proceed:
             doc_apply = _maybe_auto_apply_on_proceed(status, write=args.write, targets=targets)
