@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–094", patched)
+        self.assertIn("019–095", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -908,7 +908,7 @@ Monitoring.
         self.assertEqual(stall["lfg_pr_watch_result"], "stalled")
         self.assertIn("job hang", stall["merge_hint"])
 
-    def test_watch_pr_merge_status_queue_stalled(self) -> None:
+    def test_watch_pr_merge_status_queue_stall_exits_when_flagged(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
         queue_progress = {
             "ok": True,
@@ -933,10 +933,84 @@ Monitoring.
                         interval_sec=30.0,
                         timeout_sec=3600.0,
                         stall_polls=3,
+                        exit_on_queue_stall=True,
                     )
         self.assertEqual(status["lfg_pr_watch_result"], "queue_stalled")
         self.assertTrue(status["pr_queue_stalled"])
         self.assertIn("queue_backlog=label", err.getvalue())
+
+    def test_watch_pr_merge_status_continues_through_queue_stall(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        queue_progress = {
+            "ok": True,
+            "number": 308,
+            "url": "https://github.com/example/pr/308",
+            "lfg_merge_blocked": "pr_checks_pending",
+            "pr_merge_ready": False,
+            "checks_pending": 26,
+            "checks_in_progress": 0,
+            "pr_ci_progress": {"completion_percent": 4},
+            "in_progress_check_details": [],
+            "pending_check_details": [
+                {"name": "label", "started_at": "", "workflow": "CI", "details_url": ""},
+            ],
+        }
+        calls = {"n": 0}
+
+        def fetch_side() -> dict[str, Any]:
+            calls["n"] += 1
+            if calls["n"] <= 3:
+                return queue_progress
+            return {
+                "ok": True,
+                "number": 308,
+                "url": "https://github.com/example/pr/308",
+                "pr_merge_ready": True,
+                "lfg_merge_blocked": None,
+            }
+
+        with patch.object(mod, "_fetch_pr_merge_status", side_effect=fetch_side):
+            with patch.object(mod.time, "sleep"):
+                with patch("sys.stderr", new_callable=io.StringIO) as err:
+                    mod._watch_pr_merge_status(
+                        status,
+                        interval_sec=30.0,
+                        timeout_sec=3600.0,
+                        stall_polls=3,
+                    )
+        self.assertEqual(status["lfg_pr_watch_result"], "ready")
+        self.assertTrue(status["pr_queue_stalled"])
+        self.assertEqual(len(status["pr_queue_stall_events"]), 1)
+        self.assertIn("continuing watch", err.getvalue())
+
+    def test_watch_pr_merge_status_queue_timeout(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        queue_progress = {
+            "ok": True,
+            "number": 308,
+            "url": "https://github.com/example/pr/308",
+            "lfg_merge_blocked": "pr_checks_pending",
+            "pr_merge_ready": False,
+            "checks_pending": 26,
+            "checks_in_progress": 0,
+            "pr_ci_progress": {"completion_percent": 4},
+            "in_progress_check_details": [],
+            "pending_check_details": [
+                {"name": "label", "started_at": "", "workflow": "CI", "details_url": ""},
+            ],
+        }
+        with patch.object(mod, "_fetch_pr_merge_status", return_value=queue_progress):
+            with patch.object(mod.time, "sleep"):
+                with patch.object(mod.time, "monotonic", side_effect=[0.0, 0.0, 1.0, 1.0]):
+                    mod._watch_pr_merge_status(
+                        status,
+                        interval_sec=30.0,
+                        timeout_sec=0.0,
+                        stall_polls=99,
+                    )
+        self.assertEqual(status["lfg_pr_watch_result"], "queue_timeout")
+        self.assertEqual(status["lfg_merge_blocked"], "pr_queue_stalled")
+        self.assertIn("queue backlog", status["merge_hint"])
 
     def test_watch_pr_merge_status_stalled(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
