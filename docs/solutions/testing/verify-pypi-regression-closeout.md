@@ -66,6 +66,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - **`pr_watch_summary`** percent/pending delta and stderr one-liner when watch ends (plan 096).
 - **`--lfg-merge-watch`** default **`--watch-timeout` 7200** (plan 096).
 - **`oldest_queued_age_hours`** and **`pr_checks_crosscheck`** rollup vs gh counts (plan 097).
+- **`queue_backlog_severe`** when oldest queued age ≥ 4h; deduped queue-stall events during watch (plan 098).
 - **`pr_merged`** / **`pr_closed`** lifecycle blocked states (plan 091).
 - **`--lfg-closeout`** — same as **`--lfg-refresh --write`**; apply monitoring doc updates when CI is terminal (plan 080).
 - **`lfg_mode`** in JSON — `gate`, `merge_gate`, `pr_watch`, `preflight`, `refresh`, or `closeout` for agent routing (plans 080, 085).
@@ -146,12 +147,12 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–097** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–098** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
-## Last CI check (plan 097)
+## Last CI check (plan 098)
 
 **2026-05-27:** verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) **success** on `8916e2f`; FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) **success** on `3b6b746`.
 
-## Track status (plan 097)
+## Track status (plan 098)
 
-**Monitoring-only (plan 097).** Canonical runs verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) completed **success**. No workflow YAML changes on this track unless new CI failures appear.
+**Monitoring-only (plan 098).** Canonical runs verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) completed **success**. No workflow YAML changes on this track unless new CI failures appear.
