@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "102"
+PLAN_TRACK_CAP = "103"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1817,6 +1817,74 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
     print(line, file=sys.stderr)
 
 
+def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
+    if not status.get("lfg_track_complete"):
+        return {}
+    pr_status = status.get("pr_merge_status") or {}
+    rec = status.get("pr_ci_recommendation") or {}
+    progress = pr_status.get("pr_ci_progress") or {}
+    notes: list[str] = []
+    for key in ("pr_queue_backlog_note", "pr_checks_crosscheck_note"):
+        value = status.get(key)
+        if isinstance(value, str) and value:
+            notes.append(value)
+    blocked = status.get("lfg_merge_blocked") or pr_status.get("lfg_merge_blocked")
+    if not pr_status.get("ok"):
+        briefing: dict[str, Any] = {
+            "action": rec.get("action") or "no_pr",
+            "command": rec.get("command") or "",
+            "reason": rec.get("reason") or "no open PR on branch",
+            "notes": notes,
+            "pr_number": None,
+            "pr_url": "",
+            "merge_ready": False,
+            "blocked": blocked or "no_open_pr",
+            "completion_percent": None,
+            "checks_pending": None,
+            "checks_in_progress": None,
+        }
+    else:
+        briefing = {
+            "action": rec.get("action") or "",
+            "command": rec.get("command") or "",
+            "reason": rec.get("reason") or "",
+            "notes": notes,
+            "pr_number": pr_status.get("number"),
+            "pr_url": pr_status.get("url") or "",
+            "merge_ready": bool(pr_status.get("pr_merge_ready")),
+            "blocked": blocked,
+            "completion_percent": progress.get("completion_percent"),
+            "checks_pending": pr_status.get("checks_pending"),
+            "checks_in_progress": pr_status.get("checks_in_progress"),
+        }
+    if "lfg_exit_code" in status:
+        briefing["exit_code"] = status["lfg_exit_code"]
+    if status.get("lfg_exit_reason"):
+        briefing["exit_reason"] = status["lfg_exit_reason"]
+    return briefing
+
+
+def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
+    briefing = _build_lfg_agent_briefing(status)
+    if briefing:
+        status["lfg_agent_briefing"] = briefing
+    else:
+        status.pop("lfg_agent_briefing", None)
+
+
+def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
+    action = briefing.get("action") or "unknown"
+    parts = [f"action={action}"]
+    if "exit_code" in briefing:
+        parts.append(f"exit={briefing['exit_code']}")
+    if briefing.get("blocked"):
+        parts.append(f"blocked={briefing['blocked']}")
+    percent = briefing.get("completion_percent")
+    if isinstance(percent, int):
+        parts.append(f"complete={percent}%")
+    print(f"LFG briefing: {' '.join(parts)}", file=sys.stderr)
+
+
 def _emit_track_complete_stderr(status: dict[str, Any]) -> None:
     if not status.get("lfg_track_complete"):
         return
@@ -2768,8 +2836,14 @@ def main() -> None:
                     deferred=deferred,
                 )
                 status["lfg_exit_codes"] = LFG_EXIT_CODES
+                _apply_lfg_agent_briefing(status)
                 if exit_code != 0:
                     _emit_lfg_strict_exit_stderr(status, exit_code)
+                    briefing = status.get("lfg_agent_briefing")
+                    if isinstance(briefing, dict):
+                        _emit_lfg_agent_briefing_stderr(briefing)
+            else:
+                _apply_lfg_agent_briefing(status)
             _print_ci_status(status, as_json=args.json)
         if not status["gh_ok"]:
             sys.exit(1)
