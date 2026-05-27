@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–078", patched)
+        self.assertIn("019–080", patched)
 
     def test_apply_lfg_proceed_sets_fields(self) -> None:
         status: dict[str, Any] = {
@@ -1255,7 +1255,43 @@ last_verified: 2026-01-01
 
     def test_build_proceed_hint_deferred(self) -> None:
         hint = mod._build_proceed_hint({"checkpoint": {}}, blocked="deferred")
-        self.assertIn("--monitor-preflight --strict-defer-exit", hint)
+        self.assertIn("--lfg-gate", hint)
+        self.assertNotIn("--monitor-preflight", hint)
+
+    def test_resolve_lfg_mode_closeout(self) -> None:
+        self.assertEqual(
+            mod._resolve_lfg_mode(
+                lfg_closeout=True,
+                lfg_gate=False,
+                lfg_preflight=False,
+                lfg_refresh=True,
+                dry_run=False,
+            ),
+            "closeout",
+        )
+        self.assertEqual(
+            mod._resolve_lfg_mode(
+                lfg_closeout=False,
+                lfg_gate=True,
+                lfg_preflight=True,
+                lfg_refresh=True,
+                dry_run=True,
+            ),
+            "gate",
+        )
+
+    def test_lfg_closeout_cli_sets_mode(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), "--lfg-closeout", "--dry-run"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        if result.returncode not in (0, 2):
+            self.skipTest(f"gh unavailable or blocked: {result.stderr or result.stdout}")
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload.get("lfg_mode"), "closeout")
 
     def test_build_proceed_hint_terminal(self) -> None:
         hint = mod._build_proceed_hint(
@@ -1288,6 +1324,36 @@ last_verified: 2026-01-01
             self.assertIn("lfg_refresh_blocked", payload)
         else:
             self.assertIn("lfg_refresh_plan", payload)
+
+    def test_lfg_gate_exits_like_strict_defer(self) -> None:
+        gate = subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), "--lfg-gate"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        strict = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT_PATH),
+                "--lfg-preflight",
+                "--strict-defer-exit",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertEqual(gate.returncode, strict.returncode, msg=gate.stderr or gate.stdout)
+        gate_payload = json.loads(gate.stdout)
+        strict_payload = json.loads(strict.stdout)
+        self.assertIn("proceed_hint", gate_payload)
+        self.assertEqual(gate_payload.get("lfg_refresh_dry_run"), True)
+        self.assertEqual(
+            gate_payload.get("lfg_deferred"),
+            strict_payload.get("lfg_deferred"),
+        )
 
     def test_refresh_runs_after_dispatch_uses_poll_metadata(self) -> None:
         status: dict[str, Any] = {

@@ -28,7 +28,7 @@ related_docs: |
   AGENTS.md (PyPI verify local parity)
 category: testing
 doc_status: current
-last_verified: 2026-05-24
+last_verified: 2026-05-27
 ---
 
 # Verify PyPI Regression Closeout
@@ -45,6 +45,12 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Terminal runs set **`doc_update_recommended`** and **`proceed_reason: update_monitoring_docs`** on checkpoint (plans 070–072).
 - **`--apply-checkpoint-snippet`** — dry-run or **`--write`** to sync solution doc + plan 020 from live gh (plans 071–072).
 - **`--auto-apply-on-proceed`** — embeds `doc_apply` dry-run (or **`--write`**) when `lfg_proceed_reason` is eligible (plan 073).
+- **`--dispatch-on-proceed`** / **`--include-proceed-actions`** — dry-run or execute gh workflow refresh when SHA drift (plans 074–075).
+- **`--lfg-refresh`** — one-shot doc apply + dispatch + sync; pair with **`--dry-run`** to preview (plans 076–077).
+- **`--lfg-preflight`** — monitor JSON + refresh dry-run + **`proceed_hint`** (plan 078).
+- **`--lfg-gate`** — same as **`--lfg-preflight --strict-defer-exit`**; full briefing then exit **2** when deferred (plan 079).
+- **`--lfg-closeout`** — same as **`--lfg-refresh --write`**; apply monitoring doc updates when CI is terminal (plan 080).
+- **`lfg_mode`** in JSON — `gate`, `preflight`, `refresh`, or `closeout` for agent routing (plan 080).
 - **Gate job (`Check trigger`)** before verify matrix jobs — never schedule matrix on empty/cancelled runs.
 - **`workflow_dispatch` + weekly cron** as verify triggers; **publish→verify dispatch** (#293) after Auto-Publish with packages.
 - **`paths-ignore: docs/**`** on Forward Commits and Auto-Publish.
@@ -67,6 +73,12 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 Before `/lfg` on this track:
 
 ```bash
+python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate
+```
+
+Or explicitly:
+
+```bash
 python3 .github/scripts/local_verify_pypi_slice.py --monitor-preflight --strict-defer-exit
 ```
 
@@ -75,6 +87,20 @@ Exit codes: **2** = deferred (stop `/lfg` on monitoring); **0** = proceed; **1**
 Equivalent to `--ci-status-only --json --compare-checkpoint --exit-on-defer` (plans 061–063).
 
 When JSON includes `"lfg_deferred": true`, defer monitoring LFG until verify/FC status, conclusion, or run IDs change. Unit tests: `python3 -m unittest Libraries.PyKotor.tests.test_utility.test_local_verify_checkpoint`.
+
+## Agent loop (plans 074–079)
+
+1. **Briefing** — run **`--lfg-preflight`** (or **`--lfg-gate`** before `/lfg` work). Read `proceed_hint`, `checkpoint`, `doc_validation`, `lfg_refresh_plan`, and embedded dry-runs.
+2. **Defer** — if `lfg_deferred` or `lfg_refresh_blocked: deferred`, stop until CI moves.
+3. **Refresh** — when `proceed_hint` ends with **`--lfg-refresh`**, run it (or **`--lfg-refresh --dry-run`** first).
+4. **Docs** — terminal CI (`proceed_reason: update_monitoring_docs`) updates via **`--lfg-closeout`** or **`--lfg-refresh`** (no `--dry-run`).
+5. **Dispatch** — SHA drift (`refresh_verify_dispatch` / `refresh_fc_dispatch`) uses dispatch helpers; **`classify_fc_stale_gap`** needs local git history — not auto-fixable.
+
+```bash
+python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight
+python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run
+python3 .github/scripts/local_verify_pypi_slice.py --lfg-closeout
+```
 
 ## Local command
 
@@ -87,16 +113,16 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 | Workflow | Run | Notes |
 |----------|-----|-------|
-| Verify PyPI | [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) | Check trigger queued on `8916e2ffe` (plan 066; cancelled 26365458400) |
-| Forward Commits | [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) | merge queued on `3b6b74640` (plan 058) |
+| Verify PyPI | [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) |  Check trigger success on `8916e2f`|
+| Forward Commits | [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) |  merge success on `3b6b746`|
 
 ## Plans index
 
-Plans **019–073** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–080** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Last CI check (plan 066)
 
-**2026-05-24:** Fresh verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) **queued** on `8916e2ffe`; cancelled stale [26365458400](https://github.com/OpenKotOR/PyKotor/actions/runs/26365458400). FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) **queued** on `3b6b74640`.
+**2026-05-27:** verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) **success** on `8916e2f`; FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) **success** on `3b6b746`.
 
 ## Track status (plan 051)
 

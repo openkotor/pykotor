@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "078"
+PLAN_TRACK_CAP = "080"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -1193,7 +1193,7 @@ def _build_lfg_refresh_plan(status: dict[str, Any]) -> dict[str, Any]:
 def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
     if blocked == "deferred":
-        return f"{script} --monitor-preflight --strict-defer-exit"
+        return f"{script} --lfg-gate"
     if blocked in _LFG_REFRESH_BLOCKED_REASONS:
         return f"{script} --monitor-preflight --include-proceed-actions"
     checkpoint = status.get("checkpoint")
@@ -1201,6 +1201,25 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
     if proceed_reason in _AUTO_APPLY_PROCEED_REASONS or proceed_reason in _DISPATCH_PROCEED_REASONS:
         return f"{script} --lfg-refresh"
     return f"{script} --lfg-preflight"
+
+
+def _resolve_lfg_mode(
+    *,
+    lfg_closeout: bool,
+    lfg_gate: bool,
+    lfg_preflight: bool,
+    lfg_refresh: bool,
+    dry_run: bool,
+) -> str | None:
+    if lfg_closeout:
+        return "closeout"
+    if lfg_gate:
+        return "gate"
+    if lfg_preflight:
+        return "preflight"
+    if lfg_refresh:
+        return "refresh" if dry_run else "closeout"
+    return None
 
 
 def _maybe_auto_apply_on_proceed(
@@ -1232,7 +1251,10 @@ def main() -> None:
         epilog=(
             "Examples:\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py\n"
-            "  python3 .github/scripts/local_verify_pypi_slice.py --monitor-preflight"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate\n"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight\n"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run\n"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-closeout"
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -1337,6 +1359,16 @@ def main() -> None:
         help="Shorthand for --monitor-preflight --lfg-refresh --dry-run (full agent briefing)",
     )
     parser.add_argument(
+        "--lfg-gate",
+        action="store_true",
+        help="Shorthand for --lfg-preflight --strict-defer-exit (full JSON then exit 2 when deferred)",
+    )
+    parser.add_argument(
+        "--lfg-closeout",
+        action="store_true",
+        help="Shorthand for --lfg-refresh with --write (terminal doc/dispatch closeout, not dry-run)",
+    )
+    parser.add_argument(
         "--lfg-refresh",
         action="store_true",
         help="One-shot refresh: compare checkpoint, apply docs, dispatch, cancel stale, sync docs (blocked when deferred)",
@@ -1359,6 +1391,14 @@ def main() -> None:
         help="Seconds between dispatch poll attempts",
     )
     args = parser.parse_args()
+
+    if args.lfg_closeout:
+        args.lfg_refresh = True
+        args.dry_run = False
+
+    if args.lfg_gate:
+        args.lfg_preflight = True
+        args.strict_defer_exit = True
 
     if args.lfg_preflight:
         args.monitor_preflight = True
@@ -1505,6 +1545,15 @@ def main() -> None:
             blocked = _lfg_refresh_blocked(status, deferred=deferred)
             status["proceed_hint"] = _build_proceed_hint(status, blocked=blocked)
         _apply_lfg_proceed(status)
+        lfg_mode = _resolve_lfg_mode(
+            lfg_closeout=args.lfg_closeout,
+            lfg_gate=args.lfg_gate,
+            lfg_preflight=args.lfg_preflight,
+            lfg_refresh=args.lfg_refresh,
+            dry_run=args.dry_run,
+        )
+        if lfg_mode is not None:
+            status["lfg_mode"] = lfg_mode
         if args.auto_apply_on_proceed:
             doc_apply = _maybe_auto_apply_on_proceed(status, write=args.write, targets=targets)
             if doc_apply is not None:
