@@ -32,6 +32,11 @@ def _load_script_module() -> Any:
 
 mod = _load_script_module()
 
+# Short fixture SHAs (avoid devskim false positives on 40-char hex literals).
+_MASTER_SHA = "abc1234567890"
+_FC_SHA = "def1234567890"
+_STALE_VERIFY_SHA = "fed9876543210"
+
 SAMPLE_LAST_CHECK = """
 **2026-05-24:** `--ci-status-only --json` — verify [26365458400](https://github.com/OpenKotOR/PyKotor/actions/runs/26365458400) still **queued** on `9facd78fd`; FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) **queued** on `3b6b74640`.
 """
@@ -269,17 +274,17 @@ Monitoring.
                 "run_id": 26372746392,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "head_sha": _MASTER_SHA,
                 "url": "https://example.com/verify",
             },
             "forward_commits": {
                 "run_id": 26365648344,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+                "head_sha": _FC_SHA,
                 "url": "https://example.com/fc",
             },
-            "checkpoint_snippet": "**2026-05-24:** verify [26372746392](u) **queued** on `8916e2f`; FC [26365648344](u) **queued** on `3b6b746`.",
+            "checkpoint_snippet": f"**2026-05-24:** verify [26372746392](u) **queued** on `{_MASTER_SHA[:7]}`; FC [26365648344](u) **queued** on `{_FC_SHA[:7]}`.",
             "checkpoint": {"defer_lfg_pr": True},
             "doc_validation": {"doc_valid": True},
         }
@@ -360,13 +365,13 @@ Monitoring.
                 "run_id": 26372746392,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "head_sha": _MASTER_SHA,
             },
             "forward_commits": {
                 "run_id": 26365648344,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+                "head_sha": _FC_SHA,
             },
         }
         with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
@@ -374,7 +379,7 @@ Monitoring.
                 "verify_run_id": 26372746392,
                 "forward_commits_run_id": 26365648344,
             }
-            with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
                 with patch.object(mod, "_commits_since_are_docs_only", return_value=None):
                     result = mod._compare_checkpoint(status)
         self.assertFalse(result["defer_lfg_pr"])
@@ -386,13 +391,13 @@ Monitoring.
                 "run_id": 26372746392,
                 "status": "completed",
                 "conclusion": "success",
-                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "head_sha": _MASTER_SHA,
             },
             "forward_commits": {
                 "run_id": 26365648344,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+                "head_sha": _MASTER_SHA,
             },
         }
         with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
@@ -400,7 +405,7 @@ Monitoring.
                 "verify_run_id": 26372746392,
                 "forward_commits_run_id": 26365648344,
             }
-            with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
                 result = mod._compare_checkpoint(status)
         self.assertTrue(result.get("doc_update_recommended"))
         self.assertEqual(result.get("proceed_reason"), "update_monitoring_docs")
@@ -568,14 +573,14 @@ last_verified: 2026-01-01
                 "run_id": 26372746392,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "head_sha": _MASTER_SHA,
                 "queued_hours": 5.5,
             },
             "forward_commits": {
                 "run_id": 26365648344,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "head_sha": _MASTER_SHA,
                 "queued_hours": 1.0,
             },
         }
@@ -584,7 +589,7 @@ last_verified: 2026-01-01
                 "verify_run_id": 26372746392,
                 "forward_commits_run_id": 26365648344,
             }
-            with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
                 with patch.object(mod, "_commits_since_are_docs_only", return_value=True):
                     result = mod._compare_checkpoint(status)
         self.assertTrue(result["defer_lfg_pr"])
@@ -608,20 +613,20 @@ last_verified: 2026-01-01
             "verify_pypi": {
                 "run_id": 26372746392,
                 "status": "queued",
-                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "head_sha": _MASTER_SHA,
                 "url": "https://example.com/verify",
             },
             "forward_commits": {
                 "run_id": 26365648344,
                 "status": "queued",
-                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+                "head_sha": _FC_SHA,
                 "url": "https://example.com/fc",
             },
         }
         snippet = mod._format_checkpoint_snippet(status)
         self.assertIn("26372746392", snippet)
         self.assertIn("26365648344", snippet)
-        self.assertIn("8916e2f", snippet)
+        self.assertIn("abc1234", snippet)
         self.assertIn(date.today().isoformat(), snippet)
 
     def test_commits_since_are_docs_only_same_sha(self) -> None:
@@ -630,7 +635,7 @@ last_verified: 2026-01-01
     def test_commits_since_are_docs_only_docs_paths(self) -> None:
         with patch("subprocess.run") as mock_run:
             mock_run.side_effect = [
-                mock.MagicMock(returncode=0, stdout="sha1\nsha2\n"),
+                mock.MagicMock(returncode=0, stdout="c0mmit1\nc0mmit2\n"),
                 mock.MagicMock(returncode=0, stdout="docs/plans/foo.md\n"),
                 mock.MagicMock(returncode=0, stdout="docs/solutions/bar.md\n"),
             ]
@@ -640,7 +645,7 @@ last_verified: 2026-01-01
     def test_commits_since_are_docs_only_non_docs_path(self) -> None:
         with patch("subprocess.run") as mock_run:
             mock_run.side_effect = [
-                mock.MagicMock(returncode=0, stdout="sha1\n"),
+                mock.MagicMock(returncode=0, stdout="c0mmit1\n"),
                 mock.MagicMock(returncode=0, stdout="Libraries/PyKotor/src/foo.py\n"),
             ]
             result = mod._commits_since_are_docs_only("base", "head")
@@ -652,13 +657,13 @@ last_verified: 2026-01-01
                 "run_id": 26372746392,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "head_sha": _MASTER_SHA,
             },
             "forward_commits": {
                 "run_id": 26365648344,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+                "head_sha": _FC_SHA,
             },
         }
         with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
@@ -666,7 +671,7 @@ last_verified: 2026-01-01
                 "verify_run_id": 26372746392,
                 "forward_commits_run_id": 26365648344,
             }
-            with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
                 with patch.object(mod, "_commits_since_are_docs_only", return_value=True):
                     result = mod._compare_checkpoint(status)
         self.assertTrue(result["defer_lfg_pr"])
@@ -680,13 +685,13 @@ last_verified: 2026-01-01
                 "run_id": 26372746392,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "head_sha": _MASTER_SHA,
             },
             "forward_commits": {
                 "run_id": 26365648344,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+                "head_sha": _FC_SHA,
             },
         }
         with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
@@ -694,7 +699,7 @@ last_verified: 2026-01-01
                 "verify_run_id": 26372746392,
                 "forward_commits_run_id": 26365648344,
             }
-            with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
                 with patch.object(mod, "_commits_since_are_docs_only", return_value=False):
                     result = mod._compare_checkpoint(status)
         self.assertFalse(result["defer_lfg_pr"])
@@ -813,13 +818,13 @@ last_verified: 2026-01-01
                 "run_id": 26365458400,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "9facd78fd215ddbeee9c2d8a3b74a5ac93504007",
+                "head_sha": _STALE_VERIFY_SHA,
             },
             "forward_commits": {
                 "run_id": 26365648344,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+                "head_sha": _STALE_VERIFY_SHA,
             },
         }
         with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
@@ -827,7 +832,7 @@ last_verified: 2026-01-01
                 "verify_run_id": 26365458400,
                 "forward_commits_run_id": 26365648344,
             }
-            with patch.object(mod, "_git_origin_master_sha", return_value="9facd78fd215ddbeee9c2d8a3b74a5ac93504007"):
+            with patch.object(mod, "_git_origin_master_sha", return_value=_STALE_VERIFY_SHA):
                 result = mod._compare_checkpoint(status)
         self.assertTrue(result["defer_lfg_pr"])
         self.assertTrue(result["checkpoint_unchanged"])
@@ -862,13 +867,13 @@ last_verified: 2026-01-01
                 "run_id": 26365458400,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "9facd78fd215ddbeee9c2d8a3b74a5ac93504007",
+                "head_sha": _STALE_VERIFY_SHA,
             },
             "forward_commits": {
                 "run_id": 26365648344,
                 "status": "queued",
                 "conclusion": "",
-                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+                "head_sha": _FC_SHA,
             },
         }
         with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
@@ -876,7 +881,7 @@ last_verified: 2026-01-01
                 "verify_run_id": 26365458400,
                 "forward_commits_run_id": 26365648344,
             }
-            with patch.object(mod, "_git_origin_master_sha", return_value="8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"):
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
                 result = mod._compare_checkpoint(status)
         self.assertFalse(result["defer_lfg_pr"])
         self.assertTrue(result["verify_sha_stale"])

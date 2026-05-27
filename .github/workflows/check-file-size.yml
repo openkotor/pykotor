@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  issues: write
 
 jobs:
   check-size:
@@ -32,10 +33,14 @@ jobs:
 
             if (largeFiles.length > 0) {
               const fileList = largeFiles.map(f => `- ${f.filename} (${f.changes} changes)`).join('\n');
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: `⚠️ **Large files detected**\n\nThe following files have significant changes (>1000 lines):\n\n${fileList}\n\nPlease consider splitting large changes into smaller, more manageable PRs.`,
-              });
+              try {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: `⚠️ **Large files detected**\n\nThe following files have significant changes (>1000 lines):\n\n${fileList}\n\nPlease consider splitting large changes into smaller, more manageable PRs.`,
+                });
+              } catch (error) {
+                core.warning(`Could not post large-file comment: ${error.message}`);
+              }
             }
