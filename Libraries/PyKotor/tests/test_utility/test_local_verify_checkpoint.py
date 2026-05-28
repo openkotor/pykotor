@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–129", patched)
+        self.assertIn("019–130", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1064,6 +1064,7 @@ Monitoring.
                 "expected_after_terminal": {"action": "closeout"},
                 "active_runs": ["fc"],
                 "gh_watch_summary": "fc:26549293445",
+                "queue_context": {"max_queued_hours": 1.5},
                 "fc_run_id": 26549293445,
                 "monitor_commands": {
                     "watch_fc_run": "gh run watch 26549293445 --exit-status",
@@ -1077,6 +1078,7 @@ Monitoring.
         self.assertIn("expected_after=closeout", output)
         self.assertIn("active_runs=fc", output)
         self.assertIn("gh_watch=fc:26549293445", output)
+        self.assertIn("queued=1.5h", output)
 
     def test_apply_lfg_agent_briefing_gh_watch_summary(self) -> None:
         status: dict[str, Any] = {
@@ -1091,6 +1093,7 @@ Monitoring.
         briefing = status.get("lfg_agent_briefing") or {}
         self.assertEqual(briefing.get("gh_watch_summary"), "verify:1,fc:2")
         self.assertEqual(status.get("gh_watch_summary"), "verify:1,fc:2")
+        self.assertEqual(status.get("active_runs"), ["verify", "fc"])
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}

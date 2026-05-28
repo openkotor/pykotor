@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "129"
+PLAN_TRACK_CAP = "130"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2201,6 +2201,15 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
         active_runs = briefing.get("active_runs")
         if isinstance(active_runs, list) and active_runs:
             line = f"{line} active_runs={','.join(str(label) for label in active_runs)}"
+        queue_context = briefing.get("queue_context")
+        if isinstance(queue_context, dict):
+            max_queued = queue_context.get("max_queued_hours")
+            if isinstance(max_queued, (int, float)):
+                line = f"{line} queued={float(max_queued):.1f}h"
+            if queue_context.get("queue_backlog_severe"):
+                line = f"{line} queue_backlog=true"
+            elif queue_context.get("queue_backlog_warning"):
+                line = f"{line} queue_warn=true"
         gh_watch = briefing.get("gh_watch_summary")
         if not isinstance(gh_watch, str) or not gh_watch:
             gh_watch = _format_gh_watch_summary(briefing)
@@ -2594,9 +2603,15 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
             status["gh_watch_summary"] = gh_watch
         else:
             status.pop("gh_watch_summary", None)
+        active_runs = briefing.get("active_runs")
+        if isinstance(active_runs, list) and active_runs:
+            status["active_runs"] = list(active_runs)
+        else:
+            status.pop("active_runs", None)
     else:
         status.pop("lfg_agent_briefing", None)
         status.pop("gh_watch_summary", None)
+        status.pop("active_runs", None)
 
 
 def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
