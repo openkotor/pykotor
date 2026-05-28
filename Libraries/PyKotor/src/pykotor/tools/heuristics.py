@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.common.misc import Game
+from pykotor.tools.path import CaseAwarePath
 
 if TYPE_CHECKING:
     import os
@@ -36,10 +36,10 @@ def determine_game(
         3. Run checks and score games
         4. Return game with highest score or None if scores are equal or all checks fail
     """
-    r_path: Path = Path(path)
+    r_path: CaseAwarePath = CaseAwarePath(path)
 
     def check(x: str) -> bool:
-        c_path: Path = r_path.joinpath(x)
+        c_path: CaseAwarePath = r_path.joinpath(x)
         return c_path.exists() is not False
 
     # Checks for each game
