@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "115"
+PLAN_TRACK_CAP = "116"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2160,6 +2160,18 @@ def _build_drift_refresh_commands(status: dict[str, Any]) -> dict[str, str]:
     return commands
 
 
+def _defer_preflight_watch_recommended(status: dict[str, Any]) -> bool:
+    defer_reason = status.get("lfg_defer_reason")
+    if not isinstance(defer_reason, str) or not defer_reason:
+        defer_reason = _resolve_lfg_defer_reason(status.get("checkpoint"))
+    return defer_reason in {
+        "fc_active_pending",
+        "fc_active_closeout",
+        "verify_active_closeout",
+        "unchanged_active_runs",
+    }
+
+
 def _build_defer_monitor_commands(briefing: dict[str, Any]) -> dict[str, str]:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
     command = briefing.get("command")
@@ -2274,6 +2286,9 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
         }
         _attach_active_run_refs(status, briefing)
         briefing["monitor_commands"] = _build_defer_monitor_commands(briefing)
+        if _defer_preflight_watch_recommended(status):
+            briefing["watch_recommended"] = True
+            briefing["command"] = briefing["monitor_commands"]["preflight_watch"]
         return briefing
     blocked_refresh = status.get("lfg_refresh_blocked")
     if blocked_refresh:
@@ -2323,6 +2338,8 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
     parts = [f"action={action}"]
     if action == "defer" and briefing.get("reason"):
         parts.append(f"reason={briefing['reason']}")
+    if action == "defer" and briefing.get("watch_recommended"):
+        parts.append("watch_recommended=true")
     if action == "investigate_ci_drift" and briefing.get("wait_recommended"):
         parts.append("wait=true")
         drift = briefing.get("drift")
@@ -2780,10 +2797,16 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
     if blocked == "deferred":
         defer_reason = _resolve_lfg_defer_reason(status.get("checkpoint"))
-        if defer_reason in {"fc_active_pending", "fc_active_closeout"}:
-            return f"{script} --lfg-preflight  # re-check when FC run reaches terminal"
-        if defer_reason == "verify_active_closeout":
-            return f"{script} --lfg-preflight  # re-check when verify run reaches terminal"
+        if defer_reason in {
+            "fc_active_pending",
+            "fc_active_closeout",
+            "verify_active_closeout",
+            "unchanged_active_runs",
+        }:
+            return (
+                f"{script} --lfg-preflight-watch --json  "
+                "# poll until active runs reach terminal"
+            )
         return f"{script} --lfg-gate"
     if blocked == "classify_fc_stale_gap":
         return f"{script} --prefetch-git --lfg-gate"

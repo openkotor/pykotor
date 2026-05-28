@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–115", patched)
+        self.assertIn("019–116", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2480,7 +2480,7 @@ last_verified: 2026-01-01
                 "lfg_defer_reason": "fc_active_pending",
                 "proceed_hint": (
                     "python3 .github/scripts/local_verify_pypi_slice.py "
-                    "--lfg-preflight  # re-check when FC run reaches terminal"
+                    "--lfg-preflight-watch --json  # poll until active runs reach terminal"
                 ),
                 "checkpoint": {
                     "fc_stale_gap_pending_note": "FC queued on def1234 vs master abc1234",
@@ -2507,6 +2507,8 @@ last_verified: 2026-01-01
         )
         self.assertIn("preflight_watch", monitor)
         self.assertIn("--lfg-preflight-watch", monitor["preflight_watch"])
+        self.assertTrue(briefing["watch_recommended"])
+        self.assertIn("--lfg-preflight-watch", briefing["command"])
 
     def test_build_defer_monitor_commands_verify_active(self) -> None:
         commands = mod._build_defer_monitor_commands(
@@ -2527,6 +2529,7 @@ last_verified: 2026-01-01
                     "action": "defer",
                     "reason": "fc_active_pending",
                     "blocked": "deferred",
+                    "watch_recommended": True,
                     "fc_run_id": 26546235822,
                     "monitor_commands": {
                         "watch_fc_run": "gh run watch 26546235822 --exit-status",
@@ -2535,6 +2538,7 @@ last_verified: 2026-01-01
             )
         output = err.getvalue()
         self.assertIn("reason=fc_active_pending", output)
+        self.assertIn("watch_recommended=true", output)
         self.assertIn("fc_run=26546235822", output)
         self.assertIn("watch=gh run watch 26546235822 --exit-status", output)
 
@@ -2801,7 +2805,7 @@ last_verified: 2026-01-01
             },
             blocked="deferred",
         )
-        self.assertIn("--lfg-preflight", hint)
+        self.assertIn("--lfg-preflight-watch", hint)
         self.assertIn("terminal", hint)
 
     def test_apply_lfg_defer_skipped_when_disabled(self) -> None:
