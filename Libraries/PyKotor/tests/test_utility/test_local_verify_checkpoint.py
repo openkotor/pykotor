@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–123", patched)
+        self.assertIn("019–124", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2675,6 +2675,79 @@ last_verified: 2026-01-01
         assert expected is not None
         self.assertEqual(expected["action"], "prefetch_gate")
         self.assertIn("--prefetch-git", expected["command"])
+
+    def test_build_defer_expected_after_terminal_prefers_closeout(self) -> None:
+        expected = mod._build_defer_expected_after_terminal(
+            {
+                "gate": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate",
+                "closeout": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-closeout",
+            }
+        )
+        self.assertIsNotNone(expected)
+        assert expected is not None
+        self.assertEqual(expected["action"], "closeout")
+
+    def test_build_active_runs_list(self) -> None:
+        active = mod._build_active_runs_list(
+            {
+                "verify_pypi": {"status": "completed", "conclusion": "success"},
+                "forward_commits": {"status": "queued", "conclusion": ""},
+            }
+        )
+        self.assertEqual(active, ["fc"])
+
+    def test_defer_briefing_unchanged_active_runs(self) -> None:
+        briefing = mod._build_lfg_agent_briefing(
+            {
+                "gh_ok": True,
+                "lfg_deferred": True,
+                "lfg_defer_reason": "unchanged_active_runs",
+                "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+                "checkpoint": {"defer_lfg_pr": True},
+                "verify_pypi": {
+                    "run_id": 26372746392,
+                    "status": "completed",
+                    "conclusion": "success",
+                },
+                "forward_commits": {
+                    "run_id": 26549293445,
+                    "status": "queued",
+                    "conclusion": "",
+                    "queued_hours": 0.3,
+                },
+            }
+        )
+        self.assertEqual(briefing["active_runs"], ["fc"])
+        expected_after = briefing.get("expected_after_terminal")
+        self.assertIsInstance(expected_after, dict)
+        assert isinstance(expected_after, dict)
+        self.assertEqual(expected_after["action"], "closeout")
+        self.assertIn("closeout", briefing["post_terminal_commands"])
+
+    def test_emit_defer_briefing_stderr_active_runs(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "defer",
+                    "reason": "unchanged_active_runs",
+                    "active_runs": ["fc"],
+                    "expected_after_terminal": {"action": "closeout"},
+                }
+            )
+        self.assertIn("active_runs=fc", err.getvalue())
+        self.assertIn("expected_after=closeout", err.getvalue())
+
+    def test_format_gate_watch_poll_line_active_runs(self) -> None:
+        line = mod._format_preflight_watch_poll_line(
+            1,
+            {
+                "lfg_defer_reason": "unchanged_active_runs",
+                "verify_pypi": {"run_id": 1, "status": "completed", "conclusion": "success"},
+                "forward_commits": {"run_id": 2, "status": "queued", "conclusion": ""},
+            },
+            watch_label="gate",
+        )
+        self.assertIn("active_runs=fc", line)
 
     def test_defer_briefing_expected_after_terminal(self) -> None:
         briefing = mod._build_lfg_agent_briefing(

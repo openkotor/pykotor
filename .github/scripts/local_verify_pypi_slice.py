@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "123"
+PLAN_TRACK_CAP = "124"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1696,6 +1696,9 @@ def _format_preflight_watch_poll_line(
         queued = run.get("queued_hours")
         if isinstance(queued, (int, float)):
             parts.append(f"{label}_queued={queued:.1f}h")
+    active_runs = _build_active_runs_list(status)
+    if active_runs:
+        parts.append(f"active_runs={','.join(active_runs)}")
     return " ".join(parts)
 
 
@@ -2188,16 +2191,21 @@ def _attach_active_run_refs(status: dict[str, Any], briefing: dict[str, Any]) ->
         briefing[f"{prefix}_status"] = _run_display_label(run)
 
 
-def _build_ci_drift_detail(status: dict[str, Any]) -> dict[str, Any]:
-    checkpoint = status.get("checkpoint") if isinstance(status.get("checkpoint"), dict) else {}
-    doc_validation = (
-        status.get("doc_validation") if isinstance(status.get("doc_validation"), dict) else {}
-    )
+def _build_active_runs_list(status: dict[str, Any]) -> list[str]:
     active_runs: list[str] = []
     for key, label in (("verify_pypi", "verify"), ("forward_commits", "fc")):
         run = status.get(key)
         if isinstance(run, dict) and "error" not in run and _is_active_run(run):
             active_runs.append(label)
+    return active_runs
+
+
+def _build_ci_drift_detail(status: dict[str, Any]) -> dict[str, Any]:
+    checkpoint = status.get("checkpoint") if isinstance(status.get("checkpoint"), dict) else {}
+    doc_validation = (
+        status.get("doc_validation") if isinstance(status.get("doc_validation"), dict) else {}
+    )
+    active_runs = _build_active_runs_list(status)
     return {
         "fields": list(doc_validation.get("drift") or []),
         "status_drift": list(doc_validation.get("status_drift") or []),
@@ -2315,13 +2323,24 @@ def _build_defer_post_terminal_commands(status: dict[str, Any]) -> dict[str, str
         commands["prefetch_gate"] = (
             f"{script} --prefetch-git --lfg-gate  # after FC terminal; classify SHA gap"
         )
+    defer_reason = status.get("lfg_defer_reason")
+    if not isinstance(defer_reason, str) or not defer_reason:
+        defer_reason = _resolve_lfg_defer_reason(
+            status.get("checkpoint") if isinstance(status.get("checkpoint"), dict) else None
+        )
+    if defer_reason in {
+        "unchanged_active_runs",
+        "fc_active_closeout",
+        "verify_active_closeout",
+    }:
+        commands["closeout"] = f"{script} --lfg-closeout"
     return commands
 
 
 def _build_defer_expected_after_terminal(
     post_terminal_commands: dict[str, str],
 ) -> dict[str, str] | None:
-    for key in ("prefetch_gate", "gate", "preflight"):
+    for key in ("prefetch_gate", "closeout", "gate", "preflight"):
         command = post_terminal_commands.get(key)
         if isinstance(command, str) and command:
             return {"action": key, "command": command}
@@ -2447,6 +2466,9 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
             briefing["sha_gap"] = sha_gap
         queue_context = _build_defer_queue_context(status)
         briefing["queue_context"] = queue_context
+        active_runs = _build_active_runs_list(status)
+        if active_runs:
+            briefing["active_runs"] = active_runs
         if _defer_preflight_watch_recommended(status):
             briefing["watch_recommended"] = True
             briefing["primary_action"] = "gate_watch"
@@ -2529,6 +2551,9 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
             short = sha_gap.get("short")
             if isinstance(short, str) and short:
                 parts.append(f"sha_gap={short}")
+        active_runs = briefing.get("active_runs")
+        if isinstance(active_runs, list) and active_runs:
+            parts.append(f"active_runs={','.join(str(label) for label in active_runs)}")
     if briefing.get("action") == "investigate_ci_drift" and briefing.get("wait_recommended"):
         parts.append("wait=true")
         if briefing.get("primary_action"):
