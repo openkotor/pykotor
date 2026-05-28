@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "160"
+PLAN_TRACK_CAP = "161"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1739,7 +1739,7 @@ def _format_preflight_watch_poll_line(
         active_runs = status.get("active_runs")
         if isinstance(active_runs, list) and active_runs:
             parts.append(f"active_runs={','.join(str(label) for label in active_runs)}")
-        if briefing.get("watch_recommended"):
+        if status.get("watch_recommended"):
             parts.append("watch_recommended=true")
         gh_watch_command = _extract_gh_watch_command(briefing)
         if gh_watch_command is not None:
@@ -1776,6 +1776,12 @@ def _format_preflight_watch_poll_line(
         fc_run_id = status.get("fc_run_id")
         if fc_run_id is not None:
             parts.append(f"fc_run={fc_run_id}")
+        verify_run_url = status.get("verify_run_url")
+        if isinstance(verify_run_url, str) and verify_run_url:
+            parts.append(f"verify_run_url={_format_run_url_stderr(verify_run_url)}")
+        fc_run_url = status.get("fc_run_url")
+        if isinstance(fc_run_url, str) and fc_run_url:
+            parts.append(f"fc_run_url={_format_run_url_stderr(fc_run_url)}")
         verify_status = status.get("verify_status")
         if isinstance(verify_status, str) and verify_status:
             parts.append(f"verify_status={verify_status}")
@@ -2628,6 +2634,12 @@ def _format_queue_backlog_note_stderr(note: str) -> str:
     if len(note) <= 96:
         return note
     return f"{note[:93]}..."
+
+
+def _format_run_url_stderr(url: str) -> str:
+    if len(url) <= 96:
+        return url
+    return f"{url[:93]}..."
 
 
 def _mirror_queue_context_fields(
