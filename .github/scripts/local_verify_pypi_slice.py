@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "121"
+PLAN_TRACK_CAP = "122"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -74,6 +74,7 @@ _TERMINAL_CONCLUSIONS = frozenset(
 )
 _ACTIVE_STATUSES = frozenset({"queued", "in_progress", "pending", "waiting", "requested"})
 _QUEUE_BACKLOG_HOURS = 4.0
+_QUEUE_WARN_HOURS = 2.0
 
 CORE_CHECK = """
 import pykotor
@@ -1728,6 +1729,16 @@ def _format_preflight_watch_summary_line(
     duration = summary.get("watch_duration_sec")
     duration_text = f"{duration:.0f}s" if isinstance(duration, (int, float)) else "n/a"
     parts = [f"result={result} polls={polls} duration={duration_text}"]
+    start_reason = summary.get("start_defer_reason")
+    end_reason = summary.get("end_defer_reason")
+    if (
+        isinstance(start_reason, str)
+        and isinstance(end_reason, str)
+        and start_reason
+        and end_reason
+        and start_reason != end_reason
+    ):
+        parts.append(f"reason={start_reason}->{end_reason}")
     next_hint = summary.get("next_hint")
     if isinstance(next_hint, str) and next_hint:
         hint = next_hint if len(next_hint) <= 96 else f"{next_hint[:93]}..."
@@ -2265,10 +2276,16 @@ def _build_defer_queue_context(status: dict[str, Any]) -> dict[str, Any]:
             if max_queued is None or value > max_queued:
                 max_queued = value
     queue_backlog = max_queued is not None and max_queued >= _QUEUE_BACKLOG_HOURS
+    queue_backlog_warning = (
+        max_queued is not None
+        and max_queued >= _QUEUE_WARN_HOURS
+        and not queue_backlog
+    )
     note = checkpoint.get("queue_backlog_note")
     context: dict[str, Any] = {
         "queue_backlog": queue_backlog,
         "queue_backlog_severe": queue_backlog,
+        "queue_backlog_warning": queue_backlog_warning,
     }
     if max_queued is not None:
         context["max_queued_hours"] = round(max_queued, 2)
@@ -2289,6 +2306,16 @@ def _build_defer_post_terminal_commands(status: dict[str, Any]) -> dict[str, str
             f"{script} --prefetch-git --lfg-gate  # after FC terminal; classify SHA gap"
         )
     return commands
+
+
+def _build_defer_expected_after_terminal(
+    post_terminal_commands: dict[str, str],
+) -> dict[str, str] | None:
+    for key in ("prefetch_gate", "gate", "preflight"):
+        command = post_terminal_commands.get(key)
+        if isinstance(command, str) and command:
+            return {"action": key, "command": command}
+    return None
 
 
 def _build_defer_monitor_commands(briefing: dict[str, Any]) -> dict[str, str]:
@@ -2402,6 +2429,9 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
         _attach_active_run_refs(status, briefing)
         briefing["monitor_commands"] = _build_defer_monitor_commands(briefing)
         briefing["post_terminal_commands"] = _build_defer_post_terminal_commands(status)
+        expected_after = _build_defer_expected_after_terminal(briefing["post_terminal_commands"])
+        if expected_after is not None:
+            briefing["expected_after_terminal"] = expected_after
         sha_gap = _build_defer_sha_gap_detail(status)
         if sha_gap is not None:
             briefing["sha_gap"] = sha_gap
@@ -2472,6 +2502,13 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
                 parts.append(f"queued={float(max_queued):.1f}h")
             if queue_context.get("queue_backlog_severe"):
                 parts.append("queue_backlog=true")
+            elif queue_context.get("queue_backlog_warning"):
+                parts.append("queue_warn=true")
+        expected_after = briefing.get("expected_after_terminal")
+        if isinstance(expected_after, dict):
+            action = expected_after.get("action")
+            if isinstance(action, str) and action:
+                parts.append(f"expected_after={action}")
         sha_gap = briefing.get("sha_gap")
         if isinstance(sha_gap, dict):
             short = sha_gap.get("short")
