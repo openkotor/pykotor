@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–153", patched)
+        self.assertIn("019–154", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -3697,6 +3697,43 @@ last_verified: 2026-01-01
             )
         self.assertIn("gate watch poll", line)
         self.assertIn("action=defer", line)
+
+    def test_format_preflight_watch_poll_line_briefing_notes(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+                "queue_backlog_note": "Runner backlog ~3h",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        self.assertIn("notes=1", line)
+
+    def test_format_gate_watch_poll_line_briefing_notes(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+                "queue_backlog_note": "Runner backlog ~3h",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        self.assertIn("gate watch poll", line)
+        self.assertIn("notes=1", line)
 
     def test_format_preflight_watch_poll_line_queue_warn(self) -> None:
         line = mod._format_preflight_watch_poll_line(
