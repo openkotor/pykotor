@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "141"
+PLAN_TRACK_CAP = "142"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1804,6 +1804,9 @@ def _format_preflight_watch_summary_line(
     blocked = summary.get("blocked")
     if isinstance(blocked, str) and blocked:
         parts.append(f"blocked={blocked}")
+    briefing_action = summary.get("briefing_action")
+    if isinstance(briefing_action, str) and briefing_action:
+        parts.append(f"action={briefing_action}")
     return " ".join(parts)
 
 
@@ -1917,6 +1920,9 @@ def _watch_lfg_preflight_defer(
         blocked = briefing.get("blocked")
         if isinstance(blocked, str) and blocked:
             summary["blocked"] = blocked
+        action = briefing.get("action")
+        if isinstance(action, str) and action:
+            summary["briefing_action"] = action
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
     print(
@@ -2319,6 +2325,9 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
         blocked = briefing.get("blocked")
         if isinstance(blocked, str) and blocked:
             line = f"{line} blocked={blocked}"
+        action = briefing.get("action")
+        if isinstance(action, str) and action:
+            line = f"{line} action={action}"
     print(line, file=sys.stderr)
 
 
@@ -2786,6 +2795,11 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
             status["blocked"] = blocked
         else:
             status.pop("blocked", None)
+        action = briefing.get("action")
+        if isinstance(action, str) and action:
+            status["briefing_action"] = action
+        else:
+            status.pop("briefing_action", None)
     else:
         status.pop("lfg_agent_briefing", None)
         status.pop("gh_watch_summary", None)
@@ -2808,6 +2822,7 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("verify_status", None)
         status.pop("fc_status", None)
         status.pop("blocked", None)
+        status.pop("briefing_action", None)
 
 
 def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:

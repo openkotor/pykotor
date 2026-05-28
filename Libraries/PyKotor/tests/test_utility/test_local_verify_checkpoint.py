@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–141", patched)
+        self.assertIn("019–142", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1070,6 +1070,7 @@ Monitoring.
                 "verify_status": "queued",
                 "fc_status": "queued",
                 "blocked": "deferred",
+                "action": "defer",
                 "monitor_commands": {
                     "watch_fc_run": "gh run watch 26549293445 --exit-status",
                 },
@@ -1087,6 +1088,7 @@ Monitoring.
         self.assertIn("verify_status=queued", output)
         self.assertIn("fc_status=queued", output)
         self.assertIn("blocked=deferred", output)
+        self.assertIn("action=defer", output)
 
     def test_emit_lfg_strict_exit_stderr_watch_recommended(self) -> None:
         status: dict[str, Any] = {
@@ -1132,6 +1134,7 @@ Monitoring.
         self.assertEqual(status.get("verify_status"), "queued")
         self.assertEqual(status.get("fc_status"), "queued")
         self.assertEqual(status.get("blocked"), "deferred")
+        self.assertEqual(status.get("briefing_action"), "defer")
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
@@ -1518,7 +1521,7 @@ Monitoring.
                 "defer_lfg_pr": True,
                 "defer_reason": "same canonical runs still active on unchanged checkpoint",
             },
-            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5, "url": "https://example.com/runs/1"},
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 2.5, "url": "https://example.com/runs/1"},
             "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0, "url": "https://example.com/runs/2"},
         }
         with patch.object(mod, "_ci_status", return_value=deferred_status):
@@ -1536,7 +1539,7 @@ Monitoring.
         self.assertEqual(summary.get("active_runs"), ["verify", "fc"])
         self.assertEqual(summary.get("gh_watch_summary"), "verify:1,fc:2")
         queue_context = summary.get("queue_context") or {}
-        self.assertEqual(queue_context.get("max_queued_hours"), 1.5)
+        self.assertEqual(queue_context.get("max_queued_hours"), 2.5)
         expected_after = summary.get("expected_after_terminal") or {}
         self.assertEqual(expected_after.get("action"), "closeout")
         self.assertEqual(summary.get("primary_action"), "gate_watch")
@@ -1553,8 +1556,9 @@ Monitoring.
         self.assertEqual(summary.get("verify_status"), "queued")
         self.assertEqual(summary.get("fc_status"), "queued")
         self.assertEqual(summary.get("blocked"), "deferred")
+        self.assertEqual(summary.get("briefing_action"), "defer")
         self.assertTrue(summary.get("queue_backlog_warning"))
-        self.assertEqual(summary.get("max_queued_hours"), 1.5)
+        self.assertEqual(summary.get("max_queued_hours"), 2.5)
 
     def test_build_drift_expected_after_prefers_closeout(self) -> None:
         expected = mod._build_drift_expected_after(
