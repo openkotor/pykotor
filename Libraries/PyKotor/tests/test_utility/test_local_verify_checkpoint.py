@@ -496,7 +496,49 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–184", patched)
+        self.assertIn("019–185", patched)
+
+    def test_format_preflight_watch_poll_line_flat_keys_heartbeat(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        first_status = dict(status)
+        mod._format_preflight_watch_poll_line(1, first_status)
+        previous = mod._lfg_flat_field_keys_present_stderr(first_status)
+        line = mod._format_preflight_watch_poll_line(
+            13,
+            dict(status),
+            previous_flat_keys=previous,
+            flat_keys_unchanged_streak=12,
+            flat_keys_heartbeat_polls=12,
+        )
+        self.assertIn("flat_keys=", line)
+        self.assertIn("flat_keys_heartbeat=1", line)
+        self.assertNotIn("flat_unchanged=true", line)
+
+    def test_build_preflight_watch_summary_flat_keys_heartbeat_polls(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [{"flat_keys": ["primary_action"]}],
+            "lfg_preflight_watch_result": "timeout",
+            "preflight_flat_keys_heartbeats": 2,
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("flat_keys_heartbeat_polls"), 2)
 
     def test_count_unchanged_preflight_flat_keys_polls(self) -> None:
         history = [
@@ -527,6 +569,17 @@ Monitoring.
             }
         )
         self.assertIn("unchanged_flat_keys_polls=2", line)
+
+    def test_format_preflight_watch_summary_line_flat_keys_heartbeat_polls(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "polls": 13,
+                "result": "timeout",
+                "flat_keys_heartbeat_polls": 1,
+            },
+            watch_label="gate",
+        )
+        self.assertIn("flat_keys_heartbeat_polls=1", line)
 
     def test_format_preflight_watch_poll_line_omits_unchanged_flat_keys(self) -> None:
         status: dict[str, Any] = {

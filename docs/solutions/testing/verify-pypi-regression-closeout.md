@@ -147,6 +147,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Shared mirror stderr includes **`flat_keys=k1,k2,...`** from present-keys for poll diffs (plan 182).
 - Gate-watch poll stderr omits **`flat_keys=`** / **`flat_fields=`** when present-keys unchanged; emits **`flat_unchanged=true`** (plan 183).
 - **`preflight_watch_summary.unchanged_flat_keys_polls`** counts consecutive polls with identical **`flat_keys`** snapshots (plan 184).
+- Gate-watch poll stderr re-emits full **`flat_keys=`** every **`--watch-heartbeat-polls`** unchanged flat-key polls (plan 185).
 - **`--lfg-preflight-watch`** — poll preflight until defer clears or timeout (default 7200s); `preflight_watch_summary` with `next_hint` (plan 114).
 - **`--lfg-gate-watch`** — gate + preflight-watch; defer **`post_terminal_commands`** for after FC terminal; primary wait command for defer/drift (plans 118–119).
 - **`investigate_ci_drift`** briefing includes structured **`drift`**, **`refresh_commands`**, and **`wait_recommended`** when runs are still active (plan 115).
@@ -230,7 +231,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–184** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–185** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Last CI check (plan 123)
 
