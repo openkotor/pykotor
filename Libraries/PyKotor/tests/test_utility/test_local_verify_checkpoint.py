@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–126", patched)
+        self.assertIn("019–127", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1063,6 +1063,11 @@ Monitoring.
                 "primary_action": "gate_watch",
                 "expected_after_terminal": {"action": "closeout"},
                 "active_runs": ["fc"],
+                "gh_watch_summary": "fc:26549293445",
+                "fc_run_id": 26549293445,
+                "monitor_commands": {
+                    "watch_fc_run": "gh run watch 26549293445 --exit-status",
+                },
             },
         }
         with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
@@ -1071,6 +1076,20 @@ Monitoring.
         self.assertIn("primary_action=gate_watch", output)
         self.assertIn("expected_after=closeout", output)
         self.assertIn("active_runs=fc", output)
+        self.assertIn("gh_watch=fc:26549293445", output)
+
+    def test_apply_lfg_agent_briefing_gh_watch_summary(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {"defer_lfg_pr": True},
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": ""},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": ""},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            mod._apply_lfg_agent_briefing(status)
+        briefing = status.get("lfg_agent_briefing") or {}
+        self.assertEqual(briefing.get("gh_watch_summary"), "verify:1,fc:2")
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
@@ -3293,6 +3312,17 @@ last_verified: 2026-01-01
             }
         )
         self.assertIn("reason=fc_active_pending->investigate_ci_drift", line)
+
+    def test_format_preflight_watch_summary_line_active_runs(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "active_runs": ["verify", "fc"],
+            }
+        )
+        self.assertIn("active_runs=verify,fc", line)
 
     def test_apply_lfg_defer_skipped_when_disabled(self) -> None:
         status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True}}

@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "126"
+PLAN_TRACK_CAP = "127"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1746,6 +1746,9 @@ def _format_preflight_watch_summary_line(
     if isinstance(next_hint, str) and next_hint:
         hint = next_hint if len(next_hint) <= 96 else f"{next_hint[:93]}..."
         parts.append(f"next={hint}")
+    active_runs = summary.get("active_runs")
+    if isinstance(active_runs, list) and active_runs:
+        parts.append(f"active_runs={','.join(str(label) for label in active_runs)}")
     return " ".join(parts)
 
 
@@ -2189,6 +2192,11 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
         active_runs = briefing.get("active_runs")
         if isinstance(active_runs, list) and active_runs:
             line = f"{line} active_runs={','.join(str(label) for label in active_runs)}"
+        gh_watch = briefing.get("gh_watch_summary")
+        if not isinstance(gh_watch, str) or not gh_watch:
+            gh_watch = _format_gh_watch_summary(briefing)
+        if gh_watch:
+            line = f"{line} gh_watch={gh_watch}"
     print(line, file=sys.stderr)
 
 
@@ -2549,9 +2557,16 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
+def _attach_gh_watch_summary(briefing: dict[str, Any]) -> None:
+    gh_watch = _format_gh_watch_summary(briefing)
+    if gh_watch:
+        briefing["gh_watch_summary"] = gh_watch
+
+
 def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
     briefing = _build_lfg_agent_briefing(status)
     if briefing:
+        _attach_gh_watch_summary(briefing)
         status["lfg_agent_briefing"] = briefing
     else:
         status.pop("lfg_agent_briefing", None)
