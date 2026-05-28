@@ -1,3 +1,5 @@
+"""TSLPatcher install: backup, InstallFile, and apply modifications to target files/capsules."""
+
 from __future__ import annotations
 
 import shutil
@@ -7,7 +9,6 @@ from typing import TYPE_CHECKING, Any
 
 from pykotor.common.stream import BinaryReader
 from pykotor.tslpatcher.mods.template import PatcherModifications
-from utility.error_handling import universal_simplify_exception
 
 if TYPE_CHECKING:
     import os
@@ -64,8 +65,14 @@ def create_backup(
             uninstall_folder.mkdir(exist_ok=True)
 
             # Write the PowerShell/Bash uninstall scripts to the uninstall folder
-            subdir_temp: PurePath | None = PurePath(subdirectory_path) if subdirectory_path else None
-            game_folder: CaseAwarePath = destination_filepath.parents[len(subdir_temp.parts)] if subdir_temp else destination_filepath.parent
+            subdir_temp: PurePath | None = (
+                PurePath(subdirectory_path) if subdirectory_path else None
+            )
+            game_folder: CaseAwarePath = (
+                destination_filepath.parents[len(subdir_temp.parts)]
+                if subdir_temp
+                else destination_filepath.parent
+            )
             create_uninstall_scripts(backup_folderpath, uninstall_folder, game_folder)
             processed_files.add(uninstall_str_lower)
 
@@ -80,10 +87,12 @@ def create_backup(
             log.add_note(f"Backing up '{destination_file_str}'...")
             if subdirectory_backup_path:
                 subdirectory_backup_path.mkdir(exist_ok=True, parents=True)
-            try:  # sourcery skip: remove-redundant-exception
+            try:
                 shutil.copy(destination_filepath, backup_filepath)
             except (OSError, PermissionError) as e:
-                log.add_warning(f"Failed to create backup of '{destination_file_str}': {universal_simplify_exception(e)}")
+                log.add_warning(
+                    f"Failed to create backup of '{destination_file_str}': {(e.__class__.__name__, str(e))}"
+                )
         else:
             # Write the file path to remove these files.txt in backup directory
             removal_files_txt: CaseAwarePath = backup_folderpath.joinpath("remove these files.txt")

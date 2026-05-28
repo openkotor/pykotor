@@ -1,17 +1,36 @@
+"""UTC (creature) generic: GFF-based creature definitions and inventory."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger
+import kaitaistruct
 
+from bioware_kaitai_formats.gff import Gff
+
+from loggerplus import RobustLogger
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import EquipmentSlot, Game, InventoryItem, ResRef
-from pykotor.resource.formats.gff import GFF, GFFContent, GFFList, read_gff, write_gff
-from pykotor.resource.formats.gff.gff_auto import bytes_gff
-from pykotor.resource.formats.gff.gff_data import GFFFieldType
+from pykotor.common.stream import BinaryReader
+from pykotor.resource.formats.gff import (
+    GFF,
+    GFFContent,
+    GFFFieldType,
+    GFFList,
+    bytes_gff,
+    read_gff,
+    write_gff,
+)
+from pykotor.resource.formats.gff.gff_auto import (
+    _adjust_offset_after_utf8_bom,
+    _classify_gff_peek,
+    _locate_binary_gff_header,
+    _locate_binary_gff_header_structural,
+)
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
+    from pykotor.resource.formats.gff import GFFStruct
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
 
@@ -481,10 +500,8 @@ class UTCClass:
         self.class_level: int = class_level
         self.powers: list[int] = []
 
-    def __repr__(
-        self,
-    ):
-        return f"{self.__class__.__name__}(class_id={self.class_id}, class_level={self.class_level})"
+    def __repr__(self) -> str:
+        return f"UTCClass(class_id={self.class_id}, class_level={self.class_level}, powers={self.powers})"
 
     def __eq__(
         self,
@@ -493,8 +510,8 @@ class UTCClass:
         if self is other:
             return True
         if isinstance(other, UTCClass):
-            return self.class_id == other.class_id and self.class_level == self.class_level
-        return NotImplemented
+            return self.class_id == other.class_id and self.class_level == other.class_level
+        return NotImplemented  # type: ignore[no-any-return]
 
 
 def construct_utc(
@@ -800,9 +817,11 @@ def dismantle_utc(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
+    """Build UTC GFF from UTC. Written values mirror the construct path / observed retail."""
     gff = GFF(GFFContent.UTC)
 
     root = gff.root
+    # Root fields: same defaults as on read (0, 0.0, "", blank ResRef).
     root.set_resref("TemplateResRef", utc.resref)
     root.set_string("Tag", utc.tag)
     root.set_string("Comment", utc.comment)
@@ -900,17 +919,23 @@ def dismantle_utc(
             power_struct.set_uint16("Spell", power)
             power_struct.set_uint8("SpellFlags", 1)
             power_struct.set_uint8("SpellMetaMagic", 0)
-        power_list._structs = sorted(
-            power_list._structs, key=lambda power_struct_local: utc_class._original_powers_mapping.get(power_struct_local.get_uint16("Spell"), float("inf"))
-        )
+
+        def _sort_powers(power_struct: GFFStruct):
+            return utc_class._original_powers_mapping.get(
+                power_struct.get_uint16("Spell"), float("inf")
+            )
+
+        power_list._structs = sorted(power_list._structs, key=_sort_powers)
 
     feat_list: GFFList = root.set_list("FeatList", GFFList())
     for feat in utc.feats:
         feat_list.add(1).set_uint16("Feat", feat)
 
     # Sort utc.feats according to their original index, stored in utc._original_feat_mapping
-    # Might be better to use GFFStructInterface from that PR.
-    feat_list._structs = sorted(feat_list._structs, key=lambda feat: utc._original_feat_mapping.get(feat.get_uint16("Feat"), float("inf")))
+    def _sort_feats(feat_struct: GFFStruct):
+        return utc._original_feat_mapping.get(feat_struct.get_uint16("Feat"), float("inf"))
+
+    feat_list._structs = sorted(feat_list._structs, key=_sort_feats)
 
     # Not sure what these are for, verified they exist in K1's 'c_drdg.utc' in data\templates.bif. Might be unused in which case this can be deleted.
     if utc._extra_unimplemented_skills:
@@ -954,11 +979,69 @@ def dismantle_utc(
     return gff
 
 
+def _validate_utc_kaitai_binary(
+    source: SOURCE_TYPES,
+    offset: int,
+    size: int | None,
+) -> None:
+    """If ``source`` resolves to binary GFF, parse with ``Gff`` and require header type ``UTC ``.
+
+    XML/JSON GFF paths are skipped. On ``KaitaiStructError``, fall through so ``read_gff`` reports errors.
+    Mirrors ``read_gff`` header/BOM handling so the validated slice matches ``GFFBinaryReader``.
+    """
+    offset_adj, size_adj = _adjust_offset_after_utf8_bom(source, offset, size)
+    try:
+        with BinaryReader.from_auto(source, offset_adj) as reader:
+            chunk_len = min(512, max(0, reader.remaining()))
+            peek = reader.read_bytes(chunk_len)
+    except (FileNotFoundError, PermissionError, IsADirectoryError):
+        raise
+    except OSError:
+        return
+
+    header_off = _locate_binary_gff_header(peek)
+    if header_off is None:
+        header_off = _locate_binary_gff_header_structural(source, offset_adj, size_adj)
+
+    promoted_binary = False
+    file_format = _classify_gff_peek(peek)
+    if file_format == ResourceType.INVALID and header_off is not None:
+        file_format = ResourceType.GFF
+        promoted_binary = True
+    if (
+        file_format == ResourceType.GFF
+        and header_off is not None
+        and (promoted_binary or header_off > 0)
+    ):
+        offset_adj += header_off
+        if size_adj is not None:
+            size_adj = max(0, size_adj - header_off)
+
+    if file_format != ResourceType.GFF:
+        return
+
+    try:
+        with BinaryReader.from_auto(source, offset_adj, size_adj) as reader:
+            payload = reader.read_all()
+    except OSError:
+        return
+
+    try:
+        parsed = Gff.from_bytes(payload)
+    except kaitaistruct.KaitaiStructError:
+        return
+
+    if parsed.header.file_type != "UTC ":
+        msg = "Not a valid binary UTC file: GFF header file type is not 'UTC '."
+        raise ValueError(msg)
+
+
 def read_utc(
     source: SOURCE_TYPES,
     offset: int = 0,
     size: int | None = None,
 ) -> UTC:
+    _validate_utc_kaitai_binary(source, offset, size)
     gff: GFF = read_gff(source, offset, size)
     return construct_utc(gff)
 

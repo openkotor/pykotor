@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 
 from pathlib import Path
@@ -19,12 +20,28 @@ QRC_SOURCE_PATH = Path("./resources/resources.qrc")
 QRC_TARGET_PATH = Path("./rcc")
 
 
+def postprocess_ui_file(ui_target: Path) -> None:
+    if not ui_target.is_file():
+        return
+
+    filedata = ui_target.read_text(encoding="utf-8")
+    new_filedata = re.sub(
+        r"^\s*\w+(?:\.\w+)*\.setFrameShape\([^\n]*::[^\n]*NoFrame[^\n]*\)\r?\n",
+        "",
+        filedata,
+        flags=re.MULTILINE,
+    )
+
+    if filedata != new_filedata:
+        ui_target.write_text(new_filedata, encoding="utf-8")
+
+
 def compile_ui(qt_version: str, *, ignore_timestamp: bool = False):
     ui_compiler = {
         "pyside2": "pyside2-uic",
         "pyside6": "pyside6-uic",
         "pyqt5": "pyuic5",
-        "pyqt6": "pyuic6"
+        "pyqt6": "pyuic6",
     }[qt_version]
     for ui_file in UI_SOURCE_DIR.rglob("*.ui"):
         if ui_file.is_dir():
@@ -54,6 +71,7 @@ def compile_ui(qt_version: str, *, ignore_timestamp: bool = False):
             command = f"{ui_compiler} {ui_file.relative_to(Path.cwd())} -o {ui_target}"
             print(command)
             os.system(command)  # noqa: S605
+            postprocess_ui_file(ui_target)
 
 
 def compile_qrc(qt_version: str, *, ignore_timestamp: bool = False):

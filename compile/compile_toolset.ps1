@@ -7,16 +7,97 @@ param(
     [string]$force_python_version,
     [string]$upx_dir
 )
-$this_noprompt = $noprompt
-
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $repoRootPath = (Resolve-Path -LiteralPath "$scriptPath/..").Path
-Write-Host "The path to the script directory is: $scriptPath"
-Write-Host "The path to the root directory is: $repoRootPath"
 
-Write-Host "Initializing python virtual environment..."
-if ($this_noprompt) {
-    . $repoRootPath/install_python_venv.ps1 -noprompt -venv_name $venv_name
+function Get-LocalOS {
+    if ($IsWindows) { return "Windows" }
+    if ($IsMacOS) { return "Mac" }
+    if ($IsLinux) { return "Linux" }
+    return "Unknown"
+}
+
+$toolPath = (Resolve-Path -LiteralPath "$repoRootPath/Tools/HolocronToolset").Path
+$toolSrcDir = (Resolve-Path -LiteralPath "$toolPath/src").Path
+$iconExtension = if ((Get-LocalOS) -eq 'Mac') { 'icns' } else { 'ico' }
+$iconPath = "$toolSrcDir/resources/icons/sith.$iconExtension"
+$dataSeparator = if ((Get-LocalOS) -eq "Windows") { ";" } else { ":" }
+$argsList = @(
+    "--tool-path", $toolPath
+    "--entrypoint", "toolset/__main__.py"
+    "--name", "HolocronToolset"
+    "--distpath", "$repoRootPath/dist"
+    "--workpath", "$toolSrcDir/build"
+    "--icon", $iconPath
+    "--windowed"
+    "--onefile"
+    "--noconfirm"
+    "--clean"
+    "--hidden-import", "utility"
+    "--hidden-import", "utility.error_handling"
+    "--hidden-import", "utility.common"
+    "--hidden-import", "utility.system"
+    "--hidden-import", "utility.gui"
+    "--hidden-import", "utility.updater"
+    "--include-wiki-if-present"
+    "--add-data-if-exists", "$repoRootPath/vendor/kotorblender/io_scene_kotor${dataSeparator}kotorblender/io_scene_kotor"
+    "--venv-name", $venv_name
+)
+
+$qtApi = if ($env:QT_API) { $env:QT_API } else { "PyQt6" }
+$argsList += @("--qt-api", $qtApi, "--exclude-other-qt")
+
+$upxExcludes = @(
+    "_uuid.pyd",
+    "api-ms-win-crt-environment-l1-1-0.dll",
+    "api-ms-win-crt-string-l1-1-0.dll",
+    "api-ms-win-crt-convert-l1-1-0.dll",
+    "api-ms-win-crt-heap-l1-1-0.dll",
+    "api-ms-win-crt-conio-l1-1-0.dll",
+    "api-ms-win-crt-filesystem-l1-1-0.dll",
+    "api-ms-win-crt-stdio-l1-1-0.dll",
+    "api-ms-win-crt-process-l1-1-0.dll",
+    "api-ms-win-crt-locale-l1-1-0.dll",
+    "api-ms-win-crt-time-l1-1-0.dll",
+    "api-ms-win-crt-math-l1-1-0.dll",
+    "api-ms-win-crt-runtime-l1-1-0.dll",
+    "api-ms-win-crt-utility-l1-1-0.dll",
+    "python3.dll",
+    "api-ms-win-crt-private-l1-1-0.dll",
+    "api-ms-win-core-timezone-l1-1-0.dll",
+    "api-ms-win-core-file-l1-1-0.dll",
+    "api-ms-win-core-processthreads-l1-1-1.dll",
+    "api-ms-win-core-processenvironment-l1-1-0.dll",
+    "api-ms-win-core-debug-l1-1-0.dll",
+    "api-ms-win-core-localization-l1-2-0.dll",
+    "api-ms-win-core-processthreads-l1-1-0.dll",
+    "api-ms-win-core-errorhandling-l1-1-0.dll",
+    "api-ms-win-core-handle-l1-1-0.dll",
+    "api-ms-win-core-util-l1-1-0.dll",
+    "api-ms-win-core-profile-l1-1-0.dll",
+    "api-ms-win-core-rtlsupport-l1-1-0.dll",
+    "api-ms-win-core-namedpipe-l1-1-0.dll",
+    "api-ms-win-core-libraryloader-l1-1-0.dll",
+    "api-ms-win-core-file-l1-2-0.dll",
+    "api-ms-win-core-synch-l1-2-0.dll",
+    "api-ms-win-core-sysinfo-l1-1-0.dll",
+    "api-ms-win-core-console-l1-1-0.dll",
+    "api-ms-win-core-string-l1-1-0.dll",
+    "api-ms-win-core-memory-l1-1-0.dll",
+    "api-ms-win-core-synch-l1-1-0.dll",
+    "api-ms-win-core-interlocked-l1-1-0.dll",
+    "api-ms-win-core-datetime-l1-1-0.dll",
+    "api-ms-win-core-file-l2-1-0.dll",
+    "api-ms-win-core-heap-l1-1-0.dll"
+)
+foreach ($item in $upxExcludes) { $argsList += @("--upx-exclude", $item) }
+if ($upx_dir) { $argsList += @("--upx-dir", $upx_dir) }
+if ($noprompt) { $argsList += "--noprompt" }
+
+# If pythonExePath is set (venv already created by workflow), pass --skip-venv and --python-exe
+$pythonExeToUse = $null
+if ($env:pythonExePath) {
+    $pythonExeToUse = $env:pythonExePath
 } else {
     . $repoRootPath/install_python_venv.ps1 -venv_name $venv_name
 }
@@ -137,9 +218,10 @@ $argumentsArray = $pyInstallerArgs.GetEnumerator() | ForEach-Object {
         foreach ($elem in $($_.Value)) { $arr += "--$($_.Key)=$elem" }
         $arr
     } else {
-        if ($_.Value -eq $true) { "--$($_.Key)" }
-        elseif ($_.Value -eq $false) {}
-        else { "--$($_.Key)=$($_.Value)" }
+        $possiblePython = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Definition) "..\$venv_name\bin\python"
+    }
+    if (Test-Path $possiblePython) {
+        $pythonExeToUse = $possiblePython
     }
 }
 
@@ -201,9 +283,5 @@ try {
     Pop-Location
 }
 
-Write-Host "Checking '$finalExecutablePath' to see if it was built and the file exists."
-if (-not (Test-Path -LiteralPath $finalExecutablePath -ErrorAction SilentlyContinue)) {
-    Write-Error "$($pyInstallerArgs.name) could not be compiled, scroll up to find out why"
-} else {
-    Write-Host "$($pyInstallerArgs.name) was compiled to '$finalExecutablePath'"
-}
+& "$scriptPath/compile_tool.ps1" @argsList
+exit $LASTEXITCODE

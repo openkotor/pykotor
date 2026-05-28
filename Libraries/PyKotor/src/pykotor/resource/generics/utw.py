@@ -1,3 +1,5 @@
+"""UTW (waypoint) generic: GFF-based waypoint definitions and map notes."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -86,9 +88,7 @@ class UTW:
 
     BINARY_TYPE = ResourceType.UTW
 
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         self.resref: ResRef = ResRef.from_blank()
         self.comment: str = ""
         self.tag: str = ""
@@ -110,6 +110,11 @@ class UTW:
 def construct_utw(
     gff: GFF,
 ) -> UTW:
+    """Constructs a UTW object from a GFF structure.
+
+    Missing fields use blank tag/ResRef, empty localized strings, and false map-note flags (observed
+    retail). Instance transforms live on the GIT entry.
+    """
     utw = UTW()
 
     root: GFFStruct = gff.root
@@ -119,6 +124,7 @@ def construct_utw(
     utw.tag = root.acquire("Tag", "")
     utw.name = root.acquire("LocalizedName", LocalizedString.from_invalid())
     utw.description = root.acquire("Description", LocalizedString.from_invalid())
+    # Map note: HasMapNote, MapNote, MapNoteEnabled.
     utw.has_map_note = bool(root.acquire("HasMapNote", 0))
     utw.map_note = root.acquire("MapNote", LocalizedString.from_invalid())
     utw.map_note_enabled = bool(root.acquire("MapNoteEnabled", 0))
@@ -134,19 +140,25 @@ def dismantle_utw(
     *,
     use_deprecated: bool = True,  # noqa: ARG001
 ) -> GFF:
+    """Dismantles a UTW object into a GFF structure (round-trip with :func:`construct_utw`)."""
     gff = GFF(GFFContent.UTW)
 
     root: GFFStruct = gff.root
     root.set_uint8("Appearance", utw.appearance_id)
+    # LinkedTo: GFF string; toolset-only. Default "". Omit OK for engine.
     root.set_string("LinkedTo", utw.linked_to)
+    # TemplateResRef: CResRef; template ref. Default blank. Omit OK.
     root.set_resref("TemplateResRef", utw.resref)
     root.set_string("Tag", utw.tag)
     root.set_locstring("LocalizedName", utw.name)
+    # Description: GFF LocalizedString; toolset-only. Default empty. Omit OK.
     root.set_locstring("Description", utw.description)
     root.set_uint8("HasMapNote", utw.has_map_note)
     root.set_locstring("MapNote", utw.map_note)
     root.set_uint8("MapNoteEnabled", utw.map_note_enabled)
+    # PaletteID: BYTE; toolset-only. Default 0. Omit OK.
     root.set_uint8("PaletteID", utw.palette_id)
+    # Comment: GFF string; toolset-only. Default "". Omit OK.
     root.set_string("Comment", utw.comment)
 
     return gff

@@ -1,9 +1,10 @@
+"""Module (ERF/RIM) build: pack ARE/GIT/IFO/PTH and resources into game modules."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import ResRef
 from pykotor.common.module import Module
@@ -43,9 +44,6 @@ if TYPE_CHECKING:
     from pykotor.resource.generics.git import GIT
     from pykotor.resource.generics.ifo import IFO
     from pykotor.resource.generics.pth import PTH
-    from pykotor.resource.generics.utd import UTD
-    from pykotor.resource.generics.utp import UTP
-    from pykotor.resource.generics.uts import UTS
 
 
 def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
@@ -220,6 +218,7 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
             wok_data: None | bytes = None if wok_resource is None else wok_resource.data
             if wok_data is None:
                 continue
+            mdl_data, mdx_data, wok_data = resource_triplet
 
             if copy_textures:
                 for texture in model.iterate_textures(mdl_data):
@@ -228,17 +227,10 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
                     new_texture_name: str = prefix + texture[3:]
                     new_textures[texture] = new_texture_name
 
-                    tpc: TPC | None = installation.texture(
-                        texture,
-                        [
-                            SearchLocation.CHITIN,
-                            SearchLocation.OVERRIDE,
-                            SearchLocation.TEXTURES_GUI,
-                            SearchLocation.TEXTURES_TPA,
-                        ],
-                    )
-                    if tpc is None:
-                        RobustLogger().warning(f"TPC/TGA resource not found for texture '{texture}' in module '{root}'")
+                    if not _write_texture_as_tga(texture, new_texture_name):
+                        RobustLogger().warning(
+                            f"TPC/TGA resource not found for texture '{texture}' in module '{root}'"
+                        )
                         continue
                     tpc = tpc.copy()
                     if tpc.format() in (TPCTextureFormat.BGR, TPCTextureFormat.DXT1, TPCTextureFormat.Greyscale):
@@ -339,3 +331,130 @@ def rim_to_mod(
             mod.set_data(str(res.resref), res.restype, res.data)
 
     write_erf(mod, filepath, ResourceType.MOD)
+
+
+def get_resource_priority(location: LocationResult, installation: Installation) -> int:
+    """Get resource priority based on KOTOR resolution order.
+
+    Resolution order (from highest to lowest priority):
+    1. Override folder (priority 0 - highest)
+    2. Modules (.mod files) (priority 1)
+    3. Modules (.rim/_s.rim/_dlg.erf files) (priority 2)
+    4. Chitin BIFs (priority 3 - lowest)
+
+    Reference: Libraries/PyKotor/src/pykotor/tslpatcher/writer.py _get_resource_priority
+
+    Args:
+    ----
+        location: LocationResult from installation.locations()
+        installation: The installation instance
+
+    Returns:
+    -------
+        Priority value (lower = higher priority)
+    """
+    filepath = location.filepath
+    parent_names_lower = [parent.name.lower() for parent in filepath.parents]
+
+    if "override" in parent_names_lower:
+        return 0
+    if "modules" in parent_names_lower:
+        name_lower = filepath.name.lower()
+        if name_lower.endswith(".mod"):
+            return 1
+        return 2  # .rim/_s.rim/_dlg.erf
+    if "data" in parent_names_lower or filepath.suffix.lower() == ".bif":
+        return 3
+    # Files directly in installation root treated as Override priority
+    if filepath.parent == installation.path():
+        return 0
+    # Default to lowest priority if unknown
+    return 3
+
+
+def prioritize_module_files(module_files: list[os.PathLike | str]) -> list[Path]:
+    """Prioritize module files using canonical composite loading logic.
+
+    This implements the same priority logic used by kotordiff's composite module loading:
+    - `.mod` files overshadow rim-like files (`.rim`, `_s.rim`, `_dlg.erf`) - if a `.mod` exists
+      for a module root, only the `.mod` is used and rim-like files are ignored
+    - Only rim-like files can form a composite module group - if no `.mod` exists, all rim-like
+      files (`.rim`, `_s.rim`, `_dlg.erf`) are combined together
+
+    Args:
+    ----
+        module_files: List of module file paths to prioritize
+
+    Returns:
+    -------
+        Prioritized list of Path objects representing the files to use.
+        Files are grouped by module root, with `.mod` files overshadowing rim-like files
+        for the same module root. Only rim-like files form composite groups when no `.mod` exists.
+
+    Examples:
+    --------
+        >>> files = ["mymod.rim", "mymod.mod", "mymod_s.rim"]
+        >>> prioritize_module_files(files)
+        [Path("mymod.mod")]  # .mod overshadows rim-like files
+
+        >>> files = ["mymod.rim", "mymod_s.rim", "mymod_dlg.erf"]
+        >>> prioritize_module_files(files)
+        [Path("mymod.rim"), Path("mymod_s.rim"), Path("mymod_dlg.erf")]  # Rim-like files form composite when no .mod
+
+    Note:
+    ----
+        This matches the logic from `pykotor.tslpatcher.diff.engine.apply_folder_resolution_order`
+        and `pykotor.tslpatcher.diff.engine.CompositeModuleCapsule`.
+    """
+    from pathlib import Path  # noqa: PLC0415
+
+    # Group files by module root
+    module_groups: dict[str, list[Path]] = {}
+    non_module_files: list[Path] = []
+
+    for file_path in module_files:
+        path = Path(file_path)
+        file_name_lower = path.name.lower()
+
+        # Check if this is a module file
+        is_module_file = (
+            file_name_lower.endswith(".mod")
+            or file_name_lower.endswith(".rim")
+            or file_name_lower.endswith("_s.rim")
+            or file_name_lower.endswith("_dlg.erf")
+        )
+
+        if is_module_file:
+            try:
+                root = Installation.get_module_root(path)
+                if root not in module_groups:
+                    module_groups[root] = []
+                module_groups[root].append(path)
+            except Exception:  # noqa: BLE001
+                # If we can't determine module root, treat as non-module file
+                non_module_files.append(path)
+        else:
+            non_module_files.append(path)
+
+    # Apply priority logic to each module group
+    prioritized_files: list[Path] = list(non_module_files)
+
+    for root, group_files in module_groups.items():
+        # Partition into .mod (highest priority) and rim-like group
+        mod_files = [f for f in group_files if f.name.lower().endswith(".mod")]
+        rimlike_files = [
+            f
+            for f in group_files
+            if (f.name.lower().endswith(".rim") and not f.name.lower().endswith("_s.rim"))
+            or f.name.lower().endswith("_s.rim")
+            or f.name.lower().endswith("_dlg.erf")
+        ]
+
+        if mod_files:
+            # .mod exists - use it, ignore rim-like group
+            prioritized_files.append(mod_files[0])
+        else:
+            # No .mod - use all rim-like files
+            prioritized_files.extend(rimlike_files)
+
+    return prioritized_files

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, overload
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QHeaderView, QWidget
 
-from utility.ui_libraries.qt.widgets.itemviews.abstractview import (
+from utility.gui.qt.widgets.itemviews.abstractview import (
     RobustAbstractItemView,
 )
 
@@ -70,38 +70,40 @@ class RobustHeaderView(RobustAbstractItemView, QHeaderView):
             "Sections Movable",
             self.sectionsMovable,
             self.setSectionsMovable,
-            "sectionsMovable"
+            "sectionsMovable",
         )
         self._add_menu_action(
             header_menu,
             "Sections Clickable",
             self.sectionsClickable,
             self.setSectionsClickable,
-            "sectionsClickable"
+            "sectionsClickable",
         )
         self._add_menu_action(
             header_menu,
             "Sort Indicator Shown",
             self.isSortIndicatorShown,
             self.setSortIndicatorShown,
-            "sortIndicatorShown"
+            "sortIndicatorShown",
         )
         self._add_menu_action(
             header_menu,
             "Stretch Last Section",
             self.stretchLastSection,
             self.setStretchLastSection,
-            "stretchLastSection"
+            "stretchLastSection",
         )
         self._add_menu_action(
             header_menu,
             "Cascading Section Resizes",
             self.cascadingSectionResizes,
             self.setCascadingSectionResizes,
-            "cascadingSectionResizes"
+            "cascadingSectionResizes",
         )
 
         return menu
+
+
 # ... existing code ...
 
 if __name__ == "__main__":
@@ -123,7 +125,7 @@ if __name__ == "__main__":
 
     # Set header labels
     table.setHorizontalHeaderLabels(["Column 1", "Column 2", "Column 3"])
-    table.setVerticalHeaderLabels([f"Row {i+1}" for i in range(5)])
+    table.setVerticalHeaderLabels([f"Row {i + 1}" for i in range(5)])
 
     # Show the table
     table.resize(400, 300)

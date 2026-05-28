@@ -3,7 +3,6 @@ from __future__ import annotations
 import threading
 import weakref
 
-from contextlib import suppress
 from ctypes import POINTER, Structure, byref, c_int, c_uint, c_wchar_p, oledll, windll
 from ctypes.wintypes import BYTE, DWORD, WORD
 from typing import TYPE_CHECKING, Sequence
@@ -31,9 +30,11 @@ try:
     inherit = (COMTYPE_GUID,)
 except ImportError:
     inherit = (Structure,)
+
+
 class GUID(*inherit):
     _instances = weakref.WeakValueDictionary()  # Class-level dictionary to hold GUID instances
-    _fields_: Sequence[ tuple[str, type[_CData]] | tuple[str, type[_CData], int] ] = [
+    _fields_: Sequence[tuple[str, type[_CData]] | tuple[str, type[_CData], int]] = [
         ("Data1", DWORD),
         ("Data2", WORD),
         ("Data3", WORD),
@@ -116,7 +117,7 @@ class GUID(*inherit):
     def __repr__(self):
         return f'GUID("{self!s}")'
 
-    def __str__(self):  # sourcery skip: remove-unreachable-code
+    def __str__(self):
         # return f"{{{self.Data1:08X}-{self.Data2:04X}-{self.Data3:04X}-{self.Data4[0]:02X}{self.Data4[1]:02X}-{self.Data4[2]:02X}{self.Data4[3]:02X}{self.Data4[4]:02X}{self.Data4[5]:02X}{self.Data4[6]:02X}{self.Data4[7]:02X}}}"
         # Comment out above line to use ole32.StringFromCLSID directly.
         p = c_wchar_p()
@@ -125,18 +126,26 @@ class GUID(*inherit):
         windll.ole32.CoTaskMemFree(p)
         if result is None:
             d4_hex = "".join(f"{byte:02X}" for byte in self.Data4)
-            result = f"{{{self.Data1:08X}-{self.Data2:04X}-{self.Data3:04X}-{d4_hex[:4]}-{d4_hex[4:]}}}"
-        return result and result.strip() or str(self.NULL())
+            result = (
+                f"{{{self.Data1:08X}-{self.Data2:04X}-{self.Data3:04X}-{d4_hex[:4]}-{d4_hex[4:]}}}"
+            )
+        return (result and result.strip()) or str(self.NULL())
 
     @classmethod
-    def guid_ducktypes(cls) -> tuple[type[COMTYPE_GUID], type[Self]] | tuple[type[COMTYPE_GUID], type[GUID], type[Self]]:
+    def guid_ducktypes(
+        cls,
+    ) -> tuple[type[COMTYPE_GUID], type[Self]] | tuple[type[COMTYPE_GUID], type[GUID], type[Self]]:
         """Returns (cls, GUID, comtypes.GUID). If comtypes cannot be imported, return (cls, GUID).
 
         This allows duck typing and subclasses to work in isinstance checks.
         """
-        COMTYPE_GUID = None
-        with suppress(ImportError, ModuleNotFoundError):
-            from comtypes.GUID import GUID as COMTYPE_GUID  # pyright: ignore[reportMissingTypeStubs, reportMissingImports]
+        try:
+            from comtypes.GUID import (
+                GUID as COMTYPE_GUID,  # pyright: ignore[reportMissingTypeStubs, reportMissingImports]
+            )
+        except ImportError:
+            if not TYPE_CHECKING:
+                COMTYPE_GUID = None
         return (GUID, cls) if COMTYPE_GUID is None else (cls, GUID, COMTYPE_GUID)  # pyright: ignore[reportReturnType]
 
     def __bool__(self):
@@ -199,7 +208,7 @@ class GUID(*inherit):
         d3: int | None = None,
         d4: tuple[int, int, int, int, int, int, int, int] | int | bytes | None = None,
         *args,
-    ) -> tuple[int, int, int, bytes]:  # sourcery skip: low-code-quality
+    ) -> tuple[int, int, int, bytes]:
         # Null GUID
         if not d1 and not d2 and not d3 and not d4 and not args:
             return 0, 0, 0, b""
@@ -226,7 +235,9 @@ class GUID(*inherit):
             all_byte_ints = len(args) == 12  # noqa: PLR2004
             altern_format = len(args) == 7  # noqa: PLR2004
             if not all_byte_ints and not altern_format:
-                raise ValueError(f"Incorrect arguments passed to GUID({d1}, {d2}, {d3}, {d4}, *{args})")
+                raise ValueError(
+                    f"Incorrect arguments passed to GUID({d1}, {d2}, {d3}, {d4}, *{args})"
+                )
             if all_byte_ints:
                 gd = (d1, d2, d3, d4, *args)
                 guid_str = f"{{{gd[0]:08X}-{gd[1]:04X}-{gd[2]:04X}-{gd[3]:02X}{gd[4]:02X}-{gd[5]:02X}{gd[6]:02X}{gd[7]:02X}-{gd[8]:02X}{gd[9]:02X}{gd[10]:02X}{gd[11]:02X}}}"

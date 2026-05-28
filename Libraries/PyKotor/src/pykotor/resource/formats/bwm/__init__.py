@@ -1,3 +1,5 @@
+"""BWM (walkmesh) package: faces, edges, adjacency and binary I/O for module geometry."""
+
 from __future__ import annotations
 
 

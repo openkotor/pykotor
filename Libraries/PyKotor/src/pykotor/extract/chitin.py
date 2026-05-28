@@ -1,3 +1,5 @@
+"""Chitin (chitin.key + BIF) loader: read-only access to game resource index and data."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -50,9 +52,7 @@ class Chitin:
     ) -> Iterator[FileResource]:
         yield from self._resources
 
-    def __len__(
-        self,
-    ):
+    def __len__(self):
         return len(self._resources)
 
     def load(self):

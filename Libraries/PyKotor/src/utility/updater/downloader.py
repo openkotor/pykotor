@@ -12,9 +12,26 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
 
-import certifi
-import requests
-import urllib3
+from utility.misc import ensure_directory_exists
+
+# Handle optional certifi dependency
+try:
+    import certifi  # pyright: ignore[reportMissingImports]
+except ImportError:
+    if not TYPE_CHECKING:
+        certifi = None  # type: ignore[assignment, unused-ignore]
+
+try:
+    import requests
+except ImportError:
+    if not TYPE_CHECKING:
+        requests = None  # type: ignore[assignment, unused-ignore]
+
+try:
+    import urllib3
+except ImportError:
+    if not TYPE_CHECKING:
+        urllib3 = None  # type: ignore[assignment, unused-ignore]
 
 from loggerplus import RobustLogger
 
@@ -92,24 +109,34 @@ class FileDownloader:
         self.log = logger or RobustLogger()
 
         self.file_binary_data: list = []  # Hold all binary data once file has been downloaded
-        self.file_binary_path: Path = self.filepath.add_suffix(".part")  # Temporary file to hold large download data
+        self.file_binary_path: Path = Path(
+            f"{self.filepath}.part"
+        )  # Temporary file to hold large download data
 
         if not urls:
             raise FileDownloaderError("No urls provided", expected=True)
-        if not isinstance(urls, list):  # User may have accidentally passed a string to the urls parameter
+        if not isinstance(
+            urls, list
+        ):  # User may have accidentally passed a string to the urls parameter
             raise FileDownloaderError("Must pass list of urls", expected=True)
         self.urls: list[str] = urls
 
         self.hexdigest = hexdigest
         self.verify = verify  # Specify if we want to verify TLS connections
-        self.max_download_retries: int = max_download_retries or 0  # Max attempts to download resource
-        self.progress_hooks: list[Callable[[dict[str, Any]], Any]] = progress_hooks or []  # Progress hooks to be called
+        self.max_download_retries: int = (
+            max_download_retries or 0
+        )  # Max attempts to download resource
+        self.progress_hooks: list[Callable[[dict[str, Any]], Any]] = (
+            progress_hooks or []
+        )  # Progress hooks to be called
         self.block_size: int = 4096 * 4  # Initial block size for each read
         self.file_binary_type: Literal["memory", "file"] = "memory"  # Storage type
         self.downloaded_filename: str = self.filepath.name
 
         # Extra headers
-        self.headers: dict[str, Any] = headers or {"User-Agent": "MyAppName/1.0 (https://myappwebsite.com/)"}
+        self.headers: dict[str, Any] = headers or {
+            "User-Agent": "MyAppName/1.0 (https://myappwebsite.com/)"
+        }
         self.http_timeout = http_timeout
         self.download_max_size: int = (
             16 * 1024 * 1024
@@ -122,11 +149,19 @@ class FileDownloader:
 
     def _get_http_pool(self, *, secure=True):
         if secure:
-            _http = urllib3.PoolManager(
-                cert_reqs="CERT_REQUIRED",
-                ca_certs=certifi.where(),
-                timeout=self.http_timeout,
-            )
+            if certifi is None:
+                # certifi not available, use system default certificates or disable verification
+                self.log.warning("certifi not available, using system default certificate store")
+                _http = urllib3.PoolManager(
+                    cert_reqs="CERT_REQUIRED",
+                    timeout=self.http_timeout,
+                )
+            else:
+                _http = urllib3.PoolManager(
+                    cert_reqs="CERT_REQUIRED",
+                    ca_certs=certifi.where(),
+                    timeout=self.http_timeout,
+                )
         else:
             _http = urllib3.PoolManager(timeout=self.http_timeout)
 
@@ -137,8 +172,12 @@ class FileDownloader:
 
     def _apply_custom_headers(self, _http: urllib3.PoolManager):
         urllib_keys = inspect.getfullargspec(urllib3.make_headers).args
-        urllib_headers = {header: value for header, value in self.headers.items() if header in urllib_keys}
-        other_headers = {header: value for header, value in self.headers.items() if header not in urllib_keys}
+        urllib_headers = {
+            header: value for header, value in self.headers.items() if header in urllib_keys
+        }
+        other_headers = {
+            header: value for header, value in self.headers.items() if header not in urllib_keys
+        }
         _headers: dict[str, str] = urllib3.make_headers(**urllib_headers)
         _headers.update(other_headers)
         if not isinstance(_http.headers, dict):
@@ -147,22 +186,14 @@ class FileDownloader:
 
     def _start_hooks(self, content_length):
         for hook in self.progress_hooks:
-            hook(
-                {
-                    "action": "starting",
-                    "data": {"total": content_length}
-                }
-            )
+            hook({"action": "starting", "data": {"total": content_length}})
 
     def _progress_hooks(self, just_downloaded, total):
         for hook in self.progress_hooks:
             hook(
                 {
                     "action": "update_progress",
-                    "data": {
-                        "downloaded": just_downloaded,
-                        "total": total
-                    }
+                    "data": {"downloaded": just_downloaded, "total": total},
                 }
             )
 
@@ -186,11 +217,16 @@ class FileDownloader:
         success: bool = False
         for url in self.urls:
             try:
-                with self.session.get(url, stream=True, timeout=self.http_timeout, verify=self.verify) as r:
+                with self.session.get(
+                    url, stream=True, timeout=self.http_timeout, verify=self.verify
+                ) as r:
                     r.raise_for_status()
 
                     # Determine the filename from the Content-Disposition header or URL.
-                    filename = self._get_filename_from_cd(r.headers.get("Content-Disposition")) or Path(url).name
+                    filename = (
+                        self._get_filename_from_cd(r.headers.get("Content-Disposition"))
+                        or Path(url).name
+                    )
                     self.downloaded_filename = filename
                     RobustLogger().info(f"Expected downloaded filename: {self.downloaded_filename}")
                     file_path = self.filepath.parent / filename
@@ -215,10 +251,14 @@ class FileDownloader:
                                             "total": content_length,
                                             "downloaded": chunk_start,
                                             "status": "downloading",
-                                            "percent_complete": self._calc_progress_percent(chunk_start, content_length),
-                                            "time": self._calc_eta(start_time, time.time(), content_length, chunk_start),
-                                        }
-                                    }
+                                            "percent_complete": self._calc_progress_percent(
+                                                chunk_start, content_length
+                                            ),
+                                            "time": self._calc_eta(
+                                                start_time, time.time(), content_length, chunk_start
+                                            ),
+                                        },
+                                    },
                                 )
                     success = self._check_hash()
                     if success:
@@ -258,7 +298,7 @@ class FileDownloader:
                     f.write(block)
         else:
             filepath = Path(self.filepath)
-            if filepath.safe_exists():
+            if filepath.exists():
                 filepath.unlink(missing_ok=True)
             self.file_binary_path.rename(self.filepath)
 
@@ -304,8 +344,6 @@ class FileDownloader:
         return f"{percent:.1f}"
 
 
-
-
 def _api_request(data, sequence_num: int | None = None, **kwargs):
     if sequence_num is None:
         sequence_num = secrets.randbelow(0xFFFFFFFF)
@@ -322,7 +360,9 @@ def _api_request(data, sequence_num: int | None = None, **kwargs):
     if not isinstance(data, list):
         data = [data]
 
-    req = requests.post("https://g.api.mega.co.nz/cs", params=params, data=json.dumps(data), timeout=160)
+    req = requests.post(
+        "https://g.api.mega.co.nz/cs", params=params, data=json.dumps(data), timeout=160
+    )
     json_resp = json.loads(req.text)
 
     # if numeric error code response
@@ -353,7 +393,12 @@ def _download_file(
         else:
             file_data = _api_request({"a": "g", "g": 1, "n": file_handle})
 
-        k = (file_key[0] ^ file_key[4], file_key[1] ^ file_key[5], file_key[2] ^ file_key[6], file_key[3] ^ file_key[7])
+        k = (
+            file_key[0] ^ file_key[4],
+            file_key[1] ^ file_key[5],
+            file_key[2] ^ file_key[6],
+            file_key[3] ^ file_key[7],
+        )
         iv = file_key[4:6] + (0, 0)
         meta_mac = file_key[6:8]
     else:
@@ -432,7 +477,7 @@ def _download_file(
                 "status": "downloading",
                 "percent_complete": percent,
                 "time": time_left,
-            }
+            },
         }
 
         log = RobustLogger()
@@ -444,7 +489,7 @@ def _download_file(
                 try:
                     ph(status)
                 except Exception as err:  # noqa: PERF203
-                    log.exception("Exception in callback: %s", ph.__name__)
+                    log.exception("Exception in callback '%s': %s", ph.__name__, err)
         log.debug(f"Status - {file_info.st_size / file_size * 100:.2f} downloaded")  # noqa: G004
         log.debug(f"{file_info.st_size} of {file_size} downloaded")  # noqa: G004
 
@@ -462,7 +507,7 @@ def _download_file(
         dest_path = dest_path.parent
     dest_filepath = dest_path / file_name
     if not dest_filepath.parent.is_dir():
-        dest_filepath.parent.mkdir(parents=True, exist_ok=True)
+        ensure_directory_exists(dest_filepath.parent)
     shutil.move(temp_output_file.name, dest_filepath)
 
 
@@ -483,4 +528,11 @@ def download_mega_file_url(
     print("Base URL:", base_url)
     print("File ID:", file_id)
     print("Decryption Key:", decryption_key)
-    _download_file(file_id, decryption_key, dest_path, dest_filename, is_public=True, progress_hooks=progress_hooks)
+    _download_file(
+        file_id,
+        decryption_key,
+        dest_path,
+        dest_filename,
+        is_public=True,
+        progress_hooks=progress_hooks,
+    )

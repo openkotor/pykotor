@@ -277,4 +277,6 @@ class ModificationsNCS(PatcherModifications):
     ):
         super().pop_tslpatcher_vars(file_section_dict, default_destination, default_sourcefolder)
         replace_file: bool | str = file_section_dict.pop("ReplaceFile", self.replace_file)
-        self.replace_file = bool(int(replace_file))  # NOTE: tslpatcher's hacklist does NOT prefix with an exclamation point.
+        self.replace_file = bool(
+            int(replace_file)
+        )  # NOTE: tslpatcher's hacklist does NOT prefix with an exclamation point.

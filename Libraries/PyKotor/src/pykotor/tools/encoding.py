@@ -1,3 +1,5 @@
+"""Encoding utilities: decode bytes with language/encoding fallbacks and KotOR charset helpers."""
+
 from __future__ import annotations
 
 import codecs
@@ -6,17 +8,15 @@ from contextlib import suppress
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from types import ModuleType
-
     from charset_normalizer import CharsetMatch, CharsetMatches
 
     from pykotor.common.language import Language
 
-charset_normalizer: None | ModuleType
 try:
     import charset_normalizer
 except ImportError:
-    charset_normalizer = None
+    if not TYPE_CHECKING:
+        charset_normalizer = None
 
 
 def decode_bytes_with_fallbacks(  # noqa: C901
@@ -93,11 +93,15 @@ def decode_bytes_with_fallbacks(  # noqa: C901
         # Filter the charset-normalizer results to encodings with a maximum of 256 characters
         if only_8bit_encodings:
             max_8bit_characters: int = 256
-            detected_8bit_encodings: list[CharsetMatch] = [enc_match for enc_match in detected_encodings if len(enc_match.alphabets) <= max_8bit_characters]
-            best_8bit_encoding = "windows-1252"
+            detected_8bit_encodings: list[CharsetMatch] = [
+                enc_match
+                for enc_match in detected_encodings
+                if len(enc_match.alphabets) <= max_8bit_characters
+            ]
+            best_8bit_encoding: str = "windows-1252"
             if detected_8bit_encodings:
                 best_match: CharsetMatch = detected_8bit_encodings[0]
-                best_8bit_encoding: str = best_match.encoding
+                best_8bit_encoding = best_match.encoding
             return byte_content.decode(encoding=best_8bit_encoding, errors=attempt_errors)
 
         result_detect: CharsetMatch | None = detected_encodings.best()
@@ -177,8 +181,9 @@ def get_charset_from_unicode_encoding(
 def get_charset_from_doublebyte_encoding(
     encoding: str,
 ) -> list[str]:
-    # I believe these need to be mapped to the TXI with the 'dbmapping' field.
-    # Experimentation would be required for the syntax, perhaps could pull from other aurora games.
+    # NOTE: The KOTOR engine does not support double-byte character encoding.
+    # The 'isdoublebyte' and 'dbmapping' fields are not parsed by CAurFontInfo::ParseField.
+    # Multi-byte character support would require engine modifications or an overlay system.
     if encoding == "cp936":
         return get_cp936_charset()
     if encoding == "cp949":
@@ -251,7 +256,6 @@ def get_cp949_charset() -> list[str]:
 
 
 def get_cp936_charset() -> list[str]:
-    # sourcery skip: merge-duplicate-blocks, remove-redundant-if
     charset: list[str] = []
     for i in range(256):
         if 0x00 <= i <= 0x7F:  # noqa: PLR2004
@@ -298,7 +302,9 @@ def get_generalized_doublebyte_charset(
             except UnicodeDecodeError:
                 charset.append("")  # Append a blank for non-existent characters
 
-        elif potential_lead_byte_start <= i <= potential_lead_byte_end:  # Potential lead byte for double-byte characters
+        elif (
+            potential_lead_byte_start <= i <= potential_lead_byte_end
+        ):  # Potential lead byte for double-byte characters
             for j in range(256):
                 try:
                     charset.append(bytes([i, j]).decode(encoding))

@@ -172,7 +172,9 @@ class MacFileDialogHelper(QFileDialogPlatformHelper):
         if self._options.acceptMode() == AcceptMode.AcceptOpen:
             panel = NSOpenPanel.openPanel()
             panel.setCanChooseFiles_(self._options.fileMode() != FileMode.Directory)
-            panel.setCanChooseDirectories_(self._options.fileMode() in [FileMode.Directory, FileMode.ExistingFiles])
+            panel.setCanChooseDirectories_(
+                self._options.fileMode() in [FileMode.Directory, FileMode.ExistingFiles]
+            )
             panel.setAllowsMultipleSelection_(self._options.fileMode() == FileMode.ExistingFiles)
         else:
             panel = NSSavePanel.savePanel()
@@ -247,9 +249,19 @@ class WindowsFileDialogHelper(QFileDialogPlatformHelper):
         file_filter = self._create_win32_file_filter()
 
         if self._options.acceptMode() == AcceptMode.AcceptOpen:
-            (file_path, customfilter, flags) = win32gui.GetOpenFileNameW(InitialDir=self._current_directory, Flags=flags, Filter=file_filter, Title="Open File")
+            (file_path, customfilter, flags) = win32gui.GetOpenFileNameW(
+                InitialDir=self._current_directory,
+                Flags=flags,
+                Filter=file_filter,
+                Title="Open File",
+            )
         else:
-            (file_path, customfilter, flags) = win32gui.GetSaveFileNameW(InitialDir=self._current_directory, Flags=flags, Filter=file_filter, Title="Save File")
+            (file_path, customfilter, flags) = win32gui.GetSaveFileNameW(
+                InitialDir=self._current_directory,
+                Flags=flags,
+                Filter=file_filter,
+                Title="Save File",
+            )
 
         if file_path:
             if flags & win32con.OFN_ALLOWMULTISELECT:

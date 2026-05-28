@@ -1,3 +1,5 @@
+"""UTS (sound) generic: GFF-based sound object definitions and audio settings."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -158,9 +160,7 @@ class UTS:
 
     BINARY_TYPE = ResourceType.UTS
 
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         self.resref: ResRef = ResRef.from_blank()
         self.tag: str = ""
         self.comment: str = ""
@@ -198,7 +198,14 @@ class UTS:
 
 def construct_uts(
     gff: GFF,
+    game: Game = Game.K2,
+    *,
+    use_deprecated: bool = True,
 ) -> UTS:
+    """Constructs a UTS object from a GFF structure.
+
+    Missing fields use blank tag/ResRef, false flags, and zero floats/integers (observed retail).
+    """
     uts = UTS()
 
     root: GFFStruct = gff.root

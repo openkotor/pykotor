@@ -10,8 +10,8 @@ import comtypes
 
 from comtypes.client import CreateObject
 from comtypes.gen import Shell32
-from loggerplus import RobustLogger
 
+from loggerplus import RobustLogger
 from utility.system.win32.com.interfaces import CLSID_FileOperation, IFileOperationProgressSink
 from utility.system.win32.hresult import S_OK
 
@@ -40,7 +40,9 @@ class FileOperationProgressSinkImpl(IFileOperationProgressSink):
         print(f"Preparing to move item {psiItem.GetDisplayName()} to {pszNewName}")
         return S_OK
 
-    def PostMoveItem(self, dwFlags, psiItem, psiDestinationFolder, pszNewName, hrMove, psiNewlyCreated):
+    def PostMoveItem(
+        self, dwFlags, psiItem, psiDestinationFolder, pszNewName, hrMove, psiNewlyCreated
+    ):
         print(f"Moved item {psiItem.GetDisplayName()} to {pszNewName}")
         return S_OK
 
@@ -48,7 +50,9 @@ class FileOperationProgressSinkImpl(IFileOperationProgressSink):
         print(f"Preparing to copy item {psiItem.GetDisplayName()} to {pszNewName}")
         return S_OK
 
-    def PostCopyItem(self, dwFlags, psiItem, psiDestinationFolder, pszNewName, hrCopy, psiNewlyCreated):
+    def PostCopyItem(
+        self, dwFlags, psiItem, psiDestinationFolder, pszNewName, hrCopy, psiNewlyCreated
+    ):
         print(f"Copied item {psiItem.GetDisplayName()} to {pszNewName}")
         return S_OK
 
@@ -64,7 +68,16 @@ class FileOperationProgressSinkImpl(IFileOperationProgressSink):
         print(f"Preparing to create new item {pszNewName}")
         return S_OK
 
-    def PostNewItem(self, dwFlags, psiDestinationFolder, pszNewName, pszTemplateName, dwFileAttributes, hrNew, psiNewItem):
+    def PostNewItem(
+        self,
+        dwFlags,
+        psiDestinationFolder,
+        pszNewName,
+        pszTemplateName,
+        dwFileAttributes,
+        hrNew,
+        psiNewItem,
+    ):
         print(f"Created new item {pszNewName}")
         return S_OK
 
@@ -84,11 +97,14 @@ class FileOperationProgressSinkImpl(IFileOperationProgressSink):
         print("Timer resumed")
         return S_OK
 
+
 def initialize_com():
     comtypes.CoInitialize()
 
+
 def uninitialize_com():
     comtypes.CoUninitialize()
+
 
 def create_shell_item(path_obj):
     path = WindowsPath(path_obj).resolve()
@@ -98,6 +114,7 @@ def create_shell_item(path_obj):
     folder = shell.NameSpace(str(path.parent))
     item = folder.ParseName(path.name)
     return item.QueryInterface(Shell32.IShellItem)
+
 
 def perform_file_operation(
     source: os.PathLike | str,
@@ -135,10 +152,13 @@ def perform_file_operation(
         print(f"File operation {operation} from {source_path} to {destination_path} completed")
 
     except Exception as e:  # noqa: BLE001
-        RobustLogger().exception(f"General error while attempting to perform file operations with the com objects: {e.__class__.__name__}: {e}")
+        RobustLogger().exception(
+            f"General error while attempting to perform file operations with the com objects: {e.__class__.__name__}: {e}"
+        )
 
     finally:
         uninitialize_com()
+
 
 # Example usage
 if __name__ == "__main__":

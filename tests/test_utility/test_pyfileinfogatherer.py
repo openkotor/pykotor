@@ -5,13 +5,14 @@ import os
 import sys
 import tempfile
 
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 from qtpy.QtCore import QCoreApplication
 import pytest
 
 from qtpy.QtCore import QDir, QFileInfo
-from qtpy.QtWidgets import QApplication, QFileIconProvider
+from qtpy.QtWidgets import QApplication
 
 from utility.ui_libraries.qt.adapters.filesystem.pyfileinfogatherer import PyFileInfoGatherer
 
@@ -114,7 +115,9 @@ def test_drive_added(gatherer: PyFileInfoGatherer):
             print("Called with:", gatherer.fetchExtendedInformation.call_args)
 
             # Now assert it was called with the correct arguments
-            expected_path = ""  # `driveAdded` in the code calls fetchExtendedInformation with an empty path
+            expected_path = (
+                ""  # `driveAdded` in the code calls fetchExtendedInformation with an empty path
+            )
             gatherer.fetchExtendedInformation.assert_called_once_with(expected_path, [])
 
 
@@ -136,11 +139,17 @@ def test_drive_removed(gatherer: PyFileInfoGatherer):
     ["path", "files", "expected_length"],
     [
         ["", [], 2],  # When an empty path is added, paths list should increase by one
-        ["path1", ["file1"], 1],  # When a path that already exists is passed, paths list should not change
+        [
+            "path1",
+            ["file1"],
+            1,
+        ],  # When a path that already exists is passed, paths list should not change
     ],
     ids=["empty_path", "non_empty_path"],
 )
-def test_fetch_extended_information_boiler(gatherer: PyFileInfoGatherer, path: str, files: list[str], expected_length: int):
+def test_fetch_extended_information_boiler(
+    gatherer: PyFileInfoGatherer, path: str, files: list[str], expected_length: int
+):
     gatherer._paths = ["path1"]  # noqa: SLF001
     gatherer._files = [["file1"]]  # noqa: SLF001
 
@@ -186,6 +195,27 @@ def test_fetch_extended_information(gatherer: PyFileInfoGatherer):
         check_timer.timeout.connect(check_data)
         check_timer.start(50)  # Check every 50ms
         
+        loop.exec()
+        check_timer.stop()
+        timeout_timer.stop()
+
+        # Wait for the background thread to process the request with a loop that exits when data arrives
+        loop = QEventLoop()
+        timeout_timer = QTimer()
+        timeout_timer.setSingleShot(True)
+        timeout_timer.timeout.connect(loop.quit)
+        timeout_timer.start(1000)  # Wait up to 1 second
+
+        check_timer = QTimer()
+
+        def check_data():
+            if updates_data:
+                timeout_timer.stop()
+                loop.quit()
+
+        check_timer.timeout.connect(check_data)
+        check_timer.start(50)  # Check every 50ms
+
         loop.exec()
         check_timer.stop()
         timeout_timer.stop()

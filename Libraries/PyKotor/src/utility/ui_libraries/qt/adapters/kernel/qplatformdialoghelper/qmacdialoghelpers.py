@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from utility.ui_libraries.qt.kernel.qplatformdialoghelper.qplatformdialoghelper import QFileDialogPlatformHelper
+from utility.gui.qt.kernel.qplatformdialoghelper.qplatformdialoghelper import (
+    QFileDialogPlatformHelper,
+)
 
 
 class MacFileDialogHelper(QFileDialogPlatformHelper):
@@ -11,11 +13,18 @@ class MacFileDialogHelper(QFileDialogPlatformHelper):
             print("AppKit is not available. Make sure you're running on macOS.")
             return False
 
-        if self._options.acceptMode() == AcceptMode.AcceptOpen:
+        from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog
+
+        if self._options.acceptMode() == QFileDialog.AcceptMode.AcceptOpen:
             panel = NSOpenPanel.openPanel()
-            panel.setCanChooseFiles_(self._options.fileMode() != FileMode.Directory)
-            panel.setCanChooseDirectories_(self._options.fileMode() in [FileMode.Directory, FileMode.ExistingFiles])
-            panel.setAllowsMultipleSelection_(self._options.fileMode() == FileMode.ExistingFiles)
+            panel.setCanChooseFiles_(self._options.fileMode() != QFileDialog.FileMode.Directory)
+            panel.setCanChooseDirectories_(
+                self._options.fileMode()
+                in [QFileDialog.FileMode.Directory, QFileDialog.FileMode.ExistingFiles]
+            )
+            panel.setAllowsMultipleSelection_(
+                self._options.fileMode() == QFileDialog.FileMode.ExistingFiles
+            )
         else:
             panel = NSSavePanel.savePanel()
 

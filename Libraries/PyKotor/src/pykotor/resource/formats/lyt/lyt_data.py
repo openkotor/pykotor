@@ -150,6 +150,11 @@ class LYT(ComparableMixin):
     def iter_resource_identifiers(self) -> Generator[ResourceIdentifier, Any, None]:
         """Generate resources that utilise this LYT."""
         for room in self.rooms:
+            if not ResRef.is_valid(room.model):
+                print(
+                    f"LYT.iter_resource_identifiers(): Invalid room model: '{room.model}' (not a valid ResRef)"
+                )
+                continue
             yield ResourceIdentifier(room.model, ResourceType.MDL)
             yield ResourceIdentifier(room.model, ResourceType.MDX)
             yield ResourceIdentifier(room.model, ResourceType.WOK)
@@ -328,6 +333,12 @@ class LYTTrack(ComparableMixin):
     def __hash__(self) -> int:
         return hash((self.model.lower(), self.position))
 
+    def serialize(self) -> dict[str, Any]:
+        """Serialize an LYTTrack to JSON-compatible dict."""
+        return {
+            "model": self.model,
+            "position": self.position.serialize(),
+        }
 
 class LYTObstacle(ComparableMixin):
     """Represents a swoop track obstacle element in a LYT layout.
@@ -454,7 +465,7 @@ class LYTDoorHook(ComparableMixin):
         if self is other:
             return True
         if not isinstance(other, LYTDoorHook):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
         return (
             self.room == other.room
             and self.door == other.door
@@ -464,3 +475,12 @@ class LYTDoorHook(ComparableMixin):
 
     def __hash__(self) -> int:
         return hash((self.room, self.door, self.position, self.orientation))
+
+    def serialize(self) -> dict[str, Any]:
+        """Serialize an LYTDoorHook to JSON-compatible dict."""
+        return {
+            "room": self.room,
+            "door": self.door,
+            "position": self.position.serialize(),
+            "orientation": self.orientation.serialize(),
+        }

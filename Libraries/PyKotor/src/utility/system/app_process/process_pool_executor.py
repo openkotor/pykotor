@@ -20,6 +20,7 @@ class CustomProcessPoolExecutor(Generic[T]):
 
     Use concurrent.futures.ProcessPoolExecutor instead of this implementation.
     """
+
     _shared_state: ClassVar[dict[str, Any]] = {}
 
     def __new__(cls, *args, **kwargs):
@@ -37,7 +38,9 @@ class CustomProcessPoolExecutor(Generic[T]):
         if hasattr(self, "singleton_initialized"):
             return
         self.max_workers: int = max_workers or multiprocessing.cpu_count() * 2
-        self.task_queue: multiprocessing.JoinableQueue[Callable[..., Any]] = multiprocessing.JoinableQueue()
+        self.task_queue: multiprocessing.JoinableQueue[Callable[..., Any]] = (
+            multiprocessing.JoinableQueue()
+        )
         self.result_queue: multiprocessing.Queue[T] = multiprocessing.Queue()
         self.workers: list[tuple[MultiprocessingEvent, TaskConsumer]] = []
         self._initializer: Callable[[], None] | None = initializer
@@ -114,7 +117,7 @@ if __name__ == "__main__":
         executor1.map(
             functools.partial(print, "Hello World"),
             [(x, i) for i in range(10) for x in range(10)],
-        )
+        ),
     )
 
     print("Results:", results)

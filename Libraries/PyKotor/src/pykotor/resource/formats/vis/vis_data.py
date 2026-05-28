@@ -117,9 +117,7 @@ class VIS(ComparableMixin):
         for observer, observed in self._visibility.items():
             yield observer, deepcopy(observed)
 
-    def all_rooms(
-        self,
-    ) -> set[str]:
+    def all_rooms(self) -> set[str]:
         """Returns a copy of the set of rooms.
 
         Args:
@@ -278,9 +276,7 @@ class VIS(ComparableMixin):
 
         return show in self._visibility[when_inside]
 
-    def set_all_visible(
-        self,
-    ):
+    def set_all_visible(self):
         """Sets all rooms visible from each other.
 
         Processing Logic:

@@ -1,3 +1,9 @@
+"""ASCII MDL read/write: human-readable model format for editing and debugging.
+
+Third-party GitHub URL lines removed from this module are archived at
+``wiki/reverse_engineering_findings_io_mdl_ascii_github_urls_pre_scrub.md``.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -14,6 +20,11 @@ if TYPE_CHECKING:
 _FACE_SURFACE_MASK = 0x1F
 _FACE_SMOOTH_SHIFT = 5
 
+    def _parse_node(self, line: str) -> None:
+        """Parse a node declaration."""
+        match = re.match(r"^\s*node\s+(\S+)\s+(\S+)", line, re.IGNORECASE)
+        if not match:
+            return
 
 def _unpack_face_material(face: "MDLFace") -> tuple[int, int]:
     """Return (surface_material, smoothing_group) from packed face material flags.

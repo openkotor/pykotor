@@ -15,15 +15,19 @@ if TYPE_CHECKING:
 def command_exists(cmd: str) -> bool:
     return subprocess.call(["which", cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0  # noqa: S603, S607
 
+
 # Get default actions using xdg-mime and gio
 def get_default_actions(path: os.PathLike | str) -> list[str]:
     try:
-        mime_type = subprocess.check_output(["xdg-mime", "query", "filetype", path], text=True).strip()  # noqa: S603, S607
+        mime_type = subprocess.check_output(
+            ["xdg-mime", "query", "filetype", path], text=True
+        ).strip()  # noqa: S603, S607
         actions = subprocess.check_output(["gio", "mime", mime_type], text=True).splitlines()  # noqa: S603, S607
     except Exception:  # noqa: BLE001
         return []
     else:
         return [action.split(":")[1].strip() for action in actions if action.startswith("default:")]
+
 
 # ctypes method 1: Using GTK
 def context_menu_gtk(path: os.PathLike | str) -> bool:
@@ -48,6 +52,7 @@ def context_menu_gtk(path: os.PathLike | str) -> bool:
     else:
         return True
 
+
 # ctypes method 2: Using Qt
 def context_menu_qt(path: os.PathLike | str) -> bool:
     try:
@@ -60,11 +65,12 @@ def context_menu_qt(path: os.PathLike | str) -> bool:
         for action in actions:
             libQt5.QMenu_addAction(menu, action.encode())
         libQt5.QMenu_exec(menu)
-        libQt5.qApp.exec()
+        libQt5.qApp.exec()  # type: ignore[attr-defined]
     except Exception:  # noqa: BLE001
         return False
     else:
         return True
+
 
 # ctypes method 3: Using wxWidgets
 def context_menu_wxwidgets(path: os.PathLike | str) -> bool:
@@ -99,12 +105,15 @@ def context_menu_zenity(path: str):
         result = subprocess.run(
             ["zenity", "--list", "--title=Context Menu", "--column=Options", *actions],  # noqa: S603, S607
             stdout=subprocess.PIPE,
-            text=True, check=False
+            text=True,
+            check=False,
         )
         if result.returncode == 0:
             choice = result.stdout.strip()
             if choice:
-                subprocess.run(["zenity", "--info", f"--text=You chose '{choice}' for '{path}'"], check=False)  # noqa: S603, S607
+                subprocess.run(
+                    ["zenity", "--info", f"--text=You chose '{choice}' for '{path}'"], check=False
+                )  # noqa: S603, S607
     except Exception as e:  # noqa: BLE001
         print(f"Zenity method failed: {e}")
         return False
@@ -122,12 +131,15 @@ def context_menu_yad(path: str):
         result = subprocess.run(
             ["yad", "--list", "--title=Context Menu", "--column=Options", *actions],  # noqa: S607, S603
             stdout=subprocess.PIPE,
-            text=True, check=False
+            text=True,
+            check=False,
         )
         if result.returncode == 0:
             choice = result.stdout.strip()
             if choice:
-                subprocess.run(["yad", "--info", f"--text=You chose '{choice}' for '{path}'"], check=False)  # noqa: S607, S603
+                subprocess.run(
+                    ["yad", "--info", f"--text=You chose '{choice}' for '{path}'"], check=False
+                )  # noqa: S607, S603
     except Exception as e:  # noqa: BLE001
         print(f"Yad method failed: {e}")
         return False
@@ -146,7 +158,7 @@ def context_menu_dmenu(path: str):  # noqa: ANN201
             ["dmenu", "-p", "Choose an option:"],  # noqa: S607, S603
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            text=True
+            text=True,
         )
         result, _ = process.communicate(input="\n".join(actions))
         if process.returncode == 0:
@@ -162,39 +174,56 @@ def context_menu_dmenu(path: str):  # noqa: ANN201
 
 def show_context_menu(path: str):
     abs_path = PosixPath(path).resolve()
+
     def cmd_exists(cmd) -> bool:
         return subprocess.call(["which", cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0  # noqa: S603, S607
+
     def get_actions(p) -> list[str]:
         return [
             a.split(":")[1].strip()
             for a in subprocess.check_output(
-                ["gio", "mime", subprocess.check_output(["xdg-mime", "query", "filetype", p], text=True).strip()],  # noqa: S607, S603
+                [
+                    "gio",
+                    "mime",
+                    subprocess.check_output(
+                        ["xdg-mime", "query", "filetype", p], text=True
+                    ).strip(),
+                ],  # noqa: S607, S603
                 text=True,
             ).splitlines()
             if a.startswith("default:")
         ]
 
     methods = [
-        lambda p: cmd_exists("nautilus") and not subprocess.run(["nautilus", "--select", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("dolphin") and not subprocess.run(["dolphin", "--select", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("thunar") and not subprocess.run(["thunar", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("nemo") and not subprocess.run(["nemo", "--no-desktop", "--browser", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("caja") and not subprocess.run(["caja", "--browser", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("pcmanfm") and not subprocess.run(["pcmanfm", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("konqueror") and not subprocess.run(["konqueror", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("spacefm") and not subprocess.run(["spacefm", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("nautilus")
+        and not subprocess.run(["nautilus", "--select", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("dolphin")
+        and not subprocess.run(["dolphin", "--select", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("thunar")
+        and not subprocess.run(["thunar", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("nemo")
+        and not subprocess.run(["nemo", "--no-desktop", "--browser", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("caja")
+        and not subprocess.run(["caja", "--browser", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("pcmanfm")
+        and not subprocess.run(["pcmanfm", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("konqueror")
+        and not subprocess.run(["konqueror", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("spacefm")
+        and not subprocess.run(["spacefm", p], check=False).returncode,  # noqa: S603, S607
         lambda p: cmd_exists("rox") and not subprocess.run(["rox", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("krusader") and not subprocess.run(["krusader", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("krusader")
+        and not subprocess.run(["krusader", p], check=False).returncode,  # noqa: S603, S607
         context_menu_zenity,
         context_menu_yad,
         context_menu_dmenu,
         context_menu_gtk,
         context_menu_qt,
-        context_menu_wxwidgets
+        context_menu_wxwidgets,
     ]
     abs_path = PosixPath(path).resolve()
     for method in methods:
-        if method(abs_path):
+        if method(str(abs_path)):
             return
     print("All methods failed to display the context menu.")
 

@@ -1,3 +1,5 @@
+"""Talk table (dialog.tlk): read-only StrRef lookup and string/sound results."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,6 +8,7 @@ from typing import TYPE_CHECKING, NamedTuple
 from pykotor.common.language import Language
 from pykotor.common.misc import ResRef
 from pykotor.common.stream import BinaryReader
+from pykotor.tools.path import CaseAwarePath
 
 if TYPE_CHECKING:
     import os
@@ -42,7 +45,7 @@ class TalkTable:  # TODO(th3w1zard1): dialogf.tlk  # noqa: FIX002, TD003
         self,
         path: os.PathLike | str,
     ):
-        self._path: Path = Path(path)
+        self._path: CaseAwarePath = CaseAwarePath(path)
 
     def path(self) -> Path:
         return self._path
@@ -162,9 +165,7 @@ class TalkTable:  # TODO(th3w1zard1): dialogf.tlk  # noqa: FIX002, TD003
 
             return batch
 
-    def size(
-        self,
-    ) -> int:
+    def size(self) -> int:
         """Returns the number of entries in the talk table.
 
         Returns:
@@ -175,9 +176,7 @@ class TalkTable:  # TODO(th3w1zard1): dialogf.tlk  # noqa: FIX002, TD003
             reader.seek(12)
             return reader.read_uint32()  # entries_count
 
-    def language(
-        self,
-    ) -> Language:
+    def language(self) -> Language:
         """Returns the matching Language of the TLK file.
 
         Returns:

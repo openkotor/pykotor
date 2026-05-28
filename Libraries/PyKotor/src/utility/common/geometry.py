@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import math
 
 from enum import IntEnum
@@ -13,7 +14,15 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-class Vector2:
+if importlib.util.find_spec("pyglm"):
+    from pyglm.glm import mat4, vec2, vec3, vec4
+elif importlib.util.find_spec("glm"):
+    from glm import mat4, vec2, vec3, vec4
+elif not TYPE_CHECKING:
+    vec2, vec3, vec4, mat4 = object, object, object, object
+
+
+class Vector2(vec2):
     """Represents a 2 dimensional vector.
 
     Attributes:
@@ -24,15 +33,21 @@ class Vector2:
 
     def __init__(
         self,
-        x: float,
-        y: float,
+        x: float | Vector2 | Vector3 | Vector4 = 0.0,
+        y: float | None = None,
     ):
-        self.x: float = x
-        self.y: float = y
+        # Handle construction from other vector types
+        if isinstance(x, (Vector2, Vector3, Vector4)):
+            self.x: float = float(x.x)
+            self.y: float = float(x.y)
+            return
+        # Handle scalar construction
+        if y is None:
+            y = x
+        self.x = float(x)
+        self.y = float(y)
 
-    def __iter__(
-        self,
-    ) -> Iterator[float]:
+    def __iter__(self) -> Iterator[float]:
         return iter((self.x, self.y))
 
     def __repr__(
@@ -40,9 +55,7 @@ class Vector2:
     ) -> str:
         return f"{self.__class__.__name__}({self.x}, {self.y})"
 
-    def __str__(
-        self,
-    ):
+    def __str__(self):
         """Returns the individual components separated by whitespace."""
         return f"{self.x} {self.y}"
 
@@ -54,7 +67,7 @@ class Vector2:
         if self is other:
             return True
         if not isinstance(other, Vector2):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
 
         isclose_x: bool = math.isclose(self.x, other.x)
         isclose_y: bool = math.isclose(self.y, other.y)
@@ -66,12 +79,24 @@ class Vector2:
     ):
         """Adds the components of two Vector2 objects."""
         if not isinstance(other, Vector2):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
 
         new: Self = self.__class__.from_vector2(self)
         new.x += other.x
         new.y += other.y
         return new
+
+    def __radd__(
+        self,
+        other,
+    ):
+        """Right addition: scalar + Vector2 (returns Vector2)."""
+        if isinstance(other, (int, float)):
+            new = self.__class__.from_vector2(self)
+            new.x = other + new.x
+            new.y = other + new.y
+            return new
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __sub__(
         self,
@@ -79,20 +104,36 @@ class Vector2:
     ):
         """Subtracts the components of two Vector2 objects."""
         if not isinstance(other, Vector2):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
 
         new = self.__class__.from_vector2(self)
         new.x -= other.x
         new.y -= other.y
         return new
 
+    def __rsub__(
+        self,
+        other,
+    ):
+        """Right subtraction: scalar - Vector2."""
+        if isinstance(other, (int, float)):
+            new = self.__class__.from_vector2(self)
+            new.x = other - new.x
+            new.y = other - new.y
+            return new
+        return NotImplemented  # type: ignore[no-any-return]
+
     def __mul__(
         self,
         other,
     ):
-        """Multiplies the components by a scalar integer."""
-        if not isinstance(other, int):
-            return NotImplemented
+        """Multiplies the components by a scalar."""
+        if isinstance(other, (int, float)):
+            new = self.__class__.from_vector2(self)
+            new.x *= other
+            new.y *= other
+            return new
+        return NotImplemented  # type: ignore[no-any-return]
 
         new = self.__class__.from_vector2(self)
         new.x *= other
@@ -116,7 +157,7 @@ class Vector2:
 
         Processing Logic:
         ----------------
-            - Check if other is an integer
+            - Check if other is a scalar
             - Create a new vector from self
             - Divide x element by other
             - Divide y element by other
@@ -127,7 +168,19 @@ class Vector2:
             new.x /= other
             new.y /= other
             return new
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
+
+    def __rtruediv__(
+        self,
+        other,
+    ):
+        """Right division: scalar / Vector2."""
+        if isinstance(other, (int, float)):
+            new = self.__class__.from_vector2(self)
+            new.x = other / new.x if new.x != 0 else 0.0
+            new.y = other / new.y if new.y != 0 else 0.0
+            return new
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __getitem__(
         self,
@@ -139,7 +192,7 @@ class Vector2:
             if item == 1:
                 return self.y
             raise KeyError
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __setitem__(
         self,
@@ -151,7 +204,7 @@ class Vector2:
                 self.x = value
             elif key == 1:
                 self.y = value
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     @classmethod
     def from_vector2(
@@ -250,9 +303,7 @@ class Vector2:
         self.x = x
         self.y = y
 
-    def normalize(
-        self,
-    ):
+    def normalize(self):
         """Normalizes the vector so that the magnitude is equal to one while maintaining the same angle."""
         magnitude = self.magnitude()
         if magnitude == 0:
@@ -262,9 +313,7 @@ class Vector2:
             self.x /= magnitude
             self.y /= magnitude
 
-    def magnitude(
-        self,
-    ) -> float:
+    def magnitude(self) -> float:
         """Returns the magnitude of the vector.
 
         Returns:
@@ -334,9 +383,7 @@ class Vector2:
         """
         return any(item is self for item in container)
 
-    def angle(
-        self,
-    ) -> float:
+    def angle(self) -> float:
         """Returns the angle of the vector.
 
         Returns:
@@ -345,8 +392,12 @@ class Vector2:
         """
         return math.atan2(self.y, self.x)
 
+    def copy(self) -> Self:
+        """Return a shallow copy of this vector."""
+        return self.__class__.from_vector2(self)
 
-class Vector3:
+
+class Vector3(vec3):
     """Represents a 3 dimensional vector.
 
     Attributes:
@@ -358,27 +409,32 @@ class Vector3:
 
     def __init__(
         self,
-        x: float,
-        y: float,
-        z: float,
+        x: float | Vector2 | Vector3 | Vector4 = 0.0,
+        y: float | None = None,
+        z: float | None = None,
     ):
-        self.x: float = x
-        self.y: float = y
-        self.z: float = z
+        # Handle construction from other vector types
+        if isinstance(x, (Vector2, Vector3, Vector4)):
+            self.x = float(x.x)
+            self.y = float(x.y)
+            self.z = float(getattr(x, "z", 0.0))
+            return
+        # Handle scalar construction
+        if y is None:
+            y = x
+        if z is None:
+            z = x
+        self.x = float(x)
+        self.y = float(y)
+        self.z = float(z)
 
-    def __iter__(
-        self,
-    ) -> Iterator[float]:
+    def __iter__(self) -> Iterator[float]:
         return iter((self.x, self.y, self.z))
 
-    def __repr__(
-        self,
-    ):
+    def __repr__(self):
         return f"Vector3({self.x}, {self.y}, {self.z})"
 
-    def __str__(
-        self,
-    ):
+    def __str__(self):
         """Returns the individual components as a string separated by whitespace."""
         return f"{self.x} {self.y} {self.z}"
 
@@ -390,7 +446,7 @@ class Vector3:
         if self is other:
             return True
         if not isinstance(other, Vector3):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
 
         isclose_x = math.isclose(self.x, other.x)
         isclose_y = math.isclose(self.y, other.y)
@@ -406,7 +462,7 @@ class Vector3:
     ):
         """Adds the components of two Vector3 objects."""
         if not isinstance(other, Vector3):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
 
         new = self.__class__.from_vector3(self)
         new.x += other.x
@@ -414,19 +470,45 @@ class Vector3:
         new.z += other.z
         return new
 
+    def __radd__(
+        self,
+        other,
+    ):
+        """Right addition: scalar + Vector3 (returns Vector3)."""
+        if isinstance(other, (int, float)):
+            new = self.__class__.from_vector3(self)
+            new.x = other + new.x
+            new.y = other + new.y
+            new.z = other + new.z
+            return new
+        return NotImplemented  # type: ignore[no-any-return]
+
     def __sub__(
         self,
         other,
     ):
         """Subtracts the components of two Vector3 objects."""
         if not isinstance(other, Vector3):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
 
         new = self.__class__.from_vector3(self)
         new.x -= other.x
         new.y -= other.y
         new.z -= other.z
         return new
+
+    def __rsub__(
+        self,
+        other,
+    ):
+        """Right subtraction: scalar - Vector3."""
+        if isinstance(other, (int, float)):
+            new = self.__class__.from_vector3(self)
+            new.x = other - new.x
+            new.y = other - new.y
+            new.z = other - new.z
+            return new
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __mul__(
         self,
@@ -439,11 +521,30 @@ class Vector3:
             new.y *= other
             new.z *= other
             return new
-        return NotImplemented
+        if isinstance(other, Vector3):
+            new = self.__class__.from_vector3(self)
+            new.x *= other.x
+            new.y *= other.y
+            new.z *= other.z
+            return new
+        return NotImplemented  # type: ignore[no-any-return]
+
+    def __rmul__(
+        self,
+        other: float,
+    ):
+        """Right multiplication: scalar * Vector3."""
+        if isinstance(other, (int, float)):
+            new = self.__class__.from_vector3(self)
+            new.x *= other
+            new.y *= other
+            new.z *= other
+            return new
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __truediv__(
         self,
-        other,
+        other: float,
     ):
         if isinstance(other, int):
             new = self.__class__.from_vector3(self)
@@ -451,7 +552,20 @@ class Vector3:
             new.y /= other
             new.z /= other
             return new
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
+
+    def __rtruediv__(
+        self,
+        other,
+    ):
+        """Right division: scalar / Vector3."""
+        if isinstance(other, (int, float)):
+            new = self.__class__.from_vector3(self)
+            new.x = other / new.x if new.x != 0 else 0.0
+            new.y = other / new.y if new.y != 0 else 0.0
+            new.z = other / new.z if new.z != 0 else 0.0
+            return new
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __getitem__(
         self,
@@ -465,7 +579,7 @@ class Vector3:
             if item == 2:  # noqa: PLR2004
                 return self.z
             raise KeyError
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __setitem__(
         self,
@@ -483,7 +597,7 @@ class Vector3:
                 self.z = value
                 return None
             return None
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     @classmethod
     def from_vector2(
@@ -581,9 +695,7 @@ class Vector3:
             self.z /= magnitude
         return self
 
-    def magnitude(
-        self,
-    ) -> float:
+    def magnitude(self) -> float:
         """Returns the magnitude of the vector.
 
         Returns:
@@ -655,8 +767,21 @@ class Vector3:
         """
         return any(item is self for item in container)
 
+    def serialize(self) -> dict[str, float]:
+        """Serialize a Vector3 to JSON-compatible dict.
 
-class Vector4:
+        Returns:
+        -------
+            Dictionary with x, y, z components as floats.
+        """
+        return {"x": float(self.x), "y": float(self.y), "z": float(self.z)}
+
+    def copy(self) -> Self:
+        """Return a shallow copy of this vector."""
+        return self.__class__.from_vector3(self)
+
+
+class Vector4(vec4):
     """Represents a 4 dimensional vector.
 
     Attributes:
@@ -669,29 +794,49 @@ class Vector4:
 
     def __init__(
         self,
-        x: float,
-        y: float,
-        z: float,
-        w: float,
+        x: float | Vector2 | Vector3 | Vector4 = 0.0,
+        y: float | None = None,
+        z: float | None = None,
+        w: float | None = None,
     ):
-        self.x: float = x
-        self.y: float = y
-        self.z: float = z
-        self.w: float = w
+        # Handle construction from other vector types
+        if isinstance(x, Vector2):
+            self.x: float = float(x.x)
+            self.y: float = float(x.y)
+            self.z: float = 0.0
+            self.w: float = float(y) if y is not None else 0.0
+            return
+        if isinstance(x, Vector3):
+            self.x = float(x.x)
+            self.y = float(x.y)
+            self.z = float(x.z)
+            self.w = float(y) if y is not None else 0.0
+            return
+        if isinstance(x, Vector4):
+            self.x = float(x.x)
+            self.y = float(x.y)
+            self.z = float(x.z)
+            self.w = float(x.w)
+            return
+        # Handle scalar construction
+        if y is None:
+            y = x
+        if z is None:
+            z = x
+        if w is None:
+            w = x
+        self.x = float(x)
+        self.y = float(y)
+        self.z = float(z)
+        self.w = float(w)
 
-    def __iter__(
-        self,
-    ) -> Iterator[float]:
+    def __iter__(self) -> Iterator[float]:
         return iter((self.x, self.y, self.z, self.w))
 
-    def __repr__(
-        self,
-    ):
+    def __repr__(self):
         return f"Vector4({self.x}, {self.y}, {self.z}, {self.w})"
 
-    def __str__(
-        self,
-    ):
+    def __str__(self):
         """Returns the individual components as a string separated by whitespace."""
         return f"{self.x} {self.y} {self.z} {self.w}"
 
@@ -703,7 +848,7 @@ class Vector4:
         if self is other:
             return True
         if not isinstance(other, Vector4):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
 
         isclose_x: bool = math.isclose(self.x, other.x)
         isclose_y: bool = math.isclose(self.y, other.y)
@@ -717,7 +862,7 @@ class Vector4:
     ):
         """Adds the components of two Vector4 objects."""
         if not isinstance(other, Vector4):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
 
         new = self.__class__.from_vector4(self)
         new.x += other.x
@@ -738,7 +883,7 @@ class Vector4:
     ):
         """Subtracts the components of two Vector4 objects."""
         if not isinstance(other, Vector4):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
 
         new = self.__class__.from_vector4(self)
         new.x -= other.x
@@ -747,13 +892,19 @@ class Vector4:
         new.w -= other.w
         return new
 
-    def __mul__(
+    def __rsub__(
         self,
         other,
     ):
-        """Multiplies the components by a scalar integer."""
-        if not isinstance(other, int):
-            return NotImplemented
+        """Right subtraction: scalar - Vector4."""
+        if isinstance(other, (int, float)):
+            new = self.__class__.from_vector4(self)
+            new.x = other - new.x
+            new.y = other - new.y
+            new.z = other - new.z
+            new.w = other - new.w
+            return new
+        return NotImplemented  # type: ignore[no-any-return]
 
         new = self.__class__.from_vector4(self)
         new.x *= other
@@ -897,10 +1048,18 @@ class Vector4:
         pitch: float = y
         yaw: float = z
 
-        qx: float = math.sin(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) - math.cos(roll / 2) * math.sin(pitch / 2) * math.sin(yaw / 2)
-        qy: float = math.cos(roll / 2) * math.sin(pitch / 2) * math.cos(yaw / 2) + math.sin(roll / 2) * math.cos(pitch / 2) * math.sin(yaw / 2)
-        qz: float = math.cos(roll / 2) * math.cos(pitch / 2) * math.sin(yaw / 2) - math.sin(roll / 2) * math.sin(pitch / 2) * math.cos(yaw / 2)
-        qw: float = math.cos(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) + math.sin(roll / 2) * math.sin(pitch / 2) * math.sin(yaw / 2)
+        qx: float = math.sin(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) - math.cos(
+            roll / 2
+        ) * math.sin(pitch / 2) * math.sin(yaw / 2)
+        qy: float = math.cos(roll / 2) * math.sin(pitch / 2) * math.cos(yaw / 2) + math.sin(
+            roll / 2
+        ) * math.cos(pitch / 2) * math.sin(yaw / 2)
+        qz: float = math.cos(roll / 2) * math.cos(pitch / 2) * math.sin(yaw / 2) - math.sin(
+            roll / 2
+        ) * math.sin(pitch / 2) * math.cos(yaw / 2)
+        qw: float = math.cos(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) + math.sin(
+            roll / 2
+        ) * math.sin(pitch / 2) * math.sin(yaw / 2)
 
         return cls(qx, qy, qz, qw)
 
@@ -944,9 +1103,40 @@ class Vector4:
         # Pack into single 32-bit integer
         return x_packed | (y_packed << 11) | (z_packed << 22)
 
-    def to_euler(
-        self,
-    ) -> Vector3:
+    def to_compressed(self) -> int:
+        """Compress this quaternion into a 32-bit integer.
+
+        Inverse of from_compressed. Packs X, Y, Z components into a single
+        32-bit value. The W component is not stored as it can be recomputed from
+        the quaternion unit constraint.
+
+        Returns:
+        -------
+            int: 32-bit packed quaternion value
+
+        Notes:
+        -----
+            Values are clamped to [-1, 1] range before packing to prevent overflow.
+        """
+        # Clamp values to valid range
+        x = max(-1.0, min(1.0, self.x))
+        y = max(-1.0, min(1.0, self.y))
+        z = max(-1.0, min(1.0, self.z))
+
+        # Map from [-1, 1] to integer ranges and pack
+        # X: [-1, 1] -> [0, 2047] (11 bits) via (value + 1) * 1023
+        x_packed = int((x + 1.0) * 1023.0) & 0x7FF
+
+        # Y: [-1, 1] -> [0, 2047] (11 bits)
+        y_packed = int((y + 1.0) * 1023.0) & 0x7FF
+
+        # Z: [-1, 1] -> [0, 1023] (10 bits)
+        z_packed = int((z + 1.0) * 511.0) & 0x3FF
+
+        # Pack into single 32-bit integer
+        return x_packed | (y_packed << 11) | (z_packed << 22)
+
+    def to_euler(self) -> Vector3:
         """Converts a quaternion to Euler angles.
 
         Args:
@@ -979,9 +1169,7 @@ class Vector4:
 
         return Vector3(roll, pitch, yaw)
 
-    def magnitude(
-        self,
-    ) -> float:
+    def magnitude(self) -> float:
         """Returns the magnitude of the vector.
 
         Returns:
@@ -1033,6 +1221,19 @@ class Vector4:
         self.z = z
         self.w = w
 
+    def serialize(self) -> dict[str, float]:
+        """Serialize a Vector4 (quaternion) to JSON-compatible dict.
+
+        Returns:
+        -------
+            Dictionary with x, y, z, w components as floats.
+        """
+        return {"x": float(self.x), "y": float(self.y), "z": float(self.z), "w": float(self.w)}
+
+    def copy(self) -> Self:
+        """Return a shallow copy of this vector."""
+        return self.__class__.from_vector4(self)
+
 
 class AxisAngle:
     """Represents a rotation in 3D space.
@@ -1045,11 +1246,11 @@ class AxisAngle:
 
     def __init__(
         self,
-        axis: Vector3,
-        angle: float,
+        axis: Vector3 | None = None,
+        angle: float | None = None,
     ):
-        self.axis: Vector3 = axis
-        self.angle: float = angle
+        self.axis: Vector3 = axis if axis is not None else Vector3()
+        self.angle: float = angle if angle is not None else 0.0
 
     @classmethod
     def from_quaternion(
@@ -1133,25 +1334,27 @@ class SurfaceMaterial(IntEnum):
     SURFACE_MATERIAL_29 = 29
     TRIGGER = 30
 
-    def walkable(
-        self,
-    ) -> bool:
+    def walkable(self) -> bool:
         """Returns True if the surface material is walkable, False otherwise."""
         return self in {
-            SurfaceMaterial.DIRT,
-            SurfaceMaterial.GRASS,
-            SurfaceMaterial.STONE,
-            SurfaceMaterial.WOOD,
-            SurfaceMaterial.WATER,
             SurfaceMaterial.CARPET,
-            SurfaceMaterial.METAL,
-            SurfaceMaterial.PUDDLES,
-            SurfaceMaterial.SWAMP,
-            SurfaceMaterial.MUD,
-            SurfaceMaterial.LEAVES,
+            SurfaceMaterial.DIRT,
             SurfaceMaterial.DOOR,
+            SurfaceMaterial.GRASS,
+            SurfaceMaterial.LEAVES,
+            SurfaceMaterial.METAL,
+            SurfaceMaterial.MUD,
+            SurfaceMaterial.PUDDLES,
+            SurfaceMaterial.STONE,
+            SurfaceMaterial.SWAMP,
             SurfaceMaterial.TRIGGER,
+            SurfaceMaterial.WATER,
+            SurfaceMaterial.WOOD,
         }
+
+    def is_walkable(self) -> bool:
+        """Alias for walkable() to satisfy toolset expectations."""
+        return self.walkable()
 
 
 class Face:
@@ -1167,14 +1370,14 @@ class Face:
 
     def __init__(
         self,
-        v1: Vector3,
-        v2: Vector3,
-        v3: Vector3,
+        v1: Vector3 | None = None,
+        v2: Vector3 | None = None,
+        v3: Vector3 | None = None,
         material: SurfaceMaterial = SurfaceMaterial.UNDEFINED,
     ):
-        self.v1: Vector3 = v1
-        self.v2: Vector3 = v2
-        self.v3: Vector3 = v3
+        self.v1: Vector3 = Vector3() if v1 is None else v1
+        self.v2: Vector3 = Vector3() if v2 is None else v2
+        self.v3: Vector3 = Vector3() if v3 is None else v3
         self.material: SurfaceMaterial = material
 
     def __eq__(self, other: object) -> bool:
@@ -1201,9 +1404,27 @@ class Face:
     ) -> Vector3:
         """Returns the normal for the face.
 
-        Returns:
-        -------
-            A new Vector3 instance representing the face normal.
+        Two faces are equal if they have the same three vertices (by value)
+        and the same material. This is value-based equality, not identity-based.
+        """
+        if not isinstance(other, Face):
+            return NotImplemented  # type: ignore[no-any-return]
+        return (
+            self.v1 == other.v1
+            and self.v2 == other.v2
+            and self.v3 == other.v3
+            and self.material == other.material
+        )
+
+    def __hash__(self) -> int:
+        """Hash based on vertices and material for use in sets/dicts."""
+        return hash((self.v1, self.v2, self.v3, self.material))
+
+    def normal(self) -> Vector3:
+        """Returns the normal for the face (cross product of edges, normalized).
+
+        Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:741-746 (rebuild: cb = v3-v2, ab = v1-v2, normal = cb.cross(ab)).
+        Equivalent: (v2-v1)×(v3-v2) = (v3-v2)×(v1-v2).
         """
         u: Vector3 = self.v2 - self.v1
         v: Vector3 = self.v3 - self.v2
@@ -1216,27 +1437,22 @@ class Face:
 
         return normal
 
-    def area(
-        self,
-    ) -> float:
+    def area(self) -> float:
         a = self.v1.distance(self.v2)
         b = self.v1.distance(self.v3)
         c = self.v2.distance(self.v3)
         return 0.25 * math.sqrt((a + b + c) * (-a + b + c) * (a - b + c) * (a + b - c))
 
-    def planar_distance(
-        self,
-    ) -> float:
+    def planar_distance(self) -> float:
+        """Plane coefficient d for plane equation n·x + d = 0 (n = normal, v1 on plane).
+        Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:749 (rebuild: coeff = -dot(v1, normal)).
+        """
         return -1.0 * (self.normal().dot(self.v1))
 
-    def centre(
-        self,
-    ) -> Vector3:
+    def centre(self) -> Vector3:
         return (self.v1 + self.v2 + self.v3) / 3
 
-    def average(
-        self,
-    ) -> Vector3:
+    def average(self) -> Vector3:
         """Returns the average point of the face.
 
         Returns:
@@ -1269,6 +1485,10 @@ class Face:
         ny = (dy1 * dx3 - dx1 * dy3) / scale
         return self.v1.z + ny * (self.v2.z - self.v1.z) + nx * (self.v3.z - self.v1.z)
 
+    def copy(self) -> Face:
+        """Return a copy of this face and its vertices."""
+        return self.__class__(self.v1.copy(), self.v2.copy(), self.v3.copy(), self.material)
+
 
 class Polygon2:
     def __init__(
@@ -1277,19 +1497,13 @@ class Polygon2:
     ):
         self.points: list[Vector2] = [] if points is None else points
 
-    def __iter__(
-        self,
-    ) -> Iterator[Vector2]:
+    def __iter__(self) -> Iterator[Vector2]:
         yield from self.points
 
-    def __len__(
-        self,
-    ) -> int:
+    def __len__(self) -> int:
         return len(self.points)
 
-    def __repr__(
-        self,
-    ) -> str:
+    def __repr__(self) -> str:
         return f"Polygon2({self.points})"
 
     def __getitem__(
@@ -1300,7 +1514,7 @@ class Polygon2:
             return self.points[item]
         if isinstance(item, slice):
             return self.points[item.start : item.stop : item.step]
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __setitem__(
         self,
@@ -1309,7 +1523,7 @@ class Polygon2:
     ):
         if isinstance(key, int) and isinstance(value, Vector2):
             self.points[key] = value
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     @classmethod
     def from_polygon3(
@@ -1351,7 +1565,7 @@ class Polygon2:
         # https://stackoverflow.com/a/42306732
 
         n = len(self.points)
-        inside = False
+        inside: bool = False
 
         p1: Vector2 = self.points[0]
         for i in range(1, n + 1):
@@ -1375,9 +1589,7 @@ class Polygon2:
             p1 = p2
         return inside
 
-    def area(
-        self,
-    ) -> float:
+    def area(self) -> float:
         """Calculates the area of a polygon.
 
         Args:
@@ -1400,7 +1612,9 @@ class Polygon2:
         n: int = len(self.points)
         area: float = 0.0
         for i in range(n - 1):
-            area += -self.points[i].y * self.points[i + 1].x + self.points[i].x * self.points[i + 1].y
+            area += (
+                -self.points[i].y * self.points[i + 1].x + self.points[i].x * self.points[i + 1].y
+            )
         area += -self.points[n - 1].y * self.points[0].x + self.points[n - 1].x * self.points[0].y
         return 0.5 * math.fabs(area)
 
@@ -1428,6 +1642,10 @@ class Polygon2:
     ) -> int:
         return self.points.index(point)
 
+    def copy(self) -> Polygon2:
+        """Return a copy of this polygon and its points."""
+        return self.__class__([point.copy() for point in self.points])
+
 
 class Polygon3:
     def __init__(
@@ -1436,19 +1654,13 @@ class Polygon3:
     ):
         self.points: list[Vector3] = [] if points is None else points
 
-    def __iter__(
-        self,
-    ) -> Iterator[Vector3]:
+    def __iter__(self) -> Iterator[Vector3]:
         yield from self.points
 
-    def __len__(
-        self,
-    ) -> int:
+    def __len__(self) -> int:
         return len(self.points)
 
-    def __repr__(
-        self,
-    ):
+    def __repr__(self):
         return f"Polygon3({self.points})"
 
     def __getitem__(
@@ -1459,7 +1671,7 @@ class Polygon3:
             return self.points[item]
         if isinstance(item, slice):
             return self.points[item.start : item.stop : item.step]
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __setitem__(
         self,
@@ -1468,7 +1680,7 @@ class Polygon3:
     ):
         if isinstance(key, int) and isinstance(value, Vector3):
             self.points[key] = value
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     @classmethod
     def from_polygon2(
@@ -1505,11 +1717,11 @@ class Polygon3:
         This method modifies the instance by adding three Vector3 points defining the triangle.
         """
         x, y, z = origin
-        height = size * (3 ** 0.5) / 2
+        height = size * (3**0.5) / 2
         self.points = [
             Vector3(x, y, z),
             Vector3(x + size, y, z),
-            Vector3(x + size / 2, y + height, z)
+            Vector3(x + size / 2, y + height, z),
         ]
 
     def default_square(
@@ -1531,7 +1743,7 @@ class Polygon3:
             Vector3(x, y, z),
             Vector3(x + size, y, z),
             Vector3(x + size, y + size, z),
-            Vector3(x, y + size, z)
+            Vector3(x, y + size, z),
         ]
 
     def append(

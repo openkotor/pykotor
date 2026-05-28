@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 
-[CmdletBinding(PositionalBinding=$false)]
+[CmdletBinding(PositionalBinding = $false)]
 param(
   [switch]$noprompt,
   [string]$venv_name = ".venv",
@@ -8,132 +8,114 @@ param(
 )
 $ErrorActionPreference = "Stop"
 
-$repoRootPath = (Resolve-Path -LiteralPath "$($MyInvocation.MyCommand.Definition)/../..").Path  # Path to PyKotor repo root.
-Write-Host "Initializing the Python virtual environment..."
-if ($noprompt) {
-    . $repoRootPath/install_python_venv.ps1 -noprompt -venv_name $venv_name
-} else {
-    . $repoRootPath/install_python_venv.ps1 -venv_name $venv_name
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$repoRootPath = (Resolve-Path -LiteralPath "$($scriptDir)/..").Path
+$toolPath = (Resolve-Path -LiteralPath "$repoRootPath/Tools/HoloPatcher").Path
+$toolSrcDir = (Resolve-Path -LiteralPath "$toolPath/src").Path
+
+function Get-LocalOS {
+  if ($IsWindows) { return "Windows" }
+  if ($IsMacOS) { return "Mac" }
+  if ($IsLinux) { return "Linux" }
+  return "Unknown"
+}
+$iconExtension = if ((Get-LocalOS) -eq 'Mac') { 'icns' } else { 'ico' }
+$iconPath = "$toolSrcDir/holopatcher/resources/icons/patcher_icon_v2.$iconExtension"
+
+$argsList = @(
+  "--tool-path", $toolPath
+  "--entrypoint", "holopatcher/__main__.py"
+  "--name", "HoloPatcher"
+  "--distpath", "$repoRootPath/dist"
+  "--workpath", "$toolSrcDir/build"
+  "--icon", $iconPath
+  "--debug", "imports"
+  "--log-level", "INFO"
+  "--console"
+  "--onefile"
+  "--noconfirm"
+  "--clean"
+  "--exclude-module=PyQt5",
+  "--exclude-module=PyQt5-Qt5",
+  "--exclude-module=PyQt5-sip",
+  "--exclude-module=PyQt6",
+  "--exclude-module=PyQt6-Qt6",
+  "--exclude-module=PyQt6-sip",
+  "--exclude-module=PySide2",
+  "--exclude-module=PySide6",
+  "--exclude-module", "PyOpenGL"
+  "--exclude-module", "PyGLM"
+  "--upx-exclude", "_uuid.pyd"
+  "--upx-exclude", "api-ms-win-crt-environment-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-crt-string-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-crt-convert-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-crt-heap-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-crt-conio-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-crt-filesystem-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-crt-stdio-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-crt-process-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-crt-locale-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-crt-time-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-crt-math-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-crt-runtime-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-crt-utility-l1-1-0.dll"
+  "--upx-exclude", "python3.dll"
+  "--upx-exclude", "api-ms-win-crt-private-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-timezone-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-file-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-processthreads-l1-1-1.dll"
+  "--upx-exclude", "api-ms-win-core-processenvironment-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-debug-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-localization-l1-2-0.dll"
+  "--upx-exclude", "api-ms-win-core-processthreads-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-errorhandling-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-handle-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-util-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-profile-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-rtlsupport-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-namedpipe-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-libraryloader-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-file-l1-2-0.dll"
+  "--upx-exclude", "api-ms-win-core-synch-l1-2-0.dll"
+  "--upx-exclude", "api-ms-win-core-sysinfo-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-console-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-string-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-memory-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-synch-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-interlocked-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-datetime-l1-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-file-l2-1-0.dll"
+  "--upx-exclude", "api-ms-win-core-heap-l1-1-0.dll"
+  "--venv-name", $venv_name
+)
+
+if ($noprompt) { $argsList += "--noprompt" }
+if ($upx_dir) { $argsList += @("--upx-dir", $upx_dir) }
+
+# If pythonExePath is set (venv already created by workflow), pass --skip-venv and --python-exe
+$pythonExeToUse = $null
+if ($env:pythonExePath) {
+  $pythonExeToUse = $env:pythonExePath
+}
+else {
+  # Try to construct from venv_name (workflow creates venv with specific naming)
+  $os = Get-LocalOS
+  if ($os -eq "Windows") {
+    $possiblePython = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Definition) "..\$venv_name\Scripts\python.exe"
+  }
+  else {
+    $possiblePython = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Definition) "..\$venv_name\bin\python"
+  }
+  if (Test-Path $possiblePython) {
+    $pythonExeToUse = $possiblePython
+  }
 }
 
-$iconExtension = if ((Get-OS) -eq 'Mac') {'icns'} else {'ico'}
-$pyInstallerArgs = @{
-    'exclude-module' = @(  # add some giant packages that should never be included
-        'PyQt5',
-        'PyOpenGL',
-        'PyGLM',
-        'dl_translate',
-        'torch',
-        'deep_translator',
-        'cefpython3'
-    )
-    'upx-exclude' = @(
-        '_uuid.pyd',
-        'api-ms-win-crt-environment-l1-1-0.dll',
-        'api-ms-win-crt-string-l1-1-0.dll',
-        'api-ms-win-crt-convert-l1-1-0.dll',
-        'api-ms-win-crt-heap-l1-1-0.dll',
-        'api-ms-win-crt-conio-l1-1-0.dll',
-        'api-ms-win-crt-filesystem-l1-1-0.dll',
-        'api-ms-win-crt-stdio-l1-1-0.dll',
-        'api-ms-win-crt-process-l1-1-0.dll',
-        'api-ms-win-crt-locale-l1-1-0.dll',
-        'api-ms-win-crt-time-l1-1-0.dll',
-        'api-ms-win-crt-math-l1-1-0.dll',
-        'api-ms-win-crt-runtime-l1-1-0.dll',
-        'api-ms-win-crt-utility-l1-1-0.dll',
-        'python3.dll',
-        'api-ms-win-crt-private-l1-1-0.dll',
-        'api-ms-win-core-timezone-l1-1-0.dll',
-        'api-ms-win-core-file-l1-1-0.dll',
-        'api-ms-win-core-processthreads-l1-1-1.dll',
-        'api-ms-win-core-processenvironment-l1-1-0.dll',
-        'api-ms-win-core-debug-l1-1-0.dll',
-        'api-ms-win-core-localization-l1-2-0.dll',
-        'api-ms-win-core-processthreads-l1-1-0.dll',
-        'api-ms-win-core-errorhandling-l1-1-0.dll',
-        'api-ms-win-core-handle-l1-1-0.dll',
-        'api-ms-win-core-util-l1-1-0.dll',
-        'api-ms-win-core-profile-l1-1-0.dll',
-        'api-ms-win-core-rtlsupport-l1-1-0.dll',
-        'api-ms-win-core-namedpipe-l1-1-0.dll',
-        'api-ms-win-core-libraryloader-l1-1-0.dll',
-        'api-ms-win-core-file-l1-2-0.dll',
-        'api-ms-win-core-synch-l1-2-0.dll',
-        'api-ms-win-core-sysinfo-l1-1-0.dll',
-        'api-ms-win-core-console-l1-1-0.dll',
-        'api-ms-win-core-string-l1-1-0.dll',
-        'api-ms-win-core-memory-l1-1-0.dll',
-        'api-ms-win-core-synch-l1-1-0.dll',
-        'api-ms-win-core-interlocked-l1-1-0.dll',
-        'api-ms-win-core-datetime-l1-1-0.dll',
-        'api-ms-win-core-file-l2-1-0.dll',
-        'api-ms-win-core-heap-l1-1-0.dll'
-    )
-    'debug' = 'imports'
-    'log-level' = 'INFO'
-    'clean' = $true
-    'windowed' = $false  # https://github.com/pyinstaller/pyinstaller/wiki/FAQ#mac-os-x  https://pyinstaller.org/en/stable/usage.html#cmdoption-w
-    'onefile' = $true
-    'noconfirm' = $true
-    'distpath' = "$repoRootPath$($pathSep)dist"
-    #'workpath' = ""  # defined after this constructor.
-    'name' = 'HoloPatcher'
-    'upx-dir' = $upx_dir
-    'icon' = ""  # defined after this constructor.
-    'path' = $env:PYTHONPATH -split ';'
+if ($pythonExeToUse) {
+  $argsList += "--skip-venv"
+  $argsList += @("--python-exe", $pythonExeToUse)
+  Write-Host "Using pre-created venv Python: $pythonExeToUse"
 }
 
-$toolSrcDir = (Resolve-Path -LiteralPath "$($repoRootPath)$($pathSep)Tools$($pathSep)$($pyInstallerArgs.name)$($pathSep)src").Path
-$pyInstallerArgs.workpath = "$toolSrcDir$($pathSep)build"
-$pyInstallerArgs.path += $toolSrcDir
-$pyInstallerArgs.icon = "$toolSrcDir${pathSep}resources${pathSep}icons${pathSep}patcher_icon_v2.${iconExtension}"
-Write-Host "toolSrcDir: '$toolSrcDir'"
-
-# Remove old compile/build files/folders if clean is set.
-if (Get-OS -eq "Windows") { $extension = "exe" } elseif (Get-OS -eq "Linux") { $extension = "" } elseif (Get-OS -eq "Mac") { $extension = "app" }
-$finalExecutablePath = $pyInstallerArgs.distpath + $pathSep + "$($pyInstallerArgs.name).$extension"
-if (Test-Path -LiteralPath $finalExecutablePath -ErrorAction SilentlyContinue) {
-    Write-Host "Removing old exe at '$finalExecutablePath'"
-    Remove-Item -LiteralPath $finalExecutablePath -Force
-} else {
-    $finalExecutablePath = "$($pyInstallerArgs.distpath)$($pathSep)$($pyInstallerArgs.name)$($pathSep)$($pyInstallerArgs.name).$extension"
-    $finalExecutableDir = "$($pyInstallerArgs.distpath)$pathSep$($pyInstallerArgs.name)"
-    if (Test-Path -LiteralPath $finalExecutableDir -ErrorAction SilentlyContinue) {
-        Write-Host "Removing old dist dir at '$finalExecutableDir'"
-        Remove-Item -LiteralPath $finalExecutableDir -Recurse -Force
-    }
-}
-if ($clean -and (Test-Path $pyInstallerArgs.workpath -ErrorAction SilentlyContinue)) { Remove-Item -LiteralPath $pyInstallerArgs.workpath -Recurse -Force }
-
-
-# Build flat arguments array.
-$argumentsArray = $pyInstallerArgs.GetEnumerator() | ForEach-Object {
-    if ($_.Value -is [System.Array]) {
-        $arr = @()
-        foreach ($elem in $($_.Value)) { $arr += "--$($_.Key)=$elem" }
-        $arr
-    } else {
-        if ($_.Value -eq $true) { "--$($_.Key)" }
-        elseif ($_.Value -eq $false) {}
-        else { "--$($_.Key)=$($_.Value)" }
-    }
-}
-
-
-Write-Host "Compiling $($pyInstallerArgs.name)..."
-Push-Location -LiteralPath $toolSrcDir
-try {
-    $argumentsArray = @('-m', 'PyInstaller') + $argumentsArray + "$($pyInstallerArgs.name)$pathSep`__main__.py"
-    Write-Host "Executing command: $pythonExePath $argumentsArray"
-    & $pythonExePath $argumentsArray
-} finally {
-    Pop-Location
-}
-
-Write-Host "Checking '$finalExecutablePath' to see if it was built and the file exists."
-if (-not (Test-Path -LiteralPath $finalExecutablePath -ErrorAction SilentlyContinue)) {
-    Write-Error "$($pyInstallerArgs.name) could not be compiled, scroll up to find out why"
-} else {
-    Write-Host "$($pyInstallerArgs.name) was compiled to '$finalExecutablePath'"
-}
+& "$scriptDir/compile_tool.ps1" @argsList
+exit $LASTEXITCODE

@@ -1,3 +1,37 @@
+"""MDL (Model) data structures for KotOR.
+
+This module defines the in-memory representation of MDL/MDX model files used in KotOR.
+MDL files store 3D model geometry, animations, materials, and node hierarchies for
+characters, creatures, placeables, and area geometry.
+
+MDL Format Overview:
+-------------------
+MDL files contain hierarchical node structures with:
+- Geometry nodes (Trimesh, Skin, Danglymesh)
+- Animation nodes (controllers for position, orientation, scale)
+- Light nodes (point lights, spot lights, ambient)
+- Emitter nodes (particle effects)
+- Reference nodes (model references, placeables)
+- Camera nodes (viewpoint definitions)
+
+Each node can have:
+- Position, orientation (quaternion), scale
+- Controllers (keyframe animations)
+- Children nodes (hierarchical structure)
+- Node-specific data (geometry, lights, etc.)
+
+The module provides canonicalization functions for comparing MDL structures
+across different toolchains, handling floating-point precision differences
+and structural equivalency checks.
+
+Notes:
+------
+    Shapes here are driven by what retail KotOR I/II actually load—see ``__init__.py`` for
+    field-name trivia and ``io_mdl.py`` for how the binary stream maps into these objects.
+    Third-party GitHub URL lines removed from this module are archived at
+    ``wiki/reverse_engineering_findings_mdl_data_github_urls_pre_scrub.md``.
+"""
+
 from __future__ import annotations
 
 from enum import IntFlag
@@ -15,6 +49,10 @@ if TYPE_CHECKING:
 
 class MDL(ComparableMixin):
     """Represents a MDL/MDX file.
+
+    MDL files store hierarchical node structures with geometry, animations, lights, emitters,
+    and references. Each node can have position, orientation (quaternion), scale, controllers
+    (keyframe animations), and children nodes forming a tree structure.
 
     Attributes:
     ----------
@@ -40,14 +78,163 @@ class MDL(ComparableMixin):
     COMPARABLE_FIELDS = ("name", "fog", "supermodel")
     COMPARABLE_SEQUENCE_FIELDS = ("anims",)
 
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         self.root: MDLNode = MDLNode()
         self.anims: list[MDLAnimation] = []
+        # Back-compat: some engine/tooling expects a geometry_type field.
+        self.geometry_type: MDLGeometryType = MDLGeometryType.GEOMETRY_NORMAL
         self.name: str = ""
         self.fog: bool = False
         self.supermodel: str = ""
+        # ASCII/mdlops specific header fields
+        self.classification: MDLClassification = MDLClassification.OTHER
+        self.classification_unk1: int = 0
+        self.animation_scale: float = 0.971
+        self.bmin: Vector3 = Vector3(-5, -5, -1)
+        self.bmax: Vector3 = Vector3(5, 5, 10)
+        self.radius: float = 7.0
+        self.headlink: str = ""
+        self.compress_quaternions: int = 0
+
+    # Back-compat aliases (used by Libraries/PyKotor/src/pykotor/engine tests/tooling)
+    @property
+    def animations(self) -> list[MDLAnimation]:
+        return self.anims
+
+    @animations.setter
+    def animations(self, v: list[MDLAnimation]) -> None:
+        self.anims = v
+
+    @property
+    def root_node(self) -> MDLNode:
+        return self.root
+
+    @root_node.setter
+    def root_node(self, v: MDLNode) -> None:
+        self.root = v
+
+    def __eq__(self, other):
+        if not isinstance(other, MDL):
+            return NotImplemented  # type: ignore[no-any-return]
+        # Header/scalars (canonical float compare)
+        if self.name != other.name:
+            return False
+        if self.fog != other.fog:
+            return False
+        if self.supermodel != other.supermodel:
+            return False
+        if int(self.classification) != int(other.classification):
+            return False
+        if int(self.classification_unk1) != int(other.classification_unk1):
+            return False
+        if _qfloat(float(self.animation_scale)) != _qfloat(float(other.animation_scale)):
+            return False
+        if _qfloat(float(self.radius)) != _qfloat(float(other.radius)):
+            return False
+        if (
+            _qfloat(float(self.bmin.x)) != _qfloat(float(other.bmin.x))
+            or _qfloat(float(self.bmin.y)) != _qfloat(float(other.bmin.y))
+            or _qfloat(float(self.bmin.z)) != _qfloat(float(other.bmin.z))
+        ):
+            return False
+        if (
+            _qfloat(float(self.bmax.x)) != _qfloat(float(other.bmax.x))
+            or _qfloat(float(self.bmax.y)) != _qfloat(float(other.bmax.y))
+            or _qfloat(float(self.bmax.z)) != _qfloat(float(other.bmax.z))
+        ):
+            return False
+        if self.headlink != other.headlink:
+            return False
+        if int(self.compress_quaternions) != int(other.compress_quaternions):
+            return False
+
+        # Geometry graph: duplicate-safe, sibling-order-insensitive subtree comparison.
+        a_nodes = self.all_nodes()
+        b_nodes = other.all_nodes()
+        if Counter(n.name for n in a_nodes) != Counter(n.name for n in b_nodes):
+            return False
+        if not _mdl_subtree_equal(self.root, other.root, in_geometry_tree=True):
+            return False
+
+        # Validate ids (no ignoring) as equivalency.
+        if not (
+            _mdl_validate_ids_self_consistent(self.root)
+            and _mdl_validate_ids_self_consistent(other.root)
+        ):
+            return False
+        if not _mdl_ids_equivalent_subtree(self.root, other.root):
+            return False
+
+        # Animations matched by (name, root_model)
+        def _akey(anim: MDLAnimation) -> tuple[str, str]:
+            return (anim.name, anim.root_model)
+
+        if len(self.anims) != len(other.anims):
+            return False
+        a_anims = {_akey(a): a for a in self.anims}
+        b_anims = {_akey(a): a for a in other.anims}
+        if len(a_anims) != len(self.anims) or len(b_anims) != len(other.anims):
+            return False
+        if set(a_anims.keys()) != set(b_anims.keys()):
+            return False
+        for k in a_anims:
+            if not _mdl_animation_equal(a_anims[k], b_anims[k]):
+                return False
+
+        return True
+
+    def __hash__(self):
+        # WARNING: MDL objects are mutable; mutating after hashing is unsafe for set/dict keys.
+        # Hash must match __eq__. Since node_id/parent_id are compared via equivalency, we hash
+        # the canonical graph keyed by node name and parent-name edges, not raw ids.
+        h = 0
+        h ^= hash(self.name)
+        h ^= hash(self.fog)
+        h ^= hash(self.supermodel)
+        h ^= hash(int(self.classification))
+        h ^= hash(int(self.classification_unk1))
+        h ^= hash(_qfloat(float(self.animation_scale)))
+        h ^= hash(_qfloat(float(self.radius)))
+        h ^= hash(
+            (_qfloat(float(self.bmin.x)), _qfloat(float(self.bmin.y)), _qfloat(float(self.bmin.z)))
+        )
+        h ^= hash(
+            (_qfloat(float(self.bmax.x)), _qfloat(float(self.bmax.y)), _qfloat(float(self.bmax.z)))
+        )
+        h ^= hash(self.headlink)
+        h ^= hash(int(self.compress_quaternions))
+
+        h ^= hash(
+            ("geometry_subtree", _mdl_subtree_semantic_hash(self.root, in_geometry_tree=True))
+        )
+
+        # Animations hashed by key
+        def _akey(anim: MDLAnimation) -> tuple[str, str]:
+            return (anim.name, anim.root_model)
+
+        for k in sorted(_akey(a) for a in self.anims):
+            anim = next(a for a in self.anims if _akey(a) == k)
+            h ^= hash(
+                (
+                    "anim",
+                    k,
+                    _qfloat(float(anim.anim_length)),
+                    _qfloat(float(anim.transition_length)),
+                )
+            )
+            h ^= hash(_mdl_deep_hash(anim.events, ignore_keys=_MDL_EQ_IGNORE_KEYS))
+            # canonical node graph hash by name+parent edge + payload
+            a_by = _mdl_animation_nodes_by_name(anim)
+            a_parent = _mdl_node_parent_edges_by_name(list(a_by.values()))
+            for name in sorted(a_by.keys()):
+                n = a_by[name]
+                h ^= hash(("anode", k, name, a_parent.get(name)))
+                # Keep in sync with _mdl_node_payload_equal(in_geometry_tree=False):
+                # strict scalar transforms + effective controller equivalence.
+                h ^= hash(_mdl_node_canonical_position_strict(n, prefer_controllers=False))
+                h ^= hash(_mdl_node_canonical_orientation_strict(n, prefer_controllers=False))
+                h ^= hash(_mdl_effective_controllers_hashable(n))
+        return h
 
     def __eq__(self, other):
         if not isinstance(other, MDL):
@@ -95,10 +282,11 @@ class MDL(ComparableMixin):
 
         return pick
 
-    def all_nodes(
-        self,
-    ) -> list[MDLNode]:
+    def all_nodes(self) -> list[MDLNode]:
         """Returns a list of all nodes in the tree including the root node and children recursively.
+
+        Uses pre-order depth-first traversal (parent before children, children in order).
+        This matches MDLOps node ordering which is required for binary compatibility.
 
         Args:
         ----
@@ -113,7 +301,8 @@ class MDL(ComparableMixin):
         while scan:
             node: MDLNode = scan.pop()
             nodes.append(node)
-            scan.extend(node.children)
+            # Reverse children so that pop() gives them in correct order
+            scan.extend(reversed(node.children))
         return nodes
 
     def find_parent(
@@ -177,9 +366,7 @@ class MDL(ComparableMixin):
                 return node
         raise ValueError
 
-    def all_textures(
-        self,
-    ) -> set[str]:
+    def all_textures(self) -> set[str]:
         """Returns all unique texture names used in the scene.
 
         Args:
@@ -196,9 +383,7 @@ class MDL(ComparableMixin):
             if (node.mesh and node.mesh.texture_1 != "NULL" and node.mesh.texture_1)
         }
 
-    def all_lightmaps(
-        self,
-    ) -> set[str]:
+    def all_lightmaps(self) -> set[str]:
         """Returns a set of all lightmap textures used in the scene.
 
         Args:
@@ -241,6 +426,34 @@ class MDL(ComparableMixin):
                 # vendor/reone/src/libs/graphics/format/mdlmdxreader.cpp:708-721
                 # Prepare bone lookups for this skin mesh
                 node.mesh.skin.prepare_bone_lookups(nodes)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(name={self.name!r}, supermodel={self.supermodel!r})"
+
+    def prepare_skin_meshes(self) -> None:
+        """Prepare bone lookup tables for all skinned meshes in the model.
+
+        This method should be called after loading the model and before rendering or
+        manipulating skinned meshes. It creates bone serial and node number lookup
+        tables for efficient bone matrix computation during skeletal animation.
+
+        References:
+        ----------
+        Observed in retail KotOR I and TSL.
+        Called after model loading to initialize skin mesh bone mappings
+
+
+        Notes:
+        -----
+            This is essential for multi-part character models where body parts
+            reference bones in the full skeleton hierarchy.
+        """
+        nodes = self.all_nodes()
+        for node in nodes:
+            # Only process skin mesh nodes
+            if node.mesh and isinstance(node.mesh, MDLSkin):
+                # Prepare bone lookups for this skin mesh
+                node.mesh.prepare_bone_lookups(nodes)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(name={self.name!r}, supermodel={self.supermodel!r})"
@@ -334,6 +547,9 @@ class MDLAnimation(ComparableMixin):
     ) -> list[MDLNode]:
         """Returns all nodes in the MDL tree including children recursively.
 
+        Uses pre-order depth-first traversal (parent before children, children in order).
+        This matches MDLOps node ordering which is required for binary compatibility.
+
         Args:
         ----
             self: The MDL tree object
@@ -347,7 +563,8 @@ class MDLAnimation(ComparableMixin):
         while scan:
             node = scan.pop()
             nodes.append(node)
-            scan.extend(node.children)
+            # Reverse children so that pop() gives them in correct order
+            scan.extend(reversed(node.children))
         return nodes
 
     def __repr__(self):
@@ -443,6 +660,13 @@ class MDLNode(ComparableMixin):
         vendor/KotOR.js/src/odyssey/OdysseyModelNode.ts:31-464 - TypeScript node implementation
         vendor/mdlops (ASCII MDL node format specifications)
         vendor/kotor/kotor/model/nodes.py:7-51 - Python node parsing
+
+    Model nodes form a hierarchical tree structure where each node can contain geometric data
+    (mesh, skin, dangly, saber, walkmesh), light sources, particle emitters, or serve as
+    positioning dummies. Controller keyframes can animate node properties over time.
+
+    References:
+    ----------
 
     Attributes:
     ----------
@@ -1049,6 +1273,10 @@ class MDLEmitter(ComparableMixin):
         # Behavior flags (see MDLEmitterFlags)
         self.flags: int = 0
 
+    def __eq__(self, other):
+        if not isinstance(other, MDLEmitter):
+            return NotImplemented  # type: ignore[no-any-return]
+        return _mdl_eq(self, other, ignore_keys=_MDL_EQ_IGNORE_KEYS | _MDL_EQ_ID_KEYS)
 
 class MDLReference(ComparableMixin):
     """Reference node data for attaching external model resources.
@@ -1341,6 +1569,10 @@ class MDLSkin(ComparableMixin):
             self.bone_serial[bone_idx] = serial_index
             self.bone_node_number[bone_idx] = bone_node.node_id
 
+        # Prepared lookup tables for bone serial numbers and node numbers
+        # These are computed from bonemap during skin mesh preparation
+        self.bone_serial: list[int] = []  # Maps bone index to serial number in model
+        self.bone_node_number: list[int] = []  # Maps bone index to node number in hierarchy
 
 class MDLConstraint:
     """Constraint data that can be attached to a node."""
@@ -1588,6 +1820,144 @@ class MDLFace(ComparableMixin):
         self.coefficient: int = 0
         self.normal: Vector3 = Vector3.from_null()
 
+    @property
+    def _canon_t1(self) -> int:
+        return self.v1 if self.t1 < 0 else self.t1
+
+    @property
+    def _canon_t2(self) -> int:
+        return self.v2 if self.t2 < 0 else self.t2
+
+    @property
+    def _canon_t3(self) -> int:
+        return self.v3 if self.t3 < 0 else self.t3
+
+    def __eq__(self, other):
+        if not isinstance(other, MDLFace):
+            return NotImplemented  # type: ignore[no-any-return]
+        return _mdl_eq(self, other, ignore_keys=_MDL_EQ_IGNORE_KEYS)
+
+    def __hash__(self):
+        return _mdl_hash(self, ignore_keys=_MDL_EQ_IGNORE_KEYS)
+
+
+def _mdl_recompute_mesh_face_payload(mesh: MDLMesh) -> None:
+    """Recompute derived per-face payload (adjacency, plane coefficient, normal) from mesh geometry.
+
+    MDLOps-style ASCII does not carry these binary-only fields. To keep roundtrips idempotent
+    without inventing new ASCII syntax, we deterministically derive them from:
+    - mesh.vertex_positions
+    - mesh.faces (v1/v2/v3 indices)
+
+    This function is intentionally side-effecting and does NOT cache results.
+    """
+    try:
+        faces = mesh.faces
+        verts = mesh.vertex_positions
+    except Exception:
+        return
+
+    if not faces or not verts:
+        return
+
+    # Map vertex index -> list of faces that reference it.
+    nverts = len(verts)
+    faces_by_vertex: list[list[int]] = [[] for _ in range(nverts)]
+    for fi, f in enumerate(faces):
+        try:
+            faces_by_vertex[int(f.v1)].append(fi)
+            faces_by_vertex[int(f.v2)].append(fi)
+            faces_by_vertex[int(f.v3)].append(fi)
+        except Exception:
+            continue
+
+    # Tolerant position keying inspired by MDLOps ( adjacency routine):
+    # it groups vertices by formatted position so overlapping geometry still links.
+    verts_by_pos: dict[str, list[int]] = {}
+    pos_key_of_vert: list[str] = [""] * nverts
+    for vi, p in enumerate(verts):
+        try:
+            key = f"{float(p.x):.4g},{float(p.y):.4g},{float(p.z):.4g}"
+        except Exception:
+            key = "0,0,0"
+        pos_key_of_vert[vi] = key
+        verts_by_pos.setdefault(key, []).append(vi)
+
+    def _vec_sub(a: Vector3, b: Vector3) -> Vector3:
+        return Vector3(float(a.x) - float(b.x), float(a.y) - float(b.y), float(a.z) - float(b.z))
+
+    def _vec_cross(a: Vector3, b: Vector3) -> Vector3:
+        ax, ay, az = float(a.x), float(a.y), float(a.z)
+        bx, by, bz = float(b.x), float(b.y), float(b.z)
+        return Vector3(ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx)
+
+    def _vec_len(a: Vector3) -> float:
+        ax, ay, az = float(a.x), float(a.y), float(a.z)
+        if math.isnan(ax) or math.isnan(ay) or math.isnan(az):
+            return 0.0
+        return (ax * ax + ay * ay + az * az) ** 0.5
+
+    def _vec_norm(a: Vector3) -> Vector3:
+        length = _vec_len(a)
+        if length < 1e-12:
+            return Vector3.from_null()
+        inv = 1.0 / length
+        nx = float(a.x) * inv
+        ny = float(a.y) * inv
+        nz = float(a.z) * inv
+        if math.isnan(nx) or math.isnan(ny) or math.isnan(nz):
+            return Vector3.from_null()
+        return Vector3(nx, ny, nz)
+
+    # For each face, compute:
+    # - normal: normalized cross((p2-p1),(p3-p1))
+    # - coefficient: int(-dot(n,p1)) (deterministic; matches our binary rounding/truncation style)
+    # - adjacency: for each edge, choose the smallest neighbor face index that shares that edge
+    for fi, f in enumerate(faces):
+        try:
+            v1 = int(f.v1)
+            v2 = int(f.v2)
+            v3 = int(f.v3)
+            if v1 < 0 or v2 < 0 or v3 < 0 or v1 >= nverts or v2 >= nverts or v3 >= nverts:
+                continue
+            p1 = verts[v1]
+            p2 = verts[v2]
+            p3 = verts[v3]
+        except Exception:
+            continue
+
+        # Normal + plane coefficient
+        n = _vec_norm(_vec_cross(_vec_sub(p2, p1), _vec_sub(p3, p1)))
+        f.normal = n
+        try:
+            d = -(float(n.x) * float(p1.x) + float(n.y) * float(p1.y) + float(n.z) * float(p1.z))
+        except Exception:
+            d = 0.0
+        if math.isnan(d) or math.isinf(d):
+            d = 0.0
+        f.coefficient = int(d)
+
+        # Adjacency via "faces touching each (position-tolerant) vertex"
+        corner_verts = (v1, v2, v3)
+        vsets: list[set[int]] = []
+        for cv in corner_verts:
+            key = pos_key_of_vert[cv]
+            s: set[int] = set()
+            for ov in verts_by_pos.get(key, (cv,)):
+                for face_idx in faces_by_vertex[ov]:
+                    if face_idx != fi:
+                        s.add(face_idx)
+            vsets.append(s)
+
+        # Edge (v1,v2), (v2,v3), (v3,v1) -> a1,a2,a3
+        def _pick_neighbor(a: set[int], b: set[int]) -> int:
+            inter = a & b
+            return min(inter) if inter else 0
+
+        f.a1 = _pick_neighbor(vsets[0], vsets[1])
+        f.a2 = _pick_neighbor(vsets[1], vsets[2])
+        f.a3 = _pick_neighbor(vsets[2], vsets[0])
+
 
 # endregion
 
@@ -1659,10 +2029,16 @@ class MDLControllerRow(ComparableMixin):
     ):
         return f"{self.__class__.__name__}({self.time!r}, {self.data!r})"
 
-    def __str__(
-        self,
-    ):
+    def __str__(self):
         return f"{self.time} {self.data}".replace(",", "").replace("[", "").replace("]", "")
+
+    def __eq__(self, other):
+        if not isinstance(other, MDLControllerRow):
+            return NotImplemented  # type: ignore[no-any-return]
+        return _mdl_eq(self, other, ignore_keys=_MDL_EQ_IGNORE_KEYS)
+
+    def __hash__(self):
+        return _mdl_hash(self, ignore_keys=_MDL_EQ_IGNORE_KEYS)
 
 
 # endregion

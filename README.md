@@ -80,7 +80,7 @@ To install development dependencies, use:
 poetry install --with dev
 ```
 
-This will install all the development tools like mypy, ruff, pylint, etc.
+### Standard Install
 
 ## Compiling/Building Available Tools
 
@@ -102,9 +102,12 @@ from pykotor.resource.type import ResourceType
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats.tpc import write_tpc
 
+# Load game installation
 inst = Installation("C:/Program Files (x86)/Steam/steamapps/common/swkotor")
-tex = inst.texture("C_Gammorean01")
-write_tpc(tex, "./C_Gammorean01.tga", ResourceType.TGA)
+
+# Extract a texture
+texture = inst.texture("C_Gammorean01")
+write_tpc(texture, "./C_Gammorean01.tga", ResourceType.TGA)
 ```
 
 This saves `C_Gammorean01.tga` to the current directory.  

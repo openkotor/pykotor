@@ -63,23 +63,28 @@ def get_app_dir() -> Path:
     if is_frozen():
         return Path(sys.executable).resolve().parent
     main_module = sys.modules["__main__"]
-    RobustLogger().debug("Try to get the __file__ attribute that contains the path of the entry-point script.")
+    RobustLogger().debug(
+        "Try to get the __file__ attribute that contains the path of the entry-point script."
+    )
+    # Check for optional __file__ attribute - legitimate use of getattr for optional module attribute
     main_script_path = getattr(main_module, "__file__", None)
     if main_script_path is not None:
         return Path(main_script_path).resolve().parent
-    RobustLogger().debug("Fall back to the current working directory if the __file__ attribute was not found.")
+    RobustLogger().debug(
+        "Fall back to the current working directory if the __file__ attribute was not found."
+    )
     return Path.cwd()
 
 
 def is_frozen() -> bool:
+    # Check for sys attributes - legitimate use of getattr for optional runtime attributes
     return (
-        getattr(sys, "frozen", False)
-        or getattr(sys, "_MEIPASS", False)
+        getattr(sys, "frozen", False) or getattr(sys, "_MEIPASS", False)
         # or tempfile.gettempdir() in sys.executable  # Not sure any frozen implementations use this (PyInstaller/py2exe). Re-enable if we find one that does.
     )
 
 
-def requires_admin(path: os.PathLike | str) -> bool:    # pragma: no cover
+def requires_admin(path: os.PathLike | str) -> bool:  # pragma: no cover
     """Check if a dir or a file requires admin permissions for read/write."""
     path_obj = Path(path)
     isdir_check = path_obj.is_dir()
@@ -127,12 +132,7 @@ def dir_requires_admin(
         remove_any(dummy_filepath, ignore_errors=True, missing_ok=True)
 
 
-def remove_any(
-    path: os.PathLike | str,
-    *,
-    ignore_errors: bool = True,
-    missing_ok: bool = True
-):
+def remove_any(path: os.PathLike | str, *, ignore_errors: bool = True, missing_ok: bool = True):
     path_obj = Path(path)
     isdir_func = Path.is_dir
     isfile_func = Path.exists
@@ -140,6 +140,7 @@ def remove_any(
         if missing_ok:
             return
         import errno
+
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(path_obj))
 
     def _remove_any(x: Path):
@@ -199,7 +200,10 @@ def win_get_system32_dir() -> Path:
         ctypes.windll.kernel32.GetSystemDirectoryW(buffer, len(buffer))
         return Path(buffer.value)
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Error accessing system directory via GetSystemDirectoryW. Attempting fallback.", exc_info=True)
+        RobustLogger().warning(
+            "Error accessing system directory via GetSystemDirectoryW. Attempting fallback.",
+            exc_info=True,
+        )
         buffer = ctypes.create_unicode_buffer(260)
         ctypes.windll.kernel32.GetWindowsDirectoryW(buffer, len(buffer))
         return Path(buffer.value).joinpath("system32")

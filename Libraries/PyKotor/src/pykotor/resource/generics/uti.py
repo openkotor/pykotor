@@ -1,3 +1,5 @@
+"""UTI (item) generic: GFF-based item definitions and properties."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -5,8 +7,8 @@ from typing import TYPE_CHECKING
 
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Game, ResRef
-from pykotor.resource.formats.gff import GFF, GFFContent, GFFList, read_gff, write_gff
-from pykotor.resource.formats.gff.gff_auto import bytes_gff
+from pykotor.resource.formats.gff.gff_auto import bytes_gff, read_gff, write_gff
+from pykotor.resource.formats.gff.gff_data import GFF, GFFContent, GFFList
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
@@ -144,9 +146,7 @@ class UTI:
         self.stolen: int = 0
         self.identified: int = 0
 
-    def is_armor(
-        self,
-    ) -> bool:
+    def is_armor(self) -> bool:
         return self.base_item in ARMOR_BASE_ITEMS
 
 

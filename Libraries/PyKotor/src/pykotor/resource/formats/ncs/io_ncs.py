@@ -1,8 +1,23 @@
+"""Binary NCS (NWScript compiled script) read/write and VM validation."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pykotor.resource.formats.ncs.ncs_data import NCS, NCSByteCode, NCSInstruction, NCSInstructionType, NCSInstructionTypeValue
+import kaitaistruct
+
+from bioware_kaitai_formats.ncs import Ncs
+from bioware_kaitai_formats.ncs_minimal import NcsMinimal
+
+from pykotor.common.stream import BinaryReader
+from pykotor.resource.formats.ncs.ncs_data import (
+    NCS,
+    NCSByteCode,
+    NCSInstruction,
+    NCSInstructionType,
+    NCSInstructionTypeValue,
+)
+from pykotor.resource.formats.ncs.vm_validation import validate_ncs_for_vm
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
 if TYPE_CHECKING:
@@ -31,6 +46,8 @@ class NCSBinaryReader(ResourceReader):
         source: SOURCE_TYPES,
         offset: int = 0,
         size: int = 0,
+        *,
+        validate_for_vm: bool = False,
     ):
         super().__init__(source, offset, size)
         self._ncs: NCS | None = None
@@ -57,19 +74,17 @@ class NCSBinaryReader(ResourceReader):
             - Adds the instructions to the NCS object
             - Optionally closes the reader.
         """
+        data = self._reader.read_all()
+        parsed_ncs: Ncs | None = None
+        try:
+            parsed_ncs = Ncs.from_bytes(data)
+        except kaitaistruct.KaitaiStructError:
+            try:
+                NcsMinimal.from_bytes(data)
+            except kaitaistruct.KaitaiStructError:
+                pass
+
         self._ncs = NCS()
-
-        file_type = self._reader.read_string(4)
-        file_version = self._reader.read_string(4)
-
-        if file_type != "NCS ":
-            msg = "The file type that was loaded is invalid."
-            raise ValueError(msg)
-
-        if file_version != "V1.0":
-            msg = "The NCS version that was loaded is not supported."
-            raise ValueError(msg)
-
         self._instructions = {}  # offset -> instruction
         self._jumps = []
 
@@ -157,6 +172,10 @@ class NCSBinaryReader(ResourceReader):
 
         self._ncs.instructions = list(self._instructions.values())
 
+        # Optional strict validation for VM compatibility (can reject valid real-world scripts).
+        if self._validate_for_vm:
+            validate_ncs_for_vm(self._ncs)
+
         return self._ncs
 
     def _read_instruction(self) -> NCSInstruction:
@@ -236,7 +255,9 @@ class NCSBinaryReader(ResourceReader):
             NCSInstructionType.CPDOWNBP,
             NCSInstructionType.CPTOPBP,
         }:
-            instruction.args.extend([self._reader.read_int32(big=True), self._reader.read_uint16(big=True)])
+            instruction.args.extend(
+                [self._reader.read_int32(big=True), self._reader.read_uint16(big=True)]
+            )
 
         elif instruction.ins_type == NCSInstructionType.CONSTI:
             instruction.args.extend([self._reader.read_uint32(big=True)])
@@ -254,7 +275,9 @@ class NCSBinaryReader(ResourceReader):
             instruction.args.extend([self._reader.read_int32(big=True)])
 
         elif instruction.ins_type == NCSInstructionType.ACTION:
-            instruction.args.extend([self._reader.read_uint16(big=True), self._reader.read_uint8(big=True)])
+            instruction.args.extend(
+                [self._reader.read_uint16(big=True), self._reader.read_uint8(big=True)]
+            )
 
         elif instruction.ins_type == NCSInstructionType.MOVSP:
             instruction.args.extend([self._reader.read_int32(big=True)])
@@ -286,7 +309,9 @@ class NCSBinaryReader(ResourceReader):
             instruction.args.extend([self._reader.read_uint32(big=True)])
 
         elif instruction.ins_type == NCSInstructionType.STORE_STATE:
-            instruction.args.extend([self._reader.read_uint32(big=True), self._reader.read_uint32(big=True)])
+            instruction.args.extend(
+                [self._reader.read_uint32(big=True), self._reader.read_uint32(big=True)]
+            )
 
         elif instruction.ins_type in {
             NCSInstructionType.EQUALTT,
@@ -412,27 +437,29 @@ class NCSBinaryReader(ResourceReader):
             ...
 
         elif (
-            instruction.ins_type == NCSInstructionType.COMPI
+            (
+                instruction.ins_type == NCSInstructionType.COMPI
+                or instruction.ins_type
+                in {  # noqa: SIM114
+                    # NCSInstructionType.STORE_STATEALL,
+                }
+            )
+            or instruction.ins_type == NCSInstructionType.RETN
+            or instruction.ins_type == NCSInstructionType.NOTI
             or instruction.ins_type
             in {  # noqa: SIM114
-                # NCSInstructionType.STORE_STATEALL,
+                NCSInstructionType.SAVEBP,
+                NCSInstructionType.RESTOREBP,
             }
+            or instruction.ins_type == NCSInstructionType.NOP
         ):
             ...
 
-        elif instruction.ins_type == NCSInstructionType.RETN:  # noqa: SIM114
-            ...
-
-        elif instruction.ins_type == NCSInstructionType.NOTI:  # noqa: SIM114
-            ...
-
         elif instruction.ins_type in {  # noqa: SIM114
-            NCSInstructionType.SAVEBP,
-            NCSInstructionType.RESTOREBP,
+            NCSInstructionType.RESERVED,
+            NCSInstructionType.RESERVED_01,
         }:
-            ...
-
-        elif instruction.ins_type == NCSInstructionType.NOP:  # noqa: SIM114
+            # Reserved/unknown opcodes - treat as 2-byte no-ops with no arguments
             ...
 
         elif instruction.ins_type in {  # noqa: SIM114

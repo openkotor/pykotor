@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import struct
 
+from logging import Logger
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.bwm.bwm_data import BWM, BWMFace, BWMType  # noqa: E402
@@ -35,8 +36,143 @@ from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose  # n
 from utility.common.geometry import SurfaceMaterial, Vector3  # noqa: E402
 
 if TYPE_CHECKING:
-    from pykotor.resource.formats.bwm.bwm_data import BWMAdjacency, BWMEdge, BWMNodeAABB
+    from pykotor.resource.formats.bwm.bwm_data import (
+        BWMAdjacency,
+        BWMEdge,
+        BWMNodeAABB,
+    )
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
+
+
+def _load_bwm_from_kaitai(data: bytes) -> BWM:
+    """Load walkmesh via Kaitai (geometry + materials); edges read with legacy uint32 rules."""
+    parsed = Bwm.from_bytes(data)
+    wok = BWM()
+    wp = parsed.walkmesh_properties
+    wok.walkmesh_type = BWMType(wp.walkmesh_type)
+    r1, r2, a1, a2, pos = (
+        wp.relative_use_position_1,
+        wp.relative_use_position_2,
+        wp.absolute_use_position_1,
+        wp.absolute_use_position_2,
+        wp.position,
+    )
+    wok.relative_hook1 = Vector3(r1.x, r1.y, r1.z)
+    wok.relative_hook2 = Vector3(r2.x, r2.y, r2.z)
+    wok.absolute_hook1 = Vector3(a1.x, a1.y, a1.z)
+    wok.absolute_hook2 = Vector3(a2.x, a2.y, a2.z)
+    wok.position = Vector3(pos.x, pos.y, pos.z)
+
+    va = parsed.vertices
+    vertices: list[Vector3] = (
+        [Vector3(v.x, v.y, v.z) for v in va.vertices] if va is not None else []
+    )
+
+    faces: list[BWMFace] = []
+    fi = parsed.face_indices
+    if fi is not None:
+        for tri in fi.faces:
+            v1, v2, v3 = vertices[tri.v1_index], vertices[tri.v2_index], vertices[tri.v3_index]
+            faces.append(BWMFace(v1, v2, v3))
+
+    ma = parsed.materials
+    if ma is not None:
+        for face, material_id in zip(faces, ma.materials):
+            face.material = SurfaceMaterial(material_id)
+
+    dto = parsed.data_table_offsets
+    br = BinaryReader.from_bytes(data, 0)
+    if dto.edge_count > 0:
+        br.seek(dto.edge_offset)
+        for _ in range(dto.edge_count):
+            edge_index = br.read_uint32()
+            transition = br.read_uint32()
+            if transition != 0xFFFFFFFF:
+                face_index = edge_index // 3
+                trans_index = edge_index % 3
+                if trans_index == 0:
+                    faces[face_index].trans1 = transition
+                elif trans_index == 1:
+                    faces[face_index].trans2 = transition
+                elif trans_index == 2:
+                    faces[face_index].trans3 = transition
+
+    wok.faces = faces
+    return wok
+
+
+def _load_bwm_legacy(reader: BinaryReader) -> BWM:
+    """Original BWM reader (Kaitai fallback)."""
+    wok = BWM()
+
+    file_type = reader.read_string(4)
+    file_version = reader.read_string(4)
+
+    if file_type != "BWM ":
+        msg = f"Not a valid binary BWM file. Expected 'BWM ', got '{file_type}' (hex: {file_type.encode('latin1').hex()})"
+        raise ValueError(msg)
+
+    if file_version != "V1.0":
+        msg = f"Unsupported BWM version: got '{file_version}', expected 'V1.0'"
+        raise ValueError(msg)
+
+    wok.walkmesh_type = BWMType(reader.read_uint32())
+    wok.relative_hook1 = reader.read_vector3()
+    wok.relative_hook2 = reader.read_vector3()
+    wok.absolute_hook1 = reader.read_vector3()
+    wok.absolute_hook2 = reader.read_vector3()
+    wok.position = reader.read_vector3()
+
+    vertices_count = reader.read_uint32()
+    vertices_offset = reader.read_uint32()
+    face_count = reader.read_uint32()
+    indices_offset = reader.read_uint32()
+    materials_offset = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+    edges_count = reader.read_uint32()
+    edges_offset = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+
+    reader.seek(vertices_offset)
+    vertices: list[Vector3] = [reader.read_vector3() for _ in range(vertices_count)]
+    faces: list[BWMFace] = []
+    reader.seek(indices_offset)
+    for _ in range(face_count):
+        i1, i2, i3 = (
+            reader.read_uint32(),
+            reader.read_uint32(),
+            reader.read_uint32(),
+        )
+        faces.append(BWMFace(vertices[i1], vertices[i2], vertices[i3]))
+
+    reader.seek(materials_offset)
+    for face in faces:
+        material_id = reader.read_uint32()
+        face.material = SurfaceMaterial(material_id)
+
+    reader.seek(edges_offset)
+    for _ in range(edges_count):
+        edge_index = reader.read_uint32()
+        transition = reader.read_uint32()
+        if transition != 0xFFFFFFFF:
+            face_index = edge_index // 3
+            trans_index = edge_index % 3
+            if trans_index == 0:
+                faces[face_index].trans1 = transition
+            elif trans_index == 1:
+                faces[face_index].trans2 = transition
+            elif trans_index == 2:
+                faces[face_index].trans3 = transition
+
+    wok.faces = faces
+    return wok
 
 
 class BWMBinaryReader(ResourceReader):
@@ -190,9 +326,14 @@ class BWMBinaryWriter(ResourceWriter):
         self,
         wok: BWM,
         target: TARGET_TYPES,
+        *,
+        regenerate_derived: bool = True,
+        logger: Logger | None = None,
     ):
         super().__init__(target)
         self._wok: BWM = wok
+        self._regenerate_derived: bool = regenerate_derived
+        self._logger: Logger | None = logger
 
     @autoclose
     def write(self, *, auto_close: bool = True):  # noqa: FBT001, FBT002, ARG002  # pyright: ignore[reportUnusedParameters]
@@ -209,20 +350,49 @@ class BWMBinaryWriter(ResourceWriter):
             2. Packs sections and computes offsets
             3. Writes header, counts and offsets, followed by section data
         """
-        vertices: list[Vector3] = self._wok.vertices()
 
+        def _log(msg: str) -> None:
+            if self._logger is not None:
+                self._logger.debug(msg)  # noqa: G004
+
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:834-1019 (toExportBuffer)
+        if self._regenerate_derived:
+            _log("write: enforcing transition invariant")
+            self._wok.enforce_transition_invariant()
+            _log("write: asserting transition arrows invariant")
+            self._wok.assert_transition_arrows_invariant()
+        _log("write: collecting vertices")
+        vertices: list[Vector3] = self._wok.vertices()
+        _log(f"write: vertices count={len(vertices)}")
+
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:834-836 (toExportBuffer calls buildPerimeters).
+        # Emit the canonical ordering (walkable faces first) to match engine/tooling expectations.
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:729-731 (rebuild: sort walkable first).
+        _log("write: ordering faces (walkable first)")
         walkable: list[BWMFace] = [face for face in self._wok.faces if face.material.walkable()]
-        unwalkable: list[BWMFace] = [face for face in self._wok.faces if not face.material.walkable()]
+        unwalkable: list[BWMFace] = [
+            face for face in self._wok.faces if not face.material.walkable()
+        ]
         faces: list[BWMFace] = walkable + unwalkable
+        _log(
+            f"write: faces count={len(faces)} (walkable={len(walkable)}, unwalkable={len(unwalkable)})"
+        )
+
+        walkable = [face for face in faces if face.material.walkable()]
+        _log("write: building AABB tree")
         aabbs: list[BWMNodeAABB] = self._wok.aabbs()
+        _log(f"write: AABB nodes count={len(aabbs)}")
 
         vertex_offset = 136
-        vertex_data = bytearray()
+        _log("write: packing vertex data")
+        vertex_data: bytearray = bytearray()
         for vertex in vertices:
             vertex_data += struct.pack("fff", vertex.x, vertex.y, vertex.z)
 
-        indices_offset = vertex_offset + len(vertex_data)
-        indices_data = bytearray()
+        _log(f"write: vertex_data size={len(vertex_data)} bytes")
+        indices_offset: int = vertex_offset + len(vertex_data)
+        _log("write: packing face indices")
+        indices_data: bytearray = bytearray()
         for face in faces:
             # Find vertex indices by object identity
             i1 = next(i for i, v in enumerate(vertices) if v is face.v1)
@@ -230,22 +400,30 @@ class BWMBinaryWriter(ResourceWriter):
             i3 = next(i for i, v in enumerate(vertices) if v is face.v3)
             indices_data += struct.pack("III", i1, i2, i3)
 
-        material_offset = indices_offset + len(indices_data)
-        material_data = bytearray()
+        _log(f"write: indices_data size={len(indices_data)} bytes")
+        material_offset: int = indices_offset + len(indices_data)
+        _log("write: packing materials")
+        material_data: bytearray = bytearray()
         for face in faces:
             material_data += struct.pack("I", face.material.value)
 
+        _log(f"write: material_data size={len(material_data)} bytes")
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:735-750 (rebuild: normal and coeff from vertices).
         normal_offset = material_offset + len(material_data)
+        _log("write: packing face normals")
         normal_data = bytearray()
         for face in faces:
             normal = face.normal()
             normal_data += struct.pack("fff", normal.x, normal.y, normal.z)
 
+        _log(f"write: normal_data size={len(normal_data)} bytes")
         coefficient_offset = normal_offset + len(normal_data)
+        _log("write: packing planar coefficients")
         coeffeicent_data = bytearray()
         for face in faces:
             coeffeicent_data += struct.pack("f", face.planar_distance())
 
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:958-962 (toExportBuffer AABB write: min.z+10, max.z-10).
         aabb_offset = coefficient_offset + len(coeffeicent_data)
         aabb_data = bytearray()
         for aabb in aabbs:
@@ -262,7 +440,10 @@ class BWMBinaryWriter(ResourceWriter):
             aabb_data += struct.pack("I", left_idx)
             aabb_data += struct.pack("I", right_idx)
 
+        _log(f"write: aabb_data size={len(aabb_data)} bytes")
+        # Adjacency matrix layout: see wiki reverse_engineering_findings (*io_bwm.py — adjacency note*).
         adjacency_offset = aabb_offset + len(aabb_data)
+        _log("write: packing adjacency (walkable faces)")
         adjacency_data = bytearray()
         for face in walkable:
             adjancencies: tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None] = self._wok.adjacencies(face)
@@ -306,6 +487,65 @@ class BWMBinaryWriter(ResourceWriter):
         
         edge_data = bytearray()
         edge_offset = adjacency_offset + len(adjacency_data)
+        _log("write: collecting perimeter edges")
+        # Get perimeter edges from the walkmesh
+        # NOTE: edges() returns perimeter edges based on walkable face indices
+        # We need to map these to the reordered face list (walkable + unwalkable)
+        perimeter_edges: list[BWMEdge] = self._wok.edges()
+        _log(f"write: perimeter_edges count={len(perimeter_edges)}")
+
+        # Convert perimeter edges to use reordered face indices
+        # IMPORTANT: We must use identity-based lookup (the `is` operator), NOT value-based
+        # equality. BWMFace has custom __eq__/__hash__ that uses vertex coordinates and
+        # transitions for equality. If two faces have the same coordinates and transitions
+        # (e.g., a walkable and unwalkable face sharing geometry), using a dict would cause
+        # key collisions and return the wrong face index. This would cause transitions to
+        # be assigned to the wrong faces (e.g., unwalkable instead of walkable), breaking
+        # pathfinding in the game.
+        # Reference: wiki/BWM-File-Format.md - Edges section
+        edges: list[BWMEdge] = []
+        edge_index_map: dict[int, BWMEdge] = {}
+        face_index_map: dict[int, int] = {id(face): idx for idx, face in enumerate(faces)}
+        for edge in perimeter_edges:
+            # Find the face index in the reordered list BY IDENTITY (not value equality)
+            # This is critical: we need the exact object reference, not just an equal face
+            face_idx = face_index_map.get(id(edge.face))
+            if face_idx is None:
+                # Face not found in reordered list (shouldn't happen, but handle gracefully)
+                continue
+            # Create new BWMEdge with correct face reference and transition
+            # The edge.index is the local edge index (0, 1, or 2) within the face
+            from pykotor.resource.formats.bwm.bwm_data import BWMEdge
+
+            new_edge = BWMEdge(faces[face_idx], edge.index, edge.transition)
+            edge_index = face_idx * 3 + edge.index
+            edge_index_map[edge_index] = new_edge
+            edges.append(new_edge)
+
+        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:838, 998-1006 (edges only from buildPerimeters).
+        # When regenerating, emit perimeter-only edges (no non-perimeter roundtrip).
+        if not self._regenerate_derived:
+            for face in faces:
+                face_idx = face_index_map[id(face)]
+                transitions = (face.trans1, face.trans2, face.trans3)
+                for edge_idx, transition in enumerate(transitions):
+                    if transition is None:
+                        continue
+                    edge_index = face_idx * 3 + edge_idx
+                    if edge_index in edge_index_map:
+                        existing = edge_index_map[edge_index]
+                        if existing.transition == -1:
+                            existing.transition = transition
+                        continue
+                    from pykotor.resource.formats.bwm.bwm_data import BWMEdge
+
+                    new_edge = BWMEdge(face, edge_idx, transition)
+                    edge_index_map[edge_index] = new_edge
+                    edges.append(new_edge)
+
+        _log(f"write: edges list count={len(edges)}")
+        _log("write: packing edge data")
+        edge_data = bytearray()
         for edge in edges:
             # Find face index by object identity
             face_idx = next(i for i, f in enumerate(faces) if f is edge.face)
@@ -316,9 +556,16 @@ class BWMBinaryWriter(ResourceWriter):
         perimeters: list[int] = [next(i for i, e in enumerate(edges) if e is edge) + 1 for edge in edges if edge.final]
         perimeter_data = bytearray()
         perimeter_offset = edge_offset + len(edge_data)
+        _log("write: packing perimeter data")
+        perimeter_data = bytearray()
         for perimeter in perimeters:
             perimeter_data += struct.pack("I", perimeter)
+        edges_count_out = len(edges)
+        perimeters_count_out = len(perimeters)
+        _log(f"write: perimeter_data size={len(perimeter_data)} bytes")
 
+        # Reference: wiki/BWM-File-Format.md — walkMeshType, four hook float3s, position (64 bytes).
+        _log("write: writing header (magic, type, hooks, position, counts, offsets)")
         self._writer.write_string("BWM V1.0")
         self._writer.write_uint32(self._wok.walkmesh_type.value)
         self._writer.write_vector3(self._wok.relative_hook1)
@@ -339,17 +586,27 @@ class BWMBinaryWriter(ResourceWriter):
         self._writer.write_uint32(0)
         self._writer.write_uint32(len(self._wok.walkable_faces()))
         self._writer.write_uint32(adjacency_offset)
-        self._writer.write_uint32(len(edges))
+        self._writer.write_uint32(edges_count_out)
         self._writer.write_uint32(edge_offset)
-        self._writer.write_uint32(len(perimeters))
+        self._writer.write_uint32(perimeters_count_out)
         self._writer.write_uint32(perimeter_offset)
 
+        _log("write: writing vertex_data to stream")
         self._writer.write_bytes(vertex_data)
+        _log("write: writing indices_data to stream")
         self._writer.write_bytes(indices_data)
+        _log("write: writing material_data to stream")
         self._writer.write_bytes(material_data)
+        _log("write: writing normal_data to stream")
         self._writer.write_bytes(normal_data)
+        _log("write: writing coeffeicent_data to stream")
         self._writer.write_bytes(coeffeicent_data)
+        _log("write: writing aabb_data to stream")
         self._writer.write_bytes(aabb_data)
+        _log("write: writing adjacency_data to stream")
         self._writer.write_bytes(adjacency_data)
+        _log("write: writing edge_data to stream")
         self._writer.write_bytes(edge_data)
+        _log("write: writing perimeter_data to stream")
         self._writer.write_bytes(perimeter_data)
+        _log("write: done")

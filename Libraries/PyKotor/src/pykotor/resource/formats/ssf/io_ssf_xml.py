@@ -1,3 +1,5 @@
+"""SSF XML read/write: sound set (strref to wave) in XML for tooling and round-trip."""
+
 from __future__ import annotations
 
 from contextlib import suppress
@@ -5,7 +7,9 @@ from contextlib import suppress
 # Try to import defusedxml, fallback to ElementTree if not available
 from xml.etree import ElementTree
 
-try:  # sourcery skip: remove-redundant-exception, simplify-single-exception-tuple
+import kaitaistruct
+
+try:
     from defusedxml.ElementTree import fromstring as _fromstring
 
     ElementTree.fromstring = _fromstring
@@ -13,6 +17,8 @@ except (ImportError, ModuleNotFoundError):
     print("warning: defusedxml is not available but recommended for security")
 
 from typing import TYPE_CHECKING
+
+from bioware_kaitai_formats.ssf_xml import SsfXml
 
 from pykotor.resource.formats.ssf.ssf_data import SSF, SSFSound
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
@@ -47,7 +53,12 @@ class SSFXMLReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> SSF:  # noqa: FBT001, FBT002, ARG002
         self._ssf = SSF()
 
-        data = decode_bytes_with_fallbacks(self._reader.read_bytes(self._reader.size()))
+        raw = self._reader.read_all()
+        try:
+            SsfXml.from_bytes(raw)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        data = decode_bytes_with_fallbacks(raw)
         xml_root = ElementTree.fromstring(data)  # noqa: S314
 
         for child in xml_root:

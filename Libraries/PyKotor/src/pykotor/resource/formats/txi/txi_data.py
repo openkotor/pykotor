@@ -1133,8 +1133,12 @@ class TXIFontInformation(TXIBaseInformation):
 
     def __str__(self):
         # Format the coordinates (left 4 spaces are not required, but make formatting cleaner)
-        ul_coords_str = "\n".join([f"    {x:.6f} {y:.6f} {not_z}" for x, y, not_z in self.upper_left_coords])
-        lr_coords_str = "\n".join([f"    {x:.6f} {y:.6f} {not_z}" for x, y, not_z in self.lower_right_coords])
+        ul_coords_str = "\n".join(
+            [f"    {x:.6f} {y:.6f} {not_z}" for x, y, not_z in self.upper_left_coords]
+        )
+        lr_coords_str = "\n".join(
+            [f"    {x:.6f} {y:.6f} {not_z}" for x, y, not_z in self.lower_right_coords]
+        )
 
         return f"""
 mipmap {self.mipmap}
@@ -1147,7 +1151,6 @@ fontwidth {self.fontwidth:.6f}
 spacingR {self.spacingR:.6f}
 spacingB {self.spacingB:.6f}
 caretindent {self.caretindent:.6f}
-isdoublebyte {int(self.isdoublebyte)}
 upperleftcoords {self.ul_coords_count}
 {ul_coords_str}
 lowerrightcoords {self.lr_coords_count}
@@ -1194,7 +1197,9 @@ lowerrightcoords {self.lr_coords_count}
         return boxes
 
     def normalize_coords(
-        self, boxes: list[tuple[float, float, float, float]], resolution: tuple[int, int]
+        self,
+        boxes: list[tuple[float, float, float, float]],
+        resolution: tuple[int, int],
     ) -> tuple[list[tuple[float, float, int]], list[tuple[float, float, int]]]:
         """Converts boxes to normalized coordinates.
 

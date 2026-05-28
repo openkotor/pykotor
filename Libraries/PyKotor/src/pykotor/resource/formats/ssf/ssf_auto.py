@@ -1,11 +1,15 @@
+"""SSF auto: detect format and read/write sound set (binary/XML)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from pykotor.common.stream import BinaryReader
+from pykotor.resource.formats._base import BiowareEncoder
 from pykotor.resource.formats.ssf.io_ssf import SSFBinaryReader, SSFBinaryWriter
 from pykotor.resource.formats.ssf.io_ssf_xml import SSFXMLReader, SSFXMLWriter
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, ToolsetFormat
+from pykotor.tools.encoding import decode_bytes_with_fallbacks
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.ssf.ssf_data import SSF
@@ -36,18 +40,18 @@ def detect_ssf(
         The format of the SSF data.
     """
 
-    def check(first4: str) -> ResourceType:
+    def check(first4: str) -> RESOURCE_FORMAT:
         if first4 == "SSF ":
             return ResourceType.SSF
-        if "<" in first4:  # sourcery skip: assign-if-exp, reintroduce-else
-            return ResourceType.SSF_XML
-        # if "{" in first4:
-        #    return ResourceType.SSF_JSON
+        if "<" in first4:
+            return ToolsetFormat.SSF_XML
+        if "{" in first4:
+            return ToolsetFormat.SSF_JSON
         # if "," in first4:
         #    return ResourceType.SSF_CSV
         return ResourceType.INVALID
 
-    file_format: ResourceType
+    file_format: RESOURCE_FORMAT
     try:
         with BinaryReader.from_auto(source, offset) as reader:
             file_format = check(reader.read_string(4))
@@ -90,24 +94,31 @@ def read_ssf(
     if file_format is None:
         file_format = detect_ssf(source, offset)
 
-    if file_format is ResourceType.INVALID:
+    if file_format == ResourceType.INVALID:
         msg = "Failed to determine the format of the GFF file."
         raise ValueError(msg)
 
-    if file_format is ResourceType.SSF:
+    if file_format == ResourceType.SSF:
         return SSFBinaryReader(source, offset, size or 0).load()
-    if file_format is ResourceType.SSF_XML:
+    if file_format == ToolsetFormat.SSF_XML:
         return SSFXMLReader(source, offset, size or 0).load()
-    msg = "Failed to determine the format of the GFF file."
+    if file_format == ToolsetFormat.SSF_JSON:
+        from pykotor.resource.formats.ssf.ssf_data import SSF
+
+        with BinaryReader.from_auto(source, offset) as reader:
+            raw = reader.read_all()
+        decoded = decode_bytes_with_fallbacks(raw)
+        return SSF.from_json(json.loads(decoded))
+    msg = "Failed to determine the format of the SSF file."
     raise ValueError(msg)
 
 
 def write_ssf(
     ssf: SSF,
     target: TARGET_TYPES,
-    file_format: ResourceType = ResourceType.SSF,
+    file_format: RESOURCE_FORMAT = ResourceType.SSF,
 ):
-    """Writes the SSF data to the target location with the specified format (SSF or SSF_XML).
+    """Writes the SSF data to the target location with the specified format.
 
     Args:
     ----
@@ -121,20 +132,26 @@ def write_ssf(
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
     """
-    if file_format is ResourceType.SSF:
+    if file_format == ResourceType.SSF:
         SSFBinaryWriter(ssf, target).write()
-    elif file_format is ResourceType.SSF_XML:
+    elif file_format == ToolsetFormat.SSF_XML:
         SSFXMLWriter(ssf, target).write()
+    elif file_format == ToolsetFormat.SSF_JSON:
+        json_dump = json.dumps(ssf, cls=BiowareEncoder, indent=4)
+        from pykotor.common.stream import BinaryWriter
+
+        with BinaryWriter.to_auto(target) as writer:
+            writer.write_bytes(json_dump.encode())
     else:
-        msg = "Unsupported format specified; use SSF or SSF_XML."
+        msg = "Unsupported format specified; use SSF, SSF_XML or SSF_JSON."
         raise ValueError(msg)
 
 
 def bytes_ssf(
     ssf: SSF,
-    file_format: ResourceType = ResourceType.SSF,
+    file_format: RESOURCE_FORMAT = ResourceType.SSF,
 ) -> bytes:
-    """Returns the SSF data in the specified format (SSF or SSF_XML) as a bytes object.
+    """Returns the SSF data in the specified format as a bytes object.
 
     This is a convenience method that wraps the write_ssf() method.
 

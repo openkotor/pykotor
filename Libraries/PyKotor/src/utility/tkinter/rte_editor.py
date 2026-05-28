@@ -16,6 +16,7 @@ from typing import Any
 if os.name == "nt":
     ctypes.windll.shcore.SetProcessDpiAwareness(True)  # noqa: FBT003
 
+
 class RichTextEditor:
     def __init__(self, master: tk.Tk, initialdir: Path | None = None):
         self.root: tk.Tk = master
@@ -33,47 +34,44 @@ class RichTextEditor:
                 "Bold": {"font": f"{self.current_font} 15 bold"},
                 "Italic": {"font": f"{self.current_font} 15 italic"},
                 "Underline": {"underline": True},
-                "Overstrike": {"overstrike": True}
+                "Overstrike": {"overstrike": True},
             },
             "Font Sizes": {
                 "Small": {"font": f"{self.current_font} 8"},
                 "Medium": {"font": f"{self.current_font} 12"},
                 "Large": {"font": f"{self.current_font} 18"},
-                "Extra Large": {"font": f"{self.current_font} 24"}
+                "Extra Large": {"font": f"{self.current_font} 24"},
             },
             "Text Colors": {
                 "Black": {"foreground": "#000000"},
                 "Red": {"foreground": "#FF0000"},
                 "Green": {"foreground": "#00FF00"},
                 "Blue": {"foreground": "#0000FF"},
-                "Custom Color...": "custom_color"
+                "Custom Color...": "custom_color",
             },
             "Background Colors": {
                 "Yellow": {"background": "#FFFF00"},
                 "Light Blue": {"background": "#ADD8E6"},
                 "Light Green": {"background": "#90EE90"},
-                "Custom Color...": "custom_background_color"
+                "Custom Color...": "custom_background_color",
             },
             "Paragraph Alignment": {
                 "Left": {"justify": "left"},
                 "Center": {"justify": "center"},
-                "Right": {"justify": "right"}
+                "Right": {"justify": "right"},
             },
             "Spacing": {
                 "Single": {"spacing1": "0", "spacing3": "0"},
                 "1.5": {"spacing1": "3", "spacing3": "3"},
-                "Double": {"spacing1": "6", "spacing3": "6"}
+                "Double": {"spacing1": "6", "spacing3": "6"},
             },
             "Indentation": {
                 "No Indent": {"lmargin1": "0", "lmargin2": "0"},
                 "First Line": {"lmargin1": "20", "lmargin2": "0"},
                 "Hanging": {"lmargin1": "0", "lmargin2": "20"},
-                "Both": {"lmargin1": "20", "lmargin2": "20"}
+                "Both": {"lmargin1": "20", "lmargin2": "20"},
             },
-            "Lists": {
-                "Bullet List": "bullet_list",
-                "Numbered List": "numbered_list"
-            }
+            "Lists": {"Bullet List": "bullet_list", "Numbered List": "numbered_list"},
         }
 
         self.text_area = tk.Text(self.root, undo=True, wrap="word")
@@ -107,11 +105,23 @@ class RichTextEditor:
             for option, properties in options.items():
                 tag_name = f"{category}_{option}".replace(" ", "_")
                 if isinstance(properties, dict):
-                    submenu.add_checkbutton(label=option, command=partial(self.toggle_format, tag_name, properties))
+                    submenu.add_checkbutton(
+                        label=option, command=partial(self.toggle_format, tag_name, properties)
+                    )
                 else:
-                    submenu.add_command(label=option, command=lambda c=category, o=option: self.apply_tag_from_category(c, o))
+                    submenu.add_command(
+                        label=option,
+                        command=lambda c=category, o=option: self.apply_tag_from_category(c, o),
+                    )
                 # Update check status when opening the menu
-                self.menu_bar.bind("<Enter>", lambda event, menu=submenu, tag=tag_name, index=submenu.index(option): self.check_menu_item(menu, index, tag), add="+")
+                self.menu_bar.bind(
+                    "<Enter>",
+                    lambda event,
+                    menu=submenu,
+                    tag=tag_name,
+                    index=submenu.index(option): self.check_menu_item(menu, index, tag),
+                    add="+",
+                )
 
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         edit_menu.add_command(label="Undo", command=self.text_area.edit_undo, accelerator="Ctrl+Z")
@@ -120,12 +130,15 @@ class RichTextEditor:
         self.root.bind_all("<Control-z>", lambda _e: self.text_area.edit_undo())
         self.root.bind_all("<Control-y>", lambda _e: self.text_area.edit_redo())
         self.root.bind_all("<Control-Shift-z>", lambda _event: self.text_area.edit_redo())
-        self.root.bind_all("<Control-Shift-Z>", lambda _event: self.text_area.edit_redo())  # different keyboard layouts ig
+        self.root.bind_all(
+            "<Control-Shift-Z>", lambda _event: self.text_area.edit_redo()
+        )  # different keyboard layouts ig
 
         font_menu = tk.Menu(self.menu_bar, tearoff=0)
         for family in self.font_families:
             font_menu.add_command(label=family, command=lambda f=family: self.apply_font(family))
         self.menu_bar.add_cascade(label="Font", menu=font_menu)
+
         # Context (right-click) menu setup
         def show_context_menu(event):
             """Show the right-click context menu."""
@@ -133,6 +146,7 @@ class RichTextEditor:
                 self.menu_bar.tk_popup(event.x_root, event.y_root)
             finally:
                 self.menu_bar.grab_release()
+
         self.text_area.bind("<Button-3>", show_context_menu)
         self.root.config(menu=self.menu_bar)
 
@@ -187,9 +201,13 @@ class RichTextEditor:
             selected_text = self.text_area.get(selection_start, selection_end)
 
             # Determine if we're adding or removing list formatting
-            if any(line.startswith("• ") for line in selected_text.splitlines()) and list_type == "bullet":
-                process = "remove"
-            elif any(re.match(r"^\d+\.\s", line) for line in selected_text.splitlines()) and list_type == "number":
+            if (
+                any(line.startswith("• ") for line in selected_text.splitlines())
+                and list_type == "bullet"
+            ) or (
+                any(re.match(r"^\d+\.\s", line) for line in selected_text.splitlines())
+                and list_type == "number"
+            ):
                 process = "remove"
             else:
                 process = "add"
@@ -217,7 +235,7 @@ class RichTextEditor:
             self.text_area.delete(selection_start, selection_end)
             # If numbering and we're adding numbers, add them here
             if list_type == "number" and process == "add":
-                new_text_lines = [f"{i+1}. {line}" for i, line in enumerate(new_text_lines)]
+                new_text_lines = [f"{i + 1}. {line}" for i, line in enumerate(new_text_lines)]
             self.text_area.insert(selection_start, "\n".join(new_text_lines))
 
     def align_text(self, alignment):
@@ -249,7 +267,6 @@ class RichTextEditor:
             self.text_area.tag_configure(tag_name, **properties)
             self.text_area.tag_add(tag_name, "sel.first", "sel.last")
 
-
     def toggle_format(self, tag, properties=None):
         """Toggle formatting for the selected text based on the tag.
 
@@ -276,7 +293,9 @@ class RichTextEditor:
             menu.entryconfig(index, onvalue=0)
 
     def open_file(self):
-        filePath: str = filedialog.askopenfilename(filetypes=self.valid_file_types, initialdir=self.initialdir)
+        filePath: str = filedialog.askopenfilename(
+            filetypes=self.valid_file_types, initialdir=self.initialdir
+        )
         if not filePath:
             return
 
@@ -314,11 +333,24 @@ class RichTextEditor:
                 continue
 
             ranges = self.text_area.tag_ranges(tag_name)
-            document["tags"][tag_name] = [[str(ranges[i]), str(ranges[i + 1])] for i in range(0, len(ranges), 2)]
+            document["tags"][tag_name] = [
+                [str(ranges[i]), str(ranges[i + 1])] for i in range(0, len(ranges), 2)
+            ]
 
             config = {
                 option: self.text_area.tag_cget(tag_name, option)
-                for option in ["font", "foreground", "background", "underline", "overstrike", "justify", "lmargin1", "lmargin2", "spacing1", "spacing3"]
+                for option in [
+                    "font",
+                    "foreground",
+                    "background",
+                    "underline",
+                    "overstrike",
+                    "justify",
+                    "lmargin1",
+                    "lmargin2",
+                    "spacing1",
+                    "spacing3",
+                ]
                 if self.text_area.tag_cget(tag_name, option)
             }
             if config:
@@ -336,10 +368,13 @@ class RichTextEditor:
         self.save_file_content()
 
     def save_as_file(self):
-        file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("All Files", "*.*"), ("Rich Text (JSON)", "*.rte")])
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".txt", filetypes=[("All Files", "*.*"), ("Rich Text (JSON)", "*.rte")]
+        )
         if file_path:
             self.file_path = Path(file_path)
             self.save_file_content()
+
 
 def main():
     root = tk.Tk()

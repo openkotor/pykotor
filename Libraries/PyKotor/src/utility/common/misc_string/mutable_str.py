@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-def is_string_like(obj: Any) -> bool:  # sourcery skip: use-fstring-for-concatenation
+def is_string_like(obj: Any) -> bool:
     try:
         _ = obj + ""
     except Exception:  # pylint: disable=W0718  # noqa: BLE001
@@ -36,16 +36,27 @@ class WrappedStr(str):
         return (self.__class__, (self._content,))
 
     if not TYPE_CHECKING:  # Prevents pylance in vs code from bringing us here in 'go to definition'
+
         def __getattribute__(self, name: str):
             try:
                 return super().__getattribute__(name)
             except AttributeError:
-                return getattr(self._content, name)
+                # Forward attribute access to _content - legitimate use of getattr for delegation
+                try:
+                    return getattr(self._content, name)
+                except AttributeError:
+                    raise AttributeError(
+                        f"'{type(self).__name__}' object and its '_content' attribute have no attribute '{name}'"
+                    )
 
     # region Forwards Compatibility
+    # Check if str has __reduce_ex__ - legitimate runtime check for optional builtin method
     if not hasattr(str, "__reduce_ex__"):
+
         def __reduce_ex__(self, protocol: int):
-            if protocol >= 2:  # Protocol version 2 or higher uses a more efficient pickling format  # noqa: PLR2004
+            if (
+                protocol >= 2
+            ):  # Protocol version 2 or higher uses a more efficient pickling format  # noqa: PLR2004
                 return (self.__class__, (str(self),), None, None, None)
             return self.__reduce__()
     # endregion
@@ -63,7 +74,9 @@ class WrappedStr(str):
             raise TypeError(msg)
         return str(var)
 
+    # Check if str has removeprefix - legitimate runtime check for optional builtin method
     if not hasattr(str, "removeprefix"):
+
         def removeprefix(
             self,
             __prefix: WrappedStr | str,
@@ -73,7 +86,9 @@ class WrappedStr(str):
                 return self.__class__(self._content[len(parsed_prefix) :])
             return self.__class__(self._content)
 
+    # Check if str has removesuffix - legitimate runtime check for optional builtin method
     if not hasattr(str, "removesuffix"):
+
         def removesuffix(
             self,
             __suffix: WrappedStr | str,

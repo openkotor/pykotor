@@ -5,7 +5,16 @@ import json
 import os
 import random
 
-from ctypes import POINTER, WINFUNCTYPE, byref, c_ulong, c_void_p, c_wchar_p, cast as cast_with_ctypes, windll
+from ctypes import (
+    POINTER,
+    WINFUNCTYPE,
+    byref,
+    c_ulong,
+    c_void_p,
+    c_wchar_p,
+    cast as cast_with_ctypes,
+    windll,
+)
 from ctypes.wintypes import HMODULE, HWND, LPCWSTR
 from pathlib import WindowsPath
 from typing import TYPE_CHECKING, Sequence
@@ -14,7 +23,6 @@ import comtypes  # pyright: ignore[reportMissingTypeStubs]
 import comtypes.client  # pyright: ignore[reportMissingTypeStubs]
 
 from loggerplus import RobustLogger
-
 from utility.system.win32.com.com_helpers import HandleCOMCall
 from utility.system.win32.com.com_types import GUID
 from utility.system.win32.com.interfaces import (
@@ -49,7 +57,9 @@ class FileDialogControlEvents(comtypes.COMObject):
         self.selected_path: str | None = None
         super().__init__()
 
-    def OnItemSelected(self, pfdc: IFileDialogCustomize, dwIDCtl: DWORD, dwIDItem: DWORD) -> HRESULT:  # noqa: N803
+    def OnItemSelected(
+        self, pfdc: IFileDialogCustomize, dwIDCtl: DWORD, dwIDItem: DWORD
+    ) -> HRESULT:  # noqa: N803
         # Implement the logic for when an item is selected
         return S_OK
 
@@ -83,7 +93,9 @@ class FileDialogControlEvents(comtypes.COMObject):
 
         return None
 
-    def OnCheckButtonToggled(self, pfdc: IFileDialogCustomize, dwIDCtl: DWORD, bChecked: BOOL) -> HRESULT:  # noqa: N803
+    def OnCheckButtonToggled(
+        self, pfdc: IFileDialogCustomize, dwIDCtl: DWORD, bChecked: BOOL
+    ) -> HRESULT:  # noqa: N803
         # Implement the logic for when a check button is toggled
         return S_OK
 
@@ -93,26 +105,41 @@ class FileDialogControlEvents(comtypes.COMObject):
 
 
 # Load COM function pointers
-def LoadCOMFunctionPointers(dialog_type: type[IFileDialog | IFileOpenDialog | IFileSaveDialog]) -> COMFunctionPointers:
+def LoadCOMFunctionPointers(
+    dialog_type: type[IFileDialog | IFileOpenDialog | IFileSaveDialog],
+) -> COMFunctionPointers:
     comFuncPtrs = COMFunctionPointers()
     comFuncPtrs.hOle32 = comFuncPtrs.load_library("ole32.dll")
     comFuncPtrs.hShell32 = comFuncPtrs.load_library("shell32.dll")
 
-
     # Get function pointers
-    if comFuncPtrs.hOle32:  # sourcery skip: extract-method
+    if comFuncPtrs.hOle32:
         PFN_CoInitialize: type[_FuncPointer] = WINFUNCTYPE(HRESULT, POINTER(dialog_type))
         PFN_CoUninitialize: type[_FuncPointer] = WINFUNCTYPE(None)
-        PFN_CoCreateInstance: type[_FuncPointer] = WINFUNCTYPE(HRESULT, POINTER(GUID), c_void_p, c_ulong, POINTER(GUID), POINTER(POINTER(dialog_type)))
+        PFN_CoCreateInstance: type[_FuncPointer] = WINFUNCTYPE(
+            HRESULT, POINTER(GUID), c_void_p, c_ulong, POINTER(GUID), POINTER(POINTER(dialog_type))
+        )
         PFN_CoTaskMemFree: type[_FuncPointer] = WINFUNCTYPE(None, c_void_p)
-        comFuncPtrs.pCoInitialize = comFuncPtrs.resolve_function(comFuncPtrs.hOle32, b"CoInitialize", PFN_CoInitialize)
-        comFuncPtrs.pCoUninitialize = comFuncPtrs.resolve_function(comFuncPtrs.hOle32, b"CoUninitialize", PFN_CoUninitialize)
-        comFuncPtrs.pCoCreateInstance = comFuncPtrs.resolve_function(comFuncPtrs.hOle32, b"CoCreateInstance", PFN_CoCreateInstance)
-        comFuncPtrs.pCoTaskMemFree = comFuncPtrs.resolve_function(comFuncPtrs.hOle32, b"CoTaskMemFree", PFN_CoTaskMemFree)
+        comFuncPtrs.pCoInitialize = comFuncPtrs.resolve_function(
+            comFuncPtrs.hOle32, b"CoInitialize", PFN_CoInitialize
+        )
+        comFuncPtrs.pCoUninitialize = comFuncPtrs.resolve_function(
+            comFuncPtrs.hOle32, b"CoUninitialize", PFN_CoUninitialize
+        )
+        comFuncPtrs.pCoCreateInstance = comFuncPtrs.resolve_function(
+            comFuncPtrs.hOle32, b"CoCreateInstance", PFN_CoCreateInstance
+        )
+        comFuncPtrs.pCoTaskMemFree = comFuncPtrs.resolve_function(
+            comFuncPtrs.hOle32, b"CoTaskMemFree", PFN_CoTaskMemFree
+        )
 
     if comFuncPtrs.hShell32:
-        PFN_SHCreateItemFromParsingName: type[_FuncPointer] = WINFUNCTYPE(HRESULT, LPCWSTR, c_void_p, POINTER(GUID), POINTER(POINTER(IShellItem)))
-        comFuncPtrs.pSHCreateItemFromParsingName = comFuncPtrs.resolve_function(comFuncPtrs.hShell32, b"SHCreateItemFromParsingName", PFN_SHCreateItemFromParsingName)
+        PFN_SHCreateItemFromParsingName: type[_FuncPointer] = WINFUNCTYPE(
+            HRESULT, LPCWSTR, c_void_p, POINTER(GUID), POINTER(POINTER(IShellItem))
+        )
+        comFuncPtrs.pSHCreateItemFromParsingName = comFuncPtrs.resolve_function(
+            comFuncPtrs.hShell32, b"SHCreateItemFromParsingName", PFN_SHCreateItemFromParsingName
+        )
     return comFuncPtrs
 
 
@@ -205,7 +232,7 @@ DEFAULT_FILTERS: list[COMDLG_FILTERSPEC] = [
     COMDLG_FILTERSPEC("Vagrantfiles", "Vagrantfile"),
     COMDLG_FILTERSPEC("Terraform Files", "*.tf"),
     COMDLG_FILTERSPEC("HCL Files", "*.hcl"),
-    COMDLG_FILTERSPEC("Kubernetes YAML Files", "*.yaml;*.yml")
+    COMDLG_FILTERSPEC("Kubernetes YAML Files", "*.yaml;*.yml"),
 ]
 
 
@@ -220,7 +247,7 @@ def configure_file_dialog(  # noqa: PLR0913, PLR0912, C901, PLR0915
     default_extension: str | None = None,
     dialog_interfaces: list[comtypes.IUnknown | comtypes.COMObject] | None = None,
     hwnd: HWND | int | None = None,
-) -> list[str] | None:  # sourcery skip: low-code-quality
+) -> list[str] | None:
     comFuncs: COMFunctionPointers = LoadCOMFunctionPointers(type(file_dialog))
     cookies = []
     if dialog_interfaces:
@@ -235,7 +262,9 @@ def configure_file_dialog(  # noqa: PLR0913, PLR0912, C901, PLR0915
         if default_folder:
             defaultFolder_path = WindowsPath(default_folder).resolve()
             if not defaultFolder_path.is_dir():
-                raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(defaultFolder_path))
+                raise FileNotFoundError(
+                    errno.ENOENT, os.strerror(errno.ENOENT), str(defaultFolder_path)
+                )
             shell_item = createShellItem(comFuncs, str(defaultFolder_path))
             with HandleCOMCall(f"SetFolder({defaultFolder_path})") as check:
                 check(file_dialog.SetFolder(shell_item))
@@ -245,10 +274,14 @@ def configure_file_dialog(  # noqa: PLR0913, PLR0912, C901, PLR0915
         # Resolve contradictory options
         if options & FileOpenOptions.FOS_ALLNONSTORAGEITEMS:
             if options & FileOpenOptions.FOS_FORCEFILESYSTEM:
-                RobustLogger().warning("Removing FileOpenOptions.FOS_FORCEFILESYSTEM to prevent conflict with FOS_ALLNONSTORAGEITEMS")
+                RobustLogger().warning(
+                    "Removing FileOpenOptions.FOS_FORCEFILESYSTEM to prevent conflict with FOS_ALLNONSTORAGEITEMS"
+                )
                 options &= ~FileOpenOptions.FOS_FORCEFILESYSTEM
             if options & FileOpenOptions.FOS_PICKFOLDERS:
-                RobustLogger().warning("Removing FileOpenOptions.FOS_PICKFOLDERS to prevent conflict with FOS_ALLNONSTORAGEITEMS")
+                RobustLogger().warning(
+                    "Removing FileOpenOptions.FOS_PICKFOLDERS to prevent conflict with FOS_ALLNONSTORAGEITEMS"
+                )
                 options &= ~FileOpenOptions.FOS_PICKFOLDERS
 
         def get_flag_differences(set_options: int, get_options: int) -> list[str]:
@@ -271,23 +304,23 @@ def configure_file_dialog(  # noqa: PLR0913, PLR0912, C901, PLR0915
         print(f"GetOptions({cur_options})")
 
         assert original_dialog_options != cur_options, (
-            f"SetOptions call was completely ignored by the dialog interface, attempted to set {options}, "
-            f"but retrieved {cur_options} (the original)"
+            f"SetOptions call was completely ignored by the dialog interface, attempted to set {options}, but retrieved {cur_options} (the original)"
         )
-        if (options != cur_options):
+        if options != cur_options:
             differing_flags = get_flag_differences(options, cur_options)
             RobustLogger().warning(f"Differing flags: {', '.join(differing_flags)}")
 
         if not options & FileOpenOptions.FOS_PICKFOLDERS and file_types:
             print("Using custom file filters")
             filters = (COMDLG_FILTERSPEC * len(file_types))(
-                *[
-                    (c_wchar_p(name), c_wchar_p(spec))
-                    for name, spec in file_types
-                ]
+                *[(c_wchar_p(name), c_wchar_p(spec)) for name, spec in file_types]
             )
             with HandleCOMCall(f"SetFileTypes({len(filters)})") as check:
-                check(file_dialog.SetFileTypes(len(filters), cast_with_ctypes(filters, POINTER(c_void_p))))
+                check(
+                    file_dialog.SetFileTypes(
+                        len(filters), cast_with_ctypes(filters, POINTER(c_void_p))
+                    )
+                )
 
         if title:
             file_dialog.SetTitle(title)
@@ -308,8 +341,12 @@ def configure_file_dialog(  # noqa: PLR0913, PLR0912, C901, PLR0915
 
         if show_file_dialog(file_dialog, hwnd):
             control_event_handler = next(
-                (interface for interface in dialog_interfaces if isinstance(interface, FileDialogControlEvents)),
-                None
+                (
+                    interface
+                    for interface in dialog_interfaces
+                    if isinstance(interface, FileDialogControlEvents)
+                ),
+                None,
             )
             if control_event_handler and control_event_handler.selected_path:
                 return [control_event_handler.selected_path]
@@ -351,7 +388,7 @@ def open_file_and_folder_dialog(  # noqa: C901, PLR0913, PLR0912
     default_no_minimode: bool = False,
     force_preview_pane_on: bool = False,
     ok_button_text: str | None = None,
-) -> list[str] | None:  # sourcery skip: low-code-quality
+) -> list[str] | None:
     """Opens a file dialog to select files.
 
     Args:
@@ -429,7 +466,17 @@ def open_file_and_folder_dialog(  # noqa: C901, PLR0913, PLR0912
     folder_button_id = 1001
     customize_handler.AddPushButton(folder_button_id, "Select Folder")
     control_event_handler = FileDialogControlEvents(file_dialog)
-    return configure_file_dialog(file_dialog, title, options, default_folder, ok_button_text, None, None, default_extension, [control_event_handler])
+    return configure_file_dialog(
+        file_dialog,
+        title,
+        options,
+        default_folder,
+        ok_button_text,
+        None,
+        None,
+        default_extension,
+        [control_event_handler],
+    )
 
 
 def open_file_dialog(  # noqa: C901, PLR0913, PLR0912
@@ -459,7 +506,7 @@ def open_file_dialog(  # noqa: C901, PLR0913, PLR0912
     default_no_minimode: bool = False,
     force_preview_pane_on: bool = False,
     ok_button_text: str | None = None,
-) -> list[str] | None:  # sourcery skip: low-code-quality
+) -> list[str] | None:
     """Opens a file dialog to select files.
 
     Args:
@@ -534,7 +581,16 @@ def open_file_dialog(  # noqa: C901, PLR0913, PLR0912
     if force_preview_pane_on:
         options |= FileOpenOptions.FOS_FORCEPREVIEWPANEON
     file_dialog = comtypes.client.CreateObject(CLSID_FileOpenDialog, interface=IFileOpenDialog)
-    return configure_file_dialog(file_dialog, title, options, default_folder, ok_button_text, None, file_types, default_extension)
+    return configure_file_dialog(
+        file_dialog,
+        title,
+        options,
+        default_folder,
+        ok_button_text,
+        None,
+        file_types,
+        default_extension,
+    )
 
 
 def save_file_dialog(  # noqa: C901, PLR0913, PLR0912
@@ -563,7 +619,7 @@ def save_file_dialog(  # noqa: C901, PLR0913, PLR0912
     default_no_minimode: bool = False,
     force_preview_pane_on: bool = False,
     ok_button_text: str | None = None,
-) -> list[str] | None:  # sourcery skip: low-code-quality
+) -> list[str] | None:
     """Opens a file dialog to save a file.
 
     Args:
@@ -637,7 +693,16 @@ def save_file_dialog(  # noqa: C901, PLR0913, PLR0912
     options &= ~FileOpenOptions.FOS_PICKFOLDERS  # Required (exceptions otherwise)
     options &= ~FileOpenOptions.FOS_ALLOWMULTISELECT  # Required (exceptions otherwise)
     file_dialog = comtypes.client.CreateObject(CLSID_FileSaveDialog, interface=IFileSaveDialog)
-    return configure_file_dialog(file_dialog, title, options, default_folder, ok_button_text, None, file_types, default_extension)
+    return configure_file_dialog(
+        file_dialog,
+        title,
+        options,
+        default_folder,
+        ok_button_text,
+        None,
+        file_types,
+        default_extension,
+    )
 
 
 def open_folder_dialog(  # noqa: C901, PLR0913, PLR0912
@@ -664,7 +729,7 @@ def open_folder_dialog(  # noqa: C901, PLR0913, PLR0912
     default_no_minimode: bool = False,
     force_preview_pane_on: bool = False,
     ok_button_text: str | None = None,
-) -> list[str] | None:  # sourcery skip: low-code-quality
+) -> list[str] | None:
     """Opens a dialog to select folders.
 
     Args:
@@ -736,7 +801,9 @@ def open_folder_dialog(  # noqa: C901, PLR0913, PLR0912
     if force_preview_pane_on:
         options |= FileOpenOptions.FOS_FORCEPREVIEWPANEON
     file_dialog = comtypes.client.CreateObject(CLSID_FileOpenDialog, interface=IFileOpenDialog)
-    return configure_file_dialog(file_dialog, title, options, default_folder, ok_button_text, None, None, None)
+    return configure_file_dialog(
+        file_dialog, title, options, default_folder, ok_button_text, None, None, None
+    )
 
 
 def get_open_file_dialog_results(

@@ -23,6 +23,7 @@ import math
 
 from contextlib import contextmanager
 from copy import copy, deepcopy
+from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
@@ -43,8 +44,11 @@ if TYPE_CHECKING:
 
     from collections.abc import Callable, Generator, Iterator
 
+    from typing_extensions import Self
+
 T = TypeVar("T")
 U = TypeVar("U")
+GFFStructType = TypeVar("GFFStructType", bound="GFFStruct")
 
 
 def format_diff(
@@ -90,15 +94,30 @@ class GFFContent(Enum):
     UTM = "UTM "
     UTT = "UTT "
     UTW = "UTW "
+    UTG = "UTG "  # random item generator template (user), GFF
     ARE = "ARE "
     DLG = "DLG "
     FAC = "FAC "
     GIT = "GIT "
+    GIC = "GIC "  # game instance comments (toolset-only companion to GIT), GFF
     GUI = "GUI "
     IFO = "IFO "
     ITP = "ITP "
     JRL = "JRL "
     PTH = "PTH "
+    # BioWare-authored counterparts to the user-facing UT* blueprint types
+    BTS = "BTS "  # sound template (BioWare), GFF
+    BTG = "BTG "  # random item generator template (BioWare), GFF
+    # Odyssey- and cross-engine types with GFF content
+    CUT = "CUT "  # cutscene, GFF
+    QDB = "QDB "  # quest database, GFF
+    QST = "QST "  # quest, GFF
+    QST2 = "QST2"  # quest (Odyssey, 4-char identifier without trailing space), GFF
+    STO = "STO "  # store (Odyssey), GFF
+    CWA = "CWA "  # crowd attributes (Odyssey), GFF
+    UTR = "UTR "  # tree template (user), GFF
+    ULT = "ULT "  # light template (user), GFF
+    WMP = "WMP "  # world map, GFF
     NFO = "NFO "  # savenfo.res
     PT = "PT  "  # partytable.res
     GVT = "GVT "  # GLOBALVARS.res
@@ -127,7 +146,7 @@ class GFFContent(Enum):
             if content_enum in res_contents:
                 gff_extensions.add("res")
                 continue
-            gff_extensions.add(content_enum.value.lower().strip())
+            gff_extensions.add(normalize_string(content_enum.value))
         return gff_extensions
 
     @classmethod
@@ -154,6 +173,139 @@ class GFFContent(Enum):
         elif lower_resname == "inventory":
             gff_content = GFFContent.INV
         return gff_content
+
+    @classmethod
+    def from_resource_type(cls, restype: ResourceType) -> GFFContent | None:
+        """Map a ResourceType to GFFContent when unambiguous (e.g. .utc -> UTC).
+
+        Multiple GFF payloads share ``.res`` (partytable, savenfo, …); those are not inferred here—use
+        :meth:`from_res` or default to :attr:`GFFContent.GFF`.
+        """
+        if restype.is_invalid:
+            return None
+        target = restype.target_type()
+        res_contents: set[GFFContent] = {cls.PTH, cls.NFO, cls.PT, cls.GVT, cls.INV}
+        matches: list[GFFContent] = []
+        for content_enum in cls:
+            if content_enum in res_contents:
+                mapped = ResourceType.RES
+            else:
+                ext = normalize_string(content_enum.value)
+                mapped = ResourceType.from_extension(ext).target_type()
+            if mapped == target:
+                matches.append(content_enum)
+        if len(matches) == 1:
+            return matches[0]
+        return None
+
+
+def _normalize_string_for_compare(value: object) -> str:
+    """Normalize string for comparison to avoid false positives from whitespace/line endings.
+
+    Observed / tooling: GFF string fields are often compared as raw bytes on read paths;
+    trailing whitespace and CRLF vs LF can differ between tools. Normalizing allows semantically
+    equal values to match. Used in ``GFFStruct.compare`` for String and LocalizedString fields.
+    """
+    if not isinstance(value, str):
+        return str(value) if value is not None else ""
+    # Normalize line endings to \n, strip trailing whitespace from each line and overall
+    return "\n".join(
+        line.rstrip() for line in value.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    ).rstrip()
+
+
+@dataclass
+class GFFListSemanticConfig(ComparableMixin):
+    """Configuration for semantic identity matching of GFF list elements.
+
+    Used to correctly detect modified entries (same logical item, different fields)
+    vs added/removed entries. Prevents false "2 added + 2 removed" when the same
+    structs have optional fields added (e.g., GuaranteedCount in UTE CreatureList).
+
+    Attributes:
+    ----------
+        identity_fields: Field names that uniquely identify a list entry. Used to
+            match structs across old/new (e.g., ResRef+CR+Appearance for creature spawns).
+        default_when_absent: Map field_name -> default value. When a field is absent
+            in one side, treat it as this default for identity and comparison.
+            E.g., {"GuaranteedCount": 0} for UTE CreatureList (K2 field, default 0).
+        ignorable_when_value: Map field_name -> value(s). When a field is added with
+            this value (or removed when the effective value would be this), treat as
+            no change. E.g., {"GuaranteedCount": 0} - adding GuaranteedCount=0 is
+            ignorable (K2 default; engine reads 0 when absent).
+    """
+
+    identity_fields: tuple[str, ...]
+    default_when_absent: dict[str, Any] = field(default_factory=dict)
+    ignorable_when_value: dict[str, Any] = field(default_factory=dict)
+
+
+# Registry: (GFFContent, list_field_name) -> semantic config for list comparison.
+# When present, list entries are matched by identity_fields + default_when_absent,
+# so "same creature, new optional field" is reported as MODIFIED not ADDED+REMOVED.
+# K1 encounter spawns only honor ResRef, CR, SingleSpawn; TSL adds GuaranteedCount.
+# Appearance on CreatureList is editor cruft the retail games ignore for encounters.
+_GFF_LIST_SEMANTIC_REGISTRY: dict[tuple[GFFContent, str], GFFListSemanticConfig] = {
+    # Identity matches what both games actually load; optional fields get sane defaults for diffs.
+    (GFFContent.UTE, "CreatureList"): GFFListSemanticConfig(
+        identity_fields=("ResRef", "CR", "SingleSpawn"),
+        default_when_absent={"GuaranteedCount": 0, "Appearance": 0},
+        ignorable_when_value={"GuaranteedCount": 0},
+    ),
+}
+
+# Registry of ignorable field values, keyed by (GFFContent, list_field_name | None).
+# list_field_name: apply only when comparing structs inside that list (e.g. "CreatureList").
+# None: apply to root/toplevel struct fields.
+# Used when comparing GFFs: fields added/removed with these values are treated as no-change.
+# Prefer GFFContent enum; never use raw strings for content type.
+#
+# K1 encounter saves omit GuaranteedCount; TSL writes it (default 0). Treat "missing or zero"
+# as the same thing when diffing so vanilla files do not look artificially dirty.
+_GFF_IGNORABLE_FIELD_VALUES: dict[tuple[GFFContent, str | None], dict[str, frozenset[Any]]] = {
+    (GFFContent.UTE, "CreatureList"): {"GuaranteedCount": frozenset({0})},
+}
+
+
+def _build_ignorable_for_content(content: GFFContent) -> dict[str, set[Any]] | None:
+    """Merge all ignorable field values for a GFF content type.
+
+    Merges entries keyed by (content, list_field) and (content, None).
+    Returns None if no ignorable entries exist.
+    """
+    merged: dict[str, set[Any]] = {}
+    for (gff_content, _list_field), field_map in _GFF_IGNORABLE_FIELD_VALUES.items():
+        if gff_content != content:
+            continue
+        for label, values in field_map.items():
+            existing = merged.get(label)
+            vals = set(values)
+            merged[label] = (existing | vals) if existing else vals
+    return merged if merged else None
+
+
+def _infer_gff_content_from_path(path: PureWindowsPath | str | None) -> GFFContent | None:
+    """Infer GFF content type from path (e.g., 'foo.ute' -> GFFContent.UTE)."""
+    if path is None:
+        return None
+    parts = PureWindowsPath(str(path)).parts
+    if not parts:
+        return None
+    first = parts[0]
+    if "." in first:
+        ext = normalize_string(first.split(".")[-1])
+        for content in GFFContent:
+            if normalize_string(content.value) == ext:
+                return content
+    return None
+
+
+def _list_field_name_from_path(path: PureWindowsPath | str | None) -> str | None:
+    """Extract the list field name from path (e.g., 'root/CreatureList' -> 'CreatureList')."""
+    if path is None:
+        return None
+    parts = PureWindowsPath(str(path)).parts
+    return parts[-1] if parts else None
 
 
 class GFFFieldType(IntEnum):
@@ -291,6 +443,13 @@ class GFF(ComparableMixin):
         self.content: GFFContent = content
         self.root: GFFStruct = GFFStruct(-1)
 
+    def fields(self) -> list[GFFFieldView]:
+        """Return the root struct fields in insertion order.
+
+        Returns immutable views at the file level for convenience.
+        """
+        return self.root.fields()
+
     def print_tree(
         self,
         root: GFFStruct | None = None,
@@ -304,19 +463,19 @@ class GFF(ComparableMixin):
             length_or_id: int = -2
             gff_struct: GFFStruct = value
             gff_list: GFFList = value
-            if field_type is GFFFieldType.Struct:
+            if field_type == GFFFieldType.Struct:
                 length_or_id = gff_struct.struct_id
-            if field_type is GFFFieldType.List:
+            if field_type == GFFFieldType.List:
                 length_or_id = len(gff_list)
 
             print(("  " * indent + label).ljust(column_len), " ", length_or_id)
 
-            if field_type is GFFFieldType.Struct:
+            if field_type == GFFFieldType.Struct:
                 self.print_tree(value, indent + 1)
-            if field_type is GFFFieldType.List:
+            if field_type == GFFFieldType.List:
                 for i, gff_struct in enumerate(value):
                     print(
-                        f'  {"  " * indent}[Struct {i}]'.ljust(column_len),
+                        f"  {'  ' * indent}[Struct {i}]".ljust(column_len),
                         " ",
                         gff_struct.struct_id,
                     )
@@ -399,9 +558,7 @@ class _GFFField:
         else:
             self._value = value
 
-    def field_type(
-        self,
-    ) -> GFFFieldType:
+    def field_type(self) -> GFFFieldType:
         """Returns the field type.
 
         Returns:
@@ -410,9 +567,7 @@ class _GFFField:
         """
         return self._field_type
 
-    def value(
-        self,
-    ) -> Any:
+    def value(self) -> Any:
         """Returns the value.
 
         Returns:
@@ -531,19 +686,79 @@ class GFFStruct(ComparableMixin):
         """Returns the number of fields."""
         return len(self._fields)
 
-    def __iter__(
-        self,
-    ) -> Generator[tuple[str, GFFFieldType, Any], Any, None]:
+    def keys(self):
+        """Return field labels (dict compatibility)."""
+        return self._fields.keys()
+
+    def values(self):
+        """Return field values (dict compatibility)."""
+        for field in self._fields.values():
+            yield field.value()
+
+    def items(self):
+        """Return field label-value pairs (dict compatibility)."""
+        for label, field in self._fields.items():
+            yield label, field.value()
+
+    def get(self, key: str, default=None):
+        """Get field value with default (dict compatibility)."""
+        if key in self._fields:
+            return self._fields[key].value()
+        return default
+
+    def __repr__(self) -> str:
+        if not self._fields:
+            return f"GFFStruct(struct_id={self.struct_id}, fields=[])"
+
+        summary_items = []
+        for idx, (label, field) in enumerate(self._fields.items()):
+            if idx >= 3:
+                summary_items.append(f"... ({len(self._fields) - 3} more)")
+                break
+            field_label = label or f"<unnamed:{idx}>"
+            summary_items.append(f"{field_label}:{field.field_type().name}")
+
+        summary = ", ".join(summary_items)
+        return f"GFFStruct(struct_id={self.struct_id}, fields=[{summary}])"
+
+    def __str__(self) -> str:
+        def _format_value(value: Any) -> str:
+            if isinstance(value, GFFStruct):
+                return f"<Struct#{value.struct_id}>"
+            if isinstance(value, GFFList):
+                return f"<List[{len(value)}]>"
+            if isinstance(value, bytes):
+                return f"<bytes len={len(value)}>"
+            value_str = repr(value) if isinstance(value, (str, int, float, bool)) else str(value)
+            return value_str if len(value_str) <= 80 else f"{value_str[:77]}..."
+
+        lines: list[str] = [f"GFFStruct #{self.struct_id} ({len(self._fields)} fields)"]
+        if not self._fields:
+            lines.append("  <empty>")
+            return "\n".join(lines)
+
+        for label, field in self._fields.items():
+            field_label = label or "<unnamed>"
+            field_type = field.field_type().name
+            value = field.value()
+            lines.append(f"  {field_label} ({field_type}): {_format_value(value)}")
+
+        return "\n".join(lines)
+
+    def __iter__(self) -> Generator[tuple[str, GFFFieldType, Any], Any, None]:
         """Iterates through the stored fields yielding each field's (label, type, value)."""
         for label, field in self._fields.items():
             yield label, field.field_type(), field.value()
 
-    def __getitem__(
-        self,
-        item: str,
-    ) -> Any:
-        """Returns the value of the specified field."""
-        return self._fields[item].value() if isinstance(item, str) else NotImplemented
+    def fields(self) -> list[GFFFieldView]:
+        """Return lightweight field views preserving insertion order.
+
+        Returns immutable views so callers cannot mutate `_fields` directly.
+        """
+        return [
+            GFFFieldView(label or "", field.field_type(), field.value())
+            for label, field in self._fields.items()
+        ]
 
     def remove(
         self,
@@ -730,7 +945,8 @@ class GFFStruct(ComparableMixin):
         -------
             The field value. If the field does not exist or the value type does not match the specified type then the default is returned instead.
         """
-        assert isinstance(default, object), f"{type(default).__name__}: {default}"
+        default_cls = default.__class__
+        assert isinstance(default, object), f"{default_cls.__name__}: {default}"
         value: T = default
         if object_type is None:
             object_type = default.__class__
@@ -1704,24 +1920,130 @@ class GFFList(ComparableMixin):
     ):
         self._structs: list[GFFStruct] = []
 
-    def __len__(
-        self,
-    ) -> int:
+    def __copy__(self) -> GFFList:
+        """Support `copy.copy(GFFList)` safely.
+
+        `GFFList` subclasses `list`, but stores its real content in `_structs`. The default
+        `list` reduce/copy path will copy `__dict__`/state in a way that can transiently share
+        `_structs` between source and destination during reconstruction, and then populate the
+        destination by iterating the source — which becomes unbounded if `_structs` is shared.
+        """
+        new_obj = GFFList()
+        new_obj._structs = self._structs.copy()
+        return new_obj
+
+    def __deepcopy__(self, memo: dict[int, object]) -> GFFList:
+        new_obj = GFFList()
+        memo[id(self)] = new_obj
+        new_obj._structs = deepcopy(self._structs, memo)
+        return new_obj
+
+    @staticmethod
+    def _from_reduce(structs: list[GFFStruct]) -> GFFList:
+        obj = GFFList()
+        obj._structs = structs
+        return obj
+
+    def __reduce_ex__(self, protocol: int):
+        """Override list's reduce to avoid shared `_structs` during reconstruction."""
+        return (GFFList._from_reduce, (self._structs.copy(),))
+
+    def __getitem__(self, index: int) -> GFFStruct:
+        """Returns the struct at the specified index."""
+        return self._structs[index]
+
+    def __setitem__(self, index: int, value: GFFStruct) -> None:
+        """Set struct at specified index."""
+        if not isinstance(value, GFFStruct):
+            raise TypeError("GFFList elements must be GFFStruct instances")
+        self._structs[index] = value
+
+    def __delitem__(self, index: int) -> None:
+        """Remove struct at specified index."""
+        del self._structs[index]
+
+    def __iter__(self):
+        """Iterate through structs."""
+        return iter(self._structs)
+
+    def __len__(self) -> int:
         """Returns the number of elements in _structs."""
         return len(self._structs)
 
-    def __iter__(
-        self,
-    ) -> Iterator[GFFStruct]:
-        """Iterates through _structs yielding each element."""
-        yield from self._structs
+    def append(self, struct: GFFStruct) -> None:
+        """Appends an existing struct to the list without creating a copy.
 
-    def __getitem__(
-        self,
-        item: int,
-    ) -> GFFStruct:
-        """Returns the struct at the specified index."""
-        return self._structs[item] if isinstance(item, int) else NotImplemented
+        Args:
+        ----
+            struct: The `GFFStruct` instance to append.
+
+        Raises:
+        ------
+            TypeError: If `struct` is not an instance of `GFFStruct`.
+        """
+        if not isinstance(struct, GFFStruct):
+            struct_type = type(struct)
+            RobustLogger().error(
+                f"Failed to append struct; expected GFFStruct, received {struct_type!r}."
+            )
+            msg = f"The struct must be a GFFStruct instance, got {struct_type!r} instead."
+            raise TypeError(msg)
+
+        self._structs.append(struct)
+        RobustLogger().debug(
+            f"Appended Struct#{struct.struct_id} to GFFList; list_length={len(self._structs)}."
+        )
+
+    def extend(self, other):
+        """Extend list with another iterable of GFFStructs."""
+        for item in other:
+            self.append(item)
+
+    def insert(self, index: int, struct: GFFStruct) -> None:
+        """Insert struct at specified index."""
+        if not isinstance(struct, GFFStruct):
+            raise TypeError("GFFList elements must be GFFStruct instances")
+        self._structs.insert(index, struct)
+
+    def __repr__(self) -> str:
+        """Returns a detailed string representation of the GFFList."""
+        if not self._structs:
+            return "GFFList([])"
+
+        # Show summary with struct IDs
+        struct_ids = [f"Struct#{s.struct_id}" for s in self._structs[:3]]
+        preview = ", ".join(struct_ids)
+        if len(self._structs) > 3:  # noqa: PLR2004
+            preview += f", ... ({len(self._structs) - 3} more)"
+
+        return f"GFFList([{preview}], total={len(self._structs)})"
+
+    def __str__(self) -> str:
+        """Returns a human-readable string representation of the GFFList."""
+        if not self._structs:
+            return "GFFList (empty)"
+
+        lines = [f"GFFList with {len(self._structs)} structs:"]
+        for i, struct in enumerate(self._structs):
+            lines.append(f"  [{i}] Struct#{struct.struct_id} ({len(struct)} fields)")
+            # Show first few fields of each struct
+            max_fields_preview = 3
+            for field_count, (label, field_type, value) in enumerate(struct):
+                if field_count >= max_fields_preview:
+                    lines.append(f"      ... ({len(struct) - max_fields_preview} more fields)")
+                    break
+                # Format value based on type
+                if field_type == GFFFieldType.Struct:
+                    value_str = f"<Struct#{value.struct_id}>"
+                elif field_type == GFFFieldType.List:
+                    value_str = f"<List[{len(value)}]>"
+                elif isinstance(value, (str, int, float)):
+                    value_str = repr(value)
+                else:
+                    value_str = str(value)
+                lines.append(f"      {label}: {value_str}")
+
+        return "\n".join(lines)
 
     def __repr__(self) -> str:
         """Returns a detailed string representation of the GFFList."""
@@ -1865,8 +2187,7 @@ class GFFList(ComparableMixin):
             - Detect moved/reordered structs (same content, different index)
             - Compare structs at same index that haven't moved
         """
-        current_path = current_path or PureWindowsPath("GFFList")
-        is_same_result = True
+        if format_type == "unified":
 
         if not isinstance(other, GFFList):
             log_func(f"GFFList counts have changed at '{current_path}': '{len(self)}' --> '<unknown>'")

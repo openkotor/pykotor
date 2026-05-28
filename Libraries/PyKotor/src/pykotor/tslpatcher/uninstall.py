@@ -1,3 +1,5 @@
+"""TSLPatcher uninstall: revert override folder and restore from backups."""
+
 from __future__ import annotations
 
 import os
@@ -8,14 +10,14 @@ from pathlib import Path
 from tkinter import messagebox
 from typing import TYPE_CHECKING
 
-from pykotor.common.misc import Game
 from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.tlk import read_tlk, write_tlk
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
 from pykotor.tools.misc import is_mod_file
 from pykotor.tools.path import CaseAwarePath
 from pykotor.tslpatcher.logger import PatchLogger
-from utility.error_handling import universal_simplify_exception
+from pykotor.tslpatcher.tlkdefs import detect_patch_type, get_vanilla_tlk_count
+from utility.misc import ensure_directory_exists
 
 if TYPE_CHECKING:
     from pykotor.extract.installation import Installation
@@ -28,8 +30,8 @@ def uninstall_all_mods(
 ):
     """Uninstalls all mods from the game.
 
-    What this method really does is delete all the contents of the override folder and delete all .MOD files from
-    the modules folder. Then it removes all appended TLK entries using
+    What this method really does is delete all the contents of the override folder (except Aspyr patch files)
+    and delete all .MOD files from the modules folder. Then it removes all appended TLK entries using
     the hardcoded number of entries depending on the game. There are 49,265 TLK entries in KOTOR 1, and 136,329 in TSL.
     """
     root_path: Path = installation.path()
@@ -46,14 +48,42 @@ def uninstall_all_mods(
     # This implementation would be required regardless in K2 anyway as this function currently isn't determining if the Aspyr patch and/or TSLRCM is installed.
     write_tlk(dialog_tlk, dialog_tlk_path)
 
-    # Remove all override files
+    # TODO: Implement complete vanilla TLK restoration system
+    # This would require:
+    # 1. Storing original vanilla TLK files for each game version/patch combination
+    # 2. SHA1 hash verification against known vanilla hashes
+    # 3. Exact restoration of original TLK data instead of entry truncation
+    # 4. Support for TSLRCM and other patch detection
+
+    # Files placed by the Aspyr patch (Mac/Linux version) that should be preserved
+    # These are required for the game to function properly on non-Windows platforms
+    aspyr_override_files: set[str] = {
+        # GUI files modified for different platforms/resolutions
+        "mainmenu.gui",
+        "dialog.gui",
+        "journal.gui",
+        "charinfo.gui",
+        "ingame.gui",
+        "loadscreen.gui",
+        "partyselect.gui",
+        "options.gui",
+        # Texture files that may be platform-specific
+        "loadscreen.tpc",
+        "mainmenu_background.tpc",
+        # Configuration and other essential files
+        "fonts.bif",
+        "subtitles.bif",  # Sometimes placed in override
+    }
+
+    # Remove all override files except Aspyr-required ones
     for file_path in override_path.iterdir():
-        file_path.unlink()
+        if file_path.name.lower() not in aspyr_override_files:
+            file_path.unlink(missing_ok=True)
 
     # Remove any .MOD files
     for file_path in modules_path.iterdir():
         if is_mod_file(file_path.name):
-            file_path.unlink()
+            file_path.unlink(missing_ok=True)
 
 
 class ModUninstaller:
@@ -153,10 +183,12 @@ class ModUninstaller:
         if not valid_backups:
             messagebox.showerror(
                 "No backups found!",
-                f"No backups found at '{backup_folder_path}'!{os.linesep}" "HoloPatcher cannot uninstall TSLPatcher.exe installations.",
+                f"No backups found at '{backup_folder_path}'!{os.linesep}HoloPatcher cannot uninstall TSLPatcher.exe installations.",
             )
             return None
-        return max(valid_backups, key=lambda x: datetime.strptime(x.name, "%Y-%m-%d_%H.%M.%S").astimezone())
+        return max(
+            valid_backups, key=lambda x: datetime.strptime(x.name, "%Y-%m-%d_%H.%M.%S").astimezone()
+        )
 
     def restore_backup(
         self,
@@ -194,12 +226,16 @@ class ModUninstaller:
             destination_path: Path = self.game_path / file_path.relative_to(backup_folder)  # type: ignore[attr-defined]
             destination_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(file_path, destination_path)
-            self.log.add_note(f"Restoring backup of '{file_path.name}' to '{destination_path.relative_to(self.game_path.parent)}'...")  # type: ignore[attr-defined]
+            self.log.add_note(
+                f"Restoring backup of '{file_path.name}' to '{destination_path.relative_to(self.game_path.parent)}'..."
+            )  # type: ignore[attr-defined]
 
     def get_backup_info(self) -> tuple[Path | None, set[str], list[Path], int]:
         """Get info about the most recent valid backup."""
-        most_recent_backup_folder: Path | None = self.get_most_recent_backup(self.backups_location_path)
-        if not most_recent_backup_folder:
+        most_recent_backup_folder: Path | None = self.get_most_recent_backup(
+            self.backups_location_path
+        )
+        if most_recent_backup_folder is None:
             return None, set(), [], 0
 
         delete_list_file: Path = most_recent_backup_folder / "remove these files.txt"
@@ -209,7 +245,11 @@ class ModUninstaller:
             with BinaryReader.from_file(delete_list_file) as f:
                 lines: list[str] = decode_bytes_with_fallbacks(f.read_all()).split("\n")
             files_to_delete = {line.strip() for line in lines if line.strip()}
-            existing_files = {line.strip() for line in files_to_delete if line.strip() and Path(line.strip()).is_file()}
+            existing_files = {
+                line.strip()
+                for line in files_to_delete
+                if line.strip() and Path(line.strip()).is_file()
+            }
             if len(existing_files) < len(files_to_delete) and not messagebox.askyesno(
                 "Backup out of date or mismatched",
                 (
@@ -243,14 +283,18 @@ class ModUninstaller:
             - Restore files from backup
             - Offer to delete restored backup.
         """
-        most_recent_backup_folder, existing_files, files_in_backup, folder_count = self.get_backup_info()
-        if not most_recent_backup_folder:
+        most_recent_backup_folder, existing_files, files_in_backup, folder_count = (
+            self.get_backup_info()
+        )
+        if most_recent_backup_folder is None:
             return False
         self.log.add_note(f"Using backup folder '{most_recent_backup_folder}'")
 
         if len(files_in_backup) < 6:
             for item in files_in_backup:
-                self.log.add_note(f"Would restore file '{item.relative_to(most_recent_backup_folder)}'")
+                self.log.add_note(
+                    f"Would restore file '{item.relative_to(most_recent_backup_folder)}'"
+                )
         if not messagebox.askyesno(
             "Confirmation",
             f"Really uninstall {len(existing_files)} files and restore the most recent backup (containing {len(files_in_backup)} files and {folder_count} folders)?\nNote: This uses the most recent mod-specific backup, the namespace option displayed does not affect this tool.",  # noqa: E501
@@ -259,7 +303,7 @@ class ModUninstaller:
         try:
             self.restore_backup(most_recent_backup_folder, existing_files, files_in_backup)
         except Exception as e:  # pylint: disable=W0718  # noqa: BLE001
-            error_name, msg = universal_simplify_exception(e)
+            error_name, msg = (e.__class__.__name__, str(e))
             messagebox.showerror(
                 error_name,
                 f"Failed to restore backup because of exception.{os.linesep * 2}{msg}",

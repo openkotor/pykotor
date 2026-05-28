@@ -165,14 +165,76 @@ class TwoDA(ComparableMixin):
             tuple(self._labels)
         ))
 
-    def __repr__(
-        self,
-    ):
+        # Performance optimization: O(1) lookup for row labels
+        # Maps label string to row index for fast find_row() operations
+        self._label_to_index: dict[str, int] = {}
+
+    def __eq__(self, other):
+        if not isinstance(other, TwoDA):
+            return NotImplemented  # type: ignore[no-any-return]
+        return (
+            self._rows == other._rows
+            and self._headers == other._headers
+            and self._labels == other._labels
+        )
+
+    def __hash__(self):
+        return hash(
+            (
+                tuple(tuple(sorted(row.items())) for row in self._rows),
+                tuple(self._headers),
+                tuple(self._labels),
+            )
+        )
+
+    def __repr__(self):
         return f"{self.__class__.__name__}(headers={self._headers!r}, labels={self._labels!r}, rows={self._rows!r})"
 
-    def __iter__(
-        self,
-    ):
+    def __json__(self) -> dict[str, list]:
+        """Serialize the TwoDA object to a JSON-compatible dictionary."""
+        json_data: dict[str, list] = {"headers": self._headers, "rows": []}
+        for row in self:
+            json_row: dict[str, list | str] = {"label": row.label(), "cells": []}
+            for header in self._headers:
+                json_row["cells"].append(row.get_string(header))
+            json_data["rows"].append(json_row)
+        return json_data
+
+    @classmethod
+    def from_json(cls, data: dict) -> TwoDA:
+        """Hydrate a TwoDA object from a JSON dictionary."""
+        instance = cls()
+
+        # Support both legacy format (rows with "_id" and header keys) and the
+        # newer format (top-level "headers" list and rows containing "label" and "cells").
+        if isinstance(data, dict) and "headers" in data and "rows" in data:
+            for header in data.get("headers", []):
+                instance.add_column(header)
+
+            for row in data.get("rows", []):
+                label = row.get("label")
+                cells = row.get("cells", [])
+                cell_map = {
+                    h: (cells[i] if i < len(cells) else "")
+                    for i, h in enumerate(instance.get_headers())
+                }
+                instance.add_row(str(label), cell_map)
+            return instance
+
+        # Fallback to legacy behavior
+        for row in data.get("rows", []):
+            row_label = row["_id"]
+            del row["_id"]
+
+            for header in row:
+                if header not in instance.get_headers():
+                    instance.add_column(header)
+
+            instance.add_row(row_label, row)
+
+        return instance
+
+    def __iter__(self):
         """Iterates through each row yielding a new linked TwoDARow instance."""
         for i, row in enumerate(self._rows):
             yield TwoDARow(self.get_label(i), row)
@@ -274,7 +336,83 @@ class TwoDA(ComparableMixin):
 
     def get_headers(
         self,
-    ) -> list[str]:
+        label: str,
+    ) -> bool:
+        """Checks if a row label exists in the 2DA.
+
+        Args:
+        ----
+            label: The row label to check.
+
+        Returns:
+        -------
+            True if the label exists, False otherwise.
+        """
+        return label in self._label_to_index
+
+    def __getitem__(
+        self,
+        key: int | str | slice,
+    ) -> TwoDARow | list[TwoDARow]:
+        """Pythonic access to rows by index, label, or slice.
+
+        Args:
+        ----
+            key: Row index (int), label (str), or slice.
+
+        Returns:
+        -------
+            TwoDARow for single access, list[TwoDARow] for slice.
+
+        Raises:
+        ------
+            KeyError: If label not found.
+            IndexError: If index out of range.
+        """
+        if isinstance(key, int):
+            return self.get_row(key)
+        if isinstance(key, str):
+            result = self.find_row(key)
+            if result is None:
+                raise KeyError(f"Row label '{key}' not found")
+            return result
+        if isinstance(key, slice):
+            indices = range(len(self._rows))[key]
+            return [self.get_row(i) for i in indices]
+        msg = f"Invalid key type: {type(key).__name__}. Expected int, str, or slice."
+        raise TypeError(msg)
+
+    @property
+    def shape(self) -> tuple[int, int]:
+        """Returns the dimensions of the 2DA as (rows, columns).
+
+        Returns:
+        -------
+            Tuple of (row_count, column_count).
+        """
+        return (self.get_height(), self.get_width())
+
+    @property
+    def columns(self) -> list[str]:
+        """Returns a copy of the column headers.
+
+        Returns:
+        -------
+            List of column header names.
+        """
+        return copy(self._headers)
+
+    @property
+    def index(self) -> list[str]:
+        """Returns a copy of the row labels.
+
+        Returns:
+        -------
+            List of row labels.
+        """
+        return copy(self._labels)
+
+    def get_headers(self) -> list[str]:
         """Returns a copy of the set of column headers.
 
         Returns:
@@ -358,9 +496,7 @@ class TwoDA(ComparableMixin):
 
         self._headers.remove(header)
 
-    def get_labels(
-        self,
-    ) -> list[str]:
+    def get_labels(self) -> list[str]:
         """Returns a copy of the set of row labels.
 
         Returns:
@@ -467,7 +603,10 @@ class TwoDA(ComparableMixin):
         try:
             label_row = self.get_label(row_index)
         except IndexError as e:
-            e.args = (f"Row index {row_index} not found in the 2DA." + (f" Context: {context}" if context is not None else ""),)
+            e.args = (
+                f"Row index {row_index} not found in the 2DA."
+                + (f" Context: {context}" if context is not None else ""),
+            )
             raise
         return TwoDARow(label_row, self._rows[row_index])
 
@@ -515,11 +654,18 @@ class TwoDA(ComparableMixin):
 
         Processing Logic:
         ----------------
-            - Iterate through the 2D array and enumerate the rows.
-            - Check if the current row equals the searching row.
-            - If a match is found, return the index i.
-            - If no match is found after full iteration, return None.
+            - Use O(1) label lookup for efficiency
+            - Fallback to linear search only if needed
         """
+        # Fast O(1) lookup by label
+        row_label: str = row.label()
+        if row_label in self._label_to_index:
+            index: int = self._label_to_index[row_label]
+            # Verify the row data matches (in case of hash collision or stale cache)
+            if index < len(self._rows) and self._rows[index] == row._data:
+                return index
+
+        # Fallback to linear search for edge cases
         return next((i for i, searching in enumerate(self) if searching == row), None)
 
     def add_row(
@@ -595,7 +741,13 @@ class TwoDA(ComparableMixin):
             override_cells[header] = str(override_cells[header])
 
         for header in self._headers:
-            self._rows[-1][header] = override_cells[header] if header in override_cells else self.get_cell(source_index, header)  # FIXME: source_index cannot be None
+            if source_index is None:
+                raise ValueError("Source index cannot be None")
+            self._rows[-1][header] = (
+                override_cells[header]
+                if header in override_cells
+                else self.get_cell(source_index, header)
+            )  # FIXME: source_index cannot be None
 
         return row_index
 
@@ -683,9 +835,7 @@ class TwoDA(ComparableMixin):
         value = "" if value is None else value
         self._rows[row_index][column] = str(value)
 
-    def get_height(
-        self,
-    ) -> int:
+    def get_height(self) -> int:
         """Returns the number of rows in the table.
 
         Returns:
@@ -694,9 +844,7 @@ class TwoDA(ComparableMixin):
         """
         return len(self._rows)
 
-    def get_width(
-        self,
-    ) -> int:
+    def get_width(self) -> int:
         """Returns the number of columns in the table.
 
         Returns:
@@ -754,9 +902,7 @@ class TwoDA(ComparableMixin):
 
         return max_found + 1
 
-    def label_max(
-        self,
-    ) -> int:
+    def label_max(self) -> int:
         """Finds the maximum label and returns the next integer.
 
         Args:
@@ -893,30 +1039,33 @@ class TwoDA(ComparableMixin):
         # Common headers
         common_headers: set[str] = old_headers.intersection(new_headers)
 
-        # Check for row mismatches
-        old_indices: set[int | None] = {self.row_index(row) for row in self}
-        new_indices: set[int | None] = {other.row_index(row) for row in other}
-        missing_rows: set[int | None] = old_indices - new_indices
-        extra_rows: set[int | None] = new_indices - old_indices
+        # Check for row mismatches by comparing label sets (much more efficient)
+        old_labels = set(self.get_labels())
+        new_labels = set(other.get_labels())
+        missing_rows: set[str] = old_labels - new_labels
+        extra_rows: set[str] = new_labels - old_labels
         if missing_rows:
-            log_func(f"Missing rows in new TwoDA: {', '.join(map(str, missing_rows))}")
+            log_func(f"Missing rows in new TwoDA: {', '.join(missing_rows)}")
             ret = False
         if extra_rows:
-            log_func(f"Extra rows in new TwoDA: {', '.join(map(str, extra_rows))}")
+            log_func(f"Extra rows in new TwoDA: {', '.join(extra_rows)}")
             ret = False
 
-        # Check cell values for common rows
-        for index in old_indices.intersection(new_indices):
-            if index is None:
-                log_func("Row mismatch")
+        # Check cell values for common rows by label (efficient O(1) lookup)
+        common_labels: set[str] = old_labels.intersection(new_labels)
+        for label in common_labels:
+            old_row: TwoDARow | None = self.find_row(label)
+            new_row: TwoDARow | None = other.find_row(label)
+            if old_row is None or new_row is None:
+                log_func(f"Row '{label}' not found during comparison")
                 return False
-            old_row: TwoDARow = self.get_row(index)
-            new_row: TwoDARow = other.get_row(index)
             for header in common_headers:
                 old_value: str = old_row.get_string(header)
                 new_value: str = new_row.get_string(header)
                 if old_value != new_value:
-                    log_func(f"Cell mismatch at RowIndex '{index}' Header '{header}': '{old_value}' --> '{new_value}'")
+                    log_func(
+                        f"Cell mismatch at Row '{label}' Header '{header}': '{old_value}' --> '{new_value}'"
+                    )
                     ret = False
 
         return ret
@@ -966,9 +1115,7 @@ class TwoDARow(ComparableMixin):
         # Cell data: column_header -> cell_value (all strings)
         self._data: dict[str, str] = row_data
 
-    def __repr__(
-        self,
-    ):
+    def __repr__(self):
         return f"{self.__class__.__name__}(row_label={self._row_label}, row_data={self._data})"
 
     def __eq__(self, other: TwoDARow | object):
@@ -976,7 +1123,7 @@ class TwoDARow(ComparableMixin):
             return True
         if isinstance(other, TwoDARow):
             return self._row_label == other._row_label and self._data == other._data
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __hash__(self):
         return hash((self._row_label, tuple(sorted(self._data.items()))))

@@ -29,8 +29,7 @@ class ResRef(str):
 
     Used in:
     -------
-        - Encapsulated Resource Files (ERF/MOD/SAV)
-        - RIM/BIF archives
+        - BioWare Archive/Container Files (BIF/ERF/MOD/RIM/SAV)
         - Filenames in the Override folder
         - GFF field values (ResRef field type)
         - Resource lookups and references throughout the engine
@@ -116,7 +115,9 @@ class ResRef(str):
         """ResRefs cannot be converted to a different case."""
 
         def __init__(self, resref: ResRef, func_name: str, *args, **kwargs):
-            super().__init__(f"ResRef's must be case-insensitive, attempted {resref!r}.{func_name}({args, kwargs})")
+            super().__init__(
+                f"ResRef's must be case-insensitive, attempted {resref!r}.{func_name}({args, kwargs})"
+            )
 
     def __new__(cls, text: str) -> Self:
         # Create the instance
@@ -147,9 +148,7 @@ class ResRef(str):
     def __hash__(self):
         return hash(self._value.casefold())
 
-    def __repr__(
-        self,
-    ):
+    def __repr__(self):
         return f"ResRef({self._value})"
 
     def __str__(
@@ -186,22 +185,12 @@ class ResRef(str):
     def set_data(
         self,
         text: str,
-        *,
-        truncate: bool = False,
-    ):  # sourcery skip: remove-unnecessary-cast
+    ):
         """Sets the ResRef.
 
         Args:
         ----
             text - str: The reference string.
-            truncate - bool: Whether to truncate the text to 16 characters. Default is False.
-
-        Raises:
-        ------
-            InvalidEncodingError - text was not in ascii format
-            ExceedsMaxLengthError - text exceeded 16 characters
-            InvalidFormatError - text starts/ends with a space or contains windows invalid filename characters.
-            All of the above exceptions inherit ValueError.
         """
         parsed_text: str = str(text).strip()
         # Check for leading or trailing whitespace. Ensure text doesn't start/end with whitespace.
@@ -228,7 +217,7 @@ class ResRef(str):
         if not text.isascii():  # Ensure text only contains ASCII characters.
             raise self.InvalidEncodingError(text)
 
-        # Validate text length.
+        # Strict maximum length validation (16 characters)
         if len(parsed_text) > self.MAX_LENGTH:
             if not truncate:
                 raise self.ExceedsMaxLengthError(parsed_text)
@@ -319,7 +308,7 @@ class Color:
         if self is other:
             return True
         if not isinstance(other, Color):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
 
         return hash(self) == hash(other)
 
@@ -542,7 +531,7 @@ class WrappedInt:
         if isinstance(other, int):
             self._value += other
             return None
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __hash__(self):
         return hash(self._value)
@@ -555,7 +544,7 @@ class WrappedInt:
             return True
         if isinstance(other, WrappedInt):
             return self.get() == other.get()
-        if isinstance(other, int):  # sourcery skip: assign-if-exp
+        if isinstance(other, int):
             return self.get() == other
         return hash(self) == hash(other)
 
@@ -565,9 +554,7 @@ class WrappedInt:
     ):
         self._value = value
 
-    def get(
-        self,
-    ) -> int:
+    def get(self) -> int:
         return self._value
 
 
@@ -582,9 +569,7 @@ class InventoryItem:
         self.droppable: bool = droppable
         self.infinite: bool = infinite
 
-    def __str__(
-        self,
-    ) -> str:
+    def __str__(self) -> str:
         return str(self.resref)
 
     def __eq__(
@@ -594,12 +579,12 @@ class InventoryItem:
         if self is other:
             return True
         if isinstance(other, InventoryItem):
-            return self.resref == other.resref and self.droppable == other.droppable  # and self.infinite == other.infinite
-        return NotImplemented
+            return (
+                self.resref == other.resref and self.droppable == other.droppable
+            )  # and self.infinite == other.infinite
+        return NotImplemented  # type: ignore[no-any-return]
 
-    def __hash__(
-        self,
-    ):
+    def __hash__(self):
         return hash(self.resref)
 
 

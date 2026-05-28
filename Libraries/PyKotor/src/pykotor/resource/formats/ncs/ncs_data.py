@@ -172,17 +172,25 @@ class NCSInstructionType(Enum):
     EQUALTT = NCSInstructionTypeValue(NCSByteCode.EQUALxx, NCSInstructionQualifier.StructStruct)
     EQUALEFFEFF = NCSInstructionTypeValue(NCSByteCode.EQUALxx, NCSInstructionQualifier.EffectEffect)
     EQUALEVTEVT = NCSInstructionTypeValue(NCSByteCode.EQUALxx, NCSInstructionQualifier.EventEvent)
-    EQUALLOCLOC = NCSInstructionTypeValue(NCSByteCode.EQUALxx, NCSInstructionQualifier.LocationLocation)
+    EQUALLOCLOC = NCSInstructionTypeValue(
+        NCSByteCode.EQUALxx, NCSInstructionQualifier.LocationLocation
+    )
     EQUALTALTAL = NCSInstructionTypeValue(NCSByteCode.EQUALxx, NCSInstructionQualifier.TalentTalent)
     NEQUALII = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.IntInt)
     NEQUALFF = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.FloatFloat)
     NEQUALSS = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.StringString)
     NEQUALOO = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.ObjectObject)
     NEQUALTT = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.StructStruct)
-    NEQUALEFFEFF = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.EffectEffect)
+    NEQUALEFFEFF = NCSInstructionTypeValue(
+        NCSByteCode.NEQUALxx, NCSInstructionQualifier.EffectEffect
+    )
     NEQUALEVTEVT = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.EventEvent)
-    NEQUALLOCLOC = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.LocationLocation)
-    NEQUALTALTAL = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.TalentTalent)
+    NEQUALLOCLOC = NCSInstructionTypeValue(
+        NCSByteCode.NEQUALxx, NCSInstructionQualifier.LocationLocation
+    )
+    NEQUALTALTAL = NCSInstructionTypeValue(
+        NCSByteCode.NEQUALxx, NCSInstructionQualifier.TalentTalent
+    )
     GEQII = NCSInstructionTypeValue(NCSByteCode.GEQxx, NCSInstructionQualifier.IntInt)
     GEQFF = NCSInstructionTypeValue(NCSByteCode.GEQxx, NCSInstructionQualifier.FloatFloat)
     GTII = NCSInstructionTypeValue(NCSByteCode.GTxx, NCSInstructionQualifier.IntInt)
@@ -367,9 +375,10 @@ class NCS(ComparableMixin):
         return "\n".join(lines)
 
     def print(self):
+        inst_to_idx = {id(inst): i for i, inst in enumerate(self.instructions)}
         for i, instruction in enumerate(self.instructions):
             if instruction.jump:
-                jump_index = self.instructions.index(instruction.jump)
+                jump_index = inst_to_idx.get(id(instruction.jump), -1)
                 print(f"{i}:\t{instruction.ins_type.name.ljust(8)}\t--> {jump_index}")
             else:
                 print(f"{i}:\t{instruction.ins_type.name.ljust(8)} {instruction.args}")
@@ -690,6 +699,13 @@ class NCSInstruction(ComparableMixin):
         # Used by debugger to map bytecode instructions back to source code lines
         self.line_number: int = -1
 
+        # Byte offset of instruction in NCS file (set during loading, -1 if not determined)
+        self.offset: int = -1
+
+        # Source line number for debugging (set during compilation, -1 if not tracked)
+        # Used by debugger to map bytecode instructions back to source code lines
+        self.line_number: int = -1
+
     def __str__(self):
         """Returns a human-readable string representation of the instruction."""
         args_str = f" args={self.args}" if self.args else ""
@@ -869,7 +885,7 @@ class NCSInstruction(ComparableMixin):
         return 0
 
 
-class NCSOptimizer(ABC):
+class NCSOptimizer(BiowareResource, ABC):
     def __init__(self):
         self.instructions_cleared: int = 0
 
@@ -881,7 +897,7 @@ class NCSOptimizer(ABC):
         self.instructions_cleared = 0
 
 
-class NCSCompiler(ABC):
+class NCSCompiler(BiowareResource, ABC):
     @abstractmethod
     def compile_script(self, source_file: os.PathLike | str, output_file: os.PathLike | str, game: Game | int, timeout: int = 5, *, debug: bool = False) -> tuple[str, str]:
         ...

@@ -9,7 +9,11 @@ from loggerplus import RobustLogger
 if TYPE_CHECKING:
     import os
 
-    from tkinter import Misc, StringVar, Tk  # Do not import tkinter-related outside type-checking blocks, in case not installed.
+    from tkinter import (  # Do not import tkinter-related outside type-checking blocks, in case not installed.
+        Misc,
+        StringVar,
+        Tk,
+    )
     from typing import IO, Any, Iterable
 
     from typing_extensions import Literal
@@ -17,6 +21,7 @@ if TYPE_CHECKING:
 
 def _get_tk_root() -> Tk:
     import tkinter as tk
+
     if tk._default_root is None:  # pyright: ignore[reportAttributeAccessIssue]  # noqa: SLF001
         root = tk.Tk()
         root.withdraw()
@@ -64,9 +69,7 @@ def _run_gtk_dialog(  # noqa: PLR0913, PLR0911, ANN201
     GTK_RESPONSE_ACCEPT = -3
 
     # Determine the action type for the dialog
-    if dialog_type == "open_file":
-        action = GTK_FILE_CHOOSER_ACTION_OPEN
-    elif dialog_type == "open_folder":
+    if dialog_type == "open_file" or dialog_type == "open_folder":
         action = GTK_FILE_CHOOSER_ACTION_OPEN
     elif dialog_type == "save_file":
         action = GTK_FILE_CHOOSER_ACTION_SAVE
@@ -78,9 +81,11 @@ def _run_gtk_dialog(  # noqa: PLR0913, PLR0911, ANN201
         title.encode("utf-8") if title else None,
         None,
         action,
-        b"_Cancel", ctypes.c_int(-6),
-        b"_Open", ctypes.c_int(GTK_RESPONSE_ACCEPT),
-        None
+        b"_Cancel",
+        ctypes.c_int(-6),
+        b"_Open",
+        ctypes.c_int(GTK_RESPONSE_ACCEPT),
+        None,
     )
 
     # Set the initial directory
@@ -120,7 +125,6 @@ def _run_gtk_dialog(  # noqa: PLR0913, PLR0911, ANN201
     return None
 
 
-
 def askdirectory(  # noqa: PLR0913, PLR0911, ANN201
     *,
     initialdir: os.PathLike | str | None = None,
@@ -130,6 +134,7 @@ def askdirectory(  # noqa: PLR0913, PLR0911, ANN201
 ) -> str:
     try:
         from tkinter import filedialog
+
         result = filedialog.askdirectory(
             initialdir=initialdir,
             mustexist=mustexist,
@@ -138,13 +143,27 @@ def askdirectory(  # noqa: PLR0913, PLR0911, ANN201
         )
         return "" if not result or not result.strip() else result
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askdirectory() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askdirectory() threw an exception!", exc_info=True
+        )
         try:
-            result = _run_zenity_dialog("file-selection", ["--directory", f"--title={title}", f"--filename={initialdir or ''}"]) or ""
+            result = (
+                _run_zenity_dialog(
+                    "file-selection",
+                    ["--directory", f"--title={title}", f"--filename={initialdir or ''}"],
+                )
+                or ""
+            )
             return "" if not result or not result.strip() else result
         except Exception:  # noqa: BLE001
             try:
-                result = _run_yad_dialog("file-selection", ["--directory", f"--title={title}", f"--filename={initialdir or ''}"]) or ""
+                result = (
+                    _run_yad_dialog(
+                        "file-selection",
+                        ["--directory", f"--title={title}", f"--filename={initialdir or ''}"],
+                    )
+                    or ""
+                )
                 return "" if not result or not result.strip() else result
             except Exception:  # noqa: BLE001
                 try:
@@ -174,6 +193,7 @@ def askopenfile(  # noqa: PLR0913, PLR0911, ANN201
 ) -> IO[Any] | None:
     try:
         from tkinter import filedialog
+
         return filedialog.askopenfile(
             mode,
             defaultextension=defaultextension,
@@ -185,13 +205,19 @@ def askopenfile(  # noqa: PLR0913, PLR0911, ANN201
             typevariable=typevariable,
         )
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askopenfile() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askopenfile() threw an exception!", exc_info=True
+        )
         try:
-            result = _run_zenity_dialog("file-selection", [f"--title={title}", f"--filename={initialdir or ''}"])
+            result = _run_zenity_dialog(
+                "file-selection", [f"--title={title}", f"--filename={initialdir or ''}"]
+            )
             return None if not result or not result.strip() else open(result, mode)  # noqa: SIM115, PTH123
         except Exception:  # noqa: BLE001
             try:
-                result = _run_yad_dialog("file-selection", [f"--title={title}", f"--filename={initialdir or ''}"])
+                result = _run_yad_dialog(
+                    "file-selection", [f"--title={title}", f"--filename={initialdir or ''}"]
+                )
                 return None if not result or not result.strip() else open(result, mode)  # noqa: SIM115, PTH123
             except Exception:  # noqa: BLE001
                 try:
@@ -220,6 +246,7 @@ def askopenfilename(  # noqa: PLR0913, PLR0911, ANN201
 ) -> str:
     try:
         from tkinter import filedialog
+
         result = filedialog.askopenfilename(
             defaultextension=defaultextension,
             filetypes=[] if filetypes is None else filetypes,  # rem: do not send None
@@ -231,13 +258,19 @@ def askopenfilename(  # noqa: PLR0913, PLR0911, ANN201
         )
         return "" if not result or not result.strip() else result
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askopenfilename() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askopenfilename() threw an exception!", exc_info=True
+        )
         try:
-            result = _run_zenity_dialog("file-selection", [f"--title={title}", f"--filename={initialdir or ''}"])
+            result = _run_zenity_dialog(
+                "file-selection", [f"--title={title}", f"--filename={initialdir or ''}"]
+            )
             return "" if not result or not result.strip() else result
         except Exception:  # noqa: BLE001
             try:
-                result = _run_yad_dialog("file-selection", [f"--title={title}", f"--filename={initialdir or ''}"])
+                result = _run_yad_dialog(
+                    "file-selection", [f"--title={title}", f"--filename={initialdir or ''}"]
+                )
                 return "" if not result or not result.strip() else result
             except Exception:  # noqa: BLE001
                 try:
@@ -266,6 +299,7 @@ def askopenfilenames(  # noqa: PLR0913
 ) -> tuple[str, ...] | Literal[""]:
     try:
         from tkinter import filedialog
+
         result = filedialog.askopenfilenames(
             defaultextension=defaultextension,
             filetypes=[] if filetypes is None else filetypes,  # rem: do not send None
@@ -277,25 +311,47 @@ def askopenfilenames(  # noqa: PLR0913
         )
         return "" if not result else tuple(result)
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askopenfilenames() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askopenfilenames() threw an exception!", exc_info=True
+        )
         try:
-            result = _run_zenity_dialog("file-selection", [
-                f"--title={title}",
-                "--multiple",
-                "--separator=|",
-                f"--filename={initialdir or ''}",
-                *([f"--file-filter={ftype[1]}" for ftype in filetypes] if filetypes else [])
-            ]) or ""
+            result = (
+                _run_zenity_dialog(
+                    "file-selection",
+                    [
+                        f"--title={title}",
+                        "--multiple",
+                        "--separator=|",
+                        f"--filename={initialdir or ''}",
+                        *(
+                            [f"--file-filter={ftype[1]}" for ftype in filetypes]
+                            if filetypes
+                            else []
+                        ),
+                    ],
+                )
+                or ""
+            )
             return "" if not result or not result.strip() else tuple(result.split("|"))
         except Exception:  # noqa: BLE001
             try:
-                result = _run_yad_dialog("file-selection", [
-                    f"--title={title}",
-                    "--multiple",
-                    "--separator=|",
-                    f"--filename={initialdir or ''}",
-                    *([f"--file-filter={ftype[1]}" for ftype in filetypes] if filetypes else [])
-                ]) or ""
+                result = (
+                    _run_yad_dialog(
+                        "file-selection",
+                        [
+                            f"--title={title}",
+                            "--multiple",
+                            "--separator=|",
+                            f"--filename={initialdir or ''}",
+                            *(
+                                [f"--file-filter={ftype[1]}" for ftype in filetypes]
+                                if filetypes
+                                else []
+                            ),
+                        ],
+                    )
+                    or ""
+                )
                 return "" if not result or not result.strip() else tuple(result.split("|"))
             except Exception:  # noqa: BLE001
                 try:
@@ -325,6 +381,7 @@ def askopenfiles(  # noqa: PLR0913
 ) -> tuple[IO[Any], ...] | None:
     try:
         from tkinter import filedialog
+
         result = filedialog.askopenfiles(
             mode,
             defaultextension=defaultextension,
@@ -337,26 +394,46 @@ def askopenfiles(  # noqa: PLR0913
         )
         return result if result else None  # noqa: TRY300
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askopenfiles() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askopenfiles() threw an exception!", exc_info=True
+        )
         try:
-            result = _run_zenity_dialog("file-selection", [
-                f"--title={title}",
-                "--multiple",
-                "--separator=|",
-                f"--filename={initialdir or ''}",
-                *([f"--file-filter={ftype[1]}" for ftype in filetypes] if filetypes else [])
-            ])
-            return None if not result or not result.strip() else tuple(open(file, mode) for file in result.split("|"))
-        except Exception:  # noqa: BLE001
-            try:
-                result = _run_yad_dialog("file-selection", [
+            result = _run_zenity_dialog(
+                "file-selection",
+                [
                     f"--title={title}",
                     "--multiple",
                     "--separator=|",
                     f"--filename={initialdir or ''}",
-                    *([f"--file-filter={ftype[1]}" for ftype in filetypes] if filetypes else [])
-                ])
-                return None if not result or not result.strip() else tuple(open(file, mode) for file in result.split("|"))
+                    *([f"--file-filter={ftype[1]}" for ftype in filetypes] if filetypes else []),
+                ],
+            )
+            return (
+                None
+                if not result or not result.strip()
+                else tuple(open(file, mode) for file in result.split("|"))
+            )
+        except Exception:  # noqa: BLE001
+            try:
+                result = _run_yad_dialog(
+                    "file-selection",
+                    [
+                        f"--title={title}",
+                        "--multiple",
+                        "--separator=|",
+                        f"--filename={initialdir or ''}",
+                        *(
+                            [f"--file-filter={ftype[1]}" for ftype in filetypes]
+                            if filetypes
+                            else []
+                        ),
+                    ],
+                )
+                return (
+                    None
+                    if not result or not result.strip()
+                    else tuple(open(file, mode) for file in result.split("|"))
+                )
             except Exception:  # noqa: BLE001
                 try:
                     result = _run_gtk_dialog(
@@ -386,6 +463,7 @@ def asksaveasfile(  # noqa: PLR0913, PLR0911, ANN201
 ) -> IO[Any] | None:
     try:
         from tkinter import filedialog
+
         return filedialog.asksaveasfile(
             mode,
             confirmoverwrite=confirmoverwrite,
@@ -398,13 +476,29 @@ def asksaveasfile(  # noqa: PLR0913, PLR0911, ANN201
             typevariable=typevariable,
         )
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.asksaveasfile() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.asksaveasfile() threw an exception!", exc_info=True
+        )
         try:
-            result = _run_zenity_dialog("file-selection", ["--save", f"--title={title}", f"--filename={initialdir or ''}/{initialfile or ''}"])
+            result = _run_zenity_dialog(
+                "file-selection",
+                [
+                    "--save",
+                    f"--title={title}",
+                    f"--filename={initialdir or ''}/{initialfile or ''}",
+                ],
+            )
             return None if not result or not result.strip() else open(result, mode)  # noqa: SIM115, PTH123
         except Exception:  # noqa: BLE001
             try:
-                result = _run_yad_dialog("file-selection", ["--save", f"--title={title}", f"--filename={initialdir or ''}/{initialfile or ''}"])
+                result = _run_yad_dialog(
+                    "file-selection",
+                    [
+                        "--save",
+                        f"--title={title}",
+                        f"--filename={initialdir or ''}/{initialfile or ''}",
+                    ],
+                )
                 return None if not result or not result.strip() else open(result, mode)  # noqa: SIM115, PTH123
             except Exception:  # noqa: BLE001
                 try:
@@ -434,6 +528,7 @@ def asksaveasfilename(  # noqa: PLR0913, PLR0911, ANN201
 ) -> str:
     try:
         from tkinter import filedialog
+
         result = filedialog.asksaveasfilename(
             confirmoverwrite=confirmoverwrite,
             defaultextension=defaultextension,
@@ -446,13 +541,29 @@ def asksaveasfilename(  # noqa: PLR0913, PLR0911, ANN201
         )
         return "" if not result or not result.strip() else result
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.asksaveasfilename() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.asksaveasfilename() threw an exception!", exc_info=True
+        )
         try:
-            result = _run_zenity_dialog("file-selection", ["--save", f"--title={title}", f"--filename={initialdir or ''}/{initialfile or ''}"])
+            result = _run_zenity_dialog(
+                "file-selection",
+                [
+                    "--save",
+                    f"--title={title}",
+                    f"--filename={initialdir or ''}/{initialfile or ''}",
+                ],
+            )
             return "" if not result or not result.strip() else result
         except Exception:  # noqa: BLE001
             try:
-                result = _run_yad_dialog("file-selection", ["--save", f"--title={title}", f"--filename={initialdir or ''}/{initialfile or ''}"])
+                result = _run_yad_dialog(
+                    "file-selection",
+                    [
+                        "--save",
+                        f"--title={title}",
+                        f"--filename={initialdir or ''}/{initialfile or ''}",
+                    ],
+                )
                 return "" if not result or not result.strip() else result
             except Exception:  # noqa: BLE001
                 try:

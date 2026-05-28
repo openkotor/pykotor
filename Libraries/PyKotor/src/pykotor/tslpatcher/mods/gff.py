@@ -69,7 +69,7 @@ FIELD_TYPE_TO_GETTER: dict[GFFFieldType, Callable[[GFFStruct, str], Any]] = {
     GFFFieldType.Vector3: GFFStruct.get_vector3,
     GFFFieldType.Vector4: GFFStruct.get_vector4,
     GFFFieldType.List: GFFStruct.get_list,
-    GFFFieldType.Struct: GFFStruct.get_struct
+    GFFFieldType.Struct: GFFStruct.get_struct,
 }
 
 
@@ -132,7 +132,9 @@ class FieldValue(ABC):
     @abstractmethod
     def value(self, memory: PatcherMemory, field_type: GFFFieldType) -> Any: ...
 
-    def validate(self, value: Any, field_type: GFFFieldType) -> ResRef | str | PureWindowsPath | int | float | object:
+    def validate(
+        self, value: Any, field_type: GFFFieldType
+    ) -> ResRef | str | PureWindowsPath | int | float | object:
         """Validate a value based on its field type.
 
         Args:
@@ -154,7 +156,9 @@ class FieldValue(ABC):
             return value
         if field_type == GFFFieldType.ResRef and not isinstance(value, ResRef):
             value = (  # This is here to support empty statements like 'resref=' in ini (allow_no_entries=True in configparser)
-                ResRef(str(value)) if not isinstance(value, str) or value.strip() else ResRef.from_blank()
+                ResRef(str(value))
+                if not isinstance(value, str) or value.strip()
+                else ResRef.from_blank()
             )
         elif field_type == GFFFieldType.String and not isinstance(value, str):
             value = str(value)
@@ -262,7 +266,9 @@ class ModifyGFF(ABC):
     ) -> _GFFField | None:
         """Navigates to a field from the root gff struct from a path."""
         path = PureWindowsPath(path)
-        container: GFFList | GFFStruct | None = self._navigate_containers(root_container, path.parent)
+        container: GFFList | GFFStruct | None = self._navigate_containers(
+            root_container, path.parent
+        )
         label: str = path.name
 
         # Return the field if the container is a GFFStruct
@@ -290,7 +296,9 @@ class AddStructToListGFF(ModifyGFF):
         """
         self.identifier: str = identifier
         if not isinstance(value, (FieldValueListIndex, FieldValueConstant)):
-            raise TypeError(f"value must be FieldValueListIndex or FieldValueConstant, instead got {value.__class__.__name__}")
+            raise TypeError(
+                f"value must be FieldValueListIndex or FieldValueConstant, instead got {value.__class__.__name__}"
+            )
         self.value: FieldValueListIndex | FieldValueConstant = value
         self.path: PureWindowsPath = PureWindowsPath(path)
         self.index_to_token: int | None = index_to_token
@@ -328,8 +336,14 @@ class AddStructToListGFF(ModifyGFF):
         if isinstance(navigated_container, GFFList):
             list_container = navigated_container
         else:
-            reason: str = "Does not exist" if navigated_container is None else f"Path points to a '{navigated_container.__class__.__name__}', expected a GFFList."
-            logger.add_error(f"Unable to add struct to list '{self.path or f'[{self.identifier}]'}': {reason}")
+            reason: str = (
+                "Does not exist"
+                if navigated_container is None
+                else f"Path points to a '{navigated_container.__class__.__name__}', expected a GFFList."
+            )
+            logger.add_error(
+                f"Unable to add struct to list '{self.path or f'[{self.identifier}]'}': {reason}"
+            )
             return
 
         new_struct: GFFStruct | None = None
@@ -340,12 +354,16 @@ class AddStructToListGFF(ModifyGFF):
             elif isinstance(lookup, GFFStruct):
                 new_struct = lookup
             else:
-                raise ValueError(f"bad lookup: {lookup} ({lookup!r}) expected 'listindex' or GFFStruct")
+                raise ValueError(
+                    f"bad lookup: {lookup} ({lookup!r}) expected 'listindex' or GFFStruct"
+                )
         except KeyError as e:
             logger.add_error(f"INI section [{self.identifier}] threw an exception: {e}")
 
         if not isinstance(new_struct, GFFStruct):
-            logger.add_error(f"Failed to add a new struct to list '{self.path}' in [{self.identifier}]. Reason: Expected GFFStruct but got '{new_struct}' ({new_struct!r}) of type {type(new_struct).__name__} Skipping...")
+            logger.add_error(
+                f"Failed to add a new struct to list '{self.path}' in [{self.identifier}]. Reason: Expected GFFStruct but got '{new_struct}' ({new_struct!r}) of type {type(new_struct).__name__} Skipping...",
+            )
             return
 
         list_container._structs.append(new_struct)  # noqa: SLF001
@@ -355,10 +373,12 @@ class AddStructToListGFF(ModifyGFF):
             memory.memory_2da[self.index_to_token] = length
 
         for add_field in self.modifiers:
-            assert isinstance(add_field, (AddFieldGFF, AddStructToListGFF, Memory2DAModifierGFF, ModifyFieldGFF)), f"{type(add_field).__name__}: {add_field}"
+            assert isinstance(
+                add_field, (AddFieldGFF, AddStructToListGFF, Memory2DAModifierGFF, ModifyFieldGFF)
+            ), f"{type(add_field).__name__}: {add_field}"
             list_index = len(list_container) - 1
             newpath = self.path / str(list_index)
-            #logger.add_verbose(f"Resolved GFFList path of [{add_field.identifier}] from '{add_field.path}' --> '{newpath}'")
+            # logger.add_verbose(f"Resolved GFFList path of [{add_field.identifier}] from '{add_field.path}' --> '{newpath}'")
             add_field.path = newpath
             add_field.apply(root_container, memory, logger)
 
@@ -423,28 +443,42 @@ class AddFieldGFF(ModifyGFF):
         if isinstance(value, PureWindowsPath):
             stored_fieldpath: PureWindowsPath = value
             if isinstance(self.value, FieldValue2DAMemory):
-                logger.add_verbose(f"Looking up field pointer of stored !FieldPath ({stored_fieldpath}) in 2DAMEMORY{self.value.token_id}")
+                logger.add_verbose(
+                    f"Looking up field pointer of stored !FieldPath ({stored_fieldpath}) in 2DAMEMORY{self.value.token_id}"
+                )
             else:
                 logger.add_verbose(f'Found PureWindowsPath object in value() lookup from non-FieldValue2DAMemory object? Path: "{stored_fieldpath}" INI section: [{self.identifier}]')  # noqa: E501
             from_container: GFFList | GFFStruct | None = self._navigate_containers(root_container, stored_fieldpath.parent)
             if not isinstance(from_container, GFFStruct):
-                reason = "does not exist!" if from_container is None else "is not an instance of a GFFStruct."
-                logger.add_error(f"Unable to use !FieldPath from 2DAMEMORY. Parent field at '{stored_fieldpath}' {reason}")
+                reason = (
+                    "does not exist!"
+                    if from_container is None
+                    else "is not an instance of a GFFStruct."
+                )
+                logger.add_error(
+                    f"Unable to use !FieldPath from 2DAMEMORY. Parent field at '{stored_fieldpath}' {reason}"
+                )
                 return
             value = from_container.value(value.name)
-            logger.add_verbose(f"Acquired value '{value}' from 2DAMEMORY !FieldPath({stored_fieldpath})")
+            logger.add_verbose(
+                f"Acquired value '{value}' from 2DAMEMORY !FieldPath({stored_fieldpath})"
+            )
 
-        logger.add_verbose(f"AddField: Creating field of type '{self.field_type.name}' value: '{value}' at GFF path '{self.path}'. INI section: [{self.identifier}]")
+        logger.add_verbose(
+            f"AddField: Creating field of type '{self.field_type.name}' value: '{value}' at GFF path '{self.path}'. INI section: [{self.identifier}]"
+        )
         FIELD_TYPE_TO_SETTER[self.field_type](struct_container, self.label, value, memory)
 
         for add_field in self.modifiers:
-            assert isinstance(add_field, (AddFieldGFF, AddStructToListGFF, ModifyFieldGFF, Memory2DAModifierGFF)), f"{type(add_field).__name__}: {add_field}"
+            assert isinstance(
+                add_field, (AddFieldGFF, AddStructToListGFF, ModifyFieldGFF, Memory2DAModifierGFF)
+            ), f"{type(add_field).__name__}: {add_field}"
 
             # HACK(th3w1zard1): resolves any >>##INDEXINLIST##<<, not sure why lengths aren't the same though (hence use of zip_longest)? Whatever, it works.
             newpath = PureWindowsPath("")
             for part, resolvedpart in zip_longest(add_field.path.parts, self.path.parts):
                 newpath /= resolvedpart or part
-            #logger.add_verbose(f"Resolved gff path of INI section [{add_field.identifier}] from relative '{add_field.path}' --> absolute '{newpath}'")
+            # logger.add_verbose(f"Resolved gff path of INI section [{add_field.identifier}] from relative '{add_field.path}' --> absolute '{newpath}'")
             add_field.path = newpath
 
             add_field.apply(root_container, memory, logger)
@@ -481,24 +515,36 @@ class Memory2DAModifierGFF(ModifyGFF):
             return
 
         display_src_name = f"2DAMEMORY{self.src_token_id}"
-        logger.add_verbose(f"GFFList ptr !fieldpath: Assign {display_dest_name}={display_src_name} initiated. iniPath: {self.path}, section: [{self.identifier}]")
+        logger.add_verbose(
+            f"GFFList ptr !fieldpath: Assign {display_dest_name}={display_src_name} initiated. iniPath: {self.path}, section: [{self.identifier}]"
+        )
 
-        ptr_to_dest: PureWindowsPath | Any = memory.memory_2da.get(self.dest_token_id, None) if self.dest_token_id is not None else self.path
+        ptr_to_dest: PureWindowsPath | Any = (
+            memory.memory_2da.get(self.dest_token_id, None)
+            if self.dest_token_id is not None
+            else self.path
+        )
         if isinstance(ptr_to_dest, PureWindowsPath):
             dest_field = self._navigate_to_field(root_container, ptr_to_dest)
             if dest_field is None:
                 raise ValueError(f"Cannot assign 2DAMEMORY{self.dest_token_id}=2DAMEMORY{self.src_token_id}: LEFT side of assignment's path '{ptr_to_dest}' does not point to a valid GFF Field!")  # noqa: E501
             assert isinstance(dest_field, _GFFField)
-            logger.add_verbose(f"LEFT SIDE 2DAMEMORY{self.src_token_id} lookup at '{ptr_to_dest}' returned '{dest_field.value()}'")
+            logger.add_verbose(
+                f"LEFT SIDE 2DAMEMORY{self.src_token_id} lookup at '{ptr_to_dest}' returned '{dest_field.value()}'"
+            )
         elif ptr_to_dest is None:
             logger.add_verbose(f"Left side {display_dest_name} is not defined yet.")
         else:
-            logger.add_verbose(f"Left side {display_dest_name} value of {ptr_to_dest} will be overwritten.")
+            logger.add_verbose(
+                f"Left side {display_dest_name} value of {ptr_to_dest} will be overwritten."
+            )
 
         # Lookup assigning value
         ptr_to_src: PureWindowsPath | Any = memory.memory_2da.get(self.src_token_id, None)
         if ptr_to_src is None:
-            raise ValueError(f"Cannot assign {display_dest_name}={display_src_name} because RIGHT side of assignment is undefined.")
+            raise ValueError(
+                f"Cannot assign {display_dest_name}={display_src_name} because RIGHT side of assignment is undefined."
+            )
 
         if isinstance(ptr_to_src, PureWindowsPath):
             logger.add_verbose(f"Assigner {display_src_name} is a pointer !FieldPath to another field located at '{ptr_to_src}'")
@@ -516,12 +562,10 @@ class Memory2DAModifierGFF(ModifyGFF):
         else:
             memory.memory_2da[self.dest_token_id] = ptr_to_dest
 
+
 class ModifyFieldGFF(ModifyGFF):
     def __init__(
-        self,
-        path: PureWindowsPath | os.PathLike | str,
-        value: FieldValue,
-        identifier: str = ""
+        self, path: PureWindowsPath | os.PathLike | str, value: FieldValue, identifier: str = ""
     ):
         self.path: PureWindowsPath = PureWindowsPath(path)
         self.value: FieldValue = value
@@ -552,7 +596,11 @@ class ModifyFieldGFF(ModifyGFF):
         label: str = self.path.name
         navigated_container: GFFList | GFFStruct | None = self._navigate_containers(root_container, self.path.parent)
         if not isinstance(navigated_container, GFFStruct):
-            reason: str = "does not exist!" if navigated_container is None else "is not an instance of a GFFStruct."
+            reason: str = (
+                "does not exist!"
+                if navigated_container is None
+                else "is not an instance of a GFFStruct."
+            )
             logger.add_error(f"Unable to modify GFF field '{label}'. Path '{self.path}' {reason}")
             return
 
@@ -565,20 +613,32 @@ class ModifyFieldGFF(ModifyGFF):
         if isinstance(value, PureWindowsPath):
             stored_fieldpath: PureWindowsPath = value
             if isinstance(self.value, FieldValue2DAMemory):
-                logger.add_verbose(f"Looking up field pointer of stored !FieldPath ({stored_fieldpath}) in 2DAMEMORY{self.value.token_id}")
+                logger.add_verbose(
+                    f"Looking up field pointer of stored !FieldPath ({stored_fieldpath}) in 2DAMEMORY{self.value.token_id}"
+                )
             else:
                 logger.add_verbose(f'Found PureWindowsPath object in value() lookup from non-FieldValue2DAMemory object? Path: "{stored_fieldpath}" INI section: [{self.identifier}]')  # noqa: E501
             from_container: GFFList | GFFStruct | None = self._navigate_containers(root_container, value.parent)
             if not isinstance(from_container, GFFStruct):
-                reason = "does not exist!" if from_container is None else "is not an instance of a GFFStruct."
-                logger.add_error(f"Unable use !FieldPath from 2DAMEMORY. Parent field at '{value.parent}' {reason}")
+                reason = (
+                    "does not exist!"
+                    if from_container is None
+                    else "is not an instance of a GFFStruct."
+                )
+                logger.add_error(
+                    f"Unable use !FieldPath from 2DAMEMORY. Parent field at '{value.parent}' {reason}"
+                )
                 return
             value = from_container.value(value.name)
-            logger.add_verbose(f"Acquired value '{value}' from field at !FieldPath '{stored_fieldpath}'")
+            logger.add_verbose(
+                f"Acquired value '{value}' from field at !FieldPath '{stored_fieldpath}'"
+            )
 
         try:
             orig_value = FIELD_TYPE_TO_GETTER[field_type](navigated_struct, label)
-            logger.add_verbose(f"Found original value of '{orig_value}' ({orig_value!r}) at GFF Path {self.path}: Patch section: [{self.identifier}]")
+            logger.add_verbose(
+                f"Found original value of '{orig_value}' ({orig_value!r}) at GFF Path {self.path}: Patch section: [{self.identifier}]"
+            )
         except KeyError:
             msg = (
                 f"The field {field_type.name} did not exist at {self.path} in INI section [{self.identifier}]. Use AddField if you need to create fields/structs."
@@ -588,8 +648,10 @@ class ModifyFieldGFF(ModifyGFF):
             logger.add_error(msg)
             return
 
-        logger.add_verbose(f"Direct set value of determined field type '{field_type.name}' at GFF path '{self.path}' to new value '{value}'. INI section: [{self.identifier}]")
-        if field_type is not GFFFieldType.LocalizedString:
+        logger.add_verbose(
+            f"Direct set value of determined field type '{field_type.name}' at GFF path '{self.path}' to new value '{value}'. INI section: [{self.identifier}]"
+        )
+        if field_type != GFFFieldType.LocalizedString:
             FIELD_TYPE_TO_SETTER[field_type](navigated_struct, label, value, memory)
             return
 

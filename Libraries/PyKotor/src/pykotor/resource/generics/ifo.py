@@ -1,3 +1,5 @@
+"""IFO (module info) generic: GFF-based module metadata and entry points."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -127,9 +129,16 @@ class IFO:
 def construct_ifo(
     gff: GFF,
 ) -> IFO:
+    """Construct IFO from GFF.
+
+    All ``Mod_*`` fields are optional on read; defaults below match observed retail. When both
+    entry direction components are zero, it has been observed that the game uses a forward
+    facing (1, 0) for the module entry vector.
+    """
     ifo = IFO()
 
     root = gff.root
+    # Mod_ID: empty when absent (observed retail).
     ifo.mod_id = root.acquire("Mod_ID", b"")
     ifo.vo_id = root.acquire("Mod_VO_ID", "")
     ifo.mod_name = root.acquire("Mod_Name", LocalizedString.from_invalid())
@@ -138,6 +147,7 @@ def construct_ifo(
     ifo.entry_position.x = root.acquire("Mod_Entry_X", 0.0)
     ifo.entry_position.y = root.acquire("Mod_Entry_Y", 0.0)
     ifo.entry_position.z = root.acquire("Mod_Entry_Z", 0.0)
+    # Mod_On* hooks: blank ResRef when absent.
     ifo.on_heartbeat = root.acquire("Mod_OnHeartbeat", ResRef.from_blank())
     ifo.on_load = root.acquire("Mod_OnModLoad", ResRef.from_blank())
     ifo.on_start = root.acquire("Mod_OnModStart", ResRef.from_blank())
@@ -151,6 +161,7 @@ def construct_ifo(
     ifo.on_player_dying = root.acquire("Mod_OnPlrDying", ResRef.from_blank())
     ifo.on_player_levelup = root.acquire("Mod_OnPlrLvlUp", ResRef.from_blank())
     ifo.on_player_respawn = root.acquire("Mod_OnSpawnBtnDn", ResRef.from_blank())
+    # Expansion/time/deprecated-style fields: 0 / empty when absent.
     ifo.expansion_id = root.acquire("Expansion_Pack", 0)
     ifo.hak = root.acquire("Mod_Hak", "")
     ifo.description = root.acquire("Mod_Description", LocalizedString.from_invalid())
@@ -164,9 +175,11 @@ def construct_ifo(
     ifo.start_year = root.acquire("Mod_StartYear", 0)
     ifo.xp_scale = root.acquire("Mod_XPScale", 0)
     ifo.start_movie = root.acquire("Mod_StartMovie", ResRef.from_blank())
+    # Mod_Creator_ID / Mod_Version: 0 when absent.
     ifo.creator_id = root.acquire("Mod_Creator_ID", 0)
     ifo.version = root.acquire("Mod_Version", 0)
 
+    # Mod_Entry_Dir_X/Y: 0.0 when absent; game uses (1,0) when both are zero (observed retail).
     dir_x = root.acquire("Mod_Entry_Dir_X", 0.0)
     dir_y = root.acquire("Mod_Entry_Dir_Y", 0.0)
     ifo.entry_direction = Vector2(dir_x, dir_y).angle()
@@ -186,9 +199,15 @@ def dismantle_ifo(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
-    gff = GFF(GFFContent.IFO)
+    """Build IFO GFF from IFO. Written values match the read defaults / observed retail.
 
+    ``Mod_IsSaveGame`` is written as 0 when not otherwise specified; ``Mod_Area_list`` gets
+    at least one row for ``Area_Name``.
+    """
+    gff = GFF(GFFContent.IFO)
     root = gff.root
+
+    # Mod_ID / strings: empty; Mod_IsSaveGame 0 for new module GFFs here.
     root.set_binary("Mod_ID", ifo.mod_id)
     root.set_string("Mod_VO_ID", ifo.vo_id)
     root.set_locstring("Mod_Name", ifo.mod_name)
@@ -212,15 +231,15 @@ def dismantle_ifo(
     root.set_resref("Mod_OnPlrLvlUp", ifo.on_player_levelup)
     root.set_resref("Mod_OnSpawnBtnDn", ifo.on_player_respawn)
 
+    # Mod_Entry_Dir_X/Y: derived from stored facing angle.
     entry_direction = Vector2.from_angle(ifo.entry_direction)
     root.set_single("Mod_Entry_Dir_X", entry_direction.x)
     root.set_single("Mod_Entry_Dir_Y", entry_direction.y)
 
-    root.set_list("Mod_Area_list", GFFList()).add(6).set_resref(
-        "Area_Name",
-        ifo.area_name,
-    )
+    # Mod_Area_list: at least one struct with Area_Name.
+    root.set_list("Mod_Area_list", GFFList()).add(6).set_resref("Area_Name", ifo.area_name)
 
+    # Deprecated/time/global lists: optional block mirroring read defaults when use_deprecated.
     if use_deprecated:
         root.set_uint16("Expansion_Pack", ifo.expansion_id)
         root.set_string("Mod_Hak", ifo.hak)

@@ -5,20 +5,16 @@ param(
   [switch]$noprompt,
   [string]$venv_name = ".venv"
 )
-$this_noprompt = $noprompt
-
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $rootPath = (Resolve-Path -LiteralPath "$scriptPath/..").Path
-Write-Host "The path to the script directory is: $scriptPath"
-Write-Host "The path to the root directory is: $rootPath"
 
-Write-Host "Initializing python virtual environment..."
-Write-Host "Initializing python virtual environment..."
-if ($this_noprompt) {
-    . $rootPath/install_python_venv.ps1 -noprompt -venv_name $venv_name
-} else {
-    . $rootPath/install_python_venv.ps1 -venv_name $venv_name
-}
+$argsList = @(
+    "--tool-path", (Resolve-Path -LiteralPath "$rootPath/Tools/BatchPatcher").Path
+    "--venv-name", $venv_name
+    "--linux-package-profile", "tk"
+    "--pip-requirements", (Resolve-Path -LiteralPath "$rootPath/Libraries/PyKotor/requirements.txt").Path
+)
+if ($noprompt) { $argsList += "--noprompt" }
 
 if ((Get-OS) -eq "Mac") {
     Write-Host "path: '$pythonExePath'"

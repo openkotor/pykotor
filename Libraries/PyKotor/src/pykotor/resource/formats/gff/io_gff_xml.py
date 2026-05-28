@@ -1,3 +1,5 @@
+"""XML read/write for GFF; uses defusedxml when available for safe parsing."""
+
 from __future__ import annotations
 
 import base64
@@ -9,7 +11,11 @@ from xml.etree import ElementTree as ET
 
 from loggerplus import RobustLogger
 
-try:  # sourcery skip: remove-redundant-exception, simplify-single-exception-tuple
+import kaitaistruct
+
+from loggerplus import RobustLogger
+
+try:
     from defusedxml.ElementTree import fromstring as _fromstring
 
     ET.fromstring = _fromstring

@@ -16,7 +16,6 @@ from pykotor.resource.formats.ncs.compilers import ExternalNCSCompiler
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
 from pykotor.tools.path import CaseAwarePath
 from pykotor.tslpatcher.mods.template import PatcherModifications
-from utility.error_handling import universal_simplify_exception
 
 if TYPE_CHECKING:
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
@@ -105,15 +104,21 @@ class ModificationsNSS(PatcherModifications):
             try:
                 return self._compile_with_external(temp_script_file, nwnnsscompiler, logger, game)
             except Exception as e:  # pylint: disable=W0718  # noqa: BLE001
-                logger.add_error(str(universal_simplify_exception(e)))
+                logger.add_error(str((e.__class__.__name__, str(e))))
 
         if is_windows:
             if not self.nwnnsscomp_path or not nwnnsscomp_exists:
-                logger.add_note("nwnnsscomp.exe was not found in the 'tslpatchdata' folder, using the built-in compilers...")
+                logger.add_note(
+                    "nwnnsscomp.exe was not found in the 'tslpatchdata' folder, using the built-in compilers..."
+                )
             else:
-                logger.add_error(f"An error occurred while compiling '{self.sourcefile}' with nwnnsscomp.exe, falling back to the built-in compilers...")
+                logger.add_error(
+                    f"An error occurred while compiling '{self.sourcefile}' with nwnnsscomp.exe, falling back to the built-in compilers..."
+                )
         else:
-            logger.add_note(f"Patching from a unix operating system, compiling '{self.sourcefile}' using the built-in compilers...")
+            logger.add_note(
+                f"Patching from a unix operating system, compiling '{self.sourcefile}' using the built-in compilers..."
+            )
 
         # Compile using built-in script compiler if external compiler fails.
         try:
@@ -161,12 +166,18 @@ class ModificationsNSS(PatcherModifications):
                 token_id = int(mutable_data.value[start + len(token_name) + 1 : end - 1])  # -3 adjusts for '#', the first digit and '#'
 
                 if token_id not in memory_dict:
-                    msg = f"{token_name}{token_id} was not defined before use in '{self.sourcefile}'"
+                    msg = (
+                        f"{token_name}{token_id} was not defined before use in '{self.sourcefile}'"
+                    )
                     raise KeyError(msg)
 
                 replacement_value = memory_dict[token_id]
                 if isinstance(replacement_value, PureWindowsPath):
-                    msg = str(TypeError(f"{token_name} cannot be !FieldPath for [CompileList] patches, got '{token_name}{token_id}={replacement_value!r}'"))
+                    msg = str(
+                        TypeError(
+                            f"{token_name} cannot be !FieldPath for [CompileList] patches, got '{token_name}{token_id}={replacement_value!r}'"
+                        )
+                    )
                     logger.add_error(msg)
                     match = re.search(search_pattern, mutable_data.value)
                     continue
@@ -187,7 +198,9 @@ class ModificationsNSS(PatcherModifications):
     ) -> bytes | Literal[True]:
         with TemporaryDirectory() as tempdir:
             tempcompiled_filepath: Path = Path(tempdir, "temp_script.ncs")
-            stdout, stderr = nwnnsscompiler.compile_script(temp_script_file, tempcompiled_filepath, game)
+            stdout, stderr = nwnnsscompiler.compile_script(
+                temp_script_file, tempcompiled_filepath, game
+            )
             result: bool | bytes = "File is an include file, ignored" in stdout
             if not result:
                 # Return the compiled bytes

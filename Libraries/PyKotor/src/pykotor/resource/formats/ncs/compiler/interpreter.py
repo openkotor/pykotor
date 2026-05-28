@@ -1,3 +1,5 @@
+"""NCS bytecode interpreter: execute NCS for testing and script debugging."""
+
 from __future__ import annotations
 
 import logging
@@ -1007,7 +1009,7 @@ class StackV2:
         log.debug("StackV2 cleared: freed %s bytes, %s objects", stack_size, heap_size)
 
 
-class Stack:
+class Stack(ComparableMixin):
     def __init__(self):
         self._stack: list[StackObject] = []
         self._bp: int = 0
@@ -1889,7 +1891,7 @@ class StackSnapshot(NamedTuple):
     stack: list[StackObject]
 
 
-class EngineRoutineMock:
+class EngineRoutineMock(ComparableMixin):
     def __init__(self, function: ScriptFunction, mock: Callable):
         self.function: ScriptFunction = function
         self.mock: Callable = mock

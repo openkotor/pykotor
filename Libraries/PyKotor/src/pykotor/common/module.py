@@ -1,3 +1,5 @@
+"""Module abstraction: load/save ARE, GIT, LYT, VIS, and resources from capsule or path."""
+
 from __future__ import annotations
 
 import errno
@@ -152,7 +154,7 @@ class KModuleType(Enum):
         """
         if restype.target_type() is not restype:
             return False
-        if restype is ResourceType.DLG:
+        if restype == ResourceType.DLG:
             if game is None:
                 return self is self.DATA or self is self.K2_DLG
             if game.is_k1():
@@ -163,6 +165,9 @@ class KModuleType(Enum):
         if self is self.MOD:
             return self is not ResourceType.TwoDA
         if self is self.MAIN:
+            return restype in {ResourceType.ARE, ResourceType.IFO, ResourceType.GIT}
+        # _a.rim and _adx.rim carry the area-side resources in split-module layouts.
+        if self is self.AREA or self is self.AREA_EXTENDED:
             return restype in {ResourceType.ARE, ResourceType.IFO, ResourceType.GIT}
         if self is self.DATA:
             return restype in {
@@ -227,6 +232,10 @@ class ModulePieceResource(Capsule):
                 new_cls = ModuleDataPiece
             elif piece_info.modtype is KModuleType.MAIN:
                 new_cls = ModuleLinkPiece
+            elif piece_info.modtype is KModuleType.AREA:
+                new_cls = ModuleLinkPiece  # _a.rim uses same structure as .rim
+            elif piece_info.modtype is KModuleType.AREA_EXTENDED:
+                new_cls = ModuleLinkPiece  # _adx.rim uses same structure as .rim
             elif piece_info.modtype is KModuleType.K2_DLG:
                 new_cls = ModuleDLGPiece
             elif piece_info.modtype is KModuleType.MOD:
@@ -291,7 +300,9 @@ class ModuleLinkPiece(ModulePieceResource):
                     return area_localized_name
             print(f"{self.filename()}: Module.IFO does not contain a valid Mod_Area_list. Could not get the module id!")
         else:
-            RobustLogger().error(f"{self.filename()}: Module.IFO does not have an existing Mod_Area_list.")
+            RobustLogger().error(
+                f"{self.filename()}: Module.IFO does not have an existing Mod_Area_list."
+            )
         return None
 
     def area_name(self) -> LocalizedString | ResRef:
@@ -323,6 +334,8 @@ class ModuleFullOverridePiece(ModuleDLGPiece, ModuleDataPiece, ModuleLinkPiece):
 
 class _CapsuleDictTypes(TypedDict, total=False):
     MAIN: ModuleLinkPiece | None
+    AREA: ModuleLinkPiece | None
+    AREA_EXTENDED: ModuleLinkPiece | None
     DATA: ModuleDataPiece | None
     K2_DLG: ModuleDLGPiece | None
     MOD: ModuleFullOverridePiece | None
@@ -383,35 +396,76 @@ class Module:  # noqa: PLR0904
         *,
         use_dot_mod: bool = True,  # Should this Module instance represent the .rim/_s.rim/._dlg.erf vanilla archives, or the singular `root`.mod override archive?
     ):
-        self.resources: dict[ResourceIdentifier, ModuleResource] = {}  # The keys are only used for ensured uniqueness.
+        self.resources: dict[
+            ResourceIdentifier, ModuleResource
+        ] = {}  # The keys are only used for ensured uniqueness.
         self.dot_mod: bool = use_dot_mod
         self._installation: Installation = installation
         self._root: str = self.name_to_root(filename_or_root.lower())
         self._cached_mod_id: ResRef | None = None
         self._cached_sort_id: str | None = None
+        self._load_textures: bool = load_textures
 
-        # Build all capsules relevant to this root in the provided installation
+        # Build the archive set relevant to this module root.
         self._capsules: _CapsuleDictTypes = {
             KModuleType.MAIN.name: None,
+            KModuleType.AREA.name: None,
+            KModuleType.AREA_EXTENDED.name: None,
             KModuleType.DATA.name: None,
             KModuleType.K2_DLG.name: None,
             KModuleType.MOD.name: None,
         }
+        module_path = installation.module_path()
+
         if self.dot_mod:
-            mod_filepath = installation.module_path().joinpath(self._root + KModuleType.MOD.value)
+            # A .mod file overrides the split RIM/ERF layout.
+            mod_filepath = module_path.joinpath(self._root + KModuleType.MOD.value)
             if mod_filepath.is_file():
-                self._capsules[KModuleType.MOD.name] = ModuleFullOverridePiece(mod_filepath)
+                self._capsules[KModuleType.MOD.name] = ModuleFullOverridePiece(mod_filepath)  # pyright: ignore[reportGeneralTypeIssues]
             else:
                 self.dot_mod = False
-                self._capsules[KModuleType.MAIN.name] = ModuleLinkPiece(installation.module_path().joinpath(self._root + KModuleType.MAIN.value))
-                self._capsules[KModuleType.DATA.name] = ModuleDataPiece(installation.module_path().joinpath(self._root + KModuleType.DATA.value))
+                # Fall back to the split archive layout when .mod is absent.
+                self._capsules[KModuleType.MAIN.name] = ModuleLinkPiece(
+                    module_path.joinpath(self._root + KModuleType.MAIN.value)
+                )  # pyright: ignore[reportGeneralTypeIssues]
+                self._capsules[KModuleType.DATA.name] = ModuleDataPiece(
+                    module_path.joinpath(self._root + KModuleType.DATA.value)
+                )  # pyright: ignore[reportGeneralTypeIssues]
                 if self._installation.game().is_k2():
-                    self._capsules[KModuleType.K2_DLG.name] = ModuleDLGPiece(installation.module_path().joinpath(self._root + KModuleType.K2_DLG.value))
+                    self._capsules[KModuleType.K2_DLG.name] = ModuleDLGPiece(
+                        module_path.joinpath(self._root + KModuleType.K2_DLG.value)
+                    )  # pyright: ignore[reportGeneralTypeIssues]
         else:
-            self._capsules[KModuleType.MAIN.name] = ModuleLinkPiece(installation.module_path().joinpath(self._root + KModuleType.MAIN.value))
-            self._capsules[KModuleType.DATA.name] = ModuleDataPiece(installation.module_path().joinpath(self._root + KModuleType.DATA.value))
+            # In split layouts, prefer area archives before the base .rim.
+            area_rim_path = module_path.joinpath(self._root + KModuleType.AREA.value)
+            area_extended_rim_path = module_path.joinpath(
+                self._root + KModuleType.AREA_EXTENDED.value
+            )
+
+            # Prefer _a.rim when present.
+            if area_rim_path.is_file():
+                self._capsules[KModuleType.AREA.name] = ModuleLinkPiece(area_rim_path)  # pyright: ignore[reportGeneralTypeIssues]
+            # Otherwise fall back to _adx.rim before .rim.
+            elif area_extended_rim_path.is_file():
+                self._capsules[KModuleType.AREA_EXTENDED.name] = ModuleLinkPiece(
+                    area_extended_rim_path
+                )  # pyright: ignore[reportGeneralTypeIssues]
+            else:
+                # Use the base .rim when no split-area archive exists.
+                self._capsules[KModuleType.MAIN.name] = ModuleLinkPiece(
+                    module_path.joinpath(self._root + KModuleType.MAIN.value)
+                )  # pyright: ignore[reportGeneralTypeIssues]
+
+            # Add _s.rim when present.
+            data_rim_path = module_path.joinpath(self._root + KModuleType.DATA.value)
+            if data_rim_path.is_file():
+                self._capsules[KModuleType.DATA.name] = ModuleDataPiece(data_rim_path)  # pyright: ignore[reportGeneralTypeIssues]
+
+            # TSL may also provide a separate dialog ERF.
             if self._installation.game().is_k2():
-                self._capsules[KModuleType.K2_DLG.name] = ModuleDLGPiece(installation.module_path().joinpath(self._root + KModuleType.K2_DLG.value))
+                dlg_erf_path = module_path.joinpath(self._root + KModuleType.K2_DLG.value)
+                if dlg_erf_path.is_file():
+                    self._capsules[KModuleType.K2_DLG.name] = ModuleDLGPiece(dlg_erf_path)  # pyright: ignore[reportGeneralTypeIssues]
 
         self.reload_resources()
 
@@ -427,6 +481,8 @@ class Module:  # noqa: PLR0904
         # Build all capsules relevant to this root in the provided installation
         capsules: _CapsuleDictTypes = {
             KModuleType.MAIN.name: None,
+            KModuleType.AREA.name: None,
+            KModuleType.AREA_EXTENDED.name: None,
             KModuleType.DATA.name: None,
             KModuleType.K2_DLG.name: None,
             KModuleType.MOD.name: None,
@@ -435,12 +491,19 @@ class Module:  # noqa: PLR0904
         if filename.lower().endswith(".mod"):
             mod_filepath = module_path.joinpath(root + KModuleType.MOD.value)
             if mod_filepath.is_file():
-                capsules[KModuleType.MOD.name] = ModuleFullOverridePiece(mod_filepath)
-            elif not strict:
-                capsules[KModuleType.MAIN.name] = ModuleLinkPiece(module_path.joinpath(root + KModuleType.MAIN.value))
-                capsules[KModuleType.DATA.name] = ModuleDataPiece(module_path.joinpath(root + KModuleType.DATA.value))
+                capsules[KModuleType.MOD.name] = ModuleFullOverridePiece(mod_filepath)  # pyright: ignore[reportGeneralTypeIssues]
+            else:
+                # Engine is permissive: fall back to rim files when .mod doesn't exist
+                capsules[KModuleType.MAIN.name] = ModuleLinkPiece(
+                    module_path.joinpath(root + KModuleType.MAIN.value)
+                )  # pyright: ignore[reportGeneralTypeIssues]
+                capsules[KModuleType.DATA.name] = ModuleDataPiece(
+                    module_path.joinpath(root + KModuleType.DATA.value)
+                )  # pyright: ignore[reportGeneralTypeIssues]
                 if not isinstance(install_or_path, Installation) or install_or_path.game().is_k2():
-                    capsules[KModuleType.K2_DLG.name] = ModuleDLGPiece(module_path.joinpath(root + KModuleType.K2_DLG.value))
+                    capsules[KModuleType.K2_DLG.name] = ModuleDLGPiece(
+                        module_path.joinpath(root + KModuleType.K2_DLG.value)
+                    )  # pyright: ignore[reportGeneralTypeIssues]
         else:
             capsules[KModuleType.MAIN.name] = ModuleLinkPiece(module_path.joinpath(root + KModuleType.MAIN.value))
             capsules[KModuleType.DATA.name] = ModuleDataPiece(module_path.joinpath(root + KModuleType.DATA.value))
@@ -727,6 +790,11 @@ class Module:  # noqa: PLR0904
                 self.add_locations(resource.resname(), resource.restype(), [resource.filepath()]).activate()
 
         # Also try get paths for textures in models
+        if not self._load_textures:
+            # Fast mode: skip model texture/lightmap crawling. This is the largest bottleneck in practice
+            # and is unnecessary for workflows that only need module-local resources (e.g. IndoorMap/ModuleKit extraction).
+            return
+
         lookup_texture_queries: set[str] = set()
         lookup_lightmap_queries: set[str] = set()
         for model in self.models():
@@ -796,11 +864,14 @@ class Module:  # noqa: PLR0904
         if not main_search_results.get(query):
             if useable_type == VIS:
                 return set()  # make vis optional I guess
-            raise FileNotFoundError(errno.ENOENT,
-                                    os.strerror(errno.ENOENT),
-                                    self.lookup_main_capsule().filepath() / str(query))
+            raise FileNotFoundError(
+                errno.ENOENT,
+                os.strerror(errno.ENOENT),
+                self.lookup_main_capsule().filepath() / str(query),
+            )
         original_git_or_lyt = self.add_locations(
-            query.resname, query.restype,
+            query.resname,
+            query.restype,
             (loc.filepath for loc in main_search_results[query]),
         )
         # Activate each GIT/LYT location for this module, and fill this module with all of their resources (all of the resources their instances point to).
@@ -870,7 +941,7 @@ class Module:  # noqa: PLR0904
             RobustLogger().warning("No locations found for '%s.%s' which are intended to add to module '%s'", resname, restype, self._root)
         module_resource: ModuleResource | None = self.resource(resname, restype)
         if module_resource is None:
-            module_resource = ModuleResource(resname, restype, self._installation)
+            module_resource = ModuleResource(resname, restype, self._installation, self._root)
             self.resources[module_resource.identifier()] = module_resource
         module_resource.add_locations(locations)
         return module_resource
@@ -937,9 +1008,7 @@ class Module:  # noqa: PLR0904
         """
         return next((resource for resource in self.resources.values() if (resource.restype() is ResourceType.VIS and resource.resname() == self.module_id())), None)
 
-    def are(
-        self,
-    ) -> ModuleResource[ARE] | None:
+    def are(self) -> ModuleResource[ARE] | None:
         """Returns the ARE resource with the given ID if it exists.
 
         Args:
@@ -961,9 +1030,7 @@ class Module:  # noqa: PLR0904
             None,
         )
 
-    def git(
-        self,
-    ) -> ModuleResource[GIT] | None:  # sourcery skip: remove-unreachable-code
+    def git(self) -> ModuleResource[GIT] | None:
         """Returns the git resource with matching id if found.
 
         Args:
@@ -990,7 +1057,12 @@ class Module:  # noqa: PLR0904
                 None,
             )
             if fallback is not None:  # noqa: RET503
-                RobustLogger().warning("This module '%s' has an incorrect GIT resname/resref! Expected '%s', found '%s'", self._root, self.module_id(), fallback.resname())  # noqa: RET503
+                RobustLogger().warning(
+                    "This module '%s' has an incorrect GIT resname/resref! Expected '%s', found '%s'",
+                    self._root,
+                    self.module_id(),
+                    fallback.resname(),
+                )  # noqa: RET503
         return result  # noqa: RET504
 
     def pth(
@@ -1019,9 +1091,7 @@ class Module:  # noqa: PLR0904
     def ifo(self) -> ModuleResource[IFO] | None:
         return self.info()
 
-    def info(
-        self,
-    ) -> ModuleResource[IFO] | None:
+    def info(self) -> ModuleResource[IFO] | None:
         """Returns the ModuleResource with type IFO if it exists.
 
         Args:
@@ -1070,9 +1140,55 @@ class Module:  # noqa: PLR0904
             None,
         )
 
-    def creatures(
-        self,
-    ) -> list[ModuleResource[UTC]]:
+    def _filter_resources_by_type(self, resource_type: ResourceType) -> list[ModuleResource]:
+        """Filter resources by their type.
+
+        Args:
+        ----
+            resource_type: The ResourceType to filter by
+
+        Returns:
+        -------
+            list[ModuleResource]: List of resources matching the specified type
+
+        Processing Logic:
+        ----------------
+            - Iterate through all resources in self.resources.values()
+            - Check if each resource's type matches the specified resource_type
+            - Return list of matching resources.
+        """
+        return [
+            resource for resource in self.resources.values() if resource.restype() == resource_type
+        ]
+
+    def _filter_resources_by_types(
+        self, resource_types: set[ResourceType], require_active: bool = False
+    ) -> list[ModuleResource]:
+        """Filter resources by their types with optional active check.
+
+        Args:
+        ----
+            resource_types: Set of ResourceTypes to filter by
+            require_active: Whether to only include active resources
+
+        Returns:
+        -------
+            list[ModuleResource]: List of resources matching the specified types
+
+        Processing Logic:
+        ----------------
+            - Iterate through all resources in self.resources.values()
+            - Check if each resource's type is in the specified resource_types
+            - If require_active is True, also check if resource.isActive()
+            - Return list of matching resources.
+        """
+        return [
+            resource
+            for resource in self.resources.values()
+            if resource.restype() in resource_types and (not require_active or resource.isActive())
+        ]
+
+    def creatures(self) -> list[ModuleResource[UTC]]:
         """Returns a list of UTC resources.
 
         Args:
@@ -1089,7 +1205,7 @@ class Module:  # noqa: PLR0904
             - Check if each resource's type is UTC
             - Add matching resources to the return list.
         """
-        return [resource for resource in self.resources.values() if resource.restype() is ResourceType.UTC]
+        return self._filter_resources_by_type(ResourceType.UTC)
 
     def placeable(
         self,
@@ -1117,9 +1233,7 @@ class Module:  # noqa: PLR0904
             None,
         )
 
-    def placeables(
-        self,
-    ) -> list[ModuleResource[UTP]]:
+    def placeables(self) -> list[ModuleResource[UTP]]:
         """Returns a list of UTP resources for this module.
 
         Args:
@@ -1136,7 +1250,7 @@ class Module:  # noqa: PLR0904
             - Check if resource type is UTP
             - Add matching resources to the return list.
         """
-        return [resource for resource in self.resources.values() if resource.restype() is ResourceType.UTP]
+        return self._filter_resources_by_type(ResourceType.UTP)
 
     def door(
         self,
@@ -1164,9 +1278,7 @@ class Module:  # noqa: PLR0904
             None,
         )
 
-    def doors(
-        self,
-    ) -> list[ModuleResource[UTD]]:
+    def doors(self) -> list[ModuleResource[UTD]]:
         """Returns a list of all UTD resources for this module.
 
         Args:
@@ -1183,7 +1295,7 @@ class Module:  # noqa: PLR0904
             - Check if each resource's type is UTD
             - Add matching resources to the return list.
         """
-        return [resource for resource in self.resources.values() if resource.restype() is ResourceType.UTD]
+        return self._filter_resources_by_type(ResourceType.UTD)
 
     def item(
         self,
@@ -1211,9 +1323,7 @@ class Module:  # noqa: PLR0904
             None,
         )
 
-    def items(
-        self,
-    ) -> list[ModuleResource[UTI]]:
+    def items(self) -> list[ModuleResource[UTI]]:
         """Returns a list of UTI resources for this module.
 
         Args:
@@ -1227,11 +1337,11 @@ class Module:  # noqa: PLR0904
         Processing Logic:
         ----------------
             - Iterate through self.resources which is a dictionary of all resources
-            - Check if each resource's restype is equal to ResourceType.UTD
+            - Check if each resource's restype is equal to ResourceType.UTI
             - If equal, add it to the return list
             - Return the list of UTI resources.
         """
-        return [resource for resource in self.resources.values() if resource.restype() is ResourceType.UTD]
+        return self._filter_resources_by_type(ResourceType.UTI)
 
     def encounter(
         self,
@@ -1259,9 +1369,7 @@ class Module:  # noqa: PLR0904
             None,
         )
 
-    def encounters(
-        self,
-    ) -> list[ModuleResource[UTE]]:
+    def encounters(self) -> list[ModuleResource[UTE]]:
         """Returns a list of UTE resources for this module.
 
         Args:
@@ -1279,7 +1387,7 @@ class Module:  # noqa: PLR0904
             - If type matches, add it to the return list
             - Return the list of UTE resources.
         """
-        return [resource for resource in self.resources.values() if resource.restype() is ResourceType.UTE]
+        return self._filter_resources_by_type(ResourceType.UTE)
 
     def store(self, resname: str) -> ModuleResource[UTM] | None:
         """Looks up a material (UTM) resource by the specified resname from this module and returns the resource data.
@@ -1305,11 +1413,9 @@ class Module:  # noqa: PLR0904
             None,
         )
 
-    def stores(
-        self,
-    ) -> list[ModuleResource[UTM]]:
+    def stores(self) -> list[ModuleResource[UTM]]:
         """Returns a list of material (UTM) resources for this module."""
-        return [resource for resource in self.resources.values() if resource.restype() is ResourceType.UTM]
+        return self._filter_resources_by_type(ResourceType.UTM)
 
     def trigger(
         self,
@@ -1338,9 +1444,7 @@ class Module:  # noqa: PLR0904
             None,
         )
 
-    def triggers(
-        self,
-    ) -> list[ModuleResource[UTT]]:
+    def triggers(self) -> list[ModuleResource[UTT]]:
         """Returns a list of UTT resources for this module.
 
         Args:
@@ -1358,7 +1462,7 @@ class Module:  # noqa: PLR0904
             - Add matching resources to a list
             - Return the list of UTT resources.
         """
-        return [resource for resource in self.resources.values() if resource.restype() is ResourceType.UTT]
+        return self._filter_resources_by_type(ResourceType.UTT)
 
     def waypoint(
         self,
@@ -1387,9 +1491,7 @@ class Module:  # noqa: PLR0904
             None,
         )
 
-    def waypoints(
-        self,
-    ) -> list[ModuleResource[UTW]]:
+    def waypoints(self) -> list[ModuleResource[UTW]]:
         """Returns list of UTW resources from resources dict.
 
         Returns:
@@ -1403,7 +1505,7 @@ class Module:  # noqa: PLR0904
             - Add matching resources to return list
             - Return list of UTW resources.
         """
-        return [resource for resource in self.resources.values() if resource.restype() is ResourceType.UTW]
+        return self._filter_resources_by_type(ResourceType.UTW)
 
     def model(
         self,
@@ -1456,9 +1558,7 @@ class Module:  # noqa: PLR0904
             None,
         )
 
-    def models(
-        self,
-    ) -> list[ModuleResource[MDL]]:
+    def models(self) -> list[ModuleResource[MDL]]:
         """Returns a list of MDL model resources.
 
         Args:
@@ -1474,11 +1574,9 @@ class Module:  # noqa: PLR0904
             - Checks if the resource type is MDL
             - Adds matching resources to the return list.
         """
-        return [resource for resource in self.resources.values() if resource.restype() is ResourceType.MDL]
+        return self._filter_resources_by_type(ResourceType.MDL)
 
-    def model_exts(
-        self,
-    ) -> list[ModuleResource]:
+    def model_exts(self) -> list[ModuleResource]:
         """Returns a list of MDX model resources.
 
         Args:
@@ -1494,7 +1592,7 @@ class Module:  # noqa: PLR0904
             - Checks if the resource type is MDX
             - Adds matching resources to the return list.
         """
-        return [resource for resource in self.resources.values() if resource.restype() is ResourceType.MDX]
+        return self._filter_resources_by_type(ResourceType.MDX)
 
     def texture(
         self,
@@ -1524,9 +1622,7 @@ class Module:  # noqa: PLR0904
             None,
         )
 
-    def textures(
-        self,
-    ) -> list[ModuleResource[MDL]]:
+    def textures(self) -> list[ModuleResource[MDL]]:
         """Generates a list of texture resources from this module.
 
         Args:
@@ -1544,7 +1640,7 @@ class Module:  # noqa: PLR0904
             - Include the resource in return list if type matches.
         """
         texture_types: set[ResourceType] = {ResourceType.TPC, ResourceType.TGA}
-        return [resource for resource in self.resources.values() if resource.isActive() is not None and resource.restype() in texture_types]
+        return self._filter_resources_by_types(texture_types, require_active=True)
 
     def sound(
         self,
@@ -1572,9 +1668,7 @@ class Module:  # noqa: PLR0904
             None,
         )
 
-    def sounds(
-        self,
-    ) -> list[ModuleResource[UTS]]:
+    def sounds(self) -> list[ModuleResource[UTS]]:
         """Returns a list of UTS resources.
 
         Args:
@@ -1592,7 +1686,114 @@ class Module:  # noqa: PLR0904
             - Add matching resources to a list
             - Return the list of UTS resources.
         """
-        return [resource for resource in self.resources.values() if resource.restype() is ResourceType.UTS]
+        return self._filter_resources_by_type(ResourceType.UTS)
+
+    def loadscreen(self) -> FileResource | None:
+        """Returns a FileResource object representing the loadscreen texture for this module.
+
+        The loadscreen is determined by:
+        1. Getting the LoadScreenID from the module's ARE file
+        2. Looking up the bmpresref in loadscreens.2da using the LoadScreenID
+        3. Finding the texture resource (TGA or TPC) with that ResRef
+
+        Returns:
+        -------
+            FileResource | None: The loadscreen texture FileResource, or None if not found.
+
+        Processing Logic:
+        ----------------
+            1. Get the ARE resource from the module
+            2. Read the ARE to get LoadScreenID
+            3. Load loadscreens.2da from the installation
+            4. Get the bmpresref from loadscreens.2da using LoadScreenID as row index
+            5. Search for the texture (TGA or TPC) using installation.locations()
+            6. Return the FileResource from the first location found, or None if not found.
+        """
+        from pykotor.resource.formats.twoda.twoda_auto import read_2da
+
+        # Get the ARE resource
+        are_resource = self.are()
+        if are_resource is None:
+            RobustLogger().warning(
+                f"Module '{self._root}' has no ARE resource, cannot determine loadscreen"
+            )
+            return None
+
+        # Read the ARE to get LoadScreenID
+        are_data = are_resource.resource()
+        if are_data is None:
+            RobustLogger().warning(f"Failed to read ARE resource for module '{self._root}'")
+            return None
+
+        loadscreen_id = are_data.loadscreen_id
+        if loadscreen_id == 0:
+            RobustLogger().debug(
+                f"Module '{self._root}' has LoadScreenID=0, no loadscreen specified"
+            )
+            return None
+
+        # Load loadscreens.2da from installation
+        loadscreens_result = self._installation.resource(
+            "loadscreens",
+            ResourceType.TwoDA,
+            [SearchLocation.OVERRIDE, SearchLocation.CHITIN],
+        )
+        if loadscreens_result is None:
+            RobustLogger().warning("loadscreens.2da not found in installation")
+            return None
+
+        loadscreens_2da = read_2da(loadscreens_result.data)
+
+        # Get the bmpresref from loadscreens.2da using LoadScreenID as row index
+        try:
+            loadscreen_row = loadscreens_2da.get_row(loadscreen_id)
+            bmpresref = loadscreen_row.get_string("bmpresref")
+            if not bmpresref or bmpresref == "****":
+                RobustLogger().debug(
+                    f"Module '{self._root}' loadscreen row {loadscreen_id} has no bmpresref"
+                )
+                return None
+        except (IndexError, KeyError) as e:
+            RobustLogger().warning(
+                f"Failed to get bmpresref from loadscreens.2da row {loadscreen_id}: {e}"
+            )
+            return None
+
+        # Search for the texture (TGA or TPC) using installation.locations()
+        texture_queries = [
+            ResourceIdentifier(bmpresref, ResourceType.TPC),
+            ResourceIdentifier(bmpresref, ResourceType.TGA),
+        ]
+        texture_locations = self._installation.locations(
+            texture_queries,
+            [
+                SearchLocation.OVERRIDE,
+                SearchLocation.CUSTOM_MODULES,
+                SearchLocation.CHITIN,
+                SearchLocation.TEXTURES_TPA,
+            ],
+        )
+
+        # Return the FileResource from the first location found
+        for query in texture_queries:
+            if texture_locations.get(query):
+                location: LocationResult = texture_locations[query][0]
+                try:
+                    return location.as_file_resource()
+                except RuntimeError:
+                    # If FileResource wasn't set, create one from the location
+                    return FileResource(
+                        resname=bmpresref,
+                        restype=query.restype,
+                        size=location.size,
+                        offset=location.offset,
+                        filepath=location.filepath,
+                    )
+
+        RobustLogger().debug(
+            f"Loadscreen texture '{bmpresref}' not found for module '{self._root}'"
+        )
+        return None
 
     def loadscreen(
         self,
@@ -1747,6 +1948,7 @@ class ModuleResource(Generic[T]):
         resname: str,
         restype: ResourceType,
         installation: Installation,
+        module_root: str | None = None,
     ):
         self._resname: str = resname
         self._installation: Installation = installation
@@ -1755,6 +1957,7 @@ class ModuleResource(Generic[T]):
         self._resource_obj: Any = None
         self._locations: list[Path] = []
         self._identifier = ResourceIdentifier(resname, restype)
+        self._module_root: str | None = module_root
 
     def __repr__(self):
         return f"{self.__class__.__name__}(resname={self._resname} restype={self._restype!r} installation={self._installation!r})"
@@ -1766,7 +1969,7 @@ class ModuleResource(Generic[T]):
             return self._identifier == other
         if isinstance(other, ModuleResource):
             return self._identifier == other._identifier
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __hash__(self):
         return hash(self._identifier)
@@ -1796,7 +1999,6 @@ class ModuleResource(Generic[T]):
         return self._identifier
 
     def localized_name(self) -> str | None:
-        # sourcery skip: assign-if-exp, reintroduce-else
         """Returns a localized name for the resource.
 
         Args:
@@ -1928,14 +2130,21 @@ class ModuleResource(Generic[T]):
             return None
         conversions: dict[ResourceType, Callable[[Any, TARGET_TYPES], Any]] = {
             ResourceType.ARE: write_are,
+            #            ResourceType.CNV: write_cnv,
             ResourceType.DLG: write_dlg,
+            ResourceType.DWK: write_bwm,
+            #            ResourceType.FAC: write_fac,
             ResourceType.GIT: write_git,
             ResourceType.IFO: write_ifo,
             ResourceType.LYT: write_lyt,
+            #            ResourceType.MDL: write_mdl,
+            #            ResourceType.MDX: write_mdl,
             ResourceType.NCS: write_ncs,
             ResourceType.PTH: write_pth,
+            #            ResourceType.PWK: write_bwm,
             ResourceType.TPC: write_tpc,
             ResourceType.TGA: write_tpc,
+            ResourceType.UTC: write_utc,
             ResourceType.UTD: write_utd,
             ResourceType.UTE: write_ute,
             ResourceType.UTI: write_uti,
@@ -1944,7 +2153,6 @@ class ModuleResource(Generic[T]):
             ResourceType.UTS: write_uts,
             ResourceType.UTT: write_utt,
             ResourceType.UTW: write_utw,
-            ResourceType.UTC: write_utc,
             ResourceType.VIS: write_vis,
             ResourceType.WOK: write_bwm,
         }
@@ -2022,9 +2230,7 @@ class ModuleResource(Generic[T]):
     def isActive(self) -> bool:
         return bool(self._active)
 
-    def save(
-        self,
-    ):
+    def save(self):
         """Saves the resource to the active file.
 
         Args:

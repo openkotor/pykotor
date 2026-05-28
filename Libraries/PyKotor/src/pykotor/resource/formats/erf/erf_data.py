@@ -131,7 +131,9 @@ class ERFType(Enum):
             return cls.ERF
         if is_mod_file(ext_or_filepath):
             return cls.MOD
-        if is_sav_file(ext_or_filepath):
+        if is_sav_file(
+            ext_or_filepath
+        ):  # .SAV files still use the 'MOD ' signature in its first 4 bytes of the file header
             return cls.MOD
         msg = f"Invalid ERF extension in filepath '{ext_or_filepath}'."
         raise ValueError(msg)
@@ -179,6 +181,10 @@ class ERF(BiowareArchive):
         erf_type: ERFType = ERFType.ERF,
         *,
         is_save: bool = False,
+        build_year: int = 0,
+        build_day: int = 0,
+        description_strref: int = -1,
+        localized_strings: dict[int, str] | None = None,
     ):
         super().__init__()
 

@@ -1,3 +1,5 @@
+"""TGA read/write for TPC textures: RGBA mipmap I/O and TGA header handling."""
+
 from __future__ import annotations
 
 import io
@@ -118,7 +120,11 @@ class TPCTGAReader(ResourceReader):
                             self._reader.read_uint8(),
                             self._reader.read_uint8(),
                         )
-                        pixel = [r, g, b, self._reader.read_uint8()] if bits_per_pixel == 32 else [r, g, b, 255]
+                        pixel = (
+                            [r, g, b, self._reader.read_uint8()]
+                            if bits_per_pixel == 32
+                            else [r, g, b, 255]
+                        )
                     elif color_map:
                         index = self._reader.read_uint8()
                         color = list(color_map[index])
@@ -136,7 +142,11 @@ class TPCTGAReader(ResourceReader):
                         self._reader.read_uint8(),
                         self._reader.read_uint8(),
                     )
-                    pixel = [r, g, b, self._reader.read_uint8()] if bits_per_pixel == 32 else [r, g, b, 255]
+                    pixel = (
+                        [r, g, b, self._reader.read_uint8()]
+                        if bits_per_pixel == 32
+                        else [r, g, b, 255]
+                    )
                 elif color_map:
                     index = self._reader.read_uint8()
                     color = list(color_map[index])

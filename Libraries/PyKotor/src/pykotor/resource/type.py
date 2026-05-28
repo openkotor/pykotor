@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING, NamedTuple, TypeVar, Union, cast
 from xml.etree.ElementTree import ParseError
 
 from pykotor.common.stream import BinaryReader, BinaryWriter
+from pykotor.resource.formats._base import ComparableMixin  # type: ignore[import-untyped]
 from utility.common.misc_string.mutable_str import WrappedStr
 
 if TYPE_CHECKING:
@@ -60,7 +61,25 @@ def autoclose(func: Callable[..., R]) -> Callable[..., R]:
     return _autoclose
 
 
-class ResourceReader:
+R = TypeVar("R")
+
+
+def autoclose(func: Callable[..., R]) -> Callable[..., R]:
+    def _autoclose(self: ResourceReader | ResourceWriter, auto_close: bool = True) -> R:  # noqa: FBT002, FBT001
+        try:
+            resource: R = func(self, auto_close=auto_close)
+        except (OSError, ParseError, ValueError, IndexError, StopIteration, struct.error) as e:
+            msg = "Tried to save or load an unsupported or corrupted file."
+            raise ValueError(msg) from e
+        finally:
+            if auto_close:
+                self.close()
+        return resource
+
+    return _autoclose
+
+
+class ResourceReader(ComparableMixin):
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -95,41 +114,100 @@ class ResourceReader:
             self._size = len(loaded_src)
             self._source: bytearray = loaded_src[offset : self._size]
 
-    def close(
-        self,
-    ):
+            self._offset: int = offset
+            self._size = len(loaded_src)
+            self._source: bytearray = loaded_src[offset : self._size]
+
+    def close(self):
         self._reader.close()
 
 
-class ResourceWriter:
+class ResourceWriter(ComparableMixin):
     def __init__(
         self,
         target: TARGET_TYPES,
     ):
         self._writer: BinaryWriterFile | BinaryWriterBytearray = cast("BinaryWriterFile | BinaryWriterBytearray", BinaryWriter.to_auto(target))
 
-    def close(
-        self,
-    ):
+    def close(self):
         self._writer.close()
 
 
 class ResourceTuple(NamedTuple):
+    """Tuple representing a resource type definition.
+
+    Attributes:
+    -----------
+        type_id: Integer ID of the resource type as recognized by the game engines.
+        extension: File extension associated with the resource type (lowercase, no leading dot).
+        category: Short description of what kind of data the resource type stores.
+        contents: How the resource type stores data: "binary", "plaintext", "gff", "erf", "lips", "video", or "xml".
+        is_invalid: Whether this resource type is invalid/undefined.
+        target_member: For toolset-only types, the name of the target ResourceType member this maps to.
+        supported_engines: Set of BiowareEngine values indicating which engines support this resource type.
+            Defaults to empty set if not specified (unknown support).
+
+    References:
+    -----------
+        Observed extension-to-type mapping in retail KotOR builds; see wiki resource-type tables.
+    """
+
     type_id: int
     extension: str
-    category: str
-    contents: str
+    category: Literal[ "Chitin", "Archives", "Crowd Attributes", "Paths", "Lips", "Quests", "Walkmeshes", "Waypoints", "Journals", "Merchants", "Materials", "Cutscenes", "Items", "Fonts", "Soundsets", "Save Data", "Images", "Videos", "Audio", "Text Files", "Other", "Models", "Textures", "Scripts", "Modules", "Module Data", "Creatures", "2D Arrays", "Talk Tables", "Dialogs", "Palettes", "Triggers", "Sounds", "Factions", "Encounters", "Doors", "Placeables", "Defaults", "GUIs", "Unused", ]
+    contents: Literal["binary", "plaintext", "gff", "erf", "lips", "video", "xml"]
     is_invalid: bool = False
-    target_member: str | None = None
+    target_member: ( Literal[ "LIP", "DLG", "2DA", "TLK", "SSF", "PTH", "UTW", "IFO", "JRL", "UTM", "GUI", "UTP", "FAC", "UTD", "UTS", "UTE", "UTT", "UTI", "UTC", "GIT", "GFF", "RES", "BMP", "MVE", "TGA", "WAV", "PLT", "INI", "BMU", "MPG", "TXT", "WMA", "WMV", "XMV", "PLH", "TEX", "MDL", "THG", "FNT", "LUA", "SLT", "NSS", "NCS", "MOD", "ARE", "SET", "BIP", "JPG2", "PWC"] | None ) = None
+    supported_engines: tuple[BiowareEngine, ...] = ()  # Empty tuple as default, use tuple for immutability
+
+
+def _resolve_resource_target_member(target_member: str | None) -> ResourceType | None:
+    if target_member is None:
+        return None
+
+    members = ResourceType.__members__
+    if target_member in members:
+        return members[target_member]
+
+    legacy_aliases = {
+        "2DA": "TwoDA",
+    }
+    resolved_member = legacy_aliases.get(target_member)
+    if resolved_member is not None and resolved_member in members:
+        return members[resolved_member]
+    return None
 
 
 class ResourceType(Enum):
-    """Represents a resource type that is used within either games.
+    """Represents a resource type used across BioWare game engines.
 
     Stored in the class is also several static attributes, each an actual resource type used by the games.
     Resource type IDs match the internal format used by the BioWare Odyssey Engine.
 
-    Attributes:
+    Each enum member is a ResourceTuple containing:
+    - type_id: Integer ID recognized by game engines (consistent across implementations)
+    - extension: File extension (lowercase, no leading dot)
+    - category: Descriptive category grouping
+    - contents: Data storage format
+    - is_invalid: Whether this type is invalid/undefined
+    - target_member: For toolset-only types, the target ResourceType this maps to
+    - supported_engines: Tuple of BiowareEngine values indicating engine support
+
+    Resource type IDs are treated as stable across vendor builds for a given title. Types marked as "Unused" are reserved IDs that
+    are not currently used by any known engine.
+
+    Engine Support:
+    --------------
+        Infinity: Baldur's Gate, Icewind Dale, Planescape: Torment
+        Aurora: Neverwinter Nights series
+        Odyssey: Knights of the Old Republic I & II
+        Eclipse: Dragon Age: Origins, Dragon Age II
+
+    Toolset-only types (supported_engines=()) are used by modding tools but not by
+    game engines directly. These typically provide human-readable formats (XML, JSON)
+    for editing game resources.
+
+    References:
     ----------
         type_id: Integer id of the resource type as recognized by the games.
         extension: File extension associated with the resource type and as recognized by the game.
@@ -305,6 +383,7 @@ class ResourceType(Enum):
         contents: str,
         is_invalid: bool = False,  # noqa: FBT001, FBT002
         target_member: str | None = None,
+        supported_engines: tuple[BiowareEngine, ...] = (),
     ):
         self.type_id: int = type_id
         self.extension: str = extension.strip().lower()
@@ -312,6 +391,7 @@ class ResourceType(Enum):
         self.contents: str = contents
         self.is_invalid: bool = is_invalid
         self.target_member: str | None = target_member
+        self.supported_engines: tuple[BiowareEngine, ...] = supported_engines
 
     def is_gff(self) -> bool:
         """Returns True if this resourcetype is a gff, excluding the xml/json abstractions, False otherwise."""
@@ -364,10 +444,19 @@ class ResourceType(Enum):
         lower_ext: str = extension.lower()
         if lower_ext.startswith("."):
             lower_ext = lower_ext[1:]
-        return next(
-            (restype for restype in ResourceType.__members__.values() if lower_ext == restype.extension),
+        resource_type = next(
+            (
+                restype
+                for restype in ResourceType.__members__.values()
+                if lower_ext == restype.extension
+            ),
             ResourceType.from_invalid(extension=lower_ext),
         )
+        if resource_type.is_invalid:
+            toolset_format = ToolsetFormat.from_extension(lower_ext)
+            if toolset_format is not None:
+                return cast(ResourceType, toolset_format)
+        return resource_type
 
     @classmethod
     def from_invalid(
@@ -387,15 +476,17 @@ class ResourceType(Enum):
             category=kwargs.get("category", cls.INVALID.category),
             contents=kwargs.get("contents", cls.INVALID.contents),
             is_invalid=kwargs.get("is_invalid", cls.INVALID.is_invalid),
-            target_member=kwargs.get("target_member", cls.INVALID.target_member)
+            target_member=kwargs.get("target_member", cls.INVALID.target_member),
+            supported_engines=kwargs.get("supported_engines", cls.INVALID.supported_engines),
         )
-        instance.__init__(
+        instance.__init__(  # type: ignore[misc]
             type_id=kwargs.get("type_id", cls.INVALID.type_id),
             extension=kwargs.get("extension", cls.INVALID.extension),
             category=kwargs.get("category", cls.INVALID.category),
             contents=kwargs.get("contents", cls.INVALID.contents),
             is_invalid=kwargs.get("is_invalid", cls.INVALID.is_invalid),
-            target_member=kwargs.get("target_member", cls.INVALID.target_member)
+            target_member=kwargs.get("target_member", cls.INVALID.target_member),
+            supported_engines=kwargs.get("supported_engines", cls.INVALID.supported_engines),
         )
         return super().__new__(cls, instance)
 

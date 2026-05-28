@@ -5,51 +5,22 @@ param(
   [switch]$noprompt,
   [string]$venv_name = ".venv"
 )
-$this_noprompt = $noprompt
-
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $rootPath = (Resolve-Path -LiteralPath "$scriptPath/..").Path
-Write-Host "The path to the script directory is: $scriptPath"
-Write-Host "The path to the root directory is: $rootPath"
 
-function Get-OS {
-    if ($IsWindows) {
-        return "Windows"
-    } elseif ($IsMacOS) {
-        return "Mac"
-    } elseif ($IsLinux) {
-        return "Linux"
-    }
-    $os = (Get-WmiObject -Class Win32_OperatingSystem).Caption
-    if ($os -match "Windows") {
-        return "Windows"
-    } elseif ($os -match "Mac") {
-        return "Mac"
-    } elseif ($os -match "Linux") {
-        return "Linux"
-    } else {
-        Write-Error "Unknown Operating System"
-        Write-Host "Press any key to exit..."
-        if (-not $noprompt) {
-            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-        }
-        exit
-    }
-}
+$qtApi = if ($env:QT_API) { $env:QT_API } else { "PyQt6" }
+$brewPackage = if ($qtApi -match "6") { "qt@6" } else { "qt@5" }
 
-function Get-Linux-Distro-Name {
-    if (Test-Path "/etc/os-release" -ErrorAction SilentlyContinue) {
-        $osInfo = Get-Content "/etc/os-release" -Raw
-        if ($osInfo -match '\nID="?([^"\n]*)"?') {
-            $distroName = $Matches[1].Trim('"')
-            if ($distroName -eq "ol") {
-                return "oracle"
-            }
-            return $distroName
-        }
-    }
-    return $null
-}
+$argsList = @(
+    "--tool-path", (Resolve-Path -LiteralPath "$rootPath/Tools/HolocronToolset").Path
+    "--venv-name", $venv_name
+    "--pip-requirements", (Resolve-Path -LiteralPath "$rootPath/Libraries/PyKotor/requirements.txt").Path
+    "--linux-package-profile", "qt_gui"
+    "--qt-api", $qtApi
+    "--qt-install-using-brew"
+    "--brew-package", $brewPackage
+)
+if ($noprompt) { $argsList += "--noprompt" }
 
 $qtApi = $env:QT_API
 if (-not $qtApi) {

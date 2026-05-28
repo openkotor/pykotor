@@ -1,3 +1,5 @@
+"""Creature model and appearance resolution for UTC (2DA appearance, body/head models, textures)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -59,6 +61,7 @@ def get_body_model(  # noqa: C901, PLR0912, PLR0915
     utc_appearance_row: TwoDARow = appearance.get_row(utc.appearance_id, context=f"Fetching row based on appearance_id{context_base}")
     body_model: str | None = None
     override_texture: str | None = None
+    invalid_model_tokens = {"", "****"}
 
     # Determine body model and texture based on modeltype
     modeltype: str = utc_appearance_row.get_string("modeltype", context=f"Fetching model type{context_base}")
@@ -181,13 +184,11 @@ def get_weapon_models(
         if not appearance_lookup:
             RobustLogger().error("appearance.2da missing from installation.")
             return None, None
-        appearance = read_2da(appearance_lookup.data)
     if baseitems is None:
         baseitems_lookup: ResourceResult | None = installation.resource("baseitems", ResourceType.TwoDA)
         if not baseitems_lookup:
             RobustLogger().error("baseitems.2da missing from installation.")
             return None, None
-        baseitems = read_2da(baseitems_lookup.data)
 
     right_hand_model: str | None = _load_hand_uti(installation, str(utc.equipment[EquipmentSlot.RIGHT_HAND].resref), baseitems) if EquipmentSlot.RIGHT_HAND in utc.equipment else None
     left_hand_model: str | None = _load_hand_uti(installation, str(utc.equipment[EquipmentSlot.LEFT_HAND].resref), baseitems) if EquipmentSlot.LEFT_HAND in utc.equipment else None
@@ -201,7 +202,7 @@ def _load_hand_uti(
 ) -> str | None:
     hand_lookup: ResourceResult | None = installation.resource(hand_resref, ResourceType.UTI)
     if not hand_lookup:
-        RobustLogger().error(f"{hand_resref}.uti missing from installation.")
+        RobustLogger().debug(f"{hand_resref}.uti missing from installation.")
         return None
     hand_uti: UTI = read_uti(hand_lookup.data)
     default_model: str = baseitems.get_row(hand_uti.base_item).get_string("defaultmodel")
@@ -241,13 +242,11 @@ def get_head_model(  # noqa: C901, PLR0912
         if not appearance_lookup:
             RobustLogger().error("appearance.2da missing from installation.")
             return None, None
-        appearance = read_2da(appearance_lookup.data)
     if heads is None:
         heads_lookup: ResourceResult | None = installation.resource("heads", ResourceType.TwoDA)
         if not heads_lookup:
             RobustLogger().error("heads.2da missing from installation.")
             return None, None
-        heads = read_2da(heads_lookup.data)
 
     model: str | None = None
     texture: str | None = None
@@ -261,7 +260,6 @@ def get_head_model(  # noqa: C901, PLR0912
                 "Row %s missing from heads.2da, defined in appearance.2da under the column 'normalhead' row %s",
                 head_id,
                 utc.appearance_id,
-                exc_info=True,
             )
         else:
             model = head_row.get_string("head")

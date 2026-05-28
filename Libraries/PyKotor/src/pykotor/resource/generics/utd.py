@@ -1,3 +1,5 @@
+"""UTD (door) generic: GFF-based door definitions and lock/unlock mechanics."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -14,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class UTD:
-    """Stores door data.
+    """Stores door data from the on-disk UTD GFF template.
 
     UTD files are GFF-based format files that store door definitions including
     lock/unlock mechanics, HP, scripts, and appearance.
@@ -498,12 +500,18 @@ def utd_version(
 def construct_utd(
     gff: GFF,
 ) -> UTD:
+    """Build UTD from GFF. Defaults when field missing match engine ReadField* (template load: 0/""/blank ResRef). Omit OK.
+
+    Reference: CSWSDoor::LoadDoor @  (/K1/k1_win_gog_swkotor.exe: 0x0058a1f0, TSL: 0x006531e0 legacy PC / 0x00765620 Aspyr).
+    """
     utd = UTD()
 
     root = gff.root
+    # Identity: Tag/LocName/TemplateResRef "" or empty. K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620. Omit OK.
     utd.tag = root.acquire("Tag", "")
     utd.name = root.acquire("LocName", LocalizedString.from_invalid())
     utd.resref = root.acquire("TemplateResRef", ResRef.from_blank())
+    # Lock/key: AutoRemoveKey, KeyRequired, Lockable, Locked, OpenLockDC 0; KeyName "". K1/TSL ReadFieldBYTE/CExoString. Omit OK.
     utd.auto_remove_key = bool(root.acquire("AutoRemoveKey", 0))
     utd.conversation = root.acquire("Conversation", ResRef.from_blank())
     utd.faction_id = root.acquire("Faction", 0)
@@ -515,10 +523,12 @@ def construct_utd(
     utd.unlock_dc = root.acquire("OpenLockDC", 0)
     utd.key_name = root.acquire("KeyName", "")
     utd.animation_state = root.acquire("AnimationState", 0)
+    # HP/stats: HP, CurrentHP, Hardness, Fort 0. K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620 ReadFieldSHORT/BYTE. Omit OK.
     utd.maximum_hp = root.acquire("HP", 0)
     utd.current_hp = root.acquire("CurrentHP", 0)
     utd.hardness = root.acquire("Hardness", 0)
     utd.fortitude = root.acquire("Fort", 0)
+    # Scripts: OnClosed/OnDamaged/OnDeath/OnHeartbeat etc. ResRef "" when missing. K1/TSL ReadFieldCResRef. Omit OK.
     utd.on_closed = root.acquire("OnClosed", ResRef.from_blank())
     utd.on_damaged = root.acquire("OnDamaged", ResRef.from_blank())
     utd.on_death = root.acquire("OnDeath", ResRef.from_blank())
@@ -566,9 +576,14 @@ def dismantle_utd(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
+    """Build GFF from UTD. Written fields match engine; omit = engine default.
+
+    Reference: CSWSDoor::LoadDoor @  (/K1/k1_win_gog_swkotor.exe: 0x0058a1f0, TSL: 0x006531e0 legacy PC / 0x00765620 Aspyr).
+    """
     gff = GFF(GFFContent.UTD)
 
     root: GFFStruct = gff.root
+    # Root fields: same defaults as engine when missing (0, "", blank ResRef). K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620. Omit OK.
     root.set_string("Tag", utd.tag)
     root.set_locstring("LocName", utd.name)
     root.set_resref("TemplateResRef", utd.resref)

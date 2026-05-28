@@ -101,17 +101,42 @@ class TLK(ComparableMixin):
         # Language ID field - unused by game but present in file format
         self.language: Language = language  # game does not use this field
 
-    def __len__(
-        self,
-    ) -> int:
+    def __len__(self) -> int:
         """Returns the number of stored entries."""
         return len(self.entries)
 
-    def __iter__(
-        self,
-    ):
+    def __iter__(self):
         """Iterates through the stored entry with each iteration yielding a stringref and the corresponding entry data."""
         yield from enumerate(self.entries)
+
+    def __json__(self) -> dict[str, list[dict[str, str]]]:
+        """Serialize the TLK object to a JSON-compatible dictionary."""
+        json_data: dict[str, list[dict[str, str]]] = {"strings": []}
+        for stringref, entry in self:
+            json_data["strings"].append(
+                {
+                    "_index": str(stringref),
+                    "text": entry.text,
+                    "soundResRef": str(entry.voiceover),
+                }
+            )
+        return json_data
+
+    @classmethod
+    def from_json(cls, data: dict) -> TLK:
+        """Hydrate a TLK object from a JSON dictionary."""
+        instance = cls()
+
+        strings = data.get("strings", [])
+        if strings:
+            instance.resize(max(int(s.get("_index", 0)) for s in strings) + 1)
+
+        for string_data in strings:
+            index = int(string_data["_index"])
+            instance.entries[index].text = string_data["text"]
+            instance.entries[index].voiceover = ResRef(string_data["soundResRef"])
+
+        return instance
 
     def __getitem__(
         self,
@@ -172,7 +197,9 @@ class TLK(ComparableMixin):
             raise IndexError(msg)
         old_text: str = self.entries[stringref].text
         old_sound: ResRef = self.entries[stringref].voiceover
-        self.entries[stringref] = TLKEntry(text or old_text, ResRef(sound_resref) if sound_resref else old_sound)
+        self.entries[stringref] = TLKEntry(
+            text or old_text, ResRef(sound_resref) if sound_resref else old_sound
+        )
 
     def resize(
         self,
@@ -396,7 +423,7 @@ class TLKEntry(ComparableMixin):
         if self is other:
             return True
         if not isinstance(other, TLKEntry):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
         return other.text == self.text and other.voiceover == self.voiceover
 
     def __hash__(self) -> int:

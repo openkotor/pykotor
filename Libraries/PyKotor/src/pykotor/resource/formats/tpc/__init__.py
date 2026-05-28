@@ -1,4 +1,7 @@
+"""TPC (texture) package: mipmaps, DXT/TGA/BMP I/O and format detection."""
+
 from __future__ import annotations
+
 from pykotor.resource.formats.tpc.tpc_data import (
     TPC,
     TPCTextureFormat,
@@ -9,9 +12,14 @@ from pykotor.resource.formats.tpc.io_tpc import (
     TPCBinaryReader,
     TPCBinaryWriter,
 )
+from pykotor.resource.formats.tpc.io_dds import TPCDDSReader, TPCDDSWriter
 from pykotor.resource.formats.tpc.io_tga import TPCTGAWriter, TPCTGAReader
 from pykotor.resource.formats.tpc.io_bmp import TPCBMPWriter
+from pykotor.resource.formats.tpc.tga import read_tga
 from pykotor.resource.formats.tpc.tpc_auto import (
+    build_tpc_from_tga_bytes,
+    build_tpc_from_tga_path,
+    bytes_tpc,
     read_tpc,
     write_tpc,
     bytes_tpc,

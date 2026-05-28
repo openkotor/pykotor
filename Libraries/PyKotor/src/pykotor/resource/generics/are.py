@@ -1,3 +1,5 @@
+"""ARE (area) generic: GFF-based static area data and script hooks."""
+
 from __future__ import annotations
 
 from enum import IntEnum
@@ -30,6 +32,17 @@ class ARE(GenericBase):
         vendor/xoreos-tools/src/xml/aredumper.cpp (ARE to XML conversion)
         vendor/xoreos-tools/src/xml/arecreator.cpp (XML to ARE conversion)
         Note: ARE files are GFF format files with specific structure definitions
+
+    ARE files are GFF-based format files that store static area information including
+    lighting, fog, grass, weather, script hooks, and map data. ARE files use the GFF
+    binary format with a specific structure defined by the ARE content type.
+
+    Field names match the on-disk ARE GFF schema. Defaults used when a field is absent in
+    ``construct_are`` / ``dismantle_are`` mirror **observed retail** KotOR I and TSL
+    behavior; symbol- and address-level notes are migrated to
+    ``wiki/reverse_engineering_findings.md``.
+    Third-party GitHub URL line comments from field docstrings are archived at
+    ``wiki/reverse_engineering_findings_generics_are_github_urls_pre_scrub.md``.
 
     Attributes:
     ----------
@@ -106,6 +119,12 @@ class ARE(GenericBase):
         no_hang_back: "NoHangBack" field. Not used by the game engine.
         player_only: "PlayerOnly" field. Not used by the game engine.
         player_vs_player: "PlayerVsPlayer" field. Not used by the game engine.
+
+        NOTE on "unused by the engine" labels:
+        Those labels follow common toolset documentation. It has been observed in retail
+        play that moon lighting and fog fields, ``IsNight``, ``DayNightCycle``, and the
+        sun/dynamic color fields still participate in day/night and lighting setup, so treat
+        "unused" as a mod-author hint, not a hard guarantee across every build.
     """
 
     BINARY_TYPE = ResourceType.ARE
@@ -170,8 +189,8 @@ class ARE(GenericBase):
         # vendor/KotOR.js/src/module/ModuleArea.ts:246-250
         # Fog rendering properties
         self.fog_color: Color = Color.BLACK
-        self.fog_near: float = 0
-        self.fog_far: float = 0
+        self.fog_near: float = 10000.0  # Observed retail default when SunFogNear is absent
+        self.fog_far: float = 10000.0  # Observed retail default when SunFogFar is absent
         self.fog_enabled: bool = False
 
         # vendor/reone/src/libs/resource/parser/gff/are.cpp:311,314,317,320
@@ -256,7 +275,7 @@ class ARE(GenericBase):
         self.world_point_1: Vector2 = Vector2.from_null()
         self.world_point_2: Vector2 = Vector2.from_null()
         self.map_res_x: int = 0
-        self.map_zoom: int = 0
+        self.map_zoom: int = 1  # Observed retail default when Map.MapZoom is absent
         self.north_axis: ARENorthAxis = ARENorthAxis.PositiveX
 
         # vendor/reone/src/libs/resource/parser/gff/are.cpp:366-368
@@ -409,6 +428,10 @@ def construct_are(
         - Acquires values from the GFF root node and assigns them to ARE properties
         - Handles color values as special case, converting to Color objects
         - All other values assigned directly from GFF.
+
+    When a field is absent, ``acquire`` uses defaults aligned with observed retail KotOR I
+    and TSL ARE loading (map, fog, rooms, scripts, etc.). Former address/symbol commentary
+    is migrated to ``wiki/reverse_engineering_findings.md``.
     """
     are = ARE()
 
@@ -416,11 +439,13 @@ def construct_are(
     map_struct = root.acquire("Map", GFFStruct())
     are.map_original_struct_id = map_struct.struct_id
 
-    are.north_axis = ARENorthAxis(
-        map_struct.acquire("NorthAxis", 0),
-    )
-    are.map_zoom = map_struct.acquire("MapZoom", 0)
+    # NorthAxis (INT32). Optional when Map struct present; retail uses 0 when absent.
+    are.north_axis = ARENorthAxis(map_struct.acquire("NorthAxis", 0))
+    # MapZoom (INT32). Optional when Map struct present; retail uses 1 when absent.
+    are.map_zoom = map_struct.acquire("MapZoom", 1)
+    # MapResX (INT32). Optional; 0 disables minimap (observed retail).
     are.map_res_x = map_struct.acquire("MapResX", 0)
+    # Map corner points: FLOAT or INT in GFF; acquire uses float defaults when absent.
     are.map_point_1 = Vector2(
         map_struct.acquire("MapPt1X", 0.0),
         map_struct.acquire("MapPt1Y", 0.0),
@@ -429,6 +454,7 @@ def construct_are(
         map_struct.acquire("MapPt2X", 0.0),
         map_struct.acquire("MapPt2Y", 0.0),
     )
+    # WorldPt1X, WorldPt1Y, WorldPt2X, WorldPt2Y (FLOAT). Optional when Map present. Missing -> 0.0.
     are.world_point_1 = Vector2(
         map_struct.acquire("WorldPt1X", 0.0),
         map_struct.acquire("WorldPt1Y", 0.0),
@@ -441,7 +467,7 @@ def construct_are(
     are.tag = root.acquire("Tag", "")
     are.name = root.acquire("Name", LocalizedString.from_invalid())
     are.comment = root.acquire("Comments", "")
-    are.alpha_test = root.acquire("AlphaTest", 0.0)
+    are.alpha_test = root.acquire("AlphaTest", 0.2)
     are.camera_style = root.acquire("CameraStyle", 0)
     are.default_envmap = root.acquire("DefaultEnvMap", ResRef.from_blank())
     are.grass_texture = root.acquire("Grass_TexName", ResRef.from_blank())
@@ -451,9 +477,10 @@ def construct_are(
     are.grass_prob_lr = root.acquire("Grass_Prob_LR", 0.0)
     are.grass_prob_ul = root.acquire("Grass_Prob_UL", 0.0)
     are.grass_prob_ur = root.acquire("Grass_Prob_UR", 0.0)
+    # SunFogOn: default 0 when missing. SunFogNear/SunFogFar: default 10000.0 when missing; engine clamps negative to 0.
     are.fog_enabled = bool(root.acquire("SunFogOn", 0))
-    are.fog_near = root.acquire("SunFogNear", 0.0)
-    are.fog_far = root.acquire("SunFogFar", 0.0)
+    are.fog_near = root.acquire("SunFogNear", 10000.0)
+    are.fog_far = root.acquire("SunFogFar", 10000.0)
     are.shadows = bool(root.acquire("SunShadows", 0))
     are.shadow_opacity = root.acquire("ShadowOpacity", 0)
     are.wind_power = AREWindPower(root.acquire("WindPower", 0))
@@ -483,11 +510,12 @@ def construct_are(
     are.flags = root.acquire("Flags", 0)
     are.mod_spot_check = root.acquire("ModSpotCheck", 0)
     are.mod_listen_check = root.acquire("ModListenCheck", 0)
+    # Moon*: default 0; MoonFogNear/MoonFogFar default 10000.0 when missing; engine clamps negative to 0.
     are.moon_ambient = root.acquire("MoonAmbientColor", 0)
     are.moon_diffuse = root.acquire("MoonDiffuseColor", 0)
     are.moon_fog = root.acquire("MoonFogOn", 0)
-    are.moon_fog_near = root.acquire("MoonFogNear", 0.0)
-    are.moon_fog_far = root.acquire("MoonFogFar", 0.0)
+    are.moon_fog_near = root.acquire("MoonFogNear", 10000.0)
+    are.moon_fog_far = root.acquire("MoonFogFar", 10000.0)
     are.moon_fog_color = root.acquire("MoonFogColor", 0)
     are.moon_shadows = root.acquire("MoonShadows", 0)
     are.is_night = root.acquire("IsNight", 0)
@@ -505,7 +533,7 @@ def construct_are(
     are.fog_color = Color.from_rgb_integer(root.acquire("SunFogColor", 0))
     are.grass_ambient = Color.from_rgb_integer(root.acquire("Grass_Ambient", 0))
     are.grass_diffuse = Color.from_rgb_integer(root.acquire("Grass_Diffuse", 0))
-
+    # Grass_Emissive, DirtyARGB* DWORD: default 0. K2-only; optional.
     are.grass_emissive = Color.from_rgb_integer(root.acquire("Grass_Emissive", 0))
     are.dirty_argb_1 = Color.from_rgb_integer(root.acquire("DirtyARGBOne", 0))
     are.dirty_argb_2 = Color.from_rgb_integer(root.acquire("DirtyARGBTwo", 0))
@@ -518,7 +546,21 @@ def construct_are(
         room_name = room_struct.acquire("RoomName", "")
         disable_weather = bool(room_struct.acquire("DisableWeather", 0))
         force_rating = room_struct.acquire("ForceRating", 0)
-        are.rooms.append(ARERoom(room_name, disable_weather, env_audio, force_rating, ambient_scale))
+        are.rooms.append(
+            ARERoom(room_name, disable_weather, env_audio, force_rating, ambient_scale)
+        )
+
+    # Preserve original values for fields not in UI
+    are.preserve_original()
+    # Store all field values as original
+    are._store_original("version", are.version)
+    are._store_original("player_vs_player", are.player_vs_player)
+    are._store_original("moon_fog", are.moon_fog)
+    are._store_original("moon_fog_near", are.moon_fog_near)
+    are._store_original("moon_fog_far", are.moon_fog_far)
+    are._store_original("moon_fog_color", are.moon_fog_color)
+    are._store_original("map_point_1", are.map_point_1)
+    are._store_original("map_point_2", are.map_point_2)
 
     # Preserve original values for fields not in UI
     are.preserve_original()
@@ -560,11 +602,14 @@ def dismantle_are(
         - Includes additional K2-specific fields if game is K2
         - Includes deprecated fields if use_deprecated is True
         - Returns the populated GFF structure.
+
+    Written defaults match the read path and observed retail behavior when fields were absent.
     """
     gff = GFF(GFFContent.ARE)
 
     root = gff.root
 
+    # Map struct: written values mirror the acquire defaults above (retail-aligned).
     map_struct = root.set_struct("Map", GFFStruct(are.map_original_struct_id))
     map_struct.set_int32("MapZoom", are.map_zoom)
     map_struct.set_int32("MapResX", are.map_res_x)

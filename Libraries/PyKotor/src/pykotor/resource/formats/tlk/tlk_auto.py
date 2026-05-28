@@ -1,14 +1,18 @@
+"""TLK (talk table) format detection and auto read/write dispatch (binary, JSON, XML)."""
+
 from __future__ import annotations
 
+import json
 import os
 
 from typing import TYPE_CHECKING
 
 from pykotor.common.stream import BinaryReader
+from pykotor.resource.formats._base import BiowareEncoder
 from pykotor.resource.formats.tlk.io_tlk import TLKBinaryReader, TLKBinaryWriter
-from pykotor.resource.formats.tlk.io_tlk_json import TLKJSONReader, TLKJSONWriter
 from pykotor.resource.formats.tlk.io_tlk_xml import TLKXMLReader, TLKXMLWriter
-from pykotor.resource.type import ResourceType
+from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, ToolsetFormat
+from pykotor.tools.encoding import decode_bytes_with_fallbacks
 
 if TYPE_CHECKING:
     from pykotor.common.language import Language
@@ -44,13 +48,13 @@ def detect_tlk(
 
     def check(
         first4,
-    ):
+    ) -> RESOURCE_FORMAT:
         if first4 == "TLK ":
             return ResourceType.TLK
         if "{" in first4:
-            return ResourceType.TLK_JSON
-        if "<" in first4:  # sourcery skip: assign-if-exp, reintroduce-else
-            return ResourceType.TLK_XML
+            return ToolsetFormat.TLK_JSON
+        if "<" in first4:
+            return ToolsetFormat.TLK_XML
         return ResourceType.INVALID
 
     if isinstance(source, str) and not os.path.exists(source):
@@ -103,7 +107,7 @@ def read_tlk(
     if file_format is None:
         file_format = detect_tlk(source, offset)
 
-    if file_format is ResourceType.INVALID:
+    if file_format == ResourceType.INVALID:
         msg = "Failed to determine the format of the TLK file."
         raise ValueError(msg)
 
@@ -124,7 +128,7 @@ def read_tlk(
 def write_tlk(
     tlk: TLK,
     target: TARGET_TYPES,
-    file_format: ResourceType = ResourceType.TLK,
+    file_format: RESOURCE_FORMAT = ResourceType.TLK,
 ):
     """Writes the TLK data to the target location with the specified format (TLK, TLK_XML or TLK_JSON).
 
@@ -140,12 +144,16 @@ def write_tlk(
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
     """
-    if file_format is ResourceType.TLK:
+    if file_format == ResourceType.TLK:
         TLKBinaryWriter(tlk, target).write()
-    elif file_format is ResourceType.TLK_XML:
+    elif file_format == ToolsetFormat.TLK_XML:
         TLKXMLWriter(tlk, target).write()
-    elif file_format is ResourceType.TLK_JSON:
-        TLKJSONWriter(tlk, target).write()
+    elif file_format == ToolsetFormat.TLK_JSON:
+        json_dump = json.dumps(tlk, cls=BiowareEncoder, indent=4)
+        from pykotor.common.stream import BinaryWriter
+
+        with BinaryWriter.to_auto(target) as writer:
+            writer.write_bytes(json_dump.encode())
     else:
         msg = "Unsupported format specified; use TLK or TLK_XML."
         raise ValueError(msg)
@@ -153,7 +161,7 @@ def write_tlk(
 
 def bytes_tlk(
     tlk: TLK,
-    file_format: ResourceType = ResourceType.TLK,
+    file_format: RESOURCE_FORMAT = ResourceType.TLK,
 ) -> bytes:
     """Returns the TLK data in the specified format (TLK or TLK_XML or TLK_JSON) as a bytes object.
 

@@ -1,11 +1,23 @@
+"""TPC/texture format detection and auto read/write dispatch (TPC, TGA, DDS, BMP).
+
+Includes :func:`build_tpc_from_tga_bytes`, :func:`build_tpc_from_tga_path`, and the
+TGA→TPC CLI entrypoint (``python -m pykotor.resource.formats.tpc``).
+"""
+
 from __future__ import annotations
 
+import argparse
+import io
 import os
+import struct
+import sys
 
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, Iterable, Sequence
 
 from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.tpc.io_bmp import TPCBMPWriter
+from pykotor.resource.formats.tpc.io_dds import TPCDDSReader, TPCDDSWriter
 from pykotor.resource.formats.tpc.io_tga import TPCTGAReader, TPCTGAWriter
 from pykotor.resource.formats.tpc.io_tpc import TPCBinaryReader, TPCBinaryWriter
 from pykotor.resource.formats.tpc.tpc_data import TPC
@@ -13,7 +25,6 @@ from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath
 
 if TYPE_CHECKING:
-    from pykotor.resource.formats.tpc.tpc_data import TPC
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
 
@@ -57,9 +68,9 @@ def detect_tpc(
     try:
         if isinstance(source, (str, os.PathLike)):
             with BinaryReader.from_file(source, offset) as reader:
-                file_format = do_check(reader.read_bytes(100))
+                file_format = do_check(bytes(reader.read_bytes(128)))
         elif isinstance(source, (bytes, bytearray)):
-            file_format = do_check(source[:100])
+            file_format = do_check(bytes(source[:128]))
         elif isinstance(source, BinaryReader):
             file_format = do_check(source.read_bytes(100))
             source.skip(-100)
@@ -104,19 +115,23 @@ def read_tpc(
     loaded_tpc: TPC
     if file_format is ResourceType.TPC:
         loaded_tpc = TPCBinaryReader(source, offset, size or 0).load()
-    elif file_format is ResourceType.TGA:
+    elif file_format == ResourceType.TGA:
         loaded_tpc = TPCTGAReader(source, offset, size or 0).load()
+    elif file_format == ResourceType.DDS:
+        loaded_tpc = TPCDDSReader(source, offset, size or 0).load()
     else:
         msg = "Failed to determine the format of the TPC/TGA file."
         raise ValueError(msg)
     if txi_source is None and isinstance(source, (os.PathLike, str)):
-        txi_source = CaseAwarePath(source).with_suffix(".txi")
-        if not txi_source.is_file():
+        txi_path = CaseAwarePath(source).with_suffix(".txi")
+        if not txi_path.is_file():
             return loaded_tpc
+        txi_source = txi_path
     elif isinstance(txi_source, (os.PathLike, str)):
-        txi_source = CaseAwarePath(txi_source).with_suffix(".txi")
-        if not txi_source.is_file():
+        txi_path = CaseAwarePath(txi_source).with_suffix(".txi")
+        if not txi_path.is_file():
             return loaded_tpc
+        txi_source = txi_path
 
     if txi_source is None:
         return loaded_tpc
@@ -144,14 +159,16 @@ def write_tpc(
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
     """
-    if file_format is ResourceType.TGA:
+    if file_format == ResourceType.TGA:
         TPCTGAWriter(tpc, target).write()
-    elif file_format is ResourceType.BMP:
+    elif file_format == ResourceType.BMP:
         TPCBMPWriter(tpc, target).write()
-    elif file_format is ResourceType.TPC:
+    elif file_format == ResourceType.DDS:
+        TPCDDSWriter(tpc, target).write()
+    elif file_format == ResourceType.TPC:
         TPCBinaryWriter(tpc, target).write()
     else:
-        msg = "Unsupported format specified; use TPC, TGA or BMP."
+        msg = "Unsupported format specified; use TPC, TGA, DDS or BMP."
         raise ValueError(msg)
 
 
@@ -159,7 +176,7 @@ def bytes_tpc(
     tpc: TPC,
     file_format: ResourceType = ResourceType.TPC,
 ) -> bytes:
-    """Returns the TPC data in the specified format (TPC, TGA or BMP) as a bytes object.
+    """Returns the TPC data in the specified format (TPC, TGA, DDS or BMP) as a bytes object.
 
     This is a convenience method that wraps the write_tpc() method.
 

@@ -95,7 +95,10 @@ class TaskGraph:
         -------
             True if the task is ready, False otherwise.
         """
-        return all(self.get_task_status(dependency) == "completed" for dependency in self.get_dependencies(task_id))
+        return all(
+            self.get_task_status(dependency) == "completed"
+            for dependency in self.get_dependencies(task_id)
+        )
 
     def get_ready_tasks(self) -> list[int]:
         """Returns a list of task IDs that are ready to be executed.

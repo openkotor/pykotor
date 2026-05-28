@@ -1,3 +1,5 @@
+"""TSLPatcher modification template: OverrideType and PatcherModifications base."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -121,14 +123,18 @@ class PatcherModifications(ABC):
     ):
         """All optional TSLPatcher vars that can be parsed for a given patch list."""
         ####
-        # Note: The second argument passed to the 'pop' function is the default.
+        # NOTE: The second argument passed to the 'pop' function is the default.
         ####
 
         self.sourcefile = file_section_dict.pop("!SourceFile", self.sourcefile)
         # !SaveAs and !Filename are the same.
-        self.saveas = file_section_dict.pop("!Filename", file_section_dict.pop("!SaveAs", self.saveas))
+        self.saveas = file_section_dict.pop(
+            "!Filename", file_section_dict.pop("!SaveAs", self.saveas)
+        )
 
-        destination_fallback: str = self.DEFAULT_DESTINATION if default_destination is None else default_destination
+        destination_fallback: str = (
+            self.DEFAULT_DESTINATION if default_destination is None else default_destination
+        )
         self.destination = file_section_dict.pop("!Destination", destination_fallback)
 
         # !ReplaceFile=1 is prioritized, see Stoffe's HLFP mod v2.1 for reference.

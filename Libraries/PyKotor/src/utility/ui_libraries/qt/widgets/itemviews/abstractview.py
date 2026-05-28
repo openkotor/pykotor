@@ -8,8 +8,9 @@ from qtpy.QtCore import QAbstractItemModel, QSortFilterProxyModel, QTimer, Qt
 from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QAbstractItemDelegate, QAbstractItemView, QAbstractScrollArea, QFrame, QStyle, QStyleOptionViewItem
 
-from utility.ui_libraries.qt.widgets.itemviews.baseview import RobustBaseWidget
-from utility.ui_libraries.qt.widgets.itemviews.html_delegate import HTMLDelegate
+from loggerplus import RobustLogger
+from utility.gui.qt.widgets.itemviews.baseview import RobustBaseWidget
+from utility.gui.qt.widgets.itemviews.html_delegate import HTMLDelegate
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QItemSelectionModel, QMargins, QModelIndex, QPoint
@@ -110,7 +111,9 @@ class RobustAbstractItemView(RobustBaseWidget, QAbstractItemView if TYPE_CHECKIN
         modifiers: Qt.KeyboardModifier = event.modifiers()
         handled: bool = False
 
-        if bool(modifiers & Qt.KeyboardModifier.ShiftModifier) and bool(modifiers & Qt.KeyboardModifier.ControlModifier):
+        if bool(modifiers & Qt.KeyboardModifier.ShiftModifier) and bool(
+            modifiers & Qt.KeyboardModifier.ControlModifier
+        ):
             handled = self._wheel_changes_item_spacing(event)
         elif bool(modifiers & Qt.KeyboardModifier.ControlModifier):
             handled = self._wheel_changes_text_size(event)

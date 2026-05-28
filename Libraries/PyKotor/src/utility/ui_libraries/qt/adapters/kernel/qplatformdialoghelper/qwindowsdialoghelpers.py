@@ -16,6 +16,7 @@ from utility.ui_libraries.qt.adapters.kernel.qplatformdialoghelper.qplatformdial
     QPlatformFileDialogHelper,
     QPlatformFontDialogHelper,
 )
+from utility.system.win32.com.interfaces import COMDLG_FILTERSPEC, IShellItem
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractProxyModel, QObject, QUrl
@@ -24,7 +25,13 @@ try:
     from comtypes.client import CreateObject
 
     from utility.system.win32.com.com_helpers import S_OK
-    from utility.system.win32.com.interfaces import COMDLG_FILTERSPEC, SIGDN, IFileOpenDialog, IFileSaveDialog, IShellItem
+    from utility.system.win32.com.interfaces import (
+        COMDLG_FILTERSPEC,
+        SIGDN,
+        IFileOpenDialog,
+        IFileSaveDialog,
+        IShellItem,
+    )
     from utility.system.win32.com.windialogs import FileDialogControlEvents
 
     USE_COMTYPES = True
@@ -35,7 +42,9 @@ except ImportError as err:
 
         USE_COMTYPES = False
     except ImportError:
-        raise ImportError("Neither comtypes nor pywin32 is available. Please install one of them.") from err
+        raise ImportError(
+            "Neither comtypes nor pywin32 is available. Please install one of them."
+        ) from err
 
 
 class WindowsFileDialogHelper(QFileDialogPlatformHelper):
@@ -102,9 +111,19 @@ class WindowsFileDialogHelper(QFileDialogPlatformHelper):
         file_filter = self._create_win32_file_filter()
 
         if self._options.acceptMode() == QFileDialog.AcceptMode.AcceptOpen:
-            (file_path, customfilter, flags) = win32gui.GetOpenFileNameW(InitialDir=self._current_directory, Flags=flags, Filter=file_filter, Title="Open File")
+            (file_path, customfilter, flags) = win32gui.GetOpenFileNameW(
+                InitialDir=self._current_directory,
+                Flags=flags,
+                Filter=file_filter,
+                Title="Open File",
+            )
         else:
-            (file_path, customfilter, flags) = win32gui.GetSaveFileNameW(InitialDir=self._current_directory, Flags=flags, Filter=file_filter, Title="Save File")
+            (file_path, customfilter, flags) = win32gui.GetSaveFileNameW(
+                InitialDir=self._current_directory,
+                Flags=flags,
+                Filter=file_filter,
+                Title="Save File",
+            )
 
         if file_path:
             if flags & win32con.OFN_ALLOWMULTISELECT:
@@ -221,14 +240,25 @@ class QWindowsDialogHelperBase(QPlatformDialogHelper):
 
     def exec(self) -> QPlatformDialogHelper.DialogCode:
         if self.m_eventLoop:
-            raise RuntimeError("QWindowsDialogHelperBase::exec(): Recursive calls are not supported")
+            raise RuntimeError(
+                "QWindowsDialogHelperBase::exec(): Recursive calls are not supported"
+            )
         self.m_eventLoop = QEventLoop()
         self.show(Qt.WindowType(0), Qt.WindowState.WindowNoState, None)
         self.m_eventLoop.exec()
         self.m_eventLoop = None
-        return QPlatformDialogHelper.DialogCode.Accepted if self.result() else QPlatformDialogHelper.DialogCode.Rejected
+        return (
+            QPlatformDialogHelper.DialogCode.Accepted
+            if self.result()
+            else QPlatformDialogHelper.DialogCode.Rejected
+        )
 
-    def show(self, parent_window_flags: Qt.WindowType, parent_window_state: Qt.WindowState, parent: QObject | None):
+    def show(
+        self,
+        parent_window_flags: Qt.WindowType,
+        parent_window_state: Qt.WindowState,
+        parent: QObject | None,
+    ):
         self.m_visible = True
 
     def hide(self):
@@ -430,10 +460,10 @@ class QWindowsFileDialogHelper(QWindowsDialogHelperBase, QPlatformFileDialogHelp
 class QWindowsColorDialogHelper(QWindowsDialogHelperBase, QPlatformColorDialogHelper):
     def __init__(self):
         super().__init__()
-        self.m_color = QColor()
+        self.m_color: QColor = QColor()
 
     def setCurrentColor(self, color: QColor):
-        self.m_color: QColor = color
+        self.m_color = color
         self.currentColorChanged.emit(color)
 
     def currentColor(self) -> QColor:
@@ -459,7 +489,9 @@ class QWindowsFontDialogHelper(QWindowsDialogHelperBase, QPlatformFontDialogHelp
             return QPlatformDialogHelper.DialogCode.Accepted
         return QPlatformDialogHelper.DialogCode.Rejected
 
-    def show(self, parent_window_flags, parent_window_state: Qt.WindowState, parent: QObject | None):
+    def show(
+        self, parent_window_flags, parent_window_state: Qt.WindowState, parent: QObject | None
+    ):
         if not self.m_fontDialog:
             self.m_fontDialog = QFontDialog(self.m_font, parent)
         self.m_fontDialog.setOptions(self.m_options)
@@ -514,7 +546,6 @@ class QWindowsFontDialogHelper(QWindowsDialogHelperBase, QPlatformFontDialogHelp
     def styleHint(self) -> QPlatformDialogHelper.StyleHint:
         return self.defaultStyleHint()
 
-
     def updateFont(self, font: QFont):
         self.setCurrentFont(font)
         if self.m_fontDialog:
@@ -531,7 +562,12 @@ class QWindowsDialogHelper(QWindowsDialogHelperBase):
             return self.m_helper.exec()
         return QPlatformDialogHelper.DialogCode.Rejected
 
-    def show(self, parent_window_flags: Qt.WindowType, parent_window_state: Qt.WindowState, parent: QObject | None):
+    def show(
+        self,
+        parent_window_flags: Qt.WindowType,
+        parent_window_state: Qt.WindowState,
+        parent: QObject | None,
+    ):
         if self.m_helper:
             self.m_helper.show(parent_window_flags, parent_window_state, parent)
 
@@ -540,4 +576,4 @@ class QWindowsDialogHelper(QWindowsDialogHelperBase):
             self.m_helper.hide()
 
     def setHelper(self, helper: QPlatformDialogHelper):
-        self.m_helper: QPlatformDialogHelper = helper
+        self.m_helper = helper

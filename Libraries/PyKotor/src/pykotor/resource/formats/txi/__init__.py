@@ -1,3 +1,5 @@
+"""TXI (texture info) package: features, commands, and binary I/O for texture metadata."""
+
 from __future__ import annotations
 from pykotor.resource.formats.txi.txi_data import TXI, TXIFeatures, TXICommand
 from pykotor.resource.formats.txi.txi_auto import read_txi, write_txi, bytes_txi

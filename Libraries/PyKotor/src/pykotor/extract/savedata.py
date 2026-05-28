@@ -203,6 +203,7 @@ if TYPE_CHECKING:
     from pykotor.resource.generics.utc import UTC
     from pykotor.resource.generics.uti import UTI
 
+
 class SaveInfo:
     """SAVENFO.res - Save information resource.
     
@@ -2229,6 +2230,12 @@ class SaveFolderEntry:
         # Vendor ref: KSE preserves Screen.tga, KotOR.js loads it for display
         self.screenshot: bytes | None = None  # Screen.tga - Save screenshot (800x600 or 640x480 TGA)
 
+        # Screenshot data
+        # Cross-ref (wiki savedata archive): KSE preserves Screen.tga, KotOR.js loads it for display
+        self.screenshot: bytes | None = (
+            None  # Screen.tga - Save screenshot (800x600 or 640x480 TGA)
+        )
+
     def load(self):
         """Load all save game components from the folder.
         
@@ -2274,6 +2281,20 @@ class SaveFolderEntry:
         # Load screenshot if it exists
         # Vendor ref: All implementations preserve this for save menu display
         screenshot_path = self.save_path / str(self.SCREENSHOT_NAME)
+        if screenshot_path.exists():
+            logger.debug("Loading screenshot...")
+            with open(screenshot_path, "rb") as f:
+                self.screenshot = f.read()
+
+        # Infer game version for nested capsule serialization heuristics
+        if self.partytable.pt_pcname or self.partytable.pt_influence or self.save_info.pc_name:
+            self.sav.game = Game.K2
+        else:
+            self.sav.game = Game.K1
+
+        # Load screenshot if it exists
+        # Cross-ref (wiki savedata archive): All implementations preserve this for save menu display
+        screenshot_path = self.save_path / self.SCREENSHOT_NAME.resname
         if screenshot_path.exists():
             logger.debug("Loading screenshot...")
             with open(screenshot_path, "rb") as f:

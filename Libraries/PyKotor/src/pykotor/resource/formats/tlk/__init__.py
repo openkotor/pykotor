@@ -1,4 +1,7 @@
+"""TLK (talk table) package: string entries and binary/XML/JSON I/O."""
+
 from __future__ import annotations
+
 from pykotor.resource.formats.tlk.tlk_data import TLK, TLKEntry
 from pykotor.resource.formats.tlk.io_tlk import (
     TLKBinaryReader,
@@ -7,10 +10,6 @@ from pykotor.resource.formats.tlk.io_tlk import (
 from pykotor.resource.formats.tlk.io_tlk_xml import (
     TLKXMLReader,
     TLKXMLWriter,
-)
-from pykotor.resource.formats.tlk.io_tlk_json import (
-    TLKJSONReader,
-    TLKJSONWriter,
 )
 from pykotor.resource.formats.tlk.tlk_auto import (
     detect_tlk,

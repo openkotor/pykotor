@@ -1,3 +1,9 @@
+"""TSLPatcher token memory for 2DA and TLK placeholders.
+
+PatcherMemory holds 2DAMEMORY# and StrRef# token values; TokenUsage subclasses
+resolve tokens to concrete paths/indices when generating patched output.
+"""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -13,8 +19,12 @@ class PatcherMemory:
         self.memory_str: dict[int, int] = {}  # StrRef# (token) -> dialog.tlk index
 
     def __repr__(self):
-        memory_2da_repr: dict[int, str] = {key: repr(value) for key, value in self.memory_2da.items()}
-        memory_str_repr: dict[int, str] = {key: repr(value) for key, value in self.memory_str.items()}
+        memory_2da_repr: dict[int, str] = {
+            key: repr(value) for key, value in self.memory_2da.items()
+        }
+        memory_str_repr: dict[int, str] = {
+            key: repr(value) for key, value in self.memory_str.items()
+        }
         return f"PatcherMemory(memory_2da={memory_2da_repr}, memory_str={memory_str_repr})"
 
 

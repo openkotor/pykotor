@@ -1,3 +1,5 @@
+"""UTM (merchant) generic: GFF-based merchant templates and inventory/pricing."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -29,6 +31,17 @@ class UTM:
         vendor/NorthernLights/Generated/AuroraUTM.cs (UTM structure)
         vendor/KotOR-Bioware-Libs/GFF.pm (GFF format implementation)
         Original BioWare Odyssey Engine (UTM GFF structure)
+
+    UTM (User Template Merchant) files define merchant/store blueprints. Stored as GFF format
+    with inventory, pricing, and script references. Merchants use UTM templates to define
+    their inventory, buy/sell capabilities, and markup/down rates.
+
+    Merchant templates are GFF files with tag, localized name, mark up/down, ``OnOpenStore``,
+    ``BuySellFlag`` (buy/sell bits), and ``ItemList`` rows (template ResRef, infinite/droppable
+    flags, positions). Observed retail KotOR I and TSL use the same layout; binary/symbol notes
+    are migrated to ``wiki/reverse_engineering_findings.md``.
+
+    Note: ``GFFContent.UTM``.
 
     Attributes:
     ----------
@@ -130,12 +143,18 @@ class UTM:
 def construct_utm(
     gff: GFF,
 ) -> UTM:
+    """Constructs a UTM object from a GFF structure.
+
+    Missing fields use blank ResRefs/strings, empty localized name, zero pricing/flags, and an
+    empty item list when absent (observed retail).
+    """
     utm = UTM()
 
     root: GFFStruct = gff.root
     utm.resref = root.acquire("ResRef", ResRef.from_blank())
     utm.name = root.acquire("LocName", LocalizedString.from_invalid())
     utm.tag = root.acquire("Tag", "")
+    # Pricing/script: zeros and blank ResRef when absent; BuySellFlag decoded to can_buy/can_sell.
     utm.mark_up = root.acquire("MarkUp", 0)
     utm.mark_down = root.acquire("MarkDown", 0)
     utm.on_open = root.acquire("OnOpenStore", ResRef.from_blank())
@@ -144,6 +163,7 @@ def construct_utm(
     utm.can_buy = root.acquire("BuySellFlag", 0) & 1 != 0
     utm.can_sell = root.acquire("BuySellFlag", 0) & 2 != 0
 
+    # ItemList: blank ResRef and flags 0 when absent.
     item_list: GFFList = root.acquire("ItemList", GFFList())
     for item_struct in item_list:
         item = InventoryItem(ResRef.from_blank())

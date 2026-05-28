@@ -1,9 +1,11 @@
+"""XML read/write for TLK (talk table); uses defusedxml when available."""
+
 from __future__ import annotations
 
 # Try to import defusedxml, fallback to ET if not available
 from xml.etree import ElementTree as ET
 
-try:  # sourcery skip: remove-redundant-exception, simplify-single-exception-tuple
+try:
     from defusedxml.ElementTree import fromstring as _fromstring
 
     ET.fromstring = _fromstring
@@ -11,6 +13,10 @@ except (ImportError, ModuleNotFoundError):
     print("warning: defusedxml is not available but recommended for security")
 
 from typing import TYPE_CHECKING
+
+import kaitaistruct
+
+from bioware_kaitai_formats.tlk_xml import TlkXml
 
 from pykotor.common.language import Language
 from pykotor.common.misc import ResRef

@@ -1,7 +1,10 @@
+"""GFF package: struct/list/field data, binary/XML/JSON I/O, and auto detect/read/write."""
+
 from __future__ import annotations
 from pykotor.resource.formats.gff.gff_data import (
     GFF,
     GFFList,
+    GFFListSemanticConfig,
     GFFStruct,
     GFFFieldType,
     GFFContent,
@@ -11,6 +14,7 @@ from pykotor.resource.formats.gff.io_gff import (
     GFFBinaryReader,
     GFFBinaryWriter,
 )
+from pykotor.resource.formats.gff.io_gff_json import GFFJSONWriter
 from pykotor.resource.formats.gff.io_gff_xml import (
     GFFXMLReader,
     GFFXMLWriter,

@@ -6,6 +6,8 @@ import pathlib
 import pickle
 import sys
 import unittest
+
+from io import BytesIO
 from unittest import TestCase
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
@@ -25,25 +27,84 @@ if UTILITY_PATH.joinpath("utility").exists():
 from pykotor.resource.formats.tpc.tpc_data import TPC
 from utility.common.more_collections import CaseInsensitiveDict
 from pykotor.common.language import LocalizedString
+from pykotor.common.misc import Game
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import Installation, SearchLocation
 from pykotor.resource.type import ResourceType
-from pykotor.tools.path import CaseAwarePath
+from pykotor.tools.create_installation import create_installation
 
 K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
 
 
-@unittest.skipIf(
-    not K1_PATH or not CaseAwarePath(K1_PATH).joinpath("chitin.key").is_file(),
-    "K1_PATH environment variable is not set or not found on disk.",
-)
 class TestInstallation(TestCase):
     @classmethod
     def setUpClass(cls):
-        assert K1_PATH
-        cls.installation = Installation(K1_PATH)  # type: ignore[attr-defined]
-        # cls.installation.reload_all()
+        # Create temporary directory for installation
+        cls.temp_dir: Path = Path(tempfile.mkdtemp())
+        cls.install_path: Path = cls.temp_dir / "test_install"
+
+        # Create installation with all resources needed for tests
+        create_installation(
+            cls.install_path,
+            Game.K1,
+            with_override=True,
+            # BIF resources (CHITIN)
+            bif_resources={
+                "data.bif": {
+                    "c_bantha.utc": b"BIF_UTC_DATA",
+                    "m03ae_03a_lm4.tpc": b"BIF_TPC_DATA",
+                    "as_an_dantext_01.wav": b"BIF_WAV_DATA",
+                }
+            },
+            # Modules resources (in RIM files)
+            modules_resources={
+                "m01aa.rim": {"m01aa.are": b"ARE_DATA"},
+                "danm13.rim": {"m13aa.are": b"ARE_DATA_M13"},
+            },
+            # Voice resources
+            voice_resources={
+                "NM03ABCITI06004_.wav": b"VOICE_WAV_DATA",
+                "NM17AE04NI04008_.wav": b"VOICE_WAV_DATA2",
+                "n_gengamm_scrm.wav": b"VOICE_WAV_DATA3",
+            },
+            # Music resources
+            music_resources={
+                "mus_theme_carth.wav": b"MUSIC_WAV_DATA",
+                "al_en_cityext.wav": b"MUSIC_WAV_DATA2",
+            },
+            # Sound resources
+            sound_resources={
+                "P_hk47_POIS.wav": b"SOUND_WAV_DATA",
+                "P_ZAALBAR_POIS.wav": b"SOUND_WAV_DATA2",
+                "al_an_flybuzz_01.wav": b"SOUND_WAV_DATA3",
+            },
+            # Lips resources (in MOD files)
+            lips_resources={
+                "n_gendro_coms1.mod": {"n_gendro_coms1.lip": b"LIP_DATA"},
+            },
+            # Texture pack resources
+            texture_tpa_resources={
+                "blood.tpc": b"TPA_TPC_DATA",
+                "LEH_FLOOR01.tpc": b"TPA_TPC_DATA2",
+            },
+            texture_tpb_resources={
+                "blood.tpc": b"TPB_TPC_DATA",
+                "LEH_Floor01.tpc": b"TPB_TPC_DATA2",
+            },
+            texture_tpc_resources={
+                "blood.tpc": b"TPC_TPC_DATA",
+                "leh_floor01.tpc": b"TPC_TPC_DATA2",
+            },
+            texture_gui_resources={
+                "PO_PCarth.tpc": b"GUI_TPC_DATA",
+                "bluearrow.tpc": b"GUI_TPC_DATA2",
+                "1024x768back.tpc": b"GUI_TPC_DATA3",
+            },
+        )
+
+        # Create Installation instance
+        cls.installation = Installation(cls.install_path)  # type: ignore[attr-defined]
 
     def test_resource(self):
         installation: Installation = self.installation  # type: ignore[attr-defined]
@@ -51,28 +112,53 @@ class TestInstallation(TestCase):
         assert installation.resource("c_bantha", ResourceType.UTC, []) is None
         assert installation.resource("c_bantha", ResourceType.UTC) is not None
 
-        assert installation.resource("c_bantha", ResourceType.UTC, [SearchLocation.CHITIN]) is not None
+        assert (
+            installation.resource("c_bantha", ResourceType.UTC, [SearchLocation.CHITIN]) is not None
+        )
         assert installation.resource("xxx", ResourceType.UTC, [SearchLocation.CHITIN]) is None
-        assert installation.resource("m13aa", ResourceType.ARE, [SearchLocation.MODULES]) is not None
+        assert (
+            installation.resource("m13aa", ResourceType.ARE, [SearchLocation.MODULES]) is not None
+        )
         assert installation.resource("xxx", ResourceType.ARE, [SearchLocation.MODULES]) is None
         assert installation.resource("xxx", ResourceType.NSS, [SearchLocation.OVERRIDE]) is None
-        assert installation.resource("NM03ABCITI06004_", ResourceType.WAV, [SearchLocation.VOICE]) is not None
+        assert (
+            installation.resource("NM03ABCITI06004_", ResourceType.WAV, [SearchLocation.VOICE])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.WAV, [SearchLocation.VOICE]) is None
-        assert installation.resource("P_hk47_POIS", ResourceType.WAV, [SearchLocation.SOUND]) is not None
+        assert (
+            installation.resource("P_hk47_POIS", ResourceType.WAV, [SearchLocation.SOUND])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.WAV, [SearchLocation.SOUND]) is None
-        assert installation.resource("mus_theme_carth", ResourceType.WAV, [SearchLocation.MUSIC]) is not None
+        assert (
+            installation.resource("mus_theme_carth", ResourceType.WAV, [SearchLocation.MUSIC])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.WAV, [SearchLocation.MUSIC]) is None
-        assert installation.resource("n_gendro_coms1", ResourceType.LIP, [SearchLocation.LIPS]) is not None
+        assert (
+            installation.resource("n_gendro_coms1", ResourceType.LIP, [SearchLocation.LIPS])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.LIP, [SearchLocation.LIPS]) is None
         #assert installation.resource("darkjedi", ResourceType.SSF, [SearchLocation.RIMS]) is not None
         #assert installation.resource("xxx", ResourceType.SSF, [SearchLocation.RIMS]) is None
         assert installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPA]) is not None
         assert installation.resource("xxx", ResourceType.TPC, [SearchLocation.TEXTURES_TPA]) is None
-        assert installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPB]) is not None
+        assert (
+            installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPB])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.TPC, [SearchLocation.TEXTURES_TPB]) is None
-        assert installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPC]) is not None
+        assert (
+            installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPC])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.TPC, [SearchLocation.TEXTURES_TPC]) is None
-        assert installation.resource("PO_PCarth", ResourceType.TPC, [SearchLocation.TEXTURES_GUI]) is not None
+        assert (
+            installation.resource("PO_PCarth", ResourceType.TPC, [SearchLocation.TEXTURES_GUI])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.TPC, [SearchLocation.TEXTURES_GUI]) is None
 
         resource = installation.resource(
@@ -158,7 +244,9 @@ class TestInstallation(TestCase):
             ResourceIdentifier.from_path("m13aa.are"),
             ResourceIdentifier.from_path("xyz.ifo"),
         ]
-        capsules_results = installation.resources(capsules_resources, [SearchLocation.CUSTOM_MODULES], capsules=capsules)
+        capsules_results = installation.resources(
+            capsules_resources, [SearchLocation.CUSTOM_MODULES], capsules=capsules
+        )
         self._assert_from_path_tests(capsules_results, "m13aa.are", "xyz.ifo")
 
     def test_location(self):
@@ -267,7 +355,9 @@ class TestInstallation(TestCase):
             ResourceIdentifier.from_path("m13aa.are"),
             ResourceIdentifier.from_path("xyz.ifo"),
         ]
-        capsules_results = installation.locations(capsules_resources, [SearchLocation.CUSTOM_MODULES], capsules=capsules)
+        capsules_results = installation.locations(
+            capsules_resources, [SearchLocation.CUSTOM_MODULES], capsules=capsules
+        )
         self._assert_from_path_tests(capsules_results, "m13aa.are", "xyz.ifo")
         folders = [installation.override_path()]
 
@@ -383,7 +473,30 @@ class TestInstallation(TestCase):
         results = installation.strings([locstring1, locstring2, locstring3], "default text")
         assert results[locstring1] == "default text"
         assert results[locstring2] == "Some text."
-        assert results[locstring3] == "ERROR: FATAL COMPILER ERROR"  # This test will fail on non-english versions of the game
+        assert (
+            results[locstring3] == "ERROR: FATAL COMPILER ERROR"
+        )  # This test will fail on non-english versions of the game
+
+    def test_pickle_unpickle(self):
+        """Test that an Installation object can be pickled and unpickled."""
+        pickled_data = pickle.dumps(self.installation)
+        unpickled_installation = pickle.loads(pickled_data)
+        self.assertEqual(self.installation._path, unpickled_installation._path)
+
+    def test_pickle_to_file(self):
+        """Test pickling to and unpickling from a file."""
+        with BytesIO() as file:
+            pickle.dump(self.installation, file)
+            file.seek(0)
+            unpickled_installation = pickle.load(file)
+            self.assertEqual(self.installation._path, unpickled_installation._path)
+
+    def test_multiple_unpickle(self):
+        """Test that multiple unpickling operations yield consistent results."""
+        pickled_data = pickle.dumps(self.installation)
+        for _ in range(3):
+            unpickled_installation = pickle.loads(pickled_data)
+            self.assertEqual(self.installation._path, unpickled_installation._path)
 
     def test_pickle_unpickle(self):
         """Test that an Installation object can be pickled and unpickled."""

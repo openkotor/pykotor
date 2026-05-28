@@ -77,7 +77,7 @@ class ExtendedFileMetadata:
             finder_info=None,  # To be filled in
             extended_attributes=None,  # To be filled in
             acl_info=None,  # To be filled in
-            quarantine_flags=None  # To be filled in
+            quarantine_flags=None,  # To be filled in
         )
 
 
@@ -95,11 +95,10 @@ class FileSystemInformation:
 
     @classmethod
     def from_statfs(cls, filepath: str) -> FileSystemInformation:
-        # Statfs implementation placeholder
-        fs_info = statfs(filepath)
+        fs_info = os.statvfs(filepath)
         return cls(
-            filesystem_type=fs_info.f_fstypename.decode(),
-            volume_name=fs_info.f_mntonname.decode(),
+            filesystem_type="unknown",
+            volume_name=os.path.abspath(filepath),
             volume_uuid=None,  # Placeholder, could be retrieved via volume APIs
             total_blocks=fs_info.f_blocks,
             free_blocks=fs_info.f_bfree,
@@ -118,7 +117,7 @@ class FileSystemExtents:
     def from_fcntl(cls, filepath: str) -> FileSystemExtents:
         # Placeholder for fcntl with F_LOG2PHYS implementation
         return cls(
-            physical_block_addresses=[]  # To be filled in
+            physical_block_addresses=[],  # To be filled in
         )
 
 
@@ -133,7 +132,7 @@ class FileIntegritySecurity:
         # Placeholder for File Integrity and Gatekeeper status
         return cls(
             integrity_status=None,  # To be filled in
-            gatekeeper_status=None  # To be filled in
+            gatekeeper_status=None,  # To be filled in
         )
 
 
@@ -148,7 +147,7 @@ class SpotlightMetadata:
         # Placeholder for Spotlight metadata retrieval
         return cls(
             spotlight_data=None,  # To be filled in
-            tags_labels=None  # To be filled in
+            tags_labels=None,  # To be filled in
         )
 
 
@@ -163,7 +162,7 @@ class BackupInformation:
         # Placeholder for Time Machine backup status and snapshot info
         return cls(
             backup_status=None,  # To be filled in
-            snapshot_info=None  # To be filled in
+            snapshot_info=None,  # To be filled in
         )
 
 
@@ -176,7 +175,7 @@ class ResourceForks:
     def from_file(cls, filepath: str) -> ResourceForks:
         # Placeholder for resource fork data retrieval
         return cls(
-            resource_fork_data=None  # To be filled in
+            resource_fork_data=None,  # To be filled in
         )
 
 
@@ -191,7 +190,7 @@ class CodeSignatureInformation:
         # Placeholder for code signing and entitlements retrieval
         return cls(
             code_signature=None,  # To be filled in
-            entitlements=None  # To be filled in
+            entitlements=None,  # To be filled in
         )
 
 
@@ -204,7 +203,7 @@ class FileSystemEventNotifications:
     def from_file(cls, filepath: str) -> FileSystemEventNotifications:
         # Placeholder for FSEvents monitoring and retrieval
         return cls(
-            recent_events=None  # To be filled in
+            recent_events=None,  # To be filled in
         )
 
 
@@ -234,7 +233,7 @@ class ExtendedMacOSStat:
             backup_info=BackupInformation.from_file(filepath),
             resource_forks=ResourceForks.from_file(filepath),
             code_signature_info=CodeSignatureInformation.from_file(filepath),
-            fs_event_notifications=FileSystemEventNotifications.from_file(filepath)
+            fs_event_notifications=FileSystemEventNotifications.from_file(filepath),
         )
 
 

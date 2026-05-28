@@ -1,14 +1,44 @@
+"""Binary LTR (letter) read/write: Markov chain tables for random name generation."""
+
 from __future__ import annotations
 
 import itertools
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from bioware_kaitai_formats.ltr import Ltr
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.ltr.ltr_data import LTR
 from pykotor.resource.type import ResourceReader, ResourceWriter
 
 if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
+
+
+def _ltr_from_kaitai(parsed: Ltr) -> LTR | None:
+    """Map a parsed ``Ltr`` into :class:`LTR` when it matches KotOR's fixed 28-letter alphabet."""
+    if parsed.file_type != "LTR " or parsed.file_version != "V1.0":
+        return None
+    if parsed.letter_count != 28:
+        return None
+    ltr = LTR()
+    singles = parsed.single_letter_block
+    ltr._singles._start = list(singles.start_probabilities)
+    ltr._singles._middle = list(singles.middle_probabilities)
+    ltr._singles._end = list(singles.end_probabilities)
+    for i, block in enumerate(parsed.double_letter_blocks.blocks):
+        ltr._doubles[i]._start = list(block.start_probabilities)
+        ltr._doubles[i]._middle = list(block.middle_probabilities)
+        ltr._doubles[i]._end = list(block.end_probabilities)
+    for i, row in enumerate(parsed.triple_letter_blocks.rows):
+        for j, block in enumerate(row.blocks):
+            ltr._triples[i][j]._start = list(block.start_probabilities)
+            ltr._triples[i][j]._middle = list(block.middle_probabilities)
+            ltr._triples[i][j]._end = list(block.end_probabilities)
+    return ltr
 
 
 class LTRBinaryReader(ResourceReader):

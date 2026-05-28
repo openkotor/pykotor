@@ -1,3 +1,5 @@
+"""PTH (path) generic: GFF-based waypoints and path connections for pathfinding."""
+
 from __future__ import annotations
 
 from copy import copy
@@ -32,20 +34,14 @@ class PTH:
 
     BINARY_TYPE = ResourceType.PTH
 
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         self._points: list[Vector2] = []
         self._connections: list[PTHEdge] = []
 
-    def __iter__(
-        self,
-    ):
+    def __iter__(self):
         yield from self._points
 
-    def __len__(
-        self,
-    ):
+    def __len__(self):
         return len(self._points)
 
     def __getitem__(
@@ -71,8 +67,12 @@ class PTH:
         self._connections = [x for x in self._connections if index not in {x.source, x.target}]
 
         for connection in self._connections:
-            connection.source = connection.source - 1 if connection.source > index else connection.source
-            connection.target = connection.target - 1 if connection.target > index else connection.target
+            connection.source = (
+                connection.source - 1 if connection.source > index else connection.source
+            )
+            connection.target = (
+                connection.target - 1 if connection.target > index else connection.target
+            )
 
     def get(
         self,
@@ -138,9 +138,7 @@ class PTHEdge:
         self.source: int = source
         self.target: int = target
 
-    def __repr__(
-        self,
-    ):
+    def __repr__(self):
         return f"{self.__class__.__name__}(source={self.source}, target={self.target})"
 
     def __eq__(
@@ -151,7 +149,10 @@ class PTHEdge:
             return True
         if isinstance(other, PTHEdge):
             return self.source == other.source and self.target == other.target
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self):
+        return hash((self.source, self.target))
 
     def __hash__(self):
         return hash((self.source, self.target))
@@ -160,10 +161,19 @@ class PTHEdge:
 def construct_pth(
     gff: GFF,
 ) -> PTH:
+    """Construct PTH from GFF.
+
+    Defaults when field missing: Path_Points/Path_Conections optional (empty list);
+    per-point X/Y 0.0, Conections/First_Conection 0; per-connection Destination 0.
+
+    Defaults match observed retail reads when lists or numeric fields are omitted.
+    """
     pth = PTH()
 
+    # Path_Conections: Destination defaults to 0 per element when absent (observed retail).
     connections_list: GFFList = gff.root.acquire("Path_Conections", GFFList())
 
+    # Path_Points: X/Y default 0.0; Conections/First_Conection default 0 when absent.
     for point_struct in gff.root.acquire("Path_Points", GFFList()):
         connections: int = point_struct.acquire("Conections", 0)
         first_connection: int = point_struct.acquire("First_Conection", 0)
@@ -188,8 +198,10 @@ def dismantle_pth(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
+    """Build PTH GFF from PTH. Written defaults match the construct path / observed retail."""
     gff = GFF(GFFContent.PTH)
 
+    # Path_Points / Path_Conections: 0 / 0.0 when fields would be missing on read.
     connections_list: GFFList = gff.root.set_list("Path_Conections", GFFList())
     points_list: GFFList = gff.root.set_list("Path_Points", GFFList())
 
@@ -197,6 +209,7 @@ def dismantle_pth(
         outgoings: list[PTHEdge] = pth.outgoing(i)
 
         point_struct = points_list.add(2)
+        # Conections, First_Conection, X, Y: defaults as on read.
         point_struct.set_uint32("Conections", len(outgoings))
         point_struct.set_uint32("First_Conection", len(connections_list))
         point_struct.set_single("X", point.x)
@@ -204,6 +217,7 @@ def dismantle_pth(
 
         for outgoing in outgoings:
             connection_struct = connections_list.add(3)
+            # Destination defaults to 0 when absent on read.
             connection_struct.set_uint32("Destination", outgoing.target)
 
     return gff

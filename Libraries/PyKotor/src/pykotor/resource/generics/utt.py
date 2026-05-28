@@ -1,11 +1,12 @@
+"""UTT (trigger) generic: GFF-based trigger definitions, scripts, and trap settings."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Game, ResRef
-from pykotor.resource.formats.gff import GFF, GFFContent, read_gff, write_gff
-from pykotor.resource.formats.gff.gff_auto import bytes_gff
+from pykotor.resource.formats.gff import GFF, GFFContent, bytes_gff, read_gff, write_gff
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
@@ -168,9 +169,7 @@ class UTT:
 
     BINARY_TYPE = ResourceType.UTT
 
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         self.resref: ResRef = ResRef.from_blank()
         self.comment: str = ""
         self.tag: str = ""
@@ -206,28 +205,15 @@ class UTT:
         self.portrait_id: int = 0
         self.loadscreen_id: int = 0
         self.palette_id: int = 0
-        self.name: LocalizedString = LocalizedString.from_invalid()
+        self.name = LocalizedString.from_invalid()
 
 
 def construct_utt(
     gff: GFF,
 ) -> UTT:
-    """Constructs a UTT object from a GFF node.
+    """Constructs a UTT object from a GFF structure.
 
-    Args:
-    ----
-        gff: GFF - The GFF node to parse
-
-    Returns:
-    -------
-        utt: UTT - The constructed UTT object
-
-    Processing Logic:
-    ----------------
-        - Initialize an empty UTT object
-        - Get the root node of the GFF
-        - Acquire and set various UTT properties by parsing attributes from the root node
-        - Return the completed UTT object.
+    Missing fields use empty strings/ResRefs, zero numerics, and false trap flags (observed retail).
     """
     utt = UTT()
 
@@ -235,12 +221,18 @@ def construct_utt(
 
     utt.tag = root.acquire("Tag", "")
     utt.resref = root.acquire("TemplateResRef", ResRef.from_blank())
+    # Key/faction/cursor: AutoRemoveKey, Faction, Cursor, KeyName, HighlightHeight, Type.
     utt.auto_remove_key = bool(root.acquire("AutoRemoveKey", 0))
     utt.faction_id = root.acquire("Faction", 0)
+    # Cursor: BYTE default 0. Omit OK.
     utt.cursor_id = root.acquire("Cursor", 0)
+    # HighlightHeight: FLOAT default 0.0. Omit OK.
     utt.highlight_height = root.acquire("HighlightHeight", 0.0)
+    # KeyName: GFF string "". Omit OK.
     utt.key_name = root.acquire("KeyName", "")
+    # Type: INT32 default 0. Omit OK.
     utt.type_id = root.acquire("Type", 0)
+    # Trap: TrapDetectable, TrapDetectDC, TrapDisarmable, DisarmDC, TrapFlag, TrapOneShot, TrapType.
     utt.trap_detectable = bool(root.acquire("TrapDetectable", 0))
     utt.trap_detect_dc = root.acquire("TrapDetectDC", 0)
     utt.trap_disarmable = bool(root.acquire("TrapDisarmable", 0))
@@ -248,6 +240,7 @@ def construct_utt(
     utt.is_trap = bool(root.acquire("TrapFlag", 0))
     utt.trap_once = bool(root.acquire("TrapOneShot", 0))
     utt.trap_type = root.acquire("TrapType", 0)
+    # Scripts: OnDisarm, OnTrapTriggered, OnClick, ScriptHeartbeat, ScriptOnEnter, ScriptOnExit, ScriptUserDefine.
     utt.on_disarm = root.acquire("OnDisarm", ResRef.from_blank())
     utt.on_trap_triggered = root.acquire("OnTrapTriggered", ResRef.from_blank())
     utt.on_click = root.acquire("OnClick", ResRef.from_blank())
@@ -255,6 +248,7 @@ def construct_utt(
     utt.on_enter = root.acquire("ScriptOnEnter", ResRef.from_blank())
     utt.on_exit = root.acquire("ScriptOnExit", ResRef.from_blank())
     utt.on_user_defined = root.acquire("ScriptUserDefine", ResRef.from_blank())
+    # Comment/LocalizedName/LoadScreenID/PortraitId/PaletteID: toolset/display; defaults "", from_invalid(), 0.
     utt.comment = root.acquire("Comment", "")
     utt.name = root.acquire("LocalizedName", LocalizedString.from_invalid())
     utt.loadscreen_id = root.acquire("LoadScreenID", 0)
@@ -282,10 +276,7 @@ def dismantle_utt(
     -------
         GFF - The dismantled UTT as a GFF structure
 
-    Processes the UTT by:
-    - Creating a GFF root node
-    - Setting UTT fields as properties on the root node
-    - Returning the completed GFF.
+    Write the same field set as :func:`construct_utt` reads (observed retail round-trip).
     """
     gff = GFF(GFFContent.UTT)
 

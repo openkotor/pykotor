@@ -68,6 +68,10 @@ from pykotor.tslpatcher.mods.twoda import (  # pyright: ignore[reportMissingImpo
     Target,
     TargetType,
 )
+from utility.common.geometry import (  # pyright: ignore[reportMissingImports]  # noqa: E402
+    Vector3,
+    Vector4,
+)
 
 if TYPE_CHECKING:
     from pykotor.tslpatcher.mods.gff import (  # pyright: ignore[reportMissingImports]  # noqa: E402
@@ -170,7 +174,9 @@ class TestManipulate2DA(TestCase):
         memory = PatcherMemory()
         logger = PatchLogger()
         config = Modifications2DA("")
-        config.modifiers.append(ChangeRow2DA("", Target(TargetType.ROW_INDEX, 1), {"Col1": RowValueConstant("X")}))
+        config.modifiers.append(
+            ChangeRow2DA("", Target(TargetType.ROW_INDEX, 1), {"Col1": RowValueConstant("X")})
+        )
         config.apply(twoda, memory, logger, Game.K1)
 
         assert twoda.get_column("Col1") == ["a", "X"]
@@ -185,7 +191,9 @@ class TestManipulate2DA(TestCase):
         memory = PatcherMemory()
         logger = PatchLogger()
         config = Modifications2DA("")
-        config.modifiers.append(ChangeRow2DA("", Target(TargetType.ROW_LABEL, "1"), {"Col1": RowValueConstant("X")}))
+        config.modifiers.append(
+            ChangeRow2DA("", Target(TargetType.ROW_LABEL, "1"), {"Col1": RowValueConstant("X")})
+        )
         config.apply(twoda, memory, logger, Game.K1)
 
         assert twoda.get_column("Col1") == ["a", "X"]
@@ -241,8 +249,12 @@ class TestManipulate2DA(TestCase):
         memory.memory_2da[0] = "mem0"
         memory.memory_2da[1] = "mem1"
         config = Modifications2DA("")
-        config.modifiers.append(ChangeRow2DA("", Target(TargetType.ROW_INDEX, 0), {"Col1": RowValue2DAMemory(0)}))
-        config.modifiers.append(ChangeRow2DA("", Target(TargetType.ROW_INDEX, 1), {"Col1": RowValue2DAMemory(1)}))
+        config.modifiers.append(
+            ChangeRow2DA("", Target(TargetType.ROW_INDEX, 0), {"Col1": RowValue2DAMemory(0)})
+        )
+        config.modifiers.append(
+            ChangeRow2DA("", Target(TargetType.ROW_INDEX, 1), {"Col1": RowValue2DAMemory(1)})
+        )
         config.apply(twoda, memory, logger, Game.K1)
 
         assert twoda.get_column("Col1") == ["mem0", "mem1"]
@@ -257,8 +269,12 @@ class TestManipulate2DA(TestCase):
         logger = PatchLogger()
         memory = PatcherMemory()
         config = Modifications2DA("")
-        config.modifiers.append(ChangeRow2DA("", Target(TargetType.ROW_INDEX, 0), {"Col1": RowValueHigh("Col1")}))
-        config.modifiers.append(ChangeRow2DA("", Target(TargetType.ROW_INDEX, 0), {"Col2": RowValueHigh("Col2")}))
+        config.modifiers.append(
+            ChangeRow2DA("", Target(TargetType.ROW_INDEX, 0), {"Col1": RowValueHigh("Col1")})
+        )
+        config.modifiers.append(
+            ChangeRow2DA("", Target(TargetType.ROW_INDEX, 0), {"Col2": RowValueHigh("Col2")})
+        )
         config.apply(twoda, memory, logger, Game.K1)
 
         assert twoda.get_column("Col1") == ["3", "2"]
@@ -455,8 +471,11 @@ class TestManipulate2DA(TestCase):
         memory = PatcherMemory()
         config = Modifications2DA("")
         config.modifiers.append(AddRow2DA("", "Col4", "2", {}))
-        # twoda = read_2da(config.apply(bytes_2da(twoda), memory))
-        # TODO
+        config.apply(twoda, memory, logger, Game.K1)
+
+        # Should have logged a warning because exclusive_column "Col4" is not in cells dict
+        assert len(logger.warnings) == 1
+        assert "Exclusive column Col4 does not exists" in logger.warnings[0].message
 
     def test_add_exclusive_none(self):
         twoda = TwoDA(["Col1", "Col2", "Col3"])
@@ -1096,7 +1115,9 @@ class TestManipulateGFF(TestCase):
                 )
             ],
         )
-        gff = read_gff(cast(bytes, config.patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast("bytes", config.patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1))
+        )
 
         assert gff.root.get_locstring("Field1").stringref == 1
 
@@ -1122,7 +1143,6 @@ class TestManipulateGFF(TestCase):
             replace=False,
             modifiers=[ModifyFieldGFF("Field1", FieldValueConstant(Vector4(1, 2, 3, 4)))],
         )
-        gff = read_gff(cast(bytes, config.patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
 
         assert Vector4(1, 2, 3, 4) == gff.root.get_vector4("Field1")
 
@@ -1133,7 +1153,9 @@ class TestManipulateGFF(TestCase):
         gff_struct.set_string("String", "")
 
         memory = PatcherMemory()
-        modifiers: list[ModifyGFF] = [ModifyFieldGFF(PureWindowsPath("List\\0\\String"), FieldValueConstant("abc"))]
+        modifiers: list[ModifyGFF] = [
+            ModifyFieldGFF(PureWindowsPath("List\\0\\String"), FieldValueConstant("abc"))
+        ]
 
         config = ModificationsGFF("", replace=False, modifiers=modifiers)
         gff = read_gff(cast(bytes, config.patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
@@ -1155,7 +1177,9 @@ class TestManipulateGFF(TestCase):
         config = ModificationsGFF("", replace=False, modifiers=[])
         config.modifiers.append(ModifyFieldGFF("String", FieldValue2DAMemory(5)))
         config.modifiers.append(ModifyFieldGFF("Integer", FieldValue2DAMemory(5)))
-        gff = read_gff(cast(bytes, config.patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast("bytes", config.patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1))
+        )
 
         assert gff.root.get_string("String") == "123"
         assert gff.root.get_uint8("Integer") == 123
@@ -1171,7 +1195,9 @@ class TestManipulateGFF(TestCase):
         config = ModificationsGFF("", replace=False, modifiers=[])
         config.modifiers.append(ModifyFieldGFF("String", FieldValueTLKMemory(5)))
         config.modifiers.append(ModifyFieldGFF("Integer", FieldValueTLKMemory(5)))
-        gff = read_gff(cast(bytes, config.patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast("bytes", config.patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1))
+        )
 
         assert gff.root.get_string("String") == "123"
         assert gff.root.get_uint8("Integer") == 123
@@ -1181,12 +1207,22 @@ class TestManipulateGFF(TestCase):
 
         memory = PatcherMemory()
 
-        add_field1 = AddFieldGFF("", "List", GFFFieldType.List, FieldValueConstant(GFFList()), PureWindowsPath(""))
+        add_field1 = AddFieldGFF(
+            "", "List", GFFFieldType.List, FieldValueConstant(GFFList()), PureWindowsPath("")
+        )
 
-        add_field2 = AddStructToListGFF("", FieldValueConstant(GFFStruct()), PureWindowsPath("List"))
+        add_field2 = AddStructToListGFF(
+            "", FieldValueConstant(GFFStruct()), PureWindowsPath("List")
+        )
         add_field1.modifiers.append(add_field2)
 
-        add_field3 = AddFieldGFF("", "SomeInteger", GFFFieldType.UInt8, FieldValueConstant(123), PureWindowsPath("List\\>>##INDEXINLIST##<<"))
+        add_field3 = AddFieldGFF(
+            "",
+            "SomeInteger",
+            GFFFieldType.UInt8,
+            FieldValueConstant(123),
+            PureWindowsPath("List\\>>##INDEXINLIST##<<"),
+        )
         add_field2.modifiers.append(add_field3)
 
         config = ModificationsGFF("", replace=False, modifiers=[add_field1])
@@ -1214,7 +1250,9 @@ class TestManipulateGFF(TestCase):
                 path=PureWindowsPath("List\\0"),
             )
         )
-        gff = read_gff(cast(bytes, config.patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast("bytes", config.patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1))
+        )
         patched_gff_list = gff.root.get_list("List")
         patched_gff_struct = patched_gff_list.at(0)
 
@@ -1293,7 +1331,9 @@ class TestManipulateGFF(TestCase):
         config.modifiers.append(AddStructToListGFF("test2", FieldValueConstant(GFFStruct(3)), "List", None))
         config.modifiers.append(AddStructToListGFF("test3", FieldValueConstant(GFFStruct(1)), "List", None))
 
-        gff = read_gff(cast(bytes, config.patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast("bytes", config.patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1))
+        )
         patched_gff_list = gff.root.get_list("List")
 
         assert patched_gff_list.at(0).struct_id == 5  # type: ignore

@@ -20,6 +20,8 @@ if TYPE_CHECKING:
 
     from typing_extensions import Buffer, Literal, Self, SupportsIndex
 
+from utility.string_util import is_non_empty_string
+
 T = TypeVar("T")
 U = TypeVar("U")
 
@@ -51,7 +53,7 @@ class ProcessorArchitecture(Enum):
     def get_dashed_bitness(self):
         return self._get("32-bit", "64-bit")
 
-    def _get(self, arg0: T, arg1: U) -> T | U:  # sourcery skip: assign-if-exp, reintroduce-else  # noqa: ANN001
+    def _get(self, arg0: T, arg1: U) -> T | U:  # noqa: ANN001
         if self == self.BIT_32:
             return arg0
         if self == self.BIT_64:
@@ -68,7 +70,9 @@ def format_gpu_info(
     headers: tuple[str, ...],
 ) -> str:
     # Determine the maximum width for each column
-    column_widths: list[int] = [max(len(str(row[i])) for row in (headers, *info)) for i in range(len(headers))]
+    column_widths: list[int] = [
+        max(len(str(row[i])) for row in (headers, *info)) for i in range(len(headers))
+    ]
 
     # Function to format a single row
     def format_row(row: Iterable) -> str:
@@ -115,7 +119,6 @@ def print_excluding_base_classes(
 
 
 def get_system_info() -> dict[str, Any]:
-    # sourcery skip: extract-method, list-comprehension, merge-dict-assign
     info: dict[str, Any] = {}
 
     # Basic OS information
@@ -127,7 +130,7 @@ def get_system_info() -> dict[str, Any]:
     # CPU information
     psutil = None
     with suppress(ImportError):
-        import psutil  # pyright: ignore[reportMissingImports]  # type: ignore[no-redef]
+        import psutil  # type: ignore[no-redef, assignment]  # pyright: ignore[reportMissingImports, reportMissingModuleSource]
     if psutil is not None:
         info["Physical cores"] = psutil.cpu_count(logical=False)
         info["Total cores"] = psutil.cpu_count(logical=True)
@@ -140,15 +143,17 @@ def get_system_info() -> dict[str, Any]:
 
         # RAM Information
         svmem = psutil.virtual_memory()
-        info["Total Memory"] = f"{svmem.total / (1024 ** 3):.2f} GB"
-        info["Available Memory"] = f"{svmem.available / (1024 ** 3):.2f} GB"
-        info["Used Memory"] = f"{svmem.used / (1024 ** 3):.2f} GB"
+        info["Total Memory"] = f"{svmem.total / (1024**3):.2f} GB"
+        info["Available Memory"] = f"{svmem.available / (1024**3):.2f} GB"
+        info["Used Memory"] = f"{svmem.used / (1024**3):.2f} GB"
         info["Memory Usage"] = f"{svmem.percent}%"
 
     # GPU Information
-    GPUtil = None
-    with suppress(ImportError):
+    try:
         import GPUtil  # pyright: ignore[reportMissingImports]  # type: ignore[no-redef]
+    except ImportError:
+        if not TYPE_CHECKING:
+            GPUtil = None
     if GPUtil is not None:
         gpus = GPUtil.getGPUs()
         gpu_info = []
@@ -164,7 +169,18 @@ def get_system_info() -> dict[str, Any]:
             )
             for gpu in gpus
         )
-        info["GPU Details"] = format_gpu_info(gpu_info, headers=("id", "name", "total memory", "used memory", "free memory", "driver", "temperature"))
+        info["GPU Details"] = format_gpu_info(
+            gpu_info,
+            headers=(
+                "id",
+                "name",
+                "total memory",
+                "used memory",
+                "free memory",
+                "driver",
+                "temperature",
+            ),
+        )
 
     return info
 
@@ -218,7 +234,9 @@ def is_instance_or_subinstance(
         return False  # if instance is a class type, always return False
     # instance is not a class
     instance_type = instance.__class__
-    return instance_type is target_cls or is_class_or_subclass_but_not_instance(instance_type, target_cls)
+    return instance_type is target_cls or is_class_or_subclass_but_not_instance(
+        instance_type, target_cls
+    )
 
 
 def generate_hash(
@@ -333,15 +351,15 @@ def indent(
     """
     i: str = "\n" + level * "  "
     if len(elem):
-        if not elem.text or not elem.text.strip():
+        if not is_non_empty_string(elem.text):
             elem.text = f"{i}  "
-        if not elem.tail or not elem.tail.strip():
+        if not is_non_empty_string(elem.tail):
             elem.tail = i
         for e in elem:
             indent(e, level + 1)
-        if not elem.tail or not elem.tail.strip():
+        if not is_non_empty_string(elem.tail):
             elem.tail = i
-    elif level and (not elem.tail or not elem.tail.strip()):
+    elif level and not is_non_empty_string(elem.tail):
         elem.tail = i
 
 
@@ -400,5 +418,75 @@ def to_kwargs(
             if kwargs[key] is None:
                 kwargs[key] = arg
         except StopIteration as e:  # noqa: PERF203
-            raise ValueError("Too many positional arguments for the available keyword arguments.") from e  # noqa: B904
+            raise ValueError(
+                "Too many positional arguments for the available keyword arguments."
+            ) from e  # noqa: B904
     return dict(kwargs)
+
+
+def is_valid_path(path: Path | str | None) -> bool:
+    """Check if a path is valid (not None and exists).
+
+    Args:
+    ----
+        path: The path to validate
+
+    Returns:
+    -------
+        True if path is not None and exists, False otherwise
+    """
+    return path is not None and Path(path).exists()
+
+
+def get_normalized_extension(path: Path | str) -> str:
+    """Get the file extension in lowercase.
+
+    Args:
+    ----
+        path: The file path
+
+    Returns:
+    -------
+        The file extension in lowercase (e.g., '.txt', '.mdl')
+    """
+    return Path(path).suffix.lower()
+
+
+def ensure_directory_exists(path: Path | str) -> None:
+    """Ensure that a directory exists, creating it if necessary.
+
+    Args:
+    ----
+        path: The directory path to ensure exists
+    """
+    Path(path).mkdir(parents=True, exist_ok=True)
+
+
+def format_exception_message(exception: Exception) -> str:
+    """Format an exception into a consistent string format.
+
+    Args:
+    ----
+        exception: The exception to format
+
+    Returns:
+    -------
+        Formatted exception message as "ExceptionClass: message"
+    """
+    return f"{exception.__class__.__name__}: {exception}"
+
+
+def is_installation_path(path: object) -> bool:
+    """Check if a path object is an Installation instance.
+
+    Args:
+    ----
+        path: The path object to check
+
+    Returns:
+    -------
+        True if the path is an Installation instance, False otherwise
+    """
+    from pykotor.extract.installation import Installation  # Import here to avoid circular imports
+
+    return isinstance(path, Installation)

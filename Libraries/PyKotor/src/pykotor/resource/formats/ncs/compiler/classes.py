@@ -1,3 +1,5 @@
+"""NSS compiler AST and helpers: CompileError, expression/statement nodes, type helpers."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -155,7 +157,7 @@ class GlobalVariableDeclaration(TopLevelObject):
         root.add_scoped(self.identifier, self.data_type, is_const=self.is_const)
 
 
-class Identifier:
+class Identifier(ComparableMixin):
     def __init__(self, label: str):
         self.label: str = label
 
@@ -167,7 +169,7 @@ class Identifier:
             return self.label == other.label
         if isinstance(other, str):
             return self.label == other
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __str__(self):
         return self.label
@@ -217,7 +219,7 @@ class OperatorMapping(NamedTuple):
     binary: list[BinaryOperatorMapping]
 
 
-class BinaryOperatorMapping:
+class BinaryOperatorMapping(ComparableMixin):
     def __init__(
         self,
         instruction: NCSInstructionType,
@@ -234,7 +236,7 @@ class BinaryOperatorMapping:
         return f"{self.__class__.__name__}(instruction={self.instruction!r}, result={self.result!r}, lhs={self.lhs!r}, rhs={self.rhs!r})"
 
 
-class UnaryOperatorMapping:
+class UnaryOperatorMapping(ComparableMixin):
     def __init__(self, instruction: NCSInstructionType, rhs: DataType):
         self.instruction: NCSInstructionType = instruction
         self.rhs: DataType = rhs
@@ -255,7 +257,7 @@ class GetScopedResult(NamedTuple):
     is_const: bool = False
 
 
-class Struct:
+class Struct(ComparableMixin):
     def __init__(self, identifier: Identifier, members: list[StructMember]):
         self.identifier: Identifier = identifier
         self.members: list[StructMember] = members
@@ -299,7 +301,7 @@ class Struct:
         raise CompileError(msg)
 
 
-class StructMember:
+class StructMember(ComparableMixin):
     def __init__(self, datatype: DynamicDataType, identifier: Identifier):
         self.datatype: DynamicDataType = datatype
         self.identifier: Identifier = identifier
@@ -381,13 +383,17 @@ class CodeRoot:
 
         included: list[IncludeScript] = []
         while [obj for obj in self.objects if isinstance(obj, IncludeScript)]:
-            includes: list[IncludeScript] = [obj for obj in self.objects if isinstance(obj, IncludeScript)]
+            includes: list[IncludeScript] = [
+                obj for obj in self.objects if isinstance(obj, IncludeScript)
+            ]
             include: IncludeScript = includes.pop()
             self.objects.remove(include)
             included.append(include)
             include.compile(ncs, self)
 
-        script_globals: list[GlobalVariableDeclaration | GlobalVariableInitialization | StructDefinition] = [
+        script_globals: list[
+            GlobalVariableDeclaration | GlobalVariableInitialization | StructDefinition
+        ] = [
             obj
             for obj in self.objects
             if isinstance(
@@ -395,7 +401,9 @@ class CodeRoot:
                 (GlobalVariableDeclaration, GlobalVariableInitialization, StructDefinition),
             )
         ]
-        others: list[TopLevelObject] = [obj for obj in self.objects if obj not in included and obj not in script_globals]
+        others: list[TopLevelObject] = [
+            obj for obj in self.objects if obj not in included and obj not in script_globals
+        ]
 
         if script_globals:
             for global_def in script_globals:
@@ -422,7 +430,9 @@ class CodeRoot:
             )
             ncs.add(NCSInstructionType.RSADDI, args=[], index=entry_index)
         else:
-            msg = "This file has no entry point and cannot be compiled (Most likely an include file)."
+            msg = (
+                "This file has no entry point and cannot be compiled (Most likely an include file)."
+            )
             raise EntryPointError(msg)
 
     def compile_jsr(
@@ -559,7 +569,7 @@ class CodeRoot:
         return 0 - sum(scoped.data_type.size(self) for scoped in self._global_scope)
 
 
-class CodeBlock:
+class CodeBlock(ComparableMixin):
     def __init__(self):
         self.scope: list[ScopedValue] = []
         self._parent: CodeBlock | None = None
@@ -612,12 +622,17 @@ class CodeBlock:
                     )
                     ncs.add(NCSInstructionType.MOVSP, args=[-return_type.size(root)])
 
-                ncs.add(NCSInstructionType.MOVSP, args=[-scope_size])
+                # External compiler optimizes away MOVSP with offset 0, so we should match that behavior
+                if scope_size != 0:
+                    ncs.add(NCSInstructionType.MOVSP, args=[-scope_size])
                 ncs.add(NCSInstructionType.JMP, jump=return_instruction)
                 return
-        ncs.instructions.append(
-            NCSInstruction(NCSInstructionType.MOVSP, [-self.scope_size(root)]),
-        )
+        # External compiler optimizes away MOVSP with offset 0, so we should match that behavior
+        scope_size = self.scope_size(root)
+        if scope_size != 0:
+            ncs.instructions.append(
+                NCSInstruction(NCSInstructionType.MOVSP, [-scope_size]),
+            )
 
         if self.temp_stack != 0:
             # If the temp stack is 0 after the whole block has compiled there must be a logic error
@@ -815,7 +830,8 @@ class FunctionDefinition(TopLevelObject):
         )
 
 
-class FunctionDefinitionParam:
+
+class FunctionDefinitionParam(ComparableMixin):
     def __init__(
         self,
         data_type: DynamicDataType,
@@ -966,7 +982,7 @@ class Statement(ABC):
     ) -> object: ...
 
 
-class FieldAccess:
+class FieldAccess(ComparableMixin):
     def __init__(self, identifiers: list[Identifier]):
         super().__init__()
         self.identifiers: list[Identifier] = identifiers
@@ -1013,7 +1029,9 @@ class FieldAccess:
                     msg = f"Attempting to access unknown member '{next_ident}' on datatype '{datatype}'."
                     raise CompileError(msg)
             elif datatype.builtin == DataType.STRUCT:
-                assert datatype._struct is not None, "datatype._struct cannot be None in FieldAccess.get_scoped()"  # noqa: SLF001
+                assert datatype._struct is not None, (
+                    "datatype._struct cannot be None in FieldAccess.get_scoped()"
+                )  # noqa: SLF001
                 offset += root.struct_map[datatype._struct].child_offset(  # noqa: SLF001
                     root,
                     next_ident,
@@ -1023,7 +1041,9 @@ class FieldAccess:
                     next_ident,
                 )
             else:
-                msg = f"Attempting to access unknown member '{next_ident}' on datatype '{datatype}'."
+                msg = (
+                    f"Attempting to access unknown member '{next_ident}' on datatype '{datatype}'."
+                )
                 raise CompileError(msg)
         
         return GetScopedResult(is_global, datatype, offset, is_const)
@@ -1046,7 +1066,13 @@ class IdentifierExpression(Expression):
             return True
         if isinstance(other, IdentifierExpression):
             return self.identifier == other.identifier
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self) -> int:
+        return hash(self.identifier)
+
+    def __repr__(self) -> str:
+        return f"IdentifierExpression(identifier={self.identifier})"
 
     def __hash__(self) -> int:
         return hash(self.identifier)
@@ -1088,7 +1114,9 @@ class FieldAccessExpression(Expression):
 
     def compile(self, ncs: NCS, root: CodeRoot, block: CodeBlock) -> DynamicDataType:  # noqa: A003
         scoped = self.field_access.get_scoped(block, root)
-        instruction_type = NCSInstructionType.CPTOPBP if scoped.is_global else NCSInstructionType.CPTOPSP
+        instruction_type = (
+            NCSInstructionType.CPTOPBP if scoped.is_global else NCSInstructionType.CPTOPSP
+        )
         ncs.instructions.append(
             NCSInstruction(
                 instruction_type,
@@ -1108,7 +1136,13 @@ class StringExpression(Expression):
             return True
         if isinstance(other, StringExpression):
             return self.value == other.value
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __repr__(self) -> str:
+        return f"StringExpression(value={self.value})"
 
     def __hash__(self) -> int:
         return hash(self.value)
@@ -1134,7 +1168,13 @@ class IntExpression(Expression):
             return True
         if isinstance(other, IntExpression):
             return self.value == other.value
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __repr__(self) -> str:
+        return f"IntExpression(value={self.value})"
 
     def __hash__(self) -> int:
         return hash(self.value)
@@ -1161,7 +1201,13 @@ class ObjectExpression(Expression):
             return True
         if isinstance(other, ObjectExpression):
             return self.value == other.value
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __repr__(self) -> str:
+        return f"ObjectExpression(value={self.value})"
 
     def __hash__(self) -> int:
         return hash(self.value)
@@ -1187,7 +1233,13 @@ class FloatExpression(Expression):
             return True
         if isinstance(other, FloatExpression):
             return self.value == other.value
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __repr__(self) -> str:
+        return f"FloatExpression(value={self.value})"
 
     def __hash__(self) -> int:
         return hash(self.value)
@@ -1215,7 +1267,13 @@ class VectorExpression(Expression):
             return True
         if isinstance(other, VectorExpression):
             return self.x == other.x and self.y == other.y and self.z == other.z
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self) -> int:
+        return hash(self.x) ^ hash(self.y) ^ hash(self.z)
+
+    def __repr__(self) -> str:
+        return f"VectorExpression(x={self.x}, y={self.y}, z={self.z})"
 
     def __hash__(self) -> int:
         return hash(self.x) ^ hash(self.y) ^ hash(self.z)
@@ -2407,7 +2465,7 @@ class DeclarationStatement(Statement):
             declarator.compile(ncs, root, block, self.data_type, self.is_const)
 
 
-class VariableDeclarator:
+class VariableDeclarator(ComparableMixin):
     def __init__(self, identifier: Identifier):
         self.identifier: Identifier = identifier
 
@@ -2462,7 +2520,7 @@ class VariableDeclarator:
         block.add_scoped(self.identifier, data_type, is_const)
 
 
-class VariableInitializer:
+class VariableInitializer(ComparableMixin):
     def __init__(self, identifier: Identifier, expression: Expression):
         self.identifier: Identifier = identifier
         self.expression: Expression = expression
@@ -2517,7 +2575,9 @@ class ConditionalBlock(Statement):
         continue_instruction: NCSInstruction | None,
     ):
         jump_count: int = 1 + len(self.if_blocks)
-        jump_tos: list[NCSInstruction] = [NCSInstruction(NCSInstructionType.NOP, args=[]) for _ in range(jump_count)]
+        jump_tos: list[NCSInstruction] = [
+            NCSInstruction(NCSInstructionType.NOP, args=[]) for _ in range(jump_count)
+        ]
 
         for i, else_if in enumerate(self.if_blocks):
             # Save temp_stack state before condition
@@ -3033,13 +3093,13 @@ class SwitchStatement(Statement):
         block.temp_stack -= expression_type.size(root)
 
 
-class SwitchBlock:
+class SwitchBlock(ComparableMixin):
     def __init__(self, labels: list[SwitchLabel], block: list[Statement]):
         self.labels: list[SwitchLabel] = labels
         self.block: list[Statement] = block
 
 
-class SwitchLabel(ABC):
+class SwitchLabel(ComparableMixin, ABC):
     @abstractmethod
     def compile(
         self,
@@ -3051,7 +3111,7 @@ class SwitchLabel(ABC):
     ): ...
 
 
-class ExpressionSwitchLabel:
+class ExpressionSwitchLabel(SwitchLabel):
     def __init__(self, expression: Expression):
         self.expression: Expression = expression
 
@@ -3076,7 +3136,7 @@ class ExpressionSwitchLabel:
         ncs.add(NCSInstructionType.JNZ, jump=jump_to)
 
 
-class DefaultSwitchLabel:
+class DefaultSwitchLabel(SwitchLabel):
     def __init__(self): ...
 
     def compile(
@@ -3093,7 +3153,7 @@ class DefaultSwitchLabel:
 # endregion
 
 
-class DynamicDataType:
+class DynamicDataType(ComparableMixin):
     INT: DynamicDataType
     STRING: DynamicDataType
     FLOAT: DynamicDataType
@@ -3114,11 +3174,19 @@ class DynamicDataType:
             return True
         if isinstance(other, DynamicDataType):
             if self.builtin == other.builtin:
-                return self.builtin != DataType.STRUCT or (self.builtin == DataType.STRUCT and self._struct == other._struct)
+                return self.builtin != DataType.STRUCT or (
+                    self.builtin == DataType.STRUCT and self._struct == other._struct
+                )
             return False
         if isinstance(other, DataType):
             return self.builtin == other and self.builtin != DataType.STRUCT
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self) -> int:
+        return hash(self.builtin) ^ hash(self._struct)
+
+    def __repr__(self) -> str:
+        return f"DynamicDataType(builtin={self.builtin}({self.builtin.name.lower()}), struct={self._struct})"
 
     def __hash__(self) -> int:
         return hash(self.builtin) ^ hash(self._struct)

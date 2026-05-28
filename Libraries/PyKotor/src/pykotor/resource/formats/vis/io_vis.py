@@ -1,9 +1,16 @@
+"""VIS (visibility) ASCII read/write: room-to-room visibility for occlusion culling."""
+
 from __future__ import annotations
 
 import os
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from bioware_kaitai_formats.vis import Vis
+
+from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.vis.vis_data import VIS
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
@@ -29,7 +36,12 @@ class VISAsciiReader(ResourceReader):
     @autoclose
     def load(self, *, auto_close: bool = True) -> VIS:  # noqa: FBT001, FBT002, ARG002
         self._vis = VIS()
-        self._lines = self._reader.read_string(self._reader.size()).splitlines()
+        data = self._reader.read_all()
+        try:
+            raw = Vis.from_bytes(data).raw_content
+        except (kaitaistruct.KaitaiStructError, UnicodeDecodeError):
+            raw = BinaryReader.from_bytes(data, 0).read_string(len(data))
+        self._lines = raw.splitlines()
 
         pairs = []
 

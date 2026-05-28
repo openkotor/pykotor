@@ -107,12 +107,39 @@ class SSF(ComparableMixin):
     ):
         """Returns the stringref for the specified sound."""
         if not isinstance(item, SSFSound):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
         return self._sounds[item]
 
-    def reset(
-        self,
-    ):
+    def __json__(self) -> dict[str, list[dict[str, str]]]:
+        """Serialize the SSF object to a JSON-compatible dictionary."""
+        json_data: dict[str, list[dict[str, str]]] = {"sounds": []}
+        for sound_name, sound in SSFSound.__members__.items():
+            json_data["sounds"].append(
+                {
+                    "id": str(sound.value),
+                    "label": sound_name,
+                    "strref": str(self.get(sound)),
+                }
+            )
+        return json_data
+
+    @classmethod
+    def from_json(cls, data: dict) -> SSF:
+        """Hydrate an SSF object from a JSON dictionary."""
+        instance = cls()
+        sounds = data.get("sounds")
+        if not isinstance(sounds, list):
+            msg = "The JSON file that was loaded was not a valid SSF."
+            raise ValueError(msg)
+
+        for sound_entry in sounds:
+            sound = SSFSound(int(sound_entry["id"]))
+            stringref = int(sound_entry["strref"])
+            instance.set_data(sound, stringref)
+
+        return instance
+
+    def reset(self):
         """Sets all the sound stringrefs to -1."""
         for i in range(28):
             self._sounds[i] = -1
@@ -133,7 +160,7 @@ class SSF(ComparableMixin):
 
     def get(
         self,
-        sound: SSFSound,
+        sound: SSFSound | int,
     ) -> int | None:
         """Returns the stringref for the specified sound.
 
@@ -145,7 +172,13 @@ class SSF(ComparableMixin):
         -------
             The corresponding stringref.
         """
-        return self._sounds[sound]
+        if isinstance(sound, SSFSound):
+            return self._sounds[sound.value]
+        if isinstance(sound, int):
+            if sound < 0 or sound >= 28:
+                raise ValueError(f"Sound index must be between 0 and 27, got {sound}")
+            return self._sounds[sound]
+        raise ValueError(f"Sound must be a SSFSound or int, got {type(sound)}")
 
 
 class SSFSound(IntEnum):

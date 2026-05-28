@@ -2,7 +2,19 @@ from __future__ import annotations
 
 import sys
 
-from typing import TYPE_CHECKING, Any, Callable, Generic, ItemsView, Iterable, Iterator, Mapping, MutableSet, SupportsIndex, TypeVar, overload  # noqa: E402
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generic,
+    ItemsView,
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableSet,
+    SupportsIndex,
+    TypeVar,
+    overload,  # noqa: E402
+)
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -10,7 +22,8 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 VT = TypeVar("VT")
 
-class OrderedSet(list, MutableSet[T]):
+
+class OrderedSet(MutableSet[T]):
     def __init__(
         self,
         iterable: Iterable[T] | None = None,
@@ -61,11 +74,17 @@ class OrderedSet(list, MutableSet[T]):
         self._set.remove(value)
         return value
 
-    def __getitem__(self, index: int) -> T:
+    @overload
+    def __getitem__(self, index: SupportsIndex) -> T: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> list[T]: ...
+
+    def __getitem__(self, index: SupportsIndex | slice) -> T | list[T]:
         return self._list[index]
 
-    def __setitem__(self, index: int, value: T) -> None:
-        #if value in self._set:
+    def __setitem__(self, index: SupportsIndex, value: T) -> None:
+        # if value in self._set:
         #    raise ValueError(f"Duplicate item found: {value}")
         old_value = self._list[index]
         self._list[index] = value
@@ -76,13 +95,26 @@ class OrderedSet(list, MutableSet[T]):
         self._list.clear()
         self._set.clear()
 
-    def copy(self) -> Self[T]:
+    def copy(self) -> Self:
         new_set = self.__class__()
         new_set._list = self._list.copy()  # noqa: SLF001
         new_set._set = self._set.copy()  # noqa: SLF001
         return new_set
 
-    def __delitem__(self, index: int) -> None:
+    @overload
+    def __delitem__(self, index: SupportsIndex) -> None: ...
+
+    @overload
+    def __delitem__(self, index: slice) -> None: ...
+
+    def __delitem__(self, index: SupportsIndex | slice) -> None:
+        if isinstance(index, slice):
+            removed_values = self._list[index]
+            for value in removed_values:
+                self._set.discard(value)
+            del self._list[index]
+            return
+
         try:
             value = self._list.pop(index)
             self._set.remove(value)
@@ -100,25 +132,25 @@ class OrderedSet(list, MutableSet[T]):
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, (OrderedSet, list)):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
         return self._list.__eq__(other) and self._set.__eq__(other)
 
-    def __lt__(self, other: list[T]) -> bool:
-        return self._list.__lt__(other)
+    def __lt__(self, other: Iterable[T]) -> bool:
+        return list(self).__lt__(list(other))
 
-    def __le__(self, other: list[T]) -> bool:
-        return self._list.__le__(other)
+    def __le__(self, other: Iterable[T]) -> bool:
+        return list(self).__le__(list(other))
 
-    def __gt__(self, other: list[T]) -> bool:
-        return self._list.__gt__(other)
+    def __gt__(self, other: Iterable[T]) -> bool:
+        return list(self).__gt__(list(other))
 
-    def __ge__(self, other: list[T]) -> bool:
-        return self._list.__ge__(other)
+    def __ge__(self, other: Iterable[T]) -> bool:
+        return list(self).__ge__(list(other))
 
     def sort(
         self,
         *,
-        key: Callable[[T], Any] | None = None,
+        key=None,
         reverse: bool = False,
     ) -> None:
         self._list.sort(key=key, reverse=reverse)
@@ -126,12 +158,14 @@ class OrderedSet(list, MutableSet[T]):
     def reverse(self) -> None:
         self._list.reverse()
 
-    def __add__(self, other: Iterable[T]) -> Self[T]:
-        return self._set + other
+    def __add__(self, other: Iterable[T]) -> OrderedSet[T]:
+        new_set = self.copy()
+        new_set.extend(other)
+        return new_set
 
-    def __iadd__(self, other: Iterable[T]) -> Self[T]:
-        self._set += other
-        self._list += other
+    def __iadd__(self, other: Iterable[T]) -> OrderedSet[T]:
+        self.extend(other)
+        return self
 
     def __reversed__(self) -> Iterator[T]:
         return reversed(self._list)
@@ -144,6 +178,8 @@ class OrderedSet(list, MutableSet[T]):
 
 
 _unique_sentinel = object()
+
+
 class CaseInsensitiveDict(Generic[T]):
     """A class exactly like the builtin dict[str, Any], but provides case-insensitive key lookups.
 
@@ -155,19 +191,20 @@ class CaseInsensitiveDict(Generic[T]):
         initial: Mapping[str, T] | Iterable[tuple[str, T]] | ItemsView[str, T] | None = None,
     ):
         self._dictionary: dict[str, T] = {}
-        self._case_map: dict[str, T] = {}
+        self._case_map: dict[str, str] = {}
+        self._generation: int = 0
 
         if initial:
             # If initial is a mapping, use its items method.
             items: Iterable[tuple[str, T]] | ItemsView[str, T] | ItemsView[tuple[str, T], T] = (
-                initial.items()
-                if isinstance(initial, Mapping)
-                else initial
+                initial.items() if isinstance(initial, Mapping) else initial
             )
 
             # Iterate over initial items directly, avoiding the creation of an interim dict
             for key, value in items:
-                assert not isinstance(key, tuple), f"key '{key!r}' and value '{value!r}' are not expected types."
+                assert not isinstance(key, tuple), (
+                    f"key '{key!r}' and value '{value!r}' are not expected types."
+                )
                 if isinstance(key, tuple):
                     # Unpack key-value tuple
                     k, v = key
@@ -204,13 +241,18 @@ class CaseInsensitiveDict(Generic[T]):
         if self is other:
             return True
         is_casedict = isinstance(other, CaseInsensitiveDict)
-        is_dict = isinstance(other, dict) and not is_casedict  # for future implementation when we make CaseInsensitiveDict subclass dict.
-        if not is_dict and not is_casedict:
-            return NotImplemented
+        if not isinstance(other, dict) and not is_casedict:
+            return NotImplemented  # type: ignore[no-any-return]
         # it's a dict of some sort, do some more quick checks.
-        if is_casedict and other._case_map != self._case_map:
+        if is_casedict and (
+            not isinstance(other, CaseInsensitiveDict) or other._case_map != self._case_map
+        ):
             return False
-        other_dict: dict[str, T] = other._dictionary if isinstance(other, CaseInsensitiveDict) else other  # pyright: ignore[reportAssignmentType]
+        other_dict: dict[str, T]
+        if isinstance(other, CaseInsensitiveDict):
+            other_dict = other._dictionary
+        else:
+            other_dict = other  # type: ignore[assignment]
         if len(self._dictionary) != len(other_dict):
             return False
 
@@ -229,7 +271,7 @@ class CaseInsensitiveDict(Generic[T]):
         if not isinstance(key, str):
             msg = f"Keys must be strings in CaseInsensitiveDict-inherited classes, got {key!r}"
             raise KeyError(msg)
-        return self._dictionary[self._case_map[key.lower()]]  # pyright: ignore[reportArgumentType]
+        return self._dictionary[self._case_map[key.lower()]]
 
     def __setitem__(self, key: str, value: T):
         if not isinstance(key, str):
@@ -237,16 +279,18 @@ class CaseInsensitiveDict(Generic[T]):
             raise KeyError(msg)
         if key in self:
             self.__delitem__(key)
-        self._case_map[key.lower()] = key  # pyright: ignore[reportArgumentType]
+        self._case_map[key.lower()] = key
         self._dictionary[key] = value
+        self._generation += 1
 
     def __delitem__(self, key: str):
         if not isinstance(key, str):
             msg = f"Keys must be strings in CaseInsensitiveDict-inherited classes, got {key!r}"
             raise KeyError(msg)
         lower_key = key.lower()
-        del self._dictionary[self._case_map[lower_key]]  # pyright: ignore[reportArgumentType]
+        del self._dictionary[self._case_map[lower_key]]
         del self._case_map[lower_key]
+        self._generation += 1
 
     def __contains__(self, key: str) -> bool:
         return key.lower() in self._case_map
@@ -259,15 +303,19 @@ class CaseInsensitiveDict(Generic[T]):
 
     def __or__(self, other):
         if not isinstance(other, (dict, CaseInsensitiveDict)):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
         new_dict: CaseInsensitiveDict[T] = self.copy()
         new_dict.update(other)
         return new_dict
 
     def __ror__(self, other):
         if not isinstance(other, (dict, CaseInsensitiveDict)):
-            return NotImplemented
-        other_dict: CaseInsensitiveDict[T] = other if isinstance(other, CaseInsensitiveDict) else CaseInsensitiveDict.from_dict(other)
+            return NotImplemented  # type: ignore[no-any-return]
+        other_dict: CaseInsensitiveDict[T] = (
+            other
+            if isinstance(other, CaseInsensitiveDict)
+            else CaseInsensitiveDict.from_dict(other)
+        )
         new_dict: CaseInsensitiveDict[T] = other_dict.copy()
         new_dict.update(self)
         return new_dict
@@ -282,18 +330,19 @@ class CaseInsensitiveDict(Generic[T]):
     @overload
     def pop(self, __key: str) -> T: ...
     @overload
-    def pop(self, __key: str, __default: VT = None) -> VT | T: ...
+    def pop(self, __key: str, __default: VT) -> VT | T: ...
 
-    def pop(self, __key: str, __default: VT = _unique_sentinel) -> VT | T:  # type: ignore[assignment]
+    def pop(self, __key: str, __default: VT | object = _unique_sentinel) -> VT | T:
         lower_key: str = __key.lower()
         try:
             # Attempt to pop the value using the case-insensitive key.
-            value: T = self._dictionary.pop(self._case_map.pop(lower_key))  # pyright: ignore[reportArgumentType]
+            value: T = self._dictionary.pop(self._case_map.pop(lower_key))
         except KeyError:
             if __default is _unique_sentinel:
                 raise
             # Return the default value if lower_key is not found in the case map.
             return __default
+        self._generation += 1
         return value
 
     def update(self, other):
@@ -320,16 +369,16 @@ class CaseInsensitiveDict(Generic[T]):
                 self[key] = value
 
     @overload
-    def get(self, __key: str) -> T: ...
+    def get(self, __key: str) -> T | None: ...
     @overload
-    def get(self, __key: str, __default: VT = None) -> VT | T: ...
+    def get(self, __key: str, __default: VT) -> VT | T: ...
 
-    def get(self, __key: str, __default: VT = None) -> VT | T:  # type: ignore[assignment]
-        key_lookup: str = self._case_map.get(__key.lower(), _unique_sentinel)  # type: ignore[arg-type]
+    def get(self, __key: str, __default: VT | None = None) -> VT | T | None:
+        key_lookup: str | object = self._case_map.get(__key.lower(), _unique_sentinel)
         return (
             __default
             if key_lookup is _unique_sentinel
-            else self._dictionary.get(key_lookup, __default)
+            else self._dictionary.get(key_lookup, __default)  # type: ignore[arg-type]
         )
 
     def items(self):
@@ -445,4 +494,3 @@ if __name__ == "__main__":
     assert os2 != os3
 
     print("All tests passed!")
-

@@ -1,9 +1,15 @@
+"""CSV read/write for 2DA; first column is row label, rest are data columns."""
+
 from __future__ import annotations
 
 import csv
 import io
 
 from typing import TYPE_CHECKING
+
+import kaitaistruct
+
+from bioware_kaitai_formats.twoda_csv import TwodaCsv
 
 from pykotor.resource.formats.twoda.twoda_data import TwoDA
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
@@ -36,7 +42,12 @@ class TwoDACSVReader(ResourceReader):
     @autoclose
     def load(self, *, auto_close: bool = True) -> TwoDA:  # noqa: FBT001, FBT002, ARG002
         self._twoda = TwoDA()
-        data: str = decode_bytes_with_fallbacks(self._reader.read_bytes(self._reader.size()))
+        raw = self._reader.read_all()
+        try:
+            TwodaCsv.from_bytes(raw)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        data: str = decode_bytes_with_fallbacks(raw)
         _csv = csv.reader(io.StringIO(data))
 
         try:

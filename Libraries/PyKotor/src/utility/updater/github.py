@@ -23,14 +23,17 @@ from typing import (
     get_origin,
     overload,
 )
+from urllib.parse import urlparse
+
+from utility.misc import ensure_directory_exists
 
 if TYPE_CHECKING:
-
     from typing_extensions import Self
 
 
 if __name__ == "__main__":
     with suppress(Exception):
+
         def update_sys_path(path: pathlib.Path):
             working_dir = str(path)
             if working_dir not in sys.path:
@@ -41,7 +44,9 @@ if __name__ == "__main__":
         pykotor_path = file_absolute_path.parents[6] / "Libraries" / "PyKotor" / "src" / "pykotor"
         if pykotor_path.exists():
             update_sys_path(pykotor_path.parent)
-        pykotor_gl_path = file_absolute_path.parents[6] / "Libraries" / "PyKotorGL" / "src" / "pykotor"
+        pykotor_gl_path = (
+            file_absolute_path.parents[6] / "Libraries" / "PyKotorGL" / "src" / "pykotor"
+        )
         if pykotor_gl_path.exists():
             update_sys_path(pykotor_gl_path.parent)
         utility_path = file_absolute_path.parents[6] / "Libraries" / "Utility" / "src"
@@ -55,6 +60,7 @@ if __name__ == "__main__":
 
 T = TypeVar("T")
 
+
 class AbstractAPIResult(ABC):  # noqa: B024
     _type_cache: ClassVar[dict] = {}
 
@@ -66,21 +72,25 @@ class AbstractAPIResult(ABC):  # noqa: B024
 
     @classmethod
     def from_dict(cls, json_dict: dict[str, Any]) -> Self:
-        assert isinstance(json_dict, dict), f"type {json_dict.__class__.__name__} with contents {json_dict}"
+        assert isinstance(json_dict, dict), (
+            f"type {json_dict.__class__.__name__} with contents {json_dict}"
+        )
         processed_data = {}
         for this_field in fields(cls):
             key = this_field.name
             expected_type = this_field.metadata.get("default_type", (this_field.type,))
             if key not in json_dict:
-                #print(f"{cls.__name__} Warning: Missing expected key '{key}' in data")
-                processed_data[key] = this_field.default if this_field.default is not MISSING else None
+                # print(f"{cls.__name__} Warning: Missing expected key '{key}' in data")
+                processed_data[key] = (
+                    this_field.default if this_field.default is not MISSING else None
+                )
             else:
                 value = json_dict[key]
                 processed_data[key] = cls.handle_casting(value, expected_type)
 
-        #for key, value in json_dict.items():
-            #if key not in processed_data:
-            #    print(f"{cls.__name__} Warning: Unexpected key '{key}' in data with value '{value!r}'")
+        # for key, value in json_dict.items():
+        # if key not in processed_data:
+        #    print(f"{cls.__name__} Warning: Unexpected key '{key}' in data with value '{value!r}'")
 
         return cls(**processed_data)
 
@@ -91,16 +101,21 @@ class AbstractAPIResult(ABC):  # noqa: B024
             if isinstance(value, AbstractAPIResult):
                 result[field.name] = value.to_dict()
             elif isinstance(value, list):
-                result[field.name] = [item.to_dict() if isinstance(item, AbstractAPIResult) else item for item in value]
+                result[field.name] = [
+                    item.to_dict() if isinstance(item, AbstractAPIResult) else item
+                    for item in value
+                ]
             elif isinstance(value, dict):
-                result[field.name] = {k: v.to_dict() if isinstance(v, AbstractAPIResult) else v for k, v in value.items()}
+                result[field.name] = {
+                    k: v.to_dict() if isinstance(v, AbstractAPIResult) else v
+                    for k, v in value.items()
+                }
             else:
                 result[field.name] = value
         return result
 
     @classmethod
     def resolve_type(cls, type_str: str):
-        # sourcery skip: assign-if-exp, reintroduce-else
         def resolve(node):
             if isinstance(node, ast.Name):
                 # Map 'list', 'dict' to typing versions when used in type annotations
@@ -155,7 +170,10 @@ class AbstractAPIResult(ABC):  # noqa: B024
     @classmethod
     def handle_casting(cls, value: Any, expected_types: tuple[type[T], ...]) -> T:
         # Optimize by caching converted types
-        converted_types = tuple(cls._type_cache.get(t, cls.resolve_type(t) if isinstance(t, str) else t) for t in expected_types)
+        converted_types = tuple(
+            cls._type_cache.get(t, cls.resolve_type(t) if isinstance(t, str) else t)
+            for t in expected_types
+        )
         cls._type_cache.update(zip(expected_types, converted_types))
 
         # Convert all string type names to actual types
@@ -202,7 +220,10 @@ class AbstractAPIResult(ABC):  # noqa: B024
                     return value
                 # Handle mapping types
                 key_type, value_type = args if len(args) == 2 else (Any, Any)
-                return {cls.handle_casting(k, (key_type,)): cls.handle_casting(v, (value_type,)) for k, v in value.items()}
+                return {
+                    cls.handle_casting(k, (key_type,)): cls.handle_casting(v, (value_type,))
+                    for k, v in value.items()
+                }
 
             if issubclass(origin, typing.Iterable):
                 if not value and isinstance(value, origin):  # Empty check
@@ -220,7 +241,9 @@ class AbstractAPIResult(ABC):  # noqa: B024
             # Attempt to convert the value to the expected type
             return origin(value)
 
-        raise ValueError(f"Expected value of type {expected_types}, got {type(value)} with data '{value}'")
+        raise ValueError(
+            f"Expected value of type {expected_types}, got {type(value)} with data '{value}'"
+        )
 
 
 @dataclass
@@ -303,16 +326,8 @@ class GithubRelease:
             assets=assets,
             tarball_url=json_dict["tarball_url"],
             zipball_url=json_dict["zipball_url"],
-            body=json_dict["body"]
+            body=json_dict["body"],
         )
-
-
-
-@dataclass
-class LinksData(AbstractAPIResult):
-    self: str
-    git: str | None
-    html: str
 
 
 @dataclass
@@ -505,28 +520,33 @@ class TreeInfoData(AbstractAPIResult):
 class CompleteRepoData(AbstractAPIResult):
     repo_info: RepoIndexData
     branches: list[BranchInfoData]
-    #commits: list[CommitInfoData]
-    #issues: list[dict[str, Any]]
-    #pulls: list[dict[str, Any]]
-    #contributors: list[ContributorsInfoData]
-    #releases: list[GithubRelease]
-    #tags: list[dict[str, Any]]
+    # commits: list[CommitInfoData]
+    # issues: list[dict[str, Any]]
+    # pulls: list[dict[str, Any]]
+    # contributors: list[ContributorsInfoData]
+    # releases: list[GithubRelease]
+    # tags: list[dict[str, Any]]
     contents: list[ContentInfoData]
-    #languages: dict[str, Any]
+    # languages: dict[str, Any]
     forks: list[ForkContentsData]
-    #stargazers: list[dict[str, Any]]
-    #subscribers: list[dict[str, Any]]
+    # stargazers: list[dict[str, Any]]
+    # subscribers: list[dict[str, Any]]
     tree: list[TreeInfoData]
 
     def __getattr__(self, attr_name: str):
         return self.__dict__[attr_name]
 
     def get_main_branch_files(self) -> list[ContentInfoData]:
-        main_branch = next((branch for branch in self.branches if branch.name == self.repo_info.default_branch), None)
+        main_branch = next(
+            (branch for branch in self.branches if branch.name == self.repo_info.default_branch),
+            None,
+        )
         if not main_branch:
             raise ValueError(f"Main branch {self.repo_info.default_branch} not found in branches")
 
-        return [content for content in self.contents if content.path.startswith(main_branch.commit.sha)]
+        return [
+            content for content in self.contents if content.path.startswith(main_branch.commit.sha)
+        ]
 
     @classmethod
     def load_repo(cls, owner: str, repo_name: str, *, timeout: int = 15) -> CompleteRepoData:
@@ -536,11 +556,12 @@ class CompleteRepoData(AbstractAPIResult):
             "repo_info": base_url,
             "branches": f"{base_url}/branches",
             "contents": f"{base_url}/contents",
-            "forks": f"{base_url}/forks"
+            "forks": f"{base_url}/forks",
         }
 
         repo_data = {}
         import requests
+
         for key, url in endpoints.items():
             print(f"Fetching {key}...")
             response = requests.get(url, timeout=timeout)
@@ -562,7 +583,7 @@ class CompleteRepoData(AbstractAPIResult):
             branches=[BranchInfoData.from_dict(item) for item in repo_data.get("branches", [])],
             contents=[ContentInfoData.from_dict(item) for item in repo_data.get("contents", [])],
             forks=[ForkContentsData.from_dict(item) for item in repo_data.get("forks", [])],
-            tree=[TreeInfoData.from_dict(item) for item in repo_data.get("tree", [])]
+            tree=[TreeInfoData.from_dict(item) for item in repo_data.get("tree", [])],
         )
         print(f"Completed loading of '{base_url}'")
         return instance
@@ -576,33 +597,33 @@ class CompleteRepoData(AbstractAPIResult):
         repo_data = {
             "repo_info": load_json(os.path.join(folder_path, "repo_info.json")),
             "branches": load_json(os.path.join(folder_path, "branches.json")),
-        #    "commits": load_json(os.path.join(folder_path, "commits.json")),
-        #    "issues": load_json(os.path.join(folder_path, "issues.json")),
-        #    "pulls": load_json(os.path.join(folder_path, "pulls.json")),
-        #    "contributors": load_json(os.path.join(folder_path, "contributors.json")),
-        #    "releases": load_json(os.path.join(folder_path, "releases.json")),
-        #    "tags": load_json(os.path.join(folder_path, "tags.json")),
+            #    "commits": load_json(os.path.join(folder_path, "commits.json")),
+            #    "issues": load_json(os.path.join(folder_path, "issues.json")),
+            #    "pulls": load_json(os.path.join(folder_path, "pulls.json")),
+            #    "contributors": load_json(os.path.join(folder_path, "contributors.json")),
+            #    "releases": load_json(os.path.join(folder_path, "releases.json")),
+            #    "tags": load_json(os.path.join(folder_path, "tags.json")),
             "contents": load_json(os.path.join(folder_path, "contents.json")),
-        #    "languages": load_json(os.path.join(folder_path, "languages.json")),
+            #    "languages": load_json(os.path.join(folder_path, "languages.json")),
             "forks": load_json(os.path.join(folder_path, "forks.json")),
-        #    "stargazers": load_json(os.path.join(folder_path, "stargazers.json")),
-        #    "subscribers": load_json(os.path.join(folder_path, "subscribers.json")),
+            #    "stargazers": load_json(os.path.join(folder_path, "stargazers.json")),
+            #    "subscribers": load_json(os.path.join(folder_path, "subscribers.json")),
         }
 
         return cls(
             repo_info=RepoIndexData.from_dict(repo_data.get("repo_info", {})),
             branches=[BranchInfoData.from_dict(item) for item in repo_data.get("branches", [])],
-        #    commits=[CommitInfoData.from_dict(item) for item in repo_data.get("commits", [])],
-        #    issues=repo_data.get("issues", []),
-        #    pulls=repo_data.get("pulls", []),
-        #    contributors=[ContributorsInfoData.from_dict(item) for item in repo_data.get("contributors", [])],
-        #    releases=[GithubRelease.from_dict(item) for item in repo_data.get("releases", [])],
-        #    tags=repo_data.get("tags", []),
+            #    commits=[CommitInfoData.from_dict(item) for item in repo_data.get("commits", [])],
+            #    issues=repo_data.get("issues", []),
+            #    pulls=repo_data.get("pulls", []),
+            #    contributors=[ContributorsInfoData.from_dict(item) for item in repo_data.get("contributors", [])],
+            #    releases=[GithubRelease.from_dict(item) for item in repo_data.get("releases", [])],
+            #    tags=repo_data.get("tags", []),
             contents=[ContentInfoData.from_dict(item) for item in repo_data.get("contents", [])],
-        #    languages=repo_data.get("languages", {}),
+            #    languages=repo_data.get("languages", {}),
             forks=[ForkContentsData.from_dict(item) for item in repo_data.get("forks", [])],
-        #    stargazers=repo_data.get("stargazers", []),
-        #    subscribers=repo_data.get("subscribers", []),
+            #    stargazers=repo_data.get("stargazers", []),
+            #    subscribers=repo_data.get("subscribers", []),
         )
 
 
@@ -613,18 +634,37 @@ def download_github_file(
     timeout: int | None = None,
 ):
     import requests
+
     timeout = 180 if timeout is None else timeout
     local_path = Path(local_path).absolute()
-    local_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_directory_exists(local_path.parent)
 
     if isinstance(url_or_repo, tuple):
         owner, repo = url_or_repo
         base_url = f"https://api.github.com/repos/{owner}/{repo}"
-    elif "https://api.github.com/repos/" in url_or_repo:
-        base_url = url_or_repo.rsplit("/", 1)[0]
     else:
-        owner, repo = url_or_repo.split("/")[-2:]
-        base_url = f"https://api.github.com/repos/{owner}/{repo}"
+        parsed = urlparse(url_or_repo)
+        host = parsed.netloc
+        path = parsed.path or ""
+        if host == "api.github.com" and path.startswith("/repos/"):
+            # Strip trailing path segments to keep only /repos/<owner>/<repo>
+            path_parts = path.split("/")
+            if len(path_parts) >= 4:
+                owner_part, repo_part = path_parts[2], path_parts[3]
+                base_url = f"https://api.github.com/repos/{owner_part}/{repo_part}"
+            else:
+                raise ValueError(f"Invalid GitHub API URL format: {url_or_repo!r}")
+        elif host in ("github.com", "raw.githubusercontent.com"):
+            parts = [p for p in path.split("/") if p]
+            if len(parts) >= 2:
+                owner_part, repo_part = parts[0], parts[1]
+                base_url = f"https://api.github.com/repos/{owner_part}/{repo_part}"
+            else:
+                raise ValueError(f"Cannot extract owner/repo from GitHub URL: {url_or_repo!r}")
+        else:
+            raise ValueError(
+                f"URL must be a github.com, raw.githubusercontent.com, or api.github.com URL, got: {url_or_repo!r}",
+            )
 
     if repo_path is not None:
         api_url = f"{base_url}/contents/{PurePath(repo_path).as_posix()}"
@@ -753,7 +793,9 @@ def download_github_directory_fallback(
 def fetch_repo_index(owner: str, repo: str, branch: str = "master") -> dict[str, str]: ...
 @overload
 def fetch_repo_index(repo: str, branch: str = "master") -> dict[str, str]: ...
-def fetch_repo_index(owner_or_repo: str | tuple[str, str], repo: str=None, branch: str = "master") -> dict[str, str]:
+def fetch_repo_index(
+    owner_or_repo: str | tuple[str, str], repo: str = None, branch: str = "master"
+) -> dict[str, str]:
     """Fetches the index of a GitHub repository.
 
     Args:
@@ -767,6 +809,7 @@ def fetch_repo_index(owner_or_repo: str | tuple[str, str], repo: str=None, branc
         A dictionary mapping file paths in the repo to their respective GitHub URLs.
     """
     import requests
+
     if repo is None:
         owner_or_repo, repo = extract_owner_repo(owner_or_repo)
     api_url = f"https://api.github.com/repos/{owner_or_repo}/{repo}/git/trees/{branch}?recursive=1"
@@ -784,6 +827,7 @@ def fetch_repo_index(owner_or_repo: str | tuple[str, str], repo: str=None, branc
 
 def _request_api_data(api_url: str) -> Any:
     import requests
+
     response: requests.Response = requests.get(api_url, timeout=15)
     response.raise_for_status()
     return response.json()
@@ -793,7 +837,7 @@ def _request_api_data(api_url: str) -> Any:
 def get_api_url(owner: str, repo: str) -> str: ...
 @overload
 def get_api_url(repo: str) -> str: ...
-def get_api_url(owner: str, repo: str=None) -> str:
+def get_api_url(owner: str, repo: str = None) -> str:
     if repo is None:
         owner, repo = extract_owner_repo(owner)
     return f"https://api.github.com/repos/{owner}/{repo}"
@@ -803,7 +847,7 @@ def get_api_url(owner: str, repo: str=None) -> str:
 def get_forks_url(owner: str, repo: str) -> str: ...
 @overload
 def get_forks_url(repo: str) -> str: ...
-def get_forks_url(owner: str, repo: str=None) -> str:
+def get_forks_url(owner: str, repo: str = None) -> str:
     if repo is None:
         owner, repo = extract_owner_repo(owner)
     return f"https://api.github.com/repos/{owner}/{repo}/forks"
@@ -813,7 +857,7 @@ def get_forks_url(owner: str, repo: str=None) -> str:
 def get_main_url(owner: str, repo: str) -> str: ...
 @overload
 def get_main_url(repo: str) -> str: ...
-def get_main_url(owner: str, repo: str=None) -> str:
+def get_main_url(owner: str, repo: str = None) -> str:
     if repo is None:
         owner, repo = extract_owner_repo(owner)
     return f"https://github.com/{owner}/{repo}"
@@ -826,12 +870,14 @@ def extract_owner_repo_from_api_url(url: str) -> tuple[str, str]:
         raise ValueError("Invalid GitHub API URL")
     return match[1], match[2]
 
+
 def extract_owner_repo_from_raw_url(url: str) -> tuple[str, str]:
     pattern = re.compile(r"https://raw\.githubusercontent\.com/([^/]+)/([^/]+)")
     match = pattern.match(url)
     if not match:
         raise ValueError("Invalid GitHub raw content URL")
     return match[1], match[2]
+
 
 def extract_owner_repo_from_main_url(url: str) -> tuple[str, str]:
     pattern = re.compile(r"https://github\.com/([^/]+)/([^/]+)")
@@ -840,20 +886,32 @@ def extract_owner_repo_from_main_url(url: str) -> tuple[str, str]:
         raise ValueError("Invalid GitHub main URL")
     return match[1], match[2]
 
+
 def extract_owner_repo(url: str) -> tuple[str, str]:
-    if "api.github.com/repos" in url:
-        return extract_owner_repo_from_api_url(url)
-    if "raw.githubusercontent.com" in url:
-        return extract_owner_repo_from_raw_url(url)
-    if "github.com" in url:
-        return extract_owner_repo_from_main_url(url)
+    parsed = urlparse(url)
+    host = parsed.netloc
+    path = parsed.path or ""
+
+    # Normalize back to a canonical URL for the existing regex helpers.
+    normalized_url = f"https://{host}{path}"
+
+    if host == "api.github.com" and path.startswith("/repos/"):
+        return extract_owner_repo_from_api_url(normalized_url)
+    if host == "raw.githubusercontent.com":
+        return extract_owner_repo_from_raw_url(normalized_url)
+    if host == "github.com":
+        return extract_owner_repo_from_main_url(normalized_url)
     raise ValueError(f"Invalid GitHub URL format: {url}")
+
 
 if __name__ == "__main__":
     import sys
 
     from toolset.__main__ import onAppCrash
+
     sys.excepthook = onAppCrash
-    test1 = CompleteRepoData.load_repo_from_files(r"C:\GitHub\PyKotor\KOTORCommunityPatches_Vanilla_KOTOR_Script_Source\json files")
+    test1 = CompleteRepoData.load_repo_from_files(
+        r"C:\GitHub\PyKotor\KOTORCommunityPatches_Vanilla_KOTOR_Script_Source\json files"
+    )
     test1_dict = test1.to_dict()
     print(json.dumps(test1_dict, indent=4))

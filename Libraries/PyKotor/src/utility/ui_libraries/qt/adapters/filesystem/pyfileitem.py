@@ -7,36 +7,37 @@ import sys
 
 from contextlib import suppress
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 import qtpy
 
 from pykotor.tools.path import CaseAwarePath
 
-if qtpy.API_NAME in ("PyQt6", "PySide6"):
-    QDesktopWidget = None
-    from qtpy.QtGui import (  # pyright: ignore[reportPrivateImportUsage]  # noqa: F401
-        QUndoCommand,
-        QUndoStack,
-    )
-elif qtpy.API_NAME in ("PyQt5", "PySide2"):
-    from qtpy.QtWidgets import (  # noqa: F401  # pyright: ignore[reportPrivateImportUsage]
-        QDesktopWidget,
-        QUndoCommand,
-        QUndoStack,
-    )
-else:
-    raise RuntimeError(f"Unexpected qtpy version: '{qtpy.API_NAME}'")
+if not TYPE_CHECKING:
+    if qtpy.QT6:
+        QDesktopWidget = None
+        from qtpy.QtGui import (  # pyright: ignore[reportPrivateImportUsage]  # noqa: F401
+            QUndoCommand,
+            QUndoStack,
+        )
+    elif qtpy.QT5:
+        from qtpy.QtWidgets import (  # noqa: F401  # pyright: ignore[reportPrivateImportUsage]
+            QDesktopWidget,
+            QUndoCommand,
+            QUndoStack,
+        )
+    else:
+        raise RuntimeError(f"Unexpected qtpy version: '{qtpy.API_NAME}'")
 
 
+def update_sys_path(_path: pathlib.Path):
+    working_dir = str(_path)
 
-if __name__ == "__main__":
-    def update_sys_path(path: pathlib.Path):
-        working_dir = str(path)
-        if working_dir not in sys.path:
-            sys.path.append(working_dir)
+    if working_dir not in sys.path:
+        sys.path.append(working_dir)
 
 
-    file_absolute_path = pathlib.Path(__file__).resolve()
+file_absolute_path = pathlib.Path(__file__).resolve()
 
     pykotor_path = file_absolute_path.parents[6] / "Libraries" / "PyKotor" / "src" / "pykotor"
     if pykotor_path.exists():
@@ -54,10 +55,11 @@ if __name__ == "__main__":
             os.chdir(toolset_path)
 
 
-from pathlib import Path  # noqa: E402
 from typing import TYPE_CHECKING  # noqa: E402
 
 from qtpy.QtCore import QDateTime, QFileInfo  # noqa: E402
+
+from utility.system.path import Path  # noqa: E402
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QObject
@@ -73,6 +75,7 @@ class PyFileInfo:
         """Initializes the QFileInfo object."""
         self._parent = parent
         super().__init__()
+        self._is_case_sensitive = os.name == "posix"
         if isinstance(file, (PyFileInfo, QFileInfo)):
             self._path: Path = self._getPathType()(file.filePath())
         elif folder is not None:
@@ -84,7 +87,6 @@ class PyFileInfo:
         self.__exists = self._path.exists()
         self._stat = None
         self._is_symlink = self._path.is_symlink()
-        self._is_case_sensitive = os.name == "posix"
         if self.__exists:
             with suppress(FileNotFoundError, PermissionError):
                 self._stat = self._path.stat()
@@ -231,13 +233,20 @@ class PyFileInfo:
         if sys.platform != "win32":
             return self._path.name.lstrip().lstrip("/").lstrip("\\").startswith(".")
         from ctypes import windll
+
         attrs = windll.kernel32.GetFileAttributesW(str(self._path))
         assert attrs != -1
         return bool(attrs & 2)
 
     def isBundle(self) -> bool:
         """Returns True if the file is a macOS bundle."""
-        return sys.platform == "Darwin" and self._path.suffix.lower() in {".app", ".bundle", ".framework", ".plugin", ".kext"}
+        return sys.platform == "Darwin" and self._path.suffix.lower() in {
+            ".app",
+            ".bundle",
+            ".framework",
+            ".plugin",
+            ".kext",
+        }
 
     def isJunction(self) -> bool:
         """Returns True if the _path is a Windows junction."""
@@ -265,33 +274,36 @@ class PyFileInfo:
 
     def lastModified(self) -> QDateTime | None:
         """Returns the last modification time."""
-        return QDateTime.fromMSecsSinceEpoch(int(self._stat.st_mtime * 1000)) if self._stat else None  # noqa: DTZ006
+        return (
+            QDateTime.fromMSecsSinceEpoch(int(self._stat.st_mtime * 1000)) if self._stat else None
+        )  # noqa: DTZ006
 
     def lastRead(self) -> QDateTime | None:
         """Returns the last access time."""
-        return QDateTime.fromMSecsSinceEpoch(int(self._stat.st_atime * 1000)) if self._stat else None  # noqa: DTZ006
+        return (
+            QDateTime.fromMSecsSinceEpoch(int(self._stat.st_atime * 1000)) if self._stat else None
+        )  # noqa: DTZ006
 
     def birthTime(self) -> QDateTime | None:
         """Returns the creation time."""
         if self._stat:
             return QDateTime.fromMSecsSinceEpoch(
-                int(
-                    self._stat.st_ctime
-                    if os.name == "nt"
-                    else self._stat.st_birthtime * 1000
-                )
+                int(self._stat.st_ctime if os.name == "nt" else self._stat.st_birthtime * 1000)
             )  # noqa: DTZ006
         return None
 
     def metadataChangeTime(self) -> QDateTime | None:
         """Returns the metadata change time."""
-        return QDateTime.fromMSecsSinceEpoch(int(self._stat.st_ctime * 1000)) if self._stat else None  # noqa: DTZ006
+        return (
+            QDateTime.fromMSecsSinceEpoch(int(self._stat.st_ctime * 1000)) if self._stat else None
+        )  # noqa: DTZ006
 
     def owner(self) -> str | None:
         """Returns the owner name of the file."""
         if sys.platform != "win32" and self._stat:
             with suppress(KeyError):
                 import pwd
+
                 return pwd.getpwuid(self._stat.st_uid).pw_name
         return None
 
@@ -304,6 +316,7 @@ class PyFileInfo:
         if sys.platform != "win32" and self._stat:
             try:
                 import grp
+
                 return grp.getgrgid(self._stat.st_gid).gr_name
             except KeyError:
                 return None
@@ -345,7 +358,9 @@ class PyFileInfo:
             return self.lastRead()
         if time_type == "modification":
             return self.lastModified()
-        raise ValueError("Invalid time_type. Must be 'birth', 'metadata', 'access', or 'modification'.")
+        raise ValueError(
+            "Invalid time_type. Must be 'birth', 'metadata', 'access', or 'modification'."
+        )
 
     def swap(self, other: QFileInfo):
         """Swaps the contents with another QFileInfo object."""
@@ -363,7 +378,7 @@ class PyFileInfo:
     def __eq__(self, other: QFileInfo) -> bool:
         """Checks if two QFileInfo objects refer to the same file."""
         if not isinstance(other, QFileInfo):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
         return self.absoluteFilePath() == other.absoluteFilePath()
 
     def __ne__(self, other: QFileInfo) -> bool:
@@ -375,8 +390,6 @@ class PyFileInfo:
         return f"<QFileInfo _path='{self._path}'>"
 
 
-
-
 class PyWrappedQFileInfo:
     def __init__(
         self,
@@ -384,7 +397,7 @@ class PyWrappedQFileInfo:
         folder: str | Path | None = None,
     ):
         if folder is not None:
-            self._path = self._getPathType()(folder) / self._getPathType()(file)
+            self._path: Path = self._getPathType()(folder) / self._getPathType()(file)
         elif file is not None:
             self._path = self._getPathType()(file)
         else:
@@ -413,7 +426,7 @@ class PyWrappedQFileInfo:
         """Sets the file path for this object."""
         file_obj = Path(file)
         if dir is None or file_obj.is_absolute():
-            self._path: Path = file_obj
+            self._path = file_obj
         else:
             self._path = self._getPathType()(dir, file)
         self._path = self._getPathType()(file) if dir is None else self._getPathType()(dir, file)
@@ -523,6 +536,7 @@ class PyWrappedQFileInfo:
             return self._path.name.lstrip().lstrip("/").lstrip("\\").startswith(".")
         with suppress(Exception):
             from ctypes import windll
+
             attrs = windll.kernel32.GetFileAttributesW(str(self._path))
             assert attrs != -1
             return bool(attrs & 2)
@@ -531,7 +545,13 @@ class PyWrappedQFileInfo:
     def isBundle(self) -> bool:
         """Returns True if the file is a macOS bundle."""
         if sys.platform == "Darwin":
-            return self._path.suffix.lower() in [".app", ".bundle", ".framework", ".plugin", ".kext"]
+            return self._path.suffix.lower() in [
+                ".app",
+                ".bundle",
+                ".framework",
+                ".plugin",
+                ".kext",
+            ]
         return False
 
     def isJunction(self) -> bool:
@@ -570,9 +590,7 @@ class PyWrappedQFileInfo:
         """Returns the creation time."""
         if self._stat:
             return datetime.fromtimestamp(  # noqa: DTZ006
-                self._stat.st_ctime
-                if os.name == "nt"
-                else self._stat.st_birthtime
+                self._stat.st_ctime if os.name == "nt" else self._stat.st_birthtime,
             )
         return None
 
@@ -585,6 +603,7 @@ class PyWrappedQFileInfo:
         if sys.platform != "win32" and self._stat:
             with suppress(KeyError):
                 import pwd
+
                 return pwd.getpwuid(self._stat.st_uid).pw_name
         return None
 
@@ -597,6 +616,7 @@ class PyWrappedQFileInfo:
         if sys.platform != "win32" and self._stat:
             try:
                 import grp
+
                 return grp.getgrgid(self._stat.st_gid).gr_name
             except KeyError:
                 return None
@@ -638,12 +658,14 @@ class PyWrappedQFileInfo:
             return self.lastRead()
         if time_type == "modification":
             return self.lastModified()
-        raise ValueError("Invalid time_type. Must be 'birth', 'metadata', 'access', or 'modification'.")
+        raise ValueError(
+            "Invalid time_type. Must be 'birth', 'metadata', 'access', or 'modification'."
+        )
 
     def __eq__(self, other: PyFileInfo) -> bool:
         """Checks if two PyFileInfo objects refer to the same file."""
         if not isinstance(other, PyFileInfo):
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
         return self.absoluteFilePath() == other.absoluteFilePath()
 
     def __ne__(self, other: PyFileInfo) -> bool:

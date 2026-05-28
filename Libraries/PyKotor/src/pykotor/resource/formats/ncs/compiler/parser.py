@@ -1,3 +1,5 @@
+"""NSS (NWScript) parser: PLY yacc grammar and AST construction."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -5,6 +7,7 @@ from typing import TYPE_CHECKING, NoReturn, Sequence, cast
 
 from ply import yacc
 
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs.compiler.classes import (
     AdditionAssignment,
     Assignment,
@@ -145,7 +148,10 @@ class NssParser:
             p[0] = code_root
         else:
             p[0] = CodeRoot(
-                constants=self.constants, functions=self.functions, library_lookup=self.library_lookup, library=self.library
+                constants=self.constants,
+                functions=self.functions,
+                library_lookup=self.library_lookup,
+                library=self.library,
             )
 
     def p_code_root_object(self, p):
@@ -268,7 +274,7 @@ class NssParser:
             block: CodeBlock = p[1]
             block.add(p[2])
             p[0] = block
-        elif len(p) == 2:  # sourcery skip: class-extract-method
+        elif len(p) == 2:
             block = CodeBlock()
             block.add(p[1])
             p[0] = block

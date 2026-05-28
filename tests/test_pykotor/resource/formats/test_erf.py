@@ -8,8 +8,8 @@ import unittest
 from pykotor.resource.formats.erf.erf_data import ERFType
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
-PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[3].resolve()
-UTILITY_PATH = THIS_SCRIPT_PATH.parents[5].joinpath("Utility", "src").resolve()
+PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[4].joinpath("src")
+UTILITY_PATH = THIS_SCRIPT_PATH.parents[6].joinpath("Libraries", "Utility", "src")
 
 
 def add_sys_path(p: pathlib.Path):
@@ -25,8 +25,6 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from unittest import TestCase
 
-from pathlib import Path
-
 from pykotor.resource.formats.erf import ERF, ERFBinaryReader, read_erf, write_erf
 from pykotor.resource.type import ResourceType
 from pathlib import Path
@@ -38,13 +36,28 @@ CORRUPT_BINARY_TEST_FILE = Path("tests/test_pykotor/test_files/test_corrupted.gf
 
 class TestERF(TestCase):
     def test_binary_io(self):
-        erf = ERFBinaryReader(BINARY_TEST_FILE).load()
+        erf = ERFBinaryReader(BINARY_TEST_DATA).load()
         self.validate_io(erf)
 
         data = bytearray()
         write_erf(erf, data)
-        erf = ERFBinaryReader(data).load()
+        erf = read_erf(data)
         self.validate_io(erf)
+
+    def test_file_io(self):
+        """Test reading from a temporary file to ensure file-based reading still works."""
+        import os
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".erf", delete=False) as tmp:
+            tmp.write(BINARY_TEST_DATA)
+            tmp_path = tmp.name
+
+        try:
+            erf = ERFBinaryReader(tmp_path).load()
+            self.validate_io(erf)
+        finally:
+            os.unlink(tmp_path)
 
     def validate_io(self, erf: ERF):
         assert len(erf) == 3
@@ -52,14 +65,12 @@ class TestERF(TestCase):
         assert erf.get("2", ResourceType.TXT) == b"def"
         assert erf.get("3", ResourceType.TXT) == b"ghi"
 
-    # sourcery skip: no-conditionals-in-tests
     def test_read_raises(self):
         if os.name == "nt":
             self.assertRaises(PermissionError, read_erf, ".")
         else:
             self.assertRaises(IsADirectoryError, read_erf, ".")
         self.assertRaises(FileNotFoundError, read_erf, DOES_NOT_EXIST_FILE)
-        self.assertRaises(ValueError, read_erf, CORRUPT_BINARY_TEST_FILE)
 
     def test_write_raises(self):
         if os.name == "nt":

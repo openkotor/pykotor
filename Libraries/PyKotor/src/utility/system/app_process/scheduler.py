@@ -40,6 +40,7 @@ class PrioritizedTask(Generic[R]):
         timestamp: The timestamp of the task.
         checkpoints: The checkpoints of the task.
     """
+
     priority: TaskPriority
     task: Callable[..., R] = field(compare=False)
     args: tuple[Any, ...] = field(compare=False)
@@ -80,8 +81,6 @@ class TaskScheduler:
         self._task_queue.append(task)
         self._task_queue.sort(key=lambda x: (x.priority, x.timestamp))
 
-
-
     async def add_task_async(self, task: PrioritizedTask) -> None:
         """Asynchronously adds a task to the scheduler.
 
@@ -105,7 +104,13 @@ class TaskScheduler:
         ready_tasks = self._task_graph.get_ready_tasks()
         if not ready_tasks:
             return None
-        next_task_id = min(ready_tasks, key=lambda x: (self._task_priorities[x], next(i for i, task in enumerate(self._task_queue) if id(task) == x)))
+        next_task_id = min(
+            ready_tasks,
+            key=lambda x: (
+                self._task_priorities[x],
+                next(i for i, task in enumerate(self._task_queue) if id(task) == x),
+            ),
+        )
         return next(task for task in self._task_queue if id(task) == next_task_id)
 
     def get_task_queue(self) -> list[PrioritizedTask]:

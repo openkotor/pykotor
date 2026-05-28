@@ -1,3 +1,9 @@
+"""Case-aware path helpers used by PyKotor.
+
+The module keeps modern `pathlib` behavior where possible, while preserving
+legacy compatibility points that older callers still import from here.
+"""
+
 from __future__ import annotations
 
 import atexit
@@ -13,13 +19,8 @@ import tempfile
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
-from pykotor.tools.registry import find_software_key, winreg_key
-from utility.string_util import ireplace
-from utility.system.path import (
-    Path as InternalPath,
-    PosixPath as InternalPosixPath,
-    PurePath as InternalPurePath,
-    WindowsPath as InternalWindowsPath,
+from loggerplus import (
+    RobustLogger,  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
 )
 
 if TYPE_CHECKING:
@@ -54,6 +55,8 @@ def is_filesystem_case_sensitive(
     """Check if the filesystem at the given path is case-sensitive.
     This function creates a temporary file to test the filesystem behavior.
     """
+    import tempfile
+
     try:
         with tempfile.TemporaryDirectory(dir=path) as temp_dir:
             temp_path: pathlib.Path = pathlib.Path(temp_dir)
@@ -450,23 +453,83 @@ def _get_or_create_fuse_mount(root_path: str) -> str | None:
 def simple_wrapper(fn_name: str, wrapped_class_type: type[CaseAwarePath]) -> Callable[..., Any]:
     """Wraps a function to handle case-sensitive pathlib.PurePath arguments.
 
-    This is a hacky way of ensuring that all args to any pathlib methods have their path case-sensitively resolved.
-    This also resolves self, *args, and **kwargs for ensured accuracy.
+    The returned mapping is:
+        lowercase entry name -> list of actual names in that directory
+    """
+    try:
+        stat = os.stat(path_str)
+        mtime_ns = getattr(stat, "st_mtime_ns", int(stat.st_mtime * 1_000_000_000))
+    except OSError:
+        # Directory doesn't exist or is not accessible
+        RobustLogger().debug(
+            "Cannot stat directory while building case map: '%s'.", path_str, exc_info=True
+        )
+        return {}
 
-    Args:
-    ----
-        fn_name: The name of the function to wrap
-        wrapped_class_type: The class type that the function belongs to
+    # Directory-level cache keyed by mtime_ns.
+    # This gives a large speedup in repeated path resolution while still staying safe.
+    cached = _DIR_CACHE.get(path_str)
+    if cached is not None and cached[0] == mtime_ns:
+        return cached[1]
 
-    Returns:
-    -------
-        Callable[..., Any]: A wrapped function with the same signature as the original
+    mapping: dict[str, list[str]] = {}
+    try:
+        with os.scandir(path_str) as entries:
+            for entry in entries:
+                lower = entry.name.lower()
+                if lower not in mapping:
+                    mapping[lower] = []
+                mapping[lower].append(entry.name)
+    except OSError:
+        RobustLogger().debug(
+            "Cannot scan directory while building case map: '%s'.", path_str, exc_info=True
+        )
 
-    Processing Logic:
-    ----------------
-        1. Gets the original function from the class's _original_methods attribute
-        2. Parses arguments that are paths, resolving case if needed
-        3. Calls the original function with the parsed arguments.
+    # Keep cache bounded.
+    if path_str not in _DIR_CACHE and len(_DIR_CACHE) >= _DIR_CACHE_MAX_SIZE:
+        _DIR_CACHE.pop(next(iter(_DIR_CACHE)))
+    _DIR_CACHE[path_str] = (mtime_ns, mapping)
+    return mapping
+
+
+def _choose_case_match(part: str, matches: list[str], current_path: str) -> str:
+    """Choose the best match for an ambiguously-cased path segment."""
+    if len(matches) == 1:
+        return matches[0]
+    if part in matches:
+        return part
+
+    best_match = matches[0]
+    best_score = -1
+    for candidate in matches:
+        score = CaseAwarePath.get_matching_characters_count(part, candidate)
+        if score > best_score:
+            best_score = score
+            best_match = candidate
+
+    RobustLogger().debug(
+        "Ambiguous case-insensitive match for '%s' under '%s'; chose '%s' from %s.",
+        part,
+        current_path,
+        best_match,
+        matches,
+    )
+    return best_match
+
+
+def clear_cache() -> None:
+    """Clear directory case-resolution cache."""
+    cached_entries = len(_DIR_CACHE)
+    _DIR_CACHE.clear()
+    if cached_entries:
+        RobustLogger().info("Cleared CaseAwarePath directory cache (%s entries).", cached_entries)
+
+
+class CaseAwarePath(pathlib.Path):
+    """Pathlib path with case-insensitive resolution for POSIX filesystems.
+
+    This class intentionally preserves old behavior for mixed slash handling and
+    legacy utility-style helpers while still relying on pathlib for core path ops.
     """
 
     def wrapped(self: CaseAwarePath, *args, **kwargs) -> Any:
@@ -1129,9 +1192,10 @@ class CaseAwarePath(InternalWindowsPath if os.name == "nt" else InternalPosixPat
             path: The path to resolve case sensitivity for
             prefixes: Optional prefix components
 
-        Returns:
-        -------
-            CaseAwarePath: The path with case sensitivity resolved
+    def __new__(cls, *args, **kwargs):
+        if os.name == "posix":
+            args = cls._normalize_posix_constructor_args(args)
+        return super().__new__(cls, *args, **kwargs)
 
         Processing Logic:
         ----------------
@@ -1184,9 +1248,10 @@ class CaseAwarePath(InternalWindowsPath if os.name == "nt" else InternalPosixPat
         # Standard implementation (fallback or when FUSE not available)
         parts = list(pathlib_abspath.parts)
 
-        for i in range(1, len(parts)):  # ignore the root (/, C:\\, etc)
-            base_path: InternalPath = InternalPath(*parts[:i])
-            next_path: InternalPath = InternalPath(*parts[: i + 1])
+        # Preserve Windows-drive-like paths when running on POSIX
+        # (e.g. "C:/Users/test"), which are relative segments here.
+        if self._is_windows_drive_like(raw_path):
+            return raw_path
 
             if not next_path.is_dir() and base_path.is_dir():
                 # Find the first non-existent case-sensitive file/folder in hierarchy
@@ -1222,43 +1287,23 @@ class CaseAwarePath(InternalWindowsPath if os.name == "nt" else InternalPosixPat
         return cls._create_instance(*parts[num_differing_parts:], called_from_getcase=True)
 
     @classmethod
-    def find_closest_match(
-        cls,
-        target: str,
-        candidates: Generator[InternalPath, None, None],
-    ) -> str:
-        """Finds the closest match from candidates to the target string.
+    def find_closest_match(cls, target: str, candidates: Iterable[os.PathLike | str]) -> str:
+        target_lower = target.lower()
+        candidates_list = list(candidates)
 
-        Args:
-        ----
-            target: str - The target string to find closest match for
-            candidates: Generator[pathlib.Path, None, None] - Generator of candidate paths
+        best_match = target
+        best_score = -1
+        found = False
 
-        Returns:
-        -------
-            str - The closest matching candidate's file/folder name from the candidates
-
-        Processing Logic:
-        ----------------
-            - Initialize max_matching_chars to -1
-            - Iterate through each candidate
-            - Get the matching character count between candidate and target using get_matching_characters_count method
-            - Update closest_match and max_matching_chars if new candidate has more matches
-            - Return closest_match after full iteration.
-            - If no exact match found, return target which will of course be nonexistent.
-        """
-        max_matching_chars: int = -1
-        closest_match: str | None = None
-
-        for candidate in candidates:
-            matching_chars: int = cls.get_matching_characters_count(candidate.name, target)
-            if matching_chars > max_matching_chars:
-                closest_match = candidate.name
-                if matching_chars == len(target):
-                    break  # Exit the loop early if exact match (faster)
-                max_matching_chars = matching_chars
-
-        return closest_match or target
+        for cand in candidates_list:
+            cand_name = cand.name if isinstance(cand, os.PathLike) else str(cand)
+            if cand_name.lower() == target_lower:
+                found = True
+                score = cls.get_matching_characters_count(target, cand_name)
+                if score > best_score:
+                    best_score = score
+                    best_match = cand_name
+        return best_match if found else target
 
     @staticmethod
     @lru_cache(maxsize=10000)
@@ -1272,8 +1317,20 @@ class CaseAwarePath(InternalWindowsPath if os.name == "nt" else InternalPosixPat
         """
         return sum(a == b for a, b in zip(str1, str2)) if str1.lower() == str2.lower() else -1
 
-    def __hash__(self):
-        return hash(self.as_windows())
+    @staticmethod
+    def extract_absolute_prefix(
+        relative_path: os.PathLike | str, absolute_path: os.PathLike | str
+    ) -> tuple[str, ...]:
+        _warn_deprecated_endpoint(
+            "CaseAwarePath.extract_absolute_prefix()",
+            "Use pathlib path decomposition instead.",
+        )
+        absolute = pathlib.Path(absolute_path).absolute()
+        relative_resolved = (absolute.parent / relative_path).absolute()
+        abs_parts = absolute.parts
+        rel_parts = relative_resolved.parts
+        start_index_of_rel_in_abs = len(abs_parts) - len(rel_parts)
+        return abs_parts[:start_index_of_rel_in_abs]
 
     def __eq__(
         self,
@@ -1411,8 +1468,6 @@ def get_default_paths() -> dict[str, dict[Game, list[str]]]:  # TODO(th3w1zard1)
                 "~/Library/Application Support/Steam/steamapps/common/Knights of the Old Republic II/Knights of the Old Republic II.app/Contents/Assets",
                 "~/Library/Applications/Steam/steamapps/common/Knights of the Old Republic II/Star Wars™: Knights of the Old Republic II.app/Contents/GameData",
                 "~/Library/Application Support/Steam/steamapps/common/Knights of the Old Republic II/KOTOR2.app/Contents/GameData/",  # Verified
-                # The following might be from a pirated version of the game, they were provided anonymously
-                # It is also possible these are the missing app store paths.
                 "~/Applications/Knights of the Old Republic 2.app/Contents/Resources/transgaming/c_drive/Program Files/SWKotOR2/",
                 "/Applications/Knights of the Old Republic 2.app/Contents/Resources/transgaming/c_drive/Program Files/SWKotOR2/",
                 # TODO(th3w1zard1): app store version of k2  # noqa: FIX002, TD003
@@ -1420,14 +1475,13 @@ def get_default_paths() -> dict[str, dict[Game, list[str]]]:  # TODO(th3w1zard1)
         },
         "Linux": {
             Game.K1: [
+                # Steam
                 "~/.local/share/steam/common/steamapps/swkotor",
-                "~/.local/share/steam/common/steamapps/swkotor",
-                "~/.local/share/steam/common/swkotor",
-                "~/.steam/debian-installation/steamapps/common/swkotor",  # verified
-                "~/.steam/root/steamapps/common/swkotor",  # executable name is `KOTOR1` no extension
-                # Flatpak
+                "~/.steam/root/steamapps/common/swkotor",
+                "~/.steam/debian-installation/steamapps/common/swkotor",
+                # Flatpak Steam
                 "~/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/swkotor",
-                # wsl paths
+                # WSL Defaults
                 "/mnt/C/Program Files/Steam/steamapps/common/swkotor",
                 "/mnt/C/Program Files (x86)/Steam/steamapps/common/swkotor",
                 "/mnt/C/Program Files/LucasArts/SWKotOR",
@@ -1436,17 +1490,15 @@ def get_default_paths() -> dict[str, dict[Game, list[str]]]:  # TODO(th3w1zard1)
                 "/mnt/C/Amazon Games/Library/Star Wars - Knights of the Old",
             ],
             Game.K2: [
+                # Steam
                 "~/.local/share/Steam/common/steamapps/Knights of the Old Republic II",
-                "~/.local/share/Steam/common/steamapps/kotor2",  # guess
+                "~/.steam/root/steamapps/common/Knights of the Old Republic II",
+                "~/.steam/debian-installation/steamapps/common/Knights of the Old Republic II",
+                # Aspyr Port Saves
                 "~/.local/share/aspyr-media/kotor2",
-                "~/.local/share/aspyr-media/Knights of the Old Republic II",  # guess
-                "~/.local/share/Steam/common/Knights of the Old Republic II",  # ??? wrong?
-                "~/.steam/debian-installation/steamapps/common/Knights of the Old Republic II",  # guess
-                "~/.steam/debian-installation/steamapps/common/kotor2",  # guess
-                "~/.steam/root/steamapps/common/Knights of the Old Republic II",  # executable name is `KOTOR2` no extension
-                # Flatpak
+                # Flatpak Steam
                 "~/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Knights of the Old Republic II/steamassets",
-                # wsl paths
+                # WSL Defaults
                 "/mnt/C/Program Files/Steam/steamapps/common/Knights of the Old Republic II",
                 "/mnt/C/Program Files (x86)/Steam/steamapps/common/Knights of the Old Republic II",
                 "/mnt/C/Program Files/LucasArts/SWKotOR2",
@@ -1463,15 +1515,10 @@ def find_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
     Returns:
     -------
         dict[Game, list[CaseAwarePath]]: A dictionary mapping Games to lists of existing path locations.
-
-    Processing Logic:
-    ----------------
-        - Gets default hardcoded path locations from a lookup table
-        - Resolves paths and filters out non-existing ones
-        - On Windows, also searches the registry for additional locations
-        - Returns results as lists for each Game rather than sets
     """
-    from pykotor.common.misc import Game  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
+    import platform
+
+    from pykotor.common.misc import Game  # noqa: PLC0415
 
     os_str = platform.system()
 
@@ -1480,10 +1527,7 @@ def find_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
     locations: dict[Game, set[CaseAwarePath]] = {
         game: {
             case_path
-            for case_path in (
-                CaseAwarePath(path).expanduser().resolve()
-                for path in paths
-            )
+            for case_path in (CaseAwarePath(path).expanduser().resolve() for path in paths)
             if case_path.exists()
         }
         for game, paths in raw_locations.get(os_str, {}).items()
@@ -1503,5 +1547,24 @@ def find_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
         if amazon_k1_path_str is not None and InternalPath(amazon_k1_path_str).is_dir():
             locations[Game.K1].add(CaseAwarePath(amazon_k1_path_str))
 
-    # don't return nested sets, return as lists.
-    return {Game.K1: [*locations[Game.K1]], Game.K2: [*locations[Game.K2]]}
+    return {Game.K1: sorted(list(locations[Game.K1])), Game.K2: sorted(list(locations[Game.K2]))}
+
+
+def get_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
+    """Compatibility alias for find_kotor_paths_from_default()."""
+    return find_kotor_paths_from_default()
+
+
+__all__ = [
+    "CaseAwarePath",
+    "_cleanup_fuse_mounts",
+    "_get_case_insensitive_path_fast",
+    "_get_or_create_fuse_mount",
+    "clear_cache",
+    "create_case_insensitive_pathlib_class",
+    "find_kotor_paths_from_default",
+    "get_kotor_paths_from_default",
+    "get_default_paths",
+    "is_filesystem_case_sensitive",
+    "simple_wrapper",
+]

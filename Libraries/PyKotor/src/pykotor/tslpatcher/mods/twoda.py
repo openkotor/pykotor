@@ -1,3 +1,13 @@
+"""2DA modification algorithms for TSLPatcher/HoloPatcher.
+
+This module implements 2DA modification logic for applying patches from changes.ini files.
+Handles row/column additions, cell modifications, and memory token resolution.
+
+References:
+----------
+        Observed retail KotOR 2DA load/unload behavior.
+"""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -6,13 +16,11 @@ from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING, Mapping
 
 from loggerplus import RobustLogger
-
 from pykotor.resource.formats.twoda import bytes_2da, read_2da
 from pykotor.tslpatcher.mods.template import PatcherModifications
-from utility.error_handling import universal_simplify_exception
 
 if TYPE_CHECKING:
-    from typing_extensions import Literal
+    from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
 
     from pykotor.common.misc import Game
     from pykotor.resource.formats.twoda import TwoDA, TwoDARow
@@ -521,7 +529,12 @@ class CopyRow2DA(Modify2DA):
                 target_row = row
 
         if target_row is not None:
-            # If the row already exists (based on exclusive_column) then we update the cells
+            # If the row already exists (based on exclusive_column) then we copy all columns from source first
+            # Copy all column values from source row to target row
+            for header in twoda.get_headers():
+                source_value = source_row.get_string(header)
+                target_row.set_string(header, source_value)
+            # Then update with the cells dictionary (which will override the copied values)
             cells = self._unpack(self.cells, memory, twoda, target_row)
             target_row.update_values(cells)
             self._row = target_row
@@ -666,7 +679,7 @@ class Modifications2DA(PatcherModifications):
             try:
                 row.apply(mutable_data, memory)
             except Exception as e:  # noqa: PERF203, BLE001
-                msg = f"{universal_simplify_exception(e)} when patching the file '{self.saveas}'"
+                msg = f"{(e.__class__.__name__, str(e))} when patching the file '{self.saveas}'"
                 RobustLogger().critical(str(e), exc_info=e)
                 if isinstance(e, WarningError):
                     logger.add_warning(msg)

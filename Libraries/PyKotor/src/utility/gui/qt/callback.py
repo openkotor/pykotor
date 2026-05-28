@@ -3,11 +3,11 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any
 
-from loggerplus import RobustLogger
 from qtpy import QtCore, QtWidgets
 from qtpy.QtGui import QIcon
 from qtpy.QtWidgets import QMessageBox
 
+from loggerplus import RobustLogger
 from utility.gui.base import UserCommunication
 
 if TYPE_CHECKING:
@@ -39,7 +39,7 @@ class CustomQPushButton(QtWidgets.QPushButton):
             return int(self) == other
         if isinstance(other, QMessageBox.StandardButton):
             return int(self) == other
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     def __hash__(self) -> int:
         return hash(self.enum_member.value)
@@ -101,7 +101,9 @@ class MessageBoxButton(IntEnum):
     YesAll = QMessageBox.StandardButton.YesAll  # 1073741824
     FlagMask = QMessageBox.StandardButton.FlagMask  # 1073741824
     NoAll = QMessageBox.StandardButton.NoAll  # 2147483648
-    ButtonMask = QMessageBox.StandardButton.ButtonMask  # 4294967295  # A bitmask covering all values
+    ButtonMask = (
+        QMessageBox.StandardButton.ButtonMask
+    )  # 4294967295  # A bitmask covering all values
 
     @classmethod
     def from_int(cls, value: int) -> MessageBoxButton:
@@ -136,7 +138,7 @@ class MessageBoxButton(IntEnum):
             self.LastButton: 134217728,
             self.YesAll: 32768,
             self.NoAll: 131072,
-            self.ButtonMask: -769  # A bitmask covering all values
+            self.ButtonMask: -769,  # A bitmask covering all values
         }
         return enum_button_map[self]
 
@@ -164,10 +166,9 @@ class MessageBoxButton(IntEnum):
             33554432: QMessageBox.Apply,
             67108864: QMessageBox.Reset,
             134217728: QMessageBox.RestoreDefaults,
-            -769: QMessageBox.ButtonMask  # A bitmask covering all values
+            -769: QMessageBox.ButtonMask,  # A bitmask covering all values
         }
         return standard_button_map[self.value]
-
 
     def text(self) -> str:
         """Get the default text for a given MessageBoxButton."""
@@ -196,7 +197,7 @@ class MessageBoxButton(IntEnum):
             MessageBoxButton.Default: "Default",
             MessageBoxButton.Escape: "Escape",
             MessageBoxButton.FlagMask: "Flag Mask",
-            MessageBoxButton.ButtonMask: "Button Mask"
+            MessageBoxButton.ButtonMask: "Button Mask",
         }
         return button_texts.get(self.__class__(self.value), "Unknown Button")
 
@@ -205,7 +206,7 @@ class MessageBoxButton(IntEnum):
             self is not MessageBoxButton.FlagMask
             and self is not MessageBoxButton.NoButton
             and self is not MessageBoxButton.ButtonMask
-#            and self is not MessageBoxButton.FirstButton
+            #            and self is not MessageBoxButton.FirstButton
             and self is not MessageBoxButton.LastButton
         )
 
@@ -227,20 +228,28 @@ class MessageBoxButton(IntEnum):
         for btn_enum in cls:
             if btn_enum.value == button:
                 return btn_enum
-        raise ValueError(f"Cannot find QMessageBox.StandardButton with value '{button}', do not pass multiple buttons.")
+        raise ValueError(
+            f"Cannot find QMessageBox.StandardButton with value '{button}', do not pass multiple buttons."
+        )
 
     @classmethod
-    def standardbuttons_to_qpushbuttons(cls, buttons: QMessageBox.StandardButtons) -> list[QtWidgets.QPushButton]:
+    def standardbuttons_to_qpushbuttons(
+        cls, buttons: QMessageBox.StandardButtons
+    ) -> list[QtWidgets.QPushButton]:
         """Convert QMessageBox.StandardButtons to a list of QPushButton."""
         qpushbuttons = []
         for button in cls:
             if not cls.is_real_button(button):
                 RobustLogger().debug(f"Not a real button: {button.text()}")
                 continue
-            if buttons & QMessageBox.StandardButton(button.value):  # Ensure the bitmask is correctly applied
+            if buttons & QMessageBox.StandardButton(
+                button.value
+            ):  # Ensure the bitmask is correctly applied
                 RobustLogger().debug(f"Adding qpushbutton for '{button.text()}'")
                 qpushbuttons.append(button.as_qpushbutton())
-        print(f"Converted the following to standard buttons: {','.join(cls.from_qpushbutton(qb).text() for qb in qpushbuttons)}")
+        print(
+            f"Converted the following to standard buttons: {','.join(cls.from_qpushbutton(qb).text() for qb in qpushbuttons)}"
+        )
         return qpushbuttons
 
     def icon(self) -> QtGui.QIcon:
@@ -275,15 +284,25 @@ class BetterMessageBox(QtWidgets.QDialog):
         **kwargs,
     ):
         super().__init__(parent, *args, **kwargs)
-        self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.WindowCloseButtonHint | QtCore.Qt.WindowStaysOnTopHint & ~QtCore.Qt.WindowContextHelpButtonHint & ~QtCore.Qt.WindowMinMaxButtonsHint)
+        self.setWindowFlags(
+            QtCore.Qt.Dialog
+            | QtCore.Qt.WindowCloseButtonHint
+            | QtCore.Qt.WindowStaysOnTopHint
+            & ~QtCore.Qt.WindowContextHelpButtonHint
+            & ~QtCore.Qt.WindowMinMaxButtonsHint,
+        )
 
         self.setWindowTitle(title)
         self.icon: QtWidgets.QStyle.StandardPixmap = ICON_MAP.get(icon, icon)
-        self.buttons: list[QtWidgets.QPushButton] = MessageBoxButton.standardbuttons_to_qpushbuttons(buttons)
+        self.buttons: list[QtWidgets.QPushButton] = (
+            MessageBoxButton.standardbuttons_to_qpushbuttons(buttons)
+        )
         smb_default_button: QtWidgets.QPushButton = MessageBoxButton(defaultButton).as_qpushbutton()
         if smb_default_button not in self.buttons:
             self.buttons.append(smb_default_button)
-        self.result_button: QMessageBox.StandardButton = MessageBoxButton(defaultButton).as_standardbutton()
+        self.result_button: QMessageBox.StandardButton = MessageBoxButton(
+            defaultButton
+        ).as_standardbutton()
         self.initUI(message.replace("<br>", "\n"))
 
     def initUI(self, message):
@@ -299,7 +318,11 @@ class BetterMessageBox(QtWidgets.QDialog):
         layout.addWidget(icon_label)
 
         # Add spacing above the text
-        layout.addSpacerItem(QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding))
+        layout.addSpacerItem(
+            QtWidgets.QSpacerItem(
+                20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+            )
+        )
 
         # Add text label
         label = QtWidgets.QLabel(message, self)
@@ -308,7 +331,11 @@ class BetterMessageBox(QtWidgets.QDialog):
         layout.addWidget(label)
 
         # Add spacing below the text
-        layout.addSpacerItem(QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding))
+        layout.addSpacerItem(
+            QtWidgets.QSpacerItem(
+                20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+            )
+        )
 
         # Add buttons
         button_layout = QtWidgets.QHBoxLayout()
@@ -401,12 +428,13 @@ class QtUserCommunication(UserCommunication):
             status_bar.showMessage(text)
         else:
             status_bar.setText(text)
-        status_bar.setStyleSheet(f"color: {color}; font-size: {font_size}px; font-family: {font_family}; font-weight: bold;")
+        status_bar.setStyleSheet(
+            f"color: {color}; font-size: {font_size}px; font-family: {font_family}; font-weight: bold;"
+        )
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
-
 
     buttons = QMessageBox.NoButton
     for button in MessageBoxButton:
@@ -418,12 +446,10 @@ if __name__ == "__main__":
     result = QMessageBox(QMessageBox.Information, "Test title", "Test message", buttons).exec()
     print(f"first test: You pressed button '{MessageBoxButton(result).text()}'")
 
-
-
     some_window = QtWidgets.QMainWindow()
     comm = QtUserCommunication(some_window)
     comm.print(
-        "This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. "
+        "This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. ",
     )
     bmb = BetterMessageBox(
         "Test input dialog",

@@ -1,3 +1,5 @@
+"""NCS compilers: inbuilt (native) and external (nwnnsscomp) NSS-to-NCS compilation."""
+
 from __future__ import annotations
 
 import subprocess
@@ -93,8 +95,26 @@ class KnownExternalCompilers(Enum):
         release_date=date(2005, 1, 1),
         author="Fred Tetra",
         commandline={
-            "compile": ["-c", "--outputdir", "{output_dir}", "-o", "{output_name}", "-g", "{game_value}", "{source}"],
-            "decompile": ["-d", "--outputdir", "{output_dir}", "-o", "{output_name}", "-g", "{game_value}", "{source}"],
+            "compile": [
+                "-c",
+                "--outputdir",
+                "{output_dir}",
+                "-o",
+                "{output_name}",
+                "-g",
+                "{game_value}",
+                "{source}",
+            ],
+            "decompile": [
+                "-d",
+                "--outputdir",
+                "{output_dir}",
+                "-o",
+                "{output_name}",
+                "-g",
+                "{game_value}",
+                "{source}",
+            ],
         },
     )
     V1 = ExternalCompilerConfig(
@@ -113,8 +133,26 @@ class KnownExternalCompilers(Enum):
         release_date=date(2016, 5, 18),
         author="James Goad",  # TODO: double check
         commandline={
-            "compile": ["-c", "--outputdir", "{output_dir}", "-o", "{output_name}", "-g", "{game_value}", "{source}"],
-            "decompile": ["-d", "--outputdir", "{output_dir}", "-o", "{output_name}", "-g", "{game_value}", "{source}"],
+            "compile": [
+                "-c",
+                "--outputdir",
+                "{output_dir}",
+                "-o",
+                "{output_name}",
+                "-g",
+                "{game_value}",
+                "{source}",
+            ],
+            "decompile": [
+                "-d",
+                "--outputdir",
+                "{output_dir}",
+                "-o",
+                "{output_name}",
+                "-g",
+                "{game_value}",
+                "{source}",
+            ],
         },
     )
     DENCS = ExternalCompilerConfig(
@@ -155,7 +193,7 @@ class KnownExternalCompilers(Enum):
         raise ValueError(msg)
 
 
-class NwnnsscompConfig:
+class NwnnsscompConfig(ComparableMixin):
     """Unifies the arguments passed to each different version of nwnnsscomp, since no versions offer backwards-compatibility with each other."""
 
     def __init__(
@@ -172,7 +210,9 @@ class NwnnsscompConfig:
         self.output_name: str = outputfile.name
         self.game: Game = game
 
-        self.chosen_compiler: KnownExternalCompilers = KnownExternalCompilers.from_sha256(self.sha256_hash)
+        self.chosen_compiler: KnownExternalCompilers = KnownExternalCompilers.from_sha256(
+            self.sha256_hash
+        )
 
     def get_compile_args(self, executable: str) -> list[str]:
         return self._format_args(self.chosen_compiler.value.commandline["compile"], executable)
@@ -307,7 +347,9 @@ class ExternalNCSCompiler(NCSCompiler):
 
         # Check for known error conditions
         if "File is an include file, ignored" in stdout:
-            msg = "This file has no entry point and cannot be compiled (Most likely an include file)."
+            msg = (
+                "This file has no entry point and cannot be compiled (Most likely an include file)."
+            )
             raise EntryPointError(msg)
 
         if result.returncode != 0 and stderr:

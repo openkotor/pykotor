@@ -40,9 +40,9 @@ class RobustGraphicsView(RobustAbstractItemView, QGraphicsView):
             options={
                 "No Drag": QGraphicsView.NoDrag,
                 "Scroll Hand Drag": QGraphicsView.ScrollHandDrag,
-                "Rubber Band Drag": QGraphicsView.RubberBandDrag
+                "Rubber Band Drag": QGraphicsView.RubberBandDrag,
             },
-            settings_key="dragMode"
+            settings_key="dragMode",
         )
         self._add_menu_action(
             graphics_menu,
@@ -50,7 +50,7 @@ class RobustGraphicsView(RobustAbstractItemView, QGraphicsView):
             self.cacheMode,
             self.setCacheMode,
             "cacheMode",
-            param_type=QGraphicsView.CacheMode
+            param_type=QGraphicsView.CacheMode,
         )
         self._add_menu_action(
             graphics_menu,
@@ -58,7 +58,7 @@ class RobustGraphicsView(RobustAbstractItemView, QGraphicsView):
             self.renderHints,
             self.setRenderHints,
             "renderHints",
-            param_type=int
+            param_type=int,
         )
         self._add_menu_action(
             graphics_menu,
@@ -66,7 +66,7 @@ class RobustGraphicsView(RobustAbstractItemView, QGraphicsView):
             self.transform,
             self.setTransform,
             "transform",
-            param_type=QTransform
+            param_type=QTransform,
         )
 
         return menu

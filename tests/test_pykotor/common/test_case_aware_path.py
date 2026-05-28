@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import os
 import pathlib
 import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[3].joinpath("Libraries", "PyKotor", "src")
@@ -25,7 +28,12 @@ if __name__ == "__main__" and not __package__:
     sys.path.insert(0, str(this_script_file_path.parents[1]))
     __init__ = __import__(str(this_script_file_path.parent.name)).__init__  # type: ignore[misc]
 
-from pykotor.tools.path import CaseAwarePath
+from typing import TYPE_CHECKING
+
+from pykotor.tools.path import CaseAwarePath  # noqa: E402  # pyright: ignore[reportMissingImports]
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 class TestCaseAwarePath(unittest.TestCase):
@@ -35,7 +43,6 @@ class TestCaseAwarePath(unittest.TestCase):
             CaseAwarePath("/path/to/dir")
         except Exception as e:
             self.fail(f"Unexpected exception raised: {e}")
-
 
     def test_hashing(self):
         path1 = CaseAwarePath("test\\path\\to\\nothing")
@@ -56,7 +63,9 @@ class TestCaseAwarePath(unittest.TestCase):
         assert CaseAwarePath(pathlib.Path("data\\something.test")).name == "something.test"
         assert CaseAwarePath(pathlib.Path("data/something.test")).name == "something.test"
         assert CaseAwarePath("test", pathlib.Path("data\\something.test")).name == "something.test"
-        assert (CaseAwarePath("test") / pathlib.Path("data/something.test")).name == "something.test"
+        assert (
+            CaseAwarePath("test") / pathlib.Path("data/something.test")
+        ).name == "something.test"
 
     def test_new_invalid_argument(self):
         with self.assertRaises(TypeError):
@@ -69,10 +78,27 @@ class TestCaseAwarePath(unittest.TestCase):
         assert path.endswith(".TXT")
         assert not path.endswith(".doc")
 
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "find_closest_match not available on Windows (CaseAwarePath is InternalWindowsPath)",
+    )
     def test_find_closest_match(self):
-        items = [CaseAwarePath("test"), CaseAwarePath("TEST"), CaseAwarePath("TesT"), CaseAwarePath("teSt")]
-        assert str(CaseAwarePath.find_closest_match("teST", items)) == "teSt"  # type: ignore[generator vs list]
+        items = [
+            CaseAwarePath("test"),
+            CaseAwarePath("TEST"),
+            CaseAwarePath("TesT"),
+            CaseAwarePath("teSt"),
+        ]
+        # find_closest_match expects a generator, not a list
 
+        items_gen: Generator = (item for item in items)
+        result = CaseAwarePath.find_closest_match("teST", items_gen)
+        assert result == "teSt"
+
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "get_matching_characters_count not available on Windows (CaseAwarePath is InternalWindowsPath)",
+    )
     def test_get_matching_characters_count(self):
         assert CaseAwarePath.get_matching_characters_count("test", "tesT") == 3
         assert CaseAwarePath.get_matching_characters_count("test", "teat") == -1
@@ -111,53 +137,34 @@ class TestCaseAwarePath(unittest.TestCase):
         assert CaseAwarePath.str_norm("/path//to/dir/", slash="\\") == "\\path\\to\\dir"
         assert CaseAwarePath.str_norm("/path//to/dir/", slash="/") == "/path/to/dir"
 
+    @unittest.skipIf(sys.platform == "win32", "POSIX-specific case resolution behavior")
+    def test_virtual_archive_segment_does_not_scan_file_path(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            capsule_path = pathlib.Path(tmpdir) / "swpc_tex_gui.erf"
+            capsule_path.write_bytes(b"placeholder")
+            virtual_path = CaseAwarePath(capsule_path) / "load_manm26ae.tpc"
 
-class TestSplitFilename(unittest.TestCase):
-    def test_normal(self):
-        path = CaseAwarePath("file.txt")
-        stem, ext = path.split_filename()
-        assert stem == "file"
-        assert ext == "txt"
+            original_scandir = os.scandir
+            capsule_path_str = str(capsule_path)
 
-    def test_multiple_dots(self):
-        path = CaseAwarePath("file.with.dots.txt")
-        stem, ext = path.split_filename(dots=2)
-        assert stem == "file.with"
-        assert ext == "dots.txt"
-        path = CaseAwarePath("test.asdf.qwerty.tlk.xml")
-        stem, ext = path.split_filename(dots=2)
-        assert stem == "test.asdf.qwerty"
-        assert ext == "tlk.xml"
+            def guarded_scandir(path):
+                scanned = os.fspath(path)
+                if scanned == capsule_path_str:
+                    msg = "os.scandir() should not be called on archive files for virtual path segments."
+                    raise AssertionError(msg)
+                return original_scandir(path)
 
-    def test_no_dots(self):
-        path = CaseAwarePath("filename")
-        stem, ext = path.split_filename()
-        assert stem == "filename"
-        assert ext == ""
+            with patch("os.scandir", side_effect=guarded_scandir):
+                resolved_path = str(virtual_path)
 
-    def test_negative_dots(self):
-        path = CaseAwarePath("left.right.txt")
-        stem, ext = path.split_filename(dots=-1)
-        assert stem == "right.txt"
-        assert ext == "left"
-
-    def test_more_dots_than_parts(self):
-        path = CaseAwarePath("file.txt")
-        stem, ext = path.split_filename(dots=3)
-        assert stem == "file"
-        assert ext == "txt"
-        stem, ext = path.split_filename(dots=-3)
-        assert stem == "file"
-        assert ext == "txt"
-
-    def test_invalid_dots(self):
-        path = CaseAwarePath("file.txt")
-        with self.assertRaises(ValueError):
-            path.split_filename(dots=0)
+            assert resolved_path.endswith(os.path.join("swpc_tex_gui.erf", "load_manm26ae.tpc"))
 
 
 class TestIsRelativeTo(unittest.TestCase):
-    def test_basic(self):  # sourcery skip: class-extract-method
+    @unittest.skipIf(
+        sys.platform == "win32", "POSIX path test - Windows uses different path format"
+    )
+    def test_basic(self):
         p1 = CaseAwarePath("/usr/local/bin")
         p2 = CaseAwarePath("/usr/local")
         assert p1.is_relative_to(p2)

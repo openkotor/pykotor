@@ -135,7 +135,9 @@ class BinaryWriterBytearray(BinaryWriter, RawBinaryWriterBytearray):
         for language, gender, substring in value:
             string_id: int = LocalizedString.substring_id(language, gender)
             bw.write_uint32(string_id, big=big)
-            bw.write_string(substring, prefix_length=4, encoding=language.get_encoding(), errors="replace")
+            bw.write_string(
+                substring, prefix_length=4, encoding=language.get_encoding(), errors="replace"
+            )
 
         locstring_data: bytes = bw.data()
         self.write_uint32(len(locstring_data))
@@ -303,20 +305,30 @@ if __name__ == "__main__":
                 result[i] = 0.0001
 
         # Print the results with additional statistics
-        print("------------------------------------------------------\n\nInstantiation Statistics (sorted by fastest to slowest):\n")
+        print(
+            "------------------------------------------------------\n\nInstantiation Statistics (sorted by fastest to slowest):\n"
+        )
         for result in results:
             speed_percent: float = (fastest_instantiation_time / result[1]) * 100
             print(f"{result[0]}: {result[1]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[1] / NUM_INSTANTIATIONS:.2f}s per)")
 
-        print("------------------------------------------------------\n\nOperation Statistics (sorted by fastest to slowest):")
+        print(
+            "------------------------------------------------------\n\nOperation Statistics (sorted by fastest to slowest):"
+        )
         for result in results:
             speed_percent = (fastest_operation_time / result[2]) * 100
-            print(f"{result[0]}: {result[2]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[2] / NUM_INSTANTIATIONS:.2f}s per)")
+            print(
+                f"{result[0]}: {result[2]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[2] / NUM_INSTANTIATIONS:.2f}s per)"
+            )
 
-        print("------------------------------------------------------\n\nCombined Statistics (sorted by fastest to slowest):")
+        print(
+            "------------------------------------------------------\n\nCombined Statistics (sorted by fastest to slowest):"
+        )
         for result in results:
             speed_percent = (fastest_total_time / result[3]) * 100
-            print(f"{result[0]}: {result[3]:.4f} seconds (Inst: {result[1]:.4f}s, Ops: {result[2]:.4f}s) ({speed_percent:.2f}% of fastest)")
+            print(
+                f"{result[0]}: {result[3]:.4f} seconds (Inst: {result[1]:.4f}s, Ops: {result[2]:.4f}s) ({speed_percent:.2f}% of fastest)"
+            )
         print("------------------------------------------------------\n")
 
         # Calculate average times

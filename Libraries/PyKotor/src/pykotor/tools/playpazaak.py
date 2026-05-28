@@ -1,3 +1,7 @@
+"""Pazaak card game implementation and rules.
+Note: Pazaak is a card game minigame in KotOR with specific card types and scoring rules
+"""
+
 from __future__ import annotations
 
 import random
@@ -21,7 +25,7 @@ References:
 """
 
 
-class CardType:
+class CardType(Enum):
     POSITIVE = "+"
     NEGATIVE = "-"
     POS_OR_NEG = "+/-"
@@ -36,7 +40,29 @@ class PazaakSideCard:
     def __str__(self) -> str:
         if self.card_type == CardType.YELLOW_SPECIAL:
             return f"Yellow {self.value}"
-        return f"{self.card_type.value.replace('+', f'+{self.value}').replace('-', f'-{self.value}')}"
+        if self.card_type == CardType.POS_OR_NEG:
+            return f"+/-{self.value}"
+        return f"{self.card_type}{self.value}"
+
+    def get_value(
+        self,
+        choice: str | None = None,
+    ) -> int:
+        # NOTE: Do not use a mapping/dict here: it would eagerly evaluate expressions like
+        # `-self.value` even when `self.value` is a `list[int]` for yellow special cards.
+        if self.card_type == CardType.YELLOW_SPECIAL:
+            if not isinstance(self.value, list):
+                raise TypeError(
+                    f"Yellow special card value must be a list[int], got {type(self.value)!r}"
+                )
+            if not self.value:
+                raise ValueError("Yellow special card value list cannot be empty")
+            return int(self.value[0])
+
+        if not isinstance(self.value, int):
+            raise TypeError(
+                f"Card value must be an int for card_type={self.card_type!r}, got {type(self.value)!r}"
+            )
 
     def get_value(
         self,
@@ -65,7 +91,9 @@ class Player:
     stands: bool = False
 
     def calculate_hand_value(self) -> int:
-        return sum(card.get_value() if isinstance(card, PazaakSideCard) else card for card in self.hand)
+        return sum(
+            card.get_value() if isinstance(card, PazaakSideCard) else card for card in self.hand
+        )
 
     def is_bust(self) -> bool:
         return self.calculate_hand_value() > 20
@@ -151,9 +179,11 @@ class PazaakGame:
         yellow_card: PazaakSideCard,
     ) -> None:
         for i, card in enumerate(player.hand):
-            if isinstance(card, PazaakSideCard) and card.card_type == CardType.POSITIVE and card.value in yellow_card.value:
-                player.hand[i] = PazaakSideCard(card.value, CardType.NEGATIVE)
-            elif isinstance(card, int) and card in yellow_card.value:
+            if (
+                isinstance(card, PazaakSideCard)
+                and card.card_type == CardType.POSITIVE
+                and card.value in yellow_card.value
+            ) or (isinstance(card, int) and card in yellow_card.value):
                 player.hand[i] = PazaakSideCard(card.value, CardType.NEGATIVE)
 
     def switch_player(self):
@@ -204,7 +234,9 @@ class PazaakGame:
 
         if best_choice:
             side_card, new_value = best_choice
-            if new_value == self.MAX_HAND_VALUE or (ai_value < player_value and new_value > ai_value):
+            if new_value == self.MAX_HAND_VALUE or (
+                ai_value < player_value and new_value > ai_value
+            ):
                 return "use_side_card", side_card
 
         if ai_value >= 17 and ai_value >= player_value:  # noqa: PLR2004
@@ -291,7 +323,9 @@ class ConsolePazaak(PazaakInterface):
                 else:
                     print("No side cards left.")
             else:
-                print("Invalid input. Please enter 'h' for hit, 's' for stand, 'e' for end turn, or 'u' for using a side card.")
+                print(
+                    "Invalid input. Please enter 'h' for hit, 's' for stand, 'e' for end turn, or 'u' for using a side card."
+                )
 
     def ai_turn(self):
         main_card: int = self.game.draw_card()
@@ -376,7 +410,7 @@ class ConsolePazaak(PazaakInterface):
     def play_game(self):
         self.setup_game()
         while not self.game.winner:
-            round_winner = None
+            round_winner: Player | None = None
             while round_winner is None:
                 self.play_turn(self.game.current_player)
                 round_winner: Player | None = self.game.check_winner()

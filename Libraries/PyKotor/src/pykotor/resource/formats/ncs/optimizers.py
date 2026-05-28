@@ -1,3 +1,5 @@
+"""NCS bytecode optimizers: remove NOPs and other peephole optimizations."""
+
 from __future__ import annotations
 
 import logging
@@ -96,7 +98,7 @@ class RemoveMoveSPEqualsZeroOptimizer(NCSOptimizer):
 
         # Process instructions which jump to a MOVSP=0 and set them to jump to the proceeding instruction instead
         for op in movsp0:
-            nop_index: int = ncs.instructions.index(op)
+            nop_index: int = instr_to_index[id(op)]
             for link in ncs.links_to(op):
                 link.jump = ncs.instructions[nop_index + 1]
 
@@ -199,7 +201,9 @@ class RemoveUnusedBlocksOptimizer(NCSOptimizer):
             else:
                 checking.append(check + 1)
 
-        unreachable: list[NCSInstruction] = [instruction for instruction in ncs.instructions if instruction not in reachable]
+        unreachable: list[NCSInstruction] = [
+            instruction for instruction in ncs.instructions if instruction not in reachable
+        ]
         for instruction in unreachable:
             # We do not have to worry about fixing any instructions that JMP since the target instructions here should
             # be detached for the actual (reachable) script.
