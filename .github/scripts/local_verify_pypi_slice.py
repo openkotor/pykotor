@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "130"
+PLAN_TRACK_CAP = "131"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1755,6 +1755,15 @@ def _format_preflight_watch_summary_line(
     gh_watch = summary.get("gh_watch_summary")
     if isinstance(gh_watch, str) and gh_watch:
         parts.append(f"gh_watch={gh_watch}")
+    queue_context = summary.get("queue_context")
+    if isinstance(queue_context, dict):
+        max_queued = queue_context.get("max_queued_hours")
+        if isinstance(max_queued, (int, float)):
+            parts.append(f"queued={float(max_queued):.1f}h")
+        if queue_context.get("queue_backlog_severe"):
+            parts.append("queue_backlog=true")
+        elif queue_context.get("queue_backlog_warning"):
+            parts.append("queue_warn=true")
     return " ".join(parts)
 
 
@@ -1830,6 +1839,9 @@ def _watch_lfg_preflight_defer(
     gh_watch = _build_gh_watch_from_status(status)
     if gh_watch:
         summary["gh_watch_summary"] = gh_watch
+    queue_context = _build_defer_queue_context(status)
+    if queue_context.get("max_queued_hours") is not None or queue_context.get("queue_backlog"):
+        summary["queue_context"] = queue_context
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
     print(
@@ -2608,10 +2620,16 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
             status["active_runs"] = list(active_runs)
         else:
             status.pop("active_runs", None)
+        queue_context = briefing.get("queue_context")
+        if isinstance(queue_context, dict) and queue_context:
+            status["queue_context"] = queue_context
+        else:
+            status.pop("queue_context", None)
     else:
         status.pop("lfg_agent_briefing", None)
         status.pop("gh_watch_summary", None)
         status.pop("active_runs", None)
+        status.pop("queue_context", None)
 
 
 def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:

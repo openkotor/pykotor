@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–130", patched)
+        self.assertIn("019–131", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1085,8 +1085,8 @@ Monitoring.
             "lfg_deferred": True,
             "lfg_defer_reason": "unchanged_active_runs",
             "checkpoint": {"defer_lfg_pr": True},
-            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": ""},
-            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": ""},
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 0.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 0.3},
         }
         with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
             mod._apply_lfg_agent_briefing(status)
@@ -1094,6 +1094,8 @@ Monitoring.
         self.assertEqual(briefing.get("gh_watch_summary"), "verify:1,fc:2")
         self.assertEqual(status.get("gh_watch_summary"), "verify:1,fc:2")
         self.assertEqual(status.get("active_runs"), ["verify", "fc"])
+        queue_context = status.get("queue_context") or {}
+        self.assertIn("max_queued_hours", queue_context)
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
@@ -1477,8 +1479,8 @@ Monitoring.
         deferred_status = {
             "gh_ok": True,
             "checkpoint": {"defer_lfg_pr": True},
-            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": ""},
-            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": ""},
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
         }
         with patch.object(mod, "_ci_status", return_value=deferred_status):
             with patch.object(mod, "_refine_lfg_checkpoint"):
@@ -1493,6 +1495,8 @@ Monitoring.
         summary = status.get("preflight_watch_summary") or {}
         self.assertEqual(summary.get("active_runs"), ["verify", "fc"])
         self.assertEqual(summary.get("gh_watch_summary"), "verify:1,fc:2")
+        queue_context = summary.get("queue_context") or {}
+        self.assertEqual(queue_context.get("max_queued_hours"), 1.5)
 
     def test_build_drift_expected_after_prefers_closeout(self) -> None:
         expected = mod._build_drift_expected_after(
@@ -3358,6 +3362,21 @@ last_verified: 2026-01-01
             }
         )
         self.assertIn("gh_watch=verify:1,fc:2", line)
+
+    def test_format_preflight_watch_summary_line_queued(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "queue_context": {
+                    "max_queued_hours": 1.5,
+                    "queue_backlog_warning": True,
+                },
+            }
+        )
+        self.assertIn("queued=1.5h", line)
+        self.assertIn("queue_warn=true", line)
 
     def test_apply_lfg_defer_skipped_when_disabled(self) -> None:
         status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True}}
