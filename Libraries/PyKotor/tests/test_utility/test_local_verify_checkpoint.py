@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–146", patched)
+        self.assertIn("019–147", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2826,6 +2826,41 @@ last_verified: 2026-01-01
         )
         self.assertIn("sha_gap", briefing)
         self.assertEqual(briefing["sha_gap"]["short"], "7d85438:8916e2f")
+
+    def test_apply_lfg_agent_briefing_sha_gap_top_level(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight-watch --json",
+            "checkpoint": {
+                "fc_sha_stale": True,
+                "master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "fc_stale_gap_pending_note": "FC queued on 7d85438 vs master 8916e2f",
+            },
+            "forward_commits": {
+                "run_id": 26547475742,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "7d85438b090178c8c8924abc46565f7c6ded19",
+                "url": "https://example.com/runs/26547475742",
+                "queued_hours": 0.1,
+            },
+        }
+        mod._apply_lfg_agent_briefing(status)
+        self.assertEqual(status.get("sha_gap_short"), "7d85438:8916e2f")
+        sha_gap = status.get("sha_gap") or {}
+        self.assertEqual(sha_gap.get("short"), "7d85438:8916e2f")
+
+    def test_emit_lfg_strict_exit_stderr_sha_gap(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:fc_active_pending",
+            "lfg_agent_briefing": {
+                "sha_gap": {"short": "7d85438:8916e2f"},
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        self.assertIn("sha_gap=7d85438:8916e2f", err.getvalue())
 
     def test_build_defer_queue_context_severe(self) -> None:
         context = mod._build_defer_queue_context(
