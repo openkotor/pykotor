@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "117"
+PLAN_TRACK_CAP = "118"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1749,11 +1749,16 @@ def _watch_lfg_preflight_defer(
     status["preflight_watch_polls"] = polls
     status["lfg_preflight_watch_result"] = watch_result
     summary = _build_preflight_watch_summary(status)
+    blocked = _lfg_refresh_blocked(status, deferred=bool(status.get("lfg_deferred")))
+    summary["next_hint"] = _build_proceed_hint(status, blocked=blocked)
     status["preflight_watch_summary"] = summary
     print(
         f"Preflight watch summary: {_format_preflight_watch_summary_line(summary)}",
         file=sys.stderr,
     )
+    next_hint = summary.get("next_hint")
+    if isinstance(next_hint, str) and next_hint:
+        print(f"Preflight watch next: {next_hint}", file=sys.stderr)
     return status
 
 
@@ -2195,11 +2200,26 @@ def _build_defer_sha_gap_detail(status: dict[str, Any]) -> dict[str, Any] | None
     return detail
 
 
+def _build_defer_post_terminal_commands(status: dict[str, Any]) -> dict[str, str]:
+    script = "python3 .github/scripts/local_verify_pypi_slice.py"
+    commands: dict[str, str] = {
+        "preflight": f"{script} --lfg-preflight --json",
+        "gate": f"{script} --lfg-gate",
+    }
+    checkpoint = status.get("checkpoint")
+    if isinstance(checkpoint, dict) and checkpoint.get("fc_sha_stale"):
+        commands["prefetch_gate"] = (
+            f"{script} --prefetch-git --lfg-gate  # after FC terminal; classify SHA gap"
+        )
+    return commands
+
+
 def _build_defer_monitor_commands(briefing: dict[str, Any]) -> dict[str, str]:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
     commands: dict[str, str] = {
         "preflight_retry": f"{script} --lfg-preflight --json",
         "preflight_watch": f"{script} --lfg-preflight-watch --json",
+        "gate_watch": f"{script} --lfg-gate-watch --json",
     }
     fc_run_id = briefing.get("fc_run_id")
     if fc_run_id is not None:
@@ -2303,6 +2323,7 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
         }
         _attach_active_run_refs(status, briefing)
         briefing["monitor_commands"] = _build_defer_monitor_commands(briefing)
+        briefing["post_terminal_commands"] = _build_defer_post_terminal_commands(status)
         sha_gap = _build_defer_sha_gap_detail(status)
         if sha_gap is not None:
             briefing["sha_gap"] = sha_gap
@@ -2870,6 +2891,7 @@ def _resolve_lfg_mode(
     lfg_merge_gate: bool,
     lfg_closeout: bool,
     lfg_gate: bool,
+    lfg_gate_watch: bool,
     lfg_preflight: bool,
     lfg_preflight_watch: bool,
     lfg_refresh: bool,
@@ -2878,6 +2900,8 @@ def _resolve_lfg_mode(
 ) -> str | None:
     if lfg_merge_watch or (lfg_merge_gate and lfg_pr_watch):
         return "merge_watch"
+    if lfg_gate_watch or (lfg_gate and lfg_preflight_watch):
+        return "gate_watch"
     if lfg_preflight_watch:
         return "preflight_watch"
     if lfg_pr_watch:
@@ -2925,6 +2949,7 @@ def main() -> None:
             "Examples:\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate\n"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-gate\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-gate --lfg-pr-watch\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-watch\n"
@@ -3057,6 +3082,11 @@ def main() -> None:
         help="Shorthand for --lfg-preflight --strict-defer-exit (full JSON then exit 2 when deferred)",
     )
     parser.add_argument(
+        "--lfg-gate-watch",
+        action="store_true",
+        help="Shorthand for --lfg-gate --lfg-preflight-watch (poll until defer clears then gate exit)",
+    )
+    parser.add_argument(
         "--lfg-merge-watch",
         action="store_true",
         help="Shorthand for --lfg-merge-gate --lfg-pr-watch (poll until PR CI ready/failed/timeout)",
@@ -3132,6 +3162,10 @@ def main() -> None:
     if args.lfg_merge_watch:
         args.lfg_merge_gate = True
         args.lfg_pr_watch = True
+
+    if args.lfg_gate_watch:
+        args.lfg_gate = True
+        args.lfg_preflight_watch = True
 
     if args.lfg_preflight_watch:
         args.lfg_preflight = True
@@ -3334,6 +3368,7 @@ def main() -> None:
                         lfg_merge_gate=args.lfg_merge_gate,
                         lfg_closeout=args.lfg_closeout,
                         lfg_gate=args.lfg_gate,
+                        lfg_gate_watch=args.lfg_gate_watch,
                         lfg_preflight=args.lfg_preflight,
                         lfg_preflight_watch=args.lfg_preflight_watch,
                         lfg_refresh=args.lfg_refresh,
@@ -3386,6 +3421,7 @@ def main() -> None:
             lfg_merge_gate=args.lfg_merge_gate,
             lfg_closeout=args.lfg_closeout,
             lfg_gate=args.lfg_gate,
+            lfg_gate_watch=args.lfg_gate_watch,
             lfg_preflight=args.lfg_preflight,
             lfg_preflight_watch=args.lfg_preflight_watch,
             lfg_refresh=args.lfg_refresh,

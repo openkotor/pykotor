@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–117", patched)
+        self.assertIn("019–118", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2484,6 +2484,7 @@ last_verified: 2026-01-01
                 ),
                 "checkpoint": {
                     "fc_stale_gap_pending_note": "FC queued on def1234 vs master abc1234",
+                    "fc_sha_stale": True,
                 },
                 "forward_commits": {
                     "run_id": 26546235822,
@@ -2507,13 +2508,15 @@ last_verified: 2026-01-01
         )
         self.assertIn("preflight_watch", monitor)
         self.assertIn("--lfg-preflight-watch", monitor["preflight_watch"])
-        self.assertIn("--lfg-preflight --json", monitor["preflight_retry"])
+        self.assertIn("gate_watch", monitor)
+        self.assertIn("--lfg-gate-watch", monitor["gate_watch"])
+        self.assertIn("prefetch_gate", briefing["post_terminal_commands"])
         self.assertNotIn("preflight-watch", monitor["preflight_retry"])
         self.assertTrue(briefing["watch_recommended"])
         self.assertIn("--lfg-preflight-watch", briefing["command"])
         sha_gap = briefing["sha_gap"]
         self.assertEqual(sha_gap["fc_head_sha"], None)
-        self.assertFalse(sha_gap["fc_sha_stale"])
+        self.assertTrue(sha_gap["fc_sha_stale"])
 
     def test_build_defer_sha_gap_detail_fc_active(self) -> None:
         detail = mod._build_defer_sha_gap_detail(
@@ -2627,6 +2630,31 @@ last_verified: 2026-01-01
         self.assertFalse(status.get("lfg_deferred"))
         summary = status.get("preflight_watch_summary") or {}
         self.assertEqual(summary.get("polls"), 2)
+        self.assertIn("next_hint", summary)
+
+    def test_resolve_lfg_mode_gate_watch(self) -> None:
+        self.assertEqual(
+            mod._resolve_lfg_mode(
+                lfg_merge_watch=False,
+                lfg_merge_gate=False,
+                lfg_closeout=False,
+                lfg_gate=True,
+                lfg_gate_watch=True,
+                lfg_preflight=True,
+                lfg_preflight_watch=True,
+                lfg_refresh=True,
+                lfg_pr_watch=False,
+                dry_run=True,
+            ),
+            "gate_watch",
+        )
+
+    def test_build_defer_post_terminal_commands(self) -> None:
+        commands = mod._build_defer_post_terminal_commands(
+            {"checkpoint": {"fc_sha_stale": True}}
+        )
+        self.assertIn("prefetch_gate", commands)
+        self.assertIn("--prefetch-git", commands["prefetch_gate"])
 
     def test_watch_lfg_preflight_defer_timeout(self) -> None:
         deferred_status = {
@@ -2654,6 +2682,7 @@ last_verified: 2026-01-01
                 lfg_merge_gate=False,
                 lfg_closeout=False,
                 lfg_gate=False,
+                lfg_gate_watch=False,
                 lfg_preflight=True,
                 lfg_preflight_watch=True,
                 lfg_refresh=True,
@@ -3171,6 +3200,7 @@ last_verified: 2026-01-01
                 lfg_merge_gate=False,
                 lfg_closeout=True,
                 lfg_gate=False,
+                lfg_gate_watch=False,
                 lfg_preflight=False,
                 lfg_preflight_watch=False,
                 lfg_refresh=True,
@@ -3185,6 +3215,7 @@ last_verified: 2026-01-01
                 lfg_merge_gate=False,
                 lfg_closeout=False,
                 lfg_gate=True,
+                lfg_gate_watch=False,
                 lfg_preflight=True,
                 lfg_preflight_watch=False,
                 lfg_refresh=True,
@@ -3199,6 +3230,7 @@ last_verified: 2026-01-01
                 lfg_merge_gate=True,
                 lfg_closeout=False,
                 lfg_gate=True,
+                lfg_gate_watch=False,
                 lfg_preflight=True,
                 lfg_preflight_watch=False,
                 lfg_refresh=True,
@@ -3213,6 +3245,7 @@ last_verified: 2026-01-01
                 lfg_merge_gate=False,
                 lfg_closeout=False,
                 lfg_gate=True,
+                lfg_gate_watch=False,
                 lfg_preflight=True,
                 lfg_preflight_watch=False,
                 lfg_refresh=True,
@@ -3227,6 +3260,7 @@ last_verified: 2026-01-01
                 lfg_merge_gate=True,
                 lfg_closeout=False,
                 lfg_gate=True,
+                lfg_gate_watch=False,
                 lfg_preflight=True,
                 lfg_preflight_watch=False,
                 lfg_refresh=True,
