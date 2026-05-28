@@ -120,6 +120,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Deferred watch poll stderr adds **`merge_ready=`** from top-level **`briefing_merge_ready`** (plan 155).
 - Deferred watch poll stderr adds **`verify_run=`** / **`fc_run=`** from top-level run IDs (plan 156).
 - Deferred watch poll stderr adds **`verify_status=`** / **`fc_status=`** from top-level mirrored status (plan 157).
+- Deferred watch poll stderr adds **`gh_watch=`** from top-level **`gh_watch_summary`** (plan 158).
 - **`--lfg-preflight-watch`** — poll preflight until defer clears or timeout (default 7200s); `preflight_watch_summary` with `next_hint` (plan 114).
 - **`--lfg-gate-watch`** — gate + preflight-watch; defer **`post_terminal_commands`** for after FC terminal; primary wait command for defer/drift (plans 118–119).
 - **`investigate_ci_drift`** briefing includes structured **`drift`**, **`refresh_commands`**, and **`wait_recommended`** when runs are still active (plan 115).
@@ -203,7 +204,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–157** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–158** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Last CI check (plan 123)
 
