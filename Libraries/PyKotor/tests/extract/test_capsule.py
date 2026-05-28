@@ -32,6 +32,17 @@ TEST_RIM_FILE = "Libraries/PyKotor/tests/test_files/capsule.rim"
 
 
 class TestCapsule(TestCase):
+    @unittest.skipIf(sys.platform == "win32", "Case-mismatch path semantics differ on Windows filesystems.")
+    def test_case_mismatched_path(self):
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            mixed_dir = pathlib.Path(tmpdirname).joinpath("MixedCase")
+            mixed_dir.mkdir()
+            temp_rim_path = mixed_dir.joinpath("capsule.rim")
+            shutil.copy(TEST_RIM_FILE, temp_rim_path)
+
+            rim_capsule = Capsule(pathlib.Path(tmpdirname).joinpath("mixedcase", "capsule.rim"))
+            assert len(rim_capsule) == 3
+
     def _assert_existing_resources(
         self, capsule: Capsule, resources: list[tuple[str, ResourceType, int]]
     ):
