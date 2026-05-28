@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–142", patched)
+        self.assertIn("019–143", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1071,6 +1071,7 @@ Monitoring.
                 "fc_status": "queued",
                 "blocked": "deferred",
                 "action": "defer",
+                "notes": ["Runner backlog ~3h"],
                 "monitor_commands": {
                     "watch_fc_run": "gh run watch 26549293445 --exit-status",
                 },
@@ -1089,6 +1090,7 @@ Monitoring.
         self.assertIn("fc_status=queued", output)
         self.assertIn("blocked=deferred", output)
         self.assertIn("action=defer", output)
+        self.assertIn("notes=1", output)
 
     def test_emit_lfg_strict_exit_stderr_watch_recommended(self) -> None:
         status: dict[str, Any] = {
@@ -1103,7 +1105,7 @@ Monitoring.
         status: dict[str, Any] = {
             "lfg_deferred": True,
             "lfg_defer_reason": "unchanged_active_runs",
-            "checkpoint": {"defer_lfg_pr": True},
+            "checkpoint": {"defer_lfg_pr": True, "queue_backlog_note": "Runner backlog ~3h"},
             "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 2.5, "url": "https://example.com/runs/1"},
             "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 0.3, "url": "https://example.com/runs/2"},
         }
@@ -1135,6 +1137,7 @@ Monitoring.
         self.assertEqual(status.get("fc_status"), "queued")
         self.assertEqual(status.get("blocked"), "deferred")
         self.assertEqual(status.get("briefing_action"), "defer")
+        self.assertEqual(status.get("briefing_notes"), ["Runner backlog ~3h"])
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
@@ -1520,6 +1523,7 @@ Monitoring.
             "checkpoint": {
                 "defer_lfg_pr": True,
                 "defer_reason": "same canonical runs still active on unchanged checkpoint",
+                "queue_backlog_note": "Runner backlog ~3h",
             },
             "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 2.5, "url": "https://example.com/runs/1"},
             "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0, "url": "https://example.com/runs/2"},
@@ -1557,6 +1561,7 @@ Monitoring.
         self.assertEqual(summary.get("fc_status"), "queued")
         self.assertEqual(summary.get("blocked"), "deferred")
         self.assertEqual(summary.get("briefing_action"), "defer")
+        self.assertEqual(summary.get("briefing_notes"), ["Runner backlog ~3h"])
         self.assertTrue(summary.get("queue_backlog_warning"))
         self.assertEqual(summary.get("max_queued_hours"), 2.5)
 
