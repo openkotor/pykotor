@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 from pykotor.common.misc import Game
 from pykotor.common.script import DataType
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.common.scriptdefs import KOTOR_FUNCTIONS
 from pykotor.resource.formats.ncs import NCSInstruction, NCSInstructionType
 from utility.common.geometry import Vector3
 
@@ -29,7 +29,7 @@ else:
     from pykotor.common.scriptdefs import KOTOR_FUNCTIONS, TSL_FUNCTIONS
 
 
-class Interpreter(ComparableMixin):
+class Interpreter:
     """NCS bytecode interpreter for testing and debugging.
 
     Executes NCS bytecode instructions to test script behavior. Partially implemented
@@ -38,6 +38,9 @@ class Interpreter(ComparableMixin):
 
     References:
     ----------
+        vendor/KotOR.js/src/odyssey/controllers/ (Runtime script execution)
+        vendor/reone/src/libs/script/format/ncsreader.cpp (NCS instruction reading)
+        vendor/xoreos-tools/src/nwscript/decompiler.cpp (NCS instruction semantics)
         Note: Interpreter is PyKotor-specific for testing, not a full runtime implementation
     """
 
@@ -45,7 +48,9 @@ class Interpreter(ComparableMixin):
     # This is set to a high value to accommodate complex scripts while still providing protection
     DEFAULT_MAX_INSTRUCTIONS = 100_000
 
-    def __init__(self, ncs: NCS, game: Game = Game.K1, max_instructions: int | None = None):
+    def __init__(
+        self, ncs: NCS, game: Game = Game.K1, max_instructions: int | None = None
+    ):
         self._ncs: NCS = ncs
         self._cursor: NCSInstruction | None = ncs.instructions[0]
         self._cursor_index: int = 0
@@ -68,28 +73,30 @@ class Interpreter(ComparableMixin):
 
         # Instruction execution limit
         self._max_instructions: int = (
-            max_instructions if max_instructions is not None else self.DEFAULT_MAX_INSTRUCTIONS
+            max_instructions
+            if max_instructions is not None
+            else self.DEFAULT_MAX_INSTRUCTIONS
         )
         self._instructions_executed: int = 0
 
     def step_execute(self) -> bool:
         """Execute a single instruction and return whether execution should continue.
-
+        
         This method extracts the core instruction execution logic from run() to allow
         step-by-step execution for debugging. Returns True if execution should continue,
         False if execution is complete or should stop.
-
+        
         Returns:
         -------
             bool: True if more instructions remain, False if execution finished
-
+            
         Raises:
         ------
             RuntimeError: If the instruction limit is exceeded (possible infinite loop detected).
         """
         if self._cursor is None:
             return False
-
+            
         # Check instruction limit to prevent infinite loops
         if self._instructions_executed >= self._max_instructions:
             log.error(
@@ -310,7 +317,9 @@ class Interpreter(ComparableMixin):
 
         elif cursor.ins_type == NCSInstructionType.JSR:
             index_return_to = index + 1
-            return_to: NCSInstruction | None = self._ncs.instructions[index_return_to]
+            return_to: NCSInstruction | None = self._ncs.instructions[
+                index_return_to
+            ]
             self._returns.append((return_to, index_return_to))
 
         elif cursor.ins_type in {
@@ -335,7 +344,9 @@ class Interpreter(ComparableMixin):
                 return False
             return_to, return_index = return_info
             if not isinstance(return_to, NCSInstruction):
-                msg = f"Return instruction RETN at index {index} has no return target"
+                msg = (
+                    f"Return instruction RETN at index {index} has no return target"
+                )
                 raise RuntimeError(msg)
             self._set_cursor(return_to, return_index)
             return True
@@ -363,7 +374,7 @@ class Interpreter(ComparableMixin):
                 self._cursor_index = -1
                 return False
             self._set_cursor(self._ncs.instructions[index + 1], index + 1)
-
+        
         return True
 
     def run(self):
@@ -416,15 +427,16 @@ class Interpreter(ComparableMixin):
             ValueError: If argument count or types don't match function signature
         """
         if args != len(function.params):
-            msg = f"Action '{function.name}' called with {args} arguments but expects {len(function.params)} parameters"
+            msg = (
+                f"Action '{function.name}' called with {args} arguments "
+                f"but expects {len(function.params)} parameters"
+            )
             raise ValueError(msg)
 
         # DEBUG: Log stack state before popping arguments
         print(f"DEBUG do_action: function={function.name}, args={args}")
-        print(
-            f"DEBUG do_action: stack before pop: {[f'{obj.data_type.name}={obj.value}' for obj in self._stack.state()[-10:]]}"
-        )
-
+        print(f"DEBUG do_action: stack before pop: {[f'{obj.data_type.name}={obj.value}' for obj in self._stack.state()[-10:]]}")
+        
         args_snap = []
 
         # Pop arguments from stack in reverse order (last param popped first)
@@ -453,23 +465,21 @@ class Interpreter(ComparableMixin):
                 try:
                     args_snap.append(self._stack.pop())
                 except IndexError as e:
-                    msg = f"Stack underflow while popping argument for '{function.name}'"
+                    msg = (
+                        f"Stack underflow while popping argument for '{function.name}'"
+                    )
                     raise RuntimeError(msg) from e
 
         # DEBUG: Log args_snap before reverse
-        print(
-            f"DEBUG: args_snap before reverse: {[f'{obj.data_type.name}={obj.value}' for obj in args_snap]}"
-        )
-
+        print(f"DEBUG: args_snap before reverse: {[f'{obj.data_type.name}={obj.value}' for obj in args_snap]}")
+        
         # We compiled arguments in reverse order (last first), so when we pop them (last-in-first-out),
         # args_snap[0] is the last parameter and args_snap[-1] is the first parameter.
         # We need to reverse to match function.params order (first parameter at index 0).
         args_snap.reverse()
-
+        
         # DEBUG: Log args_snap after reverse and function params
-        print(
-            f"DEBUG: args_snap after reverse: {[f'{obj.data_type.name}={obj.value}' for obj in args_snap]}"
-        )
+        print(f"DEBUG: args_snap after reverse: {[f'{obj.data_type.name}={obj.value}' for obj in args_snap]}")
         print(f"DEBUG: function.params: {[(p.name, p.datatype.name) for p in function.params]}")
 
         # Validate argument types
@@ -503,9 +513,7 @@ class Interpreter(ComparableMixin):
                 self._stack.add(function.returntype, value)
 
         # Store action snapshot with raw values instead of StackObject instances
-        self.action_snapshots.append(
-            ActionSnapshot(function.name, [arg.value for arg in args_snap], None)
-        )
+        self.action_snapshots.append(ActionSnapshot(function.name, [arg.value for arg in args_snap], None))
 
     def print(self):
         for snap in self.stack_snapshots:
@@ -513,7 +521,11 @@ class Interpreter(ComparableMixin):
 
     def set_mock(self, function_name: str, mock: Callable):
         function = next(
-            (function for function in self._functions if function.name == function_name),
+            (
+                function
+                for function in self._functions
+                if function.name == function_name
+            ),
             None,
         )
 
@@ -533,7 +545,7 @@ class Interpreter(ComparableMixin):
         self._mocks.pop(function_name)
 
 
-class ObjectHeap(ComparableMixin):
+class ObjectHeap:
     """Manages object references for non-primitive types in the NCS stack.
 
     This implements a handle-based object management system where non-primitive
@@ -660,7 +672,7 @@ class ObjectHeap(ComparableMixin):
         return len(self._objects)
 
 
-class StackV2(ComparableMixin):
+class StackV2:
     """Byte-accurate stack implementation for NCS bytecode execution.
 
     This class simulates the NWScript VM stack using a bytearray to store
@@ -739,7 +751,9 @@ class StackV2(ComparableMixin):
                 raise ValueError(msg)
             float_value = float(value)
             self._stack.extend(struct.pack("f", float_value))
-            log.debug("StackV2 added FLOAT: %s (bytes: %s)", float_value, len(self._stack))
+            log.debug(
+                "StackV2 added FLOAT: %s (bytes: %s)", float_value, len(self._stack)
+            )
 
         elif datatype in {
             DataType.STRING,
@@ -764,7 +778,9 @@ class StackV2(ComparableMixin):
             # Actions are special non-primitive types used for delayed execution
             handle = self._object_heap.allocate(value, datatype)
             self._stack.extend(struct.pack("I", handle))
-            log.debug("StackV2 added ACTION: handle=%s (bytes: %s)", handle, len(self._stack))
+            log.debug(
+                "StackV2 added ACTION: handle=%s (bytes: %s)", handle, len(self._stack)
+            )
 
         elif datatype == DataType.VECTOR:
             # Vectors are stored as three consecutive floats (12 bytes)
@@ -832,7 +848,9 @@ class StackV2(ComparableMixin):
             value_bytes = self._stack[-4:]
             self._stack = self._stack[:-4]
             value = struct.unpack("i", value_bytes)[0]
-            log.debug("StackV2 popped INT: %s (bytes remaining: %s)", value, len(self._stack))
+            log.debug(
+                "StackV2 popped INT: %s (bytes remaining: %s)", value, len(self._stack)
+            )
             return value
 
         if datatype == DataType.FLOAT:
@@ -889,9 +907,7 @@ class StackV2(ComparableMixin):
                     "StackV2.pop stack underflow: VECTOR requires 12 bytes, have %s",
                     len(self._stack),
                 )
-                msg = (
-                    f"Stack underflow: VECTOR requires 12 bytes, only {len(self._stack)} available"
-                )
+                msg = f"Stack underflow: VECTOR requires 12 bytes, only {len(self._stack)} available"
                 raise IndexError(msg)
             vector_bytes = self._stack[-12:]
             self._stack = self._stack[:-12]
@@ -998,7 +1014,9 @@ class Stack(ComparableMixin):
         self._stack: list[StackObject] = []
         self._bp: int = 0
         self._bp_buffer: list[int] = []
-        self._global_bp: int = 0  # BP value for accessing globals (set after global initialization)
+        self._global_bp: int = (
+            0  # BP value for accessing globals (set after global initialization)
+        )
 
     def state(self) -> list:
         return copy(self._stack)
@@ -1084,7 +1102,9 @@ class Stack(ComparableMixin):
         absolute_index = bp_index - relative_index
 
         if absolute_index < 0 or absolute_index >= len(self._stack):
-            msg = f"BP-relative offset {offset} results in invalid index {absolute_index}"
+            msg = (
+                f"BP-relative offset {offset} results in invalid index {absolute_index}"
+            )
             raise ValueError(msg)
 
         return absolute_index
@@ -1101,26 +1121,22 @@ class Stack(ComparableMixin):
 
     def copy_to_top(self, offset: int, size: int):
         # DEBUG: Log copy_to_top params and stack state
-        print(
-            f"DEBUG copy_to_top: offset={offset}, size={size}, stack_len={len(self._stack)}, bp={self._bp}"
-        )
-        print(
-            f"DEBUG copy_to_top: stack_contents={[f'{obj.data_type.name}={obj.value}' for obj in self._stack]}"
-        )
-
+        print(f"DEBUG copy_to_top: offset={offset}, size={size}, stack_len={len(self._stack)}, bp={self._bp}")
+        print(f"DEBUG copy_to_top: stack_contents={[f'{obj.data_type.name}={obj.value}' for obj in self._stack]}")
+        
         if size <= 0 or size % 4 != 0:
             msg = f"Size must be a positive multiple of 4, got {size}"
             raise ValueError(msg)
         if offset == 0 or offset % 4 != 0:
             msg = f"Offset must be a non-zero multiple of 4, got {offset}"
             raise ValueError(msg)
-
+        
         # CPTOPSP can reference beyond current stack when accessing globals via base pointer
         # So we need a more flexible approach:
         # 1. If stack is empty, we can't copy anything
         # 2. Try to copy from the specified offset, but don't fail if offset > stack size
         #    as this might be accessing globals via BP
-
+        
         if not self._stack:
             # Empty stack - check if this is trying to access globals via BP
             # In that case, we should just push default values
@@ -1132,12 +1148,10 @@ class Stack(ComparableMixin):
 
         offset_abs = abs(offset)
         total_bytes = sum(obj.data_type.size() for obj in self._stack)
-
+        
         # If offset exceeds stack size, this might be accessing uninit globals - push defaults
         if offset_abs > total_bytes:
-            print(
-                f"DEBUG copy_to_top: offset {offset} exceeds stack size {total_bytes}, pushing defaults"
-            )
+            print(f"DEBUG copy_to_top: offset {offset} exceeds stack size {total_bytes}, pushing defaults")
             words = size // 4
             for _ in range(words):
                 self._stack.append(StackObject(DataType.INT, 0))
@@ -1239,7 +1253,7 @@ class Stack(ComparableMixin):
         if not self._stack:
             print(f"DEBUG: move() called with offset={offset} on empty stack, treating as no-op")
             return
-
+            
         remove_to = self._stack_index(offset)
         self._stack = self._stack[:remove_to]
 
@@ -1309,10 +1323,16 @@ class Stack(ComparableMixin):
             raise IndexError(msg)
         saved_bp = self._stack.pop()
         if saved_bp.data_type != DataType.INT:
-            msg = f"Encountered non-integer value while restoring base pointer; found {saved_bp.data_type}"
+            msg = (
+                "Encountered non-integer value while restoring base pointer; "
+                f"found {saved_bp.data_type}"
+            )
             raise TypeError(msg)
         if not isinstance(saved_bp.value, int):
-            msg = f"Base pointer restore requires integer value but received {type(saved_bp.value)}"
+            msg = (
+                "Base pointer restore requires integer value "
+                f"but received {type(saved_bp.value)}"
+            )
             raise TypeError(msg)
         self._bp = saved_bp.value
         if self._bp_buffer:
@@ -1425,7 +1445,7 @@ class Stack(ComparableMixin):
             self.add(DataType.FLOAT, y1 + y2)
             self.add(DataType.FLOAT, z1 + z2)
             return
-
+            
         if len(self._stack) < 2:
             msg = "Stack underflow in addition operation"
             raise IndexError(msg)
@@ -1433,7 +1453,9 @@ class Stack(ComparableMixin):
         index2 = -2  # second from top
         value1 = copy(self._stack[index1])
         value2 = copy(self._stack[index2])
-        if isinstance(value1.value, (int, float)) and isinstance(value2.value, (int, float)):
+        if isinstance(value1.value, (int, float)) and isinstance(
+            value2.value, (int, float)
+        ):
             result = value2.value + value1.value
             self._stack.pop()
             self._stack.pop()
@@ -1453,7 +1475,10 @@ class Stack(ComparableMixin):
             self._stack.pop()
             self.add(DataType.STRING, result)
             return
-        msg = f"Addition requires numeric or string operands; got {value2.data_type.name} and {value1.data_type.name}"
+        msg = (
+            "Addition requires numeric or string operands; got "
+            f"{value2.data_type.name} and {value1.data_type.name}"
+        )
         raise TypeError(msg)
 
     def subtraction_op(self, instruction_type: NCSInstructionType | None = None):
@@ -1475,7 +1500,7 @@ class Stack(ComparableMixin):
             self.add(DataType.FLOAT, y1 - y2)
             self.add(DataType.FLOAT, z1 - z2)
             return
-
+            
         if len(self._stack) < 2:
             msg = "Stack underflow in subtraction operation"
             raise IndexError(msg)
@@ -1483,7 +1508,9 @@ class Stack(ComparableMixin):
         index2 = -2
         value1 = copy(self._stack[index1])
         value2 = copy(self._stack[index2])
-        if not isinstance(value1.value, (int, float)) or not isinstance(value2.value, (int, float)):
+        if not isinstance(value1.value, (int, float)) or not isinstance(
+            value2.value, (int, float)
+        ):
             msg = "Subtraction requires numeric operands"
             raise TypeError(msg)
         result = value2.value - value1.value
@@ -1509,7 +1536,7 @@ class Stack(ComparableMixin):
             self.add(DataType.FLOAT, y * scalar)
             self.add(DataType.FLOAT, z * scalar)
             return
-        if instruction_type == NCSInstructionType.MULFV:
+        elif instruction_type == NCSInstructionType.MULFV:
             # MULFV: float * vector (float is lhs, vector is rhs, so vector is on top)
             if len(self._stack) < 4:
                 msg = "Stack underflow in vector multiplication operation"
@@ -1524,7 +1551,7 @@ class Stack(ComparableMixin):
             self.add(DataType.FLOAT, y * scalar)
             self.add(DataType.FLOAT, z * scalar)
             return
-
+            
         if len(self._stack) < 2:
             msg = "Stack underflow in multiplication operation"
             raise IndexError(msg)
@@ -1532,7 +1559,9 @@ class Stack(ComparableMixin):
         index2 = -2
         value1 = copy(self._stack[index1])
         value2 = copy(self._stack[index2])
-        if not isinstance(value1.value, (int, float)) or not isinstance(value2.value, (int, float)):
+        if not isinstance(value1.value, (int, float)) or not isinstance(
+            value2.value, (int, float)
+        ):
             msg = "Multiplication requires numeric operands"
             raise TypeError(msg)
         result = value2.value * value1.value
@@ -1561,7 +1590,7 @@ class Stack(ComparableMixin):
             self.add(DataType.FLOAT, y / scalar)
             self.add(DataType.FLOAT, z / scalar)
             return
-
+            
         if len(self._stack) < 2:
             msg = "Stack underflow in division operation"
             raise IndexError(msg)
@@ -1569,7 +1598,9 @@ class Stack(ComparableMixin):
         index2 = -2
         value1 = copy(self._stack[index1])
         value2 = copy(self._stack[index2])
-        if not isinstance(value1.value, (int, float)) or not isinstance(value2.value, (int, float)):
+        if not isinstance(value1.value, (int, float)) or not isinstance(
+            value2.value, (int, float)
+        ):
             msg = "Division requires numeric operands"
             raise TypeError(msg)
         if value1.value == 0:
@@ -1592,7 +1623,9 @@ class Stack(ComparableMixin):
         index2 = -2
         value1 = copy(self._stack[index1])
         value2 = copy(self._stack[index2])
-        if not isinstance(value1.value, (int, float)) or not isinstance(value2.value, (int, float)):
+        if not isinstance(value1.value, (int, float)) or not isinstance(
+            value2.value, (int, float)
+        ):
             msg = "Modulus requires numeric operands"
             raise TypeError(msg)
         if value1.value == 0:
@@ -1753,7 +1786,6 @@ class Stack(ComparableMixin):
         # Perform unsigned right shift by treating value2 as unsigned
         # Python doesn't have >>> operator, so we use ctypes or manual conversion
         import ctypes
-
         unsigned_value2 = ctypes.c_uint32(value2.value).value
         result = (unsigned_value2 >> value1.value) & 0xFFFFFFFF
         # Convert back to signed int if needed (handle sign extension)
@@ -1768,7 +1800,9 @@ class Stack(ComparableMixin):
             raise IndexError(msg)
         value1 = self._stack.pop()
         value2 = self._stack.pop()
-        if not isinstance(value2.value, (int, float)) or not isinstance(value1.value, (int, float)):
+        if not isinstance(value2.value, (int, float)) or not isinstance(
+            value1.value, (int, float)
+        ):
             msg = "Comparison requires numeric operands"
             raise TypeError(msg)
         result = 1 if value2.value > value1.value else 0
@@ -1781,7 +1815,9 @@ class Stack(ComparableMixin):
             raise IndexError(msg)
         value1 = self._stack.pop()
         value2 = self._stack.pop()
-        if not isinstance(value2.value, (int, float)) or not isinstance(value1.value, (int, float)):
+        if not isinstance(value2.value, (int, float)) or not isinstance(
+            value1.value, (int, float)
+        ):
             msg = "Comparison requires numeric operands"
             raise TypeError(msg)
         result = 1 if value2.value >= value1.value else 0
@@ -1794,7 +1830,9 @@ class Stack(ComparableMixin):
             raise IndexError(msg)
         value1 = self._stack.pop()
         value2 = self._stack.pop()
-        if not isinstance(value2.value, (int, float)) or not isinstance(value1.value, (int, float)):
+        if not isinstance(value2.value, (int, float)) or not isinstance(
+            value1.value, (int, float)
+        ):
             msg = "Comparison requires numeric operands"
             raise TypeError(msg)
         result = 1 if value2.value < value1.value else 0
@@ -1807,7 +1845,9 @@ class Stack(ComparableMixin):
             raise IndexError(msg)
         value1 = self._stack.pop()
         value2 = self._stack.pop()
-        if not isinstance(value2.value, (int, float)) or not isinstance(value1.value, (int, float)):
+        if not isinstance(value2.value, (int, float)) or not isinstance(
+            value1.value, (int, float)
+        ):
             msg = "Comparison requires numeric operands"
             raise TypeError(msg)
         result = 1 if value2.value <= value1.value else 0
@@ -1816,7 +1856,7 @@ class Stack(ComparableMixin):
     def store_state(self): ...
 
 
-class StackObject(ComparableMixin):
+class StackObject:
     def __init__(self, data_type: DataType, value: float | str | bool | object):  # noqa: FBT001
         self.data_type: DataType = data_type
         self.value = value

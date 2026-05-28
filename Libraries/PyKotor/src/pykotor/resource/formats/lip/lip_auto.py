@@ -1,7 +1,5 @@
 """LIP format detection and auto read/write dispatch (binary, JSON, XML)."""
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING
 
 import json

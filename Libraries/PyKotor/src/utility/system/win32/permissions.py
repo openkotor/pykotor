@@ -7,11 +7,8 @@ from ctypes import windll
 
 
 def is_admin() -> bool:
-    try:
-        return bool(windll.shell32.IsUserAnAdmin())
+    try:  # sourcery skip: do-not-use-bare-except
+        return windll.shell32.IsUserAnAdmin()
     except OSError:  # noqa: E722
-        print(
-            f"An error occurred while determining user permissions:\n{traceback.format_exc()}",
-            file=sys.stderr,
-        )
+        print(f"An error occurred while determining user permissions:\n{traceback.format_exc()}", file=sys.stderr)
         return False

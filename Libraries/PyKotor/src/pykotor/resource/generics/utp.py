@@ -19,12 +19,92 @@ if TYPE_CHECKING:
 class UTP:
     """Stores placeable data from the on-disk UTP GFF template.
 
-    Placeables share most door (UTD) lock, script, and trap semantics; this type adds inventory
-    (``ItemList``) and placeable-specific hooks. The former long class docstring (References and field
-    notes) is archived in ``wiki/reverse_engineering_findings_generics_utp_class_docstring_pre_scrub.md``. See
-    ``wiki/reverse_engineering_findings.md`` (*resource/generics/utp.py*) and ``wiki/GFF-UTP.md``.
+    UTP files are GFF-based format files that store placeable object definitions including
+    lock/unlock mechanics, HP, inventory, scripts, and appearance.
 
-    Note: ``GFFContent.UTP``.
+    References:
+    ----------
+        vendor/reone/src/libs/resource/parser/gff/utp.cpp:36-103 (UTP parsing from GFF)
+        vendor/reone/include/reone/resource/parser/gff/utp.h:34-97 (UTP structure definitions)
+        vendor/Kotor.NET/Kotor.NET/Resources/KotorUTP/UTP.cs:12-75 (UTP class definition)
+        vendor/NorthernLights/Generated/AuroraUTP.cs:67-69 (KotOR 2 specific fields)
+        Note: UTP files are GFF format files with specific structure definitions
+
+    Attributes:
+    ----------
+        resref: "TemplateResRef" field. The resource reference for this placeable template.
+            Reference: reone/utp.cpp:92 (TemplateResRef field)
+            Reference: reone/utp.h:87 (TemplateResRef field)
+            Reference: Kotor.NET/UTP.cs:64 (TemplateResRef property)
+
+        tag: "Tag" field. Tag identifier for this placeable.
+            Reference: reone/utp.cpp:91 (Tag field)
+            Reference: reone/utp.h:86 (Tag field)
+            Reference: Kotor.NET/UTP.cs:63 (Tag property)
+
+        name: "LocName" field. Localized name of the placeable.
+            Reference: reone/utp.cpp:60 (LocName field)
+            Reference: reone/utp.h:55 (LocName field)
+            Reference: Kotor.NET/UTP.cs:35 (LocName property)
+
+        appearance_id: "Appearance" field. Placeable appearance type identifier.
+            Reference: reone/utp.cpp:39 (Appearance field)
+            Reference: reone/utp.h:36 (Appearance field)
+            Reference: Kotor.NET/UTP.cs:15 (Appearance property)
+
+        has_inventory: "HasInventory" field. Whether placeable has an inventory.
+            Reference: reone/utp.cpp:52 (HasInventory field)
+            Reference: reone/utp.h:49 (HasInventory field)
+            Reference: Kotor.NET/UTP.cs:27 (HasInventory property)
+
+        inventory: List of InventoryItem objects in this placeable's inventory.
+            Reference: reone/utp.cpp:55-57 (ItemList parsing)
+            Reference: reone/utp.h:52 (ItemList vector)
+            Reference: reone/utp.h:28-32 (UTP_ItemList struct)
+            Reference: Kotor.NET/UTP.cs:74 (Inventory property)
+
+        not_blastable: "NotBlastable" field. Whether placeable cannot be blasted. KotOR 2 Only.
+            Reference: reone/utp.cpp:64 (NotBlastable field)
+            Reference: reone/utp.h:59 (NotBlastable field)
+            Reference: Kotor.NET/UTP.cs:37 (NotBlastable property)
+            Reference: NorthernLights/AuroraUTP.cs:67 (NotBlastable field)
+
+        unlock_diff: "OpenLockDiff" field. Unlock difficulty modifier. KotOR 2 Only.
+            Reference: reone/utp.cpp:82 (OpenLockDiff field)
+            Reference: reone/utp.h:77 (OpenLockDiff field)
+            Reference: Kotor.NET/UTP.cs:55 (OpenLockDiff property)
+            Reference: NorthernLights/AuroraUTP.cs:68 (OpenLockDiff field)
+
+        unlock_diff_mod: "OpenLockDiffMod" field. Additional unlock difficulty modifier. KotOR 2 Only.
+            Reference: reone/utp.cpp:83 (OpenLockDiffMod field as int)
+            Reference: reone/utp.h:78 (OpenLockDiffMod field as char)
+            Reference: Kotor.NET/UTP.cs:56 (OpenLockDiffMod property as sbyte)
+            Reference: NorthernLights/AuroraUTP.cs:69 (OpenLockDiffMod field as Char)
+            Note: Type discrepancy - reone uses char/int, Kotor.NET uses sbyte, PyKotor uses int
+
+        on_open_failed: "OnFailToOpen" field. Script to run when placeable fails to open. KotOR 2 Only.
+            Reference: reone/utp.cpp:70 (OnFailToOpen field)
+            Reference: reone/utp.h:65 (OnFailToOpen field)
+            Reference: Kotor.NET/UTP.cs:43 (OnFailToOpen property)
+
+        lock_dc: "CloseLockDC" field. Difficulty class to lock placeable. KotOR 2 Only.
+            Reference: reone/utp.cpp:42 (CloseLockDC field)
+            Reference: reone/utp.h:39 (CloseLockDC field)
+            Reference: Kotor.NET/UTP.cs:18 (CloseLockDC property)
+
+        palette_id: "PaletteID" field. Palette identifier. Used in toolset only.
+            Reference: reone/utp.cpp:84 (PaletteID field)
+            Reference: reone/utp.h:79 (PaletteID field)
+            Reference: Kotor.NET/UTP.cs:57 (PaletteID property)
+
+        Note: UTP shares many fields with UTD (door). See UTD documentation for common fields
+        like auto_remove_key, conversation, faction_id, plot, min1_hp, key_required, lockable,
+        locked, unlock_dc, key_name, animation_state, maximum_hp, current_hp, hardness,
+        fortitude, on_closed, on_damaged, on_death, on_heartbeat, on_lock, on_melee_attack,
+        on_open, on_force_power, on_unlock, on_user_defined, static, useable, party_interact,
+        on_end_dialog, on_inventory, on_used, comment, description, interruptable, portrait_id,
+        trap_detectable, trap_detect_dc, trap_disarmable, trap_disarm_dc, trap_flag,
+        trap_one_shot, trap_type, will, on_disarm, on_trap_triggered, bodybag_id, type_id.
     """
 
     BINARY_TYPE = ResourceType.UTP
@@ -120,7 +200,6 @@ def construct_utp(  # noqa: PLR0915
     utp = UTP()
 
     root: GFFStruct = gff.root
-    # Identity: Tag "", LocName empty, TemplateResRef "". K1 LoadPlaceable 0x00585670; TSL same (addresses in UTP References). Optional.
     utp.tag = root.acquire("Tag", "")
     utp.name = root.acquire("LocName", LocalizedString.from_invalid())
     utp.resref = root.acquire("TemplateResRef", ResRef.from_blank())
@@ -204,7 +283,6 @@ def dismantle_utp(  # noqa: PLR0915
     gff = GFF(GFFContent.UTP)
 
     root: GFFStruct = gff.root
-    # Write same defaults as engine read. K1 LoadPlaceable 0x00585670, SavePlaceable 0x00586a70; TSL same (addresses in UTP References). BYTE 0, DWORD 0, CResRef "".
     root.set_string("Tag", utp.tag)
     root.set_locstring("LocName", utp.name)
     root.set_resref("TemplateResRef", utp.resref)

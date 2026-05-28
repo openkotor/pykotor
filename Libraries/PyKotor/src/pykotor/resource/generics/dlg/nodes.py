@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 
 from collections import deque
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 from pykotor.common.language import Gender, Language, LocalizedString
 from pykotor.common.misc import Color, ResRef
@@ -26,103 +26,184 @@ class DLGNode:
     in the conversation tree. Each node contains text, scripts, animations, camera settings,
     and links to other nodes. Nodes are stored in EntryList or ReplyList arrays in the GFF.
 
-    DLG nodes are GFF structs within ``EntryList`` or ``ReplyList`` arrays. Loader
-    cross-references and third-party DLG mirrors (KotOR.js, Kotor.NET) are migrated to
-    ``wiki/reverse_engineering_findings.md`` (*resource/generics/dlg/nodes.py*).
+    References:
+    ----------
+        vendor/reone/include/reone/resource/parser/gff/dlg.h:61-113 (DLG_EntryReplyList struct)
+        vendor/reone/src/libs/resource/parser/gff/dlg.cpp:67-172 (DLG_EntryReplyList parsing)
+        vendor/KotOR.js/src/resource/DLGNode.ts (DLG node structure)
+        vendor/Kotor.NET/Kotor.NET/Resources/KotorDLG/DLG.cs (DLG node structure)
+        Note: DLG nodes are GFF structs within EntryList or ReplyList arrays
 
     Attributes:
     ----------
         links: List of DLGLink objects connecting to other nodes.
+            Reference: reone/dlg.h:86,102 (EntriesList/RepliesList vectors)
+            Reference: reone/dlg.cpp:95-96,102-103 (EntriesList/RepliesList parsing)
             Outgoing edges in the dialog graph.
-
+        
         list_index: Index of this node in EntryList or ReplyList.
+            Reference: reone/dlg.cpp:95-96,102-103 (list iteration)
             Used for GFF path resolution (e.g., "EntryList\\0").
-
+        
         text: "Text" field. Localized string for the dialog line.
+            Reference: reone/dlg.h:109 (Text field as pair<int, string>)
+            Reference: reone/dlg.cpp:147 (Text parsing)
             The actual dialog text displayed to the player.
-
+        
         speaker: "Speaker" field. Speaker identifier (DLGEntry only).
+            Reference: reone/dlg.h:107 (Speaker field)
+            Reference: reone/dlg.cpp:146 (Speaker parsing)
             Identifies who is speaking this line.
-
+        
         script1: "Script" field. Primary script to execute.
+            Reference: reone/dlg.h:103 (Script field)
+            Reference: reone/dlg.cpp:144 (Script parsing)
             Script ResRef executed when this node is reached.
-
+        
         script2: "Script2" field. Secondary script (KotOR 2).
+            Reference: reone/dlg.h:104 (Script2 field)
+            Reference: reone/dlg.cpp:145 (Script2 parsing)
             Additional script ResRef for KotOR 2.
-
+        
         sound: "Sound" field. Sound effect ResRef.
+            Reference: reone/dlg.h:105 (Sound field)
+            Reference: reone/dlg.cpp:148 (Sound parsing)
             Sound effect played with this dialog line.
-
+        
         vo_resref: "VO_ResRef" field. Voice-over ResRef.
+            Reference: reone/dlg.h:111 (VO_ResRef field)
+            Reference: reone/dlg.cpp:149 (VO_ResRef parsing)
             Voice-over audio file for this line.
-
+        
         animations: "AnimList" field. List of dialog animations.
+            Reference: reone/dlg.h:51-54 (DLG_EntryReplyList_AnimList struct)
+            Reference: reone/dlg.cpp:53-58,82-84 (AnimList parsing)
             Animation references for this dialog line.
-
+        
         camera_angle: "CameraAngle" field. Camera angle setting.
-
+            Reference: reone/dlg.h:79 (CameraAngle field)
+            Reference: reone/dlg.cpp:88 (CameraAngle parsing)
+        
         camera_id: "CameraID" field. Camera ID reference.
-
+            Reference: reone/dlg.h:81 (CameraID field)
+            Reference: reone/dlg.cpp:90 (CameraID parsing)
+        
         camera_anim: "CameraAnimation" field. Camera animation ID.
-
+            Reference: reone/dlg.h:80 (CameraAnimation field)
+            Reference: reone/dlg.cpp:89 (CameraAnimation parsing)
+        
         camera_fov: "CamFieldOfView" field. Camera field of view.
-
+            Reference: reone/dlg.h:76 (CamFieldOfView field)
+            Reference: reone/dlg.cpp:85 (CamFieldOfView parsing)
+        
         camera_height: "CamHeightOffset" field. Camera height offset.
-
+            Reference: reone/dlg.h:77 (CamHeightOffset field)
+            Reference: reone/dlg.cpp:86 (CamHeightOffset parsing)
+        
         camera_effect: "CamVidEffect" field. Camera video effect ID.
-
+            Reference: reone/dlg.h:78 (CamVidEffect field)
+            Reference: reone/dlg.cpp:87 (CamVidEffect parsing)
+        
         target_height: "TarHeightOffset" field. Target height offset.
-
+            Reference: reone/dlg.h:108 (TarHeightOffset field)
+            Reference: reone/dlg.cpp:150 (TarHeightOffset parsing)
+        
         fade_type: "FadeType" field. Fade effect type.
-
+            Reference: reone/dlg.h:91 (FadeType field)
+            Reference: reone/dlg.cpp:92 (FadeType parsing)
+        
         fade_color: "FadeColor" field. Fade color (vec3).
-
+            Reference: reone/dlg.h:88 (FadeColor field)
+            Reference: reone/dlg.cpp:99 (FadeColor parsing)
+        
         fade_delay: "FadeDelay" field. Fade delay in seconds.
-
+            Reference: reone/dlg.h:89 (FadeDelay field)
+            Reference: reone/dlg.cpp:100 (FadeDelay parsing)
+        
         fade_length: "FadeLength" field. Fade duration in seconds.
-
+            Reference: reone/dlg.h:90 (FadeLength field)
+            Reference: reone/dlg.cpp:101 (FadeLength parsing)
+        
         delay: "Delay" field. Dialog delay in milliseconds.
-
+            Reference: reone/dlg.h:84 (Delay field)
+            Reference: reone/dlg.cpp:93 (Delay parsing)
+        
         listener: "Listener" field. Listener identifier.
-
+            Reference: reone/dlg.h:92 (Listener field)
+            Reference: reone/dlg.cpp:94 (Listener parsing)
+        
         quest: "Quest" field. Quest identifier string.
-
+            Reference: reone/dlg.h:98 (Quest field)
+            Reference: reone/dlg.cpp:140 (Quest parsing)
+        
         quest_entry: "QuestEntry" field. Quest entry index.
-
+            Reference: reone/dlg.h:99 (QuestEntry field)
+            Reference: reone/dlg.cpp:141 (QuestEntry parsing)
+        
         plot_index: "PlotIndex" field. Plot flag index.
-
+            Reference: reone/dlg.h:95 (PlotIndex field)
+            Reference: reone/dlg.cpp:138 (PlotIndex parsing)
+        
         plot_xp_percentage: "PlotXPPercentage" field. XP percentage for plot.
-
+            Reference: reone/dlg.h:96 (PlotXPPercentage field)
+            Reference: reone/dlg.cpp:139 (PlotXPPercentage parsing)
+        
         emotion_id: "Emotion" field. Emotion animation ID.
+            Reference: reone/dlg.h:85 (Emotion field)
+            Reference: reone/dlg.cpp:94 (Emotion parsing)
             Reference: emotion.2da for valid IDs.
-
+        
         facial_id: "FacialAnim" field. Facial animation ID.
+            Reference: reone/dlg.h:87 (FacialAnim field)
+            Reference: reone/dlg.cpp:98 (FacialAnim parsing)
             Reference: facialanim.2da for valid IDs.
-
+        
         alien_race_node: "AlienRaceNode" field. KotOR 2 alien race ID.
+            Reference: reone/dlg.h:74 (AlienRaceNode field)
+            Reference: reone/dlg.cpp:81 (AlienRaceNode parsing)
             Reference: racialtypes.2da for valid IDs.
-
+        
         node_id: "NodeID" field. KotOR 2 node identifier.
+            Reference: reone/dlg.h:93 (NodeID field)
+            Reference: reone/dlg.cpp:135 (NodeID parsing)
             Unique identifier for this node.
-
+        
         post_proc_node: "PostProcNode" field. KotOR 2 post-processing node ID.
-
+            Reference: reone/dlg.h:97 (PostProcNode field)
+            Reference: reone/dlg.cpp:137 (PostProcNode parsing)
+        
         unskippable: "NodeUnskippable" field. KotOR 2 unskippable flag.
-
+            Reference: reone/dlg.h:94 (NodeUnskippable field)
+            Reference: reone/dlg.cpp:136 (NodeUnskippable parsing)
+        
         record_vo: "RecordVO" field. KotOR 2 record VO flag.
-
+            Reference: reone/dlg.h:101 (RecordVO field)
+            Reference: reone/dlg.cpp:142 (RecordVO parsing)
+        
         record_no_vo_override: "RecordNoVOOverri" field. KotOR 2 override flag.
-
+            Reference: reone/dlg.h:100 (RecordNoVOOverri field)
+            Reference: reone/dlg.cpp:143 (RecordNoVOOverri parsing)
+        
         vo_text_changed: "VOTextChanged" field. KotOR 2 VO text changed flag.
-
+            Reference: reone/dlg.h:110 (VOTextChanged field)
+            Reference: reone/dlg.cpp:151 (VOTextChanged parsing)
+        
         wait_flags: "WaitFlags" field. Wait flags bitmask.
-
+            Reference: reone/dlg.h:112 (WaitFlags field)
+            Reference: reone/dlg.cpp:152 (WaitFlags parsing)
+        
         sound_exists: "SoundExists" field. Sound existence flag.
-
+            Reference: reone/dlg.h:106 (SoundExists field)
+            Reference: reone/dlg.cpp:148 (SoundExists parsing)
+        
         script1_param1-6: "ActionParam1-5" and "ActionParamStrA" fields. KotOR 2 script parameters.
+            Reference: reone/dlg.h:62-73 (ActionParam fields)
+            Reference: reone/dlg.cpp:69-80 (ActionParam parsing)
             Parameters passed to script1.
-
+        
         script2_param1-6: "ActionParam1b-5b" and "ActionParamStrB" fields. KotOR 2 script parameters.
+            Reference: reone/dlg.h:63-73 (ActionParam fields)
+            Reference: reone/dlg.cpp:69-80 (ActionParam parsing)
             Parameters passed to script2.
     """
 
@@ -138,15 +219,11 @@ class DLGNode:
             - Sets flags and identifiers to default values
         """
         if not isinstance(self, (DLGEntry, DLGReply)):
-            raise RuntimeError(
-                "Cannot construct base class DLGNode: use DLGEntry or DLGReply instead."
-            )  # noqa: TRY004
+            raise RuntimeError("Cannot construct base class DLGNode: use DLGEntry or DLGReply instead.")  # noqa: TRY004
 
-        # Use UUID int to avoid hash collisions that would collapse shared nodes
-        self._hash_cache: int = uuid.uuid4().int
+        self._hash_cache: int = hash(uuid.uuid4().hex)
         self.comment: str = ""
-        # links is typed in subclasses (DLGEntry.links: list[DLGLink[DLGReply]], DLGReply.links: list[DLGLink[DLGEntry]])
-        self.links = []  # type: ignore[assignment]
+        self.links: list[DLGLink] = []
         self.list_index: int = -1
 
         self.camera_angle: int = 0
@@ -203,14 +280,16 @@ class DLGNode:
         self.record_vo: bool = False
         self.vo_text_changed: bool = False
 
-    def __repr__(self) -> str:
+    def __repr__(
+        self,
+    ) -> str:
         text: str | None = self.text.get(Language.ENGLISH, Gender.MALE, use_fallback=True)
         strref_display: str = f"stringref={self.text.stringref}" if text is None else f"text={text}"
         return f"{self.__class__.__name__}({strref_display}, list_index={self.list_index}, links={self.links})"
 
     def __eq__(self, other):
         if self.__class__ is not other.__class__:
-            return NotImplemented  # type: ignore[no-any-return]
+            return NotImplemented
         return self.__hash__() == other.__hash__()
 
     def __hash__(self):
@@ -218,9 +297,7 @@ class DLGNode:
 
     def path(self) -> str:
         """Returns the GFF path to this node."""
-        node_list_display: Literal["EntryList", "ReplyList"] = (
-            "EntryList" if isinstance(self, DLGEntry) else "ReplyList"
-        )
+        node_list_display: Literal["EntryList", "ReplyList"] = "EntryList" if isinstance(self, DLGEntry) else "ReplyList"
         node_path: str = f"{node_list_display}\\{self.list_index}"
         return node_path
 
@@ -230,7 +307,6 @@ class DLGNode:
         source: DLGNode,
     ):
         from pykotor.resource.generics.dlg.links import DLGLink
-
         target_links.append(DLGLink(source, len(target_links)))
 
     def calculate_links_and_nodes(self) -> tuple[int, int]:
@@ -270,16 +346,11 @@ class DLGNode:
         if node_map is None:
             node_map = {}
 
-        # Prefix keys so they never collide with DLGLink keys when stored in shared node_map
-        node_key: str = f"node-{self._hash_cache}"
+        node_key: int = hash(self)
         if node_key in node_map:
             return {"type": self.__class__.__name__, "ref": node_key}
 
-        node_dict: dict[str | int, Any] = {
-            "type": self.__class__.__name__,
-            "key": node_key,
-            "data": {},
-        }
+        node_dict: dict[str | int, Any] = {"type": self.__class__.__name__, "key": node_key, "data": {}}
         node_map[node_key] = node_dict
 
         for key, value in self.__dict__.items():
@@ -307,10 +378,7 @@ class DLGNode:
                 node_dict["data"][key] = {"value": value.to_dict(), "py_type": "LocalizedString"}
             elif key == "animations":
                 anims: list[DLGAnimation] = value
-                node_dict["data"][key] = {
-                    "value": [anim.to_dict() for anim in anims],
-                    "py_type": "list",
-                }
+                node_dict["data"][key] = {"value": [anim.to_dict() for anim in anims], "py_type": "list"}
             elif isinstance(value, list):
                 node_dict["data"][key] = {"value": value, "py_type": "list"}
             elif value is None:
@@ -331,19 +399,10 @@ class DLGNode:
             node_map = {}
 
         if "ref" in data:
-            # Return node from node_map - it should already be fully deserialized
-            # since nodes are added to node_map AFTER all non-link fields are set
-            ref_key: str = str(data["ref"])
-            if not ref_key.startswith("node-"):
-                ref_key = f"node-{ref_key}"
-            return node_map[ref_key]
+            return node_map[data["ref"]]
 
         node_key: int | str | None = data.get("key")
         assert isinstance(node_key, (int, str))
-        # Normalize prefixed keys
-        node_key_str = str(node_key)
-        if not node_key_str.startswith("node-"):
-            node_key_str = f"node-{node_key_str}"
         node_type: str | None = data.get("type")
         node_data: dict[str, Any] = data.get("data", {})
 
@@ -356,17 +415,15 @@ class DLGNode:
         else:
             raise ValueError(f"Unknown node type: {node_type}")
 
-        node._hash_cache = int(node_key_str.split("node-", maxsplit=1)[-1])  # noqa: SLF001
-        # Process non-link fields first to ensure all attributes are set before adding to node_map
-        # This prevents incomplete nodes from being returned when referenced through links
+        node_map[node_key] = node
+
+        node._hash_cache = int(node_key)  # noqa: SLF001
         for key, value in node_data.items():
             if not isinstance(value, dict):
                 continue
             py_type: str | None = value.get("py_type")
             actual_value: Any = value.get("value")
 
-            if py_type == "list" and key == "links":
-                continue  # Process links after all other fields
             if py_type == "str":
                 setattr(node, key, actual_value)
             elif py_type == "int":
@@ -381,6 +438,8 @@ class DLGNode:
                 setattr(node, key, Color.from_bgr_integer(actual_value))
             elif py_type == "LocalizedString":
                 node.text = LocalizedString.from_dict(actual_value)
+            elif py_type == "list" and key == "links":
+                node.links = [DLGLink.from_dict(link, node_map) for link in actual_value]
             elif py_type == "list" and key == "animations":
                 node.animations = [DLGAnimation.from_dict(anim) for anim in actual_value]
             elif py_type == "list":
@@ -389,33 +448,6 @@ class DLGNode:
                 setattr(node, key, None)
             else:
                 raise ValueError(f"Unsupported type: {py_type} for key: {key}")
-
-        # Add to node_map AFTER all non-link fields are set to prevent incomplete nodes from being returned
-        node_map[node_key_str] = node
-
-        # Process links after all other fields are set and node is in node_map
-        for key, value in node_data.items():
-            if not isinstance(value, dict):
-                continue
-            py_type = value.get("py_type")
-            actual_value = value.get("value")
-
-            if py_type == "list" and key == "links":
-                # Cast to correct type based on node type:
-                # DLGEntry.links is list[DLGLink[DLGReply]]
-                # DLGReply.links is list[DLGLink[DLGEntry]]
-                if node_type == "DLGEntry":
-                    node.links = cast(
-                        "list[DLGLink[DLGReply]]",
-                        [DLGLink.from_dict(link, node_map) for link in actual_value],
-                    )
-                elif node_type == "DLGReply":
-                    node.links = cast(
-                        "list[DLGLink[DLGEntry]]",
-                        [DLGLink.from_dict(link, node_map) for link in actual_value],
-                    )
-                else:
-                    node.links = [DLGLink.from_dict(link, node_map) for link in actual_value]
 
         return node
 
@@ -447,23 +479,3 @@ class DLGEntry(DLGNode):
         self.speaker: str = ""
         for key, value in kwargs.items():
             setattr(self, key, value)
-
-    @property
-    def animation_id(self) -> int | None:
-        """Get the animation ID (maps to camera_anim).
-
-        Returns:
-        -------
-            The camera animation ID, or None if not set.
-        """
-        return self.camera_anim
-
-    @animation_id.setter
-    def animation_id(self, value: int | None) -> None:
-        """Set the animation ID (maps to camera_anim).
-
-        Args:
-        ----
-            value: The camera animation ID to set, or None to clear.
-        """
-        self.camera_anim = value

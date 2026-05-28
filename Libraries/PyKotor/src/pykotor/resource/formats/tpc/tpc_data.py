@@ -2,13 +2,16 @@
 
 TPC is KotOR's proprietary texture format supporting various compression and color formats.
 
-Observed retail behavior:
+References:
 ----------
-        KotOR loads textures from ``.tpc`` resources (and related sidecar metadata) using the
-        proprietary header + mip chain layout this package models. It has been observed that
-        retail ``.tpc`` data uses DXT1/DXT5 and uncompressed RGB/RGBA payloads consistent with
-        other Aurora-era titles.
-
+    vendor/reone/src/libs/graphics/texture.cpp - TPC texture handling
+    vendor/reone/include/reone/graphics/texture.h - TPC texture structures
+    vendor/tga2tpc - TGA to TPC conversion tool
+    vendor/xoreos-tools/src/graphics/tpc.cpp - TPC parser
+    vendor/KotOR.js/src/loaders/TextureLoader.ts - TypeScript TPC loader
+    vendor/kotorblender/io_scene_kotor/format/tpc/ - Blender TPC exporter
+    vendor/KotOR-Bioware-Libs/TPC.pm - Perl TPC handling
+    Note: TPC supports DXT1, DXT3, DXT5, and uncompressed RGB/RGBA formats
 """
 
 from __future__ import annotations
@@ -17,7 +20,9 @@ from dataclasses import dataclass, field
 from enum import IntEnum, auto
 from typing import TYPE_CHECKING
 
-from pykotor.resource.formats._base import BiowareResource, ComparableMixin
+from loggerplus import RobustLogger
+
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.tpc.convert.bgra import (
     bgr_to_bgra,
     bgr_to_grey,
@@ -31,37 +36,12 @@ from pykotor.resource.formats.tpc.convert.bgra import (
     rgb_to_bgra,
     rgba_to_bgra,
 )
-from pykotor.resource.formats.tpc.convert.dxt.compress_dxt import (
-    rgb_to_dxt1,
-    rgba_to_dxt3,
-    rgba_to_dxt5,
-)
-from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import (
-    dxt1_to_rgb,
-    dxt1_to_rgba,
-    dxt3_to_rgba,
-    dxt5_to_rgba,
-)
-from pykotor.resource.formats.tpc.convert.rgb import (
-    grey_to_rgb,
-    grey_to_rgba,
-    rgb_to_grey,
-    rgb_to_rgba,
-    rgba_to_grey,
-    rgba_to_rgb,
-)
-from pykotor.resource.formats.tpc.manipulate.downsample import downsample_rgb
-from pykotor.resource.formats.tpc.manipulate.dxt_manipulate import (
-    flip_horizontally_dxt,
-    flip_vertically_dxt,
-    rotate_dxt1,
-    rotate_dxt5,
-)
-from pykotor.resource.formats.tpc.manipulate.rotate import (
-    flip_horizontally_rgb_rgba,
-    flip_vertically_rgb_rgba,
-    rotate_rgb_rgba,
-)
+from pykotor.resource.formats.tpc.convert.dxt.compress_dxt import rgb_to_dxt1, rgba_to_dxt3, rgba_to_dxt5
+from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import dxt1_to_rgb, dxt3_to_rgba, dxt5_to_rgba
+from pykotor.resource.formats.tpc.convert.rgb import grey_to_rgb, grey_to_rgba, rgb_to_grey, rgb_to_rgba, rgba_to_grey, rgba_to_rgb
+from pykotor.resource.formats.tpc.manipulate.downsample import downsample_dxt, downsample_rgb
+from pykotor.resource.formats.tpc.manipulate.dxt_manipulate import flip_horizontally_dxt, flip_vertically_dxt, rotate_dxt1, rotate_dxt5
+from pykotor.resource.formats.tpc.manipulate.rotate import flip_horizontally_rgb_rgba, flip_vertically_rgb_rgba, rotate_rgb_rgba
 from pykotor.resource.formats.txi.txi_data import TXI
 from pykotor.resource.type import ResourceType
 
@@ -90,15 +70,16 @@ class TPCTextureFormat(IntEnum):
 
     def bytes_per_pixel(self) -> Literal[1, 3, 4]:
         """Get the number of bytes per pixel for this format."""
+        bytes_per_pixel = 0
         if self is self.Greyscale:
-            return 1
-        if self.is_dxt():
-            return 1  # technically incorrect, but used for size calculations
-        if self in (self.RGB, self.BGR):
-            return 3
-        if self in (self.RGBA, self.BGRA):
-            return 4
-        return 1  # Default fallback for Invalid or unknown formats
+            bytes_per_pixel = 1
+        elif self.is_dxt():
+            bytes_per_pixel = 1  # technically incorrect.
+        elif self in (self.RGB, self.BGR):
+            bytes_per_pixel = 3
+        elif self in (self.RGBA, self.BGRA):
+            bytes_per_pixel = 4
+        return bytes_per_pixel
 
     def is_dxt(self) -> bool:
         """Check if this format is a DXT compression format."""
@@ -138,18 +119,10 @@ class TPCTextureFormat(IntEnum):
         return max(self.min_size(), size)
 
     def to_qimage_format(self) -> QImage.Format:
-        """Convert to Qt image format.
-
-        Note: BGRA format should be converted to RGBA before calling this method,
-        as Qt does not have a native BGRA format. Format_ARGB32 expects ARGB byte order
-        (A, R, G, B), which does not match BGRA byte order (B, G, R, A).
-
-        Raises:
-            ValueError: If format is BGRA (must be converted to RGBA first) or Invalid/unsupported.
-        """
+        """Convert to Qt image format."""
         from qtpy.QtGui import QImage
 
-        q_format: QImage.Format = QImage.Format.Format_Invalid
+        q_format = QImage.Format.Format_Invalid
         if self is self.Greyscale:
             q_format = QImage.Format.Format_Grayscale8
         elif self is self.RGB:
@@ -159,15 +132,7 @@ class TPCTextureFormat(IntEnum):
         elif self is self.RGBA:
             q_format = QImage.Format.Format_RGBA8888
         elif self is self.BGRA:
-            # BGRA cannot be directly mapped to a Qt format
-            # Format_ARGB32 expects ARGB byte order (A, R, G, B)
-            # but BGRA is (B, G, R, A) - completely different byte order
-            # Callers must convert BGRA to RGBA first using bgra_to_rgba()
-            raise ValueError(
-                "BGRA format cannot be directly converted to QImage format. Convert to RGBA first using bgra_to_rgba() or mipmap.convert(TPCTextureFormat.RGBA)."
-            )
-        elif self is self.Invalid:
-            q_format = QImage.Format.Format_Invalid
+            q_format = QImage.Format.Format_ARGB32
         else:
             raise ValueError(f"Unsupported format: {self!r}")
         return q_format
@@ -215,7 +180,7 @@ class TPCTextureFormat(IntEnum):
 
 
 @dataclass
-class TPCMipmap(ComparableMixin):
+class TPCMipmap:
     """A single mipmap level in a TPC texture."""
 
     width: int
@@ -236,24 +201,8 @@ class TPCMipmap(ComparableMixin):
         return QIcon(pixmap)
 
     def to_qimage(self) -> QImage:
-        """Convert to Qt image.
-
-        Note: BGRA format is automatically converted to RGBA before creating QImage,
-        as Qt does not have a native BGRA format.
-        """
+        """Convert to Qt image."""
         from qtpy.QtGui import QImage
-
-        # BGRA must be converted to RGBA for Qt compatibility
-        if self.tpc_format == TPCTextureFormat.BGRA:
-            # Create a copy and convert to RGBA
-            mipmap_copy = self.copy()
-            mipmap_copy.convert(TPCTextureFormat.RGBA)
-            return QImage(
-                bytes(mipmap_copy.data),
-                mipmap_copy.width,
-                mipmap_copy.height,
-                mipmap_copy.tpc_format.to_qimage_format(),
-            )
 
         return QImage(bytes(self.data), self.width, self.height, self.tpc_format.to_qimage_format())
 
@@ -355,19 +304,15 @@ class TPCMipmap(ComparableMixin):
             elif target is TPCTextureFormat.RGB:
                 self.data = rgb_data
             elif target is TPCTextureFormat.RGBA:
-                dxt1_rgba_data = dxt1_to_rgba(self.data, self.width, self.height)
-                self.data = dxt1_rgba_data
+                self.data = rgb_to_rgba(rgb_data)
             elif target is TPCTextureFormat.BGRA:
-                dxt1_rgba_data = dxt1_to_rgba(self.data, self.width, self.height)
-                self.data = rgba_to_bgra(dxt1_rgba_data)
+                self.data = rgba_to_bgra(rgb_to_rgba(rgb_data))
             elif target is TPCTextureFormat.Greyscale:
                 self.data = rgb_to_grey(rgb_data)
             elif target is TPCTextureFormat.DXT3:
-                dxt1_rgba_data = dxt1_to_rgba(self.data, self.width, self.height)
-                self.data = rgba_to_dxt3(dxt1_rgba_data, self.width, self.height)
+                self.data = rgba_to_dxt3(rgb_to_rgba(rgb_data), self.width, self.height)
             elif target is TPCTextureFormat.DXT5:
-                dxt1_rgba_data = dxt1_to_rgba(self.data, self.width, self.height)
-                self.data = rgba_to_dxt5(dxt1_rgba_data, self.width, self.height)
+                self.data = rgba_to_dxt5(rgb_to_rgba(rgb_data), self.width, self.height)
 
         elif self.tpc_format == TPCTextureFormat.DXT3:
             rgba_data: bytearray = dxt3_to_rgba(self.data, self.width, self.height)
@@ -411,13 +356,10 @@ class TPCMipmap(ComparableMixin):
 
 
 @dataclass
-class TPCLayer(ComparableMixin):
+class TPCLayer:
     """A layer in a TPC texture, containing mipmaps."""
 
     mipmaps: list[TPCMipmap] = field(default_factory=list)
-    _layer_width: int = field(default=0, repr=False, compare=False)
-    _layer_height: int = field(default=0, repr=False, compare=False)
-    _rgba_mipmap_ndix: bool = field(default=False, repr=False, compare=False)
 
     def set_single(
         self,
@@ -425,16 +367,11 @@ class TPCLayer(ComparableMixin):
         height: int,
         data: bytes | bytearray,
         tpc_format: TPCTextureFormat,
-        *,
-        rgba_mipmap_ndix: bool = False,
     ):
         """Given a single mipmap, progressively create smaller mipmaps and set them all to the layer."""
         if not isinstance(data, bytearray):
             data = bytearray(data)
         self.mipmaps.clear()
-        self._layer_width = width
-        self._layer_height = height
-        self._rgba_mipmap_ndix = rgba_mipmap_ndix
         mm_width, mm_height = width, height
 
         while mm_width > 0 and mm_height > 0:
@@ -452,7 +389,7 @@ class TPCLayer(ComparableMixin):
 
             # Generate the next mipmap data by downsampling
             if w > 1 and h > 1:
-                # RobustLogger().debug(f"Downsampling mipmap ({w}x{h}) to {mm_width}x{mm_height}")
+                RobustLogger().debug(f"Downsampling mipmap ({w}x{h}) to {mm_width}x{mm_height}")
                 data = self._downsample(data, w, h, tpc_format)
             else:
                 break
@@ -486,38 +423,17 @@ class TPCLayer(ComparableMixin):
             mm_width >>= 1
             mm_height >>= 1
 
+    @classmethod
     def _downsample(
-        self,
+        cls,
         data: bytearray,
         width: int,
         height: int,
         tpc_format: TPCTextureFormat,
     ) -> bytearray:
         """Downsample the given mipmap data to the next smaller mipmap size."""
-        nw, nh = max(1, width // 2), max(1, height // 2)
-        if self._rgba_mipmap_ndix and tpc_format == TPCTextureFormat.RGBA:
-            from pykotor.resource.formats.tpc.manipulate.mipmap_ndix import downsample_rgba_ndix
-
-            mip_idx = len(self.mipmaps)
-            return downsample_rgba_ndix(
-                data,
-                self._layer_width,
-                self._layer_height,
-                mip_idx,
-                interpolation=True,
-            )
-        if tpc_format == TPCTextureFormat.DXT1:
-            rgb = dxt1_to_rgb(data, width, height)
-            small = downsample_rgb(bytearray(rgb), width, height, 3)
-            return rgb_to_dxt1(small, nw, nh)
-        if tpc_format == TPCTextureFormat.DXT3:
-            rgba = dxt3_to_rgba(data, width, height)
-            small = downsample_rgb(bytearray(rgba), width, height, 4)
-            return rgba_to_dxt3(small, nw, nh)
-        if tpc_format == TPCTextureFormat.DXT5:
-            rgba = dxt5_to_rgba(data, width, height)
-            small = downsample_rgb(bytearray(rgba), width, height, 4)
-            return rgba_to_dxt5(small, nw, nh)
+        if tpc_format.is_dxt():
+            return downsample_dxt(data, width, height, tpc_format.bytes_per_block())
         return downsample_rgb(data, width, height, tpc_format.bytes_per_pixel())
 
     def copy(self) -> Self:
@@ -525,7 +441,7 @@ class TPCLayer(ComparableMixin):
         return self.__class__([mipmap.copy() for mipmap in self.mipmaps])
 
 
-class TPC(BiowareResource):
+class TPC(ComparableMixin):
     """BioWare's TPC texture format used in Knights of the Old Republic."""
 
     BINARY_TYPE = ResourceType.TPC
@@ -537,18 +453,8 @@ class TPC(BiowareResource):
                 TPCTextureFormat.RGBA,
                 bytearray(0 for _ in range(width * height * 4)),
             )
-            for width, height in (
-                (256, 256),
-                (128, 128),
-                (64, 64),
-                (32, 32),
-                (16, 16),
-                (8, 8),
-                (4, 4),
-                (2, 2),
-                (1, 1),
-            )
-        ],
+            for width, height in ((256, 256), (128, 128), (64, 64), (32, 32), (16, 16), (8, 8), (4, 4), (2, 2), (1, 1))
+        ]
     )
 
     def __init__(self):
@@ -577,11 +483,15 @@ class TPC(BiowareResource):
         """Set the TXI data from a string."""
         self._txi.load(value)
 
-    def format(self) -> TPCTextureFormat:
+    def format(
+        self,
+    ) -> TPCTextureFormat:
         """Get the texture format."""
         return self._format
 
-    def is_compressed(self) -> bool:
+    def is_compressed(
+        self,
+    ) -> bool:
         """Check if the texture is compressed."""
         return self._format in {TPCTextureFormat.DXT1, TPCTextureFormat.DXT3, TPCTextureFormat.DXT5}
 
@@ -590,7 +500,9 @@ class TPC(BiowareResource):
         mm: TPCMipmap = self.layers[layer].mipmaps[mipmap]
         return mm.width, mm.height
 
-    def dimensions(self) -> tuple[int, int]:
+    def dimensions(
+        self,
+    ) -> tuple[int, int]:
         """Get the dimensions of the texture."""
         if not self.layers:
             return 0, 0
@@ -604,9 +516,7 @@ class TPC(BiowareResource):
         """Get a specific mipmap."""
         return self.layers[layer].mipmaps[mipmap]
 
-    def set_single(
-        self, data: bytes | bytearray, tpc_format: TPCTextureFormat, width: int, height: int
-    ):
+    def set_single(self, data: bytes | bytearray, tpc_format: TPCTextureFormat, width: int, height: int):
         """Set a single texture layer with the given data."""
         self.layers = [TPCLayer()]
         self.is_cube_map = False
@@ -627,13 +537,7 @@ class TPC(BiowareResource):
                 elif self._format == TPCTextureFormat.DXT5:
                     mipmap.data = rotate_dxt5(mipmap.data, mipmap.width, mipmap.height, times)
                 elif not self._format.is_dxt():
-                    mipmap.data = rotate_rgb_rgba(
-                        mipmap.data,
-                        mipmap.width,
-                        mipmap.height,
-                        self._format.bytes_per_pixel(),
-                        times,
-                    )
+                    mipmap.data = rotate_rgb_rgba(mipmap.data, mipmap.width, mipmap.height, self._format.bytes_per_pixel(), times)
                 else:
                     raise ValueError(f"Unsupported format for rotation: {self._format}")
 
@@ -646,26 +550,18 @@ class TPC(BiowareResource):
         for layer in self.layers:
             for mipmap in layer.mipmaps:
                 if self._format.is_dxt():
-                    mipmap.data = flip_vertically_dxt(
-                        mipmap.data, mipmap.width, mipmap.height, self._format.bytes_per_block()
-                    )
+                    mipmap.data = flip_vertically_dxt(mipmap.data, mipmap.width, mipmap.height, self._format.bytes_per_block())
                 else:
-                    mipmap.data = flip_vertically_rgb_rgba(
-                        mipmap.data, mipmap.width, mipmap.height, self._format.bytes_per_pixel()
-                    )
+                    mipmap.data = flip_vertically_rgb_rgba(mipmap.data, mipmap.width, mipmap.height, self._format.bytes_per_pixel())
 
     def flip_horizontally(self) -> None:
         """Flip all mipmaps horizontally."""
         for layer in self.layers:
             for mipmap in layer.mipmaps:
                 if self._format.is_dxt():
-                    mipmap.data = flip_horizontally_dxt(
-                        mipmap.data, mipmap.width, mipmap.height, self._format.bytes_per_block()
-                    )
+                    mipmap.data = flip_horizontally_dxt(mipmap.data, mipmap.width, mipmap.height, self._format.bytes_per_block())
                 else:
-                    mipmap.data = flip_horizontally_rgb_rgba(
-                        mipmap.data, mipmap.width, mipmap.height, self._format.bytes_per_pixel()
-                    )
+                    mipmap.data = flip_horizontally_rgb_rgba(mipmap.data, mipmap.width, mipmap.height, self._format.bytes_per_pixel())
 
     def convert(self, target: TPCTextureFormat) -> None:
         """Convert the TPC texture to the specified target format."""
@@ -680,22 +576,14 @@ class TPC(BiowareResource):
 
     def decode(self):
         """Decode compressed formats to their uncompressed equivalents."""
-        if self.format() in (
-            TPCTextureFormat.BGR,
-            TPCTextureFormat.DXT1,
-            TPCTextureFormat.Greyscale,
-        ):
+        if self.format() in (TPCTextureFormat.BGR, TPCTextureFormat.DXT1, TPCTextureFormat.Greyscale):
             self.convert(TPCTextureFormat.RGB)
         elif self.format() in (TPCTextureFormat.BGRA, TPCTextureFormat.DXT3, TPCTextureFormat.DXT5):
             self.convert(TPCTextureFormat.RGBA)
 
     def encode(self):
         """Encode uncompressed formats to their compressed equivalents."""
-        if self.format() in (
-            TPCTextureFormat.RGB,
-            TPCTextureFormat.BGR,
-            TPCTextureFormat.Greyscale,
-        ):
+        if self.format() in (TPCTextureFormat.RGB, TPCTextureFormat.BGR, TPCTextureFormat.Greyscale):
             self.convert(TPCTextureFormat.DXT1)
         elif self.format() in (TPCTextureFormat.RGBA, TPCTextureFormat.BGRA, TPCTextureFormat.DXT5):
             self.convert(TPCTextureFormat.DXT5)

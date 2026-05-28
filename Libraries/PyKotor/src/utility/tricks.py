@@ -48,17 +48,17 @@ def safe_type_getattr(
     name: str,
 ) -> Any | object:
     try:
-        return type.__getattribute__(obj, name)  # pyright: ignore[reportArgumentType]
+        return type.__getattribute__(obj, name)
     except (AttributeError, TypeError):
         return SENTINEL
 
 
 def safe_object_getattr(
-    cls: type | ModuleType,
+    cls: type,
     name: str,
 ) -> Any | object:
     try:
-        return object.__getattribute__(cls, name)  # pyright: ignore[reportArgumentType]
+        return object.__getattribute__(cls, name)
     except (AttributeError, TypeError):
         return SENTINEL
 
@@ -107,7 +107,7 @@ def fallback_unknown_getmro(unk: Any) -> tuple[type, ...] | object:
 def safe_isinstance(
     obj: Any,
     cls: type,
-) -> bool | object:
+) -> bool | object:  # sourcery skip: assign-if-exp, reintroduce-else
     assert isinstance(cls, type)
     obj_cls_mro: tuple[type, ...] | object = fallback_unknown_getmro(obj)
     try:
@@ -116,7 +116,7 @@ def safe_isinstance(
         return SENTINEL
 
 
-def safe_dir(obj_or_cls: Any) -> list[str]:
+def safe_dir(obj_or_cls: Any) -> list[str]:  # sourcery skip: assign-if-exp, reintroduce-else
     obj_or_cls_dict: dict[str, Any] | object = fallback_unknown_getattr(obj_or_cls, "__dict__")
     if obj_or_cls_dict is SENTINEL:
         return []
@@ -146,7 +146,7 @@ def get_app_start_time() -> float:
     with open("/proc/self/stat", errors="replace") as f:  # noqa: PTH123
         fields: list[str] = f.read().split()
         start_time_ticks: int = int(fields[21])
-        clock_ticks_per_second: int = os.sysconf(os.sysconf_names["SC_CLK_TCK"])  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]
+        clock_ticks_per_second: int = os.sysconf(os.sysconf_names["SC_CLK_TCK"])
         start_time: float = start_time_ticks / clock_ticks_per_second
         return time.time() - (time.time() - start_time)
 
@@ -214,10 +214,8 @@ def win_get_interpreter_start_time() -> float:
 
 def is_builtin_class_instance(obj: object) -> bool:
     """Check if the object is an instance of a built-in class."""
-    return (
-        obj.__class__.__module__ in ("builtins", "__builtin__")
-        or obj.__class__.__name__ == "builtin_function_or_method"
-    )
+    return obj.__class__.__module__ in ("builtins", "__builtin__") or obj.__class__.__name__ == "builtin_function_or_method"
+
 
 
 def is_builtin_module(module: ModuleType) -> bool:
@@ -251,26 +249,12 @@ def reimport_dependencies(
 def find_importing_modules(
     target_module_name: str,
 ) -> list[ModuleType]:
-    importing_modules: list[ModuleType] = [
-        module
-        for name, module in sys.modules.items()
-        if (
-            module
-            and hasattr(module, "__file__")
-            and target_module_name in sys.modules
-            and target_module_name in module.__dict__.values()
-        )
-    ]
+    importing_modules: list[ModuleType] = [name for name, module in sys.modules.items() if module and hasattr(module, "__file__") and target_module_name in sys.modules and target_module_name in module.__dict__.values()]
     return importing_modules
 
 
-def debug_reload_pymodules(checked: bool = False):
-    """Reload all imported modules that have changed on disk and log their names and file paths.
-
-    Args:
-    ----
-        checked: Whether the action was checked (from QAction.triggered signal, ignored).
-    """
+def debug_reload_pymodules():
+    """Reload all imported modules that have changed on disk and log their names and file paths."""
     app_start_time: float = get_app_start_time()
 
     def get_last_modified_time(file_path: str) -> float:
@@ -307,7 +291,7 @@ def debug_reload_pymodules(checked: bool = False):
                     type.__setattr__(obj, "__class__", new_class)
                 # if obj_cls.__name__ not in {"TypeVar", "PurePathType"}:
                 #    print(f"Reloaded class '{new_class.__name__}'")
-            except TypeError as e:  # noqa: F841
+            except TypeError as e:
                 ...  # print(f"Failed to update instance of type '{obj_cls.__name__}': {e}", file=sys.__stderr__)
             except Exception as e:  # noqa: BLE001
                 print(
@@ -431,11 +415,7 @@ def debug_reload_pymodules(checked: bool = False):
             if current_mtime is SENTINEL:
                 current_mtime = app_start_time
                 safe_object_setattr(loaded_module, "__mtime__", last_file_modified_time)
-            if (
-                isinstance(last_file_modified_time, float)
-                and isinstance(current_mtime, float)
-                and last_file_modified_time <= current_mtime
-            ):
+            if isinstance(last_file_modified_time, float) and isinstance(current_mtime, float) and last_file_modified_time <= current_mtime:
                 continue  # No changes on disk, skip reloading
             logic_to_use = 0
             if logic_to_use < 1:

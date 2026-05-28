@@ -105,11 +105,7 @@ def print_excluding_base_classes(
     def print_filtered_attributes(obj: object, obj_name: str, exclude_attrs: Iterable[str]):
         print(f"{obj_name} Attributes:")
         for attr in dir(obj):
-            if (
-                not attr.startswith("_")
-                and not callable(getattr(obj, attr))
-                and attr not in exclude_attrs
-            ):
+            if not attr.startswith("_") and not callable(getattr(obj, attr)) and attr not in exclude_attrs:
                 try:
                     print(f"  {attr}: {getattr(obj, attr)}")
                 except Exception as ex:  # noqa: BLE001
@@ -286,12 +282,7 @@ def get_file_attributes(
     }
 
     # Check if file is hidden
-    attributes["is_hidden"] = (
-        path.name.startswith(".")
-        or bool(path.stat().st_file_attributes & stat.FILE_ATTRIBUTE_HIDDEN)
-        if hasattr(stat, "FILE_ATTRIBUTE_HIDDEN")
-        else False
-    )
+    attributes["is_hidden"] = path.name.startswith(".") or bool(path.stat().st_file_attributes & stat.FILE_ATTRIBUTE_HIDDEN) if hasattr(stat, "FILE_ATTRIBUTE_HIDDEN") else False
 
     # Check if file is read-only
     attributes["is_readonly"] = not os.access(path, os.W_OK)
@@ -319,17 +310,15 @@ def get_file_attributes(
             logging.getLogger(__name__).exception(f"Failed to get file attributes for: '{path}'")
     else:  # Unix-like systems
         # Check if file is system (based on location)
-        attributes["is_system"] = str(path).startswith(
-            ("/etc", "/var", "/bin", "/sbin", "/usr/bin", "/usr/sbin")
-        )
+        attributes["is_system"] = str(path).startswith(("/etc", "/var", "/bin", "/sbin", "/usr/bin", "/usr/sbin"))
 
         # Check if file is archived (based on extension)
         archive_extensions = {".tar", ".gz", ".bz2", ".xz", ".zip", ".7z", ".rar"}
-        attributes["is_archive"] = get_normalized_extension(path) in archive_extensions
+        attributes["is_archive"] = path.suffix.lower() in archive_extensions
 
         # Check if file is compressed (based on extension)
         compressed_extensions = {".gz", ".bz2", ".xz", ".zip", ".7z", ".rar"}
-        attributes["is_compressed"] = get_normalized_extension(path) in compressed_extensions
+        attributes["is_compressed"] = path.suffix.lower() in compressed_extensions
 
         # Check if file is encrypted (based on extension, not reliable)
         encrypted_extensions = {".gpg", ".enc", ".asc"}

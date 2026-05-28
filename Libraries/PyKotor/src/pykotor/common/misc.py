@@ -1,9 +1,8 @@
-"""Common KotOR types: ResRef, LocalizedString, enums (Game, Gender, Language, etc.), and helpers."""
-
 from __future__ import annotations
 
 import warnings
 
+from collections.abc import Iterable
 from enum import Enum, IntEnum
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Iterable, TypeVar
 
@@ -28,14 +27,29 @@ class ResRef(str):
     They serve as identifiers for game resources stored in archives (BIF, ERF, RIM)
     or as standalone files in the Override folder.
 
-    NOTE: ResRef Case-INSensitivity is critical for cross-platform compatibility
-
     Used in:
     -------
         - BioWare Archive/Container Files (BIF/ERF/MOD/RIM/SAV)
         - Filenames in the Override folder
         - GFF field values (ResRef field type)
         - Resource lookups and references throughout the engine
+    
+    References:
+    ----------
+        vendor/reone/include/reone/resource/resref.h:26-66 (ResRef class definition)
+        vendor/reone/include/reone/resource/resref.h:26 (kMaxResRefLength constant = 16)
+        vendor/reone/include/reone/resource/resref.h:32-38 (ResRef constructor with truncation and lowercasing)
+        vendor/Kotor.NET/Kotor.NET/Common/Data/ResRef.cs:9-72 (ResRef class, max length 16)
+        vendor/HoloPatcher.NET/src/TSLPatcher.Core/Common/ResRef.cs:12-132 (ResRef class with validation)
+        vendor/HoloPatcher.NET/src/TSLPatcher.Core/Common/ResRef.cs:15 (MaxLength constant = 16)
+        vendor/HoloPatcher.NET/src/TSLPatcher.Core/Common/ResRef.cs:15 (InvalidCharacters constant)
+        vendor/KotOR_IO/KotOR_IO/File Formats/GFF FieldTypes/B_ResRef.cs (ResRef GFF field type)
+        vendor/xoreos-tools/src/common/util.cpp (ResRef handling utilities)
+        vendor/KotOR.js/src/resource/ResourceTypes.ts (Resource type definitions)
+        vendor/KotOR-dotNET/AuroraFile.cs (ResRef in C#)
+        vendor/kotor/kotor/resref.py (ResRef handling in Python)
+        Original BioWare Odyssey Engine (ResRef format specification)
+        Note: ResRef case-insensitivity is critical for cross-platform compatibility
 
     Restrictions:
     ------------
@@ -45,7 +59,14 @@ class ResRef(str):
         - Usable in case-insensitive applications (KOTOR was created for Windows case-insensitive filesystem)
         - (recommended) Stored as case-sensitive text for cross-platform compatibility
         - ResRefs are trimmed of whitespace (leading/trailing spaces removed)
-
+    
+    Discrepancies:
+    -------------
+        - reone lowercases ResRefs automatically (resref.h:37: boost::to_lower(_value))
+        - PyKotor preserves case but uses casefold() for comparisons (case-insensitive equality)
+        - HoloPatcher.NET preserves case but uses case-insensitive comparison (StringComparison.OrdinalIgnoreCase)
+        - Kotor.NET preserves case without automatic lowercasing
+        - Original engine: Windows case-insensitive filesystem, ResRefs stored as-is but matched case-insensitively
     """
 
     __slots__: ClassVar[tuple[str, ...]] = ("_value",)
@@ -53,12 +74,16 @@ class ResRef(str):
     MAX_LENGTH: ClassVar[int] = 16
     """Maximum length of a ResRef in characters.
     
+    Reference: reone/resref.h:26 (kMaxResRefLength = 16)
+    Reference: HoloPatcher.NET/ResRef.cs:14 (MaxLength = 16)
+    Reference: Kotor.NET/ResRef.cs:30 (Length check > 16)
     This is a hard limit enforced by the BioWare Odyssey Engine.
     """
 
     INVALID_CHARACTERS: ClassVar[str] = '<>:"/\\|?*'
     """Characters that are invalid in ResRefs (Windows filename restrictions).
     
+    Reference: HoloPatcher.NET/ResRef.cs:15 (InvalidCharacters constant)
     These characters cannot appear in Windows filenames and are therefore
     invalid for ResRefs which are used as filenames.
     """
@@ -67,13 +92,9 @@ class ResRef(str):
         """ResRefs must conform to Windows filename requirements."""
 
         def __init__(self, bad_text: str):
-            invalid_chars: list[tuple[str, int]] = [
-                (char, pos)
-                for pos, char in enumerate(bad_text)
-                if char in ResRef.INVALID_CHARACTERS
-            ]
+            invalid_chars: list[tuple[str, int]] = [(char, pos) for pos, char in enumerate(bad_text) if char in ResRef.INVALID_CHARACTERS]
             details: str = ", ".join(f"'{char}' at position {pos}" for char, pos in invalid_chars)
-            message: str = f"String '{bad_text}' contains invalid characters: {details}. Full list of invalid characters: '{ResRef.INVALID_CHARACTERS}'"
+            message: str = f"String '{bad_text}' contains invalid characters: {details}. " f"Full list of invalid characters: '{ResRef.INVALID_CHARACTERS}'"
             super().__init__(message)
 
     class InvalidEncodingError(ValueError):
@@ -104,15 +125,13 @@ class ResRef(str):
         instance.set_data(text)
         return instance
 
-    def __len__(self):
-        return len(
-            self._value.strip()
-        )  # should already be stripped, leave here for clarity (it is a fast operation)
+    def __len__(
+        self,
+    ):
+        return len(self._value.strip())  # should already be stripped, leave here for clarity (it is a fast operation)
 
     def __bool__(self):
-        return bool(
-            self._value.strip()
-        )  # should already be stripped, leave here for clarity (it is a fast operation)
+        return bool(self._value.strip())  # should already be stripped, leave here for clarity (it is a fast operation)
 
     def __eq__(
         self,
@@ -122,7 +141,7 @@ class ResRef(str):
         if self is other:
             return True
         if not isinstance(other, str):
-            return NotImplemented  # type: ignore[no-any-return]
+            return NotImplemented
         other_value: str = other.casefold().strip()
         return other_value == self._value.casefold()
 
@@ -132,7 +151,9 @@ class ResRef(str):
     def __repr__(self):
         return f"ResRef({self._value})"
 
-    def __str__(self):
+    def __str__(
+        self,
+    ):
         return str(self._value)
 
     @classmethod
@@ -154,32 +175,12 @@ class ResRef(str):
         cls,
         text: str,
     ) -> bool:
-        """Validates that text is a valid ResRef.
-
-        Checks (in order):
-        1. Must be a non-empty string
-        2. Must be trimmed (no leading/trailing whitespace)
-        3. Strict ASCII validation (ASCII only, 0-127)
-        4. Strict maximum length validation (16 characters maximum)
-        5. Must not contain invalid characters (Windows filename restrictions)
-        """
-        if not isinstance(text, str) or text == "":
+        if not isinstance(text, str):
             return False
-
-        # Must be trimmed (no leading/trailing whitespace)
-        if text != text.strip():
-            return False
-
-        # Strict ASCII validation
-        if not text.isascii():
-            return False
-
-        # Strict maximum length validation (16 characters)
-        if len(text) > cls.MAX_LENGTH:
-            return False
-
-        # Must not contain invalid characters
-        return not any(char in cls.INVALID_CHARACTERS for char in text)
+        return next(
+            (False for char in cls.INVALID_CHARACTERS if char in text),
+            (text != "" and text.isascii() and len(text) <= cls.MAX_LENGTH and text == text.strip()),
+        )
 
     def set_data(
         self,
@@ -191,29 +192,44 @@ class ResRef(str):
         ----
             text - str: The reference string.
         """
-        # Strip whitespace and warn if original had leading/trailing whitespace
+        parsed_text: str = str(text).strip()
+        # Check for leading or trailing whitespace. Ensure text doesn't start/end with whitespace.
         raw_text = str(text)
-        parsed_text = raw_text.strip()
-        if raw_text != parsed_text:
-            msg = f"String '{raw_text}' starts or ends with whitespace. It will be stripped to '{parsed_text}'"
+        text = raw_text.strip()
+        if raw_text != text:
+            msg = f"String '{raw_text}' starts or ends with whitespace. It will be stripped to '{text}'"
             warnings.warn(msg, stacklevel=2)
 
-        # Strict ASCII validation - must be checked first
-        if not parsed_text.isascii():
-            raise self.InvalidEncodingError(parsed_text)
+        # Check for maximum length
+        if len(text) > self.MAX_LENGTH:
+            if not truncate:
+                raise self.ExceedsMaxLengthError(text)
+            warnings.warn(f"String '{raw_text}' exceeds the maximum allowed length ({self.MAX_LENGTH}) and will be truncated to '{text}'", stacklevel=2)
+            text = text[: self.MAX_LENGTH]
+
+        if any(
+            (char, pos)  # Check for invalid characters and their positions
+            for pos, char in enumerate(text)
+            if char in self.INVALID_CHARACTERS
+        ):
+            raise self.InvalidFormatError(text)
+
+        if not text.isascii():  # Ensure text only contains ASCII characters.
+            raise self.InvalidEncodingError(text)
 
         # Strict maximum length validation (16 characters)
         if len(parsed_text) > self.MAX_LENGTH:
-            # if not truncate:
-            #    raise self.ExceedsMaxLengthError(parsed_text)
-            # warnings.warn(f"String '{raw_text}' exceeds the maximum allowed length ({self.MAX_LENGTH}) and will be truncated to '{parsed_text[: self.MAX_LENGTH]}'", stacklevel=2)
+            if not truncate:
+                raise self.ExceedsMaxLengthError(parsed_text)
             parsed_text = parsed_text[: self.MAX_LENGTH]
 
-        # Check for invalid characters (Windows filename restrictions)
-        if any(char in self.INVALID_CHARACTERS for char in parsed_text):
-            raise self.InvalidFormatError(parsed_text)
+        # Ensure text doesn't contain any invalid ASCII characters.
+        for i in range(len(parsed_text)):
+            if parsed_text[i] in self.INVALID_CHARACTERS:
+                msg = f"ResRef '{text}' cannot contain any invalid characters in [{self.INVALID_CHARACTERS}]"
+                raise self.InvalidFormatError(msg)
 
-        self._value = parsed_text
+        self._value = parsed_text.strip()
 
     def get(self) -> str:
         """Returns a case-insensitive wrapped string."""
@@ -667,7 +683,13 @@ class CaseInsensitiveHashSet(set, Generic[T]):
             return x if isinstance(x, str) else str(x)
 
         normalized_items = tuple(
-            sorted((self._normalize_key(item) for item in self), key=_sort_key)
+            sorted(
+                (
+                    self._normalize_key(item)
+                    for item in self
+                ),
+                key=_sort_key
+            )
         )
         return hash(normalized_items)
 

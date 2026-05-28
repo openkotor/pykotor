@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
+
 if importlib.util.find_spec("pyglm"):
     from pyglm.glm import mat4, vec2, vec3, vec4
 elif importlib.util.find_spec("glm"):
@@ -49,7 +50,9 @@ class Vector2(vec2):
     def __iter__(self) -> Iterator[float]:
         return iter((self.x, self.y))
 
-    def __repr__(self) -> str:
+    def __repr__(
+        self,
+    ) -> str:
         return f"{self.__class__.__name__}({self.x}, {self.y})"
 
     def __str__(self):
@@ -132,17 +135,10 @@ class Vector2(vec2):
             return new
         return NotImplemented  # type: ignore[no-any-return]
 
-    def __rmul__(
-        self,
-        other,
-    ):
-        """Right multiplication: scalar * Vector2."""
-        if isinstance(other, (int, float)):
-            new = self.__class__.from_vector2(self)
-            new.x *= other
-            new.y *= other
-            return new
-        return NotImplemented  # type: ignore[no-any-return]
+        new = self.__class__.from_vector2(self)
+        new.x *= other
+        new.y *= other
+        return new
 
     def __truediv__(
         self,
@@ -167,7 +163,7 @@ class Vector2(vec2):
             - Divide y element by other
             - Return the new vector.
         """
-        if isinstance(other, (int, float)):
+        if isinstance(other, int):
             new = self.__class__.from_vector2(self)
             new.x /= other
             new.y /= other
@@ -326,7 +322,9 @@ class Vector2(vec2):
         """
         return math.sqrt(self.x**2 + self.y**2)
 
-    def normal(self) -> Self:
+    def normal(
+        self,
+    ) -> Self:
         vec2 = self.__class__.from_vector2(self)
         vec2.normalize()
         return vec2
@@ -514,9 +512,9 @@ class Vector3(vec3):
 
     def __mul__(
         self,
-        other: float | Vector3,
+        other: float,
     ):
-        """Multiplies the components by a scalar or element-wise with another Vector3."""
+        """Multiplies the components by a scalar integer."""
         if isinstance(other, (int, float)):
             new = self.__class__.from_vector3(self)
             new.x *= other
@@ -548,8 +546,7 @@ class Vector3(vec3):
         self,
         other: float,
     ):
-        """Performs element-wise true division of vector by scalar value."""
-        if isinstance(other, (int, float)):
+        if isinstance(other, int):
             new = self.__class__.from_vector3(self)
             new.x /= other
             new.y /= other
@@ -683,7 +680,9 @@ class Vector3(vec3):
         self.y = y
         self.z = z
 
-    def normalize(self) -> Self:
+    def normalize(
+        self,
+    ) -> Self:
         """Normalizes the vector so that the magnitude is equal to one while maintaining the same angle."""
         magnitude = self.magnitude()
         if magnitude == 0:
@@ -705,7 +704,9 @@ class Vector3(vec3):
         """
         return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
-    def normal(self) -> Self:
+    def normal(
+        self,
+    ) -> Self:
         vec3 = self.__class__.from_vector3(self)
         vec3.normalize()
         return vec3
@@ -870,57 +871,11 @@ class Vector4(vec4):
         new.w += other.w
         return new
 
-    def __radd__(
-        self,
-        other,
-    ):
-        """Right addition: scalar + Vector4 (returns Vector4)."""
-        if isinstance(other, (int, float)):
-            new = self.__class__.from_vector4(self)
-            new.x = other + new.x
-            new.y = other + new.y
-            new.z = other + new.z
-            new.w = other + new.w
-            return new
-        return NotImplemented  # type: ignore[no-any-return]
-
     def __getitem__(
         self,
         item: int,
     ) -> float:
-        """Get element by index (0=x, 1=y, 2=z, 3=w)."""
-        if isinstance(item, int):
-            if item == 0:
-                return self.x
-            if item == 1:
-                return self.y
-            if item == 2:  # noqa: PLR2004
-                return self.z
-            if item == 3:  # noqa: PLR2004
-                return self.w
-            raise IndexError(f"Vector4 index out of range: {item}")
-        return NotImplemented  # type: ignore[no-any-return]
-
-    def __setitem__(
-        self,
-        key: int,
-        value: float,
-    ):
-        """Set element by index (0=x, 1=y, 2=z, 3=w)."""
-        if isinstance(key, int) and isinstance(value, (float, int)):
-            if key == 0:
-                self.x = value
-                return None
-            if key == 1:
-                self.y = value
-                return None
-            if key == 2:  # noqa: PLR2004
-                self.z = value
-                return None
-            if key == 3:  # noqa: PLR2004
-                self.w = value
-                return None
-        return NotImplemented  # type: ignore[no-any-return]
+        return self[item]
 
     def __sub__(
         self,
@@ -951,68 +906,12 @@ class Vector4(vec4):
             return new
         return NotImplemented  # type: ignore[no-any-return]
 
-    def __mul__(
-        self,
-        other: float | Vector4,
-    ):
-        """Multiplies the components by a scalar or element-wise with another Vector4."""
-        if isinstance(other, (int, float)):
-            new = self.__class__.from_vector4(self)
-            new.x *= other
-            new.y *= other
-            new.z *= other
-            new.w *= other
-            return new
-        if isinstance(other, Vector4):
-            new = self.__class__.from_vector4(self)
-            new.x *= other.x
-            new.y *= other.y
-            new.z *= other.z
-            new.w *= other.w
-            return new
-        return NotImplemented  # type: ignore[no-any-return]
-
-    def __rmul__(
-        self,
-        other: float,
-    ):
-        """Right multiplication: scalar * Vector4."""
-        if isinstance(other, (int, float)):
-            new = self.__class__.from_vector4(self)
-            new.x *= other
-            new.y *= other
-            new.z *= other
-            new.w *= other
-            return new
-        return NotImplemented  # type: ignore[no-any-return]
-
-    def __truediv__(
-        self,
-        other: float,
-    ):
-        """Performs element-wise true division of vector by scalar value."""
-        if isinstance(other, (int, float)):
-            new = self.__class__.from_vector4(self)
-            new.x /= other
-            new.y /= other
-            new.z /= other
-            new.w /= other
-            return new
-        return NotImplemented  # type: ignore[no-any-return]
-
-    def __rtruediv__(
-        self,
-        other,
-    ):
-        """Right division: scalar / Vector4."""
-        if isinstance(other, (int, float)):
-            new = self.__class__.from_vector4(self)
-            new.x = other / new.x if new.x != 0 else 0.0
-            new.y = other / new.y if new.y != 0 else 0.0
-            new.z = other / new.z if new.z != 0 else 0.0
-            new.w = other / new.w if new.w != 0 else 0.0
-            return new
-        return NotImplemented  # type: ignore[no-any-return]
+        new = self.__class__.from_vector4(self)
+        new.x *= other
+        new.y *= other
+        new.z *= other
+        new.w *= other
+        return new
 
     @classmethod
     def from_vector2(
@@ -1096,6 +995,9 @@ class Vector4(vec4):
         -------
             Vector4: Decompressed quaternion (x, y, z, w)
 
+        References:
+        ----------
+            vendor/kotorblender/io_scene_kotor/format/mdl/reader.py:850-868
             Formula: X uses bits 0-10 (11 bits), Y uses bits 11-21 (11 bits),
                      Z uses bits 22-31 (10 bits), W computed from magnitude
         """
@@ -1103,10 +1005,10 @@ class Vector4(vec4):
         # X component: bits 0-10 (11 bits, mask 0x7FF = 2047)
         # Maps [0, 2047] -> [-1, 1] via (value/1023 - 1)
         x = ((data & 0x7FF) / 1023.0) - 1.0
-
+        
         # Y component: bits 11-21 (11 bits, shift 11 then mask 0x7FF)
         y = (((data >> 11) & 0x7FF) / 1023.0) - 1.0
-
+        
         # Z component: bits 22-31 (10 bits, shift 22, max value 1023)
         z = ((data >> 22) / 511.0) - 1.0
 
@@ -1160,6 +1062,46 @@ class Vector4(vec4):
         ) * math.sin(pitch / 2) * math.sin(yaw / 2)
 
         return cls(qx, qy, qz, qw)
+
+    def to_compressed(
+        self,
+    ) -> int:
+        """Compress this quaternion into a 32-bit integer.
+        
+        Inverse of from_compressed. Packs X, Y, Z components into a single
+        32-bit value. The W component is not stored as it can be recomputed from
+        the quaternion unit constraint.
+        
+        Returns:
+        -------
+            int: 32-bit packed quaternion value
+        
+        References:
+        ----------
+            vendor/kotorblender/io_scene_kotor/format/mdl/reader.py:850-868 (decompression)
+            Inverse operation derived from decompression algorithm
+        
+        Notes:
+        -----
+            Values are clamped to [-1, 1] range before packing to prevent overflow.
+        """
+        # Clamp values to valid range
+        x = max(-1.0, min(1.0, self.x))
+        y = max(-1.0, min(1.0, self.y))
+        z = max(-1.0, min(1.0, self.z))
+        
+        # Map from [-1, 1] to integer ranges and pack
+        # X: [-1, 1] -> [0, 2047] (11 bits) via (value + 1) * 1023
+        x_packed = int((x + 1.0) * 1023.0) & 0x7FF
+        
+        # Y: [-1, 1] -> [0, 2047] (11 bits)
+        y_packed = int((y + 1.0) * 1023.0) & 0x7FF
+        
+        # Z: [-1, 1] -> [0, 1023] (10 bits)  
+        z_packed = int((z + 1.0) * 511.0) & 0x3FF
+        
+        # Pack into single 32-bit integer
+        return x_packed | (y_packed << 11) | (z_packed << 22)
 
     def to_compressed(self) -> int:
         """Compress this quaternion into a 32-bit integer.
@@ -1236,7 +1178,9 @@ class Vector4(vec4):
         """
         return math.sqrt(self.x**2 + self.y**2 + self.z**2 + self.w**2)
 
-    def normalize(self) -> Self:
+    def normalize(
+        self,
+    ) -> Self:
         """Normalizes the vector so that the magnitude is equal to one while maintaining the same angle.
 
         Returns:
@@ -1353,10 +1297,6 @@ class AxisAngle:
         """
         return cls(Vector3.from_null(), 0.0)
 
-    def copy(self) -> Self:
-        """Return a copy of this axis-angle rotation."""
-        return self.__class__(self.axis.copy(), self.angle)
-
 
 class SurfaceMaterial(IntEnum):
     """The surface materials for walkmeshes found in both games."""
@@ -1442,6 +1382,27 @@ class Face:
 
     def __eq__(self, other: object) -> bool:
         """Check equality by comparing vertices and material.
+        
+        Two faces are equal if they have the same three vertices (by value)
+        and the same material. This is value-based equality, not identity-based.
+        """
+        if not isinstance(other, Face):
+            return NotImplemented
+        return (
+            self.v1 == other.v1
+            and self.v2 == other.v2
+            and self.v3 == other.v3
+            and self.material == other.material
+        )
+
+    def __hash__(self) -> int:
+        """Hash based on vertices and material for use in sets/dicts."""
+        return hash((self.v1, self.v2, self.v3, self.material))
+
+    def normal(
+        self,
+    ) -> Vector3:
+        """Returns the normal for the face.
 
         Two faces are equal if they have the same three vertices (by value)
         and the same material. This is value-based equality, not identity-based.
@@ -1612,7 +1573,7 @@ class Polygon2:
             if p1.y == p2.y:
                 if point.y == p2.y:
                     if min(p1.x, p2.x) <= point.x <= max(p1.x, p2.x):
-                        inside = include_edges
+                        inside: bool = include_edges
                         break
                     if point.x < min(p1.x, p2.x):
                         inside = not inside
@@ -1808,188 +1769,3 @@ class Polygon3:
         point: Vector3,
     ) -> int:
         return self.points.index(point)
-
-    def copy(self) -> Polygon3:
-        """Return a copy of this polygon and its points."""
-        return self.__class__([point.copy() for point in self.points])
-
-
-class Matrix4(mat4):
-    """Represents a 4x4 matrix for 3D transformations.
-
-    This class provides matrix operations compatible with GLM-style APIs.
-    Matrices are stored internally in row-major order, but accessed in
-    column-major order for GLM compatibility (mat4[i] returns column i).
-
-    Attributes:
-    ----------
-        _data: 4x4 matrix stored as list of 4 lists, each containing 4 floats.
-               Stored in row-major order internally.
-    """
-
-    def __init__(
-        self,
-        value: float | Matrix4 | list[list[float]] | None = None,
-    ):
-        """Initialize a Matrix4.
-
-        Args:
-        ----
-            value: If float, creates identity matrix scaled by value.
-                   If Matrix4, copies the matrix.
-                   If list[list[float]], creates matrix from 4x4 list (row-major).
-                   If None, creates identity matrix.
-        """
-        if value is None:
-            value = 1.0
-        if isinstance(value, (int, float)):
-            # Identity matrix scaled by value
-            self._data: list[list[float]] = [
-                [float(value), 0.0, 0.0, 0.0],
-                [0.0, float(value), 0.0, 0.0],
-                [0.0, 0.0, float(value), 0.0],
-                [0.0, 0.0, 0.0, float(value)],
-            ]
-        elif isinstance(value, Matrix4):
-            # Copy constructor
-            self._data = [[value._data[i][j] for j in range(4)] for i in range(4)]
-        elif isinstance(value, list) and len(value) == 4:
-            # List of 4 lists (row-major)
-            self._data = [[float(value[i][j]) for j in range(4)] for i in range(4)]
-        else:
-            # Default to identity
-            self._data = [
-                [1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0],
-                [0.0, 0.0, 0.0, 1.0],
-            ]
-
-    def __repr__(self) -> str:
-        return f"Matrix4(\n{self._data}\n)"
-
-    def __eq__(
-        self,
-        other: object,
-    ) -> bool:
-        """Two Matrix4 objects are equal if their components are approximately the same."""
-        if not isinstance(other, Matrix4):
-            return NotImplemented  # type: ignore[no-any-return]
-        for i in range(4):
-            for j in range(4):
-                if not math.isclose(self._data[i][j], other._data[i][j]):
-                    return False
-        return True
-
-    def __hash__(self) -> int:
-        return hash(tuple(tuple(row) for row in self._data))
-
-    def __mul__(
-        self,
-        other: Matrix4 | Vector3 | Vector4,
-    ) -> Matrix4 | Vector3 | Vector4:
-        """Multiply matrix by another matrix, Vector3, or Vector4."""
-        if isinstance(other, Matrix4):
-            # Matrix multiplication
-            result = Matrix4(0.0)
-            for i in range(4):
-                for j in range(4):
-                    result._data[i][j] = sum(self._data[i][k] * other._data[k][j] for k in range(4))
-            return result
-        if isinstance(other, Vector4):
-            # Matrix * Vector4
-            result_data = [sum(self._data[i][j] * other[j] for j in range(4)) for i in range(4)]
-            return Vector4(result_data[0], result_data[1], result_data[2], result_data[3])
-        if isinstance(other, Vector3):
-            # Treat Vector3 as Vector4 with w=1, return Vector3
-            vec4_data = [other.x, other.y, other.z, 1.0]
-            result_data = [sum(self._data[i][j] * vec4_data[j] for j in range(4)) for i in range(4)]
-            return Vector3(result_data[0], result_data[1], result_data[2])
-        return NotImplemented  # type: ignore[no-any-return]
-
-    def __getitem__(
-        self,
-        index: int,
-    ) -> Vector4:
-        """Get a column vector from the matrix (GLM-compatible indexing).
-
-        In GLM, matrices are column-major, so Matrix4[i] returns column i as a Vector4.
-        This allows syntax like m[0][0] to access element at row 0, column 0.
-
-        Args:
-        ----
-            index: Column index (0-3).
-
-        Returns:
-        -------
-            Column vector as Vector4.
-
-        Raises:
-        ------
-            IndexError: If index is out of range.
-        """
-        if not 0 <= index < 4:
-            raise IndexError(f"Matrix4 column index out of range: {index}")
-        # Return column as Vector4 (GLM uses column-major order)
-        # _data is stored in row-major, so we transpose for column access
-        return Vector4(
-            self._data[0][index],
-            self._data[1][index],
-            self._data[2][index],
-            self._data[3][index],
-        )
-
-    def __setitem__(
-        self,
-        index: int,
-        value: Vector4,
-    ):
-        """Set a column vector in the matrix (GLM-compatible).
-
-        Args:
-        ----
-            index: Column index (0-3).
-            value: Vector4 to set as column.
-        """
-        if not isinstance(value, Vector4):
-            return NotImplemented  # type: ignore[no-any-return]
-        if not 0 <= index < 4:
-            raise IndexError(f"Matrix4 column index out of range: {index}")
-        # Set column (transpose for row-major storage)
-        self._data[0][index] = value.x
-        self._data[1][index] = value.y
-        self._data[2][index] = value.z
-        self._data[3][index] = value.w
-
-    @classmethod
-    def from_identity(
-        cls,
-    ) -> Self:
-        """Returns an identity matrix.
-
-        Returns:
-        -------
-            A new Matrix4 instance representing the identity matrix.
-        """
-        return cls(1.0)
-
-    @classmethod
-    def from_matrix4(
-        cls,
-        other: Matrix4,
-    ) -> Self:
-        """Returns a duplicate of the specified matrix.
-
-        Args:
-        ----
-            other: The matrix to be duplicated.
-
-        Returns:
-        -------
-            A new Matrix4 instance.
-        """
-        return cls(other)
-
-    def copy(self) -> Self:
-        """Return a copy of this matrix."""
-        return self.__class__.from_matrix4(self)

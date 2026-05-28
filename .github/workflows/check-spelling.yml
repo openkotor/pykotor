@@ -7,21 +7,19 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   spell-check:
     name: Spell Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Check spelling
-        uses: streetsidesoftware/cspell-action@v8
+        uses: streetsidesoftware/cspell-action@v7
         with:
           files: "**/*.{md,py,txt,yml,yaml}"
           inline: true
           incremental_files_only: false
         continue-on-error: true
+

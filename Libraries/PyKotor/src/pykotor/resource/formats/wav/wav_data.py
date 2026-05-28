@@ -7,49 +7,53 @@ KotOR Audio Format Reference:
     - SFX files (streammusic): Have 0xFFF360C4 header, skip 470 bytes, then RIFF/WAVE
     - VO files (streamvoice): Usually standard RIFF/WAVE with PCM or IMA ADPCM
     - Music with MP3: RIFF header with size=50, skip 58 bytes, then MP3 data
-
-Observed retail behavior:
+    
+References:
 ----------
-        KotOR I and TSL reuse the same stream-voice / stream-music directory layout and RIFF
-        conventions summarized above.
-
+    vendor/reone/src/libs/audio/format/wavreader.cpp:30-56 - WAV header detection
+    vendor/KotOR.js/src/audio/AudioFile.ts:9-162 - Audio format detection & deobfuscation
+    vendor/xoreos/src/sound/decoders/wave.cpp - Standard WAV parsing
+    vendor/SithCodec - Audio codec for KotOR WAV handling
+    vendor/SWKotOR-Audio-Encoder - Audio encoding tools
 """
 
 from __future__ import annotations
 
 from enum import IntEnum
 
-from pykotor.resource.formats._base import BiowareResource
 from pykotor.resource.type import ResourceType
 
 
 class WaveEncoding(IntEnum):
-    """Wave encoding types used by Bioware."""
-
-    PCM = 0x01  # Linear PCM (uncompressed)
-    MS_ADPCM = 0x02  # Microsoft ADPCM
-    ALAW = 0x06  # A-Law companded
-    MULAW = 0x07  # μ-Law companded
-    IMA_ADPCM = 0x11  # IMA ADPCM (also known as DVI ADPCM)
-    MP3 = 0x55  # MPEG Layer 3
+    """Wave encoding types used by Bioware.
+    
+    References:
+    ----------
+        vendor/KotOR.js/src/enums/audio/AudioFileWaveEncoding.ts
+        vendor/xoreos/src/sound/decoders/wave_types.h
+    """
+    PCM = 0x01           # Linear PCM (uncompressed)
+    MS_ADPCM = 0x02      # Microsoft ADPCM
+    ALAW = 0x06          # A-Law companded
+    MULAW = 0x07         # μ-Law companded
+    IMA_ADPCM = 0x11     # IMA ADPCM (also known as DVI ADPCM)
+    MP3 = 0x55           # MPEG Layer 3
 
 
 class AudioFormat(IntEnum):
     """Audio format types for the WAV wrapper."""
-
-    WAVE = 1  # Standard RIFF/WAVE format
-    MP3 = 2  # MP3 data (possibly wrapped in WAV)
-    UNKNOWN = 0  # Unknown format
+    WAVE = 1       # Standard RIFF/WAVE format
+    MP3 = 2        # MP3 data (possibly wrapped in WAV)
+    UNKNOWN = 0    # Unknown format
 
 
 class WAVType(IntEnum):
     """The type of WAV file for KotOR obfuscation purposes."""
+    VO = 1      # Voice over WAV (streamvoice, streamwaves)
+    SFX = 2     # Sound effects WAV (streammusic/sounds with 470-byte header)
 
-    VO = 1  # Voice over WAV (streamvoice, streamwaves)
-    SFX = 2  # Sound effects WAV (streammusic/sounds with 470-byte header)
 
-
-class WAV(BiowareResource):
+class WAV:
     """Represents a WAV file.
 
     Attributes:
@@ -63,7 +67,7 @@ class WAV(BiowareResource):
         block_align: Block alignment
         bytes_per_sec: Bytes per second
         data: The raw audio data (PCM samples for WAVE, raw bytes for MP3)
-
+        
     Note:
     ----
         When audio_format is MP3, the data contains raw MP3 bytes that should be
@@ -118,7 +122,7 @@ class WAV(BiowareResource):
         if self is other:
             return True
         if not isinstance(other, WAV):
-            return NotImplemented  # type: ignore[no-any-return]
+            return NotImplemented
         return (
             self.wav_type == other.wav_type
             and self.audio_format == other.audio_format
@@ -131,15 +135,5 @@ class WAV(BiowareResource):
         )
 
     def __hash__(self):
-        return hash(
-            (
-                self.wav_type,
-                self.audio_format,
-                self.encoding,
-                self.channels,
-                self.sample_rate,
-                self.bits_per_sample,
-                self.block_align,
-                self.data,
-            )
-        )
+        return hash((self.wav_type, self.audio_format, self.encoding, self.channels, 
+                     self.sample_rate, self.bits_per_sample, self.block_align, self.data))

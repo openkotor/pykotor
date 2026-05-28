@@ -334,7 +334,7 @@ def format_exception_with_variables(
             format_exception_with_variables(
                 exc.__cause__,
                 message="Causing Exception's Stack Trace Variables:",
-            ).split("\n"),
+            ).split("\n")
         )
 
     detailed_message.append(formatted_traceback)

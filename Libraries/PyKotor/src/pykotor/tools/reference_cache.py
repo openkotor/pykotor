@@ -1,5 +1,3 @@
-"""Reference cache: GFF/NCS/TLK/2DA lookups and installation-wide reference finding."""
-
 from __future__ import annotations
 
 import os
@@ -10,6 +8,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Sequence, Union
 
 from loggerplus import RobustLogger
+
 from pykotor.common.language import LocalizedString
 from pykotor.common.stream import BinaryReader
 from pykotor.extract.file import FileResource  # noqa: PLC0415
@@ -21,7 +20,7 @@ from pykotor.resource.formats.gff.gff_auto import read_gff
 from pykotor.resource.formats.gff.gff_data import GFFContent, GFFFieldType, GFFList, GFFStruct
 from pykotor.resource.formats.ncs.ncs_auto import read_ncs  # noqa: PLC0415
 from pykotor.resource.formats.ssf.ssf_auto import read_ssf
-from pykotor.resource.formats.ssf.ssf_data import SSF, SSFSound
+from pykotor.resource.formats.ssf.ssf_data import SSFSound
 from pykotor.resource.formats.twoda.twoda_auto import read_2da
 from pykotor.resource.type import ResourceType
 
@@ -71,9 +70,7 @@ GFF_FIELD_TO_2DA_MAPPING: dict[str, ResourceIdentifier] = _get_gff_field_to_2da_
 
 # Logging helpers for reference caches
 # Log level: 0 = normal, 1 = verbose, 2 = debug
-_log_level = (
-    2 if os.environ.get("KOTORDIFF_DEBUG") else (1 if os.environ.get("KOTORDIFF_VERBOSE") else 0)
-)
+_log_level = 2 if os.environ.get("KOTORDIFF_DEBUG") else (1 if os.environ.get("KOTORDIFF_VERBOSE") else 0)
 
 
 def _log_debug(msg: str) -> None:
@@ -101,8 +98,7 @@ class TwoDARefLocation:
 class SSFRefLocation:
     """A reference to a StrRef in an SSF file."""
 
-    sound: SSF
-    sound_index: int
+    sound: SSFSound
 
 
 @dataclass
@@ -179,15 +175,15 @@ class StrRefReferenceCache:
 
         try:
             # 2DA files
-            if restype == ResourceType.TwoDA and filename in self._strref_2da_columns:
+            if restype is ResourceType.TwoDA and filename in self._strref_2da_columns:
                 self._scan_2da(identifier, data, filename)
 
             # SSF files
-            elif restype == ResourceType.SSF:
+            elif restype is ResourceType.SSF:
                 self._scan_ssf(identifier, data)
 
             # NCS files - FIXME: TEMPORARILY DISABLED (will revisit later)
-            # elif restype == ResourceType.NCS:
+            # elif restype is ResourceType.NCS:
             #     self._scan_ncs(identifier, data)
 
             # GFF files (only try to parse if restype indicates it's a GFF file)
@@ -223,9 +219,7 @@ class StrRefReferenceCache:
                 if cell and cell.strip().isdigit():
                     strref = int(cell.strip())
                     location = f"row_{row_idx}.{column_name}"
-                    _log_debug(
-                        f"Found StrRef {strref} in 2DA file '{filename}' at row {row_idx}, column '{column_name}'"
-                    )
+                    _log_debug(f"Found StrRef {strref} in 2DA file '{filename}' at row {row_idx}, column '{column_name}'")
                     self._add_reference(strref, identifier, location)
 
     def _scan_ssf(
@@ -237,13 +231,11 @@ class StrRefReferenceCache:
         ssf_obj = read_ssf(data)
         filename: str = f"{identifier.resname}.{identifier.restype.extension}"
 
-        for sound_index in range(28):
-            strref: int | None = ssf_obj.get(sound_index)
+        for sound in SSFSound:
+            strref: int | None = ssf_obj.get(sound)
             if strref is not None and strref != -1:
-                location = f"sound_{sound_index}"
-                _log_debug(
-                    f"Found StrRef {strref} in SSF file '{filename}' at sound slot '{sound_index}'"
-                )
+                location = f"sound_{sound.name}"
+                _log_debug(f"Found StrRef {strref} in SSF file '{filename}' at sound slot '{sound.name}'")
                 self._add_reference(strref, identifier, location)
 
     def _scan_ncs(
@@ -336,9 +328,7 @@ class StrRefReferenceCache:
                 locstring: LocalizedString = value  # type: ignore[assignment]
                 if locstring.stringref != -1:
                     filename: str = f"{identifier.resname}.{identifier.restype.extension}"
-                    _log_debug(
-                        f"Found StrRef {locstring.stringref} in GFF file '{filename}' at field path '{field_path}'"
-                    )
+                    _log_debug(f"Found StrRef {locstring.stringref} in GFF file '{filename}' at field path '{field_path}'")
                     self._add_reference(locstring.stringref, identifier, field_path)
 
             # Nested structs
@@ -374,7 +364,7 @@ class StrRefReferenceCache:
         # Initialize dict for this StrRef if needed
         if strref not in self._cache:
             self._cache[strref] = {}
-            _log_verbose(f"  -> Cached new StrRef {strref} from '{filename}' at '{location}'")
+            _log_verbose(f"  → Cached new StrRef {strref} from '{filename}' at '{location}'")
 
         # O(1) dictionary lookup instead of O(n) linear search
         if identifier in self._cache[strref]:
@@ -420,7 +410,7 @@ class StrRefReferenceCache:
             f"\nStrRef Cache Summary:\n"
             f"  • {stats['unique_strrefs']} unique StrRefs cached\n"
             f"  • {stats['total_references']} total StrRef references found\n"
-            f"  • {stats['files_with_strrefs']} files contain StrRef references",
+            f"  • {stats['files_with_strrefs']} files contain StrRef references"
         )
 
     def to_dict(self) -> dict[str, list[dict[str, str | list[str]]]]:
@@ -484,9 +474,7 @@ class StrRefReferenceCache:
                 filename: str = f"{resname}.{restype_ext}"
                 cache._files_with_strrefs.add(filename)
 
-        _log_verbose(
-            f"Restored StrRef cache from saved data: {len(cache._cache)} StrRefs, {cache._total_references_found} references"
-        )
+        _log_verbose(f"Restored StrRef cache from saved data: {len(cache._cache)} StrRefs, {cache._total_references_found} references")
 
         return cache
 
@@ -691,9 +679,7 @@ class TwoDAMemoryReferenceCache:
     def log_summary(self) -> None:
         """Log a summary of cache contents."""
         stats = self.get_statistics()
-        _log_verbose(
-            f"2DA Memory Reference Cache: {stats['unique_2da_refs']} unique 2DA rows referenced"
-        )
+        _log_verbose(f"2DA Memory Reference Cache: {stats['unique_2da_refs']} unique 2DA rows referenced")
         _log_verbose(f"  Total references: {stats['total_references']}")
         _log_verbose(f"  Files with 2DA refs: {stats['files_with_2da_refs']}")
 
@@ -799,9 +785,7 @@ def find_all_strref_references(
     # Build cache if not provided
     if cache is None:
         if logger:
-            logger(
-                f"Building StrRef cache for {len(strrefs)} StrRefs for installation {installation.path()}..."
-            )
+            logger(f"Building StrRef cache for {len(strrefs)} StrRefs for installation {installation.path()}...")
         cache = StrRefReferenceCache(installation.game())
 
         # Scan all resources to build the cache
@@ -831,9 +815,9 @@ def find_all_strref_references(
                 # StrRefs can only exist in: GFF files, 2DA files, SSF files, NCS files
                 can_contain_strref = (
                     restype.is_gff()
-                    or restype == ResourceType.TwoDA
-                    or restype == ResourceType.SSF
-                    or restype == ResourceType.NCS
+                    or restype is ResourceType.TwoDA
+                    or restype is ResourceType.SSF
+                    or restype is ResourceType.NCS
                 )
                 if not can_contain_strref:
                     skipped_count += 1
@@ -845,9 +829,7 @@ def find_all_strref_references(
 
                 # Log progress periodically
                 if logger and resource_count - last_logged_count >= log_interval:
-                    logger(
-                        f"  Scanning for StrRefs... {resource_count} resources processed for installation {installation.path()}"
-                    )
+                    logger(f"  Scanning for StrRefs... {resource_count} resources processed for installation {installation.path()}")
                     last_logged_count = resource_count
 
             except Exception:  # noqa: BLE001, S110, S112
@@ -855,9 +837,7 @@ def find_all_strref_references(
                 continue
 
         if logger:
-            logger(
-                f"Cache built: scanned {resource_count} resources (skipped {skipped_count} files) for installation {installation.path()}"
-            )
+            logger(f"Cache built: scanned {resource_count} resources (skipped {skipped_count} files) for installation {installation.path()}")
 
     # Convert cache entries to StrRefSearchResult format
     results: dict[int, list[StrRefSearchResult]] = {}
@@ -886,9 +866,7 @@ def find_all_strref_references(
                 found_resource: FileResource | None = identifier_to_resource.get(identifier)
                 if found_resource:
                     # Convert location strings to proper location objects
-                    locations: list[
-                        TwoDARefLocation | SSFRefLocation | GFFRefLocation | NCSRefLocation
-                    ] = []
+                    locations: list[TwoDARefLocation | SSFRefLocation | GFFRefLocation | NCSRefLocation] = []
 
                     for loc_str in location_strings:
                         # Parse location string format: "row_12.name", "sound_Battlecry 1", "field_path", or byte offset
@@ -898,9 +876,7 @@ def find_all_strref_references(
                             if len(parts) == 2:
                                 row_idx = int(parts[0])
                                 column_name = parts[1]
-                                locations.append(
-                                    TwoDARefLocation(row_index=row_idx, column_name=column_name)
-                                )
+                                locations.append(TwoDARefLocation(row_index=row_idx, column_name=column_name))
                         elif loc_str.startswith("sound_"):
                             # SSF reference: "sound_Battlecry 1"
                             sound_name = loc_str.replace("sound_", "")
@@ -918,9 +894,7 @@ def find_all_strref_references(
                             locations.append(GFFRefLocation(field_path=loc_str))
 
                     if locations:
-                        strref_results.append(
-                            StrRefSearchResult(resource=found_resource, locations=locations)
-                        )
+                        strref_results.append(StrRefSearchResult(resource=found_resource, locations=locations))
             except Exception:  # noqa: BLE001, S110, S112
                 continue
 
@@ -958,33 +932,11 @@ def find_strref_references(
             path_str: The relative path string (e.g., "data/2da.bif/planetary.2da")
 
         Returns:
-            Formatted path with installation folder prefix (e.g., "<install>/data/2da.bif/planetary.2da")
+            Formatted path with installation folder prefix (e.g., "swkotor/data/2da.bif/planetary.2da")
         """
         installation_path = installation.path()
         installation_folder = installation_path.name if installation_path else "unknown"
         return f"{installation_folder}/{path_str}"
-
-    def resource_path_str(resource: FileResource, *, use_path_ident: bool = False) -> str:
-        """Return resource path as installation-relative POSIX string when possible."""
-        path_obj = resource.path_ident() if use_path_ident else resource.filepath()
-        try:
-            return path_obj.relative_to(installation.path()).as_posix()
-        except ValueError:
-            return str(path_obj)
-
-    def formatted_resource_path(resource: FileResource, *, use_path_ident: bool = False) -> str:
-        """Return formatted resource path prefixed with installation folder name."""
-        return format_path_with_installation_prefix(
-            resource_path_str(resource, use_path_ident=use_path_ident)
-        )
-
-    def is_rims_resource(resource: FileResource) -> bool:
-        """Check whether resource resides in RIMs (not used at runtime)."""
-        try:
-            parts = resource.filepath().relative_to(installation.path()).parts
-            return bool(parts) and parts[0].lower() == "rims"
-        except ValueError:
-            return "rims" in resource.filepath().parts
 
     # Get game-specific 2DA columns that contain StrRefs
     strref_2da_columns: dict[str, set[str]] = {}
@@ -1014,15 +966,19 @@ def find_strref_references(
 
                     cell = twoda.get_cell(row_idx, column_name)
                     if cell and cell.strip().isdigit() and int(cell.strip()) == strref:
-                        locations.append(
-                            TwoDARefLocation(row_index=row_idx, column_name=column_name)
-                        )
+                        locations.append(TwoDARefLocation(row_index=row_idx, column_name=column_name))
 
                         if logger:
-                            formatted_path = formatted_resource_path(resource, use_path_ident=True)
-                            logger(
-                                f"    Found at: row {row_idx}, column '{column_name}' at {formatted_path}"
-                            )
+                            # Use path_ident() to show full path including resource inside BIF/capsule
+                            try:
+                                path_ident = resource.path_ident()
+                                relative_path = path_ident.relative_to(installation.path())
+                                path_str = relative_path.as_posix()
+                            except ValueError:
+                                path_str = str(resource.path_ident())
+                            # Format path with installation folder prefix
+                            formatted_path = format_path_with_installation_prefix(path_str)
+                            logger(f"    Found at: row {row_idx}, column '{column_name}' at {formatted_path}")
 
             if locations:
                 return StrRefSearchResult(resource=resource, locations=locations)
@@ -1044,7 +1000,15 @@ def find_strref_references(
                     locations.append(SSFRefLocation(sound=sound))
 
                     if logger:
-                        formatted_path = formatted_resource_path(resource, use_path_ident=True)
+                        # Use path_ident() to show full path including resource inside BIF/capsule
+                        try:
+                            path_ident = resource.path_ident()
+                            relative_path = path_ident.relative_to(installation.path())
+                            path_str = relative_path.as_posix()
+                        except ValueError:
+                            path_str = str(resource.path_ident())
+                        # Format path with installation folder prefix
+                        formatted_path = format_path_with_installation_prefix(path_str)
                         logger(f"    Found at: sound slot '{sound.name}' at {formatted_path}")
 
             if locations:
@@ -1068,9 +1032,7 @@ def find_strref_references(
 
                     try:
                         # Check LocalizedString fields
-                        if ftype == GFFFieldType.LocalizedString and isinstance(
-                            fval, LocalizedString
-                        ):
+                        if ftype == GFFFieldType.LocalizedString and isinstance(fval, LocalizedString):
                             if fval.stringref == strref:
                                 locations.append(GFFRefLocation(field_path=field_path))
 
@@ -1087,16 +1049,26 @@ def find_strref_references(
                     except Exception as e:  # noqa: BLE001
                         # Individual field errors - log but continue processing other fields
                         if logger:
-                            path_str = resource_path_str(resource)
-                            logger(
-                                f"[Debug] Error processing GFF field '{field_path}' in {path_str}: {e.__class__.__name__}: {e}"
-                            )
+                            try:
+                                relative_path = resource.filepath().relative_to(installation.path())
+                                path_str = relative_path.as_posix()
+                            except ValueError:
+                                path_str = str(resource.filepath())
+                            logger(f"[Debug] Error processing GFF field '{field_path}' in {path_str}: {e.__class__.__name__}: {e}")
                         print(traceback.format_exc())
 
             recurse_gff(gff.root)
 
             if locations and logger:
-                formatted_path = formatted_resource_path(resource, use_path_ident=True)
+                try:
+                    # Use path_ident() to show full path including resource inside BIF/capsule
+                    path_ident = resource.path_ident()
+                    relative_path = path_ident.relative_to(installation.path())
+                    path_str = relative_path.as_posix()
+                except ValueError:
+                    path_str = str(resource.path_ident())
+                # Format path with installation folder prefix
+                formatted_path = format_path_with_installation_prefix(path_str)
                 for location in locations:
                     logger(f"    Found at: field path '{location.field_path}' at {formatted_path}")
 
@@ -1106,10 +1078,12 @@ def find_strref_references(
         except Exception as e:  # noqa: BLE001, S110
             # Log which file failed to parse, but don't spam on expected failures (non-GFF files)
             if logger:
-                path_str = resource_path_str(resource)
-                logger(
-                    f"[Debug] Error scanning GFF {resource.filename()}: {e.__class__.__name__}: {e}"
-                )
+                try:
+                    relative_path = resource.filepath().relative_to(installation.path())
+                    path_str = relative_path.as_posix()
+                except ValueError:
+                    path_str = str(resource.filepath())
+                logger(f"[Debug] Error scanning GFF {resource.filename()}: {e.__class__.__name__}: {e}")
             print(traceback.format_exc())
 
         return None
@@ -1161,18 +1135,24 @@ def find_strref_references(
                         reader.skip(3)
                     elif opcode == 0x21:  # DESTRUCT  # noqa: PLR2004
                         reader.skip(6)
-                    elif (opcode == 0x0B and qualifier == 0x24) or (
-                        opcode == 0x0C and qualifier == 0x24
-                    ):  # EQUALTT  # noqa: PLR2004
+                    elif opcode == 0x0B and qualifier == 0x24:  # EQUALTT  # noqa: PLR2004
+                        reader.skip(2)
+                    elif opcode == 0x0C and qualifier == 0x24:  # NEQUALTT  # noqa: PLR2004
                         reader.skip(2)
 
             if locations:
                 if logger:
-                    formatted_path = formatted_resource_path(resource, use_path_ident=True)
+                    try:
+                        # Use path_ident() to show full path including resource inside BIF/capsule
+                        path_ident = resource.path_ident()
+                        relative_path = path_ident.relative_to(installation.path())
+                        path_str = relative_path.as_posix()
+                    except ValueError:
+                        path_str = str(resource.path_ident())
+                    # Format path with installation folder prefix
+                    formatted_path = format_path_with_installation_prefix(path_str)
                     for location in locations:
-                        logger(
-                            f"    Found at: byte offset {location.byte_offset:#X} (0x{location.byte_offset:X}) at {formatted_path}"
-                        )
+                        logger(f"    Found at: byte offset {location.byte_offset:#X} (0x{location.byte_offset:X}) at {formatted_path}")
 
                 return StrRefSearchResult(resource=resource, locations=locations)
 
@@ -1201,9 +1181,7 @@ def find_strref_references(
                         continue
 
                     # Convert location strings to proper location objects
-                    locations: list[
-                        TwoDARefLocation | SSFRefLocation | GFFRefLocation | NCSRefLocation
-                    ] = []
+                    locations: list[TwoDARefLocation | SSFRefLocation | GFFRefLocation | NCSRefLocation] = []
 
                     for loc_str in location_strings:
                         if loc_str.startswith("row_"):
@@ -1211,9 +1189,7 @@ def find_strref_references(
                             if len(parts) == 2:
                                 row_idx = int(parts[0])
                                 column_name = parts[1]
-                                locations.append(
-                                    TwoDARefLocation(row_index=row_idx, column_name=column_name)
-                                )
+                                locations.append(TwoDARefLocation(row_index=row_idx, column_name=column_name))
                         elif loc_str.startswith("sound_"):
                             sound_name = loc_str.replace("sound_", "")
                             try:
@@ -1228,9 +1204,7 @@ def find_strref_references(
                             locations.append(GFFRefLocation(field_path=loc_str))
 
                     if locations:
-                        results.append(
-                            StrRefSearchResult(resource=found_resource, locations=locations)
-                        )
+                        results.append(StrRefSearchResult(resource=found_resource, locations=locations))
                 except Exception:  # noqa: BLE001, S110, S112
                     continue
 
@@ -1241,23 +1215,31 @@ def find_strref_references(
         restype = resource.restype()
 
         # Skip RIM files - they're not used at runtime
-        if is_rims_resource(resource):
-            continue
+        try:
+            relative_path = resource.filepath().relative_to(installation.path())
+            path_parts = relative_path.parts
+            if path_parts and path_parts[0].lower() == "rims":
+                continue
+        except ValueError:
+            # If path isn't relative to installation, check absolute path
+            abs_path = resource.filepath()
+            if "rims" in abs_path.parts:
+                continue
 
         # Check 2DA files
-        if restype == ResourceType.TwoDA:
+        if restype is ResourceType.TwoDA:
             result = scan_2da(resource)
             if result:
                 results.append(result)
 
         # Check SSF files
-        elif restype == ResourceType.SSF:
+        elif restype is ResourceType.SSF:
             result = scan_ssf(resource)
             if result:
                 results.append(result)
 
         # Check NCS files - FIXME: TEMPORARILY DISABLED (will revisit later)
-        # elif restype == ResourceType.NCS:
+        # elif restype is ResourceType.NCS:
         #     result = scan_ncs(resource)
         #     if result:
         #         results.append(result)
@@ -1320,13 +1302,6 @@ def find_tlk_entry_references(
 
     installation_path = installation.path()
 
-    def _resource_path_str(resource: FileResource) -> str:
-        """Return resource path as installation-relative POSIX string when possible."""
-        try:
-            return resource.filepath().relative_to(installation_path).as_posix()
-        except ValueError:
-            return str(resource.filepath())
-
     def check_2da(resource2da: FileResource) -> bool:
         valid_2da: TwoDA | None = None
         with suppress(ValueError, OSError):
@@ -1336,7 +1311,12 @@ def find_tlk_entry_references(
             return False
         filename_2da = resource2da.filename().lower()
 
-        path_str = _resource_path_str(resource2da)
+        # Get relative path for logging
+        try:
+            relative_path = resource2da.filepath().relative_to(installation_path)
+            path_str = relative_path.as_posix()
+        except ValueError:
+            path_str = str(resource2da.filepath())
 
         found_locations: list[tuple[str, int | None]] = []  # (column_name, row_index)
 
@@ -1347,22 +1327,14 @@ def find_tlk_entry_references(
                         stripped_header = header.strip()
                         if not stripped_header.isdigit():
                             if stripped_header and stripped_header not in ("****", "*****", "-1"):
-                                RobustLogger().warning(
-                                    f"header '{header}' in '{filename_2da}' is invalid, expected a stringref number."
-                                )
+                                RobustLogger().warning(f"header '{header}' in '{filename_2da}' is invalid, expected a stringref number.")
                             continue
                         if int(stripped_header) == query_stringref:
                             found_locations.append((">>##HEADER##<<", None))
                             if logger:
                                 logger(f"    Found at: header '{header}' at {path_str}")
                     except Exception as e:  # noqa: BLE001
-                        RobustLogger().error(
-                            "Error parsing '%s' header '%s': %s",
-                            filename_2da,
-                            header,
-                            str(e),
-                            exc_info=False,
-                        )
+                        RobustLogger().error("Error parsing '%s' header '%s': %s", filename_2da, header, str(e), exc_info=False)
             else:
                 try:
                     for i, cell in enumerate(valid_2da.get_column(column_name)):
@@ -1370,23 +1342,15 @@ def find_tlk_entry_references(
                         if not stripped_cell.isdigit():
                             if stripped_cell and stripped_cell not in ("****", "*****", "-1"):
                                 RobustLogger().warning(
-                                    f"column '{column_name}' rowindex {i} in '{filename_2da}' is invalid, expected a stringref number. Instead got '{cell}'",
+                                    f"column '{column_name}' rowindex {i} in '{filename_2da}' is invalid, expected a stringref number. Instead got '{cell}'"
                                 )
                             continue
                         if int(stripped_cell) == query_stringref:
                             found_locations.append((column_name, i))
                             if logger:
-                                logger(
-                                    f"    Found at: row {i}, column '{column_name}' at {path_str}"
-                                )
+                                logger(f"    Found at: row {i}, column '{column_name}' at {path_str}")
                 except Exception as e:  # noqa: BLE001
-                    RobustLogger().error(
-                        "Error parsing '%s' column '%s': %s",
-                        filename_2da,
-                        column_name,
-                        str(e),
-                        exc_info=False,
-                    )
+                    RobustLogger().error("Error parsing '%s' column '%s': %s", filename_2da, column_name, str(e), exc_info=False)
 
         return len(found_locations) > 0
 
@@ -1398,7 +1362,12 @@ def find_tlk_entry_references(
         if not valid_ssf:
             return False
 
-        path_str = _resource_path_str(resource_ssf)
+        # Get relative path for logging
+        try:
+            relative_path = resource_ssf.filepath().relative_to(installation_path)
+            path_str = relative_path.as_posix()
+        except ValueError:
+            path_str = str(resource_ssf.filepath())
 
         # Check all sound slots for this StrRef
         for sound in SSFSound:
@@ -1421,7 +1390,12 @@ def find_tlk_entry_references(
         if not valid_ncs:
             return False
 
-        path_str = _resource_path_str(resource_ncs)
+        # Get relative path for logging
+        try:
+            relative_path = resource_ncs.filepath().relative_to(installation_path)
+            path_str = relative_path.as_posix()
+        except ValueError:
+            path_str = str(resource_ncs.filepath())
 
         # Get byte offsets using the existing function
         offsets = get_ncs_consti_offsets(resource_ncs, query_stringref)
@@ -1441,7 +1415,12 @@ def find_tlk_entry_references(
         if valid_gff is None:
             return False
 
-        path_str = _resource_path_str(resource_gff)
+        # Get relative path for logging
+        try:
+            relative_path = resource_gff.filepath().relative_to(installation_path)
+            path_str = relative_path.as_posix()
+        except ValueError:
+            path_str = str(resource_gff.filepath())
 
         # Track found field paths for logging
         found_paths: list[str] = []
@@ -1456,11 +1435,7 @@ def find_tlk_entry_references(
                         list_path = f"{field_path}[{idx}]"
                         if recurse_gff_structs_with_logging(list_struct, list_path):
                             found_paths.append(list_path)
-                if (
-                    ftype == GFFFieldType.Struct
-                    and isinstance(fval, GFFStruct)
-                    and recurse_gff_structs_with_logging(fval, field_path)
-                ):
+                if ftype == GFFFieldType.Struct and isinstance(fval, GFFStruct) and recurse_gff_structs_with_logging(fval, field_path):
                     found_paths.append(field_path)
                 if ftype != GFFFieldType.LocalizedString or not isinstance(fval, LocalizedString):
                     continue
@@ -1505,9 +1480,7 @@ def find_tlk_entry_references(
 
                     # Check if this is CONSTI (opcode=0x04, qualifier=0x03)
                     if opcode == 0x04 and qualifier == 0x03:  # CONSTI  # noqa: PLR2004
-                        value_offset = (
-                            reader.position()
-                        )  # Current position is where the 4-byte value starts
+                        value_offset = reader.position()  # Current position is where the 4-byte value starts
                         const_value = reader.read_int32(big=True)
                         if const_value == target_value:
                             offsets.append(value_offset)
@@ -1525,25 +1498,15 @@ def find_tlk_entry_references(
                         reader.skip(6)
                     elif opcode == 0x2C:  # STORE_STATE  # noqa: PLR2004
                         reader.skip(8)
-                    elif opcode in (
-                        0x1B,
-                        0x1D,
-                        0x1E,
-                        0x1F,
-                        0x23,
-                        0x24,
-                        0x25,
-                        0x28,
-                        0x29,
-                    ):  # MOVSP, jumps, inc/dec
+                    elif opcode in (0x1B, 0x1D, 0x1E, 0x1F, 0x23, 0x24, 0x25, 0x28, 0x29):  # MOVSP, jumps, inc/dec
                         reader.skip(4)
                     elif opcode == 0x05:  # ACTION  # noqa: PLR2004
                         reader.skip(3)
                     elif opcode == 0x21:  # DESTRUCT  # noqa: PLR2004
                         reader.skip(6)
-                    elif (opcode == 0x0B and qualifier == 0x24) or (
-                        opcode == 0x0C and qualifier == 0x24
-                    ):  # EQUALTT  # noqa: PLR2004
+                    elif opcode == 0x0B and qualifier == 0x24:  # EQUALTT  # noqa: PLR2004
+                        reader.skip(2)
+                    elif opcode == 0x0C and qualifier == 0x24:  # NEQUALTT  # noqa: PLR2004
                         reader.skip(2)
                         # Other instructions have no additional data
 
@@ -1590,21 +1553,17 @@ def find_tlk_entry_references(
             this_restype: ResourceType = resource.restype()
 
             # Check 2DA files
-            if (
-                resource.filename().lower() in relevant_2da_filenames
-                and this_restype == ResourceType.TwoDA
-                and check_2da(resource)
-            ):
+            if resource.filename().lower() in relevant_2da_filenames and this_restype is ResourceType.TwoDA and check_2da(resource):
                 found_resources.add(resource)
                 continue
 
             # Check SSF files
-            if this_restype == ResourceType.SSF and check_ssf(resource):
+            if this_restype is ResourceType.SSF and check_ssf(resource):
                 found_resources.add(resource)
                 continue
 
             # Check NCS files - FIXME: TEMPORARILY DISABLED (will revisit later)
-            # if this_restype == ResourceType.NCS and check_ncs(resource):
+            # if this_restype is ResourceType.NCS and check_ncs(resource):
             #     found_resources.add(resource)
             #     continue
 
@@ -1624,21 +1583,17 @@ def find_tlk_entry_references(
                 this_restype: ResourceType = resource.restype()
 
                 # Check 2DA files
-                if (
-                    resource.filename().lower() in relevant_2da_filenames
-                    and this_restype == ResourceType.TwoDA
-                    and check_2da(resource)
-                ):
+                if resource.filename().lower() in relevant_2da_filenames and this_restype is ResourceType.TwoDA and check_2da(resource):
                     found_resources.add(resource)
                     continue
 
                 # Check SSF files
-                if this_restype == ResourceType.SSF and check_ssf(resource):
+                if this_restype is ResourceType.SSF and check_ssf(resource):
                     found_resources.add(resource)
                     continue
 
                 # Check NCS files - FIXME: TEMPORARILY DISABLED (will revisit later)
-                # if this_restype == ResourceType.NCS and check_ncs(resource):
+                # if this_restype is ResourceType.NCS and check_ncs(resource):
                 #     found_resources.add(resource)
                 #     continue
 
@@ -1662,10 +1617,7 @@ def find_tlk_entry_references(
                     file.suffix
                     and (
                         file.suffix[1:].casefold() in gff_extensions
-                        or (
-                            file.name.lower() in relevant_2da_filenames
-                            and file.suffix.casefold() == ".2da"
-                        )
+                        or (file.name.lower() in relevant_2da_filenames and file.suffix.casefold() == ".2da")
                         or file.suffix.casefold() == ".ssf"
                         or file.suffix.casefold() == ".ncs"
                     )
@@ -1676,26 +1628,20 @@ def find_tlk_entry_references(
             restype: ResourceType | None = ResourceType.from_extension(gff_file.suffix)
             if not restype:
                 continue
-            fileres = FileResource(
-                resname=gff_file.stem,
-                restype=restype,
-                size=gff_file.stat().st_size,
-                offset=0,
-                filepath=gff_file,
-            )
+            fileres = FileResource(resname=gff_file.stem, restype=restype, size=gff_file.stat().st_size, offset=0, filepath=gff_file)
 
             # Check 2DA files
-            if restype == ResourceType.TwoDA and check_2da(fileres):
+            if restype is ResourceType.TwoDA and check_2da(fileres):
                 found_resources.add(fileres)
                 continue
 
             # Check SSF files
-            if restype == ResourceType.SSF and check_ssf(fileres):
+            if restype is ResourceType.SSF and check_ssf(fileres):
                 found_resources.add(fileres)
                 continue
 
             # Check NCS files - FIXME: TEMPORARILY DISABLED (will revisit later)
-            # if restype == ResourceType.NCS and check_ncs(fileres):
+            # if restype is ResourceType.NCS and check_ncs(fileres):
             #     found_resources.add(fileres)
             #     continue
 
@@ -1715,8 +1661,7 @@ def find_tlk_entry_references(
         SearchLocation.OVERRIDE: lambda: check_dict(installation._override),  # noqa: SLF001
         SearchLocation.MODULES: lambda: check_dict(installation._modules),  # noqa: SLF001
         SearchLocation.RIMS: lambda: check_dict(installation._rims),  # noqa: SLF001
-        SearchLocation.CHITIN: lambda: check_list(installation._chitin)
-        or check_list(installation._patch_erf),  # noqa: SLF001
+        SearchLocation.CHITIN: lambda: check_list(installation._chitin) or check_list(installation._patch_erf),  # noqa: SLF001
         SearchLocation.CUSTOM_MODULES: lambda: check_capsules(capsules),
         SearchLocation.CUSTOM_FOLDERS: lambda: check_folders(folders),  # type: ignore[arg-type]
     }

@@ -4,7 +4,6 @@
 This module provides formatters that convert structured DiffResult objects
 into various human-readable output formats (unified, context, side-by-side, etc.).
 """
-
 from __future__ import annotations
 
 import difflib
@@ -13,14 +12,7 @@ import traceback
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Callable
 
-from pykotor.tslpatcher.diff.objects import (
-    DiffFormat,
-    DiffType,
-    GFFDiffResult,
-    ResourceDiffResult,
-    TLKDiffResult,
-    TwoDADiffResult,
-)
+from pykotor.tslpatcher.diff.objects import DiffFormat, DiffType, GFFDiffResult, ResourceDiffResult, TLKDiffResult, TwoDADiffResult
 
 if TYPE_CHECKING:
     from pykotor.tslpatcher.diff.objects import DiffResult
@@ -49,7 +41,7 @@ class DiffFormatter(ABC):
 
 
 class DefaultFormatter(DiffFormatter):
-    """Default formatter that maintains existing diff operations behavior."""
+    """Default formatter that maintains existing KotorDiff behavior."""
 
     def format_diff(self, diff_result: DiffResult[Any]) -> str:  # noqa: PLR0911
         """Format using the default style."""
@@ -89,9 +81,7 @@ class DefaultFormatter(DiffFormatter):
 
     def _format_gff_diff(self, diff_result: GFFDiffResult) -> str:
         """Format a GFF diff."""
-        base_msg = (
-            f"GFF '{diff_result.left_identifier}' differs from '{diff_result.right_identifier}'"
-        )
+        base_msg = f"GFF '{diff_result.left_identifier}' differs from '{diff_result.right_identifier}'"
 
         if diff_result.field_diffs:
             field_count = len(diff_result.field_diffs)
@@ -101,9 +91,7 @@ class DefaultFormatter(DiffFormatter):
 
     def _format_2da_diff(self, diff_result: TwoDADiffResult) -> str:
         """Format a 2DA diff."""
-        base_msg = (
-            f"2DA '{diff_result.left_identifier}' differs from '{diff_result.right_identifier}'"
-        )
+        base_msg = f"2DA '{diff_result.left_identifier}' differs from '{diff_result.right_identifier}'"
 
         diff_counts = []
         if diff_result.header_diffs:
@@ -120,9 +108,7 @@ class DefaultFormatter(DiffFormatter):
 
     def _format_tlk_diff(self, diff_result: TLKDiffResult) -> str:
         """Format a TLK diff."""
-        base_msg = (
-            f"TLK '{diff_result.left_identifier}' differs from '{diff_result.right_identifier}'"
-        )
+        base_msg = f"TLK '{diff_result.left_identifier}' differs from '{diff_result.right_identifier}'"
 
         if diff_result.entry_diffs:
             entry_count = len(diff_result.entry_diffs)
@@ -152,31 +138,22 @@ class UnifiedFormatter(DiffFormatter):
         header = f"--- {diff_result.left_identifier}\n+++ {diff_result.right_identifier}"
 
         # Handle text-like content
-        if isinstance(diff_result, ResourceDiffResult) and diff_result.resource_type in (
-            "txt",
-            "nss",
-        ):
+        if isinstance(diff_result, ResourceDiffResult) and diff_result.resource_type in ("txt", "nss"):
             try:
                 if diff_result.left_value is not None and diff_result.right_value is not None:
-                    left_lines = diff_result.left_value.decode("utf-8", errors="ignore").splitlines(
-                        keepends=True
-                    )
-                    right_lines = diff_result.right_value.decode(
-                        "utf-8", errors="ignore"
-                    ).splitlines(keepends=True)
+                    left_lines = diff_result.left_value.decode("utf-8", errors="ignore").splitlines(keepends=True)
+                    right_lines = diff_result.right_value.decode("utf-8", errors="ignore").splitlines(keepends=True)
                 else:
                     left_lines = []
                     right_lines = []
 
-                diff_lines = list(
-                    difflib.unified_diff(
-                        left_lines,
-                        right_lines,
-                        fromfile=diff_result.left_identifier,
-                        tofile=diff_result.right_identifier,
-                        lineterm="",
-                    ),
-                )
+                diff_lines = list(difflib.unified_diff(
+                    left_lines,
+                    right_lines,
+                    fromfile=diff_result.left_identifier,
+                    tofile=diff_result.right_identifier,
+                    lineterm="",
+                ))
 
                 return "\n".join(diff_lines)
             except Exception as e:  # noqa: BLE001
@@ -210,31 +187,22 @@ class ContextFormatter(DiffFormatter):
         header = f"*** {diff_result.left_identifier}\n--- {diff_result.right_identifier}"
 
         # Handle text-like content
-        if isinstance(diff_result, ResourceDiffResult) and diff_result.resource_type in (
-            "txt",
-            "nss",
-        ):
+        if isinstance(diff_result, ResourceDiffResult) and diff_result.resource_type in ("txt", "nss"):
             try:
                 if diff_result.left_value is not None and diff_result.right_value is not None:
-                    left_lines = diff_result.left_value.decode("utf-8", errors="ignore").splitlines(
-                        keepends=True
-                    )
-                    right_lines = diff_result.right_value.decode(
-                        "utf-8", errors="ignore"
-                    ).splitlines(keepends=True)
+                    left_lines = diff_result.left_value.decode("utf-8", errors="ignore").splitlines(keepends=True)
+                    right_lines = diff_result.right_value.decode("utf-8", errors="ignore").splitlines(keepends=True)
                 else:
                     left_lines = []
                     right_lines = []
 
-                diff_lines = list(
-                    difflib.context_diff(
-                        left_lines,
-                        right_lines,
-                        fromfile=diff_result.left_identifier,
-                        tofile=diff_result.right_identifier,
-                        lineterm="",
-                    ),
-                )
+                diff_lines = list(difflib.context_diff(
+                    left_lines,
+                    right_lines,
+                    fromfile=diff_result.left_identifier,
+                    tofile=diff_result.right_identifier,
+                    lineterm="",
+                ))
 
                 return "\n".join(diff_lines)
             except Exception as e:  # noqa: BLE001
@@ -273,26 +241,14 @@ class SideBySideFormatter(DiffFormatter):
             return ""  # No output for identical files
 
         if diff_result.diff_type == DiffType.ADDED:
-            return (
-                f"{'(none)':<{self.half_width}} | {diff_result.right_identifier:>{self.half_width}}"
-            )
+            return f"{'(none)':<{self.half_width}} | {diff_result.right_identifier:>{self.half_width}}"
 
         if diff_result.diff_type == DiffType.REMOVED:
-            return (
-                f"{diff_result.left_identifier:<{self.half_width}} | {'(none)':>{self.half_width}}"
-            )
+            return f"{diff_result.left_identifier:<{self.half_width}} | {'(none)':>{self.half_width}}"
 
         # For modified files, show a simple side-by-side comparison
-        left_name = (
-            diff_result.left_identifier[: self.half_width - 3] + "..."
-            if len(diff_result.left_identifier) > self.half_width
-            else diff_result.left_identifier
-        )
-        right_name = (
-            diff_result.right_identifier[: self.half_width - 3] + "..."
-            if len(diff_result.right_identifier) > self.half_width
-            else diff_result.right_identifier
-        )
+        left_name = diff_result.left_identifier[:self.half_width-3] + "..." if len(diff_result.left_identifier) > self.half_width else diff_result.left_identifier
+        right_name = diff_result.right_identifier[:self.half_width-3] + "..." if len(diff_result.right_identifier) > self.half_width else diff_result.right_identifier
 
         return f"{left_name:<{self.half_width}} | {right_name:>{self.half_width}}"
 
@@ -327,3 +283,4 @@ class FormatterFactory:
             return SideBySideFormatter(width, output_func)
         error_msg = f"Unknown diff format: {format_type}"
         raise ValueError(error_msg)
+

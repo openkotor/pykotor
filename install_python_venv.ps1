@@ -446,27 +446,59 @@ function Invoke-BashCommandOptional {
 
 #region Python version parsing
 function Get-Python-Version {
-    Param ([string]$pythonPath)
+    Param (
+        [string]$pythonPath
+    )
 
     $parseVersionString = {
         param([string]$versionString)
-        if ([string]::IsNullOrWhiteSpace($versionString)) { return $null }
+
+        if ([string]::IsNullOrWhiteSpace($versionString)) {
+            return $null
+        }
+
         $trimmed = $versionString.Trim()
         $match = [System.Text.RegularExpressions.Regex]::Match($trimmed, '(\d+)(\.\d+){1,3}')
-        if (-not $match.Success) { return $null }
+        if (-not $match.Success) {
+            return $null
+        }
+
         $numericVersion = $match.Value
+
+        # Ensure the version string contains at least Major.Minor.Build for [Version] parsing
         $segments = $numericVersion.Split('.')
-        while ($segments.Count -lt 3) { $segments += '0' }
+        while ($segments.Count -lt 3) {
+            $segments += '0'
+        }
+
         return [Version]::Parse(($segments -join '.'))
     }
 
     try {
-        if (-not (Test-Path $pythonPath -ErrorAction SilentlyContinue)) {
-            return [Version]"0.0.0"
+        if (Test-Path $pythonPath -ErrorAction SilentlyContinue) {
+            $pythonVersionOutput = & $pythonPath --version 2>&1 | Out-String
+            $pythonVersion = & $parseVersionString $pythonVersionOutput
+
+            if ($null -eq $pythonVersion) {
+                $platformVersionOutput = & $pythonPath -c "import platform; print(platform.python_version())" 2>&1 | Out-String
+                $pythonVersion = & $parseVersionString $platformVersionOutput
+            }
+
+            if ($null -eq $pythonVersion) {
+                $sysVersionOutput = & $pythonPath -c "import sys; print('.'.join(str(x) for x in sys.version_info[:3]))" 2>&1 | Out-String
+                $pythonVersion = & $parseVersionString $sysVersionOutput
+            }
+
+            if ($null -ne $pythonVersion) {
+                return $pythonVersion
+            }
         }
-        
-        $pythonVersionOutput = & $pythonPath --version 2>&1 | Out-String
-        $pythonVersion = & $parseVersionString $pythonVersionOutput
+    } catch {
+        Write-Debug "Failed to parse python version for path '$pythonPath': $($_.Exception.Message)"
+    }
+
+    return [Version]"0.0.0"
+}
 
         if ($null -eq $pythonVersion) {
             $platformVersionOutput = & $pythonPath -c "import platform; print(platform.python_version())" 2>&1 | Out-String

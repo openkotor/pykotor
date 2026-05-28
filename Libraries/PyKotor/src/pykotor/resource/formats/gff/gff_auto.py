@@ -2,17 +2,13 @@
 
 from __future__ import annotations
 
-import os
-import struct
-
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import json
 from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.gff.gff_data import GFFContent
 from pykotor.resource.formats.gff.io_gff import GFFBinaryReader, GFFBinaryWriter
-from pykotor.resource.formats.gff.io_gff_json import GFFJSONWriter
+from pykotor.resource.formats.gff.io_gff_json import GFFJSONReader, GFFJSONWriter
 from pykotor.resource.formats.gff.io_gff_xml import GFFXMLReader, GFFXMLWriter
 from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, ToolsetFormat
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
@@ -254,20 +250,24 @@ def detect_gff(
     -------
         The format of the GFF data.
     """
-    file_format: RESOURCE_FORMAT
+
+    def check(
+        first4: str,
+    ) -> ResourceType:
+        if any(x.value == first4 for x in GFFContent):
+            return ResourceType.GFF
+        if "<" in first4:  # sourcery skip: assign-if-exp, reintroduce-else
+            return ResourceType.GFF_XML
+        if "{" in first4:
+            return ResourceType.GFF_JSON
+        # if "," in first4:
+        #    return ResourceType.GFF_CSV
+        return ResourceType.INVALID
+
+    file_format: ResourceType
     try:
         with BinaryReader.from_auto(source, offset) as reader:
-            remain = reader.remaining()
-            chunk_len = min(512, max(0, remain))
-            peek = reader.read_bytes(chunk_len)
-        file_format = _classify_gff_peek(peek)
-        if (
-            file_format == ResourceType.INVALID and _locate_binary_gff_header(peek) is not None
-        ) or (
-            file_format == ResourceType.INVALID
-            and _locate_binary_gff_header_structural(source, offset, None) is not None
-        ):
-            file_format = ResourceType.GFF
+            file_format = check(reader.read_string(4))
     except (FileNotFoundError, PermissionError, IsADirectoryError):
         raise
     except OSError:
@@ -280,8 +280,8 @@ def read_gff(
     source: SOURCE_TYPES,
     offset: int = 0,
     size: int | None = None,
-    file_format: RESOURCE_FORMAT | None = None,
-) -> GFF:
+    file_format: ResourceType | None = None,
+) -> GFF:  # sourcery skip: hoist-statement-from-if, reintroduce-else
     """Returns an GFF instance from the source.
 
     The file format (GFF or GFF_XML) is automatically determined before parsing the data.
@@ -291,7 +291,7 @@ def read_gff(
         source: The source of the data.
         offset: The byte offset of the file inside the data.
         size: Number of bytes to allowed to read from the stream. If not specified, uses the whole stream.
-        file_format: The file format to use (ResourceType.GFF or ToolsetFormat.*_XML or ToolsetFormat.*_JSON). If not specified, it will be detected automatically.
+        file_format: The file format to use (ResourceType.GFF or ResourceType.GFF_XML or ResourceType.GFF_JSON). If not specified, it will be detected automatically.
 
     Raises:
     ------
@@ -304,7 +304,8 @@ def read_gff(
     -------
         A GFF instance.
     """
-    offset, size = _adjust_offset_after_utf8_bom(source, offset, size)
+    if file_format is None:
+        file_format = detect_gff(source, offset)
 
     peek: bytes
     try:
@@ -344,13 +345,8 @@ def read_gff(
         return GFFBinaryReader(source, offset, size or 0).load()
     if file_format.name.endswith("_XML") and file_format.target_type().is_gff():
         return GFFXMLReader(source, offset, size or 0).load()
-    if file_format.name.endswith("_JSON") and file_format.target_type().is_gff():
-        from pykotor.resource.formats.gff.gff_data import GFF
-
-        with BinaryReader.from_auto(source, offset) as reader:
-            raw = reader.read_all()
-        decoded = decode_bytes_with_fallbacks(raw)
-        return GFF.from_json(json.loads(decoded))
+    if file_format is ResourceType.GFF_JSON:
+        return GFFJSONReader(source, offset, size or 0).load()
 
     msg = "Failed to determine the format of the GFF file."
     # if file_format == ResourceType.INVALID:
@@ -376,15 +372,17 @@ def write_gff(
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
     """
-    if (
-        file_format.target_type().is_gff()
-        and not file_format.name.endswith("_XML")
-        and not file_format.name.endswith("_JSON")
-    ):
+    if file_format.is_gff():
         GFFBinaryWriter(gff, target).write()
-    elif file_format.name.endswith("_XML") and file_format.target_type().is_gff():
+    elif (
+        file_format.name.endswith("_XML")
+        and file_format.target_type().is_gff()
+    ):
         GFFXMLWriter(gff, target).write()
-    elif file_format.name.endswith("_JSON") and file_format.target_type().is_gff():
+    elif (
+        file_format.name.endswith("_JSON")
+        and file_format.target_type().is_gff()
+    ):
         GFFJSONWriter(gff, target).write()
     else:
         msg = "Unsupported format specified; use GFF, GFF_XML, or GFF_JSON."

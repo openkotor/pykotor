@@ -396,7 +396,6 @@ class CaseInsensitiveDict(Generic[T]):
     def clear(self) -> None:
         self._dictionary.clear()
         self._case_map.clear()
-        self._generation += 1
 
 
 # Example usage:

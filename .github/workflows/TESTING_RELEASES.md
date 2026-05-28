@@ -26,7 +26,7 @@ This guide explains how to test the automated release workflows **without** affe
 ### Step 1: Create Test Release
 
 1. Go to your repository on GitHub
-2. Click "Releases" -> "Draft a new release"
+2. Click "Releases" → "Draft a new release"
 3. **Use test tag pattern**: `test-v3.1.3-toolset`
    - Note the `test-` prefix
    - Use a version number that doesn't conflict with real releases
@@ -147,7 +147,7 @@ Test workflow does NOT convert to full release, so:
 
 You can also test using manual workflow dispatch:
 
-1. Go to Actions -> "Toolset Release (TEST)"
+1. Go to Actions → "Toolset Release (TEST)"
 2. Click "Run workflow"
 3. Select branch: `master`
 4. Click "Run workflow"
@@ -238,9 +238,9 @@ gh release create test-v3.1.3-toolset --prerelease --notes "Test"
 
 ```bash
 # Different version formats
-test-v3.1.3-toolset     -> 3.1.3
-test-v1.0.0-kotordiff   -> 1.0.0
-test-v2.5.1-patcher     -> 2.5.1
+test-v3.1.3-toolset     → 3.1.3
+test-v1.0.0-kotordiff   → 1.0.0
+test-v2.5.1-patcher     → 2.5.1
 ```
 
 ### Scenario 3: Testing Build Matrix
@@ -270,11 +270,11 @@ To create a test workflow for KotorDiff, HoloPatcher, etc.:
 
 1. Copy `TEST_release_toolset.yml` to `TEST_release_kotordiff.yml`
 2. Replace all instances of:
-   - `toolset` -> `kotordiff`
-   - `HolocronToolset` -> `KotorDiff`
-   - `Tools/HolocronToolset/src/toolset/config/config_info.py` -> `Tools/KotorDiff/src/kotordiff/__main__.py`
-   - `currentVersion` -> `CURRENT_VERSION`
-   - `toolsetLatestVersion` -> (remove, KotorDiff doesn't have this)
+   - `toolset` → `kotordiff`
+   - `HolocronToolset` → `KotorDiff`
+   - `Tools/HolocronToolset/src/toolset/config/config_info.py` → `Tools/KotorDiff/src/kotordiff/__main__.py`
+   - `currentVersion` → `CURRENT_VERSION`
+   - `toolsetLatestVersion` → (remove, KotorDiff doesn't have this)
 3. Adjust the build steps to match the tool's build process
 
 ## Troubleshooting Test Workflows
@@ -376,3 +376,4 @@ gh run view <run-id> --log
 - You can run multiple test releases in parallel
 - Test releases don't count toward GitHub storage limits (7-day retention)
 - Always cleanup test releases to avoid confusion
+

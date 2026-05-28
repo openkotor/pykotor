@@ -2,13 +2,6 @@
 
 from __future__ import annotations
 
-import errno
-import importlib
-import os
-import re
-import sys
-
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.common.stream import BinaryReader
@@ -237,17 +230,7 @@ def detect_mdl(
         #    return ResourceType.MDL_CSV
         # return ResourceType.INVALID
 
-    if isinstance(source, (str, os.PathLike)):
-        path = Path(os.fspath(source))
-        try:
-            if path.is_dir():
-                raise IsADirectoryError(errno.EISDIR, os.strerror(errno.EISDIR), os.fspath(path))
-        except IsADirectoryError:
-            raise
-        except OSError:
-            pass
-
-    file_format: RESOURCE_FORMAT
+    file_format: ResourceType
     try:
         with BinaryReader.from_auto(source, offset) as reader:
             file_format = check(reader.read_bytes(4))
@@ -266,7 +249,7 @@ def read_mdl(
     source_ext: SOURCE_TYPES | None = None,
     offset_ext: int = 0,
     size_ext: int = 0,
-    file_format: RESOURCE_FORMAT | None = None,
+    file_format: ResourceType | None = None,
 ) -> MDL:
     """Returns an MDL instance from the source.
 
@@ -280,7 +263,7 @@ def read_mdl(
         source_ext: Source of the MDX data, if available.
         offset_ext: Offset into the source_ext data.
         size_ext: The number of bytes to read from the MDX source.
-        file_format: The file format to use (ResourceType.MDL or ToolsetFormat.MDL_ASCII). If not specified, it will be detected automatically.
+        file_format: The file format to use (ResourceType.MDL or ResourceType.MDL_ASCII). If not specified, it will be detected automatically.
 
     Raises:
     ------
@@ -296,38 +279,9 @@ def read_mdl(
     if file_format is None:
         file_format = detect_mdl(source, offset)
 
-    if file_format == ResourceType.MDL:
-        _prepare_walkmesh_safe_mdl_binary_reader()
-        try:
-            return MDLBinaryReader(
-                source, offset, size or 0, source_ext, offset_ext, size_ext
-            ).load()
-        except OSError as e:
-            if not _is_mdl_aabb_seek_oserror(e):
-                raise
-            # PyPI wheels before skip_aabb/child_ok: patch io_mdl (disk or temp) and retry.
-            if _self_heal_io_mdl_aabb_after_bad_seek():
-                return MDLBinaryReader(
-                    source,
-                    offset,
-                    size or 0,
-                    source_ext,
-                    offset_ext,
-                    size_ext,
-                ).load()
-            try:
-                return MDLBinaryReader(
-                    source,
-                    offset,
-                    size or 0,
-                    source_ext,
-                    offset_ext,
-                    size_ext,
-                    skip_aabb=True,
-                ).load()
-            except TypeError:
-                raise e from None
-    if file_format == ToolsetFormat.MDL_ASCII:
+    if file_format is ResourceType.MDL:
+        return MDLBinaryReader(source, offset, size or 0, source_ext, offset_ext, size_ext).load()
+    if file_format is ResourceType.MDL_ASCII:
         return MDLAsciiReader(source, offset, size or 0).load()
 
     msg = "Failed to determine the format of the MDL file."
@@ -379,61 +333,17 @@ def read_mdl_fast(
     """
     file_format = detect_mdl(source, offset)
 
-    if file_format == ResourceType.MDL:
-        # NOTE:
-        # This API is used in performance-sensitive contexts and is benchmarked in tests.
-        # Full parsing (read_mdl) can create a lot of cyclic garbage; if GC kicks in during the
-        # subsequent fast-load call, it can dominate the timing and make "fast" appear slower.
-        #
-        # Disabling cyclic GC for the duration of the fast-load keeps the timing stable without
-        # changing parsed results or "caching" roundtrip state.
-        import gc
-
-        _prepare_walkmesh_safe_mdl_binary_reader()
-        was_enabled = gc.isenabled()
-        try:
-            if was_enabled:
-                gc.disable()
-            try:
-                return MDLBinaryReader(
-                    source,
-                    offset,
-                    size or 0,
-                    source_ext,
-                    offset_ext,
-                    size_ext,
-                    fast_load=True,
-                ).load()
-            except OSError as e:
-                if not _is_mdl_aabb_seek_oserror(e):
-                    raise
-                if _self_heal_io_mdl_aabb_after_bad_seek():
-                    return MDLBinaryReader(
-                        source,
-                        offset,
-                        size or 0,
-                        source_ext,
-                        offset_ext,
-                        size_ext,
-                        fast_load=True,
-                    ).load()
-                try:
-                    return MDLBinaryReader(
-                        source,
-                        offset,
-                        size or 0,
-                        source_ext,
-                        offset_ext,
-                        size_ext,
-                        fast_load=True,
-                        skip_aabb=True,
-                    ).load()
-                except TypeError:
-                    raise e from None
-        finally:
-            if was_enabled:
-                gc.enable()
-    if file_format == ToolsetFormat.MDL_ASCII:
+    if file_format is ResourceType.MDL:
+        return MDLBinaryReader(
+            source,
+            offset,
+            size or 0,
+            source_ext,
+            offset_ext,
+            size_ext,
+            fast_load=True,
+        ).load()
+    if file_format is ResourceType.MDL_ASCII:
         # ASCII doesn't support fast loading, fall back to regular loading
         return MDLAsciiReader(source, offset, size or 0).load()
     msg = "Failed to determine the format of the MDL file."

@@ -4,70 +4,25 @@ This module provides reusable, abstract functions for converting between differe
 resource formats (texture, sound, model conversions). These functions are tool-agnostic
 and can be used by any application that needs resource conversions.
 
-For **directory / multi-file TPC↔TGA** workflows and **editor byte loads** (TXI sidecars,
-small-TGA fallback), use :mod:`pykotor.tools.texture_batch` alongside this module.
-
 References:
 ----------
-        Observed retail KotOR I and KotOR II behavior.
+    vendor/reone/src/libs/tools/legacy/tpc.cpp - TPC to TGA conversion
+    vendor/tga2tpc/ - TGA to TPC conversion tool
+    vendor/reone/src/libs/tools/legacy/audio.cpp - Audio conversion
+    vendor/kotorblender/ - MDL model import/export
 """
-
 from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pykotor.resource.formats.bwm.bwm_auto import read_bwm, write_bwm, write_bwm_ascii
 from pykotor.resource.formats.mdl.mdl_auto import read_mdl, write_mdl
 from pykotor.resource.formats.tpc.tpc_auto import read_tpc, write_tpc
 from pykotor.resource.formats.wav.wav_auto import read_wav, write_wav
-from pykotor.resource.type import ResourceType, ToolsetFormat
+from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.tpc.tpc_data import TPCTextureFormat
-
-
-def _read_convert_write_tpc(
-    input_path: Path,
-    output_path: Path,
-    *,
-    file_format: ResourceType,
-    target_format: TPCTextureFormat | None = None,
-    txi_source: Path | None = None,
-) -> None:
-    """Shared TPC conversion pipeline helper."""
-    tpc = read_tpc(input_path, txi_source=txi_source)
-    if target_format is not None:
-        tpc.convert(target_format)
-    write_tpc(tpc, output_path, file_format=file_format)
-
-
-def _read_write_wav(
-    input_path: Path,
-    output_path: Path,
-    *,
-    file_format: ResourceType,
-) -> None:
-    """Shared WAV conversion pipeline helper."""
-    wav = read_wav(input_path)
-    write_wav(wav, output_path, file_format=file_format)
-
-
-def _write_txi_if_requested(
-    txi_output_path: Path | None,
-    txi_text: str | None,
-) -> None:
-    """Write TXI sidecar data when both output path and content are present."""
-    if txi_output_path and txi_text:
-        txi_output_path.write_text(txi_text, encoding="ascii")
-
-
-def _resolve_wav_type(wav_type: str):
-    """Resolve user-facing WAV type label to internal WAVType enum."""
-    from pykotor.resource.formats.wav.wav_data import WAVType
-
-    type_map = {"VO": WAVType.VO, "SFX": WAVType.SFX}
-    return type_map.get(wav_type.upper(), WAVType.VO)
 
 
 def convert_tpc_to_tga(
@@ -86,14 +41,14 @@ def convert_tpc_to_tga(
 
     References:
     ----------
-        Observed retail KotOR I and KotOR II behavior.
-
-
+        vendor/reone/src/libs/tools/legacy/tpc.cpp:41-72
     """
     tpc = read_tpc(input_path)
     write_tpc(tpc, output_path, file_format=ResourceType.TGA)
 
-    _write_txi_if_requested(txi_output_path, str(tpc.txi) if tpc.txi else None)
+    # Write TXI if available and requested
+    if txi_output_path and tpc.txi:
+        txi_output_path.write_text(str(tpc.txi), encoding="ascii")
 
 
 def convert_tga_to_tpc(
@@ -105,52 +60,24 @@ def convert_tga_to_tpc(
 ) -> None:
     """Convert a TGA image file to TPC format.
 
-    When ``target_format`` is ``None`` (the default for ``pykotorcli texture-convert``),
-    conversion matches ``python -m pykotor.resource.formats.tpc`` (TGA→TPC CLI) defaults:
-    :func:`read_tga` on the file, optional ``.txi`` sidecar, mipmaps on,
-    ``compression=auto`` (8bpp → greyscale, 24bpp → DXT1, 32bpp → DXT5 to match ndixUR
-    ``tga2tpc`` / xoreos-style tools, including fully opaque 32-bit TGAs). For byte-identical
-    DXT blocks vs ndixUR Electron ``tga2tpc`` (Compressonator), set ``PYKOTOR_DXT_COMPRESSOR=ndix``
-    and install ``node`` on ``PATH`` (see ``compress_dxt_ndix``), with ``alpha_test=1.0`` in the
-    TPC header.
-
-    When ``target_format`` is set, the file is loaded with :func:`read_tpc` then
-    :meth:`TPC.convert` is applied before writing.
-
     Args:
     ----
         input_path: Path to the input TGA file
         output_path: Path to write the output TPC file
         txi_input_path: Optional path to TXI file to merge into texture
-        target_format: Optional target texture format (``None`` = Holocron / ndix-style auto)
+        target_format: Optional target texture format (auto-detected if None)
 
     References:
     ----------
-        Observed retail KotOR I and KotOR II behavior.
-
-
+        vendor/tga2tpc/ - TGA to TPC conversion tool
     """
-    if target_format is None:
-        from pykotor.resource.formats.tpc.tpc_auto import build_tpc_from_tga_path
+    tpc = read_tpc(input_path, txi_source=txi_input_path)
 
-        txi_arg = Path(txi_input_path) if txi_input_path is not None else None
-        tpc = build_tpc_from_tga_path(
-            Path(input_path),
-            txi_path=txi_arg,
-            compression="auto",
-            generate_mipmaps=True,
-            alpha_test=1.0,
-        )
-        write_tpc(tpc, output_path, file_format=ResourceType.TPC)
-        return
+    # Convert format if specified
+    if target_format:
+        tpc.convert(target_format)
 
-    _read_convert_write_tpc(
-        input_path,
-        output_path,
-        file_format=ResourceType.TPC,
-        target_format=target_format,
-        txi_source=txi_input_path,
-    )
+    write_tpc(tpc, output_path, file_format=ResourceType.TPC)
 
 
 def convert_wav_to_clean(
@@ -168,11 +95,10 @@ def convert_wav_to_clean(
 
     References:
     ----------
-        Observed retail KotOR I and KotOR II behavior.
-
-
+        vendor/reone/src/libs/tools/legacy/audio.cpp
     """
-    _read_write_wav(input_path, output_path, file_format=ToolsetFormat.WAV_DEOB)
+    wav = read_wav(input_path)
+    write_wav(wav, output_path, file_format=ResourceType.WAV_DEOB)
 
 
 def convert_clean_to_wav(
@@ -193,15 +119,16 @@ def convert_clean_to_wav(
 
     References:
     ----------
-        Observed retail KotOR I and KotOR II behavior.
-
-
+        vendor/reone/src/libs/tools/legacy/audio.cpp
     """
+    from pykotor.resource.formats.wav.wav_data import WAVType
+
     # Read as clean WAV (read_wav auto-deobfuscates)
     wav = read_wav(input_path)
 
     # Set WAV type if converting to game format
-    wav.wav_type = _resolve_wav_type(wav_type)
+    type_map = {"VO": WAVType.VO, "SFX": WAVType.SFX}
+    wav.wav_type = type_map.get(wav_type.upper(), WAVType.VO)
 
     write_wav(wav, output_path, file_format=ResourceType.WAV)
 
@@ -222,14 +149,15 @@ def convert_mdl_to_ascii(
 
     References:
     ----------
-        Observed retail KotOR I and KotOR II behavior.
+        vendor/kotorblender/io_scene_kotor/format/mdl/
+        vendor/mdlops/mdlops.pl
     """
     mdx_path = mdx_path or input_path.with_suffix(".mdx")
     if not mdx_path.exists():
         mdx_path = None
 
     mdl = read_mdl(input_path, source_ext=mdx_path if mdx_path else None)
-    write_mdl(mdl, output_path, file_format=ToolsetFormat.MDL_ASCII)
+    write_mdl(mdl, output_path, file_format=ResourceType.MDL_ASCII)
 
 
 def convert_ascii_to_mdl(
@@ -248,7 +176,8 @@ def convert_ascii_to_mdl(
 
     References:
     ----------
-        Observed retail KotOR I and KotOR II behavior.
+        vendor/kotorblender/io_scene_kotor/format/mdl/
+        vendor/mdlops/mdlops.pl
     """
     mdl = read_mdl(input_path)
 
@@ -256,30 +185,6 @@ def convert_ascii_to_mdl(
         output_mdx_path = output_mdl_path.with_suffix(".mdx")
 
     write_mdl(mdl, output_mdl_path, file_format=ResourceType.MDL, target_ext=output_mdx_path)
-
-
-def convert_bwm_to_ascii(input_path: Path, output_path: Path) -> None:
-    """Convert a binary BWM/WOK file to ASCII walkmesh format.
-
-    Args:
-    ----
-        input_path: Path to the input BWM/WOK file (binary).
-        output_path: Path to write the output ASCII walkmesh file.
-    """
-    wok = read_bwm(input_path)
-    write_bwm_ascii(wok, output_path)
-
-
-def convert_ascii_to_bwm(input_path: Path, output_path: Path) -> None:
-    """Convert an ASCII walkmesh file to binary BWM/WOK format.
-
-    Args:
-    ----
-        input_path: Path to the input ASCII walkmesh file.
-        output_path: Path to write the output BWM/WOK file (binary).
-    """
-    wok = read_bwm(input_path)
-    write_bwm(wok, output_path, file_format=ResourceType.WOK)
 
 
 def convert_texture_format(
@@ -298,13 +203,12 @@ def convert_texture_format(
 
     References:
     ----------
-        Observed retail KotOR I and KotOR II behavior.
-
-
+        vendor/tga2tpc/ - Texture format conversion
     """
-    _read_convert_write_tpc(
-        input_path,
-        output_path,
-        file_format=ResourceType.TPC,
-        target_format=target_format,
-    )
+    tpc = read_tpc(input_path)
+
+    if target_format:
+        tpc.convert(target_format)
+
+    write_tpc(tpc, output_path, file_format=ResourceType.TPC)
+

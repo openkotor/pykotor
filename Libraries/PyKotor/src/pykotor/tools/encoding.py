@@ -43,6 +43,11 @@ def decode_bytes_with_fallbacks(  # noqa: C901
     -------
         str - Decoded string
 
+    References:
+    ----------
+        vendor/KotOR.js (Character encoding handling in JavaScript)
+        Note: KotOR uses multiple character encodings including ASCII, UTF-8, and language-specific encodings
+
     Processing Logic:
     ----------------
         - If charset_normalizer not installed, use built-in decoding logic.
@@ -205,21 +210,13 @@ def get_cp950_charset() -> list[str]:  # noqa: C901, PLR0912
                     # Apply formula based on Big5 to Unicode PUA mapping
                     unicode_val: int = -1  # Placeholder for ranges not covered
                     if 0x81 <= i <= 0x8D:  # noqa: PLR2004
-                        unicode_val = (
-                            0xEEB8 + (157 * (i - 0x81)) + (j - 0x40 if j < 0x80 else j - 0x62)
-                        )  # noqa: PLR2004
+                        unicode_val = 0xEEB8 + (157 * (i - 0x81)) + (j - 0x40 if j < 0x80 else j - 0x62)  # noqa: PLR2004
                     elif 0x8E <= i <= 0xA0:  # noqa: PLR2004
-                        unicode_val = (
-                            0xE311 + (157 * (i - 0x8E)) + (j - 0x40 if j < 0x80 else j - 0x62)
-                        )  # noqa: PLR2004
+                        unicode_val = 0xE311 + (157 * (i - 0x8E)) + (j - 0x40 if j < 0x80 else j - 0x62)  # noqa: PLR2004
                     elif 0xC6 <= i <= 0xC8:  # noqa: PLR2004
-                        unicode_val = (
-                            0xF672 + (157 * (i - 0xC6)) + (j - 0x40 if j < 0x80 else j - 0x62)
-                        )  # noqa: PLR2004
+                        unicode_val = 0xF672 + (157 * (i - 0xC6)) + (j - 0x40 if j < 0x80 else j - 0x62)  # noqa: PLR2004
                     elif 0xFA <= i <= 0xFE:  # noqa: PLR2004
-                        unicode_val = (
-                            0xE000 + (157 * (i - 0xFA)) + (j - 0x40 if j < 0x80 else j - 0x62)
-                        )  # noqa: PLR2004
+                        unicode_val = 0xE000 + (157 * (i - 0xFA)) + (j - 0x40 if j < 0x80 else j - 0x62)  # noqa: PLR2004
 
                     if unicode_val != -1:
                         try:
@@ -295,9 +292,7 @@ def get_generalized_doublebyte_charset(
     charset: list[str] = []
 
     single_byte_end: int = 0x7F  # End of single-byte range
-    potential_lead_byte_start: int = (
-        0x81  # Start of potential lead byte range for double-byte characters
-    )
+    potential_lead_byte_start: int = 0x81  # Start of potential lead byte range for double-byte characters
     potential_lead_byte_end: int = 0xFC  # End of potential lead byte range
 
     for i in range(256):

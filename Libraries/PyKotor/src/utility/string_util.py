@@ -8,11 +8,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from typing_extensions import (  # pyright: ignore[reportMissingModuleSource]
-        LiteralString,
-        Self,
-        SupportsIndex,
-    )
+    from typing_extensions import LiteralString, Self, SupportsIndex  # pyright: ignore[reportMissingModuleSource]
 
 
 def insert_newlines(
@@ -35,34 +31,6 @@ def insert_newlines(
         new_string += current_line.rstrip()
 
     return new_string
-
-
-def is_non_empty_string(value: str | None) -> bool:
-    """Check if a string is not None, not empty, and not just whitespace.
-
-    Args:
-    ----
-        value: The string value to check
-
-    Returns:
-    -------
-        True if the string is non-empty and contains non-whitespace characters
-    """
-    return value is not None and bool(value.strip())
-
-
-def normalize_string(value: str | None) -> str:
-    """Normalize a string by converting to lowercase and stripping whitespace.
-
-    Args:
-    ----
-        value: The string value to normalize
-
-    Returns:
-    -------
-        The normalized string, or empty string if input is None
-    """
-    return value.lower().strip() if value else ""
 
 
 def ireplace(
@@ -491,7 +459,7 @@ def striprtf(text: str) -> str:  # noqa: C901, PLR0915, PLR0912
             "xmlname",
             "xmlnstbl",
             "xmlopen",
-        ),
+        )
     )
     # Translation of some special characters.
     specialchars: dict[str, str] = {
@@ -551,7 +519,7 @@ def striprtf(text: str) -> str:  # noqa: C901, PLR0915, PLR0912
                 if c < 0:
                     c += 0x10000
                 out.append(chr(c))
-                curskip = ucskip
+                curskip: int = ucskip
         elif hexcode:  # \'xx
             if curskip > 0:
                 curskip -= 1
@@ -723,12 +691,7 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
 
     def __mod__(
         self,
-        __value: LiteralString
-        | str
-        | WrappedStr
-        | tuple[LiteralString, ...]
-        | tuple[str, ...]
-        | tuple[WrappedStr, ...],
+        __value: LiteralString | str | WrappedStr | tuple[LiteralString, ...] | tuple[str, ...] | tuple[WrappedStr, ...],
         /,
     ):
         parsed_value: tuple[str, ...] | str = (
@@ -844,11 +807,7 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
 
         Return True if S ends with the specified suffix, False otherwise. With optional start, test S beginning at that position. With optional end, stop comparing S at that position. suffix can also be a tuple of strings to try.
         """  # noqa: D415, D400, D402, E501, W505
-        parsed_suffix: tuple[str, ...] | str = (
-            tuple(self._assert_str_type(s) for s in __suffix)
-            if isinstance(__suffix, tuple)
-            else self._assert_str_type(__suffix)
-        )
+        parsed_suffix: tuple[str, ...] | str = tuple(self._assert_str_type(s) for s in __suffix) if isinstance(__suffix, tuple) else self._assert_str_type(__suffix)
         return self._content.endswith(parsed_suffix, __start, __end)
 
     def expandtabs(  # type: ignore[override]
@@ -1169,9 +1128,7 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
         Splits are done starting at the end of the string and working to the front.
         """
         cls: type[Self] = self.__class__
-        return [
-            cls(s) for s in self._content.rsplit(self._assert_str_type(__sep or ""), __maxsplit)
-        ]
+        return [cls(s) for s in self._content.rsplit(self._assert_str_type(__sep or ""), __maxsplit)]
 
     def rstrip(
         self,
@@ -1197,10 +1154,7 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
         maxsplit
           Maximum number of splits to do. -1 (the default value) means no limit.
         """
-        return [
-            self.__class__(s)
-            for s in self._content.split(self._assert_str_type(sep or ""), maxsplit)
-        ]
+        return [self.__class__(s) for s in self._content.split(self._assert_str_type(sep or ""), maxsplit)]
 
     def splitlines(  # type: ignore[override]
         self,
@@ -1295,7 +1249,7 @@ class CaseInsensitiveWrappedStr(WrappedStr):
     def _coerce_str(
         cls,
         item: Any,
-    ) -> str:
+    ) -> str:  # sourcery skip: assign-if-exp, reintroduce-else
         if isinstance(item, WrappedStr):
             return str(item._content).casefold()  # noqa: SLF001
         if isinstance(item, str):
@@ -1406,7 +1360,7 @@ class CaseInsensitiveWrappedStr(WrappedStr):
         __start=None,
         __end=None,
         /,
-    ):
+    ):  # sourcery skip: remove-unnecessary-cast
         return self._lower_content.rfind(self._coerce_str(__sub), __start, __end)
 
     def rsplit(

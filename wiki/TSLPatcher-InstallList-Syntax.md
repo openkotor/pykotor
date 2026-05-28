@@ -1,31 +1,12 @@
 # TSLPatcher InstallList Syntax Documentation
 
-This guide explains how to install files using TSLPatcher syntax. For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
-
-Implementation: [`Libraries/PyKotor/src/pykotor/tslpatcher/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/tslpatcher/)
-
-Cross-reference:
-
-- **th3w1zard1/TSLPatcher** — original Perl TSLPatcher (stoffe lineage)
-
-  - Canonical (th3w1zard1/TSLPatcher): <https://github.com/th3w1zard1/TSLPatcher/tree/ad04700a47086c25e1c6ef4b4961f76dfa8cc6a5>
-- [`Tools/HolocronToolset/src/toolset/gui/dialogs/install_mod.py`](https://github.com/OpenKotOR/HolocronToolset/src/toolset/gui/dialogs/install_mod.py) - HoloPatcher [GUI](GFF-File-Format#gui-graphical-user-interface) implementation
-- [`KotOR.js/src/manager/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/manager) - TypeScript mod management (different approach)
-
-### See also
-
-- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) - Patching [2DA files](2DA-File-Format)
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - Patching [GFF files](GFF-File-Format)
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) - Patching [TLK files](Audio-and-Localization-Formats#tlk)
-- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) - Patching [SSF files](Audio-and-Localization-Formats#ssf)
-- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) - Binary patching [NCS files](NCS-File-Format)
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) - HoloPatcher extensions
+This guide explains how to install files using TSLPatcher syntax. For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
 
 ## Overview
 
-The `[InstallList]` section in TSLPatcher's changes.ini file enables you to copy files from your mod's `tslpatchdata` folder to their proper location in the game installation. This includes installing files to folders (such as `Override`, `Modules`, `StreamVoice`, etc.) or directly into module capsules ([MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim)). Unlike other patch lists, InstallList is designed for copying files that haven't been modified by other sections.
+The `[InstallList]` section in TSLPatcher's changes.ini file enables you to copy files from your mod's `tslpatchdata` folder to their proper location in the game installation. This includes installing files to folders (such as `Override`, `Modules`, `StreamVoice`, etc.) or directly into ERF/RIM/MOD archive files. Unlike other patch lists, InstallList is designed for copying files that haven't been modified by other sections.
 
-Important: Do **not** add any files that have been modified by any of the other sections ([GFFList](TSLPatcher-GFFList-Syntax), CompileList, [2DAList](TSLPatcher-2DAList-Syntax), etc.) to the InstallList, or the modified files might be overwritten. The other sections already handle saving files to their proper locations. The only exception to this is [ERF files](Container-Formats#erf) which have had files added to them by those sections. They must still be added to the InstallList to be put in their proper places.
+**Important:** Do **not** add any files that have been modified by any of the other sections ([GFFList](TSLPatcher-GFFList-Syntax), CompileList, [2DAList](TSLPatcher-2DAList-Syntax), etc.) to the InstallList, or the modified files might be overwritten! The other sections already handle saving files to their proper locations. The only exception to this is ERF files which have had files added to them by those sections. They must still be added to the InstallList to be put in their proper places.
 
 ## Table of Contents
 
@@ -35,7 +16,7 @@ Important: Do **not** add any files that have been modified by any of the other 
 - [File-Level Configuration](#file-level-configuration)
 - [File Replacement Behavior](#file-replacement-behavior)
 - [Installing to Folders](#installing-to-folders)
-- [Installing to Containers](#installing-to-containers)
+- [Installing to Archives](#installing-to-archives)
 - [Renaming Files](#renaming-files)
 - [Source Folder Configuration](#source-folder-configuration)
 - [Override Type Handling](#override-type-handling)
@@ -43,9 +24,9 @@ Important: Do **not** add any files that have been modified by any of the other 
 - [Special Cases and Edge Cases](#special-cases-and-edge-cases)
 - [Troubleshooting](#troubleshooting)
 
-## Basic structure
+## Basic Structure
 
-The `[InstallList]` uses a two-level hierarchical structure:
+The InstallList uses a two-level hierarchical structure:
 
 ```ini
 [InstallList]
@@ -67,27 +48,27 @@ File0=sound1.wav
 File1=sound2.wav
 ```
 
-### `[InstallList]` structure Explanation
+### Structure Explanation
 
 1. **`[InstallList]` section**: Contains keys that map to folder destination names. Each key (like `Folder0`, `Folder1`, etc.) should reference a section with the same name as the value (the destination folder).
 
 2. **Folder sections** (e.g., `[Override]`, `[Modules]`): Contain the list of files to install to that folder, along with optional folder-level configuration.
 
-3. **file sections** (optional): Individual files can have their own sections for per-file configuration options.
+3. **File sections** (optional): Individual files can have their own sections for per-file configuration options.
 
 ## Processing Order
 
-In **HoloPatcher**, the `[InstallList]` runs **first** in the patch execution order:
+In **HoloPatcher**, the InstallList runs **first** in the patch execution order:
 
-1. **[InstallList]** - files are installed first
-2. **[TLKList]** - [TLK](Audio-and-Localization-Formats#tlk) modifications
-3. **[2DAList]** - [2DA file](2DA-File-Format) modifications
-4. **[GFFList]** - [GFF file](GFF-File-Format) modifications
+1. **[InstallList]** - Files are installed first
+2. **[TLKList]** - TLK modifications
+3. **[2DAList]** - 2DA file modifications
+4. **[GFFList]** - GFF file modifications
 5. **[CompileList]** - Script compilation
 6. **[HACKList]** - Binary hacking
 7. **[SSFList]** - Sound set modifications
 
-Note: In original TSLPatcher, InstallList executes **after** TLKList, but HoloPatcher changed this order to allow installing a whole [dialog.tlk](Audio-and-Localization-Formats#tlk) file before [TLK](Audio-and-Localization-Formats#tlk) modifications are applied. This priority change should not affect the output of mods.
+**Note:** In original TSLPatcher, InstallList executes **after** TLKList, but HoloPatcher changed this order to allow installing a whole dialog.tlk file before TLK modifications are applied. This priority change should not affect the output of mods.
 
 ## Folder-Level Configuration
 
@@ -95,25 +76,24 @@ Each folder section (e.g., `[Override]`) supports the following configuration ke
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `!SourceFolder` | string | `.` (tslpatchdata folder) | Relative path from `mod_path` (typically the `tslpatchdata` folder, the parent directory of `changes.ini` or `namespaces.ini`) where files should be sourced from. The default value `.` refers to the `tslpatchdata` folder itself, not its parent directory. Path resolution: `mod_path / !SourceFolder / filename`. **HoloPatcher extension** - allows subfolder organization within the `tslpatchdata` folder. |
+| `!SourceFolder` | string | `.` (tslpatchdata folder) | Relative path from `mod_path` (typically the `tslpatchdata` folder, the parent directory of `changes.ini` or `namespaces.ini`) where files should be sourced from. The default value `.` refers to the `tslpatchdata` folder itself, not its parent directory. Path resolution: `mod_path / !SourceFolder / filename`. **HoloPatcher extension** - allows subfolder organization within tslpatchdata. |
 
-### Folder Section file List Keys
+### Folder Section File List Keys
 
 The folder section contains the list of files to install. Each file entry uses one of two syntaxes:
 
-| key format | Replace Behavior | Description |
+| Key Format | Replace Behavior | Description |
 |------------|-----------------|-------------|
 | `File#=filename.ext` | No replacement | Install the file only if it doesn't already exist at the destination. If the file exists, it will be skipped (warning logged). |
 | `Replace#=filename.ext` | Replacement enabled | Install the file and overwrite any existing file at the destination. |
 
-Syntax notes:
-
-- `#` is a sequential number starting from 0 (`File0`, `File1`, `File2`, ..., `Replace0`, `Replace1`, etc.)
-- Numbers can be sequential, but gaps are allowed (`File0`, `File2`, `File5` is valid)
-- Case-insensitive matching is used for the prefix (`file`, `replace`, `File`, `Replace` all work)
+**Syntax Notes:**
+- `#` is a sequential number starting from 0 (File0, File1, File2, ..., Replace0, Replace1, etc.)
+- Numbers can be sequential, but gaps are allowed (File0, File2, File5 is valid)
+- Case-insensitive matching is used for the prefix (file, replace, File, Replace all work)
 - The filename can include subdirectories if using `!SourceFolder`
 
-Examples:
+**Examples:**
 
 ```ini
 [Override]
@@ -124,21 +104,21 @@ Replace1=another_existing.tpc
 File2=subfolder\texture3.tpc
 ```
 
-## file-Level Configuration
+## File-Level Configuration
 
-Each file can optionally have its own section (e.g., `[my_texture.tpc]`) for per-file configuration options:
+Each file can optionally have its own section (e.g., `[my_texture.tpc]`) for per-file configuration:
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `!SourceFile` | string | Same as filename in `File#=` or `Replace#=` entry | Alternative source filename to load from the `tslpatchdata` folder. The file will be installed with the name specified in the `File#=` or `Replace#=` entry (or `!SaveAs` or `!Filename` if specified). |
+| `!SourceFile` | string | Same as filename in File#/Replace# entry | Alternative source filename to load from tslpatchdata. The file will be installed with the name specified in the File#/Replace# entry (or `!SaveAs`/`!Filename` if specified). |
 | `!SaveAs` | string | Same as `!SourceFile` | The final filename to save the file as at the destination. Allows renaming during installation. |
 | `!Filename` | string | Same as `!SaveAs` | Alias for `!SaveAs`. Both keys are equivalent. |
-| `!Destination` | string | Inherited from folder section name | Override the destination folder for this specific file. Can specify a different folder or container path. |
-| `!ReplaceFile` | 0/1 | Determined by `File#=` or `Replace#=` prefix | Whether to replace existing files. Takes priority over the `File#=` or `Replace#=` prefix syntax. `1` = replace, `0` = don't replace. |
-| `!SourceFolder` | string | Inherited from folder section `!SourceFolder` | Override the source folder for this specific file. Relative path within the `tslpatchdata` folder. |
-| `!OverrideType` | `ignore`/`warn`/`rename` | `warn` (HoloPatcher) / `ignore` (TSLPatcher) | How to handle conflicts when installing to containers. See [Override Type Handling](#override-type-handling) section. |
+| `!Destination` | string | Inherited from folder section name | Override the destination folder for this specific file. Can specify a different folder or archive path. |
+| `!ReplaceFile` | 0/1 | Determined by File#/Replace# prefix | Whether to replace existing files. Takes priority over the File#/Replace# prefix syntax. `1` = replace, `0` = don't replace. |
+| `!SourceFolder` | string | Inherited from folder section `!SourceFolder` | Override the source folder for this specific file. Relative path within tslpatchdata. |
+| `!OverrideType` | `ignore`/`warn`/`rename` | `warn` (HoloPatcher) / `ignore` (TSLPatcher) | How to handle conflicts when installing to archives. See [Override Type Handling](#override-type-handling) section. |
 
-### Example with file-level configuration
+### Example with File-Level Configuration
 
 ```ini
 [InstallList]
@@ -158,34 +138,34 @@ File1=renamed_script.ncs
 !ReplaceFile=1
 ```
 
-## file Replacement Behavior
+## File Replacement Behavior
 
-[`[InstallList]`](TSLPatcher-InstallList-Syntax) has special behavior regarding file replacement that differs from other patch lists:
+InstallList has special behavior regarding file replacement that differs from other patch lists:
 
 ### Skip If Not Replace
 
-[`[InstallList]`](TSLPatcher-InstallList-Syntax) (and [`[CompileList]`](TSLPatcher-CompileList-Syntax)) use `skip_if_not_replace=True`, which means:
+InstallList (and CompileList) use `skip_if_not_replace=True`, which means:
 
-- If `!ReplaceFile=0` (or using `File#=` syntax) **and** the file already exists at the destination folder:
+- If `!ReplaceFile=0` (or using `File#=` syntax) **and** the file already exists at the destination:
   - The file will be **skipped** (not installed)
   - A note is logged: `'filename.ext' already exists in the 'destination' folder. Skipping file...`
   - No error is raised - this is expected behavior
 
-- If `!ReplaceFile=1` (or using `Replace#=` syntax) **and** the file already exists at the destination folder:
+- If `!ReplaceFile=1` (or using `Replace#=` syntax) **and** the file already exists:
   - The file will be **replaced** (overwritten)
   - A note is logged: `Copying 'filename.ext' and replacing existing file in the 'destination' folder`
 
-- If the file does **not** exist at the destination folder:
+- If the file does **not** exist:
   - The file will be installed normally
   - A note is logged: `Copying 'filename.ext' and saving to the 'destination' folder`
 
 ### Replacement Priority
 
 1. **`!ReplaceFile`** key (if present) takes **highest priority**
-2. **`Replace#=`** prefix syntax (if `!ReplaceFile` is not specified)
+2. **`Replace#=`** prefix syntax (if `!ReplaceFile` not specified)
 3. **`File#=`** prefix syntax (default, no replacement)
 
-Example:
+**Example:**
 
 ```ini
 [Override]
@@ -195,13 +175,13 @@ Replace0=example.tpc
 !ReplaceFile=0
 ```
 
-In this case, even though `Replace0=` was used, `!ReplaceFile=0` takes priority, so the file will **NOT** replace existing files.
+In this case, even though `Replace0=` was used, `!ReplaceFile=0` takes priority, so the file will NOT replace existing files.
 
 ## Installing to Folders
 
 ### Standard Game Folders
 
-The most common use case is installing files to standard game folders (e.g., `Override`, `Modules`, `StreamVoice`, `StreamMusic`, `StreamWaves`):
+The most common use case is installing files to standard game folders:
 
 ```ini
 [InstallList]
@@ -230,7 +210,7 @@ File0=sound_effect.wav
 
 ### Subdirectories
 
-You can install files into subdirectories by specifying the relative path with backslashes (e.g., `StreamVoice\AVO\_HuttHap`):
+You can install files into subdirectories by specifying the relative path with backslashes:
 
 ```ini
 [InstallList]
@@ -241,9 +221,8 @@ File0=conversation1.wav
 File1=conversation2.wav
 ```
 
-Important notes:
-
-- Use **backslashes** (`\`) for path separators (original TSLPatcher convention)
+**Important Notes:**
+- Use **backslashes** (`\`) for path separators (TSLPatcher convention)
 - HoloPatcher/PyKotor will normalize both forward slashes (`/`) and backslashes (`\`)
 - If the specified folder path does not exist, it will be **automatically created**
 - Folder creation happens recursively (parent folders are created as needed)
@@ -261,7 +240,7 @@ File0=readme.txt
 File1=config.ini
 ```
 
-Note: In logs, `.\` is reported as the "Game" folder for clarity.
+**Note:** In logs, `.\` is reported as the "Game" folder for clarity.
 
 ### Default Destination
 
@@ -280,13 +259,13 @@ File0=file1.tpc
 File0=file2.mod
 ```
 
-Note: `!DefaultDestination` is highly undocumented in TSLPatcher. In PyKotor/HoloPatcher, it is believed to take priority over folder section destinations, except when `!Destination` is explicitly set in a file section.
+**Note:** `!DefaultDestination` is highly undocumented in TSLPatcher. In PyKotor/HoloPatcher, it is believed to take priority over folder section destinations, except when `!Destination` is explicitly set in a file section.
 
-## Installing to Containers
+## Installing to Archives
 
-InstallList supports installing files directly into [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) container files. This is done by specifying the container file path (relative to the game folder) as the destination.
+InstallList supports installing files directly into ERF/MOD/RIM archive files. This is done by specifying the archive file path (relative to the game folder) as the destination.
 
-### Container file Syntax
+### Archive File Syntax
 
 ```ini
 [InstallList]
@@ -302,28 +281,27 @@ Replace0=existing_resource.uti
 File0=another_resource.2da
 ```
 
-### Container Behavior
+### Archive Behavior
 
-- If the container **does *NOT* exist** at the specified path, then:
-  - An error is logged: `The capsule 'Modules\901myn.mod' did not exist when attempting to copy 'source_filename.ext'. Skipping file...`
+- If the archive **does not exist** at the specified path:
+  - An error is logged: `The capsule 'Modules\901myn.mod' did not exist when attempting to copy 'filename.ext'. Skipping file...`
   - The patch is skipped (no error is raised, execution continues)
 
-- If the container **exists**, then:
-  - The file is added to the container
-  - If a resource with the same name already exists in the container:
-    - If `!ReplaceFile=1` or `Replace#=`: The existing resource is **overwritten**
-    - If `!ReplaceFile=0` or `File#=`: The file is **skipped** (see [File Replacement Behavior](#file-replacement-behavior))
+- If the archive **exists**:
+  - The file is added to the archive
+  - If a resource with the same name already exists in the archive:
+    - If `!ReplaceFile=1` or `Replace#=`: The existing resource is overwritten
+    - If `!ReplaceFile=0` or `File#=`: The file is skipped (see [File Replacement Behavior](#file-replacement-behavior))
 
-Container types supported:
+- **Archive Types Supported:**
+  - `.mod` (MOD/ERF format)
+  - `.erf` (ERF format)
+  - `.rim` (RIM format)
+  - `.sav` (Save game ERF format)
 
-- `.mod` (MOD/[ERF](Container-Formats#erf) format)
-- `.erf` ([ERF](Container-Formats#erf) format)
-- `.rim` ([RIM](Container-Formats#rim) format)
-- `.sav` (Save game [ERF](Container-Formats#erf) format)
+### Installing Modified Archives
 
-### Installing Modified Containers
-
-If you've modified an container using [`[GFFList]`](TSLPatcher-GFFList-Syntax) or [`[CompileList]`](TSLPatcher-CompileList-Syntax) (e.g., added resources to it), you **must** include that container in [`[InstallList]`](TSLPatcher-InstallList-Syntax) to save it to its proper location:
+If you've modified an archive using GFFList or CompileList (e.g., added resources to it), you **must** include that archive in InstallList to save it to its proper location:
 
 ```ini
 [GFFList]
@@ -336,12 +314,12 @@ File0=Modules\901myn.mod
 Folder0=Modules
 
 [Modules]
-Replace0=901myn.mod  ; Must include to save the modified container
+Replace0=901myn.mod  ; Must include to save the modified archive
 ```
 
-## Renaming files
+## Renaming Files
 
-You can rename files during installation using `!SaveAs` or `!Filename` (or both):
+You can rename files during installation using `!SaveAs` or `!Filename`:
 
 ```ini
 [InstallList]
@@ -356,15 +334,13 @@ File0=source_name.tpc
 ```
 
 This will:
-
-1. Load `original_filename.tpc` from the `tslpatchdata` folder
+1. Load `original_filename.tpc` from tslpatchdata
 2. Install it as `final_filename.tpc` to the Override folder
 
-Notes:
-
+**Notes:**
 - `!SaveAs` and `!Filename` are equivalent - use either one
-- If `!SourceFile` is not specified, the filename from the file#/Replace# entry is used as the source
-- The source file must exist in the `tslpatchdata` folder (or `!SourceFolder` if specified)
+- If `!SourceFile` is not specified, the filename from the File#/Replace# entry is used as the source
+- The source file must exist in the tslpatchdata folder (or `!SourceFolder` if specified)
 
 ## Source Folder Configuration
 
@@ -382,11 +358,11 @@ File0=texture1.tpc
 File1=texture2.tpc
 ```
 
-This will look for files in `tslpatchdata\textures\` instead of `tslpatchdata\`. This is a **HoloPatcher extension** - original TSLPatcher may not support this feature.
+This will look for files in `tslpatchdata\textures\` instead of `tslpatchdata\`.
 
-### file-Level Source Folder
+### File-Level Source Folder
 
-You can override the source folder for individual files (e.g., `file1.tpc` is loaded from `tslpatchdata\custom_folder\` instead of `tslpatchdata\default_folder\`):
+You can override the source folder for individual files:
 
 ```ini
 [InstallList]
@@ -402,7 +378,6 @@ File1=file2.tpc
 ```
 
 In this example:
-
 - `file1.tpc` is loaded from `tslpatchdata\custom_folder\`
 - `file2.tpc` is loaded from `tslpatchdata\default_folder\`
 
@@ -410,21 +385,21 @@ In this example:
 
 - `!SourceFolder` is a **HoloPatcher extension** - original TSLPatcher may not support this feature
 - Paths are relative to the `tslpatchdata` folder
-- Use `.` (period) to reference the root `tslpatchdata` folder explicitly
+- Use `.` (period) to reference the root tslpatchdata folder explicitly
 - Supports subdirectory paths: `!SourceFolder=subfolder\deeper\folder`
 - Backslashes and forward slashes are both normalized
 
-## Override type Handling
+## Override Type Handling
 
-When installing files to containers ([MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim)), there's a potential conflict: a file might already exist in the Override folder with the same name. The `!OverrideType` setting controls how this conflict is handled:
+When installing files to archives (ERF/MOD/RIM), there's a potential conflict: a file might already exist in the Override folder with the same name. The `!OverrideType` setting controls how this conflict is handled:
 
 | Value | Behavior | Description |
 |-------|----------|-------------|
-| `ignore` | No action | Do nothing - don't even check for conflicts. This is the **TSLPatcher** default. |
-| `warn` | Log warning | Check for conflicts and log a warning if found, but continue with installation. This is the **HoloPatcher** default. |
-| `rename` | Rename override file | If a conflicting file exists in `Override`, rename it with an `old_` prefix (e.g., `old_filename.ext`) and log a warning. |
+| `ignore` | No action | Do nothing - don't even check for conflicts. This is the TSLPatcher default. |
+| `warn` | Log warning | Check for conflicts and log a warning if found, but continue with installation. This is the HoloPatcher default. |
+| `rename` | Rename override file | If a conflicting file exists in Override, rename it with an `old_` prefix (e.g., `old_filename.ext`) and log a warning. |
 
-Example:
+**Example:**
 
 ```ini
 [Modules\901myn.mod]
@@ -432,16 +407,15 @@ File0=resource.uti
 !OverrideType=warn
 ```
 
-Why this matters:
+**Why This Matters:**
 
 The game's resource loading system checks folders in this order:
-
 1. Override folder (highest priority)
-2. Module containers (.mod files)
-3. [RIM](Container-Formats#rim) files (`.rim` / `_s.rim`)
-4. Other containers
+2. Module archives (.mod files)
+3. RIM files
+4. Other archives
 
-If a file exists in both `Override` and an container, the `Override` version takes precedence. The `!OverrideType` setting helps manage this shadowing behavior.
+If a file exists in both Override and an archive, the Override version takes precedence. The `!OverrideType` setting helps manage this shadowing behavior.
 
 ## Examples
 
@@ -481,7 +455,7 @@ File1=conv2.wav
 File0=custom.mod
 ```
 
-### Example 3: Renaming files During Installation
+### Example 3: Renaming Files During Installation
 
 ```ini
 [InstallList]
@@ -500,7 +474,7 @@ File1=renamed_item.uti
 !Filename=custom_item_name.uti
 ```
 
-### Example 4: Installing to Containers
+### Example 4: Installing to Archives
 
 ```ini
 [InstallList]
@@ -548,7 +522,7 @@ Replace0=modified_module.mod
 File0=new_resource.uti
 File1=new_texture.tpc
 Replace0=modified_resource.utc
-!SourceFolder=container_resources
+!SourceFolder=archive_resources
 
 [new_resource.uti]
 !Filename=custom_name.uti
@@ -574,7 +548,7 @@ No files will be installed, and a note will be logged: `[InstallList] section mi
 
 ### Missing Folder Sections
 
-If a folder key (e.g., `Folder0`) in `[InstallList]` references a section that doesn't exist, a `KeyError` is raised:
+If a folder key in `[InstallList]` references a section that doesn't exist, a `KeyError` is raised:
 
 ```ini
 [InstallList]
@@ -582,9 +556,9 @@ Folder0=NonExistentFolder
 ; Error: Section [NonExistentFolder] not found
 ```
 
-### Missing Source files
+### Missing Source Files
 
-If a source file specified in a `File#=` or `Replace#=` entry doesn't exist in the `tslpatchdata` folder (or the specified `!SourceFolder`), an error is logged:
+If a source file specified in a File#/Replace# entry doesn't exist in tslpatchdata (or the specified `!SourceFolder`), an error is logged:
 
 ```
 Could not locate resource to copy: 'missing_file.tpc'
@@ -606,98 +580,90 @@ File0=file.tpc
 
 All parent folders (`NewFolder`, `SubFolder`, `DeepFolder`) will be created automatically.
 
-### Container file Handling
+### Archive File Handling
 
-- **Container doesn't exist**: Error logged, patch skipped
-- **Container exists but is read-only**: Permission error logged, patch skipped
-- **Container exists, file already in container**: See [File Replacement Behavior](#file-replacement-behavior)
-- **Container exists, file doesn't exist in container**: file is added normally
+- **Archive doesn't exist**: Error logged, patch skipped
+- **Archive exists but is read-only**: Permission error logged, patch skipped
+- **Archive exists, file already in archive**: See [File Replacement Behavior](#file-replacement-behavior)
+- **Archive exists, file doesn't exist in archive**: File is added normally
 
 ### Case Sensitivity
 
 - Folder and file keys are **case-insensitive**: `File0`, `file0`, `FILE0` all work
 - `Replace#` prefix detection is **case-insensitive**: `Replace0`, `replace0`, `REPLACE0` all work
-- file paths on Windows are case-insensitive, but HoloPatcher uses `CaseAwarePath` to preserve case when possible
+- File paths on Windows are case-insensitive, but PyKotor uses `CaseAwarePath` to preserve case when possible
 
 ### Path Separators
 
 - TSLPatcher convention: Use backslashes (`\`) for Windows paths
-- HoloPatcher: Normalizes both backslashes (`\`) and forward slashes (`/`)
-- Container paths: Use backslashes: `Modules\901myn.mod`
+- PyKotor/HoloPatcher: Normalizes both backslashes (`\`) and forward slashes (`/`)
+- Archive paths: Use backslashes: `Modules\901myn.mod`
 
 ### nwscript.nss Automatic Installation
 
-If the mod contains `nwscript.nss` in the `tslpatchdata` folder and there are scripts to compile (`[CompileList]`), HoloPatcher will automatically append an InstallFile entry to install `nwscript.nss` to the `Override` folder. This is required for some versions of `nwnnsscomp.exe` that expect `nwscript.nss` to be in `Override` rather than `tslpatchdata`.
+If the mod contains `nwscript.nss` in the tslpatchdata folder and there are scripts to compile (`[CompileList]`), HoloPatcher will automatically append an InstallFile entry to install `nwscript.nss` to the Override folder. This is required for some versions of nwnnsscomp.exe that expect nwscript.nss to be in Override rather than tslpatchdata.
 
 This happens during the `_prepare_compilelist` phase before the main patch loop runs.
 
 ## Troubleshooting
 
-### file Not Installing
+### File Not Installing
 
-Problem: file listed in `[InstallList]` but not being installed.
+**Problem:** File listed in InstallList but not being installed.
 
-Possible causes:
+**Possible Causes:**
+1. File already exists and `Replace#=` or `!ReplaceFile=1` not set
+   - **Solution:** Check logs for "already exists... Skipping file" message
+   - **Fix:** Use `Replace#=` or set `!ReplaceFile=1`
 
-1. File already exists and `Replace#=` or `!ReplaceFile=1` is not set
+2. Source file doesn't exist in tslpatchdata
+   - **Solution:** Check logs for "Could not locate resource" error
+   - **Fix:** Ensure file exists in tslpatchdata (or specified `!SourceFolder`)
 
-Solution: Check logs for "already exists... Skipping file" message.
-Fix: Use `Replace#=` or set `!ReplaceFile=1`.
+3. Archive doesn't exist
+   - **Solution:** Check logs for "capsule did not exist" error
+   - **Fix:** Create the archive first or ensure the path is correct
 
-1. Source file doesn't exist in the `tslpatchdata` folder
-
-Solution: Check logs for "Could not locate resource" error.
-Fix: Ensure the file exists in the `tslpatchdata` folder or the specified `!SourceFolder`.
-
-1. Container doesn't exist
-
-Solution: Check logs for "capsule did not exist" error.
-Fix: Create the container first or ensure the path is correct.
-
-1. Permission errors
-
-Solution: Check logs for permission or access-denied errors.
-Fix: Run with appropriate permissions and verify file and folder permissions.
+4. Permission errors
+   - **Solution:** Check logs for permission/access denied errors
+   - **Fix:** Run with appropriate permissions, check file/folder permissions
 
 ### Wrong Destination
 
-Problem: file installing to the wrong location.
+**Problem:** File installing to wrong location.
 
-Possible causes:
-
+**Possible Causes:**
 1. `!Destination` override in file section
-1. `!DefaultDestination` set incorrectly
-1. Folder section name typo
+2. `!DefaultDestination` set incorrectly
+3. Folder section name typo
 
-Solution: Check file section for `!Destination`, verify folder section names match destination paths.
+**Solution:** Check file section for `!Destination`, verify folder section names match destination paths.
 
-### Container Not Updating
+### Archive Not Updating
 
-Problem: file not appearing in the container after installation.
+**Problem:** File not appearing in archive after installation.
 
-Possible causes:
+**Possible Causes:**
+1. Archive doesn't exist (error logged)
+2. File already exists and replacement not enabled
+3. Archive is read-only or locked
 
-1. Container doesn't exist (error logged)
-1. file already exists and replacement is not enabled
-1. Container is read-only or locked
+**Solution:** Check logs for errors, ensure `Replace#=` or `!ReplaceFile=1` is set, verify archive permissions.
 
-Solution: Check logs for errors, ensure `Replace#=` or `!ReplaceFile=1` is set, verify container permissions.
+### Files Being Skipped Unexpectedly
 
-### files Being Skipped Unexpectedly
+**Problem:** Files that should install are being skipped.
 
-Problem: files that should install are being skipped.
-
-Possible causes:
-
+**Possible Causes:**
 1. `File#=` syntax used with existing files (expected behavior - use `Replace#=`)
-1. `!ReplaceFile=0` explicitly set
-1. File already exists in the container without replacement enabled
+2. `!ReplaceFile=0` explicitly set
+3. File already exists in archive without replacement enabled
 
-Solution: Review [File Replacement Behavior](#file-replacement-behavior) section, use `Replace#=` or `!ReplaceFile=1` to enable replacement.
+**Solution:** Review [File Replacement Behavior](#file-replacement-behavior) section, use `Replace#=` or `!ReplaceFile=1` to enable replacement.
 
 ## Reference: Complete Syntax Summary
 
-### Top-Level `[InstallList]` Section
+### Top-Level [InstallList] Section
 
 ```ini
 [InstallList]
@@ -705,19 +671,19 @@ Solution: Review [File Replacement Behavior](#file-replacement-behavior) section
 Folder#=<destination_path>          ; Required: map to folder section
 ```
 
-### Folder Section (e.g., `[Override]`)
+### Folder Section (e.g., [Override])
 
 ```ini
 [<destination_path>]
-!SourceFolder=<relative_path>        ; Optional: source folder within the `tslpatchdata` folder
+!SourceFolder=<relative_path>        ; Optional: source folder within tslpatchdata
 File#=<filename.ext>                ; Install file (skip if exists)
 Replace#=<filename.ext>             ; Install file (replace if exists)
 ```
 
-### file Section (e.g., `[filename.ext]`)
+### File Section (e.g., [filename.ext])
 
 ```ini
-[filename.ext]
+[<filename.ext>]
 !SourceFile=<source_filename.ext>  ; Optional: alternative source file
 !SaveAs=<final_filename.ext>       ; Optional: rename during installation
 !Filename=<final_filename.ext>      ; Optional: alias for !SaveAs
@@ -729,17 +695,17 @@ Replace#=<filename.ext>             ; Install file (replace if exists)
 
 ## Additional Notes
 
-- All paths in TSLPatcher use backslashes (`\`) by convention, but HoloPatcher normalizes both slashes
+- All paths in TSLPatcher use backslashes (`\`) by convention, but HoloPatcher/PyKotor normalizes both slashes
 - Folder paths are created automatically if they don't exist
-- Container paths must exist before files can be installed to them
+- Archive paths must exist before files can be installed to them
 - InstallList runs before other patch lists in HoloPatcher (but after TLKList in original TSLPatcher)
 - Files are backed up before installation (if they exist)
 - Uninstall scripts are generated automatically in the backup folder
 
-### See also
+## See Also
 
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) - Original TSLPatcher documentation
-- [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic) - Internal implementation details
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Documentation for [GFF](GFF-File-Format) modifications
-- [Mod Creation Best Practices](Mod-Creation-Best-Practices) - Best practices for mod development
-- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for install workflows
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme.md) - Original TSLPatcher documentation
+- [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic.md) - Internal implementation details
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax.md) - Documentation for GFF modifications
+- [Mod Creation Best Practices](Mod-Creation-Best-Practices.md) - Best practices for mod development
+

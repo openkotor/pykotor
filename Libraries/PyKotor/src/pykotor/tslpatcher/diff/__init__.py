@@ -15,12 +15,8 @@ This module provides:
 from __future__ import annotations
 
 from pykotor.tslpatcher.diff.analyzers import DiffAnalyzerFactory
-from pykotor.tslpatcher.diff.cache import (
-    DiffCache,
-    load_diff_cache,
-    restore_strref_cache_from_cache,
-    save_diff_cache,
-)
+from pykotor.tslpatcher.diff.application import DiffConfig, run_application
+from pykotor.tslpatcher.diff.cache import DiffCache, load_diff_cache, restore_strref_cache_from_cache, save_diff_cache
 from pykotor.tslpatcher.diff.engine import (
     CachedFileComparison,
     DiffContext,
@@ -55,19 +51,6 @@ from pykotor.tslpatcher.diff.resolution import (
     resolve_resource_in_installation,
 )
 from pykotor.tools.reference_cache import StrRefReferenceCache
-
-
-def __getattr__(name: str):
-    if name in {"DiffConfig", "run_application"}:
-        from pykotor.diff_tool.app import DiffConfig, run_application
-
-        exports = {
-            "DiffConfig": DiffConfig,
-            "run_application": run_application,
-        }
-        return exports[name]
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
-
 
 __all__ = [
     "CachedFileComparison",

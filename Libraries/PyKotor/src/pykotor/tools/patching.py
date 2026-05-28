@@ -1,25 +1,26 @@
 """Batch patching utilities for KOTOR resources.
 
 This module provides functions for:
-- Patching GFF files (setting unskippable dialogs)
+- Patching GFF files (translating LocalizedStrings, setting unskippable dialogs)
 - Converting GFF files between K1 and TSL formats
 - Converting TGA/TPC textures
+- Processing TLK files
 - Batch patching installations, folders, and files
 
 References:
 ----------
-        Observed retail KotOR GFF, TLK, and archive handling (ERF/RIM family).
-        Tools/BatchPatcher/src/batchpatcher/__main__.py - Original implementation
-
-
+    Tools/BatchPatcher/src/batchpatcher/__main__.py - Original implementation
 """
-
 from __future__ import annotations
 
+import concurrent.futures
+from collections.abc import Callable
+from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from pykotor.common.alien_sounds import ALIEN_SOUNDS
+from pykotor.common.language import Language, LocalizedString
 from pykotor.common.misc import Game, ResRef
 from pykotor.common.stream import BinaryWriter
 from pykotor.extract.capsule import Capsule, LazyCapsule
@@ -38,12 +39,25 @@ from pykotor.resource.formats.gff import (
 from pykotor.resource.formats.gff.gff_auto import bytes_gff
 from pykotor.resource.formats.rim.rim_auto import write_rim
 from pykotor.resource.formats.rim.rim_data import RIM
-from pykotor.resource.formats.tpc.io_tga import TPCTGAWriter
-from pykotor.resource.formats.tpc.tpc_auto import build_tpc_from_tga_bytes
+from pykotor.resource.formats.tlk import read_tlk, write_tlk
+from pykotor.resource.formats.tpc.io_tga import TPCTGAReader, TPCTGAWriter
 from pykotor.resource.formats.tpc.io_tpc import TPCBinaryReader, TPCBinaryWriter
 from pykotor.resource.formats.tpc.tpc_auto import bytes_tpc
 from pykotor.resource.formats.tpc.tpc_data import TPC
-from pykotor.resource.gff_dispatch import get_gff_resource_pipeline
+from pykotor.resource.generics.are import read_are, write_are
+from pykotor.resource.generics.dlg import read_dlg, write_dlg
+from pykotor.resource.generics.git import read_git, write_git
+from pykotor.resource.generics.jrl import read_jrl, write_jrl
+from pykotor.resource.generics.pth import read_pth, write_pth
+from pykotor.resource.generics.utc import read_utc, write_utc
+from pykotor.resource.generics.utd import read_utd, write_utd
+from pykotor.resource.generics.ute import read_ute, write_ute
+from pykotor.resource.generics.uti import read_uti, write_uti
+from pykotor.resource.generics.utm import read_utm, write_utm
+from pykotor.resource.generics.utp import read_utp, write_utp
+from pykotor.resource.generics.uts import read_uts, write_uts
+from pykotor.resource.generics.utt import read_utt, write_utt
+from pykotor.resource.generics.utw import read_utw, write_utw
 from pykotor.resource.salvage import validate_capsule
 from pykotor.resource.type import ResourceType
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
@@ -51,25 +65,29 @@ from pykotor.tools.misc import is_any_erf_type_file, is_capsule_file
 from pykotor.tools.path import CaseAwarePath
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from pykotor.resource.formats.tlk import TLK
+    from pykotor.resource.formats.tlk.tlk_data import TLKEntry
 
 
 class PatchingConfig:
     """Configuration for batch patching operations."""
 
     def __init__(self):
+        self.translate: bool = False
         self.set_unskippable: bool = False
         self.convert_tga: str | None = None  # "TGA to TPC", "TPC to TGA", or None
         self.k1_convert_gffs: bool = False
         self.tsl_convert_gffs: bool = False
         self.always_backup: bool = True
         self.max_threads: int = 2
+        self.translator: Any = None  # Translator instance
         self.log_callback: Callable[[str], None] | None = None
 
     def is_patching(self) -> bool:
         """Check if any patching operation is enabled."""
         return bool(
-            self.set_unskippable
+            self.translate
+            or self.set_unskippable
             or self.convert_tga
             or self.k1_convert_gffs
             or self.tsl_convert_gffs
@@ -80,20 +98,6 @@ def log_message(config: PatchingConfig, message: str) -> None:
     """Log a message using the configured callback."""
     if config.log_callback:
         config.log_callback(message)
-
-
-def _serialize_patched_resource(
-    resource: FileResource, patched_data: GFF | TPC
-) -> tuple[ResourceType, bytes]:
-    """Serialize patched resource data for writing to capsules/files."""
-    if isinstance(patched_data, GFF):
-        return resource.restype(), bytes_gff(patched_data)
-    return ResourceType.TPC, bytes(bytes_tpc(patched_data))
-
-
-def _ensure_processed_files(processed_files: set[Path] | None) -> set[Path]:
-    """Return a mutable processed-files set for patching workflows."""
-    return processed_files if processed_files is not None else set()
 
 
 def patch_nested_gff(
@@ -121,7 +125,7 @@ def patch_nested_gff(
     -------
         Tuple of (made_change: bool, alien_vo_count: int)
     """
-    if gff_content != GFFContent.DLG or not config.set_unskippable:
+    if gff_content != GFFContent.DLG and not config.translate:
         return False, alien_vo_count
 
     if gff_content == GFFContent.DLG and config.set_unskippable:
@@ -138,9 +142,7 @@ def patch_nested_gff(
         child_path: Path = current_path / label
 
         if ftype == GFFFieldType.Struct:
-            assert isinstance(value, GFFStruct), (
-                f"Not a GFFStruct instance: {value.__class__.__name__}: {value}"
-            )  # noqa: S101
+            assert isinstance(value, GFFStruct), f"Not a GFFStruct instance: {value.__class__.__name__}: {value}"  # noqa: S101
             result_made_change, alien_vo_count = patch_nested_gff(
                 value, gff_content, gff, config, child_path, made_change, alien_vo_count
             )
@@ -148,15 +150,20 @@ def patch_nested_gff(
             continue
 
         if ftype == GFFFieldType.List:
-            assert isinstance(value, GFFList), (
-                f"Not a GFFList instance: {value.__class__.__name__}: {value}"
-            )  # noqa: S101
+            assert isinstance(value, GFFList), f"Not a GFFList instance: {value.__class__.__name__}: {value}"  # noqa: S101
             result_made_change, alien_vo_count = recurse_through_list(
                 value, gff_content, gff, config, child_path, made_change, alien_vo_count
             )
             made_change |= result_made_change
             continue
 
+        if ftype == GFFFieldType.LocalizedString and config.translate:
+            assert isinstance(value, LocalizedString), f"{value.__class__.__name__}: {value}"  # noqa: S101
+            log_message(
+                config,
+                f"Translating CExoLocString at {child_path} to {config.translator.to_lang.name if config.translator else 'unknown'}",
+            )
+            made_change |= translate_locstring(value, config)
     return made_change, alien_vo_count
 
 
@@ -188,16 +195,53 @@ def recurse_through_list(
     current_path = current_path or Path("GFFListRoot")
     for list_index, gff_struct in enumerate(gff_list):
         result_made_change, alien_vo_count = patch_nested_gff(
-            gff_struct,
-            gff_content,
-            gff,
-            config,
-            current_path / str(list_index),
-            made_change,
-            alien_vo_count,
+            gff_struct, gff_content, gff, config, current_path / str(list_index), made_change, alien_vo_count
         )
         made_change |= result_made_change
     return made_change, alien_vo_count
+
+
+def translate_locstring(locstring: LocalizedString, config: PatchingConfig) -> bool:
+    """Translate a LocalizedString using the configured translator.
+
+    Args:
+    ----
+        locstring: The LocalizedString to translate
+        config: Patching configuration with translator
+
+    Returns:
+    -------
+        True if changes were made, False otherwise
+    """
+    if not config.translator:
+        return False
+
+    made_change = False
+    new_substrings: dict[int, str] = deepcopy(locstring._substrings)  # noqa: SLF001
+    for lang, gender, text in locstring:
+        if text is not None and text.strip():
+            translated_text = config.translator.translate(text, from_lang=lang)
+            log_message(config, f"Translated {text} --> {translated_text}")
+            substring_id = LocalizedString.substring_id(config.translator.to_lang, gender)
+            new_substrings[substring_id] = str(translated_text)
+            made_change = True
+    locstring._substrings = new_substrings  # noqa: SLF001
+    return made_change
+
+
+def fix_encoding(text: str, encoding: str) -> str:
+    """Fix text encoding by re-encoding and decoding.
+
+    Args:
+    ----
+        text: Text to fix
+        encoding: Target encoding
+
+    Returns:
+    -------
+        Fixed text
+    """
+    return text.encode(encoding=encoding, errors="ignore").decode(encoding=encoding, errors="ignore").strip()
 
 
 def convert_gff_game(
@@ -227,27 +271,72 @@ def convert_gff_game(
     else:
         savepath = resource.filepath()
 
-    log_message(
-        config,
-        f"Converting {resource.path_ident().parent}/{resource.path_ident().name} to {to_game.name}",
-    )
+    log_message(config, f"Converting {resource.path_ident().parent}/{resource.path_ident().name} to {to_game.name}")
     generic: Any
     try:
-        restype = resource.restype()
-        pipeline = get_gff_resource_pipeline(restype)
-        if pipeline is not None:
-            generic = pipeline.read(resource.data(), offset=0, size=resource.size())
-            pipeline.write(generic, converted_data, to_game)
+        if resource.restype() is ResourceType.ARE:
+            generic = read_are(resource.data(), offset=0, size=resource.size())
+            write_are(generic, converted_data, to_game)
+
+        elif resource.restype() is ResourceType.DLG:
+            generic = read_dlg(resource.data(), offset=0, size=resource.size())
+            write_dlg(generic, converted_data, to_game)
+
+        elif resource.restype() is ResourceType.GIT:
+            generic = read_git(resource.data(), offset=0, size=resource.size())
+            write_git(generic, converted_data, to_game)
+
+        elif resource.restype() is ResourceType.JRL:
+            generic = read_jrl(resource.data(), offset=0, size=resource.size())
+            write_jrl(generic, converted_data, game=to_game)
+
+        elif resource.restype() is ResourceType.PTH:
+            generic = read_pth(resource.data(), offset=0, size=resource.size())
+            write_pth(generic, converted_data, game=to_game)
+
+        elif resource.restype() is ResourceType.UTC:
+            generic = read_utc(resource.data(), offset=0, size=resource.size())
+            write_utc(generic, converted_data, game=to_game)
+
+        elif resource.restype() is ResourceType.UTD:
+            generic = read_utd(resource.data(), offset=0, size=resource.size())
+            write_utd(generic, converted_data, game=to_game)
+
+        elif resource.restype() is ResourceType.UTE:
+            generic = read_ute(resource.data(), offset=0, size=resource.size())
+            write_ute(generic, converted_data, game=to_game)
+
+        elif resource.restype() is ResourceType.UTI:
+            generic = read_uti(resource.data(), offset=0, size=resource.size())
+            write_uti(generic, converted_data, game=to_game)
+
+        elif resource.restype() is ResourceType.UTM:
+            generic = read_utm(resource.data(), offset=0, size=resource.size())
+            write_utm(generic, converted_data, game=to_game)
+
+        elif resource.restype() is ResourceType.UTP:
+            generic = read_utp(resource.data(), offset=0, size=resource.size())
+            write_utp(generic, converted_data, game=to_game)
+
+        elif resource.restype() is ResourceType.UTS:
+            generic = read_uts(resource.data(), offset=0, size=resource.size())
+            write_uts(generic, converted_data, game=to_game)
+
+        elif resource.restype() is ResourceType.UTT:
+            generic = read_utt(resource.data(), offset=0, size=resource.size())
+            write_utt(generic, converted_data, game=to_game)
+
+        elif resource.restype() is ResourceType.UTW:
+            generic = read_utw(resource.data(), offset=0, size=resource.size())
+            write_utw(generic, converted_data, game=to_game)
+
         else:
             log_message(config, f"Unsupported gff: {resource.identifier()}")
     except (OSError, ValueError):
         log_message(config, f"Corrupted GFF: '{resource.path_ident()}', skipping...")
         if not resource.inside_capsule:
             return
-        log_message(
-            config,
-            f"Corrupted GFF: '{resource.path_ident()}', will start validation process of '{resource.filepath().name}'...",
-        )
+        log_message(config, f"Corrupted GFF: '{resource.path_ident()}', will start validation process of '{resource.filepath().name}'...")
         new_erfrim = validate_capsule(resource.filepath(), strict=True, game=to_game)
         if isinstance(new_erfrim, ERF):
             log_message(config, f"Saving salvaged ERF to '{savepath}'")
@@ -267,12 +356,55 @@ def convert_gff_game(
         lazy_capsule.add(resource.resname(), resource.restype(), bytes(converted_data))
 
 
+def process_translations(
+    tlk: TLK,
+    from_lang: Language,
+    config: PatchingConfig,
+) -> None:
+    """Process translations for a TLK file.
+
+    Args:
+    ----
+        tlk: The TLK file to translate
+        from_lang: Source language
+        config: Patching configuration with translator
+    """
+    if not config.translator:
+        return
+
+    def translate_entry(tlkentry: TLKEntry, from_lang: Language) -> tuple[str, str]:
+        text = tlkentry.text
+        if not text.strip() or text.isdigit():
+            return text, ""
+        if "Do not translate this text" in text:
+            return text, text
+        if "actual text to be translated" in text:
+            return text, text
+        return text, config.translator.translate(text, from_lang=from_lang)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=config.max_threads) as executor:
+        future_to_strref: dict[concurrent.futures.Future[tuple[str, str]], int] = {
+            executor.submit(translate_entry, tlkentry, from_lang): strref for strref, tlkentry in tlk
+        }
+
+        for future in concurrent.futures.as_completed(future_to_strref):
+            strref: int = future_to_strref[future]
+            try:
+                original_text, translated_text = future.result()
+                if translated_text.strip():
+                    translated_text = fix_encoding(translated_text, config.translator.to_lang.get_encoding())
+                    tlk.replace(strref, translated_text)
+                    log_message(config, f"#{strref} Translated {original_text} --> {translated_text}")
+            except Exception as exc:  # pylint: disable=W0718  # noqa: BLE001
+                log_message(config, f"tlk strref {strref} generated an exception: {exc}")
+
+
 def patch_resource(
     resource: FileResource,
     config: PatchingConfig,
     processed_files: set[Path] | None = None,
 ) -> GFF | TPC | None:
-    """Patch a single resource (GFF, TPC).
+    """Patch a single resource (GFF, TPC, TLK).
 
     Args:
     ----
@@ -284,17 +416,35 @@ def patch_resource(
     -------
         Patched GFF or TPC object, or None if no changes or error
     """
-    processed_files = _ensure_processed_files(processed_files)
+    if processed_files is None:
+        processed_files = set()
+
+    # Handle TLK translation
+    if resource.restype().extension.lower() == "tlk" and config.translate and config.translator:
+        tlk: TLK | None = None
+        log_message(config, f"Loading TLK '{resource.filepath()}'")
+        try:
+            tlk = read_tlk(resource.data())
+        except Exception:  # pylint: disable=W0718  # noqa: BLE001
+            log_message(config, f"[Error] loading TLK '{resource.identifier()}' at '{resource.filepath()}'!")
+            return None
+
+        from_lang: Language = tlk.language
+        new_filename_stem = f"{resource.resname()}_{config.translator.to_lang.get_bcp47_code() or 'UNKNOWN'}"
+        new_file_path = resource.filepath().parent / f"{new_filename_stem}.{resource.restype().extension}"
+        tlk.language = config.translator.to_lang
+        log_message(config, f"Translating TalkTable resource at {resource.filepath()} to {config.translator.to_lang.name}")
+        process_translations(tlk, from_lang, config)
+        write_tlk(tlk, new_file_path)
+        processed_files.add(new_file_path)
 
     # Handle TGA to TPC conversion
     if resource.restype().extension.lower() == "tga" and config.convert_tga == "TGA to TPC":
         log_message(config, f"Converting TGA at {resource.path_ident()} to TPC...")
         try:
-            return build_tpc_from_tga_bytes(resource.data())
+            return TPCTGAReader(resource.data()).load()
         except Exception:  # pylint: disable=W0718  # noqa: BLE001
-            log_message(
-                config, f"[Error] loading TGA '{resource.identifier()}' at '{resource.filepath()}'!"
-            )
+            log_message(config, f"[Error] loading TGA '{resource.identifier()}' at '{resource.filepath()}'!")
             return None
 
     # Handle TPC to TGA conversion
@@ -303,9 +453,7 @@ def patch_resource(
         try:
             return TPCBinaryReader(resource.data()).load()
         except Exception:  # pylint: disable=W0718  # noqa: BLE001
-            log_message(
-                config, f"[Error] loading TPC '{resource.identifier()}' at '{resource.filepath()}'!"
-            )
+            log_message(config, f"[Error] loading TPC '{resource.identifier()}' at '{resource.filepath()}'!")
             return None
 
     # Handle GFF files
@@ -345,9 +493,7 @@ def patch_resource(
                 if skippable not in {0, "0"}:
                     conversationtype = gff.root.acquire("ConversationType", None)
                     if conversationtype not in {"1", 1}:
-                        log_message(
-                            config, f"Setting dialog {resource.path_ident()} as unskippable"
-                        )
+                        log_message(config, f"Setting dialog {resource.path_ident()} as unskippable")
                         made_change = True
                         gff.root.set_uint8("Skippable", 0)
 
@@ -385,6 +531,8 @@ def patch_and_save_noncapsule(
         new_data = bytes_gff(patched_data)
 
         new_gff_filename = resource.filename()
+        if config.translate and config.translator:
+            new_gff_filename = f"{resource.resname()}_{config.translator.to_lang.get_bcp47_code()}.{resource.restype().extension}"
 
         new_path = (savedir or resource.filepath().parent) / new_gff_filename
         if new_path.exists() and savedir:
@@ -433,7 +581,8 @@ def patch_capsule_file(
         config: Patching configuration
         processed_files: Set to track processed files (optional)
     """
-    processed_files = _ensure_processed_files(processed_files)
+    if processed_files is None:
+        processed_files = set()
 
     log_message(config, f"Load {c_file.name}")
     try:
@@ -443,45 +592,44 @@ def patch_capsule_file(
         return
 
     new_filepath: Path = c_file
-
-    if not config.is_patching():
-        return
+    if config.translate and config.translator:
+        new_filepath = c_file.parent / f"{c_file.stem}_{config.translator.to_lang.get_bcp47_code()}{c_file.suffix}"
 
     new_resources: list[tuple[str, ResourceType, bytes]] = []
     omitted_resources: list[ResourceIdentifier] = []
     for resource in file_capsule:
-        patched_data: GFF | TPC | None = patch_resource(resource, config, processed_files)
-        if patched_data is None:
-            continue
+        if config.is_patching():
+            patched_data: GFF | TPC | None = patch_resource(resource, config, processed_files)
+            if isinstance(patched_data, GFF):
+                new_data = bytes_gff(patched_data) if patched_data else resource.data()
+                log_message(config, f"Adding patched GFF resource '{resource.identifier()}' to capsule {new_filepath.name}")
+                new_resources.append((resource.resname(), resource.restype(), new_data))
+                omitted_resources.append(resource.identifier())
 
-        if isinstance(patched_data, TPC):
-            txi_resource = file_capsule.resource(resource.resname(), ResourceType.TXI)
-            if txi_resource is not None:
-                patched_data.txi = decode_bytes_with_fallbacks(txi_resource)
-                omitted_resources.append(ResourceIdentifier(resource.resname(), ResourceType.TXI))
+            elif isinstance(patched_data, TPC):
+                txi_resource = file_capsule.resource(resource.resname(), ResourceType.TXI)
+                if txi_resource is not None:
+                    patched_data.txi = txi_resource.decode("ascii", errors="ignore")
+                    omitted_resources.append(ResourceIdentifier(resource.resname(), ResourceType.TXI))
 
-        patched_restype, new_data = _serialize_patched_resource(resource, patched_data)
-        log_message(
-            config,
-            f"Adding patched {patched_restype.name} resource '{resource.identifier()}' to capsule {new_filepath.name}",
-        )
-        new_resources.append((resource.resname(), patched_restype, new_data))
+        new_data = bytes_tpc(patched_data)
+        log_message(config, f"Adding patched TPC resource '{resource.identifier()}' to capsule {new_filepath.name}")
+        new_resources.append((resource.resname(), ResourceType.TPC, bytes(new_data)))
         omitted_resources.append(resource.identifier())
 
-    erf_or_rim: ERF | RIM = (
-        ERF(ERFType.from_extension(new_filepath)) if is_any_erf_type_file(c_file) else RIM()
-    )
-    for resource in file_capsule:
-        if resource.identifier() not in omitted_resources:
-            erf_or_rim.set_data(resource.resname(), resource.restype(), resource.data())
-    for resinfo in new_resources:
-        erf_or_rim.set_data(*resinfo)
+    if config.is_patching():
+        erf_or_rim: ERF | RIM = ERF(ERFType.from_extension(new_filepath)) if is_any_erf_type_file(c_file) else RIM()
+        for resource in file_capsule:
+            if resource.identifier() not in omitted_resources:
+                erf_or_rim.set_data(resource.resname(), resource.restype(), resource.data())
+        for resinfo in new_resources:
+            erf_or_rim.set_data(*resinfo)
 
-    log_message(config, f"Saving back to {new_filepath.name}")
-    if is_any_erf_type_file(c_file):
-        write_erf(erf_or_rim, new_filepath)  # type: ignore[arg-type]
-    else:
-        write_rim(erf_or_rim, new_filepath)  # type: ignore[arg-type]
+        log_message(config, f"Saving back to {new_filepath.name}")
+        if is_any_erf_type_file(c_file):
+            write_erf(erf_or_rim, new_filepath)  # type: ignore[arg-type]
+        else:
+            write_rim(erf_or_rim, new_filepath)  # type: ignore[arg-type]
 
 
 def patch_erf_or_rim(
@@ -505,32 +653,30 @@ def patch_erf_or_rim(
     """
     omitted_resources: list[ResourceIdentifier] = []
     new_filename = Path(filename)
+    if config.translate and config.translator:
+        new_filename = Path(f"{new_filename.stem}_{config.translator.to_lang.name}{new_filename.suffix}")
 
     for resource in resources:
         patched_data: GFF | TPC | None = patch_resource(resource, config)
-        if patched_data is None:
-            continue
+        if isinstance(patched_data, GFF):
+            log_message(config, f"Adding patched GFF resource '{resource.identifier()}' to {new_filename}")
+            new_data: bytes = bytes_gff(patched_data) if patched_data else resource.data()
+            erf_or_rim.set_data(resource.resname(), resource.restype(), new_data)
+            omitted_resources.append(resource.identifier())
 
-        if isinstance(patched_data, TPC):
+        elif isinstance(patched_data, TPC):
+            log_message(config, f"Adding patched TPC resource '{resource.resname()}' to {new_filename}")
             txi_resource: FileResource | None = next(
-                (
-                    res
-                    for res in resources
-                    if res.resname() == resource.resname() and res.restype() == ResourceType.TXI
-                ),
+                (res for res in resources if res.resname() == resource.resname() and res.restype() is ResourceType.TXI),
                 None,
             )
             if txi_resource:
-                patched_data.txi = decode_bytes_with_fallbacks(txi_resource.data())
+                patched_data.txi = txi_resource.data().decode("ascii", errors="ignore")
                 omitted_resources.append(txi_resource.identifier())
 
-        patched_restype, new_data = _serialize_patched_resource(resource, patched_data)
-        log_message(
-            config,
-            f"Adding patched {patched_restype.name} resource '{resource.identifier()}' to {new_filename}",
-        )
-        erf_or_rim.set_data(resource.resname(), patched_restype, new_data)
-        omitted_resources.append(resource.identifier())
+            new_data = bytes_tpc(patched_data)
+            erf_or_rim.set_data(resource.resname(), ResourceType.TPC, new_data)
+            omitted_resources.append(resource.identifier())
 
     for resource in resources:
         if resource.identifier() not in omitted_resources:
@@ -557,7 +703,8 @@ def patch_file(
         config: Patching configuration
         processed_files: Set to track processed files (optional)
     """
-    processed_files = _ensure_processed_files(processed_files)
+    if processed_files is None:
+        processed_files = set()
 
     c_file = Path(file)
     if c_file in processed_files:
@@ -582,7 +729,8 @@ def patch_folder(
         config: Patching configuration
         processed_files: Set to track processed files (optional)
     """
-    processed_files = _ensure_processed_files(processed_files)
+    if processed_files is None:
+        processed_files = set()
 
     c_folderpath = Path(folder_path)
     log_message(config, f"Recursing through resources in the '{c_folderpath.name}' folder...")
@@ -618,7 +766,8 @@ def patch_install(
         config: Patching configuration
         processed_files: Set to track processed files (optional)
     """
-    processed_files = _ensure_processed_files(processed_files)
+    if processed_files is None:
+        processed_files = set()
 
     log_message(config, f"Using install dir for operations:\t{install_path}")
 
@@ -636,17 +785,14 @@ def patch_install(
                 elif isinstance(erf_or_rim, RIM):
                     write_rim(erf_or_rim, module_path)
                 else:
-                    log_message(
-                        config,
-                        f"Unknown ERF/RIM: '{module_path.relative_to(k_install.path().parent)}'",
-                    )
+                    log_message(config, f"Unknown ERF/RIM: '{module_path.relative_to(k_install.path().parent)}'")
 
         k_install.load_modules()
         for module_name, resources in k_install._modules.items():  # noqa: SLF001
             res_ident = ResourceIdentifier.from_path(module_name)
             filename = str(res_ident)
             filepath = k_install.path().joinpath("Modules", filename)
-            if res_ident.restype == ResourceType.RIM:
+            if res_ident.restype is ResourceType.RIM:
                 if filepath.with_suffix(".mod").is_file():
                     log_message(config, f"Skipping {filepath}, a .mod already exists at this path.")
                     continue
@@ -657,7 +803,7 @@ def patch_install(
 
             elif res_ident.restype.name in (ResourceType.ERF, ResourceType.MOD, ResourceType.SAV):
                 new_erf = ERF(ERFType.from_extension(filepath.suffix))
-                if res_ident.restype == ResourceType.SAV:
+                if res_ident.restype is ResourceType.SAV:
                     new_erf.is_save = True
                 new_erf_filename = patch_erf_or_rim(resources, module_name, new_erf, config)
                 log_message(config, f"Saving '{new_erf_filename}'")
@@ -678,7 +824,7 @@ def patch_install(
     if config.is_patching():
         log_message(config, "Extract and patch BIF data, saving to Override (will not overwrite)")
     for resource in k_install.core_resources():
-        if config.set_unskippable:
+        if config.translate or config.set_unskippable:
             patch_and_save_noncapsule(resource, savedir=override_path, config=config)
 
     patch_file(k_install.path().joinpath("dialog.tlk"), config, processed_files)
@@ -699,7 +845,6 @@ def determine_input_path(
     """
     if not path.exists() or path.resolve() == Path.cwd().resolve():
         import errno
-
         raise FileNotFoundError(errno.ENOENT, f"No such file or directory: {path}")
 
     if is_kotor_install_dir(path):
@@ -712,3 +857,4 @@ def determine_input_path(
         return patch_file(path, config, processed_files)
 
     return None
+

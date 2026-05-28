@@ -7,38 +7,19 @@ Write-Host ""
 $errors = @()
 $warnings = @()
 
-# Discover tools dynamically
-Write-Host "Detecting tools..." -ForegroundColor Yellow
-$tools = @()
-$discoverScript = Resolve-Path "../scripts/discover_tools.py" -ErrorAction SilentlyContinue
-if ($discoverScript) {
-    $pythonExe = if ($env:pythonExePath) { $env:pythonExePath } elseif (Test-Path "../../.venv/Scripts/python.exe") { (Resolve-Path "../../.venv/Scripts/python.exe") } else { "python" }
-    $rawTools = & $pythonExe $discoverScript --format json
-    if ($LASTEXITCODE -eq 0 -and $rawTools) {
-        $tools = $rawTools | ConvertFrom-Json
-    }
-    if ($tools.Count -eq 0) {
-        $errors += "No tools detected from shared discovery metadata"
-    } else {
-        foreach ($t in $tools) {
-            $cfgMsg = if ($t.version_file) { $t.version_file } else { "no config file" }
-            Write-Host "  • $($t.directory) (build: $($t.build_name)) -> $cfgMsg" -ForegroundColor Green
-        }
-    }
-} else {
-    $errors += "Shared discovery script not found at ../scripts/discover_tools.py"
-}
-
-# Build workflow lists dynamically
-$requiredWorkflows = @()
-$testWorkflows = @()
-foreach ($t in $tools) {
-    $requiredWorkflows += "release_$($t.build_name).yml"
-    $testWorkflows += "TEST_release_$($t.build_name).yml"
-}
-
 # Check workflow files exist
 Write-Host "Checking workflow files..." -ForegroundColor Yellow
+$requiredWorkflows = @(
+    "release_toolset.yml",
+    "release_kotordiff.yml",
+    "release_holopatcher.yml",
+    "release_guiconverter.yml",
+    "release_translator.yml"
+)
+
+$testWorkflows = @(
+    "TEST_release_toolset.yml"
+)
 
 foreach ($workflow in $requiredWorkflows) {
     if (Test-Path $workflow) {
@@ -87,7 +68,7 @@ foreach ($workflow in $requiredWorkflows + $testWorkflows) {
     if (-not (Test-Path $workflow)) {
         continue
     }
-
+    
     try {
         # Try to parse YAML (requires PowerShell-YAML module)
         if (Get-Module -ListAvailable -Name PowerShell-YAML) {
@@ -115,27 +96,32 @@ Write-Host ""
 
 # Check version files exist
 Write-Host "Checking version files..." -ForegroundColor Yellow
-foreach ($t in $tools) {
-    $file = if ($t.version_file) { Resolve-Path (Join-Path "../../$($t.relative_path)" $t.version_file) -ErrorAction SilentlyContinue } else { $null }
-    $toolLabel = $t.build_name
-    if ($null -eq $file) {
-        $warnings += "$($t.directory): version/config file not found"
-        Write-Host "  ⚠️  $toolLabel version file missing" -ForegroundColor Yellow
-        continue
-    }
-    if (Test-Path $file) {
-        Write-Host "  ✅ $toolLabel version file exists: $file" -ForegroundColor Green
+$versionFiles = @{
+    "Toolset" = "../../Tools/HolocronToolset/src/toolset/config/config_info.py"
+    "KotorDiff" = "../../Tools/KotorDiff/src/kotordiff/__main__.py"
+    "HoloPatcher" = "../../Tools/HoloPatcher/src/holopatcher/config.py"
+}
 
+foreach ($tool in $versionFiles.Keys) {
+    $file = $versionFiles[$tool]
+    if (Test-Path $file) {
+        Write-Host "  ✅ $tool version file exists" -ForegroundColor Green
+        
+        # Check for version fields
         $content = Get-Content $file -Raw
-        if ($content -match '"currentVersion"' -or $content -match 'CURRENT_VERSION' -or $content -match '__version__') {
-            Write-Host "     ✅ Found version field" -ForegroundColor Green
+        if ($tool -eq "Toolset" -and $content -match '"currentVersion"' -and $content -match '"toolsetLatestVersion"') {
+            Write-Host "     ✅ Contains currentVersion and toolsetLatestVersion" -ForegroundColor Green
+        } elseif ($tool -eq "HoloPatcher" -and $content -match '"currentVersion"' -and $content -match '"holopatcherLatestVersion"') {
+            Write-Host "     ✅ Contains currentVersion and holopatcherLatestVersion" -ForegroundColor Green
+        } elseif ($tool -eq "KotorDiff" -and $content -match 'CURRENT_VERSION') {
+            Write-Host "     ✅ Contains CURRENT_VERSION" -ForegroundColor Green
         } else {
-            $warnings += "$toolLabel version file missing expected version field"
+            $warnings += "$tool version file missing expected version fields"
             Write-Host "     ⚠️  Version fields might be missing" -ForegroundColor Yellow
         }
     } else {
         $errors += "Version file not found: $file"
-        Write-Host "  ❌ $toolLabel version file missing: $file" -ForegroundColor Red
+        Write-Host "  ❌ $tool version file missing: $file" -ForegroundColor Red
     }
 }
 
@@ -148,9 +134,9 @@ foreach ($workflow in $requiredWorkflows) {
     if (-not (Test-Path $workflow)) {
         continue
     }
-
+    
     $content = Get-Content $workflow -Raw
-
+    
     # Check for required jobs
     $requiredJobs = @("validate", "update_version_pre_build", "setup", "build", "package", "finalize")
     foreach ($job in $requiredJobs) {
@@ -160,7 +146,7 @@ foreach ($workflow in $requiredWorkflows) {
             $errors += "$workflow missing job: $job"
         }
     }
-
+    
     # Check for release trigger
     if ($content -match "types:\s*\[prereleased\]") {
         # Correct trigger
@@ -184,7 +170,7 @@ if ($errors.Count -eq 0 -and $warnings.Count -eq 0) {
     Write-Host "Your release workflows are properly configured." -ForegroundColor Green
     Write-Host ""
     Write-Host "Next steps:" -ForegroundColor Cyan
-    Write-Host "  1. Test with a test tag for one discovered build name, then create a matching prerelease" -ForegroundColor White
+    Write-Host "  1. Test with: git tag test-v3.1.99-toolset && gh release create test-v3.1.99-toolset --prerelease" -ForegroundColor White
     Write-Host "  2. Read QUICK_TEST_GUIDE.md for detailed testing" -ForegroundColor White
     Write-Host "  3. When ready, create production release (no test- prefix)" -ForegroundColor White
     Write-Host ""
@@ -192,12 +178,12 @@ if ($errors.Count -eq 0 -and $warnings.Count -eq 0) {
 } else {
     if ($errors.Count -gt 0) {
         Write-Host "❌ ERRORS FOUND ($($errors.Count)):" -ForegroundColor Red
-        foreach ($err in $errors) {
-            Write-Host "  • $err" -ForegroundColor Red
+        foreach ($error in $errors) {
+            Write-Host "  • $error" -ForegroundColor Red
         }
         Write-Host ""
     }
-
+    
     if ($warnings.Count -gt 0) {
         Write-Host "⚠️  WARNINGS ($($warnings.Count)):" -ForegroundColor Yellow
         foreach ($warning in $warnings) {
@@ -205,8 +191,9 @@ if ($errors.Count -eq 0 -and $warnings.Count -eq 0) {
         }
         Write-Host ""
     }
-
+    
     Write-Host "Please fix errors before proceeding." -ForegroundColor Red
     Write-Host ""
     exit 1
 }
+

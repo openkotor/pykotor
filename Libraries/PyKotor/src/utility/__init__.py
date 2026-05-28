@@ -17,3 +17,4 @@ __all__ = [
     "get_font_paths_macos",
     "get_font_paths_windows",
 ]
+

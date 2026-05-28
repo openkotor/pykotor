@@ -1,40 +1,28 @@
 # Auto-label PRs based on changed files
-# Format for actions/labeler@v5
 libraries:
-  - changed-files:
-    - any-glob-to-any-file: 'Libraries/**/*'
-
+  - 'Libraries/**/*'
+  
 tools:
-  - changed-files:
-    - any-glob-to-any-file: 'Tools/**/*'
-
+  - 'Tools/**/*'
+  
 tests:
-  - changed-files:
-    - any-glob-to-any-file: 'tests/**/*'
-
+  - 'tests/**/*'
+  
 docs:
-  - changed-files:
-    - any-glob-to-any-file:
-      - 'docs/**/*'
-      - 'README.md'
-      - 'CONTRIBUTING.md'
-      - '*.md'
-      - 'wiki/**/*'
+  - 'docs/**/*'
+  - README.md
+  - CONTRIBUTING.md
+  - '*.md'
 
 ci:
-  - changed-files:
-    - any-glob-to-any-file:
-      - '.github/**/*'
-      - '.github/workflows/**/*'
+  - '.github/**/*'
+  - '.github/workflows/**/*'
 
 dependencies:
-  - changed-files:
-    - any-glob-to-any-file:
-      - 'pyproject.toml'
-      - 'requirements*.txt'
-      - '**/requirements.txt'
-      - '**/pyproject.toml'
+  - pyproject.toml
+  - 'requirements*.txt'
+  - '**/requirements.txt'
+  - '**/pyproject.toml'
 
 python:
-  - changed-files:
-    - any-glob-to-any-file: '**/*.py'
+  - '**/*.py'

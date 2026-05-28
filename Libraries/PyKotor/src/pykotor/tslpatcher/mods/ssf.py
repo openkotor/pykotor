@@ -5,7 +5,9 @@ Handles sound set entry modifications and memory token resolution.
 
 References:
 ----------
-
+    vendor/TSLPatcher/TSLPatcher.pl - Original Perl SSF modification logic
+    vendor/HoloPatcher.NET/src/TSLPatcher.Core/Mods/SSF/ - C# SSF modification implementation
+    vendor/Kotor.NET/Kotor.NET.Patcher/ - Incomplete C# patcher
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ from pykotor.resource.formats.ssf.io_ssf import SSFBinaryReader
 from pykotor.tslpatcher.mods.template import PatcherModifications
 
 if TYPE_CHECKING:
+
     from pykotor.common.misc import Game
     from pykotor.resource.formats.ssf import SSF, SSFSound
     from pykotor.resource.type import SOURCE_TYPES

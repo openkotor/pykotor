@@ -1,10 +1,9 @@
-"""KEY (bif index) format detection and read/write dispatch for KotOR installations."""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
+
 from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.key.io_key import KEYBinaryReader, KEYBinaryWriter
 from pykotor.resource.formats.key.key_data import KEY

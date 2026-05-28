@@ -9,9 +9,6 @@ on:
     - cron: '0 0 * * 0'  # Weekly on Sunday
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   compatibility:
     name: Test Compatibility
@@ -29,16 +26,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
 
@@ -69,3 +66,4 @@ jobs:
           print(f'✓ ResourceType enum has {len(ResourceType)} types')
           print(f'✓ Game enum has {len(Game)} games')
           "
+

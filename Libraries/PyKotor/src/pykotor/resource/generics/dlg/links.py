@@ -26,44 +26,68 @@ class DLGLink(Generic[T_co]):
     are stored in EntriesList (for entries) or RepliesList (for replies) within nodes,
     or in the StartingList at the root level.
 
-    On disk, links use GFF fields such as ``Active`` (script ResRef), ``Index`` (target),
-    and related KotOR 2 fields; it has been observed that the retail games use the same
-    layout in KotOR I and TSL. Binary symbol/address notes are migrated to
-    ``wiki/reverse_engineering_findings.md``.
+    References:
+    ----------
+        vendor/reone/include/reone/resource/parser/gff/dlg.h:28-49 (DLG_EntryReplyList_EntriesRepliesList struct)
+        vendor/reone/src/libs/resource/parser/gff/dlg.cpp:28-51 (EntriesRepliesList parsing)
+        vendor/KotOR.js/src/resource/DLGLink.ts (DLG link structure)
+        vendor/Kotor.NET/Kotor.NET/Resources/KotorDLG/DLG.cs (DLG link structure)
+        Note: Links are GFF structs within EntriesList or RepliesList arrays
 
     Attributes:
     ----------
         node: Target DLGNode this link connects to.
+            Reference: reone/dlg.cpp:95-96,102-103 (list iteration creates nodes)
             The destination node in the dialog graph.
-
+        
         list_index: "Index" field. Index of this link in its parent's link list.
+            Reference: reone/dlg.h:31 (Index field)
+            Reference: reone/dlg.cpp:32 (Index parsing)
             Used for GFF path resolution (e.g., "RepliesList\\0").
-
+        
         active1: "Active" field. Primary conditional script ResRef.
+            Reference: reone/dlg.h:29 (Active field)
+            Reference: reone/dlg.cpp:30 (Active parsing)
             Script that must return true for this link to be available.
-
+        
         active2: "Active2" field. Secondary conditional script (KotOR 2).
+            Reference: reone/dlg.h:30 (Active2 field)
+            Reference: reone/dlg.cpp:31 (Active2 parsing)
             Additional conditional script for KotOR 2.
-
+        
         logic: "Logic" field. Logic operator for Active1 and Active2 (KotOR 2).
+            Reference: reone/dlg.h:34 (Logic field)
+            Reference: reone/dlg.cpp:35 (Logic parsing)
             Values: 0=AND, 1=OR (determines how Active1 and Active2 are combined).
-
+        
         active1_not: "Not" field. Negate Active1 result (KotOR 2).
+            Reference: reone/dlg.h:35 (Not field)
+            Reference: reone/dlg.cpp:36 (Not parsing)
             If true, Active1 result is negated.
-
+        
         active2_not: "Not2" field. Negate Active2 result (KotOR 2).
+            Reference: reone/dlg.h:36 (Not2 field)
+            Reference: reone/dlg.cpp:37 (Not2 parsing)
             If true, Active2 result is negated.
-
+        
         active1_param1-6: "Param1-5" and "ParamStrA" fields. Parameters for Active1 script.
+            Reference: reone/dlg.h:37-48 (Param1-5, ParamStrA fields)
+            Reference: reone/dlg.cpp:38-49 (Param parsing)
             Parameters passed to the Active1 script.
-
+        
         active2_param1-6: "Param1b-5b" and "ParamStrB" fields. Parameters for Active2 script.
+            Reference: reone/dlg.h:38-48 (Param1b-5b, ParamStrB fields)
+            Reference: reone/dlg.cpp:38-49 (Param parsing)
             Parameters passed to the Active2 script.
-
+        
         is_child: "IsChild" field. Whether this is a child link (not in StartingList).
+            Reference: reone/dlg.h:32 (IsChild field)
+            Reference: reone/dlg.cpp:33 (IsChild parsing)
             Distinguishes links in nodes from links in StartingList.
-
+        
         comment: "LinkComment" field. Comment string for this link.
+            Reference: reone/dlg.h:33 (LinkComment field)
+            Reference: reone/dlg.cpp:34 (LinkComment parsing)
             Developer comment, not used by game engine.
     """
 
@@ -72,7 +96,7 @@ class DLGLink(Generic[T_co]):
         node: T_co,
         list_index: int = -1,
     ):
-        self._hash_cache: int = uuid.uuid4().int
+        self._hash_cache: int = hash(uuid.uuid4().hex)
         self.active1: ResRef = ResRef.from_blank()
         self.node: T_co | DLGNode = node
         self.list_index: int = list_index
@@ -124,7 +148,7 @@ class DLGLink(Generic[T_co]):
 
     def __eq__(self, other):
         if self.__class__ is not other.__class__:
-            return NotImplemented  # type: ignore[no-any-return]
+            return NotImplemented
         return self.__hash__() == other.__hash__()
 
     def __hash__(self) -> int:
@@ -132,9 +156,13 @@ class DLGLink(Generic[T_co]):
 
     def partial_path(self, *, is_starter: bool) -> str:
         if is_starter:
-            p1: Literal["EntriesList", "RepliesList", "StartingList"] = "StartingList"
+            p1 = "StartingList"
         else:
-            p1 = "EntriesList" if self.node.__class__.__name__ == "DLGEntry" else "RepliesList"
+            p1: Literal["EntriesList", "RepliesList", "StartingList"] = (
+                "EntriesList"
+                if self.node.__class__.__name__ == "DLGEntry"
+                else "RepliesList"
+            )
         return f"{p1}\\{self.list_index}"
 
     def to_dict(  # noqa: C901, PLR0912
@@ -144,9 +172,7 @@ class DLGLink(Generic[T_co]):
         if node_map is None:
             node_map = {}
 
-        # Use the stored hash cache directly to avoid platform-dependent truncation
-        # that can occur when calling the builtin ``hash`` on large integers.
-        link_key: int = self._hash_cache
+        link_key: int = hash(self)
         if link_key in node_map:
             return {"type": self.__class__.__name__, "ref": link_key}
 
@@ -195,20 +221,14 @@ class DLGLink(Generic[T_co]):
             node_map = {}
 
         if "ref" in link_dict:
-            ref_key: str = str(link_dict["ref"])
-            if not ref_key.startswith("link-"):
-                ref_key = f"link-{ref_key}"
-            return node_map[ref_key]
+            return node_map[link_dict["ref"]]
 
-        link_key_raw: str | int = link_dict["key"]
-        link_key: str = str(link_key_raw)
-        if not link_key.startswith("link-"):
-            link_key = f"link-{link_key}"
+        link_key: int = link_dict["key"]
         if link_key in node_map:
             return node_map[link_key]
 
         link: DLGLink[T_co] = object.__new__(cls)
-        link._hash_cache = int(link_key.split("link-", maxsplit=1)[-1])  # noqa: SLF001
+        link._hash_cache = int(link_key)  # noqa: SLF001
         link.list_index = link_dict.get("link_list_index", -1)
         for key, value in link_dict["data"].items():
             if value is None:
@@ -234,17 +254,11 @@ class DLGLink(Generic[T_co]):
                 setattr(link, key, None)
             else:
                 raise ValueError(f"Unsupported type: {py_type} for key: {key}")
+        node_map[link_key] = link
 
-        # Set the node BEFORE adding to node_map to ensure the link is fully constructed
         if link_dict["node"]:
-            from pykotor.resource.generics.dlg.nodes import (
-                DLGNode,  # pyright: ignore[reportMissingImports]  # noqa: PLC0415
-            )
+            from pykotor.resource.generics.dlg.nodes import DLGNode
 
             link.node = DLGNode.from_dict(link_dict["node"], node_map)  # pyright: ignore[reportAttributeAccessIssue]
-        else:
-            link.node = None
-
-        node_map[link_key] = link
 
         return link

@@ -9,7 +9,9 @@ setup(
     author="Your Name",
     author_email="your.email@example.com",
     packages=find_packages(where="Libraries", include=["PyKotor.*", "Utility.*"]),
-    package_dir={"": "Libraries"},
+    package_dir={
+        "": "Libraries"
+    },
     install_requires=[
         "Utility",  # Assuming 'Utility' is the name of the utility package
     ],

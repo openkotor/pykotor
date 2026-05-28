@@ -125,20 +125,19 @@ def _load_tlk_legacy(reader: BinaryReader, language: Language | None) -> TLK:
 
 class TLKBinaryReader(ResourceReader):
     """Reads TLK (Talk Table) files.
-
+    
     TLK files store localized strings used throughout the game for dialog, item descriptions,
     and other text content. Each entry can have text, sound references, and flags.
-
-    Observed retail behavior:
+    
+    References:
     ----------
-        Matches the binary ``TLK `` / ``V3.0`` layout described in ``tlk_data``.
-
-        Missing Features:
-        ----------------
-        - ResRef lowercasing for embedded sound ResRefs (not applied on read)
-
+        vendor/reone/src/libs/resource/format/tlkreader.cpp:26-65 (TLK reading)
+        vendor/reone/src/libs/resource/format/tlkwriter.cpp (TLK writing)
+    
+    Missing Features:
+    ----------------
+        - ResRef lowercasing (reone lowercases sound resrefs)
     """
-
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -152,12 +151,72 @@ class TLKBinaryReader(ResourceReader):
 
     @autoclose
     def load(self, *, auto_close: bool = True) -> TLK:  # noqa: FBT001, FBT002, ARG002
-        data = self._reader.read_all()
-        try:
-            self._tlk = _load_tlk_from_kaitai(data, self._language)
-        except kaitaistruct.KaitaiStructError:
-            self._tlk = _load_tlk_legacy(BinaryReader.from_bytes(data, 0), self._language)
+        self._tlk = TLK()
+        self._texts_offset = 0
+        self._text_headers = []
+
+        self._reader.seek(0)
+
+        self._load_file_header()
+        for stringref, _entry in self._tlk:
+            self._load_entry(stringref)
+        for stringref, _entry in self._tlk:
+            self._load_text(stringref)
+
         return self._tlk
+
+    def _load_file_header(self):
+        file_type = self._reader.read_string(4)
+        file_version = self._reader.read_string(4)
+        language_id = self._reader.read_uint32()
+        string_count = self._reader.read_uint32()
+        entries_offset = self._reader.read_uint32()
+
+        if file_type != "TLK ":
+            msg = "Invalid file type."
+            raise ValueError(msg)
+        if file_version != "V3.0":
+            msg = "Invalid file version."
+            raise ValueError(msg)
+
+        self._tlk.language = Language(language_id) if self._language is None else self._language
+        self._tlk.resize(string_count)
+
+        self._texts_offset = entries_offset
+
+    def _load_entry(
+        self,
+        stringref: int,
+    ):
+        # vendor/reone/src/libs/resource/format/tlkreader.cpp:40-60
+        entry: TLKEntry = self._tlk.entries[stringref]
+
+        entry_flags = self._reader.read_uint32()
+        # vendor/reone/src/libs/resource/format/tlkreader.cpp:45-46
+        # NOTE: reone lowercases sound_resref, PyKotor does not
+        sound_resref = self._reader.read_string(16)
+        _volume_variance = self._reader.read_uint32()  # unused
+        _pitch_variance = self._reader.read_uint32()  # unused
+        text_offset = self._reader.read_uint32()
+        text_length = self._reader.read_uint32()
+        entry.sound_length = self._reader.read_single()  # unused
+        # vendor/reone/src/libs/resource/format/tlkreader.cpp:50-52
+        entry.text_present = (entry_flags & 0x0001) != 0  # Check if the TEXT_PRESENT flag is set
+        entry.sound_present = (entry_flags & 0x0002) != 0  # Check if the SND_PRESENT flag is set
+        entry.soundlength_present = (entry_flags & 0x0004) != 0  # Check if the SND_LENGTH flag is set
+        entry.voiceover = ResRef(sound_resref)
+        self._text_headers.append(ArrayHead(text_offset, text_length))
+
+    def _load_text(
+        self,
+        stringref: int,
+    ):
+        text_header: ArrayHead = self._text_headers[stringref]
+
+        self._reader.seek(text_header.offset + self._texts_offset)
+        text: str = self._reader.read_string(text_header.length, encoding=self._tlk.language.get_encoding())
+
+        self._tlk.entries[stringref].text = text
 
 
 class TLKBinaryWriter(ResourceWriter):

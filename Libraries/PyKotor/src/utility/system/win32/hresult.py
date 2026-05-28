@@ -122,8 +122,8 @@ class HRESULT(ctypesHRESULT):
         else:
             raise TypeError(f"Invalid type for HRESULT: {type(value)}")
         instance = c_long(converted_value)
-        instance.__class__ = cls  # type: ignore[assignment]
-        return cast("cls", instance)  # type: ignore[valid-type]
+        instance.__class__ = cls
+        return cast("cls", instance)
 
     def __init__(self, value: HRESULT | ctypesHRESULT | int | c_long | None = None):
         if value is None:

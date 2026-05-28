@@ -7,6 +7,7 @@ import subprocess
 import sys
 import threading
 import time
+from contextlib import suppress
 
 from contextlib import suppress
 

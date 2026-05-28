@@ -5,13 +5,13 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  OS_RUNNERS_JSON: '["windows-latest", "ubuntu-latest", "macos-latest"]'
+  OS_RUNNERS_JSON: '["windows-latest", "ubuntu-20.04", "macos-12"]'
   PYTHON_VERSIONS_JSON: '["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]'
   ARCHITECTURES_JSON: '["x86", "x64"]'
   UPX_VERSION: "4.2.2"
   USE_UPX: true
-  BUILD_BOOTLOADERS: false # Build pyinstaller bootloaders. Pretty much unusable due to AV heuristics.
-
+  BUILD_BOOTLOADERS: false  # Build pyinstaller bootloaders. Pretty much unusable due to AV heuristics.
+  
 on:
   #  push:
   workflow_dispatch:
@@ -207,6 +207,21 @@ jobs:
             architecture: x86
           - os: macos-latest
             architecture: x86
+          # latest PyPy version as of 17/03/2024 is 3.10.
+          - python_pypy: 'pypy'
+            python-version: '3.11'
+          - python_pypy: 'pypy'
+            python-version: '3.12'
+          # PyQt5 doesn't seem to be compatible with PyPy
+          - python_pypy: "pypy"
+            qt_version: 'pyqt5'
+          - python_pypy: "pypy"
+            qt_version: 'pyside2'
+          - python_pypy: "pypy"
+            qt_version: 'pyqt6'
+          - python_pypy: "pypy"
+            python-version: '3.10'
+            os: 'windows-latest'
 
     steps:
       - uses: actions/checkout@v6
@@ -770,7 +785,7 @@ jobs:
               $shortOsName = "Linux"
             } elseif ($os -eq "macos-latest") {
               $shortOsName = "Mac"
-            } elseif ($os -eq "windows-latest") {
+            } elseif ($os -eq "windows-latest" -or $os -eq "windows-2022") {
               $shortOsName = "Win"
             }
 

@@ -1,5 +1,3 @@
-"""BIF/BZF format detection and read/write dispatch (BZF uses LZMA decompression)."""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -45,7 +43,7 @@ def detect_bif(
             raise ValueError(msg)
 
         if file_version != "V1  " and file_version != "V1.1":
-            msg = f"Unsupported BIF version: {file_version}"
+            msg: str = f"Unsupported BIF version: {file_version}"
             raise ValueError(msg)
 
     return ResourceType.BIF
@@ -83,7 +81,6 @@ def read_bif(
     if key_source:
         keys: dict[int, str] = _read_key_data(key_source)
         _merge_key_data(bif, keys)
-        bif.build_lookup_tables()
 
     return bif
 
@@ -96,13 +93,13 @@ def _read_key_data(
         bif_count: int = reader.read_uint32()
         key_count: int = reader.read_uint32()
         file_table_offset: int = reader.read_uint32()
-        key_table_offset: int = reader.read_uint32()
+        reader.skip(4)  # Skip key table offset
 
-        reader.seek(key_table_offset)
+        reader.seek(file_table_offset + bif_count * 12)  # Skip file table
 
         keys: dict[int, str] = {}
         for _ in range(key_count):
-            resref: str = reader.read_string(16).rstrip("\0").lower()
+            resref: str = reader.read_string(16)
             reader.skip(2)  # Skip restype_id
             res_id: int = reader.read_uint32()
             keys[res_id] = resref
@@ -114,11 +111,10 @@ def _merge_key_data(
     bif: BIF,
     keys: dict[int, str],
 ) -> None:
-    for resource in bif.resources:
-        resource_id = resource.resname_key_index
-        if resource_id not in keys:
+    for i, resource in enumerate(bif):
+        if i not in keys:
             continue
-        resource.resref = ResRef(keys[resource_id])
+        resource.resref = ResRef(keys[i])
 
 
 def write_bif(
@@ -140,7 +136,7 @@ def write_bif(
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
     """
-    if file_format == ResourceType.BIF:
+    if file_format is ResourceType.BIF:
         BIFBinaryWriter(bif, target).write()
     else:
         msg = "Unsupported format specified; use BIF."

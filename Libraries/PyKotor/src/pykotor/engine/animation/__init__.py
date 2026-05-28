@@ -5,7 +5,8 @@ by different rendering backends.
 
 References:
 ----------
-
+    vendor/reone/include/reone/scene/animation - Animation interfaces
+    vendor/KotOR.js/src/odyssey/controllers - Controller architecture
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from pykotor.engine.animation.base import (
 
 __all__ = [
     "IAnimationController",
-    "IAnimationManager",
     "IAnimationState",
+    "IAnimationManager",
 ]
+

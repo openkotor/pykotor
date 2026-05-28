@@ -7,6 +7,16 @@ from typing import TYPE_CHECKING
 # Try to import defusedxml, fallback to ET if not available
 from xml.etree import ElementTree as ET
 
+try:  # sourcery skip: remove-redundant-exception, simplify-single-exception-tuple
+    from defusedxml.ElementTree import fromstring
+except (ImportError, ModuleNotFoundError):
+    from xml.etree import ElementTree as ET
+
+    fromstring = ET.fromstring
+
+# Try to import defusedxml, fallback to ET if not available
+from xml.etree import ElementTree as ET
+
 import kaitaistruct
 
 try:
@@ -28,16 +38,15 @@ if TYPE_CHECKING:
 
 class LIPXMLReader(ResourceReader):
     """Reads LIP files from XML format.
-
+    
     XML is a human-readable format for easier editing of lip-sync animation data.
-
+    
     References:
     ----------
-        Binary layout reference: ``lip_data``.
-
+        vendor/xoreos-tools/src/xml/lipdumper.cpp (LIP to XML conversion)
+        vendor/xoreos-tools/src/xml/lipcreator.cpp (XML to LIP conversion)
         Note: XML format structure may vary between tools
     """
-
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -51,12 +60,7 @@ class LIPXMLReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> LIP:  # noqa: FBT001, FBT002, ARG002
         self._lip = LIP()
 
-        raw = self._reader.read_all()
-        try:
-            LipXml.from_bytes(raw)
-        except kaitaistruct.KaitaiStructError:
-            pass
-        data: str = raw.decode()
+        data: str = self._reader.read_bytes(self._reader.size()).decode()
         xml_root: ET.Element = fromstring(data)  # noqa: S314
 
         if xml_root.tag != "lip":

@@ -10,8 +10,10 @@ from typing import Any
 class DLGAnimation:
     """Represents a unit of animation executed during a node."""
 
-    def __init__(self):
-        self._hash_cache: int = uuid.uuid4().int
+    def __init__(
+        self,
+    ):
+        self._hash_cache: int = hash(uuid.uuid4().hex)
         self.animation_id: int = 6
         self.participant: str = ""
 
@@ -20,18 +22,14 @@ class DLGAnimation:
 
     def __eq__(self, other):
         if self.__class__ is not other.__class__:
-            return NotImplemented  # type: ignore[no-any-return]
+            return NotImplemented
         return self.__hash__() == other.__hash__()
 
     def __hash__(self):
         return self._hash_cache
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "animation_id": self.animation_id,
-            "participant": self.participant,
-            "_hash_cache": self._hash_cache,
-        }
+        return {"animation_id": self.animation_id, "participant": self.participant, "_hash_cache": self._hash_cache}
 
     @classmethod
     def from_dict(cls, data: dict) -> DLGAnimation:

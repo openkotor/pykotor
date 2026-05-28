@@ -9,8 +9,6 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
-from pykotor.resource.formats._base import ComparableMixin
-
 if TYPE_CHECKING:
     from typing_extensions import Self
 
@@ -58,7 +56,7 @@ class NCSTypeCode(IntEnum):
     INVALID = 0xFF  # -1 in signed byte
 
 
-class NCSType(ComparableMixin):
+class NCSType:
     """Represents a type in the NCS type system.
 
     Provides type information, size calculations, and type conversion utilities.
@@ -268,11 +266,7 @@ class NCSType(ComparableMixin):
         """
         if self._type_code in {NCSTypeCode.INTINT, NCSTypeCode.INTFLOAT}:
             return NCSTypeCode.INTEGER
-        if self._type_code in {
-            NCSTypeCode.FLOATFLOAT,
-            NCSTypeCode.FLOATINT,
-            NCSTypeCode.FLOATVECTOR,
-        }:
+        if self._type_code in {NCSTypeCode.FLOATFLOAT, NCSTypeCode.FLOATINT, NCSTypeCode.FLOATVECTOR}:
             return NCSTypeCode.FLOAT
         if self._type_code in {NCSTypeCode.STRINGSTRING}:
             return NCSTypeCode.STRING
@@ -291,11 +285,7 @@ class NCSType(ComparableMixin):
         """
         if self._type_code in {NCSTypeCode.INTINT, NCSTypeCode.INTFLOAT}:
             return NCSTypeCode.INTEGER
-        if self._type_code in {
-            NCSTypeCode.FLOATFLOAT,
-            NCSTypeCode.FLOATINT,
-            NCSTypeCode.FLOATVECTOR,
-        }:
+        if self._type_code in {NCSTypeCode.FLOATFLOAT, NCSTypeCode.FLOATINT, NCSTypeCode.FLOATVECTOR}:
             return NCSTypeCode.FLOAT
         if self._type_code in {NCSTypeCode.STRINGSTRING}:
             return NCSTypeCode.STRING
@@ -324,11 +314,7 @@ class NCSType(ComparableMixin):
         """
         if self._type_code in {NCSTypeCode.INTINT, NCSTypeCode.FLOATINT}:
             return NCSTypeCode.INTEGER
-        if self._type_code in {
-            NCSTypeCode.FLOATFLOAT,
-            NCSTypeCode.INTFLOAT,
-            NCSTypeCode.VECTORFLOAT,
-        }:
+        if self._type_code in {NCSTypeCode.FLOATFLOAT, NCSTypeCode.INTFLOAT, NCSTypeCode.VECTORFLOAT}:
             return NCSTypeCode.FLOAT
         if self._type_code in {NCSTypeCode.STRINGSTRING}:
             return NCSTypeCode.STRING
@@ -356,20 +342,12 @@ class NCSType(ComparableMixin):
             bool: True if compound type
         """
         return self._type_code in {
-            NCSTypeCode.INTINT,
-            NCSTypeCode.FLOATFLOAT,
-            NCSTypeCode.OBJECTOBJECT,
-            NCSTypeCode.STRINGSTRING,
-            NCSTypeCode.STRUCTSTRUCT,
-            NCSTypeCode.INTFLOAT,
-            NCSTypeCode.FLOATINT,
-            NCSTypeCode.EFFECTEFFECT,
-            NCSTypeCode.EVENTEVENT,
-            NCSTypeCode.LOCLOC,
-            NCSTypeCode.TALTAL,
-            NCSTypeCode.VECTORVECTOR,
-            NCSTypeCode.VECTORFLOAT,
-            NCSTypeCode.FLOATVECTOR,
+            NCSTypeCode.INTINT, NCSTypeCode.FLOATFLOAT, NCSTypeCode.OBJECTOBJECT,
+            NCSTypeCode.STRINGSTRING, NCSTypeCode.STRUCTSTRUCT,
+            NCSTypeCode.INTFLOAT, NCSTypeCode.FLOATINT,
+            NCSTypeCode.EFFECTEFFECT, NCSTypeCode.EVENTEVENT,
+            NCSTypeCode.LOCLOC, NCSTypeCode.TALTAL,
+            NCSTypeCode.VECTORVECTOR, NCSTypeCode.VECTORFLOAT, NCSTypeCode.FLOATVECTOR,
         }
 
     def is_vector(self) -> bool:
@@ -473,7 +451,7 @@ class NCSType(ComparableMixin):
             return self._type_code == other._type_code
         if isinstance(other, (int, NCSTypeCode)):
             return self._type_code == other
-        return NotImplemented  # type: ignore[no-any-return]
+        return NotImplemented
 
     def __hash__(self) -> int:
         """Hash for use in dictionaries/sets."""

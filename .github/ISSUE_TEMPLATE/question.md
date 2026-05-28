@@ -7,30 +7,30 @@ assignees: ''
 ---
 
 ## Question
-
 What would you like to know?
 
 ## Context
-
 Provide any relevant context about your question.
 
 ## What I've Tried
-
 Describe what you've already tried or researched.
 
 ## Package Information
-
 Which package(s) is your question about?
-
 - [ ] PyKotor (core library)
-- [ ] One or more tools under `Tools/`
+- [ ] PyKotorGL
+- [ ] PyKotorFont
+- [ ] HolocronToolset
+- [ ] HoloPatcher
+- [ ] BatchPatcher
+- [ ] KotorDiff
+- [ ] GuiConverter
 
 ## Environment
-
 - **OS**: [e.g., Windows 11, macOS 14.0, Ubuntu 22.04]
 - **Python Version**: [e.g., 3.11.5]
-- **PyKotor Version**: [e.g., 2.0.2]
+- **PyKotor Version**: [e.g., 1.8.0]
 
 ## Additional Context
-
 Add any other context, code examples, or screenshots that might help answer your question.
+

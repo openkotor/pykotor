@@ -7,19 +7,20 @@ Usage:
 ------
     # Reading (automatic deobfuscation):
     wav = read_wav("path/to/file.wav")
-
+    
     # Writing (with obfuscation for game compatibility):
     write_wav(wav, "output.wav", ResourceType.WAV)
-
+    
     # Writing (clean for media players):
-    write_wav(wav, "output.wav", ToolsetFormat.WAV_DEOB)
-
+    write_wav(wav, "output.wav", ResourceType.WAV_DEOB)
+    
     # Get playable bytes (for Qt media player, etc.):
     playable_bytes = get_playable_bytes(wav)
-
+    
 References:
 ----------
-        Behavior notes: ``wav_data`` and ``io_wav``.
+    vendor/KotOR.js/src/audio/AudioFile.ts:164-205 - getPlayableByteStream()
+    vendor/reone/src/libs/audio/format/wavreader.cpp - Format detection
 """
 
 from __future__ import annotations
@@ -29,7 +30,7 @@ from typing import TYPE_CHECKING
 from pykotor.resource.formats.wav.io_wav import WAVBinaryReader, WAVBinaryWriter
 from pykotor.resource.formats.wav.io_wav_standard import WAVStandardWriter
 from pykotor.resource.formats.wav.wav_data import AudioFormat
-from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, ToolsetFormat
+from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.wav.wav_data import WAV
@@ -71,14 +72,14 @@ def read_wav(
 def write_wav(
     wav: WAV,
     target: TARGET_TYPES,
-    file_format: RESOURCE_FORMAT = ResourceType.WAV,
+    file_format: ResourceType = ResourceType.WAV,
 ):
     """Writes the WAV data to the target location.
 
-    If file_format == ResourceType.WAV, the data will be obfuscated based on
+    If file_format is ResourceType.WAV, the data will be obfuscated based on
     the WAV's type (SFX adds header, VO is unchanged) for game compatibility.
-
-    If file_format == ToolsetFormat.WAV_DEOB, writes clean RIFF/WAVE format
+    
+    If file_format is ResourceType.WAV_DEOB, writes clean RIFF/WAVE format
     playable by standard media players.
 
     Args:
@@ -90,7 +91,7 @@ def write_wav(
         IsADirectoryError: If the specified path is a directory.
         PermissionError: If the file could not be written.
     """
-    if file_format == ResourceType.WAV:
+    if file_format is ResourceType.WAV:
         WAVBinaryWriter(wav, target).write()
     else:
         WAVStandardWriter(wav, target).write()
@@ -98,12 +99,12 @@ def write_wav(
 
 def bytes_wav(
     wav: WAV,
-    file_format: RESOURCE_FORMAT = ResourceType.WAV,
+    file_format: ResourceType = ResourceType.WAV,
 ) -> bytes:
     """Returns the WAV data as a bytes object.
 
-    If file_format == ResourceType.WAV, returns obfuscated format for game use.
-    If file_format == ToolsetFormat.WAV_DEOB, returns clean playable format.
+    If file_format is ResourceType.WAV, returns obfuscated format for game use.
+    If file_format is ResourceType.WAV_DEOB, returns clean playable format.
 
     Args:
         wav: The target WAV object.
@@ -119,36 +120,38 @@ def bytes_wav(
 
 def get_playable_bytes(wav: WAV) -> bytes:
     """Returns playable audio bytes for media player use.
-
+    
     This is the preferred method for getting audio data that can be played
     by Qt's QMediaPlayer or other standard audio players.
-
+    
     For MP3 format: Returns raw MP3 bytes
     For WAVE format: Returns clean RIFF/WAVE structure
-
+    
     Args:
         wav: The WAV object to convert
-
+        
     Returns:
         Audio bytes playable by standard media players
-
+        
     References:
+        vendor/KotOR.js/src/audio/AudioFile.ts:164-205 - getPlayableByteStream()
     """
-    return bytes_wav(wav, ToolsetFormat.WAV_DEOB)
+    return bytes_wav(wav, ResourceType.WAV_DEOB)
 
 
 def detect_audio_type(wav: WAV) -> str:
     """Returns the file extension appropriate for this audio's actual format.
-
+    
     Useful for saving to temp files with correct extension.
-
+    
     Args:
         wav: The WAV object to check
-
+        
     Returns:
         "mp3" for MP3 format, "wav" for WAVE format
-
+        
     References:
+        vendor/KotOR.js/src/audio/AudioFile.ts:348-354 - getExportExtension()
     """
     if wav.audio_format == AudioFormat.MP3:
         return "mp3"

@@ -13,20 +13,33 @@ from pathlib import PurePath
 from typing import TYPE_CHECKING, Union
 
 from pykotor.extract.file import ResourceIdentifier
-from pykotor.resource.formats.bwm import BWM, bytes_bwm, read_bwm
-from pykotor.resource.formats.erf import ERF, bytes_erf, read_erf
-from pykotor.resource.formats.gff import GFF, GFFContent, bytes_gff, read_gff
-from pykotor.resource.formats.lip import LIP, bytes_lip, read_lip
-from pykotor.resource.formats.ltr import LTR, bytes_ltr, read_ltr
-from pykotor.resource.formats.lyt import LYT, bytes_lyt, read_lyt
+from pykotor.resource.formats.bwm import bytes_bwm, read_bwm
+from pykotor.resource.formats.bwm.bwm_data import BWM
+from pykotor.resource.formats.erf import bytes_erf, read_erf
+from pykotor.resource.formats.erf.erf_data import ERF
+from pykotor.resource.formats.gff import GFFContent, bytes_gff, read_gff
+from pykotor.resource.formats.gff.gff_data import GFF
+from pykotor.resource.formats.lip import bytes_lip, read_lip
+from pykotor.resource.formats.lip.lip_data import LIP
+from pykotor.resource.formats.ltr import bytes_ltr, read_ltr
+from pykotor.resource.formats.ltr.ltr_data import LTR
+from pykotor.resource.formats.lyt import bytes_lyt, read_lyt
+from pykotor.resource.formats.lyt.lyt_data import LYT
 from pykotor.resource.formats.mdl import MDL, bytes_mdl, read_mdl
-from pykotor.resource.formats.ncs import NCS, bytes_ncs, read_ncs
-from pykotor.resource.formats.rim import RIM, bytes_rim, read_rim
-from pykotor.resource.formats.ssf import SSF, bytes_ssf, read_ssf
-from pykotor.resource.formats.tlk import TLK, bytes_tlk, read_tlk
-from pykotor.resource.formats.tpc import TPC, bytes_tpc, read_tpc
-from pykotor.resource.formats.twoda import TwoDA, bytes_2da, read_2da
-from pykotor.resource.formats.vis import VIS, bytes_vis, read_vis
+from pykotor.resource.formats.ncs import bytes_ncs, read_ncs
+from pykotor.resource.formats.ncs.ncs_data import NCS
+from pykotor.resource.formats.rim import bytes_rim, read_rim
+from pykotor.resource.formats.rim.rim_data import RIM
+from pykotor.resource.formats.ssf import bytes_ssf, read_ssf
+from pykotor.resource.formats.ssf.ssf_data import SSF
+from pykotor.resource.formats.tlk import bytes_tlk, read_tlk
+from pykotor.resource.formats.tlk.tlk_data import TLK
+from pykotor.resource.formats.tpc import bytes_tpc, read_tpc
+from pykotor.resource.formats.tpc.tpc_data import TPC
+from pykotor.resource.formats.twoda import bytes_2da, read_2da
+from pykotor.resource.formats.twoda.twoda_data import TwoDA
+from pykotor.resource.formats.vis import bytes_vis, read_vis
+from pykotor.resource.formats.vis.vis_data import VIS
 from pykotor.resource.generics.are import ARE, dismantle_are
 from pykotor.resource.generics.dlg import DLG, dismantle_dlg
 from pykotor.resource.generics.fac import FAC, dismantle_fac
@@ -48,127 +61,6 @@ from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES
-
-
-def _ncs_to_bytes(ncs: NCS) -> bytes:
-    return bytes(bytes_ncs(ncs))
-
-
-def _read_ncs_as_bytes(source: SOURCE_TYPES) -> bytes:
-    return _ncs_to_bytes(read_ncs(source))
-
-
-def _try_read_with(readers: tuple[callable, ...], source: SOURCE_TYPES) -> bytes | None:
-    for reader in readers:
-        with suppress(OSError, ValueError):
-            return reader(source)
-    return None
-
-
-_UNKNOWN_RESOURCE_READERS: tuple[callable, ...] = (
-    lambda source: bytes_tlk(read_tlk(source)),
-    lambda source: bytes_ssf(read_ssf(source)),
-    lambda source: bytes_2da(read_2da(source)),
-    lambda source: bytes_lip(read_lip(source)),
-    lambda source: bytes_tpc(read_tpc(source)),
-    lambda source: bytes_erf(read_erf(source)),
-    lambda source: bytes_rim(read_rim(source)),
-    _read_ncs_as_bytes,
-    lambda source: bytes_gff(read_gff(source)),
-    lambda source: bytes_mdl(read_mdl(source)),
-    lambda source: bytes_vis(read_vis(source)),
-    lambda source: bytes_lyt(read_lyt(source)),
-    lambda source: bytes_ltr(read_ltr(source)),
-    lambda source: bytes_bwm(read_bwm(source)),
-)
-
-
-_GENERIC_DISMANTLERS: tuple[tuple[type, callable], ...] = (
-    (ARE, dismantle_are),
-    (DLG, dismantle_dlg),
-    (FAC, dismantle_fac),
-    (GIT, dismantle_git),
-    (GUI, dismantle_gui),
-    (IFO, dismantle_ifo),
-    (JRL, dismantle_jrl),
-    (PTH, dismantle_pth),
-    (UTC, dismantle_utc),
-    (UTD, dismantle_utd),
-    (UTE, dismantle_ute),
-    (UTI, dismantle_uti),
-    (UTM, dismantle_utm),
-    (UTP, dismantle_utp),
-    (UTS, dismantle_uts),
-    (UTT, dismantle_utt),
-    (UTW, dismantle_utw),
-)
-
-
-_RESOURCE_SERIALIZERS: tuple[tuple[type, callable], ...] = (
-    (BWM, bytes_bwm),
-    (GFF, bytes_gff),
-    (ERF, bytes_erf),
-    (LIP, bytes_lip),
-    (LTR, bytes_ltr),
-    (LYT, bytes_lyt),
-    (MDL, bytes_mdl),
-    (NCS, _ncs_to_bytes),
-    (RIM, bytes_rim),
-    (SSF, bytes_ssf),
-    (TLK, bytes_tlk),
-    (TPC, bytes_tpc),
-    (TwoDA, bytes_2da),
-    (VIS, bytes_vis),
-)
-
-
-def _read_ext_ssf(source: SOURCE_TYPES) -> bytes:
-    return bytes_ssf(read_ssf(source))
-
-
-def _read_ext_2da(source: SOURCE_TYPES) -> bytes:
-    return bytes_2da(read_2da(source))
-
-
-def _read_ext_lip(source: SOURCE_TYPES) -> bytes:
-    return bytes_lip(read_lip(source))
-
-
-def _read_ext_rim(source: SOURCE_TYPES) -> bytes:
-    return bytes_rim(read_rim(source))
-
-
-def _read_ext_ncs(source: SOURCE_TYPES) -> bytes:
-    return bytes(bytes_ncs(read_ncs(source)))
-
-
-def _read_ext_mdl(source: SOURCE_TYPES) -> bytes:
-    return bytes_mdl(read_mdl(source))
-
-
-def _read_ext_vis(source: SOURCE_TYPES) -> bytes:
-    return bytes_vis(read_vis(source))
-
-
-def _read_ext_lyt(source: SOURCE_TYPES) -> bytes:
-    return bytes_lyt(read_lyt(source))
-
-
-def _read_ext_ltr(source: SOURCE_TYPES) -> bytes:
-    return bytes_ltr(read_ltr(source))
-
-
-_READ_RESOURCE_BY_EXT: dict[str, callable] = {
-    "ssf": _read_ext_ssf,
-    "2da": _read_ext_2da,
-    "lip": _read_ext_lip,
-    "rim": _read_ext_rim,
-    "ncs": _read_ext_ncs,
-    "mdl": _read_ext_mdl,
-    "vis": _read_ext_vis,
-    "lyt": _read_ext_lyt,
-    "ltr": _read_ext_ltr,
-}
 
 
 def read_resource(  # noqa: C901, PLR0911, PLR0912
@@ -238,16 +130,39 @@ def read_resource(  # noqa: C901, PLR0911, PLR0912
 def read_unknown_resource(  # noqa: PLR0911
     source: SOURCE_TYPES,
 ) -> bytes:
-    read_result = _try_read_with(_UNKNOWN_RESOURCE_READERS, source)
-    if read_result is not None:
-        return read_result
+    with suppress(OSError, ValueError):
+        return bytes_tlk(read_tlk(source))
+    with suppress(OSError, ValueError):
+        return bytes_ssf(read_ssf(source))
+    with suppress(OSError, ValueError):
+        return bytes_2da(read_2da(source))
+    with suppress(OSError, ValueError):
+        return bytes_lip(read_lip(source))
+    with suppress(OSError, ValueError):
+        return bytes_tpc(read_tpc(source))
+    with suppress(OSError, ValueError):
+        return bytes_erf(read_erf(source))
+    with suppress(OSError, ValueError):
+        return bytes_rim(read_rim(source))
+    with suppress(OSError, ValueError):
+        return bytes_ncs(read_ncs(source))
+    with suppress(OSError, ValueError):
+        return bytes_gff(read_gff(source))
+    with suppress(OSError, ValueError):
+        return bytes_mdl(read_mdl(source))
+    with suppress(OSError, ValueError):
+        return bytes_vis(read_vis(source))
+    with suppress(OSError, ValueError):
+        return bytes_lyt(read_lyt(source))
+    with suppress(OSError, ValueError):
+        return bytes_ltr(read_ltr(source))
+    with suppress(OSError, ValueError):
+        return bytes_bwm(read_bwm(source))
     msg = "Source resource data not recognized as any kotor file formats."
     raise ValueError(msg)
 
 
-GFF_GENERICS = Union[
-    ARE, DLG, FAC, GIT, GUI, IFO, JRL, PTH, UTC, UTD, UTE, UTI, UTM, UTP, UTS, UTT, UTW
-]
+GFF_GENERICS = Union[ARE, DLG, GIT, IFO, JRL, PTH, UTC, UTD, UTE, UTM, UTP, UTS, UTW]
 
 
 def dismantle_generic(  # noqa: PLR0911, C901, PLR0912, ANN201
@@ -274,21 +189,7 @@ def dismantle_generic(  # noqa: PLR0911, C901, PLR0912, ANN201
 
 
 def resource_to_bytes(  # noqa: PLR0912, C901, PLR0911
-    resource: BWM
-    | ERF
-    | GFF
-    | LIP
-    | LTR
-    | LYT
-    | MDL
-    | NCS
-    | RIM
-    | SSF
-    | TLK
-    | TPC
-    | TwoDA
-    | VIS
-    | GFF_GENERICS,
+    resource: BWM | ERF | GFF | LIP | LTR | LYT | MDL | NCS | RIM | SSF | TLK | TPC | TwoDA | VIS | GFF_GENERICS,
 ) -> bytes:
     if isinstance(resource, GFF_GENERICS):
         return bytes_gff(dismantle_generic(resource))

@@ -9,7 +9,7 @@ Your release workflow has been completely automated. You now only need to **crea
 ### Production Release
 
 ```bash
-# Go to GitHub -> Create Release -> Tag: v3.1.4-toolset -> Check "pre-release" -> Publish
+# Go to GitHub → Create Release → Tag: v3.1.4-toolset → Check "pre-release" → Publish
 ```
 
 That's it! The workflow automatically:
@@ -38,6 +38,7 @@ That's it! The workflow automatically:
 - ✅ `.github/workflows/release_toolset.yml`
 - ✅ `.github/workflows/release_kotordiff.yml`
 - ✅ `.github/workflows/release_holopatcher.yml`
+- ✅ `.github/workflows/release_guiconverter.yml`
 - ✅ `.github/workflows/release_translator.yml`
 
 ### New Test Infrastructure
@@ -110,12 +111,12 @@ Your requirement was met perfectly:
 
 ### Old Process (Manual)
 
-```text
-1. Edit config.py -> currentVersion
+```
+1. Edit config.py → currentVersion
 2. Create release branch
 3. Create pre-release on GitHub
 4. Wait for builds
-5. Edit config.py -> toolsetLatestVersion
+5. Edit config.py → toolsetLatestVersion
 6. Manually convert to full release
 ```
 
@@ -123,7 +124,7 @@ Your requirement was met perfectly:
 
 ### New Process (Automated)
 
-```text
+```
 1. Create pre-release on GitHub
 ```
 
@@ -145,7 +146,7 @@ git tag test-v3.1.99-toolset
 git push origin test-v3.1.99-toolset
 gh release create test-v3.1.99-toolset --prerelease --title "TEST" --notes "Testing new workflow"
 
-# Watch: GitHub -> Actions -> "Toolset Release (TEST)"
+# Watch: GitHub → Actions → "Toolset Release (TEST)"
 # Wait: ~20 minutes
 # Verify: test-release branch updated, master unchanged
 # Cleanup: gh release delete test-v3.1.99-toolset --yes && git push origin --delete test-v3.1.99-toolset
@@ -227,7 +228,7 @@ git push origin --delete test-release
 # Via CLI
 gh run cancel <run-id>
 
-# Via Web: Actions tab -> Click workflow run -> Cancel
+# Via Web: Actions tab → Click workflow run → Cancel
 ```
 
 ### Delete Bad Release

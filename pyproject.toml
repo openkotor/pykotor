@@ -1,426 +1,72 @@
-[build-system]                                                                                                                              
-build-backend = "setuptools.build_meta"
+[build-system]
 requires = [
-  "setuptools>=67.8.0",
-  "wheel"
+    "setuptools>=42,<70",
+    "wheel",
 ]
+build-backend = "setuptools.build_meta"
 
-[dependency-groups]
-# Mirrors Libraries/PyKotor/pyproject.toml [tool.poetry.group.dev.dependencies]
-# plus workspace-level GUI/test tooling so `uv sync` at the root installs
-# every dev dependency previously only available from the PyKotor sub-project.
-dev = [
-    "pytest-qt>=4.4.0,<4.5.0; python_version < \"3.9\"",
-    "pytest-qt>=4.5.0; python_version >= \"3.9\"",
-    "pytest-timeout>=2.4.0",
-    "astroid>=3.2.0,<3.5.0; python_version<\"3.9\"",
-    "astroid>=3.2.0; python_version>=\"3.9\"",
-    "autoflake>=2.3.1",
-    "mypy-extensions>=1.1.0; python_version>=\"3.8\"",
-    "mypy>=1.0.0,<1.10.0; python_version<\"3.9\"",
-    "mypy>=1.19.1; python_version>=\"3.9\"",
-    "pyflakes>=2.0.0,<3.4.0; python_version<\"3.9\"",
-    "pylint>=2.0.0,<3.3.9; python_version<\"3.9\"",
-    "pytest-cov>=4.0.0",
-    "pytest-html>=3.0.0,<4.0.0; python_version<\"3.9\"",
-    "pytest-html>=4.2.0; python_version>=\"3.9\"",
-    "pytest-json-report>=1.5.0",
-    "pytest-metadata>=2.0.0,<3.0.0; python_version<\"3.9\"",
-    "pytest-metadata>=3.1.1; python_version>=\"3.9\"",
-    "pytest-xdist>=2.0.0,<3.8.0; python_version<\"3.9\"",
-    "pytest-xdist>=3.8.0; python_version>=\"3.9\"",
-    "pytest-asyncio>=0.23.0,<0.25.0; python_version<\"3.9\"",
-    "pytest-asyncio>=0.25.2; python_version>=\"3.9\"",
-    "pytest>=7.0.0; python_version>=\"3.9\"",
-    "pytest>=7.0.0,<8.0.0; python_version<\"3.9\"",
-    "python-dateutil>=2.9.0.post0",
-    "python-dotenv; python_version<\"3.9\"",
-    "python-dotenv>=1.2.1; python_version>=\"3.9\"",
-    "python-multipart>=0.0.9,<0.0.21; python_version < \"3.10\"",
-    "python-multipart>=0.0.22; python_version >= \"3.10\"",
-    "ruff>=0.5.3,<0.6.0; python_version < \"3.9\"",
-    "ruff>=0.5.3; python_version >= \"3.9\"",
-    "snakeviz; python_version<\"3.9\"",
-    "snakeviz>=2.2.2; python_version>=\"3.9\"",
-    "tomli-w>=1.2.0; python_version>\"3.11\"",
-    "tomli>=2.4.0; python_version>\"3.11\"",
-    "tomli>=2.4.0; python_version<\"3.11\"",
-    "types-cffi>=1.17.0.20250915; python_version>=\"3.9\"",
-    "types-colorama>=0.4.15.20250801; python_version>=\"3.9\"",
-    "types-defusedxml>=0.7.0.20250822; python_version>=\"3.9\"",
-    "types-pillow>=10.2.0.20240822; python_version>=\"3.9\"",
-    "types-psutil>=7.2.2.20260130; python_version>=\"3.9\"",
-    "types-pywin32>=38; python_version>=\"3.9\" and sys_platform == \"win32\"",
-    "types-pyyaml>=6.0.12.20250915; python_version>=\"3.9\"",
-    "types-requests>=2.32.4.20260107; python_version>=\"3.9\"",
-    "types-send2trash>=2.1.0.20260117; python_version>=\"3.9\"",
-    "types-setuptools>=80.10.0.20260124; python_version>=\"3.9\"",
-    "typing-extensions>=4.5.0,<4.9.0; python_version<\"3.9\"",
-    "typing-extensions>=4.15.0; python_version>=\"3.9\"",
-    "typing-inspection>=0.4.2; python_version>=\"3.9\"",
-]
-
-# Pin PyQt5-Qt5 to a version that has Windows wheels (5.15.11+ dropped win). Required for Python 3.8.
-[tool.uv]
-override-dependencies = [
-  "pyqt5-qt5>=5.15.2,<5.15.11",
+[tool.setuptools]
+packages = [
+    "Tools",
+    "Libraries",
 ]
 
 [project]
-name = "pykotor-workspace"
-authors = [{ name = "Nick Hugi" }, { name = "th3w1zard1" }]
-maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
-dependencies = [
-  "pykotor[render]>=2.3.12",
-  "holocrontoolset>=4.0.0b31",
-  "holopatcher>=2.0.0a3",
-  "holopazaak>=2.0.0",
-  "kotordiff>=1.0.1",
-  "numpy>=1.24.4",
-  "matplotlib>=3.7.5,<3.9.4; python_version < \"3.9\"",
-  "matplotlib>=3.9.4; python_version >= \"3.9\"",
-]
-description = "PyKotor workspace - meta-package for PyKotor ecosystem"
-keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", "toolset", "tslpatcher"]
+name="PyKotor"
+version="1.7"
+description="Read, modify and write files used by KotOR's game engine."
+authors = [{name = "NickHugi"}]
+maintainers = [{name = "th3w1zard1", email = "halomastar@gmail.com"}]
+readme = {file = "README.md", content-type = "text/markdown"}
 license = {text = "LGPL-3.0-or-later License"}
-readme = {content-type = "text/markdown", file = "README.md"}
-requires-python = ">=3.8"
-version = "2.3.12"
+keywords = ["kotor", "library", "holocron", "toolset", "pykotor", "editor", "holopatcher", "tslpatcher"]
+requires-python = ">= 3.8"
+dependencies = []
 
-# Re-export every optional-dependency set from Libraries/PyKotor/pyproject.toml so
-# that anything previously installable as `pykotor[<extra>]` is also reachable via
-# `pykotor-workspace[<extra>]` from this root project. Each entry forwards to the
-# corresponding pykotor extra; the actual dependency specifiers live in the
-# PyKotor sub-project so we never drift from its pinning logic.
 [project.optional-dependencies]
-all = ["pykotor[encodings,exp,extra,font,gl,updater,render]>=2.3.12"]
-encodings = ["pykotor[encodings]>=2.3.12"]
-exp = ["pykotor[exp]>=2.3.12"]
-extra = ["pykotor[extra]>=2.3.12"]
-font = ["pykotor[font]>=2.3.12"]
-gl = ["pykotor[gl]>=2.3.12"]
-gl_exp = ["pykotor[gl_exp]>=2.3.12"]
-updater = ["pykotor[updater]>=2.3.12"]
-render = ["pykotor[render]>=2.3.12"]
-# Surface pykotor's own dev extra too, for parity with the sub-project.
-dev = ["pykotor[dev]>=2.3.12"]
-
-[tool.setuptools]
-packages = []
-
-[project.scripts]
-batch_patcher = "batchpatcher.__main__:main"
-batch-patcher = "batchpatcher.__main__:main"
-batchpatcher = "batchpatcher.__main__:main"
-holopazaak = "holopazaak.__main__:main"
-holo_pazaak = "holopazaak.__main__:main"
-holo-pazaak = "holopazaak.__main__:main"
-holopatcher = "holopatcher.__main__:main"
-holo_patcher = "holopatcher.__main__:main"
-holo-patcher = "holopatcher.__main__:main"
-kotordiff = "kotordiff.__main__:main"
-kotor_diff = "kotordiff.__main__:main"
-kotor-diff = "kotordiff.__main__:main"
-kotor_mcp = "kotormcp.__main__:main"
-kotor-mcp = "kotormcp.__main__:main"
-kotormcp = "kotormcp.__main__:main"
-holocrontoolset = "toolset.__main__:main"
-holocron_toolset = "toolset.__main__:main"
-holocron-toolset = "toolset.__main__:main"
-toolset = "toolset.__main__:main"
-kotor-editor = "toolset.gui.editors.standalone:main"
-kotor-module-designer = "toolset.gui.editors.standalone:launch_module_designer"
-module-designer = "toolset.gui.editors.standalone:launch_module_designer"
-module_designer = "toolset.gui.editors.standalone:launch_module_designer"
-moduledesigner = "toolset.gui.editors.standalone:launch_module_designer"
-kotor-indoor-builder = "toolset.gui.editors.standalone:launch_indoor_builder"
-indoor-builder = "toolset.gui.editors.standalone:launch_indoor_builder"
-indoor_builder = "toolset.gui.editors.standalone:launch_indoor_builder"
-indoorbuilder = "toolset.gui.editors.standalone:launch_indoor_builder"
-kotor-2da-editor = "toolset.gui.editors.standalone:launch_twoda"
-kotor-are-editor = "toolset.gui.editors.standalone:launch_are"
-are-editor = "toolset.gui.editors.standalone:launch_are"
-are_editor = "toolset.gui.editors.standalone:launch_are"
-areeditor = "toolset.gui.editors.standalone:launch_are"
-kotor-bwm-editor = "toolset.gui.editors.standalone:launch_bwm"
-bwm-editor = "toolset.gui.editors.standalone:launch_bwm"
-bwm_editor = "toolset.gui.editors.standalone:launch_bwm"
-bwmeditor = "toolset.gui.editors.standalone:launch_bwm"
-kotor-dlg-editor = "toolset.gui.editors.standalone:launch_dlg"
-dlg-editor = "toolset.gui.editors.standalone:launch_dlg"
-dlg_editor = "toolset.gui.editors.standalone:launch_dlg"
-dlgeditor = "toolset.gui.editors.standalone:launch_dlg"
-kotor-erf-editor = "toolset.gui.editors.standalone:launch_erf"
-erf-editor = "toolset.gui.editors.standalone:launch_erf"
-erf_editor = "toolset.gui.editors.standalone:launch_erf"
-erfeditor = "toolset.gui.editors.standalone:launch_erf"
-kotor-gff-editor = "toolset.gui.editors.standalone:launch_gff"
-gff-editor = "toolset.gui.editors.standalone:launch_gff"
-gff_editor = "toolset.gui.editors.standalone:launch_gff"
-gffeditor = "toolset.gui.editors.standalone:launch_gff"
-kotor-git-editor = "toolset.gui.editors.standalone:launch_git"
-git-editor = "toolset.gui.editors.standalone:launch_git"
-git_editor = "toolset.gui.editors.standalone:launch_git"
-giteditor = "toolset.gui.editors.standalone:launch_git"
-kotor-ifo-editor = "toolset.gui.editors.standalone:launch_ifo"
-ifo-editor = "toolset.gui.editors.standalone:launch_ifo"
-ifo_editor = "toolset.gui.editors.standalone:launch_ifo"
-ifoeditor = "toolset.gui.editors.standalone:launch_ifo"
-kotor-jrl-editor = "toolset.gui.editors.standalone:launch_jrl"
-jrl-editor = "toolset.gui.editors.standalone:launch_jrl"
-jrl_editor = "toolset.gui.editors.standalone:launch_jrl"
-jrleditor = "toolset.gui.editors.standalone:launch_jrl"
-kotor-lip-editor = "toolset.gui.editors.standalone:launch_lip"
-lip-editor = "toolset.gui.editors.standalone:launch_lip"
-lip_editor = "toolset.gui.editors.standalone:launch_lip"
-lipeditor = "toolset.gui.editors.standalone:launch_lip"
-kotor-mdl-editor = "toolset.gui.editors.standalone:launch_mdl"
-mdl-editor = "toolset.gui.editors.standalone:launch_mdl"
-mdl_editor = "toolset.gui.editors.standalone:launch_mdl"
-mdleditor = "toolset.gui.editors.standalone:launch_mdl"
-kotor-nss-editor = "toolset.gui.editors.standalone:launch_nss"
-nss-editor = "toolset.gui.editors.standalone:launch_nss"
-nss_editor = "toolset.gui.editors.standalone:launch_nss"
-nsseditor = "toolset.gui.editors.standalone:launch_nss"
-kotor-pth-editor = "toolset.gui.editors.standalone:launch_pth"
-pth-editor = "toolset.gui.editors.standalone:launch_pth"
-pth_editor = "toolset.gui.editors.standalone:launch_pth"
-ptheditor = "toolset.gui.editors.standalone:launch_pth"
-kotor-savegame-editor = "toolset.gui.editors.standalone:launch_savegame"
-savegame-editor = "toolset.gui.editors.standalone:launch_savegame"
-savegame_editor = "toolset.gui.editors.standalone:launch_savegame"
-savegameeditor = "toolset.gui.editors.standalone:launch_savegame"
-kotor-ssf-editor = "toolset.gui.editors.standalone:launch_ssf"
-ssf-editor = "toolset.gui.editors.standalone:launch_ssf"
-ssf_editor = "toolset.gui.editors.standalone:launch_ssf"
-ssfeditor = "toolset.gui.editors.standalone:launch_ssf"
-kotor-tlk-editor = "toolset.gui.editors.standalone:launch_tlk"
-tlk-editor = "toolset.gui.editors.standalone:launch_tlk"
-tlk_editor = "toolset.gui.editors.standalone:launch_tlk"
-tlkeditor = "toolset.gui.editors.standalone:launch_tlk"
-kotor-tpc-editor = "toolset.gui.editors.standalone:launch_tpc"
-tpc-editor = "toolset.gui.editors.standalone:launch_tpc"
-tpc_editor = "toolset.gui.editors.standalone:launch_tpc"
-tpceditor = "toolset.gui.editors.standalone:launch_tpc"
-kotor-txt-editor = "toolset.gui.editors.standalone:launch_txt"
-txt-editor = "toolset.gui.editors.standalone:launch_txt"
-txt_editor = "toolset.gui.editors.standalone:launch_txt"
-txteditor = "toolset.gui.editors.standalone:launch_txt"
-kotor-utc-editor = "toolset.gui.editors.standalone:launch_utc"
-utc-editor = "toolset.gui.editors.standalone:launch_utc"
-utc_editor = "toolset.gui.editors.standalone:launch_utc"
-utceditor = "toolset.gui.editors.standalone:launch_utc"
-kotor-utd-editor = "toolset.gui.editors.standalone:launch_utd"
-utd-editor = "toolset.gui.editors.standalone:launch_utd"
-utd_editor = "toolset.gui.editors.standalone:launch_utd"
-utdeditor = "toolset.gui.editors.standalone:launch_utd"
-kotor-ute-editor = "toolset.gui.editors.standalone:launch_ute"
-ute-editor = "toolset.gui.editors.standalone:launch_ute"
-ute_editor = "toolset.gui.editors.standalone:launch_ute"
-uteeditor = "toolset.gui.editors.standalone:launch_ute"
-kotor-uti-editor = "toolset.gui.editors.standalone:launch_uti"
-uti-editor = "toolset.gui.editors.standalone:launch_uti"
-uti_editor = "toolset.gui.editors.standalone:launch_uti"
-utieditor = "toolset.gui.editors.standalone:launch_uti"
-kotor-utm-editor = "toolset.gui.editors.standalone:launch_utm"
-utm-editor = "toolset.gui.editors.standalone:launch_utm"
-utm_editor = "toolset.gui.editors.standalone:launch_utm"
-utmeditor = "toolset.gui.editors.standalone:launch_utm"
-kotor-utp-editor = "toolset.gui.editors.standalone:launch_utp"
-utp-editor = "toolset.gui.editors.standalone:launch_utp"
-utp_editor = "toolset.gui.editors.standalone:launch_utp"
-utpeditor = "toolset.gui.editors.standalone:launch_utp"
-kotor-uts-editor = "toolset.gui.editors.standalone:launch_uts"
-uts-editor = "toolset.gui.editors.standalone:launch_uts"
-uts_editor = "toolset.gui.editors.standalone:launch_uts"
-utseditor = "toolset.gui.editors.standalone:launch_uts"
-kotor-utt-editor = "toolset.gui.editors.standalone:launch_utt"
-utt-editor = "toolset.gui.editors.standalone:launch_utt"
-utt_editor = "toolset.gui.editors.standalone:launch_utt"
-utteditor = "toolset.gui.editors.standalone:launch_utt"
-kotor-utw-editor = "toolset.gui.editors.standalone:launch_utw"
-utw-editor = "toolset.gui.editors.standalone:launch_utw"
-utw_editor = "toolset.gui.editors.standalone:launch_utw"
-utweditor = "toolset.gui.editors.standalone:launch_utw"
-kotor-wav-editor = "toolset.gui.editors.standalone:launch_wav"
-wav-editor = "toolset.gui.editors.standalone:launch_wav"
-wav_editor = "toolset.gui.editors.standalone:launch_wav"
-waveditor = "toolset.gui.editors.standalone:launch_wav"
-pykotor = "pykotor.cli.__main__:main"
-pykotorcli = "pykotor.cli.__main__:main"
-
+dev = [
+    "charset-normalizer>=2.0.0,<3.3.0; python_version<\"3.9\"",
+    "charset-normalizer>=2.0.0; python_version>=\"3.9\"",
+    "defusedxml>=0.7.1",
+    "pycryptodome>=3.23.0",
+    "astroid>=3.2.0,<3.5.0; python_version>=\"3.8\"",
+    "autoflake>=2.3.1; python_version>=\"3.8\"",
+    "iniconfig>=2.1.0; python_version>=\"3.8\"",
+    "mypy>=1.0.0,<1.10.0; python_version>=\"3.8\"",
+    "mypy-extensions>=1.1.0; python_version>=\"3.8\"",
+    "pyflakes>=2.0.0,<3.4.0; python_version>=\"3.8\"",
+    "pylint>=2.0.0,<3.3.9; python_version>=\"3.8\"",
+    "pytest>=7.0.0,<8.0.0; python_version>=\"3.8\"",
+    "pytest-html>=3.0.0,<4.0.0; python_version>=\"3.8\"",
+    "pytest-metadata>=2.0.0,<3.0.0; python_version>=\"3.8\"",
+    "pytest-xdist>=2.0.0,<3.8.0; python_version>=\"3.8\"",
+    "ruff>=0.1.0,<0.4.0; python_version>=\"3.8\"",
+    "snakeviz>=2.0.0,<2.2.2; python_version>=\"3.8\"",
+    "types-pillow>=10.2.0.20240822; python_version>=\"3.8\"",
+    "types-send2trash>=1.8.2.7; python_version>=\"3.8\"",
+    "typing-extensions>=4.5.0,<4.9.0; python_version<\"3.9\"",
+    "typing-extensions>=4.5.0; python_version>=\"3.9\"",
+]
+font = [
+  "pillow>=9.5; python_implementation == 'CPython'",       # required for TXI/TGA fonts (CPython)
+  "pillow>10,<11.1.0; python_implementation == 'PyPy'",    # required for TXI/TGA fonts (PyPy)
+]
+secure_xml = ["defusedxml~=0.7"]    # secure XML parsing
+encodings = ["charset-normalizer>=2.0,<3.4"]  # used for localized string decodings
+gl = [
+  "django>2.1; os_name != 'nt'",
+  "django>2.0; os_name == 'nt'",
+  "numpy~=1.22",      # ( might need 1.22.2 )
+  "PyOpenGL~=3.1",    # ( might need 3.1.6 )
+  "PyGLM>=2.0,<2.8; python_implementation == 'CPython'",  # ( might need 2.5.7 )
+]
 
 [project.urls]
-documentation = "https://github.com/OpenKotOR/PyKotor/blob/master/README.md"
-homepage = "https://github.com/OpenKotOR/PyKotor"
-issues = "https://github.com/OpenKotOR/PyKotor/issues"
-repository = "https://github.com/OpenKotOR/PyKotor.git"
-#Changelog = "https://github.com/OpenKotOR/PyKotor/blob/master/CHANGELOG.md"
-
-[tool.poetry]
-name = "pykotor-workspace"
-version = "2.3.5"
-description = "PyKotor workspace - meta-package for PyKotor ecosystem"
-authors = ["Nick Hugi", "th3w1zard1 <boden.crouch@gmail.com>"]
-maintainers = ["th3w1zard1 <boden.crouch@gmail.com>"]
-readme = "README.md"
-license = "LGPL-3.0-or-later"
-keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", "toolset", "tslpatcher"]
-
-[tool.poetry.dependencies]
-python = "^3.8"
-pykotor = "^2.3.12"
-holocrontoolset = ">=4.0.0b31"
-holopatcher = ">=2.0.0a3"
-holopazaak = ">=2.0.0"
-kotordiff = ">=1.0.1"
-
-[tool.poetry.scripts]
-batch_patcher = "batchpatcher.__main__:main"
-batch-patcher = "batchpatcher.__main__:main"
-batchpatcher = "batchpatcher.__main__:main"
-holopazaak = "holopazaak.__main__:main"
-holo_pazaak = "holopazaak.__main__:main"
-holo-pazaak = "holopazaak.__main__:main"
-holopatcher = "holopatcher.__main__:main"
-holo_patcher = "holopatcher.__main__:main"
-holo-patcher = "holopatcher.__main__:main"
-kotordiff = "kotordiff.__main__:main"
-kotor_diff = "kotordiff.__main__:main"
-kotor-diff = "kotordiff.__main__:main"
-kotor_mcp = "kotormcp.__main__:main"
-kotor-mcp = "kotormcp.__main__:main"
-kotormcp = "kotormcp.__main__:main"
-holocrontoolset = "toolset.__main__:main"
-holocron_toolset = "toolset.__main__:main"
-holocron-toolset = "toolset.__main__:main"
-toolset = "toolset.__main__:main"
-kotor-editor = "toolset.gui.editors.standalone:main"
-kotor-module-designer = "toolset.gui.editors.standalone:launch_module_designer"
-module-designer = "toolset.gui.editors.standalone:launch_module_designer"
-module_designer = "toolset.gui.editors.standalone:launch_module_designer"
-moduledesigner = "toolset.gui.editors.standalone:launch_module_designer"
-kotor-indoor-builder = "toolset.gui.editors.standalone:launch_indoor_builder"
-indoor-builder = "toolset.gui.editors.standalone:launch_indoor_builder"
-indoor_builder = "toolset.gui.editors.standalone:launch_indoor_builder"
-indoorbuilder = "toolset.gui.editors.standalone:launch_indoor_builder"
-kotor-2da-editor = "toolset.gui.editors.standalone:launch_twoda"
-kotor-are-editor = "toolset.gui.editors.standalone:launch_are"
-are-editor = "toolset.gui.editors.standalone:launch_are"
-are_editor = "toolset.gui.editors.standalone:launch_are"
-areeditor = "toolset.gui.editors.standalone:launch_are"
-kotor-bwm-editor = "toolset.gui.editors.standalone:launch_bwm"
-bwm-editor = "toolset.gui.editors.standalone:launch_bwm"
-bwm_editor = "toolset.gui.editors.standalone:launch_bwm"
-bwmeditor = "toolset.gui.editors.standalone:launch_bwm"
-kotor-dlg-editor = "toolset.gui.editors.standalone:launch_dlg"
-dlg-editor = "toolset.gui.editors.standalone:launch_dlg"
-dlg_editor = "toolset.gui.editors.standalone:launch_dlg"
-dlgeditor = "toolset.gui.editors.standalone:launch_dlg"
-kotor-erf-editor = "toolset.gui.editors.standalone:launch_erf"
-erf-editor = "toolset.gui.editors.standalone:launch_erf"
-erf_editor = "toolset.gui.editors.standalone:launch_erf"
-erfeditor = "toolset.gui.editors.standalone:launch_erf"
-kotor-gff-editor = "toolset.gui.editors.standalone:launch_gff"
-gff-editor = "toolset.gui.editors.standalone:launch_gff"
-gff_editor = "toolset.gui.editors.standalone:launch_gff"
-gffeditor = "toolset.gui.editors.standalone:launch_gff"
-kotor-git-editor = "toolset.gui.editors.standalone:launch_git"
-git-editor = "toolset.gui.editors.standalone:launch_git"
-git_editor = "toolset.gui.editors.standalone:launch_git"
-giteditor = "toolset.gui.editors.standalone:launch_git"
-kotor-ifo-editor = "toolset.gui.editors.standalone:launch_ifo"
-ifo-editor = "toolset.gui.editors.standalone:launch_ifo"
-ifo_editor = "toolset.gui.editors.standalone:launch_ifo"
-ifoeditor = "toolset.gui.editors.standalone:launch_ifo"
-kotor-jrl-editor = "toolset.gui.editors.standalone:launch_jrl"
-jrl-editor = "toolset.gui.editors.standalone:launch_jrl"
-jrl_editor = "toolset.gui.editors.standalone:launch_jrl"
-jrleditor = "toolset.gui.editors.standalone:launch_jrl"
-kotor-lip-editor = "toolset.gui.editors.standalone:launch_lip"
-lip-editor = "toolset.gui.editors.standalone:launch_lip"
-lip_editor = "toolset.gui.editors.standalone:launch_lip"
-lipeditor = "toolset.gui.editors.standalone:launch_lip"
-kotor-mdl-editor = "toolset.gui.editors.standalone:launch_mdl"
-mdl-editor = "toolset.gui.editors.standalone:launch_mdl"
-mdl_editor = "toolset.gui.editors.standalone:launch_mdl"
-mdleditor = "toolset.gui.editors.standalone:launch_mdl"
-kotor-nss-editor = "toolset.gui.editors.standalone:launch_nss"
-nss-editor = "toolset.gui.editors.standalone:launch_nss"
-nss_editor = "toolset.gui.editors.standalone:launch_nss"
-nsseditor = "toolset.gui.editors.standalone:launch_nss"
-kotor-pth-editor = "toolset.gui.editors.standalone:launch_pth"
-pth-editor = "toolset.gui.editors.standalone:launch_pth"
-pth_editor = "toolset.gui.editors.standalone:launch_pth"
-ptheditor = "toolset.gui.editors.standalone:launch_pth"
-kotor-savegame-editor = "toolset.gui.editors.standalone:launch_savegame"
-savegame-editor = "toolset.gui.editors.standalone:launch_savegame"
-savegame_editor = "toolset.gui.editors.standalone:launch_savegame"
-savegameeditor = "toolset.gui.editors.standalone:launch_savegame"
-kotor-ssf-editor = "toolset.gui.editors.standalone:launch_ssf"
-ssf-editor = "toolset.gui.editors.standalone:launch_ssf"
-ssf_editor = "toolset.gui.editors.standalone:launch_ssf"
-ssfeditor = "toolset.gui.editors.standalone:launch_ssf"
-kotor-tlk-editor = "toolset.gui.editors.standalone:launch_tlk"
-tlk-editor = "toolset.gui.editors.standalone:launch_tlk"
-tlk_editor = "toolset.gui.editors.standalone:launch_tlk"
-tlkeditor = "toolset.gui.editors.standalone:launch_tlk"
-kotor-tpc-editor = "toolset.gui.editors.standalone:launch_tpc"
-tpc-editor = "toolset.gui.editors.standalone:launch_tpc"
-tpc_editor = "toolset.gui.editors.standalone:launch_tpc"
-tpceditor = "toolset.gui.editors.standalone:launch_tpc"
-kotor-txt-editor = "toolset.gui.editors.standalone:launch_txt"
-txt-editor = "toolset.gui.editors.standalone:launch_txt"
-txt_editor = "toolset.gui.editors.standalone:launch_txt"
-txteditor = "toolset.gui.editors.standalone:launch_txt"
-kotor-utc-editor = "toolset.gui.editors.standalone:launch_utc"
-utc-editor = "toolset.gui.editors.standalone:launch_utc"
-utc_editor = "toolset.gui.editors.standalone:launch_utc"
-utceditor = "toolset.gui.editors.standalone:launch_utc"
-kotor-utd-editor = "toolset.gui.editors.standalone:launch_utd"
-utd-editor = "toolset.gui.editors.standalone:launch_utd"
-utd_editor = "toolset.gui.editors.standalone:launch_utd"
-utdeditor = "toolset.gui.editors.standalone:launch_utd"
-kotor-ute-editor = "toolset.gui.editors.standalone:launch_ute"
-ute-editor = "toolset.gui.editors.standalone:launch_ute"
-ute_editor = "toolset.gui.editors.standalone:launch_ute"
-uteeditor = "toolset.gui.editors.standalone:launch_ute"
-kotor-uti-editor = "toolset.gui.editors.standalone:launch_uti"
-uti-editor = "toolset.gui.editors.standalone:launch_uti"
-uti_editor = "toolset.gui.editors.standalone:launch_uti"
-utieditor = "toolset.gui.editors.standalone:launch_uti"
-kotor-utm-editor = "toolset.gui.editors.standalone:launch_utm"
-utm-editor = "toolset.gui.editors.standalone:launch_utm"
-utm_editor = "toolset.gui.editors.standalone:launch_utm"
-utmeditor = "toolset.gui.editors.standalone:launch_utm"
-kotor-utp-editor = "toolset.gui.editors.standalone:launch_utp"
-utp-editor = "toolset.gui.editors.standalone:launch_utp"
-utp_editor = "toolset.gui.editors.standalone:launch_utp"
-utpeditor = "toolset.gui.editors.standalone:launch_utp"
-kotor-uts-editor = "toolset.gui.editors.standalone:launch_uts"
-uts-editor = "toolset.gui.editors.standalone:launch_uts"
-uts_editor = "toolset.gui.editors.standalone:launch_uts"
-utseditor = "toolset.gui.editors.standalone:launch_uts"
-kotor-utt-editor = "toolset.gui.editors.standalone:launch_utt"
-utt-editor = "toolset.gui.editors.standalone:launch_utt"
-utt_editor = "toolset.gui.editors.standalone:launch_utt"
-utteditor = "toolset.gui.editors.standalone:launch_utt"
-kotor-utw-editor = "toolset.gui.editors.standalone:launch_utw"
-utw-editor = "toolset.gui.editors.standalone:launch_utw"
-utw_editor = "toolset.gui.editors.standalone:launch_utw"
-utweditor = "toolset.gui.editors.standalone:launch_utw"
-kotor-wav-editor = "toolset.gui.editors.standalone:launch_wav"
-wav-editor = "toolset.gui.editors.standalone:launch_wav"
-wav_editor = "toolset.gui.editors.standalone:launch_wav"
-waveditor = "toolset.gui.editors.standalone:launch_wav"
-pykotor = "pykotor.cli.__main__:main"
-pykotorcli = "pykotor.cli.__main__:main"
-
-[tool.poetry.urls]
-Documentation = "https://github.com/OpenKotOR/PyKotor/blob/master/README.md"
-Homepage = "https://github.com/OpenKotOR/PyKotor"
-Repository = "https://github.com/OpenKotOR/PyKotor.git"
-Issues = "https://github.com/OpenKotOR/PyKotor/issues"
+Homepage = "https://github.com/NickHugi/PyKotor"
+Documentation = "https://github.com/NickHugi/PyKotor/blob/master/README.md"
+Repository = "https://github.com/NickHugi/PyKotor.git"
+Issues = "https://github.com/NickHugi/PyKotor/issues"
+#Changelog = "https://github.com/NickHugi/PyKotor/blob/master/CHANGELOG.md"
 
 ########################################################
 ## define only linter configurations below this point ##
@@ -456,10 +102,15 @@ exclude = '''
 | .mdl
 )/
 '''
-include = '\.pyi?$'
-line-length = 100
-skip-magic-trailing-comma = false
-target-version = ['py38']
+
+[tool.pyright]
+extraPaths = [
+    "Libraries/PyKotor/src",
+    "Libraries/Utility/src"
+]
+reportMissingImports = true
+reportMissingTypeStubs = true
+pythonVersion = "3.8"
 
 [tool.isort]
 atomic = true
@@ -546,9 +197,9 @@ typeCheckingMode = "basic"
 
 [tool.pyright.defineConstant]
 PYQT5 = false
-PYQT6 = true
 PYSIDE2 = false
-PYSIDE6 = false
+PYQT6 = false
+PYSIDE6 = true
 
 [tool.pytest.ini_options]
 addopts = '-ra -q -m "not slow"'
@@ -599,77 +250,84 @@ skip-magic-trailing-comma = false
 exclude = [".venv", ".venv*"]
 external = ["V"]
 ignore = [
-  # The following rules are too strict to be realistically used by ruff:
-  "ANN002", # Checks that function *args arguments have type annotations.
-  "ANN003", # Checks that function **kwargs arguments have type annotations.
-  "ANN101", # Checks that instance method self arguments have type annotations.
-  "ANN102", # Checks that class method cls arguments have type annotations.
-  "ANN204", # Missing return type annotation for special method
-  "ANN401", # Dynamically typed expressions (typing.Any) are disallowed in {name}
-  "ARG002", # Unused method argument: `method`
-  "BLE001", # Do not catch blind exception: `Exception`
-  "C901", # Function is too complex
-  "COM812", # missing-trailing-comma
-  "D100", # Missing docstring in public module
-  "D101", # Missing docstring in public class
-  "D102", # Missing docstring in public method
-  "D103", # Missing docstring in public function
-  "D104", # Missing docstring in public package
-  "D105", # Missing docstring in magic method
-  "D107", # Missing docstring in __init__
-  "D205", # 1 blank line required between summary line and description
-  "D401", # First line of docstring should be in imperative mood
-  "D413", # Missing blank line after last section 'xyz'
-  "D417", # Missing argument description in the docstring for {definition}: {name}
-  # The following are currently violated by the codebase.
-  # "D205",     # 1 blank line required between summary line and description
-  "E402", # Module level import not at top of file
-  "EM101", # Exception must not use a string literal, assign to variable first
-  "EM102", # Exception must not use an f-string literal, assign to variable first
-  "ERA001", # Found commented out code.
-  "G004", # Logging statement uses f'' string.
-  # "FIX004",   # Line contains HACK, consider resolving the issue
-  # "PD901",    # df is a bad variable name. Be kinder to your future self.
-  # "PLR2004",  # Magic value used in comparison, consider replacing X with a constant variable
-  # "S101",     # Use of assert detected
-  # "S314",     # Using `xml` to parse untrusted data is known to be vulnerable to XML attacks; use `defusedxml` equivalents
-  # "S605",     # Starting a process with a shell, possible injection detected
-  # "SLF001",   # Private member accessed
-  #
-  # According to ruff documentation, the following rules should be avoided when using its formatter:
-  #
-  # "W191",     # tab-indentation
-  # "E111",     # indentation-with-invalid-multiple
-  # "E114",     # indentation-with-invalid-multiple-comment
-  # "E117",     # over-indented
-  # "D206",     # indent-with-spaces
-  # "D300",     # triple-single-quotes
-  # "Q000",     # bad-quotes-inline-string
-  # "Q001",     # bad-quotes-multiline-string
-  # "Q002",     # bad-quotes-docstring
-  # "Q003",     # avoidable-escaped-quote
-  # "COM812",   # missing-trailing-comma
-  # "COM819",   # prohibited-trailing-comma
-  "ISC001",
-  "N802", # Function name `screenToWorld` should be lowercase
-  "N806", # Variable `jumpToOffset` in function should be lowercase
-  "N815", # Variable `var` in class scope should not be mixedCase
-  "PERF203", # `try`-`except` within a loop incurs performance overhead
-  "PLC0415", # `import` should be at the top-level of a file
-  "PLR0904", # Too many public methods
-  "PLR0911", # Too many return statements
-  "PLR0912", # Too many branches
-  "PLR0913", # Too many arguments to function call (N > 5)
-  "PLR0915", # Too many statements
-  "PLR2004", # Magic value used in comparison, consider replacing X with a constant variable
-  "RET504", # Unnecessary assignment to `varname` before `return` statement
-  "RUF100", # Unused `noqa` directive (non-enabled: `PLC0415`)
-  "S101", # Use of `assert` detected.
-  "SIM108", # Use ternary operator instead of 'if' 'else' block
-  "SIM114", # Combine `if` branches using logical `or` operator
-  "T201", # 'print' detected
-  "TD001", # Invalid TODO tag: `FIXME`
-  "TRY003" # Avoid specifying long messages outside the exception class
+# The following rules are too strict to be realistically used by ruff:
+    "ANN002",   # Checks that function *args arguments have type annotations.
+    "ANN003",   # Checks that function **kwargs arguments have type annotations.
+    "ANN101",   # Checks that instance method self arguments have type annotations.
+    "ANN102",   # Checks that class method cls arguments have type annotations.
+    "ANN204",   # Missing return type annotation for special method
+    "ANN401",   # Dynamically typed expressions (typing.Any) are disallowed in {name}
+    "ARG002",   # Unused method argument: `method`
+    "BLE001",   # Do not catch blind exception: `Exception`
+    "C901",     # Function is too complex
+    "COM812",   # missing-trailing-comma
+    "D100",     # Missing docstring in public module
+    "D101",     # Missing docstring in public class
+    "D102",     # Missing docstring in public method
+    "D103",     # Missing docstring in public function
+    "D104",     # Missing docstring in public package
+    "D105",     # Missing docstring in magic method
+    "D107",     # Missing docstring in __init__
+    "D205",     # 1 blank line required between summary line and description
+    "D401",     # First line of docstring should be in imperative mood
+    "D413",     # Missing blank line after last section 'xyz'
+    "D417",     # Missing argument description in the docstring for {definition}: {name}
+    "EM101",    # Exception must not use a string literal, assign to variable first
+    "EM102",    # Exception must not use an f-string literal, assign to variable first
+    "ERA001",   # Found commented out code.
+    "G004",     # Logging statement uses f'' string.
+    "N802",     # Function name `screenToWorld` should be lowercase
+    "N806",     # Variable `jumpToOffset` in function should be lowercase
+    "N815",     # Variable `var` in class scope should not be mixedCase
+    "PERF203",  # `try`-`except` within a loop incurs performance overhead
+    "PLC0415",  # `import` should be at the top-level of a file
+    "PLR0904",  # Too many public methods
+    "PLR0911",  # Too many return statements
+    "PLR0912",  # Too many branches
+    "PLR0913",  # Too many arguments to function call (N > 5)
+    "PLR0915",  # Too many statements
+    "PLR2004",  # Magic value used in comparison, consider replacing X with a constant variable
+    "RET504",   # Unnecessary assignment to `varname` before `return` statement
+    "RUF100",   # Unused `noqa` directive (non-enabled: `PLC0415`)
+    "S101",     # Use of `assert` detected.
+    "SIM108",   # Use ternary operator instead of 'if' 'else' block
+    "SIM114",   # Combine `if` branches using logical `or` operator
+    "T201",     # 'print' detected
+    "TD001",    # Invalid TODO tag: `FIXME`
+    "TRY003",   # Avoid specifying long messages outside the exception class
+#    "D213",     # Multi-line docstring summary should start at the second line
+#    "D400",     # First line should end with a period
+#    "D403",     # First word of the first line should be capitalized: {} -> {}
+#    "D404",     # First word of the docstring should not be "This"
+#    "FBT001",   # Boolean positional arg in function definition
+#    "FBT002",   # Boolean default value in function definition
+
+# The following are currently violated by the codebase.
+#    "D205",     # 1 blank line required between summary line and description
+#    "E402",     # Module level import not at top of file
+#    "FIX004",   # Line contains HACK, consider resolving the issue
+#    "PD901",    # df is a bad variable name. Be kinder to your future self.
+#    "PLR2004",  # Magic value used in comparison, consider replacing X with a constant variable
+#    "S101",     # Use of assert detected
+#    "S314",     # Using `xml` to parse untrusted data is known to be vulnerable to XML attacks; use `defusedxml` equivalents
+#    "S605",     # Starting a process with a shell, possible injection detected
+#    "SLF001",   # Private member accessed
+#
+# According to ruff documentation, the following rules should be avoided when using its formatter:
+#
+#    "W191",     # tab-indentation
+#    "E111",     # indentation-with-invalid-multiple
+#    "E114",     # indentation-with-invalid-multiple-comment
+#    "E117",     # over-indented
+#    "D206",     # indent-with-spaces
+#    "D300",     # triple-single-quotes
+#    "Q000",     # bad-quotes-inline-string
+#    "Q001",     # bad-quotes-multiline-string
+#    "Q002",     # bad-quotes-docstring
+#    "Q003",     # avoidable-escaped-quote
+#    "COM812",   # missing-trailing-comma
+#    "COM819",   # prohibited-trailing-comma
+    "ISC001",
 ]
 task-tags = ["FIXME", "HACK", "TODO"]
 unfixable = [

@@ -81,9 +81,7 @@ def create_backup(
             i = 2
             filestem: str = backup_filepath.stem
             while backup_filepath.exists():
-                backup_filepath = (
-                    backup_filepath.parent / f"{filestem} ({i}){backup_filepath.suffix}"
-                )
+                backup_filepath = backup_filepath.parent / f"{filestem} ({i}){backup_filepath.suffix}"
                 i += 1
 
             log.add_note(f"Backing up '{destination_file_str}'...")
@@ -329,9 +327,7 @@ class InstallFile(PatcherModifications):
         self.action: str = "Copy "
         self.skip_if_not_replace: bool = True
 
-    def __hash__(
-        self,
-    ):  # HACK(th3w1zard1): organize this into PatcherModifications class later, this is only used for nwscript.nss currently.
+    def __hash__(self):  # HACK(th3w1zard1): organize this into PatcherModifications class later, this is only used for nwscript.nss currently.
         return hash((self.destination, self.saveas, self.replace_file))
 
     def patch_resource(
@@ -345,4 +341,11 @@ class InstallFile(PatcherModifications):
         with BinaryReader.from_auto(source) as reader:
             return reader.read_all()
 
-    def apply(self, mutable_data: Any, memory: PatcherMemory, logger: PatchLogger, game: Game): ...
+    def apply(
+        self,
+        mutable_data: Any,
+        memory: PatcherMemory,
+        logger: PatchLogger,
+        game: Game
+    ):
+        ...

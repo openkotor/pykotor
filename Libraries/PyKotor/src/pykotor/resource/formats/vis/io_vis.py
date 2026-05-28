@@ -20,19 +20,14 @@ if TYPE_CHECKING:
 
 class VISAsciiReader(ResourceReader):
     """Reads VIS (Visibility) files.
-
+    
     VIS files define which rooms are visible from other rooms, used for occlusion culling
     and level-of-detail management in KotOR modules.
-
-    Observed retail behavior:
+    
+    References:
     ----------
-        KotOR loads ASCII ``.vis`` files alongside rooms; each parent line lists how many
-        children follow, and indented lines name mutually visible rooms for occlusion culling.
-
-        Note: VIS files are ASCII text: parent room names followed by indented child room names.
-
+        vendor/reone/src/libs/resource/format/visreader.cpp (VIS reading)
     """
-
     def __init__(self, source: SOURCE_TYPES, offset: int = 0, size: int = 0):
         super().__init__(source, offset, size)
         self._vis: VIS | None = None
@@ -59,13 +54,9 @@ class VISAsciiReader(ResourceReader):
                 continue
 
             # Use a named constant for the magic value 2
-            VERSION_HEADER_TOKEN_INDEX = (
-                1  # Index in VIS ASCII lines where a version string may appear
-            )
+            VERSION_HEADER_TOKEN_INDEX = 1  # Index in VIS ASCII lines where a version string may appear
             # Check if this is a version header line (e.g., "room V3.28")
-            if len(tokens) >= VERSION_HEADER_TOKEN_INDEX + 1 and tokens[
-                VERSION_HEADER_TOKEN_INDEX
-            ].startswith("V"):
+            if len(tokens) >= VERSION_HEADER_TOKEN_INDEX + 1 and tokens[VERSION_HEADER_TOKEN_INDEX].startswith("V"):
                 # This is a version header, skip it
                 # Format appears to be: roomname Version
                 continue

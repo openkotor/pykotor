@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal, TypeVar
 
 from loggerplus import RobustLogger
+
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Color, Game, ResRef
 from pykotor.resource.formats.gff.gff_auto import bytes_gff, read_gff, write_gff
@@ -34,10 +35,13 @@ def construct_dlg(  # noqa: C901, PLR0915
     Parses DLG (dialog) data from a GFF file, reading all fields including
     entries, replies, links, stunts, and conversation metadata.
 
-    Field coverage matches the on-disk DLG GFF schema; retail KotOR I and TSL use the same
-    overall structure. Former loader cross-references and inline discrepancy notes are migrated to
-    ``wiki/reverse_engineering_findings.md`` (*resource/generics/dlg/io/gff.py*) and
-    ``dlg/base.py``.
+    References:
+    ----------
+        vendor/reone/src/libs/resource/parser/gff/dlg.cpp:129-165 (parseDLG function)
+        vendor/reone/include/reone/resource/parser/gff/dlg.h:115-141 (DLG struct definition)
+        vendor/KotOR.js/src/resource/DLGObject.ts:77-493 (DLG initialization from GFF)
+        vendor/xoreos-tools/src/xml/dlgdumper.cpp (DLG to XML conversion)
+        Original BioWare Odyssey Engine (DLG GFF structure specification)
 
     Args:
     ----
@@ -63,50 +67,53 @@ def construct_dlg(  # noqa: C901, PLR0915
         -------
             None - Populates the node in-place
         """
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:122 (Text field as pair<int, string>)
+        # vendor/reone/include/reone/resource/parser/gff/dlg.h:109 (Text field)
         node.text = gff_struct.acquire("Text", LocalizedString.from_invalid())
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:103 (Listener field)
         node.listener = gff_struct.acquire("Listener", "")
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:124 (VO_ResRef field)
         node.vo_resref = gff_struct.acquire("VO_ResRef", ResRef.from_blank())
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:116 (Script field)
         node.script1 = gff_struct.acquire("Script", ResRef.from_blank())
-
-        # Map UINT32 max delay sentinel to -1 (see wiki: DLG GFF field quirks, dlg/io/gff.py).
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:94 (Delay field as uint32)
+        # Discrepancy: PyKotor converts 0xFFFFFFFF to -1, reone stores as-is
         delay: int = gff_struct.acquire("Delay", 0)
         node.delay = -1 if delay == 0xFFFFFFFF else delay  # noqa: PLR2004
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:83 (Comment field)
         node.comment = gff_struct.acquire("Comment", "")
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:118 (Sound field)
         node.sound = gff_struct.acquire("Sound", ResRef.from_blank())
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:98 (Quest field)
         node.quest = gff_struct.acquire("Quest", "")
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:95 (PlotIndex field)
         node.plot_index = gff_struct.acquire("PlotIndex", -1)
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:96 (PlotXPPercentage field as float)
         node.plot_xp_percentage = gff_struct.acquire("PlotXPPercentage", 0.0)
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:125 (WaitFlags field as uint32)
         node.wait_flags = gff_struct.acquire("WaitFlags", 0)
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:79 (CameraAngle field)
         node.camera_angle = gff_struct.acquire("CameraAngle", 0)
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:91 (FadeType field as uint8)
         node.fade_type = gff_struct.acquire("FadeType", 0)
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:106 (SoundExists field as uint8)
         node.sound_exists = gff_struct.acquire("SoundExists", 0)
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:110 (VOTextChanged field as uint8)
         node.vo_text_changed = gff_struct.acquire("VOTextChanged", default=False)
 
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:82-84 (AnimList parsing)
+        # vendor/reone/include/reone/resource/parser/gff/dlg.h:75 (AnimList vector)
         # AnimList contains participant animations for this dialog node
         anim_list: GFFList = gff_struct.acquire("AnimList", GFFList())
         for anim_struct in anim_list:
             anim = DLGAnimation()
-
+            # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:55 (Animation field)
             anim.animation_id = anim_struct.acquire("Animation", 0)
-            # Subtract 10000 when present (legacy DLG content quirk; see wiki dlg/io/gff.py notes).
-            if (
-                anim.animation_id > 10000
-            ):  # HACK(th3w1zard1): can't remember why this was needed.  # noqa: PLR2004
+            # PyKotor-specific hack: Some animation IDs are offset by 10000
+            # Discrepancy: reone doesn't apply this offset, may be KotOR-specific quirk
+            if anim.animation_id > 10000:  # HACK(th3w1zard1): can't remember why this was needed.  # noqa: PLR2004
                 anim.animation_id -= 10000
-
+            # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:56 (Participant field)
             anim.participant = anim_struct.acquire("Participant", "")
             node.animations.append(anim)
 
@@ -152,9 +159,7 @@ def construct_dlg(  # noqa: C901, PLR0915
         if gff_struct.exists("TarHeightOffset"):
             node.target_height = gff_struct.acquire("TarHeightOffset", 0.0)
         if gff_struct.exists("FadeColor"):
-            node.fade_color = Color.from_bgr_vector3(
-                gff_struct.acquire("FadeColor", Vector3.from_null())
-            )
+            node.fade_color = Color.from_bgr_vector3(gff_struct.acquire("FadeColor", Vector3.from_null()))
 
     def construct_link(
         gff_struct: GFFStruct,
@@ -192,30 +197,27 @@ def construct_dlg(  # noqa: C901, PLR0915
     dlg = DLG()
 
     root: GFFStruct = gff.root
-    # K1/TSL dialog load: EntryList/ReplyList lists; NumWords 0, EndConverAbort/EndConversation "", Skippable 0. Omit OK.
-    all_entries: list[DLGEntry] = [
-        DLGEntry() for _ in range(len(root.acquire("EntryList", GFFList())))
-    ]
-    all_replies: list[DLGReply] = [
-        DLGReply() for _ in range(len(root.acquire("ReplyList", GFFList())))
-    ]
 
+    all_entries: list[DLGEntry] = [DLGEntry() for _ in range(len(root.acquire("EntryList", GFFList())))]
+    all_replies: list[DLGReply] = [DLGReply() for _ in range(len(root.acquire("ReplyList", GFFList())))]
+
+    # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:147 (NumWords field)
     dlg.word_count = root.acquire("NumWords", 0)
-
+    # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:141 (EndConverAbort field)
     dlg.on_abort = root.acquire("EndConverAbort", ResRef.from_blank())
-
+    # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:142 (EndConversation field)
     dlg.on_end = root.acquire("EndConversation", ResRef.from_blank())
-
+    # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:154 (Skippable field)
     dlg.skippable = root.acquire("Skippable", default=False)
-
+    # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:132 (AmbientTrack field)
     dlg.ambient_track = root.acquire("AmbientTrack", ResRef.from_blank())
-
+    # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:133 (AnimatedCut field)
     dlg.animated_cut = root.acquire("AnimatedCut", 0)
-
+    # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:134 (CameraModel field)
     dlg.camera_model = root.acquire("CameraModel", ResRef.from_blank())
-
+    # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:135 (ComputerType field)
     dlg.computer_type = DLGComputerType(root.acquire("ComputerType", 0))
-
+    # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:136 (ConversationType field)
     dlg.conversation_type = DLGConversationType(root.acquire("ConversationType", 0))
 
     dlg.old_hit_check = root.acquire("OldHitCheck", default=False)
@@ -229,26 +231,26 @@ def construct_dlg(  # noqa: C901, PLR0915
     dlg.delay_entry = root.acquire("DelayEntry", 0)
     dlg.delay_reply = root.acquire("DelayReply", 0)
 
+    # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:158-160 (StuntList parsing)
+    # vendor/reone/include/reone/resource/parser/gff/dlg.h:137 (StuntList vector)
     # StuntList contains stunt model references for special dialog animations
     stunt_list: GFFList = root.acquire("StuntList", GFFList())
     for stunt_struct in stunt_list:
         stunt = DLGStunt()
         dlg.stunts.append(stunt)
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:62 (Participant field)
         stunt.participant = stunt_struct.acquire("Participant", "")
-
+        # vendor/reone/src/libs/resource/parser/gff/dlg.cpp:63 (StuntModel field)
         stunt.stunt_model = stunt_struct.acquire("StuntModel", ResRef.from_blank())
 
     starting_list: GFFList = root.acquire("StartingList", GFFList())
     for link_list_index, link_struct in enumerate(starting_list):
-        node_struct_id: int = link_struct.acquire("Index", 0)
+        node_struct_id = link_struct.acquire("Index", 0)
         try:
             starter_node: DLGEntry = all_entries[node_struct_id]
         except IndexError:
             context_link_msg: str = f"(StartingList/{link_list_index})"  # noqa: SLF001
-            RobustLogger().error(
-                f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid ReplyList node, omitting..."
-            )
+            RobustLogger().error(f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid ReplyList node, omitting...")
         else:
             link: DLGLink = DLGLink(starter_node, link_list_index)
             dlg.starters.append(link)
@@ -267,12 +269,10 @@ def construct_dlg(  # noqa: C901, PLR0915
             try:
                 reply_node: DLGReply = all_replies[node_struct_id]
             except IndexError:
-                context_link_msg = f"(EntryList/{node_list_index}/RepliesList/{link_list_index})"  # noqa: SLF001
-                RobustLogger().error(
-                    f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid ReplyList node, omitting..."
-                )
+                context_link_msg: str = f"(EntryList/{node_list_index}/RepliesList/{link_list_index})"  # noqa: SLF001
+                RobustLogger().error(f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid ReplyList node, omitting...")
             else:
-                link = DLGLink(reply_node, link_list_index)
+                link: DLGLink = DLGLink(reply_node, link_list_index)
                 link.is_child = bool(link_struct.acquire("IsChild", default=False))
                 link.comment = link_struct.acquire("LinkComment", "")
 
@@ -287,16 +287,14 @@ def construct_dlg(  # noqa: C901, PLR0915
 
         entries_list: GFFList = reply_struct.acquire("EntriesList", GFFList())
         for link_list_index, link_struct in enumerate(entries_list):
-            node_struct_id = link_struct.acquire("Index", 0)
+            node_struct_id: int = link_struct.acquire("Index", 0)
             try:
                 entry_node: DLGEntry = all_entries[node_struct_id]
             except IndexError:
-                context_link_msg = f"(ReplyList/{node_list_index}/EntriesList/{link_list_index})"  # noqa: SLF001
-                RobustLogger().error(
-                    f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid EntryList node, omitting..."
-                )
+                context_link_msg: str = f"(ReplyList/{node_list_index}/EntriesList/{link_list_index})"  # noqa: SLF001
+                RobustLogger().error(f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid EntryList node, omitting...")
             else:
-                link = DLGLink(entry_node, link_list_index)
+                link: DLGLink = DLGLink(entry_node, link_list_index)
                 link.is_child = bool(link_struct.acquire("IsChild", default=False))
                 link.comment = link_struct.acquire("LinkComment", "")
 
@@ -338,7 +336,6 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
         link: DLGLink,
         nodes: list,
         list_name: str,
-        node_to_index: dict[int, int],
     ):
         """Disassembles a link into a GFFStruct.
 
@@ -347,8 +344,7 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
             gff_struct: GFFStruct - The struct to populate
             link: DLGLink - The link to disassemble
             nodes: list - The list of nodes
-            list_name: str - The name of the GFF list
-            node_to_index: id(node) -> index for O(1) lookup
+            list_name: str - The name of the GFF list.
 
         Returns:
         -------
@@ -361,7 +357,7 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
             - If game is K2, sets additional link properties on the GFFStruct.
         """
         object.__setattr__(link, "__class__", DLGLink)
-        node_list_index = node_to_index.get(id(link.node), nodes.index(link.node))
+        node_list_index = nodes.index(link.node)
         gff_struct.set_uint32("Index", node_list_index)
 
         if list_name != "StartingList":
@@ -392,7 +388,6 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
         node: DLGNode,
         nodes: list[DLGEntry] | list[DLGReply],
         list_name: Literal["EntriesList", "RepliesList"],
-        node_to_index: dict[int, int],
     ):
         """Disassembles a DLGNode into a GFFStruct.
 
@@ -402,7 +397,6 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
             node: DLGNode - The DLGNode to dismantle into a EntryList/ReplyList GFFStruct node.
             nodes: list - The nodes list (abstracted EntryList/ReplyList represented as list[DLGEntry] | list[DLGReply])
             list_name: Literal["EntriesList", "RepliesList"] - the name of the nested linked list. If nodes is list[DLGEntry], should be 'RepliesList' and vice versa.
-            node_to_index: id(node) -> index for O(1) link target lookup when dismantling links.
 
         Processing Logic:
         ----------------
@@ -488,23 +482,17 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
 
         link_list: GFFList = gff_struct.set_list(list_name, GFFList())
         # Sort links by link_list_index, treating -1 as the highest value
-        sorted_links: list[DLGLink] = sorted(
-            node.links, key=lambda link: (link.list_index == -1, link.list_index)
-        )
+        sorted_links: list[DLGLink] = sorted(node.links, key=lambda link: (link.list_index == -1, link.list_index))
         for i, link in enumerate(sorted_links):
             link_struct: GFFStruct = link_list.add(i)
-            dismantle_link(link_struct, link, nodes, list_name, node_to_index)
+            dismantle_link(link_struct, link, nodes, list_name)
 
     all_entries: list[DLGEntry] = dlg.all_entries(as_sorted=True)
     all_replies: list[DLGReply] = dlg.all_replies(as_sorted=True)
-    # O(1) node index lookup when writing links instead of O(n) list.index() per link
-    entry_index: dict[int, int] = {id(e): i for i, e in enumerate(all_entries)}
-    reply_index: dict[int, int] = {id(r): i for i, r in enumerate(all_replies)}
 
     gff = GFF(GFFContent.DLG)
 
     root: GFFStruct = gff.root
-    # DLG defaults per engine; NumWords 0, ResRefs "", Skippable 0. Omit OK.
     root.set_uint32("NumWords", dlg.word_count)
     root.set_resref("EndConverAbort", dlg.on_abort)
     root.set_resref("EndConversation", dlg.on_end)
@@ -541,23 +529,21 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
         stunt_struct.set_resref("StuntModel", stunt.stunt_model)
 
     starting_list: GFFList = root.set_list("StartingList", GFFList())
-    sorted_links: list[DLGLink] = sorted(
-        dlg.starters, key=lambda link: (link.list_index == -1, link.list_index)
-    )
+    sorted_links: list[DLGLink] = sorted(dlg.starters, key=lambda link: (link.list_index == -1, link.list_index))
     for link_list_index, starter in enumerate(sorted_links):
         starting_struct: GFFStruct = starting_list.add(link_list_index)
-        dismantle_link(starting_struct, starter, all_entries, "StartingList", entry_index)
+        dismantle_link(starting_struct, starter, all_entries, "StartingList")
 
     entry_list: GFFList = root.set_list("EntryList", GFFList())
     for node_list_index, entry in enumerate(all_entries):
         entry_struct: GFFStruct = entry_list.add(node_list_index)
         entry_struct.set_string("Speaker", entry.speaker)
-        dismantle_node(entry_struct, entry, all_replies, "RepliesList", reply_index)
+        dismantle_node(entry_struct, entry, all_replies, "RepliesList")
 
     reply_list: GFFList = root.set_list("ReplyList", GFFList())
     for node_list_index, reply in enumerate(all_replies):
         reply_struct: GFFStruct = reply_list.add(node_list_index)
-        dismantle_node(reply_struct, reply, all_entries, "EntriesList", entry_index)
+        dismantle_node(reply_struct, reply, all_entries, "EntriesList")
 
     return gff
 

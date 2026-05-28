@@ -5,9 +5,9 @@ handling all instruction types, control flow, expressions, and data structures.
 
 References:
 ----------
-        Observed in retail KotOR I and TSL.
-        DeNCS - Original NCS decompiler implementation
-
+    vendor/xoreos-tools/src/nwscript/decompiler.cpp (NCS decompilation algorithm)
+    vendor/xoreos-docs/specs/torlack/ncs.html (NCS format specification)
+    DeNCS - Original NCS decompiler implementation
 """
 
 from __future__ import annotations
@@ -17,35 +17,21 @@ import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from pykotor.common.misc import Game  # pyright: ignore[reportMissingImports]
-from pykotor.resource.formats._base import ComparableMixin
-from pykotor.resource.formats.ncs.ncs_data import (
-    NCSInstructionType,  # pyright: ignore[reportMissingImports]
-)
+from pykotor.common.misc import Game
+from pykotor.resource.formats.ncs.ncs_data import NCSInstructionType
 
 try:
-    from utility.error_handling import (
-        format_exception_with_variables,  # pyright: ignore[reportMissingImports]
-    )
+    from utility.error_handling import format_exception_with_variables  # pyright: ignore[reportMissingImports]
 except ImportError:
     # Fallback if utility module not available
     def format_exception_with_variables(exc: BaseException, *args, **kwargs) -> str:
         import traceback
-
         return "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
 
-
 if TYPE_CHECKING:
-    from pykotor.common.misc import Game  # pyright: ignore[reportMissingImports]
-    from pykotor.common.script import (  # pyright: ignore[reportMissingImports]
-        ScriptConstant,
-        ScriptFunction,
-    )
-    from pykotor.resource.formats.ncs.ncs_data import (  # pyright: ignore[reportMissingImports]
-        NCS,
-        NCSInstruction,
-    )
-
+    from pykotor.common.misc import Game
+    from pykotor.common.script import ScriptConstant, ScriptFunction
+    from pykotor.resource.formats.ncs.ncs_data import NCS, NCSInstruction
     KOTOR_CONSTANTS: list[ScriptConstant] = []
     KOTOR_FUNCTIONS: list[ScriptFunction] = []
     TSL_CONSTANTS: list[ScriptConstant] = []
@@ -80,7 +66,7 @@ class DecompileError(Exception):
 
 
 @dataclass
-class ExpressionNode(ComparableMixin):
+class ExpressionNode:
     """Represents an expression node in the decompiled AST."""
 
     expr_type: str
@@ -107,12 +93,8 @@ class ExpressionNode(ComparableMixin):
             left = self.children[0].to_string()
             right = self.children[1].to_string()
             op_prec = self._get_operator_precedence(op)
-            left_str = (
-                f"({left})" if op_prec > 0 and self.children[0].expr_type == "binary" else left
-            )
-            right_str = (
-                f"({right})" if op_prec > 0 and self.children[1].expr_type == "binary" else right
-            )
+            left_str = f"({left})" if op_prec > 0 and self.children[0].expr_type == "binary" else left
+            right_str = f"({right})" if op_prec > 0 and self.children[1].expr_type == "binary" else right
             return f"{left_str} {op} {right_str}"
         if self.expr_type == "unary":
             op = self.value or ""
@@ -145,30 +127,19 @@ class ExpressionNode(ComparableMixin):
             Precedence value (higher = higher precedence)
         """
         prec_map = {
-            "*": 5,
-            "/": 5,
-            "%": 5,
-            "+": 4,
-            "-": 4,
-            "<<": 3,
-            ">>": 3,
-            "<": 2,
-            ">": 2,
-            "<=": 2,
-            ">=": 2,
-            "==": 1,
-            "!=": 1,
-            "&": 0,
-            "|": 0,
-            "^": 0,
-            "&&": -1,
-            "||": -1,
+            "*": 5, "/": 5, "%": 5,
+            "+": 4, "-": 4,
+            "<<": 3, ">>": 3,
+            "<": 2, ">": 2, "<=": 2, ">=": 2,
+            "==": 1, "!=": 1,
+            "&": 0, "|": 0, "^": 0,
+            "&&": -1, "||": -1,
         }
         return prec_map.get(op, 0)
 
 
 @dataclass
-class BasicBlock(ComparableMixin):
+class BasicBlock:
     """Represents a basic block in the control flow graph."""
 
     start_index: int
@@ -185,7 +156,7 @@ class BasicBlock(ComparableMixin):
 
 
 @dataclass
-class ControlStructure(ComparableMixin):
+class ControlStructure:
     """Represents a recovered control structure (if, while, etc.)."""
 
     structure_type: str  # "if", "while", "do_while", "for", "switch"
@@ -197,7 +168,7 @@ class ControlStructure(ComparableMixin):
     cases: dict = field(default_factory=dict)
 
 
-class NCSDecompiler(ComparableMixin):
+class NCSDecompiler:
     """Decompiles NCS bytecode to NSS source code.
 
     Based on DeNCS implementation, this decompiler reconstructs NSS source
@@ -205,18 +176,12 @@ class NCSDecompiler(ComparableMixin):
 
     References:
     ----------
-        Observed in retail KotOR I and TSL.
+        vendor/xoreos-tools/src/nwscript/decompiler.cpp (NCS decompilation algorithm)
+        vendor/xoreos-docs/specs/torlack/ncs.html (NCS format specification)
         DeNCS - Original NCS decompiler implementation
-
     """
 
-    def __init__(
-        self,
-        ncs: NCS,
-        game: Game,
-        functions: list[ScriptFunction] | None = None,
-        constants: list[ScriptConstant] | None = None,
-    ):
+    def __init__(self, ncs: NCS, game: Game, functions: list[ScriptFunction] | None = None, constants: list[ScriptConstant] | None = None):
         """Initialize decompiler.
 
         Args:
@@ -234,9 +199,7 @@ class NCSDecompiler(ComparableMixin):
         self.decompiled_code: list[str] = []
         self.variables: dict[int, str] = {}  # Stack offset -> variable name
         self.var_counter = 0
-        self.stack_tracking: dict[
-            int, list[ExpressionNode]
-        ] = {}  # Instruction index -> stack state
+        self.stack_tracking: dict[int, list[ExpressionNode]] = {}  # Instruction index -> stack state
         self.basic_blocks: list[BasicBlock] = []
         self.control_structures: list[ControlStructure] = []
         self.processed_blocks: set[BasicBlock] = set()
@@ -280,22 +243,16 @@ class NCSDecompiler(ComparableMixin):
             DecompileError: If decompilation fails
         """
         try:
-            import io  # noqa: PLC0415
+            import io
 
-            from pykotor.resource.formats.ncs.dencs.actions_data import ActionsData  # noqa: PLC0415
-            from pykotor.resource.formats.ncs.dencs.decompile_ncs import (
-                decompile_ncs,  # noqa: PLC0415
-            )
+            from pykotor.resource.formats.ncs.dencs.actions_data import ActionsData
+            from pykotor.resource.formats.ncs.dencs.decompile_ncs import decompile_ncs
 
             # Convert NCS to bytes for Decoder
             from pykotor.resource.formats.ncs.io_ncs import NCSBinaryWriter
-
-            # Use BytesIO for automatic buffer resizing
-            ncs_stream = io.BytesIO()
-            writer = NCSBinaryWriter(self.ncs, ncs_stream)
-            writer.write(auto_close=False)  # Don't auto-close so we can read the value
-            ncs_bytes = ncs_stream.getvalue()
-            ncs_stream.close()
+            ncs_bytes = bytearray()
+            writer = NCSBinaryWriter(self.ncs, ncs_bytes)
+            writer.write()
 
             # Create ActionsData from functions
             # ActionsData expects format with "// 0" marker, then function definitions
@@ -304,10 +261,8 @@ class NCSDecompiler(ComparableMixin):
             # Write the marker that ActionsData.read_actions() looks for
             actions_reader.write("// 0\n")
             # Write function definitions in DeNCS format
-            for _, func in enumerate(self.functions):
-                params_str = ", ".join(
-                    f"{param.datatype.name.lower()} {param.name}" for param in func.params
-                )
+            for i, func in enumerate(self.functions):
+                params_str = ", ".join(f"{param.datatype.name.lower()} {param.name}" for param in func.params)
                 actions_reader.write(f"{func.returntype.name.lower()} {func.name}({params_str});\n")
             actions_reader.seek(0)
             actions = ActionsData(actions_reader)
@@ -316,13 +271,12 @@ class NCSDecompiler(ComparableMixin):
             stream = io.BytesIO(bytes(ncs_bytes))
             result = decompile_ncs(stream, actions)
             if result is None:
-                raise DecompileError("DeNCS decompilation returned None")  # noqa: TRY301
-            return result.get_code() if hasattr(result, "get_code") else str(result)
+                raise DecompileError("DeNCS decompilation returned None")
+            return result.get_code() if hasattr(result, 'get_code') else str(result)
         except Exception as e:
-            import traceback  # noqa: PLC0415
-
+            import traceback
             tb_str = "".join(traceback.format_exception(type(e), e, e.__traceback__))
-            logger.exception("DeNCS decompilation failed:\n%s", tb_str)
+            logger.error("DeNCS decompilation failed:\n%s", tb_str)
             msg = f"DeNCS decompilation failed: {e}"
             raise DecompileError(msg) from e
 
@@ -435,10 +389,10 @@ class NCSDecompiler(ComparableMixin):
             if i + 1 < len(blocks):
                 next_block = blocks[i + 1]
                 # Fall-through if last instruction doesn't branch or is conditional
-                if (
-                    last_inst
-                    and last_inst.ins_type in {NCSInstructionType.JZ, NCSInstructionType.JNZ}
-                ) or (last_inst and not last_inst.is_control_flow()):
+                if last_inst and last_inst.ins_type in {NCSInstructionType.JZ, NCSInstructionType.JNZ}:
+                    block.successors.append(next_block)
+                    next_block.predecessors.append(block)
+                elif last_inst and not last_inst.is_control_flow():
                     block.successors.append(next_block)
                     next_block.predecessors.append(block)
 
@@ -464,30 +418,20 @@ class NCSDecompiler(ComparableMixin):
 
     def _identify_control_structures(self):
         """Identify control structures from basic blocks."""
-        block_to_index: dict[int, int] = {id(b): i for i, b in enumerate(self.basic_blocks)}
         # Identify loops by finding back edges
         for block in self.basic_blocks:
-            succ_idx = block_to_index[id(block)]
             for successor in block.successors:
                 # Back edge: successor's index < block's index
-                successor_idx = block_to_index.get(id(successor))
-                if successor_idx is None or successor_idx >= succ_idx:
-                    continue
-                # This is a loop
-                structure = ControlStructure(
-                    structure_type="while",  # Default to while, refine later
-                    start_block=successor,
-                    end_block=block,
-                    body_blocks=[
-                        b
-                        for b in self.basic_blocks
-                        if successor_idx < block_to_index[id(b)] <= succ_idx
-                    ],
-                )
-                self.control_structures.append(structure)
-                logger.debug(
-                    f"Found loop structure from block {block.start_index} to {successor.start_index}"
-                )
+                if self.basic_blocks.index(successor) < self.basic_blocks.index(block):
+                    # This is a loop
+                    structure = ControlStructure(
+                        structure_type="while",  # Default to while, refine later
+                        start_block=successor,
+                        end_block=block,
+                        body_blocks=[b for b in self.basic_blocks if self.basic_blocks.index(successor) < self.basic_blocks.index(b) <= self.basic_blocks.index(block)],
+                    )
+                    self.control_structures.append(structure)
+                    logger.debug(f"Found loop structure from block {block.start_index} to {successor.start_index}")
 
         # Identify if/else by pattern: JZ -> if-block -> JMP -> else-block -> end
         for i, block in enumerate(self.basic_blocks):
@@ -510,15 +454,9 @@ class NCSDecompiler(ComparableMixin):
                                     structure = ControlStructure(
                                         structure_type="if",
                                         start_block=block,
-                                        end_block=self.basic_blocks[
-                                            self._find_block_index(jmp_target_idx)
-                                        ],
-                                        body_blocks=self.basic_blocks[i + 1 : j + 1],
-                                        else_blocks=self.basic_blocks[
-                                            self._find_block_index(
-                                                jz_target_idx
-                                            ) : self._find_block_index(jmp_target_idx)
-                                        ],
+                                        end_block=self.basic_blocks[self._find_block_index(jmp_target_idx)],
+                                        body_blocks=self.basic_blocks[i + 1:j + 1],
+                                        else_blocks=self.basic_blocks[self._find_block_index(jz_target_idx):self._find_block_index(jmp_target_idx)],
                                     )
                                     self.control_structures.append(structure)
                                     break
@@ -575,9 +513,7 @@ class NCSDecompiler(ComparableMixin):
                 if not in_structure:
                     self._decompile_block(successor, indent)
 
-    def _process_instruction(
-        self, inst: NCSInstruction, stack: list[ExpressionNode], indent: int
-    ) -> list[ExpressionNode]:
+    def _process_instruction(self, inst: NCSInstruction, stack: list[ExpressionNode], indent: int) -> list[ExpressionNode]:
         """Process a single instruction and update stack state.
 
         Args:
@@ -604,53 +540,36 @@ class NCSDecompiler(ComparableMixin):
             stack.append(ExpressionNode("literal", f'"{value}"'))
         elif inst.ins_type == NCSInstructionType.CONSTO:
             value = inst.args[0] if inst.args else 0
-            stack.append(
-                ExpressionNode("literal", "OBJECT_INVALID" if value == 0 else f"Object({value})")
-            )
+            stack.append(ExpressionNode("literal", "OBJECT_INVALID" if value == 0 else f"Object({value})"))
 
         # Arithmetic operations
         elif inst.ins_type in {
-            NCSInstructionType.ADDII,
-            NCSInstructionType.ADDFF,
-            NCSInstructionType.ADDIF,
-            NCSInstructionType.ADDFI,
-            NCSInstructionType.ADDSS,
-            NCSInstructionType.ADDVV,
+            NCSInstructionType.ADDII, NCSInstructionType.ADDFF, NCSInstructionType.ADDIF,
+            NCSInstructionType.ADDFI, NCSInstructionType.ADDSS, NCSInstructionType.ADDVV,
         }:
             if len(stack) >= 2:
                 right = stack.pop()
                 left = stack.pop()
                 stack.append(ExpressionNode("binary", "+", [left, right]))
         elif inst.ins_type in {
-            NCSInstructionType.SUBII,
-            NCSInstructionType.SUBFF,
-            NCSInstructionType.SUBIF,
-            NCSInstructionType.SUBFI,
-            NCSInstructionType.SUBVV,
+            NCSInstructionType.SUBII, NCSInstructionType.SUBFF, NCSInstructionType.SUBIF,
+            NCSInstructionType.SUBFI, NCSInstructionType.SUBVV,
         }:
             if len(stack) >= 2:
                 right = stack.pop()
                 left = stack.pop()
                 stack.append(ExpressionNode("binary", "-", [left, right]))
         elif inst.ins_type in {
-            NCSInstructionType.MULII,
-            NCSInstructionType.MULFF,
-            NCSInstructionType.MULIF,
-            NCSInstructionType.MULFI,
-            NCSInstructionType.MULVF,
-            NCSInstructionType.MULFV,
+            NCSInstructionType.MULII, NCSInstructionType.MULFF, NCSInstructionType.MULIF,
+            NCSInstructionType.MULFI, NCSInstructionType.MULVF, NCSInstructionType.MULFV,
         }:
             if len(stack) >= 2:
                 right = stack.pop()
                 left = stack.pop()
                 stack.append(ExpressionNode("binary", "*", [left, right]))
         elif inst.ins_type in {
-            NCSInstructionType.DIVII,
-            NCSInstructionType.DIVFF,
-            NCSInstructionType.DIVIF,
-            NCSInstructionType.DIVFI,
-            NCSInstructionType.DIVVF,
-            NCSInstructionType.DIVFV,
+            NCSInstructionType.DIVII, NCSInstructionType.DIVFF, NCSInstructionType.DIVIF,
+            NCSInstructionType.DIVFI, NCSInstructionType.DIVVF, NCSInstructionType.DIVFV,
         }:
             if len(stack) >= 2:
                 right = stack.pop()
@@ -664,22 +583,16 @@ class NCSDecompiler(ComparableMixin):
 
         # Comparisons
         elif inst.ins_type in {
-            NCSInstructionType.EQUALII,
-            NCSInstructionType.EQUALFF,
-            NCSInstructionType.EQUALOO,
-            NCSInstructionType.EQUALSS,
-            NCSInstructionType.EQUALTT,
+            NCSInstructionType.EQUALII, NCSInstructionType.EQUALFF, NCSInstructionType.EQUALOO,
+            NCSInstructionType.EQUALSS, NCSInstructionType.EQUALTT,
         }:
             if len(stack) >= 2:
                 right = stack.pop()
                 left = stack.pop()
                 stack.append(ExpressionNode("binary", "==", [left, right]))
         elif inst.ins_type in {
-            NCSInstructionType.NEQUALII,
-            NCSInstructionType.NEQUALFF,
-            NCSInstructionType.NEQUALOO,
-            NCSInstructionType.NEQUALSS,
-            NCSInstructionType.NEQUALTT,
+            NCSInstructionType.NEQUALII, NCSInstructionType.NEQUALFF, NCSInstructionType.NEQUALOO,
+            NCSInstructionType.NEQUALSS, NCSInstructionType.NEQUALTT,
         }:
             if len(stack) >= 2:
                 right = stack.pop()
@@ -794,10 +707,8 @@ class NCSDecompiler(ComparableMixin):
 
         # Variable assignments (CPDOWNSP/CPDOWNBP)
         elif inst.ins_type in {
-            NCSInstructionType.CPDOWNSP,
-            NCSInstructionType.CPDOWNBP,
-            NCSInstructionType.CPTOPBP,
-            NCSInstructionType.CPTOPSP,
+            NCSInstructionType.CPDOWNSP, NCSInstructionType.CPDOWNBP,
+            NCSInstructionType.CPTOPBP, NCSInstructionType.CPTOPSP,
         }:
             if inst.args and len(inst.args) >= 2:
                 offset = inst.args[0]
@@ -814,12 +725,7 @@ class NCSDecompiler(ComparableMixin):
                 stack.pop()
 
         # RSADD instructions (variable declarations)
-        elif inst.ins_type in {
-            NCSInstructionType.RSADDI,
-            NCSInstructionType.RSADDF,
-            NCSInstructionType.RSADDS,
-            NCSInstructionType.RSADDO,
-        }:
+        elif inst.ins_type in {NCSInstructionType.RSADDI, NCSInstructionType.RSADDF, NCSInstructionType.RSADDS, NCSInstructionType.RSADDO}:
             var_name = self._get_variable_name(self.var_counter * 4)
             type_name = {
                 NCSInstructionType.RSADDI: "int",
@@ -847,3 +753,4 @@ class NCSDecompiler(ComparableMixin):
             var_num = len(self.variables)
             self.variables[offset] = f"var_{var_num}"
         return self.variables[offset]
+

@@ -16,14 +16,9 @@ from pathlib import Path, PurePath
 from typing import IO, TYPE_CHECKING, Any, Callable
 
 from loggerplus import RobustLogger
-from utility.misc import ProcessorArchitecture, ensure_directory_exists, get_normalized_extension
-from utility.system.os_helper import (
-    get_app_dir,
-    get_mac_dot_app_dir,
-    is_frozen,
-    remove_any,
-    win_hide_file,
-)
+
+from utility.misc import ProcessorArchitecture
+from utility.system.os_helper import get_app_dir, get_mac_dot_app_dir, is_frozen, remove_any, win_hide_file
 from utility.system.path import ChDir
 from utility.updater.downloader import FileDownloader, download_mega_file_url
 from utility.updater.restarter import RestartStrategy, Restarter, UpdateStrategy
@@ -525,7 +520,7 @@ class AppUpdate(LibUpdate):  # pragma: no cover
 
     def _unix_overwrite(self):
         # Unix: Overwrites the running applications binary
-        if platform.system() == "Darwin" and self._current_app_dir.name.endswith("MacOS"):
+        if platform.system() == "Darwin" and self._current_app_dir.endswith("MacOS"):
             self.log.debug("Looks like we're dealing with a Mac GUI")
             temp_dir: Path = get_mac_dot_app_dir(self._current_app_dir)
             self._current_app_dir = temp_dir
@@ -632,10 +627,8 @@ class AppUpdate(LibUpdate):  # pragma: no cover
                 old_app_path.unlink(missing_ok=True)
             elif old_app_path.is_dir():
                 shutil.rmtree(str(old_app_path), ignore_errors=True)
-            elif not old_app_path.exists():
-                raise ValueError(
-                    f"Old app path at '{old_app_path}' was neither a file or directory, perhaps we don't have permission to check? No changes have been made."
-                )
+            elif old_app_path.exists():
+                raise ValueError(f"Old app path at '{old_app_path}' was neither a file or directory, perhaps we don't have permission to check? No changes have been made.")
         except PermissionError:
             # Fallback to the good ol' rename strategy.
             randomized_old_app_path: Path = old_app_path.with_suffix(

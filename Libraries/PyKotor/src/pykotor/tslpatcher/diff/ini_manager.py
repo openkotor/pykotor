@@ -69,17 +69,16 @@ class INIManager:
             self.load()
 
         # Ensure section exists
-        if self.config is not None and section_name not in self.config:
+        if (
+            self.config is not None
+            and section_name not in self.config
+        ):
             self.config[section_name] = {}
 
-        section: dict[str, Any] = (
-            cast(
-                "dict[str, Any]",
-                self.config[section_name],
-            )
-            if self.config is not None
-            else {}
-        )
+        section: dict[str, Any] = cast(
+            "dict[str, Any]",
+            self.config[section_name],
+        ) if self.config is not None else {}
 
         # Parse and merge lines
         for line in lines:
@@ -95,9 +94,9 @@ class INIManager:
             value = value.strip()
 
             # Remove quotes if present
-            if (value.startswith('"') and value.endswith('"')) or (
-                value.startswith("'") and value.endswith("'")
-            ):
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+            elif value.startswith("'") and value.endswith("'"):
                 value = value[1:-1]
 
             # ConfigObj handles lists automatically
@@ -151,7 +150,10 @@ class INIManager:
                 current_lines = []
 
                 # Ensure section exists
-                if self.config is not None and section_name not in self.config:
+                if (
+                    self.config is not None
+                    and section_name not in self.config
+                ):
                     self.config[section_name] = {}
             # Accumulate lines for current section
             elif current_section is not None:
@@ -196,3 +198,4 @@ class INIManager:
         if self.config is None:
             return False
         return section_name in self.config
+

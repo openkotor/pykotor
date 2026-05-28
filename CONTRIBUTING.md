@@ -1,430 +1,455 @@
 # Contributing to PyKotor
 
-Thank you for your interest in contributing to PyKotor! This guide covers development setup, coding standards, and the contribution workflow.
+Thank you for your interest in contributing to PyKotor! This document provides guidelines and instructions for contributing to the project.
 
 ## Table of Contents
 
-- [Prerequisites](#prerequisites)
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
 - [Development Setup](#development-setup)
-- [Development Workflow](#development-workflow)
-- [Code Standards](#code-standards)
+- [Project Structure](#project-structure)
+- [Making Changes](#making-changes)
 - [Testing](#testing)
+- [Code Style](#code-style)
 - [Submitting Changes](#submitting-changes)
-- [Resources](#resources)
+- [Documentation](#documentation)
 
-## Prerequisites
+## Code of Conduct
 
-- **Python 3.8+** (3.9+ recommended for development)
-- **Platforms**: Windows 7–11, macOS, Linux; common architectures (amd64/arm64) supported
-- **Git** for version control
-- A code editor with Python support (VS Code, PyCharm, etc.)
+This project adheres to a code of conduct that all contributors are expected to follow. Please be respectful, inclusive, and constructive in all interactions.
+
+## Getting Started
+
+1. **Fork the repository** on GitHub
+2. **Clone your fork** locally:
+
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/PyKotor.git
+   cd PyKotor
+   ```
+
+3. **Add the upstream repository**:
+
+   ```bash
+   git remote add upstream https://github.com/th3w1zard1/PyKotor.git
+   ```
 
 ## Development Setup
 
-### 1. Clone the Repository
+PyKotor supports multiple package managers. Choose the one that works best for you:
 
-```bash
-git clone https://github.com/OpenKotOR/PyKotor.git
-cd PyKotor
+### Option 1: Using `uv` (Recommended)
+
+`uv` is a fast Python package installer and resolver written in Rust.
+
+1. **Install uv** (if not already installed):
+
+   ```bash
+   # Windows (PowerShell)
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+   
+   # macOS/Linux
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   uv sync
+   ```
+
+3. **Activate the virtual environment**:
+
+   ```bash
+   # Windows
+   .venv\Scripts\activate
+   
+   # macOS/Linux
+   source .venv/bin/activate
+   ```
+
+4. **Install the project in editable mode**:
+
+   ```bash
+   # Install core library
+   uv pip install -e Libraries/PyKotor
+   
+   # Install with optional extensions
+   uv pip install -e Libraries/PyKotor -e Libraries/PyKotorGL -e Libraries/PyKotorFont
+   
+   # Install specific tools
+   uv pip install -e Tools/HolocronToolset
+   uv pip install -e Tools/HoloPatcher
+   ```
+
+### Option 2: Using Poetry
+
+Poetry is a dependency management and packaging tool.
+
+1. **Install Poetry** (if not already installed):
+
+   ```bash
+   # Windows (PowerShell)
+   (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+   
+   # macOS/Linux
+   curl -sSL https://install.python-poetry.org | python3 -
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   poetry install
+   ```
+
+3. **Activate the virtual environment**:
+
+   ```bash
+   poetry shell
+   ```
+
+4. **Install with optional dependencies**:
+
+   ```bash
+   # Install with all extensions
+   poetry install --extras "all-extensions"
+   
+   # Install with specific tools
+   poetry install --extras "holocrontoolset"
+   ```
+
+### Option 3: Using pip
+
+Standard pip installation for those who prefer it.
+
+1. **Create a virtual environment**:
+
+   ```bash
+   # Windows
+   python -m venv .venv
+   .venv\Scripts\activate
+   
+   # macOS/Linux
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   # Install core library
+   pip install -e Libraries/PyKotor
+   
+   # Install with extensions
+   pip install -e Libraries/PyKotor[font,gl]
+   
+   # Install specific tools (they will pull in their dependencies)
+   pip install -e Tools/HolocronToolset
+   pip install -e Tools/HoloPatcher
+   ```
+
+3. **Install development dependencies**:
+
+   ```bash
+   pip install -e .[dev]
+   ```
+
+## Project Structure
+
+```
+PyKotor/
+├── Libraries/              # Core libraries
+│   ├── PyKotor/          # Main library (pykotor)
+│   ├── PyKotorGL/        # OpenGL rendering (pykotorgl)
+│   ├── PyKotorFont/      # Font rendering (pykotorfont)
+│   └── Utility/           # Shared utilities
+├── Tools/                 # Standalone tools
+│   ├── HolocronToolset/  # Main GUI editor
+│   ├── HoloPatcher/      # TSLPatcher alternative
+│   ├── BatchPatcher/     # Batch translation tool
+│   ├── KotorDiff/        # Diff generation tool
+│   └── GuiConverter/    # GUI conversion tool
+├── tests/                # Test suite
+├── docs/                 # Documentation
+└── scripts/              # Helper scripts
 ```
 
-Initialize the **wiki** submodule when you need the full Markdown corpus under `wiki/` (link checks, Holocron help packaging, bulk doc edits):
+### Package Dependencies
 
-```bash
-git submodule update --init wiki
-```
+- **PyKotor**: Core library (no optional deps required)
+- **PyKotorGL**: Requires `pykotor>=1.8.0`, `numpy`, `PyOpenGL`, `PyGLM`
+- **PyKotorFont**: Requires `pykotor>=1.8.0`, `pillow`
+- **HolocronToolset**: Requires `pykotor>=1.8.0`, `pykotorgl>=1.8.0`, Qt bindings
+- **HoloPatcher**: Requires `pykotor>=1.8.0`
+- **BatchPatcher**: Requires `pykotor>=1.8.0`, `pykotorfont>=1.8.0`
 
-The [GitHub wiki web UI](https://github.com/OpenKotOR/PyKotor/wiki) mirrors that content. If you change `wiki/*.md`, follow the **dual-repository** workflow in [`.github/copilot-instructions.md`](.github/copilot-instructions.md): commit and push to `PyKotor.wiki`, then commit the updated submodule pointer in this repository.
+## Making Changes
 
-**Faster clone (if full clone is slow or stalls):** The repository is large (~380 MB). If the clone hangs around 8–15%, use a shallow clone:
+1. **Create a new branch** for your changes:
 
-```bash
-# Shallow clone: only latest commit (fast, ~50–100 MB)
-git clone --depth 1 https://github.com/OpenKotOR/PyKotor.git
-cd PyKotor
-```
+   ```bash
+   git checkout -b feature/your-feature-name
+   # or
+   git checkout -b fix/your-bug-fix
+   ```
 
-To later fetch full history if needed (e.g. for bisect): `git fetch --unshallow`.
+2. **Make your changes** following the code style guidelines
 
-Optional: clone without blob content first, then fetch as needed:
+3. **Test your changes**:
 
-```bash
-git clone --filter=blob:none --sparse https://github.com/OpenKotOR/PyKotor.git
-cd PyKotor
-```
+   ```bash
+   # Run all tests
+   pytest
+   
+   # Run specific test suite
+   pytest tests/test_pykotor/
+   
+   # Run with coverage
+   pytest --cov=pykotor --cov-report=html
+   ```
 
-### 2. Choose Your Setup Method
+4. **Update documentation** if needed
 
-**Option A: Using uv (Recommended - Fastest)**
+5. **Commit your changes**:
 
-Install uv from [astral-sh/uv installation](https://docs.astral.sh/uv/getting-started/installation/).
+   ```bash
+   git add .
+   git commit -m "Description of your changes"
+   ```
 
-Run tools with `--with-editable` to use your local source:
+   Use clear, descriptive commit messages. Follow the format:
 
-```bash
-# PyKotor CLI
-uvx --with-editable Libraries/PyKotor pykotor --help
+   ```
+   type(scope): brief description
+   
+   Longer explanation if needed
+   ```
 
-# Tools (add --with-editable for each package you're developing)
-uvx --with-editable Libraries/PyKotor --with-editable Tools/HolocronToolset holocrontoolset
-uvx --with-editable Libraries/PyKotor --with-editable Tools/HoloPatcher holopatcher
-uvx --with-editable Libraries/PyKotor --with-editable Tools/KotorDiff kotordiff
-```
-
-Or run directly from source:
-
-```bash
-uv run --directory Libraries/PyKotor/src --module pykotor --help
-uv run --directory Tools/HolocronToolset/src --module toolset
-uv run --directory Tools/HoloPatcher/src --module holopatcher
-```
-
-To install packages in editable mode with uv:
-
-```bash
-uv pip install -e "Libraries/PyKotor[all,dev]"
-# PyKotor depends on workspace member ``bioware-kaitai-formats`` (import ``bioware_kaitai_formats``).
-# From repo root, ``uv sync`` installs it; for isolated ``pip install -e Libraries/PyKotor``, install
-# ``Libraries/bioware-kaitai-formats`` editable first or use a published ``bioware-kaitai-formats`` wheel on PyPI.
-uv pip install -e "Tools/HolocronToolset"
-uv pip install -e "Tools/HoloPatcher"
-uv pip install -e "Tools/KotorDiff"
-```
-
-**Option B: Using pip with venv**
-
-```bash
-# Windows
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m ensurepip
-python -m pip install --upgrade pip
-python -m pip install -r Tools/HolocronToolset/requirements.txt
-python Tools/HolocronToolset/src/toolset/__main__.py
-# Repeat for HoloPatcher, KotorDiff, etc. as needed
-
-# macOS/Linux
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m ensurepip
-python3 -m pip install --upgrade pip
-python3 -m pip install -r Tools/HolocronToolset/requirements.txt
-python3 Tools/HolocronToolset/src/toolset/__main__.py
-```
-
-Or install in editable mode:
-
-```bash
-# Windows
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -e "Libraries/PyKotor[all,dev]"
-python -m pip install -e Tools/HolocronToolset -e Tools/HoloPatcher
-# holocrontoolset, holopatcher should now be on PATH
-
-# macOS/Linux
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install -e "Libraries/PyKotor[all,dev]"
-python3 -m pip install -e Tools/HolocronToolset -e Tools/HoloPatcher
-# holocrontoolset, holopatcher should now be on PATH
-```
-
-**Option C: Using Poetry**
-
-```bash
-poetry install --with dev
-poetry shell
-```
-
-### 3. Verify Installation
-
-```bash
-# Check library import
-python -c "import pykotor; print('PyKotor installed successfully')"
-
-# Check tools (if installed via pip/pipx)
-holocrontoolset --version
-holopatcher --version
-kotordiff --version  # or kotordiff --version
-
-# PyKotor CLI (included with pykotor package)
-pykotor --help
-pykotorcli --help
-```
-
-## Development Workflow
-
-### 1. Create a Feature Branch
-
-```bash
-git checkout -b feature/your-feature-name
-```
-
-Use meaningful branch names:
-- `feature/` for new features
-- `fix/` for bug fixes
-- `docs/` for documentation
-- `refactor/` for code refactoring
-
-### 2. Make Your Changes
-
-- Write clean, readable code following project conventions
-- Add tests for new functionality
-- Update documentation as needed
-- Keep commits focused and atomic
-
-### 3. Test Your Changes
-
-Run the scoped test suite before committing (see [Testing](#testing) for the full command):
-
-```bash
-QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
-  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
-  Libraries/PyKotor/tests
-```
-
-### 4. Check Code Quality
-
-```bash
-# Lint code
-ruff check .
-
-# Auto-fix linting issues
-ruff check --fix .
-
-# Format code
-ruff format .
-
-# Type check
-mypy Libraries/PyKotor/src/pykotor
-```
-
-### 5. Commit Your Changes
-
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-```bash
-git add .
-git commit -m "feat: add new feature"
-```
-
-Commit types:
-- `feat:` - New feature
-- `fix:` - Bug fix
-- `docs:` - Documentation changes
-- `style:` - Code style changes (formatting, missing semi colons, etc)
-- `refactor:` - Code refactoring
-- `test:` - Adding or updating tests
-- `chore:` - Maintenance tasks
-
-### 6. Push and Create Pull Request
-
-```bash
-git push origin feature/your-feature-name
-```
-
-Then create a pull request on GitHub with:
-- Clear description of changes
-- Reference to related issues
-- Screenshots for UI changes
-
-## Code Standards
-
-### Python Style
-
-- **Python Version**: Support Python 3.8+ (avoid 3.8+ only features)
-- **Code Style**: Follow [PEP 8](https://pep8.org/)
-- **Docstrings**: Use [Google style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)
-- **Type Hints**: Add type hints where appropriate (see [PEP 484](https://www.python.org/dev/peps/pep-0484/))
-- **Line Length**: 120 characters maximum
-
-### Example Code
-
-```python
-from typing import Optional
-
-
-def process_resource(resource_name: str, game_path: Optional[str] = None) -> bool:
-    """Process a game resource file.
-    
-    Args:
-        resource_name: Name of the resource to process.
-        game_path: Optional path to game installation.
-        
-    Returns:
-        True if processing succeeded, False otherwise.
-        
-    Raises:
-        ValueError: If resource_name is empty.
-    """
-    if not resource_name:
-        raise ValueError("resource_name cannot be empty")
-    
-    # Implementation here
-    return True
-```
-
-### Code Quality Tools
-
-We use the following tools:
-
-- **ruff**: Fast Python linter and formatter
-- **mypy**: Static type checker
-- **pytest**: Testing framework
-
-Run all checks:
-
-```bash
-# Lint
-ruff check .
-
-# Format
-ruff format .
-
-# Type check
-mypy Libraries/PyKotor/src/pykotor
-
-# Test (scoped; see Testing section)
-QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
-  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
-  Libraries/PyKotor/tests
-```
+   Types: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
 
 ## Testing
 
 ### Running Tests
 
-Use the scoped command from [`AGENTS.md`](AGENTS.md#tests) (matches [`.github/workflows/python-package.yml`](.github/workflows/python-package.yml)):
-
 ```bash
-QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
-  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
-  Libraries/PyKotor/tests
-```
+# All tests
+pytest
 
-**Gotchas:**
-
-- **Scope tests to `Libraries/PyKotor/tests`**. Running pytest from the repo root without that path collects other packages (e.g. Toolset) and often fails during collection.
-- **Linux requires `--import-mode=importlib`**. Without it, pytest fails with `ModuleNotFoundError: No module named 'resource.formats'` because the test directory `Libraries/PyKotor/tests/resource/` collides with Python's stdlib `resource` module.
-
-**With verbose output:**
-
-```bash
-QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
-  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
-  Libraries/PyKotor/tests -v
-```
-
-**Run specific tests:**
-
-```bash
-# Specific file
-uv run pytest --import-mode=importlib Libraries/PyKotor/tests/test_specific.py
+# Specific test file
+pytest tests/test_pykotor/test_resource_formats.py
 
 # Specific test
-uv run pytest --import-mode=importlib Libraries/PyKotor/tests/test_specific.py::test_function_name
+pytest tests/test_pykotor/test_resource_formats.py::TestTPC::test_read_tpc
 
-# Pattern matching
-uv run pytest --import-mode=importlib -k "test_pattern" Libraries/PyKotor/tests
+# With verbose output
+pytest -v
+
+# With coverage
+pytest --cov=pykotor --cov-report=term-missing
 ```
 
 ### Writing Tests
 
-Place tests under `Libraries/PyKotor/tests/` following these conventions:
+- Place tests in the `tests/` directory
+- Follow the existing test structure
+- Use descriptive test names
+- Test both success and failure cases
+- Include edge cases
 
-**File naming:**
-- `test_*.py` for test files
-- Match the module being tested: `pykotor/module.py` -> `tests/test_module.py`
-
-**Test naming:**
-- Use descriptive names: `test_function_name_with_valid_input()`
-- Use `test_` prefix for all test functions
-
-**Example test:**
+Example test structure:
 
 ```python
-import pytest
-from pykotor.resource.type import ResourceType
+from pykotor.resource.formats.tpc import read_tpc
 
+def test_read_tpc_success():
+    """Test reading a valid TPC file."""
+    # Arrange
+    test_file = Path("tests/files/test.tpc")
+    
+    # Act
+    tpc = read_tpc(test_file)
+    
+    # Assert
+    assert tpc is not None
+    assert tpc.width == 512
+```
 
-def test_resource_type_from_extension():
-    """Test ResourceType creation from file extension."""
-    assert ResourceType.from_extension("utc") == ResourceType.UTC
-    assert ResourceType.from_extension(".utc") == ResourceType.UTC
+## Code Style
 
+PyKotor uses `ruff` for linting and formatting. Configuration is in `pyproject.toml`.
 
-def test_resource_type_invalid_extension():
-    """Test ResourceType with invalid extension raises error."""
-    with pytest.raises(ValueError):
-        ResourceType.from_extension("invalid")
+### Formatting
+
+```bash
+# Format code
+ruff format .
+
+# Check formatting
+ruff format --check .
+```
+
+### Linting
+
+```bash
+# Run linter
+ruff check .
+
+# Auto-fix issues
+ruff check --fix .
+```
+
+### Key Style Guidelines
+
+- **Line length**: 175 characters (configured in `pyproject.toml`)
+- **Imports**: Use `from __future__ import annotations` at the top
+- **Type hints**: Use type hints for all function parameters and return values
+- **Docstrings**: Use Google-style docstrings
+- **Naming**: Follow PEP 8 (snake_case for functions/variables, PascalCase for classes)
+
+### Pre-commit Hooks (Optional)
+
+You can set up pre-commit hooks to automatically format and lint:
+
+```bash
+pip install pre-commit
+pre-commit install
 ```
 
 ## Submitting Changes
 
-### Before Submitting
+1. **Update your branch** with the latest changes:
 
-Ensure your changes:
-- [ ] Pass all tests (scoped command in [`AGENTS.md`](AGENTS.md#tests))
-- [ ] Pass linting (`ruff check .`)
-- [ ] Are formatted correctly (`ruff format .`)
-- [ ] Include type hints where appropriate
-- [ ] Have docstrings for public APIs
-- [ ] Include tests for new functionality
-- [ ] Update relevant documentation
+   ```bash
+   git fetch upstream
+   git rebase upstream/main
+   ```
 
-### Pull Request Guidelines
+2. **Push your changes** to your fork:
 
-**Title:**
-- Use conventional commit format: `feat: add new feature`
-- Be descriptive but concise
+   ```bash
+   git push origin feature/your-feature-name
+   ```
 
-**Description:**
-- Explain what changes were made and why
-- Reference related issues: `Fixes #123` or `Relates to #456`
-- Include screenshots for UI changes
-- List any breaking changes
+3. **Create a Pull Request** on GitHub:
+   - Provide a clear title and description
+   - Reference any related issues
+   - Include screenshots if UI changes
+   - Ensure all tests pass
+   - Update documentation as needed
 
-**Review Process:**
-1. Automated checks must pass (linting, tests, type checking)
-2. At least one maintainer review required
-3. Address review feedback promptly
-4. Keep the PR focused on a single concern
+4. **Respond to feedback** and make requested changes
 
-### After Approval
+## Documentation
 
-- Maintainers will merge your PR
-- Your changes will be included in the next release
-- You'll be credited in the release notes
+### Code Documentation
 
-## Resources
+- Use Google-style docstrings
+- Document all public functions, classes, and methods
+- Include parameter descriptions and return types
+- Add examples for complex functions
 
-- **[Python Style Guide (PEP 8)](https://pep8.org/)** - Python coding conventions
-- **[Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)** - Docstring conventions
-- **[Conventional Commits](https://www.conventionalcommits.org/)** - Commit message format
-- **[Project Wiki (GitHub UI)](https://github.com/OpenKotOR/PyKotor/wiki)** — browsable docs; source of truth for edits is the `wiki/` **git submodule** (`PyKotor.wiki.git`) after `git submodule update --init wiki`
-- **[Wiki Conventions](https://github.com/OpenKotOR/PyKotor/blob/master/wiki/Wiki-Conventions.md)** — style, link rules, and recommended validation scripts (`helper_scripts/wiki_scripts/`)
-- **[Issue Tracker](https://github.com/OpenKotOR/PyKotor/issues)** - Report bugs or request features
+Example:
 
-### Getting Help
+```python
+def read_tpc(file_path: Path) -> TPC:
+    """Read a TPC texture file from disk.
+    
+    Args:
+        file_path: Path to the TPC file to read
+        
+    Returns:
+        TPC object containing texture data
+        
+    Raises:
+        FileNotFoundError: If the file doesn't exist
+        ValueError: If the file is not a valid TPC
+    """
+```
 
-If you need help:
-- Check existing [documentation](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/docs)
-- Search [closed issues](https://github.com/OpenKotOR/PyKotor/issues?q=is%3Aissue+is%3Aclosed)
-- Open a [new issue](https://github.com/OpenKotOR/PyKotor/issues/new) with the question label
-- Review similar code in the codebase
+### User Documentation
 
-Thank you for contributing to PyKotor!
+- Update `README.md` for user-facing changes
+- Add examples to `docs/` for new features
+- Update tool-specific READMEs in `Tools/` directories
 
+## Development Workflow
+
+### Working on a Library
+
+1. Navigate to the library directory:
+
+   ```bash
+   cd Libraries/PyKotor
+   ```
+
+2. Install in editable mode:
+
+   ```bash
+   pip install -e .
+   ```
+
+3. Make your changes
+
+4. Test your changes:
+
+   ```bash
+   pytest ../../tests/test_pykotor/
+   ```
+
+### Working on a Tool
+
+1. Navigate to the tool directory:
+
+   ```bash
+   cd Tools/HolocronToolset
+   ```
+
+2. Install in editable mode:
+
+   ```bash
+   pip install -e .
+   ```
+
+3. Make your changes
+
+4. Test your changes:
+
+   ```bash
+   pytest ../../tests/test_toolset/
+   ```
+
+## Building Packages
+
+### Building with setuptools
+
+```bash
+# Build wheel
+python -m build
+
+# Build source distribution
+python -m build --sdist
+```
+
+### Building with Poetry
+
+```bash
+poetry build
+```
+
+### Building with uv
+
+```bash
+uv build
+```
+
+## Getting Help
+
+- **GitHub Issues**: For bug reports and feature requests
+- **Discussions**: For questions and general discussion
+- **Documentation**: Check `docs/` for detailed guides
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the LGPL-3.0-or-later License.
+
+Thank you for contributing to PyKotor! 🎉

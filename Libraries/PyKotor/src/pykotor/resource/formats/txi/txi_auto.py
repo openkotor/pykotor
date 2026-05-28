@@ -27,7 +27,7 @@ def write_txi(
     file_format: ResourceType = ResourceType.TXI,
 ):
     """Writes the TXI data to the target location with the specified format."""
-    if file_format == ResourceType.TXI:
+    if file_format is ResourceType.TXI:
         TXIBinaryWriter(txi, target).write()
     else:
         msg = "Unsupported format specified; use TXI."

@@ -38,7 +38,6 @@ from loggerplus import RobustLogger
 try:
     from Crypto.Cipher import AES
     from Crypto.Util import Counter
-
     _CRYPTO_AVAILABLE = True
 except ImportError:
     _CRYPTO_AVAILABLE = False
@@ -383,7 +382,8 @@ def _download_file(
 ):
     if not _CRYPTO_AVAILABLE:
         raise ImportError(
-            "pycryptodome is required for MEGA file downloads. Install it with: pip install pycryptodome"
+            "pycryptodome is required for MEGA file downloads. "
+            "Install it with: pip install pycryptodome"
         )
     dest_path = Path(dest or Path.cwd()).absolute()
     if file is None:

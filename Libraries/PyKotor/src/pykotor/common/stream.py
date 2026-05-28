@@ -11,13 +11,7 @@ from pathlib import Path
 from typing import IO, Any
 
 from pykotor.common.language import LocalizedString
-from utility.common.stream import (
-    ArrayHead as _ArrayHead,
-    RawBinaryReader,
-    RawBinaryWriter,
-    RawBinaryWriterBytearray,
-    RawBinaryWriterFile,
-)
+from utility.common.stream import ArrayHead as _ArrayHead, RawBinaryReader, RawBinaryWriter, RawBinaryWriterBytearray, RawBinaryWriterFile
 
 ArrayHead = _ArrayHead  # backwards compatibility
 
@@ -25,7 +19,9 @@ ArrayHead = _ArrayHead  # backwards compatibility
 class BinaryReader(RawBinaryReader, ABC):
     """Provides easier reading of binary objects that abstracts uniformly to all different stream/data types."""
 
-    def read_locstring(self) -> LocalizedString:
+    def read_locstring(
+        self,
+    ) -> LocalizedString:
         """Reads the localized string data structure from the stream.
 
         The binary data structure that is read follows the structure found in the GFF format specification.
@@ -168,9 +164,7 @@ if __name__ == "__main__":
         assert FILE_DATA is not None
         instantiation_times: list[float] = []
         operation_times: list[float] = []
-        stream: (
-            BinaryReader | io.BytesIO | io.FileIO | io.BufferedReader | io.BufferedRandom | None
-        ) = None
+        stream: BinaryReader | io.BytesIO | io.FileIO | io.BufferedReader | io.BufferedRandom | None = None
         raw_raw_stream: io.RawIOBase | io.BufferedIOBase | mmap.mmap | None = None
         raw_stream: IO[Any] | mmap.mmap | None = None
 
@@ -185,11 +179,7 @@ if __name__ == "__main__":
                         stream = BinaryReader.from_bytes(FILE_DATA)
                     elif mode == "mmap":
                         raw_raw_stream = open(TEST_FILE, "rb")  # noqa: PTH123, SIM115
-                        raw_stream = mmap.mmap(
-                            raw_raw_stream.fileno(),
-                            os.stat(TEST_FILE).st_size,
-                            access=mmap.ACCESS_READ,
-                        )  # noqa: PTH116
+                        raw_stream = mmap.mmap(raw_raw_stream.fileno(), os.stat(TEST_FILE).st_size, access=mmap.ACCESS_READ)  # noqa: PTH116
                         instantiation_start_time = time.time()
                         stream = BinaryReader(raw_stream)
                     elif mode == "stream(io.BufferedReader)":
@@ -199,9 +189,7 @@ if __name__ == "__main__":
                         stream = BinaryReader.from_stream(raw_stream)
                     elif mode == "stream(io.BufferedRandom)":
                         raw_raw_stream = open(TEST_FILE, "r+b")  # noqa: PTH123, SIM115
-                        assert isinstance(raw_raw_stream, io.RawIOBase), (
-                            "raw_raw_stream must be a RawIOBase"
-                        )
+                        assert isinstance(raw_raw_stream, io.RawIOBase), "raw_raw_stream must be a RawIOBase"
                         raw_stream = io.BufferedRandom(raw_raw_stream)
                         instantiation_start_time = time.time()
                         stream = BinaryReader.from_stream(raw_stream)
@@ -228,14 +216,10 @@ if __name__ == "__main__":
                 else:
                     raw_stream = open(TEST_FILE, mode)  # noqa: PTH123, SIM115
                     if stream_class is io.BufferedReader:
-                        assert isinstance(raw_stream, io.RawIOBase), (
-                            "raw_stream must be a RawIOBase"
-                        )
+                        assert isinstance(raw_stream, io.RawIOBase), "raw_stream must be a RawIOBase"
                         stream = io.BufferedReader(raw_stream)
                     elif stream_class is io.BufferedRandom:
-                        assert isinstance(raw_stream, io.RawIOBase), (
-                            "raw_stream must be a RawIOBase"
-                        )
+                        assert isinstance(raw_stream, io.RawIOBase), "raw_stream must be a RawIOBase"
                         stream = io.BufferedRandom(raw_stream)
                     else:
                         stream = stream_class(TEST_FILE, mode)  # pyright: ignore[reportArgumentType, reportCallIssue]
@@ -298,16 +282,14 @@ if __name__ == "__main__":
         # Run the tests
         for stream_class, mode in stream_types:
             print(f"Testing {stream_class.__name__}, mode={mode}")
-            total_instantiation_time, total_operation_time, total_time = test_io_performance(
-                stream_class, mode
-            )
+            total_instantiation_time, total_operation_time, total_time = test_io_performance(stream_class, mode)
             results.append(
                 [
                     f"{stream_class.__name__}({mode})",  # pyright: ignore[reportArgumentType]
                     total_instantiation_time,
                     total_operation_time,
                     total_time,
-                ],
+                ]
             )
 
         # Sort by total performance (fastest first)
@@ -328,9 +310,7 @@ if __name__ == "__main__":
         )
         for result in results:
             speed_percent: float = (fastest_instantiation_time / result[1]) * 100
-            print(
-                f"{result[0]}: {result[1]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[1] / NUM_INSTANTIATIONS:.2f}s per)"
-            )
+            print(f"{result[0]}: {result[1]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[1] / NUM_INSTANTIATIONS:.2f}s per)")
 
         print(
             "------------------------------------------------------\n\nOperation Statistics (sorted by fastest to slowest):"

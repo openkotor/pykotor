@@ -93,23 +93,22 @@ def _read_rim_entries(
 
 class RIMBinaryReader(ResourceReader):
     """Reads RIM (Resource Information Manager) files.
-
+    
     RIM files are container formats similar to ERF files, used for module resources.
     They store multiple game resources with ResRef, type, and data.
-
+    
     References:
     ----------
-        RIM IO mirrors the on-disk layout described in ``rim_data``.
-
-        Note: RIM files use similar structure to ERF files but are read-only templates.
-        The engine loads RIM files as module blueprints and exports to ERF for runtime mutation.
-        Missing Features:
-        ----------------
-        - ResRef lowercasing (not applied on read)
-        - Other readers may permute header/table field order; this module follows ``rim_data``.
-
+        vendor/reone/src/libs/resource/format/rimreader.cpp:26-58 (RIM reading)
+        vendor/reone/src/libs/resource/format/rimwriter.cpp (RIM writing)
+        vendor/xoreos-tools/src/unrim.cpp (RIM extraction tool)
+    
+    Missing Features:
+    ----------------
+        - ResRef lowercasing (reone lowercases resrefs at rimreader.cpp:47)
+        - Field order difference: PyKotor reads restype, resids, resoffsets, ressizes
+          vs reone which reads resRef, type (uint16), skips 6 bytes, offset, size
     """
-
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -121,11 +120,45 @@ class RIMBinaryReader(ResourceReader):
 
     @autoclose
     def load(self, *, auto_close: bool = True) -> RIM:  # noqa: FBT001, FBT002, ARG002
-        data = self._reader.read_all()
-        try:
-            self._rim = _load_rim_from_kaitai(data)
-        except kaitaistruct.KaitaiStructError:
-            self._rim = _load_rim_legacy(BinaryReader.from_bytes(data, 0))
+        self._rim = RIM()
+
+        file_type = self._reader.read_string(4)
+        file_version = self._reader.read_string(4)
+
+        if file_type != "RIM ":
+            msg = "The RIM file type that was loaded was unrecognized."
+            raise ValueError(msg)
+
+        if file_version != "V1.0":
+            msg = "The RIM version that was loaded is not supported."
+            raise ValueError(msg)
+
+        self._reader.skip(4)
+        entry_count = self._reader.read_uint32()
+        offset_to_keys = self._reader.read_uint32()
+
+        resrefs: list[str] = []
+        resids: list[int] = []
+        restypes: list[int] = []
+        resoffsets: list[int] = []
+        ressizes: list[int] = []
+        self._reader.seek(offset_to_keys)
+        for _ in range(entry_count):
+            # vendor/reone/src/libs/resource/format/rimreader.cpp:46-58
+            # reone lowercases resref at line 47
+            # NOTE: Field order differs - PyKotor reads restype before resids, reone reads differently
+            resref_str = self._reader.read_string(16).rstrip("\0")
+            resrefs.append(resref_str.lower())
+            restypes.append(self._reader.read_uint32())
+            resids.append(self._reader.read_uint32())
+            resoffsets.append(self._reader.read_uint32())
+            ressizes.append(self._reader.read_uint32())
+
+        for i in range(entry_count):
+            self._reader.seek(resoffsets[i])
+            resdata = self._reader.read_bytes(ressizes[i])
+            self._rim.set_data(resrefs[i], ResourceType.from_id(restypes[i]), resdata)
+
         return self._rim
 
 

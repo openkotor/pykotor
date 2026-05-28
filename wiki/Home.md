@@ -1,41 +1,227 @@
 # Welcome to the PyKotor Wiki
 
-<a id="documentation"></a>
+## Documentation
 
-PyKotor is an LGPL-3.0-or-later monorepo whose published Python packages include `pykotor`, `holopatcher`, `holocrontoolset`, and `kotordiff`. [[PyKotor `pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/pyproject.toml), [HoloPatcher `pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HoloPatcher/pyproject.toml), [Holocron Toolset `pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/pyproject.toml), [KotorDiff `pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/KotorDiff/pyproject.toml)]
+### For End Users
 
-The Markdown pages in `wiki/` are packaged into Holocron Toolset help output through package-data rules for `toolset/help/wiki/**/*.md` and matching `MANIFEST.in` includes, so this wiki is part of the shipped desktop toolchain rather than a website-only manual. [[Holocron Toolset `pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/pyproject.toml), [Holocron Toolset `MANIFEST.in`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/MANIFEST.in)]
+- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher)
 
-## In-repo components
+### For Mod Developers
 
-- **PyKotor** describes itself as a typed Python library for reading, modifying, and writing KotOR engine files, exposes `pykotor` and `pykotorcli` console scripts, and depends on `bioware-kaitai-formats` plus `kaitaistruct` as part of its format stack. [[PyKotor `pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/pyproject.toml)]
-- **PyKotor** organizes installation discovery and extraction in `pykotor.extract.installation`, resource typing in `pykotor.resource.type`, and parser/writer implementations under `pykotor.resource.formats`. [[`pykotor.extract.installation`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/installation.py), [`pykotor.resource.type`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py), [`pykotor.resource.formats`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats)]
-- **HoloPatcher** is packaged as a cross-platform TSLPatcher-compatible installer with a `holopatcher` console entry point, and its patching flow is implemented through `holopatcher.__main__` plus the shared `pykotor.tslpatcher.reader`, `pykotor.tslpatcher.patcher`, and `pykotor.tslpatcher.writer` modules. [[HoloPatcher `pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HoloPatcher/pyproject.toml), [`holopatcher.__main__`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HoloPatcher/src/holopatcher/__main__.py), [`pykotor.tslpatcher.reader`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tslpatcher/reader.py), [`pykotor.tslpatcher.patcher`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py), [`pykotor.tslpatcher.writer`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tslpatcher/writer.py)]
-- **Holocron Toolset** is packaged as a PyQt-backed GUI application with script entry points for the full toolset, standalone editors such as `are-editor`, `mdl-editor`, `utc-editor`, and `twoda-editor`, and **`module-designer`** / **`indoor-builder`** entry points that both open **Module Designer** (`indoor-builder` jumps straight into Layout mode). [[Holocron Toolset `pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/pyproject.toml)]
-- **Holocron Toolset** maps individual resource families to editor classes and file extensions in `toolset.gui.editors.standalone`, which is why the wiki includes editor- and workflow-oriented pages in addition to file-format references. [[`toolset.gui.editors.standalone`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/standalone.py)]
-- **KotorDiff** is packaged as a shim console tool over `pykotor.diff_tool`, and the runtime application layer imports the diff engine, TSLPatcher data generator, and incremental writer from the shared PyKotor codebase. [[KotorDiff `pyproject.toml`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/KotorDiff/pyproject.toml), [`pykotor.diff_tool.__init__`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/diff_tool/__init__.py), [`pykotor.diff_tool.app`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/diff_tool/app.py)]
-- **bioware-kaitai-formats** is included in this workspace as an installable package of generated Python parsers, while its canonical `.ksy` specifications live in the upstream `OpenKotOR/bioware-kaitai-formats` repository. [[workspace `bioware-kaitai-formats` README](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/bioware-kaitai-formats/README.md), [upstream `OpenKotOR/bioware-kaitai-formats`](https://github.com/OpenKotOR/bioware-kaitai-formats)]
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.)
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
+- [TSLPatcher Thread Complete Archive](TSLPatcher_Thread_Complete)
+- [HoloPatcher Feature Coverage Overview](Explanations-on-HoloPatcher-Internal-Logic#feature-support-summary)
+- **[TSLPatcher InstallList Syntax Guide](TSLPatcher-InstallList-Syntax)** ← Complete reference for file installation
+- **[TSLPatcher TLKList Syntax Guide](TSLPatcher-TLKList-Syntax)** ← Complete reference for TLK (TalkTable) modifications
+- **[TSLPatcher 2DAList Syntax Guide](TSLPatcher-2DAList-Syntax)** ← Complete reference for 2DA (Two-Dimensional Array) patches
+- **[TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax)** ← Complete reference for GFF modifications
+- **[TSLPatcher SSFList Syntax Guide](TSLPatcher-SSFList-Syntax)** ← Complete reference for SSF (Sound Set File) modifications
+- [Mod Creation Best Practices](Mod-Creation-Best-Practices)
 
-## Source-backed adjacent projects
+### Official Bioware Aurora Documentation
 
-- **xoreos** is a multi-game Aurora/Odyssey engine reimplementation whose engine tree contains dedicated `kotor`, `kotor2`, and `kotorbase` directories under `src/engines/`. [[xoreos README](https://github.com/xoreos/xoreos/blob/master/README.md), [`xoreos/src/engines`](https://github.com/xoreos/xoreos/tree/master/src/engines), [`xoreos/src/engines/kotor`](https://github.com/xoreos/xoreos/tree/master/src/engines/kotor), [`xoreos/src/engines/kotor2`](https://github.com/xoreos/xoreos/tree/master/src/engines/kotor2)]
-- **xoreos-tools** is a separate tooling repository with converters and archive utilities such as `gff2xml`, `tlk2xml`, `convert2da`, `unerf`, `unrim`, `unkeybif`, `ncsdis`, and `ncsdecomp`, and those tools also appear as concrete source files in its `src/` tree. [[xoreos-tools README](https://github.com/xoreos/xoreos-tools/blob/master/README.md), [`xoreos-tools/src`](https://github.com/xoreos/xoreos-tools/tree/master/src)]
-- **xoreos-docs** is a documentation repository that explicitly collects official BioWare documents, Torlack notes, and partial KotOR model specifications under `specs/`, including `kotor_mdl.html`. [[xoreos-docs README](https://github.com/xoreos/xoreos-docs/blob/master/README.md), [`xoreos-docs/specs`](https://github.com/xoreos/xoreos-docs/tree/master/specs), [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html)]
-- **reone** is a focused KotOR and TSL engine project that states its goal as running both games end to end, and its source tree is split between application entry points such as `game`, `launcher`, and `toolkit` and libraries such as `audio`, `graphics`, `resource`, `scene`, `script`, and `system`. [[reone README](https://github.com/seedhartha/reone/blob/master/README.md), [`reone/src/apps`](https://github.com/seedhartha/reone/tree/master/src/apps), [`reone/src/libs`](https://github.com/seedhartha/reone/tree/master/src/libs)]
-- **KotOR.js** describes itself as a TypeScript-based reimplementation of the Odyssey engine and states that the project also includes an early modding suite named KotOR Forge. [[KotOR.js README](https://github.com/KobaltBlu/KotOR.js/blob/master/README.md)]
-- **KotOR.js** documents a source layout with Electron applications for `launcher`, `game`, `forge`, and `debugger`, a resource layer covering formats such as GFF, ERF, KEY, BIF, RIM, TLK, TPC, and 2DA, an `odyssey/` subsystem for MDL/MDX and walkmesh parsing, and an `nwscript/` subsystem with separate K1 and K2 opcode definitions. [[KotOR.js `PROJECT_STRUCTURE.md`](https://github.com/KobaltBlu/KotOR.js/blob/master/PROJECT_STRUCTURE.md), [`KotOR.js/src/apps`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/apps), [`KotOR.js/src/resource`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/resource), [`KotOR.js/src/odyssey`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/odyssey), [`KotOR.js/src/nwscript`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/nwscript)]
-- **Kotor.NET** is a multi-project C# solution that includes `Kotor.NET`, `Kotor.NET.Graphics`, `Kotor.NET.Patcher`, `Toolset`, `Toolset.Desktop`, `MapBuilder`, and `MapBuilder.Desktop`. [[`Kotor.NET.sln`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET.sln)]
-- **Kotor.NET** also carries a resource-type table spanning formats such as MDL, NSS, NCS, ARE, IFO, WOK, 2DA, TLK, GIT, UTC, DLG, UTP, JRL, SSF, LYT, VIS, RIM, PTH, LIP, TPC, MDX, and ERF, and its graphics layer includes a `KotorModelLoader` that reads MDL/MDX mesh metadata and distinguishes TSL-specific node layouts. [[`Kotor.NET/Common/Data/ResourceType.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Common/Data/ResourceType.cs), [`Kotor.NET.Graphics/KotorModelLoader.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET.Graphics/KotorModelLoader.cs)]
-- **KotorBlender** is a Blender add-on fork that now supports binary MDL import/export, LYT import/export, PTH import/export, lightmap baking, and minimap rendering through the `io_scene_kotor` package. [[kotorblender README](https://github.com/seedhartha/kotorblender/blob/master/README.md), [`kotorblender/io_scene_kotor`](https://github.com/seedhartha/kotorblender/tree/master/io_scene_kotor)]
-- **KOTORMax** is a 3ds Max and GMax plugin for Odyssey MDL/MDX import/export, animation work, and related authoring utilities, and its public README states that it writes ASCII MDL files which must then be compiled separately by `mdlops` or a similar tool. [[vendored `KOTORMax` README](https://github.com/OpenKotOR/PyKotor/blob/master/vendor/kotormax/README.md), [vendored `KOTORMax` source tree](https://github.com/OpenKotOR/PyKotor/tree/master/vendor/kotormax/KOTORMax)]
-- **MDLOps** identifies itself as a cross-platform compiler/decompiler for Odyssey engine model and walkmesh files, with support for binary-model version detection, multiple node types, and PWK/DWK/WOK processing. [[vendored `mdlops` README](https://github.com/OpenKotOR/PyKotor/blob/master/vendor/mdlops/README.md)]
-- **KotorMCP** is an MCP server built on top of PyKotor that exposes installation detection, installation loading, resource listing and description, archive reads, module inspection, reference tracing, and `kotor://` resource URIs for passive context injection. [[KotorMCP README](https://github.com/OpenKotOR/KotorMCP/blob/master/README.md), [`kotormcp/tools/installation.py`](https://github.com/OpenKotOR/KotorMCP/blob/master/src/kotormcp/tools/installation.py), [`kotormcp/tools/discovery.py`](https://github.com/OpenKotOR/KotorMCP/blob/master/src/kotormcp/tools/discovery.py), [`kotormcp/tools/refs.py`](https://github.com/OpenKotOR/KotorMCP/blob/master/src/kotormcp/tools/refs.py), [`kotormcp/mcp_resources.py`](https://github.com/OpenKotOR/KotorMCP/blob/master/src/kotormcp/mcp_resources.py)]
-- **SotOR** is a Rust save editor for KotOR 1 and 2 that targets desktop platforms and the browser, uses a built-in game database, and explicitly positions itself as a modern alternative to KSE. [[SotOR README](https://github.com/StarfishXeno/sotor/blob/master/README.md)]
-- **KotOR Savegame Editor** and **KotOR-Save-Editor** are both Perl-based save editors in the KSE lineage, with one repository documenting a repackaged build with extra functionality and another tracking a v4.0 codebase for KotOR 1 and 2 saves. [[`kotor-savegame-editor` README](https://github.com/nadrino/kotor-savegame-editor/blob/master/README.md), [vendored `KotOR-Save-Editor` README](https://github.com/OpenKotOR/PyKotor/blob/master/vendor/kotor-save-editor/README.md)]
+The following documents are official Bioware Aurora Engine file format specifications. These are authoritative references for the underlying file formats used by KotOR:
 
-## Page families
+- **[2DA File Format](Bioware-Aurora-2DA)** - Official 2DA (Two-Dimensional Array) format specification
+- **[GFF File Format](Bioware-Aurora-GFF)** - Official Generic File Format specification
+- **[Common GFF Structs](Bioware-Aurora-CommonGFFStructs)** - Common GFF structure definitions
+- **[Area File Format](Bioware-Aurora-AreaFile)** - Official ARE (Area) file format
+- **[Creature Format](Bioware-Aurora-Creature)** - Official UTC (Creature) format
+- **[Item Format](Bioware-Aurora-Item)** - Official UTI (Item) format
+- **[Door/Placeable Format](Bioware-Aurora-DoorPlaceableGFF)** - Official UTD/UTP formats
+- **[Encounter Format](Bioware-Aurora-Encounter)** - Official UTE (Encounter) format
+- **[Trigger Format](Bioware-Aurora-Trigger)** - Official UTT (Trigger) format
+- **[Waypoint Format](Bioware-Aurora-Waypoint)** - Official UTW (Waypoint) format
+- **[Store Format](Bioware-Aurora-Store)** - Official UTM (Store) format
+- **[Sound Object Format](Bioware-Aurora-SoundObject)** - Official UTS (Sound) format
+- **[Journal Format](Bioware-Aurora-Journal)** - Official JRL (Journal) format
+- **[Conversation Format](Bioware-Aurora-Conversation)** - Official DLG (Dialogue) format
+- **[IFO Format](Bioware-Aurora-IFO)** - Official Module Info format
+- **[ERF Format](Bioware-Aurora-ERF)** - Official Encapsulated Resource Format
+- **[Key/BIF Format](Bioware-Aurora-KeyBIF)** - Official Key and BIF file formats
+- **[TalkTable Format](Bioware-Aurora-TalkTable)** - Official TLK (Talk Table) format
+- **[SSF Format](Bioware-Aurora-SSF)** - Official Sound Set File format
+- **[Localized Strings Format](Bioware-Aurora-LocalizedStrings)** - Official localized strings format
+- **[Faction Format](Bioware-Aurora-Faction)** - Official faction data format
+- **[Palette/ITP Format](Bioware-Aurora-PaletteITP)** - Official palette and ITP formats
 
-- **Runtime and format reference:** [Concepts](Concepts), [Resource-Formats-and-Resolution](Resource-Formats-and-Resolution), [Container-Formats](Container-Formats), [2DA-File-Format](2DA-File-Format), [GFF-File-Format](GFF-File-Format), [Audio-and-Localization-Formats](Audio-and-Localization-Formats), [Texture-Formats](Texture-Formats), [Level-Layout-Formats](Level-Layout-Formats), [MDL-MDX-File-Format](MDL-MDX-File-Format), [NCS-File-Format](NCS-File-Format), [NSS-File-Format](NSS-File-Format), and [LTR-File-Format](LTR-File-Format).
-- **Installer and patch-data workflows:** [Installing-Mods-with-HoloPatcher](Installing-Mods-with-HoloPatcher), [HoloPatcher](HoloPatcher), [HoloPatcher-README-for-mod-developers](HoloPatcher-README-for-mod-developers), [Explanations-on-HoloPatcher-Internal-Logic](Explanations-on-HoloPatcher-Internal-Logic), [KotorDiff-Integration](KotorDiff-Integration), [TSLPatcher-Data-Syntax](TSLPatcher-Data-Syntax), [TSLPatcher-GFF-Syntax](TSLPatcher-GFF-Syntax), [TSLPatcher-Install-and-Hack-Syntax](TSLPatcher-Install-and-Hack-Syntax), and [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme).
-- **Toolset and editor workflows:** [Holocron-Toolset-Getting-Started](Holocron-Toolset-Getting-Started), [Holocron-Toolset-Core-Resources](Holocron-Toolset-Core-Resources), [Holocron-Toolset-Module-Resources](Holocron-Toolset-Module-Resources), [Holocron-Toolset-Module-Editor](Holocron-Toolset-Module-Editor), [Holocron-Toolset-Map-Builder](Holocron-Toolset-Map-Builder), [Indoor-Map-Builder-User-Guide](Indoor-Map-Builder-User-Guide), [Indoor-Map-Builder-Implementation-Guide](Indoor-Map-Builder-Implementation-Guide), and [Qt-ItemView-Selection-and-RobustTableView](Qt-ItemView-Selection-and-RobustTableView).
-- **Reverse engineering and preserved-source material:** [reverse_engineering_findings](reverse_engineering_findings), its archive pages, [Bioware-Aurora-Core-Formats](Bioware-Aurora-Core-Formats), [Bioware-Aurora-Module-and-Area](Bioware-Aurora-Module-and-Area), [Bioware-Aurora-Creature](Bioware-Aurora-Creature), [Bioware-Aurora-Items-Economy-and-Narrative](Bioware-Aurora-Items-Economy-and-Narrative), [Bioware-Aurora-Spatial-and-Interactive](Bioware-Aurora-Spatial-and-Interactive), and [Bioware-Aurora-Conversation](Bioware-Aurora-Conversation).
+### File Formats
+
+- **[MDL/MDX File Format](MDL-MDX-File-Format)** ← Complete reference for 3D model files
+  - **[2DA File Format](2DA-File-Format)** ← Complete reference for Two-Dimensional Array format (see also [Official Bioware 2DA Documentation](Bioware-Aurora-2DA))
+  - [acbonus.2da](2DA-acbonus)
+  - [actions.2da](2DA-actions)
+  - [ai_styles.2da](2DA-ai_styles)
+  - [aiscripts.2da](2DA-aiscripts)
+  - [aliensound.2da](2DA-aliensound)
+  - [alienvo.2da](2DA-alienvo)
+  - [ambientmusic.2da](2DA-ambientmusic)
+  - [ambientsound.2da](2DA-ambientsound)
+  - [ammunitiontypes.2da](2DA-ammunitiontypes)
+  - [animations.2da](2DA-animations)
+  - [appearance.2da](2DA-appearance)
+  - [appearancesndset.2da](2DA-appearancesndset)
+  - [areaeffects.2da](2DA-areaeffects)
+  - [baseitems.2da](2DA-baseitems)
+  - [bindablekeys.2da](2DA-bindablekeys)
+  - [bodybag.2da](2DA-bodybag)
+  - [bodyvariation.2da](2DA-bodyvariation)
+  - [camerastyle.2da](2DA-camerastyle)
+  - [chargenclothes.2da](2DA-chargenclothes)
+  - [classes.2da](2DA-classes)
+  - [classpowergain.2da](2DA-classpowergain)
+  - [cls_atk_*.2da](2DA-cls_atk__pattern)
+  - [cls_savthr_*.2da](2DA-cls_savthr__pattern)
+  - [combatanimations.2da](2DA-combatanimations)
+  - [creaturesize.2da](2DA-creaturesize)
+  - [creaturespeed.2da](2DA-creaturespeed)
+  - [credits.2da](2DA-credits)
+  - [crtemplates.2da](2DA-crtemplates)
+  - [cursors.2da](2DA-cursors)
+  - [dialoganimations.2da](2DA-dialoganimations)
+  - [difficultyopt.2da](2DA-difficultyopt)
+  - [disease.2da](2DA-disease)
+  - [doortypes.2da](2DA-doortypes)
+  - [droiddischarge.2da](2DA-droiddischarge)
+  - [effecticon.2da](2DA-effecticon)
+  - [emotion.2da](2DA-emotion)
+  - [encdifficulty.2da](2DA-encdifficulty)
+  - [environment.2da](2DA-environment)
+  - [exptable.2da](2DA-exptable)
+  - [facialanim.2da](2DA-facialanim)
+  - [feat.2da](2DA-feat)
+  - [featgain.2da](2DA-featgain)
+  - [feedbacktext.2da](2DA-feedbacktext)
+  - [footstepsounds.2da](2DA-footstepsounds)
+  - [forceshields.2da](2DA-forceshields)
+  - [fractionalcr.2da](2DA-fractionalcr)
+  - [gamespyrooms.2da](2DA-gamespyrooms)
+  - [gender.2da](2DA-gender)
+  - [genericdoors.2da](2DA-genericdoors)
+  - [globalcat.2da](2DA-globalcat)
+  - [grenadesnd.2da](2DA-grenadesnd)
+  - [guisounds.2da](2DA-guisounds)
+  - [heads.2da](2DA-heads)
+  - [hen_companion.2da](2DA-hen_companion)
+  - [hen_familiar.2da](2DA-hen_familiar)
+  - [humanfirst.2da](2DA-humanfirst)
+  - [humanlast.2da](2DA-humanlast)
+  - [inventorysnds.2da](2DA-inventorysnds)
+  - [iprp_abilities.2da](2DA-iprp_abilities)
+  - [iprp_acmodtype.2da](2DA-iprp_acmodtype)
+  - [iprp_aligngrp.2da](2DA-iprp_aligngrp)
+  - [iprp_ammocost.2da](2DA-iprp_ammocost)
+  - [iprp_ammotype.2da](2DA-iprp_ammotype)
+  - [iprp_attackmod.2da](2DA-iprp_attackmod)
+  - [iprp_bonusfeat.2da](2DA-iprp_bonusfeat)
+  - [iprp_combatdam.2da](2DA-iprp_combatdam)
+  - [iprp_costtable.2da](2DA-iprp_costtable)
+  - [iprp_damagecost.2da](2DA-iprp_damagecost)
+  - [iprp_damagered.2da](2DA-iprp_damagered)
+  - [iprp_damagetype.2da](2DA-iprp_damagetype)
+  - [iprp_damagevs.2da](2DA-iprp_damagevs)
+  - [iprp_feats.2da](2DA-iprp_feats)
+  - [iprp_immunity.2da](2DA-iprp_immunity)
+  - [iprp_lightcol.2da](2DA-iprp_lightcol)
+  - [iprp_monstdam.2da](2DA-iprp_monstdam)
+  - [iprp_mosterhit.2da](2DA-iprp_mosterhit)
+  - [iprp_onhit.2da](2DA-iprp_onhit)
+  - [iprp_paramtable.2da](2DA-iprp_paramtable)
+  - [iprp_protection.2da](2DA-iprp_protection)
+  - [iprp_saveelement.2da](2DA-iprp_saveelement)
+  - [iprp_savingthrow.2da](2DA-iprp_savingthrow)
+  - [iprp_skillcost.2da](2DA-iprp_skillcost)
+  - [iprp_spellres.2da](2DA-iprp_spellres)
+  - [iprp_spells.2da](2DA-iprp_spells)
+  - [iprp_traptype.2da](2DA-iprp_traptype)
+  - [iprp_walk.2da](2DA-iprp_walk)
+  - [iprp_weightinc.2da](2DA-iprp_weightinc)
+  - [itempropdef.2da](2DA-itempropdef)
+  - [itemprops.2da](2DA-itemprops)
+  - [itempropsdef.2da](2DA-itempropsdef)
+  - [keymap.2da](2DA-keymap)
+  - [loadscreenhints.2da](2DA-loadscreenhints)
+  - [loadscreens.2da](2DA-loadscreens)
+  - [masterfeats.2da](2DA-masterfeats)
+  - [merchants.2da](2DA-merchants)
+  - [minglobalrim.2da](2DA-minglobalrim)
+  - [modulesave.2da](2DA-modulesave)
+  - [movies.2da](2DA-movies)
+  - [musictable.2da](2DA-musictable)
+  - [palette.2da](2DA-palette)
+  - [pazaakdecks.2da](2DA-pazaakdecks)
+  - [phenotype.2da](2DA-phenotype)
+  - [placeableobjsnds.2da](2DA-placeableobjsnds)
+  - [placeables.2da](2DA-placeables)
+  - [planetary.2da](2DA-planetary)
+  - [plot.2da](2DA-plot)
+  - [poison.2da](2DA-poison)
+  - [portraits.2da](2DA-portraits)
+  - [prioritygroups.2da](2DA-prioritygroups)
+  - [racialtypes.2da](2DA-racialtypes)
+  - [ranges.2da](2DA-ranges)
+  - [regeneration.2da](2DA-regeneration)
+  - [repute.2da](2DA-repute)
+  - [rumble.2da](2DA-rumble)
+  - [skills.2da](2DA-skills)
+  - [soundeax.2da](2DA-soundeax)
+  - [soundset.2da](2DA-soundset)
+  - [spells.2da](2DA-spells)
+  - [stringtokens.2da](2DA-stringtokens)
+  - [subrace.2da](2DA-subrace)
+  - [surfacemat.2da](2DA-surfacemat)
+  - [texpacks.2da](2DA-texpacks)
+  - [textures.2da](2DA-textures)
+  - [tilecolor.2da](2DA-tilecolor)
+  - [traps.2da](2DA-traps)
+  - [tutorial.2da](2DA-tutorial)
+  - [tutorial_old.2da](2DA-tutorial_old)
+  - [upcrystals.2da](2DA-upcrystals)
+  - [upgrade.2da](2DA-upgrade)
+  - [videoeffects.2da](2DA-videoeffects)
+  - [videoquality.2da](2DA-videoquality)
+  - [visualeffects.2da](2DA-visualeffects)
+  - [weaponsounds.2da](2DA-weaponsounds)
+  - [xptable.2da](2DA-xptable)
+- **[TLK File Format](TLK-File-Format)** ← Complete reference for Talk Table format
+- [BIF File Format](BIF-File-Format) ← BioWare Infinity Format
+- **[BWM File Format](BWM-File-Format)** ← Complete reference for Binary WalkMesh format
+- **[GUI File Format](GUI-File-Format)** ← Complete reference for Graphical User Interface format
+- [ERF File Format](ERF-File-Format) ← Encapsulated Resource Format
+- **[Kit Structure Documentation](Kit-Structure-Documentation)** ← Complete reference for indoor kit structure and generation
+- [GFF File Format](GFF-File-Format) ← Generic File Format (see also [Official Bioware GFF Documentation](Bioware-Aurora-GFF))
+  - [ARE (Area)](GFF-ARE)
+  - [DLG (Dialogue)](GFF-DLG)
+  - [GIT (Game Instance Template)](GFF-GIT)
+  - [GUI](GFF-GUI)
+  - [IFO (Module Info)](GFF-IFO)
+  - [JRL (Journal)](GFF-JRL)
+  - [PTH (Path)](GFF-PTH)
+  - [UTC (Creature)](GFF-UTC)
+  - [UTD (Door)](GFF-UTD)
+  - [UTE (Encounter)](GFF-UTE)
+  - [UTI (Item)](GFF-UTI)
+  - [UTM (Merchant)](GFF-UTM)
+  - [UTP (Placeable)](GFF-UTP)
+  - [UTS (Sound)](GFF-UTS)
+  - [UTT (Trigger)](GFF-UTT)
+  - [UTW (Waypoint)](GFF-UTW)
+- [KEY File Format](KEY-File-Format) ← Key file format
+- [LIP File Format](LIP-File-Format) ← Lip sync format
+- [LTR File Format](LTR-File-Format) ← Letter format
+- [LYT File Format](LYT-File-Format) ← Layout format
+- [NCS File Format](NCS-File-Format) ← NwScript Compiled Script format
+- [NSS File Format](NSS-File-Format) ← NwScript Source format (nwscript.nss, function/constant definitions)
+- [RIM File Format](RIM-File-Format) ← Resource Index Manifest format
+- [SSF File Format](SSF-File-Format) ← Sound Set File format
+- [TLK File Format](TLK-File-Format) ← Talk Table format
+- [TPC File Format](TPC-File-Format) ← Texture Pack Container format
+- [TXI File Format](TXI-File-Format) ← Texture Info format
+- [VIS File Format](VIS-File-Format) ← Visibility format
+- [WAV File Format](WAV-File-Format) ← Wave audio format
+
+### Internal Documentation
+
+- [HoloPatcher](HoloPatcher)
+- [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic)

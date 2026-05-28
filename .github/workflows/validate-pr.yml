@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -31,16 +31,13 @@ jobs:
           if [[ "$PR_TITLE" =~ ^Merge\ .+\ into\ .+$ ]]; then
             echo "Skipping semantic PR check for merge PR: $PR_TITLE"
             echo "skip_check=true" >> $GITHUB_OUTPUT
-          elif [[ "$PR_TITLE" == "Development environment setup" ]]; then
-            echo "Skipping semantic PR check for automated environment setup PR title: $PR_TITLE"
-            echo "skip_check=true" >> $GITHUB_OUTPUT
           else
             echo "skip_check=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Check PR title format (semantic)
         if: steps.check_title.outputs.skip_check != 'true'
-        uses: amannn/action-semantic-pull-request@v6
+        uses: amannn/action-semantic-pull-request@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -64,7 +61,7 @@ jobs:
             doesn't start with an uppercase character.
 
       - name: Check commit messages
-        uses: wagoid/commitlint-github-action@v6
+        uses: wagoid/commitlint-github-action@v5
         continue-on-error: true
 
       - name: Validate file paths
@@ -86,3 +83,4 @@ jobs:
           else
             echo "✓ No large files detected"
           fi
+

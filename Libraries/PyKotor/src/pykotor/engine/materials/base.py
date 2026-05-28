@@ -5,9 +5,8 @@ the engine in a backend-agnostic manner.
 
 References:
 ----------
-        Observed retail KotOR I and KotOR II behavior.
-
-
+    vendor/reone/src/libs/graphics/material.h - Material interfaces
+    vendor/xoreos/src/graphics/aurora/material.h - Material abstraction
 """
 
 from __future__ import annotations
@@ -51,9 +50,10 @@ class IMaterialManager(ABC):
     """Abstract material manager responsible for creating and applying materials."""
 
     @abstractmethod
-    def create_material_from_mesh(self, mesh: MDLMesh) -> IMaterial:
+    def create_material_from_mesh(self, mesh: "MDLMesh") -> IMaterial:
         """Create a material definition from an MDL mesh."""
 
     @abstractmethod
     def apply_material(self, node: Any, material: IMaterial) -> None:
         """Apply the provided material to the backend-specific node."""
+

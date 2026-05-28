@@ -22,14 +22,12 @@ class Chitin:
     """Chitin object is used for loading the list of resources stored in the chitin.key/.bif files used by the game.
 
     Chitin support is read-only and you cannot write your own key/bif files with this class yet.
-
-    Container flags you will see in the wild (same buckets the retail resolver uses):
-    - ``FIXED`` (``0x00000000``): ``chitin.key`` plus the companion BIFs under ``data/``
-    - ``DIRECTORY`` (``0x80000000``): loose files (override folders, etc.)
-    - ``ERF`` (``0x40000000``): module capsules (``.mod`` / ``.erf`` / many ``.rim``)
-    - ``RIM`` (``0x20000000``): resource-image style packs (texture bundles and friends)
-
-    This class only reads the KEY/BIF side; the rest of the stack lives in the archive helpers.
+    
+    References:
+    ----------
+        vendor/reone/src/libs/resource/format/keyreader.cpp:26-65 (KEY reading)
+        vendor/reone/src/libs/resource/format/bifreader.cpp:26-63 (BIF reading)
+        vendor/xoreos-tools/src/unkeybif.cpp (KEY/BIF extraction tool)
     """
 
     KEY_ELEMENT_SIZE = 8
@@ -49,7 +47,9 @@ class Chitin:
         self.game: Game | None = game
         self.load()
 
-    def __iter__(self) -> Iterator[FileResource]:
+    def __iter__(
+        self,
+    ) -> Iterator[FileResource]:
         yield from self._resources
 
     def __len__(self):
@@ -66,9 +66,7 @@ class Chitin:
         for bif in bifs:  # Loop through all bifs in the chitin.key
             self._resource_dict[bif] = []
             absolute_bif_path: Path = self._base_path.joinpath(bif)
-            if (
-                self.game is not None and self.game.is_ios()
-            ):  # For some reason, the chitin.key references the .bif path instead of the correct .bzf path.
+            if self.game is not None and self.game.is_ios():  # For some reason, the chitin.key references the .bif path instead of the correct .bzf path.
                 absolute_bif_path = absolute_bif_path.with_suffix(".bzf")
             self.read_bif(absolute_bif_path, keys, bif)
 
@@ -78,28 +76,15 @@ class Chitin:
         keys: dict[int, str],
         bif_filename: str,
     ):
-        """Reads a single .bif file and adds its resources to this Chitin object.
-
-        Args:
-        ----
-            bif_path: The path to the .bif file.
-            keys: The dictionary mapping resource IDs to resrefs.
-            bif_filename: The filename of the .bif file (used as a key in the resource dictionary).
-
-        Returns:
-        -------
-            None
-        """
+        # vendor/reone/src/libs/resource/format/bifreader.cpp:26-63
         with BinaryReader.from_file(bif_path) as reader:
             _bif_file_type: str = reader.read_string(4)  # 0x0
             _bif_file_version: str = reader.read_string(4)  # 0x4
             resource_count: int = reader.read_uint32()  # 0x8
-            _fixed_resource_count: int = (
-                reader.read_uint32()
-            )  # unimplemented/padding (always 0x00000000?)
+            _fixed_resource_count: int = reader.read_uint32()  # unimplemented/padding (always 0x00000000?)
             resource_offset: int = reader.read_uint32()  # 0x10 always the value hex 0x14 (dec 20)
             reader.seek(resource_offset)  # Skip to 0x14
-
+            # vendor/reone/src/libs/resource/format/bifreader.cpp:50-63
             for _ in range(resource_count):
                 # Initialize the FileResource and add to this chitin object's collections.
                 resource = FileResource(
@@ -113,6 +98,7 @@ class Chitin:
                 self._resource_dict[bif_filename].append(resource)
 
     def _get_chitin_data(self) -> tuple[dict[int, str], list[str]]:
+        # vendor/reone/src/libs/resource/format/keyreader.cpp:26-65
         with BinaryReader.from_file(self._key_path) as reader:
             # _key_file_type = reader.read_string(4)  # noqa: ERA001
             # _key_file_version = reader.read_string(4)  # noqa: ERA001
@@ -122,12 +108,11 @@ class Chitin:
             file_table_offset: int = reader.read_uint32()
             reader.skip(4)  # key table offset uint32
 
+            # vendor/reone/src/libs/resource/format/keyreader.cpp:38-59
             files: list[tuple[int, int]] = []
             reader.seek(file_table_offset)
             for _ in range(bif_count):
-                reader.skip(
-                    4
-                )  # Unknown field; observed u32 differs between K1 and K2 retail KEY/BIF stacks (wiki).
+                reader.skip(4)  # ??? 0x000696E0 in k1, 0x000DDD8A in k2
                 file_offset: int = reader.read_uint32()
                 file_length: int = reader.read_uint16()
                 reader.skip(2)  # ??? 0x0001 in K1, 0x0000 in K2
@@ -139,6 +124,7 @@ class Chitin:
                 bif: str = reader.read_string(file_length)
                 bifs.append(bif)
 
+            # vendor/reone/src/libs/resource/format/keyreader.cpp:61-68
             keys: dict[int, str] = {}
             for _ in range(key_count):
                 resref: str = reader.read_string(16)

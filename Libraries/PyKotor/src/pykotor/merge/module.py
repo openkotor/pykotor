@@ -63,9 +63,7 @@ class ModuleManager:
 
             # First Pass: Collect Resource Information
             for identifier, mod_res in module.resources.items():
-                resource_info: ResourceInfo = self.resources_info.setdefault(
-                    identifier, ResourceInfo()
-                )
+                resource_info: ResourceInfo = self.resources_info.setdefault(identifier, ResourceInfo())
                 resource_info.modules.add(module_name)
 
                 # Create FileResource instances for each location and add them to the resource info
@@ -79,9 +77,7 @@ class ModuleManager:
                     )
                     resource_info.file_resources.append(file_resource)
                     resource_hash: str = file_resource.get_sha1_hash()
-                    resource_info.resource_hashes[file_resource.filepath().as_posix()] = (
-                        resource_hash
-                    )
+                    resource_info.resource_hashes[file_resource.filepath().as_posix()] = resource_hash
 
                 # Check for unused resources
                 if not mod_res.isActive():
@@ -99,9 +95,7 @@ class ModuleManager:
                 resource_info = self.resources_info[identifier]
 
                 # Find dependencies within the module
-                dependent_resources: set[ResourceIdentifier] = self._find_dependencies(
-                    module, mod_res
-                )
+                dependent_resources: set[ResourceIdentifier] = self._find_dependencies(module, mod_res)
                 resource_info.dependent_resources.update(dependent_resources)
 
                 # Check for resource conflicts across multiple modules
@@ -124,9 +118,7 @@ class ModuleManager:
 
         # Search for linked resources like GIT, LYT, VIS
         if mod_res.restype() in {ResourceType.GIT, ResourceType.LYT, ResourceType.VIS}:
-            linked_resources: set[ResourceIdentifier] = self._search_linked_resources(
-                module, mod_res
-            )
+            linked_resources: set[ResourceIdentifier] = self._search_linked_resources(module, mod_res)
             dependencies.update(linked_resources)
 
         # Extract dependencies from GFF files
@@ -189,9 +181,7 @@ class ModuleManager:
         for field in gff.fields():
             if field.type == GFFFieldType.ResRef:
                 resref: ResRef = field.value
-                references.add(
-                    ResourceIdentifier(resref.get(), ResourceType.UNKNOWN)
-                )  # ResourceType.UNKNOWN is a placeholder
+                references.add(ResourceIdentifier(resref.get(), ResourceType.UNKNOWN))  # ResourceType.UNKNOWN is a placeholder
         return references
 
     def _extract_references_from_model(self, model_data: bytes) -> set[ResourceIdentifier]:
@@ -364,9 +354,7 @@ class ModuleManager:
         for resource_file in override_path.iterdir():
             if resource_file.is_file():
                 resname: str = resource_file.stem
-                restype: ResourceType = ResourceType.from_extension(
-                    resource_file.suffix[1:]
-                )  # Remove the dot
+                restype: ResourceType = ResourceType.from_extension(resource_file.suffix[1:])  # Remove the dot
                 identifier = ResourceIdentifier(resname, restype)
 
                 modules: set[str] = self.resource_to_modules.get(resname.lower(), set())

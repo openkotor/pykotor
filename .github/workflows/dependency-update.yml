@@ -5,19 +5,16 @@ on:
     - cron: '0 0 * * 1'  # Weekly on Monday
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   check-updates:
     name: Check for Dependency Updates
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: 'pip'
@@ -29,6 +26,8 @@ jobs:
       - name: Check for security vulnerabilities
         run: |
           pip-audit --requirement Libraries/PyKotor/requirements.txt || true
+          pip-audit --requirement Libraries/PyKotorGL/requirements.txt || true
+          pip-audit --requirement Libraries/PyKotorFont/requirements.txt || true
 
       - name: Check for outdated packages
         run: |
@@ -46,8 +45,9 @@ jobs:
           pip list --outdated >> dependency-report.md || echo "No outdated packages" >> dependency-report.md
 
       - name: Upload dependency report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: dependency-report
           path: dependency-report.md
           retention-days: 7
+

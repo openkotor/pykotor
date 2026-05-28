@@ -1,14 +1,4 @@
-"""DXT compression: RGB/RGBA to DXT1/DXT3/DXT5 block encode."""
-
 from __future__ import annotations
-
-from pykotor.resource.formats.tpc.convert.dxt.compress_dxt_ndix import (
-    ndix_compressor_available,
-    rgba_to_dxt1_ndix,
-    rgba_to_dxt5_ndix,
-    use_ndix_compressor,
-)
-from pykotor.resource.formats.tpc.convert.rgb import rgb_to_rgba
 
 
 def rgb_to_dxt1(
@@ -16,8 +6,6 @@ def rgb_to_dxt1(
     width: int,
     height: int,
 ) -> bytearray:
-    if use_ndix_compressor() and ndix_compressor_available():
-        return bytearray(rgba_to_dxt1_ndix(rgb_to_rgba(rgb_data), width, height))
     dxt1_data = bytearray()
     for y in range(0, height, 4):
         for x in range(0, width, 4):
@@ -48,8 +36,6 @@ def rgba_to_dxt5(
     width: int,
     height: int,
 ) -> bytearray:
-    if use_ndix_compressor() and ndix_compressor_available():
-        return bytearray(rgba_to_dxt5_ndix(rgba_data, width, height))
     dxt5_data = bytearray()
     for y in range(0, height, 4):
         for x in range(0, width, 4):
@@ -89,16 +75,12 @@ def _compress_dxt1_block(
 ) -> None:
     _compress_color_block(dest, src)
 
-
 def _compress_dxt3_block(
     dest: bytearray,
     src: list[int],
 ) -> None:
     _compress_alpha_block_dxt3(dest, src)
-    color_dest = bytearray(8)
-    _compress_color_block(color_dest, src)
-    dest[8:16] = color_dest
-
+    _compress_color_block(dest[8:], src)
 
 def _compress_alpha_block_dxt3(
     dest: bytearray,
@@ -112,9 +94,7 @@ def _compress_alpha_block_dxt3(
 
 def _compress_dxt5_block(dest: bytearray, src: list[int]) -> None:
     _compress_alpha_block_dxt5(dest, src)
-    color_dest = bytearray(8)
-    _compress_color_block(color_dest, src)
-    dest[8:16] = color_dest
+    _compress_color_block(dest[8:], src)
 
 
 def _compress_alpha_block_dxt5(
@@ -145,7 +125,7 @@ def _compress_alpha_block_dxt5(
             code = 7
         else:
             t: int = (alpha[i] - min_a) * 7 // (max_a - min_a)
-            code = min(7, t)
+            code: int = min(7, t)
 
         indices |= code << (3 * i)
 
@@ -175,7 +155,7 @@ def _compress_color_block(
             lastmask: int = mask
             if refine_block(src, max16, min16, mask):
                 if max16 != min16:
-                    color = eval_colors(max16, min16)
+                    color: list[int] = eval_colors(max16, min16)
                     mask = match_colors_block(src, color)
                 else:
                     mask = 0
@@ -257,9 +237,9 @@ def optimize_colors_block(block: list[int]) -> tuple[int, int]:
     vfb: int = max_color[2] - min_color[2]
 
     for _ in range(4):  # Power iteration
-        r = vfr * cov[0] + vfg * cov[1] + vfb * cov[2]
-        g = vfr * cov[1] + vfg * cov[3] + vfb * cov[4]
-        b = vfr * cov[2] + vfg * cov[4] + vfb * cov[5]
+        r: int = vfr * cov[0] + vfg * cov[1] + vfb * cov[2]
+        g: int = vfr * cov[1] + vfg * cov[3] + vfb * cov[4]
+        b: int = vfr * cov[2] + vfg * cov[4] + vfb * cov[5]
         vfr, vfg, vfb = r, g, b
 
     magn: int = max(abs(vfr), abs(vfg), abs(vfb))
@@ -376,9 +356,9 @@ def refine_block(
         at2_b += b
         mask >>= 2
 
-    at2_r = 3 * at2_r - at1_r
-    at2_g = 3 * at2_g - at1_g
-    at2_b = 3 * at2_b - at1_b
+    at2_r: int = 3 * at2_r - at1_r
+    at2_g: int = 3 * at2_g - at1_g
+    at2_b: int = 3 * at2_b - at1_b
 
     xx: int = akku >> 16
     yy: int = (akku >> 8) & 255

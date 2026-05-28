@@ -1,13 +1,12 @@
 """Abstract material system interfaces.
 
 This package defines backend-agnostic interfaces for material handling that can
-be implemented by different rendering engines (OpenGL, Qt5 or Qt6, Panda3D, etc.).
+be implemented by different rendering engines (OpenGL, Qt5, Panda3D, etc.).
 
 References:
 ----------
-        Observed retail KotOR I and KotOR II behavior.
-
-
+    vendor/reone/src/libs/graphics/material.h - Material interfaces
+    vendor/xoreos/src/graphics/aurora/renderqueue.h - Material abstraction
 """
 
 from __future__ import annotations
@@ -18,3 +17,4 @@ __all__ = [
     "IMaterial",
     "IMaterialManager",
 ]
+

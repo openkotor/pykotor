@@ -97,8 +97,6 @@ class WrappedStr(str):
             if self._content.endswith(parsed_suffix):
                 return self.__class__(self._content[: -len(parsed_suffix)])
             return self.__class__(self._content)
-
     def __getstate__(self) -> str:
         return self._content
-
     # endregion

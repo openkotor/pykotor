@@ -8,8 +8,21 @@ import random
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import ClassVar
+
+"""Pazaak card game implementation and rules.
+
+References:
+----------
+    vendor/pazaak-eggborne (Pazaak game in JavaScript)
+    vendor/pazaak-iron-ginger (Pazaak game in Python)
+    vendor/Java_Pazaak (Pazaak game in Java)
+    vendor/PazaakApp (Pazaak web app)
+    vendor/react-pazaak (React Pazaak component)
+    vendor/vue-pazaak (Vue Pazaak component)
+    vendor/GetLucky33 (Pazaak-related tool)
+    Note: Pazaak is a card game minigame in KotOR with specific card types and scoring rules
+"""
 
 
 class CardType(Enum):
@@ -19,10 +32,10 @@ class CardType(Enum):
     YELLOW_SPECIAL = "Yellow"
 
 
+@dataclass
 class PazaakSideCard:
-    def __init__(self, value: int | list[int], card_type: CardType):
-        self.value: int | list[int] = value
-        self.card_type: CardType = card_type
+    value: ClassVar[int | list[int]]
+    card_type: ClassVar[CardType]
 
     def __str__(self) -> str:
         if self.card_type == CardType.YELLOW_SPECIAL:
@@ -51,14 +64,21 @@ class PazaakSideCard:
                 f"Card value must be an int for card_type={self.card_type!r}, got {type(self.value)!r}"
             )
 
-        if self.card_type == CardType.POSITIVE:
-            return self.value
-        if self.card_type == CardType.NEGATIVE:
-            return -self.value
-        if self.card_type == CardType.POS_OR_NEG:
-            return self.value if choice == "+" else -self.value
+    def get_value(
+        self,
+        choice: str | None = None,
+    ) -> int:
+        value_map: dict[CardType, int | list[int]] = {
+            CardType.POSITIVE: self.value,
+            CardType.NEGATIVE: -self.value,
+            CardType.POS_OR_NEG: self.value if choice == "+" else -self.value,
+            CardType.YELLOW_SPECIAL: self.value[0],
+        }
 
-        raise ValueError(f"Unknown card_type {self.card_type!r}")
+        if self.card_type not in value_map:
+            raise ValueError(f"Unknown card_type {self.card_type!r}")
+
+        return value_map[self.card_type]
 
 
 @dataclass
@@ -203,12 +223,9 @@ class PazaakGame:
             if side_card.card_type == CardType.YELLOW_SPECIAL:
                 simulated_hand: list[int | PazaakSideCard] = self.ai.hand.copy()
                 self.apply_yellow_card_effect(Player("Simulated", simulated_hand), side_card)
-                simulated_value: int = sum(
-                    card.get_value() if isinstance(card, PazaakSideCard) else card
-                    for card in simulated_hand
-                )
+                simulated_value: int = sum(card.get_value() if isinstance(card, PazaakSideCard) else card for card in simulated_hand)
             else:
-                simulated_value = ai_value + side_card.get_value()
+                simulated_value: int = ai_value + side_card.get_value()
 
             value_diff: int = self.MAX_HAND_VALUE - simulated_value
             if 0 <= value_diff < min_value_diff:
@@ -286,9 +303,7 @@ class ConsolePazaak(PazaakInterface):
             return
 
         while True:
-            action: str = input(
-                "Do you want to hit (h), stand (s), end turn (e), or use a side card (u)? "
-            ).lower()
+            action: str = input("Do you want to hit (h), stand (s), end turn (e), or use a side card (u)? ").lower()
             if action == "s":
                 self.game.player.stands = True
                 print("You chose to stand.")
@@ -398,7 +413,7 @@ class ConsolePazaak(PazaakInterface):
             round_winner: Player | None = None
             while round_winner is None:
                 self.play_turn(self.game.current_player)
-                round_winner = self.game.check_winner()
+                round_winner: Player | None = self.game.check_winner()
                 if round_winner is None:
                     self.game.switch_player()
 

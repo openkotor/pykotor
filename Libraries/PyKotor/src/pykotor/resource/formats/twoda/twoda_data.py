@@ -5,37 +5,48 @@ They contain configuration data for nearly all game systems: items, spells, crea
 skills, feats, and many other game mechanics. The format uses column headers, row labels,
 and string-based cells that are parsed as integers, floats, or other types as needed.
 
-Observed retail behavior:
+References:
 ----------
-        KotOR I and TSL hydrate dozens of ``*.2da`` sheets at boot and during play—binary
-        ``2DA V2.b`` and ASCII ``2DA V2.0`` both appear in shipping data. Missing tables surface
-        the same class of log errors modders already quote from retail builds.
+    vendor/TSLPatcher/lib/site/Bioware/TwoDA.pm:1-945 - Complete 2DA implementation
+    vendor/Kotor.NET/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs:10-139 - Binary format
+    vendor/KotOR_IO/KotOR_IO/File Formats/TwoDA.cs:20-288 - C# 2DA reader/writer
+    vendor/KotOR-Bioware-Libs/TwoDA.pm - Perl 2DA library
+    vendor/reone/include/reone/resource/2da.h:28-107 - C++ 2DA class
+    vendor/xoreos/src/aurora/2dafile.cpp:38-376 - 2DA file handling
+    vendor/KotOR.js/src/resource/TwoDAObject.ts:9-276 - TypeScript implementation
+    vendor/sotor/core/src/formats/twoda/read.rs:13-127 - Rust 2DA reader
 
-        2DA file format specification
-        Binary Format (Version 2.b):
-        ----------------------------
-        Header (9 bytes):
+Binary Format (Version 2.b):
+----------------------------
+    Header (9 bytes):
         - 4 bytes: File Type ("2DA ")
         - 4 bytes: File Version ("V2.0" or "v2.b" for binary)
         - 1 byte: Line break ('\n')
-        Column Headers (variable length):
+    
+    Column Headers (variable length):
         - Tab-separated column names
         - Terminated by null byte ('\0')
-        Row Count:
+    
+    Row Count:
         - 4 bytes: Number of rows (int32)
-        Row Labels (variable length):
+    
+    Row Labels (variable length):
         - Tab-separated row labels/indices
         - One per row
-        Cell Data Offsets:
+    
+    Cell Data Offsets:
         - 2 bytes per cell (uint16): offset into cell data string table
         - One offset for each cell (row_count * column_count)
-        Cell Data Size:
+    
+    Cell Data Size:
         - 2 bytes (uint16): total size of cell data string table
-        Cell Data String Table:
+    
+    Cell Data String Table:
         - Null-terminated strings
         - Deduplicated (same string value shares offset)
         - Blank cells typically stored as empty string or "****"
-
+        
+    Reference: Kotor.NET:19-63, KotOR_IO:60-135, TSLPatcher/TwoDA.pm:200-350
 
 ASCII Format (Version V2.0):
 ----------------------------
@@ -43,7 +54,7 @@ ASCII Format (Version V2.0):
     Line 2: Blank line or DEFAULT: value
     Line 3: Tab-separated column headers
     Lines 4+: Row_label <tab> cell1 <tab> cell2...
-
+    
     Blank cells represented as "****"
 """
 
@@ -55,7 +66,7 @@ from contextlib import contextmanager, suppress
 from copy import copy
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from pykotor.resource.formats._base import BiowareResource, ComparableMixin
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
@@ -65,33 +76,45 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 
-class TwoDA(BiowareResource):
+class TwoDA(ComparableMixin):
     """Two-Dimensional Array table for game configuration data.
-
+    
     2DA files store tabular data used throughout the game engine. Each file contains
     a set of named columns (headers), numbered rows (labels), and string-valued cells.
     The game reads these files at startup and queries them during gameplay for various
     configuration values like item properties, spell effects, creature stats, etc.
-
-    2DA file format specification
-
-
+    
+    References:
+    ----------
+        vendor/TSLPatcher/lib/site/Bioware/TwoDA.pm:48-71 - get_cell() implementation
+        vendor/Kotor.NET/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs:12-112 - FileRoot class
+        vendor/KotOR_IO/KotOR_IO/File Formats/TwoDA.cs:20-152 - TwoDA class structure
+        vendor/reone/include/reone/resource/2da.h:28-107 - TwoDA C++ class
+        vendor/xoreos/src/aurora/2dafile.h:40-108 - 2DAFile class
+        
     Attributes:
     ----------
         _rows: Internal list of row dictionaries mapping column headers to cell values
             Reference: TSLPatcher/TwoDA.pm:70 (table hash structure)
+            Reference: KotOR_IO/TwoDA.cs:152 (Data dictionary)
+            Reference: reone/2da.h:103 (_rows vector)
             Each row is a dict[str, str] where keys are column headers
             All cell values stored as strings regardless of actual type
             Empty/blank cells represented as "" (empty string)
-
+            
         _headers: List of column header names
             Reference: TSLPatcher/TwoDA.pm:130 (columns array)
+            Reference: Kotor.NET/TwoDABinaryStructure.cs:15 (ColumnHeaders list)
+            Reference: KotOR_IO/TwoDA.cs:142 (Columns list)
+            Reference: reone/2da.h:102 (_columns vector)
             Headers are case-sensitive strings (typically lowercase)
             Order matters for binary format cell offset calculation
             Common headers: "label", "name", "description", "icon", etc.
-
+            
         _labels: List of row labels (typically numeric indices as strings)
             Reference: TSLPatcher/TwoDA.pm:133 (rows_array)
+            Reference: Kotor.NET/TwoDABinaryStructure.cs:16 (RowHeaders list)
+            Reference: KotOR_IO/TwoDA.cs:100 (generated index_list)
             Row labels are usually numeric ("0", "1", "2"...) but can be arbitrary strings
             Used for row identification and lookup
             Game typically accesses rows by integer index, labels are metadata
@@ -104,14 +127,43 @@ class TwoDA(BiowareResource):
         self,
         headers: list[str] | None = None,
     ):
+        # vendor/Kotor.NET/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs:17
+        # vendor/KotOR_IO/KotOR_IO/File Formats/TwoDA.cs:152
+        # vendor/TSLPatcher/lib/site/Bioware/TwoDA.pm:70
         # Internal storage: list of dicts, each dict is a row mapping column headers to cell values
         self._rows: list[dict[str, str]] = []
-
+        
+        # vendor/Kotor.NET/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs:15
+        # vendor/KotOR_IO/KotOR_IO/File Formats/TwoDA.cs:142
+        # vendor/reone/include/reone/resource/2da.h:102
         # Column headers (case-sensitive, typically lowercase)
         self._headers: list[str] = [] if headers is None else headers  # for columns
-
+        
+        # vendor/Kotor.NET/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs:16
+        # vendor/KotOR_IO/KotOR_IO/File Formats/TwoDA.cs:98-100
+        # vendor/TSLPatcher/lib/site/Bioware/TwoDA.pm:133
         # Row labels (usually "0", "1", "2"... but can be arbitrary strings)
         self._labels: list[str] = []  # for rows
+        
+        # Performance optimization: O(1) lookup for row labels
+        # Maps label string to row index for fast find_row() operations
+        self._label_to_index: dict[str, int] = {}
+
+    def __eq__(self, other):
+        if not isinstance(other, TwoDA):
+            return NotImplemented
+        return (
+            self._rows == other._rows
+            and self._headers == other._headers
+            and self._labels == other._labels
+        )
+
+    def __hash__(self):
+        return hash((
+            tuple(tuple(sorted(row.items())) for row in self._rows),
+            tuple(self._headers),
+            tuple(self._labels)
+        ))
 
         # Performance optimization: O(1) lookup for row labels
         # Maps label string to row index for fast find_row() operations
@@ -187,7 +239,9 @@ class TwoDA(BiowareResource):
         for i, row in enumerate(self._rows):
             yield TwoDARow(self.get_label(i), row)
 
-    def __len__(self) -> int:
+    def __len__(
+        self,
+    ) -> int:
         """Returns the number of rows in the 2DA.
 
         Returns:
@@ -197,6 +251,90 @@ class TwoDA(BiowareResource):
         return self.get_height()
 
     def __contains__(
+        self,
+        label: str,
+    ) -> bool:
+        """Checks if a row label exists in the 2DA.
+
+        Args:
+        ----
+            label: The row label to check.
+
+        Returns:
+        -------
+            True if the label exists, False otherwise.
+        """
+        return label in self._label_to_index
+
+    def __getitem__(
+        self,
+        key: int | str | slice,
+    ) -> TwoDARow | list[TwoDARow]:
+        """Pythonic access to rows by index, label, or slice.
+
+        Args:
+        ----
+            key: Row index (int), label (str), or slice.
+
+        Returns:
+        -------
+            TwoDARow for single access, list[TwoDARow] for slice.
+
+        Raises:
+        ------
+            KeyError: If label not found.
+            IndexError: If index out of range.
+        """
+        if isinstance(key, int):
+            return self.get_row(key)
+        if isinstance(key, str):
+            result = self.find_row(key)
+            if result is None:
+                raise KeyError(f"Row label '{key}' not found")
+            return result
+        if isinstance(key, slice):
+            indices = range(len(self._rows))[key]
+            return [self.get_row(i) for i in indices]
+        msg = f"Invalid key type: {type(key).__name__}. Expected int, str, or slice."
+        raise TypeError(msg)
+
+    @property
+    def shape(
+        self,
+    ) -> tuple[int, int]:
+        """Returns the dimensions of the 2DA as (rows, columns).
+
+        Returns:
+        -------
+            Tuple of (row_count, column_count).
+        """
+        return (self.get_height(), self.get_width())
+
+    @property
+    def columns(
+        self,
+    ) -> list[str]:
+        """Returns a copy of the column headers.
+
+        Returns:
+        -------
+            List of column header names.
+        """
+        return copy(self._headers)
+
+    @property
+    def index(
+        self,
+    ) -> list[str]:
+        """Returns a copy of the row labels.
+
+        Returns:
+        -------
+            List of row labels.
+        """
+        return copy(self._labels)
+
+    def get_headers(
         self,
         label: str,
     ) -> bool:
@@ -307,7 +445,9 @@ class TwoDA(BiowareResource):
 
         return [self._rows[i][header] for i in range(self.get_height())]
 
-    def get_columns(self) -> dict[str, list[str]]:
+    def get_columns(
+        self,
+    ) -> dict[str, list[str]]:
         """Returns all columns as a dictionary mapping header names to their column values.
 
         Returns:
@@ -551,7 +691,7 @@ class TwoDA(BiowareResource):
         self._rows.append({})
         label = str(len(self._rows)) if row_label is None else row_label
         self._labels.append(label)
-
+        
         # Update lookup dictionary for O(1) find_row performance
         row_index = len(self._rows) - 1
         self._label_to_index[label] = row_index
@@ -589,7 +729,7 @@ class TwoDA(BiowareResource):
         self._rows.append({})
         label = str(len(self._rows)) if row_label is None else row_label
         self._labels.append(label)
-
+        
         # Update lookup dictionary for O(1) find_row performance
         row_index = len(self._rows) - 1
         self._label_to_index[label] = row_index
@@ -933,34 +1073,45 @@ class TwoDA(BiowareResource):
 
 class TwoDARow(ComparableMixin):
     """A single row in a 2DA table with accessor methods for typed cell values.
-
+    
     TwoDARow provides a convenient interface for accessing and modifying cell values
     in a specific row, with automatic type conversion for integers, floats, and enums.
     This class is typically returned by TwoDA.get_row() and provides a pythonic interface
     to the underlying string-based storage.
-
+    
+    References:
+    ----------
+        vendor/TSLPatcher/lib/site/Bioware/TwoDA.pm:48-71 - Cell access by row/column
+        vendor/KotOR_IO/KotOR_IO/File Formats/TwoDA.cs:162-200 - Indexer for cell access
+        vendor/reone/src/libs/resource/2da.cpp:36-84 - Type conversion methods
+        
     Attributes:
     ----------
         _row_label: The label/identifier for this row
             Reference: TSLPatcher/TwoDA.pm:133 (rows_array)
+            Reference: Kotor.NET/TwoDABinaryStructure.cs:35-36 (row label reading)
             Usually numeric ("0", "1"...) but can be arbitrary string
-
+            
         _data: Dictionary mapping column headers to cell string values
             Reference: TSLPatcher/TwoDA.pm:70 (table->{row}{column} structure)
+            Reference: KotOR_IO/TwoDA.cs:152 (Data[columnLabel][rowIndex])
             All values stored as strings, converted on access
             Empty cells are "" (empty string), not null/None
     """
-
+    
     COMPARABLE_FIELDS = ("_row_label", "_data")
-
     def __init__(
         self,
         row_label: str,
         row_data: dict[str, str],
     ):
+        # vendor/Kotor.NET/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs:35-36
+        # vendor/TSLPatcher/lib/site/Bioware/TwoDA.pm:133
         # Row label (typically numeric index as string)
         self._row_label: str = row_label
-
+        
+        # vendor/KotOR_IO/KotOR_IO/File Formats/TwoDA.cs:152
+        # vendor/TSLPatcher/lib/site/Bioware/TwoDA.pm:70
         # Cell data: column_header -> cell_value (all strings)
         self._data: dict[str, str] = row_data
 
@@ -977,7 +1128,9 @@ class TwoDARow(ComparableMixin):
     def __hash__(self):
         return hash((self._row_label, tuple(sorted(self._data.items()))))
 
-    def label(self) -> str:
+    def label(
+        self,
+    ) -> str:
         """Returns the row label.
 
         Returns:

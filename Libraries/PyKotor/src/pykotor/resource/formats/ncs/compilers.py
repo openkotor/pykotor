@@ -10,7 +10,6 @@ from pathlib import Path  # pyright: ignore[reportMissingImports]
 from typing import TYPE_CHECKING, NamedTuple
 
 from pykotor.common.misc import Game
-from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs.compiler.classes import EntryPointError
 from pykotor.resource.formats.ncs.ncs_auto import compile_nss, write_ncs
 from pykotor.resource.formats.ncs.ncs_data import NCSCompiler
@@ -31,15 +30,16 @@ class InbuiltNCSCompiler(NCSCompiler):
     This compiler provides full NSS compilation without external dependencies,
     supporting all KOTOR/TSL script features including:
     - Functions, variables, structs
-    - Control flow (if/else, while, for, do-while, switch)
+    - Control flow (if/else, while, for, do-while, switch)  
     - All data types (int, float, string, object, vector, etc.)
     - #include directive support
     - Optimization passes
-
+    
     References:
     ----------
-        PyKotor's native compiler targets the same NWScript bytecode layout retail KotOR executes.
-
+        vendor/KotOR.js/src/nwscript/NWScriptCompiler.ts (NSS compilation reference)
+        vendor/xoreos-tools/src/nwscript/compiler.cpp (NSS compilation)
+        vendor/xoreos-docs/specs/torlack/ncs.html (NCS format specification)
     """
 
     def compile_script(  # noqa: PLR0913
@@ -57,9 +57,7 @@ class InbuiltNCSCompiler(NCSCompiler):
         source_filepath: Path = Path(source_file)
         nss_data: bytes = source_filepath.read_bytes()
         nss_contents: str = decode_bytes_with_fallbacks(nss_data)
-        ncs: NCS = compile_nss(
-            nss_contents, game, optimizers, library_lookup=[source_filepath.parent], debug=debug
-        )
+        ncs: NCS = compile_nss(nss_contents, game, optimizers, library_lookup=[source_filepath.parent], debug=debug)
         write_ncs(ncs, output_file)
         return "", ""
 
@@ -74,12 +72,13 @@ class ExternalCompilerConfig(NamedTuple):
 
 class KnownExternalCompilers(Enum):
     """Known external NSS compilers and their configurations.
-
+    
     References:
     ----------
-
+        vendor/TSLPatcher/TSLPatcher.pl - Original Perl TSLPatcher implementation
+        vendor/Kotor.NET/Kotor.NET.Patcher/ - Incomplete C# patcher
+        vendor/xoreos-tools/src/nwscript/compiler.cpp - Xoreos compiler
     """
-
     TSLPATCHER = ExternalCompilerConfig(
         sha256="539EB689D2E0D3751AEED273385865278BEF6696C46BC0CAB116B40C3B2FE820",
         name="TSLPatcher",
@@ -168,7 +167,7 @@ class KnownExternalCompilers(Enum):
         name="Xoreos Tools",
         release_date=date(2016, 1, 1),  # Approximate based on project history
         author="Xoreos Team",
-        commandline={},  # Placeholder registry entry; no bundled NSS CLI from this stack
+        commandline={},  # Xoreos tools are primarily for engine reimplementation
     )
     KNSSCOMP = ExternalCompilerConfig(
         # knsscomp is Nick Hugi's modern NSS compiler

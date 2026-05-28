@@ -21,3 +21,4 @@ jobs:
           target: minor
           merge-method: squash
           approve: true
+

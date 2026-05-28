@@ -117,22 +117,20 @@ def _load_twoda_legacy(reader: BinaryReader) -> TwoDA:
 
 class TwoDABinaryReader(ResourceReader):
     """Reads 2DA (Two-Dimensional Array) files.
-
+    
     2DA files store tabular data used throughout KotOR for game configuration, item stats,
     spell data, and other structured information.
-
-    Observed retail behavior:
+    
+    References:
     ----------
-        Shipped data overwhelmingly uses compact binary ``2DA V2.b``; ASCII ``2DA V2.0`` also
-        appears in tools and some distributions.
-
-        ASCII V2.0 / CSV / JSON are handled by other modules in this package (e.g. ``io_twoda_csv``).
-
-    Implementation note: cells are read with terminated-string semantics; other stacks may use
-    different C-string helpers with explicit limits.
-
+        vendor/reone/src/libs/resource/format/2dareader.cpp:26-80 (2DA reading)
+        vendor/reone/src/libs/resource/format/2dawriter.cpp (2DA writing)
+    
+    Algorithm Differences:
+    ---------------------
+        - Cell reading: PyKotor uses read_terminated_string, reone uses readCStringAt with limit
+        - Token reading approaches differ between implementations
     """
-
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -162,11 +160,55 @@ class TwoDABinaryReader(ResourceReader):
             - Read cell offsets
             - Seek to cell data and populate cells
         """
-        data = self._reader.read_all()
-        try:
-            self._twoda = _load_twoda_from_kaitai(data)
-        except (kaitaistruct.KaitaiStructError, ValueError):
-            self._twoda = _load_twoda_legacy(BinaryReader.from_bytes(data, 0))
+        self._twoda = TwoDA()
+
+        file_type: str = self._reader.read_string(4)
+        file_version: str = self._reader.read_string(4)
+
+        if file_type != "2DA ":
+            msg = "The file type that was loaded is invalid."
+            raise TypeError(msg)
+
+        if file_version != "V2.b":
+            msg = "The 2DA version that was loaded is not supported."
+            raise TypeError(msg)
+
+        self._reader.read_uint8()  # \n
+
+        columns: list[str] = []
+        while self._reader.peek() != b"\0":
+            column_header: str = self._reader.read_terminated_string("\t")
+            self._twoda.add_column(column_header)
+            columns.append(column_header)
+
+        self._reader.read_uint8()  # \0
+
+        row_count: int = self._reader.read_uint32()
+        column_count: int = self._twoda.get_width()
+        cell_count: int = row_count * column_count
+        for _ in range(row_count):
+            row_header: str = self._reader.read_terminated_string("\t")
+            row_label: str = row_header
+            self._twoda.add_row(row_label)
+
+        cell_offsets: list[int] = [0] * cell_count
+        for i in range(cell_count):
+            cell_offsets[i] = self._reader.read_uint16()
+
+        self._reader.read_uint16()
+        cell_data_offset: int = self._reader.position()
+
+        for i in range(cell_count):
+            column_id: int = i % column_count
+            row_id: int = i // column_count
+            column_header: str = columns[column_id]
+            self._reader.seek(cell_data_offset + cell_offsets[i])
+            # vendor/reone/src/libs/resource/format/2dareader.cpp:65-70
+            # NOTE: reone uses readCStringAt with limit, PyKotor uses read_terminated_string
+            # Should verify buffer limits match vendor behavior
+            cell_value: str = self._reader.read_terminated_string("\0")
+            self._twoda.set_cell(row_id, column_header, cell_value)
+
         return self._twoda
 
 

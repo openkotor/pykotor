@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from typing import TYPE_CHECKING
 
 from pykotor.common.stream import BinaryReader
@@ -54,7 +53,7 @@ def detect_2da(
         #    return ResourceType.TwoDA_XML
         return ResourceType.INVALID
 
-    file_format: RESOURCE_FORMAT
+    file_format: ResourceType
     try:
         with BinaryReader.from_auto(source, offset) as reader:
             file_format = check(reader.read_string(4))
@@ -70,7 +69,7 @@ def read_2da(
     source: SOURCE_TYPES,
     offset: int = 0,
     size: int | None = None,
-    file_format: RESOURCE_FORMAT | None = None,
+    file_format: ResourceType | None = None,
 ) -> TwoDA:
     """Returns an TwoDA instance from the source.
 
@@ -81,7 +80,7 @@ def read_2da(
         source: The source of the data.
         offset: The byte offset of the file inside the data.
         size: Number of bytes to allowed to read from the stream. If not specified, uses the whole stream.
-        file_format: The file format to use (ResourceType.TwoDA, ToolsetFormat.TwoDA_CSV, ToolsetFormat.TwoDA_JSON). If not specified, it will be detected automatically.
+        file_format: The file format to use (ResourceType.TwoDA, ResourceType.TwoDA_CSV, ResourceType.TwoDA_JSON). If not specified, it will be detected automatically.
 
     Raises:
     ------

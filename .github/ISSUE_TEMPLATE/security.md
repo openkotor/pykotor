@@ -13,7 +13,7 @@ assignees: ''
 Please report security vulnerabilities through one of these methods:
 
 1. **GitHub Security Advisories** (Preferred):
-   - Go to: https://github.com/OpenKotOR/PyKotor/security/advisories/new
+   - Go to: https://github.com/th3w1zard1/PyKotor/security/advisories/new
    - Click "New draft security advisory"
    - Fill out the form with details
 
@@ -47,3 +47,4 @@ If you accidentally created a public issue:
 ## Thank You
 
 Thank you for responsibly reporting security vulnerabilities!
+

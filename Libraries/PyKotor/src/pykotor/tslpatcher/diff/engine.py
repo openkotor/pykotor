@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Core comparison operations for diff operations.
+"""Core comparison operations for KotorDiff.
 
-This module offers unified diff/comparison logic for diff operations and is the main entry point
+This module offers unified diff/comparison logic for KotorDiff and is the main entry point
 for resource diffing operations. It brings together helpers for:
 
 - Resource walking: walking any path (installation root, container, directory, or single file)
@@ -13,12 +13,16 @@ Designed for both 2-way and 3-way comparisons including changes.ini generation.
 
 Handlers for individual resource formats can be added to the _HANDLERS map to extend support.
 
+References:
+----------
+    vendor/TSLPatcher/TSLPatcher.pl - Original TSLPatcher INI format and patching logic
+    vendor/HoloPatcher.NET/ - C# port of HoloPatcher with diff generation
+    vendor/Kotor.NET/Kotor.NET.Patcher/ - Incomplete C# patcher
 """
 
 from __future__ import annotations
 
 import difflib
-import os
 import traceback
 
 from contextlib import suppress
@@ -44,75 +48,11 @@ from pykotor.tslpatcher.diff.analyzers import DiffAnalyzer, DiffAnalyzerFactory
 from pykotor.tslpatcher.mods.gff import ModificationsGFF, ModifyGFF
 from pykotor.tslpatcher.mods.install import InstallFile
 from pykotor.tslpatcher.mods.ncs import ModificationsNCS, ModifyNCS  # noqa: F401
-
-
-class DiffLogger(Protocol):
-    """Protocol for diff logging interface."""
-
-    def debug(self, message: str, *args, **kwargs) -> None:
-        """Log a debug message."""
-        ...
-
-    def info(self, message: str, *args, **kwargs) -> None:
-        """Log an info message."""
-        ...
-
-    def warning(self, message: str, *args, **kwargs) -> None:
-        """Log a warning message."""
-        ...
-
-    def error(self, message: str, *args, **kwargs) -> None:
-        """Log an error message."""
-        ...
-
-    def critical(self, message: str, *args, **kwargs) -> None:
-        """Log a critical message."""
-        ...
-
-    def diff_output(self, message: str, *args, **kwargs) -> None:
-        """Output diff-specific content that should always be shown."""
-        ...
-
-
-# Enhanced log function that supports message classification
-class EnhancedLogFunc:
-    """Enhanced log function that supports message classification."""
-
-    def __init__(self, logger: DiffLogger):
-        self.logger = logger
-
-    def __call__(
-        self,
-        message: str,
-        *,
-        separator: bool = False,
-        message_type: str = "info",
-    ) -> None:
-        """Log a message with classification.
-
-        Args:
-            message: The message to log
-            separator: Whether this is a separator message
-            message_type: Type of message - "info", "diff", "error", etc.
-        """
-        if message_type == "diff":
-            # Always output diff content
-            self.logger.diff_output(message)
-        elif message_type == "error":
-            self.logger.error(message)
-        elif message_type == "warning":
-            self.logger.warning(message)
-        elif message_type == "debug":
-            self.logger.debug(message)
-        else:
-            # Default to info
-            self.logger.info(message)
-
-
 from pykotor.tslpatcher.mods.ssf import ModificationsSSF, ModifySSF
 from pykotor.tslpatcher.mods.template import PatcherModifications
 from pykotor.tslpatcher.mods.tlk import ModificationsTLK, ModifyTLK
 from pykotor.tslpatcher.mods.twoda import Modifications2DA, Modify2DA
+from utility.error_handling import universal_simplify_exception
 from utility.misc import generate_hash
 
 if TYPE_CHECKING:
@@ -137,8 +77,7 @@ gff_types: list[str] = list(gff.GFFContent.get_extensions())
 
 def is_kotor_install_dir(path: Path) -> bool | None:
     """Check if a path is a KOTOR installation directory."""
-    c_path = CaseAwarePath(path)
-    return c_path.is_dir() and c_path.joinpath("chitin.key").is_file()
+    return path.is_dir() and path.joinpath("chitin.key").is_file()
 
 
 # ---------------------------------------------------------------------------
@@ -181,10 +120,7 @@ def _is_readonly_source(source_path: Path) -> bool:
         True if the source is read-only and cannot be directly modified
     """
     source_lower: str = str(source_path).lower()
-    source_path_obj = (
-        Path(source_path) if isinstance(source_path, (str, os.PathLike)) else source_path
-    )
-    suffix_lower: str = source_path_obj.suffix.lower()
+    suffix_lower: str = source_path.suffix.lower()
 
     # RIM and ERF files are read-only
     if suffix_lower in (".rim", ".erf"):
@@ -277,9 +213,7 @@ def _determine_destination_for_source(
             module_root = get_module_root(actual_filepath)
             destination = f"modules\\{module_root}.mod"
             if verbose:
-                log_func(
-                    f"    +-- Resolution: {display_name} found in {actual_filepath.name} (read-only)"
-                )
+                log_func(f"    +-- Resolution: {display_name} found in {actual_filepath.name} (read-only)")
                 log_func(f"    +-- Destination: {destination} (.mod overrides .rim/.erf)")
             return destination
 
@@ -292,15 +226,10 @@ def _determine_destination_for_source(
 
         # Unknown location type - log warning and fall through to path inference
         if verbose:
-            log_func(
-                f"    +-- Warning: Unknown location_type '{location_type}', using path inference"
-            )
+            log_func(f"    +-- Warning: Unknown location_type '{location_type}', using path inference")
 
     # FALLBACK: Path-based inference (for non-resolution-aware code paths)
-    parent_names_lower: set[str] = {
-        parent.name.lower()
-        for parent in (source_filepath.parents if source_filepath is not None else [])
-    }
+    parent_names_lower: set[str] = {parent.name.lower() for parent in (source_filepath.parents if source_filepath is not None else [])}
     if "override" in parent_names_lower:
         # Determine if it's a read-only source (RIM/ERF)
         if not _is_readonly_source(source_path):
@@ -355,8 +284,7 @@ def _ensure_capsule_install(
     folder_lower = capsule_folder.lower()
 
     already_present = any(
-        install_file.destination.lower() == folder_lower
-        and install_file.saveas.lower() == filename_lower
+        install_file.destination.lower() == folder_lower and install_file.saveas.lower() == filename_lower
         for install_file in modifications_by_type.install
     )
 
@@ -374,6 +302,8 @@ def _ensure_capsule_install(
     def _path_is_file(path_obj: Path | None) -> bool:
         if path_obj is None:
             return False
+        if hasattr(path_obj, "safe_isfile"):
+            return bool(path_obj.is_file())  # type: ignore[attr-defined]
         return path_obj.is_file()
 
     if _path_is_file(capsule_path):
@@ -417,11 +347,7 @@ def _extract_and_add_capsule_resources(
             destination = "Override"
 
         if capsule_path.suffix.lower() == ".mod":
-            capsule_destination_str = (
-                destination
-                if destination.lower().endswith(".mod")
-                else f"{destination}\\{capsule_name}"
-            )
+            capsule_destination_str = destination if destination.lower().endswith(".mod") else f"{destination}\\{capsule_name}"
             _ensure_capsule_install(
                 modifications_by_type,
                 capsule_destination_str,
@@ -448,9 +374,7 @@ def _extract_and_add_capsule_resources(
         log_func(f"    Extracted {resource_count} resources from {capsule_name}")
 
     except Exception as e:  # noqa: BLE001
-        log_func(
-            f"  [Error] Failed to extract resources from capsule {capsule_path.name}: {e.__class__.__name__}: {e}"
-        )
+        log_func(f"  [Error] Failed to extract resources from capsule {capsule_path.name}: {e.__class__.__name__}: {e}")
         log_func("  Full traceback:")
         for line in traceback.format_exc().splitlines():
             log_func(f"    {line}")
@@ -615,12 +539,8 @@ def _create_patch_for_missing_file(
         identifier = str(context.where) if context else filename
 
         # Analyze differences (comparing modded file against empty)
-        assert isinstance(analyzer, DiffAnalyzer), (
-            f"`analyzer` is not a DiffAnalyzer: {analyzer} (type: {type(analyzer)}) for context: {context}"
-        )  # noqa: E501
-        result: PatcherModifications | tuple[PatcherModifications, dict[int, int]] | None = (
-            analyzer.analyze(empty_data, modded_data, identifier)
-        )
+        assert isinstance(analyzer, DiffAnalyzer), f"`analyzer` is not a DiffAnalyzer: {analyzer} (type: {type(analyzer)}) for context: {context}"  # noqa: E501
+        result: PatcherModifications | tuple[PatcherModifications, dict[int, int]] | None = analyzer.analyze(empty_data, modded_data, identifier)
         assert result is not None, f"Analyzer returned None for context: {context}"
         if isinstance(result, tuple):
             modifications, _strref_mappings = result
@@ -713,9 +633,7 @@ def _create_empty_file_data(ext: str) -> bytes | None:
 
     except Exception as e:  # noqa: BLE001
         # Log the exception for debugging
-        print(
-            f"Failed to create empty file data for extension '{ext}': {e.__class__.__name__}: {e}"
-        )
+        print(f"Failed to create empty file data for extension '{ext}': {e.__class__.__name__}: {e}")
         traceback.print_exc()
 
     return None
@@ -753,8 +671,7 @@ def _add_to_install_folder(
     file_exists: bool = False
     for install_file in modifications_by_type.install:
         if (  # must be case-insensitive.
-            install_file.destination.lower() == folder.lower()
-            and install_file.saveas.lower() == filename.lower()
+            install_file.destination.lower() == folder.lower() and install_file.saveas.lower() == filename.lower()
         ):
             file_exists = True
             break
@@ -773,7 +690,10 @@ def _add_to_install_folder(
         capsule_destination = folder if folder_lower.endswith(".mod") else f"{folder}\\{filename}"
         capsule_source_path: Path | None = None
         if modded_path is not None:
-            if modded_path.is_file():
+            if hasattr(modded_path, "safe_isfile"):
+                if modded_path.is_file():  # type: ignore[attr-defined]
+                    capsule_source_path = modded_path
+            elif modded_path.is_file():
                 capsule_source_path = modded_path
 
         _ensure_capsule_install(
@@ -915,9 +835,7 @@ def _compare_gff(a: bytes, b: bytes) -> bool:
     left_gff = gff.read_gff(a)
     right_gff = gff.read_gff(b)
     comparison_result = GFFComparisonResult()
-    are_same = left_gff.compare(
-        right_gff, lambda *_a, **_k: None, comparison_result=comparison_result
-    )
+    are_same = left_gff.compare(right_gff, lambda *_a, **_k: None, comparison_result=comparison_result)
     return are_same and not comparison_result.has_field_differences()
 
 
@@ -1024,11 +942,7 @@ class ResourceWalker:
     def _from_capsule(self, file_path: Path) -> Iterable[ComparableResource]:
         # Check if this is a RIM file that should use composite module loading
         # Only use composite loading if both paths are module files
-        should_use_composite = (
-            is_rim_file(file_path.name)
-            and not self._is_in_rims_folder(file_path)
-            and self._should_use_composite_loading(file_path)
-        )
+        should_use_composite = is_rim_file(file_path.name) and not self._is_in_rims_folder(file_path) and self._should_use_composite_loading(file_path)
 
         if should_use_composite:
             # Use CompositeModuleCapsule to include related module files
@@ -1090,22 +1004,12 @@ class DiffContext:
     resname: str | None = None
 
     # Resolution order location types (for resolution-aware diffing)
-    file1_location_type: str | None = (
-        None  # Location type in vanilla/older install (Override, Modules (.mod), etc.)
-    )
+    file1_location_type: str | None = None  # Location type in vanilla/older install (Override, Modules (.mod), etc.)
     file2_location_type: str | None = None  # Location type in modded/newer install
-    file1_filepath: Path | None = (
-        None  # Full filepath in base installation (for StrRef reference finding)
-    )
-    file2_filepath: Path | None = (
-        None  # Full filepath in target installation (for module name extraction)
-    )
-    file1_installation: Installation | None = (
-        None  # Base installation object (for StrRef reference finding)
-    )
-    file2_installation: Installation | None = (
-        None  # Target installation object (for StrRef/2DA reference finding)
-    )
+    file1_filepath: Path | None = None  # Full filepath in base installation (for StrRef reference finding)
+    file2_filepath: Path | None = None  # Full filepath in target installation (for module name extraction)
+    file1_installation: Installation | None = None  # Base installation object (for StrRef reference finding)
+    file2_installation: Installation | None = None  # Target installation object (for StrRef/2DA reference finding)
 
     @property
     def where(self) -> str:
@@ -1130,7 +1034,7 @@ class DiffContext:
 
 def is_text_content(data: bytes) -> bool:
     """Heuristically determine if data is text content."""
-    if not data:
+    if len(data) == 0:
         return True
 
     with suppress(UnicodeDecodeError):
@@ -1149,9 +1053,7 @@ def is_text_content(data: bytes) -> bool:
     PRINTABLE_ASCII_MAX = 126
     TEXT_THRESHOLD = 0.7
 
-    printable_count: int = sum(
-        1 for b in data if PRINTABLE_ASCII_MIN <= b <= PRINTABLE_ASCII_MAX or b in (9, 10, 13)
-    )
+    printable_count: int = sum(1 for b in data if PRINTABLE_ASCII_MIN <= b <= PRINTABLE_ASCII_MAX or b in (9, 10, 13))
     return printable_count / len(data) > TEXT_THRESHOLD
 
 
@@ -1161,11 +1063,7 @@ def read_text_lines(filepath: Path) -> list[str]:
         return filepath.read_bytes().decode("utf-8", errors="ignore").splitlines(keepends=True)
     except Exception:  # noqa: BLE001
         try:
-            return (
-                filepath.read_bytes()
-                .decode("windows-1252", errors="ignore")
-                .splitlines(keepends=True)
-            )
+            return filepath.read_bytes().decode("windows-1252", errors="ignore").splitlines(keepends=True)
         except Exception:  # noqa: BLE001
             return []
 
@@ -1175,9 +1073,6 @@ def compare_text_content(
     data2: bytes,
     where: str,
     log_func: Callable[[str], None],
-    format_type: str = "unified",
-    *,
-    show_header: bool = True,
 ) -> bool:
     """Compare text content using line-by-line diffing."""
     MAX_LINE_LENGTH = 200  # Maximum characters to display per line
@@ -1202,53 +1097,24 @@ def compare_text_content(
     lines1 = text1.splitlines(keepends=True)
     lines2 = text2.splitlines(keepends=True)
 
-    # Avoid O(n*m) difflib on huge inputs (can cause test timeouts)
-    _MAX_DIFF_LINES = 4000
-    if len(lines1) > _MAX_DIFF_LINES or len(lines2) > _MAX_DIFF_LINES:
-        if show_header:
-            log_func(
-                f"^ '{where}': Text content differs ({len(lines1)} vs {len(lines2)} lines, diff omitted) ^",
-                separator=True,
-                message_type="diff",  # pyright: ignore[reportCallIssue]
-            )
-        return False
-
-    if format_type == "unified":
-        diff = difflib.unified_diff(
-            lines1,
-            lines2,
-            fromfile=f"(old){where}",
-            tofile=f"(new){where}",
-            lineterm="",
-        )
-    elif format_type == "context":
-        diff = difflib.context_diff(
-            lines1,
-            lines2,
-            fromfile=f"(old){where}",
-            tofile=f"(new){where}",
-            lineterm="",
-        )
-    else:  # default to unified
-        diff = difflib.unified_diff(
-            lines1,
-            lines2,
-            fromfile=f"(old){where}",
-            tofile=f"(new){where}",
-            lineterm="",
-        )
+    diff = difflib.unified_diff(
+        lines1,
+        lines2,
+        fromfile=f"(old){where}",
+        tofile=f"(new){where}",
+        lineterm="",
+    )
 
     diff_lines = list(diff)
     if diff_lines:
-        if show_header:
-            log_func(f"^ '{where}': Text content differs ^", separator=True, message_type="diff")  # pyright: ignore[reportCallIssue]
+        log_func(f"^ '{where}': Text content differs ^", separator=True)  # pyright: ignore[reportCallIssue]
         for line in diff_lines:
             # Truncate excessively long lines (likely binary data that slipped through)
             if len(line) > MAX_LINE_LENGTH:
                 truncated = line[:MAX_LINE_LENGTH] + f"... (truncated, {len(line)} chars total)"
-                log_func(truncated, message_type="diff")
+                log_func(truncated)
             else:
-                log_func(line.rstrip(), message_type="diff")
+                log_func(line.rstrip())
         return False
 
     return True
@@ -1259,66 +1125,27 @@ def compare_text_content(
 # ---------------------------------------------------------------------------
 
 
-def get_resource_reader_function(
-    ext: str,
-) -> (
-    Callable[[bytes], GFF | TwoDA | TLK | LIP | ERF | RIM | SSF | MDL | NCS | BWM | LTR | LYT | VIS]
-    | None
-):
+def get_resource_reader_function(ext: str) -> Callable[[bytes], GFF | TwoDA | TLK | LIP | ERF | RIM | SSF | MDL | NCS | BWM | LTR | LYT | VIS] | None:
     """Dynamically get the appropriate resource reader function for an extension."""
     # Map extensions to their reader functions
     reader_map: dict[str, Callable[[bytes], Any]] = {
-        "2da": lambda data: __import__(
-            "pykotor.resource.formats.twoda.twoda_auto", fromlist=["read_2da"]
-        ).read_2da(data),
-        "dwk": lambda data: __import__(
-            "pykotor.resource.formats.bwm.bwm_auto", fromlist=["read_bwm"]
-        ).read_bwm(data),
-        "wok": lambda data: __import__(
-            "pykotor.resource.formats.bwm.bwm_auto", fromlist=["read_bwm"]
-        ).read_bwm(data),
-        "erf": lambda data: __import__(
-            "pykotor.resource.formats.erf.erf_auto", fromlist=["read_erf"]
-        ).read_erf(data),
-        "gff": lambda data: __import__(
-            "pykotor.resource.formats.gff.gff_auto", fromlist=["read_gff"]
-        ).read_gff(data),
-        "mod": lambda data: __import__(
-            "pykotor.resource.formats.erf.erf_auto", fromlist=["read_erf"]
-        ).read_erf(data),
-        "sav": lambda data: __import__(
-            "pykotor.resource.formats.erf.erf_auto", fromlist=["read_erf"]
-        ).read_erf(data),
-        "rim": lambda data: __import__(
-            "pykotor.resource.formats.rim.rim_auto", fromlist=["read_rim"]
-        ).read_rim(data),
-        "lip": lambda data: __import__(
-            "pykotor.resource.formats.lip.lip_auto", fromlist=["read_lip"]
-        ).read_lip(data),
-        "ltr": lambda data: __import__(
-            "pykotor.resource.formats.ltr.ltr_auto", fromlist=["read_ltr"]
-        ).read_ltr(data),
-        "lyt": lambda data: __import__(
-            "pykotor.resource.formats.lyt.lyt_auto", fromlist=["read_lyt"]
-        ).read_lyt(data),
-        "mdl": lambda data: __import__(
-            "pykotor.resource.formats.mdl.mdl_auto", fromlist=["read_mdl"]
-        ).read_mdl(data),
-        "ncs": lambda data: __import__(
-            "pykotor.resource.formats.ncs.ncs_auto", fromlist=["read_ncs"]
-        ).read_ncs(data),
-        "pwk": lambda data: __import__(
-            "pykotor.resource.formats.bwm.bwm_auto", fromlist=["read_bwm"]
-        ).read_bwm(data),
-        "ssf": lambda data: __import__(
-            "pykotor.resource.formats.ssf.ssf_auto", fromlist=["read_ssf"]
-        ).read_ssf(data),
-        "tlk": lambda data: __import__(
-            "pykotor.resource.formats.tlk.tlk_auto", fromlist=["read_tlk"]
-        ).read_tlk(data),
-        "vis": lambda data: __import__(
-            "pykotor.resource.formats.vis.vis_auto", fromlist=["read_vis"]
-        ).read_vis(data),
+        "2da": lambda data: __import__("pykotor.resource.formats.twoda.twoda_auto", fromlist=["read_2da"]).read_2da(data),
+        "dwk": lambda data: __import__("pykotor.resource.formats.bwm.bwm_auto", fromlist=["read_bwm"]).read_bwm(data),
+        "wok": lambda data: __import__("pykotor.resource.formats.bwm.bwm_auto", fromlist=["read_bwm"]).read_bwm(data),
+        "erf": lambda data: __import__("pykotor.resource.formats.erf.erf_auto", fromlist=["read_erf"]).read_erf(data),
+        "gff": lambda data: __import__("pykotor.resource.formats.gff.gff_auto", fromlist=["read_gff"]).read_gff(data),
+        "mod": lambda data: __import__("pykotor.resource.formats.erf.erf_auto", fromlist=["read_erf"]).read_erf(data),
+        "sav": lambda data: __import__("pykotor.resource.formats.erf.erf_auto", fromlist=["read_erf"]).read_erf(data),
+        "rim": lambda data: __import__("pykotor.resource.formats.rim.rim_auto", fromlist=["read_rim"]).read_rim(data),
+        "lip": lambda data: __import__("pykotor.resource.formats.lip.lip_auto", fromlist=["read_lip"]).read_lip(data),
+        "ltr": lambda data: __import__("pykotor.resource.formats.ltr.ltr_auto", fromlist=["read_ltr"]).read_ltr(data),
+        "lyt": lambda data: __import__("pykotor.resource.formats.lyt.lyt_auto", fromlist=["read_lyt"]).read_lyt(data),
+        "mdl": lambda data: __import__("pykotor.resource.formats.mdl.mdl_auto", fromlist=["read_mdl"]).read_mdl(data),
+        "ncs": lambda data: __import__("pykotor.resource.formats.ncs.ncs_auto", fromlist=["read_ncs"]).read_ncs(data),
+        "pwk": lambda data: __import__("pykotor.resource.formats.bwm.bwm_auto", fromlist=["read_bwm"]).read_bwm(data),
+        "ssf": lambda data: __import__("pykotor.resource.formats.ssf.ssf_auto", fromlist=["read_ssf"]).read_ssf(data),
+        "tlk": lambda data: __import__("pykotor.resource.formats.tlk.tlk_auto", fromlist=["read_tlk"]).read_tlk(data),
+        "vis": lambda data: __import__("pykotor.resource.formats.vis.vis_auto", fromlist=["read_vis"]).read_vis(data),
     }
 
     return reader_map.get(ext.lower())
@@ -1338,11 +1165,7 @@ def relative_path_from_to(
     dst_parts: list[str] = list(PurePath(dst).parts)
 
     common_length: int = next(
-        (
-            i
-            for i, (src_part, dst_part) in enumerate(zip(src_parts, dst_parts))
-            if src_part != dst_part
-        ),
+        (i for i, (src_part, dst_part) in enumerate(zip(src_parts, dst_parts)) if src_part != dst_part),
         len(src_parts),
     )
     rel_parts: list[str] = dst_parts[common_length:]
@@ -1399,10 +1222,6 @@ def print_udiff(
     b = read_text_lines(to_file)
     if not a and not b:
         return
-    _MAX_UDIFF_LINES = 4000
-    if len(a) > _MAX_UDIFF_LINES or len(b) > _MAX_UDIFF_LINES:
-        log_func(f"--- {label_from}\n+++ {label_to}\n(diff omitted: {len(a)} vs {len(b)} lines)")
-        return
     diff: Iterator[str] = difflib.unified_diff(
         a,
         b,
@@ -1419,11 +1238,10 @@ def diff_data(  # noqa: PLR0913
     data2: bytes | Path,
     context: DiffContext,
     *,
-    log_func: Callable[[str], None] = print,
+    log_func: Callable,
     compare_hashes: bool = True,
     modifications_by_type: ModificationsByType | None = None,
     incremental_writer: IncrementalTSLPatchDataWriter | None = None,
-    format_type: str = "unified",
 ) -> bool | None:
     """Compare two resources with appropriate format-specific handling.
 
@@ -1480,9 +1298,7 @@ def diff_data(  # noqa: PLR0913
         try:
             gff1 = gff.read_gff(data1)
         except Exception as e:  # noqa: BLE001, PERF203, S112
-            log_func(
-                f"[Error] loading GFF {context.file1_rel.parent / where}!\n{(e.__class__.__name__, str(e))}"
-            )
+            log_func(f"[Error] loading GFF {context.file1_rel.parent / where}!\n{universal_simplify_exception(e)}")
             log_func("Full traceback:")
             for line in traceback.format_exc().splitlines():
                 log_func(f"  {line}")
@@ -1490,150 +1306,122 @@ def diff_data(  # noqa: PLR0913
         try:
             gff2 = gff.read_gff(data2)
         except Exception as e:  # noqa: BLE001, PERF203, S112
-            log_func(
-                f"[Error] loading GFF {context.file2_rel.parent / where}!\n{(e.__class__.__name__, str(e))}"
-            )
+            log_func(f"[Error] loading GFF {context.file2_rel.parent / where}!\n{universal_simplify_exception(e)}")
             log_func("Full traceback:")
             for line in traceback.format_exc().splitlines():
                 log_func(f"  {line}")
+            return None
+        if not gff1 and not gff2:
+            log_func(f"Both GFF resources missing in memory:\t'{context.where}'")
+            return None
+        if not gff1:
+            log_func(f"GFF resource missing in memory:\t'{context.file1_rel.parent / where}'")
+            return None
+        if not gff2:
+            log_func(f"GFF resource missing in memory:\t'{context.file2_rel.parent / where}'")
             return None
         # Extract just the filename from context.where to avoid duplication in field paths
         # If context.where is "swkotor\Override\journal.gui", use just "journal.gui" as the root path
         compare_path = PureWindowsPath(Path(str(context.where)).name)
         comparison_result = GFFComparisonResult()
-        # For GFF comparison, always use structured format to get field-by-field diffs.
-        # ignore_default_changes=True: optional fields (e.g. UTE GuaranteedCount=0) are not reported.
-        are_same = gff1.compare(
-            gff2,
-            log_func,
-            compare_path,
-            ignore_default_changes=True,
-            comparison_result=comparison_result,
-            format_type="structured",
-        )
+        if not (gff1 and gff2):
+            return True
+        are_same = gff1.compare(gff2, log_func, compare_path, comparison_result=comparison_result)
         if are_same and not comparison_result.has_field_differences():
             return True
 
-        modifications: PatcherModifications | tuple[PatcherModifications, dict[int, int]] | None = (
-            None
-        )
-        if (
-            modifications_by_type is not None
-            or incremental_writer is not None
-            or format_type != "unified"
-        ):
-            try:
-                analyzer = DiffAnalyzerFactory.get_analyzer("gff")
-                if analyzer is None:
-                    # For unified diff format, continue to text comparison instead of returning early
-                    if format_type != "unified":
-                        # Log final separator AFTER all patch info
-                        log_func(f"^ '{context.where}': GFF is different ^")
-                        log_func("---------------------------------------")
-                        return False
-                    # Fall through to text comparison for unified diff
+        # Generate INI modifications if requested (log BEFORE final separator)
+        if modifications_by_type is None:
+            # Log final separator AFTER all patch info
+            log_func(f"^ '{context.where}': GFF is different ^", separator=True)
+            return False
 
-                strref_mappings: dict[int, int] = {}
-                result: (
-                    PatcherModifications | tuple[PatcherModifications, dict[int, int]] | None
-                ) = analyzer.analyze(data1, data2, str(context.where))
-                assert result is not None, f"Analyzer returned None for context: {context}"
-                if isinstance(result, tuple):
-                    modifications, strref_mappings = result
-                    assert isinstance(modifications, PatcherModifications), (
-                        f"`modifications` is not a PatcherModifications: {modifications} (type: {type(modifications)}) for context: {context}"
-                    )  # noqa: E501
-                else:
-                    modifications = result
-                    assert isinstance(modifications, PatcherModifications), (
-                        f"`modifications` is not a PatcherModifications: {modifications} (type: {type(modifications)}) for context: {context}"
-                    )  # noqa: E501
+        try:
+            analyzer = DiffAnalyzerFactory.get_analyzer("gff")
+            if analyzer is None:
+                # Log final separator AFTER all patch info
+                log_func(f"^ '{context.where}': GFF is different ^", separator=True)
+                return False
 
-                # File exists in both vanilla and modded - this is a PATCH, not an install
-                log_func(f"\n[PATCH] {context.where}")
-                log_func("  |-- !ReplaceFile: 0 (patch existing file, don't replace)")
-
-                # Set destination based on MODDED installation location (file2)
-                resource_name = Path(str(context.where)).name
-                destination: str = _determine_destination_for_source(
-                    context.file2_rel,  # Use MODDED installation, not vanilla
-                    resource_name,
-                    log_func=log_func,
-                    location_type=context.file2_location_type,
-                    source_filepath=context.file2_filepath,
-                )
-                modifications.destination = destination
-                modifications.sourcefile = resource_name  # Just the filename, not the full path
-                # saveas should also be just the filename, NOT the full path
-                modifications.saveas = resource_name
-
-                assert isinstance(modifications, ModificationsGFF), (
-                    f"`modifications` is not a ModificationsGFF: {modifications} (type: {modifications.__class__.__name__}) for context: {context}"
+            strref_mappings: dict[int, int] = {}
+            result: PatcherModifications | tuple[PatcherModifications, dict[int, int]] | None = analyzer.analyze(data1, data2, str(context.where))
+            assert result is not None, f"Analyzer returned None for context: {context}"
+            if isinstance(result, tuple):
+                modifications, strref_mappings = result
+                assert isinstance(modifications, PatcherModifications), (
+                    f"`modifications` is not a PatcherModifications: {modifications} (type: {type(modifications)}) for context: {context}"
+                )  # noqa: E501
+            else:
+                modifications = result
+                assert isinstance(modifications, PatcherModifications), (
+                    f"`modifications` is not a PatcherModifications: {modifications} (type: {type(modifications)}) for context: {context}"
                 )  # noqa: E501
 
-                # Only append to modifications_by_type if it's available (not in pure diff mode)
-                if modifications_by_type is not None:
-                    modifications_by_type.gff.append(modifications)
+            if modifications is None:
+                # Log final separator AFTER all patch info
+                log_func(f"^ '{context.where}': GFF is different ^", separator=True)
+                return False
 
-                modifiers: list | None = getattr(modifications, "modifiers", None)
-                if modifiers:
-                    log_func(f"  |-- Modifications: {len(modifiers)} field/struct changes")
+            # File exists in both vanilla and modded - this is a PATCH, not an install
+            log_func(f"\n[PATCH] {context.where}")
+            log_func("  |-- !ReplaceFile: 0 (patch existing file, don't replace)")
 
-                # Determine which source file to copy to tslpatchdata
-                source_to_copy = _determine_tslpatchdata_source(
-                    context.file1_rel, context.file2_rel
-                )
-                log_func(f"  +-- tslpatchdata: Will copy from {source_to_copy}")
+            # Set destination based on MODDED installation location (file2)
+            resource_name = Path(str(context.where)).name
+            destination = _determine_destination_for_source(
+                context.file2_rel,  # Use MODDED installation, not vanilla
+                resource_name,
+                log_func=log_func,
+                location_type=context.file2_location_type,
+                source_filepath=context.file2_filepath,
+            )
+            modifications.destination = destination
+            modifications.sourcefile = resource_name  # Just the filename, not the full path
+            # saveas should also be just the filename, NOT the full path
+            modifications.saveas = resource_name
 
-                # Write immediately if using incremental writer
-                if incremental_writer is not None:
-                    # Get source data (vanilla version)
-                    gff_source_data: bytes = (
-                        data1 if isinstance(data1, bytes) else data1.read_bytes()
-                    )
-                    source_path = (
-                        context.file1_installation
-                        if context.file1_installation
-                        else context.file1_filepath
-                    )
-                    incremental_writer.write_modification(
-                        modifications, gff_source_data, source_path
-                    )
-            except Exception as e:  # noqa: BLE001, PERF203, S112
-                log_func(
-                    f"[Error] Failed to generate GFF modifications for '{context.where}': {e.__class__.__name__}: {e}"
-                )
-                log_func("Full traceback:")
-                for line in traceback.format_exc().splitlines():
-                    log_func(f"  {line}")
-        else:
-            # For GFF files, we've already done the structured comparison above.
-            # Return False to indicate differences without falling through to binary text comparison.
-            log_func(f"^ '{context.where}': GFF is different ^")
-            log_func("---------------------------------------")
-            return False
+            assert isinstance(modifications, ModificationsGFF), (
+                f"`modifications` is not a ModificationsGFF: {modifications} (type: {type(modifications)}) for context: {context}"
+            )  # noqa: E501
+            modifications_by_type.gff.append(modifications)
+
+            modifiers: list | None = getattr(modifications, "modifiers", None)
+            if modifiers:
+                log_func(f"  |-- Modifications: {len(modifiers)} field/struct changes")
+
+            # Determine which source file to copy to tslpatchdata
+            source_to_copy = _determine_tslpatchdata_source(context.file1_rel, context.file2_rel)
+            log_func(f"  +-- tslpatchdata: Will copy from {source_to_copy}")
+
+            # Write immediately if using incremental writer
+            if incremental_writer is not None:
+                # Get source data (vanilla version)
+                gff_source_data: bytes = data1 if isinstance(data1, bytes) else data1.read_bytes()
+                source_path = context.file1_installation if context.file1_installation else context.file1_filepath
+                incremental_writer.write_modification(modifications, gff_source_data, source_path)
+
+        except Exception as e:  # noqa: BLE001, PERF203, S112
+            log_func(f"[Error] Failed to generate GFF modifications for '{context.where}': {e.__class__.__name__}: {e}")
+            log_func("Full traceback:")
+            for line in traceback.format_exc().splitlines():
+                log_func(f"  {line}")
+
+        # Log final separator AFTER all patch info
+        log_func(f"^ '{context.where}': GFF is different ^", separator=True)
+        return False
+
     # Define known binary formats that should never be treated as text
     BINARY_FORMATS = {
         # Scripts and models
-        "mdl",
-        "mdx",
-        "ncs",
+        "ncs", "mdl", "mdx",
         # Walkmesh formats
-        "dwk",
-        "pwk",
-        "wok",
+        "wok", "pwk", "dwk",
         # Textures
-        "tga",
-        "tpc",
-        "txi",
+        "tga", "tpc", "txi",
         # Audio/Video
-        "bik",
-        "wav",
+        "wav", "bik",
         # Capsule formats (should be handled by capsule reader, but fallback to binary if parsing fails)
-        "erf",
-        "mod",
-        "rim",
-        "sav",
+        "erf", "rim", "mod", "sav",
         # All GFF-based formats
         *gff_types,
     }
@@ -1651,12 +1439,8 @@ def diff_data(  # noqa: PLR0913
             if isinstance(obj1, ComparableMixin) and isinstance(obj2, ComparableMixin):
                 # Special handling for NCS files - provide summary instead of exhaustive diff
                 if context.ext == "ncs":
-                    assert isinstance(obj1, NCS), (
-                        f"`obj1` is not a NCS: {obj1} (type: {type(obj1)}) for context: {context}"
-                    )  # noqa: E501
-                    assert isinstance(obj2, NCS), (
-                        f"`obj2` is not a NCS: {obj2} (type: {type(obj2)}) for context: {context}"
-                    )  # noqa: E501
+                    assert isinstance(obj1, NCS), f"`obj1` is not a NCS: {obj1} (type: {type(obj1)}) for context: {context}"  # noqa: E501
+                    assert isinstance(obj2, NCS), f"`obj2` is not a NCS: {obj2} (type: {type(obj2)}) for context: {context}"  # noqa: E501
                     # Capture comparison output to summarize it
                     comparison_lines: list[str] = []
 
@@ -1680,15 +1464,12 @@ def diff_data(  # noqa: PLR0913
                     if len(comparison_lines) > MAX_DIFF_LINES:
                         for line in comparison_lines[:MAX_DIFF_LINES]:
                             log_func(line.rstrip())
-                        log_func(
-                            f"  ... ({len(comparison_lines) - MAX_DIFF_LINES} more difference lines omitted)"
-                        )
+                        log_func(f"  ... ({len(comparison_lines) - MAX_DIFF_LINES} more difference lines omitted)")
                     else:
                         for line in comparison_lines:
                             log_func(line.rstrip())
 
-                    log_func(f"^ '{context.where}': {context.ext.upper()} is different ^")
-                    log_func("---------------------------------------------------------")
+                    log_func(f"^ '{context.where}': {context.ext.upper()} is different ^", separator=True)
                     return False
 
                 # Use the structured compare method for other files
@@ -1696,9 +1477,7 @@ def diff_data(  # noqa: PLR0913
                 # Since both come from the same reader_func, they should be the same type
                 # Check that they're the same type to satisfy type checker
                 if type(obj1) is not type(obj2):
-                    log_func(
-                        f"[Error] Type mismatch in comparison: {type(obj1).__name__} vs {type(obj2).__name__}"
-                    )
+                    log_func(f"[Error] Type mismatch in comparison: {type(obj1).__name__} vs {type(obj2).__name__}")
                     return False
 
                 # Both objects are the same type, so compare will work correctly
@@ -1710,30 +1489,22 @@ def diff_data(  # noqa: PLR0913
                     return True
 
                 # Generate INI modifications if requested (log BEFORE final separator)
-                if modifications_by_type is None and incremental_writer is None:
+                if modifications_by_type is None:
                     # Log final separator AFTER all patch info
-                    log_func(
-                        f"^ '{context.where}': {context.ext.upper()} is different ^", separator=True
-                    )
+                    log_func(f"^ '{context.where}': {context.ext.upper()} is different ^", separator=True)
                     return False
 
                 try:
                     analyzer = DiffAnalyzerFactory.get_analyzer(context.ext)
                     if analyzer is None:
                         # Log final separator AFTER all patch info
-                        log_func(
-                            f"^ '{context.where}': {context.ext.upper()} is different ^",
-                            separator=True,
-                        )
+                        log_func(f"^ '{context.where}': {context.ext.upper()} is different ^", separator=True)
                         return False
 
-                    modifications = analyzer.analyze(data1, data2, str(context.where))
+                    modifications: PatcherModifications | tuple[PatcherModifications, dict[int, int]] | None = analyzer.analyze(data1, data2, str(context.where))
                     if modifications is None:
                         # Log final separator AFTER all patch info
-                        log_func(
-                            f"^ '{context.where}': {context.ext.upper()} is different ^",
-                            separator=True,
-                        )
+                        log_func(f"^ '{context.where}': {context.ext.upper()} is different ^", separator=True)
                         return False
 
                     # Add to appropriate list based on resource type
@@ -1755,49 +1526,24 @@ def diff_data(  # noqa: PLR0913
                             f"`modifications` is not a Modifications2DA: {modifications} (type: {type(modifications)}) for context: {context}"
                         )  # noqa: E501
                         modifications.destination = destination
-                        modifications.sourcefile = (
-                            resource_name  # Just the filename, not the full path
-                        )
-
-                        # Only append to modifications_by_type if it's available (not in pure diff mode)
-                        if modifications_by_type is not None:
-                            modifications_by_type.twoda.append(modifications)
-                        twoda_modifiers: list[Modify2DA] = [
-                            m for m in modifications.modifiers if isinstance(m, Modify2DA)
-                        ]
+                        modifications.sourcefile = resource_name  # Just the filename, not the full path
+                        modifications_by_type.twoda.append(modifications)
+                        twoda_modifiers: list[Modify2DA] = [m for m in modifications.modifiers if isinstance(m, Modify2DA)]
 
                         if twoda_modifiers:
-                            log_func(
-                                f"  |-- Modifications: {len(twoda_modifiers)} row/column changes"
-                            )
+                            log_func(f"  |-- Modifications: {len(twoda_modifiers)} row/column changes")
 
                         # Determine which source file to copy
-                        source_to_copy = _determine_tslpatchdata_source(
-                            context.file1_rel, context.file2_rel
-                        )
+                        source_to_copy = _determine_tslpatchdata_source(context.file1_rel, context.file2_rel)
                         log_func(f"  +-- tslpatchdata: Will copy from {source_to_copy}")
 
                         # Write immediately if using incremental writer
                         if incremental_writer is not None:
-                            twoda_vanilla_bytes: bytes = (
-                                data1 if isinstance(data1, bytes) else data1.read_bytes()
-                            )
-                            source_path = (
-                                context.file1_installation
-                                if context.file1_installation
-                                else context.file1_filepath
-                            )
-                            modded_source_path = (
-                                context.file2_installation
-                                if context.file2_installation
-                                else context.file2_filepath
-                            )
-                            log_func(
-                                f"[DEBUG] Passing to writer: source_path={source_path}, modded_source_path={modded_source_path}"
-                            )
-                            incremental_writer.write_modification(
-                                modifications, twoda_vanilla_bytes, source_path, modded_source_path
-                            )
+                            twoda_vanilla_bytes: bytes = data1 if isinstance(data1, bytes) else data1.read_bytes()
+                            source_path = context.file1_installation if context.file1_installation else context.file1_filepath
+                            modded_source_path = context.file2_installation if context.file2_installation else context.file2_filepath
+                            log_func(f"[DEBUG] Passing to writer: source_path={source_path}, modded_source_path={modded_source_path}")
+                            incremental_writer.write_modification(modifications, twoda_vanilla_bytes, source_path, modded_source_path)
                     elif context.ext == "tlk":
                         log_func(f"\n[PATCH] {context.where}")
                         log_func("  |-- Mode: Append entries (TSLPatcher design)")
@@ -1807,12 +1553,8 @@ def diff_data(  # noqa: PLR0913
                             msg = f"TLK analyzer must return tuple (ModificationsTLK, dict), got {type(modifications)}"
                             raise TypeError(msg)  # noqa: TRY301
                         mod_tlk, strref_mappings = modifications
-                        assert isinstance(mod_tlk, ModificationsTLK), (
-                            f"`mod_tlk` is not a ModificationsTLK: {mod_tlk} (type: {type(mod_tlk)}) for context: {context}"
-                        )  # noqa: E501
-                        assert isinstance(strref_mappings, dict), (
-                            f"`strref_mappings` is not a dict: {strref_mappings} (type: {type(strref_mappings)}) for context: {context}"
-                        )  # noqa: E501
+                        assert isinstance(mod_tlk, ModificationsTLK), f"`mod_tlk` is not a ModificationsTLK: {mod_tlk} (type: {type(mod_tlk)}) for context: {context}"  # noqa: E501
+                        assert isinstance(strref_mappings, dict), f"`strref_mappings` is not a dict: {strref_mappings} (type: {type(strref_mappings)}) for context: {context}"  # noqa: E501
 
                         # Store metadata for StrRef reference finding
                         # For diff entries, we need to search BOTH installations (file1 and file2)
@@ -1831,18 +1573,12 @@ def diff_data(  # noqa: PLR0913
                                 "source_filepath": context.file1_filepath,
                             }
 
-                        # Only append to modifications_by_type if it's available (not in pure diff mode)
-                        if modifications_by_type is not None:
-                            modifications_by_type.tlk.append(mod_tlk)
-                        tlk_modifiers: list[ModifyTLK] = [
-                            m for m in mod_tlk.modifiers if isinstance(m, ModifyTLK)
-                        ]
+                        modifications_by_type.tlk.append(mod_tlk)
+                        tlk_modifiers: list[ModifyTLK] = [m for m in mod_tlk.modifiers if isinstance(m, ModifyTLK)]
 
                         if tlk_modifiers:
                             log_func(f"  |-- Modifications: {len(tlk_modifiers)} TLK entries")
-                        log_func(
-                            "  +-- tslpatchdata: append.tlk and/or replace.tlk will be generated"
-                        )
+                        log_func("  +-- tslpatchdata: append.tlk and/or replace.tlk will be generated")
 
                         # Write immediately if using incremental writer
                         # TLK will trigger linking patch creation via StrRef cache
@@ -1867,39 +1603,22 @@ def diff_data(  # noqa: PLR0913
                             f"`modifications` is not a ModificationsSSF: {modifications} (type: {type(modifications)}) for context: {context}"
                         )  # noqa: E501
                         modifications.destination = destination
-                        modifications.sourcefile = (
-                            resource_name  # Just the filename, not the full path
-                        )
-                        if modifications_by_type is not None:
-                            modifications_by_type.ssf.append(modifications)
-                        ssf_modifiers: list[ModifySSF] = [
-                            m for m in modifications.modifiers if isinstance(m, ModifySSF)
-                        ]
+                        modifications.sourcefile = resource_name  # Just the filename, not the full path
+                        modifications_by_type.ssf.append(modifications)
+                        ssf_modifiers: list[ModifySSF] = [m for m in modifications.modifiers if isinstance(m, ModifySSF)]
 
                         if ssf_modifiers:
-                            log_func(
-                                f"  |-- Modifications: {len(ssf_modifiers)} sound slot changes"
-                            )
+                            log_func(f"  |-- Modifications: {len(ssf_modifiers)} sound slot changes")
 
                         # Determine which source file to copy
-                        source_to_copy = _determine_tslpatchdata_source(
-                            context.file1_rel, context.file2_rel
-                        )
+                        source_to_copy = _determine_tslpatchdata_source(context.file1_rel, context.file2_rel)
                         log_func(f"  +-- tslpatchdata: Will copy from {source_to_copy}")
 
                         # Write immediately if using incremental writer
                         if incremental_writer is not None:
-                            ssf_vanilla_bytes: bytes = (
-                                data1 if isinstance(data1, bytes) else data1.read_bytes()
-                            )
-                            source_path = (
-                                context.file1_installation
-                                if context.file1_installation
-                                else context.file1_filepath
-                            )
-                            incremental_writer.write_modification(
-                                modifications, ssf_vanilla_bytes, source_path
-                            )
+                            ssf_vanilla_bytes: bytes = data1 if isinstance(data1, bytes) else data1.read_bytes()
+                            source_path = context.file1_installation if context.file1_installation else context.file1_filepath
+                            incremental_writer.write_modification(modifications, ssf_vanilla_bytes, source_path)
                     elif context.ext in gff_types:
                         # GFF file exists in both vanilla and modded - this is a PATCH
                         log_func(f"\n[PATCH] {context.where}")
@@ -1915,65 +1634,42 @@ def diff_data(  # noqa: PLR0913
                             source_filepath=context.file2_filepath,
                         )
                         assert isinstance(modifications, ModificationsGFF), (
-                            f"`modifications` is not a ModificationsGFF: {modifications} (type: {modifications.__class__}) for context: {context}"
+                            f"`modifications` is not a ModificationsGFF: {modifications} (type: {type(modifications)}) for context: {context}"
                         )  # noqa: E501
                         modifications.destination = destination
-                        modifications.sourcefile = (
-                            resource_name  # Just the filename, not the full path
-                        )
+                        modifications.sourcefile = resource_name  # Just the filename, not the full path
                         # saveas should also be just the filename, NOT the full path
                         modifications.saveas = resource_name
 
-                        if modifications_by_type is not None:
-                            modifications_by_type.gff.append(modifications)
-                        gff_modifiers: list[ModifyGFF] = [
-                            m for m in modifications.modifiers if isinstance(m, ModifyGFF)
-                        ]
+                        modifications_by_type.gff.append(modifications)
+                        gff_modifiers: list[ModifyGFF] = [m for m in modifications.modifiers if isinstance(m, ModifyGFF)]
 
                         if gff_modifiers:
-                            log_func(
-                                f"  |-- Modifications: {len(gff_modifiers)} field/struct changes"
-                            )
+                            log_func(f"  |-- Modifications: {len(gff_modifiers)} field/struct changes")
 
                         # Determine which source file to copy
-                        source_to_copy = _determine_tslpatchdata_source(
-                            context.file1_rel, context.file2_rel
-                        )
+                        source_to_copy = _determine_tslpatchdata_source(context.file1_rel, context.file2_rel)
                         log_func(f"  +-- tslpatchdata: Will copy from {source_to_copy}")
 
                         # Write immediately if using incremental writer
                         if incremental_writer is not None:
-                            gff2_source_data: bytes | None = (
-                                data1 if isinstance(data1, bytes) else data1.read_bytes()
-                            )
-                            source_path = (
-                                context.file1_installation
-                                if context.file1_installation
-                                else context.file1_filepath
-                            )
-                            incremental_writer.write_modification(
-                                modifications, gff2_source_data, source_path
-                            )
+                            gff2_source_data: bytes = data1 if isinstance(data1, bytes) else data1.read_bytes()
+                            source_path = context.file1_installation if context.file1_installation else context.file1_filepath
+                            incremental_writer.write_modification(modifications, gff2_source_data, source_path)
 
                 except Exception as e:  # noqa: BLE001, PERF203, S112
-                    log_func(
-                        f"[Error] Failed to generate {context.ext.upper()} modifications for '{context.where}': {e.__class__.__name__}: {e}"
-                    )
+                    log_func(f"[Error] Failed to generate {context.ext.upper()} modifications for '{context.where}': {e.__class__.__name__}: {e}")
                     log_func("Full traceback:")
                     for line in traceback.format_exc().splitlines():
                         log_func(f"  {line}")
 
                 # Log final separator AFTER all patch info
-                log_func(
-                    f"^ '{context.where}': {context.ext.upper()} is different ^", separator=True
-                )
+                log_func(f"^ '{context.where}': {context.ext.upper()} is different ^", separator=True)
                 return False
 
         except Exception as e:  # noqa: BLE001, PERF203, S112
             # Parsing failed, fall through to other comparison methods
-            log_func(
-                f"[Error] Could not parse {context.ext.upper()} for structured comparison at '{context.where}'"
-            )
+            log_func(f"[Error] Could not parse {context.ext.upper()} for structured comparison at '{context.where}'")
             log_func(f"  Exception: {e.__class__.__name__}: {e}")
             # Show the original cause if available (for chained exceptions)
             if e.__cause__:
@@ -1988,27 +1684,14 @@ def diff_data(  # noqa: PLR0913
                 if not compare_hashes:
                     return True
                 if generate_hash(data1) != generate_hash(data2):
-                    log_func(f"'{context.where}': SHA256 is different", message_type="diff")
+                    log_func(f"'{context.where}': SHA256 is different")
                     return False
                 return True
 
     # Check if content appears to be text (but skip for known binary formats)
-    # In unified diff mode, always attempt text comparison for diff output
-    if (
-        context.ext.lower() not in BINARY_FORMATS
-        and is_text_content(data1)
-        and is_text_content(data2)
-    ) or format_type == "unified":
-        if format_type != "unified":
-            log_func(f"Comparing text content for '{context.where}'", message_type="diff")
-        return compare_text_content(
-            data1,
-            data2,
-            str(context.where),
-            log_func,
-            format_type,
-            show_header=(format_type != "unified"),
-        )
+    if context.ext.lower() not in BINARY_FORMATS and is_text_content(data1) and is_text_content(data2):
+        log_func(f"Comparing text content for '{context.where}'")
+        return compare_text_content(data1, data2, str(context.where), log_func)
 
     # Fallback to hash comparison for binary content
     if compare_hashes and generate_hash(data1) != generate_hash(data2):
@@ -2026,7 +1709,6 @@ def diff_files(
     compare_hashes: bool = True,
     modifications_by_type: ModificationsByType | None = None,
     incremental_writer: IncrementalTSLPatchDataWriter | None = None,
-    format_type: str = "unified",
 ) -> bool | None:
     """Compare two files.
 
@@ -2057,20 +1739,15 @@ def diff_files(
         a = read_text_lines(file1)
         b = read_text_lines(file2)
         if a or b:
-            if len(a) <= 4000 and len(b) <= 4000:
-                diff = difflib.unified_diff(
-                    a,
-                    b,
-                    fromfile=str(f"(old){c_file1_rel}"),
-                    tofile=str(f"(new){c_file2_rel}"),
-                    lineterm="",
-                )
-                for line in diff:
-                    log_func(line)
-            else:
-                log_func(
-                    f"(old){c_file1_rel}: {len(a)} lines vs (new){c_file2_rel}: {len(b)} lines (diff omitted)"
-                )
+            diff = difflib.unified_diff(
+                a,
+                b,
+                fromfile=str(f"(old){c_file1_rel}"),
+                tofile=str(f"(new){c_file2_rel}"),
+                lineterm="",
+            )
+            for line in diff:
+                log_func(line)
 
     if is_capsule_file(c_file1_rel.name):
         # Implementation moved to separate function for clarity
@@ -2083,7 +1760,6 @@ def diff_files(
             compare_hashes=compare_hashes,
             modifications_by_type=modifications_by_type,
             incremental_writer=incremental_writer,
-            format_type=format_type,
         )
 
     ctx = DiffContext(c_file1_rel, c_file2_rel, c_file1_rel.suffix.casefold()[1:])
@@ -2095,7 +1771,6 @@ def diff_files(
         compare_hashes=compare_hashes,
         modifications_by_type=modifications_by_type,
         incremental_writer=incremental_writer,
-        format_type=format_type,
     )
 
 
@@ -2109,7 +1784,6 @@ def diff_capsule_files(  # noqa: C901, PLR0913
     compare_hashes: bool = True,
     modifications_by_type: ModificationsByType | None = None,
     incremental_writer: IncrementalTSLPatchDataWriter | None = None,
-    format_type: str = "unified",
 ) -> bool | None:
     """Handle diffing of capsule files."""
     # Check if we should use composite module loading for each file individually
@@ -2117,13 +1791,9 @@ def diff_capsule_files(  # noqa: C901, PLR0913
     use_composite_file2 = should_use_composite_for_file(c_file2, c_file1)
 
     if use_composite_file1:
-        log_func(
-            f"Using composite module loading for {c_file1_rel.name} ({c_file1_rel.stem}.rim + {c_file1_rel.stem}._s.rim + {c_file1_rel.stem}._dlg.erf)"
-        )
+        log_func(f"Using composite module loading for {c_file1_rel.name} ({c_file1_rel.stem}.rim + {c_file1_rel.stem}._s.rim + {c_file1_rel.stem}._dlg.erf)")
     if use_composite_file2:
-        log_func(
-            f"Using composite module loading for {c_file2_rel.name} ({c_file2_rel.stem}.rim + {c_file2_rel.stem}._s.rim + {c_file2_rel.stem}._dlg.erf)"
-        )
+        log_func(f"Using composite module loading for {c_file2_rel.name} ({c_file2_rel.stem}.rim + {c_file2_rel.stem}._s.rim + {c_file2_rel.stem}._dlg.erf)")
 
     if modifications_by_type is not None:
         capsule_destination: str | None = None
@@ -2146,15 +1816,11 @@ def diff_capsule_files(  # noqa: C901, PLR0913
             )
 
     # Load capsules
-    file1_capsule = load_capsule(
-        CaseAwarePath(c_file1), use_composite=use_composite_file1, log_func=log_func
-    )
+    file1_capsule = load_capsule(CaseAwarePath(c_file1), use_composite=use_composite_file1, log_func=log_func)
     if file1_capsule is None:
         return None
 
-    file2_capsule = load_capsule(
-        CaseAwarePath(c_file2), use_composite=use_composite_file2, log_func=log_func
-    )
+    file2_capsule = load_capsule(CaseAwarePath(c_file2), use_composite=use_composite_file2, log_func=log_func)
     if file2_capsule is None:
         return None
 
@@ -2182,9 +1848,7 @@ def diff_capsule_files(  # noqa: C901, PLR0913
 
             # Determine destination based on capsule location
             actual_source_path: Path = file_resource.filepath()
-            parent_names_lower: list[str] = [
-                parent.name.lower() for parent in actual_source_path.parents
-            ]
+            parent_names_lower: list[str] = [parent.name.lower() for parent in actual_source_path.parents]
             destination: str = "Override"
             if "modules" in parent_names_lower:
                 # Resource belongs in a module file
@@ -2275,7 +1939,7 @@ def load_capsule(
             return CompositeModuleCapsule(file_path)
         return Capsule(file_path)
     except ValueError as e:
-        log_func(f"Could not load '{file_path}'. Reason: {(e.__class__.__name__, str(e))}")
+        log_func(f"Could not load '{file_path}'. Reason: {universal_simplify_exception(e)}")
         return None
 
 
@@ -2392,9 +2056,7 @@ def apply_folder_resolution_order(
                     module_groups[root] = []
                 module_groups[root].append(file_path)
             except Exception as e:  # noqa: BLE001
-                log_func(
-                    f"Warning: Could not determine module root for '{file_path}': {e.__class__.__name__}: {e}"
-                )
+                log_func(f"Warning: Could not determine module root for '{file_path}': {e.__class__.__name__}: {e}")
                 non_module_files.append(file_path)
         else:
             non_module_files.append(file_path)
@@ -2407,10 +2069,7 @@ def apply_folder_resolution_order(
         rimlike_files: list[str] = [
             f
             for f in group_files
-            if (
-                Path(f).name.lower().endswith(".rim")
-                and not Path(f).name.lower().endswith("_s.rim")
-            )
+            if (Path(f).name.lower().endswith(".rim") and not Path(f).name.lower().endswith("_s.rim"))
             or Path(f).name.lower().endswith("_s.rim")
             or Path(f).name.lower().endswith("_dlg.erf")
         ]
@@ -2432,9 +2091,7 @@ def apply_folder_resolution_order(
 
             if rimlike_files:
                 log_func(f"  Resolution: .mod takes priority -> Using '{Path(mod_files[0]).name}'")
-                log_func(
-                    f"              (ignoring {len(rimlike_files)} .rim/_s.rim/_dlg.erf files)"
-                )
+                log_func(f"              (ignoring {len(rimlike_files)} .rim/_s.rim/_dlg.erf files)")
             else:
                 log_func(f"  Resolution: Using '{Path(mod_files[0]).name}' (.mod file)")
 
@@ -2442,9 +2099,7 @@ def apply_folder_resolution_order(
         else:
             # No .mod - use all .rim/_s.rim/_dlg.erf files
             if rimlike_files:
-                log_func(
-                    f"  Resolution: No .mod found -> Using {len(rimlike_files)} .rim/_s.rim/_dlg.erf file(s)"
-                )
+                log_func(f"  Resolution: No .mod found -> Using {len(rimlike_files)} .rim/_s.rim/_dlg.erf file(s)")
             for file_path in rimlike_files:
                 resolved_files.add(file_path)
 
@@ -2535,20 +2190,8 @@ def diff_module_directories(  # noqa: PLR0913
             filenames1 = [f for f in files1 if Path(f).name.lower().endswith(".mod")]
             filenames2 = [f for f in files2 if Path(f).name.lower().endswith(".mod")]
 
-            rimlike1 = [
-                f
-                for f in files1
-                if Path(f).name.lower().endswith(".rim")
-                or Path(f).name.lower().endswith("_s.rim")
-                or Path(f).name.lower().endswith("_dlg.erf")
-            ]
-            rimlike2 = [
-                f
-                for f in files2
-                if Path(f).name.lower().endswith(".rim")
-                or Path(f).name.lower().endswith("_s.rim")
-                or Path(f).name.lower().endswith("_dlg.erf")
-            ]
+            rimlike1 = [f for f in files1 if Path(f).name.lower().endswith(".rim") or Path(f).name.lower().endswith("_s.rim") or Path(f).name.lower().endswith("_dlg.erf")]
+            rimlike2 = [f for f in files2 if Path(f).name.lower().endswith(".rim") or Path(f).name.lower().endswith("_s.rim") or Path(f).name.lower().endswith("_dlg.erf")]
 
             side_case = None
             if filenames1 and rimlike2:  # mod in #1, rimlike in #2
@@ -2601,9 +2244,7 @@ def diff_module_directories(  # noqa: PLR0913
                     files_to_skip.update(files1)
                     files_to_skip.update(files2)
                 else:
-                    log_func(
-                        f"Warning: Could not find main rim for basename '{basename}', using normal comparison"
-                    )
+                    log_func(f"Warning: Could not find main rim for basename '{basename}', using normal comparison")
 
     return is_same_result, files_to_skip
 
@@ -2662,18 +2303,13 @@ def diff_directories(
     diff_cache: DiffCache | None = None,
     modifications_by_type: ModificationsByType | None = None,
     incremental_writer: IncrementalTSLPatchDataWriter | None = None,
-    format_type: str = "unified",
 ) -> bool | None:
     """Compare two directories recursively."""
     log_func(f"Finding differences in the '{dir1.name}' folders...")
 
     # Store relative paths instead of just filenames
-    files_path1: set[str] = {
-        f.relative_to(dir1).as_posix().casefold() for f in dir1.rglob("*") if f.is_file()
-    }
-    files_path2: set[str] = {
-        f.relative_to(dir2).as_posix().casefold() for f in dir2.rglob("*") if f.is_file()
-    }
+    files_path1: set[str] = {f.relative_to(dir1).as_posix().casefold() for f in dir1.rglob("*") if f.is_file()}
+    files_path2: set[str] = {f.relative_to(dir2).as_posix().casefold() for f in dir2.rglob("*") if f.is_file()}
 
     # Merge both sets
     all_files: set[str] = files_path1.union(files_path2)
@@ -2703,7 +2339,6 @@ def diff_directories(
                 log_func=log_func,
                 modifications_by_type=modifications_by_type,
                 incremental_writer=incremental_writer,
-                format_type=format_type,
             ),
         )
         is_same_result = module_result
@@ -2751,7 +2386,7 @@ def diff_directories(
                     ext=ext,
                     left_exists=True,
                     right_exists=True,
-                ),
+                )
             )
 
     # Report all missing files after comparisons
@@ -2781,7 +2416,7 @@ def diff_directories(
                         ext=ext,
                         left_exists=False,
                         right_exists=True,
-                    ),
+                    )
                 )
         else:
             file2_path = dir2 / rel_path
@@ -2797,7 +2432,7 @@ def diff_directories(
                         ext=ext,
                         left_exists=True,
                         right_exists=False,
-                    ),
+                    )
                 )
         is_same_result = False
 
@@ -2828,9 +2463,9 @@ def diff_installs_with_objects(
       4. Override (HIGHEST - always wins)
 
     InstallList Logic (2-way comparison):
-      - File exists in installation2 but NOT in installation1 -> [InstallList]
-      - File exists in both -> [GFFList]/[2DAList]/[SSFList]/[HACKList]
-      - File exists in installation1 but NOT in installation2 -> Removed (no action)
+      - File exists in installation2 but NOT in installation1 → [InstallList]
+      - File exists in both → [GFFList]/[2DAList]/[SSFList]/[HACKList]
+      - File exists in installation1 but NOT in installation2 → Removed (no action)
 
     Mapping to CLI arguments:
       - installation1 corresponds to --mine (vanilla/base)
@@ -2850,9 +2485,7 @@ def diff_installs_with_objects(
         True if identical, False if different, None if errors occurred
     """
     log_func("Using resource resolution order (game priority) for comparison...")
-    from pykotor.tslpatcher.diff.resolution import (
-        diff_installations_with_resolution,  # noqa: PLC0415
-    )
+    from pykotor.tslpatcher.diff.resolution import diff_installations_with_resolution  # noqa: PLC0415
 
     return diff_installations_with_resolution(
         [installation1, installation2],
@@ -2879,6 +2512,65 @@ class DiffDirectoriesFunc(Protocol):
         ...
 
 
+def diff_installs_implementation(
+    install_path1: Path,
+    install_path2: Path,
+    *,
+    filters: list[str] | None = None,
+    log_func: Callable[[str], None],
+    diff_files_func: Callable[[Path, Path], bool | None],
+    diff_directories_func: DiffDirectoriesFunc,
+) -> bool | None:
+    """Compare two KOTOR installations by diffing their standard directories."""
+    rinstall_path1: CaseAwarePath = CaseAwarePath(install_path1).resolve()
+    rinstall_path2: CaseAwarePath = CaseAwarePath(install_path2).resolve()
+    log_func("")
+    log_func((max(len(str(rinstall_path1)) + 29, len(str(rinstall_path2)) + 30)) * "-")
+    log_func(f"Searching first install dir: {rinstall_path1}")
+    log_func(f"Searching second install dir: {rinstall_path2}")
+    if filters:
+        log_func(f"Using filters: {filters}")
+    log_func("")
+
+    is_same_result: bool | None = True
+
+    # Compare dialog.tlk
+    if not filters or any("dialog.tlk" in f.lower() or "tlk" in f.lower() for f in filters):
+        is_same_result = (
+            diff_files_func(
+                rinstall_path1.joinpath("dialog.tlk"),
+                rinstall_path2 / "dialog.tlk",
+            )
+            and is_same_result
+        )
+
+    # Compare standard directories
+    for dir_name in ["Modules", "Override", "Lips"]:
+        mine = rinstall_path1 / dir_name
+        older = rinstall_path2 / dir_name
+        is_same_result = (
+            diff_directories_func(
+                mine,
+                older,
+                filters=filters,
+            )
+            and is_same_result
+        )
+
+    # Streamwaves (may be named streamvoice)
+    streamwaves_path1 = rinstall_path1.joinpath("streamwaves") if rinstall_path1.joinpath("streamwaves").is_dir() else rinstall_path1.joinpath("streamvoice")
+    streamwaves_path2 = rinstall_path2.joinpath("streamwaves") if rinstall_path2.joinpath("streamwaves").is_dir() else rinstall_path2.joinpath("streamvoice")
+    is_same_result = (
+        diff_directories_func(
+            streamwaves_path1,
+            streamwaves_path2,
+            filters=filters,
+        )
+        and is_same_result
+    )
+    return is_same_result
+
+
 # ---------------------------------------------------------------------------
 # Resource resolution
 # ---------------------------------------------------------------------------
@@ -2898,9 +2590,7 @@ def resolve_resource_with_installation(
             installation_logger = InstallationLogger()
 
         installation_logger(f"Processing resource: {resource_name}.{resource_type.extension}")
-        installation_logger(
-            f"Resolving resource '{resource_name}.{resource_type.extension}' in installation..."
-        )
+        installation_logger(f"Resolving resource '{resource_name}.{resource_type.extension}' in installation...")
 
         resource_result: ResourceResult | None = installation.resource(
             resource_name,
@@ -2910,25 +2600,17 @@ def resolve_resource_with_installation(
         )
 
         if resource_result is not None:
-            search_log = installation_logger.get_resource_log(
-                f"{resource_name}.{resource_type.extension}"
-            )
+            search_log = installation_logger.get_resource_log(f"{resource_name}.{resource_type.extension}")
             return resource_result.data, f"{resource_result.filepath}", search_log
 
-        installation_logger(
-            f"Resource '{resource_name}.{resource_type.extension}' not found in any location"
-        )
-        search_log = installation_logger.get_resource_log(
-            f"{resource_name}.{resource_type.extension}"
-        )
+        installation_logger(f"Resource '{resource_name}.{resource_type.extension}' not found in any location")
+        search_log = installation_logger.get_resource_log(f"{resource_name}.{resource_type.extension}")
 
     except Exception as e:  # noqa: BLE001, PERF203, S112
-        error_msg = f"Error resolving resource: {(e.__class__.__name__, str(e))}"
+        error_msg = f"Error resolving resource: {universal_simplify_exception(e)}"
         if installation_logger is not None:
             installation_logger(error_msg)
-            search_log = installation_logger.get_resource_log(
-                f"{resource_name}.{resource_type.extension}"
-            )
+            search_log = installation_logger.get_resource_log(f"{resource_name}.{resource_type.extension}")
             installation_logger("Full traceback:")
             for line in traceback.format_exc().splitlines():
                 installation_logger(f"  {line}")
@@ -2975,7 +2657,7 @@ def determine_source_location(filepath: str) -> str:
     if "rims" in filepath:
         return f"RIM: {filepath}"
     if "chitin.key" in filepath or "data" in filepath.lower():
-        return f"Chitin/BIF: {filepath}"
+        return f"Chitin: {filepath}"
     return f"Other: {filepath}"
 
 
@@ -2992,9 +2674,7 @@ def resolve_resource_in_installation_impl(
     try:
         installation = Installation(installation_path)
 
-        name_part, resource_type, error_msg = parse_resource_name_and_type(
-            resource_name, resource_type, log_func
-        )
+        name_part, resource_type, error_msg = parse_resource_name_and_type(resource_name, resource_type, log_func)
         if error_msg is not None or name_part is None or resource_type is None:
             return None, error_msg or "Failed to parse resource name and type"
 
@@ -3006,7 +2686,6 @@ def resolve_resource_in_installation_impl(
             SearchLocation.TEXTURES_TPA,
             SearchLocation.TEXTURES_TPB,
             SearchLocation.TEXTURES_TPC,
-            SearchLocation.TEXTURES_GUI,
             SearchLocation.LIPS,
             # SearchLocation.RIMS intentionally omitted - must be specified explicitly
         ]
@@ -3026,7 +2705,7 @@ def resolve_resource_in_installation_impl(
         log_func(f"Found '{name_part}.{resource_type.extension}' at: {source}")
 
     except Exception as e:  # noqa: BLE001
-        error_msg = f"Error resolving resource: {(e.__class__.__name__, str(e))}"
+        error_msg = f"Error resolving resource: {universal_simplify_exception(e)}"
         log_func(error_msg)
         log_func("Full traceback:")
         for line in traceback.format_exc().splitlines():
@@ -3069,7 +2748,7 @@ def load_container_capsule(
             return CompositeModuleCapsule(container_path)
         return Capsule(container_path)
     except Exception as e:  # noqa: BLE001
-        log_func(f"Error loading container '{container_path}': {(e.__class__.__name__, str(e))}")
+        log_func(f"Error loading container '{container_path}': {universal_simplify_exception(e)}")
         log_func("Full traceback:")
         for line in traceback.format_exc().splitlines():
             log_func(f"  {line}")
@@ -3100,9 +2779,7 @@ def process_container_resource(  # noqa: PLR0913
     try:
         container_data = resource.data()
     except Exception as e:  # noqa: BLE001
-        log_func(
-            f"Error reading resource '{resource_identifier}' from container: {(e.__class__.__name__, str(e))}"
-        )
+        log_func(f"Error reading resource '{resource_identifier}' from container: {universal_simplify_exception(e)}")
         log_func("Full traceback:")
         for line in traceback.format_exc().splitlines():
             log_func(f"  {line}")
@@ -3134,7 +2811,7 @@ def process_container_resource(  # noqa: PLR0913
             ctx = DiffContext(installation_rel, container_rel, restype.extension.casefold())
             result = diff_data_func(installation_data, container_data, ctx)
     except Exception as e:  # noqa: BLE001
-        log_func(f"Error comparing '{resource_identifier}': {(e.__class__.__name__, str(e))}")
+        log_func(f"Error comparing '{resource_identifier}': {universal_simplify_exception(e)}")
         log_func("Full traceback:")
         for line in traceback.format_exc().splitlines():
             log_func(f"  {line}")
@@ -3162,14 +2839,10 @@ def diff_container_vs_installation(
     use_composite, related_files, module_root = determine_composite_loading(container_path)
 
     if use_composite:
-        log_func(
-            f"Found {len(related_files)} related module files for '{module_root}': {[f.name for f in related_files]}"
-        )
+        log_func(f"Found {len(related_files)} related module files for '{module_root}': {[f.name for f in related_files]}")
 
     # Load the container
-    container_capsule = load_container_capsule(
-        CaseAwarePath(container_path), use_composite=use_composite, log_func=log_func
-    )
+    container_capsule = load_container_capsule(CaseAwarePath(container_path), use_composite=use_composite, log_func=log_func)
     if container_capsule is None:
         return None
 
@@ -3209,9 +2882,7 @@ def diff_container_vs_installation(
         if should_continue:
             compared_resources += 1
 
-    log_func(
-        f"Container comparison complete: {compared_resources}/{total_resources} resources processed"
-    )
+    log_func(f"Container comparison complete: {compared_resources}/{total_resources} resources processed")
     return is_same_result
 
 
@@ -3231,7 +2902,7 @@ def diff_resource_vs_installation(
     try:
         resource_data = resource_path.read_bytes()
     except Exception as e:  # noqa: BLE001
-        log_func(f"Error reading resource file '{resource_path}': {(e.__class__.__name__, str(e))}")
+        log_func(f"Error reading resource file '{resource_path}': {universal_simplify_exception(e)}")
         log_func("Full traceback:")
         for line in traceback.format_exc().splitlines():
             log_func(f"  {line}")
@@ -3307,7 +2978,7 @@ def validate_paths(
 
 def load_installations(
     files_and_folders_and_installations: list[Path | Installation],
-    log_func: Callable[[str], None],
+    log_func: Callable,
 ) -> list[PathInfo]:
     """Load installations for all paths, creating PathInfo objects.
 
@@ -3334,9 +3005,7 @@ def load_installations(
                 path_info = PathInfo.from_path_or_installation(installation, idx)
                 path_infos.append(path_info)
             except Exception as e:  # noqa: BLE001
-                log_func(
-                    f"Error loading installation from path {idx} '{path}': {(e.__class__.__name__, str(e))}"
-                )
+                log_func(f"Error loading installation from path {idx} '{path}': {universal_simplify_exception(e)}")
                 log_func("Full traceback:")
                 for line in traceback.format_exc().splitlines():
                     log_func(f"  {line}")
@@ -3434,9 +3103,7 @@ def collect_all_resources(
             log_func(f"  Collected {resource_count} resources from path {path_info.index}")
 
         except Exception as e:  # noqa: BLE001
-            log_func(
-                f"Error collecting resources from path {path_info.index}: {(e.__class__.__name__, str(e))}"
-            )
+            log_func(f"Error collecting resources from path {path_info.index}: {universal_simplify_exception(e)}")
             log_func("Full traceback:")
             for line in traceback.format_exc().splitlines():
                 log_func(f"  {line}")
@@ -3492,28 +3159,34 @@ def compare_resources_n_way(  # noqa: PLR0913
 
             log_func(f"\n[UNIQUE RESOURCE] {resource_id}")
             log_func(f"  Only in path {path_index} ({path_info.name})")
-            log_func("  -> Creating InstallList entry and patch")
+            log_func("  → Creating InstallList entry and patch")
 
-            filename: str = Path(resource_id).name
-            destination: str = "Override"
-            resource_path: Path | None = None
-            if incremental_writer is not None:
-                try:
-                    base_path = path_info.get_path()
-                    if path_info.is_file:
-                        resource_path = base_path
-                    elif path_info.is_folder:
-                        resource_path = base_path / Path(resource.identifier)
-                    else:
-                        resource_path = None
-                except Exception:  # noqa: BLE001
-                    resource_path = None
-
+            # Generate install patch for unique resource
             if modifications_by_type is not None:
+                filename: str = Path(resource_id).name
+
+                # Determine destination - default to Override for safety
+                destination: str = "Override"
+
+                resource_path: Path | None = None
+                if incremental_writer is not None:
+                    try:
+                        base_path = path_info.get_path()
+                        if path_info.is_file:
+                            resource_path = base_path
+                        elif path_info.is_folder:
+                            resource_path = base_path / Path(resource.identifier)
+                        else:
+                            resource_path = None
+                    except Exception:  # noqa: BLE001
+                        resource_path = None
+
+                # Create context for patch creation
                 file1_rel: Path = Path(f"path{path_index}") / filename
                 file2_rel: Path = Path("missing") / filename
                 context: DiffContext = DiffContext(file1_rel, file2_rel, resource.ext)
 
+                # Add to install folder
                 _add_to_install_folder(
                     modifications_by_type,
                     destination,
@@ -3525,15 +3198,12 @@ def compare_resources_n_way(  # noqa: PLR0913
                     incremental_writer=incremental_writer,
                 )
 
-            # Always add to incremental writer when present (e.g. tslpatchdata_path set, modifications_by_type None)
-            if incremental_writer is not None and resource_path is not None:
-                try:
-                    if hasattr(resource_path, "is_file") and resource_path.is_file():
-                        incremental_writer.add_install_file(destination, filename, resource_path)
-                except Exception as exc:  # noqa: BLE001
-                    log_func(
-                        f"  [Warning] Failed to stage install file '{filename}': {(exc.__class__.__name__, str(exc))}"
-                    )
+                if incremental_writer is not None and resource_path is not None:
+                    try:
+                        if hasattr(resource_path, "is_file") and resource_path.is_file():
+                            incremental_writer.add_install_file(destination, filename, resource_path)
+                    except Exception as exc:  # noqa: BLE001
+                        log_func(f"  [Warning] Failed to stage install file '{filename}': {universal_simplify_exception(exc)}")
 
             diff_count += 1
             is_same_result = False
@@ -3555,28 +3225,25 @@ def compare_resources_n_way(  # noqa: PLR0913
                     log_func(f"\n[DIFFERENT RESOURCE] {resource_id}")
                     found_differences = True
 
-                log_func(
-                    f"  Difference between path {idx_a} ({path_a.name}) and path {idx_b} ({path_b.name})"
-                )
+                log_func(f"  Difference between path {idx_a} ({path_a.name}) and path {idx_b} ({path_b.name})")
 
-                # Always call diff_data to output field differences, even if not generating modifications
-                file1_rel = Path(f"path{idx_a}_{path_a.name}") / Path(resource_id).name
-                file2_rel = Path(f"path{idx_b}_{path_b.name}") / Path(resource_id).name
-                context = DiffContext(file1_rel, file2_rel, resource_a.ext)
-
-                # Use diff_data to output differences (and optionally generate modifications)
-                diff_data(
-                    resource_a.data,
-                    resource_b.data,
-                    context,
-                    log_func=log_func,
-                    compare_hashes=compare_hashes,
-                    modifications_by_type=modifications_by_type,
-                    incremental_writer=incremental_writer,
-                )
-
-                # Generate modification patch if requested
+                # Generate modification patch using diff_data
                 if modifications_by_type is not None:
+                    file1_rel = Path(f"path{idx_a}_{path_a.name}") / Path(resource_id).name
+                    file2_rel = Path(f"path{idx_b}_{path_b.name}") / Path(resource_id).name
+                    context = DiffContext(file1_rel, file2_rel, resource_a.ext)
+
+                    # Use diff_data to generate proper modifications
+                    diff_data(
+                        resource_a.data,
+                        resource_b.data,
+                        context,
+                        log_func=log_func,
+                        compare_hashes=compare_hashes,
+                        modifications_by_type=modifications_by_type,
+                        incremental_writer=incremental_writer,
+                    )
+
                     # Always also add an InstallList entry so the file exists before patching
                     # Don't create patch here - diff_data already created one above
                     try:
@@ -3594,17 +3261,13 @@ def compare_resources_n_way(  # noqa: PLR0913
                             create_patch=False,  # Patch already created by diff_data above
                         )
                     except Exception as e:  # noqa: BLE001, S110
-                        print(
-                            f"Error adding install entry for {resource_id}: {(e.__class__.__name__, str(e))}"
-                        )
+                        print(f"Error adding install entry for {resource_id}: {universal_simplify_exception(e)}")
                         print("Full traceback:")
                         for line in traceback.format_exc().splitlines():
                             print(f"  {line}")
 
             except Exception as e:  # noqa: BLE001
-                log_func(
-                    f"Error comparing {resource_id} between paths {idx_a} and {idx_b}: {(e.__class__.__name__, str(e))}"
-                )
+                log_func(f"Error comparing {resource_id} between paths {idx_a} and {idx_b}: {universal_simplify_exception(e)}")
                 log_func("Full traceback:")
                 for line in traceback.format_exc().splitlines():
                     log_func(f"  {line}")
@@ -3636,7 +3299,6 @@ def run_differ_from_args_impl(
     compare_hashes: bool = True,
     modifications_by_type: ModificationsByType | None = None,
     incremental_writer: IncrementalTSLPatchDataWriter | None = None,
-    format_type: str = "unified",
 ) -> bool | None:
     """Run differ with N paths of any type.
 
@@ -3658,11 +3320,7 @@ def run_differ_from_args_impl(
 
         log_func(f"Starting {len(files_and_folders_and_installations)}-way comparison...")
         for idx, path in enumerate(files_and_folders_and_installations):
-            path_type = (
-                "Installation"
-                if isinstance(path, Installation)
-                else ("Folder" if path.is_dir() else "File")
-            )
+            path_type = "Installation" if isinstance(path, Installation) else ("Folder" if path.is_dir() else "File")
             log_func(f"  Path {idx}: {path} ({path_type})")
         log_func("-------------------------------------------")
         log_func("")
@@ -3676,26 +3334,18 @@ def run_differ_from_args_impl(
 
         # Load installations and create PathInfo objects
         log_func("[DEBUG] Loading installations...")
-        path_infos: list[PathInfo] = load_installations(
-            files_and_folders_and_installations, log_func
-        )
+        path_infos: list[PathInfo] = load_installations(files_and_folders_and_installations, log_func)
         log_func(f"[DEBUG] Loaded {len(path_infos)} PathInfo objects")
         for info in path_infos:
-            log_func(
-                f"[DEBUG]   Path {info.index}: is_installation={info.is_installation}, is_folder={info.is_folder}, is_file={info.is_file}"
-            )
+            log_func(f"[DEBUG]   Path {info.index}: is_installation={info.is_installation}, is_folder={info.is_folder}, is_file={info.is_file}")
 
         # For Installation-to-Installation comparison, use resolution-aware comparison
-        all_installations: list[Installation] = [
-            path for path in files_and_folders_and_installations if isinstance(path, Installation)
-        ]
+        all_installations: list[Installation] = [path for path in files_and_folders_and_installations if isinstance(path, Installation)]
         log_func(f"[DEBUG] Found {len(all_installations)} Installation objects")
 
         if len(all_installations) >= 2:  # noqa: PLR2004
             log_func("Detected multiple installations - using resolution-aware comparison...")
-            from pykotor.tslpatcher.diff.resolution import (
-                diff_installations_with_resolution,  # noqa: PLC0415
-            )
+            from pykotor.tslpatcher.diff.resolution import diff_installations_with_resolution  # noqa: PLC0415
 
             return diff_installations_with_resolution(
                 files_and_folders_and_installations,
@@ -3726,9 +3376,7 @@ def run_differ_from_args_impl(
         )
 
     except Exception as e:  # noqa: BLE001
-        log_func(
-            f"[CRITICAL ERROR] Exception in run_differ_from_args_impl: {(e.__class__.__name__, str(e))}"
-        )
+        log_func(f"[CRITICAL ERROR] Exception in run_differ_from_args_impl: {universal_simplify_exception(e)}")
         log_func("Full traceback:")
         for line in traceback.format_exc().splitlines():
             log_func(f"  {line}")

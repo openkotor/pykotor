@@ -1,90 +1,47 @@
-"""OpenGL texture handling: load TPC/mipmaps, upload to GPU, and DXT decompression."""
-
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from pykotor.gl.compat import (
-    MissingPyOpenGLError,
-    has_pyopengl,
-    missing_constant,
-    missing_gl_func,
+from OpenGL.GL import GL_NO_ERROR, glGenTextures, glGetError, glTexImage2D
+from OpenGL.GL.framebufferobjects import glGenerateMipmap
+from OpenGL.GLU import gluErrorString
+from OpenGL.raw.GL.EXT.texture_compression_s3tc import (
+    GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
+    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+    GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
 )
-
-HAS_PYOPENGL = has_pyopengl()
-
-if HAS_PYOPENGL:
-    from OpenGL.GL import (  # pyright: ignore[reportMissingImports]
-        GL_NO_ERROR,
-        glGenTextures,
-        glGetError,
-        glTexImage2D,
-    )
-    from OpenGL.GL.framebufferobjects import (
-        glGenerateMipmap,  # pyright: ignore[reportMissingImports]
-    )
-    from OpenGL.GLU import gluErrorString  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.EXT.texture_compression_s3tc import (  # pyright: ignore[reportMissingImports]
-        GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
-        GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
-        GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
-    )
-    from OpenGL.raw.GL.VERSION.GL_1_0 import (  # pyright: ignore[reportMissingImports]
-        GL_LINEAR,
-        GL_LINEAR_MIPMAP_LINEAR,
-        GL_NEAREST_MIPMAP_LINEAR,
-        GL_REPEAT,
-        GL_RGB,
-        GL_RGBA,
-        GL_TEXTURE_2D,
-        GL_TEXTURE_MAG_FILTER,
-        GL_TEXTURE_MIN_FILTER,
-        GL_TEXTURE_WRAP_S,
-        GL_TEXTURE_WRAP_T,
-        GL_UNSIGNED_BYTE,
-        glTexParameteri,
-    )
-    from OpenGL.raw.GL.VERSION.GL_1_1 import glBindTexture  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_1_3 import (
-        glCompressedTexImage2D,  # pyright: ignore[reportMissingImports]
-    )
-else:
-    glGenTextures = missing_gl_func("glGenTextures")
-    glGetError = missing_gl_func("glGetError")
-    glTexImage2D = missing_gl_func("glTexImage2D")
-    glGenerateMipmap = missing_gl_func("glGenerateMipmap")
-    gluErrorString = missing_gl_func("gluErrorString")
-    glBindTexture = missing_gl_func("glBindTexture")
-    glCompressedTexImage2D = missing_gl_func("glCompressedTexImage2D")
-    glTexParameteri = missing_gl_func("glTexParameteri")
-    GL_NO_ERROR = missing_constant("GL_NO_ERROR")
-    GL_COMPRESSED_RGBA_S3TC_DXT3_EXT = missing_constant("GL_COMPRESSED_RGBA_S3TC_DXT3_EXT")
-    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT = missing_constant("GL_COMPRESSED_RGBA_S3TC_DXT5_EXT")
-    GL_COMPRESSED_RGB_S3TC_DXT1_EXT = missing_constant("GL_COMPRESSED_RGB_S3TC_DXT1_EXT")
-    GL_LINEAR = missing_constant("GL_LINEAR")
-    GL_LINEAR_MIPMAP_LINEAR = missing_constant("GL_LINEAR_MIPMAP_LINEAR")
-    GL_NEAREST_MIPMAP_LINEAR = missing_constant("GL_NEAREST_MIPMAP_LINEAR")
-    GL_REPEAT = missing_constant("GL_REPEAT")
-    GL_RGB = missing_constant("GL_RGB")
-    GL_RGBA = missing_constant("GL_RGBA")
-    GL_TEXTURE_2D = missing_constant("GL_TEXTURE_2D")
-    GL_TEXTURE_MAG_FILTER = missing_constant("GL_TEXTURE_MAG_FILTER")
-    GL_TEXTURE_MIN_FILTER = missing_constant("GL_TEXTURE_MIN_FILTER")
-    GL_TEXTURE_WRAP_S = missing_constant("GL_TEXTURE_WRAP_S")
-    GL_TEXTURE_WRAP_T = missing_constant("GL_TEXTURE_WRAP_T")
-    GL_UNSIGNED_BYTE = missing_constant("GL_UNSIGNED_BYTE")
+from OpenGL.raw.GL.VERSION.GL_1_0 import (
+    GL_LINEAR,
+    GL_NEAREST_MIPMAP_LINEAR,
+    GL_REPEAT,
+    GL_RGB,
+    GL_RGBA,
+    GL_TEXTURE_2D,
+    GL_TEXTURE_MAG_FILTER,
+    GL_TEXTURE_MIN_FILTER,
+    GL_TEXTURE_WRAP_S,
+    GL_TEXTURE_WRAP_T,
+    GL_UNSIGNED_BYTE,
+    glTexParameteri,
+)
+from OpenGL.raw.GL.VERSION.GL_1_1 import glBindTexture
+from OpenGL.raw.GL.VERSION.GL_1_3 import glCompressedTexImage2D
 
 from pykotor.resource.formats.tpc import TPCTextureFormat
 from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import (
-    dxt1_to_rgba,
+    dxt1_to_rgb,
     dxt3_to_rgba,
     dxt5_to_rgba,
 )
 
 if TYPE_CHECKING:
+    from moderngl import Context as ModernContext, Texture as ModernTexture
     from pykotor.resource.formats.tpc import TPC, TPCMipmap
+else:  # pragma: no cover - optional dependency
+    ModernContext = Any  # type: ignore[assignment]
+    ModernTexture = Any  # type: ignore[assignment]
 
 
 class Texture:
@@ -99,12 +56,7 @@ class Texture:
         self._width: int | None = width
         self._height: int | None = height
         self._rgba_cache: bytes | None = rgba_data
-
-        # Optional material hints (populated when the source format carries TXI metadata).
-        # 0 = default, 1 = additive, 2 = punchthrough.
-        self.blend_mode: int = 0
-        self.alpha_cutoff: float = 0.0
-        self.has_alpha: bool = False
+        self._modern_texture: ModernTexture | None = None  # type: ignore[name-defined]
 
     @classmethod
     def from_tpc(
@@ -112,127 +64,38 @@ class Texture:
         tpc: TPC,
     ) -> Texture:
         mm: TPCMipmap = tpc.get(0, 0)
-
-        rgba_cache: bytes
-        if mm.tpc_format == TPCTextureFormat.DXT1:
-            rgba_cache = bytes(dxt1_to_rgba(mm.data, mm.width, mm.height))
-        elif mm.tpc_format == TPCTextureFormat.DXT3:
-            rgba_cache = bytes(dxt3_to_rgba(mm.data, mm.width, mm.height))
-        elif mm.tpc_format == TPCTextureFormat.DXT5:
-            rgba_cache = bytes(dxt5_to_rgba(mm.data, mm.width, mm.height))
-        elif mm.tpc_format == TPCTextureFormat.RGB:
-            rgba_cache = _rgb_to_rgba_bytes(mm.data, mm.width, mm.height)
-        elif mm.tpc_format == TPCTextureFormat.RGBA:
-            rgba_cache = bytes(mm.data)
-        else:
-            raise ValueError(f"Unsupported texture format: {mm.tpc_format!r}")
-
-        # If PyOpenGL is not available, keep an in-memory texture placeholder.
-        txi = getattr(tpc, "_txi", None)  # noqa: SLF001
-        txi_features = getattr(txi, "features", None)
-        blend_mode = int(
-            (getattr(txi_features, "blending", 0) if txi_features is not None else 0) or 0
-        )
-        has_alpha = _rgba_has_transparency(rgba_cache)
-        alpha_cutoff = 0.01 if has_alpha and blend_mode != 1 else 0.0
-        if blend_mode == 2:
-            alphamean = (
-                getattr(txi_features, "alphamean", None) if txi_features is not None else None
-            )
-            alpha_cutoff = max(alpha_cutoff, float(alphamean) if alphamean is not None else 0.1)
-
-        if not HAS_PYOPENGL:
-            texture = Texture(0, mm.width, mm.height, rgba_cache)
-            texture.blend_mode = blend_mode
-            texture.alpha_cutoff = alpha_cutoff
-            texture.has_alpha = has_alpha
-            return texture
+        image_size: int = len(mm.data)
 
         gl_id: int = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, gl_id)
 
-        # Upload all mip levels when present (TPC stores authored mipmaps).
-        # This avoids driver-generated mipmaps that can look noticeably worse at distance.
-        mipmaps = list(tpc.layers[0].mipmaps) if tpc.layers and tpc.layers[0].mipmaps else [mm]
-        for level, mip in enumerate(mipmaps):
-            image_size: int = len(mip.data)
-            if mip.tpc_format == TPCTextureFormat.DXT1:
-                mip_rgba = bytes(dxt1_to_rgba(mip.data, mip.width, mip.height))
-                glTexImage2D(
-                    GL_TEXTURE_2D,
-                    level,
-                    GL_RGBA,
-                    mip.width,
-                    mip.height,
-                    0,
-                    GL_RGBA,
-                    GL_UNSIGNED_BYTE,
-                    mip_rgba,
-                )
-            elif mip.tpc_format == TPCTextureFormat.DXT3:
-                glCompressedTexImage2D(
-                    GL_TEXTURE_2D,
-                    level,
-                    GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
-                    mip.width,
-                    mip.height,
-                    0,
-                    image_size,
-                    mip.data,
-                )
-            elif mip.tpc_format == TPCTextureFormat.DXT5:
-                glCompressedTexImage2D(
-                    GL_TEXTURE_2D,
-                    level,
-                    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
-                    mip.width,
-                    mip.height,
-                    0,
-                    image_size,
-                    mip.data,
-                )
-            elif mip.tpc_format == TPCTextureFormat.RGB:
-                glTexImage2D(
-                    GL_TEXTURE_2D,
-                    level,
-                    GL_RGB,
-                    mip.width,
-                    mip.height,
-                    0,
-                    GL_RGB,
-                    GL_UNSIGNED_BYTE,
-                    mip.data,
-                )
-            elif mip.tpc_format == TPCTextureFormat.RGBA:
-                glTexImage2D(
-                    GL_TEXTURE_2D,
-                    level,
-                    GL_RGBA,
-                    mip.width,
-                    mip.height,
-                    0,
-                    GL_RGBA,
-                    GL_UNSIGNED_BYTE,
-                    mip.data,
-                )
-            else:
-                raise ValueError(f"Unsupported texture format: {mip.tpc_format!r}")
+        rgba_cache: bytes | None = None
+
+        if mm.tpc_format == TPCTextureFormat.DXT1:
+            glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, mm.width, mm.height, 0, image_size, mm.data)
+            rgba_cache = _rgb_to_rgba_bytes(dxt1_to_rgb(mm.data, mm.width, mm.height), mm.width, mm.height)
+        elif mm.tpc_format == TPCTextureFormat.DXT3:
+            glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, mm.width, mm.height, 0, image_size, mm.data)
+            rgba_cache = bytes(dxt3_to_rgba(mm.data, mm.width, mm.height))
+        elif mm.tpc_format == TPCTextureFormat.DXT5:
+            glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, mm.width, mm.height, 0, image_size, mm.data)
+            rgba_cache = bytes(dxt5_to_rgba(mm.data, mm.width, mm.height))
+        elif mm.tpc_format == TPCTextureFormat.RGB:
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mm.width, mm.height, 0, GL_RGB, GL_UNSIGNED_BYTE, mm.data)
+            rgba_cache = _rgb_to_rgba_bytes(mm.data, mm.width, mm.height)
+        elif mm.tpc_format == TPCTextureFormat.RGBA:
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mm.width, mm.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, mm.data)
+            rgba_cache = bytes(mm.data)
+        else:
+            raise ValueError(f"Unsupported texture format: {mm.tpc_format!r}")
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        # Trilinear filtering reduces shimmering/aliasing when zoomed out.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glGenerateMipmap(GL_TEXTURE_2D)
 
-        # Only generate mipmaps when the source has a single level.
-        if len(mipmaps) <= 1:
-            glGenerateMipmap(GL_TEXTURE_2D)
-
-        texture = Texture(gl_id, mm.width, mm.height, rgba_cache)
-        texture.blend_mode = blend_mode
-        texture.alpha_cutoff = alpha_cutoff
-        texture.has_alpha = has_alpha
-        return texture
+        return Texture(gl_id, mm.width, mm.height, rgba_cache)
 
     @classmethod
     def from_rgba(
@@ -242,32 +105,27 @@ class Texture:
         rgba_data: bytes,
     ) -> Texture:
         """Create texture from RGBA pixel data.
-
+        
         Args:
         ----
             width: Texture width in pixels
             height: Texture height in pixels
             rgba_data: Raw RGBA pixel data (bytes)
-
+        
         Returns:
         -------
             Texture: OpenGL texture object
         """
-        if not HAS_PYOPENGL:
-            return Texture(0, width, height, bytes(rgba_data))
-
         gl_id: int = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, gl_id)
-
-        glTexImage2D(
-            GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba_data
-        )
+        
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba_data)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
         glGenerateMipmap(GL_TEXTURE_2D)
-
+        
         return Texture(gl_id, width, height, bytes(rgba_data))
 
     @classmethod
@@ -277,15 +135,11 @@ class Texture:
         g: int = 0,
         b: int = 0,
     ) -> Texture:
-        # Create pixel data using numpy for better performance and alignment
-        pixels: np.ndarray = np.full((64, 64, 3), [r, g, b], dtype=np.uint8)
-
-        if not HAS_PYOPENGL:
-            rgba = _rgb_to_rgba_bytes(pixels.tobytes(), 64, 64)
-            return Texture(0, 64, 64, rgba)
-
         gl_id: int = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, gl_id)
+
+        # Create pixel data using numpy for better performance and alignment
+        pixels: np.ndarray = np.full((64, 64, 3), [r, g, b], dtype=np.uint8)
 
         # Immediate error checking before and after glTexImage2D
         errno: int | None = glGetError()
@@ -297,14 +151,48 @@ class Texture:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        # Cache RGBA for downstream consumers (and for consistency with other loaders).
+        # Convert RGB to RGBA for ModernGL compatibility
         rgba = _rgb_to_rgba_bytes(pixels.tobytes(), 64, 64)
         return Texture(gl_id, 64, 64, rgba)
 
     def use(self):
-        if not HAS_PYOPENGL:
-            raise MissingPyOpenGLError("PyOpenGL is required to bind GL textures.")
         glBindTexture(GL_TEXTURE_2D, self._id)
+
+    def ensure_modern(
+        self,
+        ctx: ModernContext,
+    ):
+        if self._modern_texture is not None:
+            return self._modern_texture
+        if self._rgba_cache is None or self._width is None or self._height is None:
+            raise RuntimeError("RGBA texture data not available for moderngl upload")
+        
+        # Validate data size matches expected dimensions
+        expected_size = self._width * self._height * 4  # RGBA = 4 bytes per pixel
+        actual_size = len(self._rgba_cache)
+        if actual_size != expected_size:
+            # Try to fix by padding or truncating if close, otherwise raise error
+            if actual_size < expected_size:
+                # Pad with opaque alpha if data is too small
+                padding = bytes([255] * (expected_size - actual_size))
+                self._rgba_cache = self._rgba_cache + padding
+            elif actual_size > expected_size:
+                # Truncate if data is too large (shouldn't happen, but handle gracefully)
+                self._rgba_cache = self._rgba_cache[:expected_size]
+            # Re-validate after fix
+            if len(self._rgba_cache) != expected_size:
+                raise RuntimeError(
+                    f"Texture data size mismatch: expected {expected_size} bytes "
+                    f"(width={self._width}, height={self._height}, RGBA=4), "
+                    f"got {actual_size} bytes (after fix: {len(self._rgba_cache)} bytes)"
+                )
+        
+        texture = ctx.texture((self._width, self._height), 4, data=self._rgba_cache)
+        texture.repeat_x = True
+        texture.repeat_y = True
+        texture.build_mipmaps()
+        self._modern_texture = texture
+        return texture
 
 
 def _rgb_to_rgba_bytes(
@@ -318,5 +206,3 @@ def _rgb_to_rgba_bytes(
     return np.hstack([arr, alpha]).astype(np.uint8).tobytes()
 
 
-def _rgba_has_transparency(rgba_data: bytes) -> bool:
-    return any(alpha < 255 for alpha in rgba_data[3::4])

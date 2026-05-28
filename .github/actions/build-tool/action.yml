@@ -2,17 +2,9 @@ name: 'Build PyKotor Tool'
 description: 'Reusable action to build a PyKotor tool with PyInstaller'
 
 inputs:
-  tool_path:
-    description: 'Path to a tool directory under Tools/'
+  tool_name:
+    description: 'Name of the tool to build (toolset, holopatcher, kotordiff, etc.)'
     required: true
-  tool_display_name:
-    description: 'Display name for artifacts (defaults to tool directory name)'
-    required: false
-    default: ''
-  tool_requires_qt:
-    description: 'Whether the tool requires Qt (true/false)'
-    required: false
-    default: 'false'
   python_version:
     description: 'Python version to use'
     required: false
@@ -21,10 +13,10 @@ inputs:
     description: 'Architecture (x86 or x64)'
     required: false
     default: 'x64'
-  qt_api:
-    description: 'Qt API for GUI tools (PyQt5, PyQt6, PySide6, etc.)'
+  qt_version:
+    description: 'Qt version for GUI tools (PyQt5, PyQt6, etc.)'
     required: false
-    default: 'PyQt6'
+    default: 'PyQt5'
   upx_version:
     description: 'UPX version for compression'
     required: false
@@ -57,12 +49,19 @@ runs:
       id: artifact_name
       shell: pwsh
       run: |
-        $toolPath = "${{ inputs.tool_path }}"
-        $toolDir = [System.IO.Path]::GetFileName($toolPath.TrimEnd([char[]]@('/', '\')))
-        $displayName = if ("${{ inputs.tool_display_name }}") { "${{ inputs.tool_display_name }}" } else { $toolDir }
+        $toolName = "${{ inputs.tool_name }}"
+        $toolNameMap = @{
+          "toolset" = "HolocronToolset"
+          "holopatcher" = "HoloPatcher"
+          "kotordiff" = "KotorDiff"
+          "guiconverter" = "GuiConverter"
+          "batchpatcher" = "BatchPatcher"
+          "kitgenerator" = "KitGenerator"
+        }
+        $displayName = if ($toolNameMap.ContainsKey($toolName.ToLower())) { $toolNameMap[$toolName.ToLower()] } else { $toolName }
         $artifactName = "${displayName}_${{ runner.os }}_${{ inputs.architecture }}"
-        if ("${{ inputs.tool_requires_qt }}" -eq "true") {
-          $artifactName = "${displayName}_${{ runner.os }}_${{ inputs.qt_api }}_${{ inputs.architecture }}"
+        if ("${{ inputs.qt_version }}" -ne "" -and "${{ inputs.tool_name }}" -eq "toolset") {
+          $artifactName = "${displayName}_${{ runner.os }}_${{ inputs.qt_version }}_${{ inputs.architecture }}"
         }
         echo "name=$artifactName" >> $env:GITHUB_OUTPUT
         echo "display_name=$displayName" >> $env:GITHUB_OUTPUT
@@ -128,10 +127,10 @@ runs:
       if: runner.os == 'Windows' && inputs.dry_run != 'true'
       shell: pwsh
       run: |
-        $redistUrl = if ("${{ inputs.architecture }}" -eq "x86") {
-          "https://aka.ms/vs/17/release/vc_redist.x86.exe"
-        } else {
-          "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+        $redistUrl = if ("${{ inputs.architecture }}" -eq "x86") { 
+          "https://aka.ms/vs/17/release/vc_redist.x86.exe" 
+        } else { 
+          "https://aka.ms/vs/17/release/vc_redist.x64.exe" 
         }
         Invoke-WebRequest -Uri $redistUrl -OutFile "vc_redist.exe"
         Start-Process "vc_redist.exe" -ArgumentList '/install', '/quiet', '/norestart' -Wait
@@ -142,63 +141,43 @@ runs:
       shell: pwsh
       run: |
         try {
-          $toolPath = "${{ inputs.tool_path }}"
-          $toolDir = [System.IO.Path]::GetFileName($toolPath.TrimEnd([char[]]@('/', '\')))
-          $venvName = ".venv_${toolDir}_${{ runner.os }}_${{ inputs.python_version }}_${{ inputs.architecture }}"
-
-          $depsArgs = @(
-            "--tool-path", $toolPath,
-            "--venv-name", $venvName,
-            "--noprompt",
-            "--force-python-version", "${{ inputs.python_version }}",
-            "--pip-requirements", "./Libraries/PyKotor/requirements.txt"
-          )
-
-          if ("${{ inputs.tool_requires_qt }}" -eq "true") {
-            $depsArgs += @(
-              "--qt-api", "${{ inputs.qt_api }}"
-            )
-          }
-
-          $repoRoot = (Get-Location).Path
-          $venvPython = if ("${{ runner.os }}" -eq "Windows") {
-            Join-Path $repoRoot "$venvName/Scripts/python.exe"
-          } else {
-            Join-Path $repoRoot "$venvName/bin/python"
-          }
-
-          # In CI, setup-python already provisioned Python; avoid install_python_venv.ps1 downloads.
-          if ($env:GITHUB_ACTIONS -eq "true") {
-            if (-not (Test-Path -LiteralPath $venvPython)) {
-              python -m venv $venvName
-              if ($LASTEXITCODE -ne 0) { throw "python -m venv failed with exit code $LASTEXITCODE" }
+          $toolName = "${{ inputs.tool_name }}".ToLower()
+          $venvName = ".venv_${toolName}_${{ runner.os }}_${{ inputs.python_version }}_${{ inputs.architecture }}"
+          
+          . ./install_python_venv.ps1 -noprompt -venv_name $venvName -force_python_version ${{ inputs.python_version }}
+          
+          & $pythonExePath -m pip install --upgrade pip
+          
+          # Install PyInstaller
+          if ("${{ runner.os }}" -eq "Windows") {
+            $pyVersion = "${{ inputs.python_version }}"
+            if ($pyVersion -eq "3.12") {
+              pip install pyinstaller --prefer-binary -U
+            } else {
+              pip install "pyinstaller==5.13.2" --prefer-binary
             }
-            if (-not (Test-Path -LiteralPath $venvPython)) {
-              throw "Venv python not found at $venvPython after python -m venv"
-            }
-            # deps_tool.py runs with venv python (--skip-venv); tomli must be in the venv on Py3.8.
-            & $venvPython -m pip install --disable-pip-version-check tomli
-            if ($LASTEXITCODE -ne 0) { throw "pip install tomli into venv failed with exit code $LASTEXITCODE" }
-            $env:pythonExePath = $venvPython
-            Write-Host "Using Actions-hosted Python venv: $venvPython"
+            pip install comtypes pywin32 -U
           } else {
-            # tool_metadata.py and deps_tool.py require tomli on Python < 3.11.
-            python -m pip install --disable-pip-version-check tomli
-            if ($LASTEXITCODE -ne 0) { throw "pip install tomli failed with exit code $LASTEXITCODE" }
+            pip install pyinstaller -U --prefer-binary
           }
-
-          Write-Host "Installing dependencies via compile/deps_tool.ps1: $($depsArgs -join ' ')"
-          & ./compile/deps_tool.ps1 @depsArgs
-          if ($LASTEXITCODE -ne 0) { throw "deps_tool.ps1 failed with exit code $LASTEXITCODE" }
-
-          if (-not (Test-Path -LiteralPath $venvPython)) {
-            throw "Venv python not found at $venvPython"
+          
+          # Install tool-specific dependencies
+          $depsScript = "./compile/deps_$toolName.ps1"
+          if (Test-Path $depsScript) {
+            if ("${{ inputs.tool_name }}" -eq "toolset") {
+              $env:QT_API = "${{ inputs.qt_version }}"
+            }
+            . $depsScript -noprompt -venv_name $venvName 2>&1 | ForEach-Object { Write-Output $_.ToString() }
           }
-
+          
+          # Additional deps for toolset
+          if ("${{ inputs.tool_name }}" -eq "toolset") {
+            pip install "setuptools==69.5.1"
+            pip install qdarkstyle -U
+          }
+          
           echo "success=true" >> $env:GITHUB_OUTPUT
           echo "venv_name=$venvName" >> $env:GITHUB_OUTPUT
-          echo "venv_python=$venvPython" >> $env:GITHUB_OUTPUT
-          echo "tool_path=$toolPath" >> $env:GITHUB_OUTPUT
         } catch {
           Write-Host -ForegroundColor Red "Error: $($_.Exception.Message)"
           echo "success=false" >> $env:GITHUB_OUTPUT
@@ -209,37 +188,50 @@ runs:
       if: inputs.dry_run == 'true'
       shell: pwsh
       run: |
-        $venvName = "${{ steps.deps.outputs.venv_name }}"
-        $venvPython = "${{ steps.deps.outputs.venv_python }}"
-
+        $toolName = "${{ inputs.tool_name }}".ToLower()
+        $compileScript = "./compile/compile_$toolName.ps1"
+        
         Write-Host "=== DRY RUN: Validating build configuration ==="
-
-        # Check core build wrappers exist
-        if (-not (Test-Path -LiteralPath "./compile/compile_tool.ps1")) {
-          Write-Error "compile/compile_tool.ps1 not found"
+        
+        # Check compile script exists
+        if (-not (Test-Path $compileScript)) {
+          Write-Error "Compile script not found: $compileScript"
           exit 1
         }
-        if (-not (Test-Path -LiteralPath "./compile/deps_tool.ps1")) {
-          Write-Error "compile/deps_tool.ps1 not found"
-          exit 1
-        }
-        Write-Host "✓ Core build wrappers exist"
-
-        if (-not (Test-Path -LiteralPath $venvPython)) {
-          Write-Error "Venv python missing: $venvPython"
-          exit 1
-        }
-        Write-Host "✓ Venv python exists: $venvPython"
-
+        Write-Host "✓ Compile script exists: $compileScript"
+        
+        # Verify dependencies installed
+        . ./install_python_venv.ps1 -noprompt -venv_name "${{ steps.deps.outputs.venv_name }}"
+        
         # Check PyInstaller
-        $pyinstallerVersion = & $venvPython -m pip show pyinstaller 2>$null | Select-String "Version"
+        $pyinstallerVersion = pip show pyinstaller 2>$null | Select-String "Version"
         if ($pyinstallerVersion) {
           Write-Host "✓ PyInstaller installed: $pyinstallerVersion"
         } else {
           Write-Error "PyInstaller not found"
           exit 1
         }
-
+        
+        # Validate imports
+        $toolPaths = @{
+          "toolset" = "toolset"
+          "holopatcher" = "holopatcher"
+          "kotordiff" = "kotordiff"
+          "guiconverter" = "gui_converter"
+          "batchpatcher" = "batchpatcher"
+          "kitgenerator" = "kitgenerator"
+        }
+        $importPath = $toolPaths[$toolName]
+        if ($importPath) {
+          $importTest = & $pythonExePath -c "import $importPath; print('OK')" 2>&1
+          if ($importTest -eq "OK") {
+            Write-Host "✓ Import test passed: $importPath"
+          } else {
+            Write-Error "Import test failed: $importTest"
+            exit 1
+          }
+        }
+        
         Write-Host ""
         Write-Host "=== DRY RUN COMPLETE: Build configuration validated ==="
 
@@ -249,40 +241,32 @@ runs:
       shell: pwsh
       run: |
         try {
+          $toolName = "${{ inputs.tool_name }}".ToLower()
           $venvName = "${{ steps.deps.outputs.venv_name }}"
-          $venvPython = "${{ steps.deps.outputs.venv_python }}"
-          $toolPath = "${{ steps.deps.outputs.tool_path }}"
           $upxDir = $env:UPX_DIR
-
-          if (-not (Test-Path -LiteralPath $venvPython)) {
-            Write-Error "Venv python missing: $venvPython"
+          $compileScript = "./compile/compile_$toolName.ps1"
+          
+          if (-not (Test-Path $compileScript)) {
+            Write-Error "Compile script not found: $compileScript"
             echo "success=false" >> $env:GITHUB_OUTPUT
             exit 1
           }
-
+          
           $env:PYTHONOPTIMIZE = "1"
-          $compileArgs = @(
-            "--tool-path", $toolPath,
-            "--venv-name", $venvName,
-            "--skip-venv",
-            "--python-exe", $venvPython,
-            "--noprompt"
-          )
-          if ($upxDir) { $compileArgs += @("--upx-dir", $upxDir) }
-          if ("${{ inputs.tool_requires_qt }}" -eq "true") {
-            $compileArgs += @("--qt-api", "${{ inputs.qt_api }}", "--exclude-other-qt")
+          if ("${{ inputs.tool_name }}" -eq "toolset") {
+            $env:QT_API = "${{ inputs.qt_version }}"
           }
-
+          
           $output = ""
           $errorLines = @()
-          & ./compile/compile_tool.ps1 @compileArgs 2>&1 | ForEach-Object {
+          . $compileScript -noprompt -venv_name $venvName -upx_dir $upxDir 2>&1 | ForEach-Object {
             Write-Output $_.ToString()
             $output += $_.ToString() + "`n"
             if ($_ -match 'ERROR:') {
               $errorLines += $_.ToString()
             }
           }
-
+          
           $warningCount = 0
           $output -split "`n" | ForEach-Object {
             if ($_ -match 'WARNING: Library not found: could not resolve' -or
@@ -293,7 +277,7 @@ runs:
               $warningCount++
             }
           }
-
+          
           if ($errorLines.Count -gt 0) {
             $errorLines | ForEach-Object { Write-Error $_ }
             echo "success=false" >> $env:GITHUB_OUTPUT
@@ -318,3 +302,4 @@ runs:
         name: ${{ steps.artifact_name.outputs.name }}
         path: ./dist/**
         retention-days: ${{ inputs.artifact_retention_days }}
+

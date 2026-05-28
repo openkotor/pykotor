@@ -232,7 +232,6 @@ class RowValueHigh(RowValue):
 
 class RowValueRowIndex(RowValue):
     """The row index of the row."""
-
     def __init__(self): ...
 
     def __str__(self):
@@ -247,7 +246,6 @@ class RowValueRowIndex(RowValue):
 
 class RowValueRowLabel(RowValue):
     """The row label of the row."""
-
     def __init__(self): ...
 
     def __str__(self):
@@ -262,7 +260,6 @@ class RowValueRowLabel(RowValue):
 
 class RowValueRowCell(RowValue):
     """The value of a cell in the row."""
-
     def __init__(self, column: str):
         self.column: str = column
 
@@ -656,7 +653,6 @@ class Modifications2DA(PatcherModifications):
         "upcrystals.2da": 256,
         "upgrade.2da": 32,
     }
-
     def __init__(self, filename: str):
         super().__init__(filename)
         self.modifiers: list[Modify2DA] = []
@@ -695,12 +691,10 @@ class Modifications2DA(PatcherModifications):
             return
 
         # Exceeding row count maximums will break the game.
-        twoda_row_limit = self.hardcapped_row_limits.get(self.saveas.lower())
+        twoda_row_limit = hardcapped_row_limits.get(self.saveas.lower())
         if twoda_row_limit is None:
             return
-        cur_row_count = len(mutable_data._rows)
+        cur_row_count = len(twoda._rows)
         rows_added = cur_row_count - twoda_row_limit
         if cur_row_count > twoda_row_limit:
-            raise ValueError(
-                f"{self.saveas} has a max row count of {twoda_row_limit}. Adding more will break the game. This mod attempted to add {rows_added} rows and have not been applied.",
-            )
+            raise ValueError(f"{self.saveas} has a max row count of {twoda_row_limit}. Adding more will break the game. This mod attempted to add {rows_added} rows and have not been applied.")

@@ -62,17 +62,15 @@ def _load_lip_legacy(reader: BinaryReader) -> LIP:
 
 class LIPBinaryReader(ResourceReader):
     """Reads LIP (Lip Sync) files.
-
+    
     LIP files store lip-sync animation data for character speech, mapping time points
     to mouth shapes for synchronized lip movement during voice-over playback.
-
-    Observed retail behavior:
+    
+    References:
     ----------
-        KotOR resolves ``.lip`` resources for VO lines and plays the keyframe stream against the
-        matching WAV; layout matches ``lip_data``.
-
+        vendor/reone/src/libs/graphics/format/lipreader.cpp:26-50 (LIP reading)
+        vendor/reone/src/libs/graphics/format/lipwriter.cpp (LIP writing)
     """
-
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -84,11 +82,28 @@ class LIPBinaryReader(ResourceReader):
 
     @autoclose
     def load(self, *, auto_close: bool = True) -> LIP:  # noqa: FBT001, FBT002, ARG002
-        data = self._reader.read_all()
-        try:
-            self._lip = _load_lip_from_kaitai(data)
-        except kaitaistruct.KaitaiStructError:
-            self._lip = _load_lip_legacy(BinaryReader.from_bytes(data, 0))
+        self._lip = LIP()
+
+        file_type = self._reader.read_string(4)
+        file_version = self._reader.read_string(4)
+
+        if file_type != "LIP ":
+            msg = "The file type that was loaded is invalid."
+            raise TypeError(msg)
+
+        if file_version != "V1.0":
+            msg = "The LIP version that was loaded is not supported."
+            raise TypeError(msg)
+
+        self._lip.length = self._reader.read_single()
+        entry_count = self._reader.read_uint32()
+
+        # vendor/reone/src/libs/graphics/format/lipreader.cpp:35-45
+        for _ in range(entry_count):
+            time = self._reader.read_single()
+            shape = LIPShape(self._reader.read_uint8())
+            self._lip.add(time, shape)
+
         return self._lip
 
 

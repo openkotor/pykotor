@@ -42,17 +42,16 @@ if TYPE_CHECKING:
 
 class ModInstaller:
     """Core mod installer implementing TSLPatcher/HoloPatcher logic.
-
+    
     Handles mod installation, backup creation, and applying patches from changes.ini files.
     This is a Python rewrite of the original TSLPatcher Perl implementation.
-
+    
     References:
     ----------
-        Observed retail KotOR GFF serialization behavior.
-
-
+        vendor/TSLPatcher/TSLPatcher.pl - Original Perl TSLPatcher implementation
+        vendor/HoloPatcher.NET/ - C# port of HoloPatcher
+        vendor/Kotor.NET/Kotor.NET.Patcher/ - Incomplete C# patcher
     """
-
     def __init__(
         self,
         mod_path: os.PathLike | str,
@@ -206,23 +205,15 @@ class ModInstaller:
         if is_capsule_file(patch.destination):
             module_root: str = Installation.get_module_root(output_container_path)
             tslrcm_omitted_rims: tuple[Literal["702KOR"], Literal["401DXN"]] = ("702KOR", "401DXN")
-            if module_root.upper() not in tslrcm_omitted_rims and is_rim_file(
-                output_container_path
-            ):
-                self.log.add_warning(
-                    f"This mod is patching RIM file Modules/{output_container_path.name}!\nPatching RIMs is highly incompatible, not recommended, and widely considered bad practice. Please request the mod developer to fix this.",
-                )  # noqa: E501
+            if module_root.upper() not in tslrcm_omitted_rims and is_rim_file(output_container_path):
+                self.log.add_warning(f"This mod is patching RIM file Modules/{output_container_path.name}!\nPatching RIMs is highly incompatible, not recommended, and widely considered bad practice. Please request the mod developer to fix this.")  # noqa: E501
             if not output_container_path.is_file():
                 if is_mod_file(output_container_path):
                     self.log.add_note(
                         f"IMPORTANT! The module at path '{output_container_path}' did not exist, building one in the 'Modules' folder immediately from the following files:"  # noqa: ISC003
                         + f"\n    Modules/{module_root}.rim"
                         + f"\n    Modules/{module_root}_s.rim"
-                        + (
-                            f"\n    Modules/{module_root}_dlg.erf"
-                            if self.game is not None and self.game.is_k2()
-                            else ""
-                        ),
+                        + (f"\n    Modules/{module_root}_dlg.erf" if self.game is not None and self.game.is_k2() else "")
                     )
                     try:
                         rim_to_mod(
@@ -294,9 +285,7 @@ class ModInstaller:
                 # Path resolution: mod_path / sourcefolder / sourcefile
                 # mod_path is typically the tslpatchdata folder (parent of changes.ini).
                 # If sourcefolder = ".", this resolves to mod_path itself (tslpatchdata folder).
-                return self.load_resource_file(
-                    self.mod_path / patch.sourcefolder / patch.sourcefile
-                )
+                return self.load_resource_file(self.mod_path / patch.sourcefolder / patch.sourcefile)
             if capsule is None:
                 return self.load_resource_file(output_container_path / patch.saveas)
             return capsule.resource(*ResourceIdentifier.from_path(patch.saveas).unpack())
@@ -317,9 +306,7 @@ class ModInstaller:
         # if not modrim_type or modrim_type == ignore
         #    return
         erfrim_path: CaseAwarePath = self.game_path / patch.destination / patch.saveas
-        mod_path: CaseAwarePath = erfrim_path.with_name(
-            f"{Installation.get_module_root(erfrim_path.name)}.mod"
-        )
+        mod_path: CaseAwarePath = erfrim_path.with_name(f"{Installation.get_module_root(erfrim_path.name)}.mod")
         if erfrim_path != mod_path and mod_path.is_file():
             self.log.add_warning(
                 f"This mod intends to install '{patch.saveas}' into '{patch.destination}', but is overshadowed by the existing '{mod_path.name}'!"
@@ -436,13 +423,9 @@ class ModInstaller:
             )  # noqa: E501
             return False
 
-        save_type: str = (
-            "adding" if capsule is not None and patch.saveas == patch.sourcefile else "saving"
-        )
+        save_type: str = "adding" if capsule is not None and patch.saveas == patch.sourcefile else "saving"
         saving_as_str: str = f"as '{patch.saveas}' in" if patch.saveas != patch.sourcefile else "to"
-        self.log.add_note(
-            f"{patch.action[:-1]}ing '{patch.sourcefile}' and {save_type} {saving_as_str} the '{local_folder}' {container_type}"
-        )
+        self.log.add_note(f"{patch.action[:-1]}ing '{patch.sourcefile}' and {save_type} {saving_as_str} the '{local_folder}' {container_type}")
         return True
 
     def install(  # noqa: PLR0915, PLR0912, C901
@@ -473,7 +456,7 @@ class ModInstaller:
             *self.get_tlk_patches(config),
             *config.patches_2da,
             *config.patches_gff,
-            # NOTE: TSLPatcher runs [CompileList] *after* [HACKList], which is objectively bad, so HoloPatcher here will do the inverse.
+            # Note: TSLPatcher runs [CompileList] *after* [HACKList], which is objectively bad, so HoloPatcher here will do the inverse.
             *config.patches_nss,
             *config.patches_ncs,
             *config.patches_ssf,
@@ -595,7 +578,7 @@ class ModInstaller:
             f"Preprocessing #StrRef# and #2DAMEMORY# tokens for all {len(scripts_list)} scripts, before running [CompileList]"
         )
         for script in temp_script_folder.iterdir():
-            if get_normalized_extension(script) != ".nss" or not script.is_file():
+            if script.suffix.lower() != ".nss" or not script.is_file():
                 continue
             log.add_verbose(f"Parsing tokens in '{script.name}'...")
             with script.open(mode="rb") as f:

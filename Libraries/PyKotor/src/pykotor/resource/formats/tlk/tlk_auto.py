@@ -62,7 +62,7 @@ def detect_tlk(
         if stripped.startswith(("TLK ", "{", "<")):
             return check(stripped[:4].ljust(4))
 
-    file_format: RESOURCE_FORMAT
+    file_format: ResourceType
     try:
         with BinaryReader.from_auto(source, offset) as reader:
             file_format = check(reader.read_string(4))
@@ -79,7 +79,7 @@ def read_tlk(
     offset: int = 0,
     size: int | None = None,
     language: Language | None = None,
-    file_format: RESOURCE_FORMAT | None = None,
+    file_format: ResourceType | None = None,
 ) -> TLK:
     """Returns an TLK instance from the source.
 
@@ -91,7 +91,7 @@ def read_tlk(
         offset: The byte offset of the file inside the data.
         size: Number of bytes to allowed to read from the stream. If not specified, uses the whole stream.
         language: The language of the TLK data.
-        file_format: The file format to use (ResourceType.TLK, ToolsetFormat.TLK_XML, ToolsetFormat.TLK_JSON). If not specified, it will be detected automatically.
+        file_format: The file format to use (ResourceType.TLK, ResourceType.TLK_XML, ResourceType.TLK_JSON). If not specified, it will be detected automatically.
 
     Raises:
     ------
@@ -112,24 +112,15 @@ def read_tlk(
         raise ValueError(msg)
 
     normalized_source = source
-    if (
-        isinstance(source, str)
-        and file_format in (ToolsetFormat.TLK_XML, ToolsetFormat.TLK_JSON)
-        and not os.path.exists(source)
-    ):  # noqa: PTH110
+    if isinstance(source, str) and file_format in (ResourceType.TLK_XML, ResourceType.TLK_JSON) and not os.path.exists(source):  # noqa: PTH110
         normalized_source = source.encode("utf-8")
 
-    if file_format == ResourceType.TLK:
+    if file_format is ResourceType.TLK:
         return TLKBinaryReader(normalized_source, offset, size or 0, language).load()
-    if file_format == ToolsetFormat.TLK_XML:
+    if file_format is ResourceType.TLK_XML:
         return TLKXMLReader(normalized_source, offset, size or 0).load()
-    if file_format == ToolsetFormat.TLK_JSON:
-        from pykotor.resource.formats.tlk.tlk_data import TLK
-
-        with BinaryReader.from_auto(normalized_source, offset) as reader:
-            raw = reader.read_all()
-        decoded = decode_bytes_with_fallbacks(raw)
-        return TLK.from_json(json.loads(decoded))
+    if file_format is ResourceType.TLK_JSON:
+        return TLKJSONReader(normalized_source, offset, size or 0).load()
     msg = "Unsupported TLK format specified."
     raise ValueError(msg)
 

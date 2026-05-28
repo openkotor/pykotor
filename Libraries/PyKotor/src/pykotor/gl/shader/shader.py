@@ -1,50 +1,16 @@
-"""OpenGL shaders: compile vertex/fragment source, uniform upload, and KOTOR/plain/picker shader strings."""
-
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
-from pykotor.gl import mat4, value_ptr, vec3, vec4
-from pykotor.gl.compat import (
-    MissingPyOpenGLError,
-    has_pyopengl,
-    missing_constant,
-    missing_gl_func,
-)
+import glm
 
-HAS_PYOPENGL = has_pyopengl()
-
-if HAS_PYOPENGL:
-    from OpenGL.GL import (  # pyright: ignore[reportMissingImports]
-        glGetUniformLocation,
-        glUniform1f,
-        glUniform3fv,
-        glUniform4fv,
-        glUniformMatrix4fv,
-        shaders,
-    )
-    from OpenGL.GL.shaders import GL_FALSE  # pyright: ignore[reportMissingImports]
-    from OpenGL.raw.GL.VERSION.GL_2_0 import (  # pyright: ignore[reportMissingImports]
-        GL_FRAGMENT_SHADER,
-        GL_VERTEX_SHADER,
-        glUniform1i,
-        glUseProgram,
-    )
-else:
-    glGetUniformLocation = missing_gl_func("glGetUniformLocation")
-    glUniform1f = missing_gl_func("glUniform1f")
-    glUniform3fv = missing_gl_func("glUniform3fv")
-    glUniform4fv = missing_gl_func("glUniform4fv")
-    glUniformMatrix4fv = missing_gl_func("glUniformMatrix4fv")
-    glUniform1i = missing_gl_func("glUniform1i")
-    glUseProgram = missing_gl_func("glUseProgram")
-    shaders = None  # type: ignore[assignment]
-    GL_FALSE = missing_constant("GL_FALSE")
-    GL_FRAGMENT_SHADER = missing_constant("GL_FRAGMENT_SHADER")
-    GL_VERTEX_SHADER = missing_constant("GL_VERTEX_SHADER")
+from OpenGL.GL import glGetUniformLocation, glUniform3fv, glUniform4fv, glUniformMatrix4fv, shaders
+from OpenGL.GL.shaders import GL_FALSE
+from OpenGL.raw.GL.VERSION.GL_2_0 import GL_FRAGMENT_SHADER, GL_VERTEX_SHADER, glUniform1i, glUseProgram
 
 if TYPE_CHECKING:
-    from pykotor.gl import mat4, vec3, vec4
+    from glm import mat4, vec3, vec4
+
 
 
 KOTOR_VSHADER = """
@@ -65,9 +31,9 @@ uniform mat4 projection;
 
 void main()
 {
-    gl_Position = projection * view * model * vec4(position, 1.0);
-    diffuse_uv = vec2(uv.x, 1.0 - uv.y);
-    lightmap_uv = vec2(uv2.x, 1.0 - uv2.y);
+    gl_Position = projection * view * model *  vec4(position, 1.0);
+    diffuse_uv = vec2(uv.x, uv.y);
+    lightmap_uv = vec2(uv2.x, uv2.y);
 }
 """
 
@@ -82,21 +48,14 @@ out vec4 FragColor;
 layout(binding = 0) uniform sampler2D diffuse;
 layout(binding = 1) uniform sampler2D lightmap;
 uniform int enableLightmap;
-uniform float alphaCutoff;
 
 void main()
 {
     vec4 diffuseColor = texture(diffuse, diffuse_uv);
     vec4 lightmapColor = texture(lightmap, lightmap_uv);
 
-    // Optional alpha cutout for masked textures (configured per-material).
-    if (alphaCutoff > 0.0 && diffuseColor.a < alphaCutoff) {
-        discard;
-    }
-
     if (enableLightmap == 1) {
-        vec3 rgb = mix(diffuseColor.rgb, lightmapColor.rgb, 0.5);
-        FragColor = vec4(rgb, diffuseColor.a);
+        FragColor = mix(diffuseColor, lightmapColor, 0.5);
     } else {
         FragColor = diffuseColor;
     }
@@ -115,7 +74,7 @@ uniform mat4 projection;
 
 void main()
 {
-    gl_Position = projection * view * model * vec4(position, 1.0);
+    gl_Position = projection * view * model *  vec4(position, 1.0);
 }
 """
 
@@ -145,7 +104,7 @@ uniform mat4 projection;
 
 void main()
 {
-    gl_Position = projection * view * model * vec4(position, 1.0);
+    gl_Position = projection * view * model *  vec4(position, 1.0);
 }
 """
 
@@ -166,29 +125,21 @@ void main()
 
 class Shader:
     """Optimized shader class with cached uniform locations.
-
+    
     Performance optimization: glGetUniformLocation is expensive and was being
     called every frame for every uniform. This class caches uniform locations
     on first access, providing ~10x speedup for uniform setting operations.
-
-    Active shader tracking: glUseProgram is skipped when the shader is already
-    active, eliminating ~50-100 redundant GPU state changes per frame.
-
+    
     Reference: Industry standard practice in game engines (Unity, Unreal, Godot)
     """
-
-    __slots__: ClassVar[tuple[str, ...]] = ("_id", "_uniform_cache")
-    _active_id: ClassVar[int] = -1
-
+    
+    __slots__ = ("_id", "_uniform_cache")
+    
     def __init__(
         self,
         vshader: str,
         fshader: str,
     ):
-        if not HAS_PYOPENGL or shaders is None:
-            raise MissingPyOpenGLError(
-                "PyOpenGL is required for the legacy Shader class. Install PyOpenGL (and ensure it imports)."
-            )
         vertex_shader: int = shaders.compileShader(vshader, GL_VERTEX_SHADER)
         fragment_shader: int = shaders.compileShader(fshader, GL_FRAGMENT_SHADER)
         self._id: int = shaders.compileProgram(vertex_shader, fragment_shader)
@@ -196,20 +147,14 @@ class Shader:
         self._uniform_cache: dict[str, int] = {}
 
     def use(self):
-        if not HAS_PYOPENGL:
-            raise MissingPyOpenGLError(
-                "PyOpenGL is required for the legacy Shader class. Install PyOpenGL (and ensure it imports)."
-            )
-        if Shader._active_id != self._id:
-            glUseProgram(self._id)
-            Shader._active_id = self._id
+        glUseProgram(self._id)
 
     def uniform(
         self,
         uniform_name: str,
     ) -> int:
         """Get uniform location with caching.
-
+        
         Caches the result of glGetUniformLocation which is expensive.
         Subsequent calls for the same uniform are O(1) dictionary lookups.
         """
@@ -217,7 +162,7 @@ class Shader:
         cached = self._uniform_cache.get(uniform_name)
         if cached is not None:
             return cached
-
+        
         # Cache miss - get from OpenGL and store
         location = glGetUniformLocation(self._id, uniform_name)
         self._uniform_cache[uniform_name] = location
@@ -228,28 +173,25 @@ class Shader:
         uniform: str,
         matrix: mat4,
     ):
-        glUniformMatrix4fv(self.uniform(uniform), 1, GL_FALSE, value_ptr(matrix))
+        glUniformMatrix4fv(self.uniform(uniform), 1, GL_FALSE, glm.value_ptr(matrix))
 
     def set_vector4(
         self,
         uniform: str,
         vector: vec4,
     ):
-        glUniform4fv(self.uniform(uniform), 1, value_ptr(vector))
+        glUniform4fv(self.uniform(uniform), 1, glm.value_ptr(vector))
 
     def set_vector3(
         self,
         uniform: str,
         vector: vec3,
     ):
-        glUniform3fv(self.uniform(uniform), 1, value_ptr(vector))
+        glUniform3fv(self.uniform(uniform), 1, glm.value_ptr(vector))
 
     def set_bool(self, uniform: str, boolean: bool):  # noqa: FBT001
         glUniform1i(self.uniform(uniform), boolean)
-
-    def set_float(self, uniform: str, value: float):
-        glUniform1f(self.uniform(uniform), float(value))
-
+    
     def clear_cache(self):
         """Clear the uniform cache. Call if shader is recompiled."""
         self._uniform_cache.clear()

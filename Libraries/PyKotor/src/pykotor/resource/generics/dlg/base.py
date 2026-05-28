@@ -30,80 +30,127 @@ class DLGConversationType(IntEnum):
     Human = 0
     Computer = 1
     Other = 2
-    Unknown = 3  # Fallback for UI variants that surface an extra option
 
 
 class DLG:
     """Stores dialog data.
-
+    
     DLG files are GFF-based format files that store dialog trees with entries, replies,
     links, and conversation metadata. The dialog system uses a graph structure where
     entries (NPC lines) and replies (player options) are connected via links with
     conditional logic.
-
-    DLG is a GFF graph: root metadata, ``EntryList`` / ``ReplyList`` / ``StartingList`` /
-    ``StuntList``, per-node text (localized), scripts (ResRef), speaker string, fades, sounds,
-    animations, and per-link script/indices. It has been observed that KotOR I and TSL share
-    the same on-disk layout for these structures. Loader notes and third-party DLG
-    implementations (KotOR.js, Kotor.NET, including DLGDecompiler.cs) are migrated to
-    ``wiki/reverse_engineering_findings.md`` (*resource/generics/dlg/base.py*).
+    
+    References:
+    ----------
+        vendor/reone/include/reone/resource/parser/gff/dlg.h:115-141 (DLG struct definition)
+        vendor/reone/src/libs/resource/parser/gff/dlg.cpp:37-172 (DLG parsing from GFF)
+        vendor/reone/include/reone/resource/dialog.h (Dialog resource abstraction)
+        vendor/KotOR.js/src/resource/DLGObject.ts (DLG loading and dialog tree structure)
+        vendor/KotOR.js/src/resource/DLGNode.ts (DLG node structure)
+        vendor/xoreos-tools/src/xml/dlgdumper.cpp (DLG to XML conversion)
+        vendor/xoreos-tools/src/xml/dlgcreator.cpp (XML to DLG conversion)
+        vendor/Kotor.NET/Kotor.NET/Resources/KotorDLG/DLG.cs (DLG structure)
+        vendor/Kotor.NET/Kotor.NET/Resources/KotorDLG/DLGDecompiler.cs (DLG parsing)
+        Note: DLG files are GFF format files with specific structure definitions
 
     Attributes:
     ----------
         starters: "StartingList" field. List of initial dialog links.
+            Reference: reone/dlg.h:136 (StartingList vector)
+            Reference: reone/dlg.cpp:170-171 (StartingList parsing)
             The entry points into the dialog tree.
-
+        
         stunts: "StuntList" field. List of stunt model references.
+            Reference: reone/dlg.h:56-59 (DLG_StuntList struct)
+            Reference: reone/dlg.cpp:60-65 (StuntList parsing)
             Used for special dialog animations.
-
+        
         word_count: "NumWords" field. Word count for dialog.
-
+            Reference: reone/dlg.h:130 (NumWords field)
+            Reference: reone/dlg.cpp:168 (NumWords parsing)
+        
         on_abort: "EndConverAbort" field. Script to run on conversation abort.
-
+            Reference: reone/dlg.h:126 (EndConverAbort field)
+            Reference: reone/dlg.cpp:166 (EndConverAbort parsing)
+        
         on_end: "EndConversation" field. Script to run when conversation ends.
-
+            Reference: reone/dlg.h:127 (EndConversation field)
+            Reference: reone/dlg.cpp:167 (EndConversation parsing)
+        
         skippable: "Skippable" field. Whether dialog can be skipped.
-
+            Reference: reone/dlg.h:135 (Skippable field)
+            Reference: reone/dlg.cpp:169 (Skippable parsing)
+        
         ambient_track: "AmbientTrack" field. Background music track.
-
+            Reference: reone/dlg.h:117 (AmbientTrack field)
+            Reference: reone/dlg.cpp:164 (AmbientTrack parsing)
+        
         animated_cut: "AnimatedCut" field. Animated cutscene flag.
-
+            Reference: reone/dlg.h:118 (AnimatedCut field)
+            Reference: reone/dlg.cpp:165 (AnimatedCut parsing)
+        
         camera_model: "CameraModel" field. Camera model ResRef.
-
+            Reference: reone/dlg.h:119 (CameraModel field)
+            Reference: reone/dlg.cpp:163 (CameraModel parsing)
+        
         computer_type: "ComputerType" field. Type of computer interface.
+            Reference: reone/dlg.h:120 (ComputerType field)
+            Reference: reone/dlg.cpp:162 (ComputerType parsing)
             Values: 0=Modern, 1=Ancient
-
+        
         conversation_type: "ConversationType" field. Type of conversation.
+            Reference: reone/dlg.h:121 (ConversationType field)
+            Reference: reone/dlg.cpp:161 (ConversationType parsing)
             Values: 0=Human, 1=Computer, 2=Other
-
+        
         old_hit_check: "OldHitCheck" field. Legacy hit check flag.
-
+            Reference: reone/dlg.h:131 (OldHitCheck field)
+            Reference: reone/dlg.cpp:160 (OldHitCheck parsing)
+        
         unequip_hands: "UnequipHItem" field. Unequip hand items flag.
-
+            Reference: reone/dlg.h:138 (UnequipHItem field)
+            Reference: reone/dlg.cpp:159 (UnequipHItem parsing)
+        
         unequip_items: "UnequipItems" field. Unequip all items flag.
-
+            Reference: reone/dlg.h:139 (UnequipItems field)
+            Reference: reone/dlg.cpp:158 (UnequipItems parsing)
+        
         vo_id: "VO_ID" field. Voice-over identifier string.
+            Reference: reone/dlg.h:140 (VO_ID field)
+            Reference: reone/dlg.cpp:157 (VO_ID parsing)
 
         alien_race_owner: "AlienRaceOwner" field. KotOR 2 Only.
+            Reference: reone/dlg.h:116 (AlienRaceOwner field)
+            Reference: reone/dlg.cpp:155 (AlienRaceOwner parsing)
             Alien race for dialog processing.
-
+        
         post_proc_owner: "PostProcOwner" field. KotOR 2 Only.
+            Reference: reone/dlg.h:132 (PostProcOwner field)
+            Reference: reone/dlg.cpp:156 (PostProcOwner parsing)
             Post-processing owner ID.
-
+        
         record_no_vo: "RecordNoVO" field. KotOR 2 Only.
+            Reference: reone/dlg.h:133 (RecordNoVO field)
+            Reference: reone/dlg.cpp:154 (RecordNoVO parsing)
             Flag to record without voice-over.
-
+        
         next_node_id: "NextNodeID" field. KotOR 2 Only.
+            Reference: reone/dlg.h:129 (NextNodeID field)
+            Reference: reone/dlg.cpp:153 (NextNodeID parsing)
             Next available node ID for new nodes.
 
         delay_entry: "DelayEntry" field. Not used by the game engine.
-
+            Reference: reone/dlg.h:122 (DelayEntry field, deprecated)
+        
         delay_reply: "DelayReply" field. Not used by the game engine.
+            Reference: reone/dlg.h:123 (DelayReply field, deprecated)
     """
 
     BINARY_TYPE = ResourceType.DLG
 
-    def __init__(self):
+    def __init__(
+        self,
+    ):
         self.starters: list[DLGLink[DLGEntry]] = []
         self.stunts: list[DLGStunt] = []
 
@@ -149,9 +196,7 @@ class DLG:
         if isinstance(target, DLGLink):
             parent_node: DLGEntry | DLGReply | DLG | None = self.get_link_parent(target)
             if parent_node is None:
-                raise ValueError(
-                    f"Target {target.__class__.__name__} doesn't have a parent, and also not found in starters."
-                )
+                raise ValueError(f"Target {target.__class__.__name__} doesn't have a parent, and also not found in starters.")
             if isinstance(parent_node, DLG):
                 paths.append(PureWindowsPath("StartingList", str(target.list_index)))
             else:
@@ -310,11 +355,7 @@ class DLG:
             seen_entries.add(entry)
             for reply_link in entry.links:
                 reply: DLGNode = reply_link.node
-                entries.extend(
-                    self._all_entries(
-                        cast("Sequence[DLGLink[DLGEntry]]", reply.links), seen_entries
-                    )
-                )
+                entries.extend(self._all_entries(cast("Sequence[DLGLink[DLGEntry]]", reply.links), seen_entries))
 
         return entries
 
@@ -352,11 +393,7 @@ class DLG:
         """
         replies: list[DLGReply] = []
 
-        links = (
-            [_ for link in self.starters if link.node is not None for _ in link.node.links]
-            if links is None
-            else links
-        )
+        links = [_ for link in self.starters if link.node is not None for _ in link.node.links] if links is None else links
         seen_replies = [] if seen_replies is None else seen_replies
 
         for link in links:
@@ -371,8 +408,6 @@ class DLG:
                 entry: DLGNode | None = entry_link.node
                 if entry is None:
                     continue
-                replies.extend(
-                    self._all_replies(cast("Sequence[DLGLink]", entry.links), seen_replies)
-                )
+                replies.extend(self._all_replies(cast("Sequence[DLGLink]", entry.links), seen_replies))
 
         return replies

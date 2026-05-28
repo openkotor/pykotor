@@ -6,37 +6,21 @@ tool-agnostic and can be used by any application that needs to work with scripts
 
 References:
 ----------
-        Observed retail KotOR I and KotOR II behavior.
-
-
+    vendor/xoreos-tools/src/ncsdecomp.cpp - NCS decompiler
+    vendor/xoreos-tools/src/ncsdis.cpp - NCS disassembler
+    vendor/xoreos-docs/specs/torlack/ncs.html - NCS format specification
 """
-
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pykotor.common.misc import Game
 from pykotor.resource.formats.ncs.ncs_auto import decompile_ncs, read_ncs
+from pykotor.resource.formats.ncs.ncs_data import NCS
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
-    from pykotor.common.misc import Game
     from pykotor.common.script import ScriptConstant, ScriptFunction
-    from pykotor.resource.formats.ncs.ncs_data import NCS
-
-
-def _write_text_if_requested(output_path: Path | None, text: str) -> None:
-    """Write text output to disk when an output path is provided."""
-    if output_path:
-        output_path.write_text(text, encoding="utf-8")
-
-
-def _instruction_offset(index: int, instruction: object) -> int:
-    """Return a stable instruction offset, falling back to 4-byte indexing."""
-    offset = getattr(instruction, "offset", -1)
-    if isinstance(offset, int) and offset >= 0:
-        return offset
-    return index * 4
 
 
 def decompile_ncs_to_nss(
@@ -63,14 +47,13 @@ def decompile_ncs_to_nss(
 
     References:
     ----------
-        Observed retail KotOR I and KotOR II behavior.
-
-
+        vendor/xoreos-tools/src/ncsdecomp.cpp
     """
     ncs = read_ncs(ncs_path)
     source = decompile_ncs(ncs, game, functions, constants)
 
-    _write_text_if_requested(output_path, source)
+    if output_path:
+        output_path.write_text(source, encoding="utf-8")
 
     return source
 
@@ -97,9 +80,7 @@ def disassemble_ncs(
 
     References:
     ----------
-        Observed retail KotOR I and KotOR II behavior.
-
-
+        vendor/xoreos-tools/src/ncsdis.cpp
     """
     ncs: NCS = read_ncs(ncs_path)
 
@@ -112,13 +93,20 @@ def disassemble_ncs(
         instruction_str = str(instruction)
 
         if pretty:
-            lines.append(f"{_instruction_offset(i, instruction):08X}: {instruction_str}")
+            # Use instruction offset if available, otherwise use index
+            if instruction.offset >= 0:
+                byte_offset = instruction.offset
+            else:
+                # Estimate offset (rough approximation)
+                byte_offset = i * 4  # Average ~4 bytes per instruction
+            lines.append(f"{byte_offset:08X}: {instruction_str}")
         else:
             lines.append(instruction_str)
 
     result = "\n".join(lines)
 
-    _write_text_if_requested(output_path, result)
+    if output_path:
+        output_path.write_text(result, encoding="utf-8")
 
     return result
 
@@ -157,3 +145,4 @@ def ncs_to_text(
 
     msg = f"Invalid mode: {mode!r}. Must be 'decompile' or 'disassemble'"
     raise ValueError(msg)
+

@@ -170,10 +170,7 @@ def remove_any(path: os.PathLike | str, *, ignore_errors: bool = True, missing_o
             else:
                 if not isfile_func(path_obj):
                     return
-                print(
-                    f"File/folder {path_obj} still exists after {i} iterations! (remove_any)",
-                    file=sys.stderr,
-                )
+                print(f"File/folder {path_obj} still exists after {i} iterations! (remove_any)", file=sys.stderr)
         if not ignore_errors:  # should raise at this point.
             _remove_any(path_obj)
 

@@ -46,71 +46,61 @@ Located in `.github/ISSUE_TEMPLATE/`:
 All labels have been created via GitHub API:
 
 ### Type Labels
-
 - bug, enhancement, documentation, question, duplicate, invalid, wontfix
 - help wanted, good first issue
 
 ### Status Labels
-
 - needs-triage, in-progress, blocked, stale
 
 ### Priority Labels
-
 - priority: critical, priority: high, priority: medium, priority: low
 
 ### Package Labels
-
-- package: pykotor
+- package: pykotor, package: pykotorgl, package: pykotorfont
 - package: toolset, package: holopatcher, package: batchpatcher
-- package: kotordiff
+- package: kotordiff, package: guiconverter
 
 ### Size Labels (for PRs)
-
 - size/XS, size/S, size/M, size/L, size/XL, size/XXL
 
 ### Area Labels
-
 - area: libraries, area: tools, area: tests, area: ci/cd
 - area: documentation, area: dependencies
 
 ### Special Labels
-
 - security, breaking-change, performance, refactor, chore
 - pinned, work-in-progress, ignore-for-release
 
 ## GitHub Actions Workflows
 
 ### Core Workflows
-
 1. **ci.yml** - Main CI workflow with multi-platform testing
 2. **lint.yml** - Linting and type checking
 3. **test.yml** - Test suite with coverage
 4. **publish-pypi-auto.yml** - Automated releases to PyPI (scans and publishes packages with newer versions)
 
 ### Security & Quality
-
 5. **codeql.yml** - CodeQL security analysis
 6. **code-scanning.yml** - Bandit and Safety security scans
 7. **dependency-review.yml** - Dependency vulnerability review
 
 ### Automation
-
-8. **pr-check.yml** - PR validation and size checks
-9. **label.yml** - Auto-label PRs based on files
-10. **issue-automation.yml** - Auto-label issues and welcome new contributors
-11. **auto-merge.yml** - Auto-merge Dependabot PRs
+8. **stale.yml** - Mark stale issues and PRs
+9. **pr-check.yml** - PR validation and size checks
+10. **label.yml** - Auto-label PRs based on files
+11. **issue-automation.yml** - Auto-label issues and welcome new contributors
+12. **auto-merge.yml** - Auto-merge Dependabot PRs
 
 ### Additional Workflows
-
-12. **validate-pr.yml** - Validate PR format and content
-13. **changelog.yml** - Generate changelog on release
-14. **license-check.yml** - Check license headers
-15. **performance.yml** - Performance benchmarks
-16. **compatibility.yml** - Compatibility testing
-17. **package-size.yml** - Check package sizes
-18. **check-typos.yml** - Typo checking
-19. **check-docs.yml** - Documentation validation
-20. **backup.yml** - Weekly repository backups
+13. **validate-pr.yml** - Validate PR format and content
+14. **changelog.yml** - Generate changelog on release
+15. **license-check.yml** - Check license headers
+16. **performance.yml** - Performance benchmarks
+17. **compatibility.yml** - Compatibility testing
+18. **package-size.yml** - Check package sizes
+19. **check-typos.yml** - Typo checking
+20. **check-docs.yml** - Documentation validation
+21. **backup.yml** - Weekly repository backups
 
 ## Dependabot Configuration
 
@@ -140,7 +130,6 @@ All labels have been created via GitHub API:
 ## Summary
 
 This repository now has:
-
 - ✅ Comprehensive issue templates
 - ✅ PR template
 - ✅ Security policy
@@ -156,3 +145,4 @@ This repository now has:
 - ✅ Compatibility testing
 
 All configurations follow industry best practices and are tailored to the PyKotor multi-package repository structure.
+

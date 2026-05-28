@@ -5,46 +5,47 @@ The bytecode uses a stack-based virtual machine with instructions for arithmetic
 function calls, and stack manipulation. Each instruction consists of a bytecode opcode and a qualifier
 that specifies operand types.
 
-Observed retail behavior:
-------------------------
-    KotOR I and TSL execute NWScript from compiled ``NCS`` blobs: files begin with the ``NCS ``
-    signature, a ``V1.0`` version tag, opcode stream, and the usual stack VM semantics shared
-    with other Aurora titles. Resources are pulled from disk or embedded GFF fields before the
-    VM runs.
-
-    Maintainers: superseded script-VM delivery notes are **migrated** to the wiki
-    engine-findings article (*PyKotor package: migrated library notes*).
-
-    Community bytecode references (Torlack NCS notes, mirrors) are linked from
-    ``wiki/reverse_engineering_findings.md#third-party-format-implementations``.
-
+References:
+----------
+    vendor/reone/include/reone/script/format/ncsreader.h:29-47 - NcsReader class
+    vendor/reone/src/libs/script/format/ncsreader.cpp:28-190 - Complete NCS reading implementation
+    vendor/xoreos/src/aurora/nwscript/ncsfile.h:86-280 - NCSFile class and instruction types
+    vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:49-1649 - Complete NCS execution engine
+    vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs:9-799 - NCS instruction classes
+    vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCSReader.cs:11-31 - NCS reader interface
+    https://github.com/xoreos/xoreos-docs - Torlack's NCS specification (mirrored)
+    
 Binary Format:
 -------------
     Header (9 bytes):
-    Offset | Size | Type   | Description
-    -------|------|--------|-------------
-    0x00   | 4    | char[] | File Type ("NCS ")
-    0x04   | 4    | char[] | File Version ("V1.0")
-    0x08   | 1    | uint8  | First instruction bytecode
-
+        Offset | Size | Type   | Description
+        -------|------|--------|-------------
+        0x00   | 4    | char[] | File Type ("NCS ")
+        0x04   | 4    | char[] | File Version ("V1.0")
+        0x08   | 1    | uint8  | First instruction bytecode
+        
     Instructions (variable length):
-    Each instruction consists of:
-    - Bytecode (1 byte): Opcode identifying instruction type
-    - Qualifier (1 byte): Type qualifier for operands (e.g., INT, FLOAT, INT_INT)
-    - Arguments (variable): Instruction-specific arguments (offsets, constants, jump targets)
-
-Instruction Types:
------------------
-    Stack Operations: CPDOWNSP, CPTOPSP, CPDOWNBP, CPTOPBP, MOVSP, RSADDx
-    Constants: CONSTI, CONSTF, CONSTS, CONSTO
-    Arithmetic: ADDxx, SUBxx, MULxx, DIVxx, MODxx, NEGx
-    Comparison: EQUALxx, NEQUALxx, GTxx, GEQxx, LTxx, LEQxx
-    Logic: LOGANDxx, LOGORxx, BOOLANDxx, NOTx
-    Bitwise: INCORxx, EXCORxx, SHLEFTxx, SHRIGHTxx, USHRIGHTxx, COMPx
-    Control Flow: JMP, JSR, JZ, JNZ, RETN
-    Function Calls: ACTION
-    Stack Management: SAVEBP, RESTOREBP, STORE_STATE, DESTRUCT
-    Increment/Decrement: INCxSP, DECxSP, INCxBP, DECxBP
+        Each instruction consists of:
+        - Bytecode (1 byte): Opcode identifying instruction type
+        - Qualifier (1 byte): Type qualifier for operands (e.g., INT, FLOAT, INT_INT)
+        - Arguments (variable): Instruction-specific arguments (offsets, constants, jump targets)
+        
+        Reference: reone/ncsreader.cpp:42-190, xoreos/ncsfile.cpp:194-1649
+    
+    Instruction Types:
+    -----------------
+        Stack Operations: CPDOWNSP, CPTOPSP, CPDOWNBP, CPTOPBP, MOVSP, RSADDx
+        Constants: CONSTI, CONSTF, CONSTS, CONSTO
+        Arithmetic: ADDxx, SUBxx, MULxx, DIVxx, MODxx, NEGx
+        Comparison: EQUALxx, NEQUALxx, GTxx, GEQxx, LTxx, LEQxx
+        Logic: LOGANDxx, LOGORxx, BOOLANDxx, NOTx
+        Bitwise: INCORxx, EXCORxx, SHLEFTxx, SHRIGHTxx, USHRIGHTxx, COMPx
+        Control Flow: JMP, JSR, JZ, JNZ, RETN
+        Function Calls: ACTION
+        Stack Management: SAVEBP, RESTOREBP, STORE_STATE, DESTRUCT
+        Increment/Decrement: INCxSP, DECxSP, INCxBP, DECxBP
+        
+        Reference: reone/ncsreader.cpp:52-182, Kotor.NET/NCS.cs:725-798
 """
 
 from __future__ import annotations
@@ -53,7 +54,7 @@ from abc import ABC, abstractmethod
 from enum import Enum, IntEnum
 from typing import TYPE_CHECKING, Any, NamedTuple
 
-from pykotor.resource.formats._base import BiowareResource, ComparableMixin
+from pykotor.resource.formats._base import ComparableMixin
 
 if TYPE_CHECKING:
     import os
@@ -248,41 +249,48 @@ class NCSInstructionType(Enum):
     NOP2 = NCSInstructionTypeValue(NCSByteCode.NOP2, 0x00)
 
 
-class NCS(BiowareResource):
+class NCS(ComparableMixin):
     """Represents a compiled NWScript bytecode program.
-
+    
     NCS contains a sequence of bytecode instructions that implement NWScript logic.
     Instructions are executed sequentially by a stack-based virtual machine, with
     control flow instructions (JMP, JSR, JZ, JNZ) allowing jumps to other instructions.
-
+    
     References:
     ----------
-        Observed in retail KotOR I and TSL..
-
+        vendor/reone/include/reone/script/program.h - ScriptProgram class
+        vendor/reone/src/libs/script/format/ncsreader.cpp:34-40 (program creation)
+        vendor/xoreos/src/aurora/nwscript/ncsfile.h:86-280 - NCSFile class
+        vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs:9-17 - NCS class
+        
     Attributes:
     ----------
         instructions: List of NCSInstruction objects making up the program
+            Reference: reone/script/program.h (instructions vector)
+            Reference: reone/ncsreader.cpp:187 (_program->add instruction)
+            Reference: xoreos/ncsfile.h:184 (_script stream, instructions parsed on-demand)
+            Reference: Kotor.NET/NCS.cs:11 (Instructions List property)
             Instructions are executed sequentially, with jumps allowing control flow
             Each instruction has an offset, type, arguments, and optional jump target
     """
-
     COMPARABLE_SEQUENCE_FIELDS = ("instructions",)
 
     def __init__(self):
+        # vendor/reone/src/libs/script/format/ncsreader.cpp:34
+        # vendor/xoreos/src/aurora/nwscript/ncsfile.h:184
+        # vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs:11
         # List of bytecode instructions making up the compiled script
         self.instructions: list[NCSInstruction] = []
 
     def __eq__(self, other):
         if not isinstance(other, NCS):
-            return NotImplemented  # type: ignore[no-any-return]
+            return NotImplemented
 
         if len(self.instructions) != len(other.instructions):
             return False
 
         self_index_map = {id(instruction): idx for idx, instruction in enumerate(self.instructions)}
-        other_index_map = {
-            id(instruction): idx for idx, instruction in enumerate(other.instructions)
-        }
+        other_index_map = {id(instruction): idx for idx, instruction in enumerate(other.instructions)}
 
         for instruction, other_instruction in zip(self.instructions, other.instructions):
             if instruction.ins_type != other_instruction.ins_type:
@@ -327,12 +335,11 @@ class NCS(BiowareResource):
         if not self.instructions:
             return "NCS(instructions=[])"
 
-        # O(1) jump index lookup; avoids repeated list.index() in loop
-        inst_to_idx = {id(inst): i for i, inst in enumerate(self.instructions)}
+        # Show first few instructions for compact representation
         max_preview: int = 3
         inst_reprs: list[str] = []
         for i, inst in enumerate(self.instructions[:max_preview]):
-            jump_idx = inst_to_idx.get(id(inst.jump)) if inst.jump else None
+            jump_idx = self.instructions.index(inst.jump) if inst.jump else None
             jump_str = f"->#{jump_idx}" if jump_idx is not None else ""
             args_str = f"({', '.join(repr(arg) for arg in inst.args)})" if inst.args else ""
             inst_reprs.append(f"#{i}: {inst.ins_type.name}{args_str}{jump_str}")
@@ -348,10 +355,15 @@ class NCS(BiowareResource):
         if not self.instructions:
             return "NCS (empty - no instructions)"
 
-        inst_to_idx = {id(inst): i for i, inst in enumerate(self.instructions)}
         lines = [f"NCS with {len(self.instructions)} instructions:"]
         for i, inst in enumerate(self.instructions):
-            jump_idx: int | str | None = inst_to_idx.get(id(inst.jump), "?") if inst.jump else None
+            # Find jump target index if present
+            jump_idx: int | str | None = None
+            if inst.jump:
+                try:
+                    jump_idx = self.instructions.index(inst.jump)
+                except ValueError:
+                    jump_idx = "?"
 
             # Format instruction
             inst_name = inst.ins_type.name.ljust(15)
@@ -453,9 +465,7 @@ class NCS(BiowareResource):
         # Check for jumps to invalid targets
         for i, inst in enumerate(self.instructions):
             if inst.jump is not None and inst.jump not in self.instructions:
-                issues.append(
-                    f"Instruction #{i} ({inst.ins_type.name}) jumps to instruction not in list"
-                )
+                issues.append(f"Instruction #{i} ({inst.ins_type.name}) jumps to instruction not in list")
 
         # Check for instructions that require jumps but don't have them
         jump_required = {
@@ -589,40 +599,24 @@ class NCS(BiowareResource):
     def _expected_arg_count(ins_type: NCSInstructionType) -> int | None:
         """Get expected argument count for instruction type, or None if variable/complex."""
         # Instructions with 2 args
-        if ins_type in {
-            NCSInstructionType.CPDOWNSP,
-            NCSInstructionType.CPTOPSP,
-            NCSInstructionType.CPDOWNBP,
-            NCSInstructionType.CPTOPBP,
-            NCSInstructionType.ACTION,
-            NCSInstructionType.STORE_STATE,
-        }:
+        if ins_type in {NCSInstructionType.CPDOWNSP, NCSInstructionType.CPTOPSP,
+                        NCSInstructionType.CPDOWNBP, NCSInstructionType.CPTOPBP,
+                        NCSInstructionType.ACTION, NCSInstructionType.STORE_STATE}:
             return 2
         # Instructions with 1 arg
-        if ins_type in {
-            NCSInstructionType.CONSTI,
-            NCSInstructionType.CONSTF,
-            NCSInstructionType.CONSTS,
-            NCSInstructionType.CONSTO,
-            NCSInstructionType.MOVSP,
-            NCSInstructionType.DECxSP,
-            NCSInstructionType.INCxSP,
-            NCSInstructionType.DECxBP,
-            NCSInstructionType.INCxBP,
-        }:
+        if ins_type in {NCSInstructionType.CONSTI, NCSInstructionType.CONSTF,
+                          NCSInstructionType.CONSTS, NCSInstructionType.CONSTO,
+                          NCSInstructionType.MOVSP,
+                          NCSInstructionType.DECxSP, NCSInstructionType.INCxSP,
+                          NCSInstructionType.DECxBP, NCSInstructionType.INCxBP}:
             return 1
         # Instructions with 3 args
         if ins_type == NCSInstructionType.DESTRUCT:
             return 3
         # Most other instructions have 0 args
-        if ins_type in {
-            NCSInstructionType.RETN,
-            NCSInstructionType.NOP,
-            NCSInstructionType.SAVEBP,
-            NCSInstructionType.RESTOREBP,
-            NCSInstructionType.NOTI,
-            NCSInstructionType.COMPI,
-        }:
+        if ins_type in {NCSInstructionType.RETN, NCSInstructionType.NOP,
+                          NCSInstructionType.SAVEBP, NCSInstructionType.RESTOREBP,
+                          NCSInstructionType.NOTI, NCSInstructionType.COMPI}:
             return 0
         # Complex/variable - return None
         return None
@@ -630,28 +624,43 @@ class NCS(BiowareResource):
 
 class NCSInstruction(ComparableMixin):
     """Represents a single NCS bytecode instruction.
-
+    
     Each instruction consists of a bytecode opcode, a qualifier specifying operand types,
     optional arguments (offsets, constants, etc.), and an optional jump target for
     control flow instructions.
-
+    
     References:
     ----------
-        Observed in retail KotOR I and TSL..
-
+        vendor/reone/include/reone/script/program.h - Instruction struct
+        vendor/reone/src/libs/script/format/ncsreader.cpp:48-190 (instruction reading)
+        vendor/xoreos/src/aurora/nwscript/ncsfile.h:131-177 (InstructionType enum)
+        vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:194-1649 (instruction execution)
+        vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs:19-711 - NCSInstruction classes
+        
     Attributes:
     ----------
         ins_type: Instruction type (opcode + qualifier combination)
+            Reference: reone/ncsreader.cpp:50 (ins.type = R_INSTR_TYPE(byteCode, qualifier))
+            Reference: xoreos/ncsfile.cpp:194-1649 (opcode dispatch table)
+            Reference: Kotor.NET/NCS.cs:21-22 (Instruction and Qualifier properties)
             Combines bytecode opcode (e.g., ADDxx) with qualifier (e.g., INT_INT) to form complete instruction
-
+            
         args: List of instruction arguments (offsets, constants, sizes, etc.)
+            Reference: reone/ncsreader.cpp:57-105 (argument reading per instruction type)
+            Reference: xoreos/ncsfile.cpp:194-1649 (argument handling in opcode handlers)
+            Reference: Kotor.NET/NCS.cs:23 (Args property, varies by instruction type)
             Examples: CPDOWNSP has [offset, size], CONSTI has [int_value], ACTION has [routine_id, arg_count]
-
+            
         jump: Optional jump target instruction for control flow (JMP, JSR, JZ, JNZ)
+            Reference: reone/ncsreader.cpp:81-85 (jumpOffset reading for JMP/JSR/JZ/JNZ)
+            Reference: xoreos/ncsfile.cpp:252-260 (jump instruction execution)
+            Reference: Kotor.NET/NCS.cs:24 (JumpTo property, NCSInstruction?)
             Used by JMP (unconditional), JSR (subroutine call), JZ (jump if zero), JNZ (jump if not zero)
             Jump offset is stored as int32 in binary, converted to instruction reference in memory
-
+            
         offset: Byte offset of instruction in NCS file (set during loading)
+            Reference: reone/ncsreader.cpp:49 (ins.offset = static_cast<uint32_t>(offset))
+            Reference: reone/ncsreader.cpp:185 (ins.nextOffset for following instruction)
             Used for jump target resolution and debugging
             Value -1 indicates offset not yet determined
     """
@@ -664,14 +673,31 @@ class NCSInstruction(ComparableMixin):
         args: list[Any] | None = None,
         jump: NCSInstruction | None = None,
     ):
+        # vendor/reone/src/libs/script/format/ncsreader.cpp:50
+        # vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:194-1649
+        # vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs:21-22
         # Instruction type (bytecode opcode + qualifier combination)
         self.ins_type: NCSInstructionType = ins_type
-
+        
+        # vendor/reone/src/libs/script/format/ncsreader.cpp:81-85
+        # vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:252-260
+        # vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs:24
         # Optional jump target for control flow instructions (JMP, JSR, JZ, JNZ)
         self.jump: NCSInstruction | None = jump
-
+        
+        # vendor/reone/src/libs/script/format/ncsreader.cpp:57-105
+        # vendor/xoreos/src/aurora/nwscript/ncsfile.cpp:194-1649
+        # vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs:23
         # Instruction arguments (offsets, constants, sizes, etc., varies by instruction type)
         self.args: list[Any] = [] if args is None else args
+        
+        # vendor/reone/src/libs/script/format/ncsreader.cpp:49
+        # Byte offset of instruction in NCS file (set during loading, -1 if not determined)
+        self.offset: int = -1
+        
+        # Source line number for debugging (set during compilation, -1 if not tracked)
+        # Used by debugger to map bytecode instructions back to source code lines
+        self.line_number: int = -1
 
         # Byte offset of instruction in NCS file (set during loading, -1 if not determined)
         self.offset: int = -1
@@ -693,14 +719,16 @@ class NCSInstruction(ComparableMixin):
 
     def __eq__(self, other):
         if not isinstance(other, NCSInstruction):
-            return NotImplemented  # type: ignore[no-any-return]
-        # NOTE: We compare jump by identity since it's a circular reference
+            return NotImplemented
+        # Note: We compare jump by identity since it's a circular reference
         return (
-            self.ins_type == other.ins_type and self.args == other.args and self.jump is other.jump
+            self.ins_type == other.ins_type
+            and self.args == other.args
+            and self.jump is other.jump
         )
 
     def __hash__(self):
-        # NOTE: We use id() for jump since it's a circular reference
+        # Note: We use id() for jump since it's a circular reference
         return hash((self.ins_type, tuple(self.args), id(self.jump) if self.jump else None))
 
     def is_jump_instruction(self) -> bool:
@@ -742,55 +770,29 @@ class NCSInstruction(ComparableMixin):
     def is_arithmetic(self) -> bool:
         """Check if this instruction performs arithmetic operations."""
         return self.ins_type in {
-            NCSInstructionType.ADDII,
-            NCSInstructionType.ADDIF,
-            NCSInstructionType.ADDFI,
-            NCSInstructionType.ADDFF,
-            NCSInstructionType.ADDSS,
-            NCSInstructionType.ADDVV,
-            NCSInstructionType.SUBII,
-            NCSInstructionType.SUBIF,
-            NCSInstructionType.SUBFI,
-            NCSInstructionType.SUBFF,
+            NCSInstructionType.ADDII, NCSInstructionType.ADDIF, NCSInstructionType.ADDFI, NCSInstructionType.ADDFF,
+            NCSInstructionType.ADDSS, NCSInstructionType.ADDVV,
+            NCSInstructionType.SUBII, NCSInstructionType.SUBIF, NCSInstructionType.SUBFI, NCSInstructionType.SUBFF,
             NCSInstructionType.SUBVV,
-            NCSInstructionType.MULII,
-            NCSInstructionType.MULIF,
-            NCSInstructionType.MULFI,
-            NCSInstructionType.MULFF,
-            NCSInstructionType.MULVF,
-            NCSInstructionType.MULFV,
-            NCSInstructionType.DIVII,
-            NCSInstructionType.DIVIF,
-            NCSInstructionType.DIVFI,
-            NCSInstructionType.DIVFF,
-            NCSInstructionType.DIVVF,
-            NCSInstructionType.DIVFV,
+            NCSInstructionType.MULII, NCSInstructionType.MULIF, NCSInstructionType.MULFI, NCSInstructionType.MULFF,
+            NCSInstructionType.MULVF, NCSInstructionType.MULFV,
+            NCSInstructionType.DIVII, NCSInstructionType.DIVIF, NCSInstructionType.DIVFI, NCSInstructionType.DIVFF,
+            NCSInstructionType.DIVVF, NCSInstructionType.DIVFV,
             NCSInstructionType.MODII,
-            NCSInstructionType.NEGI,
-            NCSInstructionType.NEGF,
+            NCSInstructionType.NEGI, NCSInstructionType.NEGF,
         }
 
     def is_comparison(self) -> bool:
         """Check if this instruction performs comparison operations."""
         return self.ins_type in {
-            NCSInstructionType.EQUALII,
-            NCSInstructionType.EQUALFF,
-            NCSInstructionType.EQUALSS,
-            NCSInstructionType.EQUALOO,
-            NCSInstructionType.EQUALTT,
-            NCSInstructionType.NEQUALII,
-            NCSInstructionType.NEQUALFF,
-            NCSInstructionType.NEQUALSS,
-            NCSInstructionType.NEQUALOO,
-            NCSInstructionType.NEQUALTT,
-            NCSInstructionType.GTII,
-            NCSInstructionType.GTFF,
-            NCSInstructionType.GEQII,
-            NCSInstructionType.GEQFF,
-            NCSInstructionType.LTII,
-            NCSInstructionType.LTFF,
-            NCSInstructionType.LEQII,
-            NCSInstructionType.LEQFF,
+            NCSInstructionType.EQUALII, NCSInstructionType.EQUALFF, NCSInstructionType.EQUALSS,
+            NCSInstructionType.EQUALOO, NCSInstructionType.EQUALTT,
+            NCSInstructionType.NEQUALII, NCSInstructionType.NEQUALFF, NCSInstructionType.NEQUALSS,
+            NCSInstructionType.NEQUALOO, NCSInstructionType.NEQUALTT,
+            NCSInstructionType.GTII, NCSInstructionType.GTFF,
+            NCSInstructionType.GEQII, NCSInstructionType.GEQFF,
+            NCSInstructionType.LTII, NCSInstructionType.LTFF,
+            NCSInstructionType.LEQII, NCSInstructionType.LEQFF,
         }
 
     def is_logical(self) -> bool:
@@ -846,21 +848,11 @@ class NCSInstruction(ComparableMixin):
         """
         # Binary operations consume 2 operands
         if self.is_arithmetic() or self.is_comparison() or self.is_logical():
-            if self.ins_type in {
-                NCSInstructionType.NEGI,
-                NCSInstructionType.NEGF,
-                NCSInstructionType.NOTI,
-                NCSInstructionType.COMPI,
-            }:
+            if self.ins_type in {NCSInstructionType.NEGI, NCSInstructionType.NEGF, NCSInstructionType.NOTI, NCSInstructionType.COMPI}:
                 return 1
             return 2
         # Unary operations consume 1 operand
-        if self.ins_type in {
-            NCSInstructionType.NEGI,
-            NCSInstructionType.NEGF,
-            NCSInstructionType.NOTI,
-            NCSInstructionType.COMPI,
-        }:
+        if self.ins_type in {NCSInstructionType.NEGI, NCSInstructionType.NEGF, NCSInstructionType.NOTI, NCSInstructionType.COMPI}:
             return 1
         # Constants produce 1 operand
         if self.is_constant():
@@ -907,12 +899,5 @@ class NCSOptimizer(BiowareResource, ABC):
 
 class NCSCompiler(BiowareResource, ABC):
     @abstractmethod
-    def compile_script(
-        self,
-        source_file: os.PathLike | str,
-        output_file: os.PathLike | str,
-        game: Game | int,
-        timeout: int = 5,
-        *,
-        debug: bool = False,
-    ) -> tuple[str, str]: ...
+    def compile_script(self, source_file: os.PathLike | str, output_file: os.PathLike | str, game: Game | int, timeout: int = 5, *, debug: bool = False) -> tuple[str, str]:
+        ...

@@ -1,11 +1,9 @@
-"""Game/path heuristics: detect KotOR 1 vs 2 and installation type from directory contents."""
-
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.common.misc import Game
-from pykotor.tools.path import CaseAwarePath
 
 if TYPE_CHECKING:
     import os
@@ -26,7 +24,8 @@ def determine_game(
 
     References:
     ----------
-        Observed retail KotOR install layout (executables, INI, chitin.key, module archives).
+        vendor/KOTOR_Registry_Install_Path_Editor (Registry path detection)
+        vendor/HoloPatcher.NET/src/HoloPatcher/Utils (Game detection logic)
         Note: File and folder heuristics vary between Steam, GOG, and disc releases
 
     Processing Logic:
@@ -36,10 +35,10 @@ def determine_game(
         3. Run checks and score games
         4. Return game with highest score or None if scores are equal or all checks fail
     """
-    r_path: CaseAwarePath = CaseAwarePath(path)
+    r_path: Path = Path(path)
 
     def check(x: str) -> bool:
-        c_path: CaseAwarePath = r_path.joinpath(x)
+        c_path: Path = r_path.joinpath(x)
         return c_path.exists() is not False
 
     # Checks for each game

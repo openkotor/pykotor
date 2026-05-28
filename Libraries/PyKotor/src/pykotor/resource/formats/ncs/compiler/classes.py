@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple, cast
 
 from pykotor.common.script import DataType
-from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs import NCS, NCSInstruction, NCSInstructionType
 from pykotor.tools.path import CaseAwarePath
 
@@ -32,10 +31,12 @@ class CompileError(Exception):
     """Base exception for NSS compilation errors.
 
     Provides detailed error messages to help debug script issues.
-
+    
     References:
     ----------
-
+        vendor/HoloLSP/server/src/nwscript-parser.ts (NSS parser error handling)
+        vendor/xoreos-tools/src/nwscript/compiler.cpp (NSS compiler error handling)
+        vendor/KotOR.js/src/nwscript/NWScriptCompiler.ts (TypeScript compiler errors)
     """
 
     def __init__(self, message: str, line_num: int | None = None, context: str | None = None):
@@ -57,7 +58,7 @@ class MissingIncludeError(CompileError):
     """Raised when a #include file cannot be found."""
 
 
-class TopLevelObject(ComparableMixin, ABC):
+class TopLevelObject(ABC):
     @abstractmethod
     def compile(self, ncs: NCS, root: CodeRoot):  # noqa: A003
         ...
@@ -141,10 +142,16 @@ class GlobalVariableDeclaration(TopLevelObject):
                 msg = f"Unknown struct type for variable '{self.identifier}'"
                 raise CompileError(msg)
         elif self.data_type.builtin == DataType.VOID:
-            msg = f"Cannot declare variable '{self.identifier}' with void type\n  void can only be used as a function return type"
+            msg = (
+                f"Cannot declare variable '{self.identifier}' with void type\n"
+                f"  void can only be used as a function return type"
+            )
             raise CompileError(msg)
         else:
-            msg = f"Unsupported type '{self.data_type.builtin.name}' for global variable '{self.identifier}'\n  This may indicate a compiler bug or unsupported type"
+            msg = (
+                f"Unsupported type '{self.data_type.builtin.name}' for global variable '{self.identifier}'\n"
+                f"  This may indicate a compiler bug or unsupported type"
+            )
             raise CompileError(msg)
 
         root.add_scoped(self.identifier, self.data_type, is_const=self.is_const)
@@ -155,6 +162,7 @@ class Identifier(ComparableMixin):
         self.label: str = label
 
     def __eq__(self, other: object) -> bool:
+        # sourcery skip: assign-if-exp, reintroduce-else
         if self is other:
             return True
         if isinstance(other, Identifier):
@@ -274,7 +282,10 @@ class Struct(ComparableMixin):
         else:
             # Provide helpful error with available members
             available = [m.identifier.label for m in self.members]
-            msg = f"Unknown member '{identifier}' in struct '{self.identifier}'\n  Available members: {', '.join(available)}"
+            msg = (
+                f"Unknown member '{identifier}' in struct '{self.identifier}'\n"
+                f"  Available members: {', '.join(available)}"
+            )
             raise CompileError(msg)
         return size
 
@@ -283,7 +294,10 @@ class Struct(ComparableMixin):
             if member.identifier == identifier:
                 return member.datatype
         available = [m.identifier.label for m in self.members]
-        msg = f"Member '{identifier}' not found in struct '{self.identifier}'\n  Available members: {', '.join(available)}"
+        msg = (
+            f"Member '{identifier}' not found in struct '{self.identifier}'\n"
+            f"  Available members: {', '.join(available)}"
+        )
         raise CompileError(msg)
 
 
@@ -308,9 +322,7 @@ class StructMember(ComparableMixin):
                 msg = f"Struct member '{self.identifier.label}' has no struct type name"
                 raise CompileError(msg)
             if struct_type_name not in root.struct_map:
-                msg = (
-                    f"Unknown struct type '{struct_type_name}' for member '{self.identifier.label}'"
-                )
+                msg = f"Unknown struct type '{struct_type_name}' for member '{self.identifier.label}'"
                 raise CompileError(msg)
             root.struct_map[struct_type_name].initialize(ncs, root)
         else:
@@ -325,17 +337,20 @@ class StructMember(ComparableMixin):
         return self.datatype.size(root)
 
 
-class CodeRoot(ComparableMixin):
+class CodeRoot:
     """Root compilation context for NSS compilation.
-
+    
     Manages global scope, function definitions, constants, and compilation state.
     Provides symbol resolution and type checking during NSS to NCS compilation.
-
+    
     References:
     ----------
-
+        vendor/KotOR.js/src/nwscript/NWScriptCompiler.ts (TypeScript compiler architecture)
+        vendor/xoreos-tools/src/nwscript/decompiler.cpp (NCS decompiler, reverse reference for compilation)
+        vendor/HoloLSP/server/src/nwscript-parser.ts (NSS parser and AST generation)
+        vendor/HoloLSP/server/src/nwscript-lexer.ts (NSS lexer/tokenizer)
+        vendor/DeNCS/ (NCS decompiler, reverse reference for compilation)
     """
-
     def __init__(
         self,
         constants: list[ScriptConstant],
@@ -480,7 +495,7 @@ class CodeRoot(ComparableMixin):
         else:
             msg = f"Trying to return unsupported type '{definition.return_type.builtin.name}'"
             raise CompileError(msg)
-
+        
         # Track return value space in temp_stack
         block.temp_stack += return_type_size
 
@@ -543,11 +558,12 @@ class CodeRoot(ComparableMixin):
             available = [s.identifier.label for s in self._global_scope[:10]]  # Show first 10
             more = len(self._global_scope) - 10
             more_text = f" (and {more} more)" if more > 0 else ""
-            msg = f"Undefined variable '{identifier}'\n  Available globals: {', '.join(available)}{more_text}"
+            msg = (
+                f"Undefined variable '{identifier}'\n"
+                f"  Available globals: {', '.join(available)}{more_text}"
+            )
             raise CompileError(msg)
-        return GetScopedResult(
-            is_global=True, datatype=scoped.data_type, offset=offset, is_const=scoped.is_const
-        )
+        return GetScopedResult(is_global=True, datatype=scoped.data_type, offset=offset, is_const=scoped.is_const)
 
     def scope_size(self):
         return 0 - sum(scoped.data_type.size(self) for scoped in self._global_scope)
@@ -628,9 +644,7 @@ class CodeBlock(ComparableMixin):
             )
             raise ValueError(msg)
 
-    def add_scoped(
-        self, identifier: Identifier, data_type: DynamicDataType, is_const: bool = False
-    ):
+    def add_scoped(self, identifier: Identifier, data_type: DynamicDataType, is_const: bool = False):
         self.scope.insert(0, ScopedValue(identifier, data_type, is_const))
 
     def get_scoped(
@@ -648,9 +662,7 @@ class CodeBlock(ComparableMixin):
             if self._parent is not None:
                 return self._parent.get_scoped(identifier, root, offset)
             return root.get_scoped(identifier, root)
-        return GetScopedResult(
-            is_global=False, datatype=scoped.data_type, offset=offset, is_const=scoped.is_const
-        )
+        return GetScopedResult(is_global=False, datatype=scoped.data_type, offset=offset, is_const=scoped.is_const)
 
     def scope_size(self, root: CodeRoot) -> int:
         """Returns size of local scope."""
@@ -676,7 +688,7 @@ class CodeBlock(ComparableMixin):
         self._break_scope = True
 
 
-class ScopedValue(ComparableMixin):
+class ScopedValue:
     def __init__(self, identifier: Identifier, data_type: DynamicDataType, is_const: bool = False):
         self.identifier: Identifier = identifier
         self.data_type: DynamicDataType = data_type
@@ -748,14 +760,15 @@ class FunctionDefinition(TopLevelObject):
 
         # Make sure params are all constant values
         for param in self.parameters:
-            if isinstance(param.default, IdentifierExpression) and not param.default.is_constant(
-                root
-            ):
+            if isinstance(param.default, IdentifierExpression) and not param.default.is_constant(root):
                 msg = f"Non-constant default value specified for function prototype parameter '{param.identifier}'."
                 raise CompileError(msg)
 
         if name in root.function_map and not root.function_map[name].is_prototype():
-            msg = f"Function '{name}' is already defined\n  Cannot redefine a function that already has an implementation"
+            msg = (
+                f"Function '{name}' is already defined\n"
+                f"  Cannot redefine a function that already has an implementation"
+            )
             raise CompileError(msg)
         if name in root.function_map and root.function_map[name].is_prototype():
             self._compile_function(root, name, ncs)
@@ -775,23 +788,25 @@ class FunctionDefinition(TopLevelObject):
             details = []
             if self.return_type != prototype.return_type:
                 details.append(
-                    f"Return type mismatch: prototype has {prototype.return_type.builtin.name}, definition has {self.return_type.builtin.name}"
+                    f"Return type mismatch: prototype has {prototype.return_type.builtin.name}, "
+                    f"definition has {self.return_type.builtin.name}"
                 )
             if len(self.parameters) != len(prototype.parameters):
                 details.append(
-                    f"Parameter count mismatch: prototype has {len(prototype.parameters)}, definition has {len(self.parameters)}"
+                    f"Parameter count mismatch: prototype has {len(prototype.parameters)}, "
+                    f"definition has {len(self.parameters)}"
                 )
             else:
-                for i, (def_param, proto_param) in enumerate(
-                    zip(self.parameters, prototype.parameters)
-                ):
+                for i, (def_param, proto_param) in enumerate(zip(self.parameters, prototype.parameters)):
                     if def_param.data_type != proto_param.data_type:
                         details.append(
-                            f"Parameter {i + 1} type mismatch: prototype has {proto_param.data_type.builtin.name}, definition has {def_param.data_type.builtin.name}",
+                            f"Parameter {i+1} type mismatch: prototype has {proto_param.data_type.builtin.name}, "
+                            f"definition has {def_param.data_type.builtin.name}"
                         )
 
-            msg = f"Function '{name}' definition does not match its prototype\n  " + "\n  ".join(
-                details
+            msg = (
+                f"Function '{name}' definition does not match its prototype\n"
+                f"  " + "\n  ".join(details)
             )
             raise CompileError(msg)
 
@@ -804,9 +819,7 @@ class FunctionDefinition(TopLevelObject):
         stub_index: int = ncs.instructions.index(root.function_map[name].instruction)
         ncs.instructions[stub_index + 1 : stub_index + 1] = temp.instructions
 
-    def is_matching_signature(
-        self, prototype: FunctionForwardDeclaration | FunctionDefinition
-    ) -> bool:
+    def is_matching_signature(self, prototype: FunctionForwardDeclaration | FunctionDefinition) -> bool:
         if self.return_type != prototype.return_type:
             return False
         if len(self.parameters) != len(prototype.parameters):
@@ -815,6 +828,7 @@ class FunctionDefinition(TopLevelObject):
             these_parameters.data_type == prototype.parameters[i].data_type
             for i, these_parameters in enumerate(self.parameters)
         )
+
 
 
 class FunctionDefinitionParam(ComparableMixin):
@@ -887,7 +901,9 @@ class IncludeScript(TopLevelObject):
         else:
             # Not found in filesystem, try library
             case_sensitive: bool = not root.library_lookup or all(
-                lookup_path for lookup_path in root.library_lookup if isinstance(lookup_path, Path)
+                lookup_path
+                for lookup_path in root.library_lookup
+                if isinstance(lookup_path, Path)
             )
             include_filename: str = self.file.value if case_sensitive else self.file.value.lower()
             if include_filename in self.library:
@@ -912,22 +928,25 @@ class StructDefinition(TopLevelObject):
 
     def compile(self, ncs: NCS, root: CodeRoot):  # noqa: A003
         if len(self.members) == 0:
-            msg = f"Struct '{self.identifier}' cannot be empty\n  Structs must have at least one member"
+            msg = (
+                f"Struct '{self.identifier}' cannot be empty\n"
+                f"  Structs must have at least one member"
+            )
             raise CompileError(msg)
         root.struct_map[self.identifier.label] = Struct(self.identifier, self.members)
 
 
-class Expression(ComparableMixin, ABC):
+class Expression(ABC):
     """Abstract base class for NSS expressions.
-
+    
     Expressions compile to NCS bytecode instructions that evaluate to values.
     All expression types (literals, operators, function calls, etc.) inherit from this.
-
+    
     References:
     ----------
-
+        vendor/KotOR.js/src/nwscript/NWScriptCompiler.ts (Expression compilation)
+        vendor/HoloLSP/server/src/nwscript-ast.ts (Expression AST nodes)
     """
-
     @abstractmethod
     def compile(
         self,
@@ -937,17 +956,17 @@ class Expression(ComparableMixin, ABC):
     ) -> DynamicDataType: ...
 
 
-class Statement(ComparableMixin, ABC):
+class Statement(ABC):
     """Abstract base class for NSS statements.
-
+    
     Statements compile to NCS bytecode instructions that perform actions (control flow,
     assignments, declarations, etc.). All statement types inherit from this.
-
+    
     References:
     ----------
-
+        vendor/KotOR.js/src/nwscript/NWScriptCompiler.ts (Statement compilation)
+        vendor/HoloLSP/server/src/nwscript-ast.ts (Statement AST nodes)
     """
-
     def __init__(self):
         self.line_num: None = None
 
@@ -1026,7 +1045,7 @@ class FieldAccess(ComparableMixin):
                     f"Attempting to access unknown member '{next_ident}' on datatype '{datatype}'."
                 )
                 raise CompileError(msg)
-
+        
         return GetScopedResult(is_global, datatype, offset, is_const)
 
     def compile(self, ncs: NCS, root: CodeRoot, block: CodeBlock) -> DynamicDataType:  # noqa: A003
@@ -1048,6 +1067,12 @@ class IdentifierExpression(Expression):
         if isinstance(other, IdentifierExpression):
             return self.identifier == other.identifier
         return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self) -> int:
+        return hash(self.identifier)
+
+    def __repr__(self) -> str:
+        return f"IdentifierExpression(identifier={self.identifier})"
 
     def __hash__(self) -> int:
         return hash(self.identifier)
@@ -1119,6 +1144,12 @@ class StringExpression(Expression):
     def __repr__(self) -> str:
         return f"StringExpression(value={self.value})"
 
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __repr__(self) -> str:
+        return f"StringExpression(value={self.value})"
+
     def data_type(self) -> DynamicDataType:
         return DynamicDataType.STRING
 
@@ -1145,12 +1176,18 @@ class IntExpression(Expression):
     def __repr__(self) -> str:
         return f"IntExpression(value={self.value})"
 
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __repr__(self) -> str:
+        return f"IntExpression(value={self.value})"
+
     def data_type(self) -> DynamicDataType:
         return DynamicDataType.INT
 
     def compile(self, ncs: NCS, root: CodeRoot, block: CodeBlock) -> DynamicDataType:  # noqa: A003
         ncs.instructions.append(NCSInstruction(NCSInstructionType.CONSTI, [self.value]))
-        # NOTE: Caller is responsible for updating temp_stack
+        # Note: Caller is responsible for updating temp_stack
         return DynamicDataType.INT
 
 
@@ -1165,6 +1202,12 @@ class ObjectExpression(Expression):
         if isinstance(other, ObjectExpression):
             return self.value == other.value
         return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __repr__(self) -> str:
+        return f"ObjectExpression(value={self.value})"
 
     def __hash__(self) -> int:
         return hash(self.value)
@@ -1198,6 +1241,12 @@ class FloatExpression(Expression):
     def __repr__(self) -> str:
         return f"FloatExpression(value={self.value})"
 
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __repr__(self) -> str:
+        return f"FloatExpression(value={self.value})"
+
     def data_type(self) -> DynamicDataType:
         return DynamicDataType.FLOAT
 
@@ -1219,6 +1268,12 @@ class VectorExpression(Expression):
         if isinstance(other, VectorExpression):
             return self.x == other.x and self.y == other.y and self.z == other.z
         return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self) -> int:
+        return hash(self.x) ^ hash(self.y) ^ hash(self.z)
+
+    def __repr__(self) -> str:
+        return f"VectorExpression(x={self.x}, y={self.y}, z={self.z})"
 
     def __hash__(self) -> int:
         return hash(self.x) ^ hash(self.y) ^ hash(self.z)
@@ -1258,14 +1313,21 @@ class EngineCallExpression(Expression):
         arg_count = len(self._args)
 
         if arg_count > len(self._function.params):
-            msg = f"Too many arguments for '{self._function.name}'\n  Expected: {len(self._function.params)}, Got: {arg_count}"
+            msg = (
+                f"Too many arguments for '{self._function.name}'\n"
+                f"  Expected: {len(self._function.params)}, Got: {arg_count}"
+            )
             raise CompileError(msg)
 
         for i, param in enumerate(self._function.params):
             if i >= arg_count:
                 if param.default is None:
                     required_params = [p.name for p in self._function.params if p.default is None]
-                    msg = f"Missing required arguments for '{self._function.name}'\n  Required parameters: {', '.join(required_params)}\n  Provided: {arg_count} argument(s)"
+                    msg = (
+                        f"Missing required arguments for '{self._function.name}'\n"
+                        f"  Required parameters: {', '.join(required_params)}\n"
+                        f"  Provided: {arg_count} argument(s)"
+                    )
                     raise CompileError(msg)
                 constant: ScriptConstant | None = next(
                     (constant for constant in root.constants if constant.name == param.default),
@@ -1302,7 +1364,7 @@ class EngineCallExpression(Expression):
                     self._args.append(ObjectExpression(int(constant.value)))
         this_stack = 0
         # DEBUG: Log arguments before compilation
-
+        
         # Compile arguments in FORWARD order (left to right, first argument first)
         # NCS bytecode pushes arguments left-to-right, so when the interpreter
         # pops them (last-in-first-out), args_snap has them in reverse order.
@@ -1376,7 +1438,11 @@ class FunctionCallExpression(Expression):
         if self._function.label not in root.function_map:
             # Provide helpful error with similar function names
             available_funcs = list(root.function_map.keys())[:10]
-            msg = f"Undefined function '{self._function.label}'\n  Available functions: {', '.join(available_funcs)}{'...' if len(root.function_map) > 10 else ''}"
+            msg = (
+                f"Undefined function '{self._function.label}'\n"
+                f"  Available functions: {', '.join(available_funcs)}"
+                f"{'...' if len(root.function_map) > 10 else ''}"
+            )
             raise CompileError(msg)
 
         # compile_jsr handles return value space reservation and temp_stack tracking
@@ -1418,10 +1484,8 @@ class BinaryOperatorExpression(Expression):
                 break
         else:
             # Build helpful error showing what operations are supported
-            supported = [
-                f"{m.lhs.name.lower()} {m.instruction.name} {m.rhs.name.lower()}"
-                for m in self.compatibility[:3]
-            ]
+            supported = [f"{m.lhs.name.lower()} {m.instruction.name} {m.rhs.name.lower()}"
+                        for m in self.compatibility[:3]]
             msg = (
                 f"Incompatible types for binary operation: {type1.builtin.name.lower()} and {type2.builtin.name.lower()}\n"
                 f"  Supported combinations: {', '.join(supported)}"
@@ -1432,7 +1496,7 @@ class BinaryOperatorExpression(Expression):
         result_type = DynamicDataType(x.result)
         result_size = result_type.size(root)
         # Binary operation consumed both operands and left result on stack
-        block.temp_stack -= type1_size + type2_size - result_size
+        block.temp_stack -= (type1_size + type2_size - result_size)
         return result_type
 
 
@@ -1446,11 +1510,14 @@ class TernaryConditionalExpression(Expression):
     def compile(self, ncs: NCS, root: CodeRoot, block: CodeBlock) -> DynamicDataType:
         # Save initial stack state
         initial_stack = block.temp_stack
-
+        
         # Compile condition (leaves value on stack)
         condition_type = self.condition.compile(ncs, root, block)
         if condition_type != DynamicDataType.INT:
-            msg = f"Ternary condition must be integer type, got {condition_type.builtin.name}\n  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
+            msg = (
+                f"Ternary condition must be integer type, got {condition_type.builtin.name}\n"
+                f"  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
+            )
             raise CompileError(msg)
 
         # Jump to false branch if condition is zero (JZ consumes the condition from stack)
@@ -1475,7 +1542,7 @@ class TernaryConditionalExpression(Expression):
         false_type = self.false_expr.compile(ncs, root, block)
         # Explicitly track that false branch result is on the stack
         block.temp_stack += false_type.size(root)
-
+        
         # Type check - both branches must have same type
         if true_type != false_type:
             msg = (
@@ -1485,7 +1552,7 @@ class TernaryConditionalExpression(Expression):
                 f"  Both branches must have the same type"
             )
             raise CompileError(msg)
-
+        
         # False branch leaves result on stack at same position as true branch
         # Both branches: initial_stack + result_size (already set above)
 
@@ -1514,7 +1581,10 @@ class UnaryOperatorExpression(Expression):
                 break
         else:
             supported_types = [m.rhs.name.lower() for m in self.compatibility]
-            msg = f"Incompatible type for unary operation: {type1.builtin.name.lower()}\n  Supported types: {', '.join(supported_types)}"
+            msg = (
+                f"Incompatible type for unary operation: {type1.builtin.name.lower()}\n"
+                f"  Supported types: {', '.join(supported_types)}"
+            )
             raise CompileError(msg)
 
         block.temp_stack -= 4
@@ -1533,7 +1603,10 @@ class LogicalNotExpression(Expression):
         if type1 == DynamicDataType.INT:
             ncs.add(NCSInstructionType.NOTI)
         else:
-            msg = f"Logical NOT requires integer operand, got {type1.builtin.name.lower()}\n  Note: In NWScript, only int types can be used in logical operations"
+            msg = (
+                f"Logical NOT requires integer operand, got {type1.builtin.name.lower()}\n"
+                f"  Note: In NWScript, only int types can be used in logical operations"
+            )
             raise CompileError(msg)
 
         block.temp_stack -= 4
@@ -1552,7 +1625,10 @@ class BitwiseNotExpression(Expression):
         if type1 == DynamicDataType.INT:
             ncs.add(NCSInstructionType.COMPI)
         else:
-            msg = f"Bitwise NOT (~) requires integer operand, got {type1.builtin.name.lower()}\n  Note: Bitwise operations only work on int types"
+            msg = (
+                f"Bitwise NOT (~) requires integer operand, got {type1.builtin.name.lower()}\n"
+                f"  Note: Bitwise operations only work on int types"
+            )
             raise CompileError(msg)
 
         block.temp_stack -= 4
@@ -1566,39 +1642,41 @@ class Assignment(Expression):
         self.field_access: FieldAccess = field_access
         self.expression: Expression = value
 
-    def compile(
-        self, ncs: NCS, root: CodeRoot, block: CodeBlock, allow_const: bool = False
-    ) -> DynamicDataType:
+    def compile(self, ncs: NCS, root: CodeRoot, block: CodeBlock, allow_const: bool = False) -> DynamicDataType:
         # Save temp_stack before compiling expression to check if expression already added to it
         temp_stack_before = block.temp_stack
         # Compile expression - expressions may or may not add to temp_stack themselves
         variable_type = self.expression.compile(ncs, root, block)
         temp_stack_after = block.temp_stack
-
+        
         # Only add to temp_stack if the expression didn't already add it
         # (FunctionCallExpression and EngineCallExpression already add their return values)
         if temp_stack_after == temp_stack_before:
             # Expression didn't add to temp_stack, so we need to add it
             block.temp_stack += variable_type.size(root)
-
+        
         # Get variable location - get_scoped uses temp_stack (including expression result) in its calculation
         is_global, expression_type, stack_index, is_const = self.field_access.get_scoped(
             block,
             root,
         )
-
+        
         if is_const and not allow_const:
             var_name = ".".join(str(ident) for ident in self.field_access.identifiers)
             msg = f"Cannot assign to const variable '{var_name}'"
             raise CompileError(msg)
-
+        
         instruction_type = NCSInstructionType.CPDOWNBP if is_global else NCSInstructionType.CPDOWNSP
         # get_scoped() already accounts for temp_stack (which includes the expression result),
         # so stack_index points to the correct variable location
 
         if variable_type != expression_type:
             var_name = ".".join(str(ident) for ident in self.field_access.identifiers)
-            msg = f"Type mismatch in assignment to '{var_name}'\n  Variable type: {expression_type.builtin.name}\n  Expression type: {variable_type.builtin.name}"
+            msg = (
+                f"Type mismatch in assignment to '{var_name}'\n"
+                f"  Variable type: {expression_type.builtin.name}\n"
+                f"  Expression type: {variable_type.builtin.name}"
+            )
             raise CompileError(msg)
 
         # Copy the value that the expression has already been placed on the stack to where the identifiers position is
@@ -1686,12 +1764,7 @@ class AdditionAssignment(Expression):
         # temp_stack currently = variable_size + expression_size
         # After operation: stack has 1 result of variable_type size
         # Net change: both operands consumed, result pushed
-        block.temp_stack = (
-            block.temp_stack
-            - variable_type.size(root)
-            - expresion_type.size(root)
-            + variable_type.size(root)
-        )
+        block.temp_stack = block.temp_stack - variable_type.size(root) - expresion_type.size(root) + variable_type.size(root)
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -1758,12 +1831,7 @@ class SubtractionAssignment(Expression):
         # temp_stack currently = variable_size + expression_size
         # After operation: stack has 1 result of variable_type size
         # Net change: both operands consumed, result pushed
-        block.temp_stack = (
-            block.temp_stack
-            - variable_type.size(root)
-            - expresion_type.size(root)
-            + variable_type.size(root)
-        )
+        block.temp_stack = block.temp_stack - variable_type.size(root) - expresion_type.size(root) + variable_type.size(root)
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -1829,12 +1897,7 @@ class MultiplicationAssignment(Expression):
         # temp_stack currently = variable_size + expression_size
         # After operation: stack has 1 result of variable_type size
         # Net change: both operands consumed, result pushed
-        block.temp_stack = (
-            block.temp_stack
-            - variable_type.size(root)
-            - expresion_type.size(root)
-            + variable_type.size(root)
-        )
+        block.temp_stack = block.temp_stack - variable_type.size(root) - expresion_type.size(root) + variable_type.size(root)
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -1900,12 +1963,7 @@ class DivisionAssignment(Expression):
         # temp_stack currently = variable_size + expression_size
         # After operation: stack has 1 result of variable_type size
         # Net change: both operands consumed, result pushed
-        block.temp_stack = (
-            block.temp_stack
-            - variable_type.size(root)
-            - expresion_type.size(root)
-            + variable_type.size(root)
-        )
+        block.temp_stack = block.temp_stack - variable_type.size(root) - expresion_type.size(root) + variable_type.size(root)
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -1963,12 +2021,7 @@ class ModuloAssignment(Expression):
         # temp_stack currently = variable_size + expression_size
         # After operation: stack has 1 result of variable_type size
         # Net change: both operands consumed, result pushed
-        block.temp_stack = (
-            block.temp_stack
-            - variable_type.size(root)
-            - expresion_type.size(root)
-            + variable_type.size(root)
-        )
+        block.temp_stack = block.temp_stack - variable_type.size(root) - expresion_type.size(root) + variable_type.size(root)
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2023,12 +2076,7 @@ class BitwiseAndAssignment(Expression):
 
         # Bitwise operation consumed variable copy and expression (2 values), left result (1 value)
         # Result is still on stack, temp_stack: both operands consumed, result pushed
-        block.temp_stack = (
-            block.temp_stack
-            - variable_type.size(root)
-            - expression_type.size(root)
-            + variable_type.size(root)
-        )
+        block.temp_stack = block.temp_stack - variable_type.size(root) - expression_type.size(root) + variable_type.size(root)
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2083,12 +2131,7 @@ class BitwiseOrAssignment(Expression):
 
         # Bitwise operation consumed variable copy and expression (2 values), left result (1 value)
         # Result is still on stack, temp_stack: both operands consumed, result pushed
-        block.temp_stack = (
-            block.temp_stack
-            - variable_type.size(root)
-            - expression_type.size(root)
-            + variable_type.size(root)
-        )
+        block.temp_stack = block.temp_stack - variable_type.size(root) - expression_type.size(root) + variable_type.size(root)
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2143,12 +2186,7 @@ class BitwiseXorAssignment(Expression):
 
         # Bitwise operation consumed variable copy and expression (2 values), left result (1 value)
         # Result is still on stack, temp_stack: both operands consumed, result pushed
-        block.temp_stack = (
-            block.temp_stack
-            - variable_type.size(root)
-            - expression_type.size(root)
-            + variable_type.size(root)
-        )
+        block.temp_stack = block.temp_stack - variable_type.size(root) - expression_type.size(root) + variable_type.size(root)
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2203,12 +2241,7 @@ class BitwiseLeftAssignment(Expression):
 
         # Bitwise operation consumed variable copy and expression (2 values), left result (1 value)
         # Result is still on stack, temp_stack: both operands consumed, result pushed
-        block.temp_stack = (
-            block.temp_stack
-            - variable_type.size(root)
-            - expression_type.size(root)
-            + variable_type.size(root)
-        )
+        block.temp_stack = block.temp_stack - variable_type.size(root) - expression_type.size(root) + variable_type.size(root)
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2263,12 +2296,7 @@ class BitwiseRightAssignment(Expression):
 
         # Bitwise operation consumed variable copy and expression (2 values), left result (1 value)
         # Result is still on stack, temp_stack: both operands consumed, result pushed
-        block.temp_stack = (
-            block.temp_stack
-            - variable_type.size(root)
-            - expression_type.size(root)
-            + variable_type.size(root)
-        )
+        block.temp_stack = block.temp_stack - variable_type.size(root) - expression_type.size(root) + variable_type.size(root)
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2323,12 +2351,7 @@ class BitwiseUnsignedRightAssignment(Expression):
 
         # Bitwise operation consumed variable copy and expression (2 values), left result (1 value)
         # Result is still on stack, temp_stack: both operands consumed, result pushed
-        block.temp_stack = (
-            block.temp_stack
-            - variable_type.size(root)
-            - expression_type.size(root)
-            + variable_type.size(root)
-        )
+        block.temp_stack = block.temp_stack - variable_type.size(root) - expression_type.size(root) + variable_type.size(root)
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2389,7 +2412,7 @@ class ExpressionStatement(Statement):
         expression_type = self.expression.compile(ncs, root, block)
         temp_stack_after = block.temp_stack
         # Expression compiled, remove its result from stack and temp_stack tracking
-        # NOTE: Some expressions (like Assignment) already remove their result from the stack,
+        # Note: Some expressions (like Assignment) already remove their result from the stack,
         # so we only need to remove it from temp_stack if it's still on the stack.
         # We check temp_stack to see if the result is still tracked.
         # For void expressions, we still need to check if temp_stack increased (e.g., from nested function calls)
@@ -2407,12 +2430,13 @@ class ExpressionStatement(Statement):
             else:
                 # temp_stack decreased, which means the expression already removed its result
                 pass
-        # Void expression - check if temp_stack increased (shouldn't happen, but clean up if it did)
-        elif temp_stack_after > temp_stack_before:
-            # Something was left on the stack (e.g., from nested function call arguments)
-            cleanup_size = temp_stack_after - temp_stack_before
-            ncs.add(NCSInstructionType.MOVSP, args=[-cleanup_size])
-            block.temp_stack -= cleanup_size
+        else:
+            # Void expression - check if temp_stack increased (shouldn't happen, but clean up if it did)
+            if temp_stack_after > temp_stack_before:
+                # Something was left on the stack (e.g., from nested function call arguments)
+                cleanup_size = temp_stack_after - temp_stack_before
+                ncs.add(NCSInstructionType.MOVSP, args=[-cleanup_size])
+                block.temp_stack -= cleanup_size
             # else: no cleanup needed - void expression with balanced stack
 
 
@@ -2481,7 +2505,10 @@ class VariableDeclarator(ComparableMixin):
                 msg = f"Unknown struct type for variable '{self.identifier}'"
                 raise CompileError(msg)
         elif data_type.builtin == DataType.VOID:
-            msg = f"Cannot declare variable '{self.identifier}' with void type\n  void can only be used as a function return type"
+            msg = (
+                f"Cannot declare variable '{self.identifier}' with void type\n"
+                f"  void can only be used as a function return type"
+            )
             raise CompileError(msg)
         else:
             msg = (
@@ -2516,7 +2543,7 @@ class VariableInitializer(ComparableMixin):
         # Allow const variables to be initialized (but not reassigned)
         assignment = Assignment(FieldAccess([self.identifier]), self.expression)
         result_type = assignment.compile(ncs, root, block, allow_const=True)
-
+        
         # Assignment leaves result on stack for ExpressionStatement to clean up,
         # but VariableInitializer is NOT in an ExpressionStatement, so we need to clean it up ourselves
         result_size = result_type.size(root)
@@ -2595,7 +2622,7 @@ class ConditionalBlock(Statement):
         ncs.instructions.append(jump_tos[-1])
 
 
-class ConditionAndBlock(ComparableMixin):
+class ConditionAndBlock:
     def __init__(self, condition: Expression, block: CodeBlock):
         self.condition: Expression = condition
         self.block: CodeBlock = block
@@ -2640,20 +2667,23 @@ class WhileLoopBlock(Statement):
 
         loopstart = ncs.add(NCSInstructionType.NOP, args=[])
         loopend = NCSInstruction(NCSInstructionType.NOP, args=[])
-
+        
         # Save temp_stack before condition (condition pushes a value, JZ consumes it)
         initial_temp_stack = block.temp_stack
         condition_type = self.condition.compile(ncs, root, block)
 
         if condition_type != DynamicDataType.INT:
-            msg = f"Loop condition must be integer type, got {condition_type.builtin.name.lower()}\n  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
+            msg = (
+                f"Loop condition must be integer type, got {condition_type.builtin.name.lower()}\n"
+                f"  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
+            )
             raise CompileError(msg)
 
         # JZ consumes the condition value from stack
         ncs.add(NCSInstructionType.JZ, jump=loopend)
         # Restore temp_stack since JZ consumed the condition
         block.temp_stack = initial_temp_stack
-
+        
         self.block.compile(ncs, root, block, return_instruction, loopend, loopstart)
         ncs.add(NCSInstructionType.JMP, jump=loopstart)
 
@@ -2692,19 +2722,22 @@ class DoWhileLoopBlock(Statement):
         )
 
         ncs.instructions.append(conditionstart)
-
+        
         # Save temp_stack before condition (condition pushes a value, JZ consumes it)
         initial_temp_stack = block.temp_stack
         condition_type = self.condition.compile(ncs, root, block)
         if condition_type != DynamicDataType.INT:
-            msg = f"do-while condition must be integer type, got {condition_type.builtin.name.lower()}\n  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
+            msg = (
+                f"do-while condition must be integer type, got {condition_type.builtin.name.lower()}\n"
+                f"  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
+            )
             raise CompileError(msg)
 
         # JZ consumes the condition value from stack
         ncs.add(NCSInstructionType.JZ, jump=loopend)
         # Restore temp_stack since JZ consumed the condition
         block.temp_stack = initial_temp_stack
-
+        
         ncs.add(NCSInstructionType.JMP, jump=loopstart)
         ncs.instructions.append(loopend)
 
@@ -2738,9 +2771,7 @@ class ForLoopBlock(Statement):
         if self.initial is not None:
             if isinstance(self.initial, Statement):
                 # For declaration statements, compile them directly
-                self.initial.compile(
-                    ncs, root, block, return_instruction, break_instruction, continue_instruction
-                )
+                self.initial.compile(ncs, root, block, return_instruction, break_instruction, continue_instruction)
             else:
                 # For expressions, compile and clean up stack
                 temp_stack_before = block.temp_stack
@@ -2761,14 +2792,17 @@ class ForLoopBlock(Statement):
         initial_temp_stack = block.temp_stack
         condition_type = self.condition.compile(ncs, root, block)
         if condition_type != DynamicDataType.INT:
-            msg = f"for loop condition must be integer type, got {condition_type.builtin.name.lower()}\n  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
+            msg = (
+                f"for loop condition must be integer type, got {condition_type.builtin.name.lower()}\n"
+                f"  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
+            )
             raise CompileError(msg)
 
         # JZ consumes the condition value from stack
         ncs.add(NCSInstructionType.JZ, jump=loopend)
         # Restore temp_stack since JZ consumed the condition
         block.temp_stack = initial_temp_stack
-
+        
         self.block.compile(ncs, root, block, return_instruction, loopend, updatestart)
 
         ncs.instructions.append(updatestart)
@@ -2827,7 +2861,10 @@ class BreakStatement(Statement):
         continue_instruction: NCSInstruction | None,
     ):
         if break_instruction is None:
-            msg = "break statement not inside loop or switch\n  break can only be used inside while, do-while, for, or switch statements"
+            msg = (
+                "break statement not inside loop or switch\n"
+                "  break can only be used inside while, do-while, for, or switch statements"
+            )
             raise CompileError(msg)
         ncs.add(NCSInstructionType.MOVSP, args=[-block.break_scope_size(root)])
         ncs.add(NCSInstructionType.JMP, jump=break_instruction)
@@ -2847,7 +2884,10 @@ class ContinueStatement(Statement):
         continue_instruction: NCSInstruction | None,
     ):
         if continue_instruction is None:
-            msg = "continue statement not inside loop\n  continue can only be used inside while, do-while, or for loops"
+            msg = (
+                "continue statement not inside loop\n"
+                "  continue can only be used inside while, do-while, or for loops"
+            )
             raise CompileError(msg)
         ncs.add(NCSInstructionType.MOVSP, args=[-block.break_scope_size(root)])
         ncs.add(NCSInstructionType.JMP, jump=continue_instruction)
@@ -2862,7 +2902,10 @@ class PrefixIncrementExpression(Expression):
 
         if variable_type != DynamicDataType.INT:
             var_name = ".".join(str(ident) for ident in self.field_access.identifiers)
-            msg = f"Increment operator (++) requires integer variable, got {variable_type.builtin.name.lower()}\n  Variable: {var_name}"
+            msg = (
+                f"Increment operator (++) requires integer variable, got {variable_type.builtin.name.lower()}\n"
+                f"  Variable: {var_name}"
+            )
             raise CompileError(msg)
 
         isglobal, variable_type, stack_index, is_const = self.field_access.get_scoped(block, root)
@@ -2896,7 +2939,10 @@ class PostfixIncrementExpression(Expression):
 
         if variable_type != DynamicDataType.INT:
             var_name = ".".join(str(ident) for ident in self.field_access.identifiers)
-            msg = f"Increment operator (++) requires integer variable, got {variable_type.builtin.name.lower()}\n  Variable: {var_name}"
+            msg = (
+                f"Increment operator (++) requires integer variable, got {variable_type.builtin.name.lower()}\n"
+                f"  Variable: {var_name}"
+            )
             raise CompileError(msg)
 
         isglobal, variable_type, stack_index, is_const = self.field_access.get_scoped(block, root)
@@ -2922,7 +2968,10 @@ class PrefixDecrementExpression(Expression):
 
         if variable_type != DynamicDataType.INT:
             var_name = ".".join(str(ident) for ident in self.field_access.identifiers)
-            msg = f"Decrement operator (--) requires integer variable, got {variable_type.builtin.name.lower()}\n  Variable: {var_name}"
+            msg = (
+                f"Decrement operator (--) requires integer variable, got {variable_type.builtin.name.lower()}\n"
+                f"  Variable: {var_name}"
+            )
             raise CompileError(msg)
 
         isglobal, variable_type, stack_index, is_const = self.field_access.get_scoped(block, root)
@@ -2956,7 +3005,10 @@ class PostfixDecrementExpression(Expression):
 
         if variable_type != DynamicDataType.INT:
             var_name = ".".join(str(ident) for ident in self.field_access.identifiers)
-            msg = f"Decrement operator (--) requires integer variable, got {variable_type.builtin.name.lower()}\n  Variable: {var_name}"
+            msg = (
+                f"Decrement operator (--) requires integer variable, got {variable_type.builtin.name.lower()}\n"
+                f"  Variable: {var_name}"
+            )
             raise CompileError(msg)
 
         isglobal, variable_type, stack_index, is_const = self.field_access.get_scoped(block, root)
@@ -3129,6 +3181,12 @@ class DynamicDataType(ComparableMixin):
         if isinstance(other, DataType):
             return self.builtin == other and self.builtin != DataType.STRUCT
         return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self) -> int:
+        return hash(self.builtin) ^ hash(self._struct)
+
+    def __repr__(self) -> str:
+        return f"DynamicDataType(builtin={self.builtin}({self.builtin.name.lower()}), struct={self._struct})"
 
     def __hash__(self) -> int:
         return hash(self.builtin) ^ hash(self._struct)

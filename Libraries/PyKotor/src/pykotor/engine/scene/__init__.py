@@ -1,7 +1,11 @@
-"""Abstract scene graph interfaces for rendering backends.
+"""Abstract scene graph interfaces.
 
-Scene graph contracts used by PyKotor tooling (area load, VIS-driven room sets, etc.).
-Executable-specific scene internals are documented only in ``wiki/reverse_engineering_findings.md``.
+This module provides abstract base classes for scene graph management that can be
+implemented by different rendering backends.
+
+References:
+----------
+    vendor/reone/include/reone/scene/graph.h - SceneGraph interface
 """
 
 from __future__ import annotations
@@ -9,6 +13,7 @@ from __future__ import annotations
 from pykotor.engine.scene.base import ISceneGraph, FogProperties
 
 __all__ = [
-    "FogProperties",
     "ISceneGraph",
+    "FogProperties",
 ]
+

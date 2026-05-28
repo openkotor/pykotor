@@ -6,110 +6,20 @@ and can be used by any application that needs these utilities.
 
 References:
 ----------
-        Observed retail KotOR GFF, TLK, and 2DA resource handling.
-        Tools/diff operations/ - File diffing implementation
-        Libraries/PyKotor/src/pykotor/tslpatcher/diff/ - Structured diff engine
-
+    vendor/xoreos-tools/ - Various utility tools
+    Tools/KotorDiff/ - File diffing implementation
+    Libraries/PyKotor/src/pykotor/tslpatcher/diff/ - Structured diff engine
 """
-
 from __future__ import annotations
 
 import difflib
 
-from typing import TYPE_CHECKING, Callable
+from pathlib import Path
 
 from pykotor.resource.formats.gff.gff_auto import read_gff
-from pykotor.resource.formats.gff.gff_data import GFFContent, GFFFieldType, GFFList, GFFStruct
+from pykotor.resource.formats.gff.gff_data import GFF, GFFFieldType, GFFList, GFFStruct
 from pykotor.resource.formats.tlk.tlk_auto import read_tlk
 from pykotor.resource.formats.twoda.twoda_auto import read_2da
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-    from pykotor.resource.formats.gff.gff_data import GFF
-
-
-# Derived from GFFContent to stay in sync with all known GFF subtypes. Excludes
-# ".res" because .res files are save-game containers that can be GFF *or* other
-# formats depending on the resource name; callers that want to include them should
-# add ".res" explicitly.
-_GFF_SUFFIXES: frozenset[str] = frozenset(
-    f".{ext}" for ext in GFFContent.get_extensions() if ext != "res"
-)
-
-
-def _write_output_if_requested(output_path: Path | None, content: str) -> None:
-    if output_path:
-        output_path.write_text(content, encoding="utf-8")
-
-
-def _diff_structured_files(
-    file1_path: Path,
-    file2_path: Path,
-    output_path: Path | None,
-    context_lines: int,
-    reader: Callable[[Path], object],
-    to_text: Callable[[object], str],
-) -> str:
-    """Diff two structured resources by converting parsed objects to text."""
-    try:
-        object1 = reader(file1_path)
-        object2 = reader(file2_path)
-
-        text1 = to_text(object1)
-        text2 = to_text(object2)
-
-        diff_lines = list(
-            difflib.unified_diff(
-                text1.splitlines(keepends=True),
-                text2.splitlines(keepends=True),
-                fromfile=str(file1_path),
-                tofile=str(file2_path),
-                lineterm="",
-                n=context_lines,
-            ),
-        )
-
-        result = "".join(diff_lines)
-        _write_output_if_requested(output_path, result)
-        return result
-    except Exception:
-        return _diff_binary_files(file1_path, file2_path, output_path, context_lines)
-
-
-def _grep_in_structured_file(
-    file_path: Path,
-    pattern: str,
-    case_sensitive: bool,
-    reader: Callable[[Path], object],
-    to_text: Callable[[object], str],
-) -> list[tuple[int, str]]:
-    """Search text-converted structured resources (GFF/2DA/TLK)."""
-    try:
-        parsed = reader(file_path)
-        text = to_text(parsed)
-        return _grep_in_text_content(text, pattern, case_sensitive)
-    except Exception:
-        return []
-
-
-def _update_gff_stats(file_path: Path, stats: dict[str, int | str]) -> None:
-    gff = read_gff(file_path)
-    stats["type"] = "GFF"
-    stats["field_count"] = len(gff.root)
-
-
-def _update_2da_stats(file_path: Path, stats: dict[str, int | str]) -> None:
-    twoda = read_2da(file_path)
-    stats["type"] = "2DA"
-    stats["row_count"] = len(twoda)
-    stats["column_count"] = len(twoda.get_headers()) if twoda else 0
-
-
-def _update_tlk_stats(file_path: Path, stats: dict[str, int | str]) -> None:
-    tlk = read_tlk(file_path)
-    stats["type"] = "TLK"
-    stats["string_count"] = len(tlk)
 
 
 def diff_files(
@@ -136,15 +46,13 @@ def diff_files(
 
     References:
     ----------
-        Observed retail KotOR GFF read/write behavior.
-        Tools/diff operations/src/kotordiff/differ.py
+        Tools/KotorDiff/src/kotordiff/differ.py
         Libraries/PyKotor/src/pykotor/tslpatcher/diff/structured.py
-
     """
     suffix = file1_path.suffix.lower()
 
     # Structured comparison for known formats
-    if suffix in _GFF_SUFFIXES:
+    if suffix in (".gff", ".utc", ".uti", ".dlg", ".are", ".git", ".ifo"):
         return _diff_gff_files(file1_path, file2_path, output_path, context_lines)
     if suffix == ".2da":
         return _diff_2da_files(file1_path, file2_path, output_path, context_lines)
@@ -162,9 +70,34 @@ def _diff_gff_files(
     context_lines: int,
 ) -> str:
     """Compare two GFF files."""
-    return _diff_structured_files(
-        file1_path, file2_path, output_path, context_lines, read_gff, _gff_to_text
-    )
+    try:
+        gff1 = read_gff(file1_path)
+        gff2 = read_gff(file2_path)
+
+        # Use GFF's compare method for structured comparison
+        text1 = _gff_to_text(gff1)
+        text2 = _gff_to_text(gff2)
+
+        diff_lines = list(
+            difflib.unified_diff(
+                text1.splitlines(keepends=True),
+                text2.splitlines(keepends=True),
+                fromfile=str(file1_path),
+                tofile=str(file2_path),
+                lineterm="",
+                n=context_lines,
+            ),
+        )
+
+        result = "".join(diff_lines)
+
+        if output_path:
+            output_path.write_text(result, encoding="utf-8")
+
+        return result
+    except Exception:
+        # Fallback to binary diff on error
+        return _diff_binary_files(file1_path, file2_path, output_path, context_lines)
 
 
 def _diff_2da_files(
@@ -174,9 +107,32 @@ def _diff_2da_files(
     context_lines: int,
 ) -> str:
     """Compare two 2DA files."""
-    return _diff_structured_files(
-        file1_path, file2_path, output_path, context_lines, read_2da, _2da_to_text
-    )
+    try:
+        twoda1 = read_2da(file1_path)
+        twoda2 = read_2da(file2_path)
+
+        text1 = _2da_to_text(twoda1)
+        text2 = _2da_to_text(twoda2)
+
+        diff_lines = list(
+            difflib.unified_diff(
+                text1.splitlines(keepends=True),
+                text2.splitlines(keepends=True),
+                fromfile=str(file1_path),
+                tofile=str(file2_path),
+                lineterm="",
+                n=context_lines,
+            ),
+        )
+
+        result = "".join(diff_lines)
+
+        if output_path:
+            output_path.write_text(result, encoding="utf-8")
+
+        return result
+    except Exception:
+        return _diff_binary_files(file1_path, file2_path, output_path, context_lines)
 
 
 def _diff_tlk_files(
@@ -186,9 +142,32 @@ def _diff_tlk_files(
     context_lines: int,
 ) -> str:
     """Compare two TLK files."""
-    return _diff_structured_files(
-        file1_path, file2_path, output_path, context_lines, read_tlk, _tlk_to_text
-    )
+    try:
+        tlk1 = read_tlk(file1_path)
+        tlk2 = read_tlk(file2_path)
+
+        text1 = _tlk_to_text(tlk1)
+        text2 = _tlk_to_text(tlk2)
+
+        diff_lines = list(
+            difflib.unified_diff(
+                text1.splitlines(keepends=True),
+                text2.splitlines(keepends=True),
+                fromfile=str(file1_path),
+                tofile=str(file2_path),
+                lineterm="",
+                n=context_lines,
+            ),
+        )
+
+        result = "".join(diff_lines)
+
+        if output_path:
+            output_path.write_text(result, encoding="utf-8")
+
+        return result
+    except Exception:
+        return _diff_binary_files(file1_path, file2_path, output_path, context_lines)
 
 
 def _diff_binary_files(
@@ -204,9 +183,14 @@ def _diff_binary_files(
     if data1 == data2:
         result = f"Files are identical: {file1_path.name} and {file2_path.name}\n"
     else:
-        result = f"Files differ:\n  {file1_path.name}: {len(data1)} bytes\n  {file2_path.name}: {len(data2)} bytes\n"
+        result = (
+            f"Files differ:\n"
+            f"  {file1_path.name}: {len(data1)} bytes\n"
+            f"  {file2_path.name}: {len(data2)} bytes\n"
+        )
 
-    _write_output_if_requested(output_path, result)
+    if output_path:
+        output_path.write_text(result, encoding="utf-8")
 
     return result
 
@@ -233,14 +217,12 @@ def grep_in_file(
 
     References:
     ----------
-        Observed retail KotOR GFF read/write behavior.
-
-
+        vendor/xoreos-tools/ - grep-like utilities
     """
     suffix = file_path.suffix.lower()
 
     # Handle structured formats
-    if suffix in _GFF_SUFFIXES:
+    if suffix in (".gff", ".utc", ".uti", ".dlg", ".are", ".git", ".ifo"):
         return _grep_in_gff(file_path, pattern, case_sensitive)
     if suffix == ".2da":
         return _grep_in_2da(file_path, pattern, case_sensitive)
@@ -269,9 +251,7 @@ def _grep_in_text_file(
     except UnicodeDecodeError:
         # Try binary search
         data = file_path.read_bytes()
-        search_bytes = (
-            pattern.encode("utf-8") if case_sensitive else pattern.lower().encode("utf-8")
-        )
+        search_bytes = pattern.encode("utf-8") if case_sensitive else pattern.lower().encode("utf-8")
         if search_bytes in data:
             matches.append((0, f"Pattern found in binary file: {file_path.name}"))
 
@@ -284,7 +264,12 @@ def _grep_in_gff(
     case_sensitive: bool,
 ) -> list[tuple[int, str]]:
     """Search in GFF file by converting to text representation."""
-    return _grep_in_structured_file(file_path, pattern, case_sensitive, read_gff, _gff_to_text)
+    try:
+        gff = read_gff(file_path)
+        text = _gff_to_text(gff)
+        return _grep_in_text_content(text, pattern, case_sensitive)
+    except Exception:
+        return []
 
 
 def _grep_in_2da(
@@ -293,7 +278,12 @@ def _grep_in_2da(
     case_sensitive: bool,
 ) -> list[tuple[int, str]]:
     """Search in 2DA file."""
-    return _grep_in_structured_file(file_path, pattern, case_sensitive, read_2da, _2da_to_text)
+    try:
+        twoda = read_2da(file_path)
+        text = _2da_to_text(twoda)
+        return _grep_in_text_content(text, pattern, case_sensitive)
+    except Exception:
+        return []
 
 
 def _grep_in_tlk(
@@ -302,7 +292,12 @@ def _grep_in_tlk(
     case_sensitive: bool,
 ) -> list[tuple[int, str]]:
     """Search in TLK file."""
-    return _grep_in_structured_file(file_path, pattern, case_sensitive, read_tlk, _tlk_to_text)
+    try:
+        tlk = read_tlk(file_path)
+        text = _tlk_to_text(tlk)
+        return _grep_in_text_content(text, pattern, case_sensitive)
+    except Exception:
+        return []
 
 
 def _grep_in_text_content(
@@ -335,9 +330,7 @@ def get_file_stats(file_path: Path) -> dict[str, int | str]:
 
     References:
     ----------
-        Observed retail KotOR GFF read/write behavior.
-
-
+        vendor/xoreos-tools/ - File analysis utilities
     """
     stats: dict[str, int | str] = {
         "path": str(file_path),
@@ -351,15 +344,28 @@ def get_file_stats(file_path: Path) -> dict[str, int | str]:
     suffix = file_path.suffix.lower()
 
     # Add format-specific statistics
-    try:
-        if suffix in _GFF_SUFFIXES:
-            _update_gff_stats(file_path, stats)
-        elif suffix == ".2da":
-            _update_2da_stats(file_path, stats)
-        elif suffix == ".tlk":
-            _update_tlk_stats(file_path, stats)
-    except Exception:
-        pass
+    if suffix in (".gff", ".utc", ".uti", ".dlg", ".are", ".git", ".ifo"):
+        try:
+            gff = read_gff(file_path)
+            stats["type"] = "GFF"
+            stats["field_count"] = len(gff.root)
+        except Exception:
+            pass
+    elif suffix == ".2da":
+        try:
+            twoda = read_2da(file_path)
+            stats["type"] = "2DA"
+            stats["row_count"] = len(twoda)
+            stats["column_count"] = len(twoda.get_headers()) if twoda else 0
+        except Exception:
+            pass
+    elif suffix == ".tlk":
+        try:
+            tlk = read_tlk(file_path)
+            stats["type"] = "TLK"
+            stats["string_count"] = len(tlk)
+        except Exception:
+            pass
 
     return stats
 
@@ -377,9 +383,7 @@ def validate_file(file_path: Path) -> tuple[bool, str]:
 
     References:
     ----------
-        Observed retail KotOR GFF read/write behavior.
-
-
+        vendor/xoreos-tools/ - File validation utilities
     """
     if not file_path.exists():
         return False, f"File does not exist: {file_path}"
@@ -387,7 +391,7 @@ def validate_file(file_path: Path) -> tuple[bool, str]:
     suffix = file_path.suffix.lower()
 
     try:
-        if suffix in _GFF_SUFFIXES:
+        if suffix in (".gff", ".utc", ".uti", ".dlg", ".are", ".git", ".ifo"):
             read_gff(file_path)
             return True, "Valid GFF file"
         if suffix == ".2da":
@@ -414,7 +418,7 @@ def validate_file(file_path: Path) -> tuple[bool, str]:
 
         return True, "File exists (format validation not implemented)"
     except Exception as e:
-        return False, f"Validation failed: {e!s}"
+        return False, f"Validation failed: {str(e)}"
 
 
 # Helper functions for text conversion
@@ -460,3 +464,4 @@ def _tlk_to_text(tlk) -> str:
         text = entry.text if hasattr(entry, "text") else str(entry)
         lines.append(f"{i}: {text}")
     return "\n".join(lines)
+

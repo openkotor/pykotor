@@ -8,8 +8,9 @@ This module's writer produces clean RIFF/WAVE output regardless of input format.
 
 References:
 ----------
-        Standard RIFF/WAVE layout; KotOR-specific quirks are summarized in ``wav_data`` / ``io_wav``.
-
+    vendor/reone/src/libs/audio/format/wavreader.cpp - WAV reading
+    vendor/xoreos/src/sound/decoders/wave.cpp - WAV structure
+    Standard RIFF/WAVE format specification
 """
 
 from __future__ import annotations
@@ -17,23 +18,21 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.wav.wav_data import (
+    WAV,
     AudioFormat,
 )
 from pykotor.resource.type import ResourceWriter, autoclose
 
 if TYPE_CHECKING:
-    from pykotor.resource.formats.wav.wav_data import (
-        WAV,
-    )
     from pykotor.resource.type import TARGET_TYPES
 
 
 class WAVStandardWriter(ResourceWriter):
     """Handles writing standard (non-obfuscated) WAV binary data.
-
+    
     This writer produces clean RIFF/WAVE format without KotOR obfuscation headers.
     For MP3 audio data, writes the raw MP3 bytes directly (not wrapped in WAV).
-
+    
     Use this writer when you need playable audio for:
     - Media players
     - Qt audio playback
@@ -61,7 +60,7 @@ class WAVStandardWriter(ResourceWriter):
         if self.wav.audio_format == AudioFormat.MP3:
             self._writer.write_bytes(self.wav.data)
             return
-
+        
         # Calculate sizes for RIFF header
         data_size = len(self.wav.data)
         fmt_chunk_size = 16
@@ -76,9 +75,7 @@ class WAVStandardWriter(ResourceWriter):
         # Write format chunk
         self._writer.write_bytes(b"fmt ")
         self._writer.write_uint32(fmt_chunk_size)
-        self._writer.write_uint16(
-            self.wav.encoding if isinstance(self.wav.encoding, int) else self.wav.encoding
-        )
+        self._writer.write_uint16(self.wav.encoding if isinstance(self.wav.encoding, int) else self.wav.encoding)
         self._writer.write_uint16(self.wav.channels)
         self._writer.write_uint32(self.wav.sample_rate)
         bytes_per_sec = self.wav.bytes_per_sec or (self.wav.sample_rate * self.wav.block_align)

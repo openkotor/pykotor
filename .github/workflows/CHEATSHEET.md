@@ -18,10 +18,10 @@ gh release create v3.1.4-toolset \
 
 **What happens automatically**:
 
-1. Updates `currentVersion` -> commits to master
+1. Updates `currentVersion` → commits to master
 2. Builds binaries with new version
 3. Uploads artifacts to release
-4. Updates `toolsetLatestVersion` -> commits to master
+4. Updates `toolsetLatestVersion` → commits to master
 5. Regenerates source archives
 6. Converts to full release ✅
 
@@ -55,19 +55,21 @@ git push origin --delete test-v3.1.99-toolset
 ### Production
 
 ```
-v3.1.4-toolset      -> HolocronToolset
-v1.0.1-kotordiff    -> KotorDiff
-v1.7.1-patcher      -> HoloPatcher
-v1.0.0-translator   -> Translator
+v3.1.4-toolset      → HolocronToolset
+v1.0.1-kotordiff    → KotorDiff
+v1.7.1-patcher      → HoloPatcher
+v1.0.0-guiconverter → GuiConverter
+v1.0.0-translator   → Translator
 ```
 
 ### Test
 
 ```
-test-v3.1.99-toolset      -> HolocronToolset (TEST)
-test-v1.0.99-kotordiff    -> KotorDiff (TEST)
-test-v1.7.99-patcher      -> HoloPatcher (TEST)
-test-v1.0.99-translator   -> Translator (TEST)
+test-v3.1.99-toolset      → HolocronToolset (TEST)
+test-v1.0.99-kotordiff    → KotorDiff (TEST)
+test-v1.7.99-patcher      → HoloPatcher (TEST)
+test-v1.0.99-guiconverter → GuiConverter (TEST)
+test-v1.0.99-translator   → Translator (TEST)
 ```
 
 ## 📊 Workflow Timeline
@@ -75,11 +77,11 @@ test-v1.0.99-translator   -> Translator (TEST)
 ```
 00:00 ─ Create pre-release
 00:01 ─ Validate tag
-00:02 ─ Update currentVersion -> commit to master -> update tag
+00:02 ─ Update currentVersion → commit to master → update tag
 00:03 ─ Build starts (6 parallel jobs)
 00:16 ─ Build complete
 00:17 ─ Upload artifacts
-00:19 ─ Update Latest versions -> commit to master -> update tag
+00:19 ─ Update Latest versions → commit to master → update tag
 00:20 ─ Convert to full release ✅
 ```
 
@@ -93,7 +95,7 @@ test-v1.0.99-translator   -> Translator (TEST)
 ## 📚 Documentation
 
 - **RELEASE_WORKFLOW.md** - Complete guide
-- **QUICK_TEST_GUIDE.md** - Safe testing
+- **QUICK_TEST_GUIDE.md** - Safe testing  
 - **TESTING_RELEASES.md** - Advanced testing
 - **README.md** - Overview
 
@@ -103,7 +105,7 @@ test-v1.0.99-translator   -> Translator (TEST)
 
 ```bash
 gh run cancel <run-id>
-# Or via GitHub Actions tab -> Cancel workflow
+# Or via GitHub Actions tab → Cancel workflow
 ```
 
 ### Revert Bad Release

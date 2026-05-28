@@ -1,5 +1,3 @@
-"""KEY/BIF writer: abstract writer and helpers for building key/bif archives."""
-
 from __future__ import annotations
 
 import os
@@ -45,22 +43,26 @@ class KEYDataWriter(ABC):
 
 class KEYWriter:
     """Writes KEY (Keyfile) files.
-
+    
     KEY files index BIF/BZF archives and provide resource lookup tables. This writer
     creates KEY files by collecting BIF entries and their contained resources.
-
+    
     References:
     ----------
+        vendor/reone/src/libs/resource/format/keyreader.cpp (KEY reading structure)
+        vendor/reone/include/reone/resource/format/keyreader.h (KEY structure)
+        vendor/xoreos-tools/src/xml/keydumper.cpp (KEY to XML conversion)
+        vendor/Kotor.NET/Kotor.NET/Formats/KotorKEY/KEY.cs (KEY structure)
+        vendor/KotOR.js/src/resource/KEYObject.ts (KEY loading)
         Note: KEY writing is uncommon in vendor implementations; most tools only read KEY files.
         PyKotor's KEYWriter is primarily for modding and tooling purposes.
-
+    
     Missing Features:
     ----------------
         - ResRef lowercasing (vendor implementations lowercase ResRefs)
         - Resource ID decomposition (vendor implementations decompose resource IDs)
         - BZF compression support (vendor implementations handle compressed BIFs)
     """
-
     def __init__(self):
         self._entries: list[Entry] = []
 
@@ -87,14 +89,15 @@ class KEYWriter:
 
         Args:
             write_stream: The stream to write to
-
+        
         References:
         ----------
-        KEY file format: 8-byte signature, BIF count, resource count, offsets, timestamps
-
+            vendor/reone/src/libs/resource/format/keyreader.cpp:26-40 (KEY header structure)
+            vendor/Kotor.NET/Kotor.NET/Formats/KotorKEY/KEYReader.cs (KEY reading)
+            KEY file format: 8-byte signature, BIF count, resource count, offsets, timestamps
         """
         # Write header
-
+        # vendor/reone/src/libs/resource/format/keyreader.cpp:26-28 (signature reading)
         write_stream.write(struct.pack(">4s4s", b"KEY ", b"V1  "))
 
         # Number of BIF/BZF files
@@ -125,9 +128,7 @@ class KEYWriter:
         # Write file table
         filename_offset: int = 64 + len(self._entries) * 12
         for entry in self._entries:
-            write_stream.write(
-                struct.pack("<III", entry.file_size, filename_offset, len(entry.file_name))
-            )
+            write_stream.write(struct.pack("<III", entry.file_size, filename_offset, len(entry.file_name)))
             filename_offset += len(entry.file_name)
 
         # Write file name table
@@ -138,10 +139,4 @@ class KEYWriter:
         for x, entry in enumerate(self._entries):
             for y, file in enumerate(entry.files):
                 write_stream.write(os.path.basename(file).encode("ascii"))  # noqa: PTH119
-                write_stream.write(
-                    struct.pack(
-                        "<HI",
-                        ResourceType.from_extension(file.split(".")[-1]).type_id,
-                        (x << 20) + y,
-                    )
-                )
+                write_stream.write(struct.pack("<HI", ResourceType.from_extension(file.split(".")[-1]).type_id, (x << 20) + y))

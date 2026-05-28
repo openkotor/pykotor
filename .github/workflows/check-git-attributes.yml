@@ -7,16 +7,13 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   check-attributes:
     name: Check Git Attributes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Check for .gitattributes file
         run: |
@@ -38,3 +35,4 @@ jobs:
               fi
             done || echo "✓ .gitattributes format is valid"
           fi
+

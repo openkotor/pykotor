@@ -31,14 +31,15 @@ if TYPE_CHECKING:
 
 class TLKXMLReader(ResourceReader):
     """Reads TLK files from XML format.
-
+    
     XML is a human-readable format for easier editing of talk tables.
-
-    Note: XML format is PyKotor-specific conversion format, not a standard game format.
-        The engine uses binary TLK format exclusively. XML conversion allows easier editing
-        and integration with external tools.
+    
+    References:
+    ----------
+        vendor/xoreos-tools/src/xml/tlkdumper.cpp (TLK to XML conversion)
+        vendor/xoreos-tools/src/xml/tlkcreator.cpp (XML to TLK conversion)
+        Note: XML format structure may vary between tools
     """
-
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -52,19 +53,12 @@ class TLKXMLReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> TLK:  # noqa: FBT001, FBT002, ARG002
         self._tlk = TLK()
 
-        raw = self._reader.read_all()
-        try:
-            TlkXml.from_bytes(raw)
-        except kaitaistruct.KaitaiStructError:
-            pass
-        data = decode_bytes_with_fallbacks(raw)
+        data = decode_bytes_with_fallbacks(self._reader.read_bytes(self._reader.size()))
         xml = ET.fromstring(data)  # noqa: S314
 
         language = xml.get("language")
         if language is None:
-            raise ValueError(
-                "The 'language' attribute is missing from the root element of the TLK XML. This attribute is required to specify the language of the TLK file."
-            )
+            raise ValueError("The 'language' attribute is missing from the root element of the TLK XML. This attribute is required to specify the language of the TLK file.")
         self._tlk.language = Language(int(language))
         self._tlk.resize(len(xml))
         for string in xml:
@@ -72,17 +66,20 @@ class TLKXMLReader(ResourceReader):
             if id_str is None:
                 raise ValueError(
                     "The 'id' attribute is missing for a string element in the TLK XML. Each <string>"
-                    f" element must have an 'id' attribute to specify its index in the TLK file. Problematic element: {ET.tostring(string, encoding='unicode')}",
+                    f" element must have an 'id' attribute to specify its index in the TLK file. Problematic element: {ET.tostring(string, encoding='unicode')}"
                 )
             index = int(id_str)
 
-            text = string.text if string.text is not None else ""
+            text = string.text
+            if text is None:
+                raise ValueError(
+                    "The text content is missing for a string element in the TLK XML. Each <string>"
+                    f" element must contain text content. Problematic element with id '{id_str}': {ET.tostring(string, encoding='unicode')}"
+                )
             self._tlk.entries[index].text = text
 
             sound = string.get("sound")
-            self._tlk.entries[index].voiceover = (
-                ResRef(sound) if sound is not None else ResRef.from_blank()
-            )
+            self._tlk.entries[index].voiceover = ResRef(sound) if sound is not None else ResRef.from_blank()
 
         return self._tlk
 

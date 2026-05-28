@@ -25,7 +25,13 @@ class LazyCapsule(FileResource):
 
     Resource data is not actually stored in memory by default but is instead loaded up on demand with the
     LazyCapsule.resource() method. Use the Capsule, RIM, or ERF classes if you want to solely work with capsules in memory.
-
+    
+    References:
+    ----------
+        vendor/reone/src/libs/resource/format/erfreader.cpp:26-72 (ERF reading)
+        vendor/reone/src/libs/resource/format/rimreader.cpp:26-58 (RIM reading)
+        vendor/xoreos-tools/src/unerf.cpp (ERF extraction)
+        vendor/xoreos-tools/src/unrim.cpp (RIM extraction)
     """
 
     def __init__(
@@ -219,7 +225,7 @@ class LazyCapsule(FileResource):
         # Check if file is empty (0 bytes) - empty files cannot be valid capsules
         if self._filepath.exists() and self._filepath.stat().st_size == 0:
             return []
-
+        
         with BinaryReader.from_file(self._filepath) as reader:
             file_type = reader.read_string(4)
             reader.skip(4)  # file version
@@ -358,6 +364,7 @@ class LazyCapsule(FileResource):
             - Seeks to resource data offset table
             - Loops to read offsets and sizes and populate resource objects.
         """
+        # vendor/reone/src/libs/resource/format/erfreader.cpp:26-72
         resources: list[FileResource] = []
         reader.skip(8)
         entry_count = reader.read_uint32()
@@ -369,7 +376,7 @@ class LazyCapsule(FileResource):
         resids: list[int] = []
         restypes: list[ResourceType] = []
         reader.seek(offset_to_keys)
-
+        # vendor/reone/src/libs/resource/format/erfreader.cpp:62-72
         for _ in range(entry_count):
             resref = reader.read_string(16).rstrip("\0")
             resrefs.append(resref)
@@ -414,13 +421,14 @@ class LazyCapsule(FileResource):
                 - Read the 4 byte offset
                 - Read the 4 byte size
         """
+        # vendor/reone/src/libs/resource/format/rimreader.cpp:26-58
         resources: list[FileResource] = []
         reader.skip(4)
         entry_count = reader.read_uint32()
         offset_to_entries = reader.read_uint32()
 
         reader.seek(offset_to_entries)
-
+        # vendor/reone/src/libs/resource/format/rimreader.cpp:46-58
         for _ in range(entry_count):
             resref = reader.read_string(16).rstrip("\0")
             restype = ResourceType.from_id(reader.read_uint32())

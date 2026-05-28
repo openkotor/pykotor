@@ -21,66 +21,140 @@ class UTS:
     UTS files are GFF-based format files that store sound object definitions including
     audio settings, positioning, looping, and volume controls.
 
-    Sound objects in modules are GFF-backed: tag, ``TemplateResRef``, activation and playback flags
-    (active, continuous, looping, positional, random pick/position), distances, intervals, pitch
-    and volume, optional ``Sounds`` list entries, and optional position fields on instances in GIT.
-    Some fields (e.g. localized name, hours, times) appear in on-disk templates but are not relied on
-    for runtime behavior in the same way as the core audio flags. Observed retail KotOR I and TSL
-    share this layout; engine loader symbols and RVAs are in ``wiki/reverse_engineering_findings.md``.
-
-    Note: ``GFFContent.UTS``.
+    References:
+    ----------
+        vendor/reone/src/libs/resource/parser/gff/uts.cpp:34-64 (UTS parsing from GFF)
+        vendor/reone/include/reone/resource/parser/gff/uts.h:32-58 (UTS structure definitions)
+        vendor/Kotor.NET/Kotor.NET/Resources/KotorUTS/UTS.cs:11-38 (UTS class definition)
+        Note: UTS files are GFF format files with specific structure definitions
 
     Attributes:
     ----------
         resref: "TemplateResRef" field. The resource reference for this sound template.
+            Reference: reone/uts.cpp:59 (TemplateResRef field)
+            Reference: reone/uts.h:54 (TemplateResRef field)
+            Reference: Kotor.NET/UTS.cs:15 (TemplateResRef property)
 
         tag: "Tag" field. Tag identifier for this sound.
+            Reference: reone/uts.cpp:58 (Tag field)
+            Reference: reone/uts.h:53 (Tag field)
+            Reference: Kotor.NET/UTS.cs:13 (Tag property)
 
         active: "Active" field. Whether sound is active.
+            Reference: reone/uts.cpp:36 (Active field)
+            Reference: reone/uts.h:33 (Active field)
+            Reference: Kotor.NET/UTS.cs:16 (Active property)
 
         continuous: "Continuous" field. Whether sound plays continuously.
+            Reference: reone/uts.cpp:38 (Continuous field)
+            Reference: reone/uts.h:35 (Continuous field)
+            Reference: Kotor.NET/UTS.cs:17 (Continuous property)
 
         looping: "Looping" field. Whether sound loops.
+            Reference: reone/uts.cpp:44 (Looping field)
+            Reference: reone/uts.h:41 (Looping field)
+            Reference: Kotor.NET/UTS.cs:18 (Looping property)
 
         positional: "Positional" field. Whether sound is positional (3D).
+            Reference: reone/uts.cpp:49 (Positional field)
+            Reference: reone/uts.h:46 (Positional field)
+            Reference: Kotor.NET/UTS.cs:19 (Positional property)
 
         random_position: "RandomPosition" field. Whether sound position is randomized.
+            Reference: reone/uts.cpp:52 (RandomPosition field)
+            Reference: reone/uts.h:49 (RandomPosition field)
+            Reference: Kotor.NET/UTS.cs:20 (RandomPosition property)
 
         random_pick: "Random" field. Whether sound is randomly selected from list.
+            Reference: reone/uts.cpp:51 (Random field)
+            Reference: reone/uts.h:48 (Random field)
+            Reference: Kotor.NET/UTS.cs:21 (Random property)
 
         elevation: "Elevation" field. Elevation offset for positional sounds.
+            Reference: reone/uts.cpp:39 (Elevation field)
+            Reference: reone/uts.h:36 (Elevation field)
+            Reference: Kotor.NET/UTS.cs:22 (Elevation property)
 
         max_distance: "MaxDistance" field. Maximum distance for positional sounds.
+            Reference: reone/uts.cpp:45 (MaxDistance field)
+            Reference: reone/uts.h:42 (MaxDistance field)
+            Reference: Kotor.NET/UTS.cs:23 (MaxDistance property)
 
         min_distance: "MinDistance" field. Minimum distance for positional sounds.
+            Reference: reone/uts.cpp:46 (MinDistance field)
+            Reference: reone/uts.h:43 (MinDistance field)
+            Reference: Kotor.NET/UTS.cs:24 (MinDistance property)
 
         random_range_x: "RandomRangeX" field. X-axis range for random positioning.
+            Reference: reone/uts.cpp:53 (RandomRangeX field)
+            Reference: reone/uts.h:50 (RandomRangeX field)
+            Reference: Kotor.NET/UTS.cs:25 (RandomRangeX property)
 
         random_range_y: "RandomRangeY" field. Y-axis range for random positioning.
+            Reference: reone/uts.cpp:54 (RandomRangeY field)
+            Reference: reone/uts.h:51 (RandomRangeY field)
+            Reference: Kotor.NET/UTS.cs:26 (RandomRangeY property)
 
         interval: "Interval" field. Time interval between sound plays (in seconds).
+            Reference: reone/uts.cpp:41 (Interval field)
+            Reference: reone/uts.h:38 (Interval field)
+            Reference: Kotor.NET/UTS.cs:27 (Interval property)
 
         interval_variation: "IntervalVrtn" field. Variation in interval timing.
+            Reference: reone/uts.cpp:42 (IntervalVrtn field)
+            Reference: reone/uts.h:39 (IntervalVrtn field)
+            Reference: Kotor.NET/UTS.cs:28 (IntervalVrtn property)
 
         pitch_variation: "PitchVariation" field. Pitch variation amount.
+            Reference: reone/uts.cpp:48 (PitchVariation field)
+            Reference: reone/uts.h:45 (PitchVariation field)
+            Reference: Kotor.NET/UTS.cs:29 (PitchVariation property)
 
         priority: "Priority" field. Sound priority level.
+            Reference: reone/uts.cpp:50 (Priority field)
+            Reference: reone/uts.h:47 (Priority field)
+            Reference: Kotor.NET/UTS.cs:30 (Priority property)
 
         volume: "Volume" field. Volume level (0-255).
+            Reference: reone/uts.cpp:61 (Volume field)
+            Reference: reone/uts.h:56 (Volume field)
+            Reference: Kotor.NET/UTS.cs:33 (Volume property)
 
         volume_variation: "VolumeVrtn" field. Volume variation amount.
+            Reference: reone/uts.cpp:62 (VolumeVrtn field)
+            Reference: reone/uts.h:57 (VolumeVrtn field)
+            Reference: Kotor.NET/UTS.cs:34 (VolumeVrtn property)
 
         sounds: List of ResRef objects representing sound files to play.
+            Reference: reone/uts.cpp:55-57 (Sounds list parsing)
+            Reference: reone/uts.h:52 (Sounds vector)
+            Reference: reone/uts.h:28-30 (UTS_Sounds struct)
+            Reference: Kotor.NET/UTS.cs:35 (Sounds property)
 
         comment: "Comment" field. Developer comment.
+            Reference: reone/uts.cpp:37 (Comment field)
+            Reference: reone/uts.h:34 (Comment field)
+            Reference: Kotor.NET/UTS.cs:37 (Comment property)
 
         palette_id: "PaletteID" field. Palette identifier. Used in toolset only.
+            Reference: reone/uts.cpp:47 (PaletteID field)
+            Reference: reone/uts.h:44 (PaletteID field)
+            Reference: Kotor.NET/UTS.cs:36 (PaletteID property)
 
         name: "LocName" field. Localized name. Not used by the game engine.
+            Reference: reone/uts.cpp:43 (LocName field)
+            Reference: reone/uts.h:40 (LocName field)
+            Reference: Kotor.NET/UTS.cs:14 (LocName property)
 
         hours: "Hours" field. Hour restriction. Not used by the game engine.
+            Reference: reone/uts.cpp:40 (Hours field)
+            Reference: reone/uts.h:37 (Hours field)
+            Reference: Kotor.NET/UTS.cs:31 (Hours property)
 
         times: "Times" field. Time restriction. Not used by the game engine.
+            Reference: reone/uts.cpp:60 (Times field)
+            Reference: reone/uts.h:55 (Times field)
+            Reference: Kotor.NET/UTS.cs:32 (Times property)
             Note: PyKotor comment notes some files have this as uint8, others as uint32
     """
 
@@ -206,9 +280,7 @@ def dismantle_uts(
     if use_deprecated:
         root.set_locstring("LocName", uts.name)
         root.set_uint32("Hours", uts.hours)
-        root.set_uint8(
-            "Times", uts.times
-        )  # TODO(th3w1zard1): double check this. Some files have this field as uint8 others as uint32?
+        root.set_uint8("Times", uts.times)  # TODO(th3w1zard1): double check this. Some files have this field as uint8 others as uint32?
 
     return gff
 

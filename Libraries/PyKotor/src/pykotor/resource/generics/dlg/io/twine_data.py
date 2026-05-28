@@ -8,14 +8,13 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import TYPE_CHECKING, Any
 
-from pykotor.common.misc import Color, ResRef
 from utility.common.geometry import Vector2
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from pykotor.common.misc import Color
     from pykotor.resource.generics.dlg.base import DLG
-    from pykotor.resource.generics.dlg.nodes import DLGNode
 
 
 class PassageType(Enum):
@@ -49,9 +48,9 @@ class PassageMetadata:
     size: Vector2 = field(default_factory=lambda: Vector2(100.0, 100.0))  # Size in editor
     # KotOR-specific metadata
     speaker: str = ""  # For entries only
-    animation_id: int = 0  # Animation to play (0 means not set, use None for DLGNode.camera_anim)
+    animation_id: int = 0  # Animation to play
     camera_angle: int = 0  # Camera angle
-    camera_id: int | None = None  # Camera ID (None means not set, matching DLGNode default)
+    camera_id: int = 0  # Camera ID
     fade_type: int = 0  # Type of fade
     quest: str = ""  # Associated quest
     sound: str = ""  # Sound to play
@@ -169,7 +168,7 @@ class FormatConverter:
     def store_kotor_metadata(
         self,
         passage: TwinePassage,
-        dlg_node: DLGNode,
+        dlg_node: Any,
     ) -> None:
         """Store KotOR-specific metadata in a Twine passage.
 
@@ -183,19 +182,17 @@ class FormatConverter:
             dlg_node: The KotOR dialog node to get metadata from
         """
         meta = passage.metadata
-        # camera_anim in DLGNode maps to animation_id in PassageMetadata
-        meta.animation_id = dlg_node.camera_anim if dlg_node.camera_anim is not None else 0
-        meta.camera_angle = dlg_node.camera_angle
-        meta.camera_id = dlg_node.camera_id if dlg_node.camera_id is not None else 0
-        meta.fade_type = dlg_node.fade_type
-        meta.quest = dlg_node.quest
-        # ResRef objects are converted to strings for storage
-        meta.sound = str(dlg_node.sound) if dlg_node.sound else ""
-        meta.vo_resref = str(dlg_node.vo_resref) if dlg_node.vo_resref else ""
+        meta.animation_id = getattr(dlg_node, "animation_id", 0)
+        meta.camera_angle = getattr(dlg_node, "camera_angle", 0)
+        meta.camera_id = getattr(dlg_node, "camera_id", 0)
+        meta.fade_type = getattr(dlg_node, "fade_type", 0)
+        meta.quest = getattr(dlg_node, "quest", "")
+        meta.sound = getattr(dlg_node, "sound", "")
+        meta.vo_resref = getattr(dlg_node, "vo_resref", "")
 
     def restore_kotor_metadata(
         self,
-        dlg_node: DLGNode,
+        dlg_node: Any,
         passage: TwinePassage,
     ) -> None:
         """Restore KotOR-specific metadata from a Twine passage.
@@ -209,37 +206,10 @@ class FormatConverter:
             passage: The Twine passage to get metadata from
         """
         meta: PassageMetadata = passage.metadata
-        # animation_id in PassageMetadata maps to camera_anim in DLGNode
-        # 0 means not set (use None), non-zero means explicitly set
-        if meta.animation_id != 0:
-            dlg_node.camera_anim = meta.animation_id
-        # else: leave as None (DLGNode default) for new files with no metadata
-
-        # camera_angle is always an int (defaults to 0, which is valid)
-        dlg_node.camera_angle = meta.camera_angle
-
-        # camera_id can be None or int - None means not set (new file), int means explicitly set
-        if meta.camera_id is not None:
-            dlg_node.camera_id = meta.camera_id
-        # else: leave as None (DLGNode default) for new files with no metadata
-
-        # fade_type is always an int (defaults to 0, which is valid)
-        dlg_node.fade_type = meta.fade_type
-
-        # quest is a string (defaults to "", which is valid)
-        dlg_node.quest = meta.quest
-
-        # sound is a ResRef, stored as string in metadata
-        # Only set if non-empty (empty string means not set for new files)
-        if meta.sound:
-            dlg_node.sound = ResRef(meta.sound)
-        # else: leave as ResRef.from_blank() (DLGNode default) for new files
-
-        # vo_resref is a ResRef, stored as string in metadata
-        # Only set if non-empty (empty string means not set for new files)
-        if meta.vo_resref:
-            dlg_node.vo_resref = ResRef(meta.vo_resref)
-        # else: leave as ResRef.from_blank() (DLGNode default) for new files
+        for feature in self.kotor_only_features:
+            if not hasattr(meta, feature):
+                continue
+            setattr(dlg_node, feature, getattr(meta, feature))
 
     def store_twine_metadata(
         self,
@@ -293,30 +263,7 @@ class FormatConverter:
             twine_data: dict[str, Any] = json.loads(dlg.comment)
             story.metadata.style = twine_data.get("style", "")
             story.metadata.script = twine_data.get("script", "")
-
-            # Restore tag_colors, converting string representations back to Color objects
-            tag_colors_raw = twine_data.get("tag_colors", {})
-            tag_colors_restored: dict[str, Color] = {}
-            for tag_name, color_value in tag_colors_raw.items():
-                if isinstance(color_value, str):
-                    # Parse string format "r g b a" back to Color object
-                    components = color_value.split()
-                    if len(components) == 4:
-                        r, g, b, a = (
-                            float(components[0]),
-                            float(components[1]),
-                            float(components[2]),
-                            float(components[3]),
-                        )
-                        tag_colors_restored[tag_name] = Color(r, g, b, a)
-                    elif len(components) == 3:
-                        r, g, b = float(components[0]), float(components[1]), float(components[2])
-                        tag_colors_restored[tag_name] = Color(r, g, b, 1.0)
-                elif isinstance(color_value, Color):
-                    # Already a Color object (shouldn't happen, but handle gracefully)
-                    tag_colors_restored[tag_name] = color_value
-
-            story.metadata.tag_colors = tag_colors_restored
+            story.metadata.tag_colors = dict(twine_data.get("tag_colors", {}).items())
             story.metadata.format = twine_data.get("format", "Harlowe")
             story.metadata.format_version = twine_data.get("format_version", "3.3.7")
             story.metadata.creator = twine_data.get("creator", "PyKotor")
@@ -325,15 +272,3 @@ class FormatConverter:
         except (json.JSONDecodeError, ValueError, KeyError, TypeError):  # noqa: S110
             # If metadata restoration fails, keep defaults
             pass
-
-    # Convenience wrappers so callers/tests can use the converter instance directly.
-    # These delegate to the module-level converters to keep a single implementation.
-    def _story_to_dlg(self, story: TwineStory) -> DLG:
-        from .twine import _story_to_dlg as _story_to_dlg_fn  # local import to avoid cycles
-
-        return _story_to_dlg_fn(story)
-
-    def _dlg_to_story(self, dlg: DLG, metadata: dict[str, Any] | None = None) -> TwineStory:
-        from .twine import _dlg_to_story as _dlg_to_story_fn  # local import to avoid cycles
-
-        return _dlg_to_story_fn(dlg, metadata)

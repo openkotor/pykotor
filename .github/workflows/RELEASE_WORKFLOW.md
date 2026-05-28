@@ -55,6 +55,8 @@ The unified `release_tools.yml` workflow **dynamically discovers tools** from th
 | **HolocronToolset** | `v*-toolset` | `Tools/HolocronToolset/src/toolset/config/config_info.py` | `currentVersion` |
 | **HoloPatcher** | `v*-patcher` | `Tools/HoloPatcher/src/holopatcher/config.py` | `currentVersion` |
 | **KotorDiff** | `v*-kotordiff` | `Tools/KotorDiff/src/kotordiff/__main__.py` | `CURRENT_VERSION` |
+| **GuiConverter** | `v*-guiconverter` | `Tools/GuiConverter/src/guiconverter/__main__.py` | `CURRENT_VERSION` |
+| **KitGenerator** | `v*-kitgenerator` | `Tools/KitGenerator/src/kitgenerator/__init__.py` | `__version__` |
 | **Translator** | `v*-translator` | `Tools/Translator/src/translator/__main__.py` | `CURRENT_VERSION` |
 
 ### Config File Discovery
@@ -99,7 +101,7 @@ The workflow searches for version information in this order:
    ```
 
 3. **Create pre-release on GitHub:**
-   - Go to [Releases](https://github.com/OpenKotOR/PyKotor/releases/new)
+   - Go to [Releases](https://github.com/th3w1zard1/PyKotor/releases/new)
    - Tag: `v3.1.3-toolset`
    - Title: `toolset v3.1.3`
    - Check "Set as a pre-release"
@@ -121,11 +123,11 @@ When you create a PR that touches tool files, the **PR Build Validation** workfl
 
 The workflow triggers on changes to:
 
-- `Tools/HolocronToolset/**` -> Tests toolset
-- `Tools/HoloPatcher/**` -> Tests holopatcher
-- `Tools/KotorDiff/**` -> Tests kotordiff
-- `Libraries/**` -> Tests ALL tools (shared code)
-- `compile/**` -> Tests ALL tools (build scripts)
+- `Tools/HolocronToolset/**` → Tests toolset
+- `Tools/HoloPatcher/**` → Tests holopatcher
+- `Tools/KotorDiff/**` → Tests kotordiff
+- `Libraries/**` → Tests ALL tools (shared code)
+- `compile/**` → Tests ALL tools (build scripts)
 
 ### What Happens
 
@@ -143,7 +145,7 @@ The workflow triggers on changes to:
 
 Run this workflow before releasing to validate everything is ready:
 
-1. Go to **Actions** -> **Release Readiness Check**
+1. Go to **Actions** → **Release Readiness Check**
 2. Click **Run workflow**
 3. Select tool and enter version
 4. Optionally enable full builds
@@ -185,7 +187,7 @@ The `.github/actions/build-tool` action is reusable across all workflows:
     tool_name: toolset
     python_version: '3.8'
     architecture: x64
-    qt_version: 'PyQt6'
+    qt_version: 'PyQt5'
     dry_run: 'true'  # Set to 'false' for full build
 ```
 
@@ -219,9 +221,9 @@ Use the `TEST_release_toolset.yml` workflow:
 
 1. Check the **Actions** tab for detailed logs
 2. Common issues:
-   - Import errors -> Check dependencies in `requirements.txt`
-   - PyInstaller errors -> Check spec file or `compile/` scripts
-   - Missing files -> Check paths in your changes
+   - Import errors → Check dependencies in `requirements.txt`
+   - PyInstaller errors → Check spec file or `compile/` scripts
+   - Missing files → Check paths in your changes
 
 ### Release Workflow Fails
 

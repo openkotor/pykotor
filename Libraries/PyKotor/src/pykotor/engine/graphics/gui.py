@@ -2,14 +2,14 @@
 
 This module provides minimal GUI infrastructure for testing without full rendering backend.
 
-Retail ``.gui`` layouts are GFF hierarchies (controls, extents, text, borders); observed behavior and
-historical loader cross-references are documented under *PyKotor package: migrated library notes*
-in ``wiki/reverse_engineering_findings.md`` (GUI subsection).
-
-Derivations and other implementations:
+References:
 ----------
-
-
+    vendor/reone/src/libs/gui/gui.cpp - GUI system implementation
+    vendor/reone/include/reone/gui/control.h - GUI control interface
+    vendor/KotOR.js/src/gui/ - GUI control implementations
+    vendor/KotOR-Unity/Assets/Scripts/UI/ - Unity GUI implementation
+    vendor/KotOR-dotNET - C# GUI handling
+    vendor/kotorblender - GUI mesh export
     Note: This is a minimal stub for testing; full GUI implementation would use a rendering backend
 """
 
@@ -69,3 +69,4 @@ class GUIManager:
     def remove_gui(self, gui: GUI) -> None:
         """Remove a GUI instance from management."""
         self._guis.pop(gui.name, None)
+

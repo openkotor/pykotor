@@ -17,19 +17,20 @@ if TYPE_CHECKING:
 
 class TPCBMPWriter(ResourceWriter):
     """Writes TPC textures as BMP (Windows Bitmap) image files.
-
+    
     Converts TPC textures to standard BMP format. Currently only writes the first
     mipmap layer as RGB24 format.
-
-    This writer exports the decoded RGB raster from a ``TPC`` mip; BMP itself is a standard
-    Windows bitmap container.
-
+    
+    References:
+    ----------
+        Standard BMP file format specification (Windows Bitmap)
+        Note: BMP is a standard format, no specific vendor implementation needed
+    
     Missing Features:
     ----------------
         - Only writes first layer/mipmap (TODO: Other layers)
         - No alpha channel support (BMP format limitation)
     """
-
     def __init__(
         self,
         tpc: TPC,

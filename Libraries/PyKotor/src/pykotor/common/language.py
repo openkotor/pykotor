@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import IntEnum
-from typing import TYPE_CHECKING, Any, Generator, cast, overload
+from typing import TYPE_CHECKING, Any, Generator, overload
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -14,10 +14,15 @@ class Language(IntEnum):
     """Language IDs recognized by both the games.
 
     Found in the TalkTable header, and CExoLocStrings (LocalizedStrings) within GFFs.
-
-    Note: Official releases support English, French, German, Italian, Spanish, Polish
-            Custom language support added for localization beyond official releases
-
+    
+    References:
+    ----------
+        vendor/reone/include/reone/resource/types.h (Language enum)
+        vendor/xoreos-tools/src/common/types.h (Language ID definitions)
+        vendor/KotOR.js/src/resource/ResourceTypes.ts (Language enum)
+        vendor/KotOR-dotNET/AuroraFile.cs (Language enum)
+        Note: Official releases support English, French, German, Italian, Spanish, Polish
+              Custom language support added for localization beyond official releases
     """
 
     # UNSET = 0x7FFFFFFF  # noqa: ERA001
@@ -203,8 +208,6 @@ class Language(IntEnum):
     CHINESE_TRADITIONAL = 129
     CHINESE_SIMPLIFIED = 130
     JAPANESE = 131
-
-    UNSET = 0x7FFFFFFF
 
     @classmethod
     def _missing_(cls, value: Any) -> Language:
@@ -698,9 +701,9 @@ class LocalizedString:
         return {"stringref": self.stringref, "substrings": self._substrings}
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Self:
-        localized_string = cls(stringref=data.get("stringref", -1))
-        localized_string._substrings = cast("dict[int, str]", data.get("substrings", {}))
+    def from_dict(cls, data: dict) -> Self:
+        localized_string = cls(data["stringref"])
+        localized_string._substrings = data.get("substrings", {})
         return localized_string
 
     @classmethod
@@ -726,9 +729,11 @@ class LocalizedString:
     @overload
     @staticmethod
     def substring_id(language: Language, gender: Gender) -> int: ...
+
     @overload
     @staticmethod
     def substring_id(language: int, gender: int) -> int: ...
+
     @staticmethod
     def substring_id(language: Language | int, gender: Gender | int) -> int:
         """Returns the ID for the language gender pair.
@@ -782,9 +787,21 @@ class LocalizedString:
         return language, gender
 
     @overload
-    def set_data(self, language: Language, gender: Gender, string: str) -> None: ...
+    def set_data(
+        self,
+        language: Language | int,
+        gender: Gender | int,
+        string: str,
+    ) -> None: ...
+
     @overload
-    def set_data(self, language: int, gender: int, string: str) -> None: ...
+    def set_data(
+        self,
+        language: int,
+        gender: int,
+        string: str,
+    ) -> None: ...
+
     def set_data(
         self,
         language: Language | int,
@@ -820,19 +837,32 @@ class LocalizedString:
         substring_id: int = LocalizedString.substring_id(language_enum, gender_enum)
         self._substrings[substring_id] = string
 
-    def set_string(self, substring_id: int | str, string: str) -> None:
-        """Backward-compatible alias that uses numeric substring ids (language*2 + gender)."""
-        language, gender = LocalizedString.substring_pair(int(substring_id))
-        self.set_data(language, gender, string)
+    @overload
+    def get(
+        self,
+        language: Language | int,
+        gender: Gender | int | None = None,
+        *,
+        use_fallback: bool = False,
+    ) -> str | None: ...
 
     @overload
     def get(
-        self, language: Language, gender: Gender, *, use_fallback: bool = False
+        self,
+        language: int,
+        gender: int,
+        *,
+        use_fallback: bool = False,
     ) -> str | None: ...
+
     @overload
-    def get(self, language: int, gender: int, *, use_fallback: bool = False) -> str | None: ...
-    @overload
-    def get(self, language: int, *, use_fallback: bool = False) -> str | None: ...
+    def get(
+        self,
+        language: int,
+        *,
+        use_fallback: bool = False,
+    ) -> str | None: ...
+
     def get(
         self,
         language: Language | int,
@@ -845,13 +875,13 @@ class LocalizedString:
         Supports both enum and integer arguments for backward compatibility.
         Can be called as:
         - get(Language.ENGLISH, Gender.MALE) - enum arguments
-        - get(0, 0) - integer arguments
+        - get(0, 0) - integer arguments  
         - get(0) - single integer (gender defaults to 0/MALE)
 
         Args:
         ----
             language: The language (Language enum or int).
-            gender: The gender (Gender enum or int).
+            gender: The gender (Gender enum or int). 
                 If None and language is int, defaults to Gender.MALE (0) for backward compatibility with get(0).
 
         Returns:
@@ -873,14 +903,22 @@ class LocalizedString:
             gender_enum = gender
 
         substring_id: int = LocalizedString.substring_id(language_enum, gender_enum)
-        return self._substrings.get(
-            substring_id, next(iter(self._substrings.values()), None) if use_fallback else None
-        )
+        return self._substrings.get(substring_id, next(iter(self._substrings.values()), None) if use_fallback else None)
 
     @overload
-    def remove(self, language: Language, gender: Gender) -> None: ...
+    def remove(
+        self,
+        language: Language,
+        gender: Gender,
+    ) -> None: ...
+
     @overload
-    def remove(self, language: int, gender: int) -> None: ...
+    def remove(
+        self,
+        language: int,
+        gender: int,
+    ) -> None: ...
+
     def remove(
         self,
         language: Language | int,
@@ -915,9 +953,19 @@ class LocalizedString:
         self._substrings.pop(substring_id)
 
     @overload
-    def exists(self, language: Language, gender: Gender) -> bool: ...
+    def exists(
+        self,
+        language: Language,
+        gender: Gender,
+    ) -> bool: ...
+
     @overload
-    def exists(self, language: int, gender: int) -> bool: ...
+    def exists(
+        self,
+        language: int,
+        gender: int,
+    ) -> bool: ...
+
     def exists(
         self,
         language: Language | int,

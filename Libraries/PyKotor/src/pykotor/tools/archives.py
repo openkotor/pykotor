@@ -6,11 +6,12 @@ by any application that needs to work with archives.
 
 References:
 ----------
-        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
-
-
+    vendor/reone/src/libs/tools/legacy/keybif.cpp:78-112 - KEY/BIF extraction
+    vendor/xoreos-tools/src/unkeybif.cpp - KEY/BIF extraction tool
+    vendor/xoreos-tools/src/unerf.cpp - ERF extraction tool
+    vendor/xoreos-tools/src/unrim.cpp - RIM extraction tool
+    vendor/xoreos-tools/src/archives/util.h - Archive utilities interface
 """
-
 from __future__ import annotations
 
 import fnmatch
@@ -29,68 +30,6 @@ if TYPE_CHECKING:
     from pykotor.resource.bioware_archive import ArchiveResource
 
 
-def _build_bif_path_lookup(search_dir: Path) -> tuple[dict[str, Path], dict[str, Path]]:
-    """Build lookup tables for BIF resolution.
-
-    KEY files may store BIF names as just a filename (e.g. ``templates.bif``) or as a
-    relative path (e.g. ``data/templates.bif``). On disk, KOTOR installs commonly
-    place BIFs under ``data/``.
-    """
-    by_basename: dict[str, Path] = {}
-    by_relposix: dict[str, Path] = {}
-
-    if not search_dir.exists():
-        return by_basename, by_relposix
-
-    # Scan once, then resolve many. This keeps KEY extraction fast even with a lot of BIFs.
-    for candidate in search_dir.rglob("*.bif"):
-        if not candidate.is_file():
-            continue
-
-        by_basename.setdefault(candidate.name.lower(), candidate)
-        try:
-            rel = candidate.relative_to(search_dir)
-        except Exception:
-            continue
-        by_relposix.setdefault(rel.as_posix().lower(), candidate)
-
-    return by_basename, by_relposix
-
-
-def _resolve_bif_path(
-    *,
-    search_dir: Path,
-    bif_name: str,
-    by_basename: dict[str, Path] | None = None,
-    by_relposix: dict[str, Path] | None = None,
-) -> Path | None:
-    """Resolve a KEY BIF entry filename to an on-disk path."""
-    normalized = bif_name.replace("\\", "/").lstrip("/").lstrip("./")
-
-    direct = search_dir / normalized
-    if direct.exists():
-        return direct
-
-    # Common install layout: <root>/data/*.bif
-    direct_data = search_dir / "data" / normalized
-    if direct_data.exists():
-        return direct_data
-
-    # Lookup by relative path or basename (case-insensitive)
-    if by_relposix is not None:
-        found = by_relposix.get(normalized.lower())
-        if found and found.exists():
-            return found
-
-    if by_basename is not None:
-        basename = Path(normalized).name.lower()
-        found = by_basename.get(basename)
-        if found and found.exists():
-            return found
-
-    return None
-
-
 def matches_filter(text: str, pattern: str) -> bool:
     """Check if text matches filter pattern (supports wildcards).
 
@@ -106,27 +45,6 @@ def matches_filter(text: str, pattern: str) -> bool:
     if "*" in pattern or "?" in pattern:
         return fnmatch.fnmatch(text.lower(), pattern.lower())
     return pattern.lower() in text.lower()
-
-
-def _iter_filtered_resources(
-    resources: Iterator[ArchiveResource],
-    *,
-    filter_pattern: str | None,
-    resource_filter: Callable[[ArchiveResource], bool] | None,
-    fallback_resref: Callable[[int], str],
-) -> Iterator[tuple[ArchiveResource, str, str]]:
-    """Yield filtered resources with normalized resref and extension."""
-    for index, resource in enumerate(resources):
-        resref = resource.resref.get() if resource.resref else fallback_resref(index)
-
-        if resource_filter is not None:
-            if not resource_filter(resource):
-                continue
-        elif filter_pattern and not matches_filter(resref, filter_pattern):
-            continue
-
-        ext = resource.restype.extension if resource.restype else "bin"
-        yield resource, resref, ext
 
 
 def extract_erf(
@@ -154,19 +72,24 @@ def extract_erf(
 
     References:
     ----------
-        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
-
-
+        vendor/xoreos-tools/src/unerf.cpp
+        vendor/reone/src/libs/resource/format/erfreader.cpp
     """
     erf_data = read_erf(erf_path)
 
-    for resource, resref, ext in _iter_filtered_resources(
-        iter(erf_data),
-        filter_pattern=filter_pattern,
-        resource_filter=resource_filter,
-        fallback_resref=lambda _index: "unknown",
-    ):
+    for resource in erf_data:
+        resref = resource.resref.get() if resource.resref else "unknown"
+
+        # Apply filters
+        if resource_filter is not None:
+            if not resource_filter(resource):
+                continue
+        elif filter_pattern and not matches_filter(resref, filter_pattern):
+            continue
+
+        ext = resource.restype.extension if resource.restype else "bin"
         output_file = output_dir / f"{resref}.{ext}"
+
         yield resource, output_file
 
 
@@ -195,19 +118,24 @@ def extract_rim(
 
     References:
     ----------
-        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
-
-
+        vendor/xoreos-tools/src/unrim.cpp
+        vendor/reone/src/libs/resource/format/rimreader.cpp
     """
     rim_data = read_rim(rim_path)
 
-    for resource, resref, ext in _iter_filtered_resources(
-        iter(rim_data),
-        filter_pattern=filter_pattern,
-        resource_filter=resource_filter,
-        fallback_resref=lambda _index: "unknown",
-    ):
+    for resource in rim_data:
+        resref = resource.resref.get() if resource.resref else "unknown"
+
+        # Apply filters
+        if resource_filter is not None:
+            if not resource_filter(resource):
+                continue
+        elif filter_pattern and not matches_filter(resref, filter_pattern):
+            continue
+
+        ext = resource.restype.extension if resource.restype else "bin"
         output_file = output_dir / f"{resref}.{ext}"
+
         yield resource, output_file
 
 
@@ -238,22 +166,26 @@ def extract_bif(
 
     References:
     ----------
-        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
-
-
+        vendor/reone/src/libs/tools/legacy/keybif.cpp:78-112
     """
     key_source = key_path if key_path and key_path.exists() else None
 
     with bif_path.open("rb") as bif_file:
         bif_data = read_bif(bif_file, key_source=key_source)
 
-    for resource, resref, ext in _iter_filtered_resources(
-        iter(bif_data),
-        filter_pattern=filter_pattern,
-        resource_filter=resource_filter,
-        fallback_resref=lambda index: f"resource_{index:05d}",
-    ):
+    for i, resource in enumerate(bif_data):
+        resref = resource.resref.get() if resource.resref else f"resource_{i:05d}"
+
+        # Apply filters
+        if resource_filter is not None:
+            if not resource_filter(resource):
+                continue
+        elif filter_pattern and not matches_filter(resref, filter_pattern):
+            continue
+
+        ext = resource.restype.extension if resource.restype else "bin"
         output_file = output_dir / f"{resref}.{ext}"
+
         yield resource, output_file
 
 
@@ -284,9 +216,8 @@ def extract_key_bif(
 
     References:
     ----------
-        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
-
-
+        vendor/reone/src/libs/tools/legacy/keybif.cpp:78-112
+        vendor/xoreos-tools/src/unkeybif.cpp
     """
     with key_path.open("rb") as key_file:
         key_data = read_key(key_file)
@@ -294,19 +225,23 @@ def extract_key_bif(
     # Find BIF files
     search_dir = bif_search_dir if bif_search_dir else key_path.parent
     bif_files: dict[int, Path] = {}
-    by_basename, by_relposix = _build_bif_path_lookup(search_dir)
 
-    for bif_index, bif_entry in enumerate(key_data.bif_entries):
+    for bif_entry in key_data.bif_entries:
         bif_name = bif_entry.filename
-        resolved = _resolve_bif_path(
-            search_dir=search_dir,
-            bif_name=bif_name,
-            by_basename=by_basename,
-            by_relposix=by_relposix,
-        )
-        if resolved is None:
-            continue  # Skip missing BIF files
-        bif_files[bif_index] = resolved
+        bif_path = search_dir / bif_name
+
+        if not bif_path.exists():
+            # Try case-insensitive search
+            for candidate in search_dir.iterdir():
+                if candidate.name.lower() == bif_name.lower():
+                    bif_path = candidate
+                    break
+            else:
+                continue  # Skip missing BIF files
+
+        # Store BIF path by its index
+        bif_index = key_data.bif_entries.index(bif_entry)
+        bif_files[bif_index] = bif_path
 
     # Extract from each BIF
     for bif_index, bif_path in bif_files.items():
@@ -329,14 +264,6 @@ def extract_key_bif(
             yield resource, output_file, bif_path
 
 
-def _list_archive(
-    path: Path,
-    read_archive: Callable[[Path], Iterator[ArchiveResource]],
-) -> Iterator[ArchiveResource]:
-    """Yield all resources from an archive using the given reader. Shared helper for list_erf/list_rim."""
-    yield from read_archive(path)
-
-
 def list_erf(erf_path: Path) -> Iterator[ArchiveResource]:
     """List all resources in an ERF/MOD/SAV/HAK archive.
 
@@ -348,7 +275,8 @@ def list_erf(erf_path: Path) -> Iterator[ArchiveResource]:
     ------
         ArchiveResource objects for each resource in the archive
     """
-    return _list_archive(erf_path, read_erf)
+    erf_data = read_erf(erf_path)
+    yield from erf_data
 
 
 def list_rim(rim_path: Path) -> Iterator[ArchiveResource]:
@@ -362,7 +290,8 @@ def list_rim(rim_path: Path) -> Iterator[ArchiveResource]:
     ------
         ArchiveResource objects for each resource in the archive
     """
-    return _list_archive(rim_path, read_rim)
+    rim_data = read_rim(rim_path)
+    yield from rim_data
 
 
 def list_bif(
@@ -434,9 +363,8 @@ def create_erf_from_directory(
 
     References:
     ----------
-        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
-
-
+        vendor/reone/src/libs/tools/legacy/erf.cpp:83-130 - ERF creation from directory
+        vendor/xoreos-tools/src/erf.cpp:49-96 - ERF packing
     """
     from pykotor.common.misc import ResRef
     from pykotor.resource.formats.erf.erf_auto import write_erf
@@ -510,9 +438,8 @@ def create_rim_from_directory(
 
     References:
     ----------
-        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
-
-
+        vendor/reone/src/libs/tools/legacy/rim.cpp:83-121 - RIM creation from directory
+        vendor/xoreos-tools/src/rim.cpp:43-84 - RIM packing
     """
     from pykotor.common.misc import ResRef
     from pykotor.resource.formats.rim.rim_auto import write_rim
@@ -580,9 +507,8 @@ def search_in_erf(
 
     References:
     ----------
-        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
-
-
+        vendor/neverwinter.nim/nwn_resman_grep - Resource grep utility
+        vendor/xoreos-tools/src/ - Archive search utilities
     """
     import re
 
@@ -702,9 +628,8 @@ def get_resource_from_archive(
 
     References:
     ----------
-        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
+        vendor/neverwinter.nim/nwn_resman_cat - Resource cat utility
         Tools/HolocronToolset/src/toolset/utils/misc.py:221-262 - get_resource_from_file
-
     """
     from pykotor.resource.type import ResourceType
 
@@ -741,81 +666,6 @@ def get_resource_from_archive(
             if result is not None:
                 return result
 
-    elif suffix == ".bif":
-        # BIFs can be read directly, but names may be numeric without a KEY.
-        key_source = archive_path.parent / "chitin.key"
-        key_path = key_source if key_source.exists() else None
-        with archive_path.open("rb") as bif_file:
-            bif_data = read_bif(bif_file, key_source=key_path)
-
-        if resource_type:
-            for resource in bif_data:
-                if resource.resref and resource.restype:
-                    if (
-                        resource.resref.get().lower() == resref.lower()
-                        and resource.restype == resource_type
-                    ):
-                        return resource.data
-            return None
-
-        # Try common types if not specified
-        for common_type in [ResourceType.NSS, ResourceType.DLG, ResourceType.UTC, ResourceType.UTI]:
-            for resource in bif_data:
-                if resource.resref and resource.restype:
-                    if (
-                        resource.resref.get().lower() == resref.lower()
-                        and resource.restype == common_type
-                    ):
-                        return resource.data
-        return None
-
-    elif suffix == ".key":
-        # KEY provides the BIF + resource indices. Resolve BIF paths relative to the KEY.
-        with archive_path.open("rb") as key_file:
-            key_data = read_key(key_file)
-
-        def _try_get_key_entry(rt: ResourceType) -> object | None:
-            return key_data.get_resource(resref, rt)
-
-        key_entry = _try_get_key_entry(resource_type) if resource_type else None
-        if key_entry is None and resource_type is None:
-            for common_type in [
-                ResourceType.NSS,
-                ResourceType.DLG,
-                ResourceType.UTC,
-                ResourceType.UTI,
-            ]:
-                key_entry = _try_get_key_entry(common_type)
-                if key_entry is not None:
-                    break
-
-        if key_entry is None:
-            return None
-
-        bif_index = key_entry.bif_index
-        res_index = key_entry.res_index
-        if bif_index < 0 or bif_index >= len(key_data.bif_entries):
-            return None
-
-        search_dir = archive_path.parent
-        by_basename, by_relposix = _build_bif_path_lookup(search_dir)
-        bif_name = key_data.bif_entries[bif_index].filename
-        bif_path = _resolve_bif_path(
-            search_dir=search_dir,
-            bif_name=bif_name,
-            by_basename=by_basename,
-            by_relposix=by_relposix,
-        )
-        if bif_path is None:
-            return None
-
-        with bif_path.open("rb") as bif_file:
-            bif_data = read_bif(bif_file, key_source=archive_path)
-        for i, resource in enumerate(bif_data):
-            if i == res_index:
-                return resource.data
-        return None
-
     return None
 
 
@@ -837,9 +687,9 @@ def create_key_from_directory(
 
     References:
     ----------
-        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
+        vendor/xoreos-tools/src/keybif.cpp - KEY/BIF creation tool
+        vendor/reone/src/libs/resource/format/keywriter.cpp - KEY writing
         Libraries/PyKotor/src/pykotor/extract/keywriter.py:44-143 - KEYWriter class
-
     """
     from pykotor.common.misc import ResRef
     from pykotor.resource.formats.bif.bif_auto import read_bif
@@ -897,3 +747,4 @@ def create_key_from_directory(
     key.build_lookup_tables()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     write_key(key, output_path)
+

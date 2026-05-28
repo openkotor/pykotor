@@ -5,9 +5,8 @@ attempting to parse and reconstruct valid data structures.
 
 References:
 ----------
-        Observed retail KotOR GFF structure (salvage aligns with on-disk GFF layout).
-
-
+    vendor/reone/src/libs/resource/gff.cpp (GFF parsing error handling)
+    vendor/xoreos-tools/src/resource/gff.cpp (GFF recovery logic)
     Note: Salvage operations try to recover data when primary parsing fails
 """
 
@@ -140,11 +139,7 @@ def validate_capsule(
 
 
 def validate_resource(  # noqa: C901, PLR0911, PLR0912
-    resource: FileResource | ERFResource | RIMResource,
-    *,
-    strict: bool = False,
-    game: Game | None = None,
-    should_raise: bool = False,
+    resource: FileResource | ERFResource | RIMResource, *, strict: bool = False, game: Game | None = None, should_raise: bool = False
 ) -> bytes | bytearray | None:
     """Attempts to validate a kotor resource by loading into memory.
 
@@ -164,12 +159,8 @@ def validate_resource(  # noqa: C901, PLR0911, PLR0912
         TypeError - Invalid argument type passed to capsule_obj. This is the ONLY time this function will ever throw.
     """
     try:
-        data: bytes | bytearray = (
-            resource.data() if isinstance(resource, FileResource) else resource.data
-        )  # pyright: ignore[reportArgumentType]
-        restype: ResourceType = (
-            resource.restype() if isinstance(resource, FileResource) else resource.restype
-        )  # pyright: ignore[reportArgumentType]
+        data: bytes | bytearray = resource.data() if isinstance(resource, FileResource) else resource.data  # pyright: ignore[reportArgumentType]
+        restype: ResourceType = resource.restype() if isinstance(resource, FileResource) else resource.restype  # pyright: ignore[reportArgumentType]
         if restype.is_gff():
             loaded_gff: GFF = read_gff(data)
             if strict and game is not None:
@@ -208,9 +199,7 @@ def validate_resource(  # noqa: C901, PLR0911, PLR0912
     except Exception as e:
         if should_raise:
             raise
-        RobustLogger().error(
-            f"Corrupted resource: {resource!r}", exc_info=not isinstance(e, (OSError, ValueError))
-        )
+        RobustLogger().error(f"Corrupted resource: {resource!r}", exc_info=not isinstance(e, (OSError, ValueError)))
     return None
 
 
@@ -240,10 +229,7 @@ def _load_as_erf_rim(  # noqa: C901, PLR0912, PLR0911
         try:
             return capsule_obj.as_cached()
         except Exception:  # noqa: BLE001
-            RobustLogger().warning(
-                f"Corrupted {type(capsule_obj).__name__} object passed to `validate_capsule` could not be loaded into memory",
-                exc_info=True,
-            )
+            RobustLogger().warning(f"Corrupted {type(capsule_obj).__name__} object passed to `validate_capsule` could not be loaded into memory", exc_info=True)
             return None
 
     if isinstance(capsule_obj, (ERF, RIM)):
@@ -254,9 +240,7 @@ def _load_as_erf_rim(  # noqa: C901, PLR0912, PLR0911
             path = Path(capsule_obj)
             return LazyCapsule(path, create_nonexisting=True).as_cached()
         except Exception:  # noqa: BLE001
-            RobustLogger().warning(
-                f"Invalid path passed to `validate_capsule`: '{capsule_obj}'", exc_info=True
-            )
+            RobustLogger().warning(f"Invalid path passed to `validate_capsule`: '{capsule_obj}'", exc_info=True)
             return None
 
     if isinstance(capsule_obj, BASE_SOURCE_TYPES):
@@ -268,26 +252,19 @@ def _load_as_erf_rim(  # noqa: C901, PLR0912, PLR0911
                 try:
                     return read_rim(capsule_obj)
                 except Exception:  # noqa: BLE001
-                    RobustLogger().error(
-                        "the binary data passed to `validate_capsule` could not be loaded as an ERF/RIM.",
-                        exc_info=True,
-                    )
+                    RobustLogger().error("the binary data passed to `validate_capsule` could not be loaded as an ERF/RIM.", exc_info=True)
                     return None
         elif is_any_erf_type_file(capsule_obj):
             try:
                 return read_erf(capsule_obj)
             except Exception:  # noqa: BLE001
-                RobustLogger().error(
-                    f"'{capsule_obj}' is not a valid filepath to an ERF", exc_info=True
-                )
+                RobustLogger().error(f"'{capsule_obj}' is not a valid filepath to an ERF", exc_info=True)
                 return None
         else:
             try:
                 return read_rim(capsule_obj)
             except Exception:  # noqa: BLE001
-                RobustLogger().error(
-                    f"'{capsule_obj}' is not a valid filepath to a RIM", exc_info=True
-                )
+                RobustLogger().error(f"'{capsule_obj}' is not a valid filepath to a RIM", exc_info=True)
                 return None
 
     raise TypeError(

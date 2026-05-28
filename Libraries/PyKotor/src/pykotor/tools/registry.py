@@ -20,6 +20,16 @@ if TYPE_CHECKING:
     from typing_extensions import Literal, Self  # pyright: ignore[reportMissingModuleSource]
 
 
+"""Windows registry paths and game installation detection.
+
+References:
+----------
+    vendor/KOTOR_Registry_Install_Path_Editor (Registry path detection tool)
+    vendor/HoloPatcher.NET/src/HoloPatcher/Util/RegistryHelper.cs (C# registry helper)
+    vendor/Kotor-Randomizer (Game path detection logic)
+    Note: Registry paths vary between Steam, GOG, and disc releases on different architectures
+"""
+
 KOTOR_REG_PATHS: dict[Game, dict[ProcessorArchitecture, list[tuple[str, str]]]] = {
     Game.K1: {
         ProcessorArchitecture.BIT_32: [
@@ -76,9 +86,7 @@ def find_software_key(software_name: str) -> str | None:
                 # Enumerate through the SIDs
                 sid: str = winreg.EnumKey(hkey_users, i)
                 software_path: str = f"{sid}\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{software_name}"
-                with suppress(FileNotFoundError), winreg.OpenKey(
-                    hkey_users, software_path
-                ) as software_key:
+                with suppress(FileNotFoundError), winreg.OpenKey(hkey_users, software_path) as software_key:
                     # If this point is reached, the software is installed under this SID
                     return winreg.QueryValue(software_key, "InstallLocation")
                 i += 1
@@ -89,7 +97,7 @@ def find_software_key(software_name: str) -> str | None:
 
 
 def resolve_reg_key_to_path(
-    registry: str | int | HKEYType,
+    registry: str | HKEYType,
     subkey: str,
     value_name: str | None = None,
 ) -> str | None:
@@ -99,13 +107,9 @@ def resolve_reg_key_to_path(
     try:
         if isinstance(registry, str):
             root_name, key_path = registry.split("\\", 1)
-            # Dynamic module attribute access based on registry root string - legitimate use of getattr
-            root_key = getattr(winreg, root_name, None)
-            if root_key is None:
-                return None
+            root_key = getattr(winreg, root_name)
             value_to_lookup = subkey
-        else:  # e.g. int
-            # treat as HKEYType, use as-is
+        else:
             root_key = registry
             if value_name is None:
                 msg = "value_name must be provided when a registry handle is supplied."
@@ -115,7 +119,7 @@ def resolve_reg_key_to_path(
 
         with winreg.OpenKey(root_key, key_path) as key:
             resolved_path, _ = winreg.QueryValueEx(key, value_to_lookup)
-            return str(resolved_path or "")
+            return resolved_path
     except (AttributeError, FileNotFoundError, PermissionError):
         return None
 
@@ -195,9 +199,7 @@ def get_winreg_path(game: Game) -> tuple[Any, int] | None | Literal[""]:
         import winreg
 
         for key_path, subkey in possible_kotor_reg_paths:
-            key: HKEYType = winreg.OpenKeyEx(
-                winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_READ
-            )
+            key: HKEYType = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_READ)
             return winreg.QueryValueEx(key, subkey)
     except (FileNotFoundError, PermissionError):
         return ""
@@ -236,7 +238,7 @@ def set_winreg_path(
 def create_registry_path(
     hive: HKEYType | int,
     path: str,
-) -> None:
+) -> None:  # sourcery skip: raise-from-previous-error
     """Recursively creates the registry path if it doesn't exist."""
     log = RobustLogger()
     try:
@@ -259,16 +261,9 @@ def create_registry_path(
 
 def get_retail_key(game: Game) -> str:
     if ProcessorArchitecture.from_os() == ProcessorArchitecture.BIT_64:
-        return (
-            r"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\LucasArts\KotOR2"
-            if game.is_k2()
-            else r"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\BioWare\SW\KOTOR"
-        )
-    return (
-        r"HKEY_LOCAL_MACHINE\SOFTWARE\LucasArts\KotOR2"
-        if game.is_k2()
-        else r"HKEY_LOCAL_MACHINE\SOFTWARE\BioWare\SW\KOTOR"
-    )
+        return r"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\LucasArts\KotOR2" if game.is_k2() else r"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\BioWare\SW\KOTOR"
+    return r"HKEY_LOCAL_MACHINE\SOFTWARE\LucasArts\KotOR2" if game.is_k2() else r"HKEY_LOCAL_MACHINE\SOFTWARE\BioWare\SW\KOTOR"
+
 
 
 class SpoofKotorRegistry:

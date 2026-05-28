@@ -22,6 +22,7 @@ from pykotor.resource.formats.tpc.tpc_auto import (
     bytes_tpc,
     read_tpc,
     write_tpc,
+    bytes_tpc,
 )
 
 __all__ = [
@@ -29,17 +30,12 @@ __all__ = [
     "TPCBMPWriter",
     "TPCBinaryReader",
     "TPCBinaryWriter",
-    "TPCDDSReader",
-    "TPCDDSWriter",
     "TPCLayer",
     "TPCMipmap",
     "TPCTGAReader",
     "TPCTGAWriter",
     "TPCTextureFormat",
-    "build_tpc_from_tga_bytes",
-    "build_tpc_from_tga_path",
     "bytes_tpc",
-    "read_tga",
     "read_tpc",
     "write_tpc",
 ]

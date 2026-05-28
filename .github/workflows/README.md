@@ -28,9 +28,9 @@ Automated release and validation workflows for all PyKotor tools.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  DEVELOPMENT: Create PR -> Build validation runs automatically   │
+│  DEVELOPMENT: Create PR → Build validation runs automatically   │
 │  PRE-RELEASE: Run Release Readiness Check (optional)            │
-│  RELEASE: Bump version -> Create pre-release -> Automatic builds  │
+│  RELEASE: Bump version → Create pre-release → Automatic builds  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -38,7 +38,7 @@ Automated release and validation workflows for all PyKotor tools.
 
 ### Option 1: One-Click Release (Easiest)
 
-1. Go to **Actions** -> **Create Release**
+1. Go to **Actions** → **Create Release**
 2. Select tool, enter version
 3. Click **Run workflow**
 4. Done! Everything is automatic.
@@ -78,6 +78,8 @@ Automated release and validation workflows for all PyKotor tools.
 | `release_tools.yml` | `v*-toolset` | HolocronToolset |
 | `release_tools.yml` | `v*-patcher` | HoloPatcher |
 | `release_tools.yml` | `v*-kotordiff` | KotorDiff |
+| `release_tools.yml` | `v*-guiconverter` | GuiConverter |
+| `release_tools.yml` | `v*-kitgenerator` | KitGenerator |
 | `release_tools.yml` | `v*-translator` | Translator (BatchPatcher) |
 
 > **Note:** All tool releases are now handled by a single unified workflow (`release_tools.yml`) that dynamically discovers tools from the `./Tools` directory and builds releases based on version comparison.
@@ -100,7 +102,7 @@ The `.github/actions/build-tool` action provides reusable build functionality:
     tool_name: toolset        # toolset, holopatcher, kotordiff, etc.
     python_version: '3.8'
     architecture: x64         # x64 or x86
-    qt_version: 'PyQt6'       # For GUI tools
+    qt_version: 'PyQt5'       # For GUI tools
     dry_run: 'true'           # Validate without full build
 ```
 
@@ -108,7 +110,7 @@ The `.github/actions/build-tool` action provides reusable build functionality:
 
 ### Method 1: PR Build Validation (Automatic)
 
-Create a PR that touches tool files -> Build validation runs automatically:
+Create a PR that touches tool files → Build validation runs automatically:
 
 - Detects affected tools
 - Validates version config files
@@ -117,7 +119,7 @@ Create a PR that touches tool files -> Build validation runs automatically:
 
 ### Method 2: Release Readiness Check (Manual)
 
-1. Go to **Actions** -> **Release Readiness Check**
+1. Go to **Actions** → **Release Readiness Check**
 2. Select tool and version
 3. Optionally enable full builds
 4. Review the summary
@@ -178,13 +180,13 @@ graph TD
 
 ## 📦 Artifacts
 
-Each release includes platform-specific builds. Minimum Python version is 3.8.
+Each release includes platform-specific builds:
 
 | Platform | Architectures |
 |----------|---------------|
-| Windows | x86, x64 (arm64 where supported) |
-| Linux | x64, arm64 |
-| macOS | x64, arm64 |
+| Windows | x86, x64 |
+| Linux | x64 |
+| macOS | x64 |
 
 ## 🐛 Troubleshooting
 
@@ -192,8 +194,8 @@ Each release includes platform-specific builds. Minimum Python version is 3.8.
 
 1. Check the Actions tab for detailed logs
 2. Common issues:
-   - Import errors -> Check dependencies
-   - Missing files -> Check paths in changes
+   - Import errors → Check dependencies
+   - Missing files → Check paths in changes
 3. Fix issues and push to PR
 
 ### Release Workflow Doesn't Trigger

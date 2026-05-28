@@ -41,21 +41,11 @@ def uninstall_all_mods(
     # Remove any TLK changes
     dialog_tlk_path = CaseAwarePath(root_path, "dialog.tlk")
     dialog_tlk: TLK = read_tlk(dialog_tlk_path)
-
-    # Detect which patch/version is installed
-    patch_type = detect_patch_type(root_path)
-    game = installation.game()
-    vanilla_count = get_vanilla_tlk_count(game, patch_type)
-
-    # With the new Replace TLK syntax, entries can be modified in-place, not just appended
-    # So we need a more sophisticated approach than just truncating to vanilla count
-
-    # For now, implement the improved truncation method with proper patch detection
-    # A complete solution would require storing the original vanilla TLK files
-    if len(dialog_tlk.entries) > vanilla_count:
-        dialog_tlk.entries = dialog_tlk.entries[:vanilla_count]
-
-    # Write the modified TLK back
+    dialog_tlk.entries = dialog_tlk.entries[:49265] if installation.game() == Game.K1 else dialog_tlk.entries[:136329]
+    # TODO: With the new Replace TLK syntax, the above TLK reinstall isn't possible anymore.
+    # Here, we should write the dialog.tlk and then check it's sha1 hash compared to vanilla.
+    # We could keep the vanilla TLK entries in a tlkdefs.py file, similar to our nwscript.nss defs.
+    # This implementation would be required regardless in K2 anyway as this function currently isn't determining if the Aspyr patch and/or TSLRCM is installed.
     write_tlk(dialog_tlk, dialog_tlk_path)
 
     # TODO: Implement complete vanilla TLK restoration system
@@ -234,7 +224,7 @@ class ModUninstaller:
             if file_path.name == "remove these files.txt":
                 continue
             destination_path: Path = self.game_path / file_path.relative_to(backup_folder)  # type: ignore[attr-defined]
-            ensure_directory_exists(destination_path.parent)
+            destination_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(file_path, destination_path)
             self.log.add_note(
                 f"Restoring backup of '{file_path.name}' to '{destination_path.relative_to(self.game_path.parent)}'..."
@@ -271,9 +261,7 @@ class ModUninstaller:
             ):
                 return None, set(), [], 0
 
-        files_in_backup: list[Path] = list(
-            filter(Path.is_file, most_recent_backup_folder.rglob("*"))
-        )
+        files_in_backup: list[Path] = list(filter(Path.is_file, most_recent_backup_folder.rglob("*")))
         folder_count: int = len(list(most_recent_backup_folder.rglob("*"))) - len(files_in_backup)
 
         return most_recent_backup_folder, existing_files, files_in_backup, folder_count

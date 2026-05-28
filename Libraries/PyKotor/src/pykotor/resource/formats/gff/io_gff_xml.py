@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING, Any
 # Try to import defusedxml, fallback to ElementTree if not available
 from xml.etree import ElementTree as ET
 
+from loggerplus import RobustLogger
+
 import kaitaistruct
 
 from loggerplus import RobustLogger
@@ -20,8 +22,6 @@ try:
 except (ImportError, ModuleNotFoundError):
     print("warning: defusedxml is not available but recommended for security")
 
-
-from bioware_kaitai_formats.gff_xml import GffXml
 
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import ResRef
@@ -36,18 +36,16 @@ if TYPE_CHECKING:
 
 class GFFXMLReader(ResourceReader):
     """Reads GFF files from XML format.
-
-    XML is a human-readable interchange format used by several modding pipelines.
+    
+    XML is a human-readable format used by xoreos-tools and other modding tools.
     Provides easier editing than binary GFF format.
-
-    Retail games read and write binary GFF with ``V3.2`` labels for KotOR data.
-
-        Note: XML format is PyKotor-specific conversion format, not a standard game format.
-        The engine uses binary GFF format exclusively. XML conversion allows easier editing
-        and integration with external editors and converters.
-
+    
+    References:
+    ----------
+        vendor/xoreos-tools/src/xml/gffdumper.cpp (GFF to XML conversion)
+        vendor/xoreos-tools/src/xml/gffcreator.cpp (XML to GFF conversion)
+        vendor/xoreos-docs/specs/aurora/gff.xml (GFF XML format specification)
     """
-
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -61,13 +59,8 @@ class GFFXMLReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> GFF:  # noqa: FBT001, FBT002, ARG002
         self._gff = GFF()
 
-        raw = self._reader.read_all()
-        xml_text: str
-        try:
-            xml_text = GffXml.from_bytes(raw).xml_content
-        except (kaitaistruct.KaitaiStructError, UnicodeDecodeError):
-            xml_text = raw.decode()
-        xml_root: ET.Element | None = ET.fromstring(xml_text).find("struct")  # noqa: S314
+        data = self._reader.read_bytes(self._reader.size()).decode()
+        xml_root: ET.Element | None = ET.fromstring(data).find("struct")  # noqa: S314
         if xml_root is None:
             raise ValueError("XML data is not valid XML")
         self._load_struct(self._gff.root, xml_root)
@@ -158,9 +151,7 @@ class GFFXMLReader(ResourceReader):
                 gff_list.add(0)
                 child_struct = gff_list.at(len(gff_list) - 1)
                 if child_struct is None:
-                    RobustLogger().error(
-                        f"Failed to acquire the GFFStruct at index {len(gff_list) - 1}, skipping..."
-                    )
+                    RobustLogger().error(f"Failed to acquire the GFFStruct at index {len(gff_list) - 1}, skipping...")
                     continue
                 self._load_struct(child_struct, xml_struct)
             gff_struct.set_list(label, gff_list)

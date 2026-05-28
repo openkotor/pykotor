@@ -22,17 +22,19 @@ from pykotor.resource.formats.ncs.compiler.classes import (
 )
 
 
-class NssLexer(ComparableMixin):
+class NssLexer:
     """NSS (NWScript Source) lexer/tokenizer.
-
+    
     Tokenizes NSS source code into tokens for parsing. Handles keywords, operators,
     literals, identifiers, and special values (OBJECTSELF, OBJECTINVALID, etc.).
-
+    
     References:
     ----------
+        vendor/HoloLSP/server/src/nwscript-lexer.ts (TypeScript NSS lexer)
+        vendor/KotOR.js/src/nwscript/NWScriptCompiler.ts (Token handling)
+        vendor/xoreos-tools/src/nwscript/ (NSS lexer implementation)
         PLY (Python Lex-Yacc) library for lexer generation
     """
-
     def __init__(
         self,
         errorlog: lex.NullLogger = lex.NullLogger(),  # noqa: B008
@@ -313,7 +315,7 @@ class NssLexer(ComparableMixin):
         value = t.value[1:-1]  # Remove quotes
         # Basic escape sequence handling (order matters - do \\ first)
         value = value.replace("\\\\", "\\")
-        value = value.replace('\\"', '"')
+        value = value.replace("\\\"", "\"")
         value = value.replace("\\n", "\n")
         value = value.replace("\\r", "\r")
         value = value.replace("\\t", "\t")
@@ -422,6 +424,16 @@ class NssLexer(ComparableMixin):
                 BinaryOperatorMapping(
                     NCSInstructionType.USHRIGHTII, DataType.INT, DataType.INT, DataType.INT
                 ),
+            ],
+        )
+        return t
+
+    def t_BITWISE_UNSIGNED_RIGHT(self, t):
+        ">>>"  # noqa: D300, D400, D415
+        t.value = OperatorMapping(
+            unary=[],
+            binary=[
+                BinaryOperatorMapping(NCSInstructionType.USHRIGHTII, DataType.INT, DataType.INT, DataType.INT),
             ],
         )
         return t

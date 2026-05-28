@@ -18,14 +18,18 @@ if TYPE_CHECKING:
 
 class PTH:
     """Stores the path data for a module.
-
-    PTH files are GFF-based; Path_Points (X, Y, Conections, First_Conection) and
-    Path_Conections (Destination) define waypoints and edges for NPC pathfinding.
-
-    It has been observed in retail KotOR I and TSL that ``Path_Points`` and ``Path_Conections``
-    may be absent (treated as empty), point coordinates default to ``0.0``, and connection
-    indices default to ``0``. Loader-oriented symbol/address notes are migrated to
-    ``wiki/reverse_engineering_findings.md``.
+    
+    PTH files are GFF-based format files that store pathfinding data including
+    waypoints and connections for NPC navigation.
+    
+    References:
+    ----------
+        vendor/reone/src/libs/resource/parser/gff/pth.cpp (PTH parsing from GFF)
+        vendor/reone/include/reone/resource/parser/gff/pth.h (PTH structure definitions)
+        vendor/reone/src/libs/game/pathfinder.cpp (Pathfinding algorithm using PTH data)
+        vendor/xoreos-tools/src/xml/pthdumper.cpp (PTH to XML conversion)
+        vendor/xoreos-tools/src/xml/pthcreator.cpp (XML to PTH conversion)
+        Note: PTH files are GFF format files with specific structure definitions
     """
 
     BINARY_TYPE = ResourceType.PTH
@@ -146,6 +150,9 @@ class PTHEdge:
         if isinstance(other, PTHEdge):
             return self.source == other.source and self.target == other.target
         return NotImplemented  # type: ignore[no-any-return]
+
+    def __hash__(self):
+        return hash((self.source, self.target))
 
     def __hash__(self):
         return hash((self.source, self.target))

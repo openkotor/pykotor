@@ -6,10 +6,6 @@ import io
 
 from typing import TYPE_CHECKING
 
-import kaitaistruct
-
-from bioware_kaitai_formats.tga import Tga
-
 from pykotor.resource.formats.tpc.tga import read_tga
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCTextureFormat
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
@@ -21,40 +17,15 @@ if TYPE_CHECKING:
 
 def _decode_mipmap_to_rgba(mipmap: TPCMipmap) -> bytes:
     """Return a copy of the mipmap's pixels in RGBA order."""
-    # Optimize: avoid copy if already RGBA format
-    if mipmap.tpc_format == TPCTextureFormat.RGBA:
-        return bytes(mipmap.data)
-    # Only copy and convert if needed
     working = mipmap.copy()
-    working.convert(TPCTextureFormat.RGBA)
+    if working.tpc_format != TPCTextureFormat.RGBA:
+        working.convert(TPCTextureFormat.RGBA)
     return bytes(working.data)
 
 
 def _has_alpha_channel(pixels: bytes) -> bool:
-    """Return True when any pixel contains transparency.
-
-    Optimized: Direct byte access with early exit for better performance.
-    Uses memoryview for faster byte access when available.
-    """
-    if len(pixels) < 4:
-        return False
-
-    # Use memoryview for faster byte access (O(1) indexing vs O(n) for large bytes)
-    # This is especially beneficial for large textures
-    try:
-        mv = memoryview(pixels)
-        # Check alpha channel (every 4th byte starting at index 3)
-        # Early exit on first transparent pixel
-        for i in range(3, len(pixels), 4):
-            if mv[i] != 0xFF:
-                return True
-    except (TypeError, ValueError):
-        # Fallback to regular bytes access if memoryview fails
-        for i in range(3, len(pixels), 4):
-            if pixels[i] != 0xFF:
-                return True
-
-    return False
+    """Return True when any pixel contains transparency."""
+    return any(pixels[i + 3] != 0xFF for i in range(0, len(pixels), 4))
 
 
 def _write_tga_rgba(writer: ResourceWriter, width: int, height: int, rgba: bytes) -> None:
@@ -70,32 +41,25 @@ def _write_tga_rgba(writer: ResourceWriter, width: int, height: int, rgba: bytes
     writer._writer.write_uint8(32)
     writer._writer.write_uint8(0x20 | 0x08)  # top-left origin, 8-bit alpha
 
-    # Convert RGBA to BGRA format in one batch operation instead of pixel-by-pixel
-    # This is much faster for large textures
     total_pixels = width * height
-    bgra = bytearray(total_pixels * 4)
     for i in range(total_pixels):
         offset = i * 4
         r, g, b, a = rgba[offset : offset + 4]
-        bgra[offset] = b
-        bgra[offset + 1] = g
-        bgra[offset + 2] = r
-        bgra[offset + 3] = a
-    writer._writer.write_bytes(bytes(bgra))
+        writer._writer.write_bytes(bytes((b, g, r, a)))
 
 
 class TPCTGAReader(ResourceReader):
     """Reads TGA files and converts them to TPC format.
-
+    
     Supports uncompressed and RLE-compressed TGA files, color-mapped images,
     grayscale images, and cube map detection (6:1 aspect ratio).
-
+    
     References:
     ----------
-        Standard TGA header layout (Truevision specification).
-
+        vendor/tga2tpc/TGALoader.js:72-577 (TGA parsing, RLE handling)
+        vendor/reone/test/graphics/format/tgareader.cpp (TGA reading tests)
+        Standard TGA specification for header format
     """
-
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -214,10 +178,6 @@ class TPCTGAReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> TPC:  # noqa: FBT001, FBT002, ARG002
         self._tpc = TPC()
         raw = self._reader.read_all()
-        try:
-            Tga.from_bytes(raw)
-        except kaitaistruct.KaitaiStructError:
-            pass
         image = read_tga(io.BytesIO(raw))
 
         width, height = image.width, image.height
@@ -243,9 +203,7 @@ class TPCTGAReader(ResourceReader):
             for row in range(face_height):
                 src_offset = ((face * face_height) + row) * width * 4
                 dst_offset = row * width * 4
-                slice_rgba[dst_offset : dst_offset + width * 4] = rgba[
-                    src_offset : src_offset + width * 4
-                ]
+                slice_rgba[dst_offset : dst_offset + width * 4] = rgba[src_offset : src_offset + width * 4]
             layer.set_single(width, face_height, slice_rgba, TPCTextureFormat.RGBA)
             self._tpc.layers.append(layer)
 
@@ -255,19 +213,17 @@ class TPCTGAReader(ResourceReader):
 
         return self._tpc
 
-
 class TPCTGAWriter(ResourceWriter):
     """Writes TPC textures as TGA image files.
-
+    
     Converts TPC textures (including animated flipbooks and cube maps) to TGA format.
     Supports single frame, animated flipbook, and cube map output.
-
+    
     References:
     ----------
-        Standard TGA header layout (Truevision specification).
-
+        vendor/tga2tpc/TGALoader.js (TGA format reference)
+        Standard TGA specification for header format
     """
-
     def __init__(
         self,
         tpc: TPC,

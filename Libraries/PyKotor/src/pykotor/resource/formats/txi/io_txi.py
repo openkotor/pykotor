@@ -1,15 +1,10 @@
-"""TXI (texture info) binary reader/writer and coordinate modes."""
-
 from __future__ import annotations
 
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
-import kaitaistruct
-
-from bioware_kaitai_formats.txi import Txi
-
 from loggerplus import RobustLogger
+
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
 if TYPE_CHECKING:
@@ -27,17 +22,14 @@ class TXIReaderMode(IntEnum):
 
 class TXIBinaryReader(ResourceReader):
     """Reads TXI (Texture Information) files.
-
+    
     TXI files contain texture metadata including blending modes, bump maps, animations,
     and other rendering properties for TPC textures.
-
+    
     References:
     ----------
-        Retail builds parse TXI text through the same Aurora texture-info path as other Odyssey
-        titles.
-
+        vendor/reone/src/libs/graphics/format/txireader.cpp (TXI reading)
     """
-
     def __init__(self, source: SOURCE_TYPES, offset: int = 0, size: int = 0):
         super().__init__(source, offset, size)
         from pykotor.resource.formats.txi.txi_data import TXI
@@ -45,20 +37,16 @@ class TXIBinaryReader(ResourceReader):
         self._txi: TXI = TXI()
 
     @autoclose
-    def load(self, *func_args, auto_close: bool = True, **func_kwargs) -> TXI:  # noqa: FBT001, FBT002, ARG002
+    def load(self, *, auto_close: bool = True) -> TXI:  # noqa: FBT001, FBT002, ARG002
         from pykotor.resource.formats.txi.txi_data import TXI, TXICommand, TXIFeatures
 
         self._txi.features = TXIFeatures()
-        self._empty: bool = True
-        mode: TXIReaderMode = TXIReaderMode.NORMAL
+        self._empty = True
+        mode = TXIReaderMode.NORMAL
         cur_coords: int = 0
-        txi_bytes: bytes = self._reader.read_all()
-        try:
-            txi_text = Txi.from_bytes(txi_bytes).content
-        except (kaitaistruct.KaitaiStructError, UnicodeDecodeError):
-            txi_text = txi_bytes.decode("ascii", errors="ignore")
+        txi_bytes = self._reader.read_all()
 
-        for line in txi_text.splitlines():
+        for line in txi_bytes.decode("ascii", errors="ignore").splitlines():
             try:
                 parsed_line: str = line.strip()
                 if not parsed_line:
@@ -66,7 +54,6 @@ class TXIBinaryReader(ResourceReader):
 
                 # Check if this line is a command (starts with a known TXI command)
                 # This allows commands to interrupt coordinate parsing
-                args: str
                 raw_cmd, args = (
                     parsed_line.split(" ", maxsplit=1)
                     if " " in parsed_line
@@ -76,7 +63,7 @@ class TXIBinaryReader(ResourceReader):
                     )
                 )
                 parsed_cmd_str: str = raw_cmd.strip().upper()
-                is_command: bool = parsed_cmd_str in TXICommand.__members__
+                is_command = parsed_cmd_str in TXICommand.__members__
 
                 if mode == TXIReaderMode.UPPER_LEFT_COORDS:
                     if is_command:
@@ -91,14 +78,10 @@ class TXIBinaryReader(ResourceReader):
                                 float(parts[1].strip()),
                                 int(parts[2].strip()),
                             )
-                            if self._txi.features.upperleftcoords is not None and cur_coords < len(
-                                self._txi.features.upperleftcoords
-                            ):
+                            if self._txi.features.upperleftcoords is not None and cur_coords < len(self._txi.features.upperleftcoords):
                                 self._txi.features.upperleftcoords[cur_coords] = coords
                             cur_coords += 1
-                            if self._txi.features.upperleftcoords is not None and cur_coords >= len(
-                                self._txi.features.upperleftcoords
-                            ):
+                            if self._txi.features.upperleftcoords is not None and cur_coords >= len(self._txi.features.upperleftcoords):
                                 mode = TXIReaderMode.NORMAL
                             continue
                         except (ValueError, IndexError):
@@ -114,20 +97,15 @@ class TXIBinaryReader(ResourceReader):
                         # Try to parse as coordinates
                         try:
                             parts = parsed_line.split()
-                            coords = (
+                            coords: tuple[float, float, int] = (
                                 float(parts[0].strip()),
                                 float(parts[1].strip()),
                                 int(parts[2].strip()),
                             )
-                            if self._txi.features.lowerrightcoords is not None and cur_coords < len(
-                                self._txi.features.lowerrightcoords
-                            ):
+                            if self._txi.features.lowerrightcoords is not None and cur_coords < len(self._txi.features.lowerrightcoords):
                                 self._txi.features.lowerrightcoords[cur_coords] = coords
                             cur_coords += 1
-                            if (
-                                self._txi.features.lowerrightcoords is not None
-                                and cur_coords >= len(self._txi.features.lowerrightcoords)
-                            ):
+                            if self._txi.features.lowerrightcoords is not None and cur_coords >= len(self._txi.features.lowerrightcoords):
                                 mode = TXIReaderMode.NORMAL
                             continue
                         except (ValueError, IndexError):
@@ -136,10 +114,10 @@ class TXIBinaryReader(ResourceReader):
                             # Fall through to process as command or skip
 
                 if not is_command:
-                    RobustLogger().debug(f"Invalid TXI command: '{raw_cmd}'")
+                    #RobustLogger().warning(f"Invalid TXI command: '{raw_cmd}'")
                     continue
                 command: TXICommand = TXICommand.__members__[parsed_cmd_str]
-                args = args.strip() if args else ""
+                args: str = args.strip() if args else ""
 
                 if command == TXICommand.ALPHAMEAN:
                     self._txi.features.alphamean = float(args)
@@ -195,6 +173,9 @@ class TXIBinaryReader(ResourceReader):
                 elif command == TXICommand.CUBE:
                     self._txi.features.cube = bool(int(args))
                     self._empty = False
+                elif command == TXICommand.DBMAPPING:
+                    self._txi.features.dbmapping = bool(int(args))
+                    self._empty = False
                 elif command == TXICommand.DECAL:
                     self._txi.features.decal = bool(int(args))
                     self._empty = False
@@ -208,10 +189,7 @@ class TXIBinaryReader(ResourceReader):
                     self._txi.features.defaultwidth = int(args)
                     self._empty = False
                 elif command == TXICommand.DISTORT:
-                    try:
-                        self._txi.features.distort = bool(int(args))
-                    except ValueError:
-                        self._txi.features.distort = float(args)
+                    self._txi.features.distort = bool(int(args))
                     self._empty = False
                 elif command == TXICommand.DISTORTANGLE:
                     self._txi.features.distortangle = float(args)
@@ -249,14 +227,14 @@ class TXIBinaryReader(ResourceReader):
                 elif command == TXICommand.ISBUMPMAP:
                     self._txi.features.isbumpmap = bool(int(args))
                     self._empty = False
+                elif command == TXICommand.ISDOUBLEBYTE:
+                    self._txi.features.isdoublebyte = bool(int(args))
+                    self._empty = False
                 elif command == TXICommand.ISLIGHTMAP:
                     self._txi.features.islightmap = bool(int(args))
                     self._empty = False
-                elif command == TXICommand.ISSPECULARBUMPMAP:
-                    self._txi.features.isspecularbumpmap = bool(int(args))
-                    self._empty = False
                 elif command == TXICommand.LOWERRIGHTCOORDS:
-                    self._txi.features.lowerrightcoords = [(0.0, 0.0, 0) for _ in range(int(args))]
+                    self._txi.features.lowerrightcoords = [[] for _ in range(int(args))]
                     mode = TXIReaderMode.LOWER_RIGHT_COORDS
                     cur_coords = 0
                     self._empty = False
@@ -318,7 +296,7 @@ class TXIBinaryReader(ResourceReader):
                     self._txi.features.unique = bool(int(args))
                     self._empty = False
                 elif command == TXICommand.UPPERLEFTCOORDS:
-                    self._txi.features.upperleftcoords = [(0.0, 0.0, 0) for _ in range(int(args))]
+                    self._txi.features.upperleftcoords = [[] for _ in range(int(args))]
                     mode = TXIReaderMode.UPPER_LEFT_COORDS
                     cur_coords = 0
                     self._empty = False
