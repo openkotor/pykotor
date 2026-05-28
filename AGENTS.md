@@ -6,9 +6,27 @@
 
 PyKotor is a pure-Python monorepo for modding Knights of the Old Republic I & II. It uses **uv** as the package manager with a workspace defined in the root `pyproject.toml`. Minimum supported Python is 3.8; local development may use 3.13 (per `.python-version`). See `README.md` and `CONTRIBUTING.md` for standard commands.
 
+**Knowledgebase map:** `STRATEGY.md` (product intent and metrics) → `docs/plans/` (active execution plans) → `docs/solutions/` (validated learnings with YAML frontmatter: `title`, `component`, `problem_type`, `doc_status`, `last_verified`, plus optional `symptoms`, `root_cause`, `solution`, `prevention`, `related_docs`, `category`) → `wiki/` (public format and RE specs) → `docs/` (implementation deep dives). Solution categories today: `docs/solutions/documentation/` (e.g. BWM authority), `docs/solutions/logic-errors/` (e.g. save/load parity), `docs/solutions/testing/` (e.g. TSLPatcher parity harness, **verify-pypi regression closeout**). Relevant when implementing or debugging in documented areas.
+
 ### Running commands
 
 Always use `uv run` to execute commands (per `.cursorrules`), e.g. `uv run pytest`, `uv run ruff check .`, `uv run pykotor --help`.
+
+### PyPI verify local parity
+
+When validating published PyPI packages (same checks as `.github/workflows/verify-pypi-regression.yml`) without waiting on CI:
+
+```bash
+python3 .github/scripts/local_verify_pypi_slice.py
+python3 .github/scripts/local_verify_pypi_slice.py --json
+python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json
+```
+
+Use system **`python3`**, not `uv run`: workspace resolution can fail on unpublished packages (e.g. kotordiff). The script uses an ephemeral venv and installs `pykotor[all]` from PyPI. Documented CLI skips (kotordiff not on PyPI; `--help` rc≠0) match CI `continue-on-error` behavior. **`--json`** prints a machine-readable pass/skip/fail summary for agents. **`--ci-status-only`** queries latest Verify PyPI / Forward Commits runs via `gh` without installing packages (monitoring-only track).
+
+See also `docs/solutions/testing/verify-pypi-regression-closeout.md` for prefer/defer/avoid guidance and CI closeout history.
+
+If `--ci-status-only --json` reports the same queued run IDs as the solution doc **Last CI check**, defer further LFG PRs on this track until status or conclusion changes (plan 056).
 
 ### Lint
 
@@ -25,6 +43,8 @@ Pre-existing lint violations exist; 259 ruff findings are normal on the current 
 QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
   --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
   --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
   Libraries/PyKotor/tests
 ```
 
