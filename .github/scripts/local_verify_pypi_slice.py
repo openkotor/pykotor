@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "136"
+PLAN_TRACK_CAP = "137"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1893,6 +1893,10 @@ def _watch_lfg_preflight_defer(
         monitor_commands = briefing.get("monitor_commands")
         if isinstance(monitor_commands, dict) and monitor_commands:
             summary["monitor_commands"] = monitor_commands
+        for field in ("verify_run_id", "fc_run_id"):
+            run_id = briefing.get(field)
+            if run_id is not None:
+                summary[field] = run_id
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
     print(
@@ -2707,6 +2711,12 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
             status["monitor_commands"] = monitor_commands
         else:
             status.pop("monitor_commands", None)
+        for field in ("verify_run_id", "fc_run_id"):
+            run_id = briefing.get(field)
+            if run_id is not None:
+                status[field] = run_id
+            else:
+                status.pop(field, None)
     else:
         status.pop("lfg_agent_briefing", None)
         status.pop("gh_watch_summary", None)
@@ -2718,6 +2728,8 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("post_terminal_commands", None)
         status.pop("wait_command", None)
         status.pop("monitor_commands", None)
+        status.pop("verify_run_id", None)
+        status.pop("fc_run_id", None)
 
 
 def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
