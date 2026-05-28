@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–112", patched)
+        self.assertIn("019–113", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2410,6 +2410,24 @@ last_verified: 2026-01-01
         self.assertEqual(briefing["fc_run_id"], 26546235822)
         self.assertEqual(briefing["fc_run_url"], "https://example.com/runs/26546235822")
         self.assertEqual(briefing["fc_status"], "queued")
+        monitor = briefing["monitor_commands"]
+        self.assertIn("preflight_retry", monitor)
+        self.assertEqual(
+            monitor["watch_fc_run"],
+            "gh run watch 26546235822 --exit-status",
+        )
+
+    def test_build_defer_monitor_commands_verify_active(self) -> None:
+        commands = mod._build_defer_monitor_commands(
+            {
+                "command": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight",
+                "verify_run_id": 26372746392,
+            }
+        )
+        self.assertEqual(
+            commands["watch_verify_run"],
+            "gh run watch 26372746392 --exit-status",
+        )
 
     def test_emit_defer_briefing_stderr_includes_reason_and_fc_run(self) -> None:
         with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
@@ -2419,11 +2437,15 @@ last_verified: 2026-01-01
                     "reason": "fc_active_pending",
                     "blocked": "deferred",
                     "fc_run_id": 26546235822,
+                    "monitor_commands": {
+                        "watch_fc_run": "gh run watch 26546235822 --exit-status",
+                    },
                 }
             )
         output = err.getvalue()
         self.assertIn("reason=fc_active_pending", output)
         self.assertIn("fc_run=26546235822", output)
+        self.assertIn("watch=gh run watch 26546235822 --exit-status", output)
 
     def test_last_ci_check_section_extracts_block(self) -> None:
         mock_path = mock.MagicMock()

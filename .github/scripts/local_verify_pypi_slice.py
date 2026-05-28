@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "112"
+PLAN_TRACK_CAP = "113"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2000,6 +2000,24 @@ def _attach_active_run_refs(status: dict[str, Any], briefing: dict[str, Any]) ->
         briefing[f"{prefix}_status"] = _run_display_label(run)
 
 
+def _build_defer_monitor_commands(briefing: dict[str, Any]) -> dict[str, str]:
+    script = "python3 .github/scripts/local_verify_pypi_slice.py"
+    command = briefing.get("command")
+    preflight_retry = (
+        str(command)
+        if isinstance(command, str) and command
+        else f"{script} --lfg-preflight --json"
+    )
+    commands: dict[str, str] = {"preflight_retry": preflight_retry}
+    fc_run_id = briefing.get("fc_run_id")
+    if fc_run_id is not None:
+        commands["watch_fc_run"] = f"gh run watch {fc_run_id} --exit-status"
+    verify_run_id = briefing.get("verify_run_id")
+    if verify_run_id is not None:
+        commands["watch_verify_run"] = f"gh run watch {verify_run_id} --exit-status"
+    return commands
+
+
 def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
     proceed_hint = str(status.get("proceed_hint") or "")
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
@@ -2092,6 +2110,7 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
             "blocked": "deferred",
         }
         _attach_active_run_refs(status, briefing)
+        briefing["monitor_commands"] = _build_defer_monitor_commands(briefing)
         return briefing
     blocked_refresh = status.get("lfg_refresh_blocked")
     if blocked_refresh:
@@ -2136,6 +2155,13 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
     fc_run_id = briefing.get("fc_run_id")
     if fc_run_id is not None:
         parts.append(f"fc_run={fc_run_id}")
+    monitor_commands = briefing.get("monitor_commands")
+    if isinstance(monitor_commands, dict):
+        watch_cmd = monitor_commands.get("watch_fc_run") or monitor_commands.get(
+            "watch_verify_run"
+        )
+        if isinstance(watch_cmd, str) and watch_cmd:
+            parts.append(f"watch={watch_cmd}")
     percent = briefing.get("completion_percent")
     if isinstance(percent, int):
         parts.append(f"complete={percent}%")

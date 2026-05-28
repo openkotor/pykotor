@@ -81,6 +81,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - **`doc_checkpoint_snapshot`** from solution doc when `gh_ok` false; blocked state **`gh_unavailable`** (plan 110).
 - Defer **`update_monitoring_docs`** until verify and FC are both terminal; **`fc_active_closeout_note`** (plan 111).
 - Defer briefing includes active **`fc_run_id`** / **`fc_run_url`** (and verify when active) (plan 112).
+- Defer briefing **`monitor_commands`** — `watch_fc_run` / `watch_verify_run` + `preflight_retry` (plan 113).
 - **`pr_merged`** / **`pr_closed`** lifecycle blocked states (plan 091).
 - **`--lfg-closeout`** — same as **`--lfg-refresh --write`**; apply monitoring doc updates when CI is terminal (plan 080).
 - **`lfg_mode`** in JSON — `gate`, `merge_gate`, `pr_watch`, `preflight`, `refresh`, or `closeout` for agent routing (plans 080, 085).
