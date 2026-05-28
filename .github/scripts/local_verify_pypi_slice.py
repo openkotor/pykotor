@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "168"
+PLAN_TRACK_CAP = "169"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1855,15 +1855,26 @@ def _format_preflight_watch_summary_line(
     gh_watch = summary.get("gh_watch_summary")
     if isinstance(gh_watch, str) and gh_watch:
         parts.append(f"gh_watch={gh_watch}")
-    queue_context = summary.get("queue_context")
-    if isinstance(queue_context, dict):
-        max_queued = queue_context.get("max_queued_hours")
-        if isinstance(max_queued, (int, float)):
-            parts.append(f"queued={float(max_queued):.1f}h")
-        if queue_context.get("queue_backlog_severe"):
-            parts.append("queue_backlog=true")
-        elif queue_context.get("queue_backlog_warning"):
-            parts.append("queue_warn=true")
+    max_queued = summary.get("max_queued_hours")
+    queue_backlog = summary.get("queue_backlog")
+    queue_backlog_severe = summary.get("queue_backlog_severe")
+    queue_backlog_warning = summary.get("queue_backlog_warning")
+    if not isinstance(max_queued, (int, float)):
+        queue_context = summary.get("queue_context")
+        if isinstance(queue_context, dict):
+            nested_queued = queue_context.get("max_queued_hours")
+            if isinstance(nested_queued, (int, float)):
+                max_queued = nested_queued
+            if not queue_backlog_severe and not queue_backlog:
+                queue_backlog_severe = queue_context.get("queue_backlog_severe")
+                queue_backlog = queue_context.get("queue_backlog")
+                queue_backlog_warning = queue_context.get("queue_backlog_warning")
+    if isinstance(max_queued, (int, float)):
+        parts.append(f"queued={float(max_queued):.1f}h")
+    if queue_backlog_severe or queue_backlog:
+        parts.append("queue_backlog=true")
+    elif queue_backlog_warning:
+        parts.append("queue_warn=true")
     expected_after = summary.get("expected_after_terminal")
     if isinstance(expected_after, dict):
         after_action = expected_after.get("action")

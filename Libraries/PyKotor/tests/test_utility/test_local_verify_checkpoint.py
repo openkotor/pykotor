@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–168", patched)
+        self.assertIn("019–169", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -4218,6 +4218,37 @@ last_verified: 2026-01-01
         self.assertIn("fc_run=2", line)
 
     def test_format_preflight_watch_summary_line_queued(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "max_queued_hours": 1.5,
+                "queue_backlog_warning": True,
+            }
+        )
+        self.assertIn("queued=1.5h", line)
+        self.assertIn("queue_warn=true", line)
+
+    def test_format_preflight_watch_summary_line_queued_prefers_top_level(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "max_queued_hours": 2.5,
+                "queue_backlog_warning": True,
+                "queue_context": {
+                    "max_queued_hours": 1.0,
+                    "queue_backlog_severe": True,
+                },
+            }
+        )
+        self.assertIn("queued=2.5h", line)
+        self.assertIn("queue_warn=true", line)
+        self.assertNotIn("queue_backlog=true", line)
+
+    def test_format_preflight_watch_summary_line_queued_queue_context_fallback(self) -> None:
         line = mod._format_preflight_watch_summary_line(
             {
                 "lfg_preflight_watch_result": "timeout",
