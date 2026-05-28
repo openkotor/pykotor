@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–111", patched)
+        self.assertIn("019–112", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2396,11 +2396,34 @@ last_verified: 2026-01-01
                 "checkpoint": {
                     "fc_stale_gap_pending_note": "FC queued on def1234 vs master abc1234",
                 },
+                "forward_commits": {
+                    "run_id": 26546235822,
+                    "status": "queued",
+                    "conclusion": "",
+                    "url": "https://example.com/runs/26546235822",
+                },
             }
         )
         self.assertEqual(briefing["action"], "defer")
         self.assertEqual(briefing["reason"], "fc_active_pending")
         self.assertIn("FC queued", briefing["notes"][0])
+        self.assertEqual(briefing["fc_run_id"], 26546235822)
+        self.assertEqual(briefing["fc_run_url"], "https://example.com/runs/26546235822")
+        self.assertEqual(briefing["fc_status"], "queued")
+
+    def test_emit_defer_briefing_stderr_includes_reason_and_fc_run(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "defer",
+                    "reason": "fc_active_pending",
+                    "blocked": "deferred",
+                    "fc_run_id": 26546235822,
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("reason=fc_active_pending", output)
+        self.assertIn("fc_run=26546235822", output)
 
     def test_last_ci_check_section_extracts_block(self) -> None:
         mock_path = mock.MagicMock()

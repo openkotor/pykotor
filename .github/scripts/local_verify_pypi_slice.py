@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "111"
+PLAN_TRACK_CAP = "112"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1986,6 +1986,20 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
     print(line, file=sys.stderr)
 
 
+def _attach_active_run_refs(status: dict[str, Any], briefing: dict[str, Any]) -> None:
+    for key, prefix in (("forward_commits", "fc"), ("verify_pypi", "verify")):
+        run = status.get(key)
+        if not isinstance(run, dict) or "error" in run or not _is_active_run(run):
+            continue
+        run_id = run.get("run_id")
+        if run_id is not None:
+            briefing[f"{prefix}_run_id"] = run_id
+        url = run.get("url")
+        if isinstance(url, str) and url:
+            briefing[f"{prefix}_run_url"] = url
+        briefing[f"{prefix}_status"] = _run_display_label(run)
+
+
 def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
     proceed_hint = str(status.get("proceed_hint") or "")
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
@@ -2069,7 +2083,7 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
             if isinstance(note, str) and note:
                 extra_notes.append(note)
     if status.get("lfg_deferred"):
-        return {
+        briefing = {
             "action": "defer",
             "command": proceed_hint,
             "reason": str(status.get("lfg_defer_reason") or "deferred"),
@@ -2077,6 +2091,8 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
             "merge_ready": False,
             "blocked": "deferred",
         }
+        _attach_active_run_refs(status, briefing)
+        return briefing
     blocked_refresh = status.get("lfg_refresh_blocked")
     if blocked_refresh:
         return {
@@ -2111,10 +2127,15 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
 def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
     action = briefing.get("action") or "unknown"
     parts = [f"action={action}"]
+    if action == "defer" and briefing.get("reason"):
+        parts.append(f"reason={briefing['reason']}")
     if "exit_code" in briefing:
         parts.append(f"exit={briefing['exit_code']}")
     if briefing.get("blocked"):
         parts.append(f"blocked={briefing['blocked']}")
+    fc_run_id = briefing.get("fc_run_id")
+    if fc_run_id is not None:
+        parts.append(f"fc_run={fc_run_id}")
     percent = briefing.get("completion_percent")
     if isinstance(percent, int):
         parts.append(f"complete={percent}%")
