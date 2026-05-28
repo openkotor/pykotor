@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "144"
+PLAN_TRACK_CAP = "145"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1813,6 +1813,8 @@ def _format_preflight_watch_summary_line(
     notes = summary.get("briefing_notes")
     if isinstance(notes, list) and notes:
         parts.append(f"notes={len(notes)}")
+    if "briefing_merge_ready" in summary:
+        parts.append(f"merge_ready={'true' if summary['briefing_merge_ready'] else 'false'}")
     return " ".join(parts)
 
 
@@ -1933,6 +1935,7 @@ def _watch_lfg_preflight_defer(
         if isinstance(reason, str) and reason:
             summary["briefing_reason"] = reason
         _mirror_briefing_notes(summary, briefing)
+        _mirror_briefing_merge_ready(summary, briefing)
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
     print(
@@ -2344,6 +2347,9 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
         notes_count = _format_briefing_notes_count(briefing)
         if notes_count is not None:
             line = f"{line} notes={notes_count}"
+        merge_ready = _format_briefing_merge_ready(briefing)
+        if merge_ready is not None:
+            line = f"{line} merge_ready={merge_ready}"
     print(line, file=sys.stderr)
 
 
@@ -2737,6 +2743,22 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
+def _mirror_briefing_merge_ready(
+    target: dict[str, Any],
+    briefing: dict[str, Any],
+) -> None:
+    if "merge_ready" in briefing:
+        target["briefing_merge_ready"] = bool(briefing["merge_ready"])
+    else:
+        target.pop("briefing_merge_ready", None)
+
+
+def _format_briefing_merge_ready(briefing: dict[str, Any]) -> str | None:
+    if "merge_ready" not in briefing:
+        return None
+    return "true" if briefing["merge_ready"] else "false"
+
+
 def _mirror_briefing_notes(
     target: dict[str, Any],
     briefing: dict[str, Any],
@@ -2840,6 +2862,7 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         else:
             status.pop("briefing_reason", None)
         _mirror_briefing_notes(status, briefing)
+        _mirror_briefing_merge_ready(status, briefing)
     else:
         status.pop("lfg_agent_briefing", None)
         status.pop("gh_watch_summary", None)
@@ -2865,6 +2888,7 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("briefing_action", None)
         status.pop("briefing_reason", None)
         status.pop("briefing_notes", None)
+        status.pop("briefing_merge_ready", None)
 
 
 def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
