@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "163"
+PLAN_TRACK_CAP = "164"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1686,6 +1686,7 @@ def _format_preflight_watch_poll_line(
     reason = status.get("lfg_defer_reason") or "deferred"
     label = _watch_label_display(watch_label)
     parts = [f"LFG {label} poll {polls}: deferred=true reason={reason}"]
+    emit_briefing_status = bool(status.get("lfg_deferred"))
     checkpoint = status.get("checkpoint")
     if isinstance(checkpoint, dict):
         master_sha = checkpoint.get("master_sha")
@@ -1695,9 +1696,12 @@ def _format_preflight_watch_poll_line(
             if isinstance(forward_commits, dict)
             else None
         )
-        if isinstance(master_sha, str) and isinstance(fc_head, str):
+        if (
+            isinstance(master_sha, str)
+            and isinstance(fc_head, str)
+            and not emit_briefing_status
+        ):
             parts.append(f"sha_gap={fc_head[:7]}:{master_sha[:7]}")
-    emit_briefing_status = bool(status.get("lfg_deferred"))
     for key, label in (("forward_commits", "fc"), ("verify_pypi", "verify")):
         run = status.get(key)
         if not isinstance(run, dict) or "error" in run:
@@ -1749,8 +1753,8 @@ def _format_preflight_watch_poll_line(
             parts.append(
                 f"briefing_command={_format_briefing_command_stderr(command)}"
             )
-        sha_gap_short = _format_briefing_sha_gap_short(briefing)
-        if sha_gap_short is not None:
+        sha_gap_short = status.get("sha_gap_short")
+        if isinstance(sha_gap_short, str) and sha_gap_short:
             parts.append(f"sha_gap={sha_gap_short}")
         queue_note = status.get("queue_backlog_note")
         if isinstance(queue_note, str) and queue_note:

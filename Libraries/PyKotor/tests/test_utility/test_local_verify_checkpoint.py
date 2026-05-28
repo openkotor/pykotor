@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–163", patched)
+        self.assertIn("019–164", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -3523,6 +3523,53 @@ last_verified: 2026-01-01
         )
         self.assertIn("sha_gap=573c9d4:8916e2f", line)
         self.assertIn("preflight watch poll", line)
+
+    def test_format_deferred_watch_poll_line_sha_gap_once(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "checkpoint": {
+                "fc_sha_stale": True,
+                "master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+            },
+            "forward_commits": {
+                "run_id": 1,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "7d85438b090178c8c8924abc46565f7c6ded19",
+                "queued_hours": 0.1,
+            },
+        }
+        line = mod._format_preflight_watch_poll_line(1, status)
+        tokens = line.split()
+        self.assertIn("sha_gap=7d85438:8916e2f", tokens)
+        self.assertEqual(sum(1 for token in tokens if token.startswith("sha_gap=")), 1)
+
+    def test_format_gate_watch_poll_line_sha_gap_once(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "checkpoint": {
+                "fc_sha_stale": True,
+                "master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+            },
+            "forward_commits": {
+                "run_id": 1,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "7d85438b090178c8c8924abc46565f7c6ded19",
+                "queued_hours": 0.1,
+            },
+        }
+        line = mod._format_preflight_watch_poll_line(
+            2,
+            status,
+            watch_label="gate",
+        )
+        tokens = line.split()
+        self.assertIn("gate watch poll", line)
+        self.assertIn("sha_gap=7d85438:8916e2f", tokens)
+        self.assertEqual(sum(1 for token in tokens if token.startswith("sha_gap=")), 1)
 
     def test_format_gate_watch_poll_line_label(self) -> None:
         line = mod._format_preflight_watch_poll_line(
