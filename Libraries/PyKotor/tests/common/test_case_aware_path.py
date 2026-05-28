@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import os
 import pathlib
 import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[3].joinpath("src")
@@ -133,6 +136,28 @@ class TestCaseAwarePath(unittest.TestCase):
         assert CaseAwarePath.str_norm("\\path//to/dir/", slash="/") == "/path/to/dir"
         assert CaseAwarePath.str_norm("/path//to/dir/", slash="\\") == "\\path\\to\\dir"
         assert CaseAwarePath.str_norm("/path//to/dir/", slash="/") == "/path/to/dir"
+
+    @unittest.skipIf(sys.platform == "win32", "POSIX-specific case resolution behavior")
+    def test_virtual_archive_segment_does_not_scan_file_path(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            capsule_path = pathlib.Path(tmpdir) / "swpc_tex_gui.erf"
+            capsule_path.write_bytes(b"placeholder")
+            virtual_path = CaseAwarePath(capsule_path) / "load_manm26ae.tpc"
+
+            original_scandir = os.scandir
+            capsule_path_str = str(capsule_path)
+
+            def guarded_scandir(path):
+                scanned = os.fspath(path)
+                if scanned == capsule_path_str:
+                    msg = "os.scandir() should not be called on archive files for virtual path segments."
+                    raise AssertionError(msg)
+                return original_scandir(path)
+
+            with patch("os.scandir", side_effect=guarded_scandir):
+                resolved_path = str(virtual_path)
+
+            assert resolved_path.endswith(os.path.join("swpc_tex_gui.erf", "load_manm26ae.tpc"))
 
 
 class TestIsRelativeTo(unittest.TestCase):
