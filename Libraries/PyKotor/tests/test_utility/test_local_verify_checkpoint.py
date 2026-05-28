@@ -496,7 +496,46 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–181", patched)
+        self.assertIn("019–182", patched)
+
+    def test_lfg_flat_field_keys_present_stderr(self) -> None:
+        keys = mod._lfg_flat_field_keys_present_stderr(
+            {
+                "lfg_flat_field_keys_present": [
+                    "primary_action",
+                    "fc_run_id",
+                ],
+            }
+        )
+        self.assertEqual(keys, ["primary_action", "fc_run_id"])
+        keys = mod._lfg_flat_field_keys_present_stderr(
+            {
+                "primary_action": "gate_watch",
+                "fc_run_id": 2,
+            }
+        )
+        self.assertEqual(keys, ["primary_action", "fc_run_id"])
+
+    def test_lfg_briefing_mirror_stderr_parts_flat_keys(self) -> None:
+        joined = " ".join(
+            mod._lfg_briefing_mirror_stderr_parts(
+                {
+                    "lfg_flat_field_keys_present": [
+                        "primary_action",
+                        "fc_run_id",
+                        "watch_recommended",
+                    ],
+                    "primary_action": "gate_watch",
+                    "fc_run_id": 2,
+                    "watch_recommended": True,
+                }
+            )
+        )
+        self.assertIn("flat_fields=3", joined)
+        self.assertIn(
+            "flat_keys=primary_action,fc_run_id,watch_recommended",
+            joined,
+        )
 
     def test_build_lfg_flat_field_keys_present_order(self) -> None:
         present = mod._build_lfg_flat_field_keys_present(

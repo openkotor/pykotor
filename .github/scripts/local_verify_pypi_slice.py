@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "181"
+PLAN_TRACK_CAP = "182"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1905,6 +1905,9 @@ def _lfg_briefing_mirror_stderr_parts(status: dict[str, Any]) -> list[str]:
     flat_count = _lfg_flat_field_stderr_count(status)
     if flat_count:
         parts.append(f"flat_fields={flat_count}")
+    flat_keys = _lfg_flat_field_keys_present_stderr(status)
+    if flat_keys:
+        parts.append(f"flat_keys={','.join(flat_keys)}")
 
     return parts
 
@@ -3162,6 +3165,16 @@ def _build_lfg_flat_field_values(source: dict[str, Any]) -> dict[str, Any]:
 
 def _build_lfg_flat_field_keys_present(flat_values: dict[str, Any]) -> list[str]:
     return [key for key in LFG_FLAT_FIELD_KEYS if key in flat_values]
+
+
+def _lfg_flat_field_keys_present_stderr(source: dict[str, Any]) -> list[str]:
+    present = source.get("lfg_flat_field_keys_present")
+    if isinstance(present, list) and present:
+        return [str(key) for key in present if isinstance(key, str) and key]
+    flat_values = source.get("lfg_flat_field_values")
+    if isinstance(flat_values, dict) and flat_values:
+        return _build_lfg_flat_field_keys_present(flat_values)
+    return _build_lfg_flat_field_keys_present(_build_lfg_flat_field_values(source))
 
 
 def _lfg_flat_field_stderr_count(source: dict[str, Any]) -> int:
