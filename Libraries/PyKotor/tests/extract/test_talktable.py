@@ -36,6 +36,21 @@ TEST_TLK_XML = """<tlk language="0">
 
 
 class TestTalkTable(unittest.TestCase):
+    @unittest.skipIf(sys.platform == "win32", "Case-mismatch path semantics differ on Windows filesystems.")
+    def test_case_mismatched_path(self):
+        import tempfile
+
+        tlk = read_tlk(TEST_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
+        with tempfile.TemporaryDirectory() as tmp:
+            mixed_dir = pathlib.Path(tmp) / "MixedCase"
+            mixed_dir.mkdir()
+            tlk_path = mixed_dir / "dialog.tlk"
+            write_tlk(tlk, tlk_path, ResourceType.TLK)
+
+            mismatched_path = pathlib.Path(tmp) / "mixedcase" / "dialog.tlk"
+            talktable = TalkTable(mismatched_path)
+            assert talktable.size() == 3
+
     @contextmanager
     def _build_talktable(self):
         import os

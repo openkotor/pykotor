@@ -7,10 +7,14 @@ exact vanilla TLK data to restore properly.
 
 from __future__ import annotations
 
+import os
+
+from typing import Literal
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 from pykotor.common.misc import Game
+from pykotor.tools.path import CaseAwarePath
 
 if TYPE_CHECKING:
     import os
@@ -86,10 +90,10 @@ def detect_patch_type(game_path: os.PathLike | str) -> Literal["base", "aspyr", 
     -------
         Patch type string ("base", "aspyr", "tslrcm")
     """
-    game_path = Path(game_path)
+    game_path = CaseAwarePath(game_path)
 
     # Check for Aspyr patch indicators
-    aspyr_indicators: list[Path] = [
+    aspyr_indicators: list[CaseAwarePath] = [
         game_path / "KOTOR.app",  # macOS
         game_path / "lib",  # Linux (Aspyr)
         game_path / "KOTOR",  # Sometimes used
