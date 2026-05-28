@@ -496,7 +496,28 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–191", patched)
+        self.assertIn("019–192", patched)
+
+    def test_build_preflight_watch_summary_heartbeat_every_alias(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [],
+            "lfg_preflight_watch_result": "timeout",
+            "preflight_watch_heartbeat_polls": 12,
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("watch_heartbeat_polls"), 12)
+        self.assertEqual(summary.get("heartbeat_every"), 12)
+
+    def test_should_emit_preflight_flat_keys_heartbeat_summary_heartbeat_every(self) -> None:
+        self.assertTrue(
+            mod._should_emit_preflight_flat_keys_heartbeat_summary(
+                {
+                    "flat_keys_heartbeat_polls": 1,
+                    "unchanged_flat_keys_polls": 12,
+                    "heartbeat_every": 12,
+                }
+            )
+        )
 
     def test_lfg_flat_field_mirror_stderr_parts(self) -> None:
         parts = mod._lfg_flat_field_mirror_stderr_parts(
@@ -547,6 +568,17 @@ Monitoring.
         }
         summary = mod._build_preflight_watch_summary(status)
         self.assertEqual(summary.get("watch_heartbeat_polls"), 12)
+        self.assertEqual(summary.get("heartbeat_every"), 12)
+
+    def test_build_preflight_watch_summary_omits_heartbeat_every_when_zero(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [],
+            "lfg_preflight_watch_result": "timeout",
+            "preflight_watch_heartbeat_polls": 0,
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("watch_heartbeat_polls"), 0)
+        self.assertNotIn("heartbeat_every", summary)
 
     def test_should_emit_preflight_flat_keys_heartbeat_summary(self) -> None:
         self.assertTrue(
@@ -580,6 +612,7 @@ Monitoring.
             watch_label="gate",
         )
         self.assertNotIn("flat_keys_heartbeat_polls=", line)
+        self.assertNotIn("flat_hb=", line)
 
     def test_format_preflight_watch_poll_line_flat_keys_heartbeat(self) -> None:
         status: dict[str, Any] = {
@@ -668,7 +701,8 @@ Monitoring.
             },
             watch_label="gate",
         )
-        self.assertIn("flat_keys_heartbeat_polls=1", line)
+        self.assertIn("flat_hb=1", line)
+        self.assertNotIn("flat_keys_heartbeat_polls=", line)
 
     def test_format_preflight_watch_poll_line_omits_unchanged_flat_keys(self) -> None:
         status: dict[str, Any] = {
