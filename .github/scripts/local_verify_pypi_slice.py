@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "177"
+PLAN_TRACK_CAP = "178"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2179,6 +2179,9 @@ def _mirror_preflight_watch_summary_from_status(
     flat_keys = status.get("lfg_flat_field_keys")
     if isinstance(flat_keys, list) and flat_keys:
         summary["lfg_flat_field_keys"] = list(flat_keys)
+    flat_values = _build_lfg_flat_field_values(summary)
+    if flat_values:
+        summary["lfg_flat_field_values"] = flat_values
 
 
 def _watch_lfg_preflight_defer(
@@ -3122,6 +3125,25 @@ def _attach_gh_watch_summary(briefing: dict[str, Any]) -> None:
         briefing["gh_watch_summary"] = gh_watch
 
 
+def _build_lfg_flat_field_values(source: dict[str, Any]) -> dict[str, Any]:
+    values: dict[str, Any] = {}
+    for key in LFG_FLAT_FIELD_KEYS:
+        if key not in source:
+            continue
+        value = source[key]
+        if value is None:
+            continue
+        if isinstance(value, bool):
+            values[key] = value
+            continue
+        if isinstance(value, str) and not value:
+            continue
+        if isinstance(value, (list, dict)) and not value:
+            continue
+        values[key] = value
+    return values
+
+
 def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
     briefing = _build_lfg_agent_briefing(status)
     if briefing:
@@ -3129,9 +3151,15 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status["lfg_agent_briefing"] = briefing
         _mirror_lfg_flat_fields(briefing, status, clear_missing=True)
         status["lfg_flat_field_keys"] = list(LFG_FLAT_FIELD_KEYS)
+        flat_values = _build_lfg_flat_field_values(status)
+        if flat_values:
+            status["lfg_flat_field_values"] = flat_values
+        else:
+            status.pop("lfg_flat_field_values", None)
     else:
         status.pop("lfg_agent_briefing", None)
         status.pop("lfg_flat_field_keys", None)
+        status.pop("lfg_flat_field_values", None)
         _mirror_lfg_flat_fields({}, status, clear_missing=True)
 
 
