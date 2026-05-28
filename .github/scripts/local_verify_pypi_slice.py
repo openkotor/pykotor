@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "169"
+PLAN_TRACK_CAP = "170"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1934,6 +1934,84 @@ def _format_preflight_watch_summary_line(
     return " ".join(parts)
 
 
+def _mirror_preflight_watch_summary_from_status(
+    status: dict[str, Any],
+    summary: dict[str, Any],
+) -> None:
+    active_runs = status.get("active_runs")
+    if isinstance(active_runs, list) and active_runs:
+        summary["active_runs"] = list(active_runs)
+    gh_watch = status.get("gh_watch_summary")
+    if isinstance(gh_watch, str) and gh_watch:
+        summary["gh_watch_summary"] = gh_watch
+    queue_context = status.get("queue_context")
+    if isinstance(queue_context, dict) and (
+        queue_context.get("max_queued_hours") is not None
+        or queue_context.get("queue_backlog")
+    ):
+        summary["queue_context"] = queue_context
+    _mirror_queue_context_fields(
+        summary,
+        queue_context if isinstance(queue_context, dict) else None,
+    )
+    _mirror_queue_backlog_note(
+        summary,
+        queue_context if isinstance(queue_context, dict) else None,
+    )
+    expected_after = status.get("expected_after_terminal")
+    if isinstance(expected_after, dict) and expected_after:
+        summary["expected_after_terminal"] = expected_after
+    primary_action = status.get("primary_action")
+    if isinstance(primary_action, str) and primary_action:
+        summary["primary_action"] = primary_action
+    if status.get("watch_recommended"):
+        summary["watch_recommended"] = True
+    post_terminal = status.get("post_terminal_commands")
+    if isinstance(post_terminal, dict) and post_terminal:
+        summary["post_terminal_commands"] = post_terminal
+    command = status.get("briefing_command") or status.get("wait_command")
+    if isinstance(command, str) and command:
+        summary["wait_command"] = command
+        summary["briefing_command"] = command
+    monitor_commands = status.get("monitor_commands")
+    if isinstance(monitor_commands, dict) and monitor_commands:
+        summary["monitor_commands"] = monitor_commands
+    for field in (
+        "verify_run_id",
+        "fc_run_id",
+        "verify_run_url",
+        "fc_run_url",
+        "verify_status",
+        "fc_status",
+    ):
+        value = status.get(field)
+        if value is not None:
+            summary[field] = value
+    blocked = status.get("blocked")
+    if isinstance(blocked, str) and blocked:
+        summary["blocked"] = blocked
+    action = status.get("briefing_action")
+    if isinstance(action, str) and action:
+        summary["briefing_action"] = action
+    reason = status.get("briefing_reason")
+    if isinstance(reason, str) and reason:
+        summary["briefing_reason"] = reason
+    notes = status.get("briefing_notes")
+    if isinstance(notes, list) and notes:
+        summary["briefing_notes"] = list(notes)
+    if "briefing_merge_ready" in status:
+        summary["briefing_merge_ready"] = status["briefing_merge_ready"]
+    sha_gap_short = status.get("sha_gap_short")
+    if isinstance(sha_gap_short, str) and sha_gap_short:
+        summary["sha_gap_short"] = sha_gap_short
+    sha_gap = status.get("sha_gap")
+    if isinstance(sha_gap, dict) and sha_gap:
+        summary["sha_gap"] = sha_gap
+    gh_watch_command = status.get("gh_watch_command")
+    if isinstance(gh_watch_command, str) and gh_watch_command:
+        summary["gh_watch_command"] = gh_watch_command
+
+
 def _watch_lfg_preflight_defer(
     *,
     targets: list[str],
@@ -2000,64 +2078,29 @@ def _watch_lfg_preflight_defer(
     summary = _build_preflight_watch_summary(status)
     blocked = _lfg_refresh_blocked(status, deferred=bool(status.get("lfg_deferred")))
     summary["next_hint"] = _build_proceed_hint(status, blocked=blocked)
-    active_runs = _build_active_runs_list(status)
-    if active_runs:
-        summary["active_runs"] = active_runs
-    gh_watch = _build_gh_watch_from_status(status)
-    if gh_watch:
-        summary["gh_watch_summary"] = gh_watch
-    queue_context = _build_defer_queue_context(status)
-    if queue_context.get("max_queued_hours") is not None or queue_context.get("queue_backlog"):
-        summary["queue_context"] = queue_context
-    _mirror_queue_context_fields(summary, summary.get("queue_context") if isinstance(summary.get("queue_context"), dict) else None)
-    _mirror_queue_backlog_note(summary, summary.get("queue_context") if isinstance(summary.get("queue_context"), dict) else None)
     if status.get("lfg_deferred"):
         _apply_lfg_agent_briefing(status)
-        briefing = status.get("lfg_agent_briefing") or {}
-        expected_after = briefing.get("expected_after_terminal")
-        if isinstance(expected_after, dict) and expected_after:
-            summary["expected_after_terminal"] = expected_after
-        primary_action = briefing.get("primary_action")
-        if isinstance(primary_action, str) and primary_action:
-            summary["primary_action"] = primary_action
-        if briefing.get("watch_recommended"):
-            summary["watch_recommended"] = True
-        post_terminal = briefing.get("post_terminal_commands")
-        if isinstance(post_terminal, dict) and post_terminal:
-            summary["post_terminal_commands"] = post_terminal
-        command = briefing.get("command")
-        if isinstance(command, str) and command:
-            summary["wait_command"] = command
-            summary["briefing_command"] = command
-        monitor_commands = briefing.get("monitor_commands")
-        if isinstance(monitor_commands, dict) and monitor_commands:
-            summary["monitor_commands"] = monitor_commands
-        for field in (
-            "verify_run_id",
-            "fc_run_id",
-            "verify_run_url",
-            "fc_run_url",
-            "verify_status",
-            "fc_status",
+        _mirror_preflight_watch_summary_from_status(status, summary)
+    else:
+        active_runs = _build_active_runs_list(status)
+        if active_runs:
+            summary["active_runs"] = active_runs
+        gh_watch = _build_gh_watch_from_status(status)
+        if gh_watch:
+            summary["gh_watch_summary"] = gh_watch
+        queue_context = _build_defer_queue_context(status)
+        if queue_context.get("max_queued_hours") is not None or queue_context.get(
+            "queue_backlog"
         ):
-            value = briefing.get(field)
-            if value is not None:
-                summary[field] = value
-        blocked = briefing.get("blocked")
-        if isinstance(blocked, str) and blocked:
-            summary["blocked"] = blocked
-        action = briefing.get("action")
-        if isinstance(action, str) and action:
-            summary["briefing_action"] = action
-        reason = briefing.get("reason")
-        if isinstance(reason, str) and reason:
-            summary["briefing_reason"] = reason
-        _mirror_briefing_notes(summary, briefing)
-        _mirror_briefing_merge_ready(summary, briefing)
-        _mirror_briefing_sha_gap(summary, briefing)
-        gh_watch_command = _extract_gh_watch_command(briefing)
-        if gh_watch_command is not None:
-            summary["gh_watch_command"] = gh_watch_command
+            summary["queue_context"] = queue_context
+        _mirror_queue_context_fields(
+            summary,
+            summary.get("queue_context") if isinstance(summary.get("queue_context"), dict) else None,
+        )
+        _mirror_queue_backlog_note(
+            summary,
+            summary.get("queue_context") if isinstance(summary.get("queue_context"), dict) else None,
+        )
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
     print(

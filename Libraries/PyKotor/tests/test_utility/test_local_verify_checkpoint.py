@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–169", patched)
+        self.assertIn("019–170", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1534,6 +1534,44 @@ Monitoring.
             "forward_commits": {"run_id": 2, "status": "in_progress", "conclusion": ""},
         }
         self.assertEqual(mod._build_gh_watch_from_status(status), "verify:1,fc:2")
+
+    def test_mirror_preflight_watch_summary_from_status(self) -> None:
+        summary: dict[str, Any] = {"polls": 1}
+        status: dict[str, Any] = {
+            "active_runs": ["fc"],
+            "gh_watch_summary": "fc:99",
+            "primary_action": "gate_watch",
+            "verify_run_id": 99,
+            "fc_run_id": 100,
+            "briefing_action": "defer",
+            "briefing_reason": "fc_active_pending",
+            "briefing_notes": ["note"],
+            "briefing_merge_ready": False,
+            "blocked": "deferred",
+            "watch_recommended": True,
+            "max_queued_hours": 3.5,
+            "queue_backlog_warning": True,
+            "queue_context": {"max_queued_hours": 3.5, "queue_backlog_warning": True},
+            "gh_watch_command": "gh run watch 100 --exit-status",
+        }
+        mod._mirror_preflight_watch_summary_from_status(status, summary)
+        self.assertEqual(summary.get("active_runs"), ["fc"])
+        self.assertEqual(summary.get("gh_watch_summary"), "fc:99")
+        self.assertEqual(summary.get("primary_action"), "gate_watch")
+        self.assertEqual(summary.get("verify_run_id"), 99)
+        self.assertEqual(summary.get("fc_run_id"), 100)
+        self.assertEqual(summary.get("briefing_action"), "defer")
+        self.assertEqual(summary.get("briefing_reason"), "fc_active_pending")
+        self.assertEqual(summary.get("briefing_notes"), ["note"])
+        self.assertFalse(summary.get("briefing_merge_ready"))
+        self.assertEqual(summary.get("blocked"), "deferred")
+        self.assertTrue(summary.get("watch_recommended"))
+        self.assertEqual(summary.get("max_queued_hours"), 3.5)
+        self.assertTrue(summary.get("queue_backlog_warning"))
+        self.assertEqual(
+            summary.get("gh_watch_command"),
+            "gh run watch 100 --exit-status",
+        )
 
     def test_watch_summary_includes_active_runs(self) -> None:
         deferred_status = {
