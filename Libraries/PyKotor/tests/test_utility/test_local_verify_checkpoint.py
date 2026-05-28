@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–143", patched)
+        self.assertIn("019–144", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1071,6 +1071,7 @@ Monitoring.
                 "fc_status": "queued",
                 "blocked": "deferred",
                 "action": "defer",
+                "reason": "unchanged_active_runs",
                 "notes": ["Runner backlog ~3h"],
                 "monitor_commands": {
                     "watch_fc_run": "gh run watch 26549293445 --exit-status",
@@ -1090,6 +1091,7 @@ Monitoring.
         self.assertIn("fc_status=queued", output)
         self.assertIn("blocked=deferred", output)
         self.assertIn("action=defer", output)
+        self.assertIn("briefing_reason=unchanged_active_runs", output)
         self.assertIn("notes=1", output)
 
     def test_emit_lfg_strict_exit_stderr_watch_recommended(self) -> None:
@@ -1137,6 +1139,7 @@ Monitoring.
         self.assertEqual(status.get("fc_status"), "queued")
         self.assertEqual(status.get("blocked"), "deferred")
         self.assertEqual(status.get("briefing_action"), "defer")
+        self.assertEqual(status.get("briefing_reason"), "unchanged_active_runs")
         self.assertEqual(status.get("briefing_notes"), ["Runner backlog ~3h"])
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
@@ -1561,6 +1564,7 @@ Monitoring.
         self.assertEqual(summary.get("fc_status"), "queued")
         self.assertEqual(summary.get("blocked"), "deferred")
         self.assertEqual(summary.get("briefing_action"), "defer")
+        self.assertEqual(summary.get("briefing_reason"), "unchanged_active_runs")
         self.assertEqual(summary.get("briefing_notes"), ["Runner backlog ~3h"])
         self.assertTrue(summary.get("queue_backlog_warning"))
         self.assertEqual(summary.get("max_queued_hours"), 2.5)

@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "143"
+PLAN_TRACK_CAP = "144"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1807,6 +1807,9 @@ def _format_preflight_watch_summary_line(
     briefing_action = summary.get("briefing_action")
     if isinstance(briefing_action, str) and briefing_action:
         parts.append(f"action={briefing_action}")
+    briefing_reason = summary.get("briefing_reason")
+    if isinstance(briefing_reason, str) and briefing_reason:
+        parts.append(f"briefing_reason={briefing_reason}")
     notes = summary.get("briefing_notes")
     if isinstance(notes, list) and notes:
         parts.append(f"notes={len(notes)}")
@@ -1926,6 +1929,9 @@ def _watch_lfg_preflight_defer(
         action = briefing.get("action")
         if isinstance(action, str) and action:
             summary["briefing_action"] = action
+        reason = briefing.get("reason")
+        if isinstance(reason, str) and reason:
+            summary["briefing_reason"] = reason
         _mirror_briefing_notes(summary, briefing)
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
@@ -2332,6 +2338,9 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
         action = briefing.get("action")
         if isinstance(action, str) and action:
             line = f"{line} action={action}"
+        reason = briefing.get("reason")
+        if isinstance(reason, str) and reason:
+            line = f"{line} briefing_reason={reason}"
         notes_count = _format_briefing_notes_count(briefing)
         if notes_count is not None:
             line = f"{line} notes={notes_count}"
@@ -2825,6 +2834,11 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
             status["briefing_action"] = action
         else:
             status.pop("briefing_action", None)
+        reason = briefing.get("reason")
+        if isinstance(reason, str) and reason:
+            status["briefing_reason"] = reason
+        else:
+            status.pop("briefing_reason", None)
         _mirror_briefing_notes(status, briefing)
     else:
         status.pop("lfg_agent_briefing", None)
@@ -2849,6 +2863,7 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("fc_status", None)
         status.pop("blocked", None)
         status.pop("briefing_action", None)
+        status.pop("briefing_reason", None)
         status.pop("briefing_notes", None)
 
 
