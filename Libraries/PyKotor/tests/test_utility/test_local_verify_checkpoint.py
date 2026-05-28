@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–161", patched)
+        self.assertIn("019–162", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -3836,8 +3836,11 @@ last_verified: 2026-01-01
         }
         with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
             line = mod._format_preflight_watch_poll_line(1, status)
-        self.assertIn("verify_run=1", line)
-        self.assertIn("fc_run=2", line)
+        tokens = line.split()
+        self.assertIn("verify_run=1", tokens)
+        self.assertIn("fc_run=2", tokens)
+        self.assertNotIn("verify=1", tokens)
+        self.assertNotIn("fc=2", tokens)
 
     def test_format_gate_watch_poll_line_run_ids(self) -> None:
         status: dict[str, Any] = {
@@ -3857,8 +3860,24 @@ last_verified: 2026-01-01
                 watch_label="gate",
             )
         self.assertIn("gate watch poll", line)
-        self.assertIn("verify_run=1", line)
-        self.assertIn("fc_run=2", line)
+        tokens = line.split()
+        self.assertIn("verify_run=1", tokens)
+        self.assertIn("fc_run=2", tokens)
+        self.assertNotIn("verify=1", tokens)
+        self.assertNotIn("fc=2", tokens)
+
+    def test_format_preflight_watch_poll_line_legacy_run_ids_when_not_deferred(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_defer_reason": "unchanged_active_runs",
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        line = mod._format_preflight_watch_poll_line(1, status)
+        tokens = line.split()
+        self.assertIn("verify=1", tokens)
+        self.assertIn("fc=2", tokens)
+        self.assertNotIn("verify_run=1", tokens)
+        self.assertNotIn("fc_run=2", tokens)
 
     def test_format_preflight_watch_poll_line_run_status_once(self) -> None:
         status: dict[str, Any] = {
