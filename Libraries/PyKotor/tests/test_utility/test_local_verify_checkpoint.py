@@ -447,7 +447,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–109", patched)
+        self.assertIn("019–110", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2441,6 +2441,9 @@ last_verified: 2026-01-01
                     "primary_kind": "rate_limited",
                     "note": "verify: HTTP 403: API rate limit exceeded",
                 },
+                "doc_checkpoint_snapshot": {
+                    "last_ci_line": "**2026-05-27:** verify success; FC queued",
+                },
                 "proceed_hint": (
                     "python3 .github/scripts/local_verify_pypi_slice.py "
                     "--lfg-preflight  # retry when GitHub API rate limit resets"
@@ -2449,7 +2452,40 @@ last_verified: 2026-01-01
         )
         self.assertEqual(briefing["action"], "gh_unavailable")
         self.assertEqual(briefing["reason"], "gh_error:rate_limited")
+        self.assertEqual(briefing["blocked"], "gh_unavailable")
         self.assertIn("rate limit", briefing["notes"][0])
+        self.assertTrue(any(note.startswith("doc:") for note in briefing["notes"]))
+
+    def test_lfg_refresh_blocked_gh_unavailable(self) -> None:
+        status: dict[str, Any] = {
+            "gh_ok": False,
+            "checkpoint": {"defer_lfg_pr": False, "proceed_reason": "fix_gh_lookup"},
+        }
+        self.assertEqual(mod._lfg_refresh_blocked(status, deferred=False), "gh_unavailable")
+
+    def test_build_doc_checkpoint_snapshot(self) -> None:
+        mock_path = mock.MagicMock()
+        mock_path.is_file.return_value = True
+        mock_path.read_text.return_value = SAMPLE_DOC
+        with patch.object(mod, "SOLUTION_CLOSEOUT", mock_path):
+            snapshot = mod._build_doc_checkpoint_snapshot()
+        self.assertEqual(snapshot["verify_run_id"], 26365458400)
+        self.assertEqual(snapshot["forward_commits_run_id"], 26365648344)
+        self.assertIn("26365458400", snapshot["last_ci_line"])
+
+    def test_ci_status_includes_doc_snapshot_on_gh_failure(self) -> None:
+        mock_path = mock.MagicMock()
+        mock_path.is_file.return_value = True
+        mock_path.read_text.return_value = SAMPLE_DOC
+        with patch.object(mod, "SOLUTION_CLOSEOUT", mock_path):
+            with patch.object(mod, "_latest_workflow_run") as mock_run:
+                mock_run.side_effect = [
+                    {"error": "HTTP 403: API rate limit exceeded"},
+                    {"error": "HTTP 403: API rate limit exceeded"},
+                ]
+                status = mod._ci_status(compare_checkpoint=True)
+        self.assertIn("doc_checkpoint_snapshot", status)
+        self.assertIn("last_ci_line", status["doc_checkpoint_snapshot"])
 
     def test_compute_lfg_exit_reason_gh_rate_limited(self) -> None:
         status = {"gh_lookup": {"primary_kind": "rate_limited"}}
@@ -2464,7 +2500,7 @@ last_verified: 2026-01-01
                 "gh_ok": False,
                 "gh_lookup": {"primary_kind": "rate_limited"},
             },
-            blocked="fix_gh_lookup",
+            blocked="gh_unavailable",
         )
         self.assertIn("--lfg-preflight", hint)
         self.assertIn("rate limit", hint)

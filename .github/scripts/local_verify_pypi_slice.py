@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "109"
+PLAN_TRACK_CAP = "110"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -586,6 +586,22 @@ def _run_display_label(run: dict[str, Any]) -> str:
     return str(run.get("status") or "unknown")
 
 
+def _build_doc_checkpoint_snapshot() -> dict[str, Any]:
+    parsed = _parse_solution_checkpoint_run_ids()
+    if "error" in parsed:
+        return {"error": parsed["error"]}
+    status_words = _parse_last_ci_check_status_words()
+    section = _last_ci_check_section().strip()
+    lines = [line.strip() for line in section.splitlines() if line.strip()]
+    return {
+        "verify_run_id": parsed["verify_run_id"],
+        "forward_commits_run_id": parsed["forward_commits_run_id"],
+        "verify_status_word": status_words.get("verify_status_word"),
+        "fc_status_word": status_words.get("fc_status_word"),
+        "last_ci_line": lines[0] if lines else "",
+    }
+
+
 def _parse_last_ci_check_status_words() -> dict[str, str | None]:
     section = _last_ci_check_section()
     if not section:
@@ -682,6 +698,9 @@ def _ci_status(
     if gh_lookup is not None:
         result["gh_lookup"] = gh_lookup
         result["gh_lookup_note"] = gh_lookup["note"]
+        snapshot = _build_doc_checkpoint_snapshot()
+        if snapshot and "error" not in snapshot:
+            result["doc_checkpoint_snapshot"] = snapshot
     return result
 
 
@@ -1952,13 +1971,17 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
         command = proceed_hint or f"{script} --lfg-preflight"
         if kind == "rate_limited":
             command = f"{script} --lfg-preflight  # retry when GitHub API rate limit resets"
+        snapshot = status.get("doc_checkpoint_snapshot") or {}
+        last_ci_line = snapshot.get("last_ci_line")
+        if isinstance(last_ci_line, str) and last_ci_line:
+            notes.append(f"doc: {last_ci_line}")
         return {
             "action": "gh_unavailable",
             "command": command,
             "reason": f"gh_error:{kind}",
             "notes": notes,
             "merge_ready": False,
-            "blocked": "fix_gh_lookup",
+            "blocked": "gh_unavailable",
         }
     if status.get("lfg_track_complete"):
         pr_status = status.get("pr_merge_status") or {}
@@ -2455,6 +2478,8 @@ def _maybe_sync_docs_after_dispatch(
 
 
 def _lfg_refresh_blocked(status: dict[str, Any], *, deferred: bool) -> str | None:
+    if not status.get("gh_ok"):
+        return "gh_unavailable"
     checkpoint = status.get("checkpoint")
     if deferred or (isinstance(checkpoint, dict) and checkpoint.get("defer_lfg_pr")):
         return "deferred"
@@ -2488,7 +2513,7 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
         return f"{script} --lfg-gate"
     if blocked == "classify_fc_stale_gap":
         return f"{script} --prefetch-git --lfg-gate"
-    if blocked == "fix_gh_lookup" or not status.get("gh_ok"):
+    if blocked in {"fix_gh_lookup", "gh_unavailable"} or not status.get("gh_ok"):
         gh_lookup = status.get("gh_lookup") or {}
         if gh_lookup.get("primary_kind") == "rate_limited":
             return f"{script} --lfg-preflight  # retry when GitHub API rate limit resets"
